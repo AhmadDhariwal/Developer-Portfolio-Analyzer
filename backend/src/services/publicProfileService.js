@@ -87,7 +87,9 @@ const resolveStoredResumePath = (value = '') => {
     const real = fs.realpathSync(candidate);
     const confined = path.relative(fs.realpathSync(uploadsDir), real);
     if (confined.startsWith('..') || path.isAbsolute(confined)) return '';
-    return fs.statSync(real).isFile() && path.extname(real).toLowerCase() === '.pdf' ? real : '';
+    return fs.statSync(real).isFile() && path.extname(real).toLowerCase() === '.pdf'
+      ? real
+      : '';
   } catch {
     return '';
   }
@@ -339,7 +341,9 @@ const normalizeUrl = (value = '') => {
   if (!raw) return '';
 
   try {
-    const candidate = /^[a-z][a-z0-9+.-]*:/i.test(raw) ? raw : `https://${raw.replace(/^\/+/, '')}`;
+    const candidate = /^[a-z][a-z0-9+.-]*:/i.test(raw)
+      ? raw
+      : `https://${raw.replace(/^\/+/, '')}`;
     const parsed = new URL(candidate);
     return ['http:', 'https:'].includes(parsed.protocol) && !parsed.username && !parsed.password
       ? parsed.toString()
@@ -349,7 +353,8 @@ const normalizeUrl = (value = '') => {
   }
 };
 
-const createValidationError = (message) => Object.assign(new Error(message), { statusCode: 400 });
+const createValidationError = (message) =>
+  Object.assign(new Error(message), { statusCode: 400 });
 const isPlainObject = (value) =>
   Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 const hasUnsafeMarkup = (value) =>
@@ -403,7 +408,10 @@ const validatePublicProfileUpdatePayload = (payload) => {
   }
   for (const [name, section] of Object.entries(payload.sections || {})) {
     if (!isPlainObject(section)) throw createValidationError('Invalid section.');
-    if (name === 'visibility' && Object.values(section).some((value) => typeof value !== 'boolean'))
+    if (
+      name === 'visibility' &&
+      Object.values(section).some((value) => typeof value !== 'boolean')
+    )
       throw createValidationError('Invalid section visibility.');
   }
   const hasUnsafeValue = (value) =>
@@ -427,7 +435,9 @@ const validatePublicProfileUpdatePayload = (payload) => {
     if (course.isVisible !== undefined && typeof course.isVisible !== 'boolean')
       throw createValidationError('Invalid course visibility.');
   }
-  Object.entries(payload.socialLinks || {}).forEach(([field, value]) => validateUrl(value, field));
+  Object.entries(payload.socialLinks || {}).forEach(([field, value]) =>
+    validateUrl(value, field)
+  );
   if (payload.sections?.cta !== undefined && !isPlainObject(payload.sections.cta))
     throw createValidationError('Invalid cta section.');
   validateUrl(payload.sections?.cta?.resumeUrl, 'resume URL');
@@ -674,11 +684,15 @@ const getOrCreatePublicProfile = async (userId) => {
     )
   };
   try {
-    return await PublicProfile.findOneAndUpdate(
-      { userId },
-      { $setOnInsert: initialProfile },
-      { returnDocument: 'after', upsert: true, setDefaultsOnInsert: true }
-    );
+    const persistence = require('./integrationPersistenceService');
+    return await persistence.transaction(async (session) => {
+      await persistence.ownerFence(userId, session);
+      return PublicProfile.findOneAndUpdate(
+        { userId },
+        { $setOnInsert: initialProfile },
+        { returnDocument: 'after', upsert: true, setDefaultsOnInsert: true, session }
+      );
+    });
   } catch (error) {
     // Concurrent initializers contend on the unique slug, then reuse the winner.
     if (error.code === 11000) {
@@ -721,7 +735,12 @@ const calculateProfileStrength = ({
   return Math.round((completed / checks.length) * 100);
 };
 
-async function buildPublicProfilePayload(profile, user, req = null, { publicOnly = false } = {}) {
+async function buildPublicProfilePayload(
+  profile,
+  user,
+  req = null,
+  { publicOnly = false } = {}
+) {
   const [skillScores, latestReport, defaultResume] = await Promise.all([
     profile.skills?.length ? [] : getSkillScores(profile.userId),
     publicOnly
@@ -734,7 +753,9 @@ async function buildPublicProfilePayload(profile, user, req = null, { publicOnly
       : null
   ]);
 
-  const normalizedSkills = profile.skills?.length ? normalizeSkills(profile.skills) : skillScores;
+  const normalizedSkills = profile.skills?.length
+    ? normalizeSkills(profile.skills)
+    : skillScores;
   const normalizedProjects = normalizeProjects(profile.projects || []);
   const normalizedUpcomingProjectsFromField = normalizeUpcomingProjects(
     profile.upcomingProjects || []
@@ -742,7 +763,9 @@ async function buildPublicProfilePayload(profile, user, req = null, { publicOnly
   const normalizedUpcomingProjects = normalizedUpcomingProjectsFromField.length
     ? normalizedUpcomingProjectsFromField
     : normalizedProjects
-        .filter((project) => ['in-progress', 'upcoming', 'planned'].includes(project.status || ''))
+        .filter((project) =>
+          ['in-progress', 'upcoming', 'planned'].includes(project.status || '')
+        )
         .map((project) => ({
           title: project.title,
           description: project.description,
@@ -771,7 +794,16 @@ async function buildPublicProfilePayload(profile, user, req = null, { publicOnly
   const publicEmail = publicOnly ? '' : ownerEmail;
   const publicPhoneNumber = publicOnly ? '' : ownerPhoneNumber;
   const hasDefaultResumeFile = Boolean(
-    defaultResume?.fileUrl && resolveStoredResumePath(defaultResume.fileUrl)
+    defaultResume?.fileUrl &&
+    (require('./storedAssetService').parse(defaultResume.fileUrl)?.ownerId ===
+    String(profile.userId)
+      ? await require('./storedAssetService')
+          .get(defaultResume.fileUrl, profile.userId)
+          .then(
+            () => true,
+            () => false
+          )
+      : resolveStoredResumePath(defaultResume.fileUrl))
   );
   const defaultResumeUrl = hasDefaultResumeFile
     ? publicOnly
@@ -941,7 +973,9 @@ const applySectionsUpdate = ({ profile, payload, user }) => {
   const incomingSections =
     payload.sections && typeof payload.sections === 'object' ? payload.sections : {};
   const incomingHero =
-    incomingSections.hero && typeof incomingSections.hero === 'object' ? incomingSections.hero : {};
+    incomingSections.hero && typeof incomingSections.hero === 'object'
+      ? incomingSections.hero
+      : {};
   const incomingSkills =
     incomingSections.skills && typeof incomingSections.skills === 'object'
       ? incomingSections.skills
@@ -959,7 +993,9 @@ const applySectionsUpdate = ({ profile, payload, user }) => {
       ? incomingSections.testimonials
       : {};
   const incomingCta =
-    incomingSections.cta && typeof incomingSections.cta === 'object' ? incomingSections.cta : {};
+    incomingSections.cta && typeof incomingSections.cta === 'object'
+      ? incomingSections.cta
+      : {};
   const incomingVisibility =
     incomingSections.visibility && typeof incomingSections.visibility === 'object'
       ? incomingSections.visibility
@@ -1026,12 +1062,17 @@ const updatePublicProfile = async (userId, payload = {}, req = null) => {
     )
     .lean();
 
+  const assets = require('./storedAssetService');
+  const previousAssets = assets.references(profile.toObject ? profile.toObject() : profile);
   await applyCoreProfileUpdates({ profile, payload });
   applyCollectionProfileUpdates({ profile, payload });
   applySectionsUpdate({ profile, payload, user });
   applySocialLinksUpdate({ profile, payload, user });
 
-  await profile.save();
+  const nextAssets = assets.references(profile.toObject ? profile.toObject() : profile);
+  if (previousAssets.size || nextAssets.size)
+    await assets.commitPortfolio(profile, previousAssets);
+  else await profile.save();
   const savedProfile = await PublicProfile.findById(profile._id);
   return buildPublicProfilePayload(savedProfile || profile, user, req);
 };
@@ -1060,25 +1101,12 @@ const recordProfileView = async ({ profile, req }) => {
     .digest('hex');
   activeAnalytics++;
   try {
-    try {
-      await PublicPortfolioVisit.create({
-        profileId: profile._id,
-        viewerHash,
-        viewedAt,
-        expiresAt: new Date(viewedAt.getTime() + 90 * 86400000)
-      });
-    } catch (error) {
-      if (error.code === 11000) return;
-      throw error;
-    }
-    await PublicProfile.updateOne(
-      { _id: profile._id, isPublic: true },
-      {
-        $inc: { totalViews: 1, uniqueViews: 1 },
-        $set: { lastViewedAt: viewedAt }
-      },
-      { timestamps: false }
-    );
+    await require('./publicPortfolioAnalyticsPersistence').record(profile, {
+      profileId: profile._id,
+      viewerHash,
+      viewedAt,
+      expiresAt: new Date(viewedAt.getTime() + 90 * 86400000)
+    });
   } finally {
     activeAnalytics--;
   }
@@ -1142,7 +1170,9 @@ const getOwnerResumeDownload = async (userId) => {
 };
 
 const resolveProfileResumeDownload = async (profile) => {
-  const user = await User.findById(profile.userId).select('defaultResumeFileId isActive').lean();
+  const user = await User.findById(profile.userId)
+    .select('defaultResumeFileId isActive')
+    .lean();
   if (user?.isActive === false) return null;
   if (!user?.defaultResumeFileId) return null;
 
@@ -1157,11 +1187,16 @@ const resolveProfileResumeDownload = async (profile) => {
   const mimeType = String(resumeFile.mimeType || 'application/pdf').toLowerCase();
   if (mimeType !== 'application/pdf') return null;
 
-  const filePath = resolveStoredResumePath(resumeFile.fileUrl);
+  const managed = require('./storedAssetService').parse(resumeFile.fileUrl);
+  const filePath =
+    managed && managed.kind === 'resumes' && managed.ownerId === String(profile.userId)
+      ? resumeFile.fileUrl
+      : resolveStoredResumePath(resumeFile.fileUrl);
   if (!filePath) return null;
 
   return {
     filePath,
+    ownerId: profile.userId,
     fileName: toSafeDownloadName(resumeFile.fileName || `${profile.slug}-resume.pdf`),
     mimeType
   };

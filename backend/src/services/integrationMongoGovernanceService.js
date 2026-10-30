@@ -193,4 +193,41 @@ async function consumeSnapshot(provider, owner, cost, maximum) {
   });
 }
 
-module.exports = { admit, release, cooldown, failure, action, consumeSnapshot, initialize };
+// Profile/Portfolio fixed windows share the tested transaction/index machinery,
+// but use a disjoint namespace. Redis never participates in this authority.
+async function requestWindow(prefix, maximum, windowMs) {
+  if (
+    typeof prefix !== 'string' ||
+    !/^public-portfolio:v3:rate:[a-z-]+:[a-f0-9]{64}$/.test(prefix) ||
+    !Number.isSafeInteger(maximum) ||
+    maximum < 1 ||
+    !Number.isSafeInteger(windowMs) ||
+    windowMs < 1
+  )
+    throw unavailable();
+  return transaction(async (session, now) => {
+    const bucket = Math.floor(now / windowMs);
+    const until = (bucket + 1) * windowMs;
+    const state = await read(`${prefix}:${bucket}`, session, now);
+    if (!Number.isSafeInteger(state.count) || state.count < 0) throw unavailable();
+    // Saturation bounds hostile repeated writes and preserves legacy denial semantics.
+    const count = Math.min(state.count + 1, maximum + 1);
+    if (count !== state.count) {
+      state.count = count;
+      state.expiresAt = new Date(until);
+      await write(state, session);
+    }
+    return { count, until };
+  });
+}
+
+module.exports = {
+  admit,
+  release,
+  cooldown,
+  failure,
+  action,
+  consumeSnapshot,
+  initialize,
+  requestWindow
+};

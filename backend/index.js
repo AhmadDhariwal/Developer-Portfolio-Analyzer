@@ -2,6 +2,10 @@ const path = require('node:path');
 require('dotenv').config({ path: path.resolve(__dirname, '.env'), quiet: true });
 const { validateEnv } = require('./src/config/env');
 const env = validateEnv();
+const localApiOnly = process.argv.includes('--api-only');
+if (localApiOnly && env.NODE_ENV !== 'development') {
+  throw Error('--api-only is available only in development.');
+}
 
 const express = require('express');
 const cors = require('cors');
@@ -141,11 +145,13 @@ app.use((req, res, next) => {
     return next();
   }
 });
+require('./src/services/b2ObjectStorageService').configuration();
 // Serve uploads with cache control to prevent stale avatar issues
 app.use(
   '/uploads',
+  require('./src/middleware/storedImageMiddleware').storedImage,
   require('./src/middleware/publicUploadAccess'),
-  express.static(path.join(__dirname, 'uploads'))
+  express.static(require('./src/services/publicImageStorageService').root())
 );
 app.use(metricsMiddleware);
 if (shouldLogRequests) {
@@ -235,8 +241,12 @@ const startServer = async () => {
   await connectDB();
   await initializeRedisAtStartup();
 
-  app.listen(PORT, () => {
+  app.listen(PORT, localApiOnly ? 'localhost' : undefined, () => {
     logger.info('server started', { port: PORT });
+    if (localApiOnly) {
+      logger.info('development API-only mode: loopback listener; background workers disabled.');
+      return;
+    }
     startEmailRetryWorker();
     startIntegrationSyncWorker();
     startJobSourceSyncWorker();

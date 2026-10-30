@@ -4,7 +4,7 @@ const { sendConfiguredEmail } = require('./emailService');
 const { isPortfolioEnabled } = require('./publicPortfolioVisibilityService');
 
 const fail = (message, statusCode) => Object.assign(new Error(message), { statusCode });
-async function deliverContact(slug, sender, body) {
+function validateContact(sender, body) {
   if (
     sender?.role !== 'recruiter' ||
     sender?.isActive === false ||
@@ -20,6 +20,11 @@ async function deliverContact(slug, sender, body) {
     body.website
   )
     throw fail('Invalid contact message.', 400);
+  return message;
+}
+
+async function deliverContact(slug, sender, body) {
+  const message = validateContact(sender, body);
   if (!(await isPortfolioEnabled())) throw fail('Public profile not found.', 404);
   const profile = await PublicProfile.findOne({ slug, isPublic: true }).select('userId').lean();
   const recipient =
@@ -44,4 +49,13 @@ async function deliverContact(slug, sender, body) {
   }
   return { sent: true };
 }
-module.exports = { deliverContact };
+function validateContactRequest(req, res, next) {
+  try {
+    validateContact(req.user, req.body);
+    return next();
+  } catch (error) {
+    return res.status(error.statusCode || 400).json({ message: error.message });
+  }
+}
+
+module.exports = { deliverContact, validateContactRequest };

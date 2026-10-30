@@ -60,6 +60,7 @@ export class Navbar implements OnInit {
   userHandle = 'developer';
   userInitial = 'D';
   userAvatar = '';
+  private avatarPreview: string | null = null;
   avatarSrc = '';
   avatarVersion = Date.now();
   showUserMenu = false;
@@ -242,6 +243,15 @@ export class Navbar implements OnInit {
     this.notificationService.streamEvents$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.loadNotifications(true));
+
+    this.authService.avatarPreview$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((preview) => {
+        this.scheduleUi(() => {
+          this.avatarPreview = preview;
+          this.syncUserState(this.authService.getCurrentUser());
+        });
+      });
 
     // Subscribe to avatar version changes to force refresh
     this.authService.avatarVersion$
@@ -700,7 +710,7 @@ export class Navbar implements OnInit {
     this.userName = user.name || roleLabel || 'User';
     this.userHandle = user.githubUsername || user.email || '';
     this.userInitial = this.profileService.getInitials(this.userName || 'User') || 'U';
-    this.userAvatar = this.profileService.resolveAvatarUrl(user.avatar || '');
+    this.userAvatar = this.profileService.resolveAvatarUrl(this.avatarPreview || user.avatar || '');
 
     this.updateAvatarSrc();
 

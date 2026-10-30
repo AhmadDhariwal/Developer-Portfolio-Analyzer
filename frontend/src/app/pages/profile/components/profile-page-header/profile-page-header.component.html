@@ -1,0 +1,65 @@
+<div class="header-main">
+  <span class="eyebrow">Developer Cockpit // Account Configuration</span>
+  <h1>Profile Settings</h1>
+  <p class="description">
+    Manage your developer identity, target career stack, connected accounts, and platform
+    preferences.
+  </p>
+</div>
+<div class="header-actions">
+  <a routerLink="/app/skill-gap" class="text-button" title="View Skill Gap Analysis">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      aria-hidden="true"
+    >
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+    </svg>
+    <span>Skill Gap</span>
+  </a>
+  <a routerLink="/app/career-sprint" class="text-button" title="View Career Sprint Roadmap">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      aria-hidden="true"
+    >
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+    </svg>
+    <span>Career Sprint</span>
+  </a>
+  <button
+    class="prof-refresh-btn"
+    type="button"
+    (click)="refreshProfileIntent.emit()"
+    [disabled]="isLoading"
+    aria-label="Refresh profile settings"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      [class.spinning]="isLoading"
+      aria-hidden="true"
+    >
+      <path d="M23 4v6h-6" />
+      <path d="M1 20v-6h6" />
+      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+    </svg>
+    <span>{{ isLoading ? 'Refreshing…' : 'Refresh State' }}</span>
+  </button>
+</div>

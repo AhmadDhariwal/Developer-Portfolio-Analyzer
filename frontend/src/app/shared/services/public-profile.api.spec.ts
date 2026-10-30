@@ -83,7 +83,7 @@ describe('Portfolio HTTP contracts', () => {
     const clear = vi.fn();
     const service = new ProfileService(
       { put: () => of({ isPublic: false }) } as unknown as HttpClient,
-      {} as AuthService,
+      { getToken: () => 'fixture-token' } as AuthService,
       {} as CareerProfileService,
       {} as FrontendAnalysisCacheService,
       {
@@ -97,5 +97,6 @@ describe('Portfolio HTTP contracts', () => {
     ).mockImplementation(() => {});
     service.updateVisibility(false).subscribe();
     expect(clear).toHaveBeenCalledOnce();
+    service.ngOnDestroy();
   });
 });

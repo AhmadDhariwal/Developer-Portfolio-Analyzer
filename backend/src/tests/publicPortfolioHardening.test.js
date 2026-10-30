@@ -178,10 +178,17 @@ test('bounded local single-flight, TTL and same-revision stale fallback', async 
     /no stale/
   );
 });
-test('rate limiter returns 429/Retry-After, allows privacy edits and closes uploads on Redis outage', async () => {
+test('rate limiter preserves 429/Retry-After and fails closed on Mongo admission outage', async () => {
   const controls = load('middleware/publicPortfolioRateLimit.js', {
-    '../services/redisCacheService': { getRedisCacheClient: () => null }
+    '../services/integrationMongoGovernanceService': {
+      requestWindow: async (_key, _maximum, windowMs) => {
+        if (unavailable) throw Error('Mongo unavailable');
+        return { count: ++count, until: Date.now() + windowMs };
+      }
+    }
   });
+  let count = 0;
+  let unavailable = false;
   const read = controls.limiter('test', 1, 60000);
   let allowed = 0;
   await read({ ip: '127.0.0.1' }, response(), () => allowed++);
@@ -190,9 +197,12 @@ test('rate limiter returns 429/Retry-After, allows privacy edits and closes uplo
   assert.equal(allowed, 1);
   assert.equal(denied.statusCode, 429);
   assert.ok(Number(denied.headers['Retry-After']) > 0);
+  unavailable = true;
   const strict = response();
   await controls.uploadLimit({ user }, strict, () => assert.fail());
   assert.equal(strict.statusCode, 503);
+  unavailable = false;
+  count = 0;
   let mutationAllowed = false;
   await controls.mutationLimit({ user }, response(), () => {
     mutationAllowed = true;

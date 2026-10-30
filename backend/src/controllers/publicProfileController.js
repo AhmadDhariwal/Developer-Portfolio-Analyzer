@@ -84,13 +84,24 @@ const downloadPublicProfileResume = async (req, res) => {
     res.set('Cache-Control', 'private, no-store');
     res.type(resume.mimeType);
     res.set('X-Content-Type-Options', 'nosniff');
+    if (require('../services/storedAssetService').parse(resume.filePath)) {
+      const bytes = await require('../services/resumeStorageService').read(
+        resume.filePath,
+        resume.ownerId
+      );
+      return res.attachment(resume.fileName).send(bytes);
+    }
     return res.download(resume.filePath, resume.fileName, (error) => {
       if (error && !res.headersSent)
-        res.status(error.statusCode === 404 ? 404 : 500).json({ message: 'Resume not available.' });
+        res
+          .status(error.statusCode === 404 ? 404 : 500)
+          .json({ message: 'Resume not available.' });
     });
   } catch (error) {
-    console.error('Public profile resume download error:', error.message);
-    return res.status(500).json({ message: 'Failed to download resume.' });
+    console.error('Public profile resume download unavailable.');
+    return res
+      .status([404, 503].includes(error.status) ? error.status : 500)
+      .json({ message: 'Failed to download resume.' });
   }
 };
 

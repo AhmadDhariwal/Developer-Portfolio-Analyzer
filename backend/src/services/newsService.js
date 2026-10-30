@@ -9,7 +9,13 @@ const discovery = require('./newsDiscoveryService');
 const governance = require('./newsGovernanceService');
 const logger = require('../utils/logger');
 const providerErrors = require('../utils/newsProviderErrors');
-const { fromNewsAPI, fromGNews, fromHackerNews, fromDevTo, fromReddit } = require('../utils/newsFormatter');
+const {
+  fromNewsAPI,
+  fromGNews,
+  fromHackerNews,
+  fromDevTo,
+  fromReddit
+} = require('../utils/newsFormatter');
 const { rankNewsItems } = require('../utils/newsRanker');
 const { getIntegrationSecretsSync } = require('./platformSettingsService');
 const { getDeveloperSignals, buildSignalHash } = require('./developerSignalService');
@@ -132,7 +138,8 @@ const fetchJson = async (source, url, options = {}, format = (value) => value) =
   if (!reservation.allowed)
     throw Object.assign(new Error('Provider admission denied'), {
       newsOutcome: {
-        status: reservation.reason === 'quota_store_unavailable' ? 'unavailable' : 'quota_limited',
+        status:
+          reservation.reason === 'quota_store_unavailable' ? 'unavailable' : 'quota_limited',
         reason: reservation.reason,
         nextEligibleAt: reservation.nextEligibleAt || null,
         items: []
@@ -162,7 +169,10 @@ const fetchJson = async (source, url, options = {}, format = (value) => value) =
                 : false;
     if (!valid) throw providerErrors.invalidPayload();
     const items = format(payload);
-    await governance.finish(reservation, { status: response.status, headers: response.headers });
+    await governance.finish(reservation, {
+      status: response.status,
+      headers: response.headers
+    });
     return items;
   } catch (error) {
     const feedback = await governance.finish(reservation, {
@@ -179,7 +189,9 @@ const fetchJson = async (source, url, options = {}, format = (value) => value) =
 
 const fetchFromNewsApi = async (sinceDate, token) => {
   const from = sinceDate.toISOString().slice(0, 10);
-  const query = encodeURIComponent('(software OR programming OR developer OR javascript OR nodejs)');
+  const query = encodeURIComponent(
+    '(software OR programming OR developer OR javascript OR nodejs)'
+  );
   const url = `https://newsapi.org/v2/everything?q=${query}&from=${from}&language=en&sortBy=publishedAt&pageSize=50`;
   return fetchJson('newsapi', url, { headers: { 'X-Api-Key': token } }, fromNewsAPI);
 };
@@ -249,7 +261,8 @@ const matchesFilters = (item, filters, sinceTimestamp) => {
 const extractTrendingTopics = (items = []) => {
   const counters = new Map();
   items.forEach((item) => {
-    const text = `${item.title} ${item.description} ${(item.tags || []).join(' ')}`.toLowerCase();
+    const text =
+      `${item.title} ${item.description} ${(item.tags || []).join(' ')}`.toLowerCase();
     [
       'javascript',
       'typescript',
@@ -273,14 +286,17 @@ const extractTrendingTopics = (items = []) => {
 };
 
 // Bounded per-account signal resolution only; public article data is shared separately.
-// Cross-worker signal changes converge within 15 seconds. Existing profile and sprint
-// mutation hooks evict locally; refresh always resolves current canonical signals.
+// Personalization revisions are checked from the already authenticated user on every read.
+// Other signal changes retain the bounded 15-second TTL; refresh always resolves signals.
 const signalCache = new Map();
-const getCachedDeveloperSignals = async (userId, force = false) => {
+const getCachedDeveloperSignals = async (user, force = false) => {
+  const userId = user._id;
+  const profileHash = developerContext.buildProfileHash(user);
   const key = String(userId);
   const cached = signalCache.get(key);
-  if (!force && cached && cached.until > Date.now()) return cached.promise;
-  const entry = { until: Date.now() + 15000 };
+  if (!force && cached && cached.until > Date.now() && cached.profileHash === profileHash)
+    return cached.promise;
+  const entry = { until: Date.now() + 15000, profileHash };
   entry.promise = Promise.resolve()
     .then(() => getDeveloperSignals(userId))
     .then((signals) => ({ signals, signalHash: buildSignalHash(signals) }))
@@ -318,7 +334,7 @@ const buildUserContext = async (user, options = {}) => {
   };
   if (!user?._id) return defaults;
 
-  const { signals, signalHash } = await getCachedDeveloperSignals(user._id, !!options.forceRefresh);
+  const { signals, signalHash } = await getCachedDeveloperSignals(user, !!options.forceRefresh);
   const careerProfile = signals.careerProfileSignal || signals.careerProfile || {};
   const github = signals.githubSignals || {};
   const resume = signals.resumeSignals || {};
@@ -331,14 +347,21 @@ const buildUserContext = async (user, options = {}) => {
   const recommendations = signals.recommendationSignal || signals.recommendationSignals || {};
 
   const resumeSkills = normalizeSkillNames(
-    [...(resume.skills || []), ...(resume.technicalSkills || []), ...(resume.extractedSkills || [])],
+    [
+      ...(resume.skills || []),
+      ...(resume.technicalSkills || []),
+      ...(resume.extractedSkills || [])
+    ],
     24
   );
   const githubTechnologies = normalizeSkillNames(
     [
       ...(github.technologies || []),
       ...(github.languageDistribution || []).map((entry) => entry?.language),
-      ...(github.repositories || []).flatMap((repo) => [repo?.language, ...(repo?.technologies || [])])
+      ...(github.repositories || []).flatMap((repo) => [
+        repo?.language,
+        ...(repo?.technologies || [])
+      ])
     ],
     18
   );
@@ -376,7 +399,9 @@ const buildUserContext = async (user, options = {}) => {
   const context = {
     ...defaults,
     careerStack:
-      developerContext.resolveCareerStack(user) || careerProfile.careerStack || defaults.careerStack,
+      developerContext.resolveCareerStack(user) ||
+      careerProfile.careerStack ||
+      defaults.careerStack,
     experienceLevel:
       developerContext.resolveExperienceLevel(user) ||
       careerProfile.experienceLevel ||
@@ -388,7 +413,10 @@ const buildUserContext = async (user, options = {}) => {
     detectedSkills: knownSkills.slice(0, 18),
     knownSkills,
     targetRole:
-      user.careerGoal || careerProfile.careerGoal || developerContext.resolveCareerStack(user) || 'Developer',
+      user.careerGoal ||
+      careerProfile.careerGoal ||
+      developerContext.resolveCareerStack(user) ||
+      'Developer',
     jobDemandSkills,
     recommendationTechnologies,
     activeLearningFocus: sprint.activeLearningFocus || '',
@@ -417,12 +445,19 @@ const fetchAllSources = async (sinceDate) => {
       configured: Boolean(gnewsToken),
       fetcher: () => fetchFromGNews(sinceDate, gnewsToken)
     },
-    { name: 'Hacker News', enabled: newsEnabled, configured: true, fetcher: () => fetchFromHackerNews() },
+    {
+      name: 'Hacker News',
+      enabled: newsEnabled,
+      configured: true,
+      fetcher: () => fetchFromHackerNews()
+    },
     { name: 'Dev.to', enabled: newsEnabled, configured: true, fetcher: () => fetchFromDevTo() },
     {
       name: 'Reddit',
       enabled: newsEnabled,
-      configured: Boolean(process.env.NEWS_REDDIT_ACCESS_TOKEN && process.env.NEWS_REDDIT_USER_AGENT),
+      configured: Boolean(
+        process.env.NEWS_REDDIT_ACCESS_TOKEN && process.env.NEWS_REDDIT_USER_AGENT
+      ),
       fetcher: () => fetchFromReddit()
     }
   ];
@@ -463,8 +498,11 @@ const fetchAllSources = async (sinceDate) => {
     if (!provider.enabled) {
       sourceBuckets[providerName] = [];
       diagnostic.status = 'disabled';
-      diagnostic.reason = provider.disabledReason ? 'budget_not_configured' : 'platform_disabled';
-      diagnostic.lastFailure = provider.disabledReason || 'Provider disabled in platform settings';
+      diagnostic.reason = provider.disabledReason
+        ? 'budget_not_configured'
+        : 'platform_disabled';
+      diagnostic.lastFailure =
+        provider.disabledReason || 'Provider disabled in platform settings';
       providerDiagnostics.push(diagnostic);
       return;
     }
@@ -498,7 +536,10 @@ const fetchAllSources = async (sinceDate) => {
         ? 'Provider request failed.'
         : 'Provider waiting for admission.';
       if (outcome.failureType)
-        logger.warn('news provider failed', { provider: providerName, reason: diagnostic.reason });
+        logger.warn('news provider failed', {
+          provider: providerName,
+          reason: diagnostic.reason
+        });
     }
     providerDiagnostics.push(diagnostic);
   });
@@ -538,7 +579,13 @@ const fetchAllSources = async (sinceDate) => {
   return { sourceBuckets, providerUsed, providerFailureCount, providerDiagnostics };
 };
 
-const buildRecommendedBasedOn = ({ userContext, filters, lastUpdated, sourceStatus, fromCache }) => {
+const buildRecommendedBasedOn = ({
+  userContext,
+  filters,
+  lastUpdated,
+  sourceStatus,
+  fromCache
+}) => {
   const activeFilterParts = [];
   if (filters.category !== 'All') activeFilterParts.push(filters.category);
   if (filters.source !== 'All') activeFilterParts.push(filters.source);
@@ -613,7 +660,9 @@ const getNewsFeed = async ({ user, query = {} }) => {
   const availableItems = stored
     ? stored.items
     : uniqueNewsItems([...(snapshot?.allItems || []), ...(topicSnapshot?.allItems || [])]);
-  const matching = availableItems.filter((item) => matchesFilters(item, filters, sinceTimestamp));
+  const matching = availableItems.filter((item) =>
+    matchesFilters(item, filters, sinceTimestamp)
+  );
   const ranked =
     filters.mode === 'explore'
       ? matching
@@ -636,7 +685,8 @@ const getNewsFeed = async ({ user, query = {} }) => {
       : rankNewsItems(matching, userContext, filters.tab);
   // Publication age controls date filters, not when the shared catalog was checked.
   const catalogCheckedAt = Date.parse(stored?.lastUpdated) || 0;
-  const queryCheckedAt = Math.max(Number(topicSnapshot?.filters?.attemptedAt) || 0, catalogCheckedAt) || null;
+  const queryCheckedAt =
+    Math.max(Number(topicSnapshot?.filters?.attemptedAt) || 0, catalogCheckedAt) || null;
   const coverage = await discovery.coverage({
     filters,
     readOnly:
@@ -678,7 +728,9 @@ const getNewsFeed = async ({ user, query = {} }) => {
       nextEligibleAt: item.nextEligibleAt || null
     }));
     if (topicSnapshot.filters?.attemptedAt)
-      coverage.enrichment.lastAttemptAt = new Date(topicSnapshot.filters.attemptedAt).toISOString();
+      coverage.enrichment.lastAttemptAt = new Date(
+        topicSnapshot.filters.attemptedAt
+      ).toISOString();
   }
   const start = (filters.page - 1) * filters.limit;
   const sourceSummary =
@@ -686,7 +738,9 @@ const getNewsFeed = async ({ user, query = {} }) => {
     Object.fromEntries(
       SOURCE_NAMES.map((name) => [name, ranked.filter((item) => item.source === name).length])
     );
-  const contributing = (topic ? [topicSnapshot] : [snapshot]).filter((value) => value?.allItems?.length);
+  const contributing = (topic ? [topicSnapshot] : [snapshot]).filter(
+    (value) => value?.allItems?.length
+  );
   const lastUpdated =
     stored?.lastUpdated ||
     contributing
@@ -716,12 +770,15 @@ const getNewsFeed = async ({ user, query = {} }) => {
   return {
     ...coverage,
     mode: filters.mode,
-    items: (stored && filters.mode === 'explore' ? ranked : ranked.slice(start, start + filters.limit)).map(
-      (item) => ({
-        ...item,
-        relatedSkillEvidence: userContext ? relatedNewsSkillEvidence(item, userContext.skillEvidence) : []
-      })
-    ),
+    items: (stored && filters.mode === 'explore'
+      ? ranked
+      : ranked.slice(start, start + filters.limit)
+    ).map((item) => ({
+      ...item,
+      relatedSkillEvidence: userContext
+        ? relatedNewsSkillEvidence(item, userContext.skillEvidence)
+        : []
+    })),
     total: stored ? (stored.rankingLimited ? ranked.length : stored.total) : ranked.length,
     sourceSummary,
     trendingTopics: extractTrendingTopics(ranked),
@@ -762,7 +819,8 @@ const getNewsFeed = async ({ user, query = {} }) => {
     }
   };
 };
-const refreshNewsPool = () => pool.refreshPool(() => fetchAllSources(new Date(Date.now() - 30 * 86400000)));
+const refreshNewsPool = () =>
+  pool.refreshPool(() => fetchAllSources(new Date(Date.now() - 30 * 86400000)));
 let scheduler;
 const startNewsIngestionScheduler = () => {
   if (scheduler || process.env.NEWS_INGESTION_ENABLED === 'false') return;

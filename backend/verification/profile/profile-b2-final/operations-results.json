@@ -1,0 +1,110 @@
+{
+  "mongo": {
+    "connectivity": "PASS",
+    "transactionTopology": true,
+    "collections": {
+      "users": {
+        "present": true,
+        "indexes": [
+          {
+            "key": {
+              "_id": 1
+            },
+            "unique": false
+          },
+          {
+            "key": {
+              "email": 1
+            },
+            "unique": true
+          },
+          {
+            "key": {
+              "organizationId": 1
+            },
+            "unique": false
+          },
+          {
+            "key": {
+              "isPublic": 1
+            },
+            "unique": false
+          },
+          {
+            "key": {
+              "isActive": 1
+            },
+            "unique": false
+          },
+          {
+            "key": {
+              "onboardingCompleted": 1
+            },
+            "unique": false
+          },
+          {
+            "key": {
+              "googleId": 1
+            },
+            "unique": true
+          },
+          {
+            "key": {
+              "githubId": 1
+            },
+            "unique": true
+          }
+        ]
+      },
+      "storedassets": {
+        "present": true,
+        "indexes": [
+          {
+            "key": {
+              "_id": 1
+            },
+            "unique": false
+          },
+          {
+            "key": {
+              "reference": 1
+            },
+            "unique": true
+          },
+          {
+            "key": {
+              "ownerId": 1
+            },
+            "unique": false
+          },
+          {
+            "key": {
+              "state": 1,
+              "expiresAt": 1
+            },
+            "unique": false
+          },
+          {
+            "key": {
+              "state": 1,
+              "retryAfter": 1,
+              "expiresAt": 1
+            },
+            "unique": false
+          }
+        ]
+      },
+      "accountdeletioncleanups": {
+        "present": false,
+        "indexes": []
+      }
+    }
+  },
+  "redis": {
+    "status": "FAIL or unavailable (sanitized)",
+    "providerQuotaExceeded": true,
+    "disposableCountersRemoved": true
+  },
+  "productionRecordsRead": false,
+  "productionRecordsWritten": false
+}

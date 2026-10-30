@@ -20,10 +20,16 @@ const fixture = () => {
     { _id: 'orphan', fileId: 'deleted', userId: 'u', analyzedAt: 9 }
   ];
   const query = (items, filter) => {
-    let rows = items.filter(row => Object.entries(filter).every(([key, value]) => row[key] === value));
+    let rows = items.filter((row) =>
+      Object.entries(filter).every(([key, value]) => row[key] === value)
+    );
     return {
-      select() { return this; },
-      then(resolve, reject) { return this.lean().then(resolve, reject); },
+      select() {
+        return this;
+      },
+      then(resolve, reject) {
+        return this.lean().then(resolve, reject);
+      },
       sort(sort) {
         rows.sort((a, b) => {
           for (const [key, direction] of Object.entries(sort)) {
@@ -33,25 +39,42 @@ const fixture = () => {
         });
         return this;
       },
-      async lean() { return rows[0] || null; }
+      async lean() {
+        return rows[0] || null;
+      }
     };
   };
   const models = {
     User: { findById: () => query([user], {}) },
-    ResumeFile: { findOne: filter => query(files, filter) },
-    ResumeAnalysis: { findOne: filter => query(analyses, filter) }
+    ResumeFile: { findOne: (filter) => query(files, filter) },
+    ResumeAnalysis: { findOne: (filter) => query(analyses, filter) }
   };
   return { user, files, analyses, models };
 };
 
 test('active GitHub wins; legacy GitHub works; absent identity is clean null', () => {
-  assert.equal(context.resolveGithubUsername({ activeGithubUsername: 'active', githubUsername: 'legacy' }), 'active');
+  assert.equal(
+    context.resolveGithubUsername({ activeGithubUsername: 'active', githubUsername: 'legacy' }),
+    'active'
+  );
   assert.equal(context.resolveGithubUsername({ githubUsername: 'legacy' }), 'legacy');
-  assert.equal(context.resolveGithubUsername({ activeGithubUsername: '  ', githubUsername: 'legacy' }), 'legacy');
-  assert.deepEqual(context.resolveIdentity({}), { githubUsername: null, careerStack: null, experienceLevel: null });
+  assert.equal(
+    context.resolveGithubUsername({ activeGithubUsername: '  ', githubUsername: 'legacy' }),
+    'legacy'
+  );
+  assert.deepEqual(context.resolveIdentity({}), {
+    githubUsername: null,
+    careerStack: null,
+    experienceLevel: null
+  });
 });
 test('active career stack and experience level win, with legacy compatibility', () => {
-  const user = { activeCareerStack: 'Backend', careerStack: 'Frontend', activeExperienceLevel: 'Intern', experienceLevel: 'Student' };
+  const user = {
+    activeCareerStack: 'Backend',
+    careerStack: 'Frontend',
+    activeExperienceLevel: 'Intern',
+    experienceLevel: 'Student'
+  };
   assert.equal(context.resolveCareerStack(user), 'Backend');
   assert.equal(context.resolveExperienceLevel(user), 'Intern');
   assert.equal(context.resolveCareerStack({ careerStack: 'Frontend' }), 'Frontend');
@@ -59,32 +82,46 @@ test('active career stack and experience level win, with legacy compatibility', 
 });
 test('active resume wins over default and newer historical resume', async () => {
   const f = fixture();
-  assert.equal((await context.resolveCurrentContext('u', f.user, f.models)).resumeFileId, 'active');
+  assert.equal(
+    (await context.resolveCurrentContext('u', f.user, f.models)).resumeFileId,
+    'active'
+  );
   assert.equal((await context.resolveResumeAnalysis('u', f.user, f.models)).fileId, 'active');
 });
 test('default resume wins when active is absent', async () => {
-  const f = fixture(); delete f.user.activeResumeFileId;
+  const f = fixture();
+  delete f.user.activeResumeFileId;
   assert.equal((await context.resolveResumeFile('u', f.user, f.models))._id, 'default');
   assert.equal((await context.resolveResumeAnalysis('u', f.user, f.models)).fileId, 'default');
 });
 test('latest valid owned historical resume is used only without either selection', async () => {
-  const f = fixture(); delete f.user.activeResumeFileId; delete f.user.defaultResumeFileId;
+  const f = fixture();
+  delete f.user.activeResumeFileId;
+  delete f.user.defaultResumeFileId;
   assert.equal((await context.resolveResumeFile('u', f.user, f.models))._id, 'latest');
   assert.equal((await context.resolveResumeAnalysis('u', f.user, f.models))._id, 'a3');
 });
 test('no resume yields clean null context, even with orphan analyses', async () => {
-  const f = fixture(); f.files.length = 0; delete f.user.activeResumeFileId; delete f.user.defaultResumeFileId;
+  const f = fixture();
+  f.files.length = 0;
+  delete f.user.activeResumeFileId;
+  delete f.user.defaultResumeFileId;
   assert.deepEqual(await context.resolveCurrentContext('u', f.user, f.models), {
-    githubUsername: null, careerStack: null, experienceLevel: null, resumeFileId: null, resumeFile: null
+    githubUsername: null,
+    careerStack: null,
+    experienceLevel: null,
+    resumeFileId: null,
+    resumeFile: null
   });
   assert.equal(await context.resolveResumeAnalysis('u', f.user, f.models), null);
   assert.equal(await context.resolveResumeAnalysis(null, undefined, f.models), null);
 });
 test('an unanalyzed selection never borrows historical analysis', async () => {
-  const f = fixture(); f.user.activeResumeFileId = 'unanalyzed';
+  const f = fixture();
+  f.user.activeResumeFileId = 'unanalyzed';
   assert.equal(await context.resolveResumeAnalysis('u', f.user, f.models), null);
 });
-test('Dashboard, Simulator, Weekly Reports read the same active resume; switching preserves history', async t => {
+test('Dashboard, Simulator, Weekly Reports read the same active resume; switching preserves history', async (t) => {
   const f = fixture();
   t.mock.method(User, 'findById', f.models.User.findById);
   t.mock.method(ResumeFile, 'findOne', f.models.ResumeFile.findOne);
@@ -100,34 +137,67 @@ test('Dashboard, Simulator, Weekly Reports read the same active resume; switchin
   assert.equal(JSON.stringify(f.user), originalUser, 'reads must not update context');
   f.user.activeResumeFileId = 'default';
   for (const load of loaders) assert.equal((await load('u')).fileId, 'default');
-  delete f.user.activeResumeFileId; delete f.user.defaultResumeFileId;
+  delete f.user.activeResumeFileId;
+  delete f.user.defaultResumeFileId;
   for (const load of loaders) assert.equal((await load('u')).fileId, 'latest');
   assert.equal(JSON.stringify({ files: f.files, analyses: f.analyses }), originalHistory);
 });
 
 test('profile completion counts active-only developer identity', () => {
-  const { computeDeveloperProfileCompletion } = require('../controllers/profilecontroller').__test;
-  assert.equal(computeDeveloperProfileCompletion({
-    name: 'Developer', activeGithubUsername: 'active', jobTitle: 'Engineer', location: 'City',
-    bio: 'About me', website: 'https://example.com', activeCareerStack: 'Backend', activeExperienceLevel: 'Intern'
-  }), 100);
+  const { computeDeveloperProfileCompletion } =
+    require('../controllers/profilecontroller').__test;
+  assert.equal(
+    computeDeveloperProfileCompletion({
+      name: 'Developer',
+      activeGithubUsername: 'active',
+      jobTitle: 'Engineer',
+      location: 'City',
+      bio: 'About me',
+      website: 'https://example.com',
+      activeCareerStack: 'Backend',
+      activeExperienceLevel: 'Intern'
+    }),
+    100
+  );
 });
-test('profile GET and resume context GET do not backfill legacy fields or save the user', async t => {
-  const f = fixture(); delete f.user.activeResumeFileId; delete f.user.defaultResumeFileId;
+test('profile GET and resume context GET do not backfill legacy fields or save the user', async (t) => {
+  const f = fixture();
+  delete f.user.activeResumeFileId;
+  delete f.user.defaultResumeFileId;
   f.user.save = async () => assert.fail('GET must not save context');
   f.user.activeGithubUsername = 'active-only';
   t.mock.method(User, 'findById', f.models.User.findById);
   t.mock.method(ResumeFile, 'findOne', f.models.ResumeFile.findOne);
   t.mock.method(ResumeAnalysis, 'findOne', f.models.ResumeAnalysis.findOne);
   const Analysis = require('../models/analysis');
-  t.mock.method(Analysis, 'findOne', () => ({ sort() { return this; }, select() { return this; }, lean: async () => null }));
+  t.mock.method(Analysis, 'findOne', () => ({
+    sort() {
+      return this;
+    },
+    select() {
+      return this;
+    },
+    lean: async () => null
+  }));
   const before = JSON.stringify(f.user);
   const req = { user: f.user, protocol: 'https', get: () => 'example.com' };
   let result;
   const res = {
-    status(code) { assert.fail(`unexpected HTTP ${code}`); },
-    json(value) { result = value; },
-    set() { return this; }, type() { return this; }, send(value) { result = JSON.parse(value); }
+    status(code) {
+      assert.fail(`unexpected HTTP ${code}`);
+    },
+    json(value) {
+      result = value;
+    },
+    set() {
+      return this;
+    },
+    type() {
+      return this;
+    },
+    send(value) {
+      result = JSON.parse(value);
+    }
   };
   await require('../controllers/profilecontroller').getProfile(req, res);
   assert.equal(result.activeResume.fileId, 'latest');
@@ -136,10 +206,11 @@ test('profile GET and resume context GET do not backfill legacy fields or save t
   assert.equal(result.activeResume.fileId, 'latest');
   assert.equal(JSON.stringify(f.user), before);
 });
-test('selecting an active resume updates only selection and retains all historical files and analyses', async t => {
+test('selecting an active resume updates only selection and retains all historical files and analyses', async (t) => {
   const f = fixture();
   const nextId = '0123456789abcdef01234567';
-  f.files[2]._id = nextId; f.analyses[2].fileId = nextId;
+  f.files[2]._id = nextId;
+  f.analyses[2].fileId = nextId;
   const before = JSON.stringify({ files: f.files, analyses: f.analyses });
   t.mock.method(ResumeFile, 'findOne', f.models.ResumeFile.findOne);
   t.mock.method(User, 'findByIdAndUpdate', async (userId, update) => {
@@ -152,7 +223,14 @@ test('selecting an active resume updates only selection and retains all historic
   let response;
   await require('../controllers/resumecontoller').setActiveResume(
     { user: f.user, body: { fileId: nextId } },
-    { status(code) { assert.fail(`unexpected HTTP ${code}`); }, json(value) { response = value; } }
+    {
+      status(code) {
+        assert.fail(`unexpected HTTP ${code}`);
+      },
+      json(value) {
+        response = value;
+      }
+    }
   );
   assert.equal(response.fileId, nextId);
   assert.equal(f.user.defaultResumeFileId, 'default');
@@ -160,9 +238,26 @@ test('selecting an active resume updates only selection and retains all historic
   assert.equal(JSON.stringify({ files: f.files, analyses: f.analyses }), before);
 });
 
+test('selected resume analyses require a surviving owned file, including orphan and foreign references', async () => {
+  const f = fixture();
+  f.user.activeResumeFileId = 'deleted';
+  assert.equal(await context.resolveResumeAnalysis('u', f.user, f.models), null);
+  f.user.activeResumeFileId = 'foreign';
+  f.analyses.push({ fileId: 'foreign', userId: 'u', analyzedAt: 10 });
+  assert.equal(await context.resolveResumeAnalysis('u', f.user, f.models), null);
+});
+
 test('null and undefined inputs return clean nulls without throwing', async () => {
-  assert.deepEqual(context.resolveIdentity(null), { githubUsername: null, careerStack: null, experienceLevel: null });
-  assert.deepEqual(context.resolveIdentity(undefined), { githubUsername: null, careerStack: null, experienceLevel: null });
+  assert.deepEqual(context.resolveIdentity(null), {
+    githubUsername: null,
+    careerStack: null,
+    experienceLevel: null
+  });
+  assert.deepEqual(context.resolveIdentity(undefined), {
+    githubUsername: null,
+    careerStack: null,
+    experienceLevel: null
+  });
   assert.equal(context.resolveGithubUsername(null), null);
   assert.equal(context.resolveGithubUsername(undefined), null);
   assert.equal(context.resolveCareerStack(null), null);
@@ -221,7 +316,9 @@ test('context resolution does not cause circular dependencies across consumers',
   ];
   for (const mod of modules) {
     const loaded = require(mod);
-    assert.ok(loaded, `Module ${mod} should load successfully without circular dependency issues`);
+    assert.ok(
+      loaded,
+      `Module ${mod} should load successfully without circular dependency issues`
+    );
   }
 });
-

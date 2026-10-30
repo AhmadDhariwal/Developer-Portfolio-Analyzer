@@ -58,6 +58,10 @@ export class FrontendCacheInvalidationService {
     this.run('saved-previews');
   }
 
+  clearProfileCache(): void {
+    this.run('profile');
+  }
+
   clearDeveloperSignalCaches(): void {
     this.frontendCache.clearCurrentSignalHash();
     this.frontendCache.clearModule('developer-signals');
@@ -70,6 +74,7 @@ export class FrontendCacheInvalidationService {
     this.clearDashboardCaches();
     this.clearWeeklyReportCaches();
     this.clearCareerSprintCaches();
+    this.run('interview-prep');
   }
 
   clearGithubCaches(): void {

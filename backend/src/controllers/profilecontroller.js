@@ -4,9 +4,6 @@ const Analysis = require('../models/analysis');
 const ResumeFile = require('../models/resumeFile');
 const ResumeAnalysis = require('../models/resumeAnalysis');
 const bcrypt = require('bcryptjs');
-const crypto = require('node:crypto');
-const fs = require('node:fs');
-const path = require('node:path');
 const { createNotification } = require('../services/notificationService');
 const { getDeveloperSettingsSync } = require('../services/platformSettingsService');
 const { invalidateNewsSignalCache } = require('../services/newsService');
@@ -14,23 +11,6 @@ const { invalidatePublicProfileCacheForUser } = require('../services/publicProfi
 const { invalidateDashboardSummaryCache } = require('./dashboardcontroller');
 const { validatePasswordAgainstPolicy } = require('../utils/passwordPolicy');
 
-const VALID_STACKS = ['Frontend', 'Backend', 'Full Stack', 'AI/ML'];
-const VALID_LEVELS = [
-  'Student',
-  'Intern',
-  '0-1 years',
-  '1-2 years',
-  '2-3 years',
-  '3-5 years',
-  '5+ years'
-];
-const VALID_GOALS = [
-  'Get first job',
-  'Improve portfolio',
-  'Prepare for interviews',
-  'Switch tech stack',
-  ''
-];
 const VALID_TIMELINES = ['Immediately', '1-3 months', '3-6 months', '6+ months', ''];
 const VALID_LEARNING_PREFERENCES = [
   'Project-based',
@@ -40,7 +20,6 @@ const VALID_LEARNING_PREFERENCES = [
   'Mixed',
   ''
 ];
-const GITHUB_USERNAME_RE = /^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$/;
 
 const sanitizeText = (value, maxLength = 240) =>
   String(value || '')
@@ -54,29 +33,7 @@ const profileTimingEnabled = () =>
   String(process.env.NODE_ENV || '').toLowerCase() !== 'production';
 const elapsedMs = (startedAt) => Math.round((performance.now() - startedAt) * 100) / 100;
 
-const buildProfileHash = (user) =>
-  crypto
-    .createHash('sha256')
-    .update(
-      JSON.stringify({
-        activeGithubUsername: sanitizeText(
-          developerContext.resolveGithubUsername(user) || '',
-          80
-        ).toLowerCase(),
-        activeCareerStack: sanitizeText(
-          developerContext.resolveCareerStack(user) || 'Full Stack',
-          40
-        ),
-        activeExperienceLevel: sanitizeText(
-          developerContext.resolveExperienceLevel(user) || 'Student',
-          40
-        ),
-        careerGoal: sanitizeText(user?.careerGoal || '', 80),
-        targetTimeline: sanitizeText(user?.targetTimeline || '', 40),
-        learningPreference: sanitizeText(user?.learningPreference || '', 40)
-      })
-    )
-    .digest('hex');
+const buildProfileHash = developerContext.buildProfileHash;
 
 const invalidateProfileDependentRuntimeCaches = (userId) => {
   invalidateNewsSignalCache(userId);
@@ -96,11 +53,11 @@ const resolveAvatarForResponse = (req, avatarValue) => {
   if (/^https?:\/\//i.test(raw)) return raw;
 
   if (raw.startsWith('/uploads/')) {
-    return `${req.protocol}://${req.get('host')}${raw}`;
+    return `${String(process.env.PUBLIC_API_ORIGIN || '').replace(/\/+$/, '')}${raw}`;
   }
 
   if (raw.startsWith('uploads/')) {
-    return `${req.protocol}://${req.get('host')}/${raw}`;
+    return `${String(process.env.PUBLIC_API_ORIGIN || '').replace(/\/+$/, '')}/${raw}`;
   }
 
   return raw;
@@ -203,7 +160,11 @@ const getProfile = async (req, res) => {
       ),
       measure(
         'resumeAnalysisQuery',
-        developerContext.resolveResumeAnalysis(req.user._id, user, { ResumeFile, ResumeAnalysis })
+        developerContext.resolveResumeAnalysis(req.user._id, user, {
+          ResumeFile,
+          ResumeAnalysis,
+          resolvedResumeFile: resolvedActiveResumeFile
+        })
       )
     ]);
 
@@ -346,10 +307,47 @@ const updateProfile = async (req, res) => {
       learningPreference
     } = req.body;
 
-    const user = await User.findById(req.user._id).select('+password');
+    const textFields = [
+      'name',
+      'githubUsername',
+      'jobTitle',
+      'location',
+      'bio',
+      'website',
+      'twitter',
+      'linkedin',
+      'phoneNumber',
+      'targetTimeline',
+      'learningPreference'
+    ];
+    if (
+      textFields.some((key) => req.body[key] !== undefined && typeof req.body[key] !== 'string')
+    )
+      return res.status(400).json({ message: 'Profile fields must be strings.' });
+    if (defaultResumeFileId && !require('mongoose').isObjectIdOrHexString(defaultResumeFileId))
+      return res.status(400).json({ message: 'Selected default resume file is invalid.' });
+    for (const [field, value] of [
+      ['website', website],
+      ['linkedin', linkedin]
+    ]) {
+      if (!value) continue;
+      try {
+        const normalized = /^[a-z][a-z0-9+.-]*:/i.test(value)
+          ? value
+          : field === 'linkedin' && /^in\//i.test(value)
+            ? `https://linkedin.com/${value}`
+            : `https://${value}`;
+        const url = new URL(normalized);
+        if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password)
+          throw Error();
+      } catch {
+        return res
+          .status(400)
+          .json({ message: 'Website and LinkedIn must be valid HTTP(S) URLs.' });
+      }
+    }
+    const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: 'User not found.' });
-    if (!user.password)
-      return res.status(400).json({ message: 'This account does not have a password yet.' });
     const previousProfileHash = buildProfileHash(user);
     const developerSettings = getDeveloperSettingsSync();
 
@@ -393,7 +391,10 @@ const updateProfile = async (req, res) => {
           hasChanges = true;
         }
       } else {
-        const resumeFile = await ResumeFile.findOne({ _id: defaultResumeFileId, userId: user._id });
+        const resumeFile = await ResumeFile.findOne({
+          _id: defaultResumeFileId,
+          userId: user._id
+        });
         if (!resumeFile) {
           return res.status(400).json({ message: 'Selected default resume file is invalid.' });
         }
@@ -452,24 +453,6 @@ const updateProfile = async (req, res) => {
         hasChanges = true;
       }
     }
-    const textFields = [
-      ['jobTitle', jobTitle],
-      ['location', location],
-      ['bio', bio],
-      ['website', website],
-      ['twitter', twitter],
-      ['linkedin', linkedin],
-      ['phoneNumber', phoneNumber]
-    ];
-
-    for (const [field, value] of textFields) {
-      if (value === undefined) continue;
-      const normalizedValue = sanitizeText(value);
-      if (normalizedValue !== String(user[field] || '')) {
-        user[field] = normalizedValue;
-        hasChanges = true;
-      }
-    }
 
     if (notifications !== undefined) {
       const notificationKeys = [
@@ -488,19 +471,11 @@ const updateProfile = async (req, res) => {
       ) {
         return res.status(400).json({ message: 'Invalid notification preferences.' });
       }
-      const nextNotifications = {
-        weeklyScoreReport:
-          notifications.weeklyScoreReport ?? user.notifications.weeklyScoreReport ?? true,
-        skillTrendAlerts:
-          notifications.skillTrendAlerts ?? user.notifications.skillTrendAlerts ?? true,
-        newRecommendations:
-          notifications.newRecommendations ?? user.notifications.newRecommendations ?? false,
-        jobMatchAlerts: notifications.jobMatchAlerts ?? user.notifications.jobMatchAlerts ?? true
-      };
-
-      if (JSON.stringify(nextNotifications) !== JSON.stringify(user.notifications || {})) {
-        user.notifications = nextNotifications;
-        hasChanges = true;
+      for (const [key, value] of Object.entries(notifications)) {
+        if (value !== user.notifications?.[key]) {
+          user.set(`notifications.${key}`, value);
+          hasChanges = true;
+        }
       }
     }
 
@@ -582,7 +557,14 @@ const updatePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
 
-    if (!currentPassword || !newPassword) {
+    if (
+      typeof currentPassword !== 'string' ||
+      typeof newPassword !== 'string' ||
+      !currentPassword ||
+      !newPassword ||
+      Buffer.byteLength(currentPassword) > 72 ||
+      Buffer.byteLength(newPassword) > 72
+    ) {
       return res.status(400).json({ message: 'Both current and new passwords are required.' });
     }
     const passwordPolicy = validatePasswordAgainstPolicy(newPassword);
@@ -590,18 +572,28 @@ const updatePassword = async (req, res) => {
       return res.status(400).json({ message: passwordPolicy.message });
     }
 
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id).select('+password');
     if (!user) return res.status(404).json({ message: 'User not found.' });
+
+    if (!user.password)
+      return res.status(400).json({ message: 'This account does not have a password yet.' });
 
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
-      return res.status(401).json({ message: 'Current password is incorrect.' });
+      return res.status(401).json({
+        code: 'CURRENT_PASSWORD_INCORRECT',
+        message: 'Current password is incorrect.'
+      });
     }
 
     const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(newPassword, salt);
-    user.providers = Array.from(new Set([...(user.providers || []), 'local']));
-    await user.save();
+    const password = await bcrypt.hash(newPassword, salt);
+    const changed = await User.updateOne(
+      { _id: user._id, password: user.password },
+      { $set: { password }, $inc: { sessionRevision: 1 }, $addToSet: { providers: 'local' } }
+    );
+    if (!changed.matchedCount)
+      return res.status(409).json({ message: 'Account security changed. Refresh and retry.' });
 
     await createNotification({
       userId: user._id,
@@ -612,7 +604,18 @@ const updatePassword = async (req, res) => {
       dedupeWindowHours: 1
     });
 
-    res.json({ message: 'Password updated successfully.' });
+    require('../middleware/storedImageMiddleware').mediaSession(
+      { user: { _id: user._id, sessionRevision: Number(user.sessionRevision || 0) + 1 } },
+      res,
+      () => {}
+    );
+    res.json({
+      message: 'Password updated successfully.',
+      token: require('../utils/authSessionToken').sign({
+        _id: user._id,
+        sessionRevision: Number(user.sessionRevision || 0) + 1
+      })
+    });
   } catch (error) {
     console.error('Password update error:', error.message);
     res.status(500).json({ message: 'Server error updating password.' });
@@ -624,17 +627,13 @@ const updatePassword = async (req, res) => {
 // @access Private
 const deleteAccount = async (req, res) => {
   try {
-    await require('../services/integrationPersistenceService').deleteAccount(
-      req.user._id,
-      async (session) => {
-        await Analysis.deleteMany({ userId: req.user._id }, { session });
-        await User.findByIdAndDelete(req.user._id, { session });
-      }
-    );
+    await require('../services/accountDeletionService').deleteAccount(req.user._id);
     res.json({ message: 'Account deleted successfully.' });
   } catch (error) {
     console.error('Delete account error:', error.message);
-    res.status(500).json({ message: 'Server error deleting account.' });
+    res.status(error.status || 500).json({
+      message: error.status === 409 ? error.message : 'Server error deleting account.'
+    });
   }
 };
 
@@ -665,7 +664,10 @@ const updateCareerProfile = async (req, res) => {
     ) {
       return res.status(400).json({ message: 'Invalid or missing experienceLevel.' });
     }
-    if (normalizedCareerGoal !== undefined && !VALID_CAREER_GOALS.includes(normalizedCareerGoal)) {
+    if (
+      normalizedCareerGoal !== undefined &&
+      !VALID_CAREER_GOALS.includes(normalizedCareerGoal)
+    ) {
       return res.status(400).json({ message: 'Invalid careerGoal.' });
     }
     if (normalizedTimeline !== undefined && !VALID_TIMELINES.includes(normalizedTimeline)) {
@@ -777,6 +779,7 @@ const updateActiveCareerProfile = async (req, res) => {
 // @route POST /api/profile/avatar
 // @access Private
 const uploadAvatar = async (req, res) => {
+  let committed = false;
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'Avatar file is required.' });
@@ -784,25 +787,33 @@ const uploadAvatar = async (req, res) => {
 
     const user = await User.findById(req.user._id);
     if (!user) {
+      await require('../services/publicImageStorageService').remove(req.file.publicPath);
       return res.status(404).json({ message: 'User not found.' });
     }
 
-    const nextAvatarPath = `/uploads/avatars/${req.file.filename}`;
-
-    // Best-effort cleanup of previous local avatar file.
-    if (user.avatar?.includes('/uploads/avatars/')) {
-      const previous = user.avatar.split('/uploads/avatars/')[1]?.split('?')[0];
-      if (previous) {
-        const absoluteOldPath = path.join(__dirname, '..', '..', 'uploads', 'avatars', previous);
-        if (fs.existsSync(absoluteOldPath)) {
-          fs.unlinkSync(absoluteOldPath);
-        }
-      }
+    const images = require('../services/publicImageStorageService');
+    const nextAvatarPath = req.file.publicPath;
+    // Atomic exchange makes concurrent replacements clean up only the displaced image.
+    const managed = require('../services/storedAssetService');
+    const previous =
+      managed.parse(nextAvatarPath) ||
+      managed.parse(user.avatar) ||
+      process.env.B2_IMAGES_BUCKET
+        ? await managed.commitAvatar(user._id, nextAvatarPath)
+        : await User.findOneAndUpdate(
+            { _id: user._id },
+            { $set: { avatar: nextAvatarPath } },
+            { returnDocument: 'before' }
+          ).lean();
+    if (!previous) {
+      await images.remove(nextAvatarPath);
+      return res.status(404).json({ message: 'User not found.' });
     }
-
-    // Store only the relative path in DB — full URL is resolved per-request
-    user.avatar = nextAvatarPath;
-    await user.save();
+    committed = true;
+    // Managed replacements already have an atomic cleanup receipt. Let the
+    // bounded worker perform provider I/O after this successful reference swap.
+    if (!managed.parse(previous.avatar))
+      await images.remove(previous.avatar).catch(() => console.warn('Avatar cleanup pending.'));
     await invalidatePublicProfileCacheForUser(user._id);
 
     await createNotification({
@@ -819,6 +830,10 @@ const uploadAvatar = async (req, res) => {
       avatar: resolveAvatarForResponse(req, nextAvatarPath)
     });
   } catch (error) {
+    if (!committed && req.file?.publicPath)
+      await require('../services/publicImageStorageService')
+        .remove(req.file.publicPath)
+        .catch(() => {});
     console.error('Avatar upload error:', error.message);
     return res.status(500).json({ message: 'Server error uploading avatar.' });
   }
@@ -834,7 +849,7 @@ const updateProfileVisibility = async (req, res) => {
     const developerSettings = getDeveloperSettingsSync();
 
     // Admins are not part of the talent pool — block them from enabling visibility.
-    if (user.role === 'admin') {
+    if (!['developer', 'recruiter'].includes(user.role)) {
       return res.status(403).json({ message: 'Admins cannot appear in the talent pool.' });
     }
 
@@ -869,13 +884,6 @@ const updateProfileVisibility = async (req, res) => {
       }
     }
 
-    // Account privacy revocation also revokes any published portfolio.
-    // Re-enabling recruiter discovery does not silently publish a portfolio.
-    if (!isPublic)
-      await require('../models/publicProfile').updateMany(
-        { userId: user._id },
-        { $set: { isPublic: false } }
-      );
     user.isPublic = isPublic;
     await user.save();
 
@@ -898,7 +906,7 @@ const updateProfileVisibility = async (req, res) => {
 };
 
 module.exports = {
-  __test: { computeDeveloperProfileCompletion },
+  __test: { computeDeveloperProfileCompletion, buildProfileHash },
   getProfile,
   updateProfile,
   updatePassword,

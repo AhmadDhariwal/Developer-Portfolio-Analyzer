@@ -1,0 +1,62 @@
+{
+  "branch": "task/profile",
+  "commit": "654fd5905eed3a5068f82d6e1e54fa56de7307cf",
+  "sourceFiles": [
+    "backend/.env.example",
+    "backend/package.json",
+    "backend/package-lock.json",
+    "backend/index.js",
+    "backend/src/controllers/profilecontroller.js",
+    "backend/src/controllers/resumecontoller.js",
+    "backend/src/controllers/publicProfileController.js",
+    "backend/src/services/publicImageStorageService.js",
+    "backend/src/services/accountDeletionService.js",
+    "backend/src/services/publicProfileService.js",
+    "backend/src/services/resumeservice.js",
+    "backend/src/middleware/uploadmiddleware.js",
+    "backend/src/routes/profile.routes.js",
+    "backend/src/routes/publicProfile.routes.js",
+    "backend/src/routes/resume.routes.js",
+    "backend/src/services/b2ObjectStorageService.js",
+    "backend/src/services/storedAssetService.js",
+    "backend/src/services/resumeStorageService.js",
+    "backend/src/models/storedAsset.js",
+    "backend/src/middleware/storedImageMiddleware.js",
+    "backend/src/scripts/retryStorageCleanup.js",
+    "backend/src/tests/b2Storage.test.js",
+    "backend/src/tests/fixtures/b2Fixture.js",
+    "backend/src/tests/fixtures/b2StorageWorker.js"
+  ],
+  "focusedTests": {
+    "passed": 53,
+    "failed": 0,
+    "skipped": 0
+  },
+  "sdk": "@aws-sdk/client-s3@3.1159.0",
+  "node": "v24.19.0",
+  "provider": "versioned in-memory S3 fixture; actual SDK constructor; no live B2 calls",
+  "database": "disposable loopback replica set, isolated b2_storage_test databases dropped",
+  "restart": "fresh child process reads Mongo reference and fixture provider snapshot",
+  "formatting": "Prettier write/check explicit task paths",
+  "syntax": "node --check all task JavaScript",
+  "frontend": "not edited by this task; no build rerun",
+  "concurrentUntouchedChangesObserved": [
+    "backend/verification/profile/profile-desktop.png",
+    "backend/verification/profile/profile-mobile.png",
+    "frontend/src/app/pages/profile/profile.component.html",
+    "frontend/src/app/pages/profile/profile.component.scss"
+  ],
+  "productionSecretsMigrationDeployment": "not changed or executed",
+  "productionGates": "open; see report",
+  "gitWorkingTreeWhitespace": "passed",
+  "gitTaskIndexWhitespace": "passed",
+  "gitFullIndexWhitespace": {
+    "status": "pre-existing warnings",
+    "files": [
+      "backend/verification/profile/frontend-build.txt",
+      "backend/verification/profile/frontend-focused-tests.txt",
+      "backend/verification/profile/frontend-tests.txt"
+    ]
+  },
+  "disposableMongoProcess": "stopped after passing acceptance; fixture databases dropped"
+}

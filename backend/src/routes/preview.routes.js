@@ -15,7 +15,10 @@ const previewStorage = multer.diskStorage({
     cb(null, previewUploadDir);
   },
   filename: (req, file, cb) => {
-    cb(null, `preview-${Date.now()}-${Math.random().toString(36).slice(2)}${path.extname(file.originalname)}`);
+    cb(
+      null,
+      `preview-${Date.now()}-${Math.random().toString(36).slice(2)}${path.extname(file.originalname)}`
+    );
   }
 });
 
@@ -26,7 +29,10 @@ const previewUpload = multer({
     fileSize: 5 * 1024 * 1024 // Size limit <= 5MB
   },
   fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'application/pdf' && path.extname(file.originalname).toLowerCase() === '.pdf') {
+    if (
+      file.mimetype === 'application/pdf' &&
+      path.extname(file.originalname).toLowerCase() === '.pdf'
+    ) {
       cb(null, true);
     } else {
       cb(new Error('Only PDF files are allowed'), false);
@@ -44,6 +50,11 @@ const previewResumePdfMiddleware = (req, res, next) => {
   });
 };
 
-router.post('/resume/parse-text', previewResumePdfMiddleware, parsePreviewResume);
+router.post(
+  '/resume/parse-text',
+  require('../middleware/publicPortfolioRateLimit').uploadLimit,
+  previewResumePdfMiddleware,
+  parsePreviewResume
+);
 
 module.exports = router;

@@ -43,6 +43,7 @@ export class Sidebar implements OnInit {
   userHandle = 'developer';
   userInitial = 'D';
   userAvatar = '';
+  private avatarPreview: string | null = null;
   avatarSrc = '';
   avatarVersion = Date.now();
   currentUrl = '';
@@ -225,6 +226,13 @@ export class Sidebar implements OnInit {
     this.authService.currentUser$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user) => {
       this.syncUserState(user);
     });
+
+    this.authService.avatarPreview$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((preview) => {
+        this.avatarPreview = preview;
+        this.syncUserState(this.authService.getCurrentUser());
+      });
 
     this.authService.avatarVersion$
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -657,7 +665,7 @@ export class Sidebar implements OnInit {
     const normalizedRole = this.getNormalizedRole(user?.role);
     this.userHandle = this.formatRoleLabel(normalizedRole) || user.githubUsername || 'developer';
     this.userInitial = this.profileService.getInitials(this.userName || 'Developer') || 'D';
-    this.userAvatar = this.profileService.resolveAvatarUrl(user.avatar || '');
+    this.userAvatar = this.profileService.resolveAvatarUrl(this.avatarPreview || user.avatar || '');
     this.currentRole = normalizedRole;
 
     this.updateAvatarSrc();
