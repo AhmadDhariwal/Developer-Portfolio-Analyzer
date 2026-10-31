@@ -8,8 +8,11 @@ const createTicket = async (req, res) => {
     const ticket = await supportService.createTicket(req.user, req.body);
     res.status(201).json({ message: 'Support ticket submitted successfully.', ticket });
   } catch (error) {
-    console.warn('Support ticket rejected:', error.message);
-    res.status(error.status || 400).json({ message: error.status ? error.message : 'Failed to submit support ticket.' });
+    console.warn('Support ticket rejected.', { status: error.status || 503 });
+    if (error.status === 429) res.set('Retry-After', String(error.retryAfter || 600));
+    res
+      .status(error.status || 503)
+      .json({ message: error.status ? error.message : 'Failed to submit support ticket.' });
   }
 };
 
@@ -53,14 +56,26 @@ const getAdminTickets = async (req, res) => {
     const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 10));
 
     const { status, category, priority, startDate, endDate } = req.query;
-    if (!validFilter(status, ['open', 'in_progress', 'resolved', 'closed'])
-      || !validFilter(category, ['bug', 'feature_request', 'account_issue', 'billing_issue', 'general_feedback', 'other'])
-      || !validFilter(priority, ['low', 'medium', 'high', 'urgent'])
-      || (startDate && Number.isNaN(Date.parse(startDate))) || (endDate && Number.isNaN(Date.parse(endDate)))) {
+    if (
+      !validFilter(status, ['open', 'in_progress', 'resolved', 'closed']) ||
+      !validFilter(category, [
+        'bug',
+        'feature_request',
+        'account_issue',
+        'billing_issue',
+        'general_feedback',
+        'other'
+      ]) ||
+      !validFilter(priority, ['low', 'medium', 'high', 'urgent']) ||
+      (startDate && Number.isNaN(Date.parse(startDate))) ||
+      (endDate && Number.isNaN(Date.parse(endDate)))
+    ) {
       return res.status(400).json({ message: 'Invalid ticket filters.' });
     }
     const result = await supportService.getAllTickets(page, limit, {
-      status, category, priority,
+      status,
+      category,
+      priority,
       startDate: startDate ? new Date(startDate) : undefined,
       endDate: endDate ? new Date(endDate) : undefined
     });
@@ -74,7 +89,12 @@ const updateTicketStatus = async (req, res) => {
   try {
     if (!validId(req.params.id)) return res.status(400).json({ message: 'Invalid ticket ID.' });
     const { status } = req.body;
-    const ticket = await supportService.updateTicketStatus(req.params.id, status);
+    const ticket = await supportService.updateTicketStatus(
+      req.params.id,
+      status,
+      req.user._id,
+      req.user.sessionRevision
+    );
     if (!ticket) return res.status(404).json({ message: 'Ticket not found.' });
     res.json({ message: 'Status updated.', ticket });
   } catch (error) {

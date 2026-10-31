@@ -1,3 +1,4 @@
+const notificationPersistence = require('./notificationPersistenceService');
 const {
   resolveRecommendationEnrichment,
   mergeNarrativeEnrichment,
@@ -14,7 +15,6 @@ const engine = require('../services/recommendationEngineService');
 const generation = require('../services/recommendationGenerationService');
 const crypto = require('node:crypto');
 const aiService = require('../services/aiservice');
-const { createNotification } = require('../services/notificationService');
 const { getRecommendationPrompt } = require('../prompts/recommendationPrompt');
 const AnalysisCache = require('../models/analysisCache');
 const ResumeAnalysis = require('../models/resumeAnalysis');
@@ -221,14 +221,6 @@ const isPersistableRecommendationResult = (result = {}) => {
     return false;
   if (result.cacheMetadata?.partial === true) return false;
   return true;
-};
-
-const voidRecommendationNotification = (payload) => {
-  setImmediate(() => {
-    createNotification(payload).catch((error) => {
-      console.warn('Recommendation notification failed:', error.message);
-    });
-  });
 };
 
 const ANALYSIS_CACHE_RESULT_FIELDS = {
@@ -1545,26 +1537,39 @@ const runRecommendationPipeline = async ({
           );
         }
         if (saveResult && req.user?._id) {
-          await Recommendation.findOneAndUpdate(
+          await notificationPersistence.commit(
+            req.user._id,
+            (session) =>
+              Recommendation.findOneAndUpdate(
+                {
+                  userId: req.user._id,
+                  snapshotVersion: engine.RULE_VERSION,
+                  contextHash: signalHash,
+                },
+                {
+                  $setOnInsert: {
+                    title: result.recommendations[0]?.title || result.analysisSummary,
+                    careerStack,
+                    experienceLevel,
+                    result,
+                    priority: result.recommendations[0]?.priority || 'Low',
+                    priorityType: (result.recommendations[0]?.priority || 'Low').toLowerCase(),
+                    category: result.recommendations[0]?.category || 'careerPaths',
+                    techStack: result.technologies
+                      .map((technology) => technology.name)
+                      .slice(0, 12),
+                    difficultyScore: null,
+                  },
+                },
+                { upsert: true, runValidators: true, session },
+              ),
             {
-              userId: req.user._id,
-              snapshotVersion: engine.RULE_VERSION,
-              contextHash: signalHash,
+              type: 'career_update',
+              title: 'Career Recommendations Updated',
+              message: 'Your latest career recommendations are ready to review.',
+              eventId: `recommendations:${engine.RULE_VERSION}:${signalHash}`,
+              preferenceKey: 'newRecommendations',
             },
-            {
-              $setOnInsert: {
-                title: result.recommendations[0]?.title || result.analysisSummary,
-                careerStack,
-                experienceLevel,
-                result,
-                priority: result.recommendations[0]?.priority || 'Low',
-                priorityType: (result.recommendations[0]?.priority || 'Low').toLowerCase(),
-                category: result.recommendations[0]?.category || 'careerPaths',
-                techStack: result.technologies.map((technology) => technology.name).slice(0, 12),
-                difficultyScore: null,
-              },
-            },
-            { upsert: true, runValidators: true },
           );
         }
         writeRecommendationMemory(
@@ -1604,15 +1609,6 @@ const runRecommendationPipeline = async ({
               resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId,
               aiUsed: Boolean(enrichment.aiUsed),
             },
-          });
-          voidRecommendationNotification({
-            userId: req.user._id,
-            type: 'career_update',
-            title: 'Career Recommendations Updated',
-            message: 'Your latest career recommendations are ready to review.',
-            dedupeKey: `recommendations:${signalHash || 'latest'}`,
-            dedupeWindowHours: 24,
-            preferenceKey: 'newRecommendations',
           });
         }
       }

@@ -159,7 +159,7 @@ if (shouldLogRequests) {
     logger.info('request', {
       requestId: req.requestId,
       method: req.method,
-      path: req.originalUrl
+      path: req.path === '/api/notifications/stream' ? req.path : req.originalUrl
     });
     next();
   });
@@ -300,6 +300,9 @@ startServer().catch((error) => {
 });
 
 const shutdown = () => {
+  require('./src/services/notificationStreamService')
+    .stop()
+    .catch(() => {});
   stopNewsIngestionScheduler();
   Promise.allSettled([closeRedisCache(), shutdownTracing()]);
 };

@@ -1,0 +1,14 @@
+<dialog
+  #dialog
+  [attr.aria-label]="title"
+  [attr.aria-describedby]="messageId"
+  (cancel)="cancel($event)"
+  (keydown)="trapFocus($event)"
+>
+  <h3>{{ title }}</h3>
+  <p [id]="messageId">{{ message }}</p>
+  <div class="actions">
+    <button type="button" autofocus (click)="cancelled.emit()">{{ cancelText }}</button>
+    <button class="danger" type="button" (click)="confirmed.emit()">{{ confirmText }}</button>
+  </div>
+</dialog>

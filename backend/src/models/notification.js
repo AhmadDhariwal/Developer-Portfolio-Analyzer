@@ -1,44 +1,77 @@
 const mongoose = require('mongoose');
 
-const notificationSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-    index: true
+const notificationSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      index: true
+    },
+    type: {
+      type: String,
+      required: true,
+      enum: [
+        'profile_update',
+        'resume_upload',
+        'github_update',
+        'low_score',
+        'career_update',
+        'system',
+        'info',
+        'warning',
+        'success',
+        'error'
+      ]
+    },
+    title: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    message: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    dedupeKey: {
+      type: String,
+      default: ''
+    },
+    isRead: {
+      type: Boolean,
+      default: false
+    },
+    security: { type: Boolean, default: false },
+    organizationId: { type: mongoose.Schema.Types.ObjectId, default: null },
+    teamId: { type: mongoose.Schema.Types.ObjectId, default: null },
+    meta: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {}
+    }
   },
-  type: {
-    type: String,
-    required: true,
-    enum: ['profile_update', 'resume_upload', 'github_update', 'low_score', 'career_update', 'system', 'info', 'warning', 'success', 'error']
-  },
-  title: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  message: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  dedupeKey: {
-    type: String,
-    default: ''
-  },
-  isRead: {
-    type: Boolean,
-    default: false
-  },
-  meta: {
-    type: mongoose.Schema.Types.Mixed,
-    default: {}
-  }
-}, { timestamps: true });
+  { timestamps: true }
+);
 
 notificationSchema.index({ userId: 1, createdAt: -1 });
 notificationSchema.index({ userId: 1, isRead: 1, createdAt: -1 });
 notificationSchema.index({ userId: 1, dedupeKey: 1, createdAt: -1 });
 notificationSchema.index({ userId: 1, type: 1, createdAt: -1 });
+notificationSchema.index(
+  { userId: 1, type: 1, createdAt: -1, _id: -1 },
+  { name: 'notification_type_cursor' }
+);
+notificationSchema.index(
+  { userId: 1, createdAt: -1, _id: -1 },
+  { name: 'notification_inbox_cursor' }
+);
+notificationSchema.index(
+  { userId: 1, isRead: 1, createdAt: -1, _id: -1 },
+  { name: 'notification_unread_cursor' }
+);
+notificationSchema.index(
+  { userId: 1, organizationId: 1, teamId: 1, createdAt: -1, _id: -1 },
+  { name: 'notification_scope_cursor' }
+);
 
 module.exports = mongoose.model('Notification', notificationSchema);

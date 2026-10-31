@@ -1,7 +1,24 @@
 .page {
+  color: #e2e8f0;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid #818cf8;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 // Card surfaces match Dashboard: solid #111827 with subtle border
@@ -137,7 +154,9 @@
     padding: 0.75rem 0.85rem;
     min-width: 0;
     outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
 
     &:focus {
       border-color: rgba(129, 140, 248, 0.85);
@@ -255,7 +274,10 @@
   border-radius: 12px;
   background: #111827;
   border: 1px solid rgba(255, 255, 255, 0.06);
-  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 
   &:hover {
     transform: translateY(-1px);
@@ -483,7 +505,12 @@
     width: 54px;
     height: 54px;
     border-radius: 16px;
-    background: linear-gradient(90deg, rgba(148, 163, 184, 0.08), rgba(148, 163, 184, 0.16), rgba(148, 163, 184, 0.08));
+    background: linear-gradient(
+      90deg,
+      rgba(148, 163, 184, 0.08),
+      rgba(148, 163, 184, 0.16),
+      rgba(148, 163, 184, 0.08)
+    );
     background-size: 200% 100%;
     animation: shimmer 1.2s linear infinite;
   }
@@ -498,7 +525,12 @@
 .skeleton-line {
   height: 10px;
   border-radius: 999px;
-  background: linear-gradient(90deg, rgba(148, 163, 184, 0.08), rgba(148, 163, 184, 0.16), rgba(148, 163, 184, 0.08));
+  background: linear-gradient(
+    90deg,
+    rgba(148, 163, 184, 0.08),
+    rgba(148, 163, 184, 0.16),
+    rgba(148, 163, 184, 0.08)
+  );
   background-size: 200% 100%;
   animation: shimmer 1.2s linear infinite;
 
@@ -593,5 +625,84 @@
   .notification-main {
     max-width: 100%;
     overflow-wrap: anywhere;
+  }
+}
+
+:host-context([data-theme='light']) {
+  .page {
+    color: #1e293b;
+  }
+  .page-hero,
+  .filters,
+  .inbox-card,
+  .stat-card,
+  .notification-item,
+  .ghost-action,
+  .pager button,
+  .field input,
+  .field select {
+    background: #fff;
+    border-color: #cbd5e1;
+    color: #1e293b;
+  }
+  h2,
+  h3,
+  strong,
+  .notification-title,
+  .notification-message {
+    color: #0f172a;
+  }
+  p,
+  small,
+  .field span,
+  .table-head span,
+  .notification-meta,
+  .pager span,
+  .stat-card__label {
+    color: #475569;
+  }
+  .status {
+    color: #1e40af;
+    background: #eff6ff;
+  }
+  .notification-main {
+    color: #1e293b;
+  }
+  .checkbox,
+  .checkbox span {
+    color: #475569;
+  }
+  .pill,
+  .type-pill {
+    color: #334155;
+    background: #f1f5f9;
+  }
+  .unread-pill {
+    color: #4338ca;
+    background: #eef2ff;
+  }
+  .notification-icon {
+    color: #475569;
+  }
+  .type-pill--warning {
+    color: #92400e;
+    background: #fffbeb;
+  }
+  .type-pill--success {
+    color: #166534;
+    background: #f0fdf4;
+  }
+  .type-pill--info {
+    color: #1e40af;
+    background: #eff6ff;
+  }
+  .type-pill--purple {
+    color: #5b21b6;
+    background: #f5f3ff;
+  }
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible {
+    outline-color: #4f46e5;
   }
 }

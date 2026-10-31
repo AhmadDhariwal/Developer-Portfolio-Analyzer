@@ -1,0 +1,17 @@
+<div class="bulk-actions" role="group" aria-label="Selected notification actions">
+  <span role="status">{{ selectedCount }} selected</span>
+  <button
+    type="button"
+    [disabled]="disabled || selectedCount === 0"
+    (click)="selectionCleared.emit()"
+  >
+    Clear selection
+  </button>
+  <button
+    type="button"
+    [disabled]="disabled || selectedCount === 0"
+    (click)="deleteRequested.emit()"
+  >
+    Delete selected
+  </button>
+</div>

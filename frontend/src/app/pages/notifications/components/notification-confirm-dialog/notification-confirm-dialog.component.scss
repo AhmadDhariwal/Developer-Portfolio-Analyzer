@@ -1,0 +1,42 @@
+dialog {
+  width: min(30rem, calc(100vw - 3rem));
+  border: 1px solid #475569;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  color: #e2e8f0;
+  background: #111827;
+  &::backdrop {
+    background: rgb(2 6 23 / 70%);
+  }
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+button {
+  min-height: 44px;
+  border: 1px solid currentColor;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  &:focus-visible {
+    outline: 2px solid #818cf8;
+    outline-offset: 3px;
+  }
+}
+.danger {
+  background: #b91c1c;
+  color: #fff;
+}
+:host-context([data-theme='light']) dialog {
+  background: #fff;
+  color: #0f172a;
+}
+
+:host-context([data-theme='light']) button:focus-visible {
+  outline-color: #4f46e5;
+}

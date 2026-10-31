@@ -1,3 +1,4 @@
+import { notificationTarget } from '../../../shared/utils/notification-navigation';
 import {
   Component,
   OnInit,
@@ -587,7 +588,11 @@ export class Navbar implements OnInit {
   }
 
   markNotificationRead(notification: AppNotification): void {
-    if (notification.isRead) return;
+    if (notification.isRead) {
+      this.closeNotifications();
+      void this.router.navigateByUrl(notificationTarget(notification));
+      return;
+    }
     const previousUnread = this.unreadNotifications;
     notification.isRead = true;
     this.unreadNotifications = Math.max(0, previousUnread - 1);
@@ -602,6 +607,7 @@ export class Navbar implements OnInit {
         },
       });
     this.closeNotifications();
+    void this.router.navigateByUrl(notificationTarget(notification));
   }
 
   markAllNotificationsRead(): void {

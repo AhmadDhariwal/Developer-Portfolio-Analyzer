@@ -1,370 +1,325 @@
-const Notification = require('../models/notification');
-const Membership = require('../models/membership');
-const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
-const {
-  resolveOrganizationRole,
-  resolveTeamRole,
-  isRoleAtLeast
-} = require('../services/tenantService');
-const {
-  notificationEvents,
-  emitNotificationEvent
-} = require('../services/notificationService');
+const Notification = require('../models/notification');
+const State = require('../models/notificationState');
+const Membership = require('../models/membership');
+const Team = require('../models/team');
+const User = require('../models/user');
+const persistence = require('../services/notificationPersistenceService');
+const { VALID_TYPES } = require('../services/notificationService');
+const { streamNotifications } = require('../services/notificationStreamService');
+const metrics = require('../services/notificationMetrics');
 
-const NOTIFICATION_TYPES = new Set(['profile_update', 'resume_upload', 'github_update', 'low_score', 'career_update', 'system', 'info', 'warning', 'success', 'error']);
-const NOTIFICATION_PROJECTION = '_id userId type title message dedupeKey meta isRead createdAt updatedAt';
+const projection =
+  '_id userId type title message meta isRead security organizationId teamId createdAt updatedAt';
+const invalid = (message) => Object.assign(Error(message), { status: 400 });
+const denied = () => Object.assign(Error('Notification scope is not authorized.'), { status: 403 });
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-const parseDate = (value) => {
-  if (!value) return null;
-  const date = new Date(String(value));
-  return Number.isNaN(date.getTime()) ? null : date;
-};
-
-const collectAllowedUserIds = async ({ organizationId, teamId, requesterId, includeAllOrgs }) => {
+async function scope(req, session, lockMembership = false) {
+  const source = { ...req.body, ...req.query };
+  const userId = String(req.user._id);
+  if (source.userId && String(source.userId) !== userId) throw denied();
+  const filter = { userId: req.user._id };
+  const organizationId = String(source.organizationId || '');
+  const teamId = String(source.teamId || '');
+  if (teamId && !organizationId) throw invalid('teamId requires organizationId.');
   if (!organizationId) {
-    if (!includeAllOrgs) {
-      return { role: 'member', allowedUserIds: [String(requesterId)] };
-    }
-
-    const memberships = await Membership.find({ userId: requesterId, status: 'active' })
-      .select('organizationId role')
+    const memberships = await Membership.find({ userId, status: 'active' })
+      .limit(201)
+      .session(session || null)
       .lean();
-
-    const orgRoles = memberships.reduce((acc, m) => {
-      const orgId = String(m.organizationId || '');
-      if (!orgId) return acc;
-      acc.set(orgId, acc.has(orgId) ? acc.get(orgId) : m.role);
-      return acc;
-    }, new Map());
-
-    if (!orgRoles.size) {
-      return { role: 'member', allowedUserIds: [String(requesterId)] };
-    }
-
-    const orgIds = Array.from(orgRoles.keys());
-    const orgMembers = await Membership.find({ organizationId: { $in: orgIds }, status: 'active' })
-      .select('organizationId userId role')
-      .lean();
-
-    const allowedUserIds = [];
-    orgMembers.forEach((m) => {
-      const orgRole = orgRoles.get(String(m.organizationId));
-      if (!orgRole) return;
-      if (orgRole === 'member') {
-        if (String(m.userId) === String(requesterId) && !allowedUserIds.includes(String(m.userId))) {
-          allowedUserIds.push(String(m.userId));
-        }
-        return;
+    if (memberships.length > 200)
+      throw Object.assign(Error('Notification membership capacity exceeded.'), { status: 503 });
+    const orgIds = memberships.map((member) => member.organizationId);
+    const adminOrgs = memberships
+      .filter((member) => member.role === 'admin' && !member.teamId)
+      .map((member) => member.organizationId);
+    const teamIds = memberships.filter((member) => member.teamId).map((member) => member.teamId);
+    filter.$and = [
+      {
+        $or: [
+          { organizationId: null },
+          { organizationId: { $in: orgIds }, teamId: null },
+          { organizationId: { $in: adminOrgs } },
+          { organizationId: { $in: orgIds }, teamId: { $in: teamIds } }
+        ]
       }
-      if (orgRole === 'manager' && m.role === 'admin' && String(m.userId) !== String(requesterId)) {
-        return;
-      }
-      if (!allowedUserIds.includes(String(m.userId))) {
-        allowedUserIds.push(String(m.userId));
-      }
-    });
-
-    return { role: 'admin', allowedUserIds };
+    ];
+    if (session && lockMembership && memberships.length)
+      await Membership.collection.updateMany(
+        { _id: { $in: memberships.map((member) => member._id) }, status: 'active' },
+        { $inc: { notificationMutationVersion: 1 } },
+        { session }
+      );
+    return filter;
   }
-
-  if (!mongoose.Types.ObjectId.isValid(organizationId)) {
-    return { error: { status: 400, message: 'organizationId is invalid.' } };
-  }
-
-  const orgRole = await resolveOrganizationRole(requesterId, organizationId);
-  if (!orgRole) {
-    return { error: { status: 403, message: 'You do not have access to this organization.' } };
-  }
-
-  if (orgRole === 'member') {
-    return { role: orgRole, allowedUserIds: [String(requesterId)] };
-  }
-
-  if (teamId) {
-    if (!mongoose.Types.ObjectId.isValid(teamId)) {
-      return { error: { status: 400, message: 'teamId is invalid.' } };
-    }
-
-    const teamRole = await resolveTeamRole(requesterId, teamId);
-    if (!teamRole || !isRoleAtLeast(teamRole.role, 'manager')) {
-      return { error: { status: 403, message: 'Insufficient team role.' } };
-    }
-
-    const teamMembers = await Membership.find({ teamId, status: 'active' })
-      .select('userId')
-      .lean();
-    const allowedUserIds = teamMembers.map((m) => String(m.userId));
-    return { role: orgRole, allowedUserIds };
-  }
-
-  if (orgRole === 'manager') {
-    return { role: orgRole, allowedUserIds: [String(requesterId)] };
-  }
-
-  const orgMembers = await Membership.find({ organizationId, status: 'active' })
-    .select('userId role')
+  if (!mongoose.isValidObjectId(organizationId) || (teamId && !mongoose.isValidObjectId(teamId)))
+    throw invalid('Invalid notification scope.');
+  const membership = await Membership.findOne({ userId, organizationId, status: 'active' })
+    .session(session || null)
     .lean();
-  const allowedUserIds = orgMembers.map((m) => String(m.userId));
-  return { role: orgRole, allowedUserIds, orgMembers };
-};
+  if (!membership) throw denied();
+  if (session && lockMembership)
+    await Membership.collection.updateOne(
+      { _id: membership._id, status: 'active' },
+      { $inc: { notificationMutationVersion: 1 } },
+      { session }
+    );
+  filter.organizationId = organizationId;
+  if (!teamId && !(membership.role === 'admin' && !membership.teamId)) {
+    const teams = await Membership.find({
+      userId,
+      organizationId,
+      status: 'active',
+      teamId: { $ne: null }
+    })
+      .select('teamId')
+      .limit(201)
+      .session(session || null)
+      .lean();
+    if (teams.length > 200)
+      throw Object.assign(Error('Notification membership capacity exceeded.'), { status: 503 });
+    filter.teamId = { $in: [null, ...teams.map((member) => member.teamId)] };
+  }
+  if (teamId) {
+    const team = await Team.findOne({ _id: teamId, organizationId, isActive: true })
+      .session(session || null)
+      .lean();
+    if (!team) throw denied();
+    if (
+      !(membership.role === 'admin' && !membership.teamId) &&
+      !(await Membership.exists({ userId, organizationId, teamId, status: 'active' }).session(
+        session || null
+      ))
+    )
+      throw denied();
+    filter.teamId = teamId;
+  }
+  return filter;
+}
+
+function fail(res, error) {
+  const status = [400, 401, 403, 404].includes(error.status) ? error.status : 503;
+  return res
+    .status(status)
+    .json({ message: status === 503 ? 'Notifications temporarily unavailable.' : error.message });
+}
+
+function cursor(value) {
+  if (typeof value !== 'string' || value.length > 200)
+    throw invalid('Invalid notification cursor.');
+  try {
+    const parsed = JSON.parse(Buffer.from(value, 'base64url').toString());
+    if (!mongoose.isValidObjectId(parsed.id) || !Number.isFinite(Date.parse(parsed.at)))
+      throw Error();
+    return { _id: parsed.id, createdAt: new Date(parsed.at) };
+  } catch {
+    throw invalid('Invalid notification cursor.');
+  }
+}
+
+async function countUnread(filter, session) {
+  const stop = metrics.duration.startTimer({ operation: 'unread-count' });
+  try {
+    return await Notification.countDocuments({ ...filter, isRead: false })
+      .session(session)
+      .maxTimeMS(2000);
+  } finally {
+    stop();
+  }
+}
 
 const getNotifications = async (req, res) => {
+  const stop = metrics.duration.startTimer({ operation: 'inbox' });
   try {
-    const rawPage = req.query.page === undefined ? 1 : Number(req.query.page);
-    const rawLimit = req.query.limit === undefined ? 20 : Number(req.query.limit);
-    if (!Number.isInteger(rawPage) || rawPage < 1 || !Number.isInteger(rawLimit) || rawLimit < 1 || rawLimit > 50) {
-      return res.status(400).json({ message: 'page and limit must be positive integers; limit cannot exceed 50.' });
-    }
-    const page = rawPage;
-    const limit = rawLimit;
-  const organizationId = String(req.query.organizationId || '').trim();
-  const teamId = String(req.query.teamId || '').trim();
-    const search = String(req.query.search || '').trim();
-    const roleFilter = String(req.query.role || '').trim().toLowerCase();
-    const typeFilter = String(req.query.type || '').trim();
-    const requestedUserId = String(req.query.userId || '').trim();
-    const unreadOnly = String(req.query.unread || '').toLowerCase() === 'true';
-  const includeAllOrgs = String(req.query.includeAllOrgs || '').toLowerCase() === 'true';
-
-    if (requestedUserId && !mongoose.Types.ObjectId.isValid(requestedUserId)) {
-      return res.status(400).json({ message: 'userId is invalid.' });
-    }
-    if (typeFilter && !NOTIFICATION_TYPES.has(typeFilter)) {
-      return res.status(400).json({ message: 'type is invalid.' });
-    }
-    if (search.length > 100) {
-      return res.status(400).json({ message: 'search cannot exceed 100 characters.' });
-    }
-
-  const scope = await collectAllowedUserIds({ organizationId, teamId, requesterId: req.user._id, includeAllOrgs });
-    if (scope.error) {
-      return res.status(scope.error.status).json({ message: scope.error.message });
-    }
-
-    let allowedUserIds = scope.allowedUserIds || [String(req.user._id)];
-    if (scope.role === 'admin' && roleFilter && Array.isArray(scope.orgMembers)) {
-      const filtered = scope.orgMembers
-        .filter((m) => String(m.role || '').toLowerCase() === roleFilter)
-        .map((m) => String(m.userId));
-      allowedUserIds = allowedUserIds.filter((id) => filtered.includes(id));
-    }
-
-    if (requestedUserId) {
-      if (!allowedUserIds.includes(requestedUserId)) {
-        return res.status(403).json({ message: 'You do not have access to this user notifications.' });
+    const page = req.query.page === undefined ? 1 : Number(req.query.page);
+    const limit = req.query.limit === undefined ? 20 : Number(req.query.limit);
+    if (
+      !Number.isInteger(page) ||
+      page < 1 ||
+      page > 100 ||
+      !Number.isInteger(limit) ||
+      limit < 1 ||
+      limit > 50
+    )
+      throw invalid('page must be 1–100 and limit must be 1–50; use cursor for older history.');
+    const snapshot = await persistence.transaction(async (session) => {
+      const account = await User.exists({
+        _id: req.user._id,
+        isActive: { $ne: false },
+        $expr: {
+          $eq: [{ $ifNull: ['$sessionRevision', 0] }, Number(req.user.sessionRevision || 0)]
+        }
+      }).session(session);
+      if (!account) throw Object.assign(Error('Account or session unavailable.'), { status: 401 });
+      const base = await scope(req, session);
+      const filter = { ...base };
+      const search = String(req.query.search || '').trim();
+      if (search.length > 100) throw invalid('Search cannot exceed 100 characters.');
+      if (req.query.type) {
+        if (!VALID_TYPES.has(req.query.type)) throw invalid('Invalid notification type.');
+        filter.type = req.query.type;
       }
-      allowedUserIds = [requestedUserId];
-    }
-
-    const filter = {
-      userId: { $in: allowedUserIds }
-    };
-
-    if (typeFilter) {
-      filter.type = typeFilter;
-    }
-
-    if (search) {
-      const regex = new RegExp(escapeRegex(search), 'i');
-      filter.$or = [{ title: regex }, { message: regex }];
-    }
-
-    const from = parseDate(req.query.from);
-    const to = parseDate(req.query.to);
-    if ((req.query.from && !from) || (req.query.to && !to) || (from && to && from > to)) {
-      return res.status(400).json({ message: 'Date range is invalid.' });
-    }
-    if (from || to) {
-      filter.createdAt = {};
-      if (from) filter.createdAt.$gte = from;
-      if (to) filter.createdAt.$lte = to;
-    }
-
-    if (unreadOnly) {
-      filter.isRead = false;
-    }
-
-    const [notifications, total, unreadCount] = await Promise.all([
-      Notification.find(filter)
-        .select(NOTIFICATION_PROJECTION)
-        .sort({ createdAt: -1 })
-        .skip((page - 1) * limit)
+      if (search)
+        filter.$or = [
+          { title: new RegExp(escapeRegex(search), 'i') },
+          { message: new RegExp(escapeRegex(search), 'i') }
+        ];
+      if (req.query.unread === 'true') filter.isRead = false;
+      const from = req.query.from ? new Date(String(req.query.from)) : null;
+      const to = req.query.to ? new Date(String(req.query.to)) : null;
+      if (
+        (from && Number.isNaN(from.getTime())) ||
+        (to && Number.isNaN(to.getTime())) ||
+        (from && to && from > to)
+      )
+        throw invalid('Invalid date range.');
+      if (from || to)
+        filter.createdAt = { ...(from ? { $gte: from } : {}), ...(to ? { $lte: to } : {}) };
+      const pageFilter = { ...filter };
+      if (req.query.cursor) {
+        const before = cursor(req.query.cursor);
+        pageFilter.$and = [
+          ...(pageFilter.$and || []),
+          {
+            $or: [
+              { createdAt: { $lt: before.createdAt } },
+              { createdAt: before.createdAt, _id: { $lt: before._id } }
+            ]
+          }
+        ];
+      }
+      const notifications = await Notification.find(pageFilter)
+        .select(projection)
+        .sort({ createdAt: -1, _id: -1 })
+        .skip(req.query.cursor ? 0 : (page - 1) * limit)
         .limit(limit)
-        .lean(),
-      Notification.countDocuments(filter),
-      Notification.countDocuments({
-        userId: { $in: allowedUserIds },
-        isRead: false
-      })
-    ]);
-
-    res.json({
-      notifications,
-      unreadCount,
-      total,
-      page,
-      totalPages: Math.max(1, Math.ceil(total / limit))
+        .session(session)
+        .maxTimeMS(2000)
+        .lean();
+      const total = await Notification.countDocuments(filter).session(session).maxTimeMS(2000);
+      const unreadCount = await countUnread(base, session);
+      const filteredUnreadCount = await Notification.countDocuments({ ...filter, isRead: false })
+        .session(session)
+        .maxTimeMS(2000);
+      const state = await State.findById(req.user._id).session(session).maxTimeMS(2000).lean();
+      const last = notifications.at(-1);
+      return {
+        notifications,
+        total,
+        unreadCount,
+        filteredUnreadCount,
+        page,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+        revision: state?.revision || 0,
+        nextCursor:
+          notifications.length === limit && last
+            ? Buffer.from(
+                JSON.stringify({ at: last.createdAt.toISOString(), id: String(last._id) })
+              ).toString('base64url')
+            : null
+      };
     });
+    res.json(snapshot);
   } catch (error) {
-    console.error('Get notifications error:', error.message);
-    res.status(500).json({ message: 'Failed to fetch notifications.' });
+    fail(res, error);
+  } finally {
+    stop();
   }
 };
 
-const canAccessNotification = async (req, notification) => {
-  if (!notification) return { allowed: false };
-  const ownerId = String(notification.userId || '');
-  const requesterId = String(req.user._id || '');
-  if (ownerId === requesterId) {
-    return { allowed: true };
-  }
-
-  const organizationId = String(req.query.organizationId || req.body.organizationId || '').trim();
-  const teamId = String(req.query.teamId || req.body.teamId || '').trim();
-  if (!organizationId) {
-    return { allowed: false };
-  }
-
-  const scope = await collectAllowedUserIds({ organizationId, teamId, requesterId: req.user._id });
-  if (scope.error) {
-    return { allowed: false, error: scope.error };
-  }
-
-  const allowed = (scope.allowedUserIds || []).includes(ownerId);
-  return { allowed };
-};
+async function mutate(req, work) {
+  return persistence.transaction(async (session) => {
+    await persistence.fence(req.user._id, session, Number(req.user.sessionRevision || 0));
+    const filter = await scope(req, session, true);
+    const result = await work(filter, session);
+    if (result.changed) await persistence.changed(req.user._id, session);
+    return result;
+  });
+}
 
 const markNotificationRead = async (req, res) => {
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: 'Notification id is invalid.' });
-    const existing = await Notification.findById(req.params.id).lean();
-    if (!existing) {
-      return res.status(404).json({ message: 'Notification not found.' });
-    }
-
-    const access = await canAccessNotification(req, existing);
-    if (!access.allowed) {
-      return res.status(access.error?.status || 403).json({ message: access.error?.message || 'Not authorized.' });
-    }
-
-    const notification = await Notification.findOneAndUpdate(
-      { _id: req.params.id },
-      { $set: { isRead: true } },
-      { returnDocument: 'after' }
-    ).lean();
-
-    emitNotificationEvent(existing.userId, 'read');
-
-    res.json({ message: 'Notification marked as read.', notification });
+    if (!mongoose.isValidObjectId(req.params.id)) throw invalid('Invalid notification ID.');
+    const result = await mutate(req, async (filter, session) => {
+      const notification = await Notification.findOneAndUpdate(
+        { ...filter, _id: req.params.id },
+        { $set: { isRead: true } },
+        { session, returnDocument: 'after' }
+      )
+        .select(projection)
+        .lean();
+      if (!notification) throw Object.assign(Error('Notification not found.'), { status: 404 });
+      return { changed: true, notification };
+    });
+    res.json({ message: 'Notification marked as read.', notification: result.notification });
   } catch (error) {
-    console.error('Mark notification read error:', error.message);
-    res.status(500).json({ message: 'Failed to mark notification as read.' });
+    fail(res, error);
   }
 };
 
 const markAllNotificationsRead = async (req, res) => {
   try {
-    await Notification.updateMany(
-      { userId: req.user._id, isRead: false },
-      { $set: { isRead: true } }
-    );
-
-    emitNotificationEvent(req.user._id, 'read_all');
-
-    res.json({ message: 'All notifications marked as read.' });
+    const result = await mutate(req, async (filter, session) => {
+      const items = await Notification.find({ ...filter, isRead: false })
+        .select('_id')
+        .sort({ createdAt: -1, _id: -1 })
+        .limit(500)
+        .session(session)
+        .lean();
+      const updated = await Notification.updateMany(
+        { ...filter, _id: { $in: items.map((item) => item._id) }, isRead: false },
+        { $set: { isRead: true } },
+        { session }
+      );
+      const remaining = await Notification.countDocuments({ ...filter, isRead: false }).session(
+        session
+      );
+      return { changed: updated.modifiedCount, remaining };
+    });
+    res.json({
+      message: result.remaining
+        ? 'Marked up to 500 notifications as read. Repeat to continue.'
+        : 'All notifications marked as read.',
+      remaining: result.remaining,
+      modifiedCount: result.changed
+    });
   } catch (error) {
-    console.error('Mark all notifications read error:', error.message);
-    res.status(500).json({ message: 'Failed to mark all notifications as read.' });
+    fail(res, error);
   }
 };
 
 const deleteNotification = async (req, res) => {
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ message: 'Notification id is invalid.' });
-    const existing = await Notification.findById(req.params.id).lean();
-    if (!existing) {
-      return res.json({ message: 'Notification already deleted.' });
-    }
-
-    const access = await canAccessNotification(req, existing);
-    if (!access.allowed) {
-      return res.status(access.error?.status || 403).json({ message: access.error?.message || 'Not authorized.' });
-    }
-
-    await Notification.deleteOne({ _id: req.params.id });
-    emitNotificationEvent(existing.userId, 'delete');
-
+    if (!mongoose.isValidObjectId(req.params.id)) throw invalid('Invalid notification ID.');
+    await mutate(req, async (filter, session) => {
+      const result = await Notification.deleteOne({ ...filter, _id: req.params.id }, { session });
+      return { changed: result.deletedCount };
+    });
+    // Identical response for an absent ID and another user's ID prevents enumeration.
     res.json({ message: 'Notification deleted.' });
   } catch (error) {
-    console.error('Delete notification error:', error.message);
-    res.status(500).json({ message: 'Failed to delete notification.' });
+    fail(res, error);
   }
 };
 
-const streamNotifications = async (req, res) => {
-  let heartbeat = null;
-  let cleanedUp = false;
-  let onChanged = null;
-
-  const cleanup = () => {
-    if (cleanedUp) return;
-    cleanedUp = true;
-    if (heartbeat) clearInterval(heartbeat);
-    if (onChanged) notificationEvents.off('changed', onChanged);
-  };
-
+const bulkDeleteNotifications = async (req, res) => {
   try {
-    const token = req.query.token;
-    if (!token) {
-      return res.status(401).json({ message: 'Not authorized, no token' });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET, {
-      algorithms: ['HS256'],
-      issuer: process.env.JWT_ISSUER || 'devinsight-api',
-      audience: process.env.JWT_AUDIENCE || 'devinsight-web'
+    const ids = req.body?.ids;
+    if (
+      !Array.isArray(ids) ||
+      !ids.length ||
+      ids.length > 100 ||
+      ids.some((id) => typeof id !== 'string' || !mongoose.isValidObjectId(id))
+    )
+      throw invalid('Provide 1–100 valid notification IDs.');
+    const result = await mutate(req, async (filter, session) => {
+      const deleted = await Notification.deleteMany({ ...filter, _id: { $in: ids } }, { session });
+      return { changed: deleted.deletedCount };
     });
-    const userId = String(decoded.id || '');
-    if (!userId) {
-      return res.status(401).json({ message: 'Not authorized, invalid token' });
-    }
-    console.info('Notification SSE connected', { userId });
-
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache, no-transform');
-    res.setHeader('Connection', 'keep-alive');
-    res.flushHeaders?.();
-
-    const sendEvent = (event, payload) => {
-      res.write(`event: ${event}\n`);
-      res.write(`data: ${JSON.stringify(payload)}\n\n`);
-    };
-
-    sendEvent('connected', { ok: true, timestamp: new Date().toISOString() });
-
-    onChanged = (payload) => {
-      if (payload?.userId !== userId) return;
-      sendEvent('notification', payload);
-    };
-
-    notificationEvents.on('changed', onChanged);
-
-    heartbeat = setInterval(() => {
-      res.write(': keep-alive\n\n');
-    }, 25000);
-
-    req.on('close', () => {
-      cleanup();
-      console.info('Notification SSE disconnected', { userId });
-      res.end();
-    });
-    res.on('error', cleanup);
+    res.json({ message: 'Selected notifications deleted.', deletedCount: result.changed });
   } catch (error) {
-    cleanup();
-    console.error('Notification stream auth error:', error.message);
-    res.status(401).json({ message: 'Not authorized, token failed' });
+    fail(res, error);
   }
 };
 
@@ -373,5 +328,7 @@ module.exports = {
   markNotificationRead,
   markAllNotificationsRead,
   deleteNotification,
-  streamNotifications
+  bulkDeleteNotifications,
+  streamNotifications,
+  scope
 };

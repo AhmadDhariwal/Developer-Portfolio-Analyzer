@@ -1,3 +1,4 @@
+const notificationPersistence = require('../services/notificationPersistenceService');
 const resetChallenge = require('../utils/passwordResetChallenge');
 const developerContext = require('../services/developerContextService');
 const User = require('../models/user');
@@ -148,9 +149,7 @@ const startOAuth = (provider) => (req, res) => {
     res.cookie(authorization.cookieName, authorization.state, authorization.cookieOptions);
     return res.redirect(302, authorization.authorizationUrl);
   } catch (error) {
-    return res
-      .status(error.statusCode || 500)
-      .json({ message: 'OAuth sign-in is unavailable.' });
+    return res.status(error.statusCode || 500).json({ message: 'OAuth sign-in is unavailable.' });
   }
 };
 
@@ -169,10 +168,7 @@ const oauthCallback = (provider) => async (req, res) => {
         : await exchangeGitHubIdentity(code);
     const payload = await completeOAuthLogin(identity);
     const encoded = Buffer.from(JSON.stringify(payload)).toString('base64url');
-    return res.redirect(
-      302,
-      `${frontendOrigin()}/auth/login#oauth=${encodeURIComponent(encoded)}`
-    );
+    return res.redirect(302, `${frontendOrigin()}/auth/login#oauth=${encodeURIComponent(encoded)}`);
   } catch (error) {
     res.clearCookie(stateCookieName(provider), clearOptions);
     const reason = error.statusCode === 403 ? 'account_unavailable' : 'oauth_failed';
@@ -278,8 +274,7 @@ const beginPasswordRecovery = async (user, type) => {
 // @access Public
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password, githubUsername, phoneNumber, countryCode, isPublic } =
-      req.body;
+    const { name, email, password, githubUsername, phoneNumber, countryCode, isPublic } = req.body;
     const normalizedEmail = normalizeEmail(email);
     const normalizedPhone = normalizePhone(phoneNumber);
     const normalizedCode = normalizeCountryCode(countryCode);
@@ -634,16 +629,36 @@ const resetPassword = async (req, res) => {
 
     const salt = await bcrypt.genSalt(10);
     const password = await bcrypt.hash(newPassword, salt);
-    const changed = await User.updateOne(
-      { _id: user._id, password: user.password || null },
-      { $set: { password }, $inc: { sessionRevision: 1 }, $addToSet: { providers: 'local' } }
+    await notificationPersistence.commit(
+      user._id,
+      async (session) => {
+        const changed = await User.updateOne(
+          { _id: user._id, password: user.password || null },
+          { $set: { password }, $inc: { sessionRevision: 1 }, $addToSet: { providers: 'local' } },
+          { session }
+        );
+        if (!changed.matchedCount)
+          throw Object.assign(Error('Reset token expired or invalid.'), { status: 400 });
+      },
+      {
+        type: 'profile_update',
+        security: true,
+        title: 'Password Reset',
+        message:
+          'Your account password was reset. Contact support if you did not request this change.',
+        eventId: `password_reset:${user._id}:${Number(user.sessionRevision || 0) + 1}`
+      },
+      Number(user.sessionRevision || 0)
     );
-    if (!changed.matchedCount)
-      return res.status(400).json({ message: 'Reset token expired or invalid.' });
 
     return res.json({ message: 'Password reset successful.' });
   } catch (error) {
-    return res.status(500).json({ message: 'Password reset is temporarily unavailable.' });
+    return res.status(error.status === 400 ? 400 : 500).json({
+      message:
+        error.status === 400
+          ? 'Reset token expired or invalid.'
+          : 'Password reset is temporarily unavailable.'
+    });
   }
 };
 
@@ -678,9 +693,7 @@ const getInviteDetails = async (req, res) => {
       }
     });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ message: error.message || 'Failed to load invitation details.' });
+    return res.status(500).json({ message: error.message || 'Failed to load invitation details.' });
   }
 };
 
@@ -764,10 +777,7 @@ const acceptInvite = async (req, res) => {
       await user.save();
     } else {
       const fallbackName =
-        requestedName ||
-        invitation.name ||
-        String(invitation.email).split('@')[0] ||
-        'Recruiter';
+        requestedName || invitation.name || String(invitation.email).split('@')[0] || 'Recruiter';
       const fallbackGithub = requestedGithub;
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(requestedPassword, salt);
@@ -816,8 +826,7 @@ const acceptInvite = async (req, res) => {
     );
 
     user.activeCareerStack = user.activeCareerStack || user.careerStack || 'Full Stack';
-    user.activeExperienceLevel =
-      user.activeExperienceLevel || user.experienceLevel || 'Student';
+    user.activeExperienceLevel = user.activeExperienceLevel || user.experienceLevel || 'Student';
     user.onboardingCompleted = true;
     await user.save();
 
@@ -836,8 +845,8 @@ const acceptInvite = async (req, res) => {
         role: toPublicRole(user.role),
         organizationId: user.organizationId || null,
         organizationName: invitation.organizationId
-          ? (await Organization.findById(invitation.organizationId).select('name').lean())
-              ?.name || ''
+          ? (await Organization.findById(invitation.organizationId).select('name').lean())?.name ||
+            ''
           : '',
         isActive: user.isActive !== false,
         isPublic: Boolean(user.isPublic),

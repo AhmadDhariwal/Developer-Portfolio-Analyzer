@@ -1,13 +1,20 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { NotificationService, AppNotification } from '../../shared/services/notification.service';
+import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { notificationTarget } from '../../shared/utils/notification-navigation';
+import { NotificationBulkActionsComponent } from './components/notification-bulk-actions/notification-bulk-actions.component';
+import {
+  NotificationService,
+  AppNotification,
+  NotificationQuery,
+} from '../../shared/services/notification.service';
 import { ApiService } from '../../shared/services/api.service';
-import { TenantContextService } from '../../shared/services/tenant-context.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DestroyRef, inject } from '@angular/core';
 import { AuthService } from '../../shared/services/auth.service';
-import { RecruiterSharedModule } from '../../supervisors/recruiter-shared/recruiter-shared.module';
+import { NotificationConfirmDialogComponent } from './components/notification-confirm-dialog/notification-confirm-dialog.component';
 
 interface OrganizationItem {
   _id: string;
@@ -20,30 +27,35 @@ interface TeamItem {
   name: string;
 }
 
-interface UserOption {
-  _id: string;
-  name?: string;
-  email?: string;
-  githubUsername?: string;
-  role?: 'admin' | 'manager' | 'member';
-}
-
 @Component({
   selector: 'app-notifications',
   standalone: true,
-  imports: [CommonModule, FormsModule, RecruiterSharedModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    NotificationConfirmDialogComponent,
+    NotificationBulkActionsComponent,
+  ],
   templateUrl: './notifications.component.html',
-  styleUrl: './notifications.component.scss'
+  styleUrl: './notifications.component.scss',
 })
 export class NotificationsComponent implements OnInit {
   notifications: AppNotification[] = [];
   loading = false;
+  loadFailed = false;
   markingAllRead = false;
   statusMessage = '';
   unreadCount = 0;
   page = 1;
   totalPages = 1;
   total = 0;
+  filteredUnreadCount = 0;
+  selectedIds = new Set<string>();
+  showBulkDeleteDialog = false;
+  deletingSelected = false;
+  private inboxRequest?: Subscription;
+  private readonly pageCursors = new Map<number, string>();
+  private readonly router = inject(Router);
 
   showDeleteDialog = false;
   pendingDeleteNotification: AppNotification | null = null;
@@ -53,16 +65,12 @@ export class NotificationsComponent implements OnInit {
   to = '';
   typeFilter = '';
   unreadOnly = false;
-  roleFilter = '';
-  selectedUserId = '';
   selectedOrganizationId = '';
   selectedTeamId = '';
 
   organizations: OrganizationItem[] = [];
   teams: TeamItem[] = [];
-  userOptions: UserOption[] = [];
 
-  private currentRole: 'admin' | 'manager' | 'member' = 'member';
   private readonly destroyRef = inject(DestroyRef);
   private readonly cdr = inject(ChangeDetectorRef);
 
@@ -77,56 +85,23 @@ export class NotificationsComponent implements OnInit {
     { value: 'success', label: 'Success' },
     { value: 'warning', label: 'Warning' },
     { value: 'info', label: 'Information' },
-    { value: 'error', label: 'Error' }
-  ];
-
-  readonly roleOptions = [
-    { value: '', label: 'All roles' },
-    { value: 'admin', label: 'Admins' },
-    { value: 'manager', label: 'Managers' },
-    { value: 'member', label: 'Members' }
+    { value: 'error', label: 'Error' },
   ];
 
   constructor(
     private readonly notificationService: NotificationService,
     private readonly apiService: ApiService,
-    private readonly tenantContext: TenantContextService,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
   ) {}
 
   ngOnInit(): void {
-    const ctx = this.tenantContext.snapshot;
-    this.selectedOrganizationId = ctx.organizationId || '';
-    this.selectedTeamId = ctx.teamId || '';
-    this.currentRole = (ctx.myRole || 'member') as 'admin' | 'manager' | 'member';
-    
-    // Load organizations and teams
     this.loadOrganizations();
 
-    this.tenantContext.state$
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((state) => {
-        if (state.organizationId && state.organizationId !== this.selectedOrganizationId) {
-          this.selectedOrganizationId = state.organizationId;
-          this.currentRole = (state.myRole || this.currentRole) as 'admin' | 'manager' | 'member';
-          this.selectedTeamId = state.teamId || '';
-          this.loadTeams();
-          this.loadUserOptions();
-          this.fetchNotifications(1);
-        }
-      });
+    this.destroyRef.onDestroy(() => this.inboxRequest?.unsubscribe());
 
     this.notificationService.streamEvents$
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.fetchNotifications(1, true));
-  }
-
-  get canFilterUsers(): boolean {
-    return this.currentRole !== 'member';
-  }
-
-  get canFilterRole(): boolean {
-    return this.currentRole === 'admin';
+      .subscribe(() => this.fetchNotifications(this.page, true));
   }
 
   private toStartOfDayIso(dateInput: string): string {
@@ -142,24 +117,22 @@ export class NotificationsComponent implements OnInit {
   }
 
   loadOrganizations(): void {
-    this.apiService.getOrganizations().subscribe({
-      next: (res) => {
-        this.organizations = Array.isArray(res?.organizations) ? res.organizations : [];
-        const selectedOrg = this.organizations.find((org) => org._id === this.selectedOrganizationId);
-        if (selectedOrg) {
-          this.currentRole = selectedOrg.myRole;
-        }
-        this.loadTeams();
-        this.loadUserOptions();
-        // Always fetch notifications
-        this.fetchNotifications(1);
-      },
-      error: () => {
-        this.organizations = [];
-        // Fetch notifications even if org loading fails
-        this.fetchNotifications(1);
-      }
-    });
+    this.apiService
+      .getOrganizations()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.organizations = Array.isArray(res?.organizations) ? res.organizations : [];
+          this.loadTeams();
+          // Always fetch notifications
+          this.fetchNotifications(1);
+        },
+        error: () => {
+          this.organizations = [];
+          // Fetch notifications even if org loading fails
+          this.fetchNotifications(1);
+        },
+      });
   }
 
   loadTeams(): void {
@@ -169,80 +142,29 @@ export class NotificationsComponent implements OnInit {
       return;
     }
 
-    this.apiService.getTeams(this.selectedOrganizationId).subscribe({
-      next: (res) => {
-        this.teams = Array.isArray(res?.teams) ? res.teams : [];
-        if (this.selectedTeamId && !this.teams.some((team) => team._id === this.selectedTeamId)) {
-          this.selectedTeamId = '';
-        }
-      },
-      error: () => {
-        this.teams = [];
-      }
-    });
-  }
-
-  loadUserOptions(): void {
-    if (!this.selectedOrganizationId) {
-      this.userOptions = [];
-      return;
-    }
-
-    if (this.currentRole === 'admin') {
-      this.apiService.getOrganizationMembers(this.selectedOrganizationId).subscribe({
+    this.apiService
+      .getTeams(this.selectedOrganizationId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
         next: (res) => {
-          const members = Array.isArray(res?.members) ? res.members : [];
-          this.userOptions = members.map((m: any) => ({
-            _id: String(m.user?._id || m.userId || m._id || ''),
-            name: m.user?.name || m.name,
-            email: m.user?.email || m.email,
-            githubUsername: m.user?.githubUsername || m.githubUsername,
-            role: m.orgRole || m.role
-          }));
+          this.teams = Array.isArray(res?.teams) ? res.teams : [];
+          if (this.selectedTeamId && !this.teams.some((team) => team._id === this.selectedTeamId)) {
+            this.selectedTeamId = '';
+          }
         },
         error: () => {
-          this.userOptions = [];
-        }
-      });
-      return;
-    }
-
-    if (this.currentRole === 'manager' && this.selectedTeamId) {
-      this.apiService.getTeamMembers(this.selectedTeamId).subscribe({
-        next: (res) => {
-          const members = Array.isArray(res?.members) ? res.members : [];
-          this.userOptions = members.map((m: any) => ({
-            _id: String(m.userId?._id || m.userId || ''),
-            name: m.userId?.name,
-            email: m.userId?.email,
-            githubUsername: m.userId?.githubUsername,
-            role: m.role
-          }));
+          this.teams = [];
         },
-        error: () => {
-          this.userOptions = [];
-        }
       });
-      return;
-    }
-
-    this.userOptions = [];
   }
 
   onOrganizationChange(): void {
-    const selectedOrg = this.organizations.find((org) => org._id === this.selectedOrganizationId);
-    this.currentRole = selectedOrg?.myRole || 'member';
     this.selectedTeamId = '';
-    this.selectedUserId = '';
-    this.roleFilter = '';
     this.loadTeams();
-    this.loadUserOptions();
     this.fetchNotifications(1);
   }
 
   onTeamChange(): void {
-    this.selectedUserId = '';
-    this.loadUserOptions();
     this.fetchNotifications(1);
   }
 
@@ -256,52 +178,87 @@ export class NotificationsComponent implements OnInit {
     this.to = '';
     this.typeFilter = '';
     this.unreadOnly = false;
-    this.roleFilter = '';
-    this.selectedUserId = '';
     this.fetchNotifications(1);
   }
 
   markAllAsRead(): void {
     if (this.markingAllRead || this.unreadCount === 0) return;
     this.markingAllRead = true;
-    this.statusMessage = '';
-    const snapshot = this.notifications.map((notification) => ({ ...notification }));
-    const previousUnread = this.unreadCount;
-    this.notifications = this.notifications.map((notification) => ({ ...notification, isRead: true }));
-    this.unreadCount = 0;
+    this.notificationService
+      .markAllAsRead({
+        organizationId: this.selectedOrganizationId || undefined,
+        teamId: this.selectedTeamId || undefined,
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (result) => {
+          this.markingAllRead = false;
+          this.fetchNotifications(this.page, true);
+          this.statusMessage = result.message;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.markingAllRead = false;
+          this.statusMessage = 'Failed to mark notifications as read.';
+          this.cdr.markForCheck();
+        },
+      });
+  }
 
-    this.notificationService.markAllAsRead().subscribe({
-      next: () => {
-        this.markingAllRead = false;
-        this.statusMessage = 'All notifications marked as read.';
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.notifications = snapshot;
-        this.unreadCount = previousUnread;
-        this.markingAllRead = false;
-        this.statusMessage = 'Failed to mark all notifications as read.';
-        this.cdr.markForCheck();
-      }
-    });
+  toggleSelection(notification: AppNotification): void {
+    const selected = new Set(this.selectedIds);
+    if (selected.has(notification._id)) selected.delete(notification._id);
+    else selected.add(notification._id);
+    this.selectedIds = selected;
+  }
+
+  clearSelection(): void {
+    this.selectedIds = new Set();
+  }
+
+  deleteSelected(): void {
+    if (!this.selectedIds.size || this.deletingSelected) return;
+    this.showBulkDeleteDialog = false;
+    this.deletingSelected = true;
+    this.notificationService
+      .bulkDelete([...this.selectedIds])
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.deletingSelected = false;
+          this.selectedIds = new Set();
+          this.fetchNotifications(1, true);
+        },
+        error: () => {
+          this.deletingSelected = false;
+          this.statusMessage = 'Failed to delete selected notifications.';
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  openNotification(notification: AppNotification): void {
+    this.markAsRead(notification);
+    void this.router.navigateByUrl(notificationTarget(notification));
   }
 
   fetchNotifications(page = this.page, forceRefresh = false): void {
+    this.inboxRequest?.unsubscribe();
+    if (page === 1) this.pageCursors.clear();
     this.loading = true;
+    this.loadFailed = false;
     this.page = page;
     this.statusMessage = '';
 
-    const query: any = {
-      page: this.page,
+    const query: NotificationQuery = {
+      page: this.pageCursors.has(page) ? undefined : this.page,
+      cursor: this.pageCursors.get(page),
       limit: 10,
       search: this.search || undefined,
       type: this.typeFilter || undefined,
       unread: this.unreadOnly || undefined,
-      role: this.canFilterRole ? (this.roleFilter || undefined) : undefined,
-      userId: this.selectedUserId || undefined,
       organizationId: this.selectedOrganizationId || undefined,
       teamId: this.selectedTeamId || undefined,
-      includeAllOrgs: !this.selectedOrganizationId
     };
 
     if (this.from) query.from = this.toStartOfDayIso(this.from);
@@ -309,25 +266,35 @@ export class NotificationsComponent implements OnInit {
 
     const user = this.authService.getCurrentUser();
     const signature = String(user?._id || user?.email || 'current-user');
-    this.notificationService.getNotifications(query, signature, forceRefresh).subscribe({
-      next: (res) => {
-        this.notifications = Array.isArray(res?.notifications) ? res.notifications : [];
-        this.unreadCount = Number(res?.unreadCount || 0);
-        this.total = Number(res?.total || 0);
-        this.totalPages = Number(res?.totalPages || 1);
-        this.loading = false;
-        this.cdr.markForCheck();
-        if (this.notifications.length === 0) {
-          this.statusMessage = 'No notifications found.';
-        }
-      },
-      error: () => {
-        this.notifications = [];
-        this.loading = false;
-        this.cdr.markForCheck();
-        this.statusMessage = 'Failed to load notifications.';
-      }
-    });
+    this.inboxRequest = this.notificationService
+      .getNotifications(query, signature, forceRefresh)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.notifications = Array.isArray(res?.notifications) ? res.notifications : [];
+          this.unreadCount = Number(res?.unreadCount || 0);
+          this.total = Number(res?.total || 0);
+          this.filteredUnreadCount = Number(res?.filteredUnreadCount ?? this.unreadCount);
+          this.selectedIds = new Set(
+            [...this.selectedIds].filter((id) =>
+              this.notifications.some((item) => item._id === id),
+            ),
+          );
+          this.totalPages = Number(res?.totalPages || 1);
+          if (res.nextCursor) this.pageCursors.set(page + 1, res.nextCursor);
+          this.loading = false;
+          this.cdr.markForCheck();
+          if (this.notifications.length === 0) {
+            this.statusMessage = 'No notifications found.';
+          }
+        },
+        error: () => {
+          this.loadFailed = true;
+          this.loading = false;
+          this.cdr.markForCheck();
+          this.statusMessage = 'Failed to load notifications.';
+        },
+      });
   }
 
   markAsRead(notification: AppNotification): void {
@@ -335,18 +302,21 @@ export class NotificationsComponent implements OnInit {
     const previousUnread = this.unreadCount;
     notification.isRead = true;
     this.unreadCount = Math.max(0, previousUnread - 1);
-    this.notificationService.markAsRead(notification._id, {
-      organizationId: this.selectedOrganizationId || undefined,
-      teamId: this.selectedTeamId || undefined
-    }).subscribe({
-      next: () => this.cdr.markForCheck(),
-      error: () => {
-        notification.isRead = false;
-        this.unreadCount = previousUnread;
-        this.statusMessage = 'Failed to mark notification as read.';
-        this.cdr.markForCheck();
-      }
-    });
+    this.notificationService
+      .markAsRead(notification._id, {
+        organizationId: this.selectedOrganizationId || undefined,
+        teamId: this.selectedTeamId || undefined,
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => this.cdr.markForCheck(),
+        error: () => {
+          notification.isRead = false;
+          this.unreadCount = previousUnread;
+          this.statusMessage = 'Failed to mark notification as read.';
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   askDelete(notification: AppNotification): void {
@@ -370,27 +340,30 @@ export class NotificationsComponent implements OnInit {
     this.total = Math.max(0, this.total - 1);
     if (!notification.isRead) this.unreadCount = Math.max(0, this.unreadCount - 1);
 
-    this.notificationService.deleteNotification(notification._id, {
-      organizationId: this.selectedOrganizationId || undefined,
-      teamId: this.selectedTeamId || undefined
-    }).subscribe({
-      next: () => {
-        if (this.notifications.length === 0 && this.page > 1) {
-          this.fetchNotifications(this.page - 1);
-          return;
-        }
-        if (this.notifications.length === 0) {
-          this.statusMessage = 'No notifications found.';
-        }
-      },
-      error: () => {
-        this.notifications = snapshot;
-        this.total = previousTotal;
-        this.unreadCount = previousUnread;
-        this.statusMessage = 'Failed to delete notification.';
-        this.cdr.markForCheck();
-      }
-    });
+    this.notificationService
+      .deleteNotification(notification._id, {
+        organizationId: this.selectedOrganizationId || undefined,
+        teamId: this.selectedTeamId || undefined,
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          if (this.notifications.length === 0 && this.page > 1) {
+            this.fetchNotifications(this.page - 1);
+            return;
+          }
+          if (this.notifications.length === 0) {
+            this.statusMessage = 'No notifications found.';
+          }
+        },
+        error: () => {
+          this.notifications = snapshot;
+          this.total = previousTotal;
+          this.unreadCount = previousUnread;
+          this.statusMessage = 'Failed to delete notification.';
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   cancelDelete(): void {
@@ -402,10 +375,6 @@ export class NotificationsComponent implements OnInit {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return 'Just now';
     return date.toLocaleString();
-  }
-
-  fmtUser(option: UserOption): string {
-    return option.name || option.githubUsername || option.email || 'User';
   }
 
   getNotificationTone(notification: AppNotification): string {
@@ -443,14 +412,15 @@ export class NotificationsComponent implements OnInit {
   }
 
   getNotificationTypeLabel(notification: AppNotification): string {
-    return notification.type
-      .replaceAll('_', ' ')
-      .replace(/\b\w/g, (char) => char.toUpperCase());
+    return notification.type.replaceAll('_', ' ').replace(/\b\w/g, (char) => char.toUpperCase());
   }
 
   getReadRate(): number {
     if (this.total <= 0) return 0;
-    return Math.max(0, Math.min(100, Math.round(((this.total - this.unreadCount) / this.total) * 100)));
+    return Math.max(
+      0,
+      Math.min(100, Math.round(((this.total - this.filteredUnreadCount) / this.total) * 100)),
+    );
   }
 
   getActiveFiltersCount(): number {
@@ -460,10 +430,8 @@ export class NotificationsComponent implements OnInit {
       this.to,
       this.typeFilter,
       this.unreadOnly ? 'unread' : '',
-      this.roleFilter,
-      this.selectedUserId,
       this.selectedOrganizationId,
-      this.selectedTeamId
+      this.selectedTeamId,
     ].filter(Boolean).length;
   }
 

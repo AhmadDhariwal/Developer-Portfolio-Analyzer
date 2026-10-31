@@ -168,6 +168,10 @@ const harness = (options = {}) => {
       return null;
     },
   });
+  mock("models/resumeFile.js", {
+    findOne: (filter) =>
+      chain({ _id: filter._id || "default", userId: filter.userId }),
+  });
   mock("models/resumeAnalysis.js", {
     findOne: () =>
       chain(
@@ -182,8 +186,8 @@ const harness = (options = {}) => {
       ),
   });
   mock("services/aiVersionService.js", { createVersion: async () => {} });
-  mock("services/notificationService.js", {
-    createNotification: async () => {},
+  mock("services/notificationPersistenceService.js", {
+    commit: async (_owner, work) => work(null),
   });
   mock("prompts/skillGapPrompt.js", {
     getSkillGapPrompt: () =>
