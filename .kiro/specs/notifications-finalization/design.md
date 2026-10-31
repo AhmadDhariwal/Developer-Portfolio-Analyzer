@@ -1,0 +1,29 @@
+# Notification design
+
+## Durable state and transaction boundary
+
+Retain the modular monolith and existing Mongo connection. `notificationPersistenceService.commit` fences an active recipient against account deletion, performs the authoritative database mutation, writes the inbox record/receipt and advances `NotificationState.revision` inside a majority/snapshot transaction with a five-second deadline. Existing managed asset transactions accept an optional notification payload inside their established reference-swap transaction. No external provider runs inside these transactions.
+
+The inbox plus durable per-recipient revision is the outbox-equivalent for **invalidation delivery**: network messages only request reconciliation, never invoke business side effects or claim to contain a complete event history. One state document per recipient coalesces bursts without an unbounded event backlog. Stable event receipts remain after inbox deletion; recurring sliding-window keys reuse a single receipt. Domain/history records and notifications have no TTL. Receipts are account-owned and removed by account deletion. A transaction that cannot persist the required notification aborts the associated source write.
+
+## Distributed streams and reconciliation
+
+Each serving process watches NotificationState using Mongo Change Streams while it has connected clients. It also reconciles at most 500 local connections in batches of ten, with cycles scheduled 15 seconds apart, against current persisted account revisions and notification cursors. Failed Change Streams back off for 60 seconds; reconciliation remains available. Cursors only increase. Reconnect always sends an authoritative-reconciliation instruction, so oplog expiration or a missing Last-Event-ID cannot lose an inbox item. Ordering is per recipient's committed revision and feed order `(createdAt desc, _id desc)`; there is no cross-recipient total order or exactly-once network claim.
+
+Shared Mongo admission extends the established Integrations transaction machinery using disjoint notification namespaces: six streams/account, 1,000 streams/fleet and 500 streams/worker. Sixty-second connection leases renew during reconciliation and expire after crashes; explicit close releases them. Slow clients disconnect at 16 KiB buffering or a failed write. No notification payload travels over SSE. Sessions terminate at JWT expiry, and persisted revocation/deletion checks run at least every reconciliation interval while connected. Reads and mutations independently authenticate and authorize. Reverse-proxy buffering is disabled in response headers; actual proxy behavior is an operator gate.
+
+## Security and queries
+
+Fetch streaming sends Bearer credentials in a header; URL credentials are rejected. Scope is recipient-owned, with current membership constraints for explicit organization/team records. Personal alerts are never exposed by manager/admin membership. Default inbox views also hide revoked organization/team notices. Membership write fences serialize scoped mutations with revocation. Feed/count/revision reads share a snapshot; stable keyset cursors avoid increasing offsets after the compatibility first 100 pages. Search is literal, escaped, length bounded and time bounded; it is not represented as a cheap indexed full-text search.
+
+Mandatory password notices bypass optional preferences. Other producers use existing preference flags. Navigation targets and retained metadata are allowlisted; support subjects/bodies never enter previews. The frontend cache uses an epoch and current token identity so late responses cannot enter another account/session. There are at most 50 cache entries and one in-flight request per query. Refreshes coalesce for 250 ms; eight reconnect retries use bounded exponential backoff/jitter, then a 60-second inbox reconciliation remains active. Logout aborts the stream and timers.
+
+## Help boundary
+
+Current source supports ticket creation, status changes and deletion. It has no reply/assignment pipeline. Creation includes quota, dedupe, ticket, inbox and email intent in one transaction using Mongo exclusively. Status revisions generate stable event IDs and no-op repeated status requests. Support email uses leased ticket delivery state with at most five attempts for failures known to precede delivery. Unknown SMTP outcomes and interrupted sends become `uncertain`, retaining operational history without automatic duplicate sends. A deterministic Message-ID aids provider reconciliation but does not assert provider-side idempotency. Never claim exactly-once SMTP delivery. Recover and review the other laptop's final Help implementation before release.
+
+## Operations and cost
+
+Notifications retain existing indexes and add explicit recipient/date/ID, unread/date/ID, type/date/ID and scoped cursor indexes. A default audit-only migration can add missing collections/indexes with `--apply`; it never drops indexes or rewrites history. Additional indexes increase write/storage cost. Notification reads include snapshot counts and current memberships, so high-volume accounts require measured query budgets. The worker reconciliation cost is two bounded batch reads per tick plus connection lease renewals; this is not a zero-cost polling claim. Membership fanout is capped at 200 rows per recipient and fails closed above the cap. Redis adds no commands to notification paths.
+
+Prometheus records bounded operation/outcome counters, persistence/read/reconciliation latency and active local stream gauges. SMTP states retain failed/uncertain work for operator queries. Deployment-equivalent sustained load, proxy buffering, replica topology, fleet quotas and restored Help contracts are separate release gates. Propose ordinary activity archival, security retention and audit retention as separate policies; no automatic 90-day deletion is approved or implemented.

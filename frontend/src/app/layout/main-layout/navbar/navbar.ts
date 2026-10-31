@@ -1,3 +1,4 @@
+import { notificationTarget } from '../../../shared/utils/notification-navigation';
 import {
   Component,
   OnInit,
@@ -68,6 +69,7 @@ export class Navbar implements OnInit {
   unreadNotifications = 0;
   notifications: AppNotification[] = [];
   totalNotifications = 0;
+  private notificationSummaryVersion = 0;
 
   activeSuggestion = -1;
   searchQuery = '';
@@ -242,7 +244,13 @@ export class Navbar implements OnInit {
 
     this.notificationService.streamEvents$
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.loadNotifications(true));
+      .subscribe(() => {
+        if (!this.notificationService.hasUnscopedFeed) this.loadNotifications();
+      });
+
+    this.notificationService.summary$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((summary) => this.applyNotificationSummary(summary));
 
     this.authService.avatarPreview$
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -407,29 +415,18 @@ export class Navbar implements OnInit {
     const user = this.authService.getCurrentUser();
     const signature = String(user?._id || user?.email || 'current-user');
     this.notificationService
-      .getNotifications({ limit: 5, page: 1 }, signature, forceRefresh)
+      .getNotifications({ limit: 10, page: 1 }, signature, forceRefresh)
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (res: NotificationResponse) => {
-          const notifications = Array.isArray(res?.notifications) ? res.notifications : [];
-          const unreadNotifications = Number(res?.unreadCount || 0);
-          const totalNotifications = Number(res?.total || notifications.length || 0);
-          // Cached notification reads emit synchronously (of(...)); defer so *ngIf
-          // bindings do not flip during the same development-mode CD pass (NG0100).
-          this.scheduleUi(() => {
-            this.notifications = notifications;
-            this.unreadNotifications = unreadNotifications;
-            this.totalNotifications = totalNotifications;
-          });
-        },
-        error: () => {
-          this.scheduleUi(() => {
-            this.notifications = [];
-            this.unreadNotifications = 0;
-            this.totalNotifications = 0;
-          });
-        },
-      });
+      .subscribe({ error: () => this.cdr.markForCheck() });
+  }
+
+  private applyNotificationSummary(res: NotificationResponse | null): void {
+    this.notificationSummaryVersion++;
+    this.scheduleUi(() => {
+      this.notifications = (res?.notifications || []).slice(0, 5);
+      this.unreadNotifications = Number(res?.unreadCount || 0);
+      this.totalNotifications = Number(res?.total || 0);
+    });
   }
 
   private loadGithubRepos(username: string): void {
@@ -587,24 +584,38 @@ export class Navbar implements OnInit {
   }
 
   markNotificationRead(notification: AppNotification): void {
-    if (notification.isRead) return;
+    if (notification.isRead) {
+      this.closeNotifications();
+      void this.router.navigateByUrl(notificationTarget(notification));
+      return;
+    }
+    const version = this.notificationSummaryVersion;
     const previousUnread = this.unreadNotifications;
-    notification.isRead = true;
+    this.notifications = this.notifications.map((item) =>
+      item._id === notification._id ? { ...item, isRead: true } : item,
+    );
     this.unreadNotifications = Math.max(0, previousUnread - 1);
     this.notificationService
       .markAsRead(notification._id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: () => this.loadNotifications(true),
+        next: () => this.cdr.markForCheck(),
         error: () => {
-          notification.isRead = false;
-          this.unreadNotifications = previousUnread;
+          if (version !== this.notificationSummaryVersion) return;
+          if (this.notifications.some((item) => item._id === notification._id && item.isRead)) {
+            this.notifications = this.notifications.map((item) =>
+              item._id === notification._id ? { ...item, isRead: false } : item,
+            );
+            this.unreadNotifications++;
+          }
         },
       });
     this.closeNotifications();
+    void this.router.navigateByUrl(notificationTarget(notification));
   }
 
   markAllNotificationsRead(): void {
+    const version = this.notificationSummaryVersion;
     const previous = this.notifications.map((item) => ({ ...item }));
     const previousUnread = this.unreadNotifications;
     this.notifications = this.notifications.map((item) => ({ ...item, isRead: true }));
@@ -613,8 +624,9 @@ export class Navbar implements OnInit {
       .markAllAsRead()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: () => this.loadNotifications(true),
+        next: () => this.cdr.markForCheck(),
         error: () => {
+          if (version !== this.notificationSummaryVersion) return;
           this.notifications = previous;
           this.unreadNotifications = previousUnread;
         },

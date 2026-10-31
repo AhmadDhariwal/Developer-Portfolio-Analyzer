@@ -11,12 +11,13 @@ const { integer } = require('./integrationGovernanceService');
 const insights = require('./integrationInsightService');
 const stale = () =>
   Object.assign(Error('Connection changed or sync lease expired.'), { status: 409 });
-async function transaction(work) {
+async function transaction(work, options = {}) {
   // Mongo transactions retry transient write conflicts. Never perform provider calls here.
   return mongoose.connection.transaction(work, {
     maxCommitTimeMS: 5000,
     readConcern: { level: 'snapshot' },
-    writeConcern: { w: 'majority' }
+    writeConcern: { w: 'majority' },
+    ...options
   });
 }
 async function ownerFence(owner, session) {

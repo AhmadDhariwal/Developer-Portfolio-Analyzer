@@ -4,7 +4,10 @@ const EmailDeliveryJob = require('../models/emailDeliveryJob');
 const { sendInvitationEmail } = require('./invitationEmailService');
 const { logEmailDeliveryAudit } = require('./emailAuditService');
 
-const RETRY_INTERVAL_MS = Math.max(5000, Number.parseInt(process.env.EMAIL_RETRY_INTERVAL_MS || '30000', 10));
+const RETRY_INTERVAL_MS = Math.max(
+  5000,
+  Number.parseInt(process.env.EMAIL_RETRY_INTERVAL_MS || '30000', 10)
+);
 const MAX_BACKOFF_MS = 60 * 60 * 1000;
 const BASE_BACKOFF_MS = 60 * 1000;
 
@@ -13,7 +16,7 @@ let isRunning = false;
 
 const calcBackoff = (attempts) => {
   const power = Math.max(0, attempts - 1);
-  return Math.min(MAX_BACKOFF_MS, BASE_BACKOFF_MS * (2 ** power));
+  return Math.min(MAX_BACKOFF_MS, BASE_BACKOFF_MS * 2 ** power);
 };
 
 const enqueueInvitationRetry = async ({ invitationId, to, payload, maxAttempts = 5 }) => {
@@ -114,6 +117,8 @@ const processDueJobs = async () => {
     for (const job of jobs) {
       await handleSingleJob(job);
     }
+    await require('./supportNotificationDeliveryService').processDue();
+    await require('./weeklyReportDeliveryService').processDue();
   } catch (error) {
     console.error('Email retry worker error:', error.message);
   } finally {

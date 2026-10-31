@@ -22,6 +22,7 @@ const ownedModels = [
   'userJobAction',
   'userCourseProgress',
   'notification',
+  'notificationReceipt',
   'otp',
   'membership',
   'workflowRun',
@@ -34,10 +35,9 @@ const ownedModels = [
 async function removeOwnedData(owner, session) {
   const Organization = require('../models/organization');
   if (await Organization.exists({ ownerId: owner }).session(session))
-    throw Object.assign(
-      Error('Transfer organization ownership before deleting this account.'),
-      { status: 409 }
-    );
+    throw Object.assign(Error('Transfer organization ownership before deleting this account.'), {
+      status: 409
+    });
   const Profile = require('../models/publicProfile');
   const profiles = await Profile.find({ userId: owner }).select('_id').session(session).lean();
   const ids = profiles.map((profile) => profile._id);
@@ -58,7 +58,7 @@ async function removeOwnedData(owner, session) {
     await require(`../models/${name}`).deleteMany({ userId: owner }, { session });
   await require('../models/Candidate').deleteMany({ userId: owner }, { session });
   await require('../models/repository').deleteMany({ ownerId: owner }, { session });
-  for (const name of ['sprintPreference', 'sprintSchedule'])
+  for (const name of ['sprintPreference', 'sprintSchedule', 'notificationState'])
     await require(`../models/${name}`).deleteMany({ _id: owner }, { session });
   for (const name of ['RecruiterMatch', 'RecruiterShortlist'])
     await require(`../models/${name}`).deleteMany(

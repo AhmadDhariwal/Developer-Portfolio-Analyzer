@@ -12,6 +12,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const connectDB = require('./src/config/db');
 const logger = require('./src/utils/logger');
+const requestLogPath = require('./src/utils/requestLogPath');
 const authroute = require('./src/routes/auth.routes');
 const githubroute = require('./src/routes/github.routes');
 const resumroute = require('./src/routes/resume.routes');
@@ -159,7 +160,7 @@ if (shouldLogRequests) {
     logger.info('request', {
       requestId: req.requestId,
       method: req.method,
-      path: req.originalUrl
+      path: requestLogPath(req)
     });
     next();
   });
@@ -300,6 +301,9 @@ startServer().catch((error) => {
 });
 
 const shutdown = () => {
+  require('./src/services/notificationStreamService')
+    .stop()
+    .catch(() => {});
   stopNewsIngestionScheduler();
   Promise.allSettled([closeRedisCache(), shutdownTracing()]);
 };

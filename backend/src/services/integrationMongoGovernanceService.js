@@ -198,7 +198,7 @@ async function consumeSnapshot(provider, owner, cost, maximum) {
 async function requestWindow(prefix, maximum, windowMs) {
   if (
     typeof prefix !== 'string' ||
-    !/^public-portfolio:v3:rate:[a-z-]+:[a-f0-9]{64}$/.test(prefix) ||
+    !/^(public-portfolio:v3:rate|notifications:v1:rate):[a-z-]+:[a-f0-9]{64}$/.test(prefix) ||
     !Number.isSafeInteger(maximum) ||
     maximum < 1 ||
     !Number.isSafeInteger(windowMs) ||
@@ -221,6 +221,26 @@ async function requestWindow(prefix, maximum, windowMs) {
   });
 }
 
+async function notificationStream(owner, reservation = null) {
+  const keys = ['notifications:streams:global', `notifications:streams:user:${hash(owner)}`];
+  const token = reservation?.token || randomUUID();
+  await transaction(async (session, now) => {
+    const states = await readMany(keys, session, now);
+    for (let index = 0; index < states.length; index++) {
+      const state = states[index];
+      state.leases = (state.leases || []).filter((lease) => lease.until.getTime() > now);
+      const existing = state.leases.find((lease) => lease.token === token);
+      if (reservation && !existing) throw unavailable();
+      if (!existing && state.leases.length >= (index === 0 ? 1000 : 6)) throw limited();
+      if (existing) existing.until = new Date(now + 60000);
+      else state.leases.push({ token, until: new Date(now + 60000) });
+      state.expiresAt = new Date(Math.max(...state.leases.map((lease) => lease.until.getTime())));
+    }
+    await writeMany(states, session);
+  });
+  return { keys, token };
+}
+
 module.exports = {
   admit,
   release,
@@ -229,5 +249,6 @@ module.exports = {
   action,
   consumeSnapshot,
   initialize,
-  requestWindow
+  requestWindow,
+  notificationStream
 };

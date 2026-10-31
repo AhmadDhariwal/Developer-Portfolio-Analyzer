@@ -1,45 +1,73 @@
+const notificationPersistence = require('./notificationPersistenceService');
 const SupportTicket = require('../models/supportTicket');
 const SupportTicketQuota = require('../models/supportTicketQuota');
 const SupportTicketDedupe = require('../models/supportTicketDedupe');
 const crypto = require('node:crypto');
 const { createNotification } = require('./notificationService');
-const { sendConfiguredEmail } = require('./emailService');
-const { isRedisCacheEnabled, getRedisCacheClient } = require('./redisCacheService');
 
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_TICKETS_PER_WINDOW = 5;
-const VALID_CATEGORIES = new Set(['bug', 'feature_request', 'account_issue', 'billing_issue', 'general_feedback', 'other']);
+const VALID_CATEGORIES = new Set([
+  'bug',
+  'feature_request',
+  'account_issue',
+  'billing_issue',
+  'general_feedback',
+  'other'
+]);
 const VALID_PRIORITIES = new Set(['low', 'medium', 'high', 'urgent']);
-const supportError = (message, status) => Object.assign(new Error(message), { status });
+const supportError = (message, status) =>
+  Object.assign(new Error(message), {
+    status,
+    ...(status === 429
+      ? { retryAfter: Math.max(1, Math.ceil((WINDOW_MS - (Date.now() % WINDOW_MS)) / 1000)) }
+      : {})
+  });
 const normalizeText = (value, maxLength, field, required = false) => {
-  if (value === undefined || value === null) return required ? (() => { throw supportError(`${field} is required.`, 400); })() : '';
+  if (value === undefined || value === null)
+    return required
+      ? (() => {
+          throw supportError(`${field} is required.`, 400);
+        })()
+      : '';
   if (typeof value !== 'string') throw supportError(`Invalid ${field}.`, 400);
-  const normalized = value.replace(/[\u0000-\u001F\u007F]/g, ' ').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+  const normalized = value
+    .replace(/[\u0000-\u001F\u007F]/g, ' ')
+    .replace(/<[^>]*>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
   if (required && !normalized) throw supportError(`${field} is required.`, 400);
   if (normalized.length > maxLength) throw supportError(`${field} is too long.`, 400);
   return normalized;
 };
-const reserveMongoQuota = async (userId, now) => {
+const reserveMongoQuota = async (userId, now, session) => {
   const window = Math.floor(now / WINDOW_MS);
   try {
-    return Boolean(await SupportTicketQuota.findOneAndUpdate(
-      { userId, window, count: { $lt: MAX_TICKETS_PER_WINDOW } },
-      { $inc: { count: 1 }, $setOnInsert: { expiresAt: new Date((window + 2) * WINDOW_MS) } },
-      { new: true, upsert: true }
-    ).lean());
+    return Boolean(
+      await SupportTicketQuota.findOneAndUpdate(
+        { userId, window, count: { $lt: MAX_TICKETS_PER_WINDOW } },
+        { $inc: { count: 1 }, $setOnInsert: { expiresAt: new Date((window + 2) * WINDOW_MS) } },
+        { returnDocument: 'after', upsert: true, session }
+      ).lean()
+    );
   } catch (error) {
     if (error?.code === 11000) return false;
     throw error;
   }
 };
-const reserveMongoDedupe = async (userId, dedupeKey, now) => {
+const reserveMongoDedupe = async (userId, dedupeKey, now, session) => {
   const id = `${userId}:${dedupeKey}`;
   try {
-    return Boolean(await SupportTicketDedupe.findOneAndUpdate(
-      { _id: id, $or: [{ expiresAt: { $lte: new Date(now) } }, { expiresAt: { $exists: false } }] },
-      { $set: { userId, dedupeKey, expiresAt: new Date(now + WINDOW_MS) } },
-      { new: true, upsert: true }
-    ).lean());
+    return Boolean(
+      await SupportTicketDedupe.findOneAndUpdate(
+        {
+          _id: id,
+          $or: [{ expiresAt: { $lte: new Date(now) } }, { expiresAt: { $exists: false } }]
+        },
+        { $set: { userId, dedupeKey, expiresAt: new Date(now + WINDOW_MS) } },
+        { returnDocument: 'after', upsert: true, session }
+      ).lean()
+    );
   } catch (error) {
     if (error?.code === 11000) return false;
     throw error;
@@ -71,16 +99,18 @@ const STATUS_BADGE_COLOR = {
   closed: '#4b5563'
 };
 
-const escapeHtml = (str) => String(str || '')
-  .replace(/&/g, '&amp;')
-  .replace(/</g, '&lt;')
-  .replace(/>/g, '&gt;')
-  .replace(/"/g, '&quot;')
-  .replace(/'/g, '&#39;');
+const escapeHtml = (str) =>
+  String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 
-const titleCase = (str) => String(str || '')
-  .replace(/_/g, ' ')
-  .replace(/\b\w/g, char => char.toUpperCase());
+const titleCase = (str) =>
+  String(str || '')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 
 const formatHtmlMessage = (str) => escapeHtml(str).replace(/\r?\n/g, '<br />');
 
@@ -220,82 +250,51 @@ const createTicket = async (user, data) => {
   const safeMessage = normalizeText(message, 5000, 'message', true);
   const safeSourcePage = normalizeText(sourcePage, 500, 'sourcePage');
   const safeBrowserInfo = normalizeText(browserInfo, 512, 'browserInfo');
-  const dedupeKey = crypto.createHash('sha256')
+  const dedupeKey = crypto
+    .createHash('sha256')
     .update(`${safeSubject.toLowerCase()}\n${safeMessage.toLowerCase()}`)
     .digest('hex');
   const now = Date.now();
   const dedupeWindow = Math.floor(now / WINDOW_MS);
-  const redis = isRedisCacheEnabled() ? getRedisCacheClient() : null;
-  const redisDedupeKey = `support:dedupe:${user._id}:${dedupeWindow}:${dedupeKey}`;
-  if (redis) {
-    try {
-      if (await redis.set(redisDedupeKey, '1', { NX: true, PX: WINDOW_MS }) !== 'OK') {
-        throw supportError('A similar ticket was recently submitted.', 409);
-      }
-    } catch (error) {
-      if (error?.status) throw error;
-      console.warn('Support Redis dedupe unavailable; using Mongo fallback.');
-    }
-  }
-  if (!await reserveMongoDedupe(user._id, dedupeKey, now)) {
-    throw supportError('A similar ticket was recently submitted.', 409);
-  }
-  let ticket;
-  try {
-    ticket = await SupportTicket.create({
-      userId: user._id, name: user.name, email: user.email, category, priority,
-      subject: safeSubject, message: safeMessage, sourcePage: safeSourcePage, browserInfo: safeBrowserInfo,
-      dedupeKey, dedupeWindow
+  const ticket = await notificationPersistence.transaction(async (session) => {
+    await notificationPersistence.fence(user._id, session, Number(user.sessionRevision || 0));
+    if (!(await reserveMongoQuota(user._id, now, session)))
+      throw supportError('Too many support requests. Please try again in a few minutes.', 429);
+    if (!(await reserveMongoDedupe(user._id, dedupeKey, now, session)))
+      throw supportError('A similar ticket was recently submitted.', 409);
+    const [created] = await SupportTicket.create(
+      [
+        {
+          userId: user._id,
+          name: user.name,
+          email: user.email,
+          category,
+          priority,
+          subject: safeSubject,
+          message: safeMessage,
+          sourcePage: safeSourcePage,
+          browserInfo: safeBrowserInfo,
+          dedupeKey,
+          dedupeWindow,
+          emailDelivery: {
+            status: process.env.SUPPORT_INBOX_EMAIL ? 'pending' : 'skipped',
+            nextAttemptAt: new Date()
+          }
+        }
+      ],
+      { session }
+    );
+    await createNotification({
+      userId: user._id,
+      session,
+      type: 'info',
+      title: 'Support request received',
+      message: 'Your support request has been received. Open Help & Support for details.',
+      eventId: `support-ticket:${created._id}`,
+      meta: { ticketId: created._id }
     });
-  } catch (error) {
-    if (error?.code === 11000) throw supportError('A similar ticket was recently submitted.', 409);
-    throw error;
-  }
-  const quotaWindow = Math.floor(now / WINDOW_MS);
-  let redisAllowed = true;
-  if (redis) {
-    try {
-      const key = `support:rate:${user._id}:${quotaWindow}`;
-      const count = await redis.incr(key);
-      if (count === 1) await redis.expire(key, Math.ceil(WINDOW_MS / 1000));
-      redisAllowed = count <= MAX_TICKETS_PER_WINDOW;
-    } catch {
-      console.warn('Support Redis limiter unavailable; using Mongo fallback.');
-    }
-  }
-  if (!redisAllowed || !await reserveMongoQuota(user._id, now)) {
-    await SupportTicket.deleteOne({ _id: ticket._id, userId: user._id });
-    if (redis) await redis.del(redisDedupeKey).catch(() => undefined);
-    await SupportTicketDedupe.deleteOne({ _id: `${user._id}:${dedupeKey}` });
-    throw supportError('Too many support requests. Please try again in a few minutes.', 429);
-  }
-
-  // Create user notification (fire-and-forget)
-  createNotification({
-    userId: user._id,
-    type: 'info',
-    title: 'Support request received',
-    message: `Your ticket "${safeSubject}" has been received. Our team will look into it shortly.`,
-    dedupeKey: `support-ticket-${ticket._id}`,
-    meta: { ticketId: ticket._id }
-  }).catch(err => console.warn('Failed to create notification:', err.message));
-
-  // Send notification email to support inbox (fire-and-forget, never blocks ticket creation)
-  const supportEmail = String(process.env.SUPPORT_INBOX_EMAIL || '').trim();
-  if (supportEmail) {
-    const categoryLabel = CATEGORY_LABELS[ticket.category] || ticket.category;
-    const priorityLabel = PRIORITY_LABELS[ticket.priority] || ticket.priority;
-
-    sendConfiguredEmail({
-      to: supportEmail,
-      subject: `New Support Ticket: [${priorityLabel}] [${categoryLabel}] - ${safeSubject}`,
-      html: buildSupportEmailHtml(ticket, user),
-      text: buildSupportEmailText(ticket, user)
-    }).catch(err => {
-      // Sanitize: log only the error message, never the email body or SMTP credentials.
-      console.warn('Failed to send support notification email:', err.message);
-    });
-  }
+    return created;
+  });
 
   return ticket;
 };
@@ -308,7 +307,7 @@ const getMyTickets = async (userId, page = 1, limit = 10) => {
     .skip(skip)
     .limit(limit)
     .lean();
-  
+
   const total = await SupportTicket.countDocuments({ userId });
 
   return {
@@ -347,7 +346,7 @@ const getAllTickets = async (page = 1, limit = 10, filters = {}) => {
     .skip(skip)
     .limit(limit)
     .lean();
-  
+
   const total = await SupportTicket.countDocuments(query);
 
   return {
@@ -361,12 +360,47 @@ const getAllTickets = async (page = 1, limit = 10, filters = {}) => {
   };
 };
 
-const updateTicketStatus = async (ticketId, status) => {
-  if (!['open', 'in_progress', 'resolved', 'closed'].includes(status)) {
+const updateTicketStatus = async (ticketId, status, actorId, actorRevision = 0) => {
+  if (!['open', 'in_progress', 'resolved', 'closed'].includes(status))
     throw new Error('Invalid status.');
-  }
-  return await SupportTicket.findByIdAndUpdate(ticketId, { status }, { new: true });
+  return notificationPersistence.transaction(async (session) => {
+    const actor = await require('../models/user')
+      .findOne({ _id: actorId, isActive: { $ne: false } })
+      .session(session)
+      .lean();
+    if (
+      !actor ||
+      !['admin', 'super_admin'].includes(
+        require('../middleware/authmiddleware').normalizeUserRole(actor.role)
+      )
+    )
+      throw supportError('Not authorized.', 403);
+    await notificationPersistence.fence(actorId, session, Number(actorRevision));
+    const ticket = await SupportTicket.findById(ticketId).session(session);
+    if (!ticket || ticket.status === status) return ticket;
+    ticket.status = status;
+    ticket.statusRevision = Number(ticket.statusRevision || 0) + 1;
+    await ticket.save({ session });
+    await createNotification({
+      userId: ticket.userId,
+      session,
+      type: 'info',
+      title: 'Support request status updated',
+      message: `Your support request is now ${status.replace('_', ' ')}. Open Help & Support for details.`,
+      eventId: `support-status:${ticket._id}:${ticket.statusRevision}`,
+      meta: { ticketId: ticket._id }
+    });
+    return ticket;
+  });
 };
+
+const supportEmailPayload = (ticket) => ({
+  to: String(process.env.SUPPORT_INBOX_EMAIL || '').trim(),
+  subject: `New Support Ticket: [${PRIORITY_LABELS[ticket.priority]}] [${CATEGORY_LABELS[ticket.category]}]`,
+  html: buildSupportEmailHtml(ticket, { name: ticket.name, email: ticket.email }),
+  text: buildSupportEmailText(ticket, { name: ticket.name, email: ticket.email }),
+  messageId: `<support-${ticket._id}@devinsight.local>`
+});
 
 module.exports = {
   createTicket,
@@ -374,5 +408,6 @@ module.exports = {
   getTicketById,
   deleteTicket,
   getAllTickets,
-  updateTicketStatus
+  updateTicketStatus,
+  supportEmailPayload
 };

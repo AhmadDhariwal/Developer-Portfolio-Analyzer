@@ -6,7 +6,6 @@ const {
   getPublicProfileResumeDownload,
   getOwnerResumeDownload
 } = require('../services/publicProfileService');
-const { createNotification } = require('../services/notificationService');
 
 const invalidatePublicProfileDependentCaches = (userId) => {
   try {
@@ -49,18 +48,6 @@ const updateMyPublicProfile = async (req, res) => {
 
     invalidatePublicProfileDependentCaches(req.user._id);
 
-    await createNotification({
-      userId: req.user._id,
-      type: 'profile_update',
-      title: 'Public Portfolio Updated',
-      message: profile?.isPublic
-        ? 'Your public portfolio changes are now live.'
-        : 'Your public portfolio settings were updated.',
-      dedupeKey: `public_portfolio_update:${profile?.slug || req.user._id}`,
-      dedupeWindowHours: 1,
-      meta: { slug: profile?.slug || '', isPublic: Boolean(profile?.isPublic) }
-    }).catch(() => console.warn('Portfolio notification unavailable.'));
-
     res.set('Cache-Control', 'no-store');
     res.json(profile);
   } catch (error) {
@@ -93,9 +80,7 @@ const downloadPublicProfileResume = async (req, res) => {
     }
     return res.download(resume.filePath, resume.fileName, (error) => {
       if (error && !res.headersSent)
-        res
-          .status(error.statusCode === 404 ? 404 : 500)
-          .json({ message: 'Resume not available.' });
+        res.status(error.statusCode === 404 ? 404 : 500).json({ message: 'Resume not available.' });
     });
   } catch (error) {
     console.error('Public profile resume download unavailable.');

@@ -1,10 +1,10 @@
+const notificationPersistence = require('../services/notificationPersistenceService');
 const developerContext = require('../services/developerContextService');
 const User = require('../models/user');
 const Analysis = require('../models/analysis');
 const ResumeFile = require('../models/resumeFile');
 const ResumeAnalysis = require('../models/resumeAnalysis');
 const bcrypt = require('bcryptjs');
-const { createNotification } = require('../services/notificationService');
 const { getDeveloperSettingsSync } = require('../services/platformSettingsService');
 const { invalidateNewsSignalCache } = require('../services/newsService');
 const { invalidatePublicProfileCacheForUser } = require('../services/publicProfileService');
@@ -320,9 +320,7 @@ const updateProfile = async (req, res) => {
       'targetTimeline',
       'learningPreference'
     ];
-    if (
-      textFields.some((key) => req.body[key] !== undefined && typeof req.body[key] !== 'string')
-    )
+    if (textFields.some((key) => req.body[key] !== undefined && typeof req.body[key] !== 'string'))
       return res.status(400).json({ message: 'Profile fields must be strings.' });
     if (defaultResumeFileId && !require('mongoose').isObjectIdOrHexString(defaultResumeFileId))
       return res.status(400).json({ message: 'Selected default resume file is invalid.' });
@@ -483,18 +481,27 @@ const updateProfile = async (req, res) => {
       return res.json({ message: 'No changes detected.' });
     }
 
-    const updated = await user.save();
+    const updated = await notificationPersistence.commit(
+      user._id,
+      (session) => user.save({ session }),
+      {
+        type: 'profile_update',
+        title: 'Profile Updated',
+        message: 'Your profile settings were updated successfully.',
+        dedupeKey: `profile_update:${require('node:crypto')
+          .createHash('sha256')
+          .update(
+            JSON.stringify(Object.entries(req.body || {}).sort(([a], [b]) => a.localeCompare(b)))
+          )
+          .digest('hex')}`,
+        dedupeWindowHours: 1 / 60
+      },
+      Number(req.user.sessionRevision || 0)
+    );
     const nextProfileHash = buildProfileHash(updated);
     if (previousProfileHash !== nextProfileHash) {
       invalidateProfileDependentRuntimeCaches(updated._id);
     }
-
-    await createNotification({
-      userId: updated._id,
-      type: 'profile_update',
-      title: 'Profile Updated',
-      message: 'Your profile settings were updated successfully.'
-    });
 
     const [defaultResume, activeResume] = await Promise.all([
       updated.defaultResumeFileId
@@ -588,21 +595,28 @@ const updatePassword = async (req, res) => {
 
     const salt = await bcrypt.genSalt(10);
     const password = await bcrypt.hash(newPassword, salt);
-    const changed = await User.updateOne(
-      { _id: user._id, password: user.password },
-      { $set: { password }, $inc: { sessionRevision: 1 }, $addToSet: { providers: 'local' } }
+    await notificationPersistence.commit(
+      user._id,
+      async (session) => {
+        const changed = await User.updateOne(
+          { _id: user._id, password: user.password },
+          { $set: { password }, $inc: { sessionRevision: 1 }, $addToSet: { providers: 'local' } },
+          { session }
+        );
+        if (!changed.matchedCount)
+          throw Object.assign(Error('Account security changed. Refresh and retry.'), {
+            status: 409
+          });
+      },
+      {
+        type: 'profile_update',
+        security: true,
+        title: 'Password Updated',
+        message: 'Your password was updated successfully.',
+        eventId: `password_update:${user._id}:${Number(user.sessionRevision || 0) + 1}`
+      },
+      Number(req.user.sessionRevision || 0)
     );
-    if (!changed.matchedCount)
-      return res.status(409).json({ message: 'Account security changed. Refresh and retry.' });
-
-    await createNotification({
-      userId: user._id,
-      type: 'profile_update',
-      title: 'Password Updated',
-      message: 'Your password was updated successfully.',
-      dedupeKey: `password_update:${user._id}`,
-      dedupeWindowHours: 1
-    });
 
     require('../middleware/storedImageMiddleware').mediaSession(
       { user: { _id: user._id, sessionRevision: Number(user.sessionRevision || 0) + 1 } },
@@ -618,7 +632,9 @@ const updatePassword = async (req, res) => {
     });
   } catch (error) {
     console.error('Password update error:', error.message);
-    res.status(500).json({ message: 'Server error updating password.' });
+    res
+      .status(error.status || 500)
+      .json({ message: error.status === 409 ? error.message : 'Server error updating password.' });
   }
 };
 
@@ -664,10 +680,7 @@ const updateCareerProfile = async (req, res) => {
     ) {
       return res.status(400).json({ message: 'Invalid or missing experienceLevel.' });
     }
-    if (
-      normalizedCareerGoal !== undefined &&
-      !VALID_CAREER_GOALS.includes(normalizedCareerGoal)
-    ) {
+    if (normalizedCareerGoal !== undefined && !VALID_CAREER_GOALS.includes(normalizedCareerGoal)) {
       return res.status(400).json({ message: 'Invalid careerGoal.' });
     }
     if (normalizedTimeline !== undefined && !VALID_TIMELINES.includes(normalizedTimeline)) {
@@ -744,19 +757,20 @@ const updateActiveCareerProfile = async (req, res) => {
 
     user.activeCareerStack = normalizedCareerStack;
     user.activeExperienceLevel = normalizedExperienceLevel;
-    await user.save();
-    if (previousProfileHash !== buildProfileHash(user)) {
+    await notificationPersistence.commit(
+      user._id,
+      (session) => user.save({ session }),
+      {
+        type: 'career_update',
+        title: 'Session Career Filter Changed',
+        message: `Active career filter switched to ${user.activeCareerStack} (${user.activeExperienceLevel}).`,
+        dedupeKey: `career_active:${user._id}:${user.activeCareerStack}:${user.activeExperienceLevel}`,
+        dedupeWindowHours: 2
+      },
+      Number(req.user.sessionRevision || 0)
+    );
+    if (previousProfileHash !== buildProfileHash(user))
       invalidateProfileDependentRuntimeCaches(user._id);
-    }
-
-    await createNotification({
-      userId: user._id,
-      type: 'career_update',
-      title: 'Session Career Filter Changed',
-      message: `Active career filter switched to ${user.activeCareerStack} (${user.activeExperienceLevel}).`,
-      dedupeKey: `career_active:${user._id}:${user.activeCareerStack}:${user.activeExperienceLevel}`,
-      dedupeWindowHours: 2
-    });
 
     return res.json({
       careerStack: user.activeCareerStack,
@@ -795,16 +809,26 @@ const uploadAvatar = async (req, res) => {
     const nextAvatarPath = req.file.publicPath;
     // Atomic exchange makes concurrent replacements clean up only the displaced image.
     const managed = require('../services/storedAssetService');
+    const notification = {
+      type: 'profile_update',
+      title: 'Profile Photo Updated',
+      message: 'Your profile photo has been updated.',
+      eventId: `profile_avatar:${nextAvatarPath}`
+    };
     const previous =
-      managed.parse(nextAvatarPath) ||
-      managed.parse(user.avatar) ||
-      process.env.B2_IMAGES_BUCKET
-        ? await managed.commitAvatar(user._id, nextAvatarPath)
-        : await User.findOneAndUpdate(
-            { _id: user._id },
-            { $set: { avatar: nextAvatarPath } },
-            { returnDocument: 'before' }
-          ).lean();
+      managed.parse(nextAvatarPath) || managed.parse(user.avatar) || process.env.B2_IMAGES_BUCKET
+        ? await managed.commitAvatar(user._id, nextAvatarPath, notification)
+        : await notificationPersistence.commit(
+            user._id,
+            (session) =>
+              User.findOneAndUpdate(
+                { _id: user._id },
+                { $set: { avatar: nextAvatarPath } },
+                { session, returnDocument: 'before' }
+              ).lean(),
+            notification,
+            Number(req.user.sessionRevision || 0)
+          );
     if (!previous) {
       await images.remove(nextAvatarPath);
       return res.status(404).json({ message: 'User not found.' });
@@ -815,15 +839,6 @@ const uploadAvatar = async (req, res) => {
     if (!managed.parse(previous.avatar))
       await images.remove(previous.avatar).catch(() => console.warn('Avatar cleanup pending.'));
     await invalidatePublicProfileCacheForUser(user._id);
-
-    await createNotification({
-      userId: user._id,
-      type: 'profile_update',
-      title: 'Profile Photo Updated',
-      message: 'Your profile photo has been updated.',
-      dedupeKey: `profile_avatar:${user._id}`,
-      dedupeWindowHours: 1
-    });
 
     return res.json({
       message: 'Avatar updated successfully.',
@@ -885,18 +900,20 @@ const updateProfileVisibility = async (req, res) => {
     }
 
     user.isPublic = isPublic;
-    await user.save();
-
-    await createNotification({
-      userId: user._id,
-      type: 'profile_update',
-      title: 'Profile Visibility Updated',
-      message: isPublic
-        ? 'Your profile is now visible to recruiters in the talent pool.'
-        : 'Your profile is now hidden from the talent pool.',
-      dedupeKey: `profile_visibility:${user._id}`,
-      dedupeWindowHours: 1
-    });
+    await notificationPersistence.commit(
+      user._id,
+      (session) => user.save({ session }),
+      {
+        type: 'profile_update',
+        title: 'Profile Visibility Updated',
+        message: isPublic
+          ? 'Your profile is now visible to recruiters in the talent pool.'
+          : 'Your profile is now hidden from the talent pool.',
+        dedupeKey: `profile_visibility:${user._id}:${isPublic}`,
+        dedupeWindowHours: 1
+      },
+      Number(req.user.sessionRevision || 0)
+    );
 
     return res.json({ isPublic: user.isPublic });
   } catch (error) {
