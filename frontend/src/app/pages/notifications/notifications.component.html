@@ -451,10 +451,23 @@
           </svg>
         </div>
 
-        <!-- Notification Main Text Body -->
-        <button type="button" class="notification-main" (click)="markAsRead(notification)">
+        <!-- Notification Main Text Body (click opens notification target) -->
+        <div
+          class="notification-main"
+          (click)="openNotification(notification)"
+          (keydown.enter)="openNotification(notification)"
+          role="button"
+          tabindex="0"
+          [attr.aria-label]="'Open ' + notification.title"
+        >
           <div class="notification-topline">
             <div class="notification-title-wrap">
+              <span
+                class="unread-dot"
+                *ngIf="!notification.isRead"
+                aria-label="Unread notification"
+                title="Unread"
+              ></span>
               <span class="notification-title">{{ notification.title }}</span>
               <span
                 class="type-pill"
@@ -466,11 +479,6 @@
                 {{ getNotificationTypeLabel(notification) }}
               </span>
             </div>
-            <span
-              class="unread-dot"
-              *ngIf="!notification.isRead"
-              title="Unread notification"
-            ></span>
           </div>
 
           <div class="notification-message">{{ notification.message }}</div>
@@ -496,7 +504,7 @@
               {{ notification.isRead ? 'Read' : 'Unread' }}
             </span>
           </div>
-        </button>
+        </div>
 
         <!-- Right Side Quick Actions -->
         <div class="notification-actions">

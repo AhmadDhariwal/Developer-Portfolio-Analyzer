@@ -1,7 +1,17 @@
 import { ScenarioInput } from '../models/scenario-simulator.model';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { finalize, Observable, of, shareReplay, tap, Subject, takeUntil } from 'rxjs';
+import {
+  catchError,
+  finalize,
+  Observable,
+  of,
+  shareReplay,
+  tap,
+  throwError,
+  Subject,
+  takeUntil,
+} from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service';
 import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
@@ -339,16 +349,32 @@ export class ApiService {
   }
 
   /* ── Multi-Tenant Teams ── */
+  private organizationsCache$: Observable<any> | null = null;
+
   createOrganization(payload: {
     name: string;
     slug?: string;
     description?: string;
   }): Observable<any> {
+    this.clearOrganizationsCache();
     return this.http.post(`${this.baseUrl}/tenant/organizations`, payload);
   }
 
-  getOrganizations(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/tenant/organizations`);
+  getOrganizations(forceRefresh = false): Observable<any> {
+    if (forceRefresh || !this.organizationsCache$) {
+      this.organizationsCache$ = this.http.get(`${this.baseUrl}/tenant/organizations`).pipe(
+        shareReplay({ bufferSize: 1, refCount: false }),
+        catchError((err) => {
+          this.organizationsCache$ = null;
+          return throwError(() => err);
+        }),
+      );
+    }
+    return this.organizationsCache$;
+  }
+
+  clearOrganizationsCache(): void {
+    this.organizationsCache$ = null;
   }
 
   createTeam(
