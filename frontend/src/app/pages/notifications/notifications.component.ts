@@ -54,6 +54,7 @@ export class NotificationsComponent implements OnInit {
   showBulkDeleteDialog = false;
   deletingSelected = false;
   private inboxRequest?: Subscription;
+  private inboxVersion = 0;
   private readonly pageCursors = new Map<number, string>();
   private readonly router = inject(Router);
 
@@ -94,14 +95,22 @@ export class NotificationsComponent implements OnInit {
     private readonly authService: AuthService,
   ) {}
 
+  get streamConnected(): boolean {
+    return this.notificationService.streamConnected();
+  }
+
   ngOnInit(): void {
     this.loadOrganizations();
+    this.fetchNotifications(1);
 
-    this.destroyRef.onDestroy(() => this.inboxRequest?.unsubscribe());
+    this.destroyRef.onDestroy(() => {
+      this.inboxRequest?.unsubscribe();
+      this.notificationService.setInboxScope(null);
+    });
 
     this.notificationService.streamEvents$
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.fetchNotifications(this.page, true));
+      .subscribe(() => this.fetchNotifications(this.page, true, true));
   }
 
   private toStartOfDayIso(dateInput: string): string {
@@ -124,13 +133,9 @@ export class NotificationsComponent implements OnInit {
         next: (res) => {
           this.organizations = Array.isArray(res?.organizations) ? res.organizations : [];
           this.loadTeams();
-          // Always fetch notifications
-          this.fetchNotifications(1);
         },
         error: () => {
           this.organizations = [];
-          // Fetch notifications even if org loading fails
-          this.fetchNotifications(1);
         },
       });
   }
@@ -178,7 +183,30 @@ export class NotificationsComponent implements OnInit {
     this.to = '';
     this.typeFilter = '';
     this.unreadOnly = false;
+    this.selectedOrganizationId = '';
+    this.selectedTeamId = '';
+    this.teams = [];
     this.fetchNotifications(1);
+  }
+
+  setQuickFilter(category: string): void {
+    if (category === 'unread') {
+      this.typeFilter = '';
+      this.unreadOnly = true;
+    } else if (category === 'all') {
+      this.typeFilter = '';
+      this.unreadOnly = false;
+    } else {
+      this.typeFilter = category;
+      this.unreadOnly = false;
+    }
+    this.fetchNotifications(1);
+  }
+
+  isQuickFilterActive(category: string): boolean {
+    if (category === 'all') return !this.typeFilter && !this.unreadOnly;
+    if (category === 'unread') return this.unreadOnly;
+    return this.typeFilter === category && !this.unreadOnly;
   }
 
   markAllAsRead(): void {
@@ -193,7 +221,6 @@ export class NotificationsComponent implements OnInit {
       .subscribe({
         next: (result) => {
           this.markingAllRead = false;
-          this.fetchNotifications(this.page, true);
           this.statusMessage = result.message;
           this.cdr.markForCheck();
         },
@@ -227,7 +254,7 @@ export class NotificationsComponent implements OnInit {
         next: () => {
           this.deletingSelected = false;
           this.selectedIds = new Set();
-          this.fetchNotifications(1, true);
+          this.cdr.markForCheck();
         },
         error: () => {
           this.deletingSelected = false;
@@ -242,13 +269,14 @@ export class NotificationsComponent implements OnInit {
     void this.router.navigateByUrl(notificationTarget(notification));
   }
 
-  fetchNotifications(page = this.page, forceRefresh = false): void {
+  fetchNotifications(page = this.page, forceRefresh = false, background = false): void {
+    const version = ++this.inboxVersion;
     this.inboxRequest?.unsubscribe();
     if (page === 1) this.pageCursors.clear();
     this.loading = true;
     this.loadFailed = false;
     this.page = page;
-    this.statusMessage = '';
+    if (!background) this.statusMessage = '';
 
     const query: NotificationQuery = {
       page: this.pageCursors.has(page) ? undefined : this.page,
@@ -261,16 +289,18 @@ export class NotificationsComponent implements OnInit {
       teamId: this.selectedTeamId || undefined,
     };
 
+    this.notificationService.setInboxScope(query);
     if (this.from) query.from = this.toStartOfDayIso(this.from);
     if (this.to) query.to = this.toEndOfDayIso(this.to);
 
     const user = this.authService.getCurrentUser();
     const signature = String(user?._id || user?.email || 'current-user');
-    this.inboxRequest = this.notificationService
+    const request = this.notificationService
       .getNotifications(query, signature, forceRefresh)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (res) => {
+          if (version !== this.inboxVersion) return;
           this.notifications = Array.isArray(res?.notifications) ? res.notifications : [];
           this.unreadCount = Number(res?.unreadCount || 0);
           this.total = Number(res?.total || 0);
@@ -281,6 +311,10 @@ export class NotificationsComponent implements OnInit {
             ),
           );
           this.totalPages = Number(res?.totalPages || 1);
+          if (page > this.totalPages && page > 1) {
+            this.fetchNotifications(this.totalPages, true, background);
+            return;
+          }
           if (res.nextCursor) this.pageCursors.set(page + 1, res.nextCursor);
           this.loading = false;
           this.cdr.markForCheck();
@@ -289,18 +323,25 @@ export class NotificationsComponent implements OnInit {
           }
         },
         error: () => {
+          if (version !== this.inboxVersion) return;
           this.loadFailed = true;
           this.loading = false;
           this.cdr.markForCheck();
           this.statusMessage = 'Failed to load notifications.';
         },
       });
+    if (version === this.inboxVersion) this.inboxRequest = request;
+    else request.unsubscribe();
   }
 
   markAsRead(notification: AppNotification): void {
     if (notification.isRead) return;
+    const version = this.inboxVersion;
     const previousUnread = this.unreadCount;
-    notification.isRead = true;
+    this.notifications = this.notifications.map((item) =>
+      item._id === notification._id ? { ...item, isRead: true } : item,
+    );
+    this.filteredUnreadCount = Math.max(0, this.filteredUnreadCount - 1);
     this.unreadCount = Math.max(0, previousUnread - 1);
     this.notificationService
       .markAsRead(notification._id, {
@@ -311,8 +352,14 @@ export class NotificationsComponent implements OnInit {
       .subscribe({
         next: () => this.cdr.markForCheck(),
         error: () => {
-          notification.isRead = false;
-          this.unreadCount = previousUnread;
+          if (version !== this.inboxVersion) return;
+          if (this.notifications.some((item) => item._id === notification._id && item.isRead)) {
+            this.notifications = this.notifications.map((item) =>
+              item._id === notification._id ? { ...item, isRead: false } : item,
+            );
+            this.filteredUnreadCount++;
+            this.unreadCount++;
+          }
           this.statusMessage = 'Failed to mark notification as read.';
           this.cdr.markForCheck();
         },
@@ -333,12 +380,13 @@ export class NotificationsComponent implements OnInit {
     this.showDeleteDialog = false;
     this.pendingDeleteNotification = null;
 
-    const snapshot = [...this.notifications];
-    const previousTotal = this.total;
-    const previousUnread = this.unreadCount;
+    const version = this.inboxVersion;
     this.notifications = this.notifications.filter((item) => item._id !== notification._id);
     this.total = Math.max(0, this.total - 1);
-    if (!notification.isRead) this.unreadCount = Math.max(0, this.unreadCount - 1);
+    if (!notification.isRead) {
+      this.unreadCount = Math.max(0, this.unreadCount - 1);
+      this.filteredUnreadCount = Math.max(0, this.filteredUnreadCount - 1);
+    }
 
     this.notificationService
       .deleteNotification(notification._id, {
@@ -357,9 +405,19 @@ export class NotificationsComponent implements OnInit {
           }
         },
         error: () => {
-          this.notifications = snapshot;
-          this.total = previousTotal;
-          this.unreadCount = previousUnread;
+          if (version !== this.inboxVersion) return;
+          if (!this.notifications.some((item) => item._id === notification._id)) {
+            this.notifications = [...this.notifications, notification].sort(
+              (left, right) =>
+                Date.parse(right.createdAt) - Date.parse(left.createdAt) ||
+                right._id.localeCompare(left._id),
+            );
+            this.total++;
+            if (!notification.isRead) {
+              this.unreadCount++;
+              this.filteredUnreadCount++;
+            }
+          }
           this.statusMessage = 'Failed to delete notification.';
           this.cdr.markForCheck();
         },

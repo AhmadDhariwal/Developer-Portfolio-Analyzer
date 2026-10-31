@@ -1,5 +1,101 @@
 # Notification production finalization
 
+## Current Notifications-only acceptance
+
+Source: existing `task/notifications` at `7d56a1f61dcb4d19b75292b25f4039e74d795c27`; PR target not applicable. The initial working tree and index were clean. This acceptance preserves the committed implementation, tests and evidence, plus concurrent notification UI edits. No Support controller, service, model or ticket workflow was changed. No dependency, API contract, schema, live data, deployment, push or merge is included.
+
+**DEVELOPMENT COMPLETE — STABLE CANDIDATE — PRODUCTION GATES PENDING.** This section supersedes historical acceptance details below for the current task. Historical Help work and its recovery gate belong to the prior implementation and are outside this Notifications-only acceptance.
+
+### Actual browser Network measurements
+
+No screenshot attachment was available in this turn. The measurements use Chrome CDP `Network.requestWillBeSent`, actual initiator stacks, freshly built production bundles, real protected notification routes and disposable Mongo. Unrelated modules/providers use synthetic fixtures. Raw Authorization values, JWTs and notification bodies are excluded from the retained Network trace.
+
+| Controlled scenario                       | Before inbox GETs | After inbox GETs |
+| ----------------------------------------- | ----------------: | ---------------: |
+| Initial notification page                 |                 4 |                1 |
+| Mark one notification read                |                 2 |                1 |
+| Five persisted producer events            |                 2 |                1 |
+| Reopen preview twice within cache TTL     |                 0 |                0 |
+| Initial notification page in a second tab |                 4 |                1 |
+| SSE connections per tab                   |                 1 |                1 |
+
+Evidence: `frontend/verification/notifications/network-before.json` and `network-after.json`, including bundle-index hashes, per-tab counts and sanitized compiled-script initiator stacks. Before optimization, the two `limit=5` requests originated from navbar preview loading/stream refresh; the two `limit=10` requests originated from the feed's organization-load/stream paths. Additional mutation callback refreshes overlapped invalidations. SSE itself was already single-connection; it was not the duplicated transport.
+
+### Final architecture and data flow
+
+```mermaid
+flowchart LR
+  P[Existing authorized producer] --> T[Mongo source + notice + receipt + revision transaction]
+  T --> I[Durable recipient inbox]
+  T --> S[Worker Change Stream + bounded reconciliation]
+  S --> F[One Bearer Fetch SSE per authenticated app tab]
+  F --> B[Revision-aware one-second invalidation batch]
+  B --> Q[One shared in-flight request per active query]
+  Q --> C[Identity-fenced bounded memory cache]
+  C --> V[Visible feed and shared navbar summary]
+  M[Successful local mutation] --> V
+  M --> B
+```
+
+Navbar and default feed now use the same ten-record first-page query. The navbar displays five records from shared state; it does not fetch its own preview on every feed update. A scoped feed cannot supply a global bell count, so a separate global request remains necessary in that case. Filtered unscoped feeds publish the global unread count while their preview is fetched only when needed.
+
+Invalidations are shared and coalesced for one second before caches are cleared. An active query refetches only its bounded page, not the full inbox. Existing in-flight reads finish before a newer invalidation is reconciled. Duplicate/older SSE revisions and the connected revision already represented by HTTP are ignored. Same-query concurrent requests share one observable; local read state updates immediately without mutating cached objects. Mutation callbacks no longer issue redundant refresh requests. Healthy streams use five-minute reconciliation; unavailable streams retain sixty-second fallback checks and eight bounded reconnect retries with jitter/Retry-After. Logout/session changes clear state and reject stale GET/mutation responses. A late 401 from an old stream cannot log out a newer session.
+
+Inbox startup no longer waits for organization loading or refetches when that request finishes. Feed fixes include complete organization/team filter reset, global/filtered unread rollback, preserved bounded mark-all messages during background refresh, and fallback to an existing page after the last rows are deleted. Obsolete fallback requests are canceled. Failed optimistic reads/deletions undo only their own operation; query/summary versions prevent late failures from replacing newer server state. Navbar mark-all failures also respect a newer summary. The live-status badge is tied to the actual SSE connection signal.
+
+### Producer and recipient verification
+
+The existing non-Support producer contracts were re-read against the preserved matrix and navigation allowlist; no producer was added, removed or refactored:
+
+| Source                      | Verified trigger, recipient and destination                                                                                                                                                                                  |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Account/Profile, six events | Successful changed settings, password update/reset, active career selection, avatar exchange and visibility save; current owner; Profile or Career Sprint as appropriate. Password notices remain mandatory security events. |
+| Resume, two events          | Committed upload and persisted deterministic analysis; resume owner; Resume Analyzer. Optional AI cannot suppress deterministic completion.                                                                                  |
+| GitHub                      | Successful non-stale/non-fallback saved analysis; analysis owner; GitHub Analyzer.                                                                                                                                           |
+| Skill Gap                   | Persisted non-preview analysis with at least three gaps; owner and preference gate; Skill Gap.                                                                                                                               |
+| Recommendations             | Explicit saved snapshot; owner and recommendation preference; Recommendations.                                                                                                                                               |
+| Career Sprint, two events   | Real task-completion transition or eligible streak restore; sprint owner; Career Sprint. Repeated same state remains a no-op.                                                                                                |
+| Weekly Reports, two events  | Committed report and recorded unconfirmed email outcome; report owner and weekly preference; Weekly Reports. No new email pipeline is introduced.                                                                            |
+| Dashboard                   | Authorized low-readiness projection, daily dedupe; current owner; Dashboard.                                                                                                                                                 |
+| Public Portfolio            | Successful publication/settings/reference commit; owner; Portfolio.                                                                                                                                                          |
+
+Stable receipts, source transaction rollback, deleted-event tombstones, preference suppression, current recipient scope and mandatory security notices retain their existing tested behavior. Modules with no existing producer are not represented as newly implemented workflows. Support contracts are preserved and excluded from this task.
+
+### MongoDB, Redis, SSE, privacy and scalability
+
+Mongo remains authoritative for inbox records, receipts, revisions, request windows and shared stream leases. Snapshot feed/count/cursor reads, account/session fences, membership filtering, bounded bulk operations, existing cursor indexes and account-deletion cleanup are unchanged. Redis remains optional acceleration; no new dependency or Redis correctness path was added. The committed disposable two-worker, process-restart, Mongo interruption, Redis independence, expiry/revocation, IDOR and deletion evidence is retained and reused because the underlying production paths are unchanged.
+
+Existing stream bounds remain six/account, 1,000/fleet, 500/worker, sixty-second leases, bounded reconciliation batches and 16 KiB buffering. These are configured ceilings, not verified deployment capacity. Protected requests still enforce Mongo quotas. One-second batching is an upper bound for automatic refresh frequency per active query; user actions and scoped global-count reads remain distinct necessary requests.
+
+Fetch SSE uses Bearer headers, no URL token, no-store semantics, session/expiry checks, abort/reader cleanup and monotonically increasing revisions. Caches remain in memory, limited to fifty entries with a fifteen-second TTL and identity/session fencing. Internal destinations are allowlisted and Angular interpolation retains escaping.
+
+A narrow shared logging fix now strips query strings from notification request and audit route fields, including mixed-case, trailing-slash and mounted-router paths. This prevents private search terms and rejected URL credentials from entering those log fields. Other modules' route representation is unchanged. Structured audit payload masking remains in place. Nine focused tests cover this boundary.
+
+### Verification and exact inventory
+
+See `acceptance-results.json` for current commands, results, exact task-owned changes, concurrent UI paths, retained evidence hashes and cleanup inventory. The existing `integration-results.json`, `governance-regression.json` and `finalization.json` remain historical reusable evidence; they were not overwritten. Fresh checks include the focused notification/navbar/component tests, logging security tests, TypeScript, production build, CDP Network comparison, real-route browser workflows, formatting and whitespace validation. No unrelated full suite or load simulation was repeated.
+
+The initial UI run exceeded its five-second bulk-feed expectation. A traced rerun confirmed the durable delete and correct cross-tab reconciliation; the harness now waits for the actual successful bulk response before measuring feed reconciliation. That rerun passed all functional scenarios, then exceeded the screenshot raster timeout. The two-tab harness now explicitly foregrounds the tab before native actions; both the click and response wait have rejection handlers. Screenshot capture disables animations, scrolls instantly to the document top and has a separate artifact-render allowance; product request, transaction and security deadlines remain unchanged. The final foreground-tab run passed all five workflow/theme groups with zero runtime errors and four retained screenshots.
+
+### Completed local verification
+
+- **34 frontend tests across five focused files passed**, including concurrent read/delete rollback, stale query/summary protection, delayed organization loading, request sharing, session switching, SSE parsing/retry/authentication, navigation and dialog focus.
+- **Nine backend logging security tests passed.** TypeScript, the production build, backend syntax, explicit-path formatting and Git whitespace checks passed. The only build warning is the existing landing-page stylesheet budget overage.
+- The final CDP Network capture confirms **4 → 1** initial inbox GETs and **2 → 1** mutation/burst reconciliation GETs. Each tab retains exactly one SSE connection. Preview reopening adds no request within the cache TTL.
+- The final real-route/disposable-Mongo browser run passed feed/bell synchronization, confirmed bulk deletion, focus/Escape, active-tab synchronization, search, empty/error/retry states, and desktop/mobile light/dark contrast/overflow. Background browser rendering is not an instant-update guarantee; each tab is activated before its visible state is asserted.
+- Existing committed backend producer, two-worker/restart/recovery, Mongo/Redis, scope/privacy and account-deletion evidence was reused. Production producer/governance/model/route files are unchanged from the authorized source; only notification-specific log-path sanitization changed shared backend code.
+- Exact task-owned changes, preserved concurrent UI files, evidence hashes, and every removed temporary file/directory are retained in [acceptance-results.json](acceptance-results.json). Runtime source, tests, final screenshots and prior structured evidence were preserved. No source files were moved or deleted. Only task-created logs/caches/disposable database files were removed.
+
+### Deployment prerequisites
+
+Ensure proxy/access logs also omit notification query strings. Validate the approved additive indexes/query plans on the real transaction-capable Mongo topology; deployment-equivalent proxy/CORS/Authorization/buffering/idle-timeout behavior; sustained agreed multi-instance/tab load, failover and soak; metrics/quotas/backpressure; and operational email-provider receipt reconciliation. Retention and archival require separately approved policies. No production migration, provider send or rollout was performed. The existing landing-page stylesheet budget warning is unrelated to this task.
+
+---
+
+## Retained prior implementation record
+
+The following record documents the earlier implementation and its original source baseline. It is preserved as historical evidence; it does not expand this task into Help & Support work.
+
 Date: 31 October 2026. Branch: `task/notifications`. Source: `release1` / `2254f090c6f1c8563ad2d7149ab081eeec09fc4c`. PR target: not applicable. No commit, push, merge, deployment, live-provider request or production database migration was performed.
 
 **DEVELOPMENT COMPLETE — STABLE CANDIDATE — PRODUCTION GATES PENDING**

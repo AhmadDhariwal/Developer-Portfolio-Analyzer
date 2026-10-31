@@ -1,0 +1,121 @@
+{
+  "synthetic": true,
+  "productionDataUsed": false,
+  "checks": [
+    "navbar/page mark-read synchronization PASS",
+    "bounded bulk delete confirmation, keyboard focus, Escape and second-tab synchronization PASS",
+    "real bearer SSE and multi-tab production PASS",
+    "search, empty state, explicit error and retry PASS",
+    "desktop/mobile light/dark and overflow PASS"
+  ],
+  "screenshots": [
+    "acceptance-notifications-1440-dark.png",
+    "acceptance-notifications-1440-light.png",
+    "acceptance-notifications-390-dark.png",
+    "acceptance-notifications-390-light.png"
+  ],
+  "errors": [],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/api/notifications?limit=10&page=1",
+      "status": 200,
+      "returned": 3,
+      "unreadCount": 3,
+      "revision": 3
+    },
+    {
+      "method": "PUT",
+      "path": "/api/notifications/6ae6323dce7bfae1e22d0fcb/read",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications?limit=10&page=1",
+      "status": 200,
+      "returned": 3,
+      "unreadCount": 2,
+      "revision": 4
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications?limit=10&page=1",
+      "status": 200,
+      "returned": 3,
+      "unreadCount": 2,
+      "revision": 4
+    },
+    {
+      "method": "POST",
+      "path": "/api/notifications/bulk-delete",
+      "status": 200,
+      "deletedCount": 2
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications?limit=10&page=1",
+      "status": 200,
+      "returned": 1,
+      "unreadCount": 1,
+      "revision": 5
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications?limit=10&page=1",
+      "status": 200,
+      "returned": 1,
+      "unreadCount": 1,
+      "revision": 5
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications?limit=10&page=1",
+      "status": 200,
+      "returned": 2,
+      "unreadCount": 2,
+      "revision": 6
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications?limit=10&page=1",
+      "status": 200,
+      "returned": 2,
+      "unreadCount": 2,
+      "revision": 6
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications?limit=10&page=1&search=Live+verification",
+      "status": 200,
+      "returned": 1,
+      "unreadCount": 2,
+      "revision": 6
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications?limit=10&page=1&search=unmatched-synthetic-query",
+      "status": 200,
+      "returned": 0,
+      "unreadCount": 2,
+      "revision": 6
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications?limit=10&page=1",
+      "status": 503
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications?limit=10&page=1",
+      "status": 200,
+      "returned": 2,
+      "unreadCount": 2,
+      "revision": 6
+    }
+  ],
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 93,
+    "productionDataUsed": false
+  }
+}

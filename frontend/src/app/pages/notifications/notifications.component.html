@@ -1,67 +1,244 @@
-<div class="page">
+<div class="page notifications-page" [attr.aria-busy]="loading">
+  <!-- ════════════════════════════════════════════
+       A. COMPACT HERO HEADER
+       ════════════════════════════════════════════ -->
   <section class="page-hero card">
     <div class="page-hero__content">
-      <div>
+      <div class="hero-text-block">
+        <span class="eyebrow">Activity & Alerts</span>
         <h2>Notifications & Activities</h2>
         <p>
           Track account activity, resume updates, GitHub events, and your organization alerts in one
           place. Personal notifications stay private.
         </p>
       </div>
+
       <div class="hero-actions">
-        <button class="ghost-action" (click)="fetchNotifications(1, true)" [disabled]="loading">
+        <button
+          class="ghost-action"
+          type="button"
+          (click)="fetchNotifications(1, true)"
+          [disabled]="loading"
+        >
+          <svg
+            class="btn-icon"
+            [class.spin]="loading"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
           {{ loading ? 'Refreshing...' : 'Refresh' }}
         </button>
         <button
           class="primary-action"
+          type="button"
           (click)="markAllAsRead()"
           [disabled]="markingAllRead || unreadCount === 0"
         >
+          <svg
+            class="btn-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
           {{ markingAllRead ? 'Marking...' : 'Mark All as Read' }}
         </button>
       </div>
     </div>
 
+    <!-- ── Compact Telemetry KPI Strip ───────────────────────── -->
     <div class="hero-stats">
-      <div class="stat-card">
-        <span class="stat-card__label">Unread</span>
+      <div class="stat-card" [class.stat-card--attention]="unreadCount > 0">
+        <div class="stat-card__top">
+          <span class="stat-card__label">Unread</span>
+          <span class="stat-card__icon stat-card__icon--amber">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+          </span>
+        </div>
         <strong>{{ unreadCount }}</strong>
         <small>Needs attention</small>
       </div>
+
       <div class="stat-card">
-        <span class="stat-card__label">Total</span>
+        <div class="stat-card__top">
+          <span class="stat-card__label">Total</span>
+          <span class="stat-card__icon stat-card__icon--indigo">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
+              <path
+                d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"
+              ></path>
+            </svg>
+          </span>
+        </div>
         <strong>{{ total }}</strong>
         <small>Loaded notifications</small>
       </div>
+
       <div class="stat-card">
-        <span class="stat-card__label">Read Rate</span>
+        <div class="stat-card__top">
+          <span class="stat-card__label">Read Rate</span>
+          <span class="stat-card__icon stat-card__icon--emerald">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </span>
+        </div>
         <strong>{{ getReadRate() }}%</strong>
         <small>Inbox progress</small>
       </div>
+
       <div class="stat-card">
-        <span class="stat-card__label">Active Filters</span>
+        <div class="stat-card__top">
+          <span class="stat-card__label">Active Filters</span>
+          <span class="stat-card__icon stat-card__icon--slate">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            </svg>
+          </span>
+        </div>
         <strong>{{ getActiveFiltersCount() }}</strong>
         <small>Current narrowing</small>
       </div>
     </div>
   </section>
 
+  <!-- ════════════════════════════════════════════
+       B. STREAMLINED COMPACT FILTERS PANEL
+       ════════════════════════════════════════════ -->
   <section class="filters card">
     <div class="filters__header">
-      <div>
+      <div class="filters-header-text">
         <h3>Filter Notifications</h3>
         <p>Search by message, narrow your inbox by type, organization, team, or date range.</p>
       </div>
       <div class="filters__actions">
-        <button class="primary-action" (click)="applyFilters()">Apply Filters</button>
-        <button class="ghost-action" (click)="resetFilters()">Reset</button>
+        <button class="primary-action" type="button" (click)="applyFilters()">Apply Filters</button>
+        <button class="ghost-action" type="button" (click)="resetFilters()">Reset</button>
       </div>
     </div>
 
+    <!-- Quick Category Filter Pills -->
+    <div class="quick-filters-row" role="tablist" aria-label="Quick category filter">
+      <button
+        type="button"
+        class="quick-pill"
+        [class.quick-pill--active]="isQuickFilterActive('all')"
+        (click)="setQuickFilter('all')"
+      >
+        All
+      </button>
+      <button
+        type="button"
+        class="quick-pill"
+        [class.quick-pill--active]="isQuickFilterActive('unread')"
+        (click)="setQuickFilter('unread')"
+      >
+        <span class="quick-pill__dot"></span>
+        Unread
+      </button>
+      <button
+        type="button"
+        class="quick-pill"
+        [class.quick-pill--active]="isQuickFilterActive('github_update')"
+        (click)="setQuickFilter('github_update')"
+      >
+        GitHub
+      </button>
+      <button
+        type="button"
+        class="quick-pill"
+        [class.quick-pill--active]="isQuickFilterActive('resume_upload')"
+        (click)="setQuickFilter('resume_upload')"
+      >
+        Resumes
+      </button>
+      <button
+        type="button"
+        class="quick-pill"
+        [class.quick-pill--active]="isQuickFilterActive('low_score')"
+        (click)="setQuickFilter('low_score')"
+      >
+        Scores & Alerts
+      </button>
+      <button
+        type="button"
+        class="quick-pill"
+        [class.quick-pill--active]="isQuickFilterActive('career_update')"
+        (click)="setQuickFilter('career_update')"
+      >
+        Career
+      </button>
+      <button
+        type="button"
+        class="quick-pill"
+        [class.quick-pill--active]="isQuickFilterActive('system')"
+        (click)="setQuickFilter('system')"
+      >
+        System
+      </button>
+    </div>
+
+    <!-- 1-Row Compact Filter Grid -->
     <div class="filters-grid">
-      <label class="field">
+      <label class="field field--search">
         <span>Search</span>
-        <input [(ngModel)]="search" placeholder="Search title or description" />
+        <div class="input-wrap">
+          <svg
+            class="field-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input
+            [(ngModel)]="search"
+            placeholder="Search title or description"
+            (keyup.enter)="applyFilters()"
+          />
+        </div>
       </label>
 
       <label class="field">
@@ -102,18 +279,36 @@
           <option *ngFor="let team of teams" [value]="team._id">{{ team.name }}</option>
         </select>
       </label>
-    </div>
 
-    <label class="checkbox">
-      <input type="checkbox" [(ngModel)]="unreadOnly" />
-      <span>Show unread notifications only</span>
-    </label>
+      <div class="field field--checkbox">
+        <label class="checkbox">
+          <input type="checkbox" [(ngModel)]="unreadOnly" />
+          <span>Unread only</span>
+        </label>
+      </div>
+    </div>
   </section>
 
+  <!-- ── Operational Status Banner ───────────────────────── -->
   <div class="status" role="status" aria-live="polite" *ngIf="statusMessage">
-    {{ statusMessage }}
+    <svg
+      class="status-icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="16" x2="12" y2="12"></line>
+      <line x1="12" y1="8" x2="12.01" y2="8"></line>
+    </svg>
+    <span>{{ statusMessage }}</span>
   </div>
 
+  <!-- ════════════════════════════════════════════
+       C. INBOX FEED CONTAINER
+       ════════════════════════════════════════════ -->
   <section class="card inbox-card" [attr.aria-busy]="loading">
     <app-notification-bulk-actions
       [selectedCount]="selectedIds.size"
@@ -121,10 +316,11 @@
       (deleteRequested)="showBulkDeleteDialog = true"
       (selectionCleared)="clearSelection()"
     ></app-notification-bulk-actions>
+
     <div class="table-head">
-      <div>
+      <div class="table-head__info">
         <strong>Notification Feed</strong>
-        <span>{{ unreadCount }} unread • {{ total }} total</span>
+        <span class="badge-total">{{ unreadCount }} unread • {{ total }} total</span>
       </div>
       <div class="pager pager--top">
         <button [disabled]="page <= 1" (click)="fetchNotifications(page - 1)">Previous</button>
@@ -133,6 +329,7 @@
       </div>
     </div>
 
+    <!-- ── Loading Skeleton Shimmer ───────────────────────── -->
     <div *ngIf="loading && notifications.length === 0" class="state state--loading">
       <div class="skeleton-item" *ngFor="let _ of [1, 2, 3]">
         <div class="skeleton-item__icon"></div>
@@ -144,6 +341,7 @@
       </div>
     </div>
 
+    <!-- ── Notification Feed Items ───────────────────────── -->
     <div class="notification-list" *ngIf="!loadFailed && notifications.length > 0">
       <article
         class="notification-item"
@@ -154,6 +352,7 @@
         [class.notification-item--info]="getNotificationTone(notification) === 'info'"
         [class.notification-item--purple]="getNotificationTone(notification) === 'purple'"
       >
+        <!-- Category Icon Box -->
         <div
           class="notification-icon"
           [class.notification-icon--warning]="getNotificationTone(notification) === 'warning'"
@@ -170,6 +369,7 @@
             fill="none"
             stroke="currentColor"
             stroke-width="2"
+            aria-hidden="true"
           >
             <path d="M20 21a8 8 0 0 0-16 0"></path>
             <circle cx="12" cy="7" r="4"></circle>
@@ -183,6 +383,7 @@
             fill="none"
             stroke="currentColor"
             stroke-width="2"
+            aria-hidden="true"
           >
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
             <polyline points="14 2 14 8 20 8"></polyline>
@@ -196,6 +397,7 @@
             fill="none"
             stroke="currentColor"
             stroke-width="2"
+            aria-hidden="true"
           >
             <path
               d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"
@@ -210,6 +412,7 @@
             fill="none"
             stroke="currentColor"
             stroke-width="2"
+            aria-hidden="true"
           >
             <path
               d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
@@ -226,6 +429,7 @@
             fill="none"
             stroke="currentColor"
             stroke-width="2"
+            aria-hidden="true"
           >
             <path d="m12 3-1.9 5.1L5 10l5.1 1.9L12 17l1.9-5.1L19 10l-5.1-1.9L12 3z"></path>
           </svg>
@@ -238,6 +442,7 @@
             fill="none"
             stroke="currentColor"
             stroke-width="2"
+            aria-hidden="true"
           >
             <path d="M10.268 21a2 2 0 0 0 3.464 0"></path>
             <path
@@ -246,10 +451,11 @@
           </svg>
         </div>
 
+        <!-- Notification Main Text Body -->
         <button type="button" class="notification-main" (click)="markAsRead(notification)">
           <div class="notification-topline">
             <div class="notification-title-wrap">
-              <div class="notification-title">{{ notification.title }}</div>
+              <span class="notification-title">{{ notification.title }}</span>
               <span
                 class="type-pill"
                 [class.type-pill--warning]="getNotificationTone(notification) === 'warning'"
@@ -260,64 +466,109 @@
                 {{ getNotificationTypeLabel(notification) }}
               </span>
             </div>
-            <span class="unread-dot" *ngIf="!notification.isRead"></span>
+            <span
+              class="unread-dot"
+              *ngIf="!notification.isRead"
+              title="Unread notification"
+            ></span>
           </div>
 
           <div class="notification-message">{{ notification.message }}</div>
 
           <div class="notification-meta">
-            <span>{{ getRelativeTime(notification.createdAt) }}</span>
-            <span>{{ formatTime(notification.createdAt) }}</span>
-            <span class="pill" [class.unread-pill]="!notification.isRead">{{
-              notification.isRead ? 'Read' : 'Unread'
-            }}</span>
+            <span class="meta-time">
+              <svg
+                class="meta-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              {{ getRelativeTime(notification.createdAt) }}
+            </span>
+            <span class="meta-separator">•</span>
+            <span class="meta-date">{{ formatTime(notification.createdAt) }}</span>
+            <span class="pill" [class.unread-pill]="!notification.isRead">
+              {{ notification.isRead ? 'Read' : 'Unread' }}
+            </span>
           </div>
         </button>
 
+        <!-- Right Side Quick Actions -->
         <div class="notification-actions">
-          <label
-            ><input
+          <label class="select-control">
+            <input
               type="checkbox"
               [checked]="selectedIds.has(notification._id)"
               [attr.aria-label]="'Select ' + notification.title"
               (change)="toggleSelection(notification)"
             />
-            Select</label
+            <span>Select</span>
+          </label>
+          <button
+            class="ghost-action ghost-action--sm"
+            type="button"
+            (click)="openNotification(notification)"
           >
-          <button class="ghost-action" type="button" (click)="openNotification(notification)">
             Open
           </button>
           <button
-            class="ghost-action"
+            class="ghost-action ghost-action--sm"
+            type="button"
             *ngIf="!notification.isRead"
             (click)="markAsRead(notification)"
           >
             Mark Read
           </button>
-          <button class="ghost-action ghost-action--danger" (click)="askDelete(notification)">
+          <button
+            class="ghost-action ghost-action--sm ghost-action--danger"
+            type="button"
+            (click)="askDelete(notification)"
+          >
             Delete
           </button>
         </div>
       </article>
     </div>
 
-    <div *ngIf="!loading && loadFailed" class="state" role="alert">
+    <!-- ── Error State ───────────────────────── -->
+    <div *ngIf="!loading && loadFailed" class="state state--error" role="alert">
+      <div class="state-icon state-icon--error">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
       <h3>Notifications could not be loaded</h3>
       <p>Your saved notifications are preserved. Please try again.</p>
       <button class="ghost-action" type="button" (click)="fetchNotifications(page, true)">
         Try again
       </button>
     </div>
+
+    <!-- ── Empty State ───────────────────────── -->
     <div *ngIf="!loading && !loadFailed && notifications.length === 0" class="state state--empty">
       <div class="state-icon">
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="26"
-          height="26"
+          width="24"
+          height="24"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
           stroke-width="1.8"
+          aria-hidden="true"
         >
           <path d="M10.268 21a2 2 0 0 0 3.464 0"></path>
           <path
@@ -332,6 +583,7 @@
       </p>
     </div>
 
+    <!-- ── Pagination Footer ───────────────────────── -->
     <div class="pager">
       <button [disabled]="page <= 1" (click)="fetchNotifications(page - 1)">Previous</button>
       <span>Page {{ page }} / {{ totalPages }}</span>
@@ -340,6 +592,9 @@
   </section>
 </div>
 
+<!-- ════════════════════════════════════════════
+     CONFIRMATION DIALOGS
+     ════════════════════════════════════════════ -->
 <app-notification-confirm-dialog
   [open]="showDeleteDialog"
   title="Delete this notification?"

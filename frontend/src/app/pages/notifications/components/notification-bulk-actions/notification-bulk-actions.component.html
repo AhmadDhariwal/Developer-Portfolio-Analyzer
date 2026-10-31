@@ -1,17 +1,40 @@
-<div class="bulk-actions" role="group" aria-label="Selected notification actions">
-  <span role="status">{{ selectedCount }} selected</span>
-  <button
-    type="button"
-    [disabled]="disabled || selectedCount === 0"
-    (click)="selectionCleared.emit()"
-  >
-    Clear selection
-  </button>
-  <button
-    type="button"
-    [disabled]="disabled || selectedCount === 0"
-    (click)="deleteRequested.emit()"
-  >
-    Delete selected
-  </button>
+<div
+  class="bulk-actions"
+  [class.bulk-actions--active]="selectedCount > 0"
+  role="group"
+  aria-label="Selected notification actions"
+>
+  <div class="bulk-info">
+    <span class="bulk-badge" role="status">
+      <svg
+        class="bulk-badge-icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+        aria-hidden="true"
+      >
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+      {{ selectedCount }} selected
+    </span>
+  </div>
+  <div class="bulk-buttons">
+    <button
+      type="button"
+      class="bulk-btn bulk-btn--clear"
+      [disabled]="disabled || selectedCount === 0"
+      (click)="selectionCleared.emit()"
+    >
+      Clear selection
+    </button>
+    <button
+      type="button"
+      class="bulk-btn bulk-btn--delete"
+      [disabled]="disabled || selectedCount === 0"
+      (click)="deleteRequested.emit()"
+    >
+      Delete selected
+    </button>
+  </div>
 </div>
