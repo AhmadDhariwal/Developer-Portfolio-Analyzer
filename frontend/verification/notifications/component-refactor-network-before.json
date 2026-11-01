@@ -1,0 +1,270 @@
+{
+  "synthetic": true,
+  "productionDataUsed": false,
+  "checks": [
+    "Real CDP request initiators, mutation/burst/reopen counts and two-tab SSE measured"
+  ],
+  "screenshots": [],
+  "errors": [],
+  "network": {
+    "mode": "before",
+    "bundleIndexSha256": "e82a42aa8b013ab753662f64ae59a02fb07f93c434ce1c93ca705951841917fc",
+    "sourceHead": "8b55e55e183f9d8698f1af39ec9a42a521852702",
+    "getCounts": {
+      "coldLoad": 1,
+      "markRead": 1,
+      "fiveEventBurst": 1,
+      "previewReopen": 0,
+      "secondTabColdLoad": 1
+    },
+    "streamConnectionsPerTab": [
+      1,
+      1
+    ],
+    "records": [
+      {
+        "tab": 1,
+        "phase": "cold-load",
+        "method": "GET",
+        "path": "/api/notifications?limit=10&page=1",
+        "initiator": "script",
+        "stack": [
+          {
+            "function": "",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 5
+          },
+          {
+            "function": "_trySubscribe",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 3
+          },
+          {
+            "function": "",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 3
+          },
+          {
+            "function": "Hr",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 3
+          },
+          {
+            "function": "subscribe",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 3
+          }
+        ]
+      },
+      {
+        "tab": 1,
+        "phase": "cold-load",
+        "method": "GET",
+        "path": "/api/notifications/stream",
+        "initiator": "script",
+        "stack": [
+          {
+            "function": "openStream",
+            "script": "/chunk-IHEMBO4H.js",
+            "line": 1
+          },
+          {
+            "function": "connectStream",
+            "script": "/chunk-IHEMBO4H.js",
+            "line": 1
+          },
+          {
+            "function": "ngOnInit",
+            "script": "/main-S6QONYIJ.js",
+            "line": 1
+          },
+          {
+            "function": "Rm",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 4
+          },
+          {
+            "function": "hb",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 4
+          }
+        ]
+      },
+      {
+        "tab": 1,
+        "phase": "mark-read",
+        "method": "PUT",
+        "path": "/api/notifications/6ae72a983b3fc24e7c3052ea/read",
+        "initiator": "script",
+        "stack": [
+          {
+            "function": "",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 5
+          },
+          {
+            "function": "_trySubscribe",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 3
+          },
+          {
+            "function": "",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 3
+          },
+          {
+            "function": "Hr",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 3
+          },
+          {
+            "function": "subscribe",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 3
+          }
+        ]
+      },
+      {
+        "tab": 1,
+        "phase": "mark-read",
+        "method": "GET",
+        "path": "/api/notifications?limit=10&page=1",
+        "initiator": "script",
+        "stack": [
+          {
+            "function": "",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 5
+          },
+          {
+            "function": "_trySubscribe",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 3
+          },
+          {
+            "function": "",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 3
+          },
+          {
+            "function": "Hr",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 3
+          },
+          {
+            "function": "subscribe",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 3
+          }
+        ]
+      },
+      {
+        "tab": 1,
+        "phase": "server-burst",
+        "method": "GET",
+        "path": "/api/notifications?limit=10&page=1",
+        "initiator": "script",
+        "stack": [
+          {
+            "function": "",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 5
+          },
+          {
+            "function": "_trySubscribe",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 3
+          },
+          {
+            "function": "",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 3
+          },
+          {
+            "function": "Hr",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 3
+          },
+          {
+            "function": "subscribe",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 3
+          }
+        ]
+      },
+      {
+        "tab": 2,
+        "phase": "second-tab",
+        "method": "GET",
+        "path": "/api/notifications?limit=10&page=1",
+        "initiator": "script",
+        "stack": [
+          {
+            "function": "",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 5
+          },
+          {
+            "function": "_trySubscribe",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 3
+          },
+          {
+            "function": "",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 3
+          },
+          {
+            "function": "Hr",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 3
+          },
+          {
+            "function": "subscribe",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 3
+          }
+        ]
+      },
+      {
+        "tab": 2,
+        "phase": "second-tab",
+        "method": "GET",
+        "path": "/api/notifications/stream",
+        "initiator": "script",
+        "stack": [
+          {
+            "function": "openStream",
+            "script": "/chunk-IHEMBO4H.js",
+            "line": 1
+          },
+          {
+            "function": "connectStream",
+            "script": "/chunk-IHEMBO4H.js",
+            "line": 1
+          },
+          {
+            "function": "ngOnInit",
+            "script": "/main-S6QONYIJ.js",
+            "line": 1
+          },
+          {
+            "function": "Rm",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 4
+          },
+          {
+            "function": "hb",
+            "script": "/chunk-BMWUW7F3.js",
+            "line": 4
+          }
+        ]
+      }
+    ]
+  },
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 95,
+    "productionDataUsed": false
+  }
+}

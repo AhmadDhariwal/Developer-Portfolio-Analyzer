@@ -15,7 +15,8 @@ Return ONLY valid JSON with this exact schema:
   "strengths": ["string", "string", "string"],
   "weakAreas": ["string", "string", "string"],
   "summary": "string",
-  "explanation": "string"
+  "explanation": "string",
+  "interviewTalkingPoints": ["string", "string", "string"]
 }
 
 Rules:
@@ -23,6 +24,7 @@ Rules:
 - weakAreas: 3-6 specific improvement areas grounded in weakAreaHints or missing signals.
 - summary: 1-2 sentences, recruiter-friendly, no hype, grounded in facts.
 - explanation: 1-2 sentences describing the deterministic score drivers without inventing numbers.
+- interviewTalkingPoints: 2-5 specific architecture, testing, or engineering tradeoff discussions grounded in the supplied original repositories and technologies.
 - Reject generic filler, placeholders, apologies, or content unrelated to this profile.
 - Activity represents sampled repository contributor history, not verified personal commits. Do not attribute it to the developer.
 - Missing or unsampled README, language, or activity data is unavailable evidence, not proof of absence.

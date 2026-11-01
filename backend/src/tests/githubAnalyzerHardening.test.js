@@ -15,7 +15,14 @@ const copy = (value) => (value == null ? value : structuredClone(value));
 const thenable = (value) => ({ lean: async () => copy(value) });
 
 const freshCounters = () => ({
-  github: { profile: 0, repositories: 0, languages: 0, contributors: 0, content: 0, commits: 0 },
+  github: {
+    profile: 0,
+    repositories: 0,
+    languages: 0,
+    contributors: 0,
+    content: 0,
+    commits: 0
+  },
   ai: 0,
   cache: { reads: 0, writes: 0 },
   persistence: {
@@ -83,12 +90,20 @@ const createHarness = () => {
       if (state.githubFailure && isFullRequest) {
         if (state.githubFailure === '404') {
           const error = new Error('remote missing');
-          error.response = { status: 404, data: { message: 'Not Found' }, headers: {} };
+          error.response = {
+            status: 404,
+            data: { message: 'Not Found' },
+            headers: {}
+          };
           throw error;
         }
         if (state.githubFailure === '429') {
           const error = new Error('rate limit');
-          error.response = { status: 429, data: { message: 'rate limit exceeded' }, headers: {} };
+          error.response = {
+            status: 429,
+            data: { message: 'rate limit exceeded' },
+            headers: {}
+          };
           throw error;
         }
         if (state.githubFailure === 'timeout') {
@@ -101,7 +116,13 @@ const createHarness = () => {
       if (/\/users\/[^/]+$/.test(url)) {
         const username = decodeURIComponent(url.split('/').pop());
         return {
-          data: { login: username, followers: 7, following: 3, public_repos: 10, bio: 'Developer' },
+          data: {
+            login: username,
+            followers: 7,
+            following: 3,
+            public_repos: 10,
+            bio: 'Developer'
+          },
           headers: {}
         };
       }
@@ -116,7 +137,10 @@ const createHarness = () => {
       }
       if (url.includes('/languages'))
         return {
-          data: state.languageOverride ?? { JavaScript: 7500, TypeScript: 2500 },
+          data: state.languageOverride ?? {
+            JavaScript: 7500,
+            TypeScript: 2500
+          },
           headers: {}
         };
       if (url.includes('/contributors'))
@@ -131,7 +155,10 @@ const createHarness = () => {
             ? '# Project\nDocumented application.'
             : '{"dependencies":{"react":"latest","express":"latest"}}';
         return {
-          data: { encoding: 'base64', content: Buffer.from(content).toString('base64') },
+          data: {
+            encoding: 'base64',
+            content: Buffer.from(content).toString('base64')
+          },
           headers: {}
         };
       }
@@ -143,6 +170,7 @@ const createHarness = () => {
   const aiService = {
     async runAIAnalysis(_prompt, fallback) {
       state.counters.ai += 1;
+      if (state.aiMode === 'hang') return new Promise(() => {});
       assert.ok(
         state.counters.cache.writes > 0,
         'deterministic analysis must be durable before AI'
@@ -174,7 +202,11 @@ const createHarness = () => {
           explanation:
             'Deterministic drivers emphasize repository quality, activity depth, and technology coverage.',
           scores: { healthScore: 999 },
-          githubHealthScore: 999
+          githubHealthScore: 999,
+          interviewTalkingPoints: [
+            'Explain the React application architecture and its tradeoffs',
+            'Discuss how backend API ownership is organized across repositories'
+          ]
         };
       }
       return {
@@ -265,7 +297,10 @@ const createHarness = () => {
 
   class Analysis {
     constructor(data) {
-      Object.assign(this, data, { githubAnalysisHistory: [], contributionActivity: [] });
+      Object.assign(this, data, {
+        githubAnalysisHistory: [],
+        contributionActivity: []
+      });
     }
     static findOne(query) {
       state.counters.persistence.analysisFinds += 1;
@@ -288,7 +323,10 @@ const createHarness = () => {
   const User = {
     async findByIdAndUpdate(id, update) {
       state.counters.persistence.userUpdates += 1;
-      state.users.set(String(id), { ...(state.users.get(String(id)) || {}), ...copy(update) });
+      state.users.set(String(id), {
+        ...(state.users.get(String(id)) || {}),
+        ...copy(update)
+      });
     },
     findById(id) {
       const row = state.users.get(String(id)) || null;
@@ -319,6 +357,7 @@ const createHarness = () => {
     },
     async setCacheJson() {},
     async acquireCacheLock(key, token) {
+      if (state.saveLockError) throw state.saveLockError;
       state.counters.locks.redisAcquire += 1;
       if (!state.redisHealthy) return null;
       if (state.redisLocks.has(key)) return false;
@@ -334,8 +373,12 @@ const createHarness = () => {
   const mocks = {
     axios,
     './aiservice': aiService,
-    '../prompts/githubPrompt': { getGitHubPrompt: () => 'sanitized deterministic prompt' },
-    './platformSettingsService': { getIntegrationSecretsSync: () => ({ githubEnabled: true }) },
+    '../prompts/githubPrompt': {
+      getGitHubPrompt: () => 'sanitized deterministic prompt'
+    },
+    './platformSettingsService': {
+      getIntegrationSecretsSync: () => ({ githubEnabled: true })
+    },
     './redisCacheService': redisService,
     '../services/redisCacheService': redisService,
     '../models/githubAnalysisCache': GitHubAnalysisCache,
@@ -432,7 +475,11 @@ const invoke = async (
   const req = {
     body: { username, ...(forceRefresh ? { forceRefresh: true } : {}) },
     query: {},
-    user: { _id: userId, githubUsername: savedUsername, activeGithubUsername: savedUsername }
+    user: {
+      _id: userId,
+      githubUsername: savedUsername,
+      activeGithubUsername: savedUsername
+    }
   };
   await handler(req, response);
   return response;
@@ -523,7 +570,10 @@ const runCrossInstanceSave = async (redisHealthy) => {
   ];
   const responses = await Promise.all(
     handlers.map(({ analyzeAndSaveGitHubProfile }) =>
-      invoke(analyzeAndSaveGitHubProfile, { username: 'shared', savedUsername: 'shared' })
+      invoke(analyzeAndSaveGitHubProfile, {
+        username: 'shared',
+        savedUsername: 'shared'
+      })
     )
   );
   assert.ok(responses.every((response) => response.statusCode === 200));
@@ -565,7 +615,11 @@ test('repository failure preserves old rows and prevents later commits', async (
   const harness = createHarness();
   const { state } = harness;
   const { controller } = harness.loadInstance();
-  state.repositories.set('user-1:legacy', { ownerId: 'user-1', repoName: 'legacy', stars: 99 });
+  state.repositories.set('user-1:legacy', {
+    ownerId: 'user-1',
+    repoName: 'legacy',
+    stars: 99
+  });
   state.repositoryFailure = true;
   const response = await invoke(controller.analyzeAndSaveGitHubProfile, {
     username: 'failure',
@@ -620,13 +674,18 @@ test('failed refresh preserves previous valid cache and skips unsafe persistence
   const writesBefore = state.counters.cache.writes;
 
   state.githubFailure = 'timeout';
-  const preserved = await service.analyzeGitHubProfile('sticky', { forceRefresh: true });
+  const preserved = await service.analyzeGitHubProfile('sticky', {
+    forceRefresh: true
+  });
   assert.equal(preserved.cache.source, 'stale-cache');
   assert.equal(preserved.githubHealthScore, health);
   assert.match(preserved.warning || '', /refresh failed|cached analysis/i);
   assert.equal(state.counters.cache.writes, writesBefore);
 
-  state.users.set('user-1', { githubUsername: 'sticky', activeGithubUsername: 'sticky' });
+  state.users.set('user-1', {
+    githubUsername: 'sticky',
+    activeGithubUsername: 'sticky'
+  });
   state.analyses.set('user-1', {
     userId: 'user-1',
     githubScore: health,
@@ -658,11 +717,15 @@ test('username validation returns 400/413 and skill-gap invalidation escapes saf
     (error) => error.status === 413
   );
 
-  const invalid = await invoke(controller.analyzeGitHub, { username: 'not valid!' });
+  const invalid = await invoke(controller.analyzeGitHub, {
+    username: 'not valid!'
+  });
   assert.equal(invalid.statusCode, 400);
   assert.equal(state.counters.cache.writes, 0);
 
-  const oversized = await invoke(controller.analyzeGitHub, { username: 'x'.repeat(250) });
+  const oversized = await invoke(controller.analyzeGitHub, {
+    username: 'x'.repeat(250)
+  });
   assert.equal(oversized.statusCode, 413);
 
   const source = require('node:fs').readFileSync(servicePath, 'utf8');
@@ -728,7 +791,9 @@ test('GitHub optional and full failures are sanitized and never cached', async (
       console.error = (...args) => harness.state.logs.push(args.join(' '));
       let response;
       try {
-        response = await invoke(controller.analyzeGitHub, { username: `full-${failure}` });
+        response = await invoke(controller.analyzeGitHub, {
+          username: `full-${failure}`
+        });
       } finally {
         console.error = originalError;
       }
@@ -752,7 +817,9 @@ test('preview mode is side-effect free and save rejects mismatched usernames', a
   const harness = createHarness();
   const { state } = harness;
   const { controller } = harness.loadInstance();
-  const preview = await invoke(controller.analyzeGitHub, { username: 'preview' });
+  const preview = await invoke(controller.analyzeGitHub, {
+    username: 'preview'
+  });
   assert.equal(preview.statusCode, 200);
   assert.deepEqual(state.counters.persistence, freshCounters().persistence);
   assert.equal(state.counters.notifications, 0);
@@ -925,7 +992,11 @@ test('canonical active identity takes priority and rejects preview overwrite', a
     {
       body: {},
       query: {},
-      user: { _id: 'canonical', activeGithubUsername: 'active', githubUsername: 'legacy' }
+      user: {
+        _id: 'canonical',
+        activeGithubUsername: 'active',
+        githubUsername: 'legacy'
+      }
     },
     res
   );
@@ -938,7 +1009,11 @@ test('canonical active identity takes priority and rejects preview overwrite', a
     {
       body: { forceRefresh: true },
       query: {},
-      user: { _id: 'canonical', activeGithubUsername: 'active', githubUsername: 'legacy' }
+      user: {
+        _id: 'canonical',
+        activeGithubUsername: 'active',
+        githubUsername: 'legacy'
+      }
     },
     res
   );
@@ -993,7 +1068,9 @@ test('mostly forked accounts score original work only', async () => {
       forks_count: 200
     }))
   ];
-  const second = await service.analyzeGitHubProfile('mixed', { forceRefresh: true });
+  const second = await service.analyzeGitHubProfile('mixed', {
+    forceRefresh: true
+  });
   assert.equal(first.githubHealthScore, second.githubHealthScore);
   assert.equal(second.repoCount, 9);
   assert.equal(second.scoring.evidence.facts.forkRepoCount, 8);
@@ -1015,4 +1092,87 @@ test('repository pagination includes later pages without duplicate influence', a
   assert.equal(result.repoCount, 101);
   assert.equal(h.state.counters.github.repositories, 2);
   assertScores(result);
+});
+
+const waitForRefresh = async (service) => {
+  const deadline = Date.now() + 10000;
+  while (service.getGitHubRefreshState().running && Date.now() < deadline) await delay(10);
+  assert.equal(service.getGitHubRefreshState().running, 0);
+};
+
+test('expired cache returns immediately and revalidates once across instances with AI enrichment', async () => {
+  const h = createHarness();
+  const first = h.loadInstance();
+  const initial = await first.service.analyzeGitHubProfile('swr');
+  h.state.cache.get('swr:github-v2').expiresAt = new Date(0);
+  first.service.clearGitHubAnalysisMemoryCache();
+  const second = h.loadInstance();
+  h.state.delays.github = 20;
+  h.state.aiMode = 'score-pollution';
+  const before = h.state.counters.cache.writes;
+  const results = await Promise.all([
+    first.service.analyzeGitHubProfile('swr'),
+    second.service.analyzeGitHubProfile('swr')
+  ]);
+  assert.ok(
+    results.every((result) => result.cache.stale && result.fetchedAt === initial.fetchedAt)
+  );
+  assert.equal(h.state.counters.cache.writes, before, 'stale response must not wait for refresh');
+  await Promise.all([waitForRefresh(first.service), waitForRefresh(second.service)]);
+  assert.equal(h.state.counters.github.profile, 2);
+  assert.equal(h.state.counters.ai, 2);
+  const refreshed = await second.service.analyzeGitHubProfile('swr');
+  assert.equal(refreshed.cache.stale, false);
+  assert.match(refreshed.summary, /full-stack delivery/);
+  assert.match(refreshed.recruiterInsights.interviewTalkingPoints[0], /React application/);
+  assert.equal(refreshed.analysisHistory.length, 2);
+  assert.notEqual(refreshed.githubHealthScore, 999);
+  assert.ok(h.state.analysisCacheDeletes.length > 0);
+});
+
+test('failed SWR preserves the durable snapshot and releases the distributed lock', async () => {
+  const h = createHarness();
+  const { service } = h.loadInstance();
+  await service.analyzeGitHubProfile('swr-failed');
+  const cached = h.state.cache.get('swr-failed:github-v2');
+  cached.expiresAt = new Date(0);
+  const original = copy(cached);
+  service.clearGitHubAnalysisMemoryCache();
+  h.state.githubFailure = '429';
+  const stale = await service.analyzeGitHubProfile('swr-failed');
+  assert.equal(stale.cache.stale, true);
+  await waitForRefresh(service);
+  assert.deepEqual(h.state.cache.get('swr-failed:github-v2'), original);
+  assert.equal(h.state.redisLocks.size, 0);
+});
+
+test('an unresponsive AI provider is bounded by the real hard timeout', async () => {
+  const h = createHarness();
+  h.state.aiMode = 'hang';
+  const { service } = h.loadInstance();
+  const start = performance.now();
+  const result = await service.analyzeGitHubProfile('hung-ai');
+  assert.ok(performance.now() - start < 6500);
+  assert.match(result.summary, /Rule-based/);
+  assert.ok(result.recruiterInsights.interviewTalkingPoints.length);
+  assertScores(result);
+});
+
+test('client errors scrub filesystem paths, classic PATs and URL credentials', async () => {
+  for (const message of [
+    'Cannot read C:/private/config',
+    'Cannot read /var/app/config',
+    'Authorization failed ghp_exampleCredential',
+    'Connection failed https://user:credential@example.com',
+    'Unexpected token: credential'
+  ]) {
+    const h = createHarness();
+    h.state.saveLockError = Object.assign(new Error(message), { status: 400 });
+    const { controller } = h.loadInstance();
+    const response = await invoke(controller.analyzeAndSaveGitHubProfile, {
+      username: 'safe'
+    });
+    assert.equal(response.statusCode, 400);
+    assert.equal(response.body.message, 'Invalid GitHub username.');
+  }
 });
