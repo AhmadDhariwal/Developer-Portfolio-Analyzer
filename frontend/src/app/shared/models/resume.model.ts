@@ -1,4 +1,9 @@
-export type ContentQualityStatus = 'VALID' | 'PARTIALLY_READABLE' | 'UNREADABLE' | 'EMPTY' | 'INVALID';
+export type ContentQualityStatus =
+  | 'VALID'
+  | 'PARTIALLY_READABLE'
+  | 'UNREADABLE'
+  | 'EMPTY'
+  | 'INVALID';
 
 export interface ResumeContentQualityState {
   state: ContentQualityStatus;
@@ -9,9 +14,11 @@ export interface ResumeContentQualityState {
 }
 
 export interface ResumeScoringBreakdownItem {
-  score: number;
+  // Current backend contract; older stored responses used score.
+  value?: number | null;
+  score?: number | null;
   weight: number;
-  contribution: number;
+  contribution: number | null;
   available: boolean;
   explanation?: string;
 }

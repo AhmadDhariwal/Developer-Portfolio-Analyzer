@@ -3,6 +3,7 @@ import { provideRouter } from '@angular/router';
 import { of, Subject, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { finiteResumeNumber, resumeScoreValue } from './resume-presentation';
 import { ResumeAnalysis } from '../../shared/models/resume.model';
 import { ApiService } from '../../shared/services/api.service';
 import { ResumeFile, ResumeService } from '../../shared/services/resume.service';
@@ -57,7 +58,7 @@ describe('ResumeAnalyzerComponent', () => {
     uploadDate: '2026-10-01T12:00:00.000Z',
     analyzedAt: '2026-10-08T10:00:00.000Z',
     resumeHash: 'hash-111',
-    analysisVersion: 'resume-overall-score-v1',
+    analysisVersion: 'resume-intel-v2',
 
     // Authoritative score: 85 (differs from legacy atsScore 70)
     scoring: {
@@ -78,56 +79,56 @@ describe('ResumeAnalyzerComponent', () => {
       },
       breakdown: {
         atsScore: {
-          score: 70,
+          value: 70,
           weight: 0.18,
           contribution: 12.6,
           available: true,
           explanation: 'Standard ATS headings',
         },
         contentQuality: {
-          score: 88,
+          value: 88,
           weight: 0.16,
           contribution: 14.1,
           available: true,
           explanation: 'Strong action verbs',
         },
         keywordDensity: {
-          score: 80,
+          value: 80,
           weight: 0.12,
           contribution: 9.6,
           available: true,
           explanation: 'Balanced terminology',
         },
         formatScore: {
-          score: 90,
+          value: 90,
           weight: 0.12,
           contribution: 10.8,
           available: true,
           explanation: 'Clean bullet structure',
         },
         projectQuality: {
-          score: 84,
+          value: 84,
           weight: 0.12,
           contribution: 10.1,
           available: true,
           explanation: 'Full-stack delivery evidence',
         },
         experienceStrength: {
-          score: 92,
+          value: 92,
           weight: 0.12,
           contribution: 11.0,
           available: true,
           explanation: 'Quantified metrics present',
         },
         skillsCoverage: {
-          score: 85,
+          value: 85,
           weight: 0.1,
           contribution: 8.5,
           available: true,
           explanation: 'Broad modern stack',
         },
         technicalDepth: {
-          score: 0,
+          value: 0,
           weight: 0.08,
           contribution: 0.0,
           available: true,
@@ -457,6 +458,24 @@ describe('ResumeAnalyzerComponent', () => {
     expect(compiled.textContent).toContain('Viewing Cached Snapshot');
   });
 
+  it('uploads the selected PDF under the backend multipart field file exactly once', () => {
+    fixture.detectChanges();
+    const file = new File(['%PDF-1.4 synthetic'], 'resume.pdf', { type: 'application/pdf' });
+    const input = fixture.nativeElement.querySelector(
+      'app-resume-upload input',
+    ) as HTMLInputElement;
+    Object.defineProperty(input, 'files', { value: [file] });
+    input.dispatchEvent(new Event('change'));
+
+    expect(apiServiceMock.uploadResume).toHaveBeenCalledTimes(1);
+    const payload = apiServiceMock.uploadResume.mock.calls[0][0] as FormData;
+    expect(payload.get('file')).toBe(file);
+    expect(payload.has('resume')).toBe(false);
+    expect(Array.from(payload.keys())).toEqual(['file']);
+    expect(apiServiceMock.analyzeResume).toHaveBeenCalledWith('file-333', false);
+    expect(input.value).toBe('');
+  });
+
   it('should block duplicate upload requests while in-flight', () => {
     fixture.detectChanges();
 
@@ -518,6 +537,174 @@ describe('ResumeAnalyzerComponent', () => {
     fixture.destroy();
     expect(upload.observed).toBe(false);
     upload.next({ fileId: 'late-file' });
+    expect(apiServiceMock.analyzeResume).not.toHaveBeenCalled();
+  });
+  it('renders actual backend value fields and matching progress values without NaN', () => {
+    fixture.detectChanges();
+    const expected = [70, 88, 80, 90, 84, 92, 85, 0];
+    expect(component.breakdownDimensions.map((item) => item.value)).toEqual(expected);
+    const root = fixture.nativeElement as HTMLElement;
+    const rows = Array.from(root.querySelectorAll('.breakdown-row'));
+    rows.forEach((row, index) => {
+      expect(row.querySelector('.score-current')?.textContent?.replace(/\s/g, '')).toBe(
+        `${expected[index]}/100`,
+      );
+      expect(row.querySelector('[role="progressbar"]')?.getAttribute('aria-valuenow')).toBe(
+        String(expected[index]),
+      );
+    });
+    expect(root.textContent).not.toContain('NaN');
+  });
+
+  it('retains support for older saved breakdowns with score fields', () => {
+    const legacy = structuredClone(sampleValidAnalysis);
+    legacy.scoring!.breakdown = Object.fromEntries(
+      Object.entries(legacy.scoring!.breakdown).map(([key, item]) => {
+        const { value, ...rest } = item;
+        return [key, { ...rest, score: value }];
+      }),
+    );
+    apiServiceMock.getResumeAnalysis.mockReturnValue(of(legacy));
+    fixture.detectChanges();
+    expect(component.breakdownDimensions.map((item) => item.value)).toEqual([
+      70, 88, 80, 90, 84, 92, 85, 0,
+    ]);
+  });
+
+  it('treats invalid scores as unavailable and keeps canonical null distinct from legacy zero', () => {
+    const malformed = structuredClone(sampleValidAnalysis);
+    malformed.scoring!.score = Number.NaN;
+    const breakdown = malformed.scoring!.breakdown;
+    breakdown['atsScore'].value = Number.NaN;
+    breakdown['atsScore'].contribution = Infinity;
+    breakdown['contentQuality'].value = null;
+    breakdown['contentQuality'].score = 99;
+    breakdown['keywordDensity'].value = undefined;
+    breakdown['formatScore'].available = false;
+    breakdown['skillsCoverage'].contribution = Number.NaN;
+    apiServiceMock.getResumeAnalysis.mockReturnValue(of(malformed));
+    fixture.detectChanges();
+    expect(component.overallScore).toBeNull();
+    expect(component.overallScoreAvailable).toBe(false);
+    for (const key of ['atsScore', 'contentQuality', 'keywordDensity', 'formatScore']) {
+      const item = component.breakdownDimensions.find((dimension) => dimension.key === key)!;
+      expect(item.available).toBe(false);
+      expect(item.value).toBeNull();
+      expect(item.contribution).toBeNull();
+    }
+    expect(
+      component.breakdownDimensions.find((item) => item.key === 'skillsCoverage')?.contribution,
+    ).toBeNull();
+    expect(component.breakdownDimensions.find((item) => item.key === 'technicalDepth')?.value).toBe(
+      0,
+    );
+    expect(fixture.nativeElement.textContent).not.toMatch(/NaN|Infinity/);
+  });
+
+  it('accepts finite numeric values while rejecting absent and nonnumeric inputs without inventing zeros', () => {
+    for (const value of [
+      null,
+      undefined,
+      '',
+      ' ',
+      false,
+      true,
+      [],
+      {},
+      Number.NaN,
+      Infinity,
+      'NaN',
+      'Infinity',
+      'invalid',
+    ]) {
+      expect(finiteResumeNumber(value)).toBeNull();
+      expect(resumeScoreValue(value)).toBeNull();
+    }
+    expect(resumeScoreValue(0)).toBe(0);
+    expect(resumeScoreValue('71')).toBe(71);
+    expect(resumeScoreValue(-2)).toBe(0);
+    expect(resumeScoreValue(101)).toBe(100);
+    expect(resumeScoreValue(71.6)).toBe(72);
+  });
+
+  it('View Analysis reuses the currently loaded matching version without HTTP or AI calls', () => {
+    fixture.detectChanges();
+    apiServiceMock.getResumeAnalysis.mockClear();
+    const button = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('button'),
+    ).find((item) => item.textContent?.includes('View Analysis'))!;
+    button.click();
+    expect(apiServiceMock.getResumeAnalysis).not.toHaveBeenCalled();
+    expect(apiServiceMock.analyzeResume).not.toHaveBeenCalled();
+    expect(component.analysisComplete).toBe(true);
+    expect(component.overallScore).toBe(85);
+  });
+
+  it('uploads and analyzes once, then views that saved result without analyzing it again', () => {
+    fixture.detectChanges();
+    const uploadedFile = {
+      ...sampleFiles[0],
+      fileId: 'file-333',
+      fileName: 'fresh.pdf',
+      resumeHash: 'hash-333',
+    };
+    const uploadedAnalysis = {
+      ...sampleValidAnalysis,
+      fileId: 'file-333',
+      fileName: 'fresh.pdf',
+      resumeHash: 'hash-333',
+    };
+    apiServiceMock.getResumeFiles.mockReturnValue(of({ files: [...sampleFiles, uploadedFile] }));
+    apiServiceMock.analyzeResume.mockReturnValue(of(uploadedAnalysis));
+    apiServiceMock.getResumeAnalysis.mockClear();
+    const file = new File(['%PDF synthetic'], 'fresh.pdf', { type: 'application/pdf' });
+    component.onFileSelected({ target: { files: [file], value: '' } } as unknown as Event);
+    component.useSelectedResume(false);
+    component.useSelectedResume(false);
+    expect(apiServiceMock.uploadResume).toHaveBeenCalledTimes(1);
+    expect(apiServiceMock.analyzeResume).toHaveBeenCalledExactlyOnceWith('file-333', false);
+    expect(apiServiceMock.getResumeAnalysis).not.toHaveBeenCalled();
+    expect(component.analysis?.fileId).toBe('file-333');
+  });
+
+  it('loads another saved file using GET without generating a new analysis', () => {
+    fixture.detectChanges();
+    component.selectedResumeFileId = 'file-222';
+    apiServiceMock.getResumeAnalysis.mockReturnValue(
+      of({ ...sampleValidAnalysis, fileId: 'file-222', resumeHash: 'hash-222' }),
+    );
+    component.useSelectedResume(false);
+    expect(apiServiceMock.getResumeAnalysis).toHaveBeenLastCalledWith('file-222');
+    expect(apiServiceMock.analyzeResume).not.toHaveBeenCalled();
+    expect(component.analysis?.fileId).toBe('file-222');
+  });
+
+  it.each([
+    { resumeHash: 'changed-hash' },
+    { analysisVersion: 'changed-version' },
+    { lastAnalyzed: '2026-11-01T12:00:00.000Z' },
+  ])('fetches a saved snapshot when library metadata changes: %j', (change) => {
+    fixture.detectChanges();
+    component.resumeFiles = [{ ...sampleFiles[0], ...change }];
+    apiServiceMock.getResumeAnalysis.mockClear();
+    component.useSelectedResume(false);
+    expect(apiServiceMock.getResumeAnalysis).toHaveBeenCalledExactlyOnceWith('file-111');
+    expect(apiServiceMock.analyzeResume).not.toHaveBeenCalled();
+  });
+
+  it('only regenerates an already analyzed resume on explicit Refresh Analysis', () => {
+    fixture.detectChanges();
+    component.analyzeSelectedResume(true);
+    expect(apiServiceMock.analyzeResume).toHaveBeenCalledExactlyOnceWith('file-111', true);
+  });
+
+  it('does not keep displaying the previous file when reading another saved result fails', () => {
+    fixture.detectChanges();
+    component.selectedResumeFileId = 'file-222';
+    apiServiceMock.getResumeAnalysis.mockReturnValue(throwError(() => ({ status: 503 })));
+    component.useSelectedResume(false);
+    expect(component.analysis).toBeNull();
+    expect(component.analysisComplete).toBe(false);
     expect(apiServiceMock.analyzeResume).not.toHaveBeenCalled();
   });
 });

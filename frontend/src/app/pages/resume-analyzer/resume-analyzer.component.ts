@@ -10,7 +10,12 @@ import { ResumeEvidenceComponent } from './components/resume-evidence/resume-evi
 import { ResumeInsightsComponent } from './components/resume-insights/resume-insights.component';
 import { ResumeOverviewComponent } from './components/resume-overview/resume-overview.component';
 import { ResumeUploadComponent } from './components/resume-upload/resume-upload.component';
-import { formatResumeDate, formatResumeFileSize } from './resume-presentation';
+import {
+  finiteResumeNumber,
+  formatResumeDate,
+  formatResumeFileSize,
+  resumeScoreValue,
+} from './resume-presentation';
 
 import {
   ProgressColor,
@@ -206,7 +211,7 @@ export class ResumeAnalyzerComponent implements OnInit {
           this.cdr.detectChanges();
 
           const formData = new FormData();
-          formData.append('resume', file);
+          formData.append('file', file);
 
           return this.apiService.uploadResume(formData).pipe(
             switchMap((uploadRes) => {
@@ -383,7 +388,16 @@ export class ResumeAnalyzerComponent implements OnInit {
     const file = this.resumeFiles.find((f) => f.fileId === this.selectedResumeFileId);
     if (!file) return;
 
+    // Viewing the version already on screen needs no network call or new analysis.
+    if (!setAsDefault && this.canReuseLoadedAnalysis(file)) {
+      this.errorMessage = '';
+      this.cdr.detectChanges();
+      return;
+    }
+
     this.isLoadingAnalysis = true;
+    this.analysisComplete = false;
+    this.analysis = null;
     this.errorMessage = '';
     this.viewedResumeFileName = file.fileName;
     this.viewedResumeFileId = file.fileId;
@@ -453,6 +467,18 @@ export class ResumeAnalyzerComponent implements OnInit {
           this.cdr.detectChanges();
         },
       });
+  }
+
+  private canReuseLoadedAnalysis(file: ResumeFile): boolean {
+    const loaded = this.analysis;
+    if (!this.analysisComplete || !loaded || loaded.fileId !== file.fileId) return false;
+    if (!loaded.resumeHash || !loaded.analysisVersion) return false;
+    if (loaded.resumeHash !== file.resumeHash || loaded.analysisVersion !== file.analysisVersion)
+      return false;
+    if (!file.lastAnalyzed) return true;
+    const libraryTime = new Date(file.lastAnalyzed).getTime();
+    const loadedTime = new Date(loaded.analyzedAt || loaded.scoring?.calculatedAt || '').getTime();
+    return Number.isFinite(libraryTime) && Number.isFinite(loadedTime) && loadedTime >= libraryTime;
   }
 
   analyzeSelectedResume(forceRefresh = false): void {
@@ -544,20 +570,16 @@ export class ResumeAnalyzerComponent implements OnInit {
     this.scoreRuleVersion = analysis.scoring?.ruleVersion || 'resume-overall-score-v1';
     this.scoreCalculatedAt = analysis.scoring?.calculatedAt || analysis.analyzedAt || null;
 
-    if (
-      analysis.scoring &&
-      analysis.scoring.score !== null &&
-      analysis.scoring.score !== undefined
-    ) {
-      this.overallScore = Math.max(0, Math.min(100, Math.round(Number(analysis.scoring.score))));
-      this.overallScoreAvailable = true;
-      this.scoreCardColor =
-        this.overallScore >= 75 ? 'green' : this.overallScore >= 50 ? 'purple' : 'amber';
-    } else {
-      this.overallScore = null;
-      this.overallScoreAvailable = false;
-      this.scoreCardColor = 'amber';
-    }
+    this.overallScore = resumeScoreValue(analysis.scoring?.score);
+    this.overallScoreAvailable = this.overallScore !== null;
+    this.scoreCardColor =
+      this.overallScore === null
+        ? 'amber'
+        : this.overallScore >= 75
+          ? 'green'
+          : this.overallScore >= 50
+            ? 'purple'
+            : 'amber';
 
     // Content Quality State
     this.contentQualityState = analysis.contentQualityState || null;
@@ -670,15 +692,21 @@ export class ResumeAnalyzerComponent implements OnInit {
       let explanation = meta.description;
 
       if (item) {
-        available = Boolean(item.available);
-        value = available ? Math.max(0, Math.min(100, Math.round(Number(item.score)))) : null;
-        contribution = available ? Math.round(Number(item.contribution) * 10) / 10 : null;
+        // An explicit null value is unavailable, even if an older score field exists.
+        const rawValue = item.value !== undefined ? item.value : item.score;
+        value = item.available === true ? resumeScoreValue(rawValue) : null;
+        available = value !== null;
+        const weighted = finiteResumeNumber(item.contribution);
+        contribution =
+          available && weighted !== null
+            ? finiteResumeNumber(Math.round(weighted * 10) / 10)
+            : null;
         explanation = item.explanation || fallbackExplanations[key] || meta.description;
       } else {
         // Legacy fallback
         const legacyVal = (analysis as any)[key] ?? analysis.qualityScores?.[key];
-        if (Number.isFinite(legacyVal)) {
-          value = Math.max(0, Math.min(100, Math.round(Number(legacyVal))));
+        value = resumeScoreValue(legacyVal);
+        if (value !== null) {
           contribution = Math.round(value * (meta.weight / 100) * 10) / 10;
           available = true;
         }
