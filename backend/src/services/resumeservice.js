@@ -1,7 +1,7 @@
 const { clampScore: clamp } = require('./scoring/math');
 const resumeOverallScore = require('./scoring/resumeOverallScore');
 const fs = require('fs/promises');
-const pdfParse = require('pdf-parse');
+const pdfExtraction = require('./resumePdfExtraction');
 const crypto = require('node:crypto');
 const aiService = require('./aiservice');
 const ResumeAnalysisCache = require('../models/resumeAnalysisCache');
@@ -13,7 +13,23 @@ const {
   assessContent,
   requireReadableContent
 } = require('./resumeContentQuality');
-const ANALYSIS_VERSION = 'resume-intel-v2';
+const ANALYSIS_VERSION = `resume-intel-v3:${pdfExtraction.EXTRACTION_VERSION}:${resumeOverallScore.RULE_VERSION}:schema-v3:focus-v1`;
+const MAX_MEMORY_ENTRIES = 128;
+const optionalCache = async (operation, fallback = null) => {
+  let timer;
+  try {
+    return await Promise.race([
+      Promise.resolve().then(operation),
+      new Promise((resolve) => {
+        timer = setTimeout(() => resolve(fallback), 150);
+      })
+    ]);
+  } catch {
+    return fallback;
+  } finally {
+    clearTimeout(timer);
+  }
+};
 const RESUME_AI_TIMEOUT_MS = 5000;
 const RESUME_CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const RESUME_CACHE_REDIS_TTL_SECONDS = Math.floor(RESUME_CACHE_TTL_MS / 1000);
@@ -89,11 +105,7 @@ const packCachedResult = (result, { analyzedAt, analysisVersion, resumeHash }) =
 const readMemoryResumeCache = (key) => {
   const cached = memoryResumeCache.get(key);
   if (!cached) return null;
-  if (
-    !cached.expiresAt ||
-    cached.expiresAt <= Date.now() ||
-    !isValidCachedResult(cached.result)
-  ) {
+  if (!cached.expiresAt || cached.expiresAt <= Date.now() || !isValidCachedResult(cached.result)) {
     memoryResumeCache.delete(key);
     return null;
   }
@@ -102,6 +114,9 @@ const readMemoryResumeCache = (key) => {
 
 const writeMemoryResumeCache = (key, entry) => {
   if (!isValidCachedResult(entry?.result)) return;
+  memoryResumeCache.delete(key);
+  while (memoryResumeCache.size >= MAX_MEMORY_ENTRIES)
+    memoryResumeCache.delete(memoryResumeCache.keys().next().value);
   memoryResumeCache.set(key, {
     result: entry.result,
     analyzedAt: entry.analyzedAt || new Date(),
@@ -142,7 +157,7 @@ const resolveTieredResumeCache = async ({
   }
 
   const redisKey = buildResumeRedisKey({ userId, resumeFileId, resumeHash, analysisVersion });
-  const redisMeta = await getCacheJsonWithMeta(redisKey);
+  const redisMeta = await optionalCache(() => getCacheJsonWithMeta(redisKey), {});
   if (timing) {
     timing.add('memoryCache', redisMeta.memoryMs || 0);
     timing.add('redis', redisMeta.redisMs || 0);
@@ -277,12 +292,7 @@ const persistResumeCacheLayers = async ({
 
 const SECTION_ALIASES = {
   summary: ['summary', 'professional summary', 'profile', 'objective'],
-  experience: [
-    'experience',
-    'work experience',
-    'professional experience',
-    'employment history'
-  ],
+  experience: ['experience', 'work experience', 'professional experience', 'employment history'],
   projects: ['projects', 'selected projects', 'personal projects'],
   skills: ['skills', 'technical skills', 'core skills', 'technologies'],
   education: ['education', 'academic background'],
@@ -378,7 +388,7 @@ const emptyTechnologyCategories = () => ({
 /**
  * Robustly extract text from a PDF file.
  */
-const parsePDFBuffer = async (dataBuffer, parser = pdfParse) => {
+const parsePDFBuffer = async (dataBuffer, parser) => {
   if (!Buffer.isBuffer(dataBuffer) || dataBuffer.subarray(0, 5).toString('ascii') !== '%PDF-') {
     const error = new Error('Only valid PDF files are allowed.');
     error.status = 400;
@@ -393,8 +403,11 @@ const parsePDFBuffer = async (dataBuffer, parser = pdfParse) => {
   let parsed;
   try {
     // The installed PDF.js engine must receive an isolated byte view, not a pooled Node Buffer.
-    parsed = await parser(Uint8Array.from(dataBuffer), { max: 0 });
-  } catch {
+    parsed = parser
+      ? await pdfExtraction.__test.parse(dataBuffer, parser)
+      : await pdfExtraction.extract(dataBuffer);
+  } catch (cause) {
+    if (cause?.code?.startsWith('RESUME_')) throw cause;
     const error = new Error(
       'The PDF could not be parsed. Upload an uncorrupted, unencrypted text-based PDF.'
     );
@@ -407,25 +420,36 @@ const parsePDFBuffer = async (dataBuffer, parser = pdfParse) => {
     };
     throw error;
   }
+  if (parsed?.rasterOnly)
+    throw Object.assign(new Error('Scanned PDFs are unsupported. Upload a text-based PDF.'), {
+      status: 422,
+      code: 'RESUME_CONTENT_UNUSABLE',
+      contentQualityState: { state: 'UNREADABLE', scoreable: false, version: CONTENT_VERSION }
+    });
   const text = typeof parsed?.text === 'string' ? parsed.text.trim() : '';
   requireReadableContent(text);
   return text;
 };
-const extractTextFromPDF = async (filePath, ownerId) => {
+const extractTextFromPDF = async (filePath, ownerId, evidence = {}) => {
+  const read = async (bytes) => {
+    evidence.documentHash = pdfExtraction.fingerprint(bytes);
+    evidence.extractionVersion = pdfExtraction.EXTRACTION_VERSION;
+    return parsePDFBuffer(bytes);
+  };
   if (Buffer.isBuffer(filePath)) {
     if (filePath.length > 10485760)
       throw Object.assign(Error('Resume PDF must be 10 MB or smaller.'), { status: 413 });
-    return parsePDFBuffer(filePath);
+    return read(filePath);
   }
   if (require('./storedAssetService').parse(filePath)?.kind === 'resumes')
-    return parsePDFBuffer(await require('./resumeStorageService').read(filePath, ownerId));
+    return read(await require('./resumeStorageService').read(filePath, ownerId));
   const stat = await fs.stat(filePath);
   if (stat.size > 10 * 1024 * 1024) {
     const error = new Error('Resume PDF must be 10 MB or smaller.');
     error.status = 413;
     throw error;
   }
-  return parsePDFBuffer(await fs.readFile(filePath));
+  return read(await fs.readFile(filePath));
 };
 
 /** Clamp a value to 0-100 and ensure it's an integer */
@@ -526,7 +550,7 @@ const extractPersonalInfo = (text = '') => {
         return (
           digits.length >= 10 &&
           digits.length <= 15 &&
-          !/\b(?:19|20)\d{2}\s*[-–—]\s*(?:19|20)\d{2}\b/.test(value)
+          !/\b(?:19|20)\d{2}\s*[-â€“â€”]\s*(?:19|20)\d{2}\b/.test(value)
         );
       })
       ?.trim() || '';
@@ -536,14 +560,17 @@ const extractPersonalInfo = (text = '') => {
     text.match(/linkedin\.com\/[^\s)]+/i)?.[0] ||
     '';
   const github =
-    urls.find((url) => /github\.com/i.test(url)) ||
-    text.match(/github\.com\/[^\s)]+/i)?.[0] ||
-    '';
+    urls.find((url) => /github\.com/i.test(url)) || text.match(/github\.com\/[^\s)]+/i)?.[0] || '';
   const portfolio = urls.find((url) => !/linkedin\.com|github\.com/i.test(url)) || '';
   const location =
-    text.match(
-      /\b(?:remote|hybrid|onsite|[A-Z][a-z]+,\s*[A-Z]{2}|[A-Z][a-z]+,\s*[A-Z][a-z]+)\b/
-    )?.[0] || '';
+    lines
+      .slice(0, 5)
+      .map((line) => line.replace(/^location\s*:\s*/i, ''))
+      .find(
+        (line) =>
+          /^(?:remote|hybrid|onsite|[\p{L} .'-]+,\s*[\p{L} .'-]+)$/iu.test(line) &&
+          !/@|https?:|www\./i.test(line)
+      ) || '';
   const name =
     lines.find((line) => {
       if (line.length > 70) return false;
@@ -557,13 +584,25 @@ const extractPersonalInfo = (text = '') => {
         )
       )
         return false;
-      return /^[A-Z][A-Za-z.'-]+(?:\s+[A-Z][A-Za-z.'-]+){0,3}$/.test(line);
+      return /^[\p{Lu}\p{Lo}][\p{L}\p{M}.'-]+(?:\s+[\p{Lu}\p{Lo}][\p{L}\p{M}.'-]+){0,3}$/u.test(
+        line
+      );
     }) || '';
 
   return { name, email, phone, location, portfolio, linkedIn, github };
 };
 
 const detectTechnologies = (text = '') => {
+  // Negative and aspirational claims do not establish demonstrated skills.
+  text = text
+    .split(/\n|[!?]\s+/)
+    .filter(
+      (line) =>
+        !/\b(?:no experience|not experienced|never used|plan to learn|want to learn|currently learning|aspiring|interested in learning)\b/i.test(
+          line
+        )
+    )
+    .join('\n');
   const categories = emptyTechnologyCategories();
   TECHNOLOGY_CATALOG.forEach((tech) => {
     const found = tech.aliases.some((alias) =>
@@ -572,9 +611,13 @@ const detectTechnologies = (text = '') => {
     if (found && categories[tech.category]) categories[tech.category].push(tech.name);
   });
 
-  const detectorSkills = extractSkillsFromText(text).map((skill) =>
-    canonicalizeSkillName(skill)
-  );
+  const detectorSkills = extractSkillsFromText(text)
+    .map((skill) => canonicalizeSkillName(skill))
+    .filter(
+      (skill) =>
+        skill &&
+        new RegExp(`(^|[^a-z0-9+#.])${escapeRegex(skill)}(?=$|[^a-z0-9+#.])`, 'i').test(text)
+    );
   detectorSkills.forEach((skill) => {
     const catalog = TECHNOLOGY_CATALOG.find(
       (entry) => entry.name.toLowerCase() === String(skill).toLowerCase()
@@ -584,7 +627,12 @@ const detectTechnologies = (text = '') => {
   });
 
   Object.keys(categories).forEach((category) => {
-    categories[category] = uniqueStrings(categories[category], 30);
+    categories[category] = uniqueStrings(categories[category], 30).filter((skill) => {
+      if (skill === 'Go') return /\bGolang\b|\bGo(?=\s*[,;/]|$)/m.test(text);
+      if (skill === 'Express')
+        return /\bexpress\.js\b/i.test(text) || /\bExpress(?=\s*[,;/]|$)/m.test(text);
+      return true;
+    });
   });
   return categories;
 };
@@ -593,9 +641,7 @@ const buildLegacySkills = (technologyCategories) => ({
   'Programming Languages': technologyCategories['Programming Languages'] || [],
   'Frameworks & Libraries': uniqueStrings(
     [
-      ...(technologyCategories.Frontend || []).filter(
-        (item) => !['HTML', 'CSS'].includes(item)
-      ),
+      ...(technologyCategories.Frontend || []).filter((item) => !['HTML', 'CSS'].includes(item)),
       ...(technologyCategories.Backend || []).filter((item) => !/api/i.test(item)),
       ...(technologyCategories['AI/ML'] || [])
     ],
@@ -632,22 +678,52 @@ const buildLegacySkills = (technologyCategories) => ({
 });
 
 const extractExperienceYears = (text = '', experienceText = '') => {
-  const explicit = text.match(/(\d{1,2})\+?\s*(?:years|yrs)\s+(?:of\s+)?experience/i);
-  if (explicit) return Math.min(40, Number(explicit[1]) || 0);
-
-  // Union dated employment intervals; gaps and overlapping jobs must not inflate tenure.
-  const currentYear = new Date().getUTCFullYear();
-  const ranges = [
-    ...experienceText.matchAll(
-      /\b((?:19|20)\d{2})\s*(?:[-–—]|to)\s*((?:19|20)\d{2}|present|current)\b/gi
+  const now = new Date();
+  const currentYear = now.getUTCFullYear();
+  const months = [
+    'jan',
+    'feb',
+    'mar',
+    'apr',
+    'may',
+    'jun',
+    'jul',
+    'aug',
+    'sep',
+    'oct',
+    'nov',
+    'dec'
+  ];
+  const monthIndex = (label) =>
+    Math.max(
+      0,
+      months.indexOf(
+        String(label || '')
+          .slice(0, 3)
+          .toLowerCase()
+      )
+    );
+  const range =
+    /\b(?:(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+)?((?:19|20)\d{2})\s*(?:[-–—]|to)\s*(?:(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+)?((?:19|20)\d{2}|present|current)\b/gi;
+  const ranges = [...experienceText.matchAll(range)]
+    .map((match) => {
+      const current = /present|current/i.test(match[4]);
+      const start = Number(match[2]) * 12 + monthIndex(match[1]);
+      const end = current
+        ? currentYear * 12 + now.getUTCMonth()
+        : Number(match[4]) * 12 + monthIndex(match[3]);
+      return [start / 12, end / 12];
+    })
+    .filter(
+      ([start, end]) => start >= 1980 && end >= start && end <= currentYear + now.getUTCMonth() / 12
     )
-  ]
-    .map((match) => [
-      Number(match[1]),
-      /present|current/i.test(match[2]) ? currentYear : Number(match[2])
-    ])
-    .filter(([start, end]) => start >= 1980 && end >= start && end <= currentYear)
     .sort((a, b) => a[0] - b[0]);
+  // Self-reported tenure is considered only when dated evidence is absent.
+  if (!ranges.length) {
+    const explicit = text.match(/(\d{1,2})\+?\s*(?:years|yrs)\s+(?:of\s+)?experience/i);
+    return explicit ? Math.min(40, Number(explicit[1]) || 0) : 0;
+  }
+
   let years = 0;
   let lastStart = null;
   let lastEnd = null;
@@ -663,7 +739,7 @@ const extractExperienceYears = (text = '', experienceText = '') => {
     }
   }
   if (lastStart !== null) years += lastEnd - lastStart;
-  return Math.min(40, years);
+  return Math.min(40, Math.round(years * 100) / 100);
 };
 
 const getExperienceLevel = (years) => {
@@ -674,9 +750,7 @@ const getExperienceLevel = (years) => {
 
 const extractBullets = (lines = []) =>
   uniqueStrings(
-    lines
-      .map((line) => line.replace(/^[\s\-*•]+/, '').trim())
-      .filter((line) => line.length >= 20)
+    lines.map((line) => line.replace(/^[\s\-*â€¢]+/, '').trim()).filter((line) => line.length >= 20)
   );
 
 const hasMetric = (value = '') =>
@@ -688,8 +762,8 @@ const hasActionVerb = (value = '') =>
     value.trim()
   );
 
-const extractCertifications = (text = '', sectionLines = []) =>
-  uniqueStrings(
+const extractCertifications = (text = '', sectionLines = []) => {
+  const candidates = uniqueStrings(
     [
       ...sectionLines,
       ...(text.match(
@@ -698,6 +772,16 @@ const extractCertifications = (text = '', sectionLines = []) =>
     ],
     12
   );
+  // A global regex may recover a prefix of an already extracted full title.
+  return candidates.filter(
+    (candidate) =>
+      !candidates.some(
+        (other) =>
+          other.length > candidate.length &&
+          other.toLowerCase().startsWith(candidate.toLowerCase() + ' ')
+      )
+  );
+};
 
 const extractEducation = (sections) => extractBullets(sections.education || []).slice(0, 10);
 const extractProjects = (sections) => extractBullets(sections.projects || []).slice(0, 12);
@@ -824,8 +908,7 @@ const scoreDeterministically = ({
   const atsScore = clamp(
     36 +
       countTruthy([personalInfo.email, personalInfo.phone]) * 8 +
-      countTruthy([present.experience, present.education, present.skills, present.projects]) *
-        7 +
+      countTruthy([present.experience, present.education, present.skills, present.projects]) * 7 +
       Math.min(allTech.length, 18) +
       (bulletCount >= 6 ? 8 : 0) -
       criticalWarnings * 7
@@ -933,7 +1016,7 @@ const scoreDeterministically = ({
       recruiterReadiness,
       overallResumeScore,
       explanations: {
-        atsScore: `${atsScore}/100 based on contact completeness, standard sections, readable bullets, and high-severity parser warnings.`,
+        atsScore: `${atsScore}/100 heuristic based on contact completeness, standard sections, readable bullets, and parser warnings; not a guarantee for every commercial ATS.`,
         keywordCoverage: `${keywordDensity}/100 from ${allTech.length} detected technologies across ${categoryCount} categories.`,
         formattingScore: `${formatScore}/100 based on section headers, dates, bullet readability, and warning count.`,
         contentQuality: `${contentQuality}/100 based on action verbs, quantified achievements, and specificity of impact.`,
@@ -1114,10 +1197,8 @@ const AI_FOCUS_AREAS = {
     'Strengthen project evidence with ownership, implementation details, and outcomes.',
   keyword_coverage:
     'Improve role-relevant keyword coverage using only skills genuinely demonstrated in the resume.',
-  bullet_clarity:
-    'Rewrite passive or vague bullets with clear action verbs and concrete outcomes.',
-  section_structure:
-    'Use conventional section headings and a clear reading order for ATS parsing.',
+  bullet_clarity: 'Rewrite passive or vague bullets with clear action verbs and concrete outcomes.',
+  section_structure: 'Use conventional section headings and a clear reading order for ATS parsing.',
   technical_depth: 'Connect listed technologies to specific project or experience evidence.',
   recruiter_readiness:
     'Prioritize the highest-severity resume warnings before adding cosmetic polish.'
@@ -1179,11 +1260,18 @@ Return valid JSON only: { "focusAreas": ["allowed_code"] }`.trim();
   const aiStartedAt = process.hrtime.bigint();
   let aiResult = fallback;
   let timer;
+  const controller = new AbortController();
   try {
     aiResult = await Promise.race([
-      aiService.runAIAnalysis(prompt, fallback, 0, { timeoutMs: RESUME_AI_TIMEOUT_MS }),
+      aiService.runAIAnalysis(prompt, fallback, 0, {
+        timeoutMs: RESUME_AI_TIMEOUT_MS,
+        signal: controller.signal
+      }),
       new Promise((resolve) => {
-        timer = setTimeout(() => resolve(fallback), RESUME_AI_TIMEOUT_MS);
+        timer = setTimeout(() => {
+          controller.abort();
+          resolve(fallback);
+        }, RESUME_AI_TIMEOUT_MS);
       })
     ]);
   } catch (error) {
@@ -1233,9 +1321,22 @@ Return valid JSON only: { "focusAreas": ["allowed_code"] }`.trim();
 const buildImprovementDelta = (current, previous) => {
   if (!previous)
     return { hasPrevious: false, summary: 'First analyzed version for this resume context.' };
-  const previousSkills = uniqueStrings(
-    Object.values(previous.technologyCategories || {}).flat()
-  );
+  if (!previous.analysisVersion || previous.analysisVersion !== current.analysisVersion)
+    return {
+      hasPrevious: false,
+      summary: 'Score comparison unavailable across analysis versions.'
+    };
+  if (
+    !['atsScore', 'keywordDensity', 'formatScore', 'contentQuality'].every((key) =>
+      Number.isFinite(previous[key])
+    ) ||
+    !Number.isFinite(previous.qualityScores?.overallResumeScore)
+  )
+    return {
+      hasPrevious: false,
+      summary: 'Score comparison unavailable because previous evidence is missing.'
+    };
+  const previousSkills = uniqueStrings(Object.values(previous.technologyCategories || {}).flat());
   const currentSkills = uniqueStrings(Object.values(current.technologyCategories || {}).flat());
   const newSkillsAdded = currentSkills.filter(
     (skill) => !previousSkills.some((prev) => prev.toLowerCase() === skill.toLowerCase())
@@ -1246,8 +1347,7 @@ const buildImprovementDelta = (current, previous) => {
     formatScore: current.formatScore - Number(previous.formatScore || 0),
     contentQuality: current.contentQuality - Number(previous.contentQuality || 0),
     overallResumeScore:
-      current.qualityScores.overallResumeScore -
-      Number(previous.qualityScores?.overallResumeScore || previous.atsScore || 0)
+      current.qualityScores.overallResumeScore - previous.qualityScores.overallResumeScore
   };
   return {
     hasPrevious: true,
@@ -1269,12 +1369,18 @@ const buildDeterministicAnalysis = async ({
   previousAnalysis,
   onTiming,
   resumeFileId,
-  deferAI = false
+  deferAI = false,
+  documentHash
 }) => {
   const deterministicStartedAt = process.hrtime.bigint();
   const normalizedText = normalizeResumeText(text);
   const contentQualityState = requireReadableContent(normalizedText);
-  const resumeHash = crypto.createHash('sha256').update(normalizedText).digest('hex');
+  const resumeHash =
+    documentHash ||
+    crypto
+      .createHash('sha256')
+      .update('text-only:' + normalizedText)
+      .digest('hex');
   const { sections, present } = detectSections(normalizedText);
   const personalInfo = extractPersonalInfo(normalizedText);
   const technologyCategories = detectTechnologies(normalizedText);
@@ -1305,7 +1411,16 @@ const buildDeterministicAnalysis = async ({
     openSourceContributions,
     sectionPresence: present,
     experienceYears,
-    experienceLevel: getExperienceLevel(experienceYears)
+    experienceLevel: getExperienceLevel(experienceYears),
+    evidenceStatus: {
+      experienceYears:
+        /\b(?:19|20)\d{2}\b/.test((sections.experience || []).join(' ')) ||
+        /\b\d+\+?\s*(?:years|yrs)\s+(?:of\s+)?experience/i.test(normalizedText)
+          ? 'reported-or-dated'
+          : 'missing',
+      experienceLevel: 'inferred-from-tenure',
+      qualifications: 'document-claims-unverified'
+    }
   };
 
   const warnings = buildWarnings({
@@ -1440,14 +1555,19 @@ const analyzeResume = async (text, fileName, fileSize, options = {}) => {
   const timing = createTiming();
   requireReadableContent(text);
   const normalizedText = normalizeResumeText(text);
-  const resumeHash = crypto.createHash('sha256').update(normalizedText).digest('hex');
+  const resumeHash =
+    options.documentHash ||
+    crypto
+      .createHash('sha256')
+      .update('text-only:' + normalizedText)
+      .digest('hex');
   const userId = options.userId || null;
   const resumeFileId = options.resumeFileId || options.fileId || null;
   const forceRefresh = Boolean(options.forceRefresh);
   const analysisVersion = options.analysisVersion || ANALYSIS_VERSION;
   const jobKey =
     userId && resumeFileId
-      ? `${String(userId)}:${String(resumeFileId)}:${resumeHash}:${forceRefresh ? 'refresh' : 'analyze'}`
+      ? `${String(userId)}:${String(resumeFileId)}:${resumeHash}:${analysisVersion}`
       : null;
 
   if (jobKey && analyzeResumeJobs.has(jobKey)) {
@@ -1477,6 +1597,7 @@ const analyzeResume = async (text, fileName, fileSize, options = {}) => {
       previousAnalysis: options.previousAnalysis || null,
       onTiming: options.onTiming,
       resumeFileId,
+      documentHash: options.documentHash,
       deferAI: true
     });
     const critique = result._critique;
@@ -1522,10 +1643,12 @@ const analyzeResume = async (text, fileName, fileSize, options = {}) => {
             buildMemoryCacheKey({ userId, resumeFileId, resumeHash, analysisVersion })
           );
           if (entry?.result?.scoring?.calculatedAt === result.scoring.calculatedAt)
-            await setCacheJson(
-              buildResumeRedisKey({ userId, resumeFileId, resumeHash, analysisVersion }),
-              { ...entry, expiresAt: new Date(entry.expiresAt), analysisVersion, resumeHash },
-              Math.max(1, Math.floor((entry.expiresAt - Date.now()) / 1000))
+            await optionalCache(() =>
+              setCacheJson(
+                buildResumeRedisKey({ userId, resumeFileId, resumeHash, analysisVersion }),
+                { ...entry, expiresAt: new Date(entry.expiresAt), analysisVersion, resumeHash },
+                Math.max(1, Math.floor((entry.expiresAt - Date.now()) / 1000))
+              )
             );
         } catch {
           /* Deterministic persistence is already durable. */
@@ -1574,6 +1697,7 @@ module.exports = {
   __test: {
     buildDeterministicAnalysis,
     extractExperienceYears,
+    buildImprovementDelta,
     extractPersonalInfo,
     getApplicableAiFocusAreas,
     buildResumeRedisKey,

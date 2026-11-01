@@ -1,12 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { of, throwError } from 'rxjs';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { of, Subject, throwError } from 'rxjs';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ResumeAnalyzerComponent } from './resume-analyzer.component';
-import { ApiService } from '../../shared/services/api.service';
-import { ResumeService, ResumeFile } from '../../shared/services/resume.service';
 import { ResumeAnalysis } from '../../shared/models/resume.model';
+import { ApiService } from '../../shared/services/api.service';
+import { ResumeFile, ResumeService } from '../../shared/services/resume.service';
+import { ResumeAnalyzerComponent } from './resume-analyzer.component';
 
 describe('ResumeAnalyzerComponent', () => {
   let component: ResumeAnalyzerComponent;
@@ -37,7 +37,7 @@ describe('ResumeAnalyzerComponent', () => {
       isDefault: true,
       isActive: true,
       resumeHash: 'hash-111',
-      analysisVersion: 'resume-intel-v2'
+      analysisVersion: 'resume-intel-v2',
     },
     {
       fileId: 'file-222',
@@ -46,8 +46,8 @@ describe('ResumeAnalyzerComponent', () => {
       uploadDate: '2026-09-15T10:00:00.000Z',
       isAnalyzed: false,
       isDefault: false,
-      isActive: false
-    }
+      isActive: false,
+    },
   ];
 
   const sampleValidAnalysis: ResumeAnalysis = {
@@ -73,26 +73,74 @@ describe('ResumeAnalyzerComponent', () => {
           technologyCount: 15,
           sectionCount: 5,
           experienceYears: 4,
-          wordCount: 320
-        }
+          wordCount: 320,
+        },
       },
       breakdown: {
-        atsScore: { score: 70, weight: 0.18, contribution: 12.6, available: true, explanation: 'Standard ATS headings' },
-        contentQuality: { score: 88, weight: 0.16, contribution: 14.1, available: true, explanation: 'Strong action verbs' },
-        keywordDensity: { score: 80, weight: 0.12, contribution: 9.6, available: true, explanation: 'Balanced terminology' },
-        formatScore: { score: 90, weight: 0.12, contribution: 10.8, available: true, explanation: 'Clean bullet structure' },
-        projectQuality: { score: 84, weight: 0.12, contribution: 10.1, available: true, explanation: 'Full-stack delivery evidence' },
-        experienceStrength: { score: 92, weight: 0.12, contribution: 11.0, available: true, explanation: 'Quantified metrics present' },
-        skillsCoverage: { score: 85, weight: 0.10, contribution: 8.5, available: true, explanation: 'Broad modern stack' },
-        technicalDepth: { score: 0, weight: 0.08, contribution: 0.0, available: true, explanation: 'Zero deep systems measured' }
-      }
+        atsScore: {
+          score: 70,
+          weight: 0.18,
+          contribution: 12.6,
+          available: true,
+          explanation: 'Standard ATS headings',
+        },
+        contentQuality: {
+          score: 88,
+          weight: 0.16,
+          contribution: 14.1,
+          available: true,
+          explanation: 'Strong action verbs',
+        },
+        keywordDensity: {
+          score: 80,
+          weight: 0.12,
+          contribution: 9.6,
+          available: true,
+          explanation: 'Balanced terminology',
+        },
+        formatScore: {
+          score: 90,
+          weight: 0.12,
+          contribution: 10.8,
+          available: true,
+          explanation: 'Clean bullet structure',
+        },
+        projectQuality: {
+          score: 84,
+          weight: 0.12,
+          contribution: 10.1,
+          available: true,
+          explanation: 'Full-stack delivery evidence',
+        },
+        experienceStrength: {
+          score: 92,
+          weight: 0.12,
+          contribution: 11.0,
+          available: true,
+          explanation: 'Quantified metrics present',
+        },
+        skillsCoverage: {
+          score: 85,
+          weight: 0.1,
+          contribution: 8.5,
+          available: true,
+          explanation: 'Broad modern stack',
+        },
+        technicalDepth: {
+          score: 0,
+          weight: 0.08,
+          contribution: 0.0,
+          available: true,
+          explanation: 'Zero deep systems measured',
+        },
+      },
     },
 
     contentQualityState: {
       state: 'VALID',
       scoreable: true,
       wordCount: 320,
-      uniqueWordCount: 140
+      uniqueWordCount: 140,
     },
 
     // Legacy scores
@@ -103,16 +151,21 @@ describe('ResumeAnalyzerComponent', () => {
 
     skills: {
       Frontend: ['Angular', 'TypeScript', 'SCSS'],
-      Backend: ['Node.js', 'Express', 'MongoDB']
+      Backend: ['Node.js', 'Express', 'MongoDB'],
     },
     experienceYears: 4,
     experienceLevel: 'Mid-Level',
     keyAchievements: [
       'Reduced latency by 30% for 10,000 active users',
-      'Improved test coverage to 85% across core APIs'
+      'Improved test coverage to 85% across core APIs',
     ],
     suggestions: [
-      { id: '1', title: 'Add CI/CD pipelines', description: 'Showcase GitHub Actions experience', color: 'orange' }
+      {
+        id: '1',
+        title: 'Add CI/CD pipelines',
+        description: 'Showcase GitHub Actions experience',
+        color: 'orange',
+      },
     ],
     normalized: {
       sectionPresence: {
@@ -120,42 +173,57 @@ describe('ResumeAnalyzerComponent', () => {
         projects: true,
         skills: true,
         education: true,
-        certifications: false
-      }
+        certifications: false,
+      },
     },
     aiInsights: {
       aiUsed: true,
-      strengths: ['Clear enterprise Angular ownership', 'Demonstrated API performance improvements'],
+      strengths: [
+        'Clear enterprise Angular ownership',
+        'Demonstrated API performance improvements',
+      ],
       weaknesses: ['Add DevOps automation tools'],
       writingSuggestions: ['Highlight cross-functional leadership in team projects'],
       priorities: [
-        { title: 'Quantify team scaling impact', description: 'Mention mentorship of junior engineers', impact: 'high' }
-      ]
-    }
+        {
+          title: 'Quantify team scaling impact',
+          description: 'Mention mentorship of junior engineers',
+          impact: 'high',
+        },
+      ],
+    },
   };
 
   beforeEach(async () => {
     apiServiceMock = {
-      getActiveResumeContext: vi.fn().mockReturnValue(of({
-        activeResume: sampleFiles[0],
-        defaultResume: sampleFiles[0]
-      })),
+      getActiveResumeContext: vi.fn().mockReturnValue(
+        of({
+          activeResume: sampleFiles[0],
+          defaultResume: sampleFiles[0],
+        }),
+      ),
       getResumeFiles: vi.fn().mockReturnValue(of({ files: sampleFiles })),
       getResumeAnalysis: vi.fn().mockReturnValue(of(sampleValidAnalysis)),
       analyzeResume: vi.fn().mockReturnValue(of(sampleValidAnalysis)),
-      uploadResume: vi.fn().mockReturnValue(of({
-        fileId: 'file-333',
-        fileName: 'new-uploaded.pdf',
-        fileSize: 150000,
-        contentQualityState: { state: 'VALID', scoreable: true }
-      })),
-      setActiveResume: vi.fn().mockReturnValue(of({ message: 'Active resume updated', fileId: 'file-222' })),
-      downloadResumeGuide: vi.fn().mockReturnValue(of(new Blob(['<html>Guide</html>'], { type: 'text/html' })))
+      uploadResume: vi.fn().mockReturnValue(
+        of({
+          fileId: 'file-333',
+          fileName: 'new-uploaded.pdf',
+          fileSize: 150000,
+          contentQualityState: { state: 'VALID', scoreable: true },
+        }),
+      ),
+      setActiveResume: vi
+        .fn()
+        .mockReturnValue(of({ message: 'Active resume updated', fileId: 'file-222' })),
+      downloadResumeGuide: vi
+        .fn()
+        .mockReturnValue(of(new Blob(['<html>Guide</html>'], { type: 'text/html' }))),
     };
 
     resumeServiceMock = {
       resumes$: of(sampleFiles) as any,
-      profile$: of(null) as any
+      profile$: of(null) as any,
     };
 
     await TestBed.configureTestingModule({
@@ -163,8 +231,8 @@ describe('ResumeAnalyzerComponent', () => {
       providers: [
         provideRouter([]),
         { provide: ApiService, useValue: apiServiceMock },
-        { provide: ResumeService, useValue: resumeServiceMock }
-      ]
+        { provide: ResumeService, useValue: resumeServiceMock },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ResumeAnalyzerComponent);
@@ -189,7 +257,7 @@ describe('ResumeAnalyzerComponent', () => {
     expect(component.overallScoreAvailable).toBe(true);
     // Legacy atsScore is 70, which should remain an individual sub-dimension
     expect(component.analysis?.atsScore).toBe(70);
-    const atsDimension = component.breakdownDimensions.find(d => d.key === 'atsScore');
+    const atsDimension = component.breakdownDimensions.find((d) => d.key === 'atsScore');
     expect(atsDimension?.value).toBe(70);
     expect(atsDimension?.weightPct).toBe(18);
   });
@@ -203,14 +271,14 @@ describe('ResumeAnalyzerComponent', () => {
         calculatedAt: '2026-10-08T10:00:00.000Z',
         warnings: ['score_unavailable'],
         evidence: { facts: {} },
-        breakdown: {}
+        breakdown: {},
       },
       contentQualityState: {
         state: 'PARTIALLY_READABLE',
         scoreable: false,
         wordCount: 25,
-        uniqueWordCount: 8
-      }
+        uniqueWordCount: 8,
+      },
     };
 
     apiServiceMock.getResumeAnalysis.mockReturnValue(of(unscoreableAnalysis));
@@ -227,7 +295,9 @@ describe('ResumeAnalyzerComponent', () => {
   });
 
   it('should show onboarding empty state when user has no resumes', () => {
-    apiServiceMock.getActiveResumeContext.mockReturnValue(of({ activeResume: null, defaultResume: null }));
+    apiServiceMock.getActiveResumeContext.mockReturnValue(
+      of({ activeResume: null, defaultResume: null }),
+    );
     apiServiceMock.getResumeFiles.mockReturnValue(of({ files: [] }));
     apiServiceMock.getResumeAnalysis.mockReturnValue(throwError(() => ({ status: 404 })));
 
@@ -240,10 +310,12 @@ describe('ResumeAnalyzerComponent', () => {
   });
 
   it('should distinguish selected but unanalyzed resume and offer analyze CTA', () => {
-    apiServiceMock.getActiveResumeContext.mockReturnValue(of({
-      activeResume: sampleFiles[1], // unanalyzed file
-      defaultResume: sampleFiles[0]
-    }));
+    apiServiceMock.getActiveResumeContext.mockReturnValue(
+      of({
+        activeResume: sampleFiles[1], // unanalyzed file
+        defaultResume: sampleFiles[0],
+      }),
+    );
     apiServiceMock.getResumeAnalysis.mockReturnValue(throwError(() => ({ status: 404 })));
 
     fixture.detectChanges();
@@ -258,11 +330,13 @@ describe('ResumeAnalyzerComponent', () => {
     fixture.detectChanges();
 
     component.selectedResumeFileId = 'file-222';
-    apiServiceMock.getResumeAnalysis.mockReturnValue(of({
-      ...sampleValidAnalysis,
-      fileId: 'file-222',
-      fileName: 'older-resume.pdf'
-    }));
+    apiServiceMock.getResumeAnalysis.mockReturnValue(
+      of({
+        ...sampleValidAnalysis,
+        fileId: 'file-222',
+        fileName: 'older-resume.pdf',
+      }),
+    );
 
     component.useSelectedResume(true);
 
@@ -278,8 +352,8 @@ describe('ResumeAnalyzerComponent', () => {
         state: 'PARTIALLY_READABLE',
         scoreable: false,
         wordCount: 22,
-        uniqueWordCount: 9
-      }
+        uniqueWordCount: 9,
+      },
     };
 
     apiServiceMock.getResumeAnalysis.mockReturnValue(of(partiallyReadableAnalysis));
@@ -294,19 +368,21 @@ describe('ResumeAnalyzerComponent', () => {
     fixture.detectChanges();
 
     const badFile = new File(['%PDF-empty'], 'corrupt.pdf', { type: 'application/pdf' });
-    apiServiceMock.uploadResume.mockReturnValue(throwError(() => ({
-      status: 422,
-      error: {
-        message: 'The resume text is unreadable or too short. Upload a readable text-based PDF.',
-        contentQualityState: { state: 'UNREADABLE', scoreable: false }
-      }
-    })));
+    apiServiceMock.uploadResume.mockReturnValue(
+      throwError(() => ({
+        status: 422,
+        error: {
+          message: 'The resume text is unreadable or too short. Upload a readable text-based PDF.',
+          contentQualityState: { state: 'UNREADABLE', scoreable: false },
+        },
+      })),
+    );
 
     const inputEvent = {
       target: {
         files: [badFile],
-        value: ''
-      }
+        value: '',
+      },
     } as unknown as Event;
 
     component.onFileSelected(inputEvent);
@@ -325,7 +401,9 @@ describe('ResumeAnalyzerComponent', () => {
     expect(apiServiceMock.uploadResume).not.toHaveBeenCalled();
 
     // 2. Oversized file (>10MB)
-    const largeFile = new File([new ArrayBuffer(11 * 1024 * 1024)], 'large.pdf', { type: 'application/pdf' });
+    const largeFile = new File([new ArrayBuffer(11 * 1024 * 1024)], 'large.pdf', {
+      type: 'application/pdf',
+    });
     Object.defineProperty(largeFile, 'size', { value: 11 * 1024 * 1024 });
     component.onFileSelected({ target: { files: [largeFile], value: '' } } as unknown as Event);
     expect(component.errorMessage).toContain('exceeds the 10 MB limit');
@@ -336,7 +414,7 @@ describe('ResumeAnalyzerComponent', () => {
 
     // In sampleValidAnalysis:
     // technicalDepth has score: 0 and available: true -> measured zero
-    const technicalDepth = component.breakdownDimensions.find(d => d.key === 'technicalDepth');
+    const technicalDepth = component.breakdownDimensions.find((d) => d.key === 'technicalDepth');
     expect(technicalDepth?.value).toBe(0);
     expect(technicalDepth?.available).toBe(true);
     expect(technicalDepth?.contribution).toBe(0);
@@ -346,8 +424,8 @@ describe('ResumeAnalyzerComponent', () => {
     const aiFailedAnalysis: ResumeAnalysis = {
       ...sampleValidAnalysis,
       aiInsights: {
-        aiUsed: false // AI timed out or threw error
-      }
+        aiUsed: false, // AI timed out or threw error
+      },
     };
 
     apiServiceMock.getResumeAnalysis.mockReturnValue(of(aiFailedAnalysis));
@@ -367,8 +445,8 @@ describe('ResumeAnalyzerComponent', () => {
       ...sampleValidAnalysis,
       cacheMetadata: {
         loadedFromCache: true,
-        analyzedAt: '2026-10-08T09:30:00.000Z'
-      }
+        analyzedAt: '2026-10-08T09:30:00.000Z',
+      },
     };
 
     apiServiceMock.getResumeAnalysis.mockReturnValue(of(cachedAnalysis));
@@ -400,5 +478,46 @@ describe('ResumeAnalyzerComponent', () => {
     expect(apiServiceMock.downloadResumeGuide).toHaveBeenCalled();
     expect(createUrlSpy).toHaveBeenCalled();
     expect(revokeUrlSpy).toHaveBeenCalled();
+  });
+  it('keeps the uploaded version when an older initial-context response arrives late', () => {
+    const oldContext = new Subject<any>();
+    apiServiceMock.getActiveResumeContext.mockReturnValue(oldContext);
+    fixture.detectChanges();
+    const input = fixture.nativeElement.querySelector('input[type=file]') as HTMLInputElement;
+    Object.defineProperty(input, 'files', {
+      value: [new File(['synthetic'], 'fresh.pdf', { type: 'application/pdf' })],
+    });
+    input.dispatchEvent(new Event('change'));
+    oldContext.next({ activeResume: sampleFiles[0], defaultResume: sampleFiles[0] });
+    expect(component.activeResumeFileId).toBe('file-333');
+    expect(apiServiceMock.uploadResume).toHaveBeenCalledTimes(1);
+    expect(apiServiceMock.analyzeResume).toHaveBeenCalledTimes(1);
+    expect(apiServiceMock.getResumeAnalysis).not.toHaveBeenCalled();
+    oldContext.complete();
+  });
+
+  it('forwards presentation actions once and retains the native upload label', () => {
+    fixture.detectChanges();
+    const input = fixture.nativeElement.querySelector('app-resume-upload input');
+    expect(input.id).toBe('resumeUploadInput');
+    expect(fixture.nativeElement.querySelector('label[for="resumeUploadInput"]')).toBeTruthy();
+    expect(
+      fixture.nativeElement.querySelectorAll('app-resume-breakdown .breakdown-row'),
+    ).toHaveLength(8);
+    expect(fixture.nativeElement.querySelector('app-resume-insights')).toBeTruthy();
+  });
+  it('cancels an in-flight upload when the page is destroyed before another account can load', () => {
+    const upload = new Subject<any>();
+    apiServiceMock.uploadResume.mockReturnValue(upload);
+    fixture.detectChanges();
+    const input = fixture.nativeElement.querySelector('input[type=file]') as HTMLInputElement;
+    Object.defineProperty(input, 'files', {
+      value: [new File(['synthetic'], 'fresh.pdf', { type: 'application/pdf' })],
+    });
+    input.dispatchEvent(new Event('change'));
+    fixture.destroy();
+    expect(upload.observed).toBe(false);
+    upload.next({ fileId: 'late-file' });
+    expect(apiServiceMock.analyzeResume).not.toHaveBeenCalled();
   });
 });

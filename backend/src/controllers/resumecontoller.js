@@ -56,6 +56,12 @@ const respondResumeError = (res, error, fallbackMessage) => {
       message: sanitizeClientMessage(error, 'Resume analysis is already in progress. Please retry.')
     });
   }
+  if (status === 429) {
+    res.set('Retry-After', String(error.retryAfter || 2));
+    return res.status(429).json({
+      message: sanitizeClientMessage(error, 'Resume processing is busy. Please retry shortly.')
+    });
+  }
   if (status === 503) return res.status(503).json({ message: 'Resume storage unavailable.' });
   if (status === 422)
     return res.status(422).json({
@@ -107,23 +113,13 @@ const createPipelineTimings = () => ({
   responseSerializationMs: 0
 });
 
-const logPipelineTiming = ({
-  userId,
-  fileId,
-  forceRefresh,
-  cacheHit,
-  status,
-  timings,
-  totalDurationMs
-}) => {
+const logPipelineTiming = ({ forceRefresh, cacheHit, status, timings, totalDurationMs }) => {
   if (String(process.env.RESUME_TIMING || '') !== '1' && process.env.NODE_ENV === 'production')
     return;
   console.log(
     '[ResumeAnalysisPipeline]',
     JSON.stringify({
       event: 'resume_analysis_complete',
-      userId: String(userId || ''),
-      fileId: String(fileId || ''),
       forceRefresh: Boolean(forceRefresh),
       cacheHit: Boolean(cacheHit),
       status,
@@ -190,7 +186,12 @@ const uploadResume = async (req, res) => {
       return res.status(400).json({ message: 'Only valid PDF files are allowed' });
     }
 
-    const text = await extractTextFromPDF(req.file.buffer || req.file.path);
+    const uploadEvidence = {};
+    const text = await extractTextFromPDF(
+      req.file.buffer || req.file.path,
+      req.user._id,
+      uploadEvidence
+    );
     const contentQualityState = assessContent(text);
     storageReference = await require('../services/resumeStorageService').persist(
       req.file,
@@ -202,6 +203,8 @@ const uploadResume = async (req, res) => {
       fileUrl: storageReference,
       fileSize: req.file.size,
       mimeType: req.file.mimetype,
+      resumeHash: uploadEvidence.documentHash,
+      analysisVersion: ANALYSIS_VERSION,
       contentQualityState
     });
 
@@ -254,6 +257,8 @@ const uploadResume = async (req, res) => {
         .catch(() => {});
     console.error('Resume Upload Error:', sanitizeClientMessage(error, 'Server Error'));
     respondResumeError(res, error, 'Server Error');
+  } finally {
+    req.releaseResumeReservation?.();
   }
 };
 
@@ -298,7 +303,19 @@ const createAnalysisDocument = (userId, resumeFile, analysis) => {
 // Existing downstream cache hooks, without changing downstream analysis logic.
 const invalidateResumeDependents = async (userId) => {
   invalidateDashboardSummaryCache(userId);
-  await aiService.invalidateCachePrefix('skill_gap:result:');
+  let timer;
+  try {
+    await Promise.race([
+      Promise.resolve()
+        .then(() => aiService.invalidateCachePrefix(`skill_gap:result:${String(userId)}:`))
+        .catch(() => {}),
+      new Promise((resolve) => {
+        timer = setTimeout(resolve, 150);
+      })
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
 };
 
 // @desc    Analyze resume
@@ -335,7 +352,8 @@ const runAnalyzeResumePipeline = async (req, { fileId, forceRefresh, timings, ad
   let deterministicRecord = null;
   if (!analysis) {
     const extractionStartedAt = process.hrtime.bigint();
-    const text = await extractTextFromPDF(resumeFile.fileUrl, req.user._id);
+    const evidence = {};
+    const text = await extractTextFromPDF(resumeFile.fileUrl, req.user._id, evidence);
     const providerMs = elapsedMs(extractionStartedAt);
     addTiming('pdfTextExtractionMs', providerMs);
     addTiming('providerMs', providerMs);
@@ -346,7 +364,7 @@ const runAnalyzeResumePipeline = async (req, { fileId, forceRefresh, timings, ad
     })
       .sort({ analyzedAt: -1, _id: -1 })
       .select(
-        'atsScore keywordDensity formatScore contentQuality technologyCategories qualityScores analyzedAt createdAt'
+        'atsScore keywordDensity formatScore contentQuality technologyCategories qualityScores analyzedAt createdAt analysisVersion'
       )
       .lean();
     analysis = await analyzeResume(text, resumeFile.fileName, resumeFile.fileSize, {
@@ -355,7 +373,14 @@ const runAnalyzeResumePipeline = async (req, { fileId, forceRefresh, timings, ad
       forceRefresh,
       cacheLookupCompleted: canLookupBeforeExtraction,
       previousAnalysis,
+      documentHash: evidence.documentHash,
       onDeterministicPersist: async (result) => {
+        if (req.resumeReservation)
+          await require('../services/integrationMongoGovernanceService').resumeLease(
+            req.user._id,
+            fileId,
+            req.resumeReservation
+          );
         deterministicRecord = createAnalysisDocument(req.user._id, resumeFile, result);
         const started = process.hrtime.bigint();
         await notificationPersistence.commit(
@@ -416,7 +441,13 @@ const runAnalyzeResumePipeline = async (req, { fileId, forceRefresh, timings, ad
   if (deterministicRecord) {
     // Only critique fields may change after deterministic persistence.
     await ResumeAnalysis.updateOne(
-      { _id: deterministicRecord._id },
+      {
+        _id: deterministicRecord._id,
+        userId: req.user._id,
+        fileId: resumeFile._id,
+        resumeHash: analysis.resumeHash,
+        analysisVersion: ANALYSIS_VERSION
+      },
       {
         $set: {
           aiInsights: analysis.aiInsights,
@@ -506,7 +537,7 @@ const analyzeResumeFile = async (req, res) => {
   try {
     fileId = parseResumeFileId(req.body?.fileId);
 
-    const inFlightKey = `${req.user._id}:${fileId}:${forceRefresh ? 'refresh' : 'analyze'}`;
+    const inFlightKey = `${req.user._id}:${fileId}:${ANALYSIS_VERSION}`;
     if (analyzeInFlight.has(inFlightKey)) {
       const shared = await analyzeInFlight.get(inFlightKey);
       cacheHit = shared.cacheHit;
@@ -543,6 +574,7 @@ const analyzeResumeFile = async (req, res) => {
     else if (error?.status === 404) status = 'not_found';
     respondResumeError(res, error, 'Server Error');
   } finally {
+    req.releaseResumeReservation?.();
     logPipelineTiming({
       userId: req.user?._id,
       fileId,

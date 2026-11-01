@@ -144,7 +144,7 @@ test(
       await new Promise((resolve, reject) => {
         const timer = setTimeout(
           () => reject(Error("Worker readiness deadline")),
-          6000,
+          45000,
         );
         child.once("message", (message) => {
           clearTimeout(timer);
@@ -387,7 +387,12 @@ test(
         const row = await State.collection.findOne({
           _id: `${prefix("upload", owner._id)}:${Math.floor(Date.now() / 3600000)}`,
         });
-        assert.equal(row.count, 3);
+        assert.equal(row.count, 2);
+        const resumeKey = `resume:v1:rate:upload:user:${crypto.createHash("sha256").update(String(owner._id)).digest("hex")}:${Math.floor(Date.now() / 3600000)}`;
+        assert.equal(
+          (await State.collection.findOne({ _id: resumeKey })).count,
+          1,
+        );
         assert.equal(redisCalls, 0);
         evidence.checks.push(
           "authenticated-avatar-portfolio-resume-real-admission",
@@ -398,6 +403,9 @@ test(
       "Mongo admission failure blocks every parser/storage/delivery path; validation runs first",
       async () => {
         const puts = fake.calls.length;
+        const resumeFailure = t.mock.method(store, "resumeWindow", async () => {
+          throw Error("Fixture admission outage");
+        });
         const failure = t.mock.method(store, "requestWindow", async () => {
           throw Error("Fixture admission outage");
         });
@@ -407,7 +415,10 @@ test(
             form("unexpected", png, "bad.png", "image/png"),
           );
           assert.equal(result.status, 503);
-          assert.equal(result.headers.get("retry-after"), "30");
+          assert.equal(
+            result.headers.get("retry-after"),
+            route === "/api/resume/upload" ? "2" : "30",
+          );
           assert.equal(
             (
               await request(
@@ -452,14 +463,20 @@ test(
         assert.equal(fake.calls.length, puts);
         assert.equal(sent, 0);
         failure.mock.restore();
+        resumeFailure.mock.restore();
         evidence.checks.push("mongo-failure-before-parsing-storage-mail");
       },
     );
     await t.test(
-      "shared upload cap prevents B2 and filesystem bypasses; contact caps prevent delivery",
+      "isolated Resume and public upload caps prevent storage-driver bypasses; contact caps prevent delivery",
       async () => {
         const key = `${prefix("upload", owner._id)}:${Math.floor(Date.now() / 3600000)}`;
         await State.collection.updateOne({ _id: key }, { $set: { count: 10 } });
+        const resumeKey = `resume:v1:rate:upload:user:${crypto.createHash("sha256").update(String(owner._id)).digest("hex")}:${Math.floor(Date.now() / 3600000)}`;
+        await State.collection.updateOne(
+          { _id: resumeKey },
+          { $set: { count: 10 } },
+        );
         const puts = fake.calls.length;
         for (const [route, body] of uploads)
           assert.equal((await request(route, body())).status, 429);

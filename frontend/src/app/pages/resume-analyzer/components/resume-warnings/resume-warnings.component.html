@@ -1,0 +1,21 @@
+<!-- Consistency Warnings Card -->
+<app-ui-card class="warnings-card" *ngIf="warningsList.length">
+  <h4>Formatting & Consistency Indicators</h4>
+  <p class="evidence-subtitle">Observations identified during document structure evaluation.</p>
+  <div class="warnings-list">
+    <div *ngFor="let warn of warningsList" class="warning-item">
+      <div class="warning-header">
+        <app-ui-badge
+          [variant]="
+            warn.severity === 'high' ? 'danger' : warn.severity === 'medium' ? 'warning' : 'neutral'
+          "
+          size="sm"
+        >
+          {{ warn.severity | uppercase }}
+        </app-ui-badge>
+        <strong>{{ warn.message }}</strong>
+      </div>
+      <p *ngIf="warn.evidence" class="warning-evidence">{{ warn.evidence }}</p>
+    </div>
+  </div>
+</app-ui-card>
