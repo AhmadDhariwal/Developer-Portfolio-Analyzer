@@ -1,3 +1,4 @@
+const notificationPersistence = require("../services/notificationPersistenceService");
 const { clampScore: clamp } = require("../services/scoring/math");
 const developerContext = require("../services/developerContextService");
 const skillGapScoring = require("../services/skillGapScoringService");
@@ -12,7 +13,6 @@ const {
   parseGitHubUsername
 } = require("../services/githubservice");
 const aiService = require("../services/aiservice");
-const { createNotification } = require("../services/notificationService");
 const { getSkillGapPrompt } = require("../prompts/skillGapPrompt");
 const AnalysisCache = require("../models/analysisCache");
 const ResumeAnalysis = require("../models/resumeAnalysis");
@@ -126,14 +126,6 @@ const withBudget = async (promise, budgetMs, fallback = null) => {
   } finally {
     if (timer) clearTimeout(timer);
   }
-};
-
-const voidSkillGapNotification = (payload) => {
-  setImmediate(() => {
-    createNotification(payload).catch((error) => {
-      logSkillGapPipeline("notification_failed", { message: error.message }, "warn");
-    });
-  });
 };
 
 const isUsableSkillGapNarrative = (value, { min = 24, max = 800 } = {}) => {
@@ -2900,10 +2892,25 @@ const analyzeSkillGap = async (req, res) => {
         updatedAt: new Date()
       };
       await timer.time("cacheWriteMs", () =>
-        AnalysisCache.findOneAndUpdate(
-          scopedCacheKey,
-          { $set: { analysisData: fullResult, userId: req.user._id } },
-          { upsert: true }
+        notificationPersistence.commit(
+          req.user._id,
+          (session) =>
+            AnalysisCache.findOneAndUpdate(
+              scopedCacheKey,
+              { $set: { analysisData: fullResult, userId: req.user._id } },
+              { upsert: true, session }
+            ),
+          Array.isArray(fullResult.missingSkills) && fullResult.missingSkills.length >= 3
+            ? {
+                type: "career_update",
+                title: "Major Skill Gaps Identified",
+                message: `${fullResult.missingSkills.length} priority skill gaps are ready for review.`,
+                dedupeKey: `skill_gap:${signalHash}`,
+                dedupeWindowHours: 24,
+                preferenceKey: "skillTrendAlerts",
+                meta: { gapCount: fullResult.missingSkills.length }
+              }
+            : null
         )
       );
       if (resultCacheKey) {
@@ -2950,23 +2957,6 @@ const analyzeSkillGap = async (req, res) => {
     });
 
     completeInflightRequest(inflightKey, inflightDeferred, fullResult);
-    if (
-      !isTemporaryMode &&
-      req.user?._id &&
-      Array.isArray(fullResult.missingSkills) &&
-      fullResult.missingSkills.length >= 3
-    ) {
-      voidSkillGapNotification({
-        userId: req.user._id,
-        type: "career_update",
-        title: "Major Skill Gaps Identified",
-        message: `${fullResult.missingSkills.length} priority skill gaps are ready for review.`,
-        dedupeKey: `skill_gap:${signalHash}`,
-        dedupeWindowHours: 24,
-        preferenceKey: "skillTrendAlerts",
-        meta: { gapCount: fullResult.missingSkills.length }
-      });
-    }
     if (STAGE_TIMINGS_ENABLED) {
       fullResult.cacheMetadata = {
         ...(fullResult.cacheMetadata || {}),

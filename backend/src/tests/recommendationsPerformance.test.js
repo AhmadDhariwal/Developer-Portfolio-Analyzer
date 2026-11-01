@@ -217,10 +217,12 @@ const createHarness = ({
     findOneAndDelete: async () => null,
   });
   mock('services/aiVersionService.js', { createVersion: async () => {} });
-  mock('services/notificationService.js', {
-    createNotification: async () => {
+  mock('services/notificationPersistenceService.js', {
+    commit: async (_owner, work) => {
+      const result = await work(null);
       counters.notifications += 1;
       await delay(notificationDelayMs);
+      return result;
     },
   });
   mock('prompts/recommendationPrompt.js', { getRecommendationPrompt: () => 'prompt' });

@@ -7,6 +7,7 @@ const challenges = require('../utils/passwordResetChallenge');
 function auth(models = {}, services = {}) {
   return load('controllers/authcontroller.js', {
     '../models/user': models,
+    '../services/notificationPersistenceService': { commit: async (_owner, work) => work(null) },
     '../middleware/securityMiddleware': {
       registerAuthFailure: () => {},
       clearAuthFailures: () => {}
@@ -100,10 +101,7 @@ test('password reset uses compare-and-set so concurrent replay cannot overwrite 
     }
   });
   const res = response();
-  await api.resetPassword(
-    { body: { resetToken: token, newPassword: 'Updated-password-2!' } },
-    res
-  );
+  await api.resetPassword({ body: { resetToken: token, newPassword: 'Updated-password-2!' } }, res);
   assert.equal(res.statusCode, 400);
   assert.deepEqual(res.body, { message: 'Reset token expired or invalid.' });
 });

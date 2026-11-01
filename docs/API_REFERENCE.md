@@ -147,10 +147,11 @@ Use this as a route catalog. For implementation details, read the linked feature
 | Method | Endpoint                  | Auth          | Notes                                     |
 | ------ | ------------------------- | ------------- | ----------------------------------------- |
 | GET    | `/notifications`          | Private       | List notifications.                       |
-| GET    | `/notifications/stream`   | Public stream | Server-sent notification stream endpoint. |
+| GET    | `/notifications/stream`   | Private       | Bearer-header SSE invalidation stream; URL tokens are rejected. |
 | PUT    | `/notifications/:id/read` | Private       | Mark one read.                            |
-| PUT    | `/notifications/read-all` | Private       | Mark all read.                            |
+| PUT    | `/notifications/read-all` | Private       | Mark up to 500 owned alerts read; returns remaining work. |
 | DELETE | `/notifications/:id`      | Private       | Delete notification.                      |
+| POST   | `/notifications/bulk-delete` | Private    | Delete 1–100 selected owned notification IDs. |
 
 ## Public Profiles
 

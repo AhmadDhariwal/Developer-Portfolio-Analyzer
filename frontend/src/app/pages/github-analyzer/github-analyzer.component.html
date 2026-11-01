@@ -189,6 +189,7 @@
   <ng-container *ngIf="analysisReady && result && !hasEmptyRepositories">
     <!-- 1. Executive Summary -->
     <section class="executive-summary-section" aria-label="Executive Summary">
+      <span class="eyebrow">Executive Intelligence</span>
       <h2 class="panel-title">GitHub Executive Summary</h2>
       <div class="executive-card">
         <!-- Left: Readiness & Health Score -->
@@ -304,6 +305,7 @@
       <div class="breakdown-panel">
         <div class="panel-header-row">
           <div>
+            <span class="eyebrow">Scoring telemetry</span>
             <h2 class="panel-title">Score Breakdown</h2>
             <p class="panel-subtitle">
               Backend scores and weighted contributions · {{ ruleVersion }}
@@ -449,6 +451,7 @@
       <div class="repositories-panel">
         <div class="panel-header-row">
           <div>
+            <span class="eyebrow">Repository signals</span>
             <h2 class="panel-title">
               {{ showAllRepositories ? 'All Repositories' : 'Top Repositories' }}
             </h2>
@@ -681,6 +684,7 @@
       <div class="tech-panel">
         <div class="panel-header-row">
           <div>
+            <span class="eyebrow">Stack fingerprint</span>
             <h2 class="panel-title">Detected Technologies & Frameworks</h2>
             <p class="panel-subtitle">
               Libraries, tools, and frameworks detected across repository manifests and codebases.
@@ -709,6 +713,7 @@
       <div class="insights-panel">
         <div class="panel-header-row">
           <div>
+            <span class="eyebrow">Qualitative intelligence</span>
             <h2 class="panel-title">Profile Insights & Talking Points</h2>
             <p class="panel-subtitle">
               Qualitative narrative and interview positioning grounded in verified repository

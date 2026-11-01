@@ -1,3 +1,4 @@
+const notificationPersistence = require('./notificationPersistenceService');
 const developerContext = require('./developerContextService');
 const crypto = require('node:crypto');
 const fs = require('node:fs');
@@ -87,9 +88,7 @@ const resolveStoredResumePath = (value = '') => {
     const real = fs.realpathSync(candidate);
     const confined = path.relative(fs.realpathSync(uploadsDir), real);
     if (confined.startsWith('..') || path.isAbsolute(confined)) return '';
-    return fs.statSync(real).isFile() && path.extname(real).toLowerCase() === '.pdf'
-      ? real
-      : '';
+    return fs.statSync(real).isFile() && path.extname(real).toLowerCase() === '.pdf' ? real : '';
   } catch {
     return '';
   }
@@ -341,9 +340,7 @@ const normalizeUrl = (value = '') => {
   if (!raw) return '';
 
   try {
-    const candidate = /^[a-z][a-z0-9+.-]*:/i.test(raw)
-      ? raw
-      : `https://${raw.replace(/^\/+/, '')}`;
+    const candidate = /^[a-z][a-z0-9+.-]*:/i.test(raw) ? raw : `https://${raw.replace(/^\/+/, '')}`;
     const parsed = new URL(candidate);
     return ['http:', 'https:'].includes(parsed.protocol) && !parsed.username && !parsed.password
       ? parsed.toString()
@@ -353,8 +350,7 @@ const normalizeUrl = (value = '') => {
   }
 };
 
-const createValidationError = (message) =>
-  Object.assign(new Error(message), { statusCode: 400 });
+const createValidationError = (message) => Object.assign(new Error(message), { statusCode: 400 });
 const isPlainObject = (value) =>
   Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 const hasUnsafeMarkup = (value) =>
@@ -408,10 +404,7 @@ const validatePublicProfileUpdatePayload = (payload) => {
   }
   for (const [name, section] of Object.entries(payload.sections || {})) {
     if (!isPlainObject(section)) throw createValidationError('Invalid section.');
-    if (
-      name === 'visibility' &&
-      Object.values(section).some((value) => typeof value !== 'boolean')
-    )
+    if (name === 'visibility' && Object.values(section).some((value) => typeof value !== 'boolean'))
       throw createValidationError('Invalid section visibility.');
   }
   const hasUnsafeValue = (value) =>
@@ -435,9 +428,7 @@ const validatePublicProfileUpdatePayload = (payload) => {
     if (course.isVisible !== undefined && typeof course.isVisible !== 'boolean')
       throw createValidationError('Invalid course visibility.');
   }
-  Object.entries(payload.socialLinks || {}).forEach(([field, value]) =>
-    validateUrl(value, field)
-  );
+  Object.entries(payload.socialLinks || {}).forEach(([field, value]) => validateUrl(value, field));
   if (payload.sections?.cta !== undefined && !isPlainObject(payload.sections.cta))
     throw createValidationError('Invalid cta section.');
   validateUrl(payload.sections?.cta?.resumeUrl, 'resume URL');
@@ -735,12 +726,7 @@ const calculateProfileStrength = ({
   return Math.round((completed / checks.length) * 100);
 };
 
-async function buildPublicProfilePayload(
-  profile,
-  user,
-  req = null,
-  { publicOnly = false } = {}
-) {
+async function buildPublicProfilePayload(profile, user, req = null, { publicOnly = false } = {}) {
   const [skillScores, latestReport, defaultResume] = await Promise.all([
     profile.skills?.length ? [] : getSkillScores(profile.userId),
     publicOnly
@@ -753,9 +739,7 @@ async function buildPublicProfilePayload(
       : null
   ]);
 
-  const normalizedSkills = profile.skills?.length
-    ? normalizeSkills(profile.skills)
-    : skillScores;
+  const normalizedSkills = profile.skills?.length ? normalizeSkills(profile.skills) : skillScores;
   const normalizedProjects = normalizeProjects(profile.projects || []);
   const normalizedUpcomingProjectsFromField = normalizeUpcomingProjects(
     profile.upcomingProjects || []
@@ -763,9 +747,7 @@ async function buildPublicProfilePayload(
   const normalizedUpcomingProjects = normalizedUpcomingProjectsFromField.length
     ? normalizedUpcomingProjectsFromField
     : normalizedProjects
-        .filter((project) =>
-          ['in-progress', 'upcoming', 'planned'].includes(project.status || '')
-        )
+        .filter((project) => ['in-progress', 'upcoming', 'planned'].includes(project.status || ''))
         .map((project) => ({
           title: project.title,
           description: project.description,
@@ -973,9 +955,7 @@ const applySectionsUpdate = ({ profile, payload, user }) => {
   const incomingSections =
     payload.sections && typeof payload.sections === 'object' ? payload.sections : {};
   const incomingHero =
-    incomingSections.hero && typeof incomingSections.hero === 'object'
-      ? incomingSections.hero
-      : {};
+    incomingSections.hero && typeof incomingSections.hero === 'object' ? incomingSections.hero : {};
   const incomingSkills =
     incomingSections.skills && typeof incomingSections.skills === 'object'
       ? incomingSections.skills
@@ -993,9 +973,7 @@ const applySectionsUpdate = ({ profile, payload, user }) => {
       ? incomingSections.testimonials
       : {};
   const incomingCta =
-    incomingSections.cta && typeof incomingSections.cta === 'object'
-      ? incomingSections.cta
-      : {};
+    incomingSections.cta && typeof incomingSections.cta === 'object' ? incomingSections.cta : {};
   const incomingVisibility =
     incomingSections.visibility && typeof incomingSections.visibility === 'object'
       ? incomingSections.visibility
@@ -1070,9 +1048,24 @@ const updatePublicProfile = async (userId, payload = {}, req = null) => {
   applySocialLinksUpdate({ profile, payload, user });
 
   const nextAssets = assets.references(profile.toObject ? profile.toObject() : profile);
+  const notification = {
+    type: 'profile_update',
+    title: 'Public Portfolio Updated',
+    message: profile.isPublic
+      ? 'Your public portfolio changes are now live.'
+      : 'Your public portfolio settings were updated.',
+    dedupeKey: `public_portfolio_update:${profile.slug || userId}`,
+    dedupeWindowHours: 1,
+    meta: { slug: profile.slug || '', isPublic: Boolean(profile.isPublic) }
+  };
   if (previousAssets.size || nextAssets.size)
-    await assets.commitPortfolio(profile, previousAssets);
-  else await profile.save();
+    await assets.commitPortfolio(profile, previousAssets, notification);
+  else
+    await notificationPersistence.commit(
+      userId,
+      (session) => profile.save({ session }),
+      notification
+    );
   const savedProfile = await PublicProfile.findById(profile._id);
   return buildPublicProfilePayload(savedProfile || profile, user, req);
 };
@@ -1170,9 +1163,7 @@ const getOwnerResumeDownload = async (userId) => {
 };
 
 const resolveProfileResumeDownload = async (profile) => {
-  const user = await User.findById(profile.userId)
-    .select('defaultResumeFileId isActive')
-    .lean();
+  const user = await User.findById(profile.userId).select('defaultResumeFileId isActive').lean();
   if (user?.isActive === false) return null;
   if (!user?.defaultResumeFileId) return null;
 

@@ -9,7 +9,10 @@ const { spawn } = require("node:child_process");
 const { MongoClient } = require("mongodb");
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function startMongo({ replicaSet = "integration-live" } = {}) {
+async function startMongo({
+  replicaSet = "integration-live",
+  temporaryRoot = os.tmpdir(),
+} = {}) {
   assert.match(replicaSet, /^[a-zA-Z0-9_-]{1,64}$/);
   const binary =
     process.env.INTEGRATION_TEST_MONGOD ||
@@ -19,7 +22,7 @@ async function startMongo({ replicaSet = "integration-live" } = {}) {
     "Installed MongoDB server binary is required",
   );
   const directory = fs.mkdtempSync(
-    path.join(os.tmpdir(), "devinsight-real-integrations-"),
+    path.join(temporaryRoot, "devinsight-real-integrations-"),
   );
   const root = fs.realpathSync(directory);
   const listener = net.createServer();

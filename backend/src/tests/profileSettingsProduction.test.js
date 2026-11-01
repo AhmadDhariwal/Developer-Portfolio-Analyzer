@@ -5,7 +5,7 @@ const { load, query, response } = require('./fixtures/publicPortfolioFixture');
 const context = require('../services/developerContextService');
 function controller(overrides = {}) {
   return load('controllers/profilecontroller.js', {
-    '../services/notificationService': { createNotification: async () => null },
+    '../services/notificationPersistenceService': { commit: async (_owner, work) => work(null) },
     '../services/newsService': { invalidateNewsSignalCache: () => {} },
     './dashboardcontroller': { invalidateDashboardSummaryCache: () => {} },
     '../services/platformSettingsService': { getDeveloperSettingsSync: () => ({}) },

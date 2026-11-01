@@ -1,3 +1,4 @@
+const notificationPersistence = require('./notificationPersistenceService');
 const sprintProgressScore = require('./scoring/sprintProgressScore');
 const { clampScore: clamp } = require('./scoring/math');
 const CareerSprint = require('../models/careerSprint');
@@ -765,7 +766,19 @@ const toggleTaskCompletion = async (userId, sprintId, taskId, isCompleted) => {
   }
 
   sprint.level = levelFromXp(sprint.xpPoints);
-  await sprint.save();
+  await notificationPersistence.commit(
+    userId,
+    (session) => sprint.save({ session }),
+    nextCompleted
+      ? {
+          type: 'success',
+          title: 'Sprint Task Completed',
+          message: 'A Career Sprint task was completed.',
+          eventId: `sprint_completed:${sprintId}:${taskId}:${task.completedAt?.toISOString() || Number(sprint.__v || 0) + 1}`,
+          meta: { sprintId: String(sprintId), taskId: String(taskId), target: '/app/career-sprint' }
+        }
+      : null
+  );
   invalidateCareerSprintCache(userId);
 
   const previousSprint = await findPreviousSprint(userId, sprint);
@@ -808,7 +821,13 @@ const restoreStreak = async (userId, sprintId) => {
   const restored = restoreStreakFn(sprint);
   if (!restored) return null;
 
-  await sprint.save();
+  await notificationPersistence.commit(userId, (session) => sprint.save({ session }), {
+    type: 'success',
+    title: 'Career Streak Restored',
+    message: `Your ${Number(sprint.currentStreak || sprint.streak || 0)} day streak is active again.`,
+    eventId: `sprint_restored:${sprintId}:${Number(sprint.__v || 0) + 1}`,
+    meta: { sprintId: String(sprintId), target: '/app/career-sprint' }
+  });
   invalidateCareerSprintCache(userId);
   const previousSprint = await findPreviousSprint(userId, sprint);
   return serializeSprint(sprint, { previousSprint, signals: null });

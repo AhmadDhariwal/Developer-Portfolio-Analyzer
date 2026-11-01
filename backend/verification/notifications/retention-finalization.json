@@ -1,0 +1,169 @@
+{
+  "status": "DEVELOPMENT COMPLETE — STABLE CANDIDATE — PRODUCTION GATES PENDING",
+  "date": "2026-11-01",
+  "branch": "task/notifications",
+  "source": "cf499746612328338cd2d5db1bcb531db6bb7ef8",
+  "pullRequestTarget": null,
+  "initialTreeAndIndex": "clean",
+  "productionDataUsed": false,
+  "liveRetentionEnabled": false,
+  "historicalDataDeleted": false,
+  "deployedOrPushed": false,
+  "policy": {
+    "enabled": false,
+    "approved": false,
+    "workerEnabled": false,
+    "proposedReadDays": 90,
+    "proposedUnreadDays": 180,
+    "ageAnchor": "creation timestamp and current read state; product approval pending",
+    "excludedFromOrdinaryRetention": [
+      "security:true",
+      "missing/null security classification",
+      "audit history",
+      "idempotency receipts"
+    ]
+  },
+  "implementation": {
+    "clearAllBatchLimit": 100,
+    "clearAllBatchesPerConfirmation": 5,
+    "clearAllWindow": "account and session-bound 15-minute body-only signed continuation; transactionally allocated inboxRevision protects later arrivals",
+    "worker": "existing Mongo governance collection; majority token lease; max 100 candidates / five owners; indexed capped scans; per-owner bounded transaction; Redis optional and unchanged"
+  },
+  "verification": {
+    "backend": {
+      "command": "node --test backend/src/tests/notificationsRetention.test.js",
+      "passed": 9,
+      "failed": 0,
+      "indexScan": {
+        "returned": 100,
+        "examined": 0,
+        "keys": 100
+      },
+      "multiWorker": [
+        {
+          "busy": true,
+          "deletedCount": 0
+        },
+        {
+          "deletedCount": 100,
+          "examined": 100,
+          "owners": 1
+        }
+      ]
+    },
+    "frontend": {
+      "command": "npm test -- --watch=false --include=<five notification spec paths>; affected notification.service.spec.ts rerun",
+      "fiveFileRunPassed": 39,
+      "finalServiceRerunPassed": 17,
+      "distinctCases": 40,
+      "failed": 0,
+      "commands": [
+        "npm test -- --watch=false --include=src/app/shared/services/notification.service.spec.ts --include=src/app/pages/notifications/notifications.component.spec.ts --include=src/app/layout/main-layout/navbar/navbar.spec.ts --include=src/app/shared/utils/notification-navigation.spec.ts --include=src/app/pages/notifications/components/notification-confirm-dialog/notification-confirm-dialog.component.spec.ts",
+        "npm test -- --watch=false --include=src/app/shared/services/notification.service.spec.ts"
+      ]
+    },
+    "browser": {
+      "command": "NOTIFICATION_RETENTION_BROWSER=true NOTIFICATION_BROWSER_PREFIX=retention node backend/src/scripts/verifyNotificationsBrowser.js",
+      "passedGroups": 7,
+      "runtimeErrors": [],
+      "screenshots": [
+        "retention-notifications-1440-dark.png",
+        "retention-notifications-1440-light.png",
+        "retention-notifications-390-dark.png",
+        "retention-notifications-390-light.png"
+      ],
+      "syntheticLoopbackOnly": true,
+      "network": "Bounded Clear All POSTs and final GET captured in retained browser JSON; existing historical CDP before/after evidence preserved.",
+      "clearAllRequestCount": 1,
+      "clearAllResponse": {
+        "status": 200,
+        "deletedCount": 2,
+        "unreadCount": 0
+      }
+    },
+    "typescript": "PASS: node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.app.json",
+    "build": "PASS: npm run build (production); existing unrelated landing-page SCSS budget warning 56.67 kB / 48 kB",
+    "formatting": "PASS: repository Prettier write and check on explicit changed paths",
+    "javascriptSyntax": "PASS: node --check on nine changed/new backend JavaScript files",
+    "gitWhitespace": "PASS: git diff --check and git diff --cached --check",
+    "postCleanup": "Focused backend/service tests, TypeScript, production build, formatting and Git checks rerun after temporary-file cleanup."
+  },
+  "inventory": {
+    "modified": [
+      "backend/index.js",
+      "backend/src/controllers/notificationcontroller.js",
+      "backend/src/models/notification.js",
+      "backend/src/routes/notification.routes.js",
+      "backend/src/scripts/verifyNotificationsBrowser.js",
+      "backend/src/services/notificationService.js",
+      "backend/src/tests/fixtures/notificationWorker.js",
+      "backend/verification/notifications/NOTIFICATIONS-PRODUCTION-FINAL.md",
+      "frontend/src/app/pages/notifications/notifications.component.html",
+      "frontend/src/app/pages/notifications/notifications.component.scss",
+      "frontend/src/app/pages/notifications/notifications.component.spec.ts",
+      "frontend/src/app/pages/notifications/notifications.component.ts",
+      "frontend/src/app/shared/services/notification.service.spec.ts",
+      "frontend/src/app/shared/services/notification.service.ts"
+    ],
+    "added": [
+      "backend/src/services/notificationRetentionService.js",
+      "backend/src/tests/notificationsRetention.test.js",
+      "backend/verification/notifications/retention-finalization.json",
+      "backend/verification/notifications/retention-results.json",
+      "frontend/verification/notifications/retention-browser-results.json",
+      "frontend/verification/notifications/retention-notifications-1440-dark.png",
+      "frontend/verification/notifications/retention-notifications-1440-light.png",
+      "frontend/verification/notifications/retention-notifications-390-dark.png",
+      "frontend/verification/notifications/retention-notifications-390-light.png"
+    ],
+    "moved": [],
+    "deletedSourceFiles": []
+  },
+  "cleanup": {
+    "ownership": "All listed logs and empty runtime folder created by this task; absent at clean preflight. No recursive deletion or destructive Git cleanup. Essential evidence retained.",
+    "deletedTemporaryFiles": [
+      {
+        "path": "backend/verification/notifications/retention-backend.log",
+        "sha256": "24b9aef2bd3df3594840e671c274c60060a6c2ea7d17755a0260baeec6ade24d"
+      },
+      {
+        "path": "frontend/verification/notifications/retention-frontend.log",
+        "sha256": "3aa15539ecd2c03cca0fa4d474df8194620b5bd65bc86d928bc90a78f41c081f"
+      },
+      {
+        "path": "frontend/verification/notifications/retention-recovery.log",
+        "sha256": "7e6fa54591057927bd4989ba0afccfd8785a13d26c772c2558e54e411b17cce8"
+      },
+      {
+        "path": "frontend/verification/notifications/retention-build.log",
+        "sha256": "9f528c9c1f3adb454d8c8adbda7cf86fcf4f23b22b63823d392fc962839076b8"
+      }
+    ],
+    "removedEmptyRuntimeDirectory": "frontend/verification/notifications/retention-runtime",
+    "backendDisposableRuntime": {
+      "mongoStopped": true,
+      "temporaryFilesRemoved": 96,
+      "productionDataUsed": false
+    },
+    "browserDisposableRuntime": {
+      "mongoStopped": true,
+      "temporaryFilesRemoved": 95,
+      "productionDataUsed": false
+    }
+  },
+  "evidenceSha256": {
+    "backend/verification/notifications/retention-results.json": "c1ab9f8bd59738de6d8f55c96fe73958915037ae1db7b35ddd7eebed72e5212b",
+    "frontend/verification/notifications/retention-browser-results.json": "24953d50453315fdfa62730430fbd49a1b46a6213d33ee5f3dbe6d3a777ce8fe",
+    "frontend/verification/notifications/retention-notifications-1440-dark.png": "9331f6d4917ff2d9fee7df6e74261fcebdc412453c0cc02d0951043784f92f47",
+    "frontend/verification/notifications/retention-notifications-1440-light.png": "f16ac6b1d63c8c7a1f5b6ff5623fee16e7f8afd43eca6988533417e28811d1ba",
+    "frontend/verification/notifications/retention-notifications-390-dark.png": "74ac021bad34a2d37b80e5f58796648120bc95ae77ec2ab0c4d8c7586c137126",
+    "frontend/verification/notifications/retention-notifications-390-light.png": "9937f760a62b0b3916947a0d18a7eb71f8837feefd090dac98d2a6982d6d5a10"
+  },
+  "productionGates": [
+    "Approve proposed durations and creation-age/read-state semantics.",
+    "Approve separate security, audit and receipt policies; inspect legacy classification and orphan data.",
+    "Separate authorization required for historical physical cleanup and live retention activation.",
+    "Deploy/drain all revision-aware producers before Clear All rollout.",
+    "Verify additive non-TTL indexes, query plans, backup/recovery, policy consistency, fleet cleanup capacity and real proxy/SSE topology."
+  ]
+}
