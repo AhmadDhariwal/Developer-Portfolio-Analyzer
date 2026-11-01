@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { defer, Observable, of } from 'rxjs';
 import { finalize, shareReplay, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service';
@@ -28,7 +28,7 @@ export interface TechnologyDistribution {
 
 export interface RepositoryActivity {
   repo: string;
-  commits: number;
+  commits: number | null;
 }
 
 export interface ScoreBreakdownItem {
@@ -163,18 +163,23 @@ export interface ActiveUsername {
 export class GithubService {
   private readonly baseUrl = environment.apiBaseUrl;
   private readonly ttlMs = 24 * 60 * 60 * 1000;
-  private readonly memoryCache = new Map<string, { result: GitHubAnalysisResult; expiresAt: number }>();
+  private readonly memoryCache = new Map<
+    string,
+    { result: GitHubAnalysisResult; expiresAt: number }
+  >();
   private readonly inflight = new Map<string, Observable<GitHubAnalysisResult>>();
+  private cacheGeneration = 0;
 
   constructor(
     private readonly http: HttpClient,
     private readonly frontendCache: FrontendAnalysisCacheService,
-    private readonly cacheInvalidation: FrontendCacheInvalidationService
+    private readonly cacheInvalidation: FrontendCacheInvalidationService,
   ) {
     this.cacheInvalidation.register('github', () => this.clearCache());
   }
 
   clearCache(): void {
+    this.cacheGeneration += 1;
     this.memoryCache.clear();
     this.inflight.clear();
   }
@@ -186,19 +191,21 @@ export class GithubService {
   }
 
   analyzeProfile(username: string, forceRefresh = false): Observable<GitHubAnalysisResult> {
-    return this.cachedRequest('public', username, forceRefresh, () => this.http.post<GitHubAnalysisResult>(
-      `${this.baseUrl}/github/analyze`,
-      { username, forceRefresh }
-    ));
+    return this.cachedRequest('public', username, forceRefresh, () =>
+      this.http.post<GitHubAnalysisResult>(`${this.baseUrl}/github/analyze`, {
+        username,
+        forceRefresh,
+      }),
+    );
   }
 
   analyzeAndSave(username: string, forceRefresh = false): Observable<GitHubAnalysisResult> {
     return this.cachedRequest('save', username, forceRefresh, () => {
       this.frontendCache.clearCurrentSignalHash();
-      return this.http.post<GitHubAnalysisResult>(
-        `${this.baseUrl}/github/analyze-save`,
-        { username, forceRefresh }
-      );
+      return this.http.post<GitHubAnalysisResult>(`${this.baseUrl}/github/analyze-save`, {
+        username,
+        forceRefresh,
+      });
     });
   }
 
@@ -210,18 +217,26 @@ export class GithubService {
     mode: 'public' | 'save',
     username: string,
     forceRefresh: boolean,
-    requestFactory: () => Observable<GitHubAnalysisResult>
+    requestFactory: () => Observable<GitHubAnalysisResult>,
   ): Observable<GitHubAnalysisResult> {
     const key = this.cacheKey(username, mode);
     const cached = !forceRefresh ? this.memoryCache.get(key) : null;
-    if (cached && cached.expiresAt > Date.now()) return of(this.withFrontendCacheStatus(cached.result));
+    if (cached && cached.expiresAt > Date.now())
+      return of(this.withFrontendCacheStatus(cached.result));
 
     const existing = this.inflight.get(key);
     if (existing) return existing;
 
-    const request$ = requestFactory().pipe(
+    const generation = this.cacheGeneration;
+    const request$ = defer(requestFactory).pipe(
       tap((result) => {
-        if (result?.rateLimited || result?.warning || result?.cache?.source === 'stale-cache') {
+        if (
+          generation !== this.cacheGeneration ||
+          result?.rateLimited ||
+          result?.warning ||
+          result?.cache?.stale ||
+          result?.cache?.source === 'stale-cache'
+        ) {
           return;
         }
         if (mode === 'save') {
@@ -230,11 +245,13 @@ export class GithubService {
         }
         this.memoryCache.set(key, {
           result,
-          expiresAt: this.getCacheExpiry(result)
+          expiresAt: this.getCacheExpiry(result),
         });
       }),
-      finalize(() => this.inflight.delete(key)),
-      shareReplay({ bufferSize: 1, refCount: false })
+      finalize(() => {
+        if (this.inflight.get(key) === request$) this.inflight.delete(key);
+      }),
+      shareReplay({ bufferSize: 1, refCount: false }),
     );
 
     this.inflight.set(key, request$);
@@ -256,12 +273,15 @@ export class GithubService {
       cache: {
         ...result.cache,
         source: 'frontend-cache',
-        hit: true
-      }
+        hit: true,
+      },
     };
   }
 
   private cacheKey(username: string, mode: 'public' | 'save'): string {
-    return `${mode}:${String(username || '').trim().replace(/^@/, '').toLowerCase()}`;
+    return `${mode}:${String(username || '')
+      .trim()
+      .replace(/^@/, '')
+      .toLowerCase()}`;
   }
 }

@@ -12,9 +12,14 @@ test(
   'notifications: disposable replica set, atomic production and two real workers',
   { timeout: 120000 },
   async (t) => {
+    const output = path.resolve(
+      process.env.NOTIFICATION_VERIFICATION_DIRECTORY ||
+        path.join(__dirname, '../../verification/notifications')
+    );
+    fs.mkdirSync(output, { recursive: true });
     const runtime = await startMongo({
       replicaSet: 'notification-acceptance',
-      temporaryRoot: path.resolve(__dirname, '../../verification/notifications')
+      temporaryRoot: output
     });
     const previousSecret = process.env.JWT_SECRET;
     process.env.JWT_SECRET = randomBytes(32).toString('hex');
@@ -39,10 +44,7 @@ test(
       evidence.cleanup = await runtime.stop();
       if (previousSecret === undefined) delete process.env.JWT_SECRET;
       else process.env.JWT_SECRET = previousSecret;
-      const report = path.resolve(
-        __dirname,
-        '../../verification/notifications/integration-results.json'
-      );
+      const report = path.join(output, 'integration-results.json');
       fs.mkdirSync(path.dirname(report), { recursive: true });
       fs.writeFileSync(report, JSON.stringify(evidence, null, 2) + '\n');
     });

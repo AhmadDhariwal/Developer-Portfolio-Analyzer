@@ -1,0 +1,206 @@
+{
+  "status": 200,
+  "data": {
+    "dataVersion": "github-normalized-v2",
+    "scoring": {
+      "score": 0,
+      "breakdown": {
+        "codeQuality": {
+          "value": 0,
+          "weight": 0.24,
+          "contribution": 0,
+          "available": true
+        },
+        "projectDiversity": {
+          "value": 0,
+          "weight": 0.17,
+          "contribution": 0,
+          "available": true
+        },
+        "contribution": {
+          "value": 0,
+          "weight": 0.18,
+          "contribution": 0,
+          "available": true
+        },
+        "consistency": {
+          "value": 0,
+          "weight": 0.13,
+          "contribution": 0,
+          "available": true
+        },
+        "projectImpact": {
+          "value": 0,
+          "weight": 0.14,
+          "contribution": 0,
+          "available": true
+        },
+        "profileStrength": {
+          "value": 0,
+          "weight": 0.14,
+          "contribution": 0,
+          "available": true
+        }
+      },
+      "warnings": [],
+      "evidence": {
+        "sources": [
+          {
+            "type": "github-user",
+            "id": "HydronChain"
+          }
+        ],
+        "inputs": {
+          "codeQuality": 0,
+          "projectDiversity": 0,
+          "contribution": 0,
+          "consistency": 0,
+          "projectImpact": 0,
+          "profileStrength": 0
+        },
+        "facts": {
+          "repoCount": 0,
+          "totalStars": 0,
+          "totalCommits": 0
+        }
+      },
+      "ruleVersion": "github-health-score-v1",
+      "calculatedAt": "2026-11-01T12:26:18.793Z"
+    },
+    "fetchedAt": "2026-11-01T12:26:18.793Z",
+    "repoCount": 0,
+    "totalStars": 0,
+    "totalForks": 0,
+    "followers": 923,
+    "developerLevel": "Beginner",
+    "strengths": [],
+    "weakAreas": [
+      "No public owner repositories were found"
+    ],
+    "summary": "No public repositories were available for analysis.",
+    "explanation": "GitHub user data was found, but there were no public repositories to score.",
+    "scores": {
+      "codeQuality": 0,
+      "projectDiversity": 0,
+      "originality": 0,
+      "contribution": 0,
+      "consistency": 0,
+      "projectImpact": 0,
+      "skillCoverage": 0,
+      "profileStrength": 0,
+      "healthScore": 0,
+      "overall": 0
+    },
+    "githubHealthScore": 0,
+    "activityScore": 0,
+    "languageDistribution": [],
+    "mainLanguageDistribution": [],
+    "supportLanguageDistribution": [],
+    "rawLanguageBytes": {},
+    "languageDistributionSource": "missing",
+    "technologyDistribution": [],
+    "technologies": [],
+    "technologyCategories": {},
+    "repositoryActivity": [],
+    "repositories": [],
+    "repositoryQuality": [],
+    "recruiterInsights": {
+      "headline": "No repository signal available",
+      "proofPoints": [],
+      "recruiterSummary": "No public repositories were available for recruiter review.",
+      "interviewTalkingPoints": []
+    },
+    "githubSignals": {
+      "username": "HydronChain",
+      "scoring": {
+        "score": 0,
+        "breakdown": {
+          "codeQuality": {
+            "value": 0,
+            "weight": 0.24,
+            "contribution": 0,
+            "available": true
+          },
+          "projectDiversity": {
+            "value": 0,
+            "weight": 0.17,
+            "contribution": 0,
+            "available": true
+          },
+          "contribution": {
+            "value": 0,
+            "weight": 0.18,
+            "contribution": 0,
+            "available": true
+          },
+          "consistency": {
+            "value": 0,
+            "weight": 0.13,
+            "contribution": 0,
+            "available": true
+          },
+          "projectImpact": {
+            "value": 0,
+            "weight": 0.14,
+            "contribution": 0,
+            "available": true
+          },
+          "profileStrength": {
+            "value": 0,
+            "weight": 0.14,
+            "contribution": 0,
+            "available": true
+          }
+        },
+        "warnings": [],
+        "evidence": {
+          "sources": [
+            {
+              "type": "github-user",
+              "id": "HydronChain"
+            }
+          ],
+          "inputs": {
+            "codeQuality": 0,
+            "projectDiversity": 0,
+            "contribution": 0,
+            "consistency": 0,
+            "projectImpact": 0,
+            "profileStrength": 0
+          },
+          "facts": {
+            "repoCount": 0,
+            "totalStars": 0,
+            "totalCommits": 0
+          }
+        },
+        "ruleVersion": "github-health-score-v1",
+        "calculatedAt": "2026-11-01T12:26:18.793Z"
+      },
+      "analyzedAt": "2026-11-01T12:26:18.793Z",
+      "analysisVersion": "github-v2"
+    },
+    "comparison": null,
+    "analysisVersion": "github-v2",
+    "cache": {
+      "source": "fresh",
+      "hit": false,
+      "expiresAt": "2026-11-02T12:26:18.795Z",
+      "cachedAt": "2026-11-01T12:26:18.810Z",
+      "fetchedAt": "2026-11-01T12:26:18.793Z",
+      "stale": false
+    },
+    "analysisHistory": [
+      {
+        "analyzedAt": "2026-11-01T12:26:18.793Z",
+        "healthScore": 0,
+        "repoCount": 0,
+        "totalStars": 0,
+        "totalForks": 0,
+        "followers": 923,
+        "topLanguages": [],
+        "topTechnologies": []
+      }
+    ]
+  }
+}

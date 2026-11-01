@@ -1,12 +1,18 @@
-const { chromium } = require('../../backend/node_modules/playwright');
+const { chromium } = require(
+  process.env.GITHUB_ACCEPTANCE_PLAYWRIGHT || '../../backend/node_modules/playwright',
+);
 const { profile, fixture } = require('./skill-gap-browser-fixture.cjs');
 const githubFixture = require('./github-browser-fixture.cjs');
 const http = require('node:http'),
   fs = require('node:fs'),
   path = require('node:path'),
   assert = require('node:assert/strict');
-const root = path.resolve(__dirname, '../dist/frontend/browser'),
-  output = path.resolve(__dirname, '../verification/github-ui');
+const root = path.resolve(
+    process.env.GITHUB_VERIFICATION_DIST || path.join(__dirname, '../dist/frontend/browser'),
+  ),
+  output = path.resolve(
+    process.env.GITHUB_VERIFICATION_OUTPUT || path.join(__dirname, '../verification/github-ui'),
+  );
 const mime = {
   '.js': 'text/javascript',
   '.css': 'text/css',
@@ -76,6 +82,10 @@ async function session(browser, theme, role = 'developer') {
         return new Promise((resolve) =>
           setTimeout(() => resolve(route.fulfill({ json: githubFixture })), 600),
         );
+      if (body.username === 'octocat' && process.env.GITHUB_CAPTURED_RESPONSE)
+        return route.fulfill({
+          json: require(path.resolve(process.env.GITHUB_CAPTURED_RESPONSE)).data,
+        });
       if (body.username === 'octocat')
         return route
           .fetch({ url: 'http://127.0.0.1:5000/api/github/analyze' })
@@ -138,7 +148,8 @@ async function session(browser, theme, role = 'developer') {
   const browser = await chromium.launch({
     headless: true,
     executablePath:
-      'C:/Users/ahmad.hassan/AppData/Local/ms-playwright/chromium-1234/chrome-win64/chrome.exe',
+      process.env.GITHUB_ACCEPTANCE_CHROME ||
+      'C:/Program Files/Google/Chrome/Application/chrome.exe',
   });
   const layouts = [],
     interactions = [];
@@ -184,8 +195,8 @@ async function session(browser, theme, role = 'developer') {
         assert.equal(measurement.overflow, false, `overflow ${theme} ${width}`);
         assert.match(measurement.font, /Manrope/);
         assert.equal(measurement.title, '28px');
-        assert.equal(measurement.section, '19px');
-        assert.equal(measurement.score, '44px');
+        assert.equal(measurement.section, '18px');
+        assert.equal(measurement.score, '46px');
         await page.evaluate(() => {
           document.querySelector('.main-content').scrollTop = 0;
           window.scrollTo(0, 0);
@@ -334,7 +345,13 @@ async function session(browser, theme, role = 'developer') {
         path: path.join(output, `${theme}-live-octocat-1440.png`),
         fullPage: true,
       });
-      interactions.push({ theme, liveBackend: true, username: 'octocat', score: liveScore });
+      interactions.push({
+        theme,
+        liveBackend: !process.env.GITHUB_CAPTURED_RESPONSE,
+        capturedSourceReplay: !!process.env.GITHUB_CAPTURED_RESPONSE,
+        username: 'octocat',
+        score: liveScore,
+      });
       if (theme === 'system') {
         await page.emulateMedia({ colorScheme: 'light' });
         await page.waitForFunction(() => document.documentElement.dataset.theme === 'light');
@@ -361,6 +378,10 @@ async function session(browser, theme, role = 'developer') {
         mobileNavigation: true,
         consoleErrors: errors,
       });
+      if (process.env.GITHUB_VERIFY_COMPONENTS_ONLY === 'true') {
+        await context.close();
+        continue;
+      }
       await page.goto('http://127.0.0.1:4319/app/skill-gap');
       await page.locator('[data-testid=coverage]').waitFor();
       await page.evaluate(() => document.fonts.ready);

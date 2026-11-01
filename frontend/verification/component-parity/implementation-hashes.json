@@ -1,0 +1,322 @@
+[
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/scripts/prepare-component-styles.cjs",
+    "kind": "added",
+    "sha256": "d6de23d251c7bc18700f7aeb0e1fa77150e3decca861c2dd5b1d3c3cb4ba6f78"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/scripts/verify-component-parity.cjs",
+    "kind": "added",
+    "sha256": "a7d306d91b4fbcfc19c63cc25208a6935f9b4e3b97efe83f7aef7a91398b7dc4"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/scripts/verify-github-ui.cjs",
+    "kind": "modified",
+    "sha256": "229c77c05afeb3871e954cd8b83c0641a2b4ed4488d3b81b28adaf7917d12cde"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/components/github-charts/github-charts.component.html",
+    "kind": "added",
+    "sha256": "05c79ed4e9239993659b31dd4f1953dad1f6e4a843ee5e7456c24c341d4c3e4f"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/components/github-charts/github-charts.component.scss",
+    "kind": "added",
+    "sha256": "a27c6c05869e8321b8e3fe0286d18b37a6e9e2d4a740835a295d09101359e96d"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/components/github-charts/github-charts.component.ts",
+    "kind": "added",
+    "sha256": "5c43d582e523312f6a5840d456cebd169b59ad153195665d905520b172bdc440"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/components/github-health-overview/github-health-overview.component.html",
+    "kind": "added",
+    "sha256": "249b68377048e3f85cb14fc54febdc350e9afec36e78f056d8cd7e24cc9348e1"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/components/github-health-overview/github-health-overview.component.scss",
+    "kind": "added",
+    "sha256": "cd410370540bf3877c871476f8201d442916f850bbf12750506d1742d8428faa"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/components/github-health-overview/github-health-overview.component.ts",
+    "kind": "added",
+    "sha256": "b509c9decf61e776c99a0200877d8c979ab6b60655b9efdf803904422bf76ae7"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/components/github-insights/github-insights.component.html",
+    "kind": "added",
+    "sha256": "6fde5e56c5b418aacc1c01b0299bef191cc5e0e0274c5c6300f993af9898399c"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/components/github-insights/github-insights.component.scss",
+    "kind": "added",
+    "sha256": "c7dafeefacd675164a5d5e81f1257d0d7e098e93ef8571e49c9299cad6e4df50"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/components/github-insights/github-insights.component.ts",
+    "kind": "added",
+    "sha256": "4958468418f7c5190322509863d29bf0fcd6ace56c19b17a48ee14482337a1a2"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/components/github-presentation.components.spec.ts",
+    "kind": "added",
+    "sha256": "e3451d7fa29314a065d3f4dd08eb8e30e2df18627ced7eb2a8c2b97302c08320"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/components/github-profile-search/github-profile-search.component.html",
+    "kind": "added",
+    "sha256": "0075aa7dd3bd77f84f41dabcfca408601f984352c4560fcb6915debd614619e4"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/components/github-profile-search/github-profile-search.component.scss",
+    "kind": "added",
+    "sha256": "e73c48d3e14237b2bca4b8bbd6f72c5f25eecb3895468a8af7893893aa091371"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/components/github-profile-search/github-profile-search.component.ts",
+    "kind": "added",
+    "sha256": "a4051afe747668cbc7ed3810eea6ad6dc17898baa42cb9d85f20d5c5f3f8f545"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/components/github-repository-table/github-repository-table.component.html",
+    "kind": "added",
+    "sha256": "d0e13af8ac1951b0c840f1da08436def0ee703ce0991049b7ed9b04ea363da01"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/components/github-repository-table/github-repository-table.component.scss",
+    "kind": "added",
+    "sha256": "397edf4646a052c60d546c8f929bd2e4e348d0ea9e5600a0524ee889f7e2d292"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/components/github-repository-table/github-repository-table.component.ts",
+    "kind": "added",
+    "sha256": "3df10acac077f6536751addd36167889adbd12a3c2dd2e7012abf22206e0703d"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/components/github-scoring-breakdown/github-scoring-breakdown.component.html",
+    "kind": "added",
+    "sha256": "1698583c71ae21487c612c8fa48c85f20ae9e4c97ec98e31b9b6e752bb5a5eb9"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/components/github-scoring-breakdown/github-scoring-breakdown.component.scss",
+    "kind": "added",
+    "sha256": "c26feb4bc2bccfbfe9f072b5ffa4e83d65b22ba1a64aaed813dfb77b49e9bd60"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/components/github-scoring-breakdown/github-scoring-breakdown.component.ts",
+    "kind": "added",
+    "sha256": "23665b65cc56b0b272e35a5f25b8691a070d20abb580c81fc9b5fe56eaa5304a"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/components/github-technical-audit/github-technical-audit.component.html",
+    "kind": "added",
+    "sha256": "ca5e589e291be16665f2a4d92f076cd2ae9433580a579921bba3af3b283ff86a"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/components/github-technical-audit/github-technical-audit.component.scss",
+    "kind": "added",
+    "sha256": "23a40b61dd3d175632ccee9d6371364d6598cad06c163f6daaeb8f2c5687db9c"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/components/github-technical-audit/github-technical-audit.component.ts",
+    "kind": "added",
+    "sha256": "0446f5f74863a763355e0222d32d12526c67e71316528c6771e25746af4029c7"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/components/github-technology-fingerprint/github-technology-fingerprint.component.html",
+    "kind": "added",
+    "sha256": "3ee4f97487848733d1e1e11f9d79942a9289c25777c0639bf25100200024940d"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/components/github-technology-fingerprint/github-technology-fingerprint.component.scss",
+    "kind": "added",
+    "sha256": "a74df90501b25bb7dbba7875426ad07252930f3170d4a1ee71a9e8d088c0ca51"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/components/github-technology-fingerprint/github-technology-fingerprint.component.ts",
+    "kind": "added",
+    "sha256": "6e4b9991344a66fdfd687b4a7f26e8ff99ce46750457a25c96314daa37466879"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/github-analyzer.component.html",
+    "kind": "modified",
+    "sha256": "0ab93fde51ec9b7349cb1fe760b0f4c5dd7e8fdb22169cdbed49fa0b7b9eae75"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/github-analyzer.component.scss",
+    "kind": "modified",
+    "sha256": "db9c9bf6a63e2373165c96cf7239afd721117be87fda2a715a4e975f0eddb9a6"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/github-analyzer.component.ts",
+    "kind": "modified",
+    "sha256": "a052c955426a59e3474b9a306d0fcb93880bc2a3f35e55c219c696d09082fd0d"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/github-presentation.ts",
+    "kind": "added",
+    "sha256": "d8e7b2dc98f7b41c6be2f241e5dce0c0c32f5e102b30e336d248a4779212e9d1"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/github-view.models.ts",
+    "kind": "added",
+    "sha256": "36f6d41a521a639befa91d1fef51fd0f6a0af211070951f58add9987018c11aa"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/github-analyzer/styles/_github-analyzer-theme.scss",
+    "kind": "added",
+    "sha256": "d128c74eacf34a9f231c6b93f17b3c9f74c93c3d3cd2deb25ea162fe9928a300"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/notifications/components/notification-empty-state/notification-empty-state.component.html",
+    "kind": "added",
+    "sha256": "717817946356f8e23c3ff417e7d60d25801b1400be077af28c5ec0d74a1c7404"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/notifications/components/notification-empty-state/notification-empty-state.component.scss",
+    "kind": "added",
+    "sha256": "40275c2807ac8e19ee507bfb5d24d7b0893c792608cec2d60f6ebb9437e71431"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/notifications/components/notification-empty-state/notification-empty-state.component.ts",
+    "kind": "added",
+    "sha256": "a3db17e4c6cbd6f593eb7bef971d3c16e3314bdcd6dcc43b16e6d18d41d12f45"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/notifications/components/notification-feed/notification-feed.component.html",
+    "kind": "added",
+    "sha256": "58199a32c0d9e91985ec8e765cc6fccf9da0d36d4048b6222c7f90cc52dbf21f"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/notifications/components/notification-feed/notification-feed.component.scss",
+    "kind": "added",
+    "sha256": "e3cf9315dfd1160cf0e39fded6b9b9cf3f7ea72f434134db902688f1464d1452"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/notifications/components/notification-feed/notification-feed.component.ts",
+    "kind": "added",
+    "sha256": "47de49780d74614ff7027ef265f685232892296fb10d69b3dd92d60d92083f35"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/notifications/components/notification-filters/notification-filters.component.html",
+    "kind": "added",
+    "sha256": "24b470e9e754874e912056ccc4c16455f92d256c12c5408aa147e3f2bb935bd8"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/notifications/components/notification-filters/notification-filters.component.scss",
+    "kind": "added",
+    "sha256": "01df9cd4530b544f51a9b3ac2afcde162dea05d2f78634655fb4f00ef90c2d0b"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/notifications/components/notification-filters/notification-filters.component.ts",
+    "kind": "added",
+    "sha256": "2f608f185e39e16b8039a6583604e245f0b4dec080c8c3c9ae3d827e54e6c05b"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/notifications/components/notification-header/notification-header.component.html",
+    "kind": "added",
+    "sha256": "43750347ae2d1a7a5e32a2d9cec2a9965a1c5f47eceee3a3b51c02290fcdb145"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/notifications/components/notification-header/notification-header.component.scss",
+    "kind": "added",
+    "sha256": "68946354fc4d84e2f8d66e2b321a8e497271ce4a8e859d9a6d061ffed91f683d"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/notifications/components/notification-header/notification-header.component.ts",
+    "kind": "added",
+    "sha256": "c91b0eed90c1afb96e523568216d74456392185fbbc6bcdcb5e1be7de9df8a7f"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/notifications/components/notification-item/notification-item.component.html",
+    "kind": "added",
+    "sha256": "31815e7b9aa789eee32492596ad8f2559bddb7438c0e651bfe4000bb62863c1d"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/notifications/components/notification-item/notification-item.component.scss",
+    "kind": "added",
+    "sha256": "c5723cdee43a124cd817def3ba22f85c6c3b1c21073eeb77ddd7d47577ab8a4e"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/notifications/components/notification-item/notification-item.component.ts",
+    "kind": "added",
+    "sha256": "49e4fd16b46be1e908e1cac0249099abe928d04ec8b7ffb3a1abd4da73e72ef4"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/notifications/components/notification-presentation.components.spec.ts",
+    "kind": "added",
+    "sha256": "52a79b43c2fd1569d52e1a6a01bf3387aca7f4450bbcd5004a70f0ed31fac3b6"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/notifications/notification-presentation.ts",
+    "kind": "added",
+    "sha256": "04b52878669521afb726ff4866fc782d1a9a1cf28997513d3c93461d438eb042"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/notifications/notification-view.models.ts",
+    "kind": "added",
+    "sha256": "ada0245fb943bc9b9a17b5b9f1e2983237f7e48483b68e6891eda46166d7259c"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/notifications/notifications.component.html",
+    "kind": "modified",
+    "sha256": "39dade4fe71762d1304ef792203bd6d9a8da9fdce9d6c8991ffda86f10562906"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/notifications/notifications.component.scss",
+    "kind": "modified",
+    "sha256": "16ccfe2f590f8b7da97594bc47b738af2eb2f74580cbfb67367ec09b5c4dfab0"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/notifications/notifications.component.ts",
+    "kind": "modified",
+    "sha256": "557e377a0276242e0df10b1c169a32ab9c9bc1b6002f57f8ae071f47fb028d5d"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/notifications/styles/_notifications-theme.scss",
+    "kind": "added",
+    "sha256": "b0e4953d5a347a5ffbc3dcfce3fd56ad59cce4128e8cc568c7dcb0cea61a713b"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/shared/services/github.service.ts",
+    "kind": "modified",
+    "sha256": "d5563c441d9c0a47fbfa3049ac41729fad172e96974aac015684106a6fcfe99e"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/backend/src/services/githubservice.js",
+    "kind": "modified",
+    "sha256": "e1248aab4a59a29184ead6d4a0c8d5681db2c8ea52ae845fdb222ab1dc15ac51"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/backend/src/prompts/githubPrompt.js",
+    "kind": "modified",
+    "sha256": "fa7adce74cbdf562ff7a5c616e18f0691e650fc32ba6382d0f7308f3074b369e"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/backend/src/tests/githubAnalyzerHardening.test.js",
+    "kind": "modified",
+    "sha256": "6659d735f1eba0169cc82bbad75413ea90494c576abfa20c686bcae4ca6b003b"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/backend/src/scripts/verifyGitHubLiveAccuracy.js",
+    "kind": "added",
+    "sha256": "663497dbe2f9b9c9df1ea0c64720bcfbda33bc0e37d977a967706bad43064656"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/backend/src/scripts/verifyNotificationsBrowser.js",
+    "kind": "modified",
+    "sha256": "13b4359cf6f11a7fec50da9b61e3f993a9e645c56280daa9063ee5833d97ea1a"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/backend/src/tests/notificationsProduction.test.js",
+    "kind": "modified",
+    "sha256": "55a2d44e90cbcee0d68a3b07f291dc95a37e51a10daf026d0c86228a98fecb13"
+  },
+  {
+    "path": "D:/Developer-Portfolio-Analyzer/backend/src/tests/notificationsRetention.test.js",
+    "kind": "modified",
+    "sha256": "f79f4fe7398431f1deefea35503ddae24f4d071faa159d252c1507e41e940b42"
+  }
+]

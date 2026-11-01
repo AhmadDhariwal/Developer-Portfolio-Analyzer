@@ -59,7 +59,12 @@ const acquireSaveLock = async (userId, username) => {
             redisLocked === true ||
             (redisLocked === null && (await acquireMongoSaveLock(key, ownerToken)));
         if (acquired)
-            return { key, ownerToken, source: redisLocked === true ? 'redis' : 'mongo', contended };
+            return {
+                key,
+                ownerToken,
+                source: redisLocked === true ? 'redis' : 'mongo',
+                contended
+            };
         contended = true;
         await sleep(100);
     }
@@ -69,7 +74,10 @@ const acquireSaveLock = async (userId, username) => {
 const releaseSaveLock = async (lock) => {
     if (!lock) return;
     if (lock.source === 'redis') return releaseCacheLock(lock.key, lock.ownerToken);
-    await GitHubSaveLock.deleteOne({ _id: lock.key, ownerToken: lock.ownerToken });
+    await GitHubSaveLock.deleteOne({
+        _id: lock.key,
+        ownerToken: lock.ownerToken
+    });
 };
 
 const toForceRefresh = (req) =>
@@ -78,9 +86,10 @@ const toForceRefresh = (req) =>
 const sanitizeClientMessage = (error, fallback) => {
     const msg = String(error?.message || '').trim();
     if (!msg || msg.length > 300) return fallback;
-    if (/[A-Za-z]:\\|\/(?:Users|home)\//i.test(msg)) return fallback;
+    if (/[A-Za-z]:[\\/]|\\\\|\/(?:Users|home|root|var|tmp|opt|srv|etc)\//i.test(msg))
+        return fallback;
     if (
-        /node_modules|at\s+\S+\s+\(|api[_-]?key|bearer\s|github_pat_|secret|password|token=/i.test(
+        /node_modules|at\s+\S+\s+\(|api[_-]?key|bearer\s|github_pat_|gh[pousr]_|secret|password|token\s*[:=]|https?:\/\/[^\s/]+:[^\s/]+@/i.test(
             msg
         )
     )
@@ -98,19 +107,19 @@ const respondGitHubError = (res, error, fallbackMessage) => {
     }
     const status = Number(error?.status || 0);
     if (status === 404) {
-        return res
-            .status(404)
-            .json({ message: sanitizeClientMessage(error, 'GitHub user not found.') });
+        return res.status(404).json({
+            message: sanitizeClientMessage(error, 'GitHub user not found.')
+        });
     }
     if (status === 400) {
-        return res
-            .status(400)
-            .json({ message: sanitizeClientMessage(error, 'Invalid GitHub username.') });
+        return res.status(400).json({
+            message: sanitizeClientMessage(error, 'Invalid GitHub username.')
+        });
     }
     if (status === 413) {
-        return res
-            .status(413)
-            .json({ message: sanitizeClientMessage(error, 'GitHub username is too large.') });
+        return res.status(413).json({
+            message: sanitizeClientMessage(error, 'GitHub username is too large.')
+        });
     }
     if (status === 409 || /already in progress/i.test(String(error?.message || ''))) {
         return res.status(409).json({
@@ -180,7 +189,10 @@ const replaceRepositoriesSafely = async (userId, repositories = []) => {
                         commits: repo.commits == null ? null : Number(repo.commits),
                         lastUpdated: repo.updatedAt || repo.pushedAt || null
                     },
-                    $setOnInsert: { ownerId: userId, repoName: String(repo.name).trim() }
+                    $setOnInsert: {
+                        ownerId: userId,
+                        repoName: String(repo.name).trim()
+                    }
                 },
                 upsert: true
             }
@@ -188,7 +200,10 @@ const replaceRepositoriesSafely = async (userId, repositories = []) => {
         { ordered: true }
     );
 
-    await Repository.deleteMany({ ownerId: userId, repoName: { $nin: repoNames } });
+    await Repository.deleteMany({
+        ownerId: userId,
+        repoName: { $nin: repoNames }
+    });
 };
 
 const persistGitHubAnalysis = async (user, githubUsername, forceRefresh) => {
@@ -204,10 +219,17 @@ const persistGitHubAnalysis = async (user, githubUsername, forceRefresh) => {
         // durable, so returning that result avoids replaying persistence work.
         if (lock.contended) return analyzeGitHubProfile(githubUsername);
 
-        const data = await analyzeGitHubProfile(githubUsername, { forceRefresh });
+        const data = await analyzeGitHubProfile(githubUsername, {
+            forceRefresh
+        });
 
         // Never persist a fallback/stale refresh result — keep the previous valid profile.
-        if (data?.rateLimited || data?.cache?.source === 'stale-cache' || data?.warning) {
+        if (
+            data?.rateLimited ||
+            data?.cache?.stale ||
+            data?.cache?.source === 'stale-cache' ||
+            data?.warning
+        ) {
             return data;
         }
 
@@ -388,4 +410,8 @@ const getActiveUsername = async (req, res) => {
     }
 };
 
-module.exports = { analyzeGitHub, analyzeAndSaveGitHubProfile, getActiveUsername };
+module.exports = {
+    analyzeGitHub,
+    analyzeAndSaveGitHubProfile,
+    getActiveUsername
+};

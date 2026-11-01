@@ -1,0 +1,253 @@
+{
+  "github": [
+    {
+      "className": "GithubProfileSearchComponent",
+      "path": "./components/github-profile-search/github-profile-search.component",
+      "folder": "src/app/pages/github-analyzer/components/github-profile-search",
+      "slug": "profile-search",
+      "inputs": [
+        "username",
+        "isAnalyzing",
+        "analysisReady",
+        "result",
+        "errorMessage",
+        "viewedUsername",
+        "isDefaultProfile",
+        "calculationTimestamp",
+        "cacheStatusLabel",
+        "isTemporaryView",
+        "defaultUsername",
+        "isStale"
+      ],
+      "outputs": [
+        "analyzeRequested",
+        "returnRequested",
+        "usernameChange"
+      ]
+    },
+    {
+      "className": "GithubHealthOverviewComponent",
+      "path": "./components/github-health-overview/github-health-overview.component",
+      "folder": "src/app/pages/github-analyzer/components/github-health-overview",
+      "slug": "health-overview",
+      "inputs": [
+        "healthScoreValue",
+        "qualitativeStateVariant",
+        "qualitativeState",
+        "executiveHeadline",
+        "result",
+        "executiveExplanation",
+        "strongestSignal",
+        "biggestWeakness",
+        "topRecommendedAction",
+        "originalRepoCount",
+        "forkedRepoCount",
+        "totalSampledCommits",
+        "displayLanguages"
+      ],
+      "outputs": []
+    },
+    {
+      "className": "GithubScoringBreakdownComponent",
+      "path": "./components/github-scoring-breakdown/github-scoring-breakdown.component",
+      "folder": "src/app/pages/github-analyzer/components/github-scoring-breakdown",
+      "slug": "scoring-breakdown",
+      "inputs": [
+        "ruleVersion",
+        "scoreBreakdownList"
+      ],
+      "outputs": [
+        "auditRequested"
+      ]
+    },
+    {
+      "className": "GithubChartsComponent",
+      "path": "./components/github-charts/github-charts.component",
+      "folder": "src/app/pages/github-analyzer/components/github-charts",
+      "slug": "charts",
+      "inputs": [
+        "hasLanguageData",
+        "hasActivityData",
+        "result",
+        "displayLanguages",
+        "supportLanguages"
+      ],
+      "outputs": []
+    },
+    {
+      "className": "GithubRepositoryTableComponent",
+      "path": "./components/github-repository-table/github-repository-table.component",
+      "folder": "src/app/pages/github-analyzer/components/github-repository-table",
+      "slug": "repository-table",
+      "inputs": [
+        "repositoryRows",
+        "showAllRepositories",
+        "repoSortField",
+        "repoSortAsc",
+        "sortedRepositoryRows",
+        "viewedUsername",
+        "username"
+      ],
+      "outputs": [
+        "showAllRequested",
+        "sortRequested"
+      ]
+    },
+    {
+      "className": "GithubTechnologyFingerprintComponent",
+      "path": "./components/github-technology-fingerprint/github-technology-fingerprint.component",
+      "folder": "src/app/pages/github-analyzer/components/github-technology-fingerprint",
+      "slug": "technology-fingerprint",
+      "inputs": [
+        "hasTechnologyData",
+        "technologyCategories"
+      ],
+      "outputs": []
+    },
+    {
+      "className": "GithubInsightsComponent",
+      "path": "./components/github-insights/github-insights.component",
+      "folder": "src/app/pages/github-analyzer/components/github-insights",
+      "slug": "insights",
+      "inputs": [
+        "result",
+        "hasAiContent",
+        "hasStrengths",
+        "hasWeakAreas",
+        "hasRecruiterInsights"
+      ],
+      "outputs": []
+    },
+    {
+      "className": "GithubTechnicalAuditComponent",
+      "path": "./components/github-technical-audit/github-technical-audit.component",
+      "folder": "src/app/pages/github-analyzer/components/github-technical-audit",
+      "slug": "technical-audit",
+      "inputs": [
+        "showEvidenceDrawer",
+        "result",
+        "ruleVersion",
+        "calculationTimestamp",
+        "cacheStatusLabel",
+        "originalRepoCount",
+        "forkedRepoCount",
+        "archivedRepoCount",
+        "totalSampledCommits",
+        "evidenceFacts",
+        "scoreBreakdownList",
+        "hasTechnologyData",
+        "technologyCategories",
+        "scoringWarnings"
+      ],
+      "outputs": [
+        "closed"
+      ]
+    }
+  ],
+  "notification": [
+    {
+      "className": "NotificationHeaderComponent",
+      "path": "./components/notification-header/notification-header.component",
+      "folder": "src/app/pages/notifications/components/notification-header",
+      "slug": "header",
+      "inputs": [
+        "clearingAll",
+        "deletingSelected",
+        "total",
+        "loading",
+        "markingAllRead",
+        "unreadCount"
+      ],
+      "outputs": [
+        "clearRequested",
+        "refreshRequested",
+        "markAllRequested"
+      ]
+    },
+    {
+      "className": "NotificationFiltersComponent",
+      "path": "./components/notification-filters/notification-filters.component",
+      "folder": "src/app/pages/notifications/components/notification-filters",
+      "slug": "filters",
+      "inputs": [
+        "clearingAll",
+        "search",
+        "from",
+        "to",
+        "typeFilter",
+        "typeOptions",
+        "selectedOrganizationId",
+        "organizations",
+        "teams",
+        "selectedTeamId",
+        "unreadOnly"
+      ],
+      "outputs": [
+        "applyRequested",
+        "resetRequested",
+        "organizationChanged",
+        "teamChanged",
+        "quickFilterRequested",
+        "searchChange",
+        "fromChange",
+        "toChange",
+        "typeFilterChange",
+        "selectedOrganizationIdChange",
+        "selectedTeamIdChange",
+        "unreadOnlyChange"
+      ]
+    },
+    {
+      "className": "NotificationFeedComponent",
+      "path": "./components/notification-feed/notification-feed.component",
+      "folder": "src/app/pages/notifications/components/notification-feed",
+      "slug": "feed",
+      "inputs": [
+        "clearingAll",
+        "loading",
+        "selectedIds",
+        "deletingSelected",
+        "unreadCount",
+        "total",
+        "page",
+        "totalPages",
+        "notifications",
+        "loadFailed"
+      ],
+      "outputs": [
+        "deleteSelectedRequested",
+        "selectionCleared",
+        "pageRequested",
+        "retryRequested",
+        "openRequested",
+        "markReadRequested",
+        "deleteRequested",
+        "selectionToggled"
+      ]
+    },
+    {
+      "className": "NotificationItemComponent",
+      "path": "./components/notification-item/notification-item.component",
+      "folder": "src/app/pages/notifications/components/notification-item",
+      "slug": "item",
+      "inputs": [
+        "notification",
+        "selected"
+      ],
+      "outputs": [
+        "openRequested",
+        "markReadRequested",
+        "deleteRequested",
+        "selectionToggled"
+      ]
+    },
+    {
+      "className": "NotificationEmptyStateComponent",
+      "path": "./components/notification-empty-state/notification-empty-state.component",
+      "folder": "src/app/pages/notifications/components/notification-empty-state",
+      "slug": "empty-state",
+      "inputs": [],
+      "outputs": []
+    }
+  ]
+}
