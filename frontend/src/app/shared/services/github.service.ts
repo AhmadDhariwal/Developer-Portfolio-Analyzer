@@ -28,7 +28,7 @@ export interface TechnologyDistribution {
 
 export interface RepositoryActivity {
   repo: string;
-  commits: number;
+  commits: number | null;
 }
 
 export interface ScoreBreakdownItem {

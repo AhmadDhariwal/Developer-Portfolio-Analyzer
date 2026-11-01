@@ -1,0 +1,102 @@
+[
+  {
+    "profile": "HydronChain",
+    "collectedAt": "2026-11-01T11:56:09.213Z",
+    "url": "https://api.github.com/users/HydronChain",
+    "params": {},
+    "status": 401,
+    "sourceDate": "Sun, 01 Nov 2026 11:56:09 GMT",
+    "etag": null,
+    "rateRemaining": null,
+    "rateReset": null,
+    "failed": true,
+    "data": {
+      "message": "Bad credentials"
+    }
+  },
+  {
+    "profile": "HydronChain",
+    "collectedAt": "2026-11-01T11:56:09.221Z",
+    "url": "https://api.github.com/users/HydronChain/repos",
+    "params": {
+      "per_page": 100,
+      "sort": "updated",
+      "type": "owner",
+      "page": 1
+    },
+    "status": 401,
+    "sourceDate": "Sun, 01 Nov 2026 11:56:09 GMT",
+    "etag": null,
+    "rateRemaining": null,
+    "rateReset": null,
+    "failed": true,
+    "data": {
+      "message": "Bad credentials"
+    }
+  },
+  {
+    "profile": "HydronChain",
+    "collectedAt": "2026-11-01T11:56:09.835Z",
+    "url": "https://api.github.com/users/HydronChain/repos",
+    "params": {
+      "per_page": 100,
+      "sort": "updated",
+      "type": "owner",
+      "page": 1
+    },
+    "status": 200,
+    "sourceDate": "Sun, 01 Nov 2026 11:56:10 GMT",
+    "etag": "\"d41c935eb5c029c094b396655d6701ed2035fea14feb9434d73918c953bbc336\"",
+    "rateRemaining": "58",
+    "rateReset": "1793537769",
+    "failed": false,
+    "data": []
+  },
+  {
+    "profile": "HydronChain",
+    "collectedAt": "2026-11-01T11:56:09.845Z",
+    "url": "https://api.github.com/users/HydronChain",
+    "params": {},
+    "status": 200,
+    "sourceDate": "Sun, 01 Nov 2026 11:56:10 GMT",
+    "etag": "W/\"bbb74c847b96d28f305da3e8227ec671dff6619bffff95ab91b2dd3ca306bd23\"",
+    "rateRemaining": "59",
+    "rateReset": "1793537769",
+    "failed": false,
+    "data": {
+      "login": "HydronChain",
+      "id": 40408662,
+      "node_id": "MDQ6VXNlcjQwNDA4NjYy",
+      "avatar_url": "https://avatars.githubusercontent.com/u/40408662?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/HydronChain",
+      "html_url": "https://github.com/HydronChain",
+      "followers_url": "https://api.github.com/users/HydronChain/followers",
+      "following_url": "https://api.github.com/users/HydronChain/following{/other_user}",
+      "gists_url": "https://api.github.com/users/HydronChain/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/HydronChain/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/HydronChain/subscriptions",
+      "organizations_url": "https://api.github.com/users/HydronChain/orgs",
+      "repos_url": "https://api.github.com/users/HydronChain/repos",
+      "events_url": "https://api.github.com/users/HydronChain/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/HydronChain/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false,
+      "name": "HydronChain",
+      "company": null,
+      "blog": "http://hydronchain.org",
+      "location": null,
+      "email": null,
+      "hireable": null,
+      "bio": "Blockchain and decentralized platform for a hospital market\r\n\r\n",
+      "twitter_username": null,
+      "public_repos": 0,
+      "public_gists": 0,
+      "followers": 923,
+      "following": 0,
+      "created_at": "2018-06-19T21:44:45Z",
+      "updated_at": "2018-06-19T21:46:24Z"
+    }
+  }
+]

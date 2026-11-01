@@ -1,0 +1,166 @@
+<section class="filters card" [attr.inert]="clearingAll ? '' : null">
+  <div class="filters__header">
+    <div class="filters-header-text">
+      <h3>Filter Notifications</h3>
+      <p>Search by message, narrow your inbox by type, organization, team, or date range.</p>
+    </div>
+    <div class="filters__actions">
+      <button class="primary-action" type="button" (click)="applyRequested.emit()">
+        Apply Filters
+      </button>
+      <button class="ghost-action" type="button" (click)="resetRequested.emit()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Quick Category Filter Pills -->
+  <div class="quick-filters-row" role="tablist" aria-label="Quick category filter">
+    <button
+      type="button"
+      class="quick-pill"
+      [class.quick-pill--active]="isQuickFilterActive('all')"
+      (click)="quickFilterRequested.emit('all')"
+    >
+      All
+    </button>
+    <button
+      type="button"
+      class="quick-pill"
+      [class.quick-pill--active]="isQuickFilterActive('unread')"
+      (click)="quickFilterRequested.emit('unread')"
+    >
+      <span class="quick-pill__dot"></span>
+      Unread
+    </button>
+    <button
+      type="button"
+      class="quick-pill"
+      [class.quick-pill--active]="isQuickFilterActive('github_update')"
+      (click)="quickFilterRequested.emit('github_update')"
+    >
+      GitHub
+    </button>
+    <button
+      type="button"
+      class="quick-pill"
+      [class.quick-pill--active]="isQuickFilterActive('resume_upload')"
+      (click)="quickFilterRequested.emit('resume_upload')"
+    >
+      Resumes
+    </button>
+    <button
+      type="button"
+      class="quick-pill"
+      [class.quick-pill--active]="isQuickFilterActive('low_score')"
+      (click)="quickFilterRequested.emit('low_score')"
+    >
+      Scores & Alerts
+    </button>
+    <button
+      type="button"
+      class="quick-pill"
+      [class.quick-pill--active]="isQuickFilterActive('career_update')"
+      (click)="quickFilterRequested.emit('career_update')"
+    >
+      Career
+    </button>
+    <button
+      type="button"
+      class="quick-pill"
+      [class.quick-pill--active]="isQuickFilterActive('system')"
+      (click)="quickFilterRequested.emit('system')"
+    >
+      System
+    </button>
+  </div>
+
+  <!-- 1-Row Compact Filter Grid -->
+  <div class="filters-grid">
+    <label class="field field--search">
+      <span>Search</span>
+      <div class="input-wrap">
+        <svg
+          class="field-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input
+          [ngModel]="search"
+          (ngModelChange)="searchChange.emit($event)"
+          placeholder="Search title or description"
+          (keyup.enter)="applyRequested.emit()"
+        />
+      </div>
+    </label>
+
+    <label class="field">
+      <span>From</span>
+      <input
+        [ngModel]="from"
+        (ngModelChange)="fromChange.emit($event)"
+        type="date"
+        title="From date"
+      />
+    </label>
+
+    <label class="field">
+      <span>To</span>
+      <input [ngModel]="to" (ngModelChange)="toChange.emit($event)" type="date" title="To date" />
+    </label>
+
+    <label class="field">
+      <span>Type</span>
+      <select
+        [ngModel]="typeFilter"
+        (ngModelChange)="typeFilterChange.emit($event)"
+        title="Activity type"
+      >
+        <option *ngFor="let option of typeOptions" [value]="option.value">
+          {{ option.label }}
+        </option>
+      </select>
+    </label>
+
+    <label class="field">
+      <span>Organization</span>
+      <select
+        [ngModel]="selectedOrganizationId"
+        (ngModelChange)="selectedOrganizationIdChange.emit($event)"
+        (change)="organizationChanged.emit()"
+        title="Organization"
+      >
+        <option value="">All organizations</option>
+        <option *ngFor="let org of organizations" [value]="org._id">{{ org.name }}</option>
+      </select>
+    </label>
+
+    <label class="field" *ngIf="teams.length">
+      <span>Team</span>
+      <select
+        [ngModel]="selectedTeamId"
+        (ngModelChange)="selectedTeamIdChange.emit($event)"
+        (change)="teamChanged.emit()"
+        title="Team"
+      >
+        <option value="">All teams</option>
+        <option *ngFor="let team of teams" [value]="team._id">{{ team.name }}</option>
+      </select>
+    </label>
+
+    <div class="field field--checkbox">
+      <label class="checkbox">
+        <input
+          type="checkbox"
+          [ngModel]="unreadOnly"
+          (ngModelChange)="unreadOnlyChange.emit($event)"
+        />
+        <span>Unread only</span>
+      </label>
+    </div>
+  </div>
+</section>

@@ -2,6 +2,8 @@
 
 Date: 1 November 2026. Work performed on authorized `fix/github`; its original Notifications page and NotificationService matched local `task/notifications` before editing. PR target not applicable. The original index and other modules were preserved.
 
+**Local refactor and disposable integration verification complete.** Full fresh GitHub live acceptance remains pending at the user's request; it is separate from the passed Notifications checks and existing deployment gates.
+
 ## Component tree and request ownership
 
 ```text

@@ -1,0 +1,28 @@
+<!-- 6. Technologies & Frameworks -->
+<section class="tech-section" *ngIf="hasTechnologyData" aria-label="Detected Technologies">
+  <div class="tech-panel">
+    <div class="panel-header-row">
+      <div>
+        <span class="eyebrow">Stack fingerprint</span>
+        <h2 class="panel-title">Detected Technologies & Frameworks</h2>
+        <p class="panel-subtitle">
+          Libraries, tools, and frameworks detected across repository manifests and codebases.
+        </p>
+      </div>
+    </div>
+
+    <div class="tech-categories-grid">
+      <div class="tech-category-cell" *ngFor="let group of technologyCategories">
+        <div class="category-header">
+          <h4 class="category-title">{{ group.category }}</h4>
+          <span class="category-count">{{ group.items.length }}</span>
+        </div>
+        <div class="tech-chips-wrap">
+          <span class="tech-tag" *ngFor="let tech of group.items">
+            {{ tech.name }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

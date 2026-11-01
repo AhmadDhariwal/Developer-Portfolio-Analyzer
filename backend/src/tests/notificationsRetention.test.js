@@ -12,7 +12,10 @@ test(
   'Notifications bounded Clear All and inactive retention acceptance',
   { timeout: 180000 },
   async (t) => {
-    const output = path.resolve(__dirname, '../../verification/notifications');
+    const output = path.resolve(
+      process.env.NOTIFICATION_VERIFICATION_DIRECTORY ||
+        path.join(__dirname, '../../verification/notifications')
+    );
     const runtime = await startMongo({
       replicaSet: 'notification-retention',
       temporaryRoot: output

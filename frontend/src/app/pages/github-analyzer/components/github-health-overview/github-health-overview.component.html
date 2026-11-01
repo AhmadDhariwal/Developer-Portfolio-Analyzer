@@ -1,0 +1,111 @@
+<!-- 1. Executive Summary -->
+<section class="executive-summary-section" aria-label="Executive Summary">
+  <span class="eyebrow">Executive Intelligence</span>
+  <h2 class="panel-title">GitHub Executive Summary</h2>
+  <div class="executive-card">
+    <!-- Left: Readiness & Health Score -->
+    <div class="exec-score-block">
+      <div class="exec-score-meta">
+        <span class="exec-eyebrow">GitHub Health</span>
+        <div class="exec-score-display">
+          <span class="exec-score-number" [ngClass]="getScoreClass(healthScoreValue ?? 0)">
+            {{ healthScoreValue !== null ? healthScoreValue : '—' }}
+          </span>
+          <span class="exec-score-max">/ 100</span>
+        </div>
+        <app-ui-badge [variant]="qualitativeStateVariant" size="sm">
+          {{ qualitativeState }}
+        </app-ui-badge>
+      </div>
+
+      <div class="exec-headline-block">
+        <h3 class="exec-headline">{{ executiveHeadline }}</h3>
+        <span
+          class="interpretation-label"
+          *ngIf="result.recruiterInsights?.headline || result.summary || result.explanation"
+          >AI-assisted profile interpretation</span
+        >
+        <p class="exec-explanation">{{ executiveExplanation }}</p>
+      </div>
+    </div>
+
+    <!-- Right: Three Strategic Pillars -->
+    <div class="exec-pillars-grid">
+      <div class="exec-pillar">
+        <div class="pillar-label">
+          <span class="pillar-dot pillar-dot--strength" aria-hidden="true">✓</span>
+          <span>Strongest Signal</span>
+        </div>
+        <strong class="pillar-title">{{ strongestSignal.label }}</strong>
+        <p class="pillar-detail">{{ strongestSignal.detail }}</p>
+      </div>
+
+      <div class="exec-pillar">
+        <div class="pillar-label">
+          <span class="pillar-dot pillar-dot--gap" aria-hidden="true">!</span>
+          <span>Primary Gap</span>
+        </div>
+        <strong class="pillar-title">{{ biggestWeakness.label }}</strong>
+        <p class="pillar-detail">{{ biggestWeakness.detail }}</p>
+      </div>
+
+      <div class="exec-pillar">
+        <div class="pillar-label">
+          <span class="pillar-dot pillar-dot--action" aria-hidden="true">→</span>
+          <span
+            >Recommended Action <small *ngIf="result.weakAreas?.length">· AI-assisted</small></span
+          >
+        </div>
+        <strong class="pillar-title">{{ topRecommendedAction.title }}</strong>
+        <p class="pillar-detail">{{ topRecommendedAction.detail }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2. Key Metrics Strip -->
+<section class="metrics-strip-section" aria-label="Key GitHub Metrics">
+  <div class="metrics-strip-grid">
+    <div class="metric-cell">
+      <span class="metric-label">Repositories</span>
+      <span class="metric-number">{{ result.repoCount }}</span>
+      <span class="metric-support"
+        >{{ originalRepoCount }} original • {{ forkedRepoCount }} forked</span
+      >
+    </div>
+
+    <div class="metric-cell">
+      <span class="metric-label">Sampled Commits</span>
+      <span class="metric-number">{{ formatNumber(totalSampledCommits) }}</span>
+      <span class="metric-support">Top 5 active repositories</span>
+    </div>
+
+    <div class="metric-cell">
+      <span class="metric-label">Languages</span>
+      <span class="metric-number">{{ displayLanguages.length }}</span>
+      <span class="metric-support">{{
+        result.languageDistributionSource === 'language_bytes'
+          ? 'Byte analysis'
+          : 'Primary languages'
+      }}</span>
+    </div>
+
+    <div class="metric-cell">
+      <span class="metric-label">Total Stars</span>
+      <span class="metric-number">{{ formatNumber(result.totalStars) }}</span>
+      <span class="metric-support">Earned across repos</span>
+    </div>
+
+    <div class="metric-cell">
+      <span class="metric-label">Community Forks</span>
+      <span class="metric-number">{{ formatNumber(result.totalForks) }}</span>
+      <span class="metric-support">Forks earned across repositories</span>
+    </div>
+
+    <div class="metric-cell">
+      <span class="metric-label">Followers</span>
+      <span class="metric-number">{{ formatNumber(result.followers) }}</span>
+      <span class="metric-support">Developer network</span>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,14 @@
+[
+  {
+    "original": "backend/src/tests/notificationsProduction.test.js",
+    "copy": "backend/src/tests/.task-notificationsProduction.test.js",
+    "sourceSha256": "93c2a568106128d8e36350cc75196f5617f85f65850aa40e145ea4d469569c3c",
+    "onlyAdaptation": "Redirect verification output to component-refactor subdirectory"
+  },
+  {
+    "original": "backend/src/tests/notificationsRetention.test.js",
+    "copy": "backend/src/tests/.task-notificationsRetention.test.js",
+    "sourceSha256": "015ddadc000e814fe10eafdd4dc232976b0bf5d2309ebf6db4b0f8365e5683e0",
+    "onlyAdaptation": "Redirect verification output to component-refactor subdirectory"
+  }
+]

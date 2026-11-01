@@ -1,96 +1,71 @@
-import {
-  Component,
-  OnInit,
-  AfterViewInit,
-  OnDestroy,
-  ViewChild,
-  ElementRef,
-  ChangeDetectorRef,
-  inject,
-  DestroyRef,
-  effect,
-  HostListener,
-} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import {
+  ChangeDetectorRef,
+  Component,
+  DestroyRef,
+  ElementRef,
+  HostListener,
+  inject,
+  OnInit,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Chart, ChartConfiguration, registerables } from 'chart.js';
+import { RouterModule } from '@angular/router';
+import { GithubChartsComponent } from './components/github-charts/github-charts.component';
+import { GithubHealthOverviewComponent } from './components/github-health-overview/github-health-overview.component';
+import { GithubInsightsComponent } from './components/github-insights/github-insights.component';
+import { GithubProfileSearchComponent } from './components/github-profile-search/github-profile-search.component';
+import { GithubRepositoryTableComponent } from './components/github-repository-table/github-repository-table.component';
+import { GithubScoringBreakdownComponent } from './components/github-scoring-breakdown/github-scoring-breakdown.component';
+import { GithubTechnicalAuditComponent } from './components/github-technical-audit/github-technical-audit.component';
+import { GithubTechnologyFingerprintComponent } from './components/github-technology-fingerprint/github-technology-fingerprint.component';
+import { GithubPresentation } from './github-presentation';
+import { DisplayBreakdownItem } from './github-view.models';
+
 import {
-  GithubService,
-  GitHubAnalysisResult,
-  LanguageDistribution,
-  RepositoryActivity,
-  Repository,
-  TechnologySignal,
-  ScoreBreakdownItem,
-  ScoreEvidence,
-} from '../../shared/services/github.service';
-import { AuthService } from '../../shared/services/auth.service';
-import { ThemeService } from '../../shared/services/theme.service';
-import {
-  UiButtonComponent,
-  UiBadgeComponent,
   BadgeVariant,
-  UiSkeletonComponent,
-  UiEmptyStateComponent,
-  UiErrorStateComponent,
-  UiProgressComponent,
   ProgressColor,
   ScoreCardColor,
+  UiButtonComponent,
+  UiEmptyStateComponent,
+  UiErrorStateComponent,
   UiPageHeaderComponent,
-  UiDrawerComponent,
+  UiSkeletonComponent,
 } from '../../shared/components';
-
-Chart.register(...registerables);
-
-const LANG_COLOURS = [
-  '#6366F1',
-  '#06B6D4',
-  '#10B981',
-  '#F59E0B',
-  '#8B5CF6',
-  '#EC4899',
-  '#3B82F6',
-  '#64748B',
-  '#14B8A6',
-  '#F97316',
-];
-
-export interface DisplayBreakdownItem {
-  id: string;
-  label: string;
-  description: string;
-  weightPct: number;
-  value: number | null;
-  contribution: number | null;
-  available: boolean;
-  color: ProgressColor;
-}
+import { AuthService } from '../../shared/services/auth.service';
+import {
+  GitHubAnalysisResult,
+  GithubService,
+  LanguageDistribution,
+  Repository,
+  ScoreBreakdownItem,
+  ScoreEvidence,
+  TechnologySignal,
+} from '../../shared/services/github.service';
 
 @Component({
   selector: 'app-github-analyzer',
   standalone: true,
   imports: [
+    GithubProfileSearchComponent,
+    GithubHealthOverviewComponent,
+    GithubScoringBreakdownComponent,
+    GithubChartsComponent,
+    GithubRepositoryTableComponent,
+    GithubTechnologyFingerprintComponent,
+    GithubInsightsComponent,
+    GithubTechnicalAuditComponent,
     CommonModule,
-    FormsModule,
     RouterModule,
     UiButtonComponent,
-    UiBadgeComponent,
     UiSkeletonComponent,
     UiEmptyStateComponent,
     UiErrorStateComponent,
-    UiProgressComponent,
     UiPageHeaderComponent,
-    UiDrawerComponent,
   ],
   templateUrl: './github-analyzer.component.html',
   styleUrl: './github-analyzer.component.scss',
 })
-export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('donutCanvas') donutCanvasRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('barCanvas') barCanvasRef!: ElementRef<HTMLCanvasElement>;
-
+export class GithubAnalyzerComponent extends GithubPresentation implements OnInit {
   username = '';
   defaultUsername = '';
   viewedUsername = '';
@@ -106,17 +81,10 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
   repoSortField: 'score' | 'stars' | 'name' = 'score';
   repoSortAsc = false;
 
-  private donutChart: Chart | null = null;
-  private barChart: Chart | null = null;
-  private viewReady = false;
-  private pendingLangs: LanguageDistribution[] | null = null;
-  private pendingActivity: RepositoryActivity[] | null = null;
-
   private readonly github = inject(GithubService);
   private readonly authService = inject(AuthService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly destroyRef = inject(DestroyRef);
-  private readonly themeService = inject(ThemeService);
   private readonly host: ElementRef<HTMLElement> = inject(ElementRef);
 
   @HostListener('document:keydown', ['$event'])
@@ -142,25 +110,12 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   constructor() {
+    super();
     const stored = this.getStoredActiveUsername();
     if (stored) {
       this.applyDefaultUsername(stored);
       this.isInitLoading = false;
     }
-
-    // Dynamic reactive chart re-rendering on theme switch
-    effect(() => {
-      // Access signal to register dependency
-      this.themeService.activeTheme();
-      if (this.viewReady && this.result) {
-        if (this.displayLanguages?.length) {
-          this.buildDonutChart(this.displayLanguages);
-        }
-        if (this.result.repositoryActivity?.length) {
-          this.buildBarChart(this.result.repositoryActivity);
-        }
-      }
-    });
   }
 
   ngOnInit(): void {
@@ -196,16 +151,6 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
           this.cdr.markForCheck();
         },
       });
-  }
-
-  ngAfterViewInit(): void {
-    this.viewReady = true;
-    this.flushPendingCharts();
-  }
-
-  ngOnDestroy(): void {
-    this.viewReady = false;
-    this.destroyCharts();
   }
 
   private getStoredActiveUsername(): string {
@@ -267,7 +212,6 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
     if (!keepCurrentResult) {
       this.analysisReady = false;
       this.result = null;
-      this.destroyCharts();
     }
 
     const request$ = isDefaultProfileAnalysis
@@ -315,159 +259,7 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
     this.isTemporaryView = !isDefaultProfileAnalysis;
     this.analysisReady = true;
 
-    this.pendingLangs = this.displayLanguages.length ? this.displayLanguages : null;
-    this.pendingActivity = data.repositoryActivity?.length ? data.repositoryActivity : null;
-
     this.cdr.detectChanges();
-    setTimeout(() => {
-      this.flushPendingCharts();
-    }, 0);
-  }
-
-  private flushPendingCharts(): void {
-    if (!this.viewReady || !this.analysisReady || !this.result) return;
-    if (this.pendingLangs && this.donutCanvasRef?.nativeElement) {
-      this.buildDonutChart(this.pendingLangs);
-      this.pendingLangs = null;
-    }
-
-    if (this.pendingActivity && this.barCanvasRef?.nativeElement) {
-      this.buildBarChart(this.pendingActivity);
-      this.pendingActivity = null;
-    }
-  }
-
-  private buildDonutChart(langs: LanguageDistribution[]): void {
-    const canvas = this.donutCanvasRef?.nativeElement;
-    if (!canvas) return;
-    try {
-      if (typeof canvas.getContext !== 'function' || !canvas.getContext('2d')) {
-        return;
-      }
-      this.donutChart?.destroy();
-      if (!langs.length) return;
-
-      const style = getComputedStyle(canvas);
-      const chartFont = style.fontFamily;
-
-      const cfg: ChartConfiguration<'doughnut'> = {
-        type: 'doughnut',
-        data: {
-          labels: langs.map((lang) => lang.language),
-          datasets: [
-            {
-              data: langs.map((lang) => lang.percentage),
-              backgroundColor: langs.map((_, i) => LANG_COLOURS[i % LANG_COLOURS.length]),
-              borderColor: style.getPropertyValue('--surface-card').trim(),
-              borderWidth: 2,
-              hoverOffset: 6,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          cutout: '68%',
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              titleFont: { family: chartFont, size: 12, weight: 600 },
-              bodyFont: { family: chartFont, size: 12 },
-              callbacks: {
-                label: (c) => ` ${c.label}: ${c.parsed}%`,
-              },
-            },
-          },
-        },
-      };
-      this.donutChart = new Chart(canvas, cfg);
-    } catch {
-      // Gracefully handle environments without full canvas 2D support
-    }
-  }
-
-  private buildBarChart(activity: RepositoryActivity[]): void {
-    const canvas = this.barCanvasRef?.nativeElement;
-    if (!canvas) return;
-    try {
-      if (typeof canvas.getContext !== 'function' || !canvas.getContext('2d')) {
-        return;
-      }
-      this.barChart?.destroy();
-
-      const top = [...(activity || [])]
-        .sort((a, b) => (b.commits ?? 0) - (a.commits ?? 0))
-        .slice(0, 7);
-      if (!top.length) return;
-
-      const style = getComputedStyle(canvas);
-      const chartFont = style.fontFamily;
-      const primary = style.getPropertyValue('--color-primary').trim();
-      const muted = style.getPropertyValue('--text-muted').trim();
-      const border = style.getPropertyValue('--border-color').trim();
-
-      const cfg: ChartConfiguration<'bar'> = {
-        type: 'bar',
-        data: {
-          labels: top.map((repo) => repo.repo),
-          datasets: [
-            {
-              label: 'Commits',
-              data: top.map((repo) => repo.commits ?? 0),
-              backgroundColor: primary,
-              borderColor: primary,
-              borderWidth: 1,
-              borderRadius: 4,
-              barThickness: 16,
-            },
-          ],
-        },
-        options: {
-          indexAxis: 'y',
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              titleFont: { family: chartFont, size: 12, weight: 600 },
-              bodyFont: { family: chartFont, size: 12 },
-              callbacks: { label: (c) => ` ${c.parsed.x} commits (sampled)` },
-            },
-          },
-          scales: {
-            x: {
-              beginAtZero: true,
-              grid: { color: border },
-              ticks: {
-                color: muted,
-                font: { family: chartFont, size: 12, weight: 500 },
-              },
-            },
-            y: {
-              grid: { display: false },
-              ticks: {
-                color: muted,
-                font: { family: chartFont, size: 12, weight: 500 },
-                callback: function (_val, idx) {
-                  const label = this.getLabelForValue(idx);
-                  return label.length > 18 ? `${label.slice(0, 17)}...` : label;
-                },
-              },
-            },
-          },
-        },
-      };
-      this.barChart = new Chart(canvas, cfg);
-    } catch {
-      // Gracefully handle environments without full canvas 2D support
-    }
-  }
-
-  private destroyCharts(): void {
-    this.donutChart?.destroy();
-    this.barChart?.destroy();
-    this.donutChart = null;
-    this.barChart = null;
   }
 
   // ── Authoritative Score & Breakdown ─────────────────────────────
@@ -947,60 +739,5 @@ export class GithubAnalyzerComponent implements OnInit, AfterViewInit, OnDestroy
 
   get hasRecruiterInsights(): boolean {
     return Boolean(this.result?.recruiterInsights?.proofPoints?.length);
-  }
-
-  repositoryScore(repo: Repository): number {
-    return Number(repo.qualityScore ?? repo.activityScore ?? 0);
-  }
-
-  repositoryTechnologies(repo: Repository): string[] {
-    return Array.from(
-      new Set((repo.technologies || []).map((tech) => String(tech || '').trim()).filter(Boolean)),
-    ).slice(0, 3);
-  }
-
-  getLangColour(index: number): string {
-    return LANG_COLOURS[index % LANG_COLOURS.length];
-  }
-
-  getScoreClass(score: number): string {
-    if (score >= 80) return 'score-high';
-    if (score >= 50) return 'score-mid';
-    return 'score-low';
-  }
-
-  getScoreBarWidth(score: number): string {
-    return `${Math.min(Math.max(Number(score || 0), 0), 100)}%`;
-  }
-
-  formatNumber(value: number | undefined | null): string {
-    if (value === null || value === undefined) return 'Unavailable';
-    const n = Number(value);
-    if (!Number.isFinite(n)) return 'Unavailable';
-    if (n >= 1000000) return `${(n / 1000000).toFixed(1).replace(/\.0$/, '')}M`;
-    if (n >= 1000) return `${(n / 1000).toFixed(1).replace(/\.0$/, '')}K`;
-    return n.toString();
-  }
-
-  formatDateTime(value: string | Date | null | undefined): string {
-    if (!value) return 'Not analyzed yet';
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return 'Not analyzed yet';
-    return date.toLocaleString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  }
-
-  private sortedLanguages(languages: LanguageDistribution[]): LanguageDistribution[] {
-    return [...languages]
-      .filter((item) => Boolean(item?.language) && Number.isFinite(Number(item.percentage)))
-      .sort(
-        (a, b) =>
-          Number(b.percentage) - Number(a.percentage) || a.language.localeCompare(b.language),
-      );
   }
 }

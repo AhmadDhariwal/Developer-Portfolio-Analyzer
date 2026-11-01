@@ -1,45 +1,37 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ChangeDetectorRef, Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { notificationTarget } from '../../shared/utils/notification-navigation';
-import { NotificationBulkActionsComponent } from './components/notification-bulk-actions/notification-bulk-actions.component';
+import { ApiService } from '../../shared/services/api.service';
+import { AuthService } from '../../shared/services/auth.service';
 import {
-  NotificationService,
   AppNotification,
   NotificationQuery,
+  NotificationService,
 } from '../../shared/services/notification.service';
-import { ApiService } from '../../shared/services/api.service';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { DestroyRef, inject } from '@angular/core';
-import { AuthService } from '../../shared/services/auth.service';
+import { notificationTarget } from '../../shared/utils/notification-navigation';
 import { NotificationConfirmDialogComponent } from './components/notification-confirm-dialog/notification-confirm-dialog.component';
-
-interface OrganizationItem {
-  _id: string;
-  name: string;
-  myRole: 'admin' | 'manager' | 'member';
-}
-
-interface TeamItem {
-  _id: string;
-  name: string;
-}
+import { NotificationFeedComponent } from './components/notification-feed/notification-feed.component';
+import { NotificationFiltersComponent } from './components/notification-filters/notification-filters.component';
+import { NotificationHeaderComponent } from './components/notification-header/notification-header.component';
+import { NotificationPresentation } from './notification-presentation';
+import { OrganizationItem, TeamItem } from './notification-view.models';
 
 @Component({
   selector: 'app-notifications',
   standalone: true,
   imports: [
+    NotificationHeaderComponent,
+    NotificationFiltersComponent,
+    NotificationFeedComponent,
     CommonModule,
-    FormsModule,
     NotificationConfirmDialogComponent,
-    NotificationBulkActionsComponent,
   ],
   templateUrl: './notifications.component.html',
   styleUrl: './notifications.component.scss',
 })
-export class NotificationsComponent implements OnInit {
+export class NotificationsComponent extends NotificationPresentation implements OnInit {
   notifications: AppNotification[] = [];
   loading = false;
   loadFailed = false;
@@ -67,8 +59,7 @@ export class NotificationsComponent implements OnInit {
   search = '';
   from = '';
   to = '';
-  typeFilter = '';
-  unreadOnly = false;
+
   selectedOrganizationId = '';
   selectedTeamId = '';
 
@@ -96,7 +87,9 @@ export class NotificationsComponent implements OnInit {
     private readonly notificationService: NotificationService,
     private readonly apiService: ApiService,
     private readonly authService: AuthService,
-  ) {}
+  ) {
+    super();
+  }
 
   get streamConnected(): boolean {
     return this.notificationService.streamConnected();
@@ -206,12 +199,6 @@ export class NotificationsComponent implements OnInit {
       this.unreadOnly = false;
     }
     this.fetchNotifications(1);
-  }
-
-  isQuickFilterActive(category: string): boolean {
-    if (category === 'all') return !this.typeFilter && !this.unreadOnly;
-    if (category === 'unread') return this.unreadOnly;
-    return this.typeFilter === category && !this.unreadOnly;
   }
 
   clearAll(): void {
@@ -494,50 +481,6 @@ export class NotificationsComponent implements OnInit {
     this.pendingDeleteNotification = null;
   }
 
-  formatTime(value: string): string {
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return 'Just now';
-    return date.toLocaleString();
-  }
-
-  getNotificationTone(notification: AppNotification): string {
-    switch (notification.type) {
-      case 'low_score':
-        return 'warning';
-      case 'resume_upload':
-        return 'success';
-      case 'github_update':
-        return 'info';
-      case 'career_update':
-        return 'purple';
-      case 'profile_update':
-        return 'neutral';
-      default:
-        return 'system';
-    }
-  }
-
-  getNotificationIcon(notification: AppNotification): string {
-    switch (notification.type) {
-      case 'profile_update':
-        return 'user';
-      case 'resume_upload':
-        return 'file';
-      case 'github_update':
-        return 'github';
-      case 'low_score':
-        return 'alert';
-      case 'career_update':
-        return 'spark';
-      default:
-        return 'bell';
-    }
-  }
-
-  getNotificationTypeLabel(notification: AppNotification): string {
-    return notification.type.replaceAll('_', ' ').replace(/\b\w/g, (char) => char.toUpperCase());
-  }
-
   getReadRate(): number {
     if (this.total <= 0) return 0;
     return Math.max(
@@ -556,20 +499,5 @@ export class NotificationsComponent implements OnInit {
       this.selectedOrganizationId,
       this.selectedTeamId,
     ].filter(Boolean).length;
-  }
-
-  getRelativeTime(value: string): string {
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return 'Just now';
-    const diff = Date.now() - date.getTime();
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-
-    if (minutes < 1) return 'Just now';
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    if (days < 7) return `${days}d ago`;
-    return date.toLocaleDateString();
   }
 }

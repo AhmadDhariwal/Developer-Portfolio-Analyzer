@@ -23,7 +23,7 @@ const count = (value) =>
     : null;
 const validDate = (value) =>
   value && Number.isFinite(Date.parse(value)) ? new Date(value).toISOString() : null;
-const DATA_VERSION = 'github-normalized-v1';
+const DATA_VERSION = 'github-normalized-v2';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const REQUEST_TIMEOUT_MS = 10000;
 const GITHUB_AI_TIMEOUT_MS = 5000;
@@ -266,9 +266,53 @@ const normalizeInsightList = (values, fallback = []) => {
   return cleaned.length >= 2 ? unique(cleaned).slice(0, 6) : fallback;
 };
 
-const resolveAIInsights = (aiResult, fallback) => {
+const resolveAIInsights = (
+  aiResult,
+  fallback,
+  excludedRepositoryNames = [],
+  evidenceTerms = []
+) => {
   if (!aiResult || typeof aiResult !== 'object' || Array.isArray(aiResult)) return fallback;
   // Score fields are ignored — deterministic code owns all numeric outcomes.
+  // Public metadata cannot establish personal authorship, proficiency, or production use.
+  const unsupported =
+    /\b(?:proficien(?:t|cy)|expert(?:ise)?|experience|familiarity|engagement|originality|contributions?|mastery|hands-on|production|authorship|ownership|exposure|understanding|knowledge|command|competence|ability|adoption|widespread|user bases?|reach|current structure|successfully manages|personal commits)\b/i;
+  const grounded = (text) =>
+    typeof text === 'string' &&
+    !/\d/.test(text) &&
+    !unsupported.test(text) &&
+    !excludedRepositoryNames.some((name) =>
+      new RegExp(`(?:^|\\W)${escapeRegex(name)}(?:\\W|$)`, 'i').test(text)
+    );
+  const safeList = (values) => (Array.isArray(values) ? values.filter(grounded) : []);
+  const relevant = (text) =>
+    evidenceTerms.some((term) =>
+      new RegExp(`(?:^|\\W)${escapeRegex(term)}(?:\\W|$)`, 'i').test(text)
+    );
+  const observation = (text) =>
+    grounded(text) &&
+    relevant(text) &&
+    /\b(?:metadata|signals?|language bytes?|language summary)\b/i.test(text) &&
+    /^(?:Public|Original public|Repository|Inspected|Sampled|Detected|The sampled|The public)\b/i.test(
+      text
+    );
+  const discussion = (text) =>
+    grounded(text) &&
+    relevant(text) &&
+    /^(?:Consider how|How (?:would|could)|What (?:would|could))\b/i.test(text) &&
+    !/\b(?:as seen|as shown|given|existing|current|within|utilized|implemented)\b/i.test(text);
+  aiResult = {
+    strengths: safeList(aiResult.strengths).filter(observation),
+    weakAreas: safeList(aiResult.weakAreas).filter(
+      (text) =>
+        /^(?:Consider|Review|Explore|Add|Improve|Document|Check|Assess|Clarify|Evaluate)\b/i.test(
+          text
+        ) && !/\b(?:lacking|lack|missing|absent|absence|without)\b/i.test(text)
+    ),
+    summary: observation(aiResult.summary) ? aiResult.summary : '',
+    explanation: observation(aiResult.explanation) ? aiResult.explanation : '',
+    interviewTalkingPoints: safeList(aiResult.interviewTalkingPoints).filter(discussion)
+  };
 
   const strengths = normalizeInsightList(aiResult.strengths, fallback.strengths);
   const weakAreas = normalizeInsightList(aiResult.weakAreas, fallback.weakAreas);
@@ -507,10 +551,10 @@ const decodeContent = (payload) => {
   }
 };
 
-const fetchRepoContent = async (username, repoName, path) => {
+const fetchRepoContent = async (username, repoName, path, canonicalReadme = false) => {
   try {
     const response = await githubGet(
-      `https://api.github.com/repos/${encodeURIComponent(username)}/${encodeURIComponent(repoName)}/contents/${path}`,
+      `https://api.github.com/repos/${encodeURIComponent(username)}/${encodeURIComponent(repoName)}/${canonicalReadme ? 'readme' : `contents/${path}`}`,
       { timeout: 7000 }
     );
     if (Array.isArray(response.data)) return null;
@@ -518,6 +562,12 @@ const fetchRepoContent = async (username, repoName, path) => {
     return decodeContent(response.data);
   } catch (error) {
     if (isRateLimitError(error)) throw error;
+    // A repository may use README, readme.md, or GitHub's other supported names.
+    // Keep the existing inspected document when present; spend at most one extra
+    // request per sampled repository to distinguish absence from another name.
+    if (error.response?.status === 404 && path === 'README.md' && !canonicalReadme) {
+      return fetchRepoContent(username, repoName, path, true);
+    }
     return error.response?.status === 404 ? '' : null;
   }
 };
@@ -1075,13 +1125,16 @@ const buildDeterministicScores = ({
 
 const buildInsightFallback = ({ developerLevel, strongestRepos = [], weakAreas = [] }) => ({
   developerLevel,
-  strengths: strongestRepos.length
-    ? strongestRepos.slice(0, 3).map((repo) => `Strong project signal in ${repo.name}`)
+  strengths: strongestRepos.some((repo) => !repo.fork)
+    ? strongestRepos
+        .filter((repo) => !repo.fork)
+        .slice(0, 3)
+        .map((repo) => `Original public repository available for review: ${repo.name}`)
     : ['Public repositories are available for review'],
   weakAreas: weakAreas.length
     ? weakAreas.slice(0, 4)
     : ['Improve documentation and project descriptions'],
-  summary: 'Rule-based GitHub analysis completed. AI narrative was unavailable.',
+  summary: 'Rule-based GitHub summary based on the available public repository evidence.',
   explanation:
     'Scores are deterministic and based on repository quality, activity, languages, stars, forks, and documentation.',
   interviewTalkingPoints: strongestRepos
@@ -1101,6 +1154,7 @@ const buildAIInsights = async ({
   weakAreas
 }) => {
   const topRepos = [...repos]
+    .filter((repo) => !repo.fork)
     .sort((a, b) => Number(b.qualityScore || 0) - Number(a.qualityScore || 0))
     .slice(0, 8)
     .map((repo) => ({
@@ -1151,7 +1205,16 @@ const buildAIInsights = async ({
         timer = setTimeout(() => resolve(fallback), GITHUB_AI_TIMEOUT_MS);
       })
     ]);
-    return resolveAIInsights(aiResult, fallback);
+    return resolveAIInsights(
+      aiResult,
+      fallback,
+      repos.filter((repo) => repo.fork).map((repo) => repo.name),
+      unique([
+        ...topRepos.map((repo) => repo.name),
+        ...languageSummary.map((entry) => entry.language),
+        ...technologySummary.map((tech) => tech.name)
+      ])
+    );
   } catch {
     return fallback;
   } finally {
@@ -1200,16 +1263,21 @@ const buildRecruiterInsights = ({
 }) => {
   const topTech = technologies.slice(0, 8).map((tech) => tech.name);
   const productionRepos = repositoryQuality.filter(
-    (repo) => repo.category === 'Production' || repo.category === 'Open Source'
+    (repo) => !repo.fork && (repo.category === 'Production' || repo.category === 'Open Source')
   );
   const proof = [];
   if (scores.healthScore >= 75)
     proof.push('Strong GitHub health score with balanced quality, activity, and impact signals.');
   if (productionRepos.length)
-    proof.push(`${productionRepos.length} repositories show production or open-source signal.`);
-  if (topTech.length) proof.push(`Visible hands-on stack: ${topTech.slice(0, 5).join(', ')}.`);
+    proof.push(
+      `${productionRepos.length} original repositories meet the project's impact heuristics.`
+    );
+  if (topTech.length)
+    proof.push(`Detected repository technology signals: ${topTech.slice(0, 5).join(', ')}.`);
   if (totalStars || followers)
-    proof.push(`${totalStars} stars and ${followers} followers provide external validation.`);
+    proof.push(
+      `Public metadata reports ${totalStars} repository stars and ${followers} profile followers.`
+    );
 
   return {
     headline:
@@ -1224,7 +1292,7 @@ const buildRecruiterInsights = ({
       ...productionRepos
         .slice(0, 3)
         .map((repo) => `Discuss architecture and tradeoffs in ${repo.name}`),
-      ...topTech.slice(0, 3).map((tech) => `Show practical experience with ${tech}`)
+      ...topTech.slice(0, 3).map((tech) => `Discuss the repository signals associated with ${tech}`)
     ]).slice(0, 5)
   };
 };
@@ -1637,8 +1705,8 @@ const buildFreshAnalysis = async (username, timing = null) => {
   const repositoryQuality = repos.map((repo) => {
     const repoTechnologies = repoTechLookup.get(repo.name) || [];
     const signals = repoSignals[repo.name] || {};
-    const commits = commitMap[repo.name] || 0;
-    const qualityScore = buildRepoQuality(repo, commits, signals, repoTechnologies);
+    const commits = commitMap[repo.name] ?? null;
+    const qualityScore = buildRepoQuality(repo, commits ?? 0, signals, repoTechnologies);
     return {
       name: repo.name,
       description: repo.description || '',
@@ -1797,13 +1865,14 @@ const buildFreshAnalysis = async (username, timing = null) => {
     strongestRepos: enrichedRepos,
     weakAreas
   });
+  const originalRepoNames = new Set(repos.filter((repo) => !repo.fork).map((repo) => repo.name));
   const recruiterInsights = buildRecruiterInsights({
     scores,
     repoCount: repos.length,
     totalStars,
     followers: Number(userData?.followers || 0),
     technologies: techResult.technologies,
-    repositoryQuality
+    repositoryQuality: repositoryQuality.filter((repo) => originalRepoNames.has(repo.name))
   });
 
   const githubSignals = {

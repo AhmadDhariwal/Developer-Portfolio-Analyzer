@@ -1,0 +1,55 @@
+<!-- 3. Analytical Score Breakdown -->
+<section class="breakdown-section" aria-label="Score Breakdown">
+  <div class="breakdown-panel">
+    <div class="panel-header-row">
+      <div>
+        <span class="eyebrow">Scoring telemetry</span>
+        <h2 class="panel-title">Score Breakdown</h2>
+        <p class="panel-subtitle">Backend scores and weighted contributions · {{ ruleVersion }}</p>
+      </div>
+      <app-ui-button variant="ghost" size="sm" (clicked)="auditRequested.emit()">
+        View Scoring Audit & Weights
+      </app-ui-button>
+    </div>
+
+    <div class="breakdown-rows-container">
+      <div class="breakdown-row" *ngFor="let item of scoreBreakdownList">
+        <!-- Left: Title & Description -->
+        <div class="row-info-col">
+          <div class="row-heading-wrap">
+            <h4 class="row-label">{{ item.label }}</h4>
+            <span class="row-weight-tag">{{ item.weightPct }}% weight</span>
+          </div>
+          <p class="row-desc">{{ item.description }}</p>
+        </div>
+
+        <!-- Right: Score, Contribution & Progress -->
+        <div class="row-data-col">
+          <div class="row-values-wrap">
+            <div class="row-score-unit">
+              <span class="score-current" *ngIf="item.available">{{ item.value }}</span>
+              <span class="score-total" *ngIf="item.available">/ 100</span>
+              <span class="score-unavailable" *ngIf="!item.available">Unavailable</span>
+            </div>
+
+            <div class="row-contrib-badge">
+              <span class="contrib-val" *ngIf="item.contribution !== null"
+                >+{{ item.contribution }} pts</span
+              >
+              <span class="contrib-omitted" *ngIf="item.contribution === null">Omitted</span>
+            </div>
+
+            <app-ui-badge [variant]="item.available ? 'success' : 'neutral'" size="sm">
+              {{ item.available ? 'Included' : 'Omitted' }}
+            </app-ui-badge>
+          </div>
+
+          <div class="row-progress-wrap">
+            <app-ui-progress [value]="item.value ?? 0" [max]="100" color="primary" size="sm">
+            </app-ui-progress>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

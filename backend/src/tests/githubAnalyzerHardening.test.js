@@ -83,7 +83,8 @@ const createHarness = () => {
         else state.counters.github.profile += 1;
       } else if (url.includes('/languages')) state.counters.github.languages += 1;
       else if (url.includes('/contributors')) state.counters.github.contributors += 1;
-      else if (url.includes('/contents/')) state.counters.github.content += 1;
+      else if (url.includes('/contents/') || url.endsWith('/readme'))
+        state.counters.github.content += 1;
       else if (url.includes('/commits')) state.counters.github.commits += 1;
 
       const isFullRequest = /\/users\/[^/]+(?:\/repos)?$/.test(url);
@@ -148,7 +149,22 @@ const createHarness = () => {
           data: state.contributorOverride ?? [{ login: 'developer', contributions: 12 }],
           headers: {}
         };
-      if (url.includes('/contents/')) {
+      if (state.readmeAlternateName && url.endsWith('/contents/README.md')) {
+        const error = new Error('README.md not found');
+        error.response = { status: 404 };
+        throw error;
+      }
+      if (url.includes('/contents/') || url.endsWith('/readme')) {
+        if (url.endsWith('/readme'))
+          return {
+            data: {
+              encoding: 'base64',
+              content: Buffer.from('# Alternate README\nDocumented original project.').toString(
+                'base64'
+              )
+            },
+            headers: {}
+          };
         const path = decodeURIComponent(url.split('/contents/')[1]);
         const content =
           path === 'README.md'
@@ -171,6 +187,20 @@ const createHarness = () => {
     async runAIAnalysis(_prompt, fallback) {
       state.counters.ai += 1;
       if (state.aiMode === 'hang') return new Promise(() => {});
+      if (state.aiMode === 'unsupported-claims')
+        return {
+          strengths: [
+            'Proficient in Ruby through the copied-engine repository',
+            'Demonstrates strong originality in personal commits'
+          ],
+          weakAreas: ['Improve testing in copied-engine', 'Document copied-engine architecture'],
+          summary: 'This developer successfully manages copied-engine in production.',
+          explanation: 'Personal commits demonstrate expertise and strong originality.',
+          interviewTalkingPoints: [
+            'Discuss architecture of copied-engine',
+            'Explain your personal commits in copied-engine'
+          ]
+        };
       assert.ok(
         state.counters.cache.writes > 0,
         'deterministic analysis must be durable before AI'
@@ -198,14 +228,14 @@ const createHarness = () => {
             'DevOps automation signals remain thin'
           ],
           summary:
-            'This profile shows durable full-stack delivery with production-ready repositories.',
+            'Repository metadata contains React and Express dependency signals in inspected original repositories.',
           explanation:
             'Deterministic drivers emphasize repository quality, activity depth, and technology coverage.',
           scores: { healthScore: 999 },
           githubHealthScore: 999,
           interviewTalkingPoints: [
-            'Explain the React application architecture and its tradeoffs',
-            'Discuss how backend API ownership is organized across repositories'
+            'How would you review the React dependencies of this repository?',
+            'What would you review about the Express dependencies of this repository?'
           ]
         };
       }
@@ -374,7 +404,10 @@ const createHarness = () => {
     axios,
     './aiservice': aiService,
     '../prompts/githubPrompt': {
-      getGitHubPrompt: () => 'sanitized deterministic prompt'
+      getGitHubPrompt: (data) => {
+        state.promptData = copy(data);
+        return 'sanitized deterministic prompt';
+      }
     },
     './platformSettingsService': {
       getIntegrationSecretsSync: () => ({ githubEnabled: true })
@@ -660,7 +693,7 @@ test('AI score pollution is ignored and narrative stays schema-safe', async () =
   assert.equal(result.githubSignals.scoring.evidence.inputs.githubPayload, undefined);
   assert.equal(result.githubHealthScore, result.scores.healthScore);
   assert.notEqual(result.githubHealthScore, 999);
-  assert.match(result.summary, /full-stack delivery/i);
+  assert.match(result.summary, /repository metadata/i);
   assert.ok(result.strengths.length >= 2);
 });
 
@@ -931,6 +964,7 @@ test('normalization deduplicates repositories and preserves unavailable activity
   const result = await service.analyzeGitHubProfile('partial');
   assert.equal(result.repoCount, 1);
   assert.equal(result.repositories[0].pushedAt, null);
+  assert.ok(result.repositoryQuality.every((repo) => repo.commits === null));
   assert.equal(result.scoring.breakdown.contribution.available, false);
   assert.equal(result.scoring.evidence.facts.totalCommits, null);
   assert.ok(result.scoring.warnings.includes('activity_partial_or_unavailable'));
@@ -1123,8 +1157,8 @@ test('expired cache returns immediately and revalidates once across instances wi
   assert.equal(h.state.counters.ai, 2);
   const refreshed = await second.service.analyzeGitHubProfile('swr');
   assert.equal(refreshed.cache.stale, false);
-  assert.match(refreshed.summary, /full-stack delivery/);
-  assert.match(refreshed.recruiterInsights.interviewTalkingPoints[0], /React application/);
+  assert.match(refreshed.summary, /repository metadata/i);
+  assert.match(refreshed.recruiterInsights.interviewTalkingPoints[0], /React dependencies/);
   assert.equal(refreshed.analysisHistory.length, 2);
   assert.notEqual(refreshed.githubHealthScore, 999);
   assert.ok(h.state.analysisCacheDeletes.length > 0);
@@ -1175,4 +1209,56 @@ test('client errors scrub filesystem paths, classic PATs and URL credentials', a
     assert.equal(response.statusCode, 400);
     assert.equal(response.body.message, 'Invalid GitHub username.');
   }
+});
+
+test('qualitative evidence excludes forks and rejects unverified proficiency and authorship', async () => {
+  const h = createHarness();
+  h.state.aiMode = 'unsupported-claims';
+  h.state.repoOverride = [
+    {
+      name: 'original-engine',
+      fork: false,
+      archived: false,
+      language: 'Python',
+      stargazers_count: 2,
+      forks_count: 0
+    },
+    {
+      name: 'copied-engine',
+      fork: true,
+      archived: false,
+      language: 'Ruby',
+      stargazers_count: 5000,
+      forks_count: 300
+    }
+  ];
+  const { service } = h.loadInstance();
+  const result = await service.analyzeGitHubProfile('narrative-evidence');
+  assert.ok(h.state.promptData.topRepos.every((repo) => repo.name !== 'copied-engine'));
+  const narrative = JSON.stringify({
+    summary: result.summary,
+    explanation: result.explanation,
+    strengths: result.strengths,
+    weakAreas: result.weakAreas,
+    recruiterInsights: result.recruiterInsights
+  });
+  assert.doesNotMatch(
+    narrative,
+    /copied-engine|proficient|expertise|personal commits|hands-on|successfully manages/i
+  );
+  assert.match(result.strengths[0], /original-engine/);
+  assertScores(result);
+});
+
+test('canonical README fallback recognizes an extensionless document without expanding the repository sample', async () => {
+  const h = createHarness();
+  h.state.readmeAlternateName = true;
+  const { service } = h.loadInstance();
+  const result = await service.analyzeGitHubProfile('readme-name');
+  const inspected = result.repositoryQuality.filter((repo) => repo.hasReadme !== null);
+  assert.equal(inspected.length, 2);
+  assert.ok(inspected.every((repo) => repo.hasReadme && repo.readmeQuality > 0));
+  assert.equal(h.state.counters.github.content, 14);
+  assert.equal(result.dataVersion, 'github-normalized-v2');
+  assertScores(result);
 });

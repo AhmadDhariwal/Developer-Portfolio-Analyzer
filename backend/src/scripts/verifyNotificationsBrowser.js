@@ -255,7 +255,10 @@ async function main() {
         unreadCount: 0
       });
     });
-    const dist = path.resolve(__dirname, '../../../frontend/dist/frontend/browser');
+    const dist = path.resolve(
+      process.env.NOTIFICATION_BROWSER_DIST ||
+        path.join(__dirname, '../../../frontend/dist/frontend/browser')
+    );
     app.use(express.static(dist));
     app.get('/{*path}', (_req, res) => res.sendFile(path.join(dist, 'index.html')));
     server = await new Promise((resolve) => {
@@ -573,7 +576,7 @@ async function main() {
       path.join(
         output,
         process.env.NOTIFICATION_NETWORK_PHASE
-          ? `network-${process.env.NOTIFICATION_NETWORK_PHASE}.json`
+          ? `${artifactPrefix ? artifactPrefix + '-' : ''}network-${process.env.NOTIFICATION_NETWORK_PHASE}.json`
           : `${artifactPrefix ? artifactPrefix + '-' : ''}browser-results.json`
       ),
       JSON.stringify(results, null, 2) + '\n'
