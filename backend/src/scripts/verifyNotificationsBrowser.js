@@ -150,6 +150,19 @@ async function main() {
   await fs.mkdir(output, { recursive: true });
   const runtime = await startMongo({ replicaSet: 'notification-browser', temporaryRoot: output });
   const originalSecret = process.env.JWT_SECRET;
+  const retentionBrowser = process.env.NOTIFICATION_RETENTION_BROWSER === 'true';
+  const originalRetention = Object.fromEntries(
+    [
+      'NOTIFICATION_RETENTION_ENABLED',
+      'NOTIFICATION_RETENTION_POLICY_APPROVED',
+      'NOTIFICATION_RETENTION_WORKER_ENABLED'
+    ].map((name) => [name, process.env[name]])
+  );
+  if (retentionBrowser) {
+    process.env.NOTIFICATION_RETENTION_ENABLED = 'true';
+    process.env.NOTIFICATION_RETENTION_POLICY_APPROVED = 'true';
+    process.env.NOTIFICATION_RETENTION_WORKER_ENABLED = 'false';
+  }
   process.env.JWT_SECRET = randomBytes(32).toString('hex');
   const results = {
     synthetic: true,
@@ -214,6 +227,19 @@ async function main() {
         message,
         eventId: `browser:${index}`
       });
+    if (retentionBrowser) {
+      const expired = await createNotification({
+        userId: owner._id,
+        type: 'info',
+        title: 'Expired synthetic activity',
+        message: 'Must not appear',
+        eventId: 'browser:expired'
+      });
+      await Notification.collection.updateOne(
+        { _id: expired._id },
+        { $set: { createdAt: new Date(Date.now() - 181 * 86400000) } }
+      );
+    }
     const app = express();
     app.use(express.json());
     app.use('/api/notifications', require('../routes/notification.routes'));
@@ -332,7 +358,13 @@ async function main() {
     assert.ok(await dialog.evaluate((element) => element.contains(document.activeElement)));
     await page.keyboard.press('Escape');
     await expect(dialog).not.toBeVisible();
-    assert.equal(await Notification.countDocuments({ userId: owner._id }), 3);
+    assert.equal(
+      await Notification.countDocuments({
+        userId: owner._id,
+        ...require('../services/notificationRetentionService').visibleFilter()
+      }),
+      3
+    );
     await page.getByRole('button', { name: 'Delete selected', exact: true }).click();
     await expect(dialog).toBeVisible();
     const confirmBulk = dialog.getByRole('button', { name: 'Delete selected', exact: true });
@@ -404,6 +436,69 @@ async function main() {
     );
     await expect(feed).toHaveCount(2);
     results.checks.push('search, empty state, explicit error and retry PASS');
+    if (retentionBrowser) {
+      await expect(page.getByText('Expired synthetic activity', { exact: true })).toHaveCount(0);
+      const receipts = require('../models/notificationReceipt');
+      const beforeReceipts = await receipts.countDocuments({ userId: owner._id });
+      await page
+        .locator('.hero-actions')
+        .getByRole('button', { name: 'Clear All', exact: true })
+        .click();
+      const clearDialog = page.getByRole('dialog', { name: 'Clear all notifications?' });
+      await expect(clearDialog).toBeVisible();
+      await clearDialog.getByRole('button', { name: 'Cancel', exact: true }).click();
+      await expect(clearDialog).not.toBeVisible();
+      await expect(feed).toHaveCount(2);
+      await page
+        .locator('.hero-actions')
+        .getByRole('button', { name: 'Clear All', exact: true })
+        .click();
+      const [cleared] = await Promise.all([
+        page.waitForResponse(
+          (response) =>
+            new URL(response.url()).pathname === '/api/notifications/clear-all' &&
+            response.request().method() === 'POST'
+        ),
+        clearDialog.getByRole('button', { name: 'Clear All', exact: true }).click()
+      ]);
+      assert.equal(cleared.status(), 200);
+      await expect(feed).toHaveCount(0);
+      await expect(page.locator('.hero-stats .stat-card strong').first()).toHaveText('0');
+      assert.equal(await receipts.countDocuments({ userId: owner._id }), beforeReceipts);
+      assert.ok(
+        await Notification.exists({ userId: owner._id, title: 'Expired synthetic activity' })
+      );
+      assert.equal(
+        await createNotification({
+          userId: owner._id,
+          type: 'info',
+          title: 'Live verification update',
+          message: 'Same stable source event',
+          eventId: 'browser:live'
+        }),
+        null
+      );
+      await second.bringToFront();
+      await expect(second.locator('app-notifications .notification-item')).toHaveCount(0);
+      await page.bringToFront();
+      await createNotification({
+        userId: owner._id,
+        type: 'info',
+        title: 'Activity after cleanup',
+        message: 'New events remain available',
+        eventId: 'browser:after-clear'
+      });
+      await expect(feed).toHaveCount(1);
+      await expect(
+        page.locator('.status').filter({ hasText: 'No notifications found.' })
+      ).toHaveCount(0);
+      results.checks.push(
+        'Clear All confirmation/cancel, immediate counts, tab synchronization, receipt preservation and later activity PASS'
+      );
+      results.checks.push(
+        'Expired activity absent from feed/count while physical cleanup worker remains disabled PASS'
+      );
+    }
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
       for (const theme of ['dark', 'light']) {
@@ -468,6 +563,10 @@ async function main() {
     }
     await mongoose.disconnect();
     results.cleanup = await runtime.stop();
+    for (const [name, value] of Object.entries(originalRetention)) {
+      if (value === undefined) delete process.env[name];
+      else process.env[name] = value;
+    }
     if (originalSecret === undefined) delete process.env.JWT_SECRET;
     else process.env.JWT_SECRET = originalSecret;
     await fs.writeFile(

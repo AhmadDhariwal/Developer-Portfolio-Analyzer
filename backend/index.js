@@ -248,6 +248,7 @@ const startServer = async () => {
       logger.info('development API-only mode: loopback listener; background workers disabled.');
       return;
     }
+    require('./src/services/notificationRetentionService').start();
     startEmailRetryWorker();
     startIntegrationSyncWorker();
     startJobSourceSyncWorker();
@@ -301,6 +302,7 @@ startServer().catch((error) => {
 });
 
 const shutdown = () => {
+  require('./src/services/notificationRetentionService').stop();
   require('./src/services/notificationStreamService')
     .stop()
     .catch(() => {});

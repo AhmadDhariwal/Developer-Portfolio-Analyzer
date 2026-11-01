@@ -1,5 +1,63 @@
 # Notification production finalization
 
+## Clear All and retention finalization — 1 November 2026
+
+Branch: `task/notifications`. Authorized source: `cf499746612328338cd2d5db1bcb531db6bb7ef8`. Working tree and index were clean at preflight; PR target is not applicable. All prior implementation, tests and evidence are preserved. No Support workflow was changed. No production/historical data deletion, live retention activation, deployment, push or merge was performed.
+
+**DEVELOPMENT COMPLETE — STABLE CANDIDATE — PRODUCTION GATES PENDING.** Retention remains inactive; the 90/180-day proposal still requires product approval.
+
+### Existing deletion and Clear All
+
+Individual deletion and selected deletion were audited and retained: both use the existing recipient/scope fence and bounded Mongo transaction; selected deletion accepts 1–100 IDs. Neither deletes receipts or audit history. Their read/selection/cache/SSE behavior is covered by focused regression tests.
+
+The new clearly labeled **Clear All** action uses the existing accessible confirmation dialog. It explicitly applies across the user's currently authorized inbox, ignores view filters, and can dismiss security inbox notices after confirmation. This manual dismissal follows existing single-delete semantics; it does not authorize automatic security-record retention or erase separate audit history/receipts.
+
+`POST /api/notifications/clear-all` requires the existing Bearer authentication and bulk admission limit. Each request selects and deletes at most **100** authorized records, commits its invalidation revision atomically, and returns deleted IDs, exact visible counts, `hasMore` and a continuation token. The client performs at most **five sequential batches/500 records per confirmation**. Remaining work is explicitly reported and requires confirmation again. Partial/unknown outcomes are reconciled from the server; completed batches are not restored or blindly retried. In-flight and conflicting controls are disabled, acknowledged rows/counts update immediately, and one final authoritative read restores the current first page.
+
+The signed fifteen-minute continuation is bound to the recipient, persisted session revision and a fixed cleanup window, with an audience distinct from API credentials. It is sent only in the request body and is masked by the existing audit token rules. It cannot authenticate an API request or be reused by another account. New notifications carry an internal `inboxRevision`, allocated in the existing notification/source transaction. This prevents another worker's new or backdated notifications from entering an already-confirmed window. Legacy records without a revision use a fixed strict creation-time boundary. Receipts remain untouched, so stable events dismissed by Clear All cannot be re-created by a retry. All producer contracts remain unchanged; the additional field is internal and is not added to feed projections.
+
+A coordinated backend rollout/drain of old producer workers is required before exposing Clear All's cross-worker arrival guarantee. No historical revision backfill is performed.
+
+### Proposed ordinary activity policy — inactive
+
+| Setting                                   | Default       | Meaning                                                                                                       |
+| ----------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------- |
+| `NOTIFICATION_RETENTION_POLICY_APPROVED`  | false         | Explicit product-policy approval attestation.                                                                 |
+| `NOTIFICATION_RETENTION_ENABLED`          | false         | Enables ordinary expiry visibility only when approval is also true. Enabling without approval fails closed.   |
+| `NOTIFICATION_RETENTION_WORKER_ENABLED`   | false         | Physical cleanup requires this third opt-in, plus both preceding flags. No live job was enabled by this task. |
+| `NOTIFICATION_RETENTION_READ_DAYS`        | 90, proposed  | Read ordinary activity age; integer 1–36,500 days.                                                            |
+| `NOTIFICATION_RETENTION_UNREAD_DAYS`      | 180, proposed | Unread ordinary activity age; integer 1–36,500 days.                                                          |
+| `NOTIFICATION_RETENTION_BATCH_SIZE`       | 100           | Maximum 100 candidate/deleted records per run.                                                                |
+| `NOTIFICATION_RETENTION_INTERVAL_MINUTES` | 60            | Per-instance tick interval, configurable 1–1,440 minutes. API-only mode does not start workers.               |
+
+Age is elapsed UTC time since **creation**, using the record's current read state. Marking an old unread record as read can immediately move it past the shorter read-age boundary. Product must approve this anchor explicitly; a policy based on read time would require a separately approved `readAt` design/backfill. No retention flag or production configuration was changed.
+
+Only records explicitly stored as `security: false`, with a matching Boolean read state and eligible creation timestamp, qualify. Security-marked records and unclassified legacy records with a missing/null security flag are excluded from both automatic expiry visibility and physical cleanup. No notification TTL index is installed. Security notifications, audit history and durable idempotency receipts need separate approved policies; the worker never purges them through ordinary activity retention.
+
+Once an approved visibility policy is enabled, expired ordinary records are excluded from feed, global unread count, filtered count, pagination totals and cursors in the same snapshot, even before physical cleanup. Existing client reconciliation bounds visible refresh; a healthy idle stream may take up to the existing five-minute fallback to re-read time-only expiry. Physical cleanup additionally increments affected owners' revisions for normal SSE reconciliation. This is not an exact-second client expiry promise.
+
+### Bounded scheduling, indexes and recovery
+
+The optional worker reuses Mongo's existing disposable governance collection under `notifications:retention:v1`; Redis, a new queue and a new datastore are unnecessary. A majority-durable expiring token lease coordinates workers. Every deletion transaction first writes/fences the current unexpired lease token and the owner account. A stale worker cannot continue after takeover, and release is token-qualified. Logical sixty-second expiry recovers process failure without waiting for the metadata TTL sweep. Work resumes on a later configured tick; the default interval does not imply sixty-second physical-purge latency.
+
+Each run performs two separately indexed, capped read/unread scans (at most 200 candidate rows read at the default size), merges to at most 100 candidates, and processes at most five owners. Each owner deletion rechecks IDs, owner, classification, read state and age inside the existing five-second majority transaction. Read-state changes, concurrent producers and account deletion are serialized/rechecked. Inactive existing accounts use the same ordinary policy while their account records remain; missing accounts are skipped. No transaction spans an entire mailbox. Per-process overlap guards complement the distributed lease; multiple workers may perform separate serialized bounded runs on different ticks, so fleet cadence must be included in capacity planning.
+
+Additive non-TTL indexes are `notification_retention_scan` (`security, isRead, createdAt, _id, userId`) and `notification_clear_window` (`userId, inboxRevision, _id`). Existing indexes remain. The worker hints by key pattern, allowing a compatible index name. The existing audit-only migration script discovers these schema indexes; no production index migration was executed. Missing indexes fail cleanup closed. Existing low-cardinality notification metrics record worker success/busy/empty/failure outcomes without user or message labels.
+
+### Verification, preservation and production gates
+
+Focused verification passed: backend **9 tests**, frontend **40 distinct cases** (39-case five-file run followed by the affected 17-case service rerun, including one added unknown-outcome recovery case), and browser **7 acceptance groups / zero runtime errors** against the final production build. TypeScript, JavaScript syntax, explicit-file formatting and Git whitespace checks pass. The build retains the existing unrelated landing-page SCSS budget warning (56.67 kB versus 48 kB). Four final mobile/desktop light/dark screenshots are retained and visually reviewed. The covered retention scan returns 100 rows with zero document fetches and 100 index keys examined.
+
+Clear All browser traffic is one bounded POST per batch plus a final feed reconciliation; existing selected-delete, mark-read and authenticated multi-tab SSE paths pass. The former duplicate-request Network measurements remain preserved below; this cleanup task did not repeat the historical before/after load simulation.
+
+Four task-owned temporary logs were removed after retaining their results/hashes; the empty task-owned runtime folder was removed without recursive deletion. No source, fixture, test, essential evidence, historical report or unrelated/untracked user work was deleted or moved.
+
+Current results, exact changed files, cleanup and evidence hashes are recorded in `retention-finalization.json`; disposable backend evidence is in `retention-results.json`, and browser evidence in `frontend/verification/notifications/retention-browser-results.json`. Earlier report sections and structured evidence below are historical and preserved.
+
+Before production: approve policy durations, creation-time/read-state semantics, classification and separate security/audit/receipt policies; review legacy and orphan data without automatically backfilling/purging it; approve physical historical cleanup separately; deploy all revision-aware producers together; verify additive index/query plans, policy consistency across instances, backups, expected cleanup throughput, proxy/SSE behavior and monitoring on the real topology. Enable no retention job until separately authorized. No automatic 90/180-day historical purge is approved by this implementation.
+
+---
+
 ## Current Notifications-only acceptance
 
 Source: existing `task/notifications` at `7d56a1f61dcb4d19b75292b25f4039e74d795c27`; PR target not applicable. The initial working tree and index were clean. This acceptance preserves the committed implementation, tests and evidence, plus concurrent notification UI edits. No Support controller, service, model or ticket workflow was changed. No dependency, API contract, schema, live data, deployment, push or merge is included.

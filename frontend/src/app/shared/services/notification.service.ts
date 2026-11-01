@@ -49,6 +49,16 @@ export interface NotificationResponse {
   revision?: number;
   nextCursor?: string | null;
 }
+export interface ClearAllResponse {
+  deletedCount: number;
+  deletedIds: string[];
+  hasMore: boolean;
+  clearToken: string;
+  unreadCount: number;
+  total: number;
+  revision?: number;
+  message: string;
+}
 export interface NotificationQuery {
   page?: number;
   limit?: number;
@@ -287,6 +297,34 @@ export class NotificationService {
         ids,
       }),
       'delete',
+    );
+  }
+
+  clearAll(clearToken?: string): Observable<ClearAllResponse> {
+    const identity = this.currentIdentity();
+    const session = this.session;
+    return this.http.post<ClearAllResponse>(`${this.baseUrl}/clear-all`, { clearToken }).pipe(
+      filter(() => session === this.session && identity === this.currentIdentity()),
+      tap({
+        next: (result) => {
+          this.clearCache();
+          const ids = new Set(result.deletedIds);
+          this.summary.next({
+            notifications: (this.summary.value?.notifications || []).filter(
+              (item) => !ids.has(item._id),
+            ),
+            unreadCount: result.unreadCount,
+            total: result.total,
+            revision: result.revision,
+          });
+          if (Number.isSafeInteger(result.revision))
+            this.appliedRevision = Math.max(this.appliedRevision, result.revision!);
+          this.reconcile('clear_all', result.revision);
+        },
+        error: () => {
+          if (session === this.session && identity === this.currentIdentity()) this.clearCache();
+        },
+      }),
     );
   }
 

@@ -183,6 +183,7 @@ async function createNotification(input) {
       else if (value instanceof mongoose.Types.ObjectId) meta[name] = String(value);
     }
     meta.target = navigation(type, { ...meta, target: input.meta?.target }, preferenceKey);
+    const state = await persistence.changed(userId, activeSession);
     const [notification] = await Notification.create(
       [
         {
@@ -194,6 +195,7 @@ async function createNotification(input) {
           dedupeKey: key,
           meta,
           isRead: false,
+          inboxRevision: state.revision,
           security,
           organizationId,
           teamId
@@ -201,7 +203,6 @@ async function createNotification(input) {
       ],
       { session: activeSession }
     );
-    await persistence.changed(userId, activeSession);
     return notification;
   };
   try {

@@ -1,3 +1,5 @@
+const retention = require('../services/notificationRetentionService');
+const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const Notification = require('../models/notification');
 const State = require('../models/notificationState');
@@ -153,6 +155,7 @@ const getNotifications = async (req, res) => {
       }).session(session);
       if (!account) throw Object.assign(Error('Account or session unavailable.'), { status: 401 });
       const base = await scope(req, session);
+      base.$and = [...(base.$and || []), retention.visibleFilter()];
       const filter = { ...base };
       const search = String(req.query.search || '').trim();
       if (search.length > 100) throw invalid('Search cannot exceed 100 characters.');
@@ -233,7 +236,8 @@ async function mutate(req, work) {
     await persistence.fence(req.user._id, session, Number(req.user.sessionRevision || 0));
     const filter = await scope(req, session, true);
     const result = await work(filter, session);
-    if (result.changed) await persistence.changed(req.user._id, session);
+    if (result.changed)
+      result.revision = (await persistence.changed(req.user._id, session)).revision;
     return result;
   });
 }
@@ -323,12 +327,111 @@ const bulkDeleteNotifications = async (req, res) => {
   }
 };
 
+const clearAllNotifications = async (req, res) => {
+  try {
+    if (
+      req.body?.clearToken !== undefined &&
+      (typeof req.body.clearToken !== 'string' ||
+        req.body.clearToken.length < 1 ||
+        req.body.clearToken.length > 2048)
+    )
+      throw invalid('Invalid cleanup token.');
+    const result = await mutate(req, async (filter, session) => {
+      // Clear All is account-wide. Client filters cannot widen the recipient fence.
+      if (req.body?.organizationId || req.body?.teamId)
+        throw invalid('Clear All applies to your complete inbox.');
+      filter.$and = [...(filter.$and || []), retention.visibleFilter()];
+      const state = await State.findById(req.user._id).session(session).lean();
+      let window;
+      if (req.body?.clearToken) {
+        try {
+          window = jwt.verify(req.body.clearToken, process.env.JWT_SECRET, {
+            algorithms: ['HS256'],
+            audience: 'devinsight-notification-clear',
+            issuer: process.env.JWT_ISSUER || 'devinsight-api'
+          });
+        } catch {
+          throw invalid('Clear All window expired or invalid. Confirm a new cleanup.');
+        }
+        if (
+          window.owner !== String(req.user._id) ||
+          window.sessionRevision !== Number(req.user.sessionRevision || 0)
+        )
+          throw denied();
+        if (!Number.isSafeInteger(window.revision) || !Number.isFinite(Date.parse(window.before)))
+          throw invalid('Invalid cleanup boundary.');
+      } else {
+        window = {
+          owner: String(req.user._id),
+          sessionRevision: Number(req.user.sessionRevision || 0),
+          revision: state?.revision || 0,
+          before: new Date().toISOString()
+        };
+      }
+      const clearToken =
+        req.body?.clearToken ||
+        jwt.sign(window, process.env.JWT_SECRET, {
+          algorithm: 'HS256',
+          audience: 'devinsight-notification-clear',
+          issuer: process.env.JWT_ISSUER || 'devinsight-api',
+          expiresIn: '15m'
+        });
+      const bounded = {
+        ...filter,
+        $and: [
+          ...filter.$and,
+          {
+            $or: [
+              { inboxRevision: { $lte: window.revision, $ne: null } },
+              { inboxRevision: null, createdAt: { $lt: new Date(window.before) } }
+            ]
+          }
+        ]
+      };
+      const items = await Notification.find(bounded)
+        .select('_id')
+        .sort({ inboxRevision: 1, _id: 1 })
+        .limit(100)
+        .session(session)
+        .maxTimeMS(2000)
+        .lean();
+      const deleted = await Notification.deleteMany(
+        { ...bounded, _id: { $in: items.map((item) => item._id) } },
+        { session }
+      );
+      const hasMore = Boolean(await Notification.exists(bounded).session(session).maxTimeMS(2000));
+      const total = await Notification.countDocuments(filter).session(session).maxTimeMS(2000);
+      const unreadCount = await countUnread(filter, session);
+      return {
+        revision: state?.revision || 0,
+        changed: deleted.deletedCount,
+        deletedIds: items.map((item) => String(item._id)),
+        clearToken,
+        hasMore,
+        total,
+        unreadCount
+      };
+    });
+    const { changed, ...details } = result;
+    res.json({
+      ...details,
+      deletedCount: changed,
+      message: result.hasMore
+        ? 'Cleared one bounded batch. More earlier notifications remain.'
+        : 'Cleanup window cleared. New activity may remain.'
+    });
+  } catch (error) {
+    fail(res, error);
+  }
+};
+
 module.exports = {
   getNotifications,
   markNotificationRead,
   markAllNotificationsRead,
   deleteNotification,
   bulkDeleteNotifications,
+  clearAllNotifications,
   streamNotifications,
   scope
 };

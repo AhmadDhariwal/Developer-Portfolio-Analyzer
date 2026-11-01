@@ -1,4 +1,4 @@
-<div class="page notifications-page" [attr.aria-busy]="loading">
+<div class="page notifications-page" [attr.aria-busy]="loading || clearingAll">
   <!-- ════════════════════════════════════════════
        A. COMPACT HERO HEADER
        ════════════════════════════════════════════ -->
@@ -17,8 +17,18 @@
         <button
           class="ghost-action"
           type="button"
+          (click)="showClearAllDialog = true"
+          [disabled]="
+            clearingAll || deletingSelected || (total === 0 && getActiveFiltersCount() === 0)
+          "
+        >
+          {{ clearingAll ? 'Clearing...' : 'Clear All' }}
+        </button>
+        <button
+          class="ghost-action"
+          type="button"
           (click)="fetchNotifications(1, true)"
-          [disabled]="loading"
+          [disabled]="loading || clearingAll"
         >
           <svg
             class="btn-icon"
@@ -39,7 +49,7 @@
           class="primary-action"
           type="button"
           (click)="markAllAsRead()"
-          [disabled]="markingAllRead || unreadCount === 0"
+          [disabled]="markingAllRead || clearingAll || unreadCount === 0"
         >
           <svg
             class="btn-icon"
@@ -144,7 +154,7 @@
   <!-- ════════════════════════════════════════════
        B. STREAMLINED COMPACT FILTERS PANEL
        ════════════════════════════════════════════ -->
-  <section class="filters card">
+  <section class="filters card" [attr.inert]="clearingAll ? '' : null">
     <div class="filters__header">
       <div class="filters-header-text">
         <h3>Filter Notifications</h3>
@@ -309,7 +319,11 @@
   <!-- ════════════════════════════════════════════
        C. INBOX FEED CONTAINER
        ════════════════════════════════════════════ -->
-  <section class="card inbox-card" [attr.aria-busy]="loading">
+  <section
+    [attr.inert]="clearingAll ? '' : null"
+    class="card inbox-card"
+    [attr.aria-busy]="loading || clearingAll"
+  >
     <app-notification-bulk-actions
       [selectedCount]="selectedIds.size"
       [disabled]="loading || deletingSelected"
@@ -621,4 +635,14 @@
   cancelText="Cancel"
   (confirmed)="deleteSelected()"
   (cancelled)="showBulkDeleteDialog = false"
+></app-notification-confirm-dialog>
+
+<app-notification-confirm-dialog
+  [open]="showClearAllDialog"
+  title="Clear all notifications?"
+  message="Delete notifications across your entire inbox, including security notices. Filters do not limit this action. Up to 100 records per batch and 500 per confirmation; new activity is preserved. Audit history and receipts remain."
+  confirmText="Clear All"
+  cancelText="Cancel"
+  (confirmed)="clearAll()"
+  (cancelled)="showClearAllDialog = false"
 ></app-notification-confirm-dialog>

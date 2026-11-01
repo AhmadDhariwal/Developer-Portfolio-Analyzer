@@ -8,13 +8,15 @@ const {
   markAllNotificationsRead,
   deleteNotification,
   streamNotifications,
-  bulkDeleteNotifications
+  bulkDeleteNotifications,
+  clearAllNotifications
 } = require('../controllers/notificationcontroller');
 
 router.use(protect);
 router.get('/', admission('read', 120), getNotifications);
 router.get('/stream', admission('connect', 30), streamNotifications);
 router.put('/read-all', admission('bulk', 10), markAllNotificationsRead);
+router.post('/clear-all', admission('bulk', 10), clearAllNotifications);
 router.post('/bulk-delete', admission('bulk', 10), bulkDeleteNotifications);
 router.put('/:id/read', admission('mutation', 60), markNotificationRead);
 router.delete('/:id', admission('mutation', 60), deleteNotification);

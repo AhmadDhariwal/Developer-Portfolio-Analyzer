@@ -53,6 +53,9 @@ export class NotificationsComponent implements OnInit {
   selectedIds = new Set<string>();
   showBulkDeleteDialog = false;
   deletingSelected = false;
+  showClearAllDialog = false;
+  clearingAll = false;
+  private clearContinuation?: string;
   private inboxRequest?: Subscription;
   private inboxVersion = 0;
   private readonly pageCursors = new Map<number, string>();
@@ -110,7 +113,9 @@ export class NotificationsComponent implements OnInit {
 
     this.notificationService.streamEvents$
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(() => this.fetchNotifications(this.page, true, true));
+      .subscribe(() => {
+        if (!this.clearingAll) this.fetchNotifications(this.page, true, true);
+      });
   }
 
   private toStartOfDayIso(dateInput: string): string {
@@ -207,6 +212,60 @@ export class NotificationsComponent implements OnInit {
     if (category === 'all') return !this.typeFilter && !this.unreadOnly;
     if (category === 'unread') return this.unreadOnly;
     return this.typeFilter === category && !this.unreadOnly;
+  }
+
+  clearAll(): void {
+    if (this.clearingAll) return;
+    this.showClearAllDialog = false;
+    this.clearingAll = true;
+    this.inboxRequest?.unsubscribe();
+    this.inboxVersion++;
+    this.loading = false;
+    this.loadFailed = false;
+    this.search = this.from = this.to = this.typeFilter = '';
+    this.selectedOrganizationId = this.selectedTeamId = '';
+    this.unreadOnly = false;
+    this.teams = [];
+    this.page = 1;
+    this.pageCursors.clear();
+    this.notificationService.setInboxScope({});
+    this.clearBatch(this.clearContinuation, 0);
+  }
+
+  private clearBatch(clearToken: string | undefined, completed: number): void {
+    this.notificationService
+      .clearAll(clearToken)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (result) => {
+          const ids = new Set(result.deletedIds);
+          this.notifications = this.notifications.filter((item) => !ids.has(item._id));
+          this.selectedIds = new Set([...this.selectedIds].filter((id) => !ids.has(id)));
+          this.unreadCount = result.unreadCount;
+          this.total = result.total;
+          this.filteredUnreadCount = result.unreadCount;
+          this.totalPages = Math.max(1, Math.ceil(this.total / 10));
+          this.clearContinuation = result.hasMore ? result.clearToken : undefined;
+          this.cdr.markForCheck();
+          if (result.hasMore && completed < 4) {
+            this.clearBatch(result.clearToken, completed + 1);
+            return;
+          }
+          this.clearingAll = false;
+          this.fetchNotifications(1, true);
+          this.statusMessage = result.hasMore
+            ? 'Cleared up to 500 notifications. Confirm Clear All again to continue the same earlier window.'
+            : 'Earlier notifications cleared. New activity may remain.';
+        },
+        error: () => {
+          this.clearingAll = false;
+          this.clearContinuation = undefined;
+          this.fetchNotifications(1, true);
+          this.statusMessage =
+            'Cleanup could not finish. Completed batches remain deleted. Review your inbox before trying again.';
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   markAllAsRead(): void {
@@ -320,6 +379,12 @@ export class NotificationsComponent implements OnInit {
           this.cdr.markForCheck();
           if (this.notifications.length === 0) {
             this.statusMessage = 'No notifications found.';
+          } else if (
+            ['No notifications found.', 'Failed to load notifications.'].includes(
+              this.statusMessage,
+            )
+          ) {
+            this.statusMessage = '';
           }
         },
         error: () => {

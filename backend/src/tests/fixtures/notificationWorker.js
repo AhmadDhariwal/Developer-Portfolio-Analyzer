@@ -20,6 +20,12 @@ async function start() {
 }
 process.on('message', async (message) => {
   try {
+    if (message.action === 'retention') {
+      process.send({
+        id: message.id,
+        result: await require('../../services/notificationRetentionService').runOnce()
+      });
+    }
     if (message.action === 'create') {
       const result = await require('../../services/notificationService').createNotification(
         message.payload

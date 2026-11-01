@@ -37,6 +37,16 @@ describe('Notifications feed filtering and mutation reconciliation', () => {
       markAllAsRead: vi.fn(() =>
         of({ message: 'More unread notifications remain.', remaining: 2 }),
       ),
+      clearAll: vi.fn(() =>
+        of({
+          deletedCount: 1,
+          deletedIds: ['notice'],
+          hasMore: false,
+          clearToken: 'window',
+          unreadCount: 0,
+          total: 0,
+        }),
+      ),
       deleteNotification: vi.fn(() => of({ message: 'Deleted' })),
       markAsRead: vi.fn(() => throwError(() => new Error('Unavailable'))),
     };
@@ -177,5 +187,71 @@ describe('Notifications feed filtering and mutation reconciliation', () => {
     expect(component.notifications).toHaveLength(0);
     expect(component.total).toBe(0);
     expect(component.filteredUnreadCount).toBe(0);
+  });
+  it('clears acknowledged rows immediately and performs one authoritative final read', () => {
+    const pending = new Subject<any>();
+    const refresh = new Subject<any>();
+    service.clearAll.mockReturnValueOnce(pending);
+    service.getNotifications.mockReturnValueOnce(refresh);
+    component.showClearAllDialog = true;
+    component.clearAll();
+    expect(component.showClearAllDialog).toBe(false);
+    expect(component.clearingAll).toBe(true);
+    pending.next({
+      deletedCount: 1,
+      deletedIds: ['notice'],
+      hasMore: false,
+      clearToken: 'window',
+      unreadCount: 0,
+      total: 0,
+    });
+    pending.complete();
+    expect(component.notifications).toHaveLength(0);
+    expect(component.unreadCount).toBe(0);
+    expect(component.clearingAll).toBe(false);
+    expect(service.clearAll).toHaveBeenCalledTimes(1);
+  });
+
+  it('caps Clear All at five bounded requests and retains the same earlier window after confirmation', () => {
+    service.clearAll.mockReturnValue(
+      of({
+        deletedCount: 100,
+        deletedIds: [],
+        hasMore: true,
+        clearToken: 'same-window',
+        unreadCount: 2,
+        total: 2,
+      }),
+    );
+    component.clearAll();
+    expect(service.clearAll).toHaveBeenCalledTimes(5);
+    expect(
+      service.clearAll.mock.calls.slice(1).every((args: any[]) => args[0] === 'same-window'),
+    ).toBe(true);
+    expect(component.statusMessage).toContain('500');
+    component.clearAll();
+    expect(service.clearAll.mock.calls[5][0]).toBe('same-window');
+    expect(service.clearAll).toHaveBeenCalledTimes(10);
+  });
+
+  it('does not duplicate Clear All while pending and reconciles unknown outcomes', () => {
+    const pending = new Subject<any>();
+    service.clearAll.mockReturnValueOnce(pending);
+    component.clearAll();
+    component.clearAll();
+    expect(service.clearAll).toHaveBeenCalledTimes(1);
+    pending.error(new Error('Unknown delivery'));
+    expect(component.clearingAll).toBe(false);
+    expect(component.statusMessage).toContain('Completed batches remain deleted');
+  });
+  it('removes the stale empty banner when background activity arrives after Clear All', () => {
+    service.getNotifications.mockReturnValueOnce(
+      of({ notifications: [], total: 0, unreadCount: 0, filteredUnreadCount: 0, totalPages: 1 }),
+    );
+    component.fetchNotifications(1, true);
+    expect(component.statusMessage).toBe('No notifications found.');
+    service.streamEvents$.next({ eventType: 'stream' });
+    expect(component.notifications).toHaveLength(1);
+    expect(component.statusMessage).toBe('');
   });
 });

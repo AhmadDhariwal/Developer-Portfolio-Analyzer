@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { of, Subject } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { NotificationResponse, NotificationService } from './notification.service';
 
 describe('NotificationService identity, reconciliation and streaming', () => {
@@ -278,5 +278,43 @@ describe('NotificationService identity, reconciliation and streaming', () => {
     expect(service.hasUnscopedFeed).toBe(false);
     service.setInboxScope(null);
     expect(service.hasUnscopedFeed).toBe(false);
+  });
+  it('discards older in-flight reads before reconciling an unknown Clear All outcome', () => {
+    const older = new Subject<NotificationResponse>();
+    http.get.mockReturnValueOnce(older);
+    const stale = vi.fn();
+    service.getNotifications().subscribe(stale);
+    http.post.mockReturnValueOnce(throwError(() => new Error('Unknown commit outcome')));
+    service.clearAll().subscribe({ error: () => undefined });
+    service.getNotifications({}, '', true).subscribe();
+    expect(http.get).toHaveBeenCalledTimes(2);
+    older.next(response);
+    older.complete();
+    expect(stale).not.toHaveBeenCalled();
+  });
+  it('publishes Clear All counts and invalidates cached records immediately after acknowledgement', () => {
+    http.post.mockReturnValueOnce(
+      of({
+        deletedCount: 1,
+        deletedIds: ['notice'],
+        hasMore: false,
+        clearToken: 'window',
+        unreadCount: 0,
+        total: 0,
+        revision: 9,
+      }),
+    );
+    const summary = vi.fn();
+    service.summary$.subscribe(summary);
+    service.getNotifications({ page: 1, limit: 10 }).subscribe();
+    service.clearAll().subscribe();
+    expect(http.post).toHaveBeenCalledWith(expect.stringMatching(/clear-all$/), {
+      clearToken: undefined,
+    });
+    expect(summary).toHaveBeenLastCalledWith(
+      expect.objectContaining({ unreadCount: 0, total: 0, revision: 9 }),
+    );
+    service.getNotifications({ page: 1, limit: 10 }).subscribe();
+    expect(http.get).toHaveBeenCalledTimes(2);
   });
 });

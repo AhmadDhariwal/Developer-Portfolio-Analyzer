@@ -42,6 +42,7 @@ const notificationSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
+    inboxRevision: { type: Number, default: null },
     security: { type: Boolean, default: false },
     organizationId: { type: mongoose.Schema.Types.ObjectId, default: null },
     teamId: { type: mongoose.Schema.Types.ObjectId, default: null },
@@ -72,6 +73,15 @@ notificationSchema.index(
 notificationSchema.index(
   { userId: 1, organizationId: 1, teamId: 1, createdAt: -1, _id: -1 },
   { name: 'notification_scope_cursor' }
+);
+
+notificationSchema.index(
+  { security: 1, isRead: 1, createdAt: 1, _id: 1, userId: 1 },
+  { name: 'notification_retention_scan' }
+);
+notificationSchema.index(
+  { userId: 1, inboxRevision: 1, _id: 1 },
+  { name: 'notification_clear_window' }
 );
 
 module.exports = mongoose.model('Notification', notificationSchema);
