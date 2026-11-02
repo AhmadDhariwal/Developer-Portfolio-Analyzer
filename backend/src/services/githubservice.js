@@ -1782,6 +1782,7 @@ const buildFreshAnalysis = async (username, timing = null) => {
       createdAt: repo.created_at || null,
       archived: Boolean(repo.archived),
       fork: Boolean(repo.fork),
+      isTemplate: repo.is_template === true,
       size: Number(repo.size || 0)
     };
   });
@@ -2153,7 +2154,8 @@ const invalidateSkillGapCachesForGitHub = async (username) => {
     githubUsername: new RegExp(`^${escapeRegex(trimmedUsername)}$`, 'i'),
     analysisVersion: SKILL_GAP_ANALYSIS_VERSION
   });
-  await aiService.invalidateCachePrefix('skill_gap:result:');
+  // Current Skill Gap caches validate source revisions before lookup; new evidence
+  // selects a new owner-scoped signal hash. Never flush unrelated accounts.
   console.log(
     '[GitHubSWR]',
     JSON.stringify({

@@ -39,6 +39,8 @@ export interface EvidenceSkill {
   warnings: string[];
 }
 export interface SkillEvidenceContract {
+  evidencePolicyVersion?: string;
+  taxonomyVersion?: string;
   ruleVersion?: string;
   requirementMatrixVersion?: string;
   calculatedAt?: string;

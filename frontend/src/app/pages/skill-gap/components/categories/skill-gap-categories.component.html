@@ -1,0 +1,31 @@
+<div class="section-heading">
+  <div>
+    <span class="eyebrow">Domain distribution</span>
+    <h2 id="categories-title">Category breakdown</h2>
+    <p>Each coverage value comes from the backend and includes required skills only.</p>
+  </div>
+  <span class="tag">{{ categories.length }} technical domains</span>
+</div>
+<div class="category-grid">
+  @for (category of categories; track category) {
+    <div class="category-card">
+      <div class="category-card__header">
+        <strong>{{ category }}</strong>
+        <span class="category-coverage-tag">{{
+          analysis.categoryBreakdown![category].coverage === null
+            ? 'Optional only'
+            : analysis.categoryBreakdown![category].coverage + '%'
+        }}</span>
+      </div>
+      <span class="category-card__meta"
+        >{{ analysis.categoryBreakdown![category].requiredSkillCount }} required ·
+        {{ analysis.categoryBreakdown![category].optionalSkillCount }} optional</span
+      >
+      <div class="category-progress-track">
+        <i [style.width.%]="analysis.categoryBreakdown![category].coverage || 0"></i>
+      </div>
+    </div>
+  } @empty {
+    <p>Category breakdown unavailable.</p>
+  }
+</div>

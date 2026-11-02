@@ -1,3 +1,4 @@
+const skillGapControls = require("../services/skillGapGovernanceService");
 const notificationPersistence = require("../services/notificationPersistenceService");
 const { clampScore: clamp } = require("../services/scoring/math");
 const developerContext = require("../services/developerContextService");
@@ -30,13 +31,14 @@ const {
 const { estimateTokens } = require("../services/promptBuilderService");
 const {
   extractSkillsFromRepositories,
+  extractSkillsFromText,
   canonicalizeSkillName,
   normalizeSkillList,
   INDUSTRY_SKILLS
 } = require("../utils/skilldetector");
 const { resolvePreviewResume } = require("../services/previewResumeCacheService");
 
-const ANALYSIS_VERSION = "v8-skill-evidence-coverage";
+const ANALYSIS_VERSION = "v9-skill-evidence-governance";
 const MIN_MISSING_SKILLS = 12;
 const MIN_KNOWN_SKILLS = 8;
 const DETERMINISTIC_CONFIDENCE_THRESHOLD = Math.min(
@@ -101,6 +103,12 @@ const readSkillGapMemory = (key) => {
 
 const writeSkillGapMemory = (key, payload) => {
   if (!key || !payload?.analysisData) return;
+  // Expiry pruning plus a hard bound prevents arbitrary preview keys growing memory.
+  for (const [entryKey, entry] of skillGapMemoryCache) {
+    if (entry.expiresAt <= Date.now()) skillGapMemoryCache.delete(entryKey);
+  }
+  while (skillGapMemoryCache.size >= 200)
+    skillGapMemoryCache.delete(skillGapMemoryCache.keys().next().value);
   skillGapMemoryCache.set(key, {
     ...payload,
     expiresAt: Date.now() + SKILL_GAP_MEMORY_TTL_MS
@@ -117,7 +125,7 @@ const withBudget = async (promise, budgetMs, fallback = null) => {
   let timer;
   try {
     return await Promise.race([
-      promise,
+      Promise.resolve(promise).catch(() => fallback),
       new Promise((resolve) => {
         timer = setTimeout(() => resolve(fallback), budgetMs);
         timer.unref?.();
@@ -196,6 +204,14 @@ const resolveSkillGapNarratives = (
   const pick = (raw, fallbackText) => {
     if (!isUsableSkillGapNarrative(raw)) return fallbackText;
     const cleaned = String(raw).replace(/\s+/g, " ").trim();
+    if (
+      /\d|\b(expert|proficient|mastered|professional experience|years of experience|employed|worked at|guaranteed|certified|senior engineer|ignore previous|system prompt)\b/i.test(
+        cleaned
+      )
+    )
+      return fallbackText;
+    const mentioned = skillGapRequirements.normalize(extractSkillsFromText([cleaned]));
+    if (mentioned.some((name) => !skillNames.includes(name))) return fallbackText;
     if (
       !isNarrativeGrounded(cleaned, {
         careerStack,
@@ -770,6 +786,7 @@ const estimateLearningEffort = (skill, experienceLevel = "Student") => {
   const weeks = Math.max(1, Math.min(6, baseWeeks + demandWeeks + experienceWeeks));
   return {
     weeks,
+    kind: "heuristic",
     label: weeks === 1 ? "1 focused week" : `${weeks} focused weeks`,
     level: weeks >= 4 ? "Deep practice" : weeks >= 2 ? "Applied practice" : "Quick validation"
   };
@@ -790,7 +807,7 @@ const getSkillResources = (skillName) => {
 const businessImpactForSkill = (skill, careerStack) => {
   const demand = clamp(skill.jobDemand || getSkillMeta(skill.name).jobDemand || 60);
   if (demand >= 85) {
-    return `${skill.name} is likely to improve match quality for ${careerStack} roles because demand is high and it appears in core hiring signals.`;
+    return `${skill.name} has a high static catalog priority for ${careerStack}; this is a heuristic planning estimate, not verified live hiring demand.`;
   }
   if (String(skill.category || "").includes("DevOps")) {
     return `${skill.name} improves delivery reliability, deployment confidence, and production-readiness signals.`;
@@ -879,13 +896,20 @@ const buildDeterministicRoadmap = (weeklyRoadmap = []) =>
     });
 
 const saveAIVersionSnapshot = async ({ req, source, output, metadata = {} }) => {
-  if (!req.user?._id || !output || typeof output !== "object") return;
+  if (!req.user?._id || !output || typeof output !== "object" || metadata.fromCache) return;
   try {
     await createVersion({
       userId: req.user._id,
       source,
-      outputJson: output,
-      metadata
+      outputJson: {
+        ruleVersion: output.ruleVersion,
+        evidencePolicyVersion: output.evidencePolicyVersion,
+        requirementMatrixVersion: output.requirementMatrixVersion,
+        coverage: output.coverage,
+        counts: { skills: output.skills?.length || 0, missing: output.missingSkills?.length || 0 },
+        aiUsed: Boolean(output.aiUsed)
+      },
+      metadata: { analysisVersion: ANALYSIS_VERSION, fromCache: Boolean(metadata.fromCache) }
     });
   } catch (error) {
     console.error("Skill gap AI snapshot error:", error.message);
@@ -914,7 +938,7 @@ const loadResumeAnalysis = (userId, userContext) =>
 
 const getGitHubData = async (
   username,
-  { forceRefresh = false, isTemporaryMode = false, cachedPeek } = {}
+  { forceRefresh = false, isTemporaryMode = false, cachedPeek, beforeRefresh } = {}
 ) => {
   if (!username)
     return {
@@ -933,11 +957,12 @@ const getGitHubData = async (
 
     if (isTemporaryMode) {
       if (forceRefresh || !cached.data || cached.status !== "fresh") {
+        if (beforeRefresh) await beforeRefresh();
         const { analyzeGitHubProfile } = require("../services/githubservice");
         const freshData = await analyzeGitHubProfile(normalizedUsername, {
           forceRefresh
         });
-        if (!freshData || freshData.repoCount === 0) {
+        if (!freshData) {
           throw new Error("GitHub profile has no public repositories or analysis is in progress.");
         }
         return freshData;
@@ -949,6 +974,7 @@ const getGitHubData = async (
     let refreshState = { queued: false, running: false, reason: "fresh" };
 
     if (shouldRefresh) {
+      if (beforeRefresh) await beforeRefresh();
       refreshState = refreshGitHubAnalysisInBackground(normalizedUsername, {
         reason: forceRefresh
           ? "manual_refresh"
@@ -962,7 +988,6 @@ const getGitHubData = async (
       "[SkillGapPipeline]",
       JSON.stringify({
         event: "github_cache_status",
-        username: normalizedUsername,
         status: cached.status,
         staleServed: cached.status === "stale",
         cacheAgeMs: cached.ageMs,
@@ -999,14 +1024,11 @@ const getGitHubData = async (
       "[SkillGapPipeline]",
       JSON.stringify({
         event: "github_swr_fallback",
-        username: String(username || "").trim(),
-        error: error.message,
+        sourceUnavailable: true,
         durationMs: Date.now() - startedAt
       })
     );
-    if (isTemporaryMode) {
-      throw error;
-    }
+    if ([429, 503].includes(error.status)) throw error;
     return {
       repoCount: 0,
       developerLevel: "Unknown",
@@ -1116,7 +1138,10 @@ const buildSkillGapCacheSignalHash = ({
         },
         profileClaims: skillGapRequirements.normalize(user.skills || []),
         requirementMatrixVersion: skillGapRequirements.MATRIX_VERSION,
+        taxonomyVersion: skillGapRequirements.TAXONOMY_VERSION,
+        roadmapVersion: "skill-gap-roadmap-v2",
         evidenceRuleVersion: skillGapEvidence.RULE_VERSION,
+        evidencePolicyVersion: skillGapEvidence.EVIDENCE_POLICY_VERSION,
         selectedResume: developerContext.resolveSelectedResumeFileId(user),
         supportingEvidence: {
           integration: developerSignals.integrationSignal,
@@ -1740,7 +1765,10 @@ const buildDeterministicSkillGroups = ({
 };
 
 const logSkillGapPipeline = (event, data = {}, level = "log") => {
-  const line = `[SkillGapPipeline] ${JSON.stringify({ event, ...data })}`;
+  if (event === "request_complete") require("../services/skillGapMetrics").completed(data);
+  const safeData = { ...data };
+  delete safeData.username;
+  const line = `[SkillGapPipeline] ${JSON.stringify({ event, ...safeData })}`;
   if (level === "warn") console.warn(line);
   else if (level === "error") console.error(line);
   else console.log(line);
@@ -1876,11 +1904,16 @@ const failInflightRequest = (key, deferred, error) => {
  */
 const analyzeSkillGap = async (req, res) => {
   const timer = createStageTimer();
-  let usernameForLog = "";
   let inflightKey = "";
   let inflightDeferred = null;
+  let reservation = null;
+  const governed = req.skillGapGovernance;
+  const ensureActive = () => {
+    if (governed?.signal.aborted || res.destroyed || res.writableEnded)
+      throw skillGapControls.failure();
+  };
   try {
-    const forceRefresh = req.body?.forceRefresh === true || req.body?.forceRefresh === "true";
+    let forceRefresh = req.body?.forceRefresh === true || req.body?.forceRefresh === "true";
     const isTemporaryMode = req.body?.isTemporary === true || req.body?.isTemporary === "true";
     const activeGithub = String(developerContext.resolveGithubUsername(req.user) || "").trim();
 
@@ -1911,7 +1944,6 @@ const analyzeSkillGap = async (req, res) => {
         .status(error.status || 400)
         .json({ message: error.message || "Username is required." });
     }
-    usernameForLog = username;
 
     let careerStack = isTemporaryMode
       ? String(req.body.careerStack || "").trim()
@@ -1967,10 +1999,30 @@ const analyzeSkillGap = async (req, res) => {
       isTemporaryMode
     });
 
+    if (governed) {
+      // Lock a logical context before source reads, independent of refresh flags or
+      // signal hashes. A waiting worker reads the latest sources after acquisition.
+      const identity = JSON.stringify([
+        governed.owner,
+        isTemporaryMode,
+        username,
+        careerStack,
+        experienceLevel,
+        previewResumeIdentity
+      ]);
+      reservation = await skillGapControls.acquire(governed.owner, identity, governed.signal);
+      if (reservation.joined) forceRefresh = false;
+    }
+    ensureActive();
     timer.mark("validationMs", validationStartedAt);
 
     const softMemoryKey = buildSkillGapSoftMemoryKey({
-      userId: isTemporaryMode ? req.user?._id || "anonymous" : req.user?._id,
+      userId: isTemporaryMode
+        ? req.user?._id ||
+          (governed
+            ? crypto.createHash("sha256").update(governed.owner).digest("hex")
+            : "anonymous")
+        : req.user?._id,
       username,
       careerStack,
       experienceLevel,
@@ -1982,7 +2034,9 @@ const analyzeSkillGap = async (req, res) => {
         previewResumeId: req.body.previewResumeId,
         resumeHash: req.body.resumeHash,
         resumeText: cleanResume,
-        experienceLevel
+        experienceLevel,
+        claimPolicy: "skill-gap-v2",
+        ownerScope: req.user?._id ? `account:${req.user._id}` : `guest:${req.ip}`
       });
       if (previewResume.error) {
         failInflightRequest(inflightKey, inflightDeferred, new Error(previewResume.error));
@@ -2000,7 +2054,7 @@ const analyzeSkillGap = async (req, res) => {
         normalizedGithubUsername
           ? getCachedGitHubAnalysis(normalizedGithubUsername, {
               allowStale: true
-            })
+            }).catch(() => ({ status: "unavailable", data: null }))
           : Promise.resolve({ status: "miss", data: null })
       )
     ]);
@@ -2021,7 +2075,11 @@ const analyzeSkillGap = async (req, res) => {
       getGitHubData(username.trim(), {
         forceRefresh,
         isTemporaryMode,
-        cachedPeek: githubPeek
+        cachedPeek: githubPeek,
+        beforeRefresh:
+          governed && !forceRefresh
+            ? () => skillGapControls.consume(governed.owner, req.ip, ["source"])
+            : undefined
       })
     );
     const githubInsights = buildGithubInsights(githubData);
@@ -2039,7 +2097,7 @@ const analyzeSkillGap = async (req, res) => {
     );
     const validCareerRequirements =
       ALLOWED_STACKS.includes(careerStack) && ALLOWED_LEVELS.includes(experienceLevel);
-    const cacheReadable =
+    let cacheReadable =
       !forceRefresh && validCareerRequirements && isPersistableSkillGapResult(githubData);
     const signalHash = buildSkillGapCacheSignalHash({
       username,
@@ -2063,11 +2121,15 @@ const analyzeSkillGap = async (req, res) => {
         waiters: existingInflight.waiters + 1,
         ageMs: Date.now() - existingInflight.startedAt
       });
+      if (existingInflight.waiters >= 32) throw skillGapControls.failure(429);
       existingInflight.waiters += 1;
       const completed = await existingInflight.deferred.promise;
       return res.status(completed.status || 200).json(completed.payload);
     }
 
+    ensureActive();
+    if (inflightSkillGapRequests.size >= 100) throw skillGapControls.failure(429);
+    ensureActive();
     inflightDeferred = createInflightDeferred();
     inflightSkillGapRequests.set(inflightKey, {
       deferred: inflightDeferred,
@@ -2433,7 +2495,8 @@ const analyzeSkillGap = async (req, res) => {
     );
     const deterministicNarrative = skillGapCompatibility.narrative(evidenceResolution);
     const deterministicConfidence = initialScoring.confidence.score;
-    const skipAI = deterministicConfidence >= DETERMINISTIC_CONFIDENCE_THRESHOLD;
+    const skipAI =
+      !validCareerRequirements || deterministicConfidence >= DETERMINISTIC_CONFIDENCE_THRESHOLD;
 
     // Deterministic evidence owns skills, priorities, coverage, graph, and schedule.
     const deterministicIdentity = {
@@ -2454,7 +2517,11 @@ const analyzeSkillGap = async (req, res) => {
       .update(JSON.stringify(deterministicIdentity))
       .digest("hex");
     let deterministicGroups = await timer.time("deterministicCacheLookupMs", () =>
-      aiService.getDeterministicSummary("skill_gap", deterministicIdentity)
+      withBudget(
+        aiService.getDeterministicSummary("skill_gap", deterministicIdentity),
+        SKILL_GAP_REDIS_LOOKUP_BUDGET_MS,
+        null
+      )
     );
     if (deterministicGroups) {
       logSkillGapPipeline("deterministic_summary_cache_hit", {
@@ -2476,7 +2543,15 @@ const analyzeSkillGap = async (req, res) => {
       );
       if (isPersistableSkillGapResult(githubData)) {
         await timer.time("deterministicCacheWriteMs", () =>
-          aiService.setDeterministicSummary("skill_gap", deterministicIdentity, deterministicGroups)
+          withBudget(
+            aiService.setDeterministicSummary(
+              "skill_gap",
+              deterministicIdentity,
+              deterministicGroups
+            ),
+            SKILL_GAP_REDIS_LOOKUP_BUDGET_MS,
+            null
+          )
         );
       }
       logSkillGapPipeline("deterministic_summary_cache_miss", {
@@ -2488,7 +2563,16 @@ const analyzeSkillGap = async (req, res) => {
     let aiUsed = false;
     let aiResult = null;
 
-    if (!skipAI) {
+    ensureActive();
+    let aiAdmitted = true;
+    if (!skipAI && governed) {
+      try {
+        await skillGapControls.consume(governed.owner, req.ip, ["ai"]);
+      } catch {
+        aiAdmitted = false;
+      } // Qualitative enrichment is optional; deterministic work remains available.
+    }
+    if (!skipAI && aiAdmitted) {
       const fallback = deterministicNarrative;
       const prompt = await timer.time("promptGenerationMs", () => {
         const compactContext = skillGapCompatibility.promptContext(
@@ -2532,6 +2616,8 @@ const analyzeSkillGap = async (req, res) => {
         aiService
           .runAIAnalysis(prompt, narrativeFallback, skillGapAiRetries, {
             timeoutMs: 7000,
+            requestPolicy: { allowedProviders: ["gemini"], maxAttempts: 1, maxOutputTokens: 600 },
+            signal: governed?.signal,
             returnMeta: true
           })
           .catch(() => ({ ok: false, value: narrativeFallback }))
@@ -2788,7 +2874,8 @@ const analyzeSkillGap = async (req, res) => {
 
     const skillGraph = buildSkillGraph({
       currentSkills: fullResult.yourSkills.filter((skill) => skill.status === "DEMONSTRATED"),
-      missingSkills: fullResult.missingSkills
+      missingSkills: fullResult.missingSkills,
+      evidenceAware: true
     });
 
     fullResult.skillGraph = skillGraph;
@@ -2849,6 +2936,7 @@ const analyzeSkillGap = async (req, res) => {
       signalHash
     };
 
+    ensureActive();
     const canPersist = validCareerRequirements && isPersistableSkillGapResult(githubData);
     if (!canPersist) {
       logSkillGapPipeline(
@@ -2860,15 +2948,6 @@ const analyzeSkillGap = async (req, res) => {
         },
         "warn"
       );
-    }
-
-    if (canPersist) {
-      writeSkillGapMemory(softMemoryKey, {
-        analysisData: fullResult,
-        updatedAt: new Date(),
-        resultCacheKey,
-        signalHash
-      });
     }
 
     if (isTemporaryMode) {
@@ -2883,7 +2962,11 @@ const analyzeSkillGap = async (req, res) => {
         };
         // Preview cache is response-critical for repeated preview; keep awaited but bounded by aiservice/redis.
         await timer.time("cacheWriteMs", () =>
-          aiService.setSharedCache(previewCacheKey, cachePayload, 1800, "preview")
+          withBudget(
+            aiService.setSharedCache(previewCacheKey, cachePayload, 1800, "preview"),
+            SKILL_GAP_REDIS_LOOKUP_BUDGET_MS,
+            null
+          )
         );
       }
     } else if (scopedCacheKey && canPersist) {
@@ -2894,12 +2977,47 @@ const analyzeSkillGap = async (req, res) => {
       await timer.time("cacheWriteMs", () =>
         notificationPersistence.commit(
           req.user._id,
-          (session) =>
-            AnalysisCache.findOneAndUpdate(
+          async (session) => {
+            ensureActive();
+            if (reservation) {
+              await skillGapControls.fence(reservation, session, governed.signal);
+              const User = require("../models/user");
+              if (
+                req.user.updatedAt &&
+                !(await User.collection.findOne(
+                  { _id: req.user._id, updatedAt: req.user.updatedAt },
+                  { session, projection: { _id: 1 } }
+                ))
+              ) {
+                throw Object.assign(
+                  new Error("Career context changed; reanalyze current evidence."),
+                  { status: 409 }
+                );
+              }
+              if (
+                latestResumeAnalysis?._id &&
+                latestResumeAnalysis.updatedAt &&
+                !(await ResumeAnalysis.collection.findOne(
+                  {
+                    _id: latestResumeAnalysis._id,
+                    userId: req.user._id,
+                    updatedAt: latestResumeAnalysis.updatedAt
+                  },
+                  { session, projection: { _id: 1 } }
+                ))
+              ) {
+                throw Object.assign(
+                  new Error("Resume evidence changed; reanalyze current evidence."),
+                  { status: 409 }
+                );
+              }
+            }
+            return AnalysisCache.findOneAndUpdate(
               scopedCacheKey,
               { $set: { analysisData: fullResult, userId: req.user._id } },
               { upsert: true, session }
-            ),
+            );
+          },
           Array.isArray(fullResult.missingSkills) && fullResult.missingSkills.length >= 3
             ? {
                 type: "career_update",
@@ -2910,7 +3028,8 @@ const analyzeSkillGap = async (req, res) => {
                 preferenceKey: "skillTrendAlerts",
                 meta: { gapCount: fullResult.missingSkills.length }
               }
-            : null
+            : null,
+          req.user.sessionRevision
         )
       );
       if (resultCacheKey) {
@@ -2921,6 +3040,15 @@ const analyzeSkillGap = async (req, res) => {
         });
         timer.mark("redisResultCacheWriteMs", Date.now());
       }
+    }
+
+    if (canPersist) {
+      writeSkillGapMemory(softMemoryKey, {
+        analysisData: fullResult,
+        updatedAt: new Date(),
+        resultCacheKey,
+        signalHash
+      });
     }
 
     if (!isTemporaryMode) {
@@ -2945,8 +3073,10 @@ const analyzeSkillGap = async (req, res) => {
     logSkillGapPipeline("request_complete", {
       username,
       cache: isTemporaryMode
-        ? "temporary_preview_cache"
-        : scopedCacheKey
+        ? canPersist
+          ? "temporary_preview_cache"
+          : "temporary_no_backend_cache"
+        : scopedCacheKey && canPersist
           ? "backend_stored"
           : "temporary_no_backend_cache",
       aiUsed,
@@ -2967,14 +3097,20 @@ const analyzeSkillGap = async (req, res) => {
   } catch (error) {
     failInflightRequest(inflightKey, inflightDeferred, error);
     console.error("Skill Gap Error:", {
-      message: error.message,
-      username: usernameForLog || req.body?.username,
+      status: error.status || 500,
       timings: buildSkillGapTimingSnapshot(timer, req)
     });
-    return res.status(500).json({
-      message: "Analysis could not be completed. Please try again shortly."
+    if (res.headersSent || res.destroyed || res.writableEnded) return;
+    const status = [400, 401, 403, 409, 429, 503].includes(error.status) ? error.status : 500;
+    if ([429, 503].includes(status)) res.set("Retry-After", String(error.retryAfter || 2));
+    return res.status(status).json({
+      message:
+        status === 429 || status === 503
+          ? skillGapControls.failure(status).message
+          : "Analysis could not be completed. Please try again shortly."
     });
   } finally {
+    if (reservation) await skillGapControls.release(reservation).catch(() => {});
     if (inflightKey && inflightSkillGapRequests.get(inflightKey)?.deferred === inflightDeferred) {
       inflightSkillGapRequests.delete(inflightKey);
     }

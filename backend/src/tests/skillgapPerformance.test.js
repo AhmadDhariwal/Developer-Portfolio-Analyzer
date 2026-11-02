@@ -27,7 +27,7 @@ const chain = (value, ms = 0) => ({
   lean: async () => {
     if (ms) await delay(ms);
     return value;
-  },
+  }
 });
 
 const parseGitHubUsername = (raw = "") => {
@@ -46,7 +46,7 @@ const BEFORE = {
   cold: { p50: 216, p95: 258 },
   redis: { p50: 79, p95: 109 },
   memory: { p50: null, p95: null },
-  concurrencyGithub: "5x peek before inflight",
+  concurrencyGithub: "5x peek before inflight"
 };
 
 const createHarness = ({
@@ -54,7 +54,7 @@ const createHarness = ({
   mongoDelayMs = 20,
   githubDelayMs = 25,
   aiDelayMs = 40,
-  resumeDelayMs = 18,
+  resumeDelayMs = 18
 } = {}) => {
   const shared = new Map();
   const deterministic = new Map();
@@ -68,20 +68,18 @@ const createHarness = ({
     redisSets: 0,
     mongoReads: 0,
     mongoWrites: 0,
-    notifications: 0,
+    notifications: 0
   };
 
   const githubPayload = {
     repoCount: 3,
     languageDistribution: [{ language: "TypeScript" }],
-    repositories: [
-      { name: "app", description: "React TypeScript", language: "TypeScript" },
-    ],
+    repositories: [{ name: "app", description: "React TypeScript", language: "TypeScript" }],
     cache: {
       cachedAt: "2026-08-05T00:00:00.000Z",
       expiresAt: "2026-08-06T00:00:00.000Z",
-      source: "cache",
-    },
+      source: "cache"
+    }
   };
 
   mock("services/githubservice.js", {
@@ -93,9 +91,9 @@ const createHarness = ({
     },
     refreshGitHubAnalysisInBackground: () => ({
       queued: false,
-      running: false,
+      running: false
     }),
-    analyzeGitHubProfile: async () => githubPayload,
+    analyzeGitHubProfile: async () => githubPayload
   });
 
   mock("services/aiservice.js", {
@@ -108,8 +106,7 @@ const createHarness = ({
       counters.redisSets += 1;
       shared.set(`${namespace}:${key}`, value);
     },
-    getDeterministicSummary: async (_scope, key) =>
-      deterministic.get(JSON.stringify(key)) || null,
+    getDeterministicSummary: async (_scope, key) => deterministic.get(JSON.stringify(key)) || null,
     setDeterministicSummary: async (_scope, key, value) =>
       deterministic.set(JSON.stringify(key), value),
     runAIAnalysis: async (_prompt, fallback, retries = 0, opts = {}) => {
@@ -120,13 +117,12 @@ const createHarness = ({
       const value = {
         analysisSummary:
           "Frontend evidence for React and TypeScript is visible with Intern-level Testing gaps remaining.",
-        levelAssessment:
-          "At Intern level for Frontend, prioritize Testing and CI/CD proof next.",
+        levelAssessment: "At Intern level for Frontend, prioritize Testing and CI/CD proof next."
       };
       if (opts.returnMeta) return { ok: true, value };
       return value;
     },
-    recordDeterministicSkip: () => {},
+    recordDeterministicSkip: () => {}
   });
 
   mock("models/analysisCache.js", {
@@ -142,13 +138,27 @@ const createHarness = ({
       const row = {
         analysisData: update.$set.analysisData,
         updatedAt: new Date(),
-        createdAt: new Date(),
+        createdAt: new Date()
       };
       mongo.set(key, row);
       return row;
-    },
+    }
   });
 
+  mock("models/resumeFile.js", {
+    findOne: (filter) => chain({ _id: filter._id || "default", userId: filter.userId })
+  });
+  mock("services/notificationPersistenceService.js", {
+    commit: async (owner, work, notification) => {
+      const result = await work(null);
+      if (notification)
+        await require("../services/notificationService").createNotification({
+          ...notification,
+          userId: owner
+        });
+      return result;
+    }
+  });
   mock("models/resumeAnalysis.js", {
     findOne: () => {
       counters.resume += 1;
@@ -158,11 +168,11 @@ const createHarness = ({
           fileName: "default.pdf",
           technicalSkills: ["React", "TypeScript"],
           atsScore: 72,
-          analyzedAt: new Date("2026-08-01"),
+          analyzedAt: new Date("2026-08-01")
         },
-        resumeDelayMs,
+        resumeDelayMs
       );
-    },
+    }
   });
 
   mock("services/aiVersionService.js", { createVersion: async () => {} });
@@ -170,7 +180,7 @@ const createHarness = ({
     createNotification: async () => {
       counters.notifications += 1;
       await delay(30);
-    },
+    }
   });
   mock("prompts/skillGapPrompt.js", { getSkillGapPrompt: () => "prompt" });
   mock("services/promptBuilderService.js", {
@@ -179,8 +189,8 @@ const createHarness = ({
       detectedSkills: [],
       resume: {},
       github: {},
-      signals: {},
-    }),
+      signals: {}
+    })
   });
   mock("services/developerSignalService.js", {
     getDeveloperSignals: async () => {
@@ -190,15 +200,15 @@ const createHarness = ({
           present: false,
           integrationScore: 0,
           detectedSkills: [],
-          weakProof: [],
+          weakProof: []
         },
         careerSprintSignal: {
           completedSkillSignals: [],
-          repeatedIncompleteSkills: [],
+          repeatedIncompleteSkills: []
         },
         weeklyReportSignal: { repeatedWeakAreas: [] },
         portfolioSignal: { portfolioSkills: [] },
-        jobsDemandSignal: { present: false, sampledJobs: 0, topSkills: [] },
+        jobsDemandSignal: { present: false, sampledJobs: 0, topSkills: [] }
       };
     },
     buildSignalHash: () => "signals",
@@ -209,21 +219,21 @@ const createHarness = ({
       technicalSkills: value?.technicalSkills || [],
       atsScore: value?.atsScore || 0,
       experienceLevel: level,
-      statusMessage: "Saved resume",
+      statusMessage: "Saved resume"
     }),
     buildResumeCacheIdentity: () => ({
       resumeHash: "a".repeat(64),
-      resumeAnalysisId: "default",
+      resumeAnalysisId: "default"
     }),
     buildAnalysisBasedOn: () => ({}),
     getPublicJobMarketSignal: async () => ({
       present: false,
       sampledJobs: 0,
-      topSkills: [],
-    }),
+      topSkills: []
+    })
   });
   mock("services/previewResumeCacheService.js", {
-    resolvePreviewResume: async () => ({ error: "not used", status: 400 }),
+    resolvePreviewResume: async () => ({ error: "not used", status: 400 })
   });
 
   const controllerPath = resolve("controllers/skillgapcontroller.js");
@@ -240,16 +250,16 @@ const createHarness = ({
       json: (payload) => {
         out.body = payload;
         return res;
-      },
+      }
     };
     await controller.analyzeSkillGap(
       {
         body,
         user,
         skillGapRouteStartedAt: Date.now(),
-        skillGapAuthCompletedAt: Date.now(),
+        skillGapAuthCompletedAt: Date.now()
       },
-      res,
+      res
     );
     return out;
   };
@@ -265,7 +275,7 @@ const createHarness = ({
       deterministic.clear();
       mongo.clear();
       controller.clearSkillGapMemoryCache();
-    },
+    }
   };
 };
 
@@ -274,7 +284,7 @@ const user = {
   activeGithubUsername: "perfdev",
   activeCareerStack: "Frontend",
   activeExperienceLevel: "Intern",
-  defaultResumeFileId: "default",
+  defaultResumeFileId: "default"
 };
 
 test("skill-gap memory/redis/cold/concurrency performance", async (t) => {
@@ -290,7 +300,7 @@ test("skill-gap memory/redis/cold/concurrency performance", async (t) => {
     const started = performance.now();
     const result = await harness.call(
       { forceRefresh: true },
-      { ...user, _id: `cold-${i}`, activeGithubUsername: `cold${i}` },
+      { ...user, _id: `cold-${i}`, activeGithubUsername: `cold${i}` }
     );
     assert.equal(result.status, 200);
     assert.ok(result.body.cacheMetadata?.stageTimings?.totalMs >= 0);
@@ -320,7 +330,7 @@ test("skill-gap memory/redis/cold/concurrency performance", async (t) => {
     resume: harness.counters.resume,
     mongoWrites: harness.counters.mongoWrites,
     redisSets: harness.counters.redisSets,
-    notifications: harness.counters.notifications,
+    notifications: harness.counters.notifications
   };
 
   // Memory hits validate current source revisions, but skip AI and result storage.
@@ -373,13 +383,11 @@ test("skill-gap memory/redis/cold/concurrency performance", async (t) => {
   const concurrentUser = {
     ...user,
     _id: "concurrent-user",
-    activeGithubUsername: "concurrentdev",
+    activeGithubUsername: "concurrentdev"
   };
   const startedConcurrent = performance.now();
   const concurrent = await Promise.all(
-    Array.from({ length: 5 }, () =>
-      harness.call({ forceRefresh: true }, concurrentUser),
-    ),
+    Array.from({ length: 5 }, () => harness.call({ forceRefresh: true }, concurrentUser))
   );
   const concurrentMs = performance.now() - startedConcurrent;
   assert.ok(concurrent.every((item) => item.status === 200));
@@ -392,15 +400,15 @@ test("skill-gap memory/redis/cold/concurrency performance", async (t) => {
   const after = {
     cold: {
       p50: percentile(coldSamples, 50),
-      p95: percentile(coldSamples, 95),
+      p95: percentile(coldSamples, 95)
     },
     redis: {
       p50: percentile(redisSamples, 50),
-      p95: percentile(redisSamples, 95),
+      p95: percentile(redisSamples, 95)
     },
     memory: {
       p50: percentile(memorySamples, 50),
-      p95: percentile(memorySamples, 95),
+      p95: percentile(memorySamples, 95)
     },
     concurrency: {
       callers: 5,
@@ -408,10 +416,10 @@ test("skill-gap memory/redis/cold/concurrency performance", async (t) => {
       github: harness.counters.github,
       resume: harness.counters.resume,
       mongoWrites: harness.counters.mongoWrites,
-      elapsedMs: Math.round(concurrentMs),
+      elapsedMs: Math.round(concurrentMs)
     },
     coldCounts,
-    before: BEFORE,
+    before: BEFORE
   };
 
   t.diagnostic(JSON.stringify({ skillGapPerfAfter: after }));
@@ -437,7 +445,7 @@ test("analysis cache exact lookup uses compound index fields", () => {
         keys.analysisVersion === 1 &&
         keys.resumeHash === 1 &&
         keys.resumeAnalysisId === 1 &&
-        keys.signalHash === 1,
-    ),
+        keys.signalHash === 1
+    )
   );
 });

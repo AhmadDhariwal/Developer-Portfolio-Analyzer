@@ -1,0 +1,153 @@
+<h2 id="sources-title">Evidence &amp; methodology</h2>
+<details class="info-disclosure source-disclosure">
+  <summary>
+    Evidence completeness &amp; freshness ·
+    {{ analysis.evidenceCompleteness?.availableCoreSources ?? 'Unknown' }} /
+    {{ analysis.evidenceCompleteness?.totalCoreSources ?? 'Unknown' }} core sources
+  </summary>
+  <div class="disclosure-body">
+    <div class="section-heading">
+      <div>
+        <h2>Evidence completeness &amp; freshness</h2>
+        <p>Source availability is separate from skill coverage and proficiency.</p>
+      </div>
+      <span class="tag"
+        >{{ analysis.evidenceCompleteness?.availableCoreSources ?? 'Unknown' }} /
+        {{ analysis.evidenceCompleteness?.totalCoreSources ?? 'Unknown' }} core sources</span
+      >
+    </div>
+    @if (noCoreEvidence) {
+      <p class="notice">
+        No analyzed GitHub or resume evidence is available. This indicates insufficient evidence,
+        not poor proficiency.
+      </p>
+    } @else if (analysis.evidenceCompleteness && !analysis.evidenceCompleteness.complete) {
+      <p class="notice">
+        Partial sources: this snapshot uses the analyzed sources available. An unavailable optional
+        integration does not reduce coverage.
+      </p>
+    }
+    @if (staleEvidence) {
+      <p class="notice">
+        Some evidence is marked stale. Existing classifications are retained; reanalyze the affected
+        source to update this snapshot.
+      </p>
+    }
+    <div class="sources">
+      @for (source of analysis.sourceReferences || []; track $index) {
+        <div class="source">
+          <h3>{{ sourceLabel(source.type) }}</h3>
+          <strong>{{ source.available ? 'Available' : 'Unavailable' }}</strong>
+          <p>Completeness: {{ source.completeness | titlecase }}</p>
+          <p>
+            {{ source.timestamp ? (source.timestamp | date: 'medium') : 'Timestamp unavailable' }}
+          </p>
+          <span>{{
+            source.freshness === 'STALE'
+              ? 'Marked stale'
+              : source.freshness === 'RECORDED'
+                ? 'Timestamp recorded · age not calibrated'
+                : 'Freshness unknown'
+          }}</span>
+        </div>
+      } @empty {
+        <p>Source references were not provided.</p>
+      }
+    </div>
+    <nav class="recovery-links" aria-label="Update evidence">
+      <a routerLink="/app/github-analyzer">Update GitHub evidence →</a
+      ><a routerLink="/app/resume-analyzer">Analyze / select a resume →</a
+      ><a routerLink="/app/profile">Review career context →</a>
+    </nav>
+    <details class="info-disclosure">
+      <summary>How evidence confidence works</summary>
+      <div class="disclosure-body">
+        <p>
+          Confidence describes the evidence for each skill, not your ability. See each skill below.
+          The backend overall value is
+          <strong>{{ analysis.evidenceConfidence || 'Unavailable' }}</strong
+          >, reflecting the weakest required skill; it is not an average or a statistically
+          calibrated percentage.
+        </p>
+        <p>
+          Confidence considers evidence strength, independent sources, completeness, relevance, and
+          recorded freshness. Missing evidence can make overall confidence Insufficient even when
+          other skills have useful evidence.
+        </p>
+      </div>
+    </details>
+  </div>
+</details>
+
+<!-- AI-Assisted Career Guidance Section -->
+<details class="info-disclosure guidance">
+  <summary>{{ analysis.aiUsed ? 'AI-assisted guidance' : 'Guidance fallback' }}</summary>
+  <div class="disclosure-body">
+    <span class="eyebrow">Separate from evidence decisions</span>
+    <h2 id="guidance-title">
+      {{ analysis.aiUsed ? 'AI-assisted guidance' : 'Guidance fallback' }}
+    </h2>
+    @if (analysis.aiUsed && analysis.analysisSummary) {
+      <p class="narrative">{{ analysis.analysisSummary }}</p>
+    } @else {
+      <p>
+        AI guidance is unavailable for this snapshot. Review the deterministic skill evidence and
+        backend-supplied improvement priorities above; they remain available without AI.
+      </p>
+    }
+    <p class="quarantine-note">
+      Guidance is explanatory. It cannot change classifications, coverage, confidence, requirements,
+      or source timestamps.
+    </p>
+  </div>
+</details>
+
+<!-- Scoring Methodology & Technical Provenance Section -->
+
+<details class="info-disclosure">
+  <summary>Scoring methodology &amp; provenance</summary>
+  <div class="disclosure-body">
+    <h3>Required skill coverage</h3>
+    <p class="formula">
+      Coverage = 100 × Σ(required weight × evidence credit) / Σ(required weight)
+    </p>
+    <p>
+      Demonstrated: 1 · Partial: 0.5 · Claimed only: 0 · Not evidenced: 0. Unavailable sources are
+      disclosed separately. Optional skills are excluded from the denominator. Rounding and score
+      boundaries are applied by the shared backend scoring utilities.
+    </p>
+    <p>
+      ATS scores, stars, repository count, and missing optional integrations do not directly affect
+      coverage. Unknown or unavailable evidence is never presented as a proficiency score.
+    </p>
+    <dl class="provenance-dl">
+      <dt>Evidence rules</dt>
+      <dd>{{ analysis.evidencePolicyVersion || analysis.ruleVersion }}</dd>
+      <dt>Requirement matrix</dt>
+      <dd>{{ analysis.requirementMatrixVersion || 'Unavailable' }}</dd>
+      <dt>Calculated</dt>
+      <dd>
+        {{
+          analysis.calculatedAt ? (analysis.calculatedAt | date: 'medium') : 'Timestamp unavailable'
+        }}
+      </dd>
+      <dt>GitHub selection</dt>
+      <dd>{{ analysis.username || 'No active GitHub' }}</dd>
+    </dl>
+    @if (legacyReadiness !== null) {
+      <p>
+        Legacy readiness: {{ legacyReadiness }}%. Historical composite; separate from current
+        coverage.
+      </p>
+    }
+    @if (analysis.legacyConfidence !== undefined) {
+      <p>
+        Legacy numeric confidence: {{ analysis.legacyConfidence }}. Historical heuristic; not a
+        calibrated probability.
+      </p>
+    }
+    @for (warning of analysis.warnings || []; track $index) {
+      <p class="warning-callout">{{ warningLabel(warning) }}</p>
+    }
+  </div>
+</details>

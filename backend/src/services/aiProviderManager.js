@@ -447,11 +447,12 @@ class AIProviderManager {
     endpoint,
     parseJson,
     timeoutMs,
-    signal
+    signal,
+    maxOutputTokens
   }) {
     const body = {
       model: modelName,
-      max_tokens: 8000,
+      max_tokens: maxOutputTokens || 8000,
       messages: [
         { role: 'system', content: 'Return valid JSON only. No markdown, no commentary.' },
         { role: 'user', content: prompt }
@@ -483,11 +484,11 @@ class AIProviderManager {
     return parseJson(text);
   }
 
-  async runGemini({ prompt, modelName, apiKey, parseJson, timeoutMs, signal }) {
+  async runGemini({ prompt, modelName, apiKey, parseJson, timeoutMs, signal, maxOutputTokens }) {
     const genAI = new GoogleGenerativeAI(apiKey);
     const generationConfig = {
       temperature: 0.15,
-      maxOutputTokens: 1400,
+      maxOutputTokens: maxOutputTokens || 1400,
       responseMimeType: 'application/json'
     };
     if (/gemini-2\.5/i.test(modelName)) generationConfig.thinkingConfig = { thinkingBudget: 0 };
@@ -524,7 +525,7 @@ class AIProviderManager {
     }
   }
 
-  async runAnthropic({ prompt, modelName, apiKey, parseJson, timeoutMs, signal }) {
+  async runAnthropic({ prompt, modelName, apiKey, parseJson, timeoutMs, signal, maxOutputTokens }) {
     const response = await axios.post(
       PROVIDERS.anthropic.endpoint,
       {
@@ -556,12 +557,37 @@ class AIProviderManager {
     return parseJson(text);
   }
 
-  async runProviderRequest({ provider, prompt, modelName, apiKey, parseJson, timeoutMs, signal }) {
+  async runProviderRequest({
+    provider,
+    prompt,
+    modelName,
+    apiKey,
+    parseJson,
+    timeoutMs,
+    signal,
+    maxOutputTokens
+  }) {
     const config = PROVIDERS[provider];
     if (config.type === 'gemini')
-      return this.runGemini({ prompt, modelName, apiKey, parseJson, timeoutMs, signal });
+      return this.runGemini({
+        prompt,
+        modelName,
+        apiKey,
+        parseJson,
+        timeoutMs,
+        signal,
+        maxOutputTokens
+      });
     if (config.type === 'anthropic')
-      return this.runAnthropic({ prompt, modelName, apiKey, parseJson, timeoutMs, signal });
+      return this.runAnthropic({
+        prompt,
+        modelName,
+        apiKey,
+        parseJson,
+        timeoutMs,
+        signal,
+        maxOutputTokens
+      });
     return this.runOpenAICompatible({
       provider,
       prompt,
@@ -570,11 +596,21 @@ class AIProviderManager {
       endpoint: config.endpoint,
       parseJson,
       timeoutMs,
-      signal
+      signal,
+      maxOutputTokens
     });
   }
 
-  async tryProvider(provider, prompt, retries, parseJson, timeoutMs, preferredModel = '', signal) {
+  async tryProvider(
+    provider,
+    prompt,
+    retries,
+    parseJson,
+    timeoutMs,
+    preferredModel = '',
+    signal,
+    budget = { remaining: Infinity }
+  ) {
     const { states } = this.getProviderState();
     const state = states[provider];
     if (!state?.hasKey)
@@ -594,6 +630,8 @@ class AIProviderManager {
 
       for (let attempt = 0; attempt <= retries; attempt += 1) {
         if (signal?.aborted) return { ok: false, reason: 'cancelled' };
+        if (budget.remaining <= 0) return { ok: false, reason: 'attempt_budget' };
+        budget.remaining--;
         const startedAt = Date.now();
         try {
           this.log('provider_selected', { provider, model: modelName, attempt });
@@ -604,7 +642,8 @@ class AIProviderManager {
             apiKey: state.apiKey,
             parseJson,
             timeoutMs,
-            signal
+            signal,
+            maxOutputTokens: budget.maxOutputTokens
           });
           const latencyMs = Date.now() - startedAt;
           this.recordSuccess(provider, latencyMs);
@@ -662,7 +701,8 @@ class AIProviderManager {
       parseJson,
       timeoutMs = Number.parseInt(process.env.AI_REQUEST_TIMEOUT_MS || '30000', 10),
       preferredModel = '',
-      signal
+      signal,
+      requestPolicy
     }
   ) {
     const { settings, states } = this.getProviderState();
@@ -671,7 +711,20 @@ class AIProviderManager {
       return { ok: false, reason: 'ai_disabled' };
     }
 
-    const priority = this.providerPriority().filter((provider) => states[provider]?.hasKey);
+    const allowed = Array.isArray(requestPolicy?.allowedProviders)
+      ? requestPolicy.allowedProviders
+      : null;
+    const priority = this.providerPriority().filter(
+      (provider) => states[provider]?.hasKey && (!allowed || allowed.includes(provider))
+    );
+    const budget = {
+      remaining: Number.isInteger(requestPolicy?.maxAttempts)
+        ? Math.max(1, Math.min(5, requestPolicy.maxAttempts))
+        : Infinity,
+      maxOutputTokens: Number.isInteger(requestPolicy?.maxOutputTokens)
+        ? Math.max(128, Math.min(8000, requestPolicy.maxOutputTokens))
+        : undefined
+    };
     if (!priority.length) return { ok: false, reason: 'no_provider' };
 
     let lastReason = '';
@@ -685,7 +738,8 @@ class AIProviderManager {
         parseJson,
         timeoutMs,
         preferredModel,
-        signal
+        signal,
+        budget
       );
       if (result.ok) return result;
       lastReason = result.reason || 'provider_failed';

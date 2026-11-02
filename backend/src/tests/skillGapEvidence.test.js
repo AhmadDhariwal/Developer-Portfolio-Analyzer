@@ -11,8 +11,8 @@ const requirements = (entries = ["React", "TypeScript"]) => ({
   skills: entries.map((name) =>
     typeof name === "string"
       ? { name, requirement: "REQUIRED", weight: 1, category: "Frontend" }
-      : name,
-  ),
+      : name
+  )
 });
 const sources = () =>
   ["github", "resume"].map((type) => ({
@@ -20,7 +20,7 @@ const sources = () =>
     id: type,
     available: true,
     completeness: "COMPLETE",
-    timestamp: time,
+    timestamp: time
   }));
 const observation = (skill, kind = "METADATA", id = "repo1", extra = {}) => ({
   skill,
@@ -28,13 +28,13 @@ const observation = (skill, kind = "METADATA", id = "repo1", extra = {}) => ({
   source: {
     type: kind === "CLAIM" ? "resume" : "github",
     id,
-    origin: `${kind === "CLAIM" ? "resume-file" : "github-repository"}:${id}`,
+    origin: `${kind === "CLAIM" ? "resume-file" : "github-repository"}:${id}`
   },
   timestamp: time,
   inspected: true,
   meaningful: true,
   artifact: "src/fixture.js",
-  ...extra,
+  ...extra
 });
 const run = (observations = [], extra = {}) =>
   engine.calculate(
@@ -42,23 +42,16 @@ const run = (observations = [], extra = {}) =>
       requirements: requirements(),
       observations,
       sources: sources(),
-      ...extra,
+      ...extra
     },
-    options,
+    options
   );
-const status = (result, name = "React") =>
-  result.skills.find((skill) => skill.name === name);
+const status = (result, name = "React") => result.skills.find((skill) => skill.name === name);
 
 test("every approved evidence status has deterministic conservative classification", () => {
-  assert.equal(
-    status(run([observation("React", "IMPLEMENTATION")])).status,
-    "DEMONSTRATED",
-  );
+  assert.equal(status(run([observation("React", "IMPLEMENTATION")])).status, "DEMONSTRATED");
   assert.equal(status(run([observation("React")])).status, "PARTIAL");
-  assert.equal(
-    status(run([observation("React", "CLAIM")])).status,
-    "CLAIMED_ONLY",
-  );
+  assert.equal(status(run([observation("React", "CLAIM")])).status, "CLAIMED_ONLY");
   assert.equal(status(run()).status, "NOT_EVIDENCED");
   assert.equal(status(run([], { sources: [] })).status, "UNKNOWN");
   assert.equal(run([], { sources: [] }).coverage, null);
@@ -69,17 +62,11 @@ test("implementation requires inspected meaningful artifact evidence from a tech
     { meaningful: false },
     { artifact: "" },
     { source: { type: "resume", id: "resume" } },
-    { source: { type: "profile", id: "profile" } },
+    { source: { type: "profile", id: "profile" } }
   ]) {
-    const result = run(
-      [observation("React", "IMPLEMENTATION", "repo1", extra)],
-      {
-        sources: [
-          ...sources(),
-          { type: "profile", id: "profile", available: true, timestamp: time },
-        ],
-      },
-    );
+    const result = run([observation("React", "IMPLEMENTATION", "repo1", extra)], {
+      sources: [...sources(), { type: "profile", id: "profile", available: true, timestamp: time }]
+    });
     assert.notEqual(status(result).status, "DEMONSTRATED");
   }
 });
@@ -87,7 +74,7 @@ test("weak independent evidence and corroborated resume claims never become demo
   const result = run([
     observation("React"),
     observation("React", "METADATA", "repo2"),
-    observation("React", "CLAIM"),
+    observation("React", "CLAIM")
   ]);
   assert.equal(status(result).status, "PARTIAL");
   assert.equal(status(result).independentTechnicalSources, 2);
@@ -103,8 +90,8 @@ test("duplicate and copied evidence never raises credit or source independence",
     entry,
     observation("React", "IMPLEMENTATION", "copy", {
       source: { type: "github", id: "copy", origin: "github-repository:repo1" },
-      artifact: "another/path.js",
-    }),
+      artifact: "another/path.js"
+    })
   ]);
   assert.equal(status(copiedOrigin).independentTechnicalSources, 1);
   assert.equal(status(copiedOrigin).evidenceConfidence, "MEDIUM");
@@ -112,20 +99,14 @@ test("duplicate and copied evidence never raises credit or source independence",
 });
 test("0%, 50%, 100% manually verified required-only coverage", () => {
   assert.equal(
-    run([observation("React", "CLAIM"), observation("TypeScript", "CLAIM")])
+    run([observation("React", "CLAIM"), observation("TypeScript", "CLAIM")]).coverage,
+    0
+  );
+  assert.equal(run([observation("React"), observation("TypeScript")]).coverage, 50);
+  assert.equal(
+    run([observation("React", "IMPLEMENTATION"), observation("TypeScript", "IMPLEMENTATION")])
       .coverage,
-    0,
-  );
-  assert.equal(
-    run([observation("React"), observation("TypeScript")]).coverage,
-    50,
-  );
-  assert.equal(
-    run([
-      observation("React", "IMPLEMENTATION"),
-      observation("TypeScript", "IMPLEMENTATION"),
-    ]).coverage,
-    100,
+    100
   );
 });
 test("optional and required classifications are independent of evidence status", () => {
@@ -133,16 +114,16 @@ test("optional and required classifications are independent of evidence status",
     requirements: requirements([
       { name: "React", weight: 2, requirement: "REQUIRED" },
       { name: "TypeScript", weight: 1, requirement: "REQUIRED" },
-      { name: "Git", weight: 50, requirement: "OPTIONAL" },
-    ]),
+      { name: "Git", weight: 50, requirement: "OPTIONAL" }
+    ])
   };
   const result = run(
     [
       observation("React", "IMPLEMENTATION"),
       observation("TypeScript"),
-      observation("Git", "IMPLEMENTATION"),
+      observation("Git", "IMPLEMENTATION")
     ],
-    input,
+    input
   );
   // (2*1 + 1*.5) / 3 * 100 = 83.333..., rounded to 83.
   assert.equal(result.coverage, 83);
@@ -160,24 +141,25 @@ test("claims, ATS, stars, repository counts, Jira and Slack scores cannot increa
         repoCount: 999,
         totalStars: 99999,
         repositories: [],
-        cache: { cachedAt: time },
+        cache: { cachedAt: time }
       },
       resumeAnalysis: {
         _id: "resume",
         analyzedAt: time,
         atsScore: 100,
-        resumeSignals: { skills: ["React", "TypeScript"] },
+        resumeSignals: { skills: ["React", "TypeScript"] }
       },
       integrationSignal: {
         present: true,
         integrationScore: 100,
         detectedSkills: ["Docker"],
-        usedProviders: ["jira", "slack"],
-      },
+        usedProviders: ["jira", "slack"]
+      }
     },
-    options,
+    options
   );
-  assert.equal(resolved.coverage, 0);
+  assert.equal(resolved.coverage, null);
+  assert.equal(resolved.evidencePolicyVersion, "skill-gap-evidence-policy-v2");
   assert.equal(status(resolved).status, "CLAIMED_ONLY");
   assert.equal(resolved.demonstratedSkills.length, 0);
 });
@@ -195,14 +177,14 @@ test("production GitHub adapter accepts exact language/topics only and never fab
             language: "JavaScript",
             topics: ["typescript"],
             technologies: ["React"],
-            implementationEvidence: [{ skill: "React", inspected: true }],
-          },
-        ],
-      },
+            implementationEvidence: [{ skill: "React", inspected: true }]
+          }
+        ]
+      }
     },
-    options,
+    options
   );
-  assert.equal(status(resolved).status, "NOT_EVIDENCED");
+  assert.equal(status(resolved).status, "UNKNOWN");
   assert.equal(status(resolved, "TypeScript").status, "PARTIAL");
   assert.equal(resolved.demonstratedSkills.length, 0);
 });
@@ -211,25 +193,18 @@ test("unavailable requirements, missing entries and all evidence absence return 
     run([], {
       requirements: {
         available: false,
-        missingEntries: ["careerStack:missing"],
-      },
+        missingEntries: ["careerStack:missing"]
+      }
     }).coverage,
-    null,
+    null
   );
   const missing = run([], {
-    requirements: requirements(["Not an existing requirement"]),
+    requirements: requirements(["Not an existing requirement"])
   });
   assert.equal(missing.coverage, null);
-  assert.ok(
-    missing.warnings.some((warning) =>
-      warning.includes("Not an existing requirement"),
-    ),
-  );
+  assert.ok(missing.warnings.some((warning) => warning.includes("Not an existing requirement")));
   const empty = run([], { sources: [] });
-  assert.equal(
-    empty.coverageUnavailableReason,
-    "relevant_evidence_unavailable",
-  );
+  assert.equal(empty.coverageUnavailableReason, "relevant_evidence_unavailable");
   assert.equal(empty.evidenceConfidence, "INSUFFICIENT");
 });
 test("Dockerfile metadata is partial Docker evidence; profile and integration summaries stay claims", () => {
@@ -239,21 +214,21 @@ test("Dockerfile metadata is partial Docker evidence; profile and integration su
       experienceLevel: "Student",
       githubData: {
         cache: { cachedAt: time },
-        repositories: [{ name: "container", language: "Dockerfile" }],
+        repositories: [{ name: "container", language: "Dockerfile" }]
       },
       profile: { _id: "owner", skills: ["SQL"], updatedAt: time },
       profileSignal: {
         present: true,
         portfolioSkills: ["React"],
-        updatedAt: time,
+        updatedAt: time
       },
       integrationSignal: {
         present: true,
         detectedSkills: ["AWS"],
-        updatedAt: time,
-      },
+        updatedAt: time
+      }
     },
-    options,
+    options
   );
   assert.equal(status(resolved, "Docker").status, "PARTIAL");
   assert.equal(status(resolved, "SQL").status, "CLAIMED_ONLY");
@@ -269,25 +244,20 @@ test("partial source limitations stay separate from coverage and missing integra
   assert.ok(githubOnly.warnings.includes("partial_source_limitations"));
   assert.equal(
     run(observations, {
-      sources: [
-        ...sources(),
-        { type: "integration", id: "optional", available: false },
-      ],
+      sources: [...sources(), { type: "integration", id: "optional", available: false }]
     }).coverage,
-    50,
+    50
   );
 });
 test("absence from GitHub never contradicts a resume claim", () => {
   const result = run([observation("React", "CLAIM")]);
   assert.equal(status(result).status, "CLAIMED_ONLY");
-  assert.ok(
-    !result.warnings.some((warning) => warning.includes("conflicting")),
-  );
+  assert.ok(!result.warnings.some((warning) => warning.includes("conflicting")));
 });
 test("explicit technical conflict warns and conservatively classifies positive implementation as partial", () => {
   const result = run([
     observation("React", "IMPLEMENTATION"),
-    observation("React", "METADATA", "repo2", { conflicting: true }),
+    observation("React", "METADATA", "repo2", { conflicting: true })
   ]);
   assert.equal(status(result).status, "PARTIAL");
   assert.equal(status(result).evidenceConfidence, "LOW");
@@ -298,53 +268,35 @@ test("old timestamp and explicit staleness are retained without downgrading demo
   const result = run([
     observation("React", "IMPLEMENTATION", "old", {
       timestamp: "2010-01-01",
-      freshness: "STALE",
-    }),
+      freshness: "STALE"
+    })
   ]);
   assert.equal(status(result).status, "DEMONSTRATED");
   assert.equal(result.coverage, 50);
-  assert.equal(
-    status(result).evidence[0].timestamp,
-    "2010-01-01T00:00:00.000Z",
-  );
+  assert.equal(status(result).evidence[0].timestamp, "2010-01-01T00:00:00.000Z");
   assert.equal(status(result).evidenceConfidence, "LOW");
   assert.ok(status(result).warnings.includes("stale_evidence"));
 });
 test("HIGH/MEDIUM/LOW/INSUFFICIENT confidence has explicit strength/independence/completeness/freshness criteria", () => {
   const strong = observation("React", "IMPLEMENTATION");
   assert.equal(
-    status(run([strong, observation("React", "IMPLEMENTATION", "repo2")]))
-      .evidenceConfidence,
-    "HIGH",
+    status(run([strong, observation("React", "IMPLEMENTATION", "repo2")])).evidenceConfidence,
+    "HIGH"
   );
   assert.equal(status(run([strong])).evidenceConfidence, "MEDIUM");
   assert.equal(status(run([observation("React")])).evidenceConfidence, "LOW");
+  assert.equal(status(run([observation("React", "CLAIM")])).evidenceConfidence, "LOW");
+  assert.equal(status(run([strong], { sources: [sources()[0]] })).evidenceConfidence, "LOW");
   assert.equal(
-    status(run([observation("React", "CLAIM")])).evidenceConfidence,
-    "LOW",
-  );
-  assert.equal(
-    status(run([strong], { sources: [sources()[0]] })).evidenceConfidence,
-    "LOW",
-  );
-  assert.equal(
-    status(
-      run([
-        observation("React", "IMPLEMENTATION", "repo1", { timestamp: null }),
-      ]),
-    ).evidenceConfidence,
-    "LOW",
+    status(run([observation("React", "IMPLEMENTATION", "repo1", { timestamp: null })]))
+      .evidenceConfidence,
+    "LOW"
   );
   assert.equal(status(run()).evidenceConfidence, "INSUFFICIENT");
-  assert.equal(
-    status(run([], { sources: [] })).evidenceConfidence,
-    "INSUFFICIENT",
-  );
+  assert.equal(status(run([], { sources: [] })).evidenceConfidence, "INSUFFICIENT");
 });
 test("aliases deduplicate actual equivalents and preserve Java/JavaScript, React/Native, .NET/C# and Shell/CI/CD", () => {
-  assert.deepEqual(dictionary.normalize(["React.js", "reactjs", "React"]), [
-    "React",
-  ]);
+  assert.deepEqual(dictionary.normalize(["React.js", "reactjs", "React"]), ["React"]);
   assert.deepEqual(
     dictionary.normalize([
       "Java",
@@ -356,7 +308,7 @@ test("aliases deduplicate actual equivalents and preserve Java/JavaScript, React
       "Shell",
       "CI/CD",
       "HCL",
-      "Terraform",
+      "Terraform"
     ]),
     [
       "Java",
@@ -368,12 +320,12 @@ test("aliases deduplicate actual equivalents and preserve Java/JavaScript, React
       "Shell",
       "CI/CD",
       "HCL",
-      "Terraform",
-    ],
+      "Terraform"
+    ]
   );
   assert.equal(dictionary.canonicalize("constructor"), "");
   const duplicate = run([observation("reactjs"), observation("React")], {
-    requirements: requirements(["React.js", "React", "TypeScript"]),
+    requirements: requirements(["React.js", "React", "TypeScript"])
   });
   assert.equal(duplicate.requiredSkills.length, 2);
   assert.equal(duplicate.coverage, 25);
@@ -384,35 +336,28 @@ test("versioned existing matrices preserve their entries, filters and equal weig
       const matrix = dictionary.resolveRequirements(stack, level);
       assert.equal(matrix.available, true);
       assert.equal(matrix.version, "skill-gap-requirements-v1");
-      assert.equal(
-        new Set(matrix.skills.map((skill) => skill.name)).size,
-        matrix.skills.length,
-      );
+      assert.equal(new Set(matrix.skills.map((skill) => skill.name)).size, matrix.skills.length);
       assert.ok(
-        matrix.skills.every(
-          (skill) => skill.requirement === "REQUIRED" && skill.weight === 1,
-        ),
+        matrix.skills.every((skill) => skill.requirement === "REQUIRED" && skill.weight === 1)
       );
-      assert.ok(
-        matrix.skills.some((skill) => skill.name === "Scalability Patterns"),
-      );
+      assert.ok(matrix.skills.some((skill) => skill.name === "Scalability Patterns"));
     }
-  assert.deepEqual(
-    dictionary.resolveRequirements("", "invalid").missingEntries,
-    ["careerStack:(absent)", "experienceLevel:invalid"],
-  );
+  assert.deepEqual(dictionary.resolveRequirements("", "invalid").missingEntries, [
+    "careerStack:(absent)",
+    "experienceLevel:invalid"
+  ]);
   assert.ok(
     !dictionary
       .resolveRequirements("Backend", "Student")
-      .skills.some((skill) => skill.name === "Accessibility"),
+      .skills.some((skill) => skill.name === "Accessibility")
   );
 });
 test("bounded evidence, category breakdown and calculation timestamps do not change facts", () => {
   const observations = Array.from({ length: 100 }, (_, index) =>
     observation("React", "METADATA", `repo${index}`, {
       rawResume: "secret",
-      rawRepository: "secret",
-    }),
+      rawRepository: "secret"
+    })
   );
   const result = run(observations);
   assert.equal(status(result).evidence.length, 12);
@@ -421,7 +366,7 @@ test("bounded evidence, category breakdown and calculation timestamps do not cha
   assert.ok(!JSON.stringify(result).includes("secret"));
   const later = engine.calculate(
     { requirements: requirements(), observations, sources: sources() },
-    { calculatedAt: "2027-01-01" },
+    { calculatedAt: "2027-01-01" }
   );
   assert.equal(later.coverage, result.coverage);
   assert.deepEqual(later.skills, result.skills);
@@ -431,7 +376,7 @@ test("historical scores are never relabeled or migrated by a new calculation", (
   const historical = {
     coverage: 87,
     ruleVersion: "skill-gap-coverage-v1",
-    calculatedAt: "2026-01-01",
+    calculatedAt: "2026-01-01"
   };
   const before = JSON.stringify(historical);
   const result = run([observation("React", "CLAIM")], { historical });
@@ -445,9 +390,9 @@ test("genuine analyzed integration artifacts can establish coverage while absent
         source: {
           type: "integration",
           id: "integration-artifact",
-          origin: "verified-artifact",
-        },
-      }),
+          origin: "verified-artifact"
+        }
+      })
     ],
     {
       requirements: requirements(["React"]),
@@ -456,10 +401,10 @@ test("genuine analyzed integration artifacts can establish coverage while absent
           type: "integration",
           id: "integration-artifact",
           available: true,
-          timestamp: time,
-        },
-      ],
-    },
+          timestamp: time
+        }
+      ]
+    }
   );
   assert.equal(result.coverage, 100);
   assert.equal(result.demonstratedSkills.length, 1);
@@ -470,8 +415,8 @@ test("conflicting equivalent requirement entries cannot silently alter the requi
   const result = run([observation("React", "IMPLEMENTATION")], {
     requirements: requirements([
       { name: "React.js", requirement: "OPTIONAL", weight: 1 },
-      { name: "React", requirement: "REQUIRED", weight: 2 },
-    ]),
+      { name: "React", requirement: "REQUIRED", weight: 2 }
+    ])
   });
   assert.equal(result.coverage, null);
   assert.ok(result.warnings.includes("conflicting_requirement_entry:React"));

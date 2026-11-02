@@ -4,6 +4,19 @@ const multer = require('multer');
 const path = require('node:path');
 const fs = require('node:fs');
 const { parsePreviewResume } = require('../controllers/resumecontoller');
+const { optionalProtect } = require('../middleware/authmiddleware');
+
+// A public multipart preview may still have an authenticated owner. Resolve it
+// before writing bytes so its temporary reference has the same scope as analysis.
+const authenticatePreviewOwner = (req, res, next) => {
+  if (!req.headers.authorization) return next();
+  const originalBody = req.body;
+  req.body = { isTemporary: true };
+  return optionalProtect(req, res, () => {
+    req.body = originalBody;
+    next();
+  });
+};
 
 const previewUploadDir = path.resolve(process.cwd(), 'uploads', 'preview');
 if (!fs.existsSync(previewUploadDir)) {
@@ -53,6 +66,7 @@ const previewResumePdfMiddleware = (req, res, next) => {
 router.post(
   '/resume/parse-text',
   require('../middleware/publicPortfolioRateLimit').uploadLimit,
+  authenticatePreviewOwner,
   previewResumePdfMiddleware,
   parsePreviewResume
 );

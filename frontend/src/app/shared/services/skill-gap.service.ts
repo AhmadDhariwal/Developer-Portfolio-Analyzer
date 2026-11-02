@@ -10,7 +10,6 @@ import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.
 
 const SKILL_GAP_CACHE_PREFIX = 'skill_gap_cache:';
 const SKILL_GAP_CACHE_INDEX_PREFIX = 'skill_gap_cache_index:';
-const SKILL_GAP_TTL_MS = 24 * 60 * 60 * 1000;
 
 export type SkillPriority = 'High' | 'Medium' | 'Low';
 
@@ -204,7 +203,7 @@ export interface SkillGraphNode {
   name: string;
   category: string;
   demandScore: number;
-  proficiency: number;
+  proficiency: number | null;
   kind: 'current' | 'missing';
   relatedSkills: string[];
   confidenceScore?: number;
@@ -236,8 +235,7 @@ export class SkillGapService {
   private readonly baseUrl = environment.apiBaseUrl;
   private readonly inflight = new Map<string, Observable<SkillGapResult>>();
   private generation = 0;
-  private profileCache: { value: SkillGapResult; cachedAt: number } | null = null;
-  private profileCacheKey = '';
+  private validatedIdentity = '';
 
   constructor(
     private readonly http: HttpClient,
@@ -245,6 +243,7 @@ export class SkillGapService {
     private readonly frontendCache: FrontendAnalysisCacheService,
     private readonly cacheInvalidation: FrontendCacheInvalidationService,
   ) {
+    this.clearCache(); // Remove historical personalized localStorage copies on service creation.
     this.cacheInvalidation.register('skill-gap', () => this.clearCache());
   }
 
@@ -267,8 +266,7 @@ export class SkillGapService {
   clearCache(): void {
     this.generation++;
     this.inflight.clear();
-    this.profileCache = null;
-    this.profileCacheKey = '';
+    this.validatedIdentity = '';
     Object.keys(localStorage)
       .filter(
         (key) =>
@@ -315,14 +313,20 @@ export class SkillGapService {
         }
       : { username, careerStack, experienceLevel, isTemporary: false, forceRefresh };
     const generation = this.generation;
+    const ownerAtStart = String(this.auth.getCurrentUser()?._id || 'anonymous');
     const request$ = this.http
       .post<SkillGapResult>(`${this.baseUrl}/skillgap/skill-gap`, payload)
       .pipe(
         tap((result) => {
-          if (!isTemporary && generation === this.generation) {
+          if (
+            !isTemporary &&
+            generation === this.generation &&
+            ownerAtStart === String(this.auth.getCurrentUser()?._id || 'anonymous')
+          ) {
             const raw = result?.data || result?.result || result;
-            this.profileCache = { value: raw, cachedAt: Date.now() };
-            this.profileCacheKey = cacheKey;
+            const identity = `${cacheKey}:${this.resultSignalHash(raw)}`;
+            if (identity === this.validatedIdentity) return;
+            this.validatedIdentity = identity;
 
             this.cacheInvalidation.clearRecommendationsCaches();
             this.cacheInvalidation.clearScenarioCaches();
@@ -336,7 +340,7 @@ export class SkillGapService {
         finalize(() => {
           if (this.inflight.get(requestKey) === request$) this.inflight.delete(requestKey);
         }),
-        shareReplay({ bufferSize: 1, refCount: false }),
+        shareReplay({ bufferSize: 1, refCount: true }),
       );
 
     this.inflight.set(requestKey, request$);
@@ -348,55 +352,20 @@ export class SkillGapService {
     careerStack: string,
     experienceLevel: string,
   ): SkillGapResult | null {
-    const signalHash = this.getLatestSignalHash(careerStack, experienceLevel);
-    const cacheKey = this.buildCacheKey(signalHash || 'no-signals', careerStack, experienceLevel);
-
-    try {
-      const raw = localStorage.getItem(cacheKey);
-      if (!raw) return null;
-      const parsed = JSON.parse(raw);
-      if (!parsed?.result || Number(parsed.expiresAt || 0) <= Date.now()) {
-        localStorage.removeItem(cacheKey);
-        this.clearSignalIndexIfCurrent(careerStack, experienceLevel, cacheKey);
-        return null;
-      }
-      if (
-        parsed.result.ruleVersion !== SKILL_EVIDENCE_VERSION ||
-        String(parsed.result.username || '').toLowerCase() !== String(username || '').toLowerCase()
-      )
-        return null;
-      return { ...parsed.result, fromFrontendCache: true } as SkillGapResult;
-    } catch {
-      localStorage.removeItem(cacheKey);
-      this.clearSignalIndexIfCurrent(careerStack, experienceLevel, cacheKey);
-      return null;
-    }
+    // Personalized evidence is memory-only and is never trusted without backend validation.
+    return null;
   }
 
   cacheResult(result: SkillGapResult, isTemporary = false): void {
     if (isTemporary || result.cacheMetadata?.temporary) return;
-    const signalHash = this.resultSignalHash(result);
-    const key = this.buildCacheKey(signalHash, result.careerStack, result.experienceLevel);
-
-    localStorage.setItem(
-      this.buildSignalIndexKey(result.careerStack, result.experienceLevel),
-      signalHash,
-    );
+    // Persist only the opaque revision used for owner-scoped downstream invalidation.
     this.frontendCache.setCurrentSignalHash(
       {
         module: 'developer-signals',
         careerStack: result.careerStack,
         experienceLevel: result.experienceLevel,
       },
-      signalHash,
-    );
-    localStorage.setItem(
-      key,
-      JSON.stringify({
-        cachedAt: Date.now(),
-        expiresAt: Date.now() + SKILL_GAP_TTL_MS,
-        result,
-      }),
+      this.resultSignalHash(result),
     );
   }
 
@@ -460,32 +429,9 @@ export class SkillGapService {
     return localStorage.getItem(this.buildSignalIndexKey(careerStack, experienceLevel));
   }
 
-  private buildCacheKey(signalHash: string, careerStack: string, experienceLevel: string): string {
-    const userId = this.auth.getCurrentUser()?._id || 'anonymous';
-    return [
-      `${SKILL_GAP_CACHE_PREFIX}${userId}`,
-      this.clean(signalHash || 'no-signals'),
-      this.clean(careerStack || 'Full Stack'),
-      this.clean(experienceLevel || 'Student'),
-    ].join(':');
-  }
-
   private resultSignalHash(result: SkillGapResult): string {
     const meta = result.cacheMetadata?.cacheKey || {};
     return this.clean(meta.signalHash || result.cacheMetadata?.signalHash || 'no-signals');
-  }
-
-  private clearSignalIndexIfCurrent(
-    careerStack: string,
-    experienceLevel: string,
-    cacheKey: string,
-  ): void {
-    const indexKey = this.buildSignalIndexKey(careerStack, experienceLevel);
-    const signalHash = localStorage.getItem(indexKey);
-    if (!signalHash) return;
-    if (this.buildCacheKey(signalHash, careerStack, experienceLevel) === cacheKey) {
-      localStorage.removeItem(indexKey);
-    }
   }
 
   private clean(value: string): string {

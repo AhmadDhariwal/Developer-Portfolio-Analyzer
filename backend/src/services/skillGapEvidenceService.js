@@ -5,6 +5,7 @@ const { createScoreResult } = require("./scoring/result");
 const { leanWarnings } = require("./scoring/evidence");
 const dictionary = require("./skillGapRequirements");
 const RULE_VERSION = "skill-evidence-coverage-v1";
+const EVIDENCE_POLICY_VERSION = "skill-gap-evidence-policy-v2";
 const CREDIT = Object.freeze({
   DEMONSTRATED: 1,
   PARTIAL: 0.5,
@@ -18,8 +19,7 @@ const STATUSES = Object.freeze([
   "NOT_EVIDENCED",
   "UNKNOWN",
 ]);
-const ref = (value) =>
-  typeof value === "string" ? value.trim().slice(0, 160) : "";
+const ref = (value) => (typeof value === "string" ? value.trim().slice(0, 160) : "");
 const timestamp = (value) => {
   if (value == null || value === "") return null;
   const time = new Date(value);
@@ -28,42 +28,25 @@ const timestamp = (value) => {
 
 // Confidence describes the reliability of this evidence assessment, not a
 // probability of proficiency. A single weak source never becomes strong proof.
-const confidenceFor = ({
-  status,
-  technicalOrigins,
-  fresh,
-  complete,
-  conflicts,
-  coreAvailable,
-}) => {
-  if (!coreAvailable || status === "UNKNOWN" || status === "NOT_EVIDENCED")
-    return "INSUFFICIENT";
-  if (conflicts || !fresh || !complete || status === "CLAIMED_ONLY")
-    return "LOW";
-  if (status === "DEMONSTRATED")
-    return technicalOrigins >= 2 ? "HIGH" : "MEDIUM";
+const confidenceFor = ({ status, technicalOrigins, fresh, complete, conflicts, coreAvailable }) => {
+  if (!coreAvailable || status === "UNKNOWN" || status === "NOT_EVIDENCED") return "INSUFFICIENT";
+  if (conflicts || !fresh || !complete || status === "CLAIMED_ONLY") return "LOW";
+  if (status === "DEMONSTRATED") return technicalOrigins >= 2 ? "HIGH" : "MEDIUM";
   return technicalOrigins >= 2 ? "MEDIUM" : "LOW";
 };
 
-const calculate = (
-  { requirements, observations = [], sources = [] } = {},
-  options = {},
-) => {
+const calculate = ({ requirements, observations = [], sources = [] } = {}, options = {}) => {
   const calculatedAt = createScoreResult({
     score: null,
     ruleVersion: RULE_VERSION,
     calculatedAt: options.calculatedAt,
   }).calculatedAt;
   const sourceList = (Array.isArray(sources) ? sources : [])
-    .filter((source) =>
-      ["github", "resume", "profile", "integration"].includes(source?.type),
-    )
+    .filter((source) => ["github", "resume", "profile", "integration"].includes(source?.type))
     .map((source) => ({
       type: source.type,
       id: ref(source.id),
-      ...(ref(source.ruleVersion)
-        ? { ruleVersion: ref(source.ruleVersion) }
-        : {}),
+      ...(ref(source.ruleVersion) ? { ruleVersion: ref(source.ruleVersion) } : {}),
       available: source.available === true,
       completeness: ["COMPLETE", "PARTIAL"].includes(source.completeness)
         ? source.completeness
@@ -88,22 +71,17 @@ const calculate = (
       },
   );
   const coreAvailable = core.some((source) => source.available);
-  const complete = core.every(
-    (source) => source.available && source.completeness === "COMPLETE",
-  );
+  const complete = core.every((source) => source.available && source.completeness === "COMPLETE");
   const warnings = [];
-  if (!requirements?.available)
-    warnings.push("career_requirements_unavailable");
+  if (!requirements?.available) warnings.push("career_requirements_unavailable");
   for (const entry of requirements?.missingEntries || [])
     warnings.push(`missing_requirement_entry:${ref(entry)}`);
   if (!coreAvailable) warnings.push("github_and_resume_evidence_unavailable");
   if (!complete) warnings.push("partial_source_limitations");
   for (const source of sourceList) {
     if (!source.available) continue;
-    if (source.freshness === "STALE")
-      warnings.push(`stale_source:${source.type}`);
-    if (!source.timestamp)
-      warnings.push(`source_timestamp_unavailable:${source.type}`);
+    if (source.freshness === "STALE") warnings.push(`stale_source:${source.type}`);
+    if (!source.timestamp) warnings.push(`source_timestamp_unavailable:${source.type}`);
     else if (source.freshness !== "STALE")
       warnings.push(`freshness_age_not_calibrated:${source.type}`);
   }
@@ -114,17 +92,9 @@ const calculate = (
     const name = dictionary.canonicalize(item?.skill);
     const type = item?.source?.type;
     const id = ref(item?.source?.id);
-    if (
-      !name ||
-      !["github", "resume", "profile", "integration"].includes(type) ||
-      !id
-    )
-      continue;
-    if (!sourceList.some((source) => source.type === type && source.available))
-      continue;
-    const kind = ["IMPLEMENTATION", "METADATA", "CLAIM"].includes(item.kind)
-      ? item.kind
-      : "CLAIM";
+    if (!name || !["github", "resume", "profile", "integration"].includes(type) || !id) continue;
+    if (!sourceList.some((source) => source.type === type && source.available)) continue;
+    const kind = ["IMPLEMENTATION", "METADATA", "CLAIM"].includes(item.kind) ? item.kind : "CLAIM";
     // A resume/profile statement cannot be relabeled inspected implementation.
     const technical = ["github", "integration"].includes(type);
     const implementation =
@@ -147,31 +117,18 @@ const calculate = (
       artifact: ref(item.artifact),
       timestamp: timestamp(item.timestamp),
       freshness:
-        item.freshness === "STALE"
-          ? "STALE"
-          : timestamp(item.timestamp)
-            ? "RECORDED"
-            : "UNKNOWN",
-      conflicting:
-        technical && effectiveKind !== "CLAIM" && item.conflicting === true,
+        item.freshness === "STALE" ? "STALE" : timestamp(item.timestamp) ? "RECORDED" : "UNKNOWN",
+      conflicting: technical && effectiveKind !== "CLAIM" && item.conflicting === true,
     };
     const entries = observed.get(name) || [];
-    const key = JSON.stringify([
-      origin,
-      effectiveKind,
-      entry.artifact,
-      entry.conflicting,
-    ]);
-    if (!entries.some((existing) => existing.key === key))
-      entries.push({ ...entry, key });
+    const key = JSON.stringify([origin, effectiveKind, entry.artifact, entry.conflicting]);
+    if (!entries.some((existing) => existing.key === key)) entries.push({ ...entry, key });
     observed.set(name, entries);
   }
   const relevantAnalyzedEvidenceAvailable =
     coreAvailable ||
     [...observed.values()].some((entries) =>
-      entries.some(
-        (entry) => entry.type === "integration" && entry.kind !== "CLAIM",
-      ),
+      entries.some((entry) => entry.type === "integration" && entry.kind !== "CLAIM"),
     );
   const requirementsByName = new Map();
   for (const entry of requirements?.skills || []) {
@@ -190,10 +147,7 @@ const calculate = (
       continue;
     }
     const previous = requirementsByName.get(name);
-    if (
-      previous &&
-      (previous.weight !== weight || previous.requirement !== entry.requirement)
-    )
+    if (previous && (previous.weight !== weight || previous.requirement !== entry.requirement))
       warnings.push(`conflicting_requirement_entry:${name}`);
     if (!previous)
       requirementsByName.set(name, {
@@ -203,9 +157,7 @@ const calculate = (
         weight,
       });
   }
-  const skills = [
-    ...new Set([...requirementsByName.keys(), ...observed.keys()]),
-  ]
+  const skills = [...new Set([...requirementsByName.keys(), ...observed.keys()])]
     .sort()
     .map((name) => {
       const requirement = requirementsByName.get(name) || {
@@ -219,9 +171,7 @@ const calculate = (
       const conflicts =
         entries.some((entry) => entry.conflicting) &&
         positive.some((entry) => entry.kind !== "CLAIM");
-      const implementation = positive.some(
-        (entry) => entry.kind === "IMPLEMENTATION",
-      );
+      const implementation = positive.some((entry) => entry.kind === "IMPLEMENTATION");
       const metadata = positive.some((entry) => entry.kind === "METADATA");
       const status = implementation
         ? conflicts
@@ -231,19 +181,15 @@ const calculate = (
           ? "PARTIAL"
           : positive.length
             ? "CLAIMED_ONLY"
-            : relevantAnalyzedEvidenceAvailable
+            : complete
               ? "NOT_EVIDENCED"
               : "UNKNOWN";
       const technicalOrigins = new Set(
-        positive
-          .filter((entry) => entry.kind !== "CLAIM")
-          .map((entry) => entry.origin),
+        positive.filter((entry) => entry.kind !== "CLAIM").map((entry) => entry.origin),
       ).size;
       const fresh =
         positive.length > 0 &&
-        positive.every(
-          (entry) => entry.timestamp && entry.freshness !== "STALE",
-        ) &&
+        positive.every((entry) => entry.timestamp && entry.freshness !== "STALE") &&
         core
           .filter((source) => source.available)
           .every((source) => source.timestamp && source.freshness !== "STALE");
@@ -265,15 +211,9 @@ const calculate = (
         evidence,
         warnings: leanWarnings([
           ...(conflicts ? ["conflicting_positive_evidence"] : []),
-          ...(entries.some((entry) => entry.freshness === "STALE")
-            ? ["stale_evidence"]
-            : []),
-          ...(entries.some((entry) => !entry.timestamp)
-            ? ["evidence_timestamp_unavailable"]
-            : []),
-          ...(entries.some(
-            (entry) => entry.timestamp && entry.freshness !== "STALE",
-          )
+          ...(entries.some((entry) => entry.freshness === "STALE") ? ["stale_evidence"] : []),
+          ...(entries.some((entry) => !entry.timestamp) ? ["evidence_timestamp_unavailable"] : []),
+          ...(entries.some((entry) => entry.timestamp && entry.freshness !== "STALE")
             ? ["freshness_age_not_calibrated"]
             : []),
         ]),
@@ -327,23 +267,14 @@ const calculate = (
       ? "INSUFFICIENT"
       : required.reduce(
           (lowest, skill) =>
-            rank[skill.evidenceConfidence] < rank[lowest]
-              ? skill.evidenceConfidence
-              : lowest,
+            rank[skill.evidenceConfidence] < rank[lowest] ? skill.evidenceConfidence : lowest,
           "HIGH",
         );
   const categoryBreakdown = Object.fromEntries(
     [...new Set(skills.map((skill) => skill.category))].map((category) => {
-      const categorySkills = skills.filter(
-        (skill) => skill.category === category,
-      );
-      const requiredSkills = categorySkills.filter(
-        (skill) => skill.requirement === "REQUIRED",
-      );
-      const weight = requiredSkills.reduce(
-        (sum, skill) => sum + skill.weight,
-        0,
-      );
+      const categorySkills = skills.filter((skill) => skill.category === category);
+      const requiredSkills = categorySkills.filter((skill) => skill.requirement === "REQUIRED");
+      const weight = requiredSkills.reduce((sum, skill) => sum + skill.weight, 0);
       const credit = requiredSkills.reduce(
         (sum, skill) => sum + skill.weight * (skill.evidenceCredit ?? 0),
         0,
@@ -355,10 +286,7 @@ const calculate = (
           optionalSkillCount: categorySkills.length - requiredSkills.length,
           requiredWeight: weight,
           weightedCredit: credit,
-          coverage:
-            reason || !weight
-              ? null
-              : clampScore(safeDivide(credit * 100, weight)),
+          coverage: reason || !weight ? null : clampScore(safeDivide(credit * 100, weight)),
         },
       ];
     }),
@@ -394,6 +322,8 @@ const calculate = (
     sourceReferences: sourceList.slice(0, 12),
     warnings: result.warnings,
     ruleVersion: RULE_VERSION,
+    evidencePolicyVersion: EVIDENCE_POLICY_VERSION,
+    taxonomyVersion: dictionary.TAXONOMY_VERSION,
     requirementMatrixVersion: requirements?.version || null,
     calculatedAt,
     scoring: result,
@@ -422,21 +352,14 @@ const resolve = (
       githubData.cache?.cachedAt ||
       githubData.githubSignals?.analyzedAt ||
       githubData.fetchedAt ||
-      (Array.isArray(githubData.repositories) &&
-        githubData.repositories.length) ||
+      (Array.isArray(githubData.repositories) && githubData.repositories.length) ||
       githubData.dataAvailability?.repositories === "complete",
     );
-  const resumeAvailable = preview
-    ? resumeInsights.analyzed === true
-    : Boolean(resumeAnalysis);
+  const resumeAvailable = preview ? resumeInsights.analyzed === true : Boolean(resumeAnalysis);
   const githubTime =
-    githubData.githubSignals?.analyzedAt ||
-    githubData.fetchedAt ||
-    githubData.cache?.cachedAt;
+    githubData.githubSignals?.analyzedAt || githubData.fetchedAt || githubData.cache?.cachedAt;
   const resumeTime =
-    resumeAnalysis?.analyzedAt ||
-    resumeAnalysis?.createdAt ||
-    resumeInsights.lastAnalyzedAt;
+    resumeAnalysis?.analyzedAt || resumeAnalysis?.createdAt || resumeInsights.lastAnalyzedAt;
   const sources = [
     {
       type: "github",
@@ -449,8 +372,7 @@ const resolve = (
       available: githubAvailable,
       timestamp: githubTime,
       ruleVersion:
-        githubData.githubSignals?.scoring?.ruleVersion ||
-        githubData.scoring?.ruleVersion,
+        githubData.githubSignals?.scoring?.ruleVersion || githubData.scoring?.ruleVersion,
       freshness: githubData.cache?.stale ? "STALE" : "RECORDED",
       completeness:
         githubData.dataAvailability?.repositories === "complete" &&
@@ -464,8 +386,7 @@ const resolve = (
       available: resumeAvailable,
       timestamp: resumeTime,
       ruleVersion:
-        resumeAnalysis?.resumeSignals?.scoring?.ruleVersion ||
-        resumeAnalysis?.scoring?.ruleVersion,
+        resumeAnalysis?.resumeSignals?.scoring?.ruleVersion || resumeAnalysis?.scoring?.ruleVersion,
       completeness: "COMPLETE",
     },
     {
@@ -495,28 +416,27 @@ const resolve = (
     });
   // Ignore names/descriptions and unanchored inferred technology summaries.
   // Exact topics and real language names are relevant metadata, not code proof.
-  for (const repo of Array.isArray(githubData.repositories)
-    ? githubData.repositories
-    : []) {
-    if (!repo?.name) continue;
+  for (const repo of Array.isArray(githubData.repositories) ? githubData.repositories : []) {
+    if (
+      !repo?.name ||
+      repo.fork === true ||
+      repo.isFork === true ||
+      repo.isTemplate === true ||
+      repo.is_template === true ||
+      repo.copied === true
+    )
+      continue;
     const source = {
       type: "github",
       id: ref(repo.name),
-      origin: `github-repository:${ref(repo.name)}`,
+      origin: `github-account:${sources[0].id}`,
     };
     const time = repo.pushedAt || repo.updatedAt || githubTime;
     for (const skill of dictionary.normalize([
       repo.language === "Dockerfile" ? "Docker" : repo.language,
       ...(Array.isArray(repo.topics) ? repo.topics : []),
     ]))
-      add(
-        skill,
-        "METADATA",
-        source,
-        time,
-        "repository-metadata",
-        githubData.cache?.stale,
-      );
+      add(skill, "METADATA", source, time, "repository-metadata", githubData.cache?.stale);
   }
   for (const language of Array.isArray(githubData.languageDistribution)
     ? githubData.languageDistribution
@@ -526,9 +446,8 @@ const resolve = (
     );
     if (
       !skill ||
-      observations.some(
-        (item) => item.skill === skill && item.source.type === "github",
-      )
+      (Array.isArray(githubData.repositories) && githubData.repositories.length > 0) ||
+      observations.some((item) => item.skill === skill && item.source.type === "github")
     )
       continue;
     add(
@@ -537,7 +456,7 @@ const resolve = (
       {
         type: "github",
         id: "language-distribution",
-        origin: "github-language-distribution",
+        origin: `github-account:${sources[0].id}`,
       },
       githubTime,
       "language-distribution",
@@ -545,9 +464,7 @@ const resolve = (
     );
   }
   let resumeSkills;
-  if (preview)
-    resumeSkills =
-      resumeInsights.technicalSkills || resumeInsights.skills || [];
+  if (preview) resumeSkills = resumeInsights.technicalSkills || resumeInsights.skills || [];
   else if (Array.isArray(resumeAnalysis?.resumeSignals?.skills))
     resumeSkills = resumeAnalysis.resumeSignals.skills;
   else if (Array.isArray(resumeAnalysis?.technicalSkills))
@@ -593,9 +510,7 @@ const resolve = (
       },
       profileSignal.updatedAt,
     );
-  for (const skill of dictionary.normalize(
-    integrationSignal.detectedSkills || [],
-  ))
+  for (const skill of dictionary.normalize(integrationSignal.detectedSkills || []))
     add(
       skill,
       "CLAIM",
@@ -608,10 +523,7 @@ const resolve = (
     );
   return calculate(
     {
-      requirements: dictionary.resolveRequirements(
-        careerStack,
-        experienceLevel,
-      ),
+      requirements: dictionary.resolveRequirements(careerStack, experienceLevel),
       observations,
       sources,
     },
@@ -621,6 +533,7 @@ const resolve = (
 
 module.exports = {
   RULE_VERSION,
+  EVIDENCE_POLICY_VERSION,
   CREDIT,
   STATUSES,
   confidenceFor,

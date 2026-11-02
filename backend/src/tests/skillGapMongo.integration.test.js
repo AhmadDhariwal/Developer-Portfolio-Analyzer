@@ -3,9 +3,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const crypto = require("node:crypto");
 const mongoose = require("mongoose");
-require("dotenv").config({
-  path: require("node:path").resolve(__dirname, "../../.env"),
-});
+const { startMongo } = require("./fixtures/disposableRequestMongo");
 const ResumeFile = require("../models/resumeFile");
 const ResumeAnalysis = require("../models/resumeAnalysis");
 const AnalysisCache = require("../models/analysisCache");
@@ -22,13 +20,10 @@ const deferred = () => {
 };
 
 test("Skill Gap Mongo: active selection, reanalysis, source revisions, history and concurrent invalidation", async (t) => {
-  assert.ok(
-    process.env.MONGODB_URI,
-    "MONGODB_URI is required for Skill Gap database verification",
-  );
-  await mongoose.connect(process.env.MONGODB_URI, {
+  const runtime = await startMongo({ replicaSet: "skill-gap-context" });
+  await mongoose.connect(runtime.uri, {
     serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 5000,
+    socketTimeoutMS: 5000
   });
   const owner = new mongoose.Types.ObjectId();
   const foreign = new mongoose.Types.ObjectId();
@@ -36,9 +31,10 @@ test("Skill Gap Mongo: active selection, reanalysis, source revisions, history a
     await Promise.all([
       ResumeFile.deleteMany({ userId: { $in: [owner, foreign] } }),
       ResumeAnalysis.deleteMany({ userId: { $in: [owner, foreign] } }),
-      AnalysisCache.deleteMany({ userId: { $in: [owner, foreign] } }),
+      AnalysisCache.deleteMany({ userId: { $in: [owner, foreign] } })
     ]);
     await mongoose.disconnect();
+    await runtime.stop();
   });
   const now = new Date();
   const files = await ResumeFile.create(
@@ -46,8 +42,8 @@ test("Skill Gap Mongo: active selection, reanalysis, source revisions, history a
       userId: owner,
       fileName: `${name}.pdf`,
       fileUrl: `/skill-gap-test/${name}`,
-      fileSize: 1,
-    })),
+      fileSize: 1
+    }))
   );
   const [a, b] = await ResumeAnalysis.create([
     {
@@ -59,8 +55,8 @@ test("Skill Gap Mongo: active selection, reanalysis, source revisions, history a
       atsScore: 10,
       resumeSignals: {
         skills: ["React"],
-        scoring: { ruleVersion: "resume-overall-score-v1" },
-      },
+        scoring: { ruleVersion: "resume-overall-score-v1" }
+      }
     },
     {
       userId: owner,
@@ -69,26 +65,23 @@ test("Skill Gap Mongo: active selection, reanalysis, source revisions, history a
       fileSize: 1,
       analyzedAt: now,
       atsScore: 90,
-      resumeSignals: { skills: ["SQL"] },
-    },
+      resumeSignals: { skills: ["SQL"] }
+    }
   ]);
   const history = await AnalysisCache.create({
     userId: owner,
     githubUsername: "fixture",
     careerStack: "Frontend",
     experienceLevel: "Student",
-    resumeHash: crypto
-      .createHash("sha256")
-      .update("historical-fixture")
-      .digest("hex"),
+    resumeHash: crypto.createHash("sha256").update("historical-fixture").digest("hex"),
     analysisVersion: "v6-skill-intelligence",
     resumeAnalysisId: String(a._id),
     signalHash: "historic",
     analysisData: {
       coverage: 87,
       legacyField: true,
-      calculatedAt: "2010-01-01",
-    },
+      calculatedAt: "2010-01-01"
+    }
   });
   const historicalBefore = await AnalysisCache.findById(history._id).lean();
   const shared = new Map();
@@ -96,16 +89,14 @@ test("Skill Gap Mongo: active selection, reanalysis, source revisions, history a
   const counts = { ai: 0, github: 0 };
   const github = {
     repoCount: 1,
-    repositories: [
-      { name: "fixture", language: "TypeScript", topics: ["react"] },
-    ],
+    repositories: [{ name: "fixture", language: "TypeScript", topics: ["react"] }],
     languageDistribution: [{ language: "TypeScript" }],
     githubSignals: { username: "fixture", analyzedAt: now.toISOString() },
     cache: { cachedAt: now.toISOString(), source: "cache" },
     dataAvailability: {
       repositories: "complete",
-      repositorySignals: "sampled",
-    },
+      repositorySignals: "sampled"
+    }
   };
   let hold = null;
   mock("../services/githubservice", {
@@ -114,15 +105,12 @@ test("Skill Gap Mongo: active selection, reanalysis, source revisions, history a
       counts.github += 1;
       return { status: "fresh", data: structuredClone(github) };
     },
-    refreshGitHubAnalysisInBackground: () => ({ queued: false }),
+    refreshGitHubAnalysisInBackground: () => ({ queued: false })
   });
   mock("../services/aiservice", {
-    getSharedCache: async (key, namespace) =>
-      shared.get(`${namespace}:${key}`) || null,
-    setSharedCache: async (key, value, _ttl, namespace) =>
-      shared.set(`${namespace}:${key}`, value),
-    getDeterministicSummary: async (_scope, key) =>
-      summaries.get(JSON.stringify(key)) || null,
+    getSharedCache: async (key, namespace) => shared.get(`${namespace}:${key}`) || null,
+    setSharedCache: async (key, value, _ttl, namespace) => shared.set(`${namespace}:${key}`, value),
+    getDeterministicSummary: async (_scope, key) => summaries.get(JSON.stringify(key)) || null,
     setDeterministicSummary: async (_scope, key, value) =>
       summaries.set(JSON.stringify(key), value),
     runAIAnalysis: async (_prompt, fallback) => {
@@ -135,11 +123,14 @@ test("Skill Gap Mongo: active selection, reanalysis, source revisions, history a
       }
       return { ok: false, value: fallback };
     },
-    recordDeterministicSkip: () => {},
+    recordDeterministicSkip: () => {}
+  });
+  mock("../services/notificationPersistenceService", {
+    commit: async (_owner, work) => work(null)
   });
   mock("../services/aiVersionService", { createVersion: async () => {} });
   mock("../services/notificationService", {
-    createNotification: async () => {},
+    createNotification: async () => {}
   });
   const signals = require("../services/developerSignalService");
   mock("../services/developerSignalService", {
@@ -148,13 +139,13 @@ test("Skill Gap Mongo: active selection, reanalysis, source revisions, history a
       integrationSignal: {
         present: false,
         integrationScore: 0,
-        detectedSkills: [],
+        detectedSkills: []
       },
       jobsDemandSignal: { present: false },
       portfolioSignal: {},
       weeklyReportSignal: {},
-      careerSprintSignal: {},
-    }),
+      careerSprintSignal: {}
+    })
   });
   delete require.cache[require.resolve("../controllers/skillgapcontroller")];
   const controller = require("../controllers/skillgapcontroller");
@@ -164,7 +155,7 @@ test("Skill Gap Mongo: active selection, reanalysis, source revisions, history a
     activeCareerStack: "Frontend",
     activeExperienceLevel: "Student",
     activeResumeFileId: files[0]._id,
-    defaultResumeFileId: files[1]._id,
+    defaultResumeFileId: files[1]._id
   };
   const call = async (body) => {
     let output,
@@ -177,32 +168,23 @@ test("Skill Gap Mongo: active selection, reanalysis, source revisions, history a
       json(value) {
         output = value;
         return this;
-      },
+      }
     };
-    await controller.analyzeSkillGap(
-      { user: { ...user }, body: body || {} },
-      res,
-    );
+    await controller.analyzeSkillGap({ user: { ...user }, body: body || {} }, res);
     assert.equal(status, 200);
     return output;
   };
   const first = await call();
   assert.deepEqual(first.resumeSkills, ["React"]);
-  assert.equal(
-    first.skills.find((skill) => skill.name === "React").status,
-    "PARTIAL",
-  );
+  assert.equal(first.skills.find((skill) => skill.name === "React").status, "PARTIAL");
   assert.equal(first.provenSkills.length, 0);
   const mongoFirst = await AnalysisCache.findOne({
     userId: owner,
     analysisVersion: controller.ANALYSIS_VERSION,
-    signalHash: first.cacheMetadata.signalHash,
+    signalHash: first.cacheMetadata.signalHash
   }).lean();
   assert.ok(mongoFirst);
-  assert.equal(
-    mongoFirst.analysisData.ruleVersion,
-    "skill-evidence-coverage-v1",
-  );
+  assert.equal(mongoFirst.analysisData.ruleVersion, "skill-evidence-coverage-v1");
 
   controller.clearSkillGapMemoryCache();
   shared.clear();
@@ -216,44 +198,34 @@ test("Skill Gap Mongo: active selection, reanalysis, source revisions, history a
   user.activeResumeFileId = files[1]._id;
   const switched = await call();
   assert.deepEqual(switched.resumeSkills, ["SQL"]);
-  assert.notEqual(
-    switched.cacheMetadata.signalHash,
-    first.cacheMetadata.signalHash,
-  );
+  assert.notEqual(switched.cacheMetadata.signalHash, first.cacheMetadata.signalHash);
   assert.equal(switched.coverage, first.coverage); // Claims alone do not change coverage.
   await ResumeAnalysis.updateOne(
     { _id: b._id },
-    { $set: { "resumeSignals.skills": ["SQL", "Docker"] } },
+    { $set: { "resumeSignals.skills": ["SQL", "Docker"] } }
   );
   const reanalyzed = await call();
   assert.deepEqual(reanalyzed.resumeSkills, ["Docker", "SQL"]);
-  assert.notEqual(
-    reanalyzed.cacheMetadata.signalHash,
-    switched.cacheMetadata.signalHash,
-  );
-  assert.equal(
-    reanalyzed.skills.find((skill) => skill.name === "Docker").status,
-    "CLAIMED_ONLY",
-  );
+  assert.notEqual(reanalyzed.cacheMetadata.signalHash, switched.cacheMetadata.signalHash);
+  assert.equal(reanalyzed.skills.find((skill) => skill.name === "Docker").status, "CLAIMED_ONLY");
 
   github.repositories[0].topics.push("docker");
   const revisedGithub = await call();
-  assert.notEqual(
-    revisedGithub.cacheMetadata.signalHash,
-    reanalyzed.cacheMetadata.signalHash,
+  assert.notEqual(revisedGithub.cacheMetadata.signalHash, reanalyzed.cacheMetadata.signalHash);
+  assert.equal(revisedGithub.skills.find((skill) => skill.name === "Docker").status, "PARTIAL");
+  assert.equal(revisedGithub.coverage, null);
+  assert.equal(reanalyzed.coverage, null);
+  assert.ok(
+    revisedGithub.scoring.coverage.evidence.inputs.weightedCredit >
+      reanalyzed.scoring.coverage.evidence.inputs.weightedCredit
   );
-  assert.equal(
-    revisedGithub.skills.find((skill) => skill.name === "Docker").status,
-    "PARTIAL",
-  );
-  assert.ok(revisedGithub.coverage > reanalyzed.coverage);
   user.activeResumeFileId = files[2]._id;
   assert.deepEqual((await call()).resumeSkills, []); // Never borrow an analyzed historical resume.
   const foreignFile = await ResumeFile.create({
     userId: foreign,
     fileName: "foreign.pdf",
     fileUrl: "/skill-gap-test/foreign",
-    fileSize: 1,
+    fileSize: 1
   });
   await ResumeAnalysis.create({
     userId: foreign,
@@ -261,7 +233,7 @@ test("Skill Gap Mongo: active selection, reanalysis, source revisions, history a
     fileName: "foreign.pdf",
     fileSize: 1,
     analyzedAt: now,
-    resumeSignals: { skills: ["Kubernetes"] },
+    resumeSignals: { skills: ["Kubernetes"] }
   });
   user.activeResumeFileId = foreignFile._id;
   assert.deepEqual((await call()).resumeSkills, []); // Active file ID never bypasses ownership.
@@ -271,15 +243,9 @@ test("Skill Gap Mongo: active selection, reanalysis, source revisions, history a
   const backend = await call();
   assert.ok(backend.requiredSkills.some((skill) => skill.name === "Node.js"));
   user.activeExperienceLevel = "5+ years";
-  assert.notEqual(
-    (await call()).cacheMetadata.signalHash,
-    backend.cacheMetadata.signalHash,
-  );
+  assert.notEqual((await call()).cacheMetadata.signalHash, backend.cacheMetadata.signalHash);
   user.activeGithubUsername = "fixture2";
-  assert.notEqual(
-    (await call()).cacheMetadata.signalHash,
-    backend.cacheMetadata.signalHash,
-  );
+  assert.notEqual((await call()).cacheMetadata.signalHash, backend.cacheMetadata.signalHash);
   user.activeGithubUsername = "fixture";
   user.activeCareerStack = "Frontend";
   user.activeExperienceLevel = "Student";
@@ -289,46 +255,38 @@ test("Skill Gap Mongo: active selection, reanalysis, source revisions, history a
     entered: 0,
     first: deferred(),
     second: deferred(),
-    gate: deferred(),
+    gate: deferred()
   };
   const pending = call({ forceRefresh: true });
   await hold.first.promise;
-  await ResumeAnalysis.updateOne(
-    { _id: b._id },
-    { $set: { "resumeSignals.skills": ["Java"] } },
-  );
+  await ResumeAnalysis.updateOne({ _id: b._id }, { $set: { "resumeSignals.skills": ["Java"] } });
   const newer = call({ forceRefresh: true });
   await hold.second.promise;
   hold.gate.resolve();
   const [olderSnapshot, newerSnapshot] = await Promise.all([pending, newer]);
   hold = null;
-  assert.notEqual(
-    olderSnapshot.cacheMetadata.signalHash,
-    newerSnapshot.cacheMetadata.signalHash,
-  );
+  assert.notEqual(olderSnapshot.cacheMetadata.signalHash, newerSnapshot.cacheMetadata.signalHash);
   assert.deepEqual(newerSnapshot.resumeSkills, ["Java"]);
   assert.deepEqual(olderSnapshot.resumeSkills, ["Docker", "SQL"]);
   assert.deepEqual((await call()).resumeSkills, ["Java"]);
 
-  assert.deepEqual(
-    await AnalysisCache.findById(history._id).lean(),
-    historicalBefore,
-  );
+  assert.deepEqual(await AnalysisCache.findById(history._id).lean(), historicalBefore);
   assert.equal(await ResumeAnalysis.countDocuments({ userId: owner }), 2);
   assert.equal(await ResumeFile.countDocuments({ userId: owner }), 3);
   assert.ok(
     (await AnalysisCache.countDocuments({
       userId: owner,
-      analysisVersion: controller.ANALYSIS_VERSION,
-    })) >= 2,
+      analysisVersion: controller.ANALYSIS_VERSION
+    })) >= 2
   );
 });
 
 test("Skill Gap: historical 56 reload behavior, reanalysis contract, and persistence", async (t) => {
+  const runtime = await startMongo({ replicaSet: "skill-gap-history" });
   if (mongoose.connection.readyState !== 1) {
-    await mongoose.connect(process.env.MONGODB_URI, {
+    await mongoose.connect(runtime.uri, {
       serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 5000,
+      socketTimeoutMS: 5000
     });
   }
   const testUser = new mongoose.Types.ObjectId();
@@ -340,17 +298,21 @@ test("Skill Gap: historical 56 reload behavior, reanalysis contract, and persist
       ResumeFile.deleteMany({ userId: testUser }),
       ResumeAnalysis.deleteMany({ userId: testUser }),
       AnalysisCache.deleteMany({ userId: testUser }),
-      SavedPreview.deleteMany({ userId: testUser }),
+      SavedPreview.deleteMany({ userId: testUser })
     ]);
     await mongoose.disconnect();
+    await runtime.stop();
   });
 
-  const resumeText =
-    "Experienced full-stack engineer with Node.js and React expertise.";
-  const resumeHash = crypto
-    .createHash("sha256")
-    .update(resumeText)
-    .digest("hex");
+  const resumeText = "Experienced full-stack engineer with Node.js and React expertise.";
+  const resumeHash = crypto.createHash("sha256").update(resumeText).digest("hex");
+  await ResumeFile.create({
+    _id: fileId,
+    userId: testUser,
+    fileName: "resume.pdf",
+    fileUrl: "/synthetic/history",
+    fileSize: 1024
+  });
   const resumeAnalysis = await ResumeAnalysis.create({
     userId: testUser,
     fileId,
@@ -360,33 +322,31 @@ test("Skill Gap: historical 56 reload behavior, reanalysis contract, and persist
     atsScore: 82,
     resumeSignals: {
       skills: ["React", "Node.js"],
-      scoring: { ruleVersion: "resume-overall-score-v1" },
-    },
+      scoring: { ruleVersion: "resume-overall-score-v1" }
+    }
   });
 
   const developerSignalsModule = require("../services/developerSignalService");
   const resumeInsights = developerSignalsModule.buildResumeAnalysisSignals(
     resumeAnalysis,
-    "2-3 years",
+    "2-3 years"
   );
   const resumeCacheIdentity = developerSignalsModule.buildResumeCacheIdentity({
-    resumeAnalysis,
+    resumeAnalysis
   });
   const githubData = {
     repoCount: 1,
-    repositories: [
-      { name: "my-app", language: "JavaScript", topics: ["react"] },
-    ],
+    repositories: [{ name: "my-app", language: "JavaScript", topics: ["react"] }],
     languageDistribution: [{ language: "JavaScript" }],
     githubSignals: {
       username: "testhistorical",
-      analyzedAt: now.toISOString(),
+      analyzedAt: now.toISOString()
     },
     cache: { cachedAt: now.toISOString(), source: "cache" },
     dataAvailability: {
       repositories: "complete",
-      repositorySignals: "sampled",
-    },
+      repositorySignals: "sampled"
+    }
   };
 
   // Seed Scenario A: unversioned historical record with score 56
@@ -404,17 +364,17 @@ test("Skill Gap: historical 56 reload behavior, reanalysis contract, and persist
       missing: 44,
       yourSkills: [{ name: "JavaScript", proficiency: 60 }],
       missingSkills: [{ name: "TypeScript", priority: "High" }],
-      calculatedAt: "2025-01-01T00:00:00.000Z",
-    },
+      calculatedAt: "2025-01-01T00:00:00.000Z"
+    }
   });
 
   mock("../services/githubservice", {
     parseGitHubUsername: (value) => String(value).trim(),
     getCachedGitHubAnalysis: async () => ({
       status: "fresh",
-      data: structuredClone(githubData),
+      data: structuredClone(githubData)
     }),
-    refreshGitHubAnalysisInBackground: () => ({ queued: false }),
+    refreshGitHubAnalysisInBackground: () => ({ queued: false })
   });
   mock("../services/aiservice", {
     getSharedCache: async () => null,
@@ -423,13 +383,16 @@ test("Skill Gap: historical 56 reload behavior, reanalysis contract, and persist
     setDeterministicSummary: async () => {},
     runAIAnalysis: async (_prompt, fallback) => ({
       ok: false,
-      value: fallback,
+      value: fallback
     }),
-    recordDeterministicSkip: () => {},
+    recordDeterministicSkip: () => {}
+  });
+  mock("../services/notificationPersistenceService", {
+    commit: async (_owner, work) => work(null)
   });
   mock("../services/aiVersionService", { createVersion: async () => {} });
   mock("../services/notificationService", {
-    createNotification: async () => {},
+    createNotification: async () => {}
   });
 
   delete require.cache[require.resolve("../controllers/skillgapcontroller")];
@@ -446,7 +409,7 @@ test("Skill Gap: historical 56 reload behavior, reanalysis contract, and persist
       json(value) {
         output = value;
         return this;
-      },
+      }
     };
     await controller.analyzeSkillGap(
       {
@@ -455,11 +418,11 @@ test("Skill Gap: historical 56 reload behavior, reanalysis contract, and persist
           activeGithubUsername: "testhistorical",
           activeCareerStack: "Full Stack",
           activeExperienceLevel: "2-3 years",
-          activeResumeFileId: fileId,
+          activeResumeFileId: fileId
         },
-        body,
+        body
       },
-      res,
+      res
     );
     assert.equal(statusCode, 200);
     return output;
@@ -468,16 +431,8 @@ test("Skill Gap: historical 56 reload behavior, reanalysis contract, and persist
   // Scenario A: forceRefresh is false, existing historical result returned
   controller.clearSkillGapMemoryCache();
   const historicalRes = await callController({ forceRefresh: false });
-  assert.equal(
-    historicalRes.coverage,
-    56,
-    "Historical coverage 56 must be returned",
-  );
-  assert.equal(
-    historicalRes.ruleVersion,
-    undefined,
-    "Historical result must have no ruleVersion",
-  );
+  assert.equal(historicalRes.coverage, 56, "Historical coverage 56 must be returned");
+  assert.equal(historicalRes.ruleVersion, undefined, "Historical result must have no ruleVersion");
   assert.equal(historicalRes.fromCache, true);
   assert.equal(historicalRes.isHistorical, true);
 
@@ -486,12 +441,9 @@ test("Skill Gap: historical 56 reload behavior, reanalysis contract, and persist
   assert.equal(
     reanalyzedRes.ruleVersion,
     "skill-evidence-coverage-v1",
-    "Must return versioned contract",
+    "Must return versioned contract"
   );
-  assert.ok(
-    typeof reanalyzedRes.coverage === "number" ||
-      reanalyzedRes.coverage === null,
-  );
+  assert.ok(typeof reanalyzedRes.coverage === "number" || reanalyzedRes.coverage === null);
   assert.ok(Array.isArray(reanalyzedRes.skills));
   assert.ok(reanalyzedRes.evidenceConfidence);
   assert.ok(reanalyzedRes.evidenceCompleteness);
@@ -499,15 +451,13 @@ test("Skill Gap: historical 56 reload behavior, reanalysis contract, and persist
   // Verify MongoDB now has the v8-skill-evidence-coverage document
   const mongoV8 = await AnalysisCache.findOne({
     userId: testUser,
-    analysisVersion: controller.ANALYSIS_VERSION,
+    analysisVersion: controller.ANALYSIS_VERSION
   }).lean();
   assert.ok(mongoV8, "v8 document must exist in MongoDB AnalysisCache");
   assert.equal(mongoV8.analysisData.ruleVersion, "skill-evidence-coverage-v1");
 
   // Verify historical document is untouched in MongoDB
-  const historicalStillInDb = await AnalysisCache.findById(
-    historicalRecord._id,
-  ).lean();
+  const historicalStillInDb = await AnalysisCache.findById(historicalRecord._id).lean();
   assert.ok(historicalStillInDb);
   assert.equal(historicalStillInDb.analysisData.coverage, 56);
 
@@ -517,13 +467,9 @@ test("Skill Gap: historical 56 reload behavior, reanalysis contract, and persist
   assert.equal(
     reloadRes.ruleVersion,
     "skill-evidence-coverage-v1",
-    "Reload must retrieve versioned snapshot",
+    "Reload must retrieve versioned snapshot"
   );
-  assert.notEqual(
-    reloadRes.coverage,
-    56,
-    "Reload must not revert to historical score 56",
-  );
+  assert.notEqual(reloadRes.coverage, 56, "Reload must not revert to historical score 56");
   assert.equal(reloadRes.fromCache, true);
 
   // Scenario I: Saved preview serialization preserves versioned evidence and valid null coverage
@@ -538,7 +484,7 @@ test("Skill Gap: historical 56 reload behavior, reanalysis contract, and persist
     json(data) {
       savedPreviewOutput = data;
       return this;
-    },
+    }
   };
   await recsController.savePreview(
     {
@@ -553,31 +499,25 @@ test("Skill Gap: historical 56 reload behavior, reanalysis contract, and persist
         result: {
           ruleVersion: "skill-evidence-coverage-v1",
           coverage: null,
-          skills: [
-            { name: "React", status: "DEMONSTRATED", requirement: "REQUIRED" },
-          ],
+          skills: [{ name: "React", status: "DEMONSTRATED", requirement: "REQUIRED" }],
           evidenceConfidence: "HIGH",
           evidenceCompleteness: { complete: true, availableCoreSources: 2 },
-          analysisSummary: "Demonstrated skills verified.",
-        },
-      },
+          analysisSummary: "Demonstrated skills verified."
+        }
+      }
     },
-    previewRes,
+    previewRes
   );
   assert.ok(savedPreviewOutput?.preview);
   const summary = savedPreviewOutput.preview.resultSummary;
   assert.equal(
     summary.ruleVersion,
     "skill-evidence-coverage-v1",
-    "Must preserve ruleVersion in saved preview",
+    "Must preserve ruleVersion in saved preview"
   );
-  assert.equal(
-    summary.coverage,
-    null,
-    "Must preserve valid null coverage, never convert to 0",
-  );
+  assert.equal(summary.coverage, null, "Must preserve valid null coverage, never convert to 0");
   assert.equal(summary.evidenceConfidence, "HIGH");
   assert.deepEqual(summary.skills, [
-    { name: "React", status: "DEMONSTRATED", requirement: "REQUIRED" },
+    { name: "React", status: "DEMONSTRATED", requirement: "REQUIRED" }
   ]);
 });

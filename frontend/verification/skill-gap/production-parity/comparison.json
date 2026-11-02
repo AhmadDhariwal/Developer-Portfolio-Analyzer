@@ -1,0 +1,313 @@
+{
+  "status": "PASS",
+  "exactVisibleLayouts": 24,
+  "screenshotPairs": 30,
+  "pixelTolerance": {
+    "maxChannelDelta": 3,
+    "maxChangedRatio": 0.002
+  },
+  "comparisons": [
+    {
+      "file": "dark-1024-fold.png",
+      "size": [
+        1024,
+        1000
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "dark-1024.png",
+      "size": [
+        1024,
+        4614
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "dark-1440-fold.png",
+      "size": [
+        1440,
+        1000
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "dark-1440.png",
+      "size": [
+        1440,
+        3719
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "dark-1600-fold.png",
+      "size": [
+        1600,
+        1000
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "dark-1600.png",
+      "size": [
+        1600,
+        3593
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "dark-375-fold.png",
+      "size": [
+        375,
+        1000
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "dark-375.png",
+      "size": [
+        375,
+        6246
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "dark-768-fold.png",
+      "size": [
+        768,
+        1000
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "dark-768.png",
+      "size": [
+        768,
+        4571
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "light-1024-fold.png",
+      "size": [
+        1024,
+        1000
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "light-1024.png",
+      "size": [
+        1024,
+        4614
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "light-1440-fold.png",
+      "size": [
+        1440,
+        1000
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "light-1440.png",
+      "size": [
+        1440,
+        3719
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "light-1600-fold.png",
+      "size": [
+        1600,
+        1000
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "light-1600.png",
+      "size": [
+        1600,
+        3593
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "light-375-fold.png",
+      "size": [
+        375,
+        1000
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "light-375.png",
+      "size": [
+        375,
+        6246
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "light-768-fold.png",
+      "size": [
+        768,
+        1000
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "light-768.png",
+      "size": [
+        768,
+        4571
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "system-1024-fold.png",
+      "size": [
+        1024,
+        1000
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "system-1024.png",
+      "size": [
+        1024,
+        4614
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "system-1440-fold.png",
+      "size": [
+        1440,
+        1000
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "system-1440.png",
+      "size": [
+        1440,
+        3719
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "system-1600-fold.png",
+      "size": [
+        1600,
+        1000
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "system-1600.png",
+      "size": [
+        1600,
+        3593
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "system-375-fold.png",
+      "size": [
+        375,
+        1000
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "system-375.png",
+      "size": [
+        375,
+        6246
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "system-768-fold.png",
+      "size": [
+        768,
+        1000
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    },
+    {
+      "file": "system-768.png",
+      "size": [
+        768,
+        4571
+      ],
+      "maxChannelDelta": 0,
+      "changedPixels": 0,
+      "changedRatio": 0.0
+    }
+  ],
+  "interactions": "search; requirement/status/category filters; all sort options; evidence disclosure; Show More/Fewer skills and projects; phase keyboard toggle; horizons; weekly milestones; course/sprint navigation; preview analyze/save/open/delete",
+  "consoleErrors": 0
+}

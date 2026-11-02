@@ -85,4 +85,30 @@ describe('SkillGapService source validation', () => {
     service.cacheResult(complete);
     expect(service.getCachedResult('other', 'Backend', 'Student')).toBeNull();
   });
+  it('never persists personalized skill evidence in localStorage', () => {
+    const complete = {
+      ...response,
+      careerStack: 'Backend',
+      experienceLevel: 'Student',
+      skills: [{ name: 'Private skill' }],
+    } as unknown as SkillGapResult;
+    service.cacheResult(complete);
+    expect(Object.keys(localStorage).some((key) => key.startsWith('skill_gap_cache'))).toBe(false);
+    expect(service.getCachedResult('active', 'Backend', 'Student')).toBeNull();
+  });
+  it('ignores an obsolete account response when invalidating downstream caches', () => {
+    service.analyze('active', 'Backend', 'Student').subscribe();
+    const pending = http.expectOne(match);
+    user = { _id: 'different-owner' };
+    pending.flush(response);
+    expect(
+      TestBed.inject(FrontendCacheInvalidationService).clearCoursesCaches,
+    ).not.toHaveBeenCalled();
+  });
+  it('cancels an unused HTTP analysis when every subscriber leaves', () => {
+    const subscription = service.analyze('active', 'Backend', 'Student').subscribe();
+    const request = http.expectOne(match);
+    subscription.unsubscribe();
+    expect(request.cancelled).toBe(true);
+  });
 });
