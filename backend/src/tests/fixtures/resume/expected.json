@@ -1,0 +1,39 @@
+{
+  "origin": "Manually authored facts from the synthetic document source; not parser snapshots.",
+  "personalInfo": {
+    "name": "Zoë Núñez",
+    "email": "zoe@example.invalid",
+    "phone": "+1 (202) 555-0142",
+    "github": "https://github.com/fixture-resume",
+    "location": "",
+    "portfolio": ""
+  },
+  "experienceYears": 3.5,
+  "skills": ["Python", "Angular", "TypeScript", "SQL", "Docker", "Node.js", "AWS"],
+  "absentSkills": ["JavaScript", "Go", "Express", "React"],
+  "sections": [
+    "summary",
+    "experience",
+    "projects",
+    "skills",
+    "education",
+    "certifications",
+    "achievements"
+  ],
+  "education": "Bachelor of Computer Science completed in 2019.",
+  "certification": "AWS Certified Developer",
+  "unsupported": [
+    "Hidden annotation URLs are not text evidence",
+    "Arbitrary interleaved table/column semantics",
+    "OCR",
+    "Non-English section labels without an explicit alias",
+    "Claims are extracted, not independently verified credentials"
+  ],
+  "ambiguous": [
+    "Year-only ranges use January boundaries",
+    "Present means the UTC analysis month",
+    "Wrapped bullets may be split into evidence fragments"
+  ],
+  "missing": ["Location", "Portfolio URL"],
+  "inferred": ["Seniority is a tenure heuristic, not a verified job title"]
+}

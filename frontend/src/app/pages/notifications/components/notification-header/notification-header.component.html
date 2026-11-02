@@ -1,0 +1,146 @@
+<section class="page-hero card">
+  <div class="page-hero__content">
+    <div class="hero-text-block">
+      <span class="eyebrow">Activity & Alerts</span>
+      <h2>Notifications & Activities</h2>
+      <p>
+        Track account activity, resume updates, GitHub events, and your organization alerts in one
+        place. Personal notifications stay private.
+      </p>
+    </div>
+
+    <div class="hero-actions">
+      <button
+        class="ghost-action"
+        type="button"
+        (click)="clearRequested.emit()"
+        [disabled]="clearingAll || deletingSelected || (total === 0 && activeFiltersCount === 0)"
+      >
+        {{ clearingAll ? 'Clearing...' : 'Clear All' }}
+      </button>
+      <button
+        class="ghost-action"
+        type="button"
+        (click)="refreshRequested.emit()"
+        [disabled]="loading || clearingAll"
+      >
+        <svg
+          class="btn-icon"
+          [class.spin]="loading"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+        {{ loading ? 'Refreshing...' : 'Refresh' }}
+      </button>
+      <button
+        class="primary-action"
+        type="button"
+        (click)="markAllRequested.emit()"
+        [disabled]="markingAllRead || clearingAll || unreadCount === 0"
+      >
+        <svg
+          class="btn-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        {{ markingAllRead ? 'Marking...' : 'Mark All as Read' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Compact Telemetry KPI Strip ───────────────────────── -->
+  <div class="hero-stats">
+    <div class="stat-card" [class.stat-card--attention]="unreadCount > 0">
+      <div class="stat-card__top">
+        <span class="stat-card__label">Unread</span>
+        <span class="stat-card__icon stat-card__icon--amber">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+        </span>
+      </div>
+      <strong>{{ unreadCount }}</strong>
+      <small>Needs attention</small>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card__top">
+        <span class="stat-card__label">Total</span>
+        <span class="stat-card__icon stat-card__icon--indigo">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
+            <path
+              d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"
+            ></path>
+          </svg>
+        </span>
+      </div>
+      <strong>{{ total }}</strong>
+      <small>Loaded notifications</small>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card__top">
+        <span class="stat-card__label">Read Rate</span>
+        <span class="stat-card__icon stat-card__icon--emerald">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </span>
+      </div>
+      <strong>{{ readRate }}%</strong>
+      <small>Inbox progress</small>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card__top">
+        <span class="stat-card__label">Active Filters</span>
+        <span class="stat-card__icon stat-card__icon--slate">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+          </svg>
+        </span>
+      </div>
+      <strong>{{ activeFiltersCount }}</strong>
+      <small>Current narrowing</small>
+    </div>
+  </div>
+</section>

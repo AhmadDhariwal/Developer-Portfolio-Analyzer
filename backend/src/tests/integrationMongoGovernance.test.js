@@ -30,7 +30,9 @@ test(
       GITHUB_INTEGRATION_CLIENT_SECRET: 'fixture-client-secret',
       GITHUB_INTEGRATION_CALLBACK_URL: 'http://localhost:5000/api/integrations/github/callback',
       FRONTEND_URL: 'http://localhost:4200',
-      INTEGRATION_TOKEN_KEYS: JSON.stringify({ fixture: crypto.randomBytes(32).toString('base64') })
+      INTEGRATION_TOKEN_KEYS: JSON.stringify({
+        fixture: crypto.randomBytes(32).toString('base64'),
+      }),
     });
     for (const name of [
       'GROQ_API_KEY',
@@ -39,7 +41,7 @@ test(
       'ANTHROPIC_API_KEY',
       'OPENROUTER_API_KEY',
       'SENDGRID_API_KEY',
-      'SMTP_PASS'
+      'SMTP_PASS',
     ])
       delete process.env[name];
     delete process.env.INTEGRATION_GOVERNANCE_STORE;
@@ -59,8 +61,8 @@ test(
     });
     const recorded = JSON.parse(
       fs.readFileSync(
-        path.resolve(__dirname, '../../verification/integrations/real-provider-live-followup.json')
-      )
+        path.resolve(__dirname, '../../verification/integrations/real-provider-live-followup.json'),
+      ),
     )
       .providers.find((row) => row.provider === 'leetcode')
       .requests.at(-1).sample;
@@ -72,8 +74,8 @@ test(
           data: {
             access_token: 'fixture-oauth-access',
             refresh_token: 'fixture-oauth-refresh',
-            expires_in: 3600
-          }
+            expires_in: 3600,
+          },
         };
       assert.equal(url, 'https://leetcode.com/graphql');
       return { data: { data: { matchedUser: recorded } } };
@@ -92,7 +94,7 @@ test(
       checkedAt: new Date().toISOString(),
       providerHttpRequests: 0,
       checks: [],
-      performance: {}
+      performance: {},
     };
     t.after(async () => {
       if (server) await new Promise((resolve) => server.close(resolve));
@@ -109,9 +111,9 @@ test(
         process.env.INTEGRATION_GOVERNANCE_EVIDENCE_FILE ||
           path.resolve(
             __dirname,
-            '../../verification/integrations/scalability-governance-regression.json'
+            '../../verification/integrations/scalability-governance-regression.json',
           ),
-        JSON.stringify(evidence, null, 2) + '\n'
+        JSON.stringify(evidence, null, 2) + '\n',
       );
     });
     await mongoose.connect(runtime.uri, { autoIndex: false, serverSelectionTimeoutMS: 500 });
@@ -128,8 +130,8 @@ test(
         {
           env: process.env,
           windowsHide: true,
-          stdio: ['ignore', 'ignore', 'ignore', 'ipc']
-        }
+          stdio: ['ignore', 'ignore', 'ignore', 'ipc'],
+        },
       );
       let id = 0;
       const api = {
@@ -147,7 +149,7 @@ test(
               child.off('message', receive);
               if (message.error)
                 reject(
-                  Object.assign(Error(message.error.message), { status: message.error.status })
+                  Object.assign(Error(message.error.message), { status: message.error.status }),
                 );
               else resolve(message.value);
             };
@@ -164,11 +166,12 @@ test(
             child.kill();
             await exit;
           }
-        }
+        },
       };
       workers.push(api);
       await new Promise((resolve, reject) => {
-        const timer = setTimeout(() => reject(Error('Worker readiness deadline')), 6000);
+        // Cold Windows module loading is setup work, separate from product request deadlines.
+        const timer = setTimeout(() => reject(Error('Worker readiness deadline')), 45000);
         child.once('message', (message) => {
           clearTimeout(timer);
           message.ready ? resolve() : reject(Error('Worker failed'));
@@ -190,14 +193,14 @@ test(
         await assert.rejects(reserve('budget', 'owner-c'), { status: 429 });
         assert.equal((await State.collection.findOne({ _id: 'budget:budget' })).count, 3);
         evidence.checks.push('provider/user 429; denied requests do not consume other counters');
-      }
+      },
     );
     await t.test(
       'concurrent processes serialize provider/global leases and job admission',
       async () => {
         const results = await Promise.allSettled([
           a.request('reserve', { provider: 'race', owner: 'a' }),
-          b.request('reserve', { provider: 'race', owner: 'b' })
+          b.request('reserve', { provider: 'race', owner: 'b' }),
         ]);
         assert.equal(results.filter((row) => row.status === 'fulfilled').length, 1);
         assert.equal(results.find((row) => row.status === 'rejected').reason.status, 429);
@@ -225,9 +228,9 @@ test(
           await running;
         }
         evidence.checks.push(
-          'two worker processes: one provider winner; global cap; job cap; release'
+          'two worker processes: one provider winner; global cap; job cap; release',
         );
-      }
+      },
     );
     await t.test(
       'lease/window expiry is logical, survives restart, and old tokens cannot release new leases',
@@ -235,12 +238,12 @@ test(
         const old = await a.request('reserve', { provider: 'expiry', owner: 'owner' });
         await a.stop();
         await assert.rejects(b.request('reserve', { provider: 'expiry', owner: 'owner' }), {
-          status: 429
+          status: 429,
         });
         for (const key of old.keys)
           await State.collection.updateOne(
             { _id: key },
-            { $set: { expiresAt: new Date(0), 'leases.0.until': new Date(0) } }
+            { $set: { expiresAt: new Date(0), 'leases.0.until': new Date(0) } },
           );
         const current = await b.request('reserve', { provider: 'expiry', owner: 'owner' });
         await governance.finish(old);
@@ -248,13 +251,13 @@ test(
         await governance.finish(current);
         await State.collection.updateOne(
           { _id: 'budget:budget' },
-          { $set: { expiresAt: new Date(0) } }
+          { $set: { expiresAt: new Date(0) } },
         );
         await governance.finish(await reserve('budget', 'new-owner'));
         evidence.checks.push(
-          'logical expiry independent of TTL sweep; crash/restart leases; stale-token fencing'
+          'logical expiry independent of TTL sweep; crash/restart leases; stale-token fencing',
         );
-      }
+      },
     );
     await t.test(
       'success backoff, Retry-After, auth failures and repeated failures retain cooldowns',
@@ -263,22 +266,22 @@ test(
           governance.run('cooldown-owner', () => governance.request(provider, operation));
         for (const [provider, data] of [
           ['backoff', { backoff: 1 }],
-          ['zero-quota', { quota_remaining: 0 }]
+          ['zero-quota', { quota_remaining: 0 }],
         ]) {
           await request(provider, async () => ({ data }));
           await assert.rejects(reserve(provider), { status: 429 });
         }
         await request('header-quota', async () => ({
-          headers: { 'x-ratelimit-remaining': '0', 'retry-after': '120' }
+          headers: { 'x-ratelimit-remaining': '0', 'retry-after': '120' },
         }));
         await assert.rejects(reserve('header-quota'), { status: 429 });
         for (const status of [401, 403, 429]) {
           await assert.rejects(
             request(`status-${status}`, async () => {
               throw Object.assign(Error('fixture'), {
-                response: { status, headers: { 'retry-after': '120' } }
+                response: { status, headers: { 'retry-after': '120' } },
               });
-            })
+            }),
           );
           await assert.rejects(reserve(`status-${status}`), { status: 429 });
         }
@@ -287,16 +290,16 @@ test(
             governance.run(`failure-owner-${i}`, () =>
               governance.request('failures', async () => {
                 throw Error('fixture');
-              })
-            )
+              }),
+            ),
           );
         assert.ok(
-          (await State.collection.findOne({ _id: 'cooldown:failures' })).expiresAt > new Date()
+          (await State.collection.findOne({ _id: 'cooldown:failures' })).expiresAt > new Date(),
         );
         evidence.checks.push(
-          'payload/header backoff; 401/403/429; three failures; cooldown extension'
+          'payload/header backoff; 401/403/429; three failures; cooldown extension',
         );
-      }
+      },
     );
 
     const owner = new mongoose.Types.ObjectId(),
@@ -307,8 +310,8 @@ test(
         name: 'Fixture',
         email: `mongo-governance-${i}@invalid.test`,
         role: 'developer',
-        isActive: true
-      }))
+        isActive: true,
+      })),
     );
     const express = require('express'),
       jwt = require('jsonwebtoken'),
@@ -330,13 +333,13 @@ test(
                     'Bearer ' +
                     jwt.sign({ id: String(actor) }, process.env.JWT_SECRET, {
                       issuer: 'devinsight-api',
-                      audience: 'devinsight-web'
-                    })
+                      audience: 'devinsight-web',
+                    }),
                 }
-              : {})
+              : {}),
           },
-          ...(body === undefined ? {} : { body: JSON.stringify(body) })
-        }
+          ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+        },
       );
       return { status: response.status, body: await response.json() };
     }
@@ -346,11 +349,11 @@ test(
         assert.equal(
           (await call('manual/connect', { provider: 'leetcode', externalUsername: 'lee215' }, null))
             .status,
-          401
+          401,
         );
         const connected = await call('manual/connect', {
           provider: 'leetcode',
-          externalUsername: 'lee215'
+          externalUsername: 'lee215',
         });
         assert.equal(connected.status, 200, JSON.stringify(connected.body));
         const sync = await call('sync-now', { provider: 'leetcode' });
@@ -359,7 +362,7 @@ test(
         assert.ok(snapshot.providers.some((row) => row.provider === 'leetcode'));
         assert.equal(
           (await call('connections', undefined, foreign, 'GET')).body.connections.length,
-          0
+          0,
         );
         const before = await b.request('cache', { owner: String(owner) });
         const cached = await b.request('cache', { owner: String(owner) });
@@ -367,7 +370,7 @@ test(
         await call('connections/leetcode', undefined, foreign, 'DELETE');
         assert.equal(
           (await Connection.findOne({ userId: owner, provider: 'leetcode' })).status,
-          'connected'
+          'connected',
         );
         const disconnected = await call('connections/leetcode', undefined, owner, 'DELETE');
         assert.equal(disconnected.status, 200, JSON.stringify(disconnected.body));
@@ -375,9 +378,9 @@ test(
         assert.notEqual(after.result.revision, before.result.revision);
         assert.equal(after.counters.pipelineExecutions, 1);
         evidence.checks.push(
-          'real authenticated routes and captured lee215 fixture; owner isolation; cross-worker revision invalidation'
+          'real authenticated routes and captured lee215 fixture; owner isolation; cross-worker revision invalidation',
         );
-      }
+      },
     );
     await t.test(
       'OAuth state ownership, replay rejection and encrypted credentials work without Redis',
@@ -396,15 +399,15 @@ test(
         assert.equal((await call('oauth/callback', body)).status, 400);
         assert.equal(httpCalls - before, 2);
         evidence.checks.push(
-          'OAuth state owner isolation/replay rejection; admitted token exchange/identity; encrypted persistence'
+          'OAuth state owner isolation/replay rejection; admitted token exchange/identity; encrypted persistence',
         );
-      }
+      },
     );
     await t.test('duplicate sync claim and action limiter still reject safely', async () => {
       const persistence = require('../services/integrationPersistenceService');
       await Connection.updateOne(
         { userId: owner, provider: 'leetcode' },
-        { $set: { status: 'connected', leaseUntil: null } }
+        { $set: { status: 'connected', leaseUntil: null } },
       );
       const claimed = await persistence.claim(owner, 'leetcode');
       assert.ok(claimed);
@@ -417,14 +420,14 @@ test(
           this.code = code;
           return this;
         },
-        json() {}
+        json() {},
       };
       let next = 0;
       for (let i = 0; i < 11; i++)
         await governance.actionLimit('fixture-action')(
           { user: { _id: owner } },
           response,
-          () => next++
+          () => next++,
         );
       assert.equal(next, 10);
       assert.equal(response.code, 429);
@@ -434,13 +437,13 @@ test(
         {
           _id: `action:mutate:${governance.hash(owner)}`,
           count: 10,
-          expiresAt: new Date(Date.now() + 60000)
+          expiresAt: new Date(Date.now() + 60000),
         },
-        { upsert: true }
+        { upsert: true },
       );
       assert.equal(
         (await call('manual/connect', { provider: 'leetcode', externalUsername: 'lee215' })).status,
-        429
+        429,
       );
       assert.equal(httpCalls, priorCalls);
       evidence.checks.push('duplicate connection claim rejected; action 11 returns 429');
@@ -453,19 +456,19 @@ test(
           userId: owner,
           provider: 'github',
           accessToken: 'fixture-secret',
-          refreshToken: ''
+          refreshToken: '',
         });
         assert.notEqual(sealed.accessToken, 'fixture-secret');
         assert.equal(
           tokens.open({ ...sealed, userId: owner, provider: 'github' }).accessToken,
-          'fixture-secret'
+          'fixture-secret',
         );
         assert.throws(() => tokens.open({ ...sealed, userId: foreign, provider: 'github' }));
         await mongoose.disconnect();
         let outbound = 0;
         await assert.rejects(
           governance.run('fixture', () => governance.request('mongo-down', async () => outbound++)),
-          { status: 503 }
+          { status: 503 },
         );
         assert.equal(outbound, 0);
         const response = {
@@ -474,33 +477,33 @@ test(
             this.code = code;
             return this;
           },
-          json() {}
+          json() {},
         };
         await governance.actionLimit('mongo-down')({ user: { _id: owner } }, response, () =>
-          assert.fail('Must fail closed')
+          assert.fail('Must fail closed'),
         );
         assert.equal(response.code, 503);
         await mongoose.connect(runtime.uri, { autoIndex: false, serverSelectionTimeoutMS: 500 });
         await governance.finish(await reserve('mongo-recovered'));
         evidence.checks.push(
-          'authenticated encryption/AAD isolation; Mongo 503 with zero outbound calls; reconnect recovery'
+          'authenticated encryption/AAD isolation; Mongo 503 with zero outbound calls; reconnect recovery',
         );
-      }
+      },
     );
     await t.test('polling uses Mongo job admission with Redis disabled', async () => {
       const connected = await call(
         'manual/connect',
         {
           provider: 'certifications',
-          externalUsername: 'AWS Certified Solutions Architect'
+          externalUsername: 'AWS Certified Solutions Architect',
         },
-        foreign
+        foreign,
       );
       assert.equal(connected.status, 200, JSON.stringify(connected.body));
       await Connection.updateMany({}, { $set: { nextSyncAt: new Date(Date.now() + 3600000) } });
       await Connection.updateOne(
         { userId: foreign, provider: 'certifications' },
-        { $set: { nextSyncAt: new Date(0) } }
+        { $set: { nextSyncAt: new Date(0) } },
       );
       await require('../services/integrationSyncService').syncDueConnections();
       assert.equal(
@@ -508,12 +511,12 @@ test(
           userId: foreign,
           provider: 'certifications',
           reason: 'polling',
-          status: 'success'
+          status: 'success',
         }),
-        1
+        1,
       );
       evidence.checks.push(
-        'background polling admitted through Mongo; self-reported fixture persisted'
+        'background polling admitted through Mongo; self-reported fixture persisted',
       );
     });
     await t.test(
@@ -527,7 +530,7 @@ test(
           assert.equal(
             (await call('manual/connect', { provider: 'leetcode', externalUsername: 'lee215' }))
               .status,
-            503
+            503,
           );
           assert.equal(httpCalls, priorCalls);
         } finally {
@@ -540,7 +543,7 @@ test(
           delete process.env.INTEGRATION_GOVERNANCE_STORE;
         }
         evidence.checks.push('HTTP 503 before provider work; immutable process store selection');
-      }
+      },
     );
     await t.test(
       'Redis availability, exhaustion, timeout and restart do not control integration admission',
@@ -552,7 +555,7 @@ test(
         const priorIndexes = await Connection.collection.indexes();
         const priorLimits = [
           process.env.INTEGRATION_PROVIDER_REQUESTS_PER_MIN,
-          process.env.INTEGRATION_USER_PROVIDER_REQUESTS_PER_MIN
+          process.env.INTEGRATION_USER_PROVIDER_REQUESTS_PER_MIN,
         ];
         process.env.INTEGRATION_PROVIDER_REQUESTS_PER_MIN = '60';
         process.env.INTEGRATION_USER_PROVIDER_REQUESTS_PER_MIN = '20';
@@ -565,7 +568,7 @@ test(
               name: 'Redis state fixture',
               email: `${actor}@invalid.test`,
               role: 'developer',
-              isActive: true
+              isActive: true,
             });
             let fixture;
             const key = `integrations:cache-fixture:${crypto.randomUUID()}`;
@@ -582,7 +585,7 @@ test(
                 if (mode === 'quota') {
                   await assert.rejects(
                     cache.getRedisCacheClient().set(key, 'fixture', { EX: 30 }),
-                    /max requests limit exceeded/
+                    /max requests limit exceeded/,
                   );
                   cacheResult = (await cache.getCacheJsonWithMeta(key)).layer;
                   assert.equal(cacheResult, 'miss');
@@ -613,20 +616,20 @@ test(
               assert.ok(Number.isFinite(downstream.body.integrationScore));
               assert.equal(
                 (await call('connections/leetcode', undefined, actor, 'DELETE')).status,
-                200
+                200,
               );
               const after = (await State.collection.findOne({ _id: 'budget:leetcode' })).count;
               assert(
                 after >= before && after <= before + 2,
-                'Only actual HTTP attempts spend provider budgets'
+                'Only actual HTTP attempts spend provider budgets',
               );
               const accountBudget = await State.collection.findOne({
-                _id: `budget:leetcode:user:${governance.hash(actor)}`
+                _id: `budget:leetcode:user:${governance.hash(actor)}`,
               });
               assert.equal(
                 accountBudget.count,
                 2,
-                'Snapshot reuse must preserve the account request quota'
+                'Snapshot reuse must preserve the account request quota',
               );
               const commands = fixture?.commands || [];
               assert(!commands.some((command) => ['EVAL', 'INCR', 'ZADD'].includes(command)));
@@ -638,7 +641,7 @@ test(
                 downstream: downstream.status,
                 before,
                 after,
-                cacheCommands: [...commands]
+                cacheCommands: [...commands],
               });
             } finally {
               await fixture?.stop();
@@ -648,19 +651,19 @@ test(
           }
           assert.equal(
             JSON.stringify(await Insight.findOne({ userId: owner }).lean()),
-            beforeSnapshot
+            beforeSnapshot,
           );
           assert.deepEqual(await Connection.collection.indexes(), priorIndexes);
         } finally {
           [
             process.env.INTEGRATION_PROVIDER_REQUESTS_PER_MIN,
-            process.env.INTEGRATION_USER_PROVIDER_REQUESTS_PER_MIN
+            process.env.INTEGRATION_USER_PROVIDER_REQUESTS_PER_MIN,
           ] = priorLimits;
         }
         evidence.checks.push(
-          'five real cache-client states; Connect/Sync/downstream/disconnect; monotonically preserved Mongo counters; historical fixture snapshot/indexes unchanged'
+          'five real cache-client states; Connect/Sync/downstream/disconnect; monotonically preserved Mongo counters; historical fixture snapshot/indexes unchanged',
         );
-      }
+      },
     );
     await t.test('bounded Mongo admission performance sample', async () => {
       const values = [];
@@ -720,10 +723,10 @@ test(
         samplesMs: values,
         collectionReads: reads,
         collectionReplacements: replacements,
-        collectionWriteCommands: writes
+        collectionWriteCommands: writes,
       };
       assert.equal(redisCalls, 0);
       evidence.checks.push('zero Redis governance calls; 12-admission bounded comparison');
     });
-  }
+  },
 );

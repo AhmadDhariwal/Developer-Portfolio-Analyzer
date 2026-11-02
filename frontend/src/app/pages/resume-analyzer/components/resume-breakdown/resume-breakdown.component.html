@@ -1,0 +1,56 @@
+<!-- Score Breakdown Section (Unified Analytical List) -->
+<div class="breakdown-section">
+  <app-ui-section-header
+    title="Score Breakdown"
+    description="Eight deterministic weighted components calculated from extracted resume evidence. Values are authoritative from the backend engine."
+  ></app-ui-section-header>
+
+  <div class="breakdown-panel">
+    <div class="breakdown-rows-container">
+      <div *ngFor="let dim of breakdownDimensions" class="dimension-card breakdown-row">
+        <!-- Left: Dimension Info & Explanation -->
+        <div class="row-info-col">
+          <div class="row-heading-wrap">
+            <h4 class="row-label">{{ dim.label }}</h4>
+            <span class="row-weight-tag">Weight: {{ dim.weightPct }}%</span>
+          </div>
+          <p class="row-desc">{{ dim.explanation }}</p>
+        </div>
+
+        <!-- Right: Score, Contribution & Progress -->
+        <div class="row-data-col">
+          <div class="row-values-wrap">
+            <div class="row-score-unit">
+              <strong *ngIf="dim.available && dim.value !== null" class="score-current"
+                >{{ dim.value }}<small class="score-total">/100</small></strong
+              >
+              <span *ngIf="!dim.available || dim.value === null" class="score-unavailable"
+                >Unavailable</span
+              >
+            </div>
+
+            <div class="row-contrib-badge">
+              <span class="contrib-val" *ngIf="dim.contribution !== null"
+                >+{{ dim.contribution }} pts</span
+              >
+              <span class="contrib-omitted" *ngIf="dim.contribution === null">Omitted</span>
+            </div>
+
+            <app-ui-badge [variant]="dim.available ? 'success' : 'neutral'" size="sm">
+              {{ dim.available ? 'Available' : 'Omitted' }}
+            </app-ui-badge>
+          </div>
+
+          <div class="row-progress-wrap">
+            <app-ui-progress
+              [value]="dim.value ?? 0"
+              [max]="100"
+              [color]="dim.tone"
+              size="sm"
+            ></app-ui-progress>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

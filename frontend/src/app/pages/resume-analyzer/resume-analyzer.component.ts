@@ -1,125 +1,102 @@
-import {
-  Component,
-  OnInit,
-  ChangeDetectorRef,
-  inject,
-  DestroyRef
-} from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, of } from 'rxjs';
 import { catchError, exhaustMap, filter, switchMap, tap } from 'rxjs/operators';
+import { ResumeBreakdownComponent } from './components/resume-breakdown/resume-breakdown.component';
+import { ResumeEvidenceComponent } from './components/resume-evidence/resume-evidence.component';
+import { ResumeInsightsComponent } from './components/resume-insights/resume-insights.component';
+import { ResumeOverviewComponent } from './components/resume-overview/resume-overview.component';
+import { ResumeUploadComponent } from './components/resume-upload/resume-upload.component';
+import {
+  finiteResumeNumber,
+  formatResumeDate,
+  formatResumeFileSize,
+  resumeScoreValue,
+} from './resume-presentation';
 
-import { ApiService } from '../../shared/services/api.service';
 import {
-  ResumeAnalysis,
-  ResumeFile,
-  ResumeSuggestion,
-  ResumeWarning,
-  ContentQualityStatus,
-  ResumeContentQualityState,
-  ResumeScoringBreakdownItem
-} from '../../shared/models/resume.model';
-import { ResumeService } from '../../shared/services/resume.service';
-import {
-  UiButtonComponent,
-  UiCardComponent,
-  UiMetricCardComponent,
-  ScoreCardComponent,
+  ProgressColor,
   ScoreCardColor,
   UiBadgeComponent,
-  BadgeVariant,
-  UiSkeletonComponent,
+  UiButtonComponent,
+  UiCardComponent,
   UiEmptyStateComponent,
-  UiProgressComponent,
-  ProgressColor,
   UiPageHeaderComponent,
-  UiSectionHeaderComponent
+  UiSkeletonComponent,
 } from '../../shared/components';
-import { SkillBadgeComponent } from '../../shared/components/skill-badge/skill-badge.component';
+import {
+  ContentQualityStatus,
+  ResumeAnalysis,
+  ResumeContentQualityState,
+  ResumeFile,
+  ResumeScoringBreakdownItem,
+  ResumeWarning,
+} from '../../shared/models/resume.model';
+import { ApiService } from '../../shared/services/api.service';
+import { ResumeService } from '../../shared/services/resume.service';
 
-export interface DisplayBreakdownDimension {
-  key: string;
-  label: string;
-  description: string;
-  weightPct: number;
-  value: number | null;
-  contribution: number | null;
-  available: boolean;
-  explanation: string;
-  tone: ProgressColor;
-}
-
-export interface SkillGroupViewModel {
-  category: string;
-  skills: string[];
-}
-
-export interface SectionPresenceItem {
-  key: string;
-  label: string;
-  present: boolean;
-}
-
-export interface QualityIndicatorConfig {
-  label: string;
-  badgeVariant: BadgeVariant;
-  title: string;
-  description: string;
-  recoveryCta: string | null;
-}
-
-const DIMENSION_METADATA: Record<string, { label: string; description: string; weight: number; tone: ProgressColor }> = {
+import {
+  DisplayBreakdownDimension,
+  QualityIndicatorConfig,
+  SectionPresenceItem,
+  SkillGroupViewModel,
+} from './resume-view.models';
+const DIMENSION_METADATA: Record<
+  string,
+  { label: string; description: string; weight: number; tone: ProgressColor }
+> = {
   atsScore: {
     label: 'ATS Compatibility',
     description: 'Header parsability, standard section recognition, and contact formatting.',
     weight: 18,
-    tone: 'primary'
+    tone: 'primary',
   },
   contentQuality: {
     label: 'Content Quality',
     description: 'Density of action verbs, clear role responsibilities, and professional tone.',
     weight: 16,
-    tone: 'info'
+    tone: 'info',
   },
   keywordDensity: {
     label: 'Keyword Density',
     description: 'Relevance and distribution of industry-standard technology terms.',
     weight: 12,
-    tone: 'primary'
+    tone: 'primary',
   },
   formatScore: {
     label: 'Formatting & Layout',
     description: 'Consistent bullet structures, readable chronology, and clean margins.',
     weight: 12,
-    tone: 'success'
+    tone: 'success',
   },
   projectQuality: {
     label: 'Project Evidence',
-    description: 'Demonstrated outcomes, architecture details, and technical ownership in projects.',
+    description:
+      'Demonstrated outcomes, architecture details, and technical ownership in projects.',
     weight: 12,
-    tone: 'secondary'
+    tone: 'secondary',
   },
   experienceStrength: {
     label: 'Experience Impact',
     description: 'Quantified results, tenure depth, and verifiable business contributions.',
     weight: 12,
-    tone: 'warning'
+    tone: 'warning',
   },
   skillsCoverage: {
     label: 'Skills Breadth',
     description: 'Coverage across languages, frameworks, cloud tools, and databases.',
     weight: 10,
-    tone: 'success'
+    tone: 'success',
   },
   technicalDepth: {
     label: 'Technical Depth',
     description: 'Sophistication of tooling, distributed patterns, and automated pipelines.',
     weight: 8,
-    tone: 'info'
-  }
+    tone: 'info',
+  },
 };
 
 @Component({
@@ -127,22 +104,22 @@ const DIMENSION_METADATA: Record<string, { label: string; description: string; w
   standalone: true,
   imports: [
     CommonModule,
+    ResumeUploadComponent,
+    ResumeOverviewComponent,
+    ResumeBreakdownComponent,
+    ResumeEvidenceComponent,
+    ResumeInsightsComponent,
     FormsModule,
     RouterModule,
     UiButtonComponent,
     UiCardComponent,
-    UiMetricCardComponent,
-    ScoreCardComponent,
     UiBadgeComponent,
-    UiProgressComponent,
     UiSkeletonComponent,
     UiEmptyStateComponent,
     UiPageHeaderComponent,
-    UiSectionHeaderComponent,
-    SkillBadgeComponent
   ],
   templateUrl: './resume-analyzer.component.html',
-  styleUrl: './resume-analyzer.component.scss'
+  styleUrl: './resume-analyzer.component.scss',
 })
 export class ResumeAnalyzerComponent implements OnInit {
   private readonly apiService = inject(ApiService);
@@ -167,7 +144,8 @@ export class ResumeAnalyzerComponent implements OnInit {
   analysisComplete = false;
   hasNoData = false;
   isUnanalyzedSelected = false;
-  cacheState: 'idle' | 'loading' | 'cache-hit' | 'server-cache-hit' | 're-analysis' | 'error' = 'idle';
+  cacheState: 'idle' | 'loading' | 'cache-hit' | 'server-cache-hit' | 're-analysis' | 'error' =
+    'idle';
   isStale = false;
   isCached = false;
 
@@ -210,6 +188,7 @@ export class ResumeAnalyzerComponent implements OnInit {
   aiExecutiveSummary = '';
   hiringReadiness = '';
 
+  private contextEpoch = 0;
   private readonly uploadSubject$ = new Subject<File>();
 
   ngOnInit(): void {
@@ -219,57 +198,62 @@ export class ResumeAnalyzerComponent implements OnInit {
   }
 
   private setupUploadPipeline(): void {
-    this.uploadSubject$.pipe(
-      takeUntilDestroyed(this.destroyRef),
-      filter(() => !this.isUploading && !this.isAnalyzing),
-      exhaustMap((file) => {
-        this.isUploading = true;
-        this.isAnalyzing = true;
-        this.errorMessage = '';
-        this.contentQualityWarning = '';
-        this.cdr.detectChanges();
+    this.uploadSubject$
+      .pipe(
+        filter(() => !this.isUploading && !this.isAnalyzing),
+        exhaustMap((file) => {
+          this.contextEpoch++;
+          this.isLoadingAnalysis = false;
+          this.isUploading = true;
+          this.isAnalyzing = true;
+          this.errorMessage = '';
+          this.contentQualityWarning = '';
+          this.cdr.detectChanges();
 
-        const formData = new FormData();
-        formData.append('resume', file);
+          const formData = new FormData();
+          formData.append('file', file);
 
-        return this.apiService.uploadResume(formData).pipe(
-          switchMap((uploadRes) => {
-            const uploadedFileId = uploadRes?.fileId;
-            if (!uploadedFileId) throw new Error('Upload succeeded but no file ID was returned.');
-            this.selectedResumeFileId = uploadedFileId;
-            this.activeResumeFileId = uploadedFileId;
-            this.activeResumeFileName = uploadRes?.fileName || file.name;
-            this.viewedResumeFileName = uploadRes?.fileName || file.name;
-            this.viewedResumeFileId = uploadedFileId;
+          return this.apiService.uploadResume(formData).pipe(
+            switchMap((uploadRes) => {
+              const uploadedFileId = uploadRes?.fileId;
+              if (!uploadedFileId) throw new Error('Upload succeeded but no file ID was returned.');
+              this.selectedResumeFileId = uploadedFileId;
+              this.activeResumeFileId = uploadedFileId;
+              this.activeResumeFileName = uploadRes?.fileName || file.name;
+              this.viewedResumeFileName = uploadRes?.fileName || file.name;
+              this.viewedResumeFileId = uploadedFileId;
 
-            // Immediately analyze uploaded resume
-            return this.apiService.analyzeResume(uploadedFileId, false);
-          }),
-          tap((analysisRes) => {
-            this.isUploading = false;
-            this.isAnalyzing = false;
-            this.applyAnalysis(analysisRes, 'idle');
-            this.refreshResumeFiles();
-          }),
-          catchError((err) => {
-            this.isUploading = false;
-            this.isAnalyzing = false;
-            this.handleUploadError(err);
-            this.cdr.detectChanges();
-            return of(null);
-          })
-        );
-      })
-    ).subscribe();
+              // Immediately analyze uploaded resume
+              return this.apiService.analyzeResume(uploadedFileId, false);
+            }),
+            tap((analysisRes) => {
+              this.isUploading = false;
+              this.isAnalyzing = false;
+              this.applyAnalysis(analysisRes, 'idle');
+              this.refreshResumeFiles();
+            }),
+            catchError((err) => {
+              this.isUploading = false;
+              this.isAnalyzing = false;
+              this.handleUploadError(err);
+              this.cdr.detectChanges();
+              return of(null);
+            }),
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe();
   }
 
   private subscribeToResumeLibrary(): void {
-    this.resumeService.resumes$.pipe(
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe((files) => {
+    this.resumeService.resumes$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((files) => {
       this.resumeFiles = Array.isArray(files) ? files : [];
       if (!this.selectedResumeFileId && this.resumeFiles.length > 0) {
-        const active = this.resumeFiles.find((f) => f.isActive) || this.resumeFiles.find((f) => f.isDefault) || this.resumeFiles[0];
+        const active =
+          this.resumeFiles.find((f) => f.isActive) ||
+          this.resumeFiles.find((f) => f.isDefault) ||
+          this.resumeFiles[0];
         this.selectedResumeFileId = active.fileId;
       }
       this.cdr.detectChanges();
@@ -277,90 +261,101 @@ export class ResumeAnalyzerComponent implements OnInit {
   }
 
   private loadInitialContext(): void {
+    const epoch = this.contextEpoch;
     this.isLoadingAnalysis = true;
     this.errorMessage = '';
     this.cdr.detectChanges();
 
-    this.apiService.getActiveResumeContext().pipe(
-      takeUntilDestroyed(this.destroyRef),
-      switchMap((activeCtx) => {
-        const activeFile = activeCtx?.activeResume || activeCtx?.defaultResume;
-        if (activeFile?.fileId) {
-          this.activeResumeFileId = activeFile.fileId;
-          this.defaultResumeFileId = activeCtx?.defaultResume?.fileId || activeFile.fileId;
-          this.activeResumeFileName = activeFile.fileName || '';
-          this.selectedResumeFileId = activeFile.fileId;
-          this.viewedResumeFileName = activeFile.fileName || '';
-          this.viewedResumeFileId = activeFile.fileId;
+    this.apiService
+      .getActiveResumeContext()
+      .pipe(
+        filter(() => epoch === this.contextEpoch),
+        switchMap((activeCtx) => {
+          const activeFile = activeCtx?.activeResume || activeCtx?.defaultResume;
+          if (activeFile?.fileId) {
+            this.activeResumeFileId = activeFile.fileId;
+            this.defaultResumeFileId = activeCtx?.defaultResume?.fileId || activeFile.fileId;
+            this.activeResumeFileName = activeFile.fileName || '';
+            this.selectedResumeFileId = activeFile.fileId;
+            this.viewedResumeFileName = activeFile.fileName || '';
+            this.viewedResumeFileId = activeFile.fileId;
 
-          // Attempt to load analysis for the active resume
-          return this.apiService.getResumeAnalysis(activeFile.fileId).pipe(
-            catchError((err) => {
-              if (err?.status === 404) {
-                // Active resume is not analyzed yet
-                this.isUnanalyzedSelected = true;
-                this.analysisComplete = false;
-                this.hasNoData = false;
-                return of(null);
-              }
-              throw err;
-            })
-          );
-        } else {
-          // No active resume found in context
-          return this.apiService.getResumeFiles().pipe(
-            switchMap((filesRes) => {
-              const files: ResumeFile[] = Array.isArray(filesRes?.files) ? filesRes.files : [];
-              this.resumeFiles = files;
-              if (files.length > 0) {
-                const first = files[0];
-                this.selectedResumeFileId = first.fileId;
-                this.viewedResumeFileName = first.fileName;
-                this.viewedResumeFileId = first.fileId;
-                if (first.isAnalyzed) {
-                  return this.apiService.getResumeAnalysis(first.fileId);
-                } else {
+            // Attempt to load analysis for the active resume
+            return this.apiService.getResumeAnalysis(activeFile.fileId).pipe(
+              catchError((err) => {
+                if (err?.status === 404) {
+                  // Active resume is not analyzed yet
                   this.isUnanalyzedSelected = true;
+                  this.analysisComplete = false;
+                  this.hasNoData = false;
                   return of(null);
                 }
-              }
-              this.hasNoData = true;
-              return of(null);
-            })
-          );
-        }
-      }),
-      tap((analysis) => {
-        this.isLoadingAnalysis = false;
-        if (analysis) {
-          this.applyAnalysis(analysis, analysis?.cacheMetadata?.loadedFromCache ? 'server-cache-hit' : 'idle');
-        }
-        this.refreshResumeFiles();
-        this.cdr.detectChanges();
-      }),
-      catchError((err) => {
-        this.isLoadingAnalysis = false;
-        if (err?.status === 404) {
-          this.hasNoData = true;
-        } else {
-          this.errorMessage = err?.error?.message || 'Could not load resume data.';
-        }
-        this.cdr.detectChanges();
-        return of(null);
-      })
-    ).subscribe();
+                throw err;
+              }),
+            );
+          } else {
+            // No active resume found in context
+            return this.apiService.getResumeFiles().pipe(
+              switchMap((filesRes) => {
+                const files: ResumeFile[] = Array.isArray(filesRes?.files) ? filesRes.files : [];
+                this.resumeFiles = files;
+                if (files.length > 0) {
+                  const first = files[0];
+                  this.selectedResumeFileId = first.fileId;
+                  this.viewedResumeFileName = first.fileName;
+                  this.viewedResumeFileId = first.fileId;
+                  if (first.isAnalyzed) {
+                    return this.apiService.getResumeAnalysis(first.fileId);
+                  } else {
+                    this.isUnanalyzedSelected = true;
+                    return of(null);
+                  }
+                }
+                this.hasNoData = true;
+                return of(null);
+              }),
+            );
+          }
+        }),
+        filter(() => epoch === this.contextEpoch),
+        tap((analysis) => {
+          this.isLoadingAnalysis = false;
+          if (analysis) {
+            this.applyAnalysis(
+              analysis,
+              analysis?.cacheMetadata?.loadedFromCache ? 'server-cache-hit' : 'idle',
+            );
+          }
+          this.refreshResumeFiles();
+          this.cdr.detectChanges();
+        }),
+        catchError((err) => {
+          if (epoch !== this.contextEpoch) return of(null);
+          this.isLoadingAnalysis = false;
+          if (err?.status === 404) {
+            this.hasNoData = true;
+          } else {
+            this.errorMessage = err?.error?.message || 'Could not load resume data.';
+          }
+          this.cdr.detectChanges();
+          return of(null);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe();
   }
 
   refreshResumeFiles(): void {
-    this.apiService.getResumeFiles().pipe(
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe({
-      next: (res) => {
-        this.resumeFiles = Array.isArray(res?.files) ? res.files : [];
-        this.cdr.detectChanges();
-      },
-      error: () => {}
-    });
+    this.apiService
+      .getResumeFiles()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.resumeFiles = Array.isArray(res?.files) ? res.files : [];
+          this.cdr.detectChanges();
+        },
+        error: () => {},
+      });
   }
 
   onFileSelected(event: Event): void {
@@ -393,30 +388,74 @@ export class ResumeAnalyzerComponent implements OnInit {
     const file = this.resumeFiles.find((f) => f.fileId === this.selectedResumeFileId);
     if (!file) return;
 
+    // Viewing the version already on screen needs no network call or new analysis.
+    if (!setAsDefault && this.canReuseLoadedAnalysis(file)) {
+      this.errorMessage = '';
+      this.cdr.detectChanges();
+      return;
+    }
+
     this.isLoadingAnalysis = true;
+    this.analysisComplete = false;
+    this.analysis = null;
     this.errorMessage = '';
     this.viewedResumeFileName = file.fileName;
     this.viewedResumeFileId = file.fileId;
     this.cdr.detectChanges();
 
     if (setAsDefault) {
-      this.apiService.setActiveResume(file.fileId, true).pipe(
-        takeUntilDestroyed(this.destroyRef),
-        switchMap(() => this.apiService.getResumeAnalysis(file.fileId)),
+      this.apiService
+        .setActiveResume(file.fileId, true)
+        .pipe(
+          switchMap(() => this.apiService.getResumeAnalysis(file.fileId)),
+          catchError((err) => {
+            if (err?.status === 404) {
+              this.isUnanalyzedSelected = true;
+              this.analysisComplete = false;
+              return of(null);
+            }
+            throw err;
+          }),
+          takeUntilDestroyed(this.destroyRef),
+        )
+        .subscribe({
+          next: (analysis) => {
+            this.isLoadingAnalysis = false;
+            this.defaultResumeFileId = file.fileId;
+            this.activeResumeFileId = file.fileId;
+            this.refreshResumeFiles();
+            if (analysis) {
+              this.applyAnalysis(analysis, 'idle');
+            }
+            this.cdr.detectChanges();
+          },
+          error: (err) => {
+            this.isLoadingAnalysis = false;
+            this.errorMessage = err?.error?.message || 'Could not set active resume.';
+            this.cdr.detectChanges();
+          },
+        });
+      return;
+    }
+
+    // View analysis of selected file
+    this.apiService
+      .getResumeAnalysis(file.fileId)
+      .pipe(
         catchError((err) => {
           if (err?.status === 404) {
             this.isUnanalyzedSelected = true;
             this.analysisComplete = false;
+            this.analysis = null;
             return of(null);
           }
           throw err;
-        })
-      ).subscribe({
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
         next: (analysis) => {
           this.isLoadingAnalysis = false;
-          this.defaultResumeFileId = file.fileId;
-          this.activeResumeFileId = file.fileId;
-          this.refreshResumeFiles();
           if (analysis) {
             this.applyAnalysis(analysis, 'idle');
           }
@@ -424,39 +463,22 @@ export class ResumeAnalyzerComponent implements OnInit {
         },
         error: (err) => {
           this.isLoadingAnalysis = false;
-          this.errorMessage = err?.error?.message || 'Could not set active resume.';
+          this.errorMessage = err?.error?.message || 'Failed to load analysis for selected resume.';
           this.cdr.detectChanges();
-        }
+        },
       });
-      return;
-    }
+  }
 
-    // View analysis of selected file
-    this.apiService.getResumeAnalysis(file.fileId).pipe(
-      takeUntilDestroyed(this.destroyRef),
-      catchError((err) => {
-        if (err?.status === 404) {
-          this.isUnanalyzedSelected = true;
-          this.analysisComplete = false;
-          this.analysis = null;
-          return of(null);
-        }
-        throw err;
-      })
-    ).subscribe({
-      next: (analysis) => {
-        this.isLoadingAnalysis = false;
-        if (analysis) {
-          this.applyAnalysis(analysis, 'idle');
-        }
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.isLoadingAnalysis = false;
-        this.errorMessage = err?.error?.message || 'Failed to load analysis for selected resume.';
-        this.cdr.detectChanges();
-      }
-    });
+  private canReuseLoadedAnalysis(file: ResumeFile): boolean {
+    const loaded = this.analysis;
+    if (!this.analysisComplete || !loaded || loaded.fileId !== file.fileId) return false;
+    if (!loaded.resumeHash || !loaded.analysisVersion) return false;
+    if (loaded.resumeHash !== file.resumeHash || loaded.analysisVersion !== file.analysisVersion)
+      return false;
+    if (!file.lastAnalyzed) return true;
+    const libraryTime = new Date(file.lastAnalyzed).getTime();
+    const loadedTime = new Date(loaded.analyzedAt || loaded.scoring?.calculatedAt || '').getTime();
+    return Number.isFinite(libraryTime) && Number.isFinite(loadedTime) && loadedTime >= libraryTime;
   }
 
   analyzeSelectedResume(forceRefresh = false): void {
@@ -469,23 +491,31 @@ export class ResumeAnalyzerComponent implements OnInit {
     this.cacheState = forceRefresh ? 're-analysis' : 'loading';
     this.cdr.detectChanges();
 
-    this.apiService.analyzeResume(fileId, forceRefresh).pipe(
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe({
-      next: (res) => {
-        this.isAnalyzing = false;
-        const payload = res?.responsePayload || res;
-        this.applyAnalysis(payload, forceRefresh ? 'idle' : (payload?.cacheMetadata?.loadedFromCache ? 'server-cache-hit' : 'idle'));
-        this.refreshResumeFiles();
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.isAnalyzing = false;
-        this.cacheState = 'error';
-        this.handleUploadError(err);
-        this.cdr.detectChanges();
-      }
-    });
+    this.apiService
+      .analyzeResume(fileId, forceRefresh)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.isAnalyzing = false;
+          const payload = res?.responsePayload || res;
+          this.applyAnalysis(
+            payload,
+            forceRefresh
+              ? 'idle'
+              : payload?.cacheMetadata?.loadedFromCache
+                ? 'server-cache-hit'
+                : 'idle',
+          );
+          this.refreshResumeFiles();
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.isAnalyzing = false;
+          this.cacheState = 'error';
+          this.handleUploadError(err);
+          this.cdr.detectChanges();
+        },
+      });
   }
 
   downloadGuide(): void {
@@ -494,29 +524,34 @@ export class ResumeAnalyzerComponent implements OnInit {
     this.errorMessage = '';
     this.cdr.detectChanges();
 
-    this.apiService.downloadResumeGuide().pipe(
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe({
-      next: (blob) => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        const name = (this.viewedResumeFileName || 'resume-guide').replace(/\.pdf$/i, '');
-        a.download = `resume-guide-${name}.html`;
-        a.click();
-        window.URL.revokeObjectURL(url);
-        this.isDownloading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.isDownloading = false;
-        this.errorMessage = err?.error?.message || 'Failed to generate resume guide. Please try again.';
-        this.cdr.detectChanges();
-      }
-    });
+    this.apiService
+      .downloadResumeGuide()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          const name = (this.viewedResumeFileName || 'resume-guide').replace(/\.pdf$/i, '');
+          a.download = `resume-guide-${name}.html`;
+          a.click();
+          window.URL.revokeObjectURL(url);
+          this.isDownloading = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.isDownloading = false;
+          this.errorMessage =
+            err?.error?.message || 'Failed to generate resume guide. Please try again.';
+          this.cdr.detectChanges();
+        },
+      });
   }
 
-  private applyAnalysis(analysis: ResumeAnalysis, cacheHitState: 'idle' | 'cache-hit' | 'server-cache-hit' | 're-analysis'): void {
+  private applyAnalysis(
+    analysis: ResumeAnalysis,
+    cacheHitState: 'idle' | 'cache-hit' | 'server-cache-hit' | 're-analysis',
+  ): void {
     this.analysis = analysis;
     this.analysisComplete = true;
     this.hasNoData = false;
@@ -526,22 +561,25 @@ export class ResumeAnalyzerComponent implements OnInit {
     this.viewedResumeFileId = analysis.fileId || this.viewedResumeFileId;
 
     // Cache / Freshness metadata
-    this.isCached = Boolean(analysis.cacheMetadata?.loadedFromCache || cacheHitState === 'server-cache-hit');
+    this.isCached = Boolean(
+      analysis.cacheMetadata?.loadedFromCache || cacheHitState === 'server-cache-hit',
+    );
     this.isStale = Boolean(analysis.cacheMetadata?.loadedFromCache);
 
     // Authoritative Overall Score (scoring.score)
     this.scoreRuleVersion = analysis.scoring?.ruleVersion || 'resume-overall-score-v1';
     this.scoreCalculatedAt = analysis.scoring?.calculatedAt || analysis.analyzedAt || null;
 
-    if (analysis.scoring && analysis.scoring.score !== null && analysis.scoring.score !== undefined) {
-      this.overallScore = Math.max(0, Math.min(100, Math.round(Number(analysis.scoring.score))));
-      this.overallScoreAvailable = true;
-      this.scoreCardColor = this.overallScore >= 75 ? 'green' : (this.overallScore >= 50 ? 'purple' : 'amber');
-    } else {
-      this.overallScore = null;
-      this.overallScoreAvailable = false;
-      this.scoreCardColor = 'amber';
-    }
+    this.overallScore = resumeScoreValue(analysis.scoring?.score);
+    this.overallScoreAvailable = this.overallScore !== null;
+    this.scoreCardColor =
+      this.overallScore === null
+        ? 'amber'
+        : this.overallScore >= 75
+          ? 'green'
+          : this.overallScore >= 50
+            ? 'purple'
+            : 'amber';
 
     // Content Quality State
     this.contentQualityState = analysis.contentQualityState || null;
@@ -559,19 +597,26 @@ export class ResumeAnalyzerComponent implements OnInit {
 
     // Quantified Achievements Evidence
     const evidenceFacts = analysis.scoring?.evidence?.facts || {};
-    this.quantifiedAchievementsCount = Number(evidenceFacts['quantifiedAchievementCount'] || analysis.keyAchievements?.length || 0);
-    this.quantifiedAchievementExamples = Array.isArray(analysis.keyAchievements) ? analysis.keyAchievements : [];
+    this.quantifiedAchievementsCount = Number(
+      evidenceFacts['quantifiedAchievementCount'] || analysis.keyAchievements?.length || 0,
+    );
+    this.quantifiedAchievementExamples = Array.isArray(analysis.keyAchievements)
+      ? analysis.keyAchievements
+      : [];
 
     // Experience Years & Level
-    this.experienceYears = analysis.experienceYears ?? (analysis.normalized?.experienceYears ?? null);
-    this.experienceLevel = analysis.experienceLevel || (analysis.normalized?.experienceLevel || null);
+    this.experienceYears = analysis.experienceYears ?? analysis.normalized?.experienceYears ?? null;
+    this.experienceLevel = analysis.experienceLevel || analysis.normalized?.experienceLevel || null;
 
     // Document token metrics
-    this.detectedWordCount = this.contentQualityState?.wordCount ?? (evidenceFacts['wordCount'] as number ?? null);
+    this.detectedWordCount =
+      this.contentQualityState?.wordCount ?? (evidenceFacts['wordCount'] as number) ?? null;
     this.uniqueWordCount = this.contentQualityState?.uniqueWordCount ?? null;
 
     // Consistency Warnings
-    this.warningsList = Array.isArray(analysis.consistencyWarnings) ? analysis.consistencyWarnings : [];
+    this.warningsList = Array.isArray(analysis.consistencyWarnings)
+      ? analysis.consistencyWarnings
+      : [];
 
     // AI Advisory Guidance (Separated from deterministic facts)
     this.setupAiGuidance(analysis);
@@ -586,24 +631,29 @@ export class ResumeAnalyzerComponent implements OnInit {
           label: 'Valid Structure',
           badgeVariant: 'success',
           title: 'Resume parsed successfully',
-          description: 'Document structure and machine readability met all standard sufficiency checks.',
-          recoveryCta: null
+          description:
+            'Document structure and machine readability met all standard sufficiency checks.',
+          recoveryCta: null,
         };
       case 'PARTIALLY_READABLE':
         return {
           label: 'Partially Readable',
           badgeVariant: 'warning',
           title: 'Partial text extraction',
-          description: 'Not enough readable text or sections found to score reliably. Score is marked Unavailable.',
-          recoveryCta: 'Upload a text-based PDF containing your full professional experience and project achievements.'
+          description:
+            'Not enough readable text or sections found to score reliably. Score is marked Unavailable.',
+          recoveryCta:
+            'Upload a text-based PDF containing your full professional experience and project achievements.',
         };
       case 'UNREADABLE':
         return {
           label: 'Unreadable Content',
           badgeVariant: 'danger',
           title: 'Resume appears image-only or unreadable',
-          description: 'Machine text could not be extracted. Scanned PDFs or non-standard font encodings cannot be parsed.',
-          recoveryCta: 'Export your resume directly from your word processor as a standard text-based PDF.'
+          description:
+            'Machine text could not be extracted. Scanned PDFs or non-standard font encodings cannot be parsed.',
+          recoveryCta:
+            'Export your resume directly from your word processor as a standard text-based PDF.',
         };
       case 'EMPTY':
         return {
@@ -611,7 +661,7 @@ export class ResumeAnalyzerComponent implements OnInit {
           badgeVariant: 'danger',
           title: 'No text found in document',
           description: 'The uploaded file contains no extractable text layer.',
-          recoveryCta: 'Ensure the PDF has selectable text and try uploading again.'
+          recoveryCta: 'Ensure the PDF has selectable text and try uploading again.',
         };
       case 'INVALID':
       default:
@@ -620,14 +670,17 @@ export class ResumeAnalyzerComponent implements OnInit {
           badgeVariant: 'danger',
           title: 'Document could not be parsed',
           description: 'The file signature or PDF structure was invalid.',
-          recoveryCta: 'Ensure the file is a valid PDF under 10 MB and retry.'
+          recoveryCta: 'Ensure the file is a valid PDF under 10 MB and retry.',
         };
     }
   }
 
   private buildBreakdownDimensions(analysis: ResumeAnalysis): DisplayBreakdownDimension[] {
     const breakdown = analysis.scoring?.breakdown || {};
-    const fallbackExplanations = (analysis.qualityScores?.['explanations'] || {}) as Record<string, string>;
+    const fallbackExplanations = (analysis.qualityScores?.['explanations'] || {}) as Record<
+      string,
+      string
+    >;
 
     return Object.keys(DIMENSION_METADATA).map((key) => {
       const meta = DIMENSION_METADATA[key];
@@ -639,16 +692,22 @@ export class ResumeAnalyzerComponent implements OnInit {
       let explanation = meta.description;
 
       if (item) {
-        available = Boolean(item.available);
-        value = available ? Math.max(0, Math.min(100, Math.round(Number(item.score)))) : null;
-        contribution = available ? Math.round(Number(item.contribution) * 10) / 10 : null;
+        // An explicit null value is unavailable, even if an older score field exists.
+        const rawValue = item.value !== undefined ? item.value : item.score;
+        value = item.available === true ? resumeScoreValue(rawValue) : null;
+        available = value !== null;
+        const weighted = finiteResumeNumber(item.contribution);
+        contribution =
+          available && weighted !== null
+            ? finiteResumeNumber(Math.round(weighted * 10) / 10)
+            : null;
         explanation = item.explanation || fallbackExplanations[key] || meta.description;
       } else {
         // Legacy fallback
         const legacyVal = (analysis as any)[key] ?? analysis.qualityScores?.[key];
-        if (Number.isFinite(legacyVal)) {
-          value = Math.max(0, Math.min(100, Math.round(Number(legacyVal))));
-          contribution = Math.round((value * (meta.weight / 100)) * 10) / 10;
+        value = resumeScoreValue(legacyVal);
+        if (value !== null) {
+          contribution = Math.round(value * (meta.weight / 100) * 10) / 10;
           available = true;
         }
       }
@@ -662,7 +721,7 @@ export class ResumeAnalyzerComponent implements OnInit {
         contribution,
         available,
         explanation,
-        tone: meta.tone
+        tone: meta.tone,
       };
     });
   }
@@ -673,7 +732,7 @@ export class ResumeAnalyzerComponent implements OnInit {
       { key: 'projects', label: 'Projects' },
       { key: 'skills', label: 'Technical Skills' },
       { key: 'education', label: 'Education' },
-      { key: 'certifications', label: 'Certifications' }
+      { key: 'certifications', label: 'Certifications' },
     ];
 
     if (!sections) return checks.map((c) => ({ ...c, present: false }));
@@ -681,11 +740,14 @@ export class ResumeAnalyzerComponent implements OnInit {
     return checks.map((c) => ({
       key: c.key,
       label: c.label,
-      present: Boolean(sections[c.key])
+      present: Boolean(sections[c.key]),
     }));
   }
 
-  private buildSkillGroups(skillsMap?: Record<string, string[]>, techMap?: Record<string, string[]>): SkillGroupViewModel[] {
+  private buildSkillGroups(
+    skillsMap?: Record<string, string[]>,
+    techMap?: Record<string, string[]>,
+  ): SkillGroupViewModel[] {
     const merged = new Map<string, Set<string>>();
 
     const addEntries = (dict?: Record<string, string[]>) => {
@@ -707,7 +769,7 @@ export class ResumeAnalyzerComponent implements OnInit {
     return Array.from(merged.entries())
       .map(([category, set]) => ({
         category,
-        skills: Array.from(set).sort()
+        skills: Array.from(set).sort(),
       }))
       .filter((group) => group.skills.length > 0)
       .sort((a, b) => b.skills.length - a.skills.length);
@@ -723,17 +785,26 @@ export class ResumeAnalyzerComponent implements OnInit {
     const ai = analysis.aiInsights;
     this.aiGuidanceAvailable = Boolean(ai && ai.aiUsed !== false);
 
-    this.aiStrengths = Array.isArray(ai?.strengths) && ai.strengths.length > 0
-      ? ai.strengths
-      : (Array.isArray(analysis.recruiterPerspective?.strengths) ? analysis.recruiterPerspective.strengths : []);
+    this.aiStrengths =
+      Array.isArray(ai?.strengths) && ai.strengths.length > 0
+        ? ai.strengths
+        : Array.isArray(analysis.recruiterPerspective?.strengths)
+          ? analysis.recruiterPerspective.strengths
+          : [];
 
-    this.aiWeaknesses = Array.isArray(ai?.weaknesses) && ai.weaknesses.length > 0
-      ? ai.weaknesses
-      : (Array.isArray(analysis.recruiterPerspective?.concerns) ? analysis.recruiterPerspective.concerns : []);
+    this.aiWeaknesses =
+      Array.isArray(ai?.weaknesses) && ai.weaknesses.length > 0
+        ? ai.weaknesses
+        : Array.isArray(analysis.recruiterPerspective?.concerns)
+          ? analysis.recruiterPerspective.concerns
+          : [];
 
-    this.aiWritingSuggestions = Array.isArray(ai?.writingSuggestions) && ai.writingSuggestions.length > 0
-      ? ai.writingSuggestions
-      : (Array.isArray(analysis.suggestions) ? analysis.suggestions.map((s) => `${s.title}: ${s.description}`) : []);
+    this.aiWritingSuggestions =
+      Array.isArray(ai?.writingSuggestions) && ai.writingSuggestions.length > 0
+        ? ai.writingSuggestions
+        : Array.isArray(analysis.suggestions)
+          ? analysis.suggestions.map((s) => `${s.title}: ${s.description}`)
+          : [];
 
     if (Array.isArray(ai?.priorities) && ai.priorities.length > 0) {
       this.aiPriorities = ai.priorities;
@@ -741,13 +812,14 @@ export class ResumeAnalyzerComponent implements OnInit {
       this.aiPriorities = analysis.suggestions.map((s) => ({
         title: s.title,
         description: s.description,
-        impact: s.color === 'red' ? 'high' : (s.color === 'orange' ? 'medium' : 'low')
+        impact: s.color === 'red' ? 'high' : s.color === 'orange' ? 'medium' : 'low',
       }));
     } else {
       this.aiPriorities = [];
     }
 
-    this.aiExecutiveSummary = ai?.executiveSummary || analysis.recruiterPerspective?.resumeSummary || '';
+    this.aiExecutiveSummary =
+      ai?.executiveSummary || analysis.recruiterPerspective?.resumeSummary || '';
     this.hiringReadiness = analysis.recruiterPerspective?.hiringReadiness || '';
   }
 
@@ -758,18 +830,23 @@ export class ResumeAnalyzerComponent implements OnInit {
     if (contentState) {
       this.contentQualityState = contentState;
       this.qualityIndicator = this.buildQualityIndicator(contentState.state);
-      this.contentQualityWarning = err?.error?.message || 'The resume content could not be processed.';
+      this.contentQualityWarning =
+        err?.error?.message || 'The resume content could not be processed.';
       return;
     }
 
     if (status === 413) {
       this.errorMessage = 'The resume file is too large. Upload a PDF of 10 MB or smaller.';
     } else if (status === 400) {
-      this.errorMessage = err?.error?.message || 'Invalid resume file. Only text-based PDF documents are accepted.';
+      this.errorMessage =
+        err?.error?.message || 'Invalid resume file. Only text-based PDF documents are accepted.';
     } else if (status === 422) {
-      this.errorMessage = err?.error?.message || 'Could not parse text from this resume. Please upload a standard text PDF.';
+      this.errorMessage =
+        err?.error?.message ||
+        'Could not parse text from this resume. Please upload a standard text PDF.';
     } else {
-      this.errorMessage = err?.error?.message || 'An unexpected error occurred while processing the resume.';
+      this.errorMessage =
+        err?.error?.message || 'An unexpected error occurred while processing the resume.';
     }
   }
 
@@ -778,23 +855,6 @@ export class ResumeAnalyzerComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  formatDate(dateVal?: string | Date | null): string {
-    if (!dateVal) return 'Unknown date';
-    try {
-      const d = new Date(dateVal);
-      return isNaN(d.getTime()) ? 'Unknown date' : d.toLocaleDateString(undefined, {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
-      });
-    } catch {
-      return 'Unknown date';
-    }
-  }
-
-  formatFileSize(bytes?: number): string {
-    if (!bytes || bytes <= 0) return '0 KB';
-    if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-    return `${Math.round(bytes / 1024)} KB`;
-  }
+  formatDate = formatResumeDate;
+  formatFileSize = formatResumeFileSize;
 }

@@ -1,0 +1,56 @@
+<!-- PDF Uploader Card -->
+<app-ui-card variant="elevated" class="uploader-card">
+  <div class="card-header-row">
+    <div>
+      <h3>Upload New Resume</h3>
+      <p>Text-based PDF only · Maximum file size 10 MB</p>
+    </div>
+    <app-ui-badge variant="primary" size="sm">PDF Only</app-ui-badge>
+  </div>
+
+  <div class="uploader-dropzone">
+    <input
+      type="file"
+      id="resumeUploadInput"
+      accept="application/pdf,.pdf"
+      (change)="fileSelected.emit($event)"
+      [disabled]="isUploading || isAnalyzing"
+      class="file-input-hidden"
+    />
+
+    <label
+      for="resumeUploadInput"
+      class="dropzone-label"
+      [class.disabled]="isUploading || isAnalyzing"
+    >
+      <div class="upload-icon-container">
+        <svg
+          *ngIf="!isUploading"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          class="upload-icon"
+          aria-hidden="true"
+        >
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="17 8 12 3 7 8" />
+          <line x1="12" y1="3" x2="12" y2="15" />
+        </svg>
+        <div *ngIf="isUploading" class="upload-spinner" aria-hidden="true"></div>
+      </div>
+
+      <div class="upload-prompt-text">
+        <strong>{{
+          isUploading ? 'Uploading & parsing resume…' : 'Choose a PDF file to upload'
+        }}</strong>
+        <span>Drag and drop or click to browse</span>
+      </div>
+
+      <div class="upload-badges">
+        <span class="file-spec-badge">.pdf</span>
+        <span class="file-spec-badge">&le; 10 MB</span>
+      </div>
+    </label>
+  </div>
+</app-ui-card>

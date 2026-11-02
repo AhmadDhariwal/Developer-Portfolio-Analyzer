@@ -41,10 +41,10 @@ async function initialize() {
   await initialization;
 }
 
-async function transaction(work) {
+async function transaction(work, timeoutMs = STORE_TIMEOUT_MS) {
   try {
     await initialize();
-    const until = Date.now() + STORE_TIMEOUT_MS;
+    const until = Date.now() + timeoutMs;
     // Concurrent first admissions may race to insert the same _id. Restart the
     // whole transaction; no partial counters or leases survive an aborted attempt.
     for (let attempt = 0; attempt < 3; attempt++) {
@@ -198,7 +198,7 @@ async function consumeSnapshot(provider, owner, cost, maximum) {
 async function requestWindow(prefix, maximum, windowMs) {
   if (
     typeof prefix !== 'string' ||
-    !/^public-portfolio:v3:rate:[a-z-]+:[a-f0-9]{64}$/.test(prefix) ||
+    !/^(public-portfolio:v3:rate|notifications:v1:rate):[a-z-]+:[a-f0-9]{64}$/.test(prefix) ||
     !Number.isSafeInteger(maximum) ||
     maximum < 1 ||
     !Number.isSafeInteger(windowMs) ||
@@ -221,7 +221,84 @@ async function requestWindow(prefix, maximum, windowMs) {
   });
 }
 
+async function notificationStream(owner, reservation = null) {
+  const keys = ['notifications:streams:global', `notifications:streams:user:${hash(owner)}`];
+  const token = reservation?.token || randomUUID();
+  await transaction(async (session, now) => {
+    const states = await readMany(keys, session, now);
+    for (let index = 0; index < states.length; index++) {
+      const state = states[index];
+      state.leases = (state.leases || []).filter((lease) => lease.until.getTime() > now);
+      const existing = state.leases.find((lease) => lease.token === token);
+      if (reservation && !existing) throw unavailable();
+      if (!existing && state.leases.length >= (index === 0 ? 1000 : 6)) throw limited();
+      if (existing) existing.until = new Date(now + 60000);
+      else state.leases.push({ token, until: new Date(now + 60000) });
+      state.expiresAt = new Date(Math.max(...state.leases.map((lease) => lease.until.getTime())));
+    }
+    await writeMany(states, session);
+  });
+  return { keys, token };
+}
+
+async function resumeWindow(owner, ip, action, limits) {
+  if (
+    !['upload', 'analyze', 'guide'].includes(action) ||
+    !Array.isArray(limits) ||
+    limits.length !== 2
+  )
+    throw unavailable();
+  return transaction(async (session, now) => {
+    const windowMs = 3600000,
+      bucket = Math.floor(now / windowMs),
+      until = (bucket + 1) * windowMs;
+    const keys = [
+      `resume:v1:rate:${action}:user:${hash(owner)}:${bucket}`,
+      `resume:v1:rate:${action}:ip:${hash(ip)}:${bucket}`
+    ];
+    const states = await readMany(keys, session, now);
+    for (let index = 0; index < states.length; index++) {
+      const state = states[index];
+      if (!Number.isSafeInteger(state.count) || state.count < 0) throw unavailable();
+      if (state.count >= limits[index])
+        throw Object.assign(Error('Resume request limit reached.'), {
+          status: 429,
+          retryAfter: Math.max(1, Math.ceil((until - now) / 1000))
+        });
+      state.count++;
+      state.expiresAt = new Date(until);
+    }
+    await writeMany(states, session);
+    return { until };
+  }, 5000);
+}
+
+// Resume reservations share the existing transactional authority, with isolated keys.
+async function resumeLease(owner, file, reservation = null) {
+  const keys = [
+    'resume:v1:jobs:global',
+    `resume:v1:jobs:user:${hash(owner)}`,
+    `resume:v1:jobs:file:${hash(`${owner}:${file}`)}`
+  ];
+  const token = reservation?.token || randomUUID();
+  await transaction(async (session, now) => {
+    const states = await readMany(keys, session, now);
+    states.forEach((state, index) => {
+      state.leases = (state.leases || []).filter((lease) => lease.until.getTime() > now);
+      const existing = state.leases.find((lease) => lease.token === token);
+      if (reservation && !existing) throw unavailable();
+      if (!existing && state.leases.length >= [8, 2, 1][index]) throw limited();
+      if (!existing) state.leases.push({ token, until: new Date(now + 90000) });
+      state.expiresAt = new Date(Math.max(...state.leases.map((lease) => lease.until.getTime())));
+    });
+    await writeMany(states, session);
+  }, 5000);
+  return { keys, token };
+}
+
 module.exports = {
+  resumeLease,
+  resumeWindow,
   admit,
   release,
   cooldown,
@@ -229,5 +306,6 @@ module.exports = {
   action,
   consumeSnapshot,
   initialize,
-  requestWindow
+  requestWindow,
+  notificationStream
 };

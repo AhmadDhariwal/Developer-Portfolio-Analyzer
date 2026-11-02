@@ -147,58 +147,85 @@ async function activate(values, owner, session) {
     if (!result.matchedCount) throw Object.assign(Error('Invalid owned asset.'), { status: 400 });
   }
 }
-async function commitAvatar(owner, next) {
+async function commitAvatar(owner, next, notification = null) {
   let previous;
-  await persistence.transaction(async (session) => {
-    await persistence.ownerFence(owner, session);
-    if (parse(next)) await activate([next], owner, session);
-    else if (
-      !String(next).startsWith(`/uploads/avatars/${owner}-`) ||
-      !/^\/uploads\/avatars\/[a-z0-9-]+\.(png|jpg|webp)$/.test(next)
-    )
-      throw Object.assign(Error('Invalid owned avatar.'), { status: 400 });
-    previous = await User.findOneAndUpdate(
-      { _id: owner },
-      { $set: { avatar: next } },
-      { session, returnDocument: 'before' }
-    ).lean();
-    if (!previous) throw Object.assign(Error('Account unavailable.'), { status: 404 });
-    const old = parse(previous.avatar);
-    if (old && old.reference !== next)
-      await Asset.updateOne(
-        { reference: old.reference, ownerId: owner },
-        { $set: { state: 'deleting' } },
-        { session }
-      );
-  });
-  return previous;
-}
-async function commitPortfolio(profile, previous) {
-  const next = references(profile.toObject());
-  await persistence.transaction(async (session) => {
-    await persistence.ownerFence(profile.userId, session);
-    await activate(next, profile.userId, session);
-    await profile.save({ session });
-    for (const reference of previous)
-      if (!next.has(reference))
+  await persistence.transaction(
+    async (session) => {
+      await persistence.ownerFence(owner, session);
+      if (parse(next)) await activate([next], owner, session);
+      else if (
+        !String(next).startsWith(`/uploads/avatars/${owner}-`) ||
+        !/^\/uploads\/avatars\/[a-z0-9-]+\.(png|jpg|webp)$/.test(next)
+      )
+        throw Object.assign(Error('Invalid owned avatar.'), { status: 400 });
+      previous = await User.findOneAndUpdate(
+        { _id: owner },
+        { $set: { avatar: next } },
+        { session, returnDocument: 'before' }
+      ).lean();
+      if (!previous) throw Object.assign(Error('Account unavailable.'), { status: 404 });
+      const old = parse(previous.avatar);
+      if (old && old.reference !== next)
         await Asset.updateOne(
-          { reference, ownerId: profile.userId },
+          { reference: old.reference, ownerId: owner },
           { $set: { state: 'deleting' } },
           { session }
         );
-  });
+      if (notification)
+        await require('./notificationService').createNotification({
+          ...notification,
+          userId: owner,
+          session
+        });
+    },
+    notification ? { timeoutMS: 5000 } : {}
+  );
+  return previous;
 }
-async function commitResume(file) {
-  await persistence.transaction(async (session) => {
-    await persistence.ownerFence(file.userId, session);
-    await activate([file.fileUrl], file.userId, session);
-    await file.save({ session });
-    await User.updateOne(
-      { _id: file.userId },
-      { $set: { activeResumeFileId: file._id } },
-      { session }
-    );
-  });
+async function commitPortfolio(profile, previous, notification = null) {
+  const next = references(profile.toObject());
+  await persistence.transaction(
+    async (session) => {
+      await persistence.ownerFence(profile.userId, session);
+      await activate(next, profile.userId, session);
+      await profile.save({ session });
+      for (const reference of previous)
+        if (!next.has(reference))
+          await Asset.updateOne(
+            { reference, ownerId: profile.userId },
+            { $set: { state: 'deleting' } },
+            { session }
+          );
+      if (notification)
+        await require('./notificationService').createNotification({
+          ...notification,
+          userId: profile.userId,
+          session
+        });
+    },
+    notification ? { timeoutMS: 5000 } : {}
+  );
+}
+async function commitResume(file, notification = null) {
+  await persistence.transaction(
+    async (session) => {
+      await persistence.ownerFence(file.userId, session);
+      await activate([file.fileUrl], file.userId, session);
+      await file.save({ session });
+      await User.updateOne(
+        { _id: file.userId },
+        { $set: { activeResumeFileId: file._id } },
+        { session }
+      );
+      if (notification)
+        await require('./notificationService').createNotification({
+          ...notification,
+          userId: file.userId,
+          session
+        });
+    },
+    notification ? { timeoutMS: 5000 } : {}
+  );
 }
 async function isReferenced(asset, session) {
   if (await User.exists({ _id: asset.ownerId, avatar: asset.reference }).session(session))

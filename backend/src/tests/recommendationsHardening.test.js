@@ -167,7 +167,7 @@ test('profile and preview isolation plus provider/cache invariants are enforced'
   assert.match(controller, /RECOMMENDATION_REDIS_LOOKUP_BUDGET_MS/);
   assert.match(controller, /recommendationInflight\.set\(inflightKey, workPromise\)/);
   assert.match(controller, /recommendationInflight\.get\(inflightKey\) === workPromise/);
-  assert.match(controller, /voidRecommendationNotification/);
+  assert.match(controller, /notificationPersistence\.commit/);
   assert.match(controller, /isPersistableRecommendationResult/);
   assert.doesNotMatch(controller, /error: error\.message/);
 });
@@ -360,7 +360,7 @@ test('prompt remains narrative-only and schema-bound', () => {
 });
 
 test('notification dedupe uses cache signal hash and invalid usernames are rejected by handlers', () => {
-  assert.match(controller, /dedupeKey: `recommendations:\$\{signalHash \|\| 'latest'\}/);
+  assert.match(controller, /eventId: `recommendations:\$\{engine.RULE_VERSION\}:\$\{signalHash\}/);
   assert.match(
     controller,
     /parseGitHubUsername\(isTemporaryMode \? githubUsername : activeGithub\)/,

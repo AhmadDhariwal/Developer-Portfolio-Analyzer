@@ -1,0 +1,80 @@
+<section
+  [attr.inert]="clearingAll ? '' : null"
+  class="card inbox-card"
+  [attr.aria-busy]="loading || clearingAll"
+>
+  <app-notification-bulk-actions
+    [selectedCount]="selectedIds.size"
+    [disabled]="loading || deletingSelected"
+    (deleteRequested)="deleteSelectedRequested.emit()"
+    (selectionCleared)="selectionCleared.emit()"
+  ></app-notification-bulk-actions>
+
+  <div class="table-head">
+    <div class="table-head__info">
+      <strong>Notification Feed</strong>
+      <span class="badge-total">{{ unreadCount }} unread • {{ total }} total</span>
+    </div>
+    <div class="pager pager--top">
+      <button [disabled]="page <= 1" (click)="pageRequested.emit(page - 1)">Previous</button>
+      <span>Page {{ page }} / {{ totalPages }}</span>
+      <button [disabled]="page >= totalPages" (click)="pageRequested.emit(page + 1)">Next</button>
+    </div>
+  </div>
+
+  <!-- ── Loading Skeleton Shimmer ───────────────────────── -->
+  <div *ngIf="loading && notifications.length === 0" class="state state--loading">
+    <div class="skeleton-item" *ngFor="let _ of [1, 2, 3]">
+      <div class="skeleton-item__icon"></div>
+      <div class="skeleton-item__body">
+        <div class="skeleton-line skeleton-line--title"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line skeleton-line--short"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Notification Feed Items ───────────────────────── -->
+  <div class="notification-list" *ngIf="!loadFailed && notifications.length > 0">
+    <app-notification-item
+      *ngFor="let notification of notifications"
+      [selected]="selectedIds.has(notification._id)"
+      [notification]="notification"
+      (openRequested)="openRequested.emit($event)"
+      (markReadRequested)="markReadRequested.emit($event)"
+      (deleteRequested)="deleteRequested.emit($event)"
+      (selectionToggled)="selectionToggled.emit($event)"
+    ></app-notification-item>
+  </div>
+
+  <!-- ── Error State ───────────────────────── -->
+  <div *ngIf="!loading && loadFailed" class="state state--error" role="alert">
+    <div class="state-icon state-icon--error">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+    </div>
+    <h3>Notifications could not be loaded</h3>
+    <p>Your saved notifications are preserved. Please try again.</p>
+    <button class="ghost-action" type="button" (click)="retryRequested.emit()">Try again</button>
+  </div>
+
+  <!-- ── Empty State ───────────────────────── -->
+  <app-notification-empty-state
+    *ngIf="!loading && !loadFailed && notifications.length === 0"
+  ></app-notification-empty-state>
+  <!-- ── Pagination Footer ───────────────────────── -->
+  <div class="pager">
+    <button [disabled]="page <= 1" (click)="pageRequested.emit(page - 1)">Previous</button>
+    <span>Page {{ page }} / {{ totalPages }}</span>
+    <button [disabled]="page >= totalPages" (click)="pageRequested.emit(page + 1)">Next</button>
+  </div>
+</section>

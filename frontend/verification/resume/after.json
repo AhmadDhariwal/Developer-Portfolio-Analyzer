@@ -1,0 +1,946 @@
+[
+  {
+    "name": "resume-analyzer-light-1440",
+    "layout": [
+      {
+        "tag": "BUTTON",
+        "text": "Download Report",
+        "box": [
+          1060.42,
+          88,
+          173.73,
+          38
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "font": "500 14px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Refresh Analysis",
+        "box": [
+          1244.16,
+          88,
+          171.84,
+          38
+        ],
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(79, 70, 229)",
+        "font": "600 14px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H3",
+        "text": "Resume Library",
+        "box": [
+          332,
+          193.28,
+          391.2,
+          20.8
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "600 16px / 20.8px Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SELECT",
+        "text": "main-resume.pdf · [Active] · [Default] · (Analyzed) older-resume.pdf · (Unanalyzed)",
+        "box": [
+          332,
+          293.27,
+          460,
+          42
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "font": "13.5px Arial",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "View Analysis",
+        "box": [
+          332,
+          349.27,
+          106.28,
+          32
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "font": "500 13px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Set as Active & Default",
+        "box": [
+          446.28,
+          349.27,
+          160.69,
+          32
+        ],
+        "color": "rgb(71, 85, 105)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "500 13px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H3",
+        "text": "Upload New Resume",
+        "box": [
+          908,
+          193.28,
+          272.8,
+          20.8
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "600 16px / 20.8px Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          907,
+          250.92,
+          1,
+          1
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "13.3333px Arial",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H3",
+        "text": "Resume parsed successfully",
+        "box": [
+          714,
+          566.67,
+          218.17,
+          20.8
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "600 16px / 20.8px Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Score Breakdown",
+        "box": [
+          284,
+          918.83,
+          152.56,
+          24.69
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "600 19px / 24.7px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Deterministic Resume Evidence",
+        "box": [
+          284,
+          1640.52,
+          278.38,
+          24.69
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "600 19px / 24.7px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "AI Improvement Guidance (Advisory)",
+        "box": [
+          284,
+          2405.92,
+          320.94,
+          24.69
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "600 19px / 24.7px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      }
+    ],
+    "overflow": false,
+    "errors": [],
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/api/notifications?limit=10&page=1"
+      },
+      {
+        "method": "GET",
+        "path": "/api/notifications/stream"
+      },
+      {
+        "method": "GET",
+        "path": "/api/tenant/organizations"
+      },
+      {
+        "method": "GET",
+        "path": "/api/resume/active"
+      },
+      {
+        "method": "GET",
+        "path": "/api/resume/result?fileId=file-111"
+      },
+      {
+        "method": "GET",
+        "path": "/api/resume/files"
+      },
+      {
+        "method": "GET",
+        "path": "/api/notifications/stream"
+      },
+      {
+        "method": "GET",
+        "path": "/api/notifications/stream"
+      }
+    ],
+    "layoutEqual": true,
+    "sameDimensions": true,
+    "changedPixels": 0,
+    "significantPixels": 0,
+    "maximumChannelDelta": 0
+  },
+  {
+    "name": "resume-analyzer-light-375",
+    "layout": [
+      {
+        "tag": "BUTTON",
+        "text": "Download Report",
+        "box": [
+          14,
+          174.97,
+          173.73,
+          38
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "font": "500 14px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Refresh Analysis",
+        "box": [
+          14,
+          222.97,
+          171.84,
+          38
+        ],
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(79, 70, 229)",
+        "font": "600 14px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H3",
+        "text": "Resume Library",
+        "box": [
+          62,
+          306.97,
+          182.2,
+          20.8
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "600 16px / 20.8px Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SELECT",
+        "text": "main-resume.pdf · [Active] · [Default] · (Analyzed) older-resume.pdf · (Unanalyzed)",
+        "box": [
+          62,
+          425.8,
+          251,
+          42
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "font": "13.5px Arial",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "View Analysis",
+        "box": [
+          62,
+          481.8,
+          106.28,
+          32
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "font": "500 13px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Set as Active & Default",
+        "box": [
+          62,
+          521.8,
+          160.69,
+          32
+        ],
+        "color": "rgb(71, 85, 105)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "500 13px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H3",
+        "text": "Upload New Resume",
+        "box": [
+          62,
+          661.8,
+          165.78,
+          20.8
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "600 16px / 20.8px Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          61,
+          738.28,
+          1,
+          1
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "13.3333px Arial",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H3",
+        "text": "Resume parsed successfully",
+        "box": [
+          64,
+          1268.03,
+          126.56,
+          41.59
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "600 16px / 20.8px Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Score Breakdown",
+        "box": [
+          14,
+          2180.92,
+          152.56,
+          24.69
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "600 19px / 24.7px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Deterministic Resume Evidence",
+        "box": [
+          14,
+          3235.23,
+          278.38,
+          24.69
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "600 19px / 24.7px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "AI Improvement Guidance (Advisory)",
+        "box": [
+          14,
+          4597.25,
+          320.94,
+          24.69
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "600 19px / 24.7px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      }
+    ],
+    "overflow": false,
+    "errors": [],
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/api/notifications?limit=10&page=1"
+      },
+      {
+        "method": "GET",
+        "path": "/api/notifications/stream"
+      },
+      {
+        "method": "GET",
+        "path": "/api/tenant/organizations"
+      },
+      {
+        "method": "GET",
+        "path": "/api/resume/active"
+      },
+      {
+        "method": "GET",
+        "path": "/api/resume/result?fileId=file-111"
+      },
+      {
+        "method": "GET",
+        "path": "/api/resume/files"
+      },
+      {
+        "method": "GET",
+        "path": "/api/notifications/stream"
+      }
+    ],
+    "layoutEqual": true,
+    "sameDimensions": true,
+    "changedPixels": 0,
+    "significantPixels": 0,
+    "maximumChannelDelta": 0
+  },
+  {
+    "name": "resume-analyzer-dark-1440",
+    "layout": [
+      {
+        "tag": "BUTTON",
+        "text": "Download Report",
+        "box": [
+          1060.42,
+          88,
+          173.73,
+          38
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(21, 29, 42)",
+        "font": "500 14px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Refresh Analysis",
+        "box": [
+          1244.16,
+          88,
+          171.84,
+          38
+        ],
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(79, 70, 229)",
+        "font": "600 14px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H3",
+        "text": "Resume Library",
+        "box": [
+          332,
+          193.28,
+          391.2,
+          20.8
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "600 16px / 20.8px Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SELECT",
+        "text": "main-resume.pdf · [Active] · [Default] · (Analyzed) older-resume.pdf · (Unanalyzed)",
+        "box": [
+          332,
+          293.27,
+          460,
+          42
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(31, 41, 55)",
+        "font": "13.5px Arial",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "View Analysis",
+        "box": [
+          332,
+          349.27,
+          106.28,
+          32
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(21, 29, 42)",
+        "font": "500 13px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Set as Active & Default",
+        "box": [
+          446.28,
+          349.27,
+          160.69,
+          32
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "500 13px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H3",
+        "text": "Upload New Resume",
+        "box": [
+          908,
+          193.28,
+          272.8,
+          20.8
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "600 16px / 20.8px Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          907,
+          250.92,
+          1,
+          1
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "13.3333px Arial",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H3",
+        "text": "Resume parsed successfully",
+        "box": [
+          714,
+          566.67,
+          218.17,
+          20.8
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "600 16px / 20.8px Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Score Breakdown",
+        "box": [
+          284,
+          918.83,
+          152.56,
+          24.69
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "600 19px / 24.7px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Deterministic Resume Evidence",
+        "box": [
+          284,
+          1640.52,
+          278.38,
+          24.69
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "600 19px / 24.7px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "AI Improvement Guidance (Advisory)",
+        "box": [
+          284,
+          2405.92,
+          320.94,
+          24.69
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "600 19px / 24.7px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      }
+    ],
+    "overflow": false,
+    "errors": [],
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/api/notifications?limit=10&page=1"
+      },
+      {
+        "method": "GET",
+        "path": "/api/notifications/stream"
+      },
+      {
+        "method": "GET",
+        "path": "/api/tenant/organizations"
+      },
+      {
+        "method": "GET",
+        "path": "/api/resume/active"
+      },
+      {
+        "method": "GET",
+        "path": "/api/resume/result?fileId=file-111"
+      },
+      {
+        "method": "GET",
+        "path": "/api/resume/files"
+      },
+      {
+        "method": "GET",
+        "path": "/api/notifications/stream"
+      },
+      {
+        "method": "GET",
+        "path": "/api/notifications/stream"
+      }
+    ],
+    "layoutEqual": true,
+    "sameDimensions": true,
+    "changedPixels": 0,
+    "significantPixels": 0,
+    "maximumChannelDelta": 0
+  },
+  {
+    "name": "resume-analyzer-dark-375",
+    "layout": [
+      {
+        "tag": "BUTTON",
+        "text": "Download Report",
+        "box": [
+          14,
+          174.97,
+          173.73,
+          38
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(21, 29, 42)",
+        "font": "500 14px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Refresh Analysis",
+        "box": [
+          14,
+          222.97,
+          171.84,
+          38
+        ],
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(79, 70, 229)",
+        "font": "600 14px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H3",
+        "text": "Resume Library",
+        "box": [
+          62,
+          306.97,
+          182.2,
+          20.8
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "600 16px / 20.8px Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SELECT",
+        "text": "main-resume.pdf · [Active] · [Default] · (Analyzed) older-resume.pdf · (Unanalyzed)",
+        "box": [
+          62,
+          425.8,
+          251,
+          42
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(31, 41, 55)",
+        "font": "13.5px Arial",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "View Analysis",
+        "box": [
+          62,
+          481.8,
+          106.28,
+          32
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(21, 29, 42)",
+        "font": "500 13px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Set as Active & Default",
+        "box": [
+          62,
+          521.8,
+          160.69,
+          32
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "500 13px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H3",
+        "text": "Upload New Resume",
+        "box": [
+          62,
+          661.8,
+          165.78,
+          20.8
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "600 16px / 20.8px Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          61,
+          738.28,
+          1,
+          1
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "13.3333px Arial",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H3",
+        "text": "Resume parsed successfully",
+        "box": [
+          64,
+          1268.03,
+          126.56,
+          41.59
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "600 16px / 20.8px Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Score Breakdown",
+        "box": [
+          14,
+          2180.92,
+          152.56,
+          24.69
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "600 19px / 24.7px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Deterministic Resume Evidence",
+        "box": [
+          14,
+          3235.23,
+          278.38,
+          24.69
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "600 19px / 24.7px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "AI Improvement Guidance (Advisory)",
+        "box": [
+          14,
+          4597.25,
+          320.94,
+          24.69
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "600 19px / 24.7px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      }
+    ],
+    "overflow": false,
+    "errors": [],
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/api/notifications?limit=10&page=1"
+      },
+      {
+        "method": "GET",
+        "path": "/api/notifications/stream"
+      },
+      {
+        "method": "GET",
+        "path": "/api/tenant/organizations"
+      },
+      {
+        "method": "GET",
+        "path": "/api/resume/active"
+      },
+      {
+        "method": "GET",
+        "path": "/api/resume/result?fileId=file-111"
+      },
+      {
+        "method": "GET",
+        "path": "/api/resume/files"
+      },
+      {
+        "method": "GET",
+        "path": "/api/notifications/stream"
+      }
+    ],
+    "layoutEqual": true,
+    "sameDimensions": true,
+    "changedPixels": 0,
+    "significantPixels": 0,
+    "maximumChannelDelta": 0
+  }
+]

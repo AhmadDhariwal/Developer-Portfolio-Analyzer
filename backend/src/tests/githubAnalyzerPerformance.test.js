@@ -53,16 +53,28 @@ const createHarness = ({ redisDelayMs = 0, mongoDelayMs = 0 } = {}) => {
       await delay(state.delays.github);
       if (/\/users\/[^/]+$/.test(url)) {
         state.counters.github.profile += 1;
-        return { data: { login: decodeURIComponent(url.split('/').pop()), followers: 3, public_repos: 8, bio: 'dev' }, headers: {} };
+        return {
+          data: {
+            login: decodeURIComponent(url.split('/').pop()),
+            followers: 3,
+            public_repos: 8,
+            bio: 'dev'
+          },
+          headers: {}
+        };
       }
       if (url.endsWith('/repos')) {
         state.counters.github.repositories += 1;
         return { data: repos, headers: {} };
       }
-      if (url.includes('/languages')) return { data: { TypeScript: 8000, JavaScript: 2000 }, headers: {} };
+      if (url.includes('/languages'))
+        return { data: { TypeScript: 8000, JavaScript: 2000 }, headers: {} };
       if (url.includes('/contributors')) return { data: [{ contributions: 5 }], headers: {} };
       if (url.includes('/contents/')) {
-        return { data: { encoding: 'base64', content: Buffer.from('# readme').toString('base64') }, headers: {} };
+        return {
+          data: { encoding: 'base64', content: Buffer.from('# readme').toString('base64') },
+          headers: {}
+        };
       }
       if (url.includes('/commits')) return { data: [], headers: {} };
       throw new Error(`unexpected url ${url}`);
@@ -84,17 +96,27 @@ const createHarness = ({ redisDelayMs = 0, mongoDelayMs = 0 } = {}) => {
       redisStore.set(key, copy(payload));
     },
     setMemoryCacheJson() {},
-    async acquireCacheLock() { return true; },
+    async acquireCacheLock() {
+      return true;
+    },
     async releaseCacheLock() {}
   };
 
   const GitHubAnalysisCache = {
-    collection: { async indexes() { return []; }, async dropIndex() {}, async createIndex() {} },
+    collection: {
+      async indexes() {
+        return [];
+      },
+      async dropIndex() {},
+      async createIndex() {}
+    },
     findOne(query) {
       state.counters.mongoReads += 1;
       const key = `${query.normalizedUsername}:${query.analysisVersion}`;
       const chain = {
-        select() { return chain; },
+        select() {
+          return chain;
+        },
         lean: async () => {
           await delay(state.delays.mongo);
           return copy(state.mongo.get(key) || null);
@@ -109,7 +131,9 @@ const createHarness = ({ redisDelayMs = 0, mongoDelayMs = 0 } = {}) => {
       const row = {
         ...(previous || {}),
         ...copy(update.$set),
-        snapshots: [...(previous?.snapshots || []), ...copy(update.$push.snapshots.$each)].slice(-12),
+        snapshots: [...(previous?.snapshots || []), ...copy(update.$push.snapshots.$each)].slice(
+          -12
+        ),
         updatedAt: new Date(),
         createdAt: previous?.createdAt || new Date()
       };
@@ -127,10 +151,15 @@ const createHarness = ({ redisDelayMs = 0, mongoDelayMs = 0 } = {}) => {
         assert.equal(options?.timeoutMs, 5000);
         await delay(state.delays.ai);
         return {
-          strengths: ['Strong TypeScript delivery across active repositories', 'Clear full-stack project ownership'],
+          strengths: [
+            'Strong TypeScript delivery across active repositories',
+            'Clear full-stack project ownership'
+          ],
           weakAreas: ['Add more automated tests', 'Strengthen CI/CD signals'],
-          summary: 'This profile shows durable full-stack delivery with production-ready repositories.',
-          explanation: 'Deterministic drivers emphasize repository quality, activity depth, and technology coverage.'
+          summary:
+            'This profile shows durable full-stack delivery with production-ready repositories.',
+          explanation:
+            'Deterministic drivers emphasize repository quality, activity depth, and technology coverage.'
         };
       },
       async invalidateCachePrefix() {}
@@ -140,22 +169,38 @@ const createHarness = ({ redisDelayMs = 0, mongoDelayMs = 0 } = {}) => {
     './redisCacheService': redisService,
     '../services/redisCacheService': redisService,
     '../models/githubAnalysisCache': GitHubAnalysisCache,
-    '../models/analysisCache': { async deleteMany() { return { deletedCount: 0 }; } },
+    '../models/analysisCache': {
+      async deleteMany() {
+        return { deletedCount: 0 };
+      }
+    },
     '../models/repository': {
-      async bulkWrite(ops) { state.counters.persistence.repositoryUpserts += ops.length; await delay(state.delays.persistence); },
+      async bulkWrite(ops) {
+        state.counters.persistence.repositoryUpserts += ops.length;
+        await delay(state.delays.persistence);
+      },
       async deleteMany() {}
     },
     '../models/analysis': class Analysis {
-      constructor(data) { Object.assign(this, data, { githubAnalysisHistory: [], contributionActivity: [] }); }
-      static findOne() { return Promise.resolve(null); }
-      async save() { state.counters.persistence.analysisSaves += 1; await delay(state.delays.persistence); }
+      constructor(data) {
+        Object.assign(this, data, { githubAnalysisHistory: [], contributionActivity: [] });
+      }
+      static findOne() {
+        return Promise.resolve(null);
+      }
+      async save() {
+        state.counters.persistence.analysisSaves += 1;
+        await delay(state.delays.persistence);
+      }
     },
     '../models/user': { async findByIdAndUpdate() {} },
     '../models/githubSaveLock': {
-      findOneAndUpdate() { return thenable({ _id: 'lock' }); },
+      findOneAndUpdate() {
+        return thenable({ _id: 'lock' });
+      },
       async deleteOne() {}
     },
-    '../services/notificationService': { async createNotification() {} },
+    '../services/notificationPersistenceService': { commit: async (_owner, work) => work(null) },
     './dashboardcontroller': { invalidateDashboardSummaryCache() {} }
   };
 
@@ -220,7 +265,10 @@ test('tiered cache paths and concurrency counts', async (t) => {
   assert.equal(state.counters.ai, 1);
 
   service.clearGitHubAnalysisMemoryCache?.();
-  assert.ok(state.redis.size >= 1, 'redis layer must contain cold analysis before redis-only benchmark');
+  assert.ok(
+    state.redis.size >= 1,
+    'redis layer must contain cold analysis before redis-only benchmark'
+  );
   const mongoReadsBeforeRedisLoop = state.counters.mongoReads;
   const redisGetsBefore = state.counters.redisGets;
   const redisHits = [];
@@ -245,15 +293,25 @@ test('tiered cache paths and concurrency counts', async (t) => {
   assert.equal(state.counters.github.profile, 1);
   assert.equal(state.counters.mongoReads, mongoReadsBeforeMongoPath + 1);
 
-  const concurrent = await Promise.all(Array.from({ length: 5 }, () => service.analyzeGitHubProfile('perfuser2')));
+  const concurrent = await Promise.all(
+    Array.from({ length: 5 }, () => service.analyzeGitHubProfile('perfuser2'))
+  );
   assert.equal(state.counters.github.profile, 2);
   assert.equal(state.counters.ai, 2);
   assert.ok(concurrent.every((row) => row === concurrent[0]));
 
-  t.diagnostic(`MEMORY p50=${percentile(memoryHits, 50).toFixed(2)}ms p95=${percentile(memoryHits, 95).toFixed(2)}ms`);
-  t.diagnostic(`REDIS p50=${percentile(redisHits, 50).toFixed(2)}ms p95=${percentile(redisHits, 95).toFixed(2)}ms`);
-  t.diagnostic(`MONGO p50=${percentile(mongoHits, 50).toFixed(2)}ms p95=${percentile(mongoHits, 95).toFixed(2)}ms`);
-  t.diagnostic(`COUNTS githubProfile=${state.counters.github.profile} ai=${state.counters.ai} redisGets=${state.counters.redisGets} mongoReads=${state.counters.mongoReads} mongoWrites=${state.counters.mongoWrites}`);
+  t.diagnostic(
+    `MEMORY p50=${percentile(memoryHits, 50).toFixed(2)}ms p95=${percentile(memoryHits, 95).toFixed(2)}ms`
+  );
+  t.diagnostic(
+    `REDIS p50=${percentile(redisHits, 50).toFixed(2)}ms p95=${percentile(redisHits, 95).toFixed(2)}ms`
+  );
+  t.diagnostic(
+    `MONGO p50=${percentile(mongoHits, 50).toFixed(2)}ms p95=${percentile(mongoHits, 95).toFixed(2)}ms`
+  );
+  t.diagnostic(
+    `COUNTS githubProfile=${state.counters.github.profile} ai=${state.counters.ai} redisGets=${state.counters.redisGets} mongoReads=${state.counters.mongoReads} mongoWrites=${state.counters.mongoWrites}`
+  );
 
   assert.ok(percentile(memoryHits, 95) < 50);
   assert.ok(percentile(redisHits, 95) < 250);

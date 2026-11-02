@@ -1,0 +1,36 @@
+<!-- Skills Explorer Card -->
+<app-ui-card class="skills-explorer-card" *ngIf="skillGroups.length">
+  <div class="card-header-row">
+    <div>
+      <h4>Extracted Skills & Technologies</h4>
+      <p>{{ detectedSkillCount }} unique skills recognized and categorized across the document.</p>
+    </div>
+    <app-ui-button
+      *ngIf="skillGroups.length > 3"
+      variant="ghost"
+      size="sm"
+      (click)="toggleSkills.emit()"
+    >
+      {{ showAllSkills ? 'Show fewer' : 'View all categories' }}
+    </app-ui-button>
+  </div>
+
+  <div class="skill-categories-grid">
+    <div
+      *ngFor="let group of showAllSkills ? skillGroups : skillGroups.slice(0, 4)"
+      class="skill-category-box"
+    >
+      <div class="category-title-row">
+        <h5>{{ group.category }}</h5>
+        <span class="category-count">{{ group.skills.length }}</span>
+      </div>
+      <div class="skill-chips-row">
+        <app-skill-badge
+          *ngFor="let skill of group.skills"
+          [skill]="skill"
+          [category]="group.category"
+        ></app-skill-badge>
+      </div>
+    </div>
+  </div>
+</app-ui-card>

@@ -1,0 +1,22 @@
+{
+  "workers": 2,
+  "concurrentRequests": 5,
+  "durableAnalyses": 1,
+  "cacheRecords": 1,
+  "aiCalls": 1,
+  "pdfParses": 1,
+  "notifications": 1,
+  "redis": "unavailable",
+  "crossOwnerStatus": 403,
+  "guideStatuses": [
+    200,
+    200,
+    200,
+    200,
+    200,
+    429
+  ],
+  "milliseconds": 4784,
+  "totalKeysExamined": 1,
+  "totalDocsExamined": 1
+}

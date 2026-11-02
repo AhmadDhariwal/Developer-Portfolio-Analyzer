@@ -1,171 +1,212 @@
 const mongoose = require('mongoose');
 
-const weeklyReportSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-    index: true
-  },
-  weekStartDate: {
-    type: Date,
-    required: true
-  },
-  weekEndDate: {
-    type: Date,
-    required: true
-  },
-  score: {
-    type: Number,
-    required: true
-  },
-  progressSummary: {
-    type: String,
-    required: true
-  },
-  insights: [{ type: String }],
-  recommendations: [{ type: String }],
-  topAchievements: [{ type: String }],
-  biggestRiskArea: {
-    type: String,
-    default: ''
-  },
-  predictedHiringReadiness: {
-    score: { type: Number, default: 0 },
-    reason: { type: String, default: '' }
-  },
-  emailStatus: {
-    type: String,
-    enum: ['sent', 'skipped', 'failed'],
-    default: 'skipped'
-  },
-  emailedAt: {
-    type: Date,
-    default: null
-  },
-  emailError: {
-    type: String,
-    default: ''
-  },
-  reportText: {
-    type: String,
-    required: true
-  },
-  meta: {
-    githubScore: { type: Number, default: 0 },
-    resumeScore: { type: Number, default: 0 },
-    skillFocus: [{ type: String }],
-    activity: {
-      repositoriesTracked: { type: Number, default: 0 },
-      activeRepositories: { type: Number, default: 0 },
-      commits: { type: Number, default: 0 },
-      weeklyCommitSignal: { type: Number, default: 0 },
-      stars: { type: Number, default: 0 },
-      forks: { type: Number, default: 0 }
+const weeklyReportSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      index: true
     },
-    sprint: {
-      tasksCompleted: { type: Number, default: 0 },
-      tasksTotal: { type: Number, default: 0 },
-      completionRate: { type: Number, default: 0 },
-      weeklyGoal: { type: Number, default: 0 },
-      streak: { type: Number, default: 0 }
+    weekStartDate: {
+      type: Date,
+      required: true
     },
-    interview: {
-      sessions: { type: Number, default: 0 },
-      questionsGenerated: { type: Number, default: 0 }
+    weekEndDate: {
+      type: Date,
+      required: true
     },
-    comparisons: {
-      scoreDelta: { type: Number, default: 0 },
-      readinessDelta: { type: Number, default: 0 },
-      githubDelta: { type: Number, default: 0 },
-      resumeDelta: { type: Number, default: 0 },
-      sprintCompletionDelta: { type: Number, default: 0 },
-      tasksCompletedDelta: { type: Number, default: 0 },
-      interviewSessionsDelta: { type: Number, default: 0 },
-      interviewQuestionsDelta: { type: Number, default: 0 },
-      activityCommitsDelta: { type: Number, default: 0 },
-      activeReposDelta: { type: Number, default: 0 },
-      missingSkillsDelta: { type: Number, default: 0 },
-      coverageDelta: { type: Number, default: 0 }
+    score: {
+      type: Number,
+      required: true
     },
-    dataSourcesUsed: {
-      github: {
-        connected: { type: Boolean, default: false },
-        lastAnalyzedAt: { type: Date, default: null },
-        status: { type: String, default: 'Unavailable' },
-        freshness: { type: String, enum: ['fresh', 'stale', 'unavailable'], default: 'unavailable' }
+    progressSummary: {
+      type: String,
+      required: true
+    },
+    insights: [{ type: String }],
+    recommendations: [{ type: String }],
+    topAchievements: [{ type: String }],
+    biggestRiskArea: {
+      type: String,
+      default: ''
+    },
+    predictedHiringReadiness: {
+      score: { type: Number, default: 0 },
+      reason: { type: String, default: '' }
+    },
+    emailStatus: {
+      type: String,
+      enum: ['sent', 'skipped', 'failed'],
+      default: 'skipped'
+    },
+    emailDelivery: {
+      status: {
+        type: String,
+        enum: ['pending', 'processing', 'retrying', 'sent', 'failed', 'uncertain', 'skipped'],
+        default: 'pending'
       },
-      resume: {
-        analyzed: { type: Boolean, default: false },
-        lastAnalyzedAt: { type: Date, default: null },
-        status: { type: String, default: 'Unavailable' },
-        freshness: { type: String, enum: ['fresh', 'stale', 'unavailable'], default: 'unavailable' }
+      contentHash: String,
+      pendingContentHash: String,
+      leaseId: String,
+      leaseUntil: Date,
+      attempts: { type: Number, default: 0 },
+      nextAttemptAt: { type: Date, default: Date.now }
+    },
+    emailedAt: {
+      type: Date,
+      default: null
+    },
+    emailError: {
+      type: String,
+      default: ''
+    },
+    reportText: {
+      type: String,
+      required: true
+    },
+    meta: {
+      githubScore: { type: Number, default: 0 },
+      resumeScore: { type: Number, default: 0 },
+      skillFocus: [{ type: String }],
+      activity: {
+        repositoriesTracked: { type: Number, default: 0 },
+        activeRepositories: { type: Number, default: 0 },
+        commits: { type: Number, default: 0 },
+        weeklyCommitSignal: { type: Number, default: 0 },
+        stars: { type: Number, default: 0 },
+        forks: { type: Number, default: 0 }
       },
-      skillGap: {
-        analyzed: { type: Boolean, default: false },
-        lastAnalyzedAt: { type: Date, default: null },
-        status: { type: String, default: 'Unavailable' },
-        freshness: { type: String, enum: ['fresh', 'stale', 'unavailable'], default: 'unavailable' }
+      sprint: {
+        tasksCompleted: { type: Number, default: 0 },
+        tasksTotal: { type: Number, default: 0 },
+        completionRate: { type: Number, default: 0 },
+        weeklyGoal: { type: Number, default: 0 },
+        streak: { type: Number, default: 0 }
       },
-      recommendations: {
-        available: { type: Boolean, default: false },
-        lastAnalyzedAt: { type: Date, default: null },
-        status: { type: String, default: 'Unavailable' }
+      interview: {
+        sessions: { type: Number, default: 0 },
+        questionsGenerated: { type: Number, default: 0 }
       },
-      careerSprint: {
-        connected: { type: Boolean, default: false },
-        lastAnalyzedAt: { type: Date, default: null },
-        status: { type: String, default: 'Unavailable' }
+      comparisons: {
+        scoreDelta: { type: Number, default: 0 },
+        readinessDelta: { type: Number, default: 0 },
+        githubDelta: { type: Number, default: 0 },
+        resumeDelta: { type: Number, default: 0 },
+        sprintCompletionDelta: { type: Number, default: 0 },
+        tasksCompletedDelta: { type: Number, default: 0 },
+        interviewSessionsDelta: { type: Number, default: 0 },
+        interviewQuestionsDelta: { type: Number, default: 0 },
+        activityCommitsDelta: { type: Number, default: 0 },
+        activeReposDelta: { type: Number, default: 0 },
+        missingSkillsDelta: { type: Number, default: 0 },
+        coverageDelta: { type: Number, default: 0 }
       },
-      interviewPrep: {
-        analyzed: { type: Boolean, default: false },
-        lastAnalyzedAt: { type: Date, default: null },
-        status: { type: String, default: 'Unavailable' }
+      dataSourcesUsed: {
+        github: {
+          connected: { type: Boolean, default: false },
+          lastAnalyzedAt: { type: Date, default: null },
+          status: { type: String, default: 'Unavailable' },
+          freshness: {
+            type: String,
+            enum: ['fresh', 'stale', 'unavailable'],
+            default: 'unavailable'
+          }
+        },
+        resume: {
+          analyzed: { type: Boolean, default: false },
+          lastAnalyzedAt: { type: Date, default: null },
+          status: { type: String, default: 'Unavailable' },
+          freshness: {
+            type: String,
+            enum: ['fresh', 'stale', 'unavailable'],
+            default: 'unavailable'
+          }
+        },
+        skillGap: {
+          analyzed: { type: Boolean, default: false },
+          lastAnalyzedAt: { type: Date, default: null },
+          status: { type: String, default: 'Unavailable' },
+          freshness: {
+            type: String,
+            enum: ['fresh', 'stale', 'unavailable'],
+            default: 'unavailable'
+          }
+        },
+        recommendations: {
+          available: { type: Boolean, default: false },
+          lastAnalyzedAt: { type: Date, default: null },
+          status: { type: String, default: 'Unavailable' }
+        },
+        careerSprint: {
+          connected: { type: Boolean, default: false },
+          lastAnalyzedAt: { type: Date, default: null },
+          status: { type: String, default: 'Unavailable' }
+        },
+        interviewPrep: {
+          analyzed: { type: Boolean, default: false },
+          lastAnalyzedAt: { type: Date, default: null },
+          status: { type: String, default: 'Unavailable' }
+        },
+        portfolio: {
+          connected: { type: Boolean, default: false },
+          lastAnalyzedAt: { type: Date, default: null },
+          status: { type: String, default: 'Unavailable' }
+        },
+        integrations: {
+          connected: { type: Boolean, default: false },
+          lastAnalyzedAt: { type: Date, default: null },
+          status: { type: String, default: 'Unavailable' }
+        }
       },
-      portfolio: {
-        connected: { type: Boolean, default: false },
-        lastAnalyzedAt: { type: Date, default: null },
-        status: { type: String, default: 'Unavailable' }
+      signalHash: {
+        type: String,
+        default: ''
       },
-      integrations: {
-        connected: { type: Boolean, default: false },
-        lastAnalyzedAt: { type: Date, default: null },
-        status: { type: String, default: 'Unavailable' }
+      reportHash: {
+        type: String,
+        default: ''
+      },
+      narrativeSource: {
+        type: String,
+        enum: ['ai-enhanced', 'deterministic', 'cached'],
+        default: 'deterministic'
+      },
+      usesAI: { type: Boolean, default: false },
+      deterministicScore: { type: Boolean, default: true },
+      guaranteed: { type: Boolean, default: false },
+      fallbackUsed: { type: Boolean, default: false },
+      dataSourceFreshness: { type: mongoose.Schema.Types.Mixed, default: {} },
+      scoreBreakdown: {
+        type: mongoose.Schema.Types.Mixed,
+        default: {}
+      },
+      snapshot: {
+        type: mongoose.Schema.Types.Mixed,
+        default: {}
       }
-    },
-    signalHash: {
-      type: String,
-      default: ''
-    },
-    reportHash: {
-      type: String,
-      default: ''
-    },
-    narrativeSource: {
-      type: String,
-      enum: ['ai-enhanced', 'deterministic', 'cached'],
-      default: 'deterministic'
-    },
-    usesAI: { type: Boolean, default: false },
-    deterministicScore: { type: Boolean, default: true },
-    guaranteed: { type: Boolean, default: false },
-    fallbackUsed: { type: Boolean, default: false },
-    dataSourceFreshness: { type: mongoose.Schema.Types.Mixed, default: {} },
-    scoreBreakdown: {
-      type: mongoose.Schema.Types.Mixed,
-      default: {}
-    },
-    snapshot: {
-      type: mongoose.Schema.Types.Mixed,
-      default: {}
     }
-  }
-}, { timestamps: true });
+  },
+  { timestamps: true }
+);
 
 weeklyReportSchema.index({ userId: 1, weekStartDate: 1, weekEndDate: 1 }, { unique: true });
 weeklyReportSchema.index({ userId: 1, weekEndDate: -1 });
 weeklyReportSchema.index({ userId: 1, createdAt: -1 });
 weeklyReportSchema.index({ userId: 1, 'meta.signalHash': 1 });
 weeklyReportSchema.index({ userId: 1, weekStartDate: -1 });
+
+weeklyReportSchema.index(
+  { 'emailDelivery.status': 1, 'emailDelivery.nextAttemptAt': 1 },
+  { name: 'weekly_email_due' }
+);
+
+weeklyReportSchema.index(
+  { 'emailDelivery.pendingContentHash': 1, 'emailDelivery.status': 1 },
+  {
+    name: 'weekly_email_coalesced',
+    partialFilterExpression: { 'emailDelivery.pendingContentHash': { $type: 'string' } }
+  }
+);
 
 module.exports = mongoose.model('WeeklyReport', weeklyReportSchema);

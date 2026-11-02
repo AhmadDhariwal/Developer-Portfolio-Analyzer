@@ -1,0 +1,17 @@
+[
+  "frontend/src/app/pages/github-analyzer/github-analyzer.component.ts",
+  "frontend/src/app/pages/notifications/notifications.component.ts",
+  "frontend/src/app/pages/github-analyzer/components/github-profile-search/github-profile-search.component.ts",
+  "frontend/src/app/pages/github-analyzer/components/github-health-overview/github-health-overview.component.ts",
+  "frontend/src/app/pages/github-analyzer/components/github-scoring-breakdown/github-scoring-breakdown.component.ts",
+  "frontend/src/app/pages/github-analyzer/components/github-charts/github-charts.component.ts",
+  "frontend/src/app/pages/github-analyzer/components/github-repository-table/github-repository-table.component.ts",
+  "frontend/src/app/pages/github-analyzer/components/github-technology-fingerprint/github-technology-fingerprint.component.ts",
+  "frontend/src/app/pages/github-analyzer/components/github-insights/github-insights.component.ts",
+  "frontend/src/app/pages/github-analyzer/components/github-technical-audit/github-technical-audit.component.ts",
+  "frontend/src/app/pages/notifications/components/notification-header/notification-header.component.ts",
+  "frontend/src/app/pages/notifications/components/notification-filters/notification-filters.component.ts",
+  "frontend/src/app/pages/notifications/components/notification-feed/notification-feed.component.ts",
+  "frontend/src/app/pages/notifications/components/notification-item/notification-item.component.ts",
+  "frontend/src/app/pages/notifications/components/notification-empty-state/notification-empty-state.component.ts"
+]

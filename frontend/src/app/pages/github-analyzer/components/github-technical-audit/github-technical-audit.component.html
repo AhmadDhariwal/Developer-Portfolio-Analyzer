@@ -1,0 +1,140 @@
+<!-- Technical Metadata & Scoring Evidence Drawer -->
+<app-ui-drawer
+  [isOpen]="showEvidenceDrawer"
+  title="Analysis Details & Audit Evidence"
+  subtitle="Deterministic provenance, scoring weights, and backend cache audit"
+  size="lg"
+  (close)="closed.emit()"
+>
+  <div class="drawer-evidence-content" *ngIf="result">
+    <!-- Group 1: Engine Provenance -->
+    <div class="drawer-section">
+      <h4 class="drawer-section-title">Engine Provenance</h4>
+      <div class="drawer-kv-grid">
+        <div class="drawer-kv-item">
+          <span class="kv-label">Rule Engine:</span>
+          <span class="kv-value font-mono">{{ ruleVersion }}</span>
+        </div>
+        <div class="drawer-kv-item">
+          <span class="kv-label">Calculated At:</span>
+          <span class="kv-value">{{ calculationTimestamp }}</span>
+        </div>
+        <div class="drawer-kv-item">
+          <span class="kv-label">Cache Status:</span>
+          <span class="kv-value">{{ cacheStatusLabel }}</span>
+        </div>
+        <div class="drawer-kv-item">
+          <span class="kv-label">Cache Hit:</span>
+          <span class="kv-value">{{
+            result.cache?.hit ? 'Yes (Cached)' : 'No (Fresh compute)'
+          }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Group 2: Audit Fact Counts -->
+    <div class="drawer-section">
+      <h4 class="drawer-section-title">Audit Facts & Scope</h4>
+      <div class="drawer-kv-grid">
+        <div class="drawer-kv-item">
+          <span class="kv-label">Total Repositories:</span>
+          <span class="kv-value">{{ result.repoCount }}</span>
+        </div>
+        <div class="drawer-kv-item">
+          <span class="kv-label">Original Repositories:</span>
+          <span class="kv-value">{{ originalRepoCount }}</span>
+        </div>
+        <div class="drawer-kv-item">
+          <span class="kv-label">Forked Repositories:</span>
+          <span class="kv-value">{{ forkedRepoCount }}</span>
+        </div>
+        <div class="drawer-kv-item">
+          <span class="kv-label">Archived Repositories:</span>
+          <span class="kv-value">{{ archivedRepoCount }}</span>
+        </div>
+        <div class="drawer-kv-item">
+          <span class="kv-label">Sampled Commits:</span>
+          <span class="kv-value">{{
+            totalSampledCommits !== null ? totalSampledCommits : 'Unavailable'
+          }}</span>
+        </div>
+        <div class="drawer-kv-item">
+          <span class="kv-label">Active Repos Evaluated:</span>
+          <span class="kv-value"
+            >{{ evidenceFacts?.activeRepos ?? result.repositoryActivity.length }} repositories</span
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- Group 3: Scoring Formulas & Weights -->
+    <div class="drawer-section">
+      <h4 class="drawer-section-title">Scoring Component Weights</h4>
+      <div class="drawer-weights-list">
+        <div class="drawer-weight-row" *ngFor="let item of scoreBreakdownList">
+          <div class="weight-row-left">
+            <strong>{{ item.label }}</strong>
+            <small>{{ item.description }}</small>
+          </div>
+          <div class="weight-row-right">
+            <span class="weight-pct">{{ item.weightPct }}%</span>
+            <span class="weight-pts" *ngIf="item.contribution !== null"
+              >+{{ item.contribution }} pts</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="drawer-section">
+      <h4 class="drawer-section-title">Source Metadata</h4>
+      <p>
+        Analysis version: {{ result.analysisVersion || 'Unavailable' }} · Data version:
+        {{ result.dataVersion || 'Unavailable' }}
+      </p>
+      <ul>
+        <li *ngFor="let source of result.scoring?.evidence?.sources">
+          {{ source.type }}: {{ source.id }}
+        </li>
+      </ul>
+      <p>
+        Activity scope:
+        {{ result.dataAvailability?.activityScope || 'Sampled repository contributor history' }}
+      </p>
+      <p *ngIf="result.warning">{{ result.warning }}</p>
+    </div>
+    <div class="drawer-section" *ngIf="hasTechnologyData">
+      <h4 class="drawer-section-title">Technology Detection Evidence</h4>
+      <div *ngFor="let group of technologyCategories">
+        <h5>{{ group.category }}</h5>
+        <ul>
+          <li *ngFor="let tech of group.items">
+            {{ tech.name }} · {{ tech.confidence }}% confidence ·
+            {{ tech.sources?.join(', ') || 'Sources not supplied' }}
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="drawer-section" *ngIf="result.scoring?.evidence?.inputs">
+      <h4 class="drawer-section-title">Scoring Inputs</h4>
+      <dl class="drawer-kv-grid">
+        <div
+          class="drawer-kv-item"
+          *ngFor="let input of result.scoring?.evidence?.inputs | keyvalue"
+        >
+          <dt>{{ input.key }}</dt>
+          <dd>{{ input.value ?? 'Unavailable' }}</dd>
+        </div>
+      </dl>
+    </div>
+    <!-- Group 4: Backend Audit Notices -->
+    <div class="drawer-section" *ngIf="scoringWarnings.length">
+      <h4 class="drawer-section-title">Backend Audit Notices</h4>
+      <div class="drawer-notices-box">
+        <ul>
+          <li *ngFor="let notice of scoringWarnings">{{ notice }}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</app-ui-drawer>

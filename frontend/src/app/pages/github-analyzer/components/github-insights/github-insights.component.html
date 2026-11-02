@@ -1,0 +1,72 @@
+<!-- 7. Profile Insights & Talking Points -->
+<section class="insights-section" aria-label="Profile Insights">
+  <div class="insights-panel">
+    <div class="panel-header-row">
+      <div>
+        <span class="eyebrow">Qualitative intelligence</span>
+        <h2 class="panel-title">Profile Insights & Talking Points</h2>
+        <p class="panel-subtitle">
+          Qualitative narrative and interview positioning grounded in verified repository signals.
+        </p>
+      </div>
+      <app-ui-badge variant="info" size="sm">AI-assisted interpretation</app-ui-badge>
+    </div>
+
+    <div class="insights-notice-banner">
+      <span class="notice-icon" aria-hidden="true">💡</span>
+      <span
+        >Scores and metrics come from deterministic backend rules and sampled GitHub evidence. The
+        narrative below is AI-assisted interpretation, not an additional score or verified
+        fact.</span
+      >
+    </div>
+
+    <!-- Narrative Summary & Explanation -->
+    <div class="insights-summary-text" *ngIf="result.summary || result.explanation">
+      <p class="lead-summary" *ngIf="result.summary">{{ result.summary }}</p>
+      <p class="lead-explanation" *ngIf="result.explanation">{{ result.explanation }}</p>
+    </div>
+
+    <!-- Fallback notice if AI content is absent -->
+    <div class="ai-fallback-notice" *ngIf="!hasAiContent">
+      <p>
+        AI qualitative narrative is temporarily unavailable for this profile. All deterministic
+        scores, component breakdowns, and repository evaluations above remain available from the
+        backend rule engine.
+      </p>
+    </div>
+
+    <!-- Three Pillars: Strengths, Growth Areas, Recruiter Talking Points -->
+    <div class="insights-pillars-grid" *ngIf="hasStrengths || hasWeakAreas || hasRecruiterInsights">
+      <div class="insight-pillar-card" *ngIf="hasStrengths">
+        <div class="pillar-card-head">
+          <span class="pillar-type-dot pillar-type-dot--success" aria-hidden="true"></span>
+          <h4>Engineering Strengths</h4>
+        </div>
+        <ul class="pillar-bullet-list">
+          <li *ngFor="let item of result.strengths">{{ item }}</li>
+        </ul>
+      </div>
+
+      <div class="insight-pillar-card" *ngIf="hasWeakAreas">
+        <div class="pillar-card-head">
+          <span class="pillar-type-dot pillar-type-dot--warning" aria-hidden="true"></span>
+          <h4>Priority Improvements</h4>
+        </div>
+        <ul class="pillar-bullet-list">
+          <li *ngFor="let item of result.weakAreas">{{ item }}</li>
+        </ul>
+      </div>
+
+      <div class="insight-pillar-card" *ngIf="hasRecruiterInsights">
+        <div class="pillar-card-head">
+          <span class="pillar-type-dot pillar-type-dot--info" aria-hidden="true"></span>
+          <h4>Interview Talking Points</h4>
+        </div>
+        <ul class="pillar-bullet-list">
+          <li *ngFor="let point of result.recruiterInsights?.proofPoints">{{ point }}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
