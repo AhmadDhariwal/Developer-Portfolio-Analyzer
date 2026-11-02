@@ -1,0 +1,110 @@
+:host {
+  display: block;
+}
+
+$card-bg: #131b2e;
+$card-border: rgba(255, 255, 255, 0.05);
+$primary: #6366f1;
+$text-main: #f8fafc;
+$text-muted: #94a3b8;
+
+.material-symbols-outlined {
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+}
+
+.panel-card {
+  background-color: $card-bg;
+  border: 1px solid $card-border;
+  border-radius: 20px;
+  padding: 24px;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+
+  .panel-title-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: $text-main;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+  }
+
+  p {
+    font-size: 14px;
+    color: $text-muted;
+    margin: 0;
+  }
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid $card-border;
+  color: $text-main;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+.ticket-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+
+  button {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid $card-border;
+    color: $text-main;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-height: 36px;
+
+    &:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    &.active {
+      background: $primary;
+      border-color: $primary;
+      color: white;
+    }
+  }
+}

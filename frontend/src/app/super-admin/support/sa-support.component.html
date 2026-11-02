@@ -1,0 +1,93 @@
+<div class="sa-page">
+  <div class="sa-header">
+    <h1>Support</h1>
+    <p>Platform-wide support ticket queue — visible to admins and super admins.</p>
+  </div>
+
+  <div class="sa-filters">
+    <input
+      [(ngModel)]="search"
+      placeholder="Search subject or email..."
+      (ngModelChange)="onSearchInput()"
+      (keydown.enter)="load(1)"
+    />
+    <select [(ngModel)]="status" (change)="load(1)">
+      <option value="">All statuses</option>
+      <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+    </select>
+    <select [(ngModel)]="category" (change)="load(1)">
+      <option value="">All categories</option>
+      <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+    </select>
+    <select [(ngModel)]="priority" (change)="load(1)">
+      <option value="">All priorities</option>
+      <option *ngFor="let p of priorities" [value]="p">{{ p }}</option>
+    </select>
+    <input type="date" [(ngModel)]="startDate" (change)="load(1)" aria-label="Start date" />
+    <input type="date" [(ngModel)]="endDate" (change)="load(1)" aria-label="End date" />
+    <select [(ngModel)]="sort" (change)="load(1)">
+      <option *ngFor="let o of sorts" [value]="o.value">{{ o.label }}</option>
+    </select>
+    <button class="primary" (click)="load(1)">Search</button>
+    <button class="ghost" (click)="reset()">Reset</button>
+  </div>
+
+  <div class="sa-full-table">
+    <div class="sa-table-head">
+      <strong>{{ total }} tickets</strong>
+    </div>
+
+    <div *ngIf="loading" class="sa-state">Loading...</div>
+    <div *ngIf="!loading && error" class="sa-state">{{ error }}</div>
+
+    <table *ngIf="!loading && !error && tickets.length > 0">
+      <thead>
+        <tr>
+          <th>Subject</th>
+          <th>Requester</th>
+          <th>Category</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of tickets">
+          <td>{{ t.subject }}</td>
+          <td>{{ t.email }}</td>
+          <td>{{ t.category }}</td>
+          <td>
+            <span class="badge" [ngClass]="'badge--' + t.priority">{{ t.priority }}</span>
+          </td>
+          <td>
+            <span class="badge" [ngClass]="'badge--' + t.status">{{ t.status }}</span>
+          </td>
+          <td>{{ t.createdAt | date: 'short' }}</td>
+          <td>
+            <button class="action-btn action-btn--primary" (click)="open(t)">Open</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="!loading && !error && tickets.length === 0" class="sa-empty">
+      No support tickets found.
+    </div>
+
+    <sa-pager
+      [page]="page"
+      [totalPages]="totalPages"
+      [total]="total"
+      [pageSize]="pageSize"
+      (change)="load($event)"
+    />
+  </div>
+</div>
+
+<app-sa-support-detail
+  *ngIf="selectedId"
+  [ticketId]="selectedId"
+  (close)="closeDetail()"
+  (updated)="onTicketUpdated()"
+/>

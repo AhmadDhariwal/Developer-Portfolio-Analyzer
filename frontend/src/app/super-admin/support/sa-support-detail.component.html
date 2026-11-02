@@ -1,0 +1,102 @@
+<sa-modal [open]="true" title="Support ticket" (close)="closeDetail()">
+  <div *ngIf="loading" class="sa-state">Loading...</div>
+  <div *ngIf="!loading && loadError" class="sa-state">{{ loadError }}</div>
+
+  <div *ngIf="!loading && !loadError && ticket" class="sad">
+    <section class="sad__meta">
+      <div class="sad__row">
+        <span class="sad__label">Requester</span>
+        <span class="sad__value">{{ ticket.name || 'Unknown' }}</span>
+      </div>
+      <div class="sad__row">
+        <span class="sad__label">Account email (trusted)</span>
+        <span class="sad__value">{{ ticket.email }}</span>
+      </div>
+      <div class="sad__row" *ngIf="ticket.replyToEmail">
+        <span class="sad__label">Reply-to (user-supplied, unverified)</span>
+        <span class="sad__value">{{ ticket.replyToEmail }}</span>
+      </div>
+      <div class="sad__row">
+        <span class="sad__label">Category</span>
+        <span class="sad__value">{{ ticket.category }}</span>
+      </div>
+      <div class="sad__row">
+        <span class="sad__label">Priority</span>
+        <span class="sad__value">{{ ticket.priority }}</span>
+      </div>
+      <div class="sad__row">
+        <span class="sad__label">Created</span>
+        <span class="sad__value">{{ ticket.createdAt | date: 'medium' }}</span>
+      </div>
+      <div class="sad__row">
+        <span class="sad__label">Last updated</span>
+        <span class="sad__value">{{ ticket.updatedAt | date: 'medium' }}</span>
+      </div>
+    </section>
+
+    <section class="sad__block">
+      <h3 class="sad__heading">Subject</h3>
+      <p class="sad__subject">{{ ticket.subject }}</p>
+      <h3 class="sad__heading">Message</h3>
+      <p class="sad__message">{{ ticket.message }}</p>
+    </section>
+
+    <section class="sad__block">
+      <label class="sad__heading" for="sad-status">Status</label>
+      <select
+        id="sad-status"
+        [(ngModel)]="statusValue"
+        (change)="onStatusChange()"
+        [disabled]="statusBusy"
+      >
+        <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
+      </select>
+      <div class="sad__error" *ngIf="statusError">{{ statusError }}</div>
+    </section>
+
+    <section class="sad__block">
+      <h3 class="sad__heading">Conversation ({{ replyCount }})</h3>
+      <div class="sad__thread" *ngIf="ticket.replies && ticket.replies.length > 0; else noReplies">
+        <div
+          class="sad__reply"
+          [ngClass]="'sad__reply--' + reply.authorRole"
+          *ngFor="let reply of ticket.replies"
+        >
+          <div class="sad__reply-head">
+            <span class="sad__reply-author">{{ authorLabel(reply.authorRole) }}</span>
+            <span class="sad__reply-time">{{ reply.createdAt | date: 'short' }}</span>
+          </div>
+          <p class="sad__reply-body">{{ reply.body }}</p>
+        </div>
+      </div>
+      <ng-template #noReplies>
+        <p class="sad__empty">No replies yet.</p>
+      </ng-template>
+    </section>
+
+    <section class="sad__block">
+      <h3 class="sad__heading">Reply</h3>
+      <textarea
+        [(ngModel)]="replyBody"
+        rows="3"
+        maxlength="5000"
+        placeholder="Write a reply to the requester..."
+        [disabled]="replyBusy || replyCapReached"
+      ></textarea>
+      <div class="sad__cap" *ngIf="replyCapReached">
+        This conversation has reached its reply limit.
+      </div>
+      <div class="sad__error" *ngIf="replyError">{{ replyError }}</div>
+      <div class="sad__actions">
+        <button
+          type="button"
+          class="primary"
+          [disabled]="replyBusy || replyCapReached || !replyBody.trim()"
+          (click)="sendReply()"
+        >
+          {{ replyBusy ? 'Sending...' : 'Send reply' }}
+        </button>
+      </div>
+    </section>
+  </div>
+</sa-modal>

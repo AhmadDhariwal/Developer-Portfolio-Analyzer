@@ -1,0 +1,48 @@
+<div class="panel-card">
+  <div class="panel-header">
+    <div class="panel-title-wrapper">
+      <h2>
+        <span class="material-symbols-outlined" style="color: #6366f1">receipt_long</span>
+        My Support Requests
+      </h2>
+      <p>Track the status of your requests.</p>
+    </div>
+    <button class="btn-secondary" *ngIf="totalPages > 1" (click)="pageChange.emit(1)">
+      View All
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" style="display: flex; justify-content: center; padding: 40px 0">
+    <span
+      class="material-symbols-outlined"
+      style="animation: spin 1s linear infinite; font-size: 32px; color: #6366f1"
+      >progress_activity</span
+    >
+  </div>
+
+  <!-- Empty State -->
+  <app-support-empty-state
+    *ngIf="!loading && tickets.length === 0"
+    message="You have no active support requests."
+    icon="inbox"
+  ></app-support-empty-state>
+
+  <!-- Ticket List -->
+  <div class="ticket-list" *ngIf="!loading && tickets.length > 0">
+    <app-support-ticket-card
+      *ngFor="let ticket of tickets"
+      [ticket]="ticket"
+      (open)="open.emit($event)"
+    ></app-support-ticket-card>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="!loading && totalPages > 1">
+    <button [disabled]="page <= 1" (click)="pageChange.emit(page - 1)">&lt; Prev</button>
+    <button *ngFor="let p of pageNumbers" [class.active]="page === p" (click)="pageChange.emit(p)">
+      {{ p }}
+    </button>
+    <button [disabled]="page >= totalPages" (click)="pageChange.emit(page + 1)">Next &gt;</button>
+  </div>
+</div>

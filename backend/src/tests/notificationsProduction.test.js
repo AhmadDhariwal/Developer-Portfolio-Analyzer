@@ -340,7 +340,8 @@ test(
           category: 'bug',
           priority: 'medium',
           subject: 'Private synthetic ticket subject',
-          message: 'Synthetic support test body'
+          message: 'Synthetic support test body',
+          replyToEmail: 'unverified@notifications.test'
         });
         const notice = await Notification.findOne({
           userId: owner._id,
@@ -355,6 +356,34 @@ test(
           await Notification.countDocuments({ 'meta.ticketId': String(ticket._id) }),
           count
         );
+        assert.equal(ticket.replyToEmail, 'unverified@notifications.test');
+        assert.equal(ticket.email, owner.email);
+        const fresh = await Ticket.findById(ticket._id);
+        await assert.rejects(
+          support.updateTicketStatus(ticket._id, 'open', admin._id, 0, ticket.updatedAt),
+          (error) => error.status === 409
+        );
+        await support.updateTicketStatus(ticket._id, 'in_progress', admin._id, 0, fresh.updatedAt);
+        const beforeReply = await Notification.countDocuments({
+          'meta.ticketId': String(ticket._id)
+        });
+        await support.addReply(owner, ticket._id, 'Private synthetic user reply');
+        assert.equal(
+          await Notification.countDocuments({ 'meta.ticketId': String(ticket._id) }),
+          beforeReply
+        );
+        await support.adminAddReply(admin, ticket._id, 'Private synthetic admin reply');
+        assert.equal(
+          await Notification.countDocuments({ 'meta.ticketId': String(ticket._id) }),
+          beforeReply + 1
+        );
+        assert.equal((await Ticket.findById(ticket._id)).replies.length, 2);
+        const replyNotice = await Notification.findOne({
+          'meta.ticketId': String(ticket._id),
+          title: 'New reply on your support ticket'
+        }).lean();
+        assert.ok(replyNotice);
+        assert.doesNotMatch(replyNotice.message, /Private synthetic/);
         const originalInbox = process.env.SUPPORT_INBOX_EMAIL;
         process.env.SUPPORT_INBOX_EMAIL = 'support@notifications.test';
         try {

@@ -1,0 +1,54 @@
+<div class="modal-backdrop" (click)="close.emit()" (window:keydown.escape)="close.emit()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Ticket Details</h3>
+      <button class="close-btn" (click)="close.emit()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-row"><strong>Subject:</strong> {{ ticket.subject }}</div>
+      <div class="detail-row" *ngIf="ticket._id"><strong>Ticket ID:</strong> {{ ticket._id }}</div>
+      <div class="detail-row"><strong>Category:</strong> {{ formatCategory(ticket.category) }}</div>
+      <div class="detail-row"><strong>Priority:</strong> {{ ticket.priority | titlecase }}</div>
+      <div class="detail-row">
+        <strong>Status:</strong>
+        <span class="ticket-status" [ngClass]="'status-' + (ticket.status || 'default')">
+          {{ formatStatus(ticket.status) | titlecase }}
+        </span>
+      </div>
+      <div class="detail-row" *ngIf="ticket.replyToEmail">
+        <strong>Reply-to email:</strong> {{ ticket.replyToEmail }}
+      </div>
+      <div class="detail-row" *ngIf="ticket.createdAt">
+        <strong>Created Date:</strong> {{ ticket.createdAt | date: 'medium' }}
+      </div>
+      <div class="detail-row" *ngIf="ticket.updatedAt">
+        <strong>Updated Date:</strong> {{ ticket.updatedAt | date: 'medium' }}
+      </div>
+      <div class="detail-row" *ngIf="ticket.sourcePage">
+        <strong>Source Page:</strong> {{ ticket.sourcePage }}
+      </div>
+      <div class="detail-row" *ngIf="ticket.browserInfo">
+        <strong>Browser/Device:</strong> {{ ticket.browserInfo }}
+      </div>
+
+      <div class="detail-message-box">
+        <strong>Message:</strong>
+        <p>{{ ticket.message }}</p>
+      </div>
+
+      <app-support-ticket-conversation
+        [replies]="ticket.replies || []"
+        [posting]="replyPosting"
+        (submitReply)="reply.emit($event)"
+      ></app-support-ticket-conversation>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-danger" (click)="delete.emit(ticket._id)" [disabled]="deleting">
+        <span class="material-symbols-outlined" style="font-size: 18px">delete</span>
+        {{ deleting ? 'Deleting...' : 'Delete Ticket' }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -7,6 +7,8 @@ const { createNotification } = require('./notificationService');
 
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_TICKETS_PER_WINDOW = 5;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const VALID_STATUSES = ['open', 'in_progress', 'resolved', 'closed'];
 const VALID_CATEGORIES = new Set([
   'bug',
   'feature_request',
@@ -125,6 +127,16 @@ const buildSupportEmailHtml = (ticket, user) => {
     : 'N/A';
   const requesterName = ticket.name || user.name;
   const requesterEmail = ticket.email || user.email;
+  const replyToEmail = String(ticket.replyToEmail || '').trim();
+  const replyToRow = replyToEmail
+    ? `
+                <tr>
+                  <td colspan="2" style="padding:14px 16px;border-top:1px solid #c7d2fe;vertical-align:top;background:#ffffff;">
+                    <div style="font-size:11px;font-weight:700;color:#5b21b6;text-transform:uppercase;letter-spacing:0.04em;">Reply-to (user-supplied, unverified)</div>
+                    <div style="margin-top:5px;font-size:13px;color:#374151;line-height:1.4;">${escapeHtml(replyToEmail)}</div>
+                  </td>
+                </tr>`
+    : '';
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -182,7 +194,7 @@ const buildSupportEmailHtml = (ticket, user) => {
                     <div style="font-size:11px;font-weight:700;color:#5b21b6;text-transform:uppercase;letter-spacing:0.04em;">Created</div>
                     <div style="margin-top:5px;font-size:14px;color:#111827;font-weight:600;line-height:1.4;">${escapeHtml(createdDate)}</div>
                   </td>
-                </tr>
+                </tr>${replyToRow}
               </table>
 
               <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border-collapse:collapse;">
@@ -221,6 +233,8 @@ const buildSupportEmailText = (ticket, user) => {
     : 'N/A';
   const requesterName = ticket.name || user.name;
   const requesterEmail = ticket.email || user.email;
+  const replyToEmail = String(ticket.replyToEmail || '').trim();
+  const replyToLine = replyToEmail ? `\nReply-to (user-supplied, unverified): ${replyToEmail}` : '';
 
   return `DevInsight AI Support
 New Support Ticket
@@ -230,7 +244,7 @@ Priority: ${priorityLabel}
 Status: ${statusLabel}
 Category: ${categoryLabel}
 
-Requester: ${requesterName} (${requesterEmail})
+Requester: ${requesterName} (${requesterEmail})${replyToLine}
 Ticket ID: ${ticket._id}
 Created: ${createdDate}
 
@@ -243,58 +257,80 @@ This email was generated automatically from DevInsight AI.`;
 };
 
 const createTicket = async (user, data) => {
-  const { category, priority, subject, message, sourcePage, browserInfo } = data;
+  const { category, priority, subject, message, sourcePage, browserInfo, replyToEmail } = data;
   if (!VALID_CATEGORIES.has(category)) throw supportError('Invalid category.', 400);
   if (!VALID_PRIORITIES.has(priority)) throw supportError('Invalid priority.', 400);
   const safeSubject = normalizeText(subject, 150, 'subject', true);
   const safeMessage = normalizeText(message, 5000, 'message', true);
   const safeSourcePage = normalizeText(sourcePage, 500, 'sourcePage');
   const safeBrowserInfo = normalizeText(browserInfo, 512, 'browserInfo');
+  // Contact-email policy: the authenticated account email remains the trusted
+  // identity; replyToEmail is an optional, user-supplied, unverified note. It is
+  // validated by the email regex directly (NOT via normalizeText, which would not
+  // reject a structurally invalid address) and never used as a sender or recipient.
+  let safeReplyToEmail = '';
+  if (replyToEmail !== undefined && replyToEmail !== null && String(replyToEmail).trim() !== '') {
+    const trimmed = String(replyToEmail).trim();
+    if (trimmed.length > 254 || !EMAIL_PATTERN.test(trimmed)) {
+      throw supportError('Invalid contact email.', 400);
+    }
+    safeReplyToEmail = trimmed;
+  }
   const dedupeKey = crypto
     .createHash('sha256')
     .update(`${safeSubject.toLowerCase()}\n${safeMessage.toLowerCase()}`)
     .digest('hex');
   const now = Date.now();
   const dedupeWindow = Math.floor(now / WINDOW_MS);
-  const ticket = await notificationPersistence.transaction(async (session) => {
-    await notificationPersistence.fence(user._id, session, Number(user.sessionRevision || 0));
-    if (!(await reserveMongoQuota(user._id, now, session)))
-      throw supportError('Too many support requests. Please try again in a few minutes.', 429);
-    if (!(await reserveMongoDedupe(user._id, dedupeKey, now, session)))
-      throw supportError('A similar ticket was recently submitted.', 409);
-    const [created] = await SupportTicket.create(
-      [
-        {
-          userId: user._id,
-          name: user.name,
-          email: user.email,
-          category,
-          priority,
-          subject: safeSubject,
-          message: safeMessage,
-          sourcePage: safeSourcePage,
-          browserInfo: safeBrowserInfo,
-          dedupeKey,
-          dedupeWindow,
-          emailDelivery: {
-            status: process.env.SUPPORT_INBOX_EMAIL ? 'pending' : 'skipped',
-            nextAttemptAt: new Date()
+  let ticket;
+  try {
+    ticket = await notificationPersistence.transaction(async (session) => {
+      await notificationPersistence.fence(user._id, session, Number(user.sessionRevision || 0));
+      // Dedupe precedes quota so a duplicate remains a 409 even at the quota limit.
+      // The transaction rolls back both reservations if any later operation fails.
+      if (!(await reserveMongoDedupe(user._id, dedupeKey, now, session)))
+        throw supportError('A similar ticket was recently submitted.', 409);
+      if (!(await reserveMongoQuota(user._id, now, session)))
+        throw supportError('Too many support requests. Please try again in a few minutes.', 429);
+      const [created] = await SupportTicket.create(
+        [
+          {
+            userId: user._id,
+            name: user.name,
+            email: user.email,
+            category,
+            priority,
+            subject: safeSubject,
+            message: safeMessage,
+            sourcePage: safeSourcePage,
+            browserInfo: safeBrowserInfo,
+            replyToEmail: safeReplyToEmail,
+            dedupeKey,
+            dedupeWindow,
+            emailDelivery: {
+              status: String(process.env.SUPPORT_INBOX_EMAIL || '').trim() ? 'pending' : 'skipped',
+              nextAttemptAt: new Date()
+            }
           }
-        }
-      ],
-      { session }
-    );
-    await createNotification({
-      userId: user._id,
-      session,
-      type: 'info',
-      title: 'Support request received',
-      message: 'Your support request has been received. Open Help & Support for details.',
-      eventId: `support-ticket:${created._id}`,
-      meta: { ticketId: created._id }
+        ],
+        { session }
+      );
+      await createNotification({
+        userId: user._id,
+        session,
+        type: 'info',
+        title: 'Support request received',
+        message: 'Your support request has been received. Open Help & Support for details.',
+        eventId: `support-ticket:${created._id}`,
+        meta: { ticketId: created._id }
+      });
+      return created;
     });
-    return created;
-  });
+  } catch (error) {
+    if (error?.status) throw error;
+    if (error?.code === 11000) throw supportError('A similar ticket was recently submitted.', 409);
+    throw supportError('Support is temporarily unavailable. Please try again shortly.', 503);
+  }
 
   return ticket;
 };
@@ -329,6 +365,15 @@ const deleteTicket = async (ticketId, userId) => {
   return await SupportTicket.findOneAndDelete({ _id: ticketId, userId });
 };
 
+const escapeRegExp = (value) => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const SORT_MAP = {
+  createdAt_desc: { createdAt: -1 },
+  createdAt_asc: { createdAt: 1 },
+  status: { status: 1 },
+  lastReplyAt_desc: { lastReplyAt: -1 }
+};
+
 const getAllTickets = async (page = 1, limit = 10, filters = {}) => {
   const skip = (page - 1) * limit;
   const query = {};
@@ -340,14 +385,50 @@ const getAllTickets = async (page = 1, limit = 10, filters = {}) => {
     if (filters.startDate) query.createdAt.$gte = filters.startDate;
     if (filters.endDate) query.createdAt.$lte = filters.endDate;
   }
+  if (filters.search) {
+    const trimmed = String(filters.search).trim().slice(0, 100);
+    if (trimmed) {
+      // Search only the trusted account email and subject — never replyToEmail
+      // (user-supplied, unverified). Metacharacters are escaped to prevent
+      // ReDoS/regex injection; the 'i' flag is the only modifier.
+      const rx = new RegExp(escapeRegExp(trimmed), 'i');
+      query.$or = [{ subject: rx }, { email: rx }];
+    }
+  }
 
-  const tickets = await SupportTicket.find(query)
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit)
-    .lean();
-
+  // Allow-listed sort; unrecognized values coerce to the default. No client-controlled
+  // field ever reaches .sort(). priority_desc needs a severity rank (a lexical sort on
+  // the enum string would be meaningless), so it is the only branch using aggregation.
+  const sort = filters.sort;
   const total = await SupportTicket.countDocuments(query);
+  let tickets;
+  if (sort === 'priority_desc') {
+    tickets = await SupportTicket.aggregate([
+      { $match: query },
+      {
+        $addFields: {
+          _priorityRank: {
+            $switch: {
+              branches: [
+                { case: { $eq: ['$priority', 'urgent'] }, then: 4 },
+                { case: { $eq: ['$priority', 'high'] }, then: 3 },
+                { case: { $eq: ['$priority', 'medium'] }, then: 2 },
+                { case: { $eq: ['$priority', 'low'] }, then: 1 }
+              ],
+              default: 0
+            }
+          }
+        }
+      },
+      { $sort: { _priorityRank: -1, createdAt: -1 } },
+      { $skip: skip },
+      { $limit: limit },
+      { $project: { _priorityRank: 0 } }
+    ]);
+  } else {
+    const sortSpec = SORT_MAP[sort] || SORT_MAP.createdAt_desc;
+    tickets = await SupportTicket.find(query).sort(sortSpec).skip(skip).limit(limit).lean();
+  }
 
   return {
     tickets,
@@ -360,39 +441,114 @@ const getAllTickets = async (page = 1, limit = 10, filters = {}) => {
   };
 };
 
-const updateTicketStatus = async (ticketId, status, actorId, actorRevision = 0) => {
-  if (!['open', 'in_progress', 'resolved', 'closed'].includes(status))
-    throw new Error('Invalid status.');
-  return notificationPersistence.transaction(async (session) => {
-    const actor = await require('../models/user')
-      .findOne({ _id: actorId, isActive: { $ne: false } })
-      .session(session)
-      .lean();
-    if (
-      !actor ||
-      !['admin', 'super_admin'].includes(
-        require('../middleware/authmiddleware').normalizeUserRole(actor.role)
-      )
+const getAdminTicketById = async (ticketId) => {
+  // Admins see every ticket; no owner fence (the route enforces the role boundary).
+  return await SupportTicket.findById(ticketId).lean();
+};
+
+const authorizeAdmin = async (actorId, actorRevision, session) => {
+  const actor = await require('../models/user')
+    .findOne({ _id: actorId, isActive: { $ne: false } })
+    .session(session)
+    .lean();
+  if (
+    !actor ||
+    !['admin', 'super_admin'].includes(
+      require('../middleware/authmiddleware').normalizeUserRole(actor.role)
     )
-      throw supportError('Not authorized.', 403);
-    await notificationPersistence.fence(actorId, session, Number(actorRevision));
+  )
+    throw supportError('Not authorized.', 403);
+  await notificationPersistence.fence(actorId, session, Number(actorRevision));
+};
+
+const updateTicketStatus = async (
+  ticketId,
+  status,
+  actorId,
+  actorRevision = 0,
+  expectedUpdatedAt
+) => {
+  if (!VALID_STATUSES.includes(status)) throw supportError('Invalid status.', 400);
+  const expected =
+    expectedUpdatedAt === undefined || expectedUpdatedAt === null || expectedUpdatedAt === ''
+      ? null
+      : new Date(expectedUpdatedAt);
+  if (expected && Number.isNaN(expected.getTime()))
+    throw supportError('Invalid ticket version.', 400);
+  return notificationPersistence.transaction(async (session) => {
+    await authorizeAdmin(actorId, actorRevision, session);
     const ticket = await SupportTicket.findById(ticketId).session(session);
-    if (!ticket || ticket.status === status) return ticket;
+    if (!ticket) return null;
+    if (expected && ticket.updatedAt.getTime() !== expected.getTime()) {
+      throw supportError('This ticket was updated by someone else. Reload and try again.', 409);
+    }
+    if (ticket.status === status) return ticket;
     ticket.status = status;
     ticket.statusRevision = Number(ticket.statusRevision || 0) + 1;
-    await ticket.save({ session });
+    // Advance the UI version token even when two writes occur in one millisecond.
+    ticket.updatedAt = new Date(Math.max(Date.now(), ticket.updatedAt.getTime() + 1));
+    await ticket.save({ session, timestamps: false });
     await createNotification({
       userId: ticket.userId,
       session,
       type: 'info',
       title: 'Support request status updated',
       message: `Your support request is now ${status.replace('_', ' ')}. Open Help & Support for details.`,
+      dedupeKey: `support-status-${ticket._id}-${ticket.statusRevision}`,
       eventId: `support-status:${ticket._id}:${ticket.statusRevision}`,
       meta: { ticketId: ticket._id }
     });
     return ticket;
   });
 };
+
+const appendReply = async (actor, ticketId, body, isAdmin) => {
+  const safeBody = normalizeText(body, 5000, 'message', true);
+  return notificationPersistence.transaction(async (session) => {
+    if (isAdmin) await authorizeAdmin(actor._id, actor.sessionRevision || 0, session);
+    else
+      await notificationPersistence.fence(actor._id, session, Number(actor.sessionRevision || 0));
+    const ownerFilter = isAdmin ? { _id: ticketId } : { _id: ticketId, userId: actor._id };
+    // A guarded push enforces the 100-reply cap under concurrent writes.
+    const result = await SupportTicket.findOneAndUpdate(
+      { ...ownerFilter, 'replies.99': { $exists: false } },
+      {
+        $push: {
+          replies: {
+            authorId: actor._id,
+            authorRole: isAdmin ? 'admin' : 'user',
+            body: safeBody,
+            createdAt: new Date()
+          }
+        },
+        $set: { lastReplyAt: new Date() }
+      },
+      { returnDocument: 'after', session }
+    );
+    if (!result) {
+      const existing = await SupportTicket.findOne(ownerFilter).session(session).lean();
+      if (!existing) throw supportError('Ticket not found.', 404);
+      throw supportError('This conversation has reached its reply limit.', 409);
+    }
+    if (isAdmin) {
+      const replyId = result.replies[result.replies.length - 1]._id;
+      await createNotification({
+        userId: result.userId,
+        session,
+        type: 'info',
+        title: 'New reply on your support ticket',
+        message: 'Support replied to your request. Open Help & Support for details.',
+        dedupeKey: `support-reply-${replyId}`,
+        eventId: `support-reply:${replyId}`,
+        meta: { ticketId: result._id }
+      });
+    }
+    return result;
+  });
+};
+
+const addReply = (user, ticketId, body) => appendReply(user, ticketId, body, false);
+const adminAddReply = (admin, ticketId, body) => appendReply(admin, ticketId, body, true);
 
 const supportEmailPayload = (ticket) => ({
   to: String(process.env.SUPPORT_INBOX_EMAIL || '').trim(),
@@ -408,6 +564,9 @@ module.exports = {
   getTicketById,
   deleteTicket,
   getAllTickets,
+  getAdminTicketById,
   updateTicketStatus,
+  addReply,
+  adminAddReply,
   supportEmailPayload
 };
