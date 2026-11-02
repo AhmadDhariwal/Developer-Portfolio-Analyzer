@@ -125,7 +125,7 @@ export class SupportComponent implements OnInit {
     },
     {
       question: 'How else can I contact support?',
-      answer: 'You can email us directly at support@example.com for urgent inquiries.',
+      answer: 'You can email us directly at support@devinsight.com for urgent inquiries.',
     },
   ];
 
@@ -238,8 +238,11 @@ export class SupportComponent implements OnInit {
       .addReply(ticket._id, trimmed)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: () => {
+        next: (res: any) => {
           this.isPostingReply = false;
+          if (res?.ticket && this.selectedTicket) {
+            this.selectedTicket = res.ticket;
+          }
           this.loadSupportTickets(this.supportPage);
           this.cdr.detectChanges();
         },

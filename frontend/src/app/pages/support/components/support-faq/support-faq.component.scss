@@ -1,12 +1,9 @@
+@use '../../../../shared/styles/developer-ui' as developer;
+
 :host {
   display: block;
+  font-family: var(--font-sans, 'Manrope', 'Segoe UI', sans-serif);
 }
-
-$card-bg: #131b2e;
-$card-border: rgba(255, 255, 255, 0.05);
-$primary: #6366f1;
-$text-main: #f8fafc;
-$text-muted: #94a3b8;
 
 .material-symbols-outlined {
   font-variation-settings:
@@ -28,123 +25,191 @@ $text-muted: #94a3b8;
   border: 0;
 }
 
-.panel-card {
-  background-color: $card-bg;
-  border: 1px solid $card-border;
-  border-radius: 20px;
+.panel {
+  min-width: 0;
+  background: var(--surface-card, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 14px;
   padding: 24px;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.03),
+    0 8px 24px -4px rgba(0, 0, 0, 0.04);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-.faq-section {
-  margin-top: 40px;
-  margin-bottom: 60px;
-}
-
-.panel-header {
+.section-heading {
   display: flex;
+  align-items: baseline;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-
-  .panel-title-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  flex-wrap: wrap;
 
   h2 {
-    font-size: 20px;
-    font-weight: 600;
-    color: $text-main;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    @include developer.section-title;
     margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
   }
 
   p {
+    margin: 4px 0 0;
     font-size: 14px;
-    color: $text-muted;
-    margin: 0;
+    color: var(--text-secondary);
   }
 }
 
-.btn-secondary {
+.btn-toggle-all {
   background: transparent;
-  border: 1px solid $card-border;
-  color: $text-main;
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-size: 13px;
-  font-weight: 500;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    background: var(--surface-hover, rgba(0, 0, 0, 0.03));
+    border-color: #4f46e5;
   }
 }
 
 .faq-search {
   position: relative;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
 
-  .material-symbols-outlined {
+  .search-icon {
     position: absolute;
-    top: 50%;
     left: 14px;
-    transform: translateY(-50%);
-    color: $text-muted;
+    color: var(--text-muted);
     font-size: 20px;
     pointer-events: none;
   }
 
   input {
     width: 100%;
-    background-color: rgba(0, 0, 0, 0.2);
-    border: 1px solid $card-border;
-    border-radius: 12px;
-    padding: 12px 16px 12px 42px;
-    color: $text-main;
-    font-size: 14px;
+    min-height: 42px;
+    border: 1px solid var(--border-strong, #cbd5e1);
+    border-radius: 8px;
+    background: var(--surface-input, #ffffff);
+    color: var(--text-primary);
     font-family: inherit;
+    font-size: 13px;
+    padding: 8px 40px 8px 42px;
     box-sizing: border-box;
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+
+    &::placeholder {
+      color: var(--text-muted);
+      opacity: 0.7;
+    }
 
     &:focus {
       outline: none;
-      border-color: $primary;
-      background-color: rgba(0, 0, 0, 0.3);
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+    }
+  }
+
+  .search-clear-btn {
+    position: absolute;
+    right: 10px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 50%;
+    transition: all 0.15s;
+
+    &:hover {
+      color: var(--text-primary);
+      background: var(--surface-hover, rgba(0, 0, 0, 0.05));
+    }
+
+    .material-symbols-outlined {
+      font-size: 18px;
     }
   }
 }
 
+:host-context([data-theme='dark']) .faq-search input,
+:host-context(.dark) .faq-search input {
+  border-color: var(--border-color, #334155);
+  background: var(--surface-input, #101622);
+
+  &:focus {
+    border-color: #a3a6ff;
+    box-shadow: 0 0 0 3px rgba(163, 166, 255, 0.2);
+  }
+}
+
 .faq-empty {
-  font-size: 14px;
-  color: $text-muted;
-  padding: 8px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: 24px 16px;
+  background: var(--surface-secondary, #f8fafc);
+  border-radius: 8px;
+  border: 1px dashed var(--border-color, #e2e8f0);
+
+  .empty-icon {
+    font-size: 18px;
+    color: #4f46e5;
+  }
 }
 
 .faq-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
-}
-@media (min-width: 768px) {
-  .faq-grid {
+  gap: 12px;
+
+  @media (min-width: 840px) {
     grid-template-columns: 1fr 1fr;
   }
 }
 
 .faq-item {
-  background-color: $card-bg;
-  border: 1px solid $card-border;
-  border-radius: 12px;
+  background: var(--surface-secondary, #f8fafc);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 10px;
   overflow: hidden;
-  transition: all 0.2s;
+  transition: all 0.15s ease;
 
   &:hover {
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: #4f46e5;
   }
+
+  &.item-open {
+    border-color: #4f46e5;
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.06);
+  }
+}
+
+:host-context([data-theme='dark']) .faq-item:hover,
+:host-context([data-theme='dark']) .faq-item.item-open,
+:host-context(.dark) .faq-item:hover,
+:host-context(.dark) .faq-item.item-open {
+  border-color: #a3a6ff;
 }
 
 .faq-heading {
@@ -154,37 +219,66 @@ $text-muted: #94a3b8;
 }
 
 .faq-question {
-  padding: 16px 20px;
+  padding: 14px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   cursor: pointer;
-  font-size: 15px;
-  font-weight: 500;
-  color: $text-main;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-primary);
   background: transparent;
   border: none;
   width: 100%;
   text-align: left;
+  min-height: 44px;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: #4f46e5;
+  }
 
   &:focus-visible {
-    outline: 2px solid $primary;
+    outline: 2px solid #4f46e5;
     outline-offset: -2px;
   }
 
-  .material-symbols-outlined {
-    color: $text-muted;
-    transition: transform 0.2s;
+  .question-text {
+    flex: 1;
   }
 
-  &.open .material-symbols-outlined {
+  .chevron-icon {
+    color: var(--text-muted);
+    font-size: 20px;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  &.open .chevron-icon {
     transform: rotate(180deg);
+    color: #4f46e5;
   }
 }
 
+:host-context([data-theme='dark']) .faq-question:hover,
+:host-context([data-theme='dark']) .faq-question.open .chevron-icon,
+:host-context(.dark) .faq-question:hover,
+:host-context(.dark) .faq-question.open .chevron-icon {
+  color: #a3a6ff;
+}
+
 .faq-answer {
-  padding: 0 20px 16px;
-  font-size: 14px;
-  color: $text-muted;
+  padding: 0 16px 14px;
+  font-size: 13px;
+  color: var(--text-secondary);
   line-height: 1.6;
+  border-top: 1px solid var(--border-color, #e2e8f0);
+  padding-top: 10px;
+
+  p {
+    margin: 0;
+  }
 }

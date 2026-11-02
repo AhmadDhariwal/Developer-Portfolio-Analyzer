@@ -1,4 +1,11 @@
-<div class="ticket-item" (click)="open.emit(ticket)" style="cursor: pointer">
+<div
+  class="ticket-item"
+  (click)="open.emit(ticket)"
+  role="button"
+  tabindex="0"
+  (keydown.enter)="open.emit(ticket)"
+  (keydown.space)="open.emit(ticket); $event.preventDefault()"
+>
   <div class="ticket-item-left">
     <div
       class="ticket-icon"
@@ -14,12 +21,16 @@
     </div>
 
     <div class="ticket-info">
-      <div class="ticket-subject">{{ ticket.subject }}</div>
+      <div class="ticket-subject" [title]="ticket.subject">{{ ticket.subject }}</div>
       <div class="ticket-meta">
-        <span>{{ formatCategory(ticket.category) }} &bull; {{ ticket.priority | titlecase }}</span>
-        <span class="ticket-id" *ngIf="ticket._id"
-          >#TCK-{{ ticket._id.substring(ticket._id.length - 6).toUpperCase() }}</span
-        >
+        <span class="meta-tag">{{ formatCategory(ticket.category) }}</span>
+        <span class="meta-sep">&bull;</span>
+        <span class="meta-priority" [ngClass]="'prio-' + (ticket.priority || 'low')">
+          {{ ticket.priority | titlecase }}
+        </span>
+        <span class="ticket-id" *ngIf="ticket._id">
+          #TCK-{{ ticket._id.substring(ticket._id.length - 6).toUpperCase() }}
+        </span>
       </div>
     </div>
   </div>
@@ -35,7 +46,8 @@
         'status-default': !ticket.status,
       }"
     >
-      {{ formatStatus(ticket.status) | titlecase }}
+      <span class="status-indicator"></span>
+      <span>{{ formatStatus(ticket.status) | titlecase }}</span>
     </div>
 
     <div class="ticket-time" *ngIf="ticket.createdAt">

@@ -1,0 +1,17 @@
+{
+  "gate": "Gate 6: Previously Skipped Tests",
+  "timestamp": "2026-11-02T10:23:59.171Z",
+  "suites": {
+    "b2Storage": {
+      "passed": true,
+      "durationMs": 18820,
+      "outputSummary": "✔ configuration defaults to filesystem and rejects partial/unsafe/shared B2 credentials (8.18ms); ✔ S3 operations isolate credentials/buckets and retain versions, integrity and bounded settings (72.4593ms); ✔ reads reject corrupt/oversized bytes and configuration drift without leaking provider failures (6.3976ms); ✔ unknown PUT outcomes delete only exact-key versions, including hidden versions, never prefix neighbors (9.5844ms); ✔ operation deadline and process admission bound stalled storage calls (57.1435ms); ✔ disposable Mongo + fixture S3: existing upload APIs, privacy, replacement, cleanup, restart and legacy reads (17421.9015ms); ℹ tests 6; ℹ pass 6; ℹ fail 0"
+    },
+    "storageSecurityFinal": {
+      "passed": true,
+      "durationMs": 8136,
+      "outputSummary": "✔ both cleanup commands share the bounded worker; failures defer and do not stop other accounts (952.4811ms); ✔ startup validates B2 before success logs and does not disclose JWT secret fragments (401.9076ms); ✔ provisioning has explicit target gates and no implicit production URI (25.5694ms); ✔ disposable Mongo provisioning is additive/idempotent; retry batch respects backoff and preserves records (6461.1596ms); ℹ tests 4; ℹ pass 4; ℹ fail 0"
+    }
+  },
+  "passed": true
+}
