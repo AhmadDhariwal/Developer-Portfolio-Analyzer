@@ -1,20 +1,14 @@
-<main class="page-container" style="max-width: 1200px; margin: 0 auto; padding: 24px;">
-  
-
-  <header class="page-header">
-    <h1 class="page-title">
-      <span class="material-symbols-outlined" style="color: #6366f1; font-size: 36px;">forum</span>
-      Help & Support
-    </h1>
-    <p class="page-subtitle">We're here to help. Get support, report issues, or share your feedback.</p>
-  </header>
+<main class="page-container" style="max-width: 1200px; margin: 0 auto; padding: 24px">
+  <app-support-page-header></app-support-page-header>
 
   <!-- Category Cards -->
   <div class="category-grid">
-    <div class="category-card" 
-         *ngFor="let cat of categoryCards" 
-         [class.active]="supportForm.category === cat.value"
-         (click)="selectCategory(cat.value)">
+    <div
+      class="category-card"
+      *ngFor="let cat of categoryCards"
+      [class.active]="draft.category === cat.value"
+      (click)="selectCategory(cat.value)"
+    >
       <div class="card-icon" [ngClass]="cat.iconClass">
         <span class="material-symbols-outlined">{{ cat.icon }}</span>
       </div>
@@ -28,241 +22,44 @@
 
   <!-- Main Grid: Form and Tickets -->
   <div class="main-grid">
-    
-    <!-- Left Column: Form -->
-    <div class="panel-card" #supportFormElement>
-      <div class="panel-header">
-        <div class="panel-title-wrapper">
-          <h2>
-            <span class="material-symbols-outlined" style="color: #6366f1;">send</span>
-            Submit a Support Request
-          </h2>
-          <p>Provide details about your issue or feedback.</p>
-        </div>
-      </div>
+    <app-support-ticket-form
+      [submitting]="isSubmittingTicket"
+      [error]="supportError"
+      [success]="supportSuccess"
+      [draft]="draft"
+      [categoryCards]="categoryCards"
+      (submitTicket)="submitSupportTicket($event)"
+    ></app-support-ticket-form>
 
-      <div class="prof-error" *ngIf="supportError">{{ supportError }}</div>
-      <div class="prof-success" *ngIf="supportSuccess">{{ supportSuccess }}</div>
-
-      <form (ngSubmit)="submitSupportTicket()">
-        
-        <div class="form-row">
-          <div class="form-group">
-            <label for="category">Category <span class="required">*</span></label>
-            <select id="category" name="category" [(ngModel)]="supportForm.category">
-              <option *ngFor="let cat of categoryCards" [value]="cat.value">{{ cat.title }}</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="priority">Priority <span class="required">*</span></label>
-            <select id="priority" name="priority" [(ngModel)]="supportForm.priority">
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="urgent">Urgent</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="subject">Subject <span class="required">*</span></label>
-          <input id="subject" name="subject" type="text" 
-                 [(ngModel)]="supportForm.subject" 
-                 placeholder="Short summary of your issue or feedback" 
-                 maxlength="150" required />
-          <div class="char-counter">{{ supportForm.subject.length }}/150</div>
-        </div>
-
-        <div class="form-group">
-          <label for="message">Message <span class="required">*</span></label>
-          <textarea id="message" name="message" 
-                    [(ngModel)]="supportForm.message" 
-                    placeholder="Please describe your issue or feedback in detail..." 
-                    maxlength="5000" required></textarea>
-          <div class="char-counter">{{ supportForm.message.length }}/5000</div>
-        </div>
-
-        <div class="form-group">
-          <label for="contactEmail">Contact Email (optional)</label>
-          <input id="contactEmail" name="contactEmail" type="email" 
-                 [(ngModel)]="supportForm.contactEmail" 
-                 placeholder="Where can we reach you with updates?" />
-        </div>
-
-        <button type="submit" class="btn-primary" [disabled]="isSubmittingTicket">
-          <span class="material-symbols-outlined" *ngIf="!isSubmittingTicket">rocket_launch</span>
-          <span *ngIf="!isSubmittingTicket">Submit Request</span>
-          
-          <span class="material-symbols-outlined" *ngIf="isSubmittingTicket" style="animation: spin 1s linear infinite;">progress_activity</span>
-          <span *ngIf="isSubmittingTicket">Submitting...</span>
-        </button>
-
-      </form>
-    </div>
-
-    <!-- Right Column: Tickets List -->
-    <div class="panel-card">
-      <div class="panel-header">
-        <div class="panel-title-wrapper">
-          <h2>
-            <span class="material-symbols-outlined" style="color: #6366f1;">receipt_long</span>
-            My Support Requests
-          </h2>
-          <p>Track the status of your requests.</p>
-        </div>
-        <button class="btn-secondary" *ngIf="supportTotalPages > 1" (click)="loadSupportTickets(1)">View All</button>
-      </div>
-
-      <!-- Loading State -->
-      <div *ngIf="isLoadingTickets" style="display: flex; justify-content: center; padding: 40px 0;">
-        <span class="material-symbols-outlined" style="animation: spin 1s linear infinite; font-size: 32px; color: #6366f1;">progress_activity</span>
-      </div>
-
-      <!-- Empty State -->
-      <div class="empty-state" *ngIf="!isLoadingTickets && supportTickets.length === 0">
-        <span class="material-symbols-outlined">inbox</span>
-        <p>You have no active support requests.</p>
-      </div>
-
-      <!-- Ticket List -->
-      <div class="ticket-list" *ngIf="!isLoadingTickets && supportTickets.length > 0">
-        
-        <div class="ticket-item" *ngFor="let ticket of supportTickets" (click)="openTicketDetails(ticket)" style="cursor: pointer;">
-          <div class="ticket-item-left">
-            <div class="ticket-icon" 
-                 [ngClass]="{
-                   'icon-bug': ticket.category === 'bug',
-                   'icon-feature': ticket.category === 'feature_request',
-                   'icon-account': ticket.category === 'account_issue',
-                   'icon-feedback': ticket.category === 'general_feedback',
-                   'icon-support': ticket.category === 'other' || !ticket.category
-                 }">
-              <span class="material-symbols-outlined">
-                {{ ticket.category === 'bug' ? 'bug_report' : 
-                   ticket.category === 'feature_request' ? 'lightbulb' : 
-                   ticket.category === 'account_issue' ? 'person' : 
-                   ticket.category === 'general_feedback' ? 'chat_bubble' : 'headset_mic' }}
-              </span>
-            </div>
-            
-            <div class="ticket-info">
-              <div class="ticket-subject">{{ ticket.subject }}</div>
-              <div class="ticket-meta">
-                <span>{{ formatCategory(ticket.category) }} &bull; {{ ticket.priority | titlecase }}</span>
-                <span class="ticket-id" *ngIf="ticket._id">#TCK-{{ ticket._id.substring(ticket._id.length - 6).toUpperCase() }}</span>
-              </div>
-            </div>
-          </div>
-          
-          <div class="ticket-item-right">
-            <div class="ticket-status" 
-                 [ngClass]="{
-                   'status-open': ticket.status === 'open',
-                   'status-in_progress': ticket.status === 'in_progress',
-                   'status-resolved': ticket.status === 'resolved',
-                   'status-closed': ticket.status === 'closed',
-                   'status-default': !ticket.status
-                 }">
-              {{ formatStatus(ticket.status) | titlecase }}
-            </div>
-            
-            <div class="ticket-time" *ngIf="ticket.createdAt">
-              {{ ticket.createdAt | date:'shortDate' }}
-            </div>
-            
-            <span class="material-symbols-outlined ticket-arrow">chevron_right</span>
-          </div>
-        </div>
-        
-      </div>
-
-      <!-- Pagination -->
-      <div class="pagination" *ngIf="!isLoadingTickets && supportTotalPages > 1">
-        <button [disabled]="supportPage <= 1" (click)="loadSupportTickets(supportPage - 1)">
-          &lt; Prev
-        </button>
-        <button *ngFor="let p of [].constructor(supportTotalPages); let i = index" 
-                [class.active]="supportPage === i + 1"
-                (click)="loadSupportTickets(i + 1)">
-          {{ i + 1 }}
-        </button>
-        <button [disabled]="supportPage >= supportTotalPages" (click)="loadSupportTickets(supportPage + 1)">
-          Next &gt;
-        </button>
-      </div>
-
-    </div>
+    <app-support-ticket-list
+      [tickets]="supportTickets"
+      [loading]="isLoadingTickets"
+      [page]="supportPage"
+      [totalPages]="supportTotalPages"
+      (open)="openTicketDetails($event)"
+      (pageChange)="loadSupportTickets($event)"
+    ></app-support-ticket-list>
   </div>
 
   <!-- FAQ Section -->
-  <div class="panel-card faq-section">
-    <div class="panel-header">
-      <div class="panel-title-wrapper">
-        <h2>
-          <span class="material-symbols-outlined" style="color: #6366f1;">article</span>
-          Frequently Asked Questions
-        </h2>
-        <p>Find quick answers to common questions.</p>
-      </div>
-      <button class="btn-secondary" (click)="toggleViewAllFaqs()">{{ showAllFaqs ? 'Show Less' : 'View All FAQs' }}</button>
-    </div>
-    
-    <div class="faq-grid">
-      <div class="faq-item" *ngFor="let faq of displayedFaqs; let i = index">
-        <button class="faq-question" [class.open]="faq.isOpen" (click)="toggleFaq(i)">
-          <span>{{ faq.question }}</span>
-          <span class="material-symbols-outlined">expand_more</span>
-        </button>
-        <div class="faq-answer" *ngIf="faq.isOpen">
-          {{ faq.answer }}
-        </div>
-      </div>
-    </div>
-  </div>
+  <app-support-faq [faqs]="faqs"></app-support-faq>
 
   <div class="footer-note">
-    We usually respond within 24-48 hours.<br/>
-    Need immediate help? Contact us at <a href="mailto:support@devinsight.com">support@devinsight.com</a>
+    We usually respond within 24-48 hours.<br />
+    Need immediate help? Contact us at
+    <a href="mailto:support@devinsight.com">support@devinsight.com</a>
   </div>
 
   <!-- Ticket Detail Modal -->
-  <div class="modal-backdrop" *ngIf="selectedTicket" (click)="closeTicketDetails()" (window:keydown.escape)="closeTicketDetails()">
-    <div class="modal-container" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3>Ticket Details</h3>
-        <button class="close-btn" (click)="closeTicketDetails()">
-          <span class="material-symbols-outlined">close</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div class="detail-row"><strong>Subject:</strong> {{ selectedTicket.subject }}</div>
-        <div class="detail-row" *ngIf="selectedTicket._id"><strong>Ticket ID:</strong> {{ selectedTicket._id }}</div>
-        <div class="detail-row"><strong>Category:</strong> {{ formatCategory(selectedTicket.category) }}</div>
-        <div class="detail-row"><strong>Priority:</strong> {{ selectedTicket.priority | titlecase }}</div>
-        <div class="detail-row">
-          <strong>Status:</strong> 
-          <span class="ticket-status" [ngClass]="'status-' + (selectedTicket.status || 'default')">
-            {{ formatStatus(selectedTicket.status) | titlecase }}
-          </span>
-        </div>
-        <div class="detail-row" *ngIf="selectedTicket.createdAt"><strong>Created Date:</strong> {{ selectedTicket.createdAt | date:'medium' }}</div>
-        <div class="detail-row" *ngIf="selectedTicket.updatedAt"><strong>Updated Date:</strong> {{ selectedTicket.updatedAt | date:'medium' }}</div>
-        <div class="detail-row" *ngIf="selectedTicket.sourcePage"><strong>Source Page:</strong> {{ selectedTicket.sourcePage }}</div>
-        <div class="detail-row" *ngIf="selectedTicket.browserInfo"><strong>Browser/Device:</strong> {{ selectedTicket.browserInfo }}</div>
-        
-        <div class="detail-message-box">
-          <strong>Message:</strong>
-          <p>{{ selectedTicket.message }}</p>
-        </div>
-      </div>
-      <div class="modal-footer" style="padding: 16px 24px; border-top: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: flex-end;">
-        <button class="btn-danger" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #ef4444; padding: 10px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: 500; transition: all 0.2s;" (click)="deleteTicket(selectedTicket._id)" [disabled]="isDeletingTicket" onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'">
-          <span class="material-symbols-outlined" style="font-size: 18px;">delete</span>
-          {{ isDeletingTicket ? 'Deleting...' : 'Delete Ticket' }}
-        </button>
-      </div>
-    </div>
-  </div>
+  <app-support-ticket-details
+    *ngIf="selectedTicket"
+    [ticket]="selectedTicket"
+    [deleting]="isDeletingTicket"
+    [replyPosting]="isPostingReply"
+    (close)="closeTicketDetails()"
+    (delete)="deleteTicket($event)"
+    (reply)="submitReply($event)"
+  ></app-support-ticket-details>
 
   <!-- Shared Confirmation Dialog Component -->
   <app-confirm-dialog
@@ -272,7 +69,7 @@
     confirmText="Confirm"
     cancelText="Cancel"
     (confirmed)="onConfirmAccepted()"
-    (cancelled)="onConfirmCancelled()">
+    (cancelled)="onConfirmCancelled()"
+  >
   </app-confirm-dialog>
-
 </main>

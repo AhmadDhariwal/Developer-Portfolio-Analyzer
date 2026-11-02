@@ -1,110 +1,176 @@
-import { Component, OnInit, ChangeDetectorRef, DestroyRef, inject, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Router } from '@angular/router';
 import { SupportService, SupportTicket } from '../../shared/services/support.service';
 import { RecruiterSharedModule } from '../../supervisors/recruiter-shared/recruiter-shared.module';
-
-interface CategoryCard {
-  value: string;
-  title: string;
-  description: string;
-  icon: string;
-  iconClass: string;
-}
-
-interface FaqItem {
-  question: string;
-  answer: string;
-  isOpen: boolean;
-}
+import {
+  SupportCategoryCard,
+  SupportFaqItem,
+  SupportTicketDraft,
+} from './components/support-models';
+import { SupportPageHeaderComponent } from './components/support-page-header/support-page-header.component';
+import { SupportTicketFormComponent } from './components/support-ticket-form/support-ticket-form.component';
+import { SupportTicketListComponent } from './components/support-ticket-list/support-ticket-list.component';
+import { SupportTicketDetailsComponent } from './components/support-ticket-details/support-ticket-details.component';
+import { SupportFaqComponent } from './components/support-faq/support-faq.component';
 
 @Component({
   selector: 'app-support',
   standalone: true,
-  imports: [CommonModule, FormsModule, RecruiterSharedModule],
+  imports: [
+    CommonModule,
+    RecruiterSharedModule,
+    SupportPageHeaderComponent,
+    SupportTicketFormComponent,
+    SupportTicketListComponent,
+    SupportTicketDetailsComponent,
+    SupportFaqComponent,
+  ],
   templateUrl: './support.html',
   styleUrl: './support.scss',
 })
 export class SupportComponent implements OnInit {
-  @ViewChild('supportFormElement') supportFormElement!: ElementRef;
-
   supportTickets: SupportTicket[] = [];
   isLoadingTickets = false;
-  
-  supportForm = {
+
+  draft: SupportTicketDraft = {
     category: 'general_feedback',
     priority: 'low',
     subject: '',
     message: '',
-    contactEmail: ''
+    replyToEmail: '',
   };
-  
+
   isSubmittingTicket = false;
   supportSuccess = '';
   supportError = '';
   supportPage = 1;
   supportTotalPages = 1;
-  
-  selectedTicket: SupportTicket | null = null;
-  showAllFaqs = false;
+  private latestRequestedPage = 1;
 
-  categoryCards: CategoryCard[] = [
+  selectedTicket: SupportTicket | null = null;
+  isDeletingTicket = false;
+  isPostingReply = false;
+
+  categoryCards: SupportCategoryCard[] = [
     {
       value: 'bug',
       title: 'Report a Bug',
       description: 'Found a bug? Let us know so we can fix it.',
       icon: 'bug_report',
-      iconClass: 'icon-bug'
+      iconClass: 'icon-bug',
     },
     {
       value: 'feature_request',
       title: 'Request a Feature',
       description: 'Suggest a new feature or improvement.',
       icon: 'lightbulb',
-      iconClass: 'icon-feature'
+      iconClass: 'icon-feature',
     },
     {
       value: 'other', // fallback for support
       title: 'Contact Support',
       description: 'Get help from our support team.',
       icon: 'headset_mic',
-      iconClass: 'icon-support'
+      iconClass: 'icon-support',
     },
     {
       value: 'account_issue',
       title: 'Account Issue',
       description: 'Facing an account or profile related issue?',
       icon: 'person',
-      iconClass: 'icon-account'
+      iconClass: 'icon-account',
     },
     {
       value: 'general_feedback',
       title: 'General Feedback',
       description: 'Share your feedback or suggestions.',
       icon: 'chat_bubble',
-      iconClass: 'icon-feedback'
-    }
+      iconClass: 'icon-feedback',
+    },
   ];
 
-  faqs: FaqItem[] = [
-    { question: 'How long does it take to get a response?', answer: 'We usually respond within 24-48 hours depending on the ticket priority.', isOpen: false },
-    { question: 'How do I report a bug?', answer: 'You can select "Report a Bug" category in the support form above and provide details of the issue.', isOpen: false },
-    { question: 'Facing an account issue?', answer: 'Select "Account Issue" from the categories and describe your problem for priority support.', isOpen: false },
-    { question: 'How do I update my profile or email?', answer: 'Navigate to your Profile Settings from the sidebar to update your personal information or email.', isOpen: false },
-    { question: 'What if I forget my password?', answer: 'Use the "Forgot Password" link on the login page to reset it.', isOpen: false },
-    { question: 'Is my sensitive information safe?', answer: 'Yes, we take privacy seriously. Please refrain from sharing highly sensitive info like passwords in support tickets.', isOpen: false },
-    { question: 'What do the ticket statuses mean?', answer: 'Open: received, In Progress: being worked on, Resolved: fixed, Closed: completed.', isOpen: false },
-    { question: 'How else can I contact support?', answer: 'You can email us directly at support@example.com for urgent inquiries.', isOpen: false }
+  faqs: SupportFaqItem[] = [
+    {
+      question: 'How long does it take to get a response?',
+      answer: 'We usually respond within 24-48 hours depending on the ticket priority.',
+    },
+    {
+      question: 'How do I report a bug?',
+      answer:
+        'You can select "Report a Bug" category in the support form above and provide details of the issue.',
+    },
+    {
+      question: 'Facing an account issue?',
+      answer:
+        'Select "Account Issue" from the categories and describe your problem for priority support.',
+    },
+    {
+      question: 'How do I update my profile or email?',
+      answer:
+        'Navigate to your Profile Settings from the sidebar to update your personal information or email.',
+    },
+    {
+      question: 'What if I forget my password?',
+      answer: 'Use the "Forgot Password" link on the login page to reset it.',
+    },
+    {
+      question: 'Is my sensitive information safe?',
+      answer:
+        'Yes, we take privacy seriously. Please refrain from sharing highly sensitive info like passwords in support tickets.',
+    },
+    {
+      question: 'What do the ticket statuses mean?',
+      answer: 'Open: received, In Progress: being worked on, Resolved: fixed, Closed: completed.',
+    },
+    {
+      question: 'How else can I contact support?',
+      answer: 'You can email us directly at support@example.com for urgent inquiries.',
+    },
   ];
 
-  get displayedFaqs(): FaqItem[] {
-    return this.showAllFaqs ? this.faqs : this.faqs.slice(0, 4);
+  // ── Confirm dialog ────────────────────────────────────────────────────
+  confirmOpen = false;
+  confirmTitle = '';
+  confirmMessage = '';
+  private pendingConfirmAction: (() => void) | null = null;
+
+  private readonly destroyRef = inject(DestroyRef);
+
+  constructor(
+    private readonly cdr: ChangeDetectorRef,
+    private readonly supportService: SupportService,
+  ) {}
+
+  ngOnInit(): void {
+    this.loadSupportTickets();
   }
 
-  toggleViewAllFaqs(): void {
-    this.showAllFaqs = !this.showAllFaqs;
+  loadSupportTickets(page: number = 1): void {
+    this.isLoadingTickets = true;
+    this.supportPage = page;
+    this.latestRequestedPage = page;
+    this.supportService
+      .getMyTickets(page, 5)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          if (page !== this.latestRequestedPage) return;
+          this.supportTickets = res.tickets || [];
+          this.supportTotalPages = res.pagination?.pages || 1;
+          this.isLoadingTickets = false;
+          if (this.selectedTicket) {
+            const refreshed = this.supportTickets.find((t) => t._id === this.selectedTicket?._id);
+            if (refreshed) this.selectedTicket = refreshed;
+          }
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          if (page !== this.latestRequestedPage) return;
+          this.isLoadingTickets = false;
+          this.cdr.detectChanges();
+        },
+      });
   }
 
   openTicketDetails(ticket: SupportTicket): void {
@@ -115,92 +181,108 @@ export class SupportComponent implements OnInit {
     this.selectedTicket = null;
   }
 
-  private readonly destroyRef = inject(DestroyRef);
-  private readonly router = inject(Router);
-
-  constructor(
-    private readonly cdr: ChangeDetectorRef,
-    private readonly supportService: SupportService
-  ) {}
-
-  ngOnInit(): void {
-    this.loadSupportTickets();
-  }
-
-  loadSupportTickets(page: number = 1): void {
-    this.isLoadingTickets = true;
-    this.supportPage = page;
-    this.supportService.getMyTickets(page, 5).pipe(
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe({
-      next: (res) => {
-        this.supportTickets = res.tickets || [];
-        this.supportTotalPages = res.pagination?.pages || 1;
-        this.isLoadingTickets = false;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.isLoadingTickets = false;
-        this.cdr.detectChanges();
-      }
-    });
-  }
-
-  selectCategory(value: string): void {
-    this.supportForm.category = value;
-    if (this.supportFormElement) {
-      this.supportFormElement.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }
-
-  toggleFaq(index: number): void {
-    this.faqs[index].isOpen = !this.faqs[index].isOpen;
-  }
-
-  submitSupportTicket(): void {
+  submitSupportTicket(draft: SupportTicketDraft): void {
     if (this.isSubmittingTicket) return;
-    if (!this.supportForm.subject.trim() || !this.supportForm.message.trim()) {
+    if (!draft.subject.trim() || !draft.message.trim()) {
+      this.draft = { ...draft };
       this.supportError = 'Subject and message are required.';
       return;
     }
+    this.draft = { ...draft };
     this.isSubmittingTicket = true;
     this.supportError = '';
     this.supportSuccess = '';
-    
+
     const payload = {
-      ...this.supportForm,
-      email: this.supportForm.contactEmail,
+      category: draft.category,
+      priority: draft.priority,
+      subject: draft.subject,
+      message: draft.message,
+      replyToEmail: draft.replyToEmail,
       sourcePage: window.location.href,
-      browserInfo: navigator.userAgent
+      browserInfo: navigator.userAgent,
     };
 
-    this.supportService.createTicket(payload).pipe(
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe({
-      next: () => {
-        this.supportSuccess = 'Support request submitted successfully.';
-        this.isSubmittingTicket = false;
-        this.supportForm.subject = '';
-        this.supportForm.message = '';
-        this.loadSupportTickets(1);
-        this.cdr.detectChanges();
-        setTimeout(() => { this.supportSuccess = ''; this.cdr.detectChanges(); }, 5000);
-      },
-      error: (err: any) => {
-        this.isSubmittingTicket = false;
-        this.supportError = err?.error?.message || 'Failed to submit request. Please try again.';
-        this.cdr.detectChanges();
-      }
-    });
+    this.supportService
+      .createTicket(payload)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.supportSuccess = 'Support request submitted successfully.';
+          this.isSubmittingTicket = false;
+          // Clear subject/message only after a 201; keep category/priority/replyToEmail.
+          this.draft = { ...this.draft, subject: '', message: '' };
+          this.loadSupportTickets(1);
+          this.cdr.detectChanges();
+          setTimeout(() => {
+            this.supportSuccess = '';
+            this.cdr.detectChanges();
+          }, 5000);
+        },
+        error: (err: any) => {
+          this.isSubmittingTicket = false;
+          // Draft retention: keep all entered fields on error.
+          this.supportError = err?.error?.message || 'Failed to submit request. Please try again.';
+          this.cdr.detectChanges();
+        },
+      });
   }
 
-  isDeletingTicket = false;
+  submitReply(body: string): void {
+    const ticket = this.selectedTicket;
+    if (!ticket?._id || this.isPostingReply) return;
+    const trimmed = (body || '').trim();
+    if (!trimmed) return;
+    this.isPostingReply = true;
+    this.supportService
+      .addReply(ticket._id, trimmed)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.isPostingReply = false;
+          this.loadSupportTickets(this.supportPage);
+          this.cdr.detectChanges();
+        },
+        error: (err: any) => {
+          this.isPostingReply = false;
+          this.supportError = err?.error?.message || 'Failed to send reply. Please try again.';
+          this.cdr.detectChanges();
+        },
+      });
+  }
 
-  // ── Confirm dialog ────────────────────────────────────────────────────
-  confirmOpen = false;
-  confirmTitle = '';
-  confirmMessage = '';
-  private pendingConfirmAction: (() => void) | null = null;
+  deleteTicket(id: string | undefined): void {
+    if (!id) return;
+
+    this.openConfirm(
+      'Delete Ticket',
+      'Warning: This ticket will be deleted permanently. Are you sure you want to proceed?',
+      () => {
+        this.isDeletingTicket = true;
+        this.supportService
+          .deleteTicket(id)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe({
+            next: () => {
+              this.supportSuccess = 'Ticket deleted successfully.';
+              this.isDeletingTicket = false;
+              this.selectedTicket = null;
+              this.loadSupportTickets(this.supportPage);
+              this.cdr.detectChanges();
+              setTimeout(() => {
+                this.supportSuccess = '';
+                this.cdr.detectChanges();
+              }, 5000);
+            },
+            error: (err: any) => {
+              this.isDeletingTicket = false;
+              this.supportError = err?.error?.message || 'Failed to delete ticket.';
+              this.cdr.detectChanges();
+            },
+          });
+      },
+    );
+  }
 
   private openConfirm(title: string, message: string, action: () => void): void {
     this.confirmTitle = title;
@@ -220,37 +302,7 @@ export class SupportComponent implements OnInit {
     this.pendingConfirmAction = null;
   }
 
-  deleteTicket(id: string | undefined): void {
-    if (!id) return;
-    
-    this.openConfirm('Delete Ticket', 'Warning: This ticket will be deleted permanently. Are you sure you want to proceed?', () => {
-      this.isDeletingTicket = true;
-      this.supportService.deleteTicket(id).pipe(
-        takeUntilDestroyed(this.destroyRef)
-      ).subscribe({
-        next: () => {
-          this.supportSuccess = 'Ticket deleted successfully.';
-          this.isDeletingTicket = false;
-          this.selectedTicket = null;
-          this.loadSupportTickets(this.supportPage);
-          this.cdr.detectChanges();
-          setTimeout(() => { this.supportSuccess = ''; this.cdr.detectChanges(); }, 5000);
-        },
-        error: (err: any) => {
-          this.isDeletingTicket = false;
-          this.supportError = err?.error?.message || 'Failed to delete ticket.';
-          this.cdr.detectChanges();
-        }
-      });
-    });
-  }
-
-  formatCategory(cat: string): string {
-    return cat.replace(/_/g, ' ');
-  }
-
-  formatStatus(status?: string): string {
-    if (!status) return 'Unknown';
-    return status.replace(/_/g, ' ');
+  selectCategory(value: string): void {
+    this.draft = { ...this.draft, category: value };
   }
 }

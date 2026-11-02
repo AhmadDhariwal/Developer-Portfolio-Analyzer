@@ -58,6 +58,37 @@ const supportTicketSchema = new mongoose.Schema({
   dedupeWindow: {
     type: Number,
     required: true
+  },
+  replyToEmail: {
+    type: String,
+    default: '',
+    maxlength: 254
+  },
+  replies: [
+    {
+      authorId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+      },
+      authorRole: {
+        type: String,
+        enum: ['user', 'admin'],
+        required: true
+      },
+      body: {
+        type: String,
+        required: true,
+        maxlength: 5000
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now
+      }
+    }
+  ],
+  lastReplyAt: {
+    type: Date
   }
 }, { timestamps: true });
 

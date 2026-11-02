@@ -1,0 +1,47 @@
+<div class="ticket-item" (click)="open.emit(ticket)" style="cursor: pointer">
+  <div class="ticket-item-left">
+    <div
+      class="ticket-icon"
+      [ngClass]="{
+        'icon-bug': ticket.category === 'bug',
+        'icon-feature': ticket.category === 'feature_request',
+        'icon-account': ticket.category === 'account_issue',
+        'icon-feedback': ticket.category === 'general_feedback',
+        'icon-support': ticket.category === 'other' || !ticket.category,
+      }"
+    >
+      <span class="material-symbols-outlined">{{ categoryIcon }}</span>
+    </div>
+
+    <div class="ticket-info">
+      <div class="ticket-subject">{{ ticket.subject }}</div>
+      <div class="ticket-meta">
+        <span>{{ formatCategory(ticket.category) }} &bull; {{ ticket.priority | titlecase }}</span>
+        <span class="ticket-id" *ngIf="ticket._id"
+          >#TCK-{{ ticket._id.substring(ticket._id.length - 6).toUpperCase() }}</span
+        >
+      </div>
+    </div>
+  </div>
+
+  <div class="ticket-item-right">
+    <div
+      class="ticket-status"
+      [ngClass]="{
+        'status-open': ticket.status === 'open',
+        'status-in_progress': ticket.status === 'in_progress',
+        'status-resolved': ticket.status === 'resolved',
+        'status-closed': ticket.status === 'closed',
+        'status-default': !ticket.status,
+      }"
+    >
+      {{ formatStatus(ticket.status) | titlecase }}
+    </div>
+
+    <div class="ticket-time" *ngIf="ticket.createdAt">
+      {{ ticket.createdAt | date: 'shortDate' }}
+    </div>
+
+    <span class="material-symbols-outlined ticket-arrow">chevron_right</span>
+  </div>
+</div>

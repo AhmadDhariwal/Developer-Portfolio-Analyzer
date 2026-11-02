@@ -1,0 +1,61 @@
+<div class="panel-card faq-section">
+  <div class="panel-header">
+    <div class="panel-title-wrapper">
+      <h2>
+        <span class="material-symbols-outlined" style="color: #6366f1">article</span>
+        Frequently Asked Questions
+      </h2>
+      <p>Find quick answers to common questions.</p>
+    </div>
+    <button
+      class="btn-secondary"
+      type="button"
+      (click)="toggleViewAll()"
+      *ngIf="!searchTerm.trim()"
+    >
+      {{ showAll ? 'Show Less' : 'View All FAQs' }}
+    </button>
+  </div>
+
+  <div class="faq-search">
+    <label for="faq-search" class="visually-hidden">Search FAQs</label>
+    <span class="material-symbols-outlined">search</span>
+    <input
+      id="faq-search"
+      type="search"
+      name="faqSearch"
+      [(ngModel)]="searchTerm"
+      placeholder="Search FAQs..."
+    />
+  </div>
+
+  <div class="faq-empty" *ngIf="displayedFaqs.length === 0">No FAQs match your search.</div>
+
+  <div class="faq-grid">
+    <div class="faq-item" *ngFor="let faq of displayedFaqs">
+      <h3 class="faq-heading">
+        <button
+          class="faq-question"
+          type="button"
+          [class.open]="isOpen(faq)"
+          [id]="buttonId(faq)"
+          [attr.aria-expanded]="isOpen(faq)"
+          [attr.aria-controls]="panelId(faq)"
+          (click)="toggle(faq)"
+        >
+          <span>{{ faq.question }}</span>
+          <span class="material-symbols-outlined">expand_more</span>
+        </button>
+      </h3>
+      <div
+        class="faq-answer"
+        role="region"
+        [id]="panelId(faq)"
+        [attr.aria-labelledby]="buttonId(faq)"
+        *ngIf="isOpen(faq)"
+      >
+        {{ faq.answer }}
+      </div>
+    </div>
+  </div>
+</div>

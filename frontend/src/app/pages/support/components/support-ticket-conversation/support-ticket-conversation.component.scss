@@ -1,0 +1,144 @@
+:host {
+  display: block;
+}
+
+$card-border: rgba(255, 255, 255, 0.05);
+$primary: #6366f1;
+$text-main: #f8fafc;
+$text-muted: #94a3b8;
+
+.material-symbols-outlined {
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+  font-size: 18px;
+}
+
+.conversation {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.conversation-title {
+  color: $text-main;
+  font-size: 14px;
+}
+
+.conversation-empty {
+  font-size: 13px;
+  color: $text-muted;
+}
+
+.reply-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.reply-item {
+  border: 1px solid $card-border;
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.02);
+
+  &.reply-admin {
+    border-color: rgba(99, 102, 241, 0.3);
+    background: rgba(99, 102, 241, 0.05);
+  }
+}
+
+.reply-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.reply-author {
+  font-size: 13px;
+  font-weight: 600;
+  color: $text-main;
+}
+
+.reply-time {
+  font-size: 12px;
+  color: $text-muted;
+}
+
+.reply-body {
+  margin: 0;
+  font-size: 14px;
+  color: $text-muted;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.reply-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reply-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: $text-main;
+}
+
+textarea {
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.2);
+  border: 1px solid $card-border;
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: $text-main;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+  box-sizing: border-box;
+
+  &:focus {
+    outline: none;
+    border-color: $primary;
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.btn-reply {
+  align-self: flex-end;
+  background: linear-gradient(135deg, $primary, #a855f7);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
