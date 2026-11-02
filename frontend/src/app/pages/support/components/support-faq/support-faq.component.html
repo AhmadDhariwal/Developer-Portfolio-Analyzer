@@ -1,38 +1,47 @@
-<div class="panel-card faq-section">
-  <div class="panel-header">
-    <div class="panel-title-wrapper">
-      <h2>
-        <span class="material-symbols-outlined" style="color: #6366f1">article</span>
-        Frequently Asked Questions
-      </h2>
-      <p>Find quick answers to common questions.</p>
+<div class="panel">
+  <div class="section-heading">
+    <div>
+      <h2>Frequently Asked Questions</h2>
+      <p>Quick answers to common questions about features, accounts, and system operations.</p>
     </div>
     <button
-      class="btn-secondary"
+      class="btn-toggle-all"
       type="button"
       (click)="toggleViewAll()"
       *ngIf="!searchTerm.trim()"
     >
-      {{ showAll ? 'Show Less' : 'View All FAQs' }}
+      {{ showAll ? 'Show less' : 'View all FAQs' }}
     </button>
   </div>
 
   <div class="faq-search">
     <label for="faq-search" class="visually-hidden">Search FAQs</label>
-    <span class="material-symbols-outlined">search</span>
+    <span class="material-symbols-outlined search-icon">search</span>
     <input
       id="faq-search"
       type="search"
       name="faqSearch"
       [(ngModel)]="searchTerm"
-      placeholder="Search FAQs..."
+      placeholder="Search FAQs by keywords..."
     />
+    <button
+      type="button"
+      class="search-clear-btn"
+      *ngIf="searchTerm"
+      (click)="searchTerm = ''"
+      aria-label="Clear search"
+    >
+      <span class="material-symbols-outlined">close</span>
+    </button>
   </div>
 
-  <div class="faq-empty" *ngIf="displayedFaqs.length === 0">No FAQs match your search.</div>
+  <div class="faq-empty" *ngIf="displayedFaqs.length === 0">
+    <span class="material-symbols-outlined empty-icon">search_off</span>
+    <span>No FAQs match your search query "{{ searchTerm }}".</span>
+  </div>
 
   <div class="faq-grid">
-    <div class="faq-item" *ngFor="let faq of displayedFaqs">
+    <div class="faq-item" *ngFor="let faq of displayedFaqs" [class.item-open]="isOpen(faq)">
       <h3 class="faq-heading">
         <button
           class="faq-question"
@@ -43,8 +52,8 @@
           [attr.aria-controls]="panelId(faq)"
           (click)="toggle(faq)"
         >
-          <span>{{ faq.question }}</span>
-          <span class="material-symbols-outlined">expand_more</span>
+          <span class="question-text">{{ faq.question }}</span>
+          <span class="material-symbols-outlined chevron-icon">expand_more</span>
         </button>
       </h3>
       <div
@@ -54,7 +63,7 @@
         [attr.aria-labelledby]="buttonId(faq)"
         *ngIf="isOpen(faq)"
       >
-        {{ faq.answer }}
+        <p>{{ faq.answer }}</p>
       </div>
     </div>
   </div>

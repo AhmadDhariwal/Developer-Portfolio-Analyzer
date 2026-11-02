@@ -1,0 +1,46 @@
+{
+  "gate": "Gate 3: MongoDB Verification",
+  "timestamp": "2026-11-02T10:08:38.492Z",
+  "connection": {
+    "version": "8.2.6",
+    "replicaSet": "rs0",
+    "disposableDb": "resume_mongo_verify_40a448bd22b3"
+  },
+  "checks": {
+    "transactions": {
+      "supported": true,
+      "latencyMs": 54
+    },
+    "indexes": {
+      "uniqueAnalysisCacheIndex": true,
+      "ttlIndex": true,
+      "ttlSeconds": 2592000
+    },
+    "uniqueConstraintEnforced": true,
+    "quotaAtomicity": {
+      "totalRequests": 22,
+      "allowedPasses": 20,
+      "throttledRejections": 2,
+      "ownerBudgetEnforced": true
+    },
+    "reservationAndFencing": {
+      "initialAcquisition": true,
+      "concurrentLockRejected": true,
+      "releaseAndReacquire": true,
+      "distinctTokens": true
+    },
+    "backupAndRestore": {
+      "disposableRestoreDb": "resume_restore_verify_8a171a81175f",
+      "sourceDocCount": 3,
+      "restoredDocCount": 3,
+      "integrityVerified": true,
+      "restoredDbDropped": true
+    }
+  },
+  "performance": {
+    "connectionMs": 43,
+    "transactionMs": 54,
+    "admissionBurstMs": 183
+  },
+  "passed": true
+}

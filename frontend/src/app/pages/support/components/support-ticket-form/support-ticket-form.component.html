@@ -1,33 +1,46 @@
-<div class="panel-card">
-  <div class="panel-header">
-    <div class="panel-title-wrapper">
-      <h2>
-        <span class="material-symbols-outlined" style="color: #6366f1">send</span>
-        Submit a Support Request
-      </h2>
-      <p>Provide details about your issue or feedback.</p>
+<div class="panel">
+  <div class="section-heading">
+    <div>
+      <h2>Submit a Support Request</h2>
+      <p>Provide details about your issue, feedback, or inquiry.</p>
+    </div>
+    <div class="security-chip">
+      <span class="material-symbols-outlined chip-icon">lock</span>
+      <span>Encrypted channel</span>
     </div>
   </div>
 
-  <div class="prof-error" *ngIf="error">{{ error }}</div>
-  <div class="prof-success" *ngIf="success">{{ success }}</div>
+  <div class="prof-error" *ngIf="error" role="alert">
+    <span class="material-symbols-outlined alert-icon">error</span>
+    <span>{{ error }}</span>
+  </div>
+  <div class="prof-success" *ngIf="success" role="status">
+    <span class="material-symbols-outlined alert-icon">check_circle</span>
+    <span>{{ success }}</span>
+  </div>
 
   <form (ngSubmit)="onSubmit()">
     <div class="form-row">
       <div class="form-group">
         <label for="category">Category <span class="required">*</span></label>
-        <select id="category" name="category" [(ngModel)]="model.category">
-          <option *ngFor="let cat of categoryCards" [value]="cat.value">{{ cat.title }}</option>
-        </select>
+        <div class="select-wrapper">
+          <select id="category" name="category" [(ngModel)]="model.category">
+            <option *ngFor="let cat of categoryCards" [value]="cat.value">{{ cat.title }}</option>
+          </select>
+          <span class="material-symbols-outlined select-chevron">expand_more</span>
+        </div>
       </div>
       <div class="form-group">
         <label for="priority">Priority <span class="required">*</span></label>
-        <select id="priority" name="priority" [(ngModel)]="model.priority">
-          <option value="low">Low</option>
-          <option value="medium">Medium</option>
-          <option value="high">High</option>
-          <option value="urgent">Urgent</option>
-        </select>
+        <div class="select-wrapper">
+          <select id="priority" name="priority" [(ngModel)]="model.priority">
+            <option value="low">Low (P3 Minor)</option>
+            <option value="medium">Medium (P2 Standard)</option>
+            <option value="high">High (P1 Critical)</option>
+            <option value="urgent">Urgent (P0 Blocker)</option>
+          </select>
+          <span class="material-symbols-outlined select-chevron">expand_more</span>
+        </div>
       </div>
     </div>
 
@@ -38,7 +51,7 @@
         name="subject"
         type="text"
         [(ngModel)]="model.subject"
-        placeholder="Short summary of your issue or feedback"
+        placeholder="Brief summary of your issue or request"
         maxlength="150"
         required
       />
@@ -46,12 +59,15 @@
     </div>
 
     <div class="form-group">
-      <label for="message">Message <span class="required">*</span></label>
+      <div class="label-row">
+        <label for="message">Message <span class="required">*</span></label>
+        <span class="helper-hint">Markdown supported</span>
+      </div>
       <textarea
         id="message"
         name="message"
         [(ngModel)]="model.message"
-        placeholder="Please describe your issue or feedback in detail..."
+        placeholder="Please describe your issue or feedback in detail... Include error traces or reproduction steps if applicable."
         maxlength="5000"
         required
       ></textarea>
@@ -60,33 +76,44 @@
 
     <div class="form-group">
       <label for="replyToEmail">Reply-to email (optional)</label>
-      <input
-        id="replyToEmail"
-        name="replyToEmail"
-        type="email"
-        maxlength="254"
-        [(ngModel)]="model.replyToEmail"
-        (ngModelChange)="onReplyToChange()"
-        placeholder="name@example.com"
-      />
+      <div class="input-with-icon">
+        <span class="material-symbols-outlined input-icon">mail</span>
+        <input
+          id="replyToEmail"
+          name="replyToEmail"
+          type="email"
+          maxlength="254"
+          [(ngModel)]="model.replyToEmail"
+          (ngModelChange)="onReplyToChange()"
+          placeholder="name@example.com"
+        />
+      </div>
       <div class="field-hint">
         We use your account email by default; add another address only if you want replies
         elsewhere.
       </div>
-      <div class="field-error" *ngIf="replyToInvalid">Please enter a valid email address.</div>
+      <div class="field-error" *ngIf="replyToInvalid">
+        <span class="material-symbols-outlined error-icon">warning</span>
+        <span>Please enter a valid email address.</span>
+      </div>
+    </div>
+
+    <div class="telemetry-notice">
+      <span class="material-symbols-outlined notice-icon">info</span>
+      <span
+        >Browser environment and active page context are included automatically for faster
+        diagnostics.</span
+      >
     </div>
 
     <button type="submit" class="btn-primary" [disabled]="submitting">
-      <span class="material-symbols-outlined" *ngIf="!submitting">rocket_launch</span>
-      <span *ngIf="!submitting">Submit Request</span>
+      <span class="material-symbols-outlined" *ngIf="!submitting">send</span>
+      <span *ngIf="!submitting">Submit Support Request</span>
 
-      <span
-        class="material-symbols-outlined"
-        *ngIf="submitting"
-        style="animation: spin 1s linear infinite"
+      <span class="material-symbols-outlined spinning-icon" *ngIf="submitting"
         >progress_activity</span
       >
-      <span *ngIf="submitting">Submitting...</span>
+      <span *ngIf="submitting">Submitting request...</span>
     </button>
   </form>
 </div>

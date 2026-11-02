@@ -9,32 +9,32 @@
   "observations": [
     {
       "fixture": "standard",
-      "milliseconds": 836,
+      "milliseconds": 167,
       "characters": 748,
       "pages": 1
     },
     {
       "fixture": "columns",
-      "milliseconds": 629,
+      "milliseconds": 159,
       "characters": 748,
       "pages": 1
     },
     {
       "fixture": "standard",
-      "milliseconds": 781,
+      "milliseconds": 158,
       "characters": 748,
       "pages": 1
     },
     {
       "fixture": "columns",
-      "milliseconds": 3100,
+      "milliseconds": 160,
       "characters": 748,
       "pages": 1
     }
   ],
   "concurrentExtractions": 2,
   "thirdConcurrentStatus": 429,
-  "processPeakRssKiB": 106740,
-  "postRunRssBytes": 87171072,
+  "processPeakRssKiB": 109856,
+  "postRunRssBytes": 91668480,
   "note": "Small synthetic local sample, including two concurrent workers. Peak RSS covers this dedicated Node process and its workers; it is not a production capacity or hard RSS limit."
 }
