@@ -1,5 +1,6 @@
 const { clampScore: clamp, numeric } = require('../services/scoring/math');
 const developerContext = require('../services/developerContextService');
+const skillGapContract = require('../services/skillGapCacheContract');
 const crypto = require('node:crypto');
 const Analysis = require('../models/analysis');
 const User = require('../models/user');
@@ -16,7 +17,11 @@ const {
   analyzeGitHubProfile,
   fetchMonthlyCommitActivity
 } = require('../services/githubservice');
-const { getDeveloperSignals, buildSignalHash } = require('../services/developerSignalService');
+const {
+  getDeveloperSignals,
+  buildSignalHash,
+  buildResumeCacheIdentity
+} = require('../services/developerSignalService');
 const { detectSkillGaps } = require('../utils/skilldetector');
 const { createNotification } = require('../services/notificationService');
 const { getIntegrationInsight } = require('../services/integrationInsightService');
@@ -250,13 +255,11 @@ const getCachedDashboardContext = async (userId, careerStack, experienceLevel) =
   const currentResume = await developerContext.resolveResumeAnalysis(userId, context, {
     ResumeAnalysis
   });
-  const skillGapScope = {
-    ...scopedCache,
-    githubUsername: String(developerContext.resolveGithubUsername(context) || '').trim(),
-    resumeAnalysisId: String(currentResume?._id || 'no-resume'),
-    'analysisData.ruleVersion': 'skill-evidence-coverage-v1',
-    createdAt: { $gt: new Date(Date.now() - 7 * 86400000) }
-  };
+  const skillGapScope = skillGapContract.buildScope({
+    userId,
+    user: context,
+    resumeIdentity: buildResumeCacheIdentity({ resumeAnalysis: currentResume })
+  });
   const [
     latestPortfolioCache,
     latestSkillGapCache,
@@ -275,7 +278,10 @@ const getCachedDashboardContext = async (userId, careerStack, experienceLevel) =
       ...skillGapScope,
       'analysisData.missingSkills': { $exists: true }
     }),
-    latestCacheByPredicate(userId, { ...scopedCache, 'analysisData.projects': { $exists: true } }),
+    latestCacheByPredicate(userId, {
+      ...scopedCache,
+      'analysisData.projects': { $exists: true }
+    }),
     Promise.resolve(currentResume),
     WeeklyReport.findOne({ userId }).sort({ weekEndDate: -1, updatedAt: -1 }).lean(),
     CareerSprint.findOne({ userId }).sort({ updatedAt: -1 }).lean(),
@@ -308,8 +314,8 @@ const deriveReadinessBreakdown = ({
 }) => {
   const skillData = skillGapCache?.analysisData;
   const canonicalCoverage =
-    skillData?.ruleVersion === 'skill-evidence-coverage-v1'
-      ? numeric(skillData.coverage)
+    !skillData || skillData.ruleVersion === 'skill-evidence-coverage-v1'
+      ? numeric(skillData?.coverage)
       : undefined;
   const cachedBreakdown =
     portfolioScore?.breakdown || portfolioScore?.analysisData?.portfolioScore?.breakdown;
@@ -444,7 +450,11 @@ const buildSummaryMeta = ({
         available: Boolean(latestCareerSprint),
         status: careerSprintFreshness
       },
-      jobs: { connected: Boolean(latestJob), available: Boolean(latestJob), status: jobsFreshness },
+      jobs: {
+        connected: Boolean(latestJob),
+        available: Boolean(latestJob),
+        status: jobsFreshness
+      },
       news: {
         connected: Boolean(latestNews),
         available: Boolean(latestNews),
@@ -625,17 +635,32 @@ const buildReadinessCenter = ({
     ])
   );
   const jobDemandScore = latestJob?.skills?.length ? 72 : 0;
-  const skillCoverage = clamp(latestSkillGapCache?.analysisData?.coverage || 0);
+  const skillCoverage = skillGapContract.coverage(latestSkillGapCache?.analysisData?.coverage);
 
   return [
-    { key: 'overall', label: 'Overall Readiness', value: clamp(readinessScore), tone: 'primary' },
+    {
+      key: 'overall',
+      label: 'Overall Readiness',
+      value: clamp(readinessScore),
+      tone: 'primary'
+    },
     { key: 'resume', label: 'Resume Readiness', value: resumeReadiness, tone: 'blue' },
-    { key: 'portfolio', label: 'Portfolio Readiness', value: portfolioReadiness, tone: 'green' },
-    { key: 'interview', label: 'Interview Readiness', value: interviewReadiness, tone: 'amber' },
+    {
+      key: 'portfolio',
+      label: 'Portfolio Readiness',
+      value: portfolioReadiness,
+      tone: 'green'
+    },
+    {
+      key: 'interview',
+      label: 'Interview Readiness',
+      value: interviewReadiness,
+      tone: 'amber'
+    },
     {
       key: 'market',
       label: 'Market Readiness',
-      value: clamp(average([jobDemandScore, skillCoverage])),
+      value: skillCoverage === null ? null : clamp(average([jobDemandScore, skillCoverage])),
       tone: 'cyan'
     },
     {
@@ -923,8 +948,10 @@ const getDashboardSummary = async (req, res) => {
         scopedSkillGapData.missingSkills || developerSignals.skillGapSignals?.missingSkills || [],
         20
       ),
-      coveragePercentage: clamp(
-        scopedSkillGapData.coverage || developerSignals.skillGapSignals?.coverage || 0
+      coveragePercentage: skillGapContract.coverage(
+        latestSkillGapCache
+          ? scopedSkillGapData.coverage
+          : developerSignals.skillGapSignals?.coverage
       ),
       stale: staleFlags.skillGap,
       updatedAt: latestSkillGapCache?.updatedAt || null
@@ -1095,21 +1122,27 @@ const getDashboardSkills = async (req, res) => {
     const forceRefresh = String(req.query.refresh || '').toLowerCase() === 'true';
     const user = await User.findById(req.user._id)
       .select(
-        'githubUsername activeGithubUsername activeCareerStack careerStack activeExperienceLevel experienceLevel'
+        'githubUsername activeGithubUsername activeCareerStack careerStack activeExperienceLevel experienceLevel activeResumeFileId defaultResumeFileId'
       )
       .lean();
     const githubUsername = developerContext.resolveGithubUsername(user) || '';
     const careerStack = developerContext.resolveCareerStack(user) || 'Full Stack';
     const experienceLevel = developerContext.resolveExperienceLevel(user) || 'Student';
 
+    const resume = await developerContext.resolveResumeAnalysis(req.user._id, user, {
+      ResumeAnalysis
+    });
     const [{ analysis, rateLimited }, integrationInsight, latestSkillGapCache] = await Promise.all([
       ensureAnalysis(req.user._id, githubUsername, { forceRefresh }),
       safeGetIntegrationInsight(req.user._id),
-      latestCacheByPredicate(req.user._id, {
-        careerStack,
-        experienceLevel,
-        'analysisData.missingSkills': { $exists: true }
-      })
+      latestCacheByPredicate(
+        req.user._id,
+        skillGapContract.buildScope({
+          userId: req.user._id,
+          user,
+          resumeIdentity: buildResumeCacheIdentity({ resumeAnalysis: resume })
+        })
+      )
     ]);
 
     const languageMap = normalizeLanguageMap(analysis?.languageDistribution);
@@ -1119,7 +1152,7 @@ const getDashboardSkills = async (req, res) => {
 
     let topSkills = [];
     let missingSkills = [];
-    let coveragePercentage = 0;
+    let coveragePercentage = null;
 
     if (latestSkillGapCache?.analysisData) {
       topSkills = Array.isArray(latestSkillGapCache.analysisData.yourSkills)
@@ -1132,15 +1165,16 @@ const getDashboardSkills = async (req, res) => {
             .map((skill) => (typeof skill === 'string' ? skill : skill?.name || skill?.skill))
             .filter(Boolean)
         : [];
-      coveragePercentage = clamp(latestSkillGapCache.analysisData.coverage || 0);
+      coveragePercentage = skillGapContract.coverage(latestSkillGapCache.analysisData.coverage);
     } else {
       const detected = detectSkillGaps(derivedTopSkills);
       topSkills = derivedTopSkills;
       missingSkills = (detected.missingSkills || [])
         .map((skill) => skill.name || skill)
         .filter(Boolean);
-      const total = topSkills.length + missingSkills.length;
-      coveragePercentage = total > 0 ? Math.round((topSkills.length / total) * 100) : 0;
+
+      // Metadata fallback cannot establish canonical evidence coverage.
+      coveragePercentage = null;
     }
 
     res.json({
@@ -1315,7 +1349,12 @@ const getDashboardIntegrationAnalytics = async (req, res) => {
 };
 
 module.exports = {
-  __test: { loadDefaultResumeAnalysis, deriveReadinessBreakdown },
+  __test: {
+    loadDefaultResumeAnalysis,
+    deriveReadinessBreakdown,
+    buildReadinessCenter,
+    getCachedDashboardContext
+  },
   getDashboardSummary,
   getDashboardContributions,
   getDashboardLanguages,

@@ -38,7 +38,7 @@ const {
 } = require("../utils/skilldetector");
 const { resolvePreviewResume } = require("../services/previewResumeCacheService");
 
-const ANALYSIS_VERSION = "v9-skill-evidence-governance";
+const { ANALYSIS_VERSION } = require("../services/skillGapCacheContract");
 const MIN_MISSING_SKILLS = 12;
 const MIN_KNOWN_SKILLS = 8;
 const DETERMINISTIC_CONFIDENCE_THRESHOLD = Math.min(
@@ -906,7 +906,10 @@ const saveAIVersionSnapshot = async ({ req, source, output, metadata = {} }) => 
         evidencePolicyVersion: output.evidencePolicyVersion,
         requirementMatrixVersion: output.requirementMatrixVersion,
         coverage: output.coverage,
-        counts: { skills: output.skills?.length || 0, missing: output.missingSkills?.length || 0 },
+        counts: {
+          skills: output.skills?.length || 0,
+          missing: output.missingSkills?.length || 0
+        },
         aiUsed: Boolean(output.aiUsed)
       },
       metadata: { analysisVersion: ANALYSIS_VERSION, fromCache: Boolean(metadata.fromCache) }
@@ -2616,7 +2619,11 @@ const analyzeSkillGap = async (req, res) => {
         aiService
           .runAIAnalysis(prompt, narrativeFallback, skillGapAiRetries, {
             timeoutMs: 7000,
-            requestPolicy: { allowedProviders: ["gemini"], maxAttempts: 1, maxOutputTokens: 600 },
+            requestPolicy: {
+              allowedProviders: ["gemini"],
+              maxAttempts: 1,
+              maxOutputTokens: 600
+            },
             signal: governed?.signal,
             returnMeta: true
           })

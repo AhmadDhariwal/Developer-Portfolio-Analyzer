@@ -1,6 +1,7 @@
 const sprintProgressScore = require('./scoring/sprintProgressScore');
 const { clampScore: clamp, numeric } = require('./scoring/math');
 const developerContext = require('./developerContextService');
+const skillGapContract = require('./skillGapCacheContract');
 const crypto = require('node:crypto');
 const Analysis = require('../models/analysis');
 const AnalysisCache = require('../models/analysisCache');
@@ -935,14 +936,11 @@ const summarizeSkillGapSignal = async (userId) => {
   const selected = context
     ? await developerContext.resolveResumeAnalysis(userId, context, { ResumeAnalysis })
     : null;
-  const identity = {
-    careerStack: developerContext.resolveCareerStack(context),
-    experienceLevel: developerContext.resolveExperienceLevel(context),
-    githubUsername: String(developerContext.resolveGithubUsername(context) || '').trim(),
-    resumeAnalysisId: String(selected?._id || 'no-resume'),
-    'analysisData.ruleVersion': 'skill-evidence-coverage-v1',
-    createdAt: { $gt: new Date(Date.now() - 7 * 86400000) }
-  };
+  const identity = skillGapContract.buildScope({
+    userId,
+    user: context,
+    resumeIdentity: buildResumeCacheIdentity({ resumeAnalysis: selected })
+  });
   const cache = userId
     ? await AnalysisCache.findOne({
         userId,
@@ -988,10 +986,7 @@ const summarizeSkillGapSignal = async (userId) => {
       storedSignals.shortTermSkills || data.shortTermSkills?.map((skill) => skill?.name || skill),
       8
     ),
-    coverage:
-      numeric(storedSignals.coverage) === null && numeric(data.coverage) === null
-        ? null
-        : clamp(numeric(storedSignals.coverage) ?? numeric(data.coverage)),
+    coverage: skillGapContract.coverage(data.coverage),
     ruleVersion: data.ruleVersion,
     evidencePolicyVersion: data.evidencePolicyVersion,
     coverageBreakdown: storedSignals.coverageBreakdown || data.coverageBreakdown || {},
@@ -1197,7 +1192,7 @@ const buildSignalsUsedSummary = ({
     },
     skillGap: {
       present: Boolean(skillGapSignal.present),
-      coverage: Number(skillGapSignal.coverage || 0),
+      coverage: skillGapContract.coverage(skillGapSignal.coverage),
       knownSkills: safeStrings(skillGapSignal.knownSkills || [], 10),
       missingSkills: safeStrings(skillGapSignal.missingSkills || [], 10),
       weakSkills: safeStrings(skillGapSignal.weakSkills || [], 8),

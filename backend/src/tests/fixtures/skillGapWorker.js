@@ -55,6 +55,8 @@ const emptySignals = {
   portfolioSignal: { portfolioSkills: [] },
   jobsDemandSignal: { present: false, sampledJobs: 0, topSkills: [] }
 };
+// Keep producer/consumer cache identity real; only upstream observations are synthetic.
+const { buildResumeCacheIdentity } = require('../../services/developerSignalService');
 mock('services/developerSignalService.js', {
   getDeveloperSignals: async () => emptySignals,
   getPublicJobMarketSignal: async () => emptySignals.jobsDemandSignal,
@@ -69,10 +71,7 @@ mock('services/developerSignalService.js', {
     experienceLevel: level,
     statusMessage: value ? 'Recorded synthetic resume' : 'No resume'
   }),
-  buildResumeCacheIdentity: ({ resumeAnalysis: value }) => ({
-    resumeHash: value ? String(value.resumeHash || value._id) : 'no-resume',
-    resumeAnalysisId: String(value?._id || 'no-resume')
-  }),
+  buildResumeCacheIdentity,
   buildAnalysisBasedOn: (input) => input
 });
 (async () => {
