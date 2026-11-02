@@ -1,0 +1,20 @@
+{
+  "deletedTaskOwnedFiles": [
+    "backend/verification/resume-local-initial.log",
+    "backend/verification/resume/mongo-tests-retry.log",
+    "backend/verification/resume/mongo-tests.log",
+    "backend/verification/resume/production-tests.log",
+    "backend/verification/resume/request-flow-tests.log"
+  ],
+  "preservedHistoricalEvidence": [
+    "backend/verification/architecture/request-flow-governance-results.json",
+    "backend/verification/integrations/scalability-governance-regression.json"
+  ],
+  "note": "Only exact task-created obsolete logs removed. No user records, historical evidence, licenses or source assets deleted.",
+  "taskOwnedGeneratorMove": {
+    "from": "backend/scripts/generate-resume-fixtures.py",
+    "to": "backend/scripts/generate-resume-fixtures.js",
+    "reason": "Keep the reusable Python fixture authoring embedded in a generator supported by the repository formatter."
+  },
+  "deletedEmptyTaskOwnedDirectories": ["frontend/verification/resume/runtime"]
+}

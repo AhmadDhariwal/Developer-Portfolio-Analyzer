@@ -1,0 +1,158 @@
+{
+  "status": "DEVELOPMENT COMPLETE — STABLE CANDIDATE — PRODUCTION GATES PENDING",
+  "branch": "fix/resume",
+  "prTarget": null,
+  "frontend": {
+    "files": 85,
+    "passed": 491,
+    "failed": 0,
+    "build": "passed",
+    "typecheck": "passed",
+    "existingWarning": "landing-page stylesheet 56.67 kB exceeds 48 kB warning budget"
+  },
+  "backend": {
+    "regression": {
+      "total": 175,
+      "passed": 173,
+      "skipped": 2,
+      "failed": 0
+    },
+    "finalReservation": {
+      "passed": 33,
+      "failed": 0
+    },
+    "finalExtraction": {
+      "passed": 32,
+      "failed": 0
+    },
+    "skippedPrerequisites": ["B2_ACCEPTANCE_MONGO", "STORAGE_SECURITY_MONGO"]
+  },
+  "accuracy": {
+    "measurements": [
+      {
+        "fixture": "standard",
+        "assertions": 27,
+        "correct": 27,
+        "milliseconds": 863,
+        "score": 78
+      },
+      {
+        "fixture": "layout-shift",
+        "assertions": 27,
+        "correct": 27,
+        "milliseconds": 897,
+        "score": 78
+      },
+      {
+        "fixture": "columns",
+        "assertions": 27,
+        "correct": 27,
+        "milliseconds": 3399,
+        "score": 78
+      }
+    ],
+    "limitations": [
+      "Hidden annotation URLs are not text evidence",
+      "Arbitrary interleaved table/column semantics",
+      "OCR",
+      "Non-English section labels without an explicit alias",
+      "Claims are extracted, not independently verified credentials"
+    ],
+    "ambiguous": [
+      "Year-only ranges use January boundaries",
+      "Present means the UTC analysis month",
+      "Wrapped bullets may be split into evidence fragments"
+    ],
+    "missing": ["Location", "Portfolio URL"],
+    "inferred": ["Seniority is a tenure heuristic, not a verified job title"]
+  },
+  "mongo": {
+    "workers": 2,
+    "concurrentRequests": 5,
+    "durableAnalyses": 1,
+    "cacheRecords": 1,
+    "aiCalls": 1,
+    "pdfParses": 1,
+    "notifications": 1,
+    "redis": "unavailable",
+    "crossOwnerStatus": 403,
+    "guideStatuses": [200, 200, 200, 200, 200, 429],
+    "milliseconds": 4784,
+    "totalKeysExamined": 1,
+    "totalDocsExamined": 1
+  },
+  "resources": {
+    "limits": {
+      "bytes": 10485760,
+      "pages": 50,
+      "characters": 200000,
+      "timeoutMs": 15000,
+      "workers": 2
+    },
+    "observations": [
+      {
+        "fixture": "standard",
+        "milliseconds": 836,
+        "characters": 748,
+        "pages": 1
+      },
+      {
+        "fixture": "columns",
+        "milliseconds": 629,
+        "characters": 748,
+        "pages": 1
+      },
+      {
+        "fixture": "standard",
+        "milliseconds": 781,
+        "characters": 748,
+        "pages": 1
+      },
+      {
+        "fixture": "columns",
+        "milliseconds": 3100,
+        "characters": 748,
+        "pages": 1
+      }
+    ],
+    "concurrentExtractions": 2,
+    "thirdConcurrentStatus": 429,
+    "processPeakRssKiB": 106740,
+    "postRunRssBytes": 87171072,
+    "note": "Small synthetic local sample, including two concurrent workers. Peak RSS covers this dedicated Node process and its workers; it is not a production capacity or hard RSS limit."
+  },
+  "visuals": [
+    {
+      "name": "resume-analyzer-light-1440",
+      "layoutEqual": true,
+      "changedPixels": 0,
+      "sameDimensions": true,
+      "overflow": false,
+      "errors": []
+    },
+    {
+      "name": "resume-analyzer-light-375",
+      "layoutEqual": true,
+      "changedPixels": 0,
+      "sameDimensions": true,
+      "overflow": false,
+      "errors": []
+    },
+    {
+      "name": "resume-analyzer-dark-1440",
+      "layoutEqual": true,
+      "changedPixels": 0,
+      "sameDimensions": true,
+      "overflow": false,
+      "errors": []
+    },
+    {
+      "name": "resume-analyzer-dark-375",
+      "layoutEqual": true,
+      "changedPixels": 0,
+      "sameDimensions": true,
+      "overflow": false,
+      "errors": []
+    }
+  ]
+}

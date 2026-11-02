@@ -1,0 +1,57 @@
+<!-- Deterministic Resume Evidence Section -->
+<div class="evidence-section">
+  <app-ui-section-header
+    title="Deterministic Resume Evidence"
+    description="Factual information extracted directly from the uploaded PDF document structure."
+  ></app-ui-section-header>
+
+  <div class="evidence-grid">
+    <!-- Section Presence Evidence -->
+    <app-ui-card class="evidence-card">
+      <h4>Detected Sections</h4>
+      <p class="evidence-subtitle">Recognition of standard industry resume sections.</p>
+      <div class="section-presence-list">
+        <div *ngFor="let sec of sectionPresenceList" class="section-item">
+          <span class="section-label">{{ sec.label }}</span>
+          <app-ui-badge [variant]="sec.present ? 'success' : 'neutral'" size="sm">
+            {{ sec.present ? 'Found' : 'Missing' }}
+          </app-ui-badge>
+        </div>
+      </div>
+    </app-ui-card>
+
+    <!-- Quantified Achievements Examples -->
+    <app-ui-card class="evidence-card">
+      <div class="card-header-row">
+        <h4>Quantified Achievements</h4>
+        <app-ui-badge variant="primary" size="sm">
+          {{ quantifiedAchievementsCount }}
+          {{ quantifiedAchievementsCount === 1 ? 'metric' : 'metrics' }}
+        </app-ui-badge>
+      </div>
+      <p class="evidence-subtitle">
+        Examples of measurable impact identified in your bullet points.
+      </p>
+
+      <div *ngIf="quantifiedAchievementExamples.length" class="achievement-bullets">
+        <ul>
+          <li *ngFor="let bullet of quantifiedAchievementExamples.slice(0, 4)">{{ bullet }}</li>
+        </ul>
+      </div>
+      <div *ngIf="!quantifiedAchievementExamples.length" class="empty-bullet-note">
+        <p>
+          No explicit numeric metrics or percentage improvements detected in experience bullets.
+          Adding quantified outcomes (e.g. "reduced latency by 30%") increases your impact score.
+        </p>
+      </div>
+    </app-ui-card>
+  </div>
+
+  <app-resume-skills
+    [skillGroups]="skillGroups"
+    [detectedSkillCount]="detectedSkillCount"
+    [showAllSkills]="showAllSkills"
+    (toggleSkills)="toggleSkills.emit()"
+  ></app-resume-skills>
+  <app-resume-warnings [warningsList]="warningsList"></app-resume-warnings>
+</div>

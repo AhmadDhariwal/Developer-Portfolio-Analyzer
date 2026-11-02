@@ -135,10 +135,13 @@ const harness = async (t) => {
   const cacheKey = (query) =>
     [query.userId, query.resumeFileId, query.resumeHash, query.analysisVersion].join(':');
   const mocks = {
-    'pdf-parse': async () => {
-      state.parserCalls++;
-      if (state.parserFailure) throw new Error('parser secret C:\private');
-      return { text: state.text };
+    './resumePdfExtraction': {
+      ...require('../services/resumePdfExtraction'),
+      extract: async () => {
+        state.parserCalls++;
+        if (state.parserFailure) throw new Error('parser secret C:\private');
+        return { text: state.text };
+      }
     },
     '../models/resumeAnalysisCache': {
       findOne: (query) => chain(state.cache.get(cacheKey(query)) || null),

@@ -1,0 +1,119 @@
+<!-- Hero Row: Overall Score & Readability Quality -->
+<div class="results-hero-grid">
+  <!-- 1. Authoritative Overall Score Card -->
+  <div class="overall-score-cell">
+    <ng-container *ngIf="overallScoreAvailable && overallScore !== null">
+      <app-score-card
+        title="Overall Resume Score"
+        [score]="overallScore"
+        [color]="scoreCardColor"
+        [stale]="isStale"
+        [subtitle]="
+          'Rule: ' +
+          scoreRuleVersion +
+          (scoreCalculatedAt ? ' · ' + formatDate(scoreCalculatedAt) : '')
+        "
+      ></app-score-card>
+    </ng-container>
+
+    <!-- Unavailable Scoring Card -->
+    <ng-container *ngIf="!overallScoreAvailable || overallScore === null">
+      <app-ui-card variant="elevated" class="unavailable-score-card">
+        <div class="unavailable-header">
+          <span class="card-eyebrow">Authoritative Scoring</span>
+          <app-ui-badge variant="warning" size="sm"
+            >Unable to score reliably / Unavailable</app-ui-badge
+          >
+        </div>
+        <div class="unavailable-body">
+          <div class="unavailable-icon-ring">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+          </div>
+          <div class="unavailable-meta">
+            <h4>Score Unavailable</h4>
+            <p>
+              Content sufficiency standards not met. Resume must contain sufficient readable text
+              and career sections to produce an authoritative score.
+            </p>
+            <small class="rule-version-label">Evaluation Engine: {{ scoreRuleVersion }}</small>
+          </div>
+        </div>
+      </app-ui-card>
+    </ng-container>
+  </div>
+
+  <!-- 2. Readability / Content Quality Card -->
+  <app-ui-card variant="elevated" class="readability-quality-card" *ngIf="qualityIndicator">
+    <div class="card-header-row">
+      <div>
+        <span class="card-eyebrow">Document Parsing & Readability</span>
+        <h3>{{ qualityIndicator.title }}</h3>
+      </div>
+      <app-ui-badge [variant]="qualityIndicator.badgeVariant" size="sm">
+        {{ qualityIndicator.label }}
+      </app-ui-badge>
+    </div>
+    <p class="quality-description">{{ qualityIndicator.description }}</p>
+
+    <div *ngIf="qualityIndicator.recoveryCta" class="recovery-box">
+      <strong>Recommended Action:</strong>
+      <p>{{ qualityIndicator.recoveryCta }}</p>
+    </div>
+
+    <div class="quality-metrics-row">
+      <div class="quality-pill" *ngIf="detectedWordCount !== null">
+        <span class="pill-label">Word Count:</span>
+        <strong class="pill-value">{{ detectedWordCount }}</strong>
+      </div>
+      <div class="quality-pill" *ngIf="uniqueWordCount !== null">
+        <span class="pill-label">Unique Tokens:</span>
+        <strong class="pill-value">{{ uniqueWordCount }}</strong>
+      </div>
+      <div class="quality-pill" *ngIf="analysis.fileSize">
+        <span class="pill-label">File Size:</span>
+        <strong class="pill-value">{{ formatFileSize(analysis.fileSize) }}</strong>
+      </div>
+    </div>
+  </app-ui-card>
+</div>
+
+<!-- Metric Highlights Row -->
+<div class="metric-highlights-grid">
+  <app-ui-metric-card
+    title="Quantified Achievements"
+    [value]="quantifiedAchievementsCount"
+    subtitle="Verifiable outcome metrics in bullets"
+    color="primary"
+  ></app-ui-metric-card>
+
+  <app-ui-metric-card
+    title="Verified Technologies"
+    [value]="detectedSkillCount"
+    subtitle="Unique tools, frameworks, and skills"
+    color="info"
+  ></app-ui-metric-card>
+
+  <app-ui-metric-card
+    title="Experience Duration"
+    [value]="experienceYears !== null ? experienceYears + ' Years' : 'Detected'"
+    [subtitle]="experienceLevel ? 'Level: ' + experienceLevel : 'Career tenure'"
+    color="success"
+  ></app-ui-metric-card>
+
+  <app-ui-metric-card
+    title="ATS Parsability"
+    [value]="analysis.atsScore !== undefined ? analysis.atsScore + '%' : 'N/A'"
+    subtitle="Sub-dimension ATS compatibility score"
+    color="secondary"
+  ></app-ui-metric-card>
+</div>

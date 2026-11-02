@@ -2167,7 +2167,7 @@ const analyzeSkillGap = async (req, res) => {
           }
         : null;
     const resultCacheKey = scopedCacheKey
-      ? crypto.createHash("sha256").update(JSON.stringify(cacheKey)).digest("hex")
+      ? `${String(req.user._id)}:${crypto.createHash("sha256").update(JSON.stringify(cacheKey)).digest("hex")}`
       : "";
     const sharedCached = await timer.time("redisResultCacheLookupMs", () =>
       resultCacheKey && cacheReadable

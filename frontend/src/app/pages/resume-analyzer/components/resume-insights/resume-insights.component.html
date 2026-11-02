@@ -1,0 +1,86 @@
+<!-- AI Advisory Guidance Section (Explicitly separated from factual analysis) -->
+<div class="ai-guidance-section">
+  <app-ui-section-header
+    title="AI Improvement Guidance (Advisory)"
+    description="AI-assisted critique and improvement suggestions. This feedback is advisory and does not alter your authoritative scoring or factual extraction."
+  ></app-ui-section-header>
+
+  <!-- AI Fallback Notice (If AI is unavailable or failed) -->
+  <div *ngIf="!aiGuidanceAvailable" class="state-banner state-banner--info">
+    <div class="banner-content">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        class="banner-icon"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="16" x2="12" y2="12" />
+        <line x1="12" y1="8" x2="12.01" y2="8" />
+      </svg>
+      <div>
+        <strong>AI Narrative Advisory Temporarily Unavailable</strong>
+        <p>
+          AI service did not return an advisory critique. All deterministic scores, breakdown
+          metrics, and extracted evidence remain 100% operational.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Content When Available -->
+  <div *ngIf="aiGuidanceAvailable" class="ai-content-grid">
+    <!-- Improvement Priorities / Focus Areas -->
+    <app-ui-card class="ai-card" *ngIf="aiPriorities.length">
+      <div class="card-header-row">
+        <h4>Priority Improvement Actions</h4>
+        <app-ui-badge variant="primary" size="sm">Action Plan</app-ui-badge>
+      </div>
+      <div class="priorities-list">
+        <div *ngFor="let item of aiPriorities" class="priority-item">
+          <div class="priority-head">
+            <span class="priority-badge" [class]="'priority-badge--' + item.impact">
+              {{ item.impact | uppercase }} IMPACT
+            </span>
+            <strong>{{ item.title }}</strong>
+          </div>
+          <p>{{ item.description }}</p>
+        </div>
+      </div>
+    </app-ui-card>
+
+    <!-- Recruiter Perspective: Strengths & Risks -->
+    <app-ui-card class="ai-card" *ngIf="aiStrengths.length || aiWeaknesses.length">
+      <div class="card-header-row">
+        <h4>Recruiter Perspective</h4>
+        <app-ui-badge *ngIf="hiringReadiness" variant="success" size="sm">
+          Readiness: {{ hiringReadiness }}
+        </app-ui-badge>
+      </div>
+
+      <div *ngIf="aiStrengths.length" class="recruiter-subgroup">
+        <h5 class="strength-title">Key Strengths</h5>
+        <ul>
+          <li *ngFor="let s of aiStrengths">{{ s }}</li>
+        </ul>
+      </div>
+
+      <div *ngIf="aiWeaknesses.length" class="recruiter-subgroup">
+        <h5 class="weakness-title">Areas of Concern & Interview Risks</h5>
+        <ul>
+          <li *ngFor="let w of aiWeaknesses">{{ w }}</li>
+        </ul>
+      </div>
+    </app-ui-card>
+
+    <!-- Writing Suggestions -->
+    <app-ui-card class="ai-card" *ngIf="aiWritingSuggestions.length">
+      <h4>Writing & Bullet Suggestions</h4>
+      <ul class="suggestions-list">
+        <li *ngFor="let sugg of aiWritingSuggestions">{{ sugg }}</li>
+      </ul>
+    </app-ui-card>
+  </div>
+</div>

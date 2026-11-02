@@ -72,7 +72,9 @@ class AIProviderManager {
         Number.parseInt(process.env[config.cooldownEnv] || String(config.defaultCooldownMs), 10)
       ])
     );
-    this.health = Object.fromEntries(PROVIDER_ORDER.map((provider) => [provider, this.createHealthState(provider)]));
+    this.health = Object.fromEntries(
+      PROVIDER_ORDER.map((provider) => [provider, this.createHealthState(provider)])
+    );
     this.logStartupStatus();
   }
 
@@ -126,7 +128,9 @@ class AIProviderManager {
   }
 
   normalizeProvider(provider = '') {
-    const value = String(provider || '').toLowerCase().trim();
+    const value = String(provider || '')
+      .toLowerCase()
+      .trim();
     if (value === 'google') return 'gemini';
     if (value === 'claude') return 'anthropic';
     if (value === 'openai-compatible') return 'openrouter';
@@ -138,8 +142,20 @@ class AIProviderManager {
     if (!value) return '';
     if (value.startsWith('gemini-')) return 'gemini';
     if (value.startsWith('claude-')) return 'anthropic';
-    if (value.startsWith('llama-') || value.includes('mixtral') || value.includes('gemma') || value.includes('qwen')) return 'groq';
-    if (value.startsWith('gpt-') || value.startsWith('o1') || value.startsWith('o3') || value.startsWith('o4')) return 'openai';
+    if (
+      value.startsWith('llama-') ||
+      value.includes('mixtral') ||
+      value.includes('gemma') ||
+      value.includes('qwen')
+    )
+      return 'groq';
+    if (
+      value.startsWith('gpt-') ||
+      value.startsWith('o1') ||
+      value.startsWith('o3') ||
+      value.startsWith('o4')
+    )
+      return 'openai';
     if (value.includes('/')) return 'openrouter';
     return '';
   }
@@ -184,9 +200,10 @@ class AIProviderManager {
       const config = PROVIDERS[provider];
       const settingsKey = settings.provider === provider ? settings.apiKey : '';
       const apiKey = settingsKey || this.clean(process.env[config.envKey] || '');
-      const settingsModel = settings.provider === provider && this.isCompatibleModel(provider, settings.model)
-        ? settings.model
-        : '';
+      const settingsModel =
+        settings.provider === provider && this.isCompatibleModel(provider, settings.model)
+          ? settings.model
+          : '';
       const models = settingsModel
         ? [...new Set([settingsModel, ...this.providerModels(provider)])]
         : this.providerModels(provider);
@@ -229,12 +246,14 @@ class AIProviderManager {
       .map((provider) => this.normalizeProvider(provider))
       .filter(Boolean);
     const { settings, states } = this.getProviderState();
-    const preferred = settings.provider && states[settings.provider]?.hasKey ? settings.provider : '';
-    const priority = fromEnv.length ? fromEnv : [
-      ...(preferred ? [preferred] : []),
-      ...PROVIDER_ORDER
-    ];
-    return priority.filter((provider, index, values) => provider && values.indexOf(provider) === index);
+    const preferred =
+      settings.provider && states[settings.provider]?.hasKey ? settings.provider : '';
+    const priority = fromEnv.length
+      ? fromEnv
+      : [...(preferred ? [preferred] : []), ...PROVIDER_ORDER];
+    return priority.filter(
+      (provider, index, values) => provider && values.indexOf(provider) === index
+    );
   }
 
   getEnabledProviders() {
@@ -259,11 +278,15 @@ class AIProviderManager {
 
     return {
       priority: this.providerPriority(),
-      enabledProviders: providers.filter((provider) => provider.enabled).map((provider) => provider.provider),
-      disabledProviders: providers.filter((provider) => !provider.enabled).map((provider) => ({
-        provider: provider.provider,
-        reason: provider.disabledReason
-      })),
+      enabledProviders: providers
+        .filter((provider) => provider.enabled)
+        .map((provider) => provider.provider),
+      disabledProviders: providers
+        .filter((provider) => !provider.enabled)
+        .map((provider) => ({
+          provider: provider.provider,
+          reason: provider.disabledReason
+        })),
       providers
     };
   }
@@ -281,7 +304,11 @@ class AIProviderManager {
       if (!state.hasRawKey) {
         this.log('provider_missing_key', { provider, envKey: PROVIDERS[provider].envKey }, 'warn');
       } else if (!state.hasKey) {
-        this.log('provider_key_mismatch', { provider, envKey: PROVIDERS[provider].envKey }, 'error');
+        this.log(
+          'provider_key_mismatch',
+          { provider, envKey: PROVIDERS[provider].envKey },
+          'error'
+        );
       } else if (!state.hasModels) {
         this.log('provider_missing_model', { provider }, 'error');
       }
@@ -293,20 +320,36 @@ class AIProviderManager {
         });
     }
 
-    if (settings.model && settings.provider && !this.isCompatibleModel(settings.provider, settings.model)) {
-      this.log('settings_model_ignored', { provider: settings.provider, model: settings.model }, 'error');
+    if (
+      settings.model &&
+      settings.provider &&
+      !this.isCompatibleModel(settings.provider, settings.model)
+    ) {
+      this.log(
+        'settings_model_ignored',
+        { provider: settings.provider, model: settings.model },
+        'error'
+      );
     }
 
     const enabled = Object.values(states).filter((state) => state.enabled);
-    this.log(enabled.length ? 'providers_ready' : 'no_providers_ready', {
-      providers: enabled.map((state) => state.provider),
-      priority: this.providerPriority().filter((provider) => states[provider]?.enabled).join(' -> ')
-    }, enabled.length ? 'log' : 'warn');
+    this.log(
+      enabled.length ? 'providers_ready' : 'no_providers_ready',
+      {
+        providers: enabled.map((state) => state.provider),
+        priority: this.providerPriority()
+          .filter((provider) => states[provider]?.enabled)
+          .join(' -> ')
+      },
+      enabled.length ? 'log' : 'warn'
+    );
   }
 
   getProviderHealth(provider) {
     const health = this.health[provider] || this.createHealthState(provider);
-    const successRate = health.requests ? Number(((health.successes / health.requests) * 100).toFixed(1)) : 0;
+    const successRate = health.requests
+      ? Number(((health.successes / health.requests) * 100).toFixed(1))
+      : 0;
     return {
       requests: health.requests,
       successes: health.successes,
@@ -348,11 +391,15 @@ class AIProviderManager {
     health.cooldownUntil = Date.now() + (this.cooldownMs[provider] || 0);
     health.disabledReason = reason;
     this.health[provider] = health;
-    this.log('provider_disabled', {
-      provider,
-      reason,
-      cooldownMs: this.cooldownMs[provider] || 0
-    }, 'warn');
+    this.log(
+      'provider_disabled',
+      {
+        provider,
+        reason,
+        cooldownMs: this.cooldownMs[provider] || 0
+      },
+      'warn'
+    );
   }
 
   getStatusCode(error) {
@@ -365,10 +412,16 @@ class AIProviderManager {
   errorClass(error) {
     const statusCode = this.getStatusCode(error);
     const message = String(error?.message || '').toLowerCase();
-    if (statusCode === 'timeout' || message.includes('timeout') || message.includes('network')) return 'transient';
+    if (statusCode === 'timeout' || message.includes('timeout') || message.includes('network'))
+      return 'transient';
     if (PERMANENT_STATUS.has(statusCode)) return 'permanent';
     if (TRANSIENT_STATUS.has(statusCode)) return 'transient';
-    if (message.includes('quota') || message.includes('resource_exhausted') || message.includes('rate')) return 'transient';
+    if (
+      message.includes('quota') ||
+      message.includes('resource_exhausted') ||
+      message.includes('rate')
+    )
+      return 'transient';
     return 'unknown';
   }
 
@@ -386,7 +439,16 @@ class AIProviderManager {
     return /mini|o1|o3|o4|reasoning/i.test(modelName);
   }
 
-  async runOpenAICompatible({ provider, prompt, modelName, apiKey, endpoint, parseJson, timeoutMs }) {
+  async runOpenAICompatible({
+    provider,
+    prompt,
+    modelName,
+    apiKey,
+    endpoint,
+    parseJson,
+    timeoutMs,
+    signal
+  }) {
     const body = {
       model: modelName,
       max_tokens: 8000,
@@ -412,7 +474,8 @@ class AIProviderManager {
 
     const response = await axios.post(endpoint, body, {
       headers,
-      timeout: timeoutMs
+      timeout: timeoutMs,
+      signal
     });
 
     const text = response.data?.choices?.[0]?.message?.content || '';
@@ -420,7 +483,7 @@ class AIProviderManager {
     return parseJson(text);
   }
 
-  async runGemini({ prompt, modelName, apiKey, parseJson, timeoutMs }) {
+  async runGemini({ prompt, modelName, apiKey, parseJson, timeoutMs, signal }) {
     const genAI = new GoogleGenerativeAI(apiKey);
     const generationConfig = {
       temperature: 0.15,
@@ -429,52 +492,76 @@ class AIProviderManager {
     };
     if (/gemini-2\.5/i.test(modelName)) generationConfig.thinkingConfig = { thinkingBudget: 0 };
     const model = genAI.getGenerativeModel({ model: modelName, generationConfig });
+    const controller = new AbortController();
+    const cancel = () => controller.abort();
+    if (signal?.aborted) cancel();
+    else signal?.addEventListener('abort', cancel, { once: true });
     let timer = null;
     const timeout = new Promise((_, reject) => {
       timer = setTimeout(() => {
         const error = new Error(`Gemini request timed out after ${timeoutMs}ms`);
         error.code = 'ECONNABORTED';
+        controller.abort();
         reject(error);
       }, timeoutMs);
     });
 
     try {
-      const result = await Promise.race([model.generateContent(prompt), timeout]);
+      const result = await Promise.race([
+        model.generateContent(prompt, { signal: controller.signal }),
+        timeout
+      ]);
       const text = result.response.text();
-      this.log('provider_response', { provider: 'gemini', model: modelName, responseChars: text.length });
+      this.log('provider_response', {
+        provider: 'gemini',
+        model: modelName,
+        responseChars: text.length
+      });
       return parseJson(text);
     } finally {
       if (timer) clearTimeout(timer);
+      signal?.removeEventListener('abort', cancel);
     }
   }
 
-  async runAnthropic({ prompt, modelName, apiKey, parseJson, timeoutMs }) {
-    const response = await axios.post(PROVIDERS.anthropic.endpoint, {
-      model: modelName,
-      max_tokens: 8000,
-      system: 'Return valid JSON only. No markdown, no commentary.',
-      messages: [{ role: 'user', content: prompt }]
-    }, {
-      headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': process.env.ANTHROPIC_VERSION || '2023-06-01',
-        'Content-Type': 'application/json'
+  async runAnthropic({ prompt, modelName, apiKey, parseJson, timeoutMs, signal }) {
+    const response = await axios.post(
+      PROVIDERS.anthropic.endpoint,
+      {
+        model: modelName,
+        max_tokens: 8000,
+        system: 'Return valid JSON only. No markdown, no commentary.',
+        messages: [{ role: 'user', content: prompt }]
       },
-      timeout: timeoutMs
-    });
+      {
+        headers: {
+          'x-api-key': apiKey,
+          'anthropic-version': process.env.ANTHROPIC_VERSION || '2023-06-01',
+          'Content-Type': 'application/json'
+        },
+        timeout: timeoutMs,
+        signal
+      }
+    );
 
     const text = (response.data?.content || [])
       .map((block) => block?.text || '')
       .join('')
       .trim();
-    this.log('provider_response', { provider: 'anthropic', model: modelName, responseChars: text.length });
+    this.log('provider_response', {
+      provider: 'anthropic',
+      model: modelName,
+      responseChars: text.length
+    });
     return parseJson(text);
   }
 
-  async runProviderRequest({ provider, prompt, modelName, apiKey, parseJson, timeoutMs }) {
+  async runProviderRequest({ provider, prompt, modelName, apiKey, parseJson, timeoutMs, signal }) {
     const config = PROVIDERS[provider];
-    if (config.type === 'gemini') return this.runGemini({ prompt, modelName, apiKey, parseJson, timeoutMs });
-    if (config.type === 'anthropic') return this.runAnthropic({ prompt, modelName, apiKey, parseJson, timeoutMs });
+    if (config.type === 'gemini')
+      return this.runGemini({ prompt, modelName, apiKey, parseJson, timeoutMs, signal });
+    if (config.type === 'anthropic')
+      return this.runAnthropic({ prompt, modelName, apiKey, parseJson, timeoutMs, signal });
     return this.runOpenAICompatible({
       provider,
       prompt,
@@ -482,17 +569,23 @@ class AIProviderManager {
       apiKey,
       endpoint: config.endpoint,
       parseJson,
-      timeoutMs
+      timeoutMs,
+      signal
     });
   }
 
-  async tryProvider(provider, prompt, retries, parseJson, timeoutMs, preferredModel = '') {
+  async tryProvider(provider, prompt, retries, parseJson, timeoutMs, preferredModel = '', signal) {
     const { states } = this.getProviderState();
     const state = states[provider];
-    if (!state?.hasKey) return { ok: false, failover: true, reason: state?.disabledReason || 'missing_key' };
-    if (!state.enabled) return { ok: false, failover: true, reason: state?.disabledReason || 'disabled' };
+    if (!state?.hasKey)
+      return { ok: false, failover: true, reason: state?.disabledReason || 'missing_key' };
+    if (!state.enabled)
+      return { ok: false, failover: true, reason: state?.disabledReason || 'disabled' };
 
-    const models = preferredModel && this.isCompatibleModel(provider, preferredModel) ? [preferredModel] : state.models;
+    const models =
+      preferredModel && this.isCompatibleModel(provider, preferredModel)
+        ? [preferredModel]
+        : state.models;
     for (const modelName of models) {
       if (!this.isCompatibleModel(provider, modelName)) {
         this.log('model_skipped_incompatible', { provider, model: modelName }, 'error');
@@ -500,6 +593,7 @@ class AIProviderManager {
       }
 
       for (let attempt = 0; attempt <= retries; attempt += 1) {
+        if (signal?.aborted) return { ok: false, reason: 'cancelled' };
         const startedAt = Date.now();
         try {
           this.log('provider_selected', { provider, model: modelName, attempt });
@@ -509,37 +603,49 @@ class AIProviderManager {
             modelName,
             apiKey: state.apiKey,
             parseJson,
-            timeoutMs
+            timeoutMs,
+            signal
           });
           const latencyMs = Date.now() - startedAt;
           this.recordSuccess(provider, latencyMs);
           this.log('provider_success', { provider, model: modelName, attempt, latencyMs });
           return { ok: true, provider, model: modelName, parsed, latencyMs };
         } catch (error) {
+          if (signal?.aborted) return { ok: false, reason: 'cancelled' };
           const latencyMs = Date.now() - startedAt;
           const statusCode = this.getStatusCode(error);
           const retryable = this.shouldRetry(error);
           const failover = this.shouldFailover(error);
-          const invalidJson = /no json found|failed to parse json/i.test(String(error?.message || ''));
-          const reason = invalidJson ? 'invalid_json' : (statusCode || this.errorClass(error));
+          const invalidJson = /no json found|failed to parse json/i.test(
+            String(error?.message || '')
+          );
+          const reason = invalidJson ? 'invalid_json' : statusCode || this.errorClass(error);
           this.recordFailure(provider, latencyMs, reason);
 
-          this.log('provider_error', {
-            provider,
-            model: modelName,
-            attempt,
-            statusCode: statusCode || 'n/a',
-            category: this.errorClass(error),
-            retryable,
-            failover,
-            latencyMs,
-            reason
-          }, retryable ? 'warn' : 'error');
+          this.log(
+            'provider_error',
+            {
+              provider,
+              model: modelName,
+              attempt,
+              statusCode: statusCode || 'n/a',
+              category: this.errorClass(error),
+              retryable,
+              failover,
+              latencyMs,
+              reason
+            },
+            retryable ? 'warn' : 'error'
+          );
 
           if (!retryable || failover) return { ok: false, failover: true, reason };
           if (attempt < retries) {
             const delayMs = Math.min(4000, 500 * Math.pow(2, attempt));
-            this.log('retry_scheduled', { provider, model: modelName, attempt: attempt + 1, delayMs, reason }, 'warn');
+            this.log(
+              'retry_scheduled',
+              { provider, model: modelName, attempt: attempt + 1, delayMs, reason },
+              'warn'
+            );
             await new Promise((resolve) => setTimeout(resolve, delayMs));
           }
         }
@@ -549,7 +655,16 @@ class AIProviderManager {
     return { ok: false, failover: true, reason: 'models_exhausted' };
   }
 
-  async execute(prompt, { retries = 2, parseJson, timeoutMs = Number.parseInt(process.env.AI_REQUEST_TIMEOUT_MS || '30000', 10), preferredModel = '' }) {
+  async execute(
+    prompt,
+    {
+      retries = 2,
+      parseJson,
+      timeoutMs = Number.parseInt(process.env.AI_REQUEST_TIMEOUT_MS || '30000', 10),
+      preferredModel = '',
+      signal
+    }
+  ) {
     const { settings, states } = this.getProviderState();
     if (!settings.enabled) {
       this.log('ai_disabled');
@@ -561,8 +676,17 @@ class AIProviderManager {
 
     let lastReason = '';
     for (const provider of priority) {
+      if (signal?.aborted) return { ok: false, reason: 'cancelled' };
       if (lastReason) this.log('provider_switched', { provider, reason: lastReason }, 'warn');
-      const result = await this.tryProvider(provider, prompt, retries, parseJson, timeoutMs, preferredModel);
+      const result = await this.tryProvider(
+        provider,
+        prompt,
+        retries,
+        parseJson,
+        timeoutMs,
+        preferredModel,
+        signal
+      );
       if (result.ok) return result;
       lastReason = result.reason || 'provider_failed';
     }

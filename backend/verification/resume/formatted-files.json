@@ -1,0 +1,113 @@
+{
+  "frontend": [
+    "frontend/scripts/prepare-resume-styles.cjs",
+    "frontend/scripts/resume-browser-fixture.cjs",
+    "frontend/scripts/resume-vitest.config.mjs",
+    "frontend/scripts/verify-resume-parity.cjs",
+    "frontend/src/app/pages/resume-analyzer/components/resume-breakdown/resume-breakdown.component.html",
+    "frontend/src/app/pages/resume-analyzer/components/resume-breakdown/resume-breakdown.component.scss",
+    "frontend/src/app/pages/resume-analyzer/components/resume-breakdown/resume-breakdown.component.ts",
+    "frontend/src/app/pages/resume-analyzer/components/resume-evidence/resume-evidence.component.html",
+    "frontend/src/app/pages/resume-analyzer/components/resume-evidence/resume-evidence.component.scss",
+    "frontend/src/app/pages/resume-analyzer/components/resume-evidence/resume-evidence.component.ts",
+    "frontend/src/app/pages/resume-analyzer/components/resume-insights/resume-insights.component.html",
+    "frontend/src/app/pages/resume-analyzer/components/resume-insights/resume-insights.component.scss",
+    "frontend/src/app/pages/resume-analyzer/components/resume-insights/resume-insights.component.ts",
+    "frontend/src/app/pages/resume-analyzer/components/resume-overview/resume-overview.component.html",
+    "frontend/src/app/pages/resume-analyzer/components/resume-overview/resume-overview.component.scss",
+    "frontend/src/app/pages/resume-analyzer/components/resume-overview/resume-overview.component.ts",
+    "frontend/src/app/pages/resume-analyzer/components/resume-skills/resume-skills.component.html",
+    "frontend/src/app/pages/resume-analyzer/components/resume-skills/resume-skills.component.scss",
+    "frontend/src/app/pages/resume-analyzer/components/resume-skills/resume-skills.component.ts",
+    "frontend/src/app/pages/resume-analyzer/components/resume-upload/resume-upload.component.html",
+    "frontend/src/app/pages/resume-analyzer/components/resume-upload/resume-upload.component.scss",
+    "frontend/src/app/pages/resume-analyzer/components/resume-upload/resume-upload.component.ts",
+    "frontend/src/app/pages/resume-analyzer/components/resume-warnings/resume-warnings.component.html",
+    "frontend/src/app/pages/resume-analyzer/components/resume-warnings/resume-warnings.component.scss",
+    "frontend/src/app/pages/resume-analyzer/components/resume-warnings/resume-warnings.component.ts",
+    "frontend/src/app/pages/resume-analyzer/resume-analyzer.component.html",
+    "frontend/src/app/pages/resume-analyzer/resume-analyzer.component.scss",
+    "frontend/src/app/pages/resume-analyzer/resume-analyzer.component.spec.ts",
+    "frontend/src/app/pages/resume-analyzer/resume-analyzer.component.ts",
+    "frontend/src/app/pages/resume-analyzer/resume-presentation.ts",
+    "frontend/src/app/pages/resume-analyzer/resume-view.models.ts",
+    "frontend/src/app/pages/resume-analyzer/styles/_resume-analyzer-theme.scss"
+  ],
+  "backend": [
+    "backend/scripts/generate-resume-fixtures.js",
+    "backend/src/controllers/resumecontoller.js",
+    "backend/src/middleware/resumeAdmission.js",
+    "backend/src/routes/resume.routes.js",
+    "backend/src/services/aiProviderManager.js",
+    "backend/src/services/aiservice.js",
+    "backend/src/services/integrationMongoGovernanceService.js",
+    "backend/src/services/resumePdfExtraction.js",
+    "backend/src/services/resumeservice.js",
+    "backend/src/tests/fixtures/resume/expected.json",
+    "backend/src/tests/fixtures/resumeWorker.js",
+    "backend/src/tests/resumeAnalyzerPerformance.test.js",
+    "backend/src/tests/resumePipelineFinalization.test.js",
+    "backend/src/tests/resumeProduction.test.js",
+    "backend/src/tests/resumeProductionMongo.test.js",
+    "backend/scripts/verify-resume-resources.js"
+  ],
+  "special": [
+    "backend/src/controllers/skillgapcontroller.js",
+    "backend/src/services/resumeGuideService.js",
+    "backend/src/tests/requestFlowGovernance.test.js"
+  ],
+  "checks": [
+    {
+      "name": "frontend",
+      "status": 0,
+      "output": "Checking formatting...\nAll matched files use Prettier code style!\n"
+    },
+    {
+      "name": "backend",
+      "status": 0,
+      "output": "Checking formatting...\nAll matched files use Prettier code style!\n"
+    },
+    {
+      "name": "guide",
+      "status": 0,
+      "output": "Checking formatting...\nAll matched files use Prettier code style!\n"
+    },
+    {
+      "name": "request-flow",
+      "status": 0,
+      "output": "Checking formatting...\nAll matched files use Prettier code style!\n"
+    },
+    {
+      "name": "skill-gap-changed-range",
+      "status": 0,
+      "output": "Checking formatting...\nAll matched files use Prettier code style!\n"
+    }
+  ],
+  "syntax": {
+    "javascriptFiles": [
+      "backend/scripts/generate-resume-fixtures.js",
+      "backend/src/controllers/resumecontoller.js",
+      "backend/src/controllers/skillgapcontroller.js",
+      "backend/src/middleware/resumeAdmission.js",
+      "backend/src/routes/resume.routes.js",
+      "backend/src/services/aiProviderManager.js",
+      "backend/src/services/aiservice.js",
+      "backend/src/services/integrationMongoGovernanceService.js",
+      "backend/src/services/resumeGuideService.js",
+      "backend/src/services/resumePdfExtraction.js",
+      "backend/src/services/resumeservice.js",
+      "backend/src/tests/fixtures/resumeWorker.js",
+      "backend/src/tests/requestFlowGovernance.test.js",
+      "backend/src/tests/resumeAnalyzerPerformance.test.js",
+      "backend/src/tests/resumePipelineFinalization.test.js",
+      "backend/src/tests/resumeProduction.test.js",
+      "backend/src/tests/resumeProductionMongo.test.js",
+      "backend/scripts/verify-resume-resources.js"
+    ],
+    "embeddedPython": "compiled successfully without writing artifacts"
+  },
+  "additionalMarkdown": [
+    "docs/features/resume-analyzer.md",
+    "backend/verification/resume/RESUME-ANALYZER-PRODUCTION-FINAL.md"
+  ]
+}
