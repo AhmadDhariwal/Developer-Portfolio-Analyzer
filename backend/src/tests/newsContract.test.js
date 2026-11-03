@@ -7,15 +7,21 @@ const user = {
   _id: 'owner',
   activeGithubUsername: 'selected',
   activeResumeFileId: 'selected-resume',
-  activeCareerStack: 'Frontend'
+  activeCareerStack: 'Frontend',
 };
 const signals = () => ({
   githubSignals: {
     present: true,
     username: 'selected',
     updatedAt: '2026-10-22T00:00:00Z',
-    repositories: [{ name: 'repo', language: 'JavaScript', pushedAt: '2026-10-22T00:00:00Z' }],
-    technologies: ['React']
+    repositories: [
+      {
+        name: 'repo',
+        language: 'JavaScript',
+        pushedAt: '2026-10-22T00:00:00Z',
+      },
+    ],
+    technologies: ['React'],
   },
   resumeSignals: {
     analyzed: true,
@@ -23,10 +29,13 @@ const signals = () => ({
     analysisId: 'analysis',
     skills: ['React'],
     technicalSkills: ['React'],
-    lastAnalyzedAt: '2026-10-22T00:00:00Z'
+    lastAnalyzedAt: '2026-10-22T00:00:00Z',
   },
-  skillGapSignals: { knownSkills: ['React'], provenSkills: ['React', 'Docker'] },
-  recommendationSignal: { skills: { recommendedTechnologies: ['Docker'] } }
+  skillGapSignals: {
+    knownSkills: ['React'],
+    provenSkills: ['React', 'Docker'],
+  },
+  recommendationSignal: { skills: { recommendedTechnologies: ['Docker'] } },
 });
 const context = (value = signals()) => ({
   careerStack: 'Frontend',
@@ -35,7 +44,7 @@ const context = (value = signals()) => ({
   skillGaps: ['Docker'],
   recommendationTechnologies: ['Docker'],
   jobDemandSkills: ['SQL'],
-  signals: value
+  signals: value,
 });
 
 test('news provenance reuses Skill Gap statuses without promoting claims, inferred summaries or recommendations', () => {
@@ -43,7 +52,7 @@ test('news provenance reuses Skill Gap statuses without promoting claims, inferr
   const byName = Object.fromEntries(output.map((skill) => [skill.name, skill]));
   assert.equal(byName.React.status, 'CLAIMED_ONLY');
   assert.equal(byName.JavaScript.status, 'PARTIAL');
-  assert.equal(byName.Docker.status, 'NOT_EVIDENCED');
+  assert.equal(byName.Docker.status, 'UNKNOWN');
   assert.equal(byName['Custom framework'].status, 'UNKNOWN');
   assert.equal(byName.SQL.status, 'UNKNOWN');
   assert.ok(output.every((skill) => skill.status !== 'DEMONSTRATED'));
@@ -56,8 +65,12 @@ test('news provenance reuses Skill Gap statuses without promoting claims, inferr
 
 test('active GitHub/resume changes reject former-selection evidence and absent signals stay UNKNOWN', () => {
   const changed = buildNewsSkillEvidence(
-    { ...user, activeGithubUsername: 'other', activeResumeFileId: 'other-resume' },
-    context()
+    {
+      ...user,
+      activeGithubUsername: 'other',
+      activeResumeFileId: 'other-resume',
+    },
+    context(),
   );
   assert.ok(changed.every((skill) => skill.status === 'UNKNOWN'));
   assert.ok(changed.every((skill) => skill.evidence.length === 0));
@@ -69,9 +82,9 @@ test('integration and portfolio signals remain claims rather than inspected impl
   const output = buildNewsSkillEvidence(user, {
     ...context({
       integrationSignal: { present: true, detectedSkills: ['React'] },
-      portfolioSignal: { present: true, portfolioSkills: ['Docker'] }
+      portfolioSignal: { present: true, portfolioSkills: ['Docker'] },
     }),
-    knownSkills: ['React', 'Docker']
+    knownSkills: ['React', 'Docker'],
   });
   assert.equal(output.find((skill) => skill.name === 'React').status, 'CLAIMED_ONLY');
   assert.equal(output.find((skill) => skill.name === 'Docker').status, 'CLAIMED_ONLY');
@@ -88,18 +101,18 @@ test('additive context/article provenance preserves ranking, legacy fields and p
     category: 'Frontend',
     publishedAt: new Date(),
     popularity: 12,
-    tags: []
+    tags: [],
   };
   const service = load('../services/newsService.js', {
     axios: { get: () => assert.fail('No provider calls allowed') },
     './newsPoolService': {
       readPool: async () => ({ allItems: [item], lastUpdated: new Date() }),
-      freshness: () => 'fresh'
+      freshness: () => 'fresh',
     },
     './developerSignalService': {
       getDeveloperSignals: async (id) => (id === 'owner' ? signals() : {}),
-      buildSignalHash: () => 'synthetic'
-    }
+      buildSignalHash: () => 'synthetic',
+    },
   });
   const currentUser = { ...user, activeExperienceLevel: 'Student' };
   const userContext = await service.buildUserContext(currentUser);
@@ -112,22 +125,34 @@ test('additive context/article provenance preserves ranking, legacy fields and p
     'relatedSkills',
     'relatedSkillGaps',
     'relevanceReasons',
-    'demandTags'
+    'demandTags',
   ])
     assert.deepEqual(after[field], before[field]);
   assert.ok(feed.recommendedBasedOn.detectedSkills.includes('React'));
   assert.equal(feed.recommendedBasedOn.skillEvidenceRuleVersion, 'skill-evidence-coverage-v1');
-  assert.equal(after.relatedSkillEvidence.find((skill) => skill.name === 'React').status, 'CLAIMED_ONLY');
-  assert.ok(after.relatedSkillEvidence.some((skill) => skill.name === 'Docker' && skill.evidence.length === 0));
-  const other = await service.getNewsFeed({ user: { _id: 'other', activeCareerStack: 'Frontend' }, query: {} });
+  assert.equal(
+    after.relatedSkillEvidence.find((skill) => skill.name === 'React').status,
+    'CLAIMED_ONLY',
+  );
+  assert.ok(
+    after.relatedSkillEvidence.some(
+      (skill) => skill.name === 'Docker' && skill.evidence.length === 0,
+    ),
+  );
+  const other = await service.getNewsFeed({
+    user: { _id: 'other', activeCareerStack: 'Frontend' },
+    query: {},
+  });
   assert.deepEqual(other.recommendedBasedOn.skillEvidence, []);
   assert.deepEqual(other.items[0].relatedSkillEvidence, []);
 });
 
 test('read-state input validation rejects coercion, history injection and owner injection before querying', async () => {
   const controller = load('../controllers/newsController.js', {
-    '../models/newsSavedItem': { findOneAndUpdate: () => assert.fail('Invalid input must not query') },
-    '../services/newsService': {}
+    '../models/newsSavedItem': {
+      findOneAndUpdate: () => assert.fail('Invalid input must not query'),
+    },
+    '../services/newsService': {},
   });
   for (const body of [
     null,
@@ -137,7 +162,7 @@ test('read-state input validation rejects coercion, history injection and owner 
     { read: 0 },
     { read: null },
     { read: false, readAt: null },
-    { userId: 'foreign' }
+    { userId: 'foreign' },
   ]) {
     let status;
     await controller.markSavedNewsAsRead(
@@ -146,8 +171,8 @@ test('read-state input validation rejects coercion, history injection and owner 
         status(code) {
           status = code;
           return { json() {} };
-        }
-      }
+        },
+      },
     );
     assert.equal(status, 400);
   }

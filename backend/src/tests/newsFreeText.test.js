@@ -8,14 +8,19 @@ test('news configuration rejects malformed flags, quotas and cache bounds before
   const { z } = require('zod');
   const { newsEnvShape, NEWS_PROVIDER_KEYS } = require('../config/newsConfig');
   const schema = z.object(newsEnvShape);
-  assert.ok(schema.safeParse({ NEWS_NEWSAPI_DAILY_BUDGET: '0', NEWS_NEWSAPI_CONTENT_APPROVED: 'false' }).success);
+  assert.ok(
+    schema.safeParse({
+      NEWS_NEWSAPI_DAILY_BUDGET: '0',
+      NEWS_NEWSAPI_CONTENT_APPROVED: 'false',
+    }).success,
+  );
   for (const entry of [
     { NEWS_DISCOVERY_ENABLED: 'yes' },
     { NEWS_DISCOVERY_DAILY_JOBS: '0' },
     { NEWS_HACKERNEWSSEARCH_DAILY_BUDGET: '-1' },
     { NEWS_DEVTO_SHARED_DAILY_BUDGET: 'NaN' },
     { NEWS_QUERY_NEGATIVE_TTL_MS: '86400000' },
-    { NEWS_QUERY_MEMORY_ENTRIES: '1000000' }
+    { NEWS_QUERY_MEMORY_ENTRIES: '1000000' },
   ])
     assert.equal(schema.safeParse(entry).success, false);
   assert.ok(NEWS_PROVIDER_KEYS.includes('cloudflarechangelog'));
@@ -29,7 +34,7 @@ test('bounded free text retains multiword meaning, normalizes aliases and reject
     'AWS Lambda',
     'Docker vulnerabilities',
     'Python async',
-    'NewTech SDK'
+    'NewTech SDK',
   ])
     assert.ok(queryFor(value), value);
   assert.equal(queryFor(' Generative   AI ').key, queryFor('genai').key);
@@ -49,7 +54,7 @@ test('bounded free text retains multiword meaning, normalizes aliases and reject
     'a/b/c',
     'abcdef12-1234-1234-1234-123456789abc',
     'eyJabc.secret.token',
-    '20261234567890'
+    '20261234567890',
   ])
     assert.equal(queryFor(value), null, value);
   assert.ok(matchesQuery({ title: 'Generative artificial intelligence systems' }, 'generative ai'));
@@ -69,7 +74,7 @@ test('free-text provider requests use fixed keyword APIs and exclude unrelated f
     './newsGovernanceService': {
       policy: () => ({ daily: 12, monthly: 300 }),
       reserve: async () => ({ allowed: true }),
-      finish: async () => {}
+      finish: async () => {},
     },
     axios: {
       get: async (url, options) => {
@@ -78,17 +83,21 @@ test('free-text provider requests use fixed keyword APIs and exclude unrelated f
           return {
             status: 200,
             headers: {},
-            data: `<rss><channel><item><title>Cloudflare Workers update</title><link>https://developers.cloudflare.com/changelog/example</link><pubDate>${new Date().toUTCString()}</pubDate><description>Do not retain full bodies</description></item></channel></rss>`
+            data: `<rss><channel><item><title>Cloudflare Workers update</title><link>https://developers.cloudflare.com/changelog/example</link><pubDate>${new Date().toUTCString()}</pubDate><description>Do not retain full bodies</description></item></channel></rss>`,
           };
         const item = {
           title: 'Generative AI engineering',
           url: 'https://example.com/generative-ai',
           published_at: new Date().toISOString(),
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
         };
-        return { status: 200, headers: {}, data: url.includes('algolia') ? { hits: [item] } : [item] };
-      }
-    }
+        return {
+          status: 200,
+          headers: {},
+          data: url.includes('algolia') ? { hits: [item] } : [item],
+        };
+      },
+    },
   });
   try {
     assert.deepEqual(providers.available('generative ai'), ['hackernewssearch', 'devtosearch']);
@@ -108,7 +117,7 @@ test('free-text provider requests use fixed keyword APIs and exclude unrelated f
     const cloudflare = await providers.search('cloudflarechangelog', 'Cloudflare workers');
     assert.equal(cloudflare.status, 'success');
     assert.equal(cloudflare.items[0].source, 'Cloudflare Changelog');
-    assert.equal(cloudflare.items[0].publisher, 'Cloudflare Changelog');
+    assert.equal(cloudflare.items[0].publisher, 'Cloudflare (CC BY 4.0)');
     assert.equal(cloudflare.items[0].description, '');
     assert.equal(new URL(requests[2].url).pathname, '/changelog/rss/index.xml');
   } finally {
@@ -124,16 +133,20 @@ test('worker downtime, user admission denial and empty-cache states remain disti
   const service = load('../services/newsDiscoveryService.js', {
     '../models/newsTopicCache': {},
     './newsGovernanceService': { inspect: async () => ({ allowed: true }) },
-    './newsDiscoveryProviders': { ...providers, enabled: () => true, available: () => ['hackernewssearch'] },
+    './newsDiscoveryProviders': {
+      ...providers,
+      enabled: () => true,
+      available: () => ['hackernewssearch'],
+    },
     './redisCacheService': {
       getRedisCacheClient: () => ({
         get: async (key) => (online && key.endsWith(':worker') ? 'heartbeat' : null),
         eval: async (_script, options) => {
           evaluations++;
           return options.arguments[7] === 'denied' ? options.arguments[10] : options.arguments[2];
-        }
-      })
-    }
+        },
+      }),
+    },
   });
   const filters = {
     search: 'generative ai',
@@ -141,18 +154,28 @@ test('worker downtime, user admission denial and empty-cache states remain disti
     category: 'All',
     dateRange: 'week',
     popularity: 'all',
-    page: 1
+    page: 1,
   };
-  const denied = await service.coverage({ filters, total: 0, broadTotal: 0, admissionKey: 'denied' });
+  const denied = await service.coverage({
+    filters,
+    total: 0,
+    broadTotal: 0,
+    admissionKey: 'denied',
+  });
   assert.equal(denied.enrichment.reason, 'user_discovery_budget');
-  const other = await service.coverage({ filters, total: 0, broadTotal: 0, admissionKey: 'other' });
+  const other = await service.coverage({
+    filters,
+    total: 0,
+    broadTotal: 0,
+    admissionKey: 'other',
+  });
   assert.equal(other.enrichment.status, 'worker_unavailable');
   assert.equal(evaluations, 2);
   online = true;
   const page = await service.coverage({
     filters: { ...filters, search: 'python async', page: 2 },
     total: 0,
-    broadTotal: 0
+    broadTotal: 0,
   });
   assert.equal(page.enrichment.status, 'not_needed');
   assert.equal(evaluations, 2);
@@ -163,24 +186,34 @@ test('This Week excludes older matching results and returns explicit broader-dat
     title: 'Generative AI practical engineering',
     url: 'https://example.com/old',
     source: 'Hacker News',
-    publishedAt: new Date(Date.now() - 10 * 86400000)
+    publishedAt: new Date(Date.now() - 10 * 86400000),
   });
-  const real = load('../services/newsDiscoveryService.js', { '../models/newsTopicCache': {} });
+  const real = load('../services/newsDiscoveryService.js', {
+    '../models/newsTopicCache': {},
+  });
   const feed = load('../services/newsService.js', {
-    './newsPoolService': { readPool: async () => ({ allItems: [item] }), freshness: () => 'fresh' },
-    './newsDiscoveryService': { readTopic: async () => null, coverage: real.coverage },
-    './developerSignalService': { getDeveloperSignals: () => assert.fail('Explore must remain independent') }
+    './newsPoolService': {
+      readPool: async () => ({ allItems: [item] }),
+      freshness: () => 'fresh',
+    },
+    './newsDiscoveryService': {
+      readTopic: async () => null,
+      coverage: real.coverage,
+    },
+    './developerSignalService': {
+      getDeveloperSignals: () => assert.fail('Explore must remain independent'),
+    },
   });
   const week = await feed.getNewsFeed({
     user: { _id: 'one' },
-    query: { mode: 'explore', search: 'generative ai', date: 'week' }
+    query: { mode: 'explore', search: 'generative ai', date: 'week' },
   });
   assert.equal(week.total, 0);
   assert.equal(week.coverage.dateExcludedMatches, 1);
   assert.equal(week.coverage.suggestedDate, 'month');
   const month = await feed.getNewsFeed({
     user: { _id: 'two' },
-    query: { mode: 'explore', search: 'generative ai', date: 'month' }
+    query: { mode: 'explore', search: 'generative ai', date: 'month' },
   });
   assert.equal(month.total, 1);
   assert.equal(month.items[0].rankScore, null);

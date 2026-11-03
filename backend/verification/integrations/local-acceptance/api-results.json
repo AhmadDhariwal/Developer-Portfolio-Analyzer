@@ -26,6 +26,16 @@
       "status": 200
     },
     {
+      "method": "POST",
+      "url": "integrations/sync-now",
+      "status": 409
+    },
+    {
+      "method": "DELETE",
+      "url": "integrations/connections/leetcode",
+      "status": 200
+    },
+    {
       "method": "GET",
       "url": "dashboard/integration-analytics",
       "status": 200
@@ -86,6 +96,46 @@
       "status": 200
     },
     {
+      "method": "POST",
+      "url": "analysis/portfolio-score",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "integrations/insights",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "integrations/sync-now",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "integrations/insights",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "analysis/portfolio-score",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "analysis/portfolio-score",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "simulator/context",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "integrations/insights",
+      "status": 200
+    },
+    {
       "method": "DELETE",
       "url": "integrations/connections/github",
       "status": 200
@@ -114,7 +164,8 @@
   "assertions": [
     "JWT authorization",
     "manual observations",
-    "owner isolation",
+    "owner isolation including foreign sync/disconnect",
+    "changed insight replaces provider snapshot and downstream caches adopt revision",
     "OAuth identity/state",
     "encrypted rotating refresh",
     "sync and ingest API",
@@ -126,6 +177,21 @@
     "Weekly report API without email",
     "disconnect clears credentials and downstream state"
   ],
+  "insightUpdate": {
+    "beforeIntegration": 64,
+    "afterIntegration": 27,
+    "adoptedIntegration": 27,
+    "stableCacheHit": true,
+    "changedRevisionCacheHit": false,
+    "adoptedRevisionCacheHit": true,
+    "normalizedProviders": [
+      "leetcode",
+      "github"
+    ],
+    "verifiedSkills": [
+      "Testing"
+    ]
+  },
   "portfolioCache": {
     "before": 70,
     "after": 70,
@@ -136,7 +202,7 @@
   "cleanup": {
     "mongoStopped": true,
     "redisStopped": true,
-    "filesRemoved": 118,
+    "filesRemoved": 134,
     "applicationDatabasesUsed": false,
     "quotaResets": 0,
     "recursiveDeletion": false

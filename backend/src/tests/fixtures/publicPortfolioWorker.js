@@ -13,7 +13,7 @@ process.once('message', async ({ dbName, namespace, profile }) => {
       dbName,
       autoCreate: false,
       autoIndex: false,
-      serverSelectionTimeoutMS: 5000
+      serverSelectionTimeoutMS: 5000,
     });
     const native = await redisService.initRedisCache({ silent: true, probeOnly: true });
     if (!native) throw Error('Test Redis unavailable');
@@ -24,7 +24,7 @@ process.once('message', async ({ dbName, namespace, profile }) => {
     const redis = {
       get: (key) => native.get(scope(key)),
       set: (key, value, options) => native.set(scope(key), value, options),
-      eval: (script, options) => native.eval(script, { ...options, keys: options.keys.map(scope) })
+      eval: (script, options) => native.eval(script, { ...options, keys: options.keys.map(scope) }),
     };
     const { createPortfolioCache } = require('../../services/publicPortfolioCacheService');
     const cache = createPortfolioCache({ redis: { getRedisCacheClient: () => redis } });
@@ -36,17 +36,18 @@ process.once('message', async ({ dbName, namespace, profile }) => {
         builds++;
         await new Promise((r) => setTimeout(r, 500));
         return { headline: profile.headline };
-      }
+      },
     );
     await redisService.closeRedisCache();
     await mongoose.disconnect();
     process.send({ payload, builds });
     process.disconnect();
+    process.exit(0);
   } catch {
     await redisService.closeRedisCache();
     await mongoose.disconnect();
     process.send({ error: 'Isolated worker verification failed' });
     process.disconnect();
-    process.exitCode = 1;
+    process.exit(1);
   }
 });

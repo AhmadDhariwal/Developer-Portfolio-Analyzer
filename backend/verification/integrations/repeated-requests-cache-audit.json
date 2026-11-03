@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-28T14:33:02.920Z",
+  "checkedAt": "2026-11-03T12:13:20.747Z",
   "providerHttpRequests": 0,
   "checks": [
     "three identical fresh Connect clicks preserve connection/insight; two explicit Syncs still normalize and append history; one source fetch across accounts",
@@ -9,21 +9,21 @@
   "baselineConnect": {
     "commands": 48,
     "documentWrites": 21,
-    "ms": 352.70570000000043,
+    "ms": 308.5681000000004,
     "providerCalls": 0,
     "normalizations": 3
   },
   "improvedConnect": {
     "commands": 27,
     "documentWrites": 3,
-    "ms": 224.2650999999987,
+    "ms": 149.09709999999905,
     "providerCalls": 0,
     "normalizations": 0
   },
   "manualSync": {
     "commands": 42,
     "documentWrites": 22,
-    "ms": 333.9426000000003,
+    "ms": 268.3081000000002,
     "providerCalls": 0,
     "normalizations": 2
   },
@@ -32,15 +32,15 @@
       "payloadBytes": 615,
       "mongoOnlyMs": {
         "n": 12,
-        "p50": 2.650900000000547,
-        "p95": 5.513100000000122,
-        "p99": 5.513100000000122
+        "p50": 2.5089000000007218,
+        "p95": 4.484300000000076,
+        "p99": 4.484300000000076
       },
       "readThroughMs": {
         "n": 12,
-        "p50": 4.635000000000218,
-        "p95": 6.978500000001077,
-        "p99": 6.978500000001077
+        "p50": 3.9852000000009866,
+        "p95": 6.389900000000125,
+        "p99": 6.389900000000125
       },
       "mongoReads": 24,
       "redisGets": 12
@@ -49,15 +49,15 @@
       "payloadBytes": 30103,
       "mongoOnlyMs": {
         "n": 12,
-        "p50": 3.7166999999990367,
-        "p95": 4.411399999999048,
-        "p99": 4.411399999999048
+        "p50": 3.5907999999999447,
+        "p95": 4.924700000001394,
+        "p99": 4.924700000001394
       },
       "readThroughMs": {
         "n": 12,
-        "p50": 4.974899999999252,
-        "p95": 6.112300000000687,
-        "p99": 6.112300000000687
+        "p50": 4.9068999999999505,
+        "p95": 6.632300000001123,
+        "p99": 6.632300000001123
       },
       "mongoReads": 24,
       "redisGets": 12
@@ -71,28 +71,28 @@
   "prototypeFailureModes": [
     {
       "mode": "quota",
-      "ms": 6.9495999999999185,
+      "ms": 6.15769999999975,
       "mongoReads": 2,
       "redisGets": 1,
       "redisSets": 1
     },
     {
       "mode": "timeout",
-      "ms": 166.9935999999998,
+      "ms": 171.58339999999953,
       "mongoReads": 2,
       "redisGets": 1,
       "redisSets": 1
     },
     {
       "mode": "unavailable",
-      "ms": 2.842800000000352,
+      "ms": 2.65940000000046,
       "mongoReads": 1,
       "redisGets": 0,
       "redisSets": 0
     },
     {
       "mode": "recovered",
-      "ms": 5.522399999999834,
+      "ms": 8.159100000000763,
       "mongoReads": 2,
       "redisGets": 1,
       "redisSets": 1
@@ -100,16 +100,7 @@
   ],
   "cleanup": {
     "mongoStopped": true,
-    "temporaryFilesRemoved": 118,
+    "temporaryFilesRemoved": 126,
     "productionDataUsed": false
-  },
-  "validation": {
-    "passed": 10,
-    "failed": 0,
-    "skipped": 0,
-    "command": "node --test --test-concurrency=1 src/tests/integrationRepeatedRequests.test.js src/tests/integrationsLifecycle.test.js"
-  },
-  "decision": "Retain Mongo-only public snapshots; the benchmark-only Redis candidate saved no Mongo reads and increased latency at both payload sizes.",
-  "initialDiagnostic": "Prototype teardown initially raced QUIT behind a timed-out SDK reply; harness waits for socket-unready before cleanup. Write-count instrumentation then corrected to include findAndModify. Final focused rerun passed. Production cache shutdown unchanged.",
-  "productionConfigurationChanged": false
+  }
 }

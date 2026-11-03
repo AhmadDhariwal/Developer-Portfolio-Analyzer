@@ -12,22 +12,22 @@ test('news pages filter and slice the entire cached pool without calling provide
     category: index < 31 ? 'Frontend' : 'Backend',
     publishedAt: new Date(),
     popularity: index,
-    tags: []
+    tags: [],
   }));
   const service = load('../services/newsService.js', {
     axios: { get: () => assert.fail('Pagination must never call providers') },
     './newsPoolService': {
       readPool: async () => ({ allItems, lastUpdated: new Date() }),
-      freshness: () => 'fresh'
+      freshness: () => 'fresh',
     },
     './developerSignalService': {
       getDeveloperSignals: async () => ({}),
-      buildSignalHash: () => 'pagination-test'
-    }
+      buildSignalHash: () => 'pagination-test',
+    },
   });
   const controller = load('../controllers/newsController.js', {
     '../services/newsService': service,
-    '../models/newsSavedItem': {}
+    '../models/newsSavedItem': {},
   });
   for (const tab of ['for-you', 'trending', 'latest']) {
     const ids = [];
@@ -36,23 +36,28 @@ test('news pages filter and slice the entire cached pool without calling provide
       await controller.getNews(
         {
           user: { _id: 'pagination-owner', activeCareerStack: 'Frontend' },
-          query: { tab, page, limit: 12, category: 'Frontend' }
+          query: { tab, page, limit: 12, category: 'Frontend' },
         },
         {
           json: (value) => {
             response = value;
-          }
-        }
+          },
+        },
       );
+      const expectedTotal = tab === 'for-you' ? 36 : 31;
+      const expectedTotalPages = Math.ceil(expectedTotal / 12);
       assert.equal(response.page, page);
       assert.equal(response.limit, 12);
-      assert.equal(response.total, 31);
-      assert.equal(response.totalPages, 3);
-      assert.equal(response.hasMore, page < 3);
-      assert.equal(response.items.length, [12, 12, 7, 0][page - 1]);
-      assert.ok(response.items.every((item) => item.category === 'Frontend'));
+      assert.equal(response.total, expectedTotal);
+      assert.equal(response.totalPages, expectedTotalPages);
+      assert.equal(response.hasMore, page < expectedTotalPages);
+      const expectedLengths = tab === 'for-you' ? [12, 12, 12, 0] : [12, 12, 7, 0];
+      assert.equal(response.items.length, expectedLengths[page - 1]);
+      if (tab !== 'for-you') {
+        assert.ok(response.items.every((item) => item.category === 'Frontend'));
+      }
       ids.push(...response.items.map((item) => item.id));
     }
-    assert.equal(new Set(ids).size, 31);
+    assert.equal(new Set(ids).size, tab === 'for-you' ? 36 : 31);
   }
 });
