@@ -1,0 +1,67 @@
+{
+  "corpus": "synthetic independently authored fixtures; not a deployed accuracy claim",
+  "profiles": 11,
+  "decisions": 22,
+  "classificationAccuracy": 1,
+  "precision": 1,
+  "recall": 1,
+  "falsePositives": 0,
+  "falseNegatives": 0,
+  "results": [
+    {
+      "name": "implemented original component",
+      "coverage": 50,
+      "statuses": ["DEMONSTRATED", "NOT_EVIDENCED"]
+    },
+    {
+      "name": "dependency metadata only",
+      "coverage": 25,
+      "statuses": ["PARTIAL", "NOT_EVIDENCED"]
+    },
+    {
+      "name": "resume claims only",
+      "coverage": 0,
+      "statuses": ["CLAIMED_ONLY", "NOT_EVIDENCED"]
+    },
+    {
+      "name": "complete empty account",
+      "coverage": 0,
+      "statuses": ["NOT_EVIDENCED", "NOT_EVIDENCED"]
+    },
+    {
+      "name": "all providers unavailable",
+      "coverage": null,
+      "statuses": ["UNKNOWN", "UNKNOWN"]
+    },
+    {
+      "name": "partial API outage",
+      "coverage": null,
+      "statuses": ["PARTIAL", "UNKNOWN"]
+    },
+    {
+      "name": "independent weak origins",
+      "coverage": 25,
+      "statuses": ["PARTIAL", "NOT_EVIDENCED"]
+    },
+    {
+      "name": "copied artifact same origin",
+      "coverage": 50,
+      "statuses": ["DEMONSTRATED", "NOT_EVIDENCED"]
+    },
+    {
+      "name": "conflicting technical sources",
+      "coverage": 25,
+      "statuses": ["PARTIAL", "NOT_EVIDENCED"]
+    },
+    {
+      "name": "fully demonstrated independent skills",
+      "coverage": 100,
+      "statuses": ["DEMONSTRATED", "DEMONSTRATED"]
+    },
+    {
+      "name": "metadata plus resume is still partial",
+      "coverage": 25,
+      "statuses": ["PARTIAL", "NOT_EVIDENCED"]
+    }
+  ]
+}

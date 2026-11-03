@@ -451,7 +451,7 @@ details[open] summary::before {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 12px;
   font-weight: 400;
 }

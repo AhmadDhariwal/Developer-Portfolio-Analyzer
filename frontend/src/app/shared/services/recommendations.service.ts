@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { finalize, shareReplay, tap } from 'rxjs/operators';
+import { filter, finalize, shareReplay, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 import { AuthService } from './auth.service';
@@ -27,6 +27,9 @@ export interface SavedPreview {
 export class RecommendationsService {
   private readonly baseUrl = environment.apiBaseUrl;
   private readonly inflight = new Map<string, Observable<RecommendationsResult>>();
+  private cacheRevision = 0;
+  private savedPreviewRevision = 0;
+  private savedPreviewRequestOwner = '';
   private profileCache: { value: RecommendationsResult; cachedAt: number } | null = null;
   private profileCacheKey = '';
   private savedPreviewCache: { userId: string; previews: SavedPreview[]; cachedAt: number } | null =
@@ -73,6 +76,7 @@ export class RecommendationsService {
   }
 
   clearCache(): void {
+    this.cacheRevision += 1;
     this.inflight.clear();
     this.profileCache = null;
     this.profileCacheKey = '';
@@ -105,12 +109,19 @@ export class RecommendationsService {
     ) {
       return of({ previews: cache.previews });
     }
-    if (this.savedPreviewListRequest) return this.savedPreviewListRequest;
+    if (this.savedPreviewListRequest && this.savedPreviewRequestOwner === userId)
+      return this.savedPreviewListRequest;
+    const revision = this.savedPreviewRevision;
 
     let request$!: Observable<{ previews: SavedPreview[] }>;
     request$ = this.http
       .get<{ previews: SavedPreview[] }>(`${this.baseUrl}/recommendations/saved-previews`)
       .pipe(
+        filter(
+          () =>
+            revision === this.savedPreviewRevision &&
+            String(this.auth.getCurrentUser()?._id || '').trim() === userId,
+        ),
         tap(({ previews }) => {
           if (String(this.auth.getCurrentUser()?._id || '').trim() !== userId) return;
           this.savedPreviewCache = {
@@ -124,6 +135,7 @@ export class RecommendationsService {
         }),
         shareReplay({ bufferSize: 1, refCount: false }),
       );
+    this.savedPreviewRequestOwner = userId;
     this.savedPreviewListRequest = request$;
     return request$;
   }
@@ -147,6 +159,8 @@ export class RecommendationsService {
   }
 
   clearSavedPreviewCache(): void {
+    this.savedPreviewRevision += 1;
+    this.savedPreviewRequestOwner = '';
     this.savedPreviewCache = null;
     this.savedPreviewListRequest = undefined;
   }
@@ -189,6 +203,8 @@ export class RecommendationsService {
     previewResumeId?: string,
     resumeHash?: string,
   ): Observable<RecommendationsResult> {
+    const revision = this.cacheRevision;
+    const ownerId = this.auth.getCurrentUser()?._id || 'anonymous';
     const cacheKey = this.getProfileCacheKey(username, careerStack, experienceLevel);
     const ttlMs = 15 * 60 * 1000; // 15 minutes TTL
     if (!isTemporary && !forceRefresh && this.profileCache && this.profileCacheKey === cacheKey) {
@@ -198,7 +214,8 @@ export class RecommendationsService {
       }
     }
 
-    const key = [
+    const key = JSON.stringify([
+      ownerId,
       username,
       careerStack,
       experienceLevel,
@@ -207,14 +224,13 @@ export class RecommendationsService {
       requestIdentity,
       (knownSkills || []).join(','),
       (missingSkills || []).join(','),
+      previewResumeId || '',
       resumeHash
         ? `resume-${resumeHash}`
         : resumeText
           ? `inline-${this.inlineResumeIdentity(resumeText)}`
           : 'no-resume',
-    ]
-      .join(':')
-      .toLowerCase();
+    ]);
     const existing = this.inflight.get(key);
     if (existing) return existing;
 
@@ -232,7 +248,8 @@ export class RecommendationsService {
           resumeHash,
         }
       : { username, careerStack, experienceLevel, forceRefresh };
-    const request$ = this.http
+    let request$!: Observable<RecommendationsResult>;
+    request$ = this.http
       .post<RecommendationsResult>(
         isTemporary
           ? `${this.baseUrl}/recommendations/generate`
@@ -240,6 +257,11 @@ export class RecommendationsService {
         payload,
       )
       .pipe(
+        filter(
+          () =>
+            revision === this.cacheRevision &&
+            (this.auth.getCurrentUser()?._id || 'anonymous') === ownerId,
+        ),
         tap((result) => {
           if (!isTemporary) {
             this.profileCache = { value: result, cachedAt: Date.now() };
@@ -253,7 +275,9 @@ export class RecommendationsService {
             this.cacheInvalidation.clearWeeklyReportCaches();
           }
         }),
-        finalize(() => this.inflight.delete(key)),
+        finalize(() => {
+          if (this.inflight.get(key) === request$) this.inflight.delete(key);
+        }),
         shareReplay({ bufferSize: 1, refCount: false }),
       );
 

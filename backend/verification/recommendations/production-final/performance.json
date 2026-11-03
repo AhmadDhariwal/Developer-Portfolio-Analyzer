@@ -1,0 +1,21 @@
+{
+  "cold": {
+    "p50": 282.3,
+    "p95": 299.15
+  },
+  "redis": {
+    "p50": 93.76,
+    "p95": 95.23
+  },
+  "memory": {
+    "p50": 31.14,
+    "p95": 31.79
+  },
+  "concurrentDelta": {
+    "github": 1,
+    "ai": 1,
+    "signals": 1,
+    "persistence": 2
+  },
+  "scope": "Synthetic mocked providers and caches; not deployed latency"
+}

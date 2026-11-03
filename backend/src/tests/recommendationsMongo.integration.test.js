@@ -25,7 +25,7 @@ const mock = (request, exports) => {
 test('Recommendations Mongo: canonical context, invalidation, history, ownership, AI failure and atomic Sprint handoff', async (t) => {
   assert.ok(
     process.env.MONGODB_URI || process.env.MONGO_URI,
-    'MongoDB connection is required, not skipped.',
+    'MongoDB connection is required, not skipped.'
   );
   await mongoose.connect(process.env.MONGODB_URI || process.env.MONGO_URI, {
     serverSelectionTimeoutMS: 5000,
@@ -104,9 +104,9 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
         model.deleteMany(
           model === User
             ? { _id: { $in: [owner, foreign] } }
-            : { userId: { $in: [owner, foreign] } },
-        ),
-      ),
+            : { userId: { $in: [owner, foreign] } }
+        )
+      )
     );
     await GitHubAnalysisCache.deleteMany({ normalizedUsername: username });
     await require('../models/sprintSchedule').deleteMany({
@@ -148,7 +148,7 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
       fileName: `${name}.pdf`,
       fileUrl: `/recommendation-test/${name}`,
       fileSize: 1,
-    })),
+    }))
   );
   const analyzedAt = new Date();
   const [a, b] = await ResumeAnalysis.create(
@@ -173,7 +173,7 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
           },
         ],
       },
-    })),
+    }))
   );
   await User.updateOne({ _id: owner }, { activeResumeFileId: files[0]._id });
   const github = {
@@ -200,6 +200,9 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
   });
   const skillGap = {
     ruleVersion: engine.SKILL_RULE,
+    evidencePolicyVersion: require('../services/skillGapEvidenceService').EVIDENCE_POLICY_VERSION,
+    taxonomyVersion: require('../services/skillGapRequirements').TAXONOMY_VERSION,
+    requirementMatrixVersion: require('../services/skillGapRequirements').MATRIX_VERSION,
     coverage: 0,
     calculatedAt: analyzedAt.toISOString(),
     requiredSkills: [
@@ -218,13 +221,16 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
         evidenceConfidence: 'LOW',
       },
     ],
-    sourceReferences: Object.values(
-      engine.sourceMetadata({
-        username,
-        githubData: github,
-        resumeAnalysis: a.toObject(),
-      }),
-    ),
+    sourceReferences: [
+      { type: 'profile', timestamp: (await User.findById(owner).lean()).updatedAt },
+      ...Object.values(
+        engine.sourceMetadata({
+          username,
+          githubData: github,
+          resumeAnalysis: a.toObject(),
+        })
+      ),
+    ],
   };
   await AnalysisCache.create({
     userId: owner,
@@ -232,7 +238,7 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
     careerStack: 'Backend',
     experienceLevel: 'Intern',
     ...resumeIdentity,
-    analysisVersion: 'v6-skill-intelligence',
+    analysisVersion: require('../services/skillGapCacheContract').ANALYSIS_VERSION,
     analysisData: skillGap,
   });
   const legacy = await Recommendation.create({
@@ -254,7 +260,7 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
         userId: owner,
         snapshotVersion: engine.RULE_VERSION,
       }),
-      1,
+      1
     );
     assert.ok(await Recommendation.findById(legacy._id));
     assert.equal(JSON.stringify(out.body).includes('resumeText'), false);
@@ -292,7 +298,7 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
       assert.equal(
         staleStatus,
         409,
-        'A changed canonical selection must never be combined with the earlier request context.',
+        'A changed canonical selection must never be combined with the earlier request context.'
       );
       const next = await call('getRecommendations');
       assert.equal(next.body.resumeInsights.analysisId, String(b._id));
@@ -304,7 +310,7 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
       assert.equal(missing.body.resumeInsights.analyzed, false);
       assert.equal(missing.body.resumeRecommendations.length, 0);
       await User.updateOne({ _id: owner }, { activeResumeFileId: files[0]._id });
-    },
+    }
   );
   await t.test('resume-only persistence, historical rows and saved preview ownership', async () => {
     await User.updateOne({ _id: owner }, { activeGithubUsername: '', githubUsername: '' });
@@ -322,8 +328,8 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
     assert.ok(history.body.snapshots.some((row) => row.legacy));
     assert.ok(
       history.body.snapshots.some(
-        (row) => row.snapshotVersion === engine.RULE_VERSION && !row.legacy,
-      ),
+        (row) => row.snapshotVersion === engine.RULE_VERSION && !row.legacy
+      )
     );
     assert.equal((await call('listRecommendationHistory', {}, foreign)).body.snapshots.length, 0);
     const saved = await call('savePreview', {
@@ -354,12 +360,12 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
     assert.equal(row.resultSummary.verified, false);
     assert.equal(
       (await call('deleteSavedPreview', {}, foreign, { id: String(row._id) })).status,
-      404,
+      404
     );
     assert.ok(await SavedPreview.findById(row._id));
     assert.equal(
       (await call('deleteSavedPreview', {}, owner, { id: String(row._id) })).status,
-      204,
+      204
     );
   });
   await t.test('reanalysis, current completion and career context invalidate caches', async () => {
@@ -370,7 +376,7 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
         analyzedAt: new Date(Date.now() + 1000),
         'scoring.score': 70,
         'resumeSignals.warnings': [],
-      },
+      }
     );
     const after = await call('getRecommendations');
     assert.notEqual(after.body.cacheMetadata.signalHash, before.body.cacheMetadata.signalHash);
@@ -381,12 +387,12 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
       {
         'result.repositories.0.hasReadme': true,
         'result.githubSignals.analyzedAt': new Date(Date.now() + 2000).toISOString(),
-      },
+      }
     );
     const complete = await call('getRecommendations');
     assert.equal(
       complete.body.projects.some((project) => /^Document/.test(project.title)),
-      false,
+      false
     );
     await User.updateOne({ _id: owner }, { activeExperienceLevel: 'Student' });
     const level = await call('getRecommendations');
@@ -407,7 +413,7 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
       try {
         const before = aiCalls;
         const outputs = await Promise.all(
-          Array.from({ length: 5 }, () => call('getRecommendations', { forceRefresh: true })),
+          Array.from({ length: 5 }, () => call('getRecommendations', { forceRefresh: true }))
         );
         assert.equal(aiCalls - before, 1);
         assert.ok(outputs.every((out) => out.status === 200 && !out.body.aiUsed));
@@ -440,7 +446,7 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
         await started;
         await ResumeAnalysis.updateOne(
           { _id: a._id },
-          { analyzedAt: new Date(Date.now() + 5000), 'scoring.score': 90 },
+          { analyzedAt: new Date(Date.now() + 5000), 'scoring.score': 90 }
         );
         const follower = call('getRecommendations', { forceRefresh: true });
         await new Promise((resolve) => setTimeout(resolve, 30));
@@ -448,10 +454,56 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
         aiGate = null;
         const [beforeRevision, afterRevision] = await Promise.all([first, follower]);
         assert.equal(afterRevision.body.sourceScores.resumeOverall, 90);
-        assert.notEqual(
-          afterRevision.body.cacheMetadata.signalHash,
-          beforeRevision.body.cacheMetadata.signalHash,
-          'An in-flight waiter must validate current source revisions before reusing a result.',
+        assert.equal(
+          beforeRevision.status,
+          409,
+          'A source revision changed during AI must not commit stale recommendations.'
+        );
+        assert.equal(afterRevision.status, 200);
+
+        const gapStarted = new Promise((resolve) => {
+          markStarted = resolve;
+        });
+        aiGate = {
+          started: markStarted,
+          promise: new Promise((resolve) => {
+            release = resolve;
+          }),
+        };
+        const changingGap = call('getRecommendations', { forceRefresh: true });
+        await gapStarted;
+        const currentResume = await ResumeAnalysis.findById(a._id).lean();
+        const currentUser = await User.findById(owner).lean();
+        const currentGithub = (
+          await GitHubAnalysisCache.findOne({ normalizedUsername: username }).lean()
+        ).result;
+        await AnalysisCache.create({
+          userId: owner,
+          githubUsername: username,
+          careerStack: currentUser.activeCareerStack,
+          experienceLevel: currentUser.activeExperienceLevel,
+          ...signals.buildResumeCacheIdentity({ resumeAnalysis: currentResume }),
+          analysisVersion: require('../services/skillGapCacheContract').ANALYSIS_VERSION,
+          analysisData: {
+            ...skillGap,
+            sourceReferences: [
+              ...Object.values(
+                engine.sourceMetadata({
+                  username,
+                  githubData: currentGithub,
+                  resumeAnalysis: currentResume,
+                })
+              ),
+              { type: 'profile', timestamp: currentUser.updatedAt },
+            ],
+          },
+        });
+        release();
+        aiGate = null;
+        assert.equal(
+          (await changingGap).status,
+          409,
+          'A new compatible Skill Gap assessment during AI must invalidate the pending result.'
         );
       } finally {
         provider.analyzeGitHubProfile = original;
@@ -463,12 +515,12 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
             githubUsername: 'someone-else',
           })
         ).status,
-        400,
+        400
       );
       const other = await call('getRecommendations', {}, foreign);
       assert.equal(other.body.sourceMetadata.resume.available, false);
       assert.equal(other.body.sourceMetadata.github.available, false);
-    },
+    }
   );
   await t.test('owned, current Sprint handoff is atomic and idempotent', async () => {
     const current = await call('getRecommendations');
@@ -489,8 +541,8 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
     });
     const outputs = await Promise.all(
       Array.from({ length: 5 }, () =>
-        call('handoffToCareerSprint', { signalHash }, owner, { id: card.id }),
-      ),
+        call('handoffToCareerSprint', { signalHash }, owner, { id: card.id })
+      )
     );
     assert.ok(outputs.every((out) => out.status === 200));
     const stored = await CareerSprint.findById(sprint._id).lean();
@@ -499,7 +551,7 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
     assert.equal(
       (await call('handoffToCareerSprint', { signalHash: 'f'.repeat(64) }, owner, { id: card.id }))
         .status,
-      409,
+      409
     );
     assert.equal(
       (
@@ -507,7 +559,7 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
           id: card.id,
         })
       ).status,
-      404,
+      404
     );
     assert.equal(
       (
@@ -515,7 +567,7 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
           id: card.id,
         })
       ).status,
-      401,
+      401
     );
   });
   await t.test('HTTP routes enforce JWT ownership and preview isolation', async () => {
@@ -544,7 +596,7 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
             body: '{}',
           })
         ).status,
-        401,
+        401
       );
       const headers = {
         'Content-Type': 'application/json',

@@ -1,0 +1,30 @@
+{
+  "exitCode": 0,
+  "durationMs": 93191,
+  "files": [
+    "src/tests/recommendationEngine.test.js",
+    "src/tests/recommendationGeneration.test.js",
+    "src/tests/recommendationGovernance.test.js",
+    "src/tests/recommendationsAccuracy.test.js",
+    "src/tests/recommendationsHardening.test.js",
+    "src/tests/recommendationsMongo.integration.test.js",
+    "src/tests/recommendationsPerformance.test.js",
+    "src/tests/skillGapConsumerContracts.test.js",
+    "src/tests/skillGapConsumerMongo.test.js"
+  ],
+  "summary": [
+    "ℹ tests 47",
+    "ℹ suites 0",
+    "ℹ pass 47",
+    "ℹ fail 0",
+    "ℹ cancelled 0",
+    "ℹ skipped 0",
+    "ℹ todo 0",
+    "ℹ duration_ms 92481.234"
+  ],
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 193,
+    "productionDataUsed": false
+  }
+}

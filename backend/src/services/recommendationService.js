@@ -1,3 +1,4 @@
+const recommendationGovernance = require('./recommendationGovernanceService');
 const notificationPersistence = require('./notificationPersistenceService');
 const {
   resolveRecommendationEnrichment,
@@ -33,7 +34,7 @@ const {
 } = require('../services/developerSignalService');
 const { resolvePreviewResume } = require('../services/previewResumeCacheService');
 
-const RECOMMENDATION_ANALYSIS_VERSION = 'v6-recommendations-evidence';
+const RECOMMENDATION_ANALYSIS_VERSION = 'v7-recommendations-evidence-policy';
 const RECOMMENDATION_TTL_MS = 24 * 60 * 60 * 1000;
 const ALLOWED_STACKS = ['Frontend', 'Backend', 'Full Stack', 'AI/ML'];
 const ALLOWED_LEVELS = [
@@ -832,6 +833,11 @@ const runRecommendationPipeline = async ({
   bypassInflight = false
 }) => {
   const isTemporaryMode = !allowSignals;
+  const cacheOwner =
+    userId ||
+    (isTemporaryMode
+      ? req.recommendationGovernance?.owner || `preview:${req.user?._id || req.ip || 'anonymous'}`
+      : '');
   const stageTimer = createStageTimer();
   const validationStarted = process.hrtime.bigint();
   const cleanResume = isTemporaryMode ? String(resumeText || '').trim() : '';
@@ -844,7 +850,7 @@ const runRecommendationPipeline = async ({
   stageTimer.mark('validation', validationStarted);
 
   const inflightKey = JSON.stringify({
-    userId: String(userId || 'temporary'),
+    userId: String(cacheOwner),
     username: normalizedGithubUsername,
     careerStack,
     experienceLevel,
@@ -880,7 +886,13 @@ const runRecommendationPipeline = async ({
             experienceLevel,
             resumeHash: shared.cacheMetadata.cacheKey.resumeHash,
             resumeAnalysisId: shared.cacheMetadata.cacheKey.resumeAnalysisId,
-            'analysisData.ruleVersion': engine.SKILL_RULE
+            'analysisData.ruleVersion': engine.SKILL_RULE,
+            'analysisData.evidencePolicyVersion': require('./skillGapEvidenceService')
+              .EVIDENCE_POLICY_VERSION,
+            'analysisData.taxonomyVersion': require('./skillGapRequirements').TAXONOMY_VERSION,
+            'analysisData.requirementMatrixVersion':
+              require('./skillGapRequirements').MATRIX_VERSION,
+            analysisVersion: require('./skillGapCacheContract').ANALYSIS_VERSION
           })
             .sort({ updatedAt: -1 })
             .lean()
@@ -890,6 +902,7 @@ const runRecommendationPipeline = async ({
           buildResumeAnalysisSignals(currentResume, experienceLevel)
         );
         const currentSkillGap = engine.compatibleSkillGap(currentSnapshot, {
+          profileRevision: req.user?.updatedAt || null,
           userId,
           username,
           careerStack,
@@ -944,8 +957,28 @@ const runRecommendationPipeline = async ({
         )
       );
     } catch (error) {
+      if (error.status === 409) {
+        return runRecommendationPipeline({
+          req,
+          res,
+          username,
+          careerStack,
+          experienceLevel,
+          resumeText,
+          previewResumeId,
+          resumeHash,
+          knownSkills,
+          missingSkills,
+          userId,
+          allowSignals,
+          saveResult,
+          source,
+          forceRefresh: false,
+          bypassInflight: true
+        });
+      }
       return res.status(error.status || 500).json({
-        message: error.message || 'Failed to generate recommendations.'
+        message: error.status ? error.message : 'Failed to generate recommendations.'
       });
     }
   }
@@ -999,7 +1032,13 @@ const runRecommendationPipeline = async ({
                 },
                 careerStack,
                 experienceLevel,
-                'analysisData.ruleVersion': engine.SKILL_RULE
+                'analysisData.ruleVersion': engine.SKILL_RULE,
+                'analysisData.evidencePolicyVersion': require('./skillGapEvidenceService')
+                  .EVIDENCE_POLICY_VERSION,
+                'analysisData.taxonomyVersion': require('./skillGapRequirements').TAXONOMY_VERSION,
+                'analysisData.requirementMatrixVersion':
+                  require('./skillGapRequirements').MATRIX_VERSION,
+                analysisVersion: require('./skillGapCacheContract').ANALYSIS_VERSION
               })
                 .sort({ updatedAt: -1 })
                 .lean()
@@ -1037,7 +1076,12 @@ const runRecommendationPipeline = async ({
           experienceLevel,
           resumeHash: resumeCacheIdentity.resumeHash,
           resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId,
-          'analysisData.ruleVersion': engine.SKILL_RULE
+          'analysisData.ruleVersion': engine.SKILL_RULE,
+          'analysisData.evidencePolicyVersion': require('./skillGapEvidenceService')
+            .EVIDENCE_POLICY_VERSION,
+          'analysisData.taxonomyVersion': require('./skillGapRequirements').TAXONOMY_VERSION,
+          'analysisData.requirementMatrixVersion': require('./skillGapRequirements').MATRIX_VERSION,
+          analysisVersion: require('./skillGapCacheContract').ANALYSIS_VERSION
         })
           .sort({ updatedAt: -1 })
           .lean()
@@ -1051,6 +1095,7 @@ const runRecommendationPipeline = async ({
       resumeInsights: storedResumeInsights
     });
     const snapshotContext = {
+      profileRevision: req.user?.updatedAt || null,
       userId,
       username,
       careerStack,
@@ -1065,7 +1110,7 @@ const runRecommendationPipeline = async ({
       skillGap
     });
     const sourceMemoryKey = buildRecommendationSourceMemoryKey({
-      userId: userId || (isTemporaryMode ? 'anonymous' : ''),
+      userId: cacheOwner,
       username: normalizedGithubUsername,
       careerStack,
       experienceLevel,
@@ -1147,6 +1192,7 @@ const runRecommendationPipeline = async ({
         .createHash('sha256')
         .update(
           JSON.stringify({
+            analysisVersion: RECOMMENDATION_ANALYSIS_VERSION,
             upstreamSignalHash,
             username: normalizedGithubUsername,
             careerStack,
@@ -1166,7 +1212,7 @@ const runRecommendationPipeline = async ({
         .digest('hex');
 
       const softMemoryKey = buildRecommendationSoftMemoryKey({
-        userId: userId || (isTemporaryMode ? 'anonymous' : ''),
+        userId: cacheOwner,
         username: normalizedGithubUsername,
         careerStack,
         experienceLevel,
@@ -1208,13 +1254,13 @@ const runRecommendationPipeline = async ({
         saveResult && req.user?._id && username ? { ...cacheKey, userId: req.user._id } : null;
       const resultCacheIdentity = {
         mode: isTemporaryMode ? 'preview' : 'profile',
-        userId: String(userId || 'temporary'),
+        userId: String(cacheOwner),
         ...cacheKey,
         providedKnownSkills,
         providedMissingSkills
       };
       const resultCacheKey = buildRecommendationResultCacheKey(resultCacheIdentity);
-      const previewCacheKey = `recommendations:preview:${normalizedGithubUsername}:${resumeCacheIdentity.resumeHash || 'no-resume'}:${careerStack}:${experienceLevel}:${signalHash}:${RECOMMENDATION_ANALYSIS_VERSION}`;
+      const previewCacheKey = `recommendations:preview:${engine.hash(cacheOwner)}:${normalizedGithubUsername}:${resumeCacheIdentity.resumeHash || 'no-resume'}:${careerStack}:${experienceLevel}:${signalHash}:${RECOMMENDATION_ANALYSIS_VERSION}`;
 
       if (!forceRefresh) {
         const redisCached = await stageTimer.measure('Redis', () =>
@@ -1419,8 +1465,9 @@ const runRecommendationPipeline = async ({
           aiService,
           prompt,
           signalHash,
-          identity: String(userId || 'preview'),
-          enabled: forceRefresh
+          identity: String(cacheOwner),
+          enabled: forceRefresh,
+          governance: req.recommendationGovernance
         })
       );
       if (aiMeta?.aiCalled) recommendationRuntimeCounters.aiCalls += 1;
@@ -1492,6 +1539,54 @@ const runRecommendationPipeline = async ({
       );
       result.aiUsed = result.aiSuggestions.length > 0;
 
+      if (req.recommendationGovernance?.signal.aborted) throw recommendationGovernance.failure();
+
+      // Provider latency must not allow an obsolete source revision to become current.
+      if (saveResult && userId) {
+        const [currentResume, currentGithub] = await Promise.all([
+          loadResumeAnalysis(userId, req.user),
+          getGitHubData(username)
+        ]);
+        const currentInsights = engine.resumeSignals(
+          currentResume,
+          buildResumeAnalysisSignals(currentResume, experienceLevel)
+        );
+        const currentGapCache = await AnalysisCache.findOne({
+          userId,
+          githubUsername: { $regex: '^' + normalizedGithubUsername + '$', $options: 'i' },
+          careerStack,
+          experienceLevel,
+          ...buildResumeCacheIdentity({ resumeAnalysis: currentResume }),
+          'analysisData.ruleVersion': engine.SKILL_RULE,
+          'analysisData.evidencePolicyVersion': require('./skillGapEvidenceService')
+            .EVIDENCE_POLICY_VERSION,
+          'analysisData.taxonomyVersion': require('./skillGapRequirements').TAXONOMY_VERSION,
+          'analysisData.requirementMatrixVersion': require('./skillGapRequirements').MATRIX_VERSION,
+          analysisVersion: require('./skillGapCacheContract').ANALYSIS_VERSION
+        })
+          .sort({ updatedAt: -1 })
+          .lean();
+        const currentFingerprint = engine.sourceFingerprint({
+          githubData: currentGithub,
+          resumeInsights: currentInsights,
+          skillGap: engine.compatibleSkillGap(currentGapCache, {
+            ...snapshotContext,
+            ...buildResumeCacheIdentity({ resumeAnalysis: currentResume }),
+            sources: engine.sourceMetadata({
+              username,
+              githubData: currentGithub,
+              resumeAnalysis: currentResume,
+              resumeInsights: currentInsights
+            })
+          })
+        });
+        if (currentFingerprint !== result.sourceFingerprint) {
+          throw Object.assign(Error('Recommendation sources changed. Refresh and try again.'), {
+            status: 409
+          });
+        }
+      }
+
       if (!isPersistableRecommendationResult(result)) {
         result.cacheMetadata.partial = true;
         return result;
@@ -1530,18 +1625,34 @@ const runRecommendationPipeline = async ({
         if (scopedCacheKey) {
           recommendationRuntimeCounters.persistenceOperations += 1;
           await stageTimer.measure('persistence', () =>
-            AnalysisCache.findOneAndUpdate(
-              scopedCacheKey,
-              { $set: { analysisData: result, userId: req.user._id } },
-              { upsert: true }
-            )
+            (req.recommendationGovernance
+              ? recommendationGovernance.transaction
+              : async (work) => work(undefined))(async (session) => {
+              if (req.recommendationGovernance)
+                await recommendationGovernance.fence(
+                  req.recommendationGovernance.reservation,
+                  session,
+                  req.recommendationGovernance.signal
+                );
+              return AnalysisCache.findOneAndUpdate(
+                scopedCacheKey,
+                { $set: { analysisData: result, userId: req.user._id } },
+                { upsert: true, session }
+              );
+            })
           );
         }
         if (saveResult && req.user?._id) {
           await notificationPersistence.commit(
             req.user._id,
-            (session) =>
-              Recommendation.findOneAndUpdate(
+            async (session) => {
+              if (req.recommendationGovernance)
+                await recommendationGovernance.fence(
+                  req.recommendationGovernance.reservation,
+                  session,
+                  req.recommendationGovernance.signal
+                );
+              return Recommendation.findOneAndUpdate(
                 {
                   userId: req.user._id,
                   snapshotVersion: engine.RULE_VERSION,
@@ -1563,7 +1674,8 @@ const runRecommendationPipeline = async ({
                   }
                 },
                 { upsert: true, runValidators: true, session }
-              ),
+              );
+            },
             {
               type: 'career_update',
               title: 'Career Recommendations Updated',
@@ -1624,6 +1736,7 @@ const runRecommendationPipeline = async ({
     settleInflight.reject(error);
     throw error;
   } finally {
+    req.releaseRecommendationReservation?.();
     if (recommendationInflight.get(inflightKey) === workPromise) {
       recommendationInflight.delete(inflightKey);
     }

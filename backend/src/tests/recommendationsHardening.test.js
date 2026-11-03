@@ -17,7 +17,7 @@ const component = read(
   'app',
   'pages',
   'recommendations',
-  'recommendations.component.ts',
+  'recommendations.component.ts'
 );
 const routes = read('backend', 'src', 'routes', 'recommendations.routes.js');
 const promptSource = read('backend', 'src', 'prompts', 'recommendationPrompt.js');
@@ -103,7 +103,7 @@ test('preview resumes require an unguessable id plus matching hash and never ret
         experienceLevel: 'Student',
       })
     ).status,
-    400,
+    400
   );
   assert.equal(
     (
@@ -113,7 +113,7 @@ test('preview resumes require an unguessable id plus matching hash and never ret
         experienceLevel: 'Student',
       })
     ).status,
-    400,
+    400
   );
   const resolved = await service.resolvePreviewResume({
     previewResumeId: created.previewResumeId,
@@ -136,17 +136,17 @@ test('oversized and expired previews return clean client errors', async () => {
         resumeText: 'x'.repeat(service.MAX_INLINE_PREVIEW_RESUME_CHARS + 1),
       })
     ).status,
-    413,
+    413
   );
   assert.equal(
     (await service.resolvePreviewResume({ previewResumeId: 'missing', resumeHash: 'a'.repeat(64) }))
       .status,
-    400,
+    400
   );
 });
 
 test('profile and preview isolation plus provider/cache invariants are enforced', () => {
-  assert.match(routes, /router\.post\('\/', protect, getRecommendations\)/);
+  assert.match(routes, /router\.post\('\/', protect, admit\(true\), getRecommendations\)/);
   assert.match(controller, /Authentication required for profile mode/);
   assert.match(controller, /Use Preview mode to analyze another GitHub username/);
   assert.match(controller, /allowSignals: !isTemporaryMode/);
@@ -176,7 +176,7 @@ test('saved previews remain owner-scoped and summary-only', () => {
   assert.match(controller, /SavedPreview\.find\(\{ userId: req\.user\._id \}\)/);
   assert.match(
     controller,
-    /findOneAndDelete\(\{\s*_id:\s*req\.params\.id,\s*userId:\s*req\.user\._id,?\s*\}\)/,
+    /findOneAndDelete\(\{\s*_id:\s*req\.params\.id,\s*userId:\s*req\.user\._id,?\s*\}\)/
   );
   assert.match(controller, /resultSummary: buildSavedPreviewSummary/);
   assert.doesNotMatch(controller, /resumeText:\s*req\.body/);
@@ -185,7 +185,7 @@ test('saved previews remain owner-scoped and summary-only', () => {
 test('frontend separates profile identities, inline resumes, and duplicate requests', () => {
   assert.match(
     client,
-    /recommendations:profile:\$\{userId\}:\$\{cleanUsername\}:\$\{cleanStack\}:\$\{cleanLevel\}/,
+    /recommendations:profile:\$\{userId\}:\$\{cleanUsername\}:\$\{cleanStack\}:\$\{cleanLevel\}/
   );
   assert.match(client, /inlineResumeIdentity/);
   assert.match(client, /this\.inflight\.get\(key\)/);
@@ -211,9 +211,9 @@ test('failed refresh preserves previous valid result in the frontend component',
   assert.match(component, /this\.loadingState = forceRefresh \? 'stale' : 'error'/);
   assert.equal(
     component.includes(
-      'this.result = null;\n        this.cdr.detectChanges();\n      }\n    });\n  }',
+      'this.result = null;\n        this.cdr.detectChanges();\n      }\n    });\n  }'
     ),
-    false,
+    false
   );
 });
 
@@ -227,7 +227,7 @@ test('polluted low-quality and ungrounded AI enrichment is rejected', () => {
 
   assert.equal(
     isUsableRecommendationNarrative('As an AI language model I recommend synergy.'),
-    false,
+    false
   );
   assert.equal(
     hasRecommendationFactPollution({
@@ -235,7 +235,7 @@ test('polluted low-quality and ungrounded AI enrichment is rejected', () => {
       projects: [{ title: 'Injected' }],
       readinessScore: 99,
     }),
-    true,
+    true
   );
 
   for (const polluted of [
@@ -302,7 +302,7 @@ test('polluted low-quality and ungrounded AI enrichment is rejected', () => {
       interviewReadinessActions: ['Explain the Backend SQL tradeoffs from your shipped project'],
     },
     sampleFallback,
-    context,
+    context
   );
 
   assert.equal(grounded.aiUsed, true);
@@ -337,7 +337,7 @@ test('AI timeout and fallback markers never mark aiUsed or override deterministi
       careerStack: 'Backend',
       experienceLevel: 'Intern',
       anchors: ['SQL'],
-    },
+    }
   );
   assert.equal(marker.aiUsed, false);
 
@@ -352,7 +352,7 @@ test('prompt remains narrative-only and schema-bound', () => {
   assert.match(promptSource, /Do not rename projects or career paths/);
   assert.match(
     promptSource,
-    /Never return projects, technologies, careerPaths, recommendationScores/,
+    /Never return projects, technologies, careerPaths, recommendationScores/
   );
   assert.equal(promptSource.includes('"impact"'), false);
   assert.equal(promptSource.includes('"recommendationScores"'), false);
@@ -363,7 +363,7 @@ test('notification dedupe uses cache signal hash and invalid usernames are rejec
   assert.match(controller, /eventId: `recommendations:\$\{engine.RULE_VERSION\}:\$\{signalHash\}/);
   assert.match(
     controller,
-    /parseGitHubUsername\(isTemporaryMode \? githubUsername : activeGithub\)/,
+    /parseGitHubUsername\(isTemporaryMode \? githubUsername : activeGithub\)/
   );
   assert.match(controller, /parseGitHubUsername\(activeGithub\)/);
   assert.match(controller, /Target stack must be one of/);
