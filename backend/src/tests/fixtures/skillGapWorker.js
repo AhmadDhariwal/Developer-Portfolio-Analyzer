@@ -80,6 +80,7 @@ mock('services/developerSignalService.js', {
     serverSelectionTimeoutMS: 2000
   });
   const app = express();
+  app.get('/metrics', require('../../services/metricsService').metricsHandler);
   app.use(express.json({ limit: '32kb' }));
   app.use('/api/skillgap', require('../../routes/skillgap.routes'));
   const server = app.listen(0, '127.0.0.1', () => process.send({ port: server.address().port }));

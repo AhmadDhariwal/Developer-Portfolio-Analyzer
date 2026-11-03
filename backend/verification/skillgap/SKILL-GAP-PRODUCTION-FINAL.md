@@ -2,7 +2,7 @@
 
 **DEVELOPMENT COMPLETE — STABLE CANDIDATE — PRODUCTION GATES PENDING**
 
-Prepared 2 November 2026, Asia/Karachi. This status covers the implementation and retained local verification. It does **not** certify deployed capacity, professional proficiency, representative market accuracy, live-provider acceptance, or a frozen production module.
+Initial implementation: 2 November 2026. Latest acceptance: 3 November 2026, Asia/Karachi. **Section 15 supersedes the historical validation counts and gate matrix below. Production acceptance is not complete.** This status covers the implementation and retained local verification. It does **not** certify deployed capacity, professional proficiency, representative market accuracy, live-provider acceptance, or a frozen production module.
 
 ## 1. Scope, architecture, and request flow
 
@@ -138,7 +138,7 @@ Final results are recorded in `validation-summary.json`; raw retained test/build
 
 `changed-files.json` is the exact final inventory, separating source/tests from verification evidence. `formatting.json` records each source path and formatter options. `cleanup.json` lists only verified task-owned trial captures removed; stable screenshots, fixtures, source, historical records and acceptance evidence are retained. No pre-existing source file was deleted or moved. No production data was used by disposable database tests.
 
-## 13. Production-gate matrix
+## 13. Historical production-gate matrix (2 November; superseded by section 15)
 
 | Gate                                                                                                                                                      | Status                                                                                             |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
@@ -153,7 +153,7 @@ Final results are recorded in `validation-summary.json`; raw retained test/build
 | Independent security/privacy/retention, accessibility and operator/recruiter acceptance                                                                   | BLOCKED — independent approvals/checks pending                                                     |
 | Deployment, monitoring/alerts, sustained capacity and rollback rehearsal                                                                                  | BLOCKED — no deployment authorized/performed                                                       |
 
-There are no known failing retained local checks at finalization. Pending gates must not be converted to PASS by reusing earlier reports or by treating small fixtures as deployed evidence. **PRODUCTION ACCEPTED — MODULE FROZEN is not asserted.**
+At the original 2 November implementation finalization, no retained local check was failing. The expanded 3 November run identifies the environment/accessibility failures in section 15. Pending gates must not be converted to PASS by reusing earlier reports or by treating small fixtures as deployed evidence. **PRODUCTION ACCEPTED — MODULE FROZEN is not asserted.**
 
 ## 14. Rollout, monitoring, and rollback
 
@@ -162,3 +162,99 @@ Review the exact source diff and candidate budgets; validate the target transact
 Monitor `dpa_skillgap_requests_total`, request/stage histograms and bounded cache/AI outcomes alongside existing process CPU/memory, database plans/latency and provider billing. Alert on sustained 429/503, lease contention, fallback spikes, context conflicts, cache misses and unexpectedly high outbound calls. Tune only from representative measurements; local sample timings are not an SLO or capacity commitment.
 
 Rollback is a reviewed code rollback after draining workers. Preserve outstanding Mongo budgets/leases until expired; do not reset the governance collection. Older analysis versions/history remain present. Revalidate current source identities before reading older caches, and retain explicit unavailable/historical labels. No rollback, deployment or destructive migration was executed in this task.
+
+## 15. Production acceptance — 3 November 2026
+
+**DEVELOPMENT COMPLETE — STABLE CANDIDATE — PRODUCTION GATES PENDING. PRODUCTION ACCEPTED — MODULE FROZEN is not asserted.**
+
+All work was performed in the original Developer-Portfolio-Analyzer checkout on `fix/skill-gap`; HEAD remains `454f46d8028f5ad289e749a34eb31db3afc14f21`. No new Git worktree/branch, commit, push, merge, deployment, production account/data write, infrastructure change or application configuration edit was performed. An ordinary source archive was exported only to rebuild the pre-refactor visual baseline; the user's checkout was never switched or overwritten. The user explicitly confirmed that no deployed staging URL/accounts/proxy/monitoring access is approved. Those gates remain **BLOCKED — STAGING ENVIRONMENT/APPROVAL REQUIRED**.
+
+### Fresh source and deterministic correctness evidence
+
+| Check                         | Result                                        | Exact evidence and limit                                                                                                                                                                                                                                                                                                                                                                                         |
+| ----------------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Fresh GitHub public demo data | PASS — bounded source spot check              | Fresh public Octocat identity/repos responses: 8 repositories, 2 forks excluded; provider Date 3 November 2026 07:07:18 GMT. Source bodies/hashes are retained. No public account was modified. This is a current evidence-adapter check, not a full live-profile production workflow.                                                                                                                           |
+| Fresh synthetic Resume/PDF    | PASS                                          | Existing synthetic fixture generator restored the missing PDFs; actual extraction/analyzer verified seven independently authored skills. The separate Resume regression suite checks names/skills/layouts, negative claims, limits, encrypted/scanned inputs, privacy and cache behavior. No user's resume was used. The initial missing-fixture failure and successful rerun logs are retained.                 |
+| Evidence/coverage/roadmap     | PASS locally; independent calibration pending | Formula and version contracts remain locked; all 28 requirement combinations and deterministic graph/order fixtures pass. The production adapter still cannot establish DEMONSTRATED and cannot exceed 50%; unknown stays null. Fresh combined source assessment returned 0%, with zero demonstrated skills. Source absence/claims are not proficiency judgments. No ability score was fabricated to reach 100%. |
+| Fresh market sample           | PASS — bounded provenance check               | One existing Arbeitnow public feed, 30 postings, retrieved 3 November 2026. Projected into disposable Mongo and read by the production market summary. The result remains cached-provider-sample, live=false, with explicit sampling limits. This does not establish representative geography/seniority demand or verify every posting's lifetime.                                                               |
+| Real Gemini                   | PASS — one bounded call                       | gemini-2.5-flash: 1,296 ms, one attempt, zero retries, 600 output-token cap; 292 input + 63 output = 355 reported tokens. Synthetic canonical skills only, no raw resume/PII. The captured output also passes the exact current controller's real narrative validator in memory, with no second provider request. Billing cost is not available from this result.                                                |
+
+Provider credentials were selected only from the development configuration; configured Mongo, Redis, account login and JWT values were not applied to the acceptance environment. Every test write used a disposable loopback replica set or synthetic local fixture. The older release verifier was not executed because it selects existing user accounts and cannot establish this isolation.
+
+### Infrastructure, reliability and security evidence
+
+- **Mongo PASS locally:** real transactions, owned source identity, revisions, leases/fencing, duplicate-write prevention, crash/expiry recovery, cache-only seven-day TTL and no durable-user/resume TTL are checked. Exact compound lookup uses IXSCAN with at most one document/key examined. These are disposable topology results, not a deployed index audit.
+- **Two-worker load/recovery PASS locally:** 60,457 ms, 105 HTTP requests, 30 accepted and 75 correctly rate-limited, zero unexpected errors. Accepted p50 73.74 ms / p95 176.33 ms, one AI invocation and one durable analysis row. A worker restarted mid-run without resetting limits or multiplying AI work. Upstream observations/AI were synthetic in this load run; the real provider probes above were separate. Coordinator RSS was 108,601,344 bytes; this is not total fleet memory or a production capacity/SLO claim.
+- **Quota/proxy abuse PASS on direct local ingress:** profile 30/hour and guest 5/hour remain unchanged; five guest requests succeeded and the next three returned 429 despite rotating forwarded IPs/usernames. Retry-After is present. Express has no trust-proxy setting; spoofed X-Forwarded-For is ignored locally. Deployed proxy header sanitation, allowed hops, IPv6/proxy grouping and synchronized clocks remain blocked pending topology/approval.
+- **Redis fallback/owner isolation:** optional-cache timeout/rejection tests pass and Mongo remains authoritative. Two real credential-free processes demonstrate that a temporary resume reference resolves on its creating worker, rejects a foreign owner, and returns 400 on the other worker without shared cache. **Fleet temporary-PDF acceptance is BLOCKED**, requiring a verified isolated shared-cache namespace or approved affinity/routing behavior. No existing shared Redis endpoint was assumed disposable or written by this task.
+- **Monitoring PASS locally, deployment BLOCKED:** real worker metrics expose bounded Skill Gap counters/histograms without synthetic owner IDs/emails/forwarded IPs. Repository observability files contain general latency/error alerts and a Grafana dashboard; they do not establish deployed scraping, alert delivery or Skill Gap-specific operational thresholds. No approved monitoring dashboard or actual staging proxy configuration was found. Architecture documentation likewise records proxy identity as an operator gate.
+- **Security/privacy PASS for retained local cases:** owner-bound resume references, active source/cache identity, guest abuse, session/source fencing, prompt redaction, bounded Gemini, safe fallback, audit/metric privacy and durable-history TTL separation pass. No new tenant-wide read or destructive retention policy was added. Deployed cross-tenant acceptance, independent privacy/retention review and operator approval remain pending.
+
+### Approved badge contrast correction and UI verification
+
+The user explicitly authorized only badge text-color corrections. Changed stale/Medium to the existing warning-text token, High to the existing danger-text token, fresh light text to #047857 (the existing light success token did not meet the required contrast), and fresh dark text to the existing success-text token. Badge backgrounds, border colors, typography, dimensions, spacing, DOM and component structure are unchanged. No shared theme token was edited.
+
+| Theme  | Measured contrast at 1440px (same values at 375px)                    |
+| ------ | --------------------------------------------------------------------- |
+| light  | fresh 4.87:1; stale 6.39:1; High 7.30:1; Medium 6.57:1; Low 7.24:1    |
+| dark   | fresh 8.30:1; stale 12.75:1; High 8.58:1; Medium 12.18:1; Low 12.19:1 |
+| system | fresh 8.30:1; stale 12.75:1; High 8.58:1; Medium 12.18:1; Low 12.19:1 |
+
+**Badge contrast PASS:** 30 state checks cover fresh/success, stale/warning, High, Medium/warning and Low across Light/Dark/System at mobile/desktop widths; all meet 4.5:1, minimum 4.87:1. There is no disabled badge variant: these are non-interactive spans; disabled buttons were not restyled.
+
+**Overall accessibility FAIL:** six axe-core 4.14.0 WCAG A/AA scans now show no automatic light-theme violation and no badge contrast violation. Dark/System still fail on the non-badge evidence legend `.status-key > summary`: 2.82:1, foreground #4f46e5 on #111827 (four viewport/theme occurrences of one selector). This was deliberately left unchanged under the badge-only approval. Gradient-related incomplete checks and independent assistive-technology review still require manual assessment; no full WCAG certification is claimed.
+
+**Visual regression PASS with explicit intentional colors:** 24 complete visible geometry snapshots and 30 screenshot pairs pass. There are 96 approved badge foreground occurrences across the 24 layouts. Only those foreground fields/regions are excepted; backgrounds, borders, typography, text, geometry and every other computed style must remain exact. Outside approved badge regions, the unchanged pixel tolerance is maximum 3/255 channel delta and below 0.2% changed pixels. Original pre-change parity also passed before the approved colors. The verifier now rejects missing/zero screenshot baselines rather than issuing a false PASS. Current and baseline captures are retained under the task's work directory, with compact comparison/axe/contrast evidence in `acceptance-2026-11-03/`.
+
+### Actual release integration target
+
+GitHub PR [#61](https://github.com/AhmadDhariwal/Developer-Portfolio-Analyzer/pull/61) identifies **release1** as the actual target, base `6fd0901cac4780269d611b9178c8eaa8937186ab`, head `454f46d8028f5ad289e749a34eb31db3afc14f21`. GitHub reports mergeable=true. Read-only local merge-tree output equals the HEAD tree `07085fab70d3bb7c2abe1517a8895f064ccd3161`: **zero textual conflicts, zero conflict resolutions required**, and release1 is already an ancestor of this branch. No merge was executed. The previous 12 conflicting local feature refs were hypothetical targets, not this PR's target; no other module branch was merged or discarded. No combined commit status was returned by the GitHub status API, so remote CI success is not inferred.
+
+Cross-module regressions cover GitHub, Resume, Dashboard, Recommendations, Learning Hub, Sprint, Scenario Simulator, Profile/security, Public Portfolio, Interview Prep, News and Notifications logging, with Notifications persistence exercised in the real Skill Gap worker suite. An additional 58/58 checks pass for Jobs Hub, actual Notifications retention, shared request/upload authority and Support isolation, all with explicitly disposable databases or pure fixtures. Existing source scoring contracts/default caller behavior and historical records remain. Future integration of other divergent feature branches requires a separate target-specific review.
+
+### Final validation and outstanding failures
+
+| Validation                                                                                            | Result                                                                         |
+| ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Expanded screened backend manifest                                                                    | **276/277 PASS; 1 FAIL** — News local environment contract                     |
+| Adjacent Jobs/Notifications retention/request authority/Support security                              | **58/58 PASS**, disposable databases/synthetic data, no skipped tests          |
+| Disposable Mongo + actual Resume/PDF regressions                                                      | **20/20 PASS**, no skipped tests                                               |
+| Full frontend suite after badge changes                                                               | **537/537 PASS across 92 files**                                               |
+| App/spec TypeScript; production build                                                                 | PASS; existing landing stylesheet warning 56.67 kB vs 48 kB remains            |
+| Explicit-path Prettier write/check; 5 JS/CJS syntax checks; Python AST; Git whitespace/unmerged check | PASS                                                                           |
+| New missing-baseline and real preview-cache regression cases                                          | PASS (included in backend manifest)                                            |
+| Badge-only accessibility and approved-change visual comparison                                        | PASS as scoped above                                                           |
+| Overall page accessibility                                                                            | **FAIL** — dark/System non-badge legend contrast and manual incomplete reviews |
+
+The backend failure is `newsConfiguration.test.js:10`: the ignored local `backend/.env` omits **21 catalog settings**, while the committed `.env.example` matches the catalog. The failing files/catalog/test were not modified by this acceptance work. No test was removed, weakened or excluded to claim a clean complete run. Exact missing key names, without values, are in `news-environment-failure.json`. The local configuration was intentionally not rewritten.
+
+### Final production-gate matrix
+
+| Gate                                                                                                  | Status / precise requirement                                                                                                                                                                  |
+| ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Fresh bounded provider/source spot checks, locked deterministic contracts, local security/reliability | PASS within the explicit limits above                                                                                                                                                         |
+| Badge contrast correction and layout/style preservation                                               | PASS                                                                                                                                                                                          |
+| Full cross-module local environment acceptance                                                        | FAIL — synchronize/review the 21 missing local News settings without overwriting secrets or operator policy                                                                                   |
+| Overall accessibility acceptance                                                                      | FAIL — approve/fix the separate non-badge legend contrast; complete manual/assistive checks                                                                                                   |
+| Actual release target conflict readiness                                                              | PASS — release1/PR #61; no merge executed                                                                                                                                                     |
+| Staging API/authentication/tenant isolation                                                           | **BLOCKED — STAGING ENVIRONMENT/APPROVAL REQUIRED:** approved HTTPS API URL, synthetic tenant/account ownership, non-production authentication/session roles and test plan                    |
+| Deployed Mongo/indexes/TTL/clock/capacity                                                             | **BLOCKED — STAGING ENVIRONMENT/APPROVAL REQUIRED:** approved replica/sharded URI and isolated DB, topology/index-read access, time-sync evidence and permitted bounded load/recovery window  |
+| Fleet Redis/temporary-PDF behavior and proxy identity                                                 | **BLOCKED — STAGING ENVIRONMENT/APPROVAL REQUIRED:** approved disposable Redis/TLS namespace or verified affinity policy, worker topology, trusted proxy allowlist/hops and header sanitation |
+| Deployed monitoring/alerts/load/rollback                                                              | **BLOCKED — STAGING ENVIRONMENT/APPROVAL REQUIRED:** approved scrape/dashboard/alert access, synthetic load budget, recovery and rollback rehearsal                                           |
+| Independent accuracy/requirements/market calibration, security/privacy/retention/operator signoff     | BLOCKED — representative reviewed corpus, rubric and independent reviewer approvals; bounded synthetic/public samples do not substitute                                                       |
+
+### Exact changes and retained evidence
+
+Source changes in this acceptance turn:
+
+- `backend/src/scripts/verifySkillGapProductionAcceptance.js`
+- `backend/src/tests/skillGapAcceptance.test.js`
+- `backend/src/tests/fixtures/skillGapPreviewCacheWorker.js`
+- `backend/src/tests/fixtures/skillGapWorker.js`
+- `frontend/scripts/compare-skill-gap-parity.py`
+- `frontend/scripts/verify-skill-gap-parity.cjs`
+- `frontend/src/app/pages/skill-gap/skill-gap.component.scss`
+
+Eight regenerated synthetic fixtures: standard.pdf, layout-shift.pdf, columns.pdf, empty.pdf, corrupt.pdf, encrypted.pdf, scanned.pdf, page-limit.pdf under the existing Resume fixture directory. The existing generator and manually authored gold expectations were not changed. Existing `backend/verification/resume/extraction-accuracy.json`, `architecture/request-flow-governance-results.json` and `skillgap/production-results.json` were refreshed by the real tests. This report and new `acceptance-2026-11-03/` JSON/log evidence are retained. No pre-existing source file was deleted/moved, no dependency manifest changed, and no production configuration was edited. Portable axe-core was integrity-verified outside the repository; its version/integrity/license provenance is retained.
+
+The test-only metrics route exists solely in the synthetic HTTP worker fixture. New live acceptance tooling requires an explicit live flag, reads only development provider settings, uses bounded attempts, and performs all writes in disposable Mongo. The output includes raw public-source captures/hashes, real provider usage, exact actual-target refs, load observations, owner-cache probe, before/after accessibility and badge-color decisions. Raw failure logs are retained alongside successful reruns. `final-validation.json` is the current machine-readable gate summary.

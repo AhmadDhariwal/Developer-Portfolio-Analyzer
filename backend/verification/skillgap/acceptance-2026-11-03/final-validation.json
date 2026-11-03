@@ -1,0 +1,484 @@
+{
+  "status": "DEVELOPMENT COMPLETE — STABLE CANDIDATE — PRODUCTION GATES PENDING",
+  "reviewDate": "2026-11-03",
+  "branch": "fix/skill-gap",
+  "head": "454f46d8028f5ad289e749a34eb31db3afc14f21",
+  "backend": {
+    "tests": 277,
+    "passed": 276,
+    "failed": 1,
+    "skipped": 0
+  },
+  "mongoAndPdf": {
+    "tests": 20,
+    "passed": 20,
+    "failed": 0,
+    "skipped": 0
+  },
+  "frontend": {
+    "passed": 537,
+    "files": 92,
+    "failed": 0
+  },
+  "badgeContrast": {
+    "status": "PASS",
+    "checks": 30,
+    "minimum": 4.874674554923308,
+    "states": [
+      {
+        "theme": "light",
+        "width": 375,
+        "states": [
+          {
+            "state": "fresh",
+            "foreground": "rgb(4, 120, 87)",
+            "background": [
+              229.44,
+              244.8,
+              242.16
+            ],
+            "ratio": 4.874674554923308
+          },
+          {
+            "state": "stale",
+            "foreground": "rgb(146, 64, 14)",
+            "background": [
+              247.76,
+              242.64,
+              232.72
+            ],
+            "ratio": 6.392234555679469
+          },
+          {
+            "state": "High",
+            "foreground": "rgb(153, 27, 27)",
+            "background": [
+              253.4,
+              236.3,
+              236.3
+            ],
+            "ratio": 7.296635272879326
+          },
+          {
+            "state": "Medium",
+            "foreground": "rgb(146, 64, 14)",
+            "background": [
+              254,
+              245.3,
+              230.6
+            ],
+            "ratio": 6.570399143688586
+          },
+          {
+            "state": "Low",
+            "foreground": "rgb(71, 85, 105)",
+            "background": [
+              248,
+              250,
+              252
+            ],
+            "ratio": 7.242510935504382
+          }
+        ],
+        "disabledBadgeState": "Not applicable: these badges are non-interactive spans with no disabled variant."
+      },
+      {
+        "theme": "light",
+        "width": 1440,
+        "states": [
+          {
+            "state": "fresh",
+            "foreground": "rgb(4, 120, 87)",
+            "background": [
+              229.44,
+              244.8,
+              242.16
+            ],
+            "ratio": 4.874674554923308
+          },
+          {
+            "state": "stale",
+            "foreground": "rgb(146, 64, 14)",
+            "background": [
+              247.76,
+              242.64,
+              232.72
+            ],
+            "ratio": 6.392234555679469
+          },
+          {
+            "state": "High",
+            "foreground": "rgb(153, 27, 27)",
+            "background": [
+              253.4,
+              236.3,
+              236.3
+            ],
+            "ratio": 7.296635272879326
+          },
+          {
+            "state": "Medium",
+            "foreground": "rgb(146, 64, 14)",
+            "background": [
+              254,
+              245.3,
+              230.6
+            ],
+            "ratio": 6.570399143688586
+          },
+          {
+            "state": "Low",
+            "foreground": "rgb(71, 85, 105)",
+            "background": [
+              248,
+              250,
+              252
+            ],
+            "ratio": 7.242510935504382
+          }
+        ],
+        "disabledBadgeState": "Not applicable: these badges are non-interactive spans with no disabled variant."
+      },
+      {
+        "theme": "dark",
+        "width": 375,
+        "states": [
+          {
+            "state": "fresh",
+            "foreground": "rgb(52, 211, 153)",
+            "background": [
+              15.08,
+              35.96,
+              48.96
+            ],
+            "ratio": 8.29693038445295
+          },
+          {
+            "state": "stale",
+            "foreground": "rgb(253, 230, 138)",
+            "background": [
+              33.400000000000006,
+              33.8,
+              39.52
+            ],
+            "ratio": 12.7501269542638
+          },
+          {
+            "state": "High",
+            "foreground": "rgb(252, 165, 165)",
+            "background": [
+              39.2,
+              28.400000000000002,
+              41.900000000000006
+            ],
+            "ratio": 8.575365976947035
+          },
+          {
+            "state": "Medium",
+            "foreground": "rgb(253, 230, 138)",
+            "background": [
+              39.8,
+              37.400000000000006,
+              36.2
+            ],
+            "ratio": 12.17687021026584
+          },
+          {
+            "state": "Low",
+            "foreground": "rgb(203, 213, 225)",
+            "background": [
+              16,
+              22,
+              34
+            ],
+            "ratio": 12.194431499695774
+          }
+        ],
+        "disabledBadgeState": "Not applicable: these badges are non-interactive spans with no disabled variant."
+      },
+      {
+        "theme": "dark",
+        "width": 1440,
+        "states": [
+          {
+            "state": "fresh",
+            "foreground": "rgb(52, 211, 153)",
+            "background": [
+              15.08,
+              35.96,
+              48.96
+            ],
+            "ratio": 8.29693038445295
+          },
+          {
+            "state": "stale",
+            "foreground": "rgb(253, 230, 138)",
+            "background": [
+              33.400000000000006,
+              33.8,
+              39.52
+            ],
+            "ratio": 12.7501269542638
+          },
+          {
+            "state": "High",
+            "foreground": "rgb(252, 165, 165)",
+            "background": [
+              39.2,
+              28.400000000000002,
+              41.900000000000006
+            ],
+            "ratio": 8.575365976947035
+          },
+          {
+            "state": "Medium",
+            "foreground": "rgb(253, 230, 138)",
+            "background": [
+              39.8,
+              37.400000000000006,
+              36.2
+            ],
+            "ratio": 12.17687021026584
+          },
+          {
+            "state": "Low",
+            "foreground": "rgb(203, 213, 225)",
+            "background": [
+              16,
+              22,
+              34
+            ],
+            "ratio": 12.194431499695774
+          }
+        ],
+        "disabledBadgeState": "Not applicable: these badges are non-interactive spans with no disabled variant."
+      },
+      {
+        "theme": "system",
+        "width": 375,
+        "states": [
+          {
+            "state": "fresh",
+            "foreground": "rgb(52, 211, 153)",
+            "background": [
+              15.08,
+              35.96,
+              48.96
+            ],
+            "ratio": 8.29693038445295
+          },
+          {
+            "state": "stale",
+            "foreground": "rgb(253, 230, 138)",
+            "background": [
+              33.400000000000006,
+              33.8,
+              39.52
+            ],
+            "ratio": 12.7501269542638
+          },
+          {
+            "state": "High",
+            "foreground": "rgb(252, 165, 165)",
+            "background": [
+              39.2,
+              28.400000000000002,
+              41.900000000000006
+            ],
+            "ratio": 8.575365976947035
+          },
+          {
+            "state": "Medium",
+            "foreground": "rgb(253, 230, 138)",
+            "background": [
+              39.8,
+              37.400000000000006,
+              36.2
+            ],
+            "ratio": 12.17687021026584
+          },
+          {
+            "state": "Low",
+            "foreground": "rgb(203, 213, 225)",
+            "background": [
+              16,
+              22,
+              34
+            ],
+            "ratio": 12.194431499695774
+          }
+        ],
+        "disabledBadgeState": "Not applicable: these badges are non-interactive spans with no disabled variant."
+      },
+      {
+        "theme": "system",
+        "width": 1440,
+        "states": [
+          {
+            "state": "fresh",
+            "foreground": "rgb(52, 211, 153)",
+            "background": [
+              15.08,
+              35.96,
+              48.96
+            ],
+            "ratio": 8.29693038445295
+          },
+          {
+            "state": "stale",
+            "foreground": "rgb(253, 230, 138)",
+            "background": [
+              33.400000000000006,
+              33.8,
+              39.52
+            ],
+            "ratio": 12.7501269542638
+          },
+          {
+            "state": "High",
+            "foreground": "rgb(252, 165, 165)",
+            "background": [
+              39.2,
+              28.400000000000002,
+              41.900000000000006
+            ],
+            "ratio": 8.575365976947035
+          },
+          {
+            "state": "Medium",
+            "foreground": "rgb(253, 230, 138)",
+            "background": [
+              39.8,
+              37.400000000000006,
+              36.2
+            ],
+            "ratio": 12.17687021026584
+          },
+          {
+            "state": "Low",
+            "foreground": "rgb(203, 213, 225)",
+            "background": [
+              16,
+              22,
+              34
+            ],
+            "ratio": 12.194431499695774
+          }
+        ],
+        "disabledBadgeState": "Not applicable: these badges are non-interactive spans with no disabled variant."
+      }
+    ]
+  },
+  "accessibility": "FAIL",
+  "visualParity": {
+    "status": "PASS",
+    "layouts": 24,
+    "pairs": 30,
+    "approvedBadgeForegroundOccurrences": 96,
+    "allOtherStylesAndBackgroundsUnchanged": true
+  },
+  "build": "PASS — existing landing stylesheet warning",
+  "appTypeScript": "PASS",
+  "specTypeScript": "PASS",
+  "formatting": "PASS",
+  "syntax": "PASS",
+  "gitWhitespace": "PASS",
+  "integration": {
+    "pr": "https://github.com/AhmadDhariwal/Developer-Portfolio-Analyzer/pull/61",
+    "head": "fix/skill-gap",
+    "headSha": "454f46d8028f5ad289e749a34eb31db3afc14f21",
+    "base": "release1",
+    "baseSha": "6fd0901cac4780269d611b9178c8eaa8937186ab",
+    "githubMergeable": true,
+    "simulationTree": "07085fab70d3bb7c2abe1517a8895f064ccd3161",
+    "simulationEqualsHeadTree": true,
+    "textualConflicts": 0,
+    "conflictsRequiringResolution": 0,
+    "actualMergePerformed": false,
+    "combinedCommitStatuses": [],
+    "note": "Other local feature branches are not this PR target; their historical simulated conflicts were not merged or discarded."
+  },
+  "newsEnvironment": {
+    "status": "FAIL",
+    "file": "backend/.env",
+    "committedExampleMatches": true,
+    "missingKeys": [
+      "NEWS_CATALOG_RETENTION_DAYS",
+      "NEWS_CATALOG_RANKING_LIMIT",
+      "NEWS_PREWARM_STRATEGY",
+      "NEWS_PREWARM_MIN_DEMAND",
+      "NEWS_PREWARM_TARGET_ARTICLES",
+      "NEWS_PREWARM_FRESHNESS_MS",
+      "NEWS_PREWARM_EVALUATION_MS",
+      "NEWS_PREWARM_MAX_CANDIDATES",
+      "NEWS_PREWARM_RESERVED_USER_JOBS",
+      "NEWS_HACKERNEWS_RETENTION_HOURS",
+      "NEWS_DEVTO_RETENTION_HOURS",
+      "NEWS_HACKERNEWSSEARCH_RETENTION_HOURS",
+      "NEWS_GITHUBRELEASES_RETENTION_HOURS",
+      "NEWS_GITHUBADVISORIES_RETENTION_HOURS",
+      "NEWS_LOBSTERS_RETENTION_HOURS",
+      "NEWS_DEVTOSEARCH_RETENTION_HOURS",
+      "NEWS_KUBERNETESBLOG_RETENTION_HOURS",
+      "NEWS_CLOUDFLARECHANGELOG_RETENTION_HOURS",
+      "NEWS_NEWSAPI_RETENTION_HOURS",
+      "NEWS_GNEWS_RETENTION_HOURS",
+      "NEWS_REDDIT_RETENTION_HOURS"
+    ],
+    "configurationChanged": false
+  },
+  "staging": {
+    "status": "BLOCKED — STAGING ENVIRONMENT/APPROVAL REQUIRED",
+    "approvedApi": false,
+    "approvedTenants": false,
+    "proxyTopology": false,
+    "monitoringAccess": false
+  },
+  "sourceFiles": [
+    {
+      "path": "backend/src/scripts/verifySkillGapProductionAcceptance.js",
+      "sha256": "59146139ae6d923c21a53fc3ce910480fe589e4daf7f747d04c1c6d898fd2792"
+    },
+    {
+      "path": "backend/src/tests/skillGapAcceptance.test.js",
+      "sha256": "508effc70d34619222daf6786563ebfa47e07e7f262a8294aa0fc1c6abe52d6b"
+    },
+    {
+      "path": "backend/src/tests/fixtures/skillGapPreviewCacheWorker.js",
+      "sha256": "efb2f3b93b9eec14570c064ec3f6ba67829503240e6be3893aea9baaae432711"
+    },
+    {
+      "path": "backend/src/tests/fixtures/skillGapWorker.js",
+      "sha256": "d829d04879543d120b6326766982c781eec2cfe5cd752f8d757f12383717b2b3"
+    },
+    {
+      "path": "frontend/scripts/compare-skill-gap-parity.py",
+      "sha256": "1e18ef07dff23beb5c31fa623185f8988f6e83bf597c0fbd9d8299198c61b729"
+    },
+    {
+      "path": "frontend/scripts/verify-skill-gap-parity.cjs",
+      "sha256": "f082e4628b4de5f5026d733eea89df9d15296635dde42301b4a371441e34fc3b"
+    },
+    {
+      "path": "frontend/src/app/pages/skill-gap/skill-gap.component.scss",
+      "sha256": "93ad2a0e8800b0cdeb1b8231f8b57fc7be3f828e87971c09eb57427f651d3b62"
+    }
+  ],
+  "productionDataUsed": false,
+  "committed": false,
+  "pushed": false,
+  "merged": false,
+  "deployed": false,
+  "adjacentSecurity": {
+    "tests": 58,
+    "passed": 58,
+    "failed": 0,
+    "skipped": 0,
+    "modules": [
+      "Jobs Hub",
+      "Notifications retention",
+      "shared request/upload authority",
+      "Support admission/owner isolation"
+    ]
+  }
+}

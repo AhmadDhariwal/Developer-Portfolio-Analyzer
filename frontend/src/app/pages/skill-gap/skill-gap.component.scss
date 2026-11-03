@@ -243,7 +243,7 @@ app-skill-gap {
     border: 1px solid transparent;
 
     &--fresh {
-      color: #059669;
+      color: #047857;
       background: rgba(16, 185, 129, 0.08);
       border-color: rgba(16, 185, 129, 0.2);
 
@@ -257,7 +257,7 @@ app-skill-gap {
     }
 
     &--stale {
-      color: #d97706;
+      color: var(--color-warning-text, #92400e);
       background: rgba(245, 158, 11, 0.08);
       border-color: rgba(245, 158, 11, 0.25);
 
@@ -620,13 +620,13 @@ app-skill-gap {
     color: var(--text-secondary);
 
     &[data-priority='High'] {
-      color: #dc2626;
+      color: var(--color-danger-text, #991b1b);
       background: rgba(239, 68, 68, 0.1);
       border: 1px solid rgba(239, 68, 68, 0.2);
     }
 
     &[data-priority='Medium'] {
-      color: #d97706;
+      color: var(--color-warning-text, #92400e);
       background: rgba(245, 158, 11, 0.1);
       border: 1px solid rgba(245, 158, 11, 0.2);
     }
@@ -1536,6 +1536,10 @@ app-skill-gap {
 ---------------------------------------------------- */
   [data-theme='dark'] &,
   .dark & {
+    .freshness-badge--fresh {
+      color: var(--color-success-text, #34d399);
+    }
+
     .skill-gap-page {
       color: #f3f4f6;
     }

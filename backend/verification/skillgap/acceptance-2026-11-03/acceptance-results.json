@@ -1,0 +1,125 @@
+{
+  "collectedAt": "2026-11-03T07:07:17.925Z",
+  "productionDataUsed": false,
+  "applicationDatabaseConfigurationLoaded": false,
+  "gates": {
+    "freshPublicGitHub": {
+      "status": "PASS",
+      "publicDemoProfile": "octocat",
+      "repositories": 8,
+      "forksExcluded": 2,
+      "sourceDate": "Tue, 03 Nov 2026 07:07:18 GMT",
+      "rawResponseHash": "4fd4451ddf4cbafadd2c17ceccaa2e6f3001538c437b4274fa5169b82a6bf6e6",
+      "scope": "Fresh public demo data through the production evidence adapter; no public account modified.",
+      "durationMs": 661
+    },
+    "freshSyntheticPdfAndEvidence": {
+      "status": "PASS",
+      "syntheticDocumentSha256": "c74dcd95d85a59f4a16186a60d1d9085e2b2fe66a39f0e17b2279cec7fb65722",
+      "pages": 1,
+      "expectedSkillsChecked": 7,
+      "coverage": 0,
+      "demonstrated": 0,
+      "ruleVersion": "skill-evidence-coverage-v1",
+      "ceilingPreserved": true,
+      "scope": "Actual PDF extraction and deterministic analyzer; document skills remain claims.",
+      "durationMs": 2317
+    },
+    "freshMarketProviderSample": {
+      "status": "PASS",
+      "sampledJobs": 30,
+      "sourceDate": "Tue, 03 Nov 2026 07:07:19 GMT",
+      "provider": "arbeitnow",
+      "liveLabel": false,
+      "scope": "One fresh provider sample projected into disposable cache and production market summary; not representative live-market statistics.",
+      "durationMs": 6093
+    },
+    "liveGeminiQualitativePolicy": {
+      "status": "PASS",
+      "provider": "gemini",
+      "model": "gemini-2.5-flash",
+      "latencyMs": 1296,
+      "maximumAttempts": 1,
+      "maximumOutputTokens": 600,
+      "retries": 0,
+      "usage": [
+        {
+          "status": 200,
+          "usage": {
+            "promptTokenCount": 292,
+            "candidatesTokenCount": 63,
+            "totalTokenCount": 355,
+            "promptTokensDetails": [
+              {
+                "modality": "TEXT",
+                "tokenCount": 292
+              }
+            ],
+            "serviceTier": "standard"
+          }
+        }
+      ],
+      "qualitativeOutput": {
+        "analysisSummary": "This student is exploring a Backend career path. They have some familiarity with TypeScript and have claimed knowledge of SQL.",
+        "levelAssessment": "To progress as a Backend engineer, the student will need to demonstrate practical application of SQL and further develop their TypeScript abilities."
+      },
+      "cost": "Token usage only where returned; billing cost is not available from this API result.",
+      "durationMs": 1494
+    },
+    "sustainedTwoWorkerLoadAndRecovery": {
+      "status": "PASS",
+      "elapsedMs": 60457,
+      "requests": 105,
+      "accepted": 30,
+      "limited": 75,
+      "unexpectedErrors": 0,
+      "acceptedP50Ms": 73.73890000000029,
+      "acceptedP95Ms": 176.3279999999977,
+      "aiCalls": 1,
+      "durableRows": 1,
+      "workerRestarted": true,
+      "spoofedForwardedIpsDidNotResetBudget": true,
+      "processMemory": {
+        "rss": 108601344,
+        "heapTotal": 41558016,
+        "heapUsed": 38814112,
+        "external": 22958805,
+        "arrayBuffers": 18776139
+      },
+      "scope": "Sixty-second local two-process run under unchanged hourly quotas; not deployed sustained-capacity certification.",
+      "durationMs": 60458
+    },
+    "localMetricsPrivacyAndExposure": {
+      "status": "PASS",
+      "metricsAvailable": true,
+      "boundedSkillGapLabels": true,
+      "syntheticOwnerAndIpAbsent": true,
+      "deployedScrapeAndAlerts": "Not verified",
+      "durationMs": 26
+    },
+    "forwardedIpGuestAbuse": {
+      "status": "PASS",
+      "statuses": [
+        200,
+        200,
+        200,
+        200,
+        200,
+        429,
+        429,
+        429
+      ],
+      "trustProxy": false,
+      "rotatingForwardedIpCannotBypassGuestBudget": true,
+      "productionProxyTopology": "Not supplied",
+      "durationMs": 1398
+    },
+    "realControllerNarrativeValidation": {
+      "status": "PASS",
+      "controllerSourceSha256": "71a95d19dce609e5941e4e9a8ecde13bdaa5bb7f4ad61ff930e98978db253790",
+      "liveOutputAcceptedByProductionPolicy": true,
+      "additionalProviderCalls": 0,
+      "durationMs": 1275
+    }
+  }
+}

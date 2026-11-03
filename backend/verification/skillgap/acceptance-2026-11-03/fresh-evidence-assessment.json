@@ -1,0 +1,1567 @@
+{
+  "coverage": 0,
+  "coverageUnavailableReason": null,
+  "skills": [
+    {
+      "name": "API Versioning",
+      "category": "Backend",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "AWS",
+      "category": "Cloud",
+      "requirement": "OPTIONAL",
+      "weight": 1,
+      "status": "CLAIMED_ONLY",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 0,
+      "evidence": [
+        {
+          "kind": "CLAIM",
+          "type": "resume",
+          "id": "synthetic-resume",
+          "origin": "resume-file:synthetic-resume",
+          "artifact": "",
+          "timestamp": "2026-11-03T07:48:10.055Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    },
+    {
+      "name": "Accessibility",
+      "category": "Frontend",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Angular",
+      "category": "Frontend",
+      "requirement": "OPTIONAL",
+      "weight": 1,
+      "status": "CLAIMED_ONLY",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 0,
+      "evidence": [
+        {
+          "kind": "CLAIM",
+          "type": "resume",
+          "id": "synthetic-resume",
+          "origin": "resume-file:synthetic-resume",
+          "artifact": "",
+          "timestamp": "2026-11-03T07:48:10.055Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    },
+    {
+      "name": "CI/CD",
+      "category": "DevOps",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "CSS",
+      "category": "Frontend",
+      "requirement": "OPTIONAL",
+      "weight": 1,
+      "status": "PARTIAL",
+      "evidenceCredit": 0.5,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 1,
+      "evidence": [
+        {
+          "kind": "METADATA",
+          "type": "github",
+          "id": "octocat.github.io",
+          "origin": "github-account:octocat",
+          "artifact": "repository-metadata",
+          "timestamp": "2024-08-11T11:57:01.000Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    },
+    {
+      "name": "Caching Strategies",
+      "category": "Backend",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Cloud Basics",
+      "category": "Cloud",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Deployment",
+      "category": "DevOps",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "CLAIMED_ONLY",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 0,
+      "evidence": [
+        {
+          "kind": "CLAIM",
+          "type": "resume",
+          "id": "synthetic-resume",
+          "origin": "resume-file:synthetic-resume",
+          "artifact": "",
+          "timestamp": "2026-11-03T07:48:10.055Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    },
+    {
+      "name": "Design Patterns",
+      "category": "General",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Docker",
+      "category": "DevOps",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "CLAIMED_ONLY",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 0,
+      "evidence": [
+        {
+          "kind": "CLAIM",
+          "type": "resume",
+          "id": "synthetic-resume",
+          "origin": "resume-file:synthetic-resume",
+          "artifact": "",
+          "timestamp": "2026-11-03T07:48:10.055Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    },
+    {
+      "name": "Documentation",
+      "category": "General",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "CLAIMED_ONLY",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 0,
+      "evidence": [
+        {
+          "kind": "CLAIM",
+          "type": "resume",
+          "id": "synthetic-resume",
+          "origin": "resume-file:synthetic-resume",
+          "artifact": "",
+          "timestamp": "2026-11-03T07:48:10.055Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    },
+    {
+      "name": "Git",
+      "category": "Tools",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "HTML",
+      "category": "Frontend",
+      "requirement": "OPTIONAL",
+      "weight": 1,
+      "status": "PARTIAL",
+      "evidenceCredit": 0.5,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 1,
+      "evidence": [
+        {
+          "kind": "METADATA",
+          "type": "github",
+          "id": "Spoon-Knife",
+          "origin": "github-account:octocat",
+          "artifact": "repository-metadata",
+          "timestamp": "2024-08-21T15:25:42.000Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    },
+    {
+      "name": "Monitoring and Observability",
+      "category": "DevOps",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Next.js",
+      "category": "Frontend",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Node.js",
+      "category": "Backend",
+      "requirement": "OPTIONAL",
+      "weight": 1,
+      "status": "CLAIMED_ONLY",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 0,
+      "evidence": [
+        {
+          "kind": "CLAIM",
+          "type": "resume",
+          "id": "synthetic-resume",
+          "origin": "resume-file:synthetic-resume",
+          "artifact": "",
+          "timestamp": "2026-11-03T07:48:10.055Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    },
+    {
+      "name": "Performance Optimization",
+      "category": "General",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Python",
+      "category": "Language",
+      "requirement": "OPTIONAL",
+      "weight": 1,
+      "status": "CLAIMED_ONLY",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 0,
+      "evidence": [
+        {
+          "kind": "CLAIM",
+          "type": "resume",
+          "id": "synthetic-resume",
+          "origin": "resume-file:synthetic-resume",
+          "artifact": "",
+          "timestamp": "2026-11-03T07:48:10.055Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    },
+    {
+      "name": "React",
+      "category": "Frontend",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "SQL",
+      "category": "Database",
+      "requirement": "OPTIONAL",
+      "weight": 1,
+      "status": "CLAIMED_ONLY",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 0,
+      "evidence": [
+        {
+          "kind": "CLAIM",
+          "type": "resume",
+          "id": "synthetic-resume",
+          "origin": "resume-file:synthetic-resume",
+          "artifact": "",
+          "timestamp": "2026-11-03T07:48:10.055Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    },
+    {
+      "name": "Scalability Patterns",
+      "category": "General",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Security Basics",
+      "category": "General",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "System Design",
+      "category": "General",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Testing",
+      "category": "Testing",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "TypeScript",
+      "category": "Language",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "CLAIMED_ONLY",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 0,
+      "evidence": [
+        {
+          "kind": "CLAIM",
+          "type": "resume",
+          "id": "synthetic-resume",
+          "origin": "resume-file:synthetic-resume",
+          "artifact": "",
+          "timestamp": "2026-11-03T07:48:10.055Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    }
+  ],
+  "requiredSkills": [
+    {
+      "name": "API Versioning",
+      "category": "Backend",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Accessibility",
+      "category": "Frontend",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "CI/CD",
+      "category": "DevOps",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Caching Strategies",
+      "category": "Backend",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Cloud Basics",
+      "category": "Cloud",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Deployment",
+      "category": "DevOps",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "CLAIMED_ONLY",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 0,
+      "evidence": [
+        {
+          "kind": "CLAIM",
+          "type": "resume",
+          "id": "synthetic-resume",
+          "origin": "resume-file:synthetic-resume",
+          "artifact": "",
+          "timestamp": "2026-11-03T07:48:10.055Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    },
+    {
+      "name": "Design Patterns",
+      "category": "General",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Docker",
+      "category": "DevOps",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "CLAIMED_ONLY",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 0,
+      "evidence": [
+        {
+          "kind": "CLAIM",
+          "type": "resume",
+          "id": "synthetic-resume",
+          "origin": "resume-file:synthetic-resume",
+          "artifact": "",
+          "timestamp": "2026-11-03T07:48:10.055Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    },
+    {
+      "name": "Documentation",
+      "category": "General",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "CLAIMED_ONLY",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 0,
+      "evidence": [
+        {
+          "kind": "CLAIM",
+          "type": "resume",
+          "id": "synthetic-resume",
+          "origin": "resume-file:synthetic-resume",
+          "artifact": "",
+          "timestamp": "2026-11-03T07:48:10.055Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    },
+    {
+      "name": "Git",
+      "category": "Tools",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Monitoring and Observability",
+      "category": "DevOps",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Next.js",
+      "category": "Frontend",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Performance Optimization",
+      "category": "General",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "React",
+      "category": "Frontend",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Scalability Patterns",
+      "category": "General",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Security Basics",
+      "category": "General",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "System Design",
+      "category": "General",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Testing",
+      "category": "Testing",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "TypeScript",
+      "category": "Language",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "CLAIMED_ONLY",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 0,
+      "evidence": [
+        {
+          "kind": "CLAIM",
+          "type": "resume",
+          "id": "synthetic-resume",
+          "origin": "resume-file:synthetic-resume",
+          "artifact": "",
+          "timestamp": "2026-11-03T07:48:10.055Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    }
+  ],
+  "optionalSkills": [
+    {
+      "name": "AWS",
+      "category": "Cloud",
+      "requirement": "OPTIONAL",
+      "weight": 1,
+      "status": "CLAIMED_ONLY",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 0,
+      "evidence": [
+        {
+          "kind": "CLAIM",
+          "type": "resume",
+          "id": "synthetic-resume",
+          "origin": "resume-file:synthetic-resume",
+          "artifact": "",
+          "timestamp": "2026-11-03T07:48:10.055Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    },
+    {
+      "name": "Angular",
+      "category": "Frontend",
+      "requirement": "OPTIONAL",
+      "weight": 1,
+      "status": "CLAIMED_ONLY",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 0,
+      "evidence": [
+        {
+          "kind": "CLAIM",
+          "type": "resume",
+          "id": "synthetic-resume",
+          "origin": "resume-file:synthetic-resume",
+          "artifact": "",
+          "timestamp": "2026-11-03T07:48:10.055Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    },
+    {
+      "name": "CSS",
+      "category": "Frontend",
+      "requirement": "OPTIONAL",
+      "weight": 1,
+      "status": "PARTIAL",
+      "evidenceCredit": 0.5,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 1,
+      "evidence": [
+        {
+          "kind": "METADATA",
+          "type": "github",
+          "id": "octocat.github.io",
+          "origin": "github-account:octocat",
+          "artifact": "repository-metadata",
+          "timestamp": "2024-08-11T11:57:01.000Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    },
+    {
+      "name": "HTML",
+      "category": "Frontend",
+      "requirement": "OPTIONAL",
+      "weight": 1,
+      "status": "PARTIAL",
+      "evidenceCredit": 0.5,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 1,
+      "evidence": [
+        {
+          "kind": "METADATA",
+          "type": "github",
+          "id": "Spoon-Knife",
+          "origin": "github-account:octocat",
+          "artifact": "repository-metadata",
+          "timestamp": "2024-08-21T15:25:42.000Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    },
+    {
+      "name": "Node.js",
+      "category": "Backend",
+      "requirement": "OPTIONAL",
+      "weight": 1,
+      "status": "CLAIMED_ONLY",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 0,
+      "evidence": [
+        {
+          "kind": "CLAIM",
+          "type": "resume",
+          "id": "synthetic-resume",
+          "origin": "resume-file:synthetic-resume",
+          "artifact": "",
+          "timestamp": "2026-11-03T07:48:10.055Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    },
+    {
+      "name": "Python",
+      "category": "Language",
+      "requirement": "OPTIONAL",
+      "weight": 1,
+      "status": "CLAIMED_ONLY",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 0,
+      "evidence": [
+        {
+          "kind": "CLAIM",
+          "type": "resume",
+          "id": "synthetic-resume",
+          "origin": "resume-file:synthetic-resume",
+          "artifact": "",
+          "timestamp": "2026-11-03T07:48:10.055Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    },
+    {
+      "name": "SQL",
+      "category": "Database",
+      "requirement": "OPTIONAL",
+      "weight": 1,
+      "status": "CLAIMED_ONLY",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 0,
+      "evidence": [
+        {
+          "kind": "CLAIM",
+          "type": "resume",
+          "id": "synthetic-resume",
+          "origin": "resume-file:synthetic-resume",
+          "artifact": "",
+          "timestamp": "2026-11-03T07:48:10.055Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    }
+  ],
+  "demonstratedSkills": [],
+  "partialSkills": [
+    {
+      "name": "CSS",
+      "category": "Frontend",
+      "requirement": "OPTIONAL",
+      "weight": 1,
+      "status": "PARTIAL",
+      "evidenceCredit": 0.5,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 1,
+      "evidence": [
+        {
+          "kind": "METADATA",
+          "type": "github",
+          "id": "octocat.github.io",
+          "origin": "github-account:octocat",
+          "artifact": "repository-metadata",
+          "timestamp": "2024-08-11T11:57:01.000Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    },
+    {
+      "name": "HTML",
+      "category": "Frontend",
+      "requirement": "OPTIONAL",
+      "weight": 1,
+      "status": "PARTIAL",
+      "evidenceCredit": 0.5,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 1,
+      "evidence": [
+        {
+          "kind": "METADATA",
+          "type": "github",
+          "id": "Spoon-Knife",
+          "origin": "github-account:octocat",
+          "artifact": "repository-metadata",
+          "timestamp": "2024-08-21T15:25:42.000Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    }
+  ],
+  "claimedOnlySkills": [
+    {
+      "name": "AWS",
+      "category": "Cloud",
+      "requirement": "OPTIONAL",
+      "weight": 1,
+      "status": "CLAIMED_ONLY",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 0,
+      "evidence": [
+        {
+          "kind": "CLAIM",
+          "type": "resume",
+          "id": "synthetic-resume",
+          "origin": "resume-file:synthetic-resume",
+          "artifact": "",
+          "timestamp": "2026-11-03T07:48:10.055Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    },
+    {
+      "name": "Angular",
+      "category": "Frontend",
+      "requirement": "OPTIONAL",
+      "weight": 1,
+      "status": "CLAIMED_ONLY",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 0,
+      "evidence": [
+        {
+          "kind": "CLAIM",
+          "type": "resume",
+          "id": "synthetic-resume",
+          "origin": "resume-file:synthetic-resume",
+          "artifact": "",
+          "timestamp": "2026-11-03T07:48:10.055Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    },
+    {
+      "name": "Deployment",
+      "category": "DevOps",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "CLAIMED_ONLY",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 0,
+      "evidence": [
+        {
+          "kind": "CLAIM",
+          "type": "resume",
+          "id": "synthetic-resume",
+          "origin": "resume-file:synthetic-resume",
+          "artifact": "",
+          "timestamp": "2026-11-03T07:48:10.055Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    },
+    {
+      "name": "Docker",
+      "category": "DevOps",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "CLAIMED_ONLY",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 0,
+      "evidence": [
+        {
+          "kind": "CLAIM",
+          "type": "resume",
+          "id": "synthetic-resume",
+          "origin": "resume-file:synthetic-resume",
+          "artifact": "",
+          "timestamp": "2026-11-03T07:48:10.055Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    },
+    {
+      "name": "Documentation",
+      "category": "General",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "CLAIMED_ONLY",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 0,
+      "evidence": [
+        {
+          "kind": "CLAIM",
+          "type": "resume",
+          "id": "synthetic-resume",
+          "origin": "resume-file:synthetic-resume",
+          "artifact": "",
+          "timestamp": "2026-11-03T07:48:10.055Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    },
+    {
+      "name": "Node.js",
+      "category": "Backend",
+      "requirement": "OPTIONAL",
+      "weight": 1,
+      "status": "CLAIMED_ONLY",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 0,
+      "evidence": [
+        {
+          "kind": "CLAIM",
+          "type": "resume",
+          "id": "synthetic-resume",
+          "origin": "resume-file:synthetic-resume",
+          "artifact": "",
+          "timestamp": "2026-11-03T07:48:10.055Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    },
+    {
+      "name": "Python",
+      "category": "Language",
+      "requirement": "OPTIONAL",
+      "weight": 1,
+      "status": "CLAIMED_ONLY",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 0,
+      "evidence": [
+        {
+          "kind": "CLAIM",
+          "type": "resume",
+          "id": "synthetic-resume",
+          "origin": "resume-file:synthetic-resume",
+          "artifact": "",
+          "timestamp": "2026-11-03T07:48:10.055Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    },
+    {
+      "name": "SQL",
+      "category": "Database",
+      "requirement": "OPTIONAL",
+      "weight": 1,
+      "status": "CLAIMED_ONLY",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 0,
+      "evidence": [
+        {
+          "kind": "CLAIM",
+          "type": "resume",
+          "id": "synthetic-resume",
+          "origin": "resume-file:synthetic-resume",
+          "artifact": "",
+          "timestamp": "2026-11-03T07:48:10.055Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    },
+    {
+      "name": "TypeScript",
+      "category": "Language",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "CLAIMED_ONLY",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "LOW",
+      "independentTechnicalSources": 0,
+      "evidence": [
+        {
+          "kind": "CLAIM",
+          "type": "resume",
+          "id": "synthetic-resume",
+          "origin": "resume-file:synthetic-resume",
+          "artifact": "",
+          "timestamp": "2026-11-03T07:48:10.055Z",
+          "freshness": "RECORDED",
+          "conflicting": false
+        }
+      ],
+      "warnings": [
+        "freshness_age_not_calibrated"
+      ]
+    }
+  ],
+  "notEvidencedSkills": [
+    {
+      "name": "API Versioning",
+      "category": "Backend",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Accessibility",
+      "category": "Frontend",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "CI/CD",
+      "category": "DevOps",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Caching Strategies",
+      "category": "Backend",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Cloud Basics",
+      "category": "Cloud",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Design Patterns",
+      "category": "General",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Git",
+      "category": "Tools",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Monitoring and Observability",
+      "category": "DevOps",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Next.js",
+      "category": "Frontend",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Performance Optimization",
+      "category": "General",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "React",
+      "category": "Frontend",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Scalability Patterns",
+      "category": "General",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Security Basics",
+      "category": "General",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "System Design",
+      "category": "General",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    },
+    {
+      "name": "Testing",
+      "category": "Testing",
+      "requirement": "REQUIRED",
+      "weight": 1,
+      "status": "NOT_EVIDENCED",
+      "evidenceCredit": 0,
+      "evidenceConfidence": "INSUFFICIENT",
+      "independentTechnicalSources": 0,
+      "evidence": [],
+      "warnings": []
+    }
+  ],
+  "unknownSkills": [],
+  "categoryBreakdown": {
+    "Backend": {
+      "requiredSkillCount": 2,
+      "optionalSkillCount": 1,
+      "requiredWeight": 2,
+      "weightedCredit": 0,
+      "coverage": 0
+    },
+    "Cloud": {
+      "requiredSkillCount": 1,
+      "optionalSkillCount": 1,
+      "requiredWeight": 1,
+      "weightedCredit": 0,
+      "coverage": 0
+    },
+    "Frontend": {
+      "requiredSkillCount": 3,
+      "optionalSkillCount": 3,
+      "requiredWeight": 3,
+      "weightedCredit": 0,
+      "coverage": 0
+    },
+    "DevOps": {
+      "requiredSkillCount": 4,
+      "optionalSkillCount": 0,
+      "requiredWeight": 4,
+      "weightedCredit": 0,
+      "coverage": 0
+    },
+    "General": {
+      "requiredSkillCount": 6,
+      "optionalSkillCount": 0,
+      "requiredWeight": 6,
+      "weightedCredit": 0,
+      "coverage": 0
+    },
+    "Tools": {
+      "requiredSkillCount": 1,
+      "optionalSkillCount": 0,
+      "requiredWeight": 1,
+      "weightedCredit": 0,
+      "coverage": 0
+    },
+    "Language": {
+      "requiredSkillCount": 1,
+      "optionalSkillCount": 1,
+      "requiredWeight": 1,
+      "weightedCredit": 0,
+      "coverage": 0
+    },
+    "Database": {
+      "requiredSkillCount": 0,
+      "optionalSkillCount": 1,
+      "requiredWeight": 0,
+      "weightedCredit": 0,
+      "coverage": null
+    },
+    "Testing": {
+      "requiredSkillCount": 1,
+      "optionalSkillCount": 0,
+      "requiredWeight": 1,
+      "weightedCredit": 0,
+      "coverage": 0
+    }
+  },
+  "evidenceConfidence": "INSUFFICIENT",
+  "evidenceCompleteness": {
+    "githubAvailable": true,
+    "resumeAvailable": true,
+    "availableCoreSources": 2,
+    "totalCoreSources": 2,
+    "complete": true,
+    "sources": [
+      {
+        "type": "github",
+        "id": "octocat",
+        "available": true,
+        "completeness": "COMPLETE",
+        "timestamp": "2026-11-03T07:07:18.602Z",
+        "freshness": "RECORDED"
+      },
+      {
+        "type": "resume",
+        "id": "synthetic-resume",
+        "ruleVersion": "resume-overall-score-v1",
+        "available": true,
+        "completeness": "COMPLETE",
+        "timestamp": "2026-11-03T07:48:10.055Z",
+        "freshness": "RECORDED"
+      },
+      {
+        "type": "profile",
+        "id": "profile",
+        "available": false,
+        "completeness": "COMPLETE",
+        "timestamp": null,
+        "freshness": "UNKNOWN"
+      },
+      {
+        "type": "integration",
+        "id": "integration-summary",
+        "available": false,
+        "completeness": "PARTIAL",
+        "timestamp": null,
+        "freshness": "UNKNOWN"
+      }
+    ]
+  },
+  "sourceReferences": [
+    {
+      "type": "github",
+      "id": "octocat",
+      "available": true,
+      "completeness": "COMPLETE",
+      "timestamp": "2026-11-03T07:07:18.602Z",
+      "freshness": "RECORDED"
+    },
+    {
+      "type": "resume",
+      "id": "synthetic-resume",
+      "ruleVersion": "resume-overall-score-v1",
+      "available": true,
+      "completeness": "COMPLETE",
+      "timestamp": "2026-11-03T07:48:10.055Z",
+      "freshness": "RECORDED"
+    },
+    {
+      "type": "profile",
+      "id": "profile",
+      "available": false,
+      "completeness": "COMPLETE",
+      "timestamp": null,
+      "freshness": "UNKNOWN"
+    },
+    {
+      "type": "integration",
+      "id": "integration-summary",
+      "available": false,
+      "completeness": "PARTIAL",
+      "timestamp": null,
+      "freshness": "UNKNOWN"
+    }
+  ],
+  "warnings": [
+    "freshness_age_not_calibrated:github",
+    "freshness_age_not_calibrated:resume"
+  ],
+  "ruleVersion": "skill-evidence-coverage-v1",
+  "evidencePolicyVersion": "skill-gap-evidence-policy-v2",
+  "taxonomyVersion": "skill-gap-taxonomy-v1",
+  "requirementMatrixVersion": "skill-gap-requirements-v1",
+  "calculatedAt": "2026-11-03T07:48:10.076Z",
+  "scoring": {
+    "score": 0,
+    "breakdown": {},
+    "warnings": [
+      "freshness_age_not_calibrated:github",
+      "freshness_age_not_calibrated:resume"
+    ],
+    "evidence": {
+      "sources": [
+        {
+          "type": "github",
+          "id": "octocat"
+        },
+        {
+          "type": "resume",
+          "id": "synthetic-resume",
+          "ruleVersion": "resume-overall-score-v1"
+        }
+      ],
+      "inputs": {
+        "weightedCredit": 0,
+        "requiredWeight": 19
+      },
+      "facts": {
+        "requiredSkillCount": 19,
+        "optionalSkillCount": 7,
+        "coreSourcesAvailable": 2
+      }
+    },
+    "ruleVersion": "skill-evidence-coverage-v1",
+    "calculatedAt": "2026-11-03T07:48:10.076Z"
+  }
+}

@@ -6,7 +6,9 @@ const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
-const root = path.resolve(__dirname, '../dist/frontend/browser');
+const root = path.resolve(
+  process.env.SKILL_GAP_WEB_ROOT || path.join(__dirname, '../dist/frontend/browser'),
+);
 const phase = process.env.SKILL_GAP_PARITY_PHASE || 'after-stable';
 const output = path.resolve(__dirname, '../verification/skill-gap/production-parity', phase);
 const { profile, fixture } = require('./skill-gap-browser-fixture.cjs');
@@ -50,6 +52,8 @@ function luminance(rgb) {
       'C:/Users/ahmad.hassan/AppData/Local/ms-playwright/chromium-1234/chrome-win64/chrome.exe',
   });
   const results = [];
+  const accessibility = [];
+  const badgeContrast = [];
   try {
     for (const theme of ['light', 'dark', 'system']) {
       const context = await browser.newContext({
@@ -151,6 +155,8 @@ function luminance(rgb) {
         content:
           '*,*::before,*::after { animation: none !important; transition: none !important; caret-color: transparent !important; }',
       });
+      if (process.env.SKILL_GAP_AXE_SCRIPT)
+        await page.addScriptTag({ path: process.env.SKILL_GAP_AXE_SCRIPT });
       for (const width of [320, 375, 425, 768, 1024, 1280, 1440, 1600]) {
         await page.setViewportSize({ width, height: 1000 });
         await page.waitForFunction(
@@ -182,6 +188,90 @@ function luminance(rgb) {
           true,
           `${theme} ${width}: page overflow`,
         );
+        if (process.env.SKILL_GAP_AXE_SCRIPT && [375, 1440].includes(width)) {
+          const audit = await page.evaluate(async () => {
+            const result = await window.axe.run(document.querySelector('.skill-gap-page'), {
+              runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa'] },
+            });
+            return {
+              engine: result.testEngine,
+              violations: result.violations.map((rule) => ({
+                id: rule.id,
+                impact: rule.impact,
+                help: rule.help,
+                nodes: rule.nodes.map((node) => ({
+                  target: node.target,
+                  html: node.html.slice(0, 500),
+                  summary: node.failureSummary,
+                })),
+              })),
+              incomplete: result.incomplete.map((rule) => ({
+                id: rule.id,
+                nodes: rule.nodes.length,
+              })),
+            };
+          });
+          accessibility.push({ theme, width, ...audit });
+        }
+        if ([375, 1440].includes(width)) {
+          const states = await page.evaluate(() => {
+            const rgb = (value) => (value.match(/[\d.]+/g) || []).map(Number);
+            const blend = (front, back) =>
+              front
+                .slice(0, 3)
+                .map((c, i) => c * (front[3] ?? 1) + back[i] * (1 - (front[3] ?? 1)));
+            const lum = (color) =>
+              color
+                .slice(0, 3)
+                .map((c) => c / 255)
+                .map((c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4))
+                .reduce((sum, c, i) => sum + c * [0.2126, 0.7152, 0.0722][i], 0);
+            const measure = (element, state) => {
+              const ancestors = [];
+              for (let item = element; item; item = item.parentElement) ancestors.unshift(item);
+              let background = [255, 255, 255];
+              for (const item of ancestors)
+                background = blend(rgb(getComputedStyle(item).backgroundColor), background);
+              const style = getComputedStyle(element);
+              const foreground = blend(rgb(style.color), background);
+              const [hi, low] = [lum(foreground), lum(background)].sort((a, b) => b - a);
+              return {
+                state,
+                foreground: style.color,
+                background,
+                ratio: (hi + 0.05) / (low + 0.05),
+              };
+            };
+            const values = [];
+            const freshness = document.querySelector('.freshness-badge');
+            const priorClass = freshness.className;
+            for (const state of ['fresh', 'stale']) {
+              freshness.className = 'freshness-badge freshness-badge--' + state;
+              values.push(measure(freshness, state));
+            }
+            freshness.className = priorClass;
+            const priority = document.querySelector('.priority-badge');
+            const priorPriority = priority.dataset.priority;
+            for (const state of ['High', 'Medium', 'Low']) {
+              priority.dataset.priority = state;
+              values.push(measure(priority, state));
+            }
+            priority.dataset.priority = priorPriority;
+            return values;
+          });
+          badgeContrast.push({
+            theme,
+            width,
+            states,
+            disabledBadgeState:
+              'Not applicable: these badges are non-interactive spans with no disabled variant.',
+          });
+          if (process.env.SKILL_GAP_CHECK_BADGE_CONTRAST === '1')
+            assert.ok(
+              states.every((state) => state.ratio >= 4.5),
+              JSON.stringify({ theme, width, states }),
+            );
+        }
         const colors = await page
           .locator('.panel')
           .first()
@@ -462,13 +552,15 @@ function luminance(rgb) {
           states:
             '0/50/100/null, unavailable core evidence, historical contract, initial preview, partial sources, stale, AI fallback, error/retry',
           consoleErrors: 0,
+          accessibility,
+          badgeContrast,
         },
         null,
         2,
       ),
     );
     console.log(
-      `PASS: ${results.length} theme/viewport combinations; keyboard, contrast, score states, error/retry and System changes.`,
+      `PASS: ${results.length} theme/viewport combinations; keyboard, score states, error/retry and System changes.`,
     );
   } finally {
     await browser.close();
