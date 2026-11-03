@@ -1536,6 +1536,10 @@ app-skill-gap {
 ---------------------------------------------------- */
   [data-theme='dark'] &,
   .dark & {
+    .status-key > summary {
+      color: var(--color-primary-text, #a5b4fc);
+    }
+
     .freshness-badge--fresh {
       color: var(--color-success-text, #34d399);
     }

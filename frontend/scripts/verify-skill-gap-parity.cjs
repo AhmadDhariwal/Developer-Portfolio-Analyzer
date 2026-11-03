@@ -212,6 +212,12 @@ function luminance(rgb) {
             };
           });
           accessibility.push({ theme, width, ...audit });
+          if (process.env.SKILL_GAP_REQUIRE_AXE_PASS === '1')
+            assert.deepEqual(
+              audit.violations,
+              [],
+              JSON.stringify({ theme, width, violations: audit.violations }),
+            );
         }
         if ([375, 1440].includes(width)) {
           const states = await page.evaluate(() => {
@@ -257,18 +263,22 @@ function luminance(rgb) {
               values.push(measure(priority, state));
             }
             priority.dataset.priority = priorPriority;
-            return values;
+            return {
+              badges: values,
+              disclosure: measure(document.querySelector('.status-key > summary'), 'evidence-key'),
+            };
           });
           badgeContrast.push({
             theme,
             width,
-            states,
+            states: states.badges,
+            disclosure: states.disclosure,
             disabledBadgeState:
               'Not applicable: these badges are non-interactive spans with no disabled variant.',
           });
           if (process.env.SKILL_GAP_CHECK_BADGE_CONTRAST === '1')
             assert.ok(
-              states.every((state) => state.ratio >= 4.5),
+              states.badges.every((state) => state.ratio >= 4.5) && states.disclosure.ratio >= 4.5,
               JSON.stringify({ theme, width, states }),
             );
         }

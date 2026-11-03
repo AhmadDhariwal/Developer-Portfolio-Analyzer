@@ -1,4 +1,4 @@
-"""Compare full UI fixtures; optional approval is limited to badge foreground colors."""
+"""Compare full UI fixtures; explicit approvals cover only badge and evidence-disclosure foregrounds."""
 import copy
 import json
 import math
@@ -16,16 +16,25 @@ baseline_files = sorted(before_root.glob("*.png"))
 assert len(baseline_files) == 30, "Thirty retained baseline screenshots are required; missing images cannot pass parity"
 assert {p.name for p in baseline_files} == {p.name for p in after_root.glob("*.png")}, "Screenshot sets differ"
 approved = os.environ.get("SKILL_GAP_APPROVED_BADGE_COLORS") == "1"
+legend_approved = os.environ.get("SKILL_GAP_APPROVED_LEGEND_COLOR") == "1"
+def is_legend(node):
+    return node["tag"] == "SUMMARY" and node["classes"] == "" and node["text"] == "Understand the five evidence classifications"
 normalized = copy.deepcopy(before["layouts"])
 intentional = []
 assert len(normalized) == len(after["layouts"]) == 24
 for old, new in zip(normalized, after["layouts"]):
     assert len(old["geometry"]) == len(new["geometry"])
     for previous, current in zip(old["geometry"], new["geometry"]):
-        if previous["color"] != current["color"] and approved:
+        if previous["color"] != current["color"] and (approved or legend_approved):
             classes = set(previous["classes"].split())
-            assert classes & {"freshness-badge", "priority-badge"}, "Unapproved foreground change"
+            assert (approved and classes & {"freshness-badge", "priority-badge"}) or (legend_approved and is_legend(previous)), "Unapproved foreground change"
             intentional.append({"theme": old["theme"], "width": old["width"], "classes": previous["classes"], "before": previous["color"], "after": current["color"]})
+            if legend_approved and is_legend(previous) and previous["border"] != current["border"]:
+                # A zero-width border is not painted; its default currentColor
+                # follows the explicitly approved text color without a CSS border change.
+                assert previous["border"] == "0px none " + previous["color"]
+                assert current["border"] == "0px none " + current["color"]
+                previous["border"] = current["border"]
             previous["color"] = current["color"]
 assert normalized == after["layouts"], "Unapproved geometry, content or computed style changed"
 comparisons = []
@@ -35,12 +44,12 @@ for source in baseline_files:
     assert left.size == right.size, source.name
     difference = ImageChops.difference(left, right)
     mask = Image.new("L", left.size, 255)
-    if approved:
+    if approved or legend_approved:
         match = re.match(r"(light|dark|system)-(\d+)(?:-fold)?\.png", source.name)
         layout = next(item for item in before["layouts"] if item["theme"] == match[1] and item["width"] == int(match[2]))
         draw = ImageDraw.Draw(mask)
         for node in layout["geometry"]:
-            if set(node["classes"].split()) & {"freshness-badge", "priority-badge"}:
+            if (approved and set(node["classes"].split()) & {"freshness-badge", "priority-badge"}) or (legend_approved and is_legend(node)):
                 draw.rectangle([math.floor(node["x"]), math.floor(node["y"]), math.ceil(node["x"] + node["width"]), math.ceil(node["y"] + node["height"])], fill=0)
         # CSS comparison above still requires identical badge background, border,
         # typography and geometry. Only their approved foreground differs.
@@ -50,6 +59,6 @@ for source in baseline_files:
     ratio = pixels / (left.width * left.height)
     assert max_delta <= 3 and ratio <= 0.002, (source.name, max_delta, ratio)
     comparisons.append({"file": source.name, "size": left.size, "maxChannelDeltaOutsideApprovedBadges": max_delta, "changedPixelsOutsideApprovedBadges": pixels, "changedRatioOutsideApprovedBadges": ratio})
-report = {"status": "PASS", "exactGeometryLayouts": len(before["layouts"]), "screenshotPairs": len(comparisons), "pixelTolerance": {"maxChannelDelta": 3, "maxChangedRatio": 0.002}, "approvedBadgeForegroundChanges": intentional, "comparisons": comparisons, "interactions": after["interactions"], "consoleErrors": after["consoleErrors"]}
+report = {"status": "PASS", "exactGeometryLayouts": len(before["layouts"]), "screenshotPairs": len(comparisons), "pixelTolerance": {"maxChannelDelta": 3, "maxChangedRatio": 0.002}, "approvedBadgeForegroundChanges": [x for x in intentional if x["classes"]], "approvedLegendForegroundChanges": [x for x in intentional if not x["classes"]], "comparisons": comparisons, "interactions": after["interactions"], "consoleErrors": after["consoleErrors"]}
 (after_root / "comparison.json").write_text(json.dumps(report, indent=2) + "\n")
 print(f"PASS: {len(before['layouts'])} exact geometry layouts; {len(comparisons)} screenshot pairs; {len(intentional)} approved badge foreground changes; other styles/backgrounds unchanged.")

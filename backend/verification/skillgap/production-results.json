@@ -12,13 +12,13 @@
     "downstream career context invalidation"
   ],
   "coldConcurrent": [
-    1622.0375999999997,
-    1465.4066000000003
+    1659.0513,
+    1471.9713999999994
   ],
   "warm": {
     "samples": 8,
-    "p50": 64.03200000000106,
-    "p95": 116.22470000000067,
+    "p50": 83.52189999999973,
+    "p95": 122.99669999999969,
     "note": "small local synthetic fixture, not deployed capacity"
   },
   "exactLookup": {
@@ -97,15 +97,15 @@
     "role": "mixed-unfiltered",
     "seniority": "mixed-unfiltered",
     "sources": [
-      "fixture-one",
-      "fixture-two"
+      "fixture-two",
+      "fixture-one"
     ],
     "duplicatesRemoved": 1,
     "limitations": [
       "Bounded cache sample; not representative of the entire job market.",
       "Demand is an uncalibrated scaled frequency, not a live market percentage."
     ],
-    "expiresAt": "2026-11-03T08:20:34.071Z",
+    "expiresAt": "2026-11-03T09:17:44.310Z",
     "topSkills": [
       {
         "name": "Python",
@@ -118,7 +118,7 @@
         "postings": 1
       }
     ],
-    "updatedAt": "2026-11-03T07:20:34.074Z"
+    "updatedAt": "2026-11-03T08:17:44.313Z"
   },
   "cleanup": {
     "mongoStopped": true,

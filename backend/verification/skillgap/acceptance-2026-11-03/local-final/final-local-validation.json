@@ -1,0 +1,66 @@
+{
+  "status": "DEVELOPMENT COMPLETE — STABLE CANDIDATE — PRODUCTION GATES PENDING",
+  "date": "2026-11-03",
+  "branch": "fix/skill-gap",
+  "head": "d23f41170772b467f12435539b8b0ea7861e760e",
+  "requestedFixes": {
+    "newsConfiguration": "PASS — 21 non-secret settings added, 179 existing values unchanged",
+    "darkDisclosureContrast": "PASS — 8.8986:1; light remains 6.2875:1"
+  },
+  "fullBackend": {
+    "files": 125,
+    "tests": 753,
+    "passed": 713,
+    "failed": 25,
+    "skipped": 15,
+    "gate": "BLOCKED — full-suite failures/skips must be resolved; exact results retained"
+  },
+  "isolatedSkillGap": {
+    "tests": 17,
+    "passed": 17,
+    "failed": 0,
+    "skipped": 0
+  },
+  "prerequisiteRetry": {
+    "tests": 8,
+    "passed": 4,
+    "failed": 3,
+    "skipped": 1
+  },
+  "frontend": {
+    "tests": 537,
+    "files": 92,
+    "failed": 0
+  },
+  "axe": {
+    "scans": 6,
+    "violations": 0,
+    "scope": "Automated A/AA checks on Skill Gap page at mobile/desktop in three themes"
+  },
+  "visual": {
+    "layouts": 24,
+    "pairs": 30,
+    "approvedBadgeForegroundOccurrences": 96,
+    "approvedDisclosureForegroundOccurrences": 16,
+    "paintedBackgroundsBordersTypographyGeometry": "unchanged",
+    "nonPaintedZeroWidthCurrentColorBorder": "Follows approved disclosure text color only"
+  },
+  "typeScript": "PASS app/spec",
+  "build": "PASS with existing landing stylesheet warning",
+  "formattingSyntaxGit": "PASS",
+  "evidenceCeilingPercent": 50,
+  "productionAcceptance": "BLOCKED — staging/fleet and independent approvals unavailable",
+  "pr": {
+    "number": 61,
+    "base": "release1",
+    "remoteHead": "d23f41170772b467f12435539b8b0ea7861e760e",
+    "localHeadMatches": true,
+    "uncommittedChangesVisibleRemotely": false,
+    "pendingReviewBundlePrepared": true,
+    "envExcluded": true
+  },
+  "committed": false,
+  "pushed": false,
+  "merged": false,
+  "deployed": false
+}

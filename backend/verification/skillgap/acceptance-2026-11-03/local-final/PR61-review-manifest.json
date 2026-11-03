@@ -1,0 +1,106 @@
+{
+  "pr": 61,
+  "branch": "fix/skill-gap",
+  "reviewBase": "d23f41170772b467f12435539b8b0ea7861e760e",
+  "remoteHeadVerified": "d23f41170772b467f12435539b8b0ea7861e760e",
+  "remoteVisibility": "Pending approved commit and push",
+  "patch": "C:/Users/ahmad.hassan/Documents/Codex/2026-11-02/hel/outputs/PR61-final-local-fixes.patch",
+  "patchSha256": "083de9b9b34fc0ba962ce890b3f96b0f791f1e0c33e1d6036afcfd1a99a8d5c1",
+  "replaysAgainstPrHead": true,
+  "privateEnvExcluded": true,
+  "stagedOnlyReviewedFiles": true,
+  "files": [
+    {
+      "path": "frontend/src/app/pages/skill-gap/skill-gap.component.scss",
+      "sha256": "83c3f0e927c5518e769c67ff382f5d53565f91f3ab4088b2414e14a5ad8f362c"
+    },
+    {
+      "path": "frontend/scripts/verify-skill-gap-parity.cjs",
+      "sha256": "4c29c14462838bdb1dc3df12a35658a1822b7333d6af7cd7d92d46c03eb04151"
+    },
+    {
+      "path": "frontend/scripts/compare-skill-gap-parity.py",
+      "sha256": "2e2dbe0c7bbd95374d803a1bd057d6f247fe67e6416dc21c4a6ffee963bea000"
+    },
+    {
+      "path": "backend/src/tests/fixtures/resume/standard.pdf",
+      "sha256": "c74dcd95d85a59f4a16186a60d1d9085e2b2fe66a39f0e17b2279cec7fb65722"
+    },
+    {
+      "path": "backend/src/tests/fixtures/resume/layout-shift.pdf",
+      "sha256": "9090e15e85b17790d7b0c54706225d9bf8e5d99388911f42fcf9de39c073c3bd"
+    },
+    {
+      "path": "backend/src/tests/fixtures/resume/columns.pdf",
+      "sha256": "ce3e80e57712fb69953a5e7850024300b28936b739cb7b2c8bc4a9e8d77f0aef"
+    },
+    {
+      "path": "backend/src/tests/fixtures/resume/empty.pdf",
+      "sha256": "de3f3c4698849df3101303c0dbd57fc01f746048808a2ab51488200c2415bf21"
+    },
+    {
+      "path": "backend/src/tests/fixtures/resume/corrupt.pdf",
+      "sha256": "83e1caf5b18318069dd1598bb856ef327389b574ededc4fc63901167594ff9db"
+    },
+    {
+      "path": "backend/src/tests/fixtures/resume/encrypted.pdf",
+      "sha256": "19ec70e245edf3882b74c27c925e5fa55ddf6271ad910bff55b2a2047f446915"
+    },
+    {
+      "path": "backend/src/tests/fixtures/resume/scanned.pdf",
+      "sha256": "e3db18729f3cc08730f202287d33704820ef9356989895eaf3c9df2cf84f94f9"
+    },
+    {
+      "path": "backend/src/tests/fixtures/resume/page-limit.pdf",
+      "sha256": "0e4277a2a41f8598637da4e7e40994f8adf19aab8a356f46d5eabd6b20d91c9f"
+    },
+    {
+      "path": "backend/src/tests/fixtures/resume/.gitattributes",
+      "sha256": "547f59603028195ff9f8a87d04c4651551e8bd0d68f075257dfd549cd846b25b"
+    },
+    {
+      "path": "backend/verification/skillgap/SKILL-GAP-PRODUCTION-FINAL.md",
+      "sha256": "5fdd75c00fc39041ebb8c9fad24fa32b78d2d78bcf03d7144191b8e1c8ffd73f"
+    },
+    {
+      "path": "backend/verification/skillgap/production-results.json",
+      "sha256": "233deadd17965e462b39a3b3410ae039a72409ccd2cbe99eb0873715b58410fb"
+    },
+    {
+      "path": "backend/verification/skillgap/acceptance-2026-11-03/news-final-reconciliation.json",
+      "sha256": "45c25af000c9d33ab34dc13473668cc3af9db3c1beeb4ea79f3d2fe4d1f4232f"
+    },
+    {
+      "path": "backend/verification/skillgap/acceptance-2026-11-03/local-final/final-local-validation.json",
+      "sha256": "3ded8df2f9c410171ab1b0d667c9513c360c3bcf84cc865e56364cdb0525cf4b"
+    },
+    {
+      "path": "backend/verification/skillgap/acceptance-2026-11-03/local-final/accessibility.json",
+      "sha256": "43e4094baba3961f6065a34d056e284b267737d81604147f9f8f0c5b295ea454"
+    },
+    {
+      "path": "backend/verification/skillgap/acceptance-2026-11-03/local-final/visual-parity.json",
+      "sha256": "fb6794ff15e1784ee6c679efdcf31d15a960a673b247f9c38ca2f554c5a4573c"
+    },
+    {
+      "path": "backend/verification/skillgap/acceptance-2026-11-03/local-final/full-backend-failures.json",
+      "sha256": "1503758b917314906827843194f7abc03a20bf7b89106ca71c3f354626a72d36"
+    },
+    {
+      "path": "backend/verification/skillgap/acceptance-2026-11-03/local-final/prerequisite-retry-failures.json",
+      "sha256": "fcd004e68de2f3688c58b56050d33ca271eca32accad1c88adc7fc3bb6c19d5f"
+    },
+    {
+      "path": "backend/verification/skillgap/acceptance-2026-11-03/local-final/pdf-byte-integrity.json",
+      "sha256": "8bb05bdb0f55ec294c2ec429cd937c0f0432426050796b0729eac59656d13095"
+    },
+    {
+      "path": "backend/verification/skillgap/acceptance-2026-11-03/local-final/PR61-PENDING-REVIEW.md",
+      "sha256": "d1793e4e76d1e6e615995acbd998c1f319ea865d794cdfec4e17517fa204c14b"
+    }
+  ],
+  "committed": false,
+  "pushed": false,
+  "merged": false,
+  "deployed": false
+}

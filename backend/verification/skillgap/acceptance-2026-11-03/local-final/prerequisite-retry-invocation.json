@@ -1,0 +1,9 @@
+{
+  "files": 7,
+  "exitCode": 1,
+  "configuredApplicationDatabaseUsed": false,
+  "externalNetworkBlocked": true,
+  "applicationDotenvImportDisabled": true,
+  "disposableMongo": true,
+  "redisNotApproved": true
+}
