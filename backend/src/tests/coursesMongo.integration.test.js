@@ -5,7 +5,10 @@ const path = require('node:path');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const express = require('express');
-require('dotenv').config({ path: path.resolve(__dirname, '../../.env'), quiet: true });
+require('dotenv').config({
+  path: path.resolve(__dirname, '../../.env'),
+  quiet: true,
+});
 const User = require('../models/user');
 const ResumeFile = require('../models/resumeFile');
 const ResumeAnalysis = require('../models/resumeAnalysis');
@@ -46,7 +49,10 @@ test('Learning Hub real Mongo/JWT: current evidence, cache identity, owned learn
       throw new Error('Course reads must not call AI');
     },
   });
-  mock('../services/developerSignalService', { ...signals, getDeveloperSignals: async () => ({}) });
+  mock('../services/developerSignalService', {
+    ...signals,
+    getDeveloperSignals: async () => ({}),
+  });
   const previousYoutubeKey = process.env.YOUTUBE_API_KEY;
   process.env.YOUTUBE_API_KEY = '';
   const controller = require('../controllers/courseController');
@@ -59,8 +65,12 @@ test('Learning Hub real Mongo/JWT: current evidence, cache identity, owned learn
     await new Promise((resolve) => setTimeout(resolve, 50));
     await Promise.all([
       User.deleteMany({ _id: { $in: [owner, foreign] } }),
-      require('../models/sprintSchedule').deleteMany({ _id: { $in: [owner, foreign] } }),
-      require('../models/sprintPreference').deleteMany({ _id: { $in: [owner, foreign] } }),
+      require('../models/sprintSchedule').deleteMany({
+        _id: { $in: [owner, foreign] },
+      }),
+      require('../models/sprintPreference').deleteMany({
+        _id: { $in: [owner, foreign] },
+      }),
       ...[ResumeFile, ResumeAnalysis, AnalysisCache, CareerSprint, Progress].map((model) =>
         model.deleteMany({ userId: { $in: [owner, foreign] } }),
       ),
@@ -132,7 +142,11 @@ test('Learning Hub real Mongo/JWT: current evidence, cache identity, owned learn
     ruleVersion: engine.SKILL_RULE,
     coverage: null,
     sourceReferences: Object.values(
-      engine.sourceMetadata({ username, githubData, resumeAnalysis: resume.toObject() }),
+      engine.sourceMetadata({
+        username,
+        githubData,
+        resumeAnalysis: resume.toObject(),
+      }),
     ),
     skills: [
       { name: 'SQL', status: 'CLAIMED_ONLY', requirement: 'REQUIRED' },
@@ -176,7 +190,7 @@ test('Learning Hub real Mongo/JWT: current evidence, cache identity, owned learn
     async () => {
       const out = await resolve();
       assert.equal(out.personalization.status, 'evidence-informed');
-      assert.deepEqual(out.skillGaps, ['SQL', 'Docker', 'Testing', 'React']);
+      assert.deepEqual(out.skillGaps, ['SQL', 'Docker', 'React']);
       assert.deepEqual(out.knownSkills, ['Node.js']);
       assert.equal(out.targets.find((item) => item.name === 'SQL').status, 'CLAIMED_ONLY');
       const response = await call({ platform: 'Coursera' });
@@ -230,7 +244,9 @@ test('Learning Hub real Mongo/JWT: current evidence, cache identity, owned learn
           {
             $set: {
               analysisData: snapshotData,
-              ...signals.buildResumeCacheIdentity({ resumeAnalysis: resume.toObject() }),
+              ...signals.buildResumeCacheIdentity({
+                resumeAnalysis: resume.toObject(),
+              }),
             },
           },
         );
@@ -255,7 +271,11 @@ test('Learning Hub real Mongo/JWT: current evidence, cache identity, owned learn
       await User.updateOne({ _id: owner }, { activeResumeFileId: files[0]._id });
       await GitHubAnalysisCache.updateOne(
         { normalizedUsername: username },
-        { $set: { 'result.fetchedAt': new Date(Date.now() + 1000).toISOString() } },
+        {
+          $set: {
+            'result.fetchedAt': new Date(Date.now() + 1000).toISOString(),
+          },
+        },
       );
       const changed = await resolve();
       assert.notEqual(changed.fingerprint, original);
@@ -355,13 +375,20 @@ test('Learning Hub real Mongo/JWT: current evidence, cache identity, owned learn
       assert.equal(Object.hasOwn(saved, 'userId'), false);
       await Promise.all(
         Array.from({ length: 6 }, () =>
-          progress.saveProgress(owner, 'fb_u2', { status: 'in_progress', progressPercent: 25 }),
+          progress.saveProgress(owner, 'fb_u2', {
+            status: 'in_progress',
+            progressPercent: 25,
+          }),
         ),
       );
       assert.equal(await Progress.countDocuments({ userId: owner, courseId: 'fb_u2' }), 1);
       assert.equal((await progress.listProgress(foreign)).total, 0);
-      const completed = await progress.saveProgress(owner, 'fb_u2', { status: 'completed' });
-      const repeated = await progress.saveProgress(owner, 'fb_u2', { status: 'completed' });
+      const completed = await progress.saveProgress(owner, 'fb_u2', {
+        status: 'completed',
+      });
+      const repeated = await progress.saveProgress(owner, 'fb_u2', {
+        status: 'completed',
+      });
       assert.equal(completed.progressPercent, 25);
       assert.equal(String(completed.completedAt), String(repeated.completedAt));
       assert.equal(
@@ -369,15 +396,24 @@ test('Learning Hub real Mongo/JWT: current evidence, cache identity, owned learn
         'CLAIMED_ONLY',
       );
       await assert.rejects(
-        progress.saveProgress(owner, 'fb_u2', { status: 'saved', userId: foreign }),
+        progress.saveProgress(owner, 'fb_u2', {
+          status: 'saved',
+          userId: foreign,
+        }),
         /Only status/,
       );
       await assert.rejects(
-        progress.saveProgress(owner, 'fb_u2', { status: 'saved', progressPercent: '80' }),
+        progress.saveProgress(owner, 'fb_u2', {
+          status: 'saved',
+          progressPercent: '80',
+        }),
         /explicit number/,
       );
       await assert.rejects(
-        progress.saveProgress(owner, 'fb_u2', { status: 'saved', notes: 'x'.repeat(2001) }),
+        progress.saveProgress(owner, 'fb_u2', {
+          status: 'saved',
+          notes: 'x'.repeat(2001),
+        }),
         /2000/,
       );
       await assert.rejects(
@@ -455,7 +491,9 @@ test('Learning Hub real Mongo/JWT: current evidence, cache identity, owned learn
         { userId: owner, courseId: 'fb_u2' },
         { $set: { 'course.title': 'Provider renamed this course' } },
       );
-      const renamed = await http('/fb_u2/career-sprint', 'POST', { targetSkill: 'Node.js' });
+      const renamed = await http('/fb_u2/career-sprint', 'POST', {
+        targetSkill: 'Node.js',
+      });
       assert.equal(renamed.status, 200);
       assert.equal(renamed.body.alreadyAdded, true);
       assert.equal((await CareerSprint.findOne({ userId: owner }).lean()).tasks.length, 1);

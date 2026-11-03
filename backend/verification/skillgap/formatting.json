@@ -1,0 +1,105 @@
+[
+  {
+    "files": [
+      "backend/src/controllers/dashboardcontroller.js",
+      "backend/src/controllers/resumecontoller.js",
+      "backend/src/middleware/skillGapAdmission.js",
+      "backend/src/routes/preview.routes.js",
+      "backend/src/routes/skillgap.routes.js",
+      "backend/src/services/aiProviderManager.js",
+      "backend/src/services/aiservice.js",
+      "backend/src/services/coursePersonalizationService.js",
+      "backend/src/services/developerSignalService.js",
+      "backend/src/services/githubservice.js",
+      "backend/src/services/integrationMongoGovernanceService.js",
+      "backend/src/services/previewResumeCacheService.js",
+      "backend/src/services/recommendationEngineService.js",
+      "backend/src/services/recommendationService.js",
+      "backend/src/services/skillGapGovernanceService.js",
+      "backend/src/services/skillGapMetrics.js",
+      "backend/src/services/skillGapResumeClaimsService.js",
+      "backend/src/services/skillGraphService.js",
+      "backend/src/tests/fixtures/skillGapWorker.js",
+      "backend/src/tests/skillGapAdmission.test.js",
+      "backend/src/tests/skillGapAiPolicy.test.js",
+      "backend/src/tests/skillGapConsumerContracts.test.js",
+      "backend/src/tests/skillGapGolden.test.js",
+      "backend/src/tests/skillGapProduction.test.js"
+    ],
+    "options": [
+      "--print-width",
+      "100",
+      "--single-quote",
+      "true",
+      "--trailing-comma",
+      "none"
+    ],
+    "write": "PASS",
+    "check": "PASS"
+  },
+  {
+    "files": [
+      "backend/src/controllers/skillgapcontroller.js",
+      "backend/src/prompts/skillGapPrompt.js",
+      "backend/src/services/skillGapCompatibilityService.js",
+      "backend/src/services/skillGapRequirements.js",
+      "backend/src/tests/skillGapEvidence.test.js",
+      "backend/src/tests/skillGapMongo.integration.test.js",
+      "backend/src/tests/skillgapHardening.test.js",
+      "backend/src/tests/skillgapPerformance.test.js"
+    ],
+    "options": [
+      "--print-width",
+      "100",
+      "--single-quote",
+      "false",
+      "--trailing-comma",
+      "none"
+    ],
+    "write": "PASS",
+    "check": "PASS"
+  },
+  {
+    "files": [
+      "backend/src/services/skillGapEvidenceService.js"
+    ],
+    "options": [
+      "--print-width",
+      "100",
+      "--single-quote",
+      "false",
+      "--trailing-comma",
+      "all"
+    ],
+    "write": "PASS",
+    "check": "PASS"
+  },
+  {
+    "files": [
+      "frontend/scripts/verify-skill-gap-parity.cjs",
+      "frontend/src/app/pages/skill-gap/components/categories/skill-gap-categories.component.html",
+      "frontend/src/app/pages/skill-gap/components/categories/skill-gap-categories.component.ts",
+      "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.html",
+      "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.ts",
+      "frontend/src/app/pages/skill-gap/components/priorities/skill-gap-priorities.component.html",
+      "frontend/src/app/pages/skill-gap/components/priorities/skill-gap-priorities.component.ts",
+      "frontend/src/app/pages/skill-gap/components/projects/skill-gap-projects.component.html",
+      "frontend/src/app/pages/skill-gap/components/projects/skill-gap-projects.component.ts",
+      "frontend/src/app/pages/skill-gap/components/sources/skill-gap-sources.component.html",
+      "frontend/src/app/pages/skill-gap/components/sources/skill-gap-sources.component.ts",
+      "frontend/src/app/pages/skill-gap/skill-gap-presentation.ts",
+      "frontend/src/app/pages/skill-gap/skill-gap.component.html",
+      "frontend/src/app/pages/skill-gap/skill-gap.component.scss",
+      "frontend/src/app/pages/skill-gap/skill-gap.component.ts",
+      "frontend/src/app/shared/models/skill-gap-evidence.model.ts",
+      "frontend/src/app/shared/services/skill-gap.service.spec.ts",
+      "frontend/src/app/shared/services/skill-gap.service.ts"
+    ],
+    "options": [
+      "--config",
+      "frontend/.prettierrc"
+    ],
+    "write": "PASS",
+    "check": "PASS"
+  }
+]

@@ -16,14 +16,14 @@ const resolveSkillSignals = async (userId, careerStack, experienceLevel, _timer,
     careerStack,
     experienceLevel,
     selectedResume: String(developerContext.resolveSelectedResumeFileId(user) || ''),
-    profileRevision: user.updatedAt || null,
+    profileRevision: user.updatedAt || null
   };
   const fallback = (reason) => ({
     skillGaps: [],
     knownSkills: [],
     targets: [],
     personalization: { status: 'career-context-only', limitation: reason, ruleVersion: SKILL_RULE },
-    fingerprint: digest({ ...base, limitation: reason }),
+    fingerprint: digest({ ...base, limitation: reason })
   });
   try {
     // Fresh indexed source reads precede pool-cache hits. A TTL alone cannot detect a new analysis.
@@ -38,14 +38,14 @@ const resolveSkillSignals = async (userId, careerStack, experienceLevel, _timer,
         userId,
         githubUsername: {
           $regex: '^' + username.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$',
-          $options: 'i',
+          $options: 'i'
         },
         careerStack,
         experienceLevel,
-        'analysisData.ruleVersion': SKILL_RULE,
+        'analysisData.ruleVersion': SKILL_RULE
       })
         .sort({ updatedAt: -1 })
-        .lean(),
+        .lean()
     ]);
     const resumeIdentity = buildResumeCacheIdentity({ resumeAnalysis: resume });
     const githubData = github?.result
@@ -53,8 +53,8 @@ const resolveSkillSignals = async (userId, careerStack, experienceLevel, _timer,
           ...github.result,
           cache: {
             ...github.result.cache,
-            stale: !github.expiresAt || new Date(github.expiresAt).getTime() <= Date.now(),
-          },
+            stale: !github.expiresAt || new Date(github.expiresAt).getTime() <= Date.now()
+          }
         }
       : { unavailable: true };
     const sources = sourceMetadata({ username, githubData, resumeAnalysis: resume });
@@ -63,7 +63,7 @@ const resolveSkillSignals = async (userId, careerStack, experienceLevel, _timer,
       Object.values(sources).every(
         (source) =>
           !source.available ||
-          (source.timestamp && new Date(source.timestamp).getTime() <= Date.now() + 300_000),
+          (source.timestamp && new Date(source.timestamp).getTime() <= Date.now() + 300_000)
       );
     const compatible =
       clocksValid && compatibleSkillGap(snapshot, { ...base, ...resumeIdentity, sources });
@@ -76,17 +76,17 @@ const resolveSkillSignals = async (userId, careerStack, experienceLevel, _timer,
             id: snapshot._id,
             signalHash: snapshot.signalHash,
             updatedAt: snapshot.updatedAt,
-            skills: snapshot.analysisData?.skills,
+            skills: snapshot.analysisData?.skills
           }
         : null,
-      compatible: !!compatible,
+      compatible: !!compatible
     });
     if (!compatible)
       return {
         ...fallback(
-          'A compatible current Skill Gap snapshot is unavailable. Results use career context and your explicit filters; absent evidence does not establish missing ability.',
+          'A compatible current Skill Gap snapshot is unavailable. Results use career context and your explicit filters; absent evidence does not establish missing ability.'
         ),
-        fingerprint,
+        fingerprint
       };
     const seen = new Set();
     const targets = (Array.isArray(compatible.skills) ? compatible.skills : [])
@@ -98,14 +98,14 @@ const resolveSkillSignals = async (userId, careerStack, experienceLevel, _timer,
           {
             name,
             status: item.status,
-            requirement: item.requirement === 'REQUIRED' ? 'REQUIRED' : 'OPTIONAL',
-          },
+            requirement: item.requirement === 'REQUIRED' ? 'REQUIRED' : 'OPTIONAL'
+          }
         ];
       })
       .slice(0, 100);
     return {
       skillGaps: targets
-        .filter((item) => item.status !== 'DEMONSTRATED')
+        .filter((item) => !['DEMONSTRATED', 'UNKNOWN'].includes(item.status))
         .sort((a, b) => Number(b.requirement === 'REQUIRED') - Number(a.requirement === 'REQUIRED'))
         .map((item) => item.name)
         .slice(0, 12),
@@ -120,12 +120,12 @@ const resolveSkillSignals = async (userId, careerStack, experienceLevel, _timer,
         targets: targets.slice(0, 40),
         ruleVersion: SKILL_RULE,
         limitation:
-          'Skill classifications describe recorded evidence, not verified proficiency or inability.',
-      },
+          'Skill classifications describe recorded evidence, not verified proficiency or inability.'
+      }
     };
   } catch {
     return fallback(
-      'Current evidence could not be checked. Showing career-context catalog results without historical skill scores.',
+      'Current evidence could not be checked. Showing career-context catalog results without historical skill scores.'
     );
   }
 };

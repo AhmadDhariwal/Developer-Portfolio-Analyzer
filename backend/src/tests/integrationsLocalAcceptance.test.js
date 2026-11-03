@@ -21,7 +21,7 @@ test(
       GITHUB_INTEGRATION_CLIENT_ID: 'local-fixture',
       GITHUB_INTEGRATION_CLIENT_SECRET: 'local-fixture-secret',
       GITHUB_INTEGRATION_CALLBACK_URL: 'http://localhost:5000/api/integrations/github/callback',
-      FRONTEND_URL: 'http://localhost:4200'
+      FRONTEND_URL: 'http://localhost:4200',
     });
     for (const key of [
       'GROQ_API_KEY',
@@ -30,7 +30,7 @@ test(
       'ANTHROPIC_API_KEY',
       'OPENROUTER_API_KEY',
       'SENDGRID_API_KEY',
-      'SMTP_PASS'
+      'SMTP_PASS',
     ])
       delete process.env[key];
     const cache = require('../services/redisCacheService'),
@@ -47,7 +47,7 @@ test(
       identity: github.getExternalIdentity,
       refresh: github.refreshAccessToken,
       ingest: github.ingestData,
-      revoke: github.revokeToken
+      revoke: github.revokeToken,
     };
     let failed = false,
       refreshes = 0,
@@ -57,14 +57,14 @@ test(
       return {
         profile: { solvedProblems: 120 },
         activity: { easy: 50, medium: 50, hard: 20 },
-        inferredSkills: ['Algorithms']
+        inferredSkills: ['Algorithms'],
       };
     };
     github.exchangeCodeForToken = async () => ({
       accessToken: 'local-access',
       refreshToken: 'local-refresh',
       expiresIn: 1,
-      scope: 'read:user'
+      scope: 'read:user',
     });
     github.getExternalIdentity = async () => ({ id: 42, username: 'local-owner' });
     github.refreshAccessToken = async () => {
@@ -72,7 +72,7 @@ test(
       return {
         accessToken: 'local-rotated',
         refreshToken: 'local-refresh-rotated',
-        expiresIn: 3600
+        expiresIn: 3600,
       };
     };
     github.ingestData = async () => ({
@@ -82,7 +82,7 @@ test(
       activity: updatedGitHub
         ? { starsReceived: 1, forksReceived: 0 }
         : { starsReceived: 500, forksReceived: 200 },
-      inferredSkills: updatedGitHub ? ['Testing'] : ['TypeScript']
+      inferredSkills: updatedGitHub ? ['Testing'] : ['TypeScript'],
     });
     github.revokeToken = async () => {};
     const ai = require('../services/aiservice');
@@ -98,7 +98,7 @@ test(
         getExternalIdentity: originals.identity,
         refreshAccessToken: originals.refresh,
         ingestData: originals.ingest,
-        revokeToken: originals.revoke
+        revokeToken: originals.revoke,
       });
       ai.runAIAnalysis = originalAI;
       await cache.closeRedisCache();
@@ -118,7 +118,7 @@ test(
       Connection.createCollection(),
       Insight.createCollection(),
       Log.createCollection(),
-      User.createCollection()
+      User.createCollection(),
     ]);
     await Connection.collection.createIndex({ userId: 1, provider: 1 }, { unique: true });
     await Insight.collection.createIndex({ userId: 1 }, { unique: true });
@@ -135,8 +135,8 @@ test(
         experienceLevel: 'Mid-level',
         activeExperienceLevel: 'Mid-level',
         notifications: { weeklyScoreReport: false },
-        isActive: true
-      }))
+        isActive: true,
+      })),
     );
     const express = require('express'),
       jwt = require('jsonwebtoken'),
@@ -148,7 +148,7 @@ test(
       ['simulator', 'scenarioSimulator.routes'],
       ['career-sprint', 'careerSprint.routes'],
       ['weekly-reports', 'weeklyReport.routes'],
-      ['analysis', 'analysis.routes']
+      ['analysis', 'analysis.routes'],
     ])
       app.use('/api/' + p, require('../routes/' + r));
     server = app.listen(0, '127.0.0.1');
@@ -157,16 +157,16 @@ test(
     const signed = (id) =>
       jwt.sign({ id: String(id) }, process.env.JWT_SECRET, {
         issuer: 'devinsight-api',
-        audience: 'devinsight-web'
+        audience: 'devinsight-web',
       });
     async function call(method, url, body, actor = owner) {
       const res = await fetch(origin + '/api/' + url, {
         method,
         headers: {
           'Content-Type': 'application/json',
-          ...(actor ? { Authorization: 'Bearer ' + signed(actor) } : {})
+          ...(actor ? { Authorization: 'Bearer ' + signed(actor) } : {}),
         },
-        ...(body === undefined ? {} : { body: JSON.stringify(body) })
+        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       });
       const json = await res.json();
       results.requests.push({ method, url, status: res.status });
@@ -182,24 +182,24 @@ test(
     assertOK(
       await call('POST', 'integrations/manual/connect', {
         provider: 'leetcode',
-        externalUsername: 'fixture-handle'
-      })
+        externalUsername: 'fixture-handle',
+      }),
     );
     let insight = assertOK(await call('GET', 'integrations/insights'));
     assert.equal(insight.providers[0].ownershipVerified, false);
     assert.ok(insight.mergedSkills.includes('Algorithms'));
     assert.equal(
       assertOK(await call('GET', 'integrations/insights', undefined, foreign)).providers.length,
-      0
+      0,
     );
     assert.equal(
       (await call('POST', 'integrations/sync-now', { provider: 'leetcode' }, foreign)).status,
-      409
+      409,
     );
     assertOK(await call('DELETE', 'integrations/connections/leetcode', undefined, foreign));
     assert.equal(
       (await Connection.findOne({ userId: owner, provider: 'leetcode' }).lean()).status,
-      'connected'
+      'connected',
     );
     const dashboard = assertOK(await call('GET', 'dashboard/integration-analytics'));
     assert.ok(JSON.stringify(dashboard).includes('leetcode'));
@@ -209,35 +209,39 @@ test(
     assert.ok(JSON.stringify(sprint).includes('leetcode'));
     assertOK(await call('POST', 'integrations/sync-now', { provider: 'leetcode' }));
     failed = true;
+    await require('../services/integrationPublicSnapshotService').invalidate(
+      'leetcode',
+      'fixture-handle',
+    );
     assert.equal(
       (await call('POST', 'integrations/sync-now', { provider: 'leetcode' })).status,
-      502
+      502,
     );
     failed = false;
     assert.equal(
       assertOK(await call('GET', 'integrations/insights')).integrationScore,
-      insight.integrationScore
+      insight.integrationScore,
     );
     const started = assertOK(
-      await call('POST', 'integrations/oauth/start', { provider: 'github' })
+      await call('POST', 'integrations/oauth/start', { provider: 'github' }),
     );
     assertOK(
       await call('POST', 'integrations/oauth/callback', {
         provider: 'github',
         state: started.state,
         code: 'fixture-code',
-        username: 'untrusted-handle'
-      })
+        username: 'untrusted-handle',
+      }),
     );
     assert.equal(
       (
         await call('POST', 'integrations/oauth/callback', {
           provider: 'github',
           state: started.state,
-          code: 'fixture-code'
+          code: 'fixture-code',
         })
       ).status,
-      400
+      400,
     );
     assertOK(await call('POST', 'integrations/ingest', { provider: 'github' }));
     assert.equal(refreshes, 1);
@@ -245,7 +249,7 @@ test(
     assert.ok(stored.accessToken.startsWith('enc:v1:'));
     assert.equal(stored.externalUsername, 'local-owner');
     const signal = await require('../services/developerSignalService').summarizeIntegrationSignal(
-      owner
+      owner,
     );
     assert.deepEqual(signal.verifiedSkills, ['TypeScript']);
     const portfolioBody = {
@@ -254,9 +258,9 @@ test(
         scores: { codeQuality: 70, skillCoverage: 70, industryReadiness: 70, projectImpact: 70 },
         healthScore: 70,
         repoCount: 3,
-        languages: ['TypeScript']
+        languages: ['TypeScript'],
       },
-      resumeAnalysis: { skills: ['TypeScript'], atsScore: 70 }
+      resumeAnalysis: { skills: ['TypeScript'], atsScore: 70 },
     };
     const portfolio = assertOK(await call('POST', 'analysis/portfolio-score', portfolioBody));
     assert.ok(Number.isFinite(portfolio.overallScore));
@@ -266,7 +270,7 @@ test(
     assert.equal(
       stableCache.fromCache,
       true,
-      'Unchanged insight must reuse the owned Portfolio cache'
+      'Unchanged insight must reuse the owned Portfolio cache',
     );
     const beforeUpdate = assertOK(await call('GET', 'integrations/insights'));
     updatedGitHub = true;
@@ -287,7 +291,7 @@ test(
     assert.deepEqual(updatedSignal.verifiedSkills, ['Testing']);
     assert.equal(
       assertOK(await call('GET', 'integrations/insights', undefined, foreign)).providers.length,
-      0
+      0,
     );
     results.insightUpdate = {
       beforeIntegration: beforeUpdate.integrationScore,
@@ -297,7 +301,7 @@ test(
       changedRevisionCacheHit: adopted.fromCache === true,
       adoptedRevisionCacheHit: adoptedCache.fromCache,
       normalizedProviders: afterUpdate.providers.map((entry) => entry.provider),
-      verifiedSkills: updatedSignal.verifiedSkills
+      verifiedSkills: updatedSignal.verifiedSkills,
     };
     assertOK(await call('DELETE', 'integrations/connections/github'));
     assertOK(await call('DELETE', 'integrations/connections/leetcode'));
@@ -314,12 +318,12 @@ test(
       after: portfolioAfter.overallScore,
       cached: portfolioAfter.fromCache || false,
       beforeIntegration: portfolio.scoring.evidence.inputs.integration,
-      afterIntegration: portfolioAfter.scoring.evidence.inputs.integration
+      afterIntegration: portfolioAfter.scoring.evidence.inputs.integration,
     };
     assert.equal(
       portfolioAfter.scoring.evidence.inputs.integration,
       null,
-      'Disconnected integration must not survive in cached Portfolio inputs'
+      'Disconnected integration must not survive in cached Portfolio inputs',
     );
     results.assertions = [
       'JWT authorization',
@@ -335,7 +339,7 @@ test(
       'Sprint revision cache',
       'Portfolio score API',
       'Weekly report API without email',
-      'disconnect clears credentials and downstream state'
+      'disconnect clears credentials and downstream state',
     ];
-  }
+  },
 );

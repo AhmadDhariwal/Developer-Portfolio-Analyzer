@@ -291,7 +291,7 @@ class AIService {
     prompt,
     fallback,
     retries = 2,
-    { timeoutMs, returnMeta = false, preferredModel = '', signal } = {}
+    { timeoutMs, returnMeta = false, preferredModel = '', signal, requestPolicy } = {}
   ) {
     const startedAt = Date.now();
     this.metrics.requests += 1;
@@ -344,6 +344,7 @@ class AIService {
       timeoutMs,
       preferredModel,
       signal,
+      requestPolicy,
       parseJson: (text) => this.extractJson(text)
     });
 

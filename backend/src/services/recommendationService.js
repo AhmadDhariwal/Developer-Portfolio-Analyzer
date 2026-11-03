@@ -3,12 +3,12 @@ const {
   resolveRecommendationEnrichment,
   mergeNarrativeEnrichment,
   isUsableRecommendationNarrative,
-  hasRecommendationFactPollution,
+  hasRecommendationFactPollution
 } = require('./recommendationNarrativeService');
 const {
   uniqueBy,
   uniqueStrings,
-  normalizeActionList,
+  normalizeActionList
 } = require('../utils/recommendationUtilities');
 const developerContext = require('../services/developerContextService');
 const engine = require('../services/recommendationEngineService');
@@ -29,7 +29,7 @@ const {
   buildResumeAnalysisSignals,
   buildResumeCacheIdentity,
   buildAnalysisBasedOn,
-  getPublicJobMarketSignal,
+  getPublicJobMarketSignal
 } = require('../services/developerSignalService');
 const { resolvePreviewResume } = require('../services/previewResumeCacheService');
 
@@ -43,25 +43,25 @@ const ALLOWED_LEVELS = [
   '1-2 years',
   '2-3 years',
   '3-5 years',
-  '5+ years',
+  '5+ years'
 ];
 const RECOMMENDATION_MEMORY_TTL_MS = Math.min(
   5 * 60 * 1000,
   Math.max(
     15_000,
-    Number.parseInt(process.env.RECOMMENDATIONS_MEMORY_TTL_MS || '60000', 10) || 60_000,
-  ),
+    Number.parseInt(process.env.RECOMMENDATIONS_MEMORY_TTL_MS || '60000', 10) || 60_000
+  )
 );
 const RECOMMENDATION_REDIS_LOOKUP_BUDGET_MS = Math.min(
   250,
   Math.max(
     40,
-    Number.parseInt(process.env.RECOMMENDATIONS_REDIS_LOOKUP_BUDGET_MS || '120', 10) || 120,
-  ),
+    Number.parseInt(process.env.RECOMMENDATIONS_REDIS_LOOKUP_BUDGET_MS || '120', 10) || 120
+  )
 );
 const RECOMMENDATION_REDIS_TTL_SECONDS = Math.min(
   3600,
-  Math.max(60, Number.parseInt(process.env.RECOMMENDATIONS_REDIS_TTL_SECONDS || '900', 10) || 900),
+  Math.max(60, Number.parseInt(process.env.RECOMMENDATIONS_REDIS_TTL_SECONDS || '900', 10) || 900)
 );
 const STAGE_TIMINGS_ENABLED =
   process.env.NODE_ENV !== 'production' ||
@@ -76,7 +76,7 @@ const EMPTY_STAGE_TIMINGS = Object.freeze({
   AI: 0,
   'deterministic processing': 0,
   persistence: 0,
-  total: 0,
+  total: 0
 });
 const createStageTimer = () => {
   const startedAt = process.hrtime.bigint();
@@ -101,10 +101,10 @@ const createStageTimer = () => {
         cacheMetadata: {
           ...(result.cacheMetadata || {}),
           stageTimingsMs: { ...stages, total: Number(total.toFixed(4)) },
-          requestCounters: { ...recommendationRuntimeCounters },
-        },
+          requestCounters: { ...recommendationRuntimeCounters }
+        }
       };
-    },
+    }
   };
 };
 const recommendationInflight = new Map();
@@ -117,7 +117,7 @@ const recommendationRuntimeCounters = {
   persistenceOperations: 0,
   memoryHits: 0,
   redisHits: 0,
-  mongoHits: 0,
+  mongoHits: 0
 };
 
 const withBudget = async (promise, budgetMs, fallback = null) => {
@@ -128,7 +128,7 @@ const withBudget = async (promise, budgetMs, fallback = null) => {
       new Promise((resolve) => {
         timer = setTimeout(() => resolve(fallback), budgetMs);
         timer.unref?.();
-      }),
+      })
     ]);
   } finally {
     if (timer) clearTimeout(timer);
@@ -142,7 +142,7 @@ const buildRecommendationSoftMemoryKey = ({
   experienceLevel = '',
   isTemporaryMode = false,
   resumeIdentity = 'profile-active',
-  signalHash = '',
+  signalHash = ''
 } = {}) =>
   [
     isTemporaryMode ? 'preview' : 'profile',
@@ -154,7 +154,7 @@ const buildRecommendationSoftMemoryKey = ({
     experienceLevel,
     String(resumeIdentity || 'no-resume'),
     String(signalHash || 'pending'),
-    RECOMMENDATION_ANALYSIS_VERSION,
+    RECOMMENDATION_ANALYSIS_VERSION
   ].join('|');
 
 const buildRecommendationSourceMemoryKey = ({
@@ -164,7 +164,7 @@ const buildRecommendationSourceMemoryKey = ({
   experienceLevel = '',
   isTemporaryMode = false,
   resumeIdentity = 'no-resume',
-  sourceFingerprint = '',
+  sourceFingerprint = ''
 } = {}) =>
   [
     isTemporaryMode ? 'preview' : 'profile',
@@ -176,7 +176,7 @@ const buildRecommendationSourceMemoryKey = ({
     experienceLevel,
     String(resumeIdentity || 'no-resume'),
     String(sourceFingerprint || 'no-source'),
-    RECOMMENDATION_ANALYSIS_VERSION,
+    RECOMMENDATION_ANALYSIS_VERSION
   ].join('|');
 
 const readRecommendationMemory = (key) => {
@@ -194,7 +194,7 @@ const writeRecommendationMemory = (key, payload, altKey = null) => {
   if (!key || !payload?.analysisData) return;
   const entry = {
     ...payload,
-    expiresAt: Date.now() + RECOMMENDATION_MEMORY_TTL_MS,
+    expiresAt: Date.now() + RECOMMENDATION_MEMORY_TTL_MS
   };
   recommendationMemoryCache.set(key, entry);
   if (altKey) {
@@ -231,7 +231,7 @@ const ANALYSIS_CACHE_RESULT_FIELDS = {
   expiresAt: 1,
   resumeHash: 1,
   resumeAnalysisId: 1,
-  githubUsername: 1,
+  githubUsername: 1
 };
 const isCacheFresh = (cache) => {
   if (!cache) return false;
@@ -272,17 +272,17 @@ const normalizeRecommendationPayload = (payload = {}) => {
       impact: engine.number(project.impact),
       confidenceScore: engine.number(project.confidenceScore),
       priority: priorityToRaw(
-        project.priority || (Number(project.impact || 0) >= 82 ? 'High' : 'Medium'),
+        project.priority || (Number(project.impact || 0) >= 82 ? 'High' : 'Medium')
       ),
       estimatedImpact: engine.number(project.estimatedImpact),
       reason: String(project.reason || project.whyThisProject || '').trim(),
       evidence: uniqueStrings(
         project.evidence || project.triggerSkills || project.newTech || [],
-        5,
+        5
       ),
       sourceSignalsUsed: uniqueStrings(project.sourceSignalsUsed || [], 6),
       estimatedEffort: String(project.estimatedEffort || project.estimatedWeeks || '').trim(),
-      startUrl: project.startUrl || '/app/github-analyzer',
+      startUrl: project.startUrl || '/app/github-analyzer'
     })),
     technologies: technologies.map((technology) => ({
       ...technology,
@@ -292,7 +292,7 @@ const normalizeRecommendationPayload = (payload = {}) => {
       reason: String(technology.reason || technology.description || '').trim(),
       evidence: uniqueStrings(technology.evidence || [], 5),
       sourceSignalsUsed: uniqueStrings(technology.sourceSignalsUsed || [], 6),
-      estimatedEffort: String(technology.estimatedEffort || '').trim(),
+      estimatedEffort: String(technology.estimatedEffort || '').trim()
     })),
     careerPaths: careerPaths.map((path, index) => ({
       ...path,
@@ -306,12 +306,12 @@ const normalizeRecommendationPayload = (payload = {}) => {
       evidence: uniqueStrings(path.evidence || path.actionItems || [], 5),
       sourceSignalsUsed: uniqueStrings(path.sourceSignalsUsed || [], 6),
       estimatedEffort: String(path.estimatedEffort || path.timeline || '').trim(),
-      exploreUrl: path.exploreUrl || '/app/profile',
+      exploreUrl: path.exploreUrl || '/app/profile'
     })),
     portfolioRecommendations: normalizeActionList(payload.portfolioRecommendations, [], 0, 4),
     resumeRecommendations: normalizeActionList(payload.resumeRecommendations, [], 0, 4),
     learningActions: normalizeActionList(payload.learningActions, [], 0, 6),
-    interviewReadinessActions: normalizeActionList(payload.interviewReadinessActions, [], 0, 4),
+    interviewReadinessActions: normalizeActionList(payload.interviewReadinessActions, [], 0, 4)
   };
 };
 
@@ -321,22 +321,22 @@ const buildRecommendationDataQuality = (payload = {}) => {
     payload.sourceMetadata?.github?.available ||
     Number(signals.github?.repoCount || 0) ||
     (payload.githubSkills || []).length ||
-    (payload.githubInsights?.repositories || []).length,
+    (payload.githubInsights?.repositories || []).length
   );
   const hasResumeData = Boolean(signals.resume?.analyzed);
   const hasSkillGapData = Boolean(signals.skillGap?.present);
   const hasPortfolioData = Boolean(
-    signals.portfolio?.present || Number(signals.portfolio?.projectCount || 0),
+    signals.portfolio?.present || Number(signals.portfolio?.projectCount || 0)
   );
   const hasJobMarketData = Boolean(
-    Number(signals.jobsDemand?.sampledJobs || 0) || (signals.jobsDemand?.topSkills || []).length,
+    Number(signals.jobsDemand?.sampledJobs || 0) || (signals.jobsDemand?.topSkills || []).length
   );
   const sources = [
     hasGitHubData,
     hasResumeData,
     hasSkillGapData,
     hasPortfolioData,
-    hasJobMarketData,
+    hasJobMarketData
   ];
 
   return {
@@ -353,8 +353,8 @@ const buildRecommendationDataQuality = (payload = {}) => {
       interviewScore: hasGitHubData || hasResumeData || hasSkillGapData,
       marketReadinessScore: hasJobMarketData && hasSkillGapData,
       careerGrowthScore: hasPortfolioData || hasSkillGapData,
-      overallRecommendationScore: sources.filter(Boolean).length >= 2,
-    },
+      overallRecommendationScore: sources.filter(Boolean).length >= 2
+    }
   };
 };
 
@@ -362,15 +362,15 @@ const normalizeRecommendationResponse = (payload = {}) => {
   const normalized = normalizeRecommendationPayload(payload);
   normalized.projects = uniqueBy(
     normalized.projects.filter((item) => item.title),
-    (item) => item.title.toLowerCase(),
+    (item) => item.title.toLowerCase()
   );
   normalized.technologies = uniqueBy(
     normalized.technologies.filter((item) => item.name),
-    (item) => item.name.toLowerCase(),
+    (item) => item.name.toLowerCase()
   );
   normalized.careerPaths = uniqueBy(
     normalized.careerPaths.filter((item) => item.title),
-    (item) => item.title.toLowerCase(),
+    (item) => item.title.toLowerCase()
   );
   normalized.structuredRecommendations = Object.fromEntries(
     Object.entries(normalized.structuredRecommendations || {})
@@ -378,18 +378,18 @@ const normalizeRecommendationResponse = (payload = {}) => {
         category,
         uniqueBy(
           (Array.isArray(cards) ? cards : []).filter((card) => String(card?.title || '').trim()),
-          (card) => String(card.title).trim().toLowerCase(),
-        ),
+          (card) => String(card.title).trim().toLowerCase()
+        )
       ])
-      .filter(([, cards]) => cards.length),
+      .filter(([, cards]) => cards.length)
   );
   normalized.dataQuality = buildRecommendationDataQuality(normalized);
   if (normalized.ruleVersion === engine.RULE_VERSION)
     normalized.dataQuality.scoreAvailability = Object.fromEntries(
       Object.entries(normalized.recommendationScores || {}).map(([key, value]) => [
         key,
-        engine.number(value) !== null,
-      ]),
+        engine.number(value) !== null
+      ])
     );
   return normalized;
 };
@@ -401,7 +401,7 @@ const saveAIVersionSnapshot = async ({ req, source, output, metadata = {} }) => 
       userId: req.user._id,
       source,
       outputJson: output,
-      metadata,
+      metadata
     });
   } catch (error) {
     console.error('Recommendation AI snapshot error:', error.message);
@@ -442,7 +442,7 @@ const loadResumeAnalysis = async (userId, expectedUser) => {
     keyAchievements: 1,
     experienceKeywords: 1,
     strengths: 1,
-    statusMessage: 1,
+    statusMessage: 1
   };
   const contextUser = await developerContext.loadUser(userId, { User });
   if (expectedUser && contextUser) {
@@ -453,7 +453,7 @@ const loadResumeAnalysis = async (userId, expectedUser) => {
         (key) =>
           current[key] &&
           expected[key] &&
-          String(current[key]).toLowerCase() !== String(expected[key]).toLowerCase(),
+          String(current[key]).toLowerCase() !== String(expected[key]).toLowerCase()
       ) ||
       String(developerContext.resolveSelectedResumeFileId(contextUser) || '') !==
         String(developerContext.resolveSelectedResumeFileId(expectedUser) || '');
@@ -471,8 +471,8 @@ const loadResumeAnalysis = async (userId, expectedUser) => {
     {
       User,
       ResumeAnalysis,
-      select: resumeSelect,
-    },
+      select: resumeSelect
+    }
   );
 };
 
@@ -501,7 +501,7 @@ const getGitHubData = async (username, { forceRefresh = false, isTemporaryMode =
     const freshData = await analyzeGitHubProfile(String(username || '').trim(), { forceRefresh });
     recommendationGithubSources.set(normalizedUsername, {
       result: freshData,
-      expiresAt: Date.now() + RECOMMENDATION_MEMORY_TTL_MS,
+      expiresAt: Date.now() + RECOMMENDATION_MEMORY_TTL_MS
     });
     if (recommendationGithubSources.size > 500)
       recommendationGithubSources.delete(recommendationGithubSources.keys().next().value);
@@ -520,7 +520,7 @@ const getGitHubData = async (username, { forceRefresh = false, isTemporaryMode =
       languageDistribution: [],
       scores: {},
       repositories: [],
-      unavailable: true,
+      unavailable: true
     };
   }
 };
@@ -532,7 +532,7 @@ const buildGithubInsights = (githubData = {}) => ({
   weakAreas: githubData?.weakAreas || [],
   languageDistribution: githubData?.languageDistribution || [],
   repositories: githubData?.repositories || [],
-  scores: githubData?.scores || {},
+  scores: githubData?.scores || {}
 });
 
 const summarizeSignalsForAI = (developerSignals = {}) => ({
@@ -545,28 +545,28 @@ const summarizeSignalsForAI = (developerSignals = {}) => ({
       .slice(0, 8)
       .map((tech) => tech?.name || tech?.technology || tech)
       .filter(Boolean),
-    weakAreas: developerSignals.githubSignals?.weakAreas || [],
+    weakAreas: developerSignals.githubSignals?.weakAreas || []
   },
   resumeSignals: {
     analyzed: Boolean(developerSignals.resumeSignals?.analyzed),
     atsScore: engine.number(developerSignals.resumeSignals?.atsScore),
     skills: (developerSignals.resumeSignals?.skills || []).slice(0, 16),
     weaknesses: (developerSignals.resumeSignals?.weaknesses || []).slice(0, 8),
-    missingSections: (developerSignals.resumeSignals?.missingSections || []).slice(0, 8),
+    missingSections: (developerSignals.resumeSignals?.missingSections || []).slice(0, 8)
   },
   skillGapSignals: {
     present: Boolean(developerSignals.skillGapSignals?.present),
     coverage: engine.number(developerSignals.skillGapSignals?.coverage),
     missingSkills: (developerSignals.skillGapSignals?.missingSkills || []).slice(0, 12),
     weakSkills: (developerSignals.skillGapSignals?.weakSkills || []).slice(0, 8),
-    highDemandSkills: (developerSignals.skillGapSignals?.highDemandSkills || []).slice(0, 8),
+    highDemandSkills: (developerSignals.skillGapSignals?.highDemandSkills || []).slice(0, 8)
   },
   portfolioSignals: developerSignals.portfolioSignal || {},
   careerSprintSignals: developerSignals.careerSprintSignal || {},
   weeklyReportSignals: developerSignals.weeklyReportSignal || {},
   integrationSignals: developerSignals.integrationSignal || {},
   careerProfile: developerSignals.careerProfileSignal || {},
-  jobMarketSignals: developerSignals.jobsDemandSignal || {},
+  jobMarketSignals: developerSignals.jobsDemandSignal || {}
 });
 
 const loadDeveloperSignalsSafely = async ({
@@ -574,7 +574,7 @@ const loadDeveloperSignalsSafely = async ({
   username,
   resumeInsights,
   githubInsights,
-  allowSignals,
+  allowSignals
 }) => {
   if (!allowSignals || !userId) {
     const emptySignals = {
@@ -587,7 +587,7 @@ const loadDeveloperSignalsSafely = async ({
         languageDistribution: [],
         repositories: [],
         scores: {},
-        updatedAt: null,
+        updatedAt: null
       },
       resumeSignals: {
         analyzed: false,
@@ -596,7 +596,7 @@ const loadDeveloperSignalsSafely = async ({
         skills: [],
         weaknesses: [],
         missingSections: [],
-        statusMessage: 'Resume not analyzed yet',
+        statusMessage: 'Resume not analyzed yet'
       },
       skillGapSignals: {
         present: false,
@@ -605,7 +605,7 @@ const loadDeveloperSignalsSafely = async ({
         weakSkills: [],
         highDemandSkills: [],
         coverage: 0,
-        updatedAt: null,
+        updatedAt: null
       },
       careerSprintSignal: {
         present: false,
@@ -618,7 +618,7 @@ const loadDeveloperSignalsSafely = async ({
         completedSkillSignals: [],
         progressPercent: 0,
         status: 'Unavailable',
-        updatedAt: null,
+        updatedAt: null
       },
       weeklyReportSignal: {
         present: false,
@@ -629,7 +629,7 @@ const loadDeveloperSignalsSafely = async ({
         skillsImprovedThisWeek: [],
         repeatedWeakAreas: [],
         trendDelta: 0,
-        updatedAt: null,
+        updatedAt: null
       },
       portfolioSignal: {
         present: false,
@@ -641,7 +641,7 @@ const loadDeveloperSignalsSafely = async ({
         projectPresentationQuality: 0,
         publicEnabled: false,
         portfolioSkills: [],
-        updatedAt: null,
+        updatedAt: null
       },
       integrationSignal: {
         present: false,
@@ -651,7 +651,7 @@ const loadDeveloperSignalsSafely = async ({
         weakProof: [],
         detectedSkills: [],
         certifications: [],
-        updatedAt: null,
+        updatedAt: null
       },
       careerProfileSignal: {
         present: false,
@@ -659,14 +659,14 @@ const loadDeveloperSignalsSafely = async ({
         experienceLevel: '',
         careerGoal: '',
         githubUsername: '',
-        updatedAt: null,
+        updatedAt: null
       },
       jobsDemandSignal: {
         present: false,
         sampledJobs: 0,
         topSkills: [],
-        updatedAt: null,
-      },
+        updatedAt: null
+      }
     };
     emptySignals.jobsDemandSignal = await getPublicJobMarketSignal();
     emptySignals.portfolioSignals = emptySignals.portfolioSignal;
@@ -682,22 +682,22 @@ const loadDeveloperSignalsSafely = async ({
         username,
         resumeInsights,
         githubInsights,
-        signals: emptySignals,
-      }),
+        signals: emptySignals
+      })
     };
   }
 
   try {
     const developerSignals = await getDeveloperSignals(userId, {
       resumeSignals: resumeInsights?.analyzed ? resumeInsights : undefined,
-      githubSignals: githubInsights?.present ? githubInsights : undefined,
+      githubSignals: githubInsights?.present ? githubInsights : undefined
     });
     const signalHash = buildSignalHash(developerSignals);
     const signalsUsed = buildSignalsUsedSummary({
       username,
       resumeInsights,
       githubInsights,
-      signals: developerSignals,
+      signals: developerSignals
     });
     return { developerSignals, signalHash, signalsUsed };
   } catch (error) {
@@ -707,7 +707,7 @@ const loadDeveloperSignalsSafely = async ({
       username,
       resumeInsights,
       githubInsights,
-      allowSignals: false,
+      allowSignals: false
     });
   }
 };
@@ -717,7 +717,7 @@ const buildRecommendationSignals = ({
   scores,
   developerSignals,
   signalHash,
-  cacheKey,
+  cacheKey
 }) => ({
   version: RECOMMENDATION_ANALYSIS_VERSION,
   generatedAt: new Date().toISOString(),
@@ -725,7 +725,7 @@ const buildRecommendationSignals = ({
   cacheKey,
   scores,
   priorityRecommendations: sortByPriorityImpact(
-    Object.values(result.structuredRecommendations || {}).flat(),
+    Object.values(result.structuredRecommendations || {}).flat()
   )
     .slice(0, 10)
     .map((item) => ({
@@ -735,23 +735,23 @@ const buildRecommendationSignals = ({
       priority: item.priority,
       confidenceScore: item.confidenceScore,
       estimatedImpact: item.estimatedImpact,
-      sourceSignalsUsed: item.sourceSignalsUsed,
+      sourceSignalsUsed: item.sourceSignalsUsed
     })),
   skills: {
     recommendedTechnologies: uniqueStrings(
       (result.technologies || []).map((tech) => tech.name),
-      12,
+      12
     ),
     missingSkills: uniqueStrings(developerSignals.skillGapSignals?.missingSkills || [], 12),
-    weakSkills: uniqueStrings(developerSignals.skillGapSignals?.weakSkills || [], 10),
+    weakSkills: uniqueStrings(developerSignals.skillGapSignals?.weakSkills || [], 10)
   },
   roadmapSummary: {
     immediateActions: (result.roadmap?.immediateActions || [])
       .map((item) => item.title)
       .slice(0, 5),
     next30Days: (result.roadmap?.next30Days || []).map((item) => item.title).slice(0, 5),
-    suggestedProjects: (result.projects || []).map((project) => project.title).slice(0, 5),
-  },
+    suggestedProjects: (result.projects || []).map((project) => project.title).slice(0, 5)
+  }
 });
 
 const finalizeRecommendationResult = ({
@@ -763,7 +763,7 @@ const finalizeRecommendationResult = ({
   developerSignals,
   signalHash,
   cacheKey,
-  previousRecommendation,
+  previousRecommendation
 }) => {
   const result = {
     ...fallback,
@@ -776,12 +776,12 @@ const finalizeRecommendationResult = ({
       resume: {
         ...signalsUsed.resume,
         analyzed: resumeInsights.analyzed,
-        atsScore: resumeInsights.atsScore,
+        atsScore: resumeInsights.atsScore
       },
       skillGap: {
         ...developerSignals.skillGapSignals,
-        coverage: developerSignals.skillGapSignals.coverage ?? null,
-      },
+        coverage: developerSignals.skillGapSignals.coverage ?? null
+      }
     },
     cacheMetadata: {
       loadedFromCache: false,
@@ -791,23 +791,23 @@ const finalizeRecommendationResult = ({
       recommendationVersion: RECOMMENDATION_ANALYSIS_VERSION,
       temporary: false,
       ttlHours: 24,
-      cachedAt: null,
-    },
+      cachedAt: null
+    }
   };
   result.githubInsights = {
     ...githubInsights,
     repositories: (githubInsights.repositories || []).slice(0, 30).map((repository) => ({
       name: String(repository.name || '').slice(0, 140),
       hasReadme: repository.hasReadme ?? null,
-      hasTests: repository.hasTests ?? null,
-    })),
+      hasTests: repository.hasTests ?? null
+    }))
   };
   result.recommendationSignals = buildRecommendationSignals({
     result,
     scores: result.recommendationScores,
     developerSignals,
     signalHash,
-    cacheKey,
+    cacheKey
   });
   result.recommendationVersioning = engine.versionChanges(result, previousRecommendation);
   return normalizeRecommendationResponse(result);
@@ -829,7 +829,7 @@ const runRecommendationPipeline = async ({
   saveResult,
   source,
   forceRefresh = false,
-  bypassInflight = false,
+  bypassInflight = false
 }) => {
   const isTemporaryMode = !allowSignals;
   const stageTimer = createStageTimer();
@@ -859,7 +859,7 @@ const runRecommendationPipeline = async ({
       : '',
     providedKnownSkills,
     providedMissingSkills,
-    analysisVersion: RECOMMENDATION_ANALYSIS_VERSION,
+    analysisVersion: RECOMMENDATION_ANALYSIS_VERSION
   });
 
   const existingInflight = !bypassInflight && recommendationInflight.get(inflightKey);
@@ -874,20 +874,20 @@ const runRecommendationPipeline = async ({
             userId,
             githubUsername: {
               $regex: '^' + normalizedGithubUsername + '$',
-              $options: 'i',
+              $options: 'i'
             },
             careerStack,
             experienceLevel,
             resumeHash: shared.cacheMetadata.cacheKey.resumeHash,
             resumeAnalysisId: shared.cacheMetadata.cacheKey.resumeAnalysisId,
-            'analysisData.ruleVersion': engine.SKILL_RULE,
+            'analysisData.ruleVersion': engine.SKILL_RULE
           })
             .sort({ updatedAt: -1 })
-            .lean(),
+            .lean()
         ]);
         const currentInsights = engine.resumeSignals(
           currentResume,
-          buildResumeAnalysisSignals(currentResume, experienceLevel),
+          buildResumeAnalysisSignals(currentResume, experienceLevel)
         );
         const currentSkillGap = engine.compatibleSkillGap(currentSnapshot, {
           userId,
@@ -899,14 +899,14 @@ const runRecommendationPipeline = async ({
             username,
             githubData: currentGithub,
             resumeAnalysis: currentResume,
-            resumeInsights: currentInsights,
-          }),
+            resumeInsights: currentInsights
+          })
         });
         if (
           engine.sourceFingerprint({
             githubData: currentGithub,
             resumeInsights: currentInsights,
-            skillGap: currentSkillGap,
+            skillGap: currentSkillGap
           }) !== shared.sourceFingerprint
         ) {
           return await runRecommendationPipeline({
@@ -916,6 +916,7 @@ const runRecommendationPipeline = async ({
             careerStack,
             experienceLevel,
             resumeText,
+            ownerScope: req.user?._id ? `account:${req.user._id}` : `guest:${req.ip}`,
             previewResumeId,
             resumeHash,
             knownSkills,
@@ -925,7 +926,7 @@ const runRecommendationPipeline = async ({
             saveResult,
             source,
             forceRefresh: false,
-            bypassInflight: true,
+            bypassInflight: true
           });
         }
       }
@@ -937,14 +938,14 @@ const runRecommendationPipeline = async ({
             cacheMetadata: {
               ...(shared.cacheMetadata || {}),
               loadedFromCache: true,
-              cacheLayer: shared.cacheMetadata?.cacheLayer || 'inflight',
-            },
-          }),
-        ),
+              cacheLayer: shared.cacheMetadata?.cacheLayer || 'inflight'
+            }
+          })
+        )
       );
     } catch (error) {
       return res.status(error.status || 500).json({
-        message: error.message || 'Failed to generate recommendations.',
+        message: error.message || 'Failed to generate recommendations.'
       });
     }
   }
@@ -970,10 +971,10 @@ const runRecommendationPipeline = async ({
             previewResumeId,
             resumeHash,
             resumeText: cleanResume,
-            experienceLevel,
+            experienceLevel
           }),
-          getGitHubData(username, { forceRefresh, isTemporaryMode }),
-        ]),
+          getGitHubData(username, { forceRefresh, isTemporaryMode })
+        ])
       );
       if (previewResume.error) {
         const error = new Error(previewResume.error);
@@ -994,24 +995,24 @@ const runRecommendationPipeline = async ({
                 userId,
                 githubUsername: {
                   $regex: '^' + normalizedGithubUsername + '$',
-                  $options: 'i',
+                  $options: 'i'
                 },
                 careerStack,
                 experienceLevel,
-                'analysisData.ruleVersion': engine.SKILL_RULE,
+                'analysisData.ruleVersion': engine.SKILL_RULE
               })
                 .sort({ updatedAt: -1 })
                 .lean()
-            : Promise.resolve(null),
-        ]),
+            : Promise.resolve(null)
+        ])
       );
       latestResumeAnalysis = loadedResume;
       storedResumeInsights = engine.resumeSignals(
         latestResumeAnalysis,
-        buildResumeAnalysisSignals(latestResumeAnalysis, experienceLevel),
+        buildResumeAnalysisSignals(latestResumeAnalysis, experienceLevel)
       );
       resumeCacheIdentity = buildResumeCacheIdentity({
-        resumeAnalysis: latestResumeAnalysis,
+        resumeAnalysis: latestResumeAnalysis
       });
       githubData = rawGithub;
       skillGapCandidate = loadedSkillGap;
@@ -1030,16 +1031,16 @@ const runRecommendationPipeline = async ({
           userId,
           githubUsername: {
             $regex: '^' + normalizedGithubUsername + '$',
-            $options: 'i',
+            $options: 'i'
           },
           careerStack,
           experienceLevel,
           resumeHash: resumeCacheIdentity.resumeHash,
           resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId,
-          'analysisData.ruleVersion': engine.SKILL_RULE,
+          'analysisData.ruleVersion': engine.SKILL_RULE
         })
           .sort({ updatedAt: -1 })
-          .lean(),
+          .lean()
       );
     }
 
@@ -1047,7 +1048,7 @@ const runRecommendationPipeline = async ({
       username,
       githubData,
       resumeAnalysis: latestResumeAnalysis,
-      resumeInsights: storedResumeInsights,
+      resumeInsights: storedResumeInsights
     });
     const snapshotContext = {
       userId,
@@ -1055,13 +1056,13 @@ const runRecommendationPipeline = async ({
       careerStack,
       experienceLevel,
       ...resumeCacheIdentity,
-      sources: sourceMetadata,
+      sources: sourceMetadata
     };
     const skillGap = engine.compatibleSkillGap(skillGapCache, snapshotContext);
     const sourceFingerprint = engine.sourceFingerprint({
       githubData,
       resumeInsights: storedResumeInsights,
-      skillGap,
+      skillGap
     });
     const sourceMemoryKey = buildRecommendationSourceMemoryKey({
       userId: userId || (isTemporaryMode ? 'anonymous' : ''),
@@ -1070,12 +1071,12 @@ const runRecommendationPipeline = async ({
       experienceLevel,
       isTemporaryMode,
       resumeIdentity,
-      sourceFingerprint,
+      sourceFingerprint
     });
 
     if (!forceRefresh) {
       const memoryHit = await stageTimer.measure('cache', () =>
-        Promise.resolve(readRecommendationMemory(sourceMemoryKey)),
+        Promise.resolve(readRecommendationMemory(sourceMemoryKey))
       );
       if (memoryHit?.analysisData) {
         recommendationRuntimeCounters.memoryHits += 1;
@@ -1087,8 +1088,8 @@ const runRecommendationPipeline = async ({
             loadedFromCache: true,
             cacheLayer: 'memory',
             signalHash: memoryHit.signalHash,
-            cachedAt: memoryHit.updatedAt || null,
-          },
+            cachedAt: memoryHit.updatedAt || null
+          }
         });
         settleInflight.resolve(fullResult);
         return res.json(stageTimer.attach(fullResult));
@@ -1102,8 +1103,8 @@ const runRecommendationPipeline = async ({
           username,
           allowSignals,
           resumeInsights: storedResumeInsights,
-          githubInsights: buildGithubInsights(githubData),
-        }),
+          githubInsights: buildGithubInsights(githubData)
+        })
       );
       preliminarySignals.developerSignals.resumeSignals = storedResumeInsights;
       // Exclude this module's own previous output from its input fingerprint.
@@ -1120,7 +1121,7 @@ const runRecommendationPipeline = async ({
               .map((skill) => skill.name),
             weakSkills: (skillGap.partialSkills || []).map((skill) => skill.name),
             sourceReferences: skillGap.sourceReferences,
-            skills: skillGap.skills || [],
+            skills: skillGap.skills || []
           }
         : {
             present: false,
@@ -1128,19 +1129,19 @@ const runRecommendationPipeline = async ({
             knownSkills: [],
             missingSkills: [],
             weakSkills: [],
-            ruleVersion: null,
+            ruleVersion: null
           };
       preliminarySignals.developerSignals.githubSignals = {
         ...sourceMetadata.github,
         scores: githubData.scores || {},
         scoring: githubData.scoring || null,
         repositories: githubData.repositories || [],
-        githubSignals: githubData.githubSignals || {},
+        githubSignals: githubData.githubSignals || {}
       };
       const upstreamSignalHash = buildSignalHash({
         ...preliminarySignals.developerSignals,
         recommendationSignal: {},
-        recommendationSignals: {},
+        recommendationSignals: {}
       });
       const signalHash = crypto
         .createHash('sha256')
@@ -1153,14 +1154,14 @@ const runRecommendationPipeline = async ({
             activeResumeFileId: String(
               developerContext.resolveSelectedResumeFileId(req.user) ||
                 latestResumeAnalysis?.fileId ||
-                '',
+                ''
             ),
             sources: sourceMetadata,
             skillGap,
             supportingSignals: preliminarySignals.developerSignals,
             providedKnownSkills,
-            providedMissingSkills,
-          }),
+            providedMissingSkills
+          })
         )
         .digest('hex');
 
@@ -1171,12 +1172,12 @@ const runRecommendationPipeline = async ({
         experienceLevel,
         isTemporaryMode,
         resumeIdentity,
-        signalHash,
+        signalHash
       });
 
       if (!forceRefresh) {
         const memoryHit = await stageTimer.measure('cache', () =>
-          Promise.resolve(readRecommendationMemory(softMemoryKey)),
+          Promise.resolve(readRecommendationMemory(softMemoryKey))
         );
         if (memoryHit?.analysisData) {
           recommendationRuntimeCounters.memoryHits += 1;
@@ -1188,8 +1189,8 @@ const runRecommendationPipeline = async ({
               loadedFromCache: true,
               cacheLayer: 'memory',
               signalHash,
-              cachedAt: memoryHit.updatedAt || null,
-            },
+              cachedAt: memoryHit.updatedAt || null
+            }
           });
         }
       }
@@ -1201,7 +1202,7 @@ const runRecommendationPipeline = async ({
         resumeHash: resumeCacheIdentity.resumeHash,
         resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId,
         signalHash,
-        analysisVersion: RECOMMENDATION_ANALYSIS_VERSION,
+        analysisVersion: RECOMMENDATION_ANALYSIS_VERSION
       };
       const scopedCacheKey =
         saveResult && req.user?._id && username ? { ...cacheKey, userId: req.user._id } : null;
@@ -1210,7 +1211,7 @@ const runRecommendationPipeline = async ({
         userId: String(userId || 'temporary'),
         ...cacheKey,
         providedKnownSkills,
-        providedMissingSkills,
+        providedMissingSkills
       };
       const resultCacheKey = buildRecommendationResultCacheKey(resultCacheIdentity);
       const previewCacheKey = `recommendations:preview:${normalizedGithubUsername}:${resumeCacheIdentity.resumeHash || 'no-resume'}:${careerStack}:${experienceLevel}:${signalHash}:${RECOMMENDATION_ANALYSIS_VERSION}`;
@@ -1220,11 +1221,11 @@ const runRecommendationPipeline = async ({
           withBudget(
             aiService.getSharedCache(
               isTemporaryMode ? previewCacheKey : resultCacheKey,
-              isTemporaryMode ? 'preview' : 'recommendations:result',
+              isTemporaryMode ? 'preview' : 'recommendations:result'
             ),
             RECOMMENDATION_REDIS_LOOKUP_BUDGET_MS,
-            null,
-          ),
+            null
+          )
         );
         if (
           redisCached?.analysisData &&
@@ -1237,9 +1238,9 @@ const runRecommendationPipeline = async ({
               analysisData: redisCached.analysisData,
               updatedAt: redisCached.updatedAt || new Date(),
               signalHash,
-              expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS),
+              expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS)
             },
-            sourceMemoryKey,
+            sourceMemoryKey
           );
           return normalizeRecommendationResponse({
             ...redisCached.analysisData,
@@ -1247,7 +1248,7 @@ const runRecommendationPipeline = async ({
               username,
               careerStack,
               experienceLevel,
-              resumeInsights: storedResumeInsights,
+              resumeInsights: storedResumeInsights
             }),
             fromCache: true,
             cacheMetadata: {
@@ -1256,15 +1257,15 @@ const runRecommendationPipeline = async ({
               cacheLayer: 'redis',
               cacheKey: isTemporaryMode ? previewCacheKey : cacheKey,
               signalHash,
-              cachedAt: redisCached.updatedAt || null,
-            },
+              cachedAt: redisCached.updatedAt || null
+            }
           });
         }
       }
 
       if (scopedCacheKey && !forceRefresh) {
         const mongoCached = await stageTimer.measure('Mongo', () =>
-          AnalysisCache.findOne(scopedCacheKey).select(ANALYSIS_CACHE_RESULT_FIELDS).lean(),
+          AnalysisCache.findOne(scopedCacheKey).select(ANALYSIS_CACHE_RESULT_FIELDS).lean()
         );
         if (
           isCacheFresh(mongoCached) &&
@@ -1277,9 +1278,9 @@ const runRecommendationPipeline = async ({
               analysisData: mongoCached.analysisData,
               updatedAt: mongoCached.updatedAt || mongoCached.createdAt || new Date(),
               signalHash,
-              expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS),
+              expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS)
             },
-            sourceMemoryKey,
+            sourceMemoryKey
           );
           setImmediate(() => {
             aiService
@@ -1287,10 +1288,10 @@ const runRecommendationPipeline = async ({
                 resultCacheKey,
                 {
                   analysisData: mongoCached.analysisData,
-                  updatedAt: mongoCached.updatedAt || mongoCached.createdAt || new Date(),
+                  updatedAt: mongoCached.updatedAt || mongoCached.createdAt || new Date()
                 },
                 RECOMMENDATION_REDIS_TTL_SECONDS,
-                'recommendations:result',
+                'recommendations:result'
               )
               .catch(() => {});
           });
@@ -1301,7 +1302,7 @@ const runRecommendationPipeline = async ({
               username,
               careerStack,
               experienceLevel,
-              resumeInsights: storedResumeInsights,
+              resumeInsights: storedResumeInsights
             }),
             resumeStatusMessage:
               mongoCached.analysisData.resumeStatusMessage || storedResumeInsights.statusMessage,
@@ -1315,8 +1316,8 @@ const runRecommendationPipeline = async ({
               analysisVersion: RECOMMENDATION_ANALYSIS_VERSION,
               recommendationVersion: RECOMMENDATION_ANALYSIS_VERSION,
               ttlHours: 24,
-              cachedAt: mongoCached.updatedAt || mongoCached.createdAt || null,
-            },
+              cachedAt: mongoCached.updatedAt || mongoCached.createdAt || null
+            }
           });
         }
       }
@@ -1324,7 +1325,7 @@ const runRecommendationPipeline = async ({
         const saved = await Recommendation.findOne({
           userId,
           snapshotVersion: engine.RULE_VERSION,
-          contextHash: signalHash,
+          contextHash: signalHash
         }).lean();
         if (
           saved?.result &&
@@ -1334,7 +1335,7 @@ const runRecommendationPipeline = async ({
           writeRecommendationMemory(softMemoryKey, {
             analysisData: saved.result,
             updatedAt: saved.createdAt,
-            signalHash,
+            signalHash
           });
           return normalizeRecommendationResponse({
             ...saved.result,
@@ -1343,8 +1344,8 @@ const runRecommendationPipeline = async ({
               ...saved.result.cacheMetadata,
               loadedFromCache: true,
               cacheLayer: 'mongo',
-              cachedAt: saved.createdAt,
-            },
+              cachedAt: saved.createdAt
+            }
           });
         }
       }
@@ -1354,19 +1355,19 @@ const runRecommendationPipeline = async ({
       const resumeInsights = storedResumeInsights;
       const githubInsights = buildGithubInsights(githubData);
       const recommendationEvidence = {
-        claimedButNotProvenSkills: (skillGap?.claimedOnlySkills || []).map((skill) => skill.name),
+        claimedButNotProvenSkills: (skillGap?.claimedOnlySkills || []).map((skill) => skill.name)
       };
       const developerSignals = preliminarySignals.developerSignals;
       const signalsUsed = buildSignalsUsedSummary({
         username,
         resumeInsights,
         githubInsights,
-        signals: developerSignals,
+        signals: developerSignals
       });
 
       const resolvedSkills = {
         knownSkills: preliminarySignals.developerSignals.skillGapSignals.knownSkills,
-        missingSkills: preliminarySignals.developerSignals.skillGapSignals.missingSkills,
+        missingSkills: preliminarySignals.developerSignals.skillGapSignals.missingSkills
       };
       const previousRecommendation = scopedCacheKey
         ? await stageTimer.measure('Mongo', () =>
@@ -1376,12 +1377,12 @@ const runRecommendationPipeline = async ({
               $or: [
                 { signalHash: { $ne: signalHash } },
                 { resumeHash: { $ne: resumeCacheIdentity.resumeHash } },
-                { githubUsername: { $ne: username } },
-              ],
+                { githubUsername: { $ne: username } }
+              ]
             })
               .select(ANALYSIS_CACHE_RESULT_FIELDS)
               .sort({ updatedAt: -1 })
-              .lean(),
+              .lean()
           )
         : null;
 
@@ -1399,8 +1400,8 @@ const runRecommendationPipeline = async ({
           githubData,
           resumeAnalysis: latestResumeAnalysis,
           skillGap,
-          supportingSignals: developerSignals,
-        }),
+          supportingSignals: developerSignals
+        })
       );
       const prompt = getRecommendationPrompt(
         careerStack,
@@ -1410,7 +1411,7 @@ const runRecommendationPipeline = async ({
         resumeInsights,
         githubInsights,
         summarizeSignalsForAI(developerSignals),
-        fallback,
+        fallback
       );
 
       const aiMeta = await stageTimer.measure('AI', () =>
@@ -1419,8 +1420,8 @@ const runRecommendationPipeline = async ({
           prompt,
           signalHash,
           identity: String(userId || 'preview'),
-          enabled: forceRefresh,
-        }),
+          enabled: forceRefresh
+        })
       );
       if (aiMeta?.aiCalled) recommendationRuntimeCounters.aiCalls += 1;
       const aiOk = Boolean(aiMeta && aiMeta.ok === true);
@@ -1435,11 +1436,11 @@ const runRecommendationPipeline = async ({
               ...resolvedSkills.missingSkills,
               ...(recommendationEvidence?.claimedButNotProvenSkills || []),
               ...(fallback.projects || []).map((project) => project.title),
-              ...(fallback.technologies || []).map((technology) => technology.name),
+              ...(fallback.technologies || []).map((technology) => technology.name)
             ],
-            24,
-          ),
-        }),
+            24
+          )
+        })
       );
       const deterministicResult = mergeNarrativeEnrichment(fallback, enrichment);
       const result = await stageTimer.measure('deterministic processing', async () =>
@@ -1455,27 +1456,27 @@ const runRecommendationPipeline = async ({
             username,
             careerStack,
             experienceLevel,
-            resumeInsights,
+            resumeInsights
           }),
           recommendationEvidence,
           developerSignals,
           resolvedSkills,
           signalHash,
           cacheKey,
-          previousRecommendation: previousRecommendation?.analysisData || null,
-        }),
+          previousRecommendation: previousRecommendation?.analysisData || null
+        })
       );
       result.cacheMetadata.temporary = !saveResult;
       result.sourceFingerprint = engine.sourceFingerprint({
         githubData,
         resumeInsights,
-        skillGap,
+        skillGap
       });
       for (const card of result.recommendations) {
         card.navigation.careerSprint.api = {
           method: 'POST',
           url: `/api/recommendations/${card.id}/career-sprint`,
-          body: { signalHash },
+          body: { signalHash }
         };
       }
       result.mode = isTemporaryMode ? 'preview' : 'profile';
@@ -1484,10 +1485,10 @@ const runRecommendationPipeline = async ({
       result.aiSuggestions = engine.safeSuggestions(
         {
           learningActions: deterministicResult.learningActions.filter((action) =>
-            enrichment.learningActions.includes(action),
-          ),
+            enrichment.learningActions.includes(action)
+          )
         },
-        fallback,
+        fallback
       );
       result.aiUsed = result.aiSuggestions.length > 0;
 
@@ -1506,9 +1507,9 @@ const runRecommendationPipeline = async ({
             analysisData: result,
             updatedAt: new Date(),
             signalHash,
-            expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS),
+            expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS)
           },
-          sourceMemoryKey,
+          sourceMemoryKey
         );
         setImmediate(() => {
           recommendationRuntimeCounters.persistenceOperations += 1;
@@ -1517,10 +1518,10 @@ const runRecommendationPipeline = async ({
               previewCacheKey,
               {
                 analysisData: result,
-                updatedAt: new Date(),
+                updatedAt: new Date()
               },
               1800,
-              'preview',
+              'preview'
             )
             .catch(() => {});
         });
@@ -1532,8 +1533,8 @@ const runRecommendationPipeline = async ({
             AnalysisCache.findOneAndUpdate(
               scopedCacheKey,
               { $set: { analysisData: result, userId: req.user._id } },
-              { upsert: true },
-            ),
+              { upsert: true }
+            )
           );
         }
         if (saveResult && req.user?._id) {
@@ -1544,7 +1545,7 @@ const runRecommendationPipeline = async ({
                 {
                   userId: req.user._id,
                   snapshotVersion: engine.RULE_VERSION,
-                  contextHash: signalHash,
+                  contextHash: signalHash
                 },
                 {
                   $setOnInsert: {
@@ -1558,18 +1559,18 @@ const runRecommendationPipeline = async ({
                     techStack: result.technologies
                       .map((technology) => technology.name)
                       .slice(0, 12),
-                    difficultyScore: null,
-                  },
+                    difficultyScore: null
+                  }
                 },
-                { upsert: true, runValidators: true, session },
+                { upsert: true, runValidators: true, session }
               ),
             {
               type: 'career_update',
               title: 'Career Recommendations Updated',
               message: 'Your latest career recommendations are ready to review.',
               eventId: `recommendations:${engine.RULE_VERSION}:${signalHash}`,
-              preferenceKey: 'newRecommendations',
-            },
+              preferenceKey: 'newRecommendations'
+            }
           );
         }
         writeRecommendationMemory(
@@ -1578,9 +1579,9 @@ const runRecommendationPipeline = async ({
             analysisData: result,
             updatedAt: new Date(),
             signalHash,
-            expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS),
+            expiresAt: new Date(Date.now() + RECOMMENDATION_TTL_MS)
           },
-          sourceMemoryKey,
+          sourceMemoryKey
         );
         setImmediate(() => {
           aiService
@@ -1588,10 +1589,10 @@ const runRecommendationPipeline = async ({
               resultCacheKey,
               {
                 analysisData: result,
-                updatedAt: new Date(),
+                updatedAt: new Date()
               },
               RECOMMENDATION_REDIS_TTL_SECONDS,
-              'recommendations:result',
+              'recommendations:result'
             )
             .catch(() => {});
         });
@@ -1607,8 +1608,8 @@ const runRecommendationPipeline = async ({
               experienceLevel,
               signalHash,
               resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId,
-              aiUsed: Boolean(enrichment.aiUsed),
-            },
+              aiUsed: Boolean(enrichment.aiUsed)
+            }
           });
         }
       }
@@ -1639,5 +1640,5 @@ module.exports = {
   getRecommendationMemoryCacheSize,
   RECOMMENDATION_ANALYSIS_VERSION,
   ALLOWED_STACKS,
-  ALLOWED_LEVELS,
+  ALLOWED_LEVELS
 };

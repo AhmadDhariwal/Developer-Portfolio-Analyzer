@@ -1,0 +1,106 @@
+{
+  "checkedAt": "2026-11-03T08:05:18.775Z",
+  "providerHttpRequests": 0,
+  "checks": [
+    "three identical fresh Connect clicks preserve connection/insight; two explicit Syncs still normalize and append history; one source fetch across accounts",
+    "active lease returns 409 without reset; commit fence preserves a newly claimed Sync; stale/credential-bearing connections do not shortcut",
+    "warm read-through measured at two payload sizes; generation mismatch falls back to Mongo; expired metadata bypasses Redis; quota/timeout/unavailable/recovered return authoritative data"
+  ],
+  "baselineConnect": {
+    "commands": 48,
+    "documentWrites": 21,
+    "ms": 265.47310000000016,
+    "providerCalls": 0,
+    "normalizations": 3
+  },
+  "improvedConnect": {
+    "commands": 27,
+    "documentWrites": 3,
+    "ms": 159.85540000000037,
+    "providerCalls": 0,
+    "normalizations": 0
+  },
+  "manualSync": {
+    "commands": 42,
+    "documentWrites": 22,
+    "ms": 264.7556000000004,
+    "providerCalls": 0,
+    "normalizations": 2
+  },
+  "readThrough": [
+    {
+      "payloadBytes": 615,
+      "mongoOnlyMs": {
+        "n": 12,
+        "p50": 2.2186000000001513,
+        "p95": 3.412500000000364,
+        "p99": 3.412500000000364
+      },
+      "readThroughMs": {
+        "n": 12,
+        "p50": 3.105199999999968,
+        "p95": 4.661600000000362,
+        "p99": 4.661600000000362
+      },
+      "mongoReads": 24,
+      "redisGets": 12
+    },
+    {
+      "payloadBytes": 30103,
+      "mongoOnlyMs": {
+        "n": 12,
+        "p50": 2.4827000000004773,
+        "p95": 3.4447000000000116,
+        "p99": 3.4447000000000116
+      },
+      "readThroughMs": {
+        "n": 12,
+        "p50": 3.5059000000001106,
+        "p95": 4.8658000000014,
+        "p99": 4.8658000000014
+      },
+      "mongoReads": 24,
+      "redisGets": 12
+    }
+  ],
+  "prototypeCommands": {
+    "mongoReads": 53,
+    "redisGets": 25,
+    "redisSets": 3
+  },
+  "prototypeFailureModes": [
+    {
+      "mode": "quota",
+      "ms": 6.1348999999991065,
+      "mongoReads": 2,
+      "redisGets": 1,
+      "redisSets": 1
+    },
+    {
+      "mode": "timeout",
+      "ms": 168.29399999999987,
+      "mongoReads": 2,
+      "redisGets": 1,
+      "redisSets": 1
+    },
+    {
+      "mode": "unavailable",
+      "ms": 2.022799999998824,
+      "mongoReads": 1,
+      "redisGets": 0,
+      "redisSets": 0
+    },
+    {
+      "mode": "recovered",
+      "ms": 4.024800000001051,
+      "mongoReads": 2,
+      "redisGets": 1,
+      "redisSets": 1
+    }
+  ],
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 126,
+    "productionDataUsed": false
+  }
+}

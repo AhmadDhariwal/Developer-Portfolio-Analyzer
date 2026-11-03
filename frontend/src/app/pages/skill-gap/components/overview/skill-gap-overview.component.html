@@ -1,0 +1,64 @@
+<div class="coverage-summary__content">
+  <span class="eyebrow">Required skills only</span>
+  <h2 id="coverage-title">Evidence-backed skill coverage</h2>
+  <p>
+    Coverage reflects evidence for your career requirements. It does not measure your total ability
+    or prove practical proficiency.
+  </p>
+</div>
+<div class="coverage-value">
+  <strong data-testid="coverage">{{
+    analysis.coverage === null || analysis.coverage === undefined
+      ? 'Unavailable'
+      : analysis.coverage + '%'
+  }}</strong
+  ><span>Skill coverage</span>
+</div>
+@if (analysis.coverage !== null && analysis.coverage !== undefined) {
+  <div
+    class="coverage-track"
+    role="progressbar"
+    aria-label="Required skill evidence coverage"
+    [attr.aria-valuenow]="analysis.coverage"
+    aria-valuemin="0"
+    aria-valuemax="100"
+  >
+    <span [style.width.%]="analysis.coverage"></span>
+  </div>
+}
+@if (analysis.coverageUnavailableReason) {
+  <p class="wide">{{ warningLabel(analysis.coverageUnavailableReason) }}</p>
+}
+<div class="limitation wide">
+  <strong>Current evidence limitation</strong>
+  <p>
+    GitHub and resume sources do not inspect code implementation. Metadata supports Partial; resume
+    mentions and self-reported skills are claims. Neither alone demonstrates proficiency.
+  </p>
+</div>
+
+<!-- Supporting metrics belong to the executive overview. -->
+<div class="metrics-grid wide">
+  <div class="metric-card">
+    <span class="metric-label">Evidence-backed skills</span>
+    <strong class="metric-value">{{ evidenceBackedCount }}</strong>
+    <span class="metric-subtext"
+      >{{ demonstratedCount }} demonstrated · {{ partialCount }} partial</span
+    >
+  </div>
+  <div class="metric-card metric-card--warning">
+    <span class="metric-label">Validated requirement gaps</span>
+    <strong class="metric-value">{{ validatedGapsCount }}</strong>
+    <span class="metric-subtext">Missing technical proof</span>
+  </div>
+  <div class="metric-card metric-card--info">
+    <span class="metric-label">Claims needing evidence</span>
+    <strong class="metric-value">{{ claimedCount }}</strong>
+    <span class="metric-subtext">Claims without implementation evidence</span>
+  </div>
+  <div class="metric-card metric-card--primary">
+    <span class="metric-label">Learning plan timeline</span>
+    <strong class="metric-value metric-value--timeline">{{ totalWeeks }}</strong>
+    <span class="metric-subtext">{{ roadmapPhaseCount }} phased milestones</span>
+  </div>
+</div>

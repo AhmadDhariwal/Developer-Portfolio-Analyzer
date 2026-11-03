@@ -1,0 +1,43 @@
+<div class="section-heading">
+  <div>
+    <span class="eyebrow">Implementation artifacts</span>
+    <h2 id="projects-title">Suggested proof projects</h2>
+    <p>Targeted project architectures designed to produce verifiable implementation evidence.</p>
+  </div>
+  <span class="tag">{{ suggestedProjects.length }} projects</span>
+</div>
+<div class="project-cards">
+  @for (proj of displayedProjects; track proj.title) {
+    <article class="project-card">
+      <div class="project-card__top">
+        <span class="project-skill-tag">{{ proj.skill }}</span>
+        <span class="project-difficulty"
+          >{{ proj.difficulty || 'Intermediate' }} · {{ proj.estimatedWeeks || 2 }} weeks</span
+        >
+      </div>
+      <h3>{{ proj.title }}</h3>
+      @if (proj.outcome) {
+        <p class="project-outcome">{{ proj.outcome }}</p>
+      }
+      @if (proj.deliverable) {
+        <div class="project-deliverable">
+          <span>Deliverable</span>
+          <strong>{{ proj.deliverable }}</strong>
+        </div>
+      }
+    </article>
+  } @empty {
+    <p class="empty-notice">No specific proof projects generated for this snapshot.</p>
+  }
+</div>
+@if (suggestedProjects.length > initialProjectLimit) {
+  <div class="projects-footer">
+    <button type="button" class="disclosure-button" (click)="expandedChange.emit(!showAllProjects)">
+      {{
+        showAllProjects
+          ? 'Show fewer projects (top 3)'
+          : 'View all ' + suggestedProjects.length + ' proof projects'
+      }}
+    </button>
+  </div>
+}

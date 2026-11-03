@@ -12,7 +12,7 @@ const {
   restoreStreak: restoreStreakFn,
   canRestore,
   MAX_RESTORE_DAYS,
-  activityAnchor
+  activityAnchor,
 } = require('./streakService');
 const { startOfDay, endOfDay, addDays, daysBetween } = require('../utils/dateUtils');
 
@@ -34,7 +34,7 @@ const runtimeCounters = {
   mongoHits: 0,
   signalCalls: 0,
   persistenceOperations: 0,
-  redisWrites: 0
+  redisWrites: 0,
 };
 const createStageTimer = () => {
   const start = performance.now();
@@ -55,11 +55,11 @@ const createStageTimer = () => {
             cacheMetadata: {
               authoritativeSource: 'MongoDB',
               stageTimingsMs: { ...stages, total: performance.now() - start },
-              requestCounters: { ...runtimeCounters }
-            }
+              requestCounters: { ...runtimeCounters },
+            },
           }
         : value;
-    }
+    },
   };
 };
 const invalidateCareerSprintCache = (userId) => overviewCache.invalidate(userId);
@@ -77,7 +77,7 @@ const LIMITS = {
   summary: 500,
   signalsUsed: 12,
   tasksPerPlan: 20,
-  tasksPerCreate: 30
+  tasksPerCreate: 30,
 };
 
 const createHttpError = (statusCode, message, details = []) => {
@@ -167,22 +167,24 @@ const normalizeTask = (
   task,
   taskTypeDefault = 'manual',
   trustedSource = false,
-  calendarOwner = {}
+  calendarOwner = {},
 ) => {
   if (!task || typeof task !== 'object' || Array.isArray(task)) {
     throw createHttpError(400, 'Task must be an object.');
   }
-  const title = sanitizeBoundedText(task?.title, LIMITS.title, 'Task title', { required: true });
+  const title = sanitizeBoundedText(task?.title, LIMITS.title, 'Task title', {
+    required: true,
+  });
   const description = sanitizeBoundedText(
     task?.description || '',
     LIMITS.description,
-    'Task description'
+    'Task description',
   );
   const defaults = { learning: 3, project: 5, practice: 4 };
   for (const [field, allowed] of Object.entries({
     category: Object.keys(defaults),
     priority: ['high', 'medium', 'low'],
-    taskType: ['ai', 'manual']
+    taskType: ['ai', 'manual'],
   })) {
     if (task[field] !== undefined && !allowed.includes(task[field])) {
       throw createHttpError(400, `Invalid task ${field}.`);
@@ -228,10 +230,10 @@ const normalizeTask = (
           sourceCourseId: task.sourceCourseId || null,
           sourceCourseSkill: task.sourceCourseSkill || null,
           ...Object.fromEntries(
-            provenance.fields.filter((key) => task[key]).map((key) => [key, task[key]])
-          )
+            provenance.fields.filter((key) => task[key]).map((key) => [key, task[key]]),
+          ),
         }
-      : {})
+      : {}),
   };
 };
 
@@ -239,10 +241,10 @@ const dedupeTasks = (
   tasks = [],
   existingTitles = [],
   trustedSource = false,
-  calendarOwner = {}
+  calendarOwner = {},
 ) => {
   const seen = new Set(
-    existingTitles.map((title) => normalizeTitle(title).toLowerCase()).filter(Boolean)
+    existingTitles.map((title) => normalizeTitle(title).toLowerCase()).filter(Boolean),
   );
   const clean = [];
 
@@ -251,7 +253,7 @@ const dedupeTasks = (
       task,
       task?.taskType === 'ai' ? 'ai' : 'manual',
       trustedSource,
-      calendarOwner
+      calendarOwner,
     );
     const key = normalized.title.toLowerCase();
     if (!normalized.title || seen.has(key)) continue;
@@ -273,7 +275,7 @@ const buildSprintPayload = ({
   goalExperienceLevel,
   sprintStartDate,
   sprintEndDate,
-  timeZone = 'UTC'
+  timeZone = 'UTC',
 }) => {
   const pinned = sprintWindow(timeZone, sprintStartDate, sprintEndDate);
   const sprintStart = pinned.sprintStartDate;
@@ -303,9 +305,9 @@ const buildSprintPayload = ({
     goalExperienceLevel: sanitizeBoundedText(
       goalExperienceLevel || '',
       LIMITS.goalField,
-      'Experience level'
+      'Experience level',
     ),
-    tasks: dedupeTasks(tasks, [], false, pinned)
+    tasks: dedupeTasks(tasks, [], false, pinned),
   };
 };
 
@@ -333,7 +335,7 @@ const buildDailyActivity = (sprint, days = 14) => {
     activity.push({
       date,
       count: completedByDay.get(key) || 0,
-      active: (completedByDay.get(key) || 0) > 0
+      active: (completedByDay.get(key) || 0) > 0,
     });
   }
   return activity;
@@ -347,7 +349,7 @@ const buildRestoreMeta = (sprint) => {
       remainingRestoreDays: Math.ceil(state.remainingRestoreMs / 86400000),
       reason: state.canRestore
         ? 'Restore is available until the exclusive expiry instant.'
-        : 'Restore is not available.'
+        : 'Restore is not available.',
     };
   }
   const broken = Boolean(sprint.streakBroken);
@@ -367,7 +369,7 @@ const buildRestoreMeta = (sprint) => {
       ? 'Your streak is active.'
       : remainingRestoreDays > 0
         ? `Your streak broke after ${missedDays || 1} missed day${missedDays === 1 ? '' : 's'}. Restore is still available.`
-        : 'The restore window has expired. Start a new streak today.'
+        : 'The restore window has expired. Start a new streak today.',
   };
 };
 
@@ -380,39 +382,39 @@ const buildInsights = ({ analytics, comparison, restoreMeta, signals }) => {
     insights.push('Progress is healthy, but there is still room to close remaining work faster.');
   } else {
     insights.push(
-      'Execution is still early. Focus on completing one high-value task today to build momentum.'
+      'Execution is still early. Focus on completing one high-value task today to build momentum.',
     );
   }
 
   if (analytics.consistencyScore >= 75) {
     insights.push(
-      'Consistency is a strength right now. Your recent task completion pattern is stable.'
+      'Consistency is a strength right now. Your recent task completion pattern is stable.',
     );
   } else if (analytics.consistencyScore !== null && analytics.consistencyScore < 45) {
     insights.push(
-      'Consistency is slipping. Smaller daily tasks or tighter task scope would improve follow-through.'
+      'Consistency is slipping. Smaller daily tasks or tighter task scope would improve follow-through.',
     );
   }
 
   if (analytics.overdueTasks > 0) {
     insights.push(
-      `There ${analytics.overdueTasks === 1 ? 'is' : 'are'} ${analytics.overdueTasks} overdue task${analytics.overdueTasks === 1 ? '' : 's'} affecting momentum.`
+      `There ${analytics.overdueTasks === 1 ? 'is' : 'are'} ${analytics.overdueTasks} overdue task${analytics.overdueTasks === 1 ? '' : 's'} affecting momentum.`,
     );
   }
 
   if (comparison.progressDelta > 0) {
     insights.push(
-      `Week-over-week progress improved by ${comparison.progressDelta} points compared with the previous sprint.`
+      `Week-over-week progress improved by ${comparison.progressDelta} points compared with the previous sprint.`,
     );
   } else if (comparison.progressDelta < 0) {
     insights.push(
-      `Week-over-week progress is down by ${Math.abs(comparison.progressDelta)} points, so this sprint likely needs a narrower focus.`
+      `Week-over-week progress is down by ${Math.abs(comparison.progressDelta)} points, so this sprint likely needs a narrower focus.`,
     );
   }
 
   if (restoreMeta.canRestore) {
     insights.push(
-      `Your streak can still be restored within ${restoreMeta.remainingRestoreDays} day${restoreMeta.remainingRestoreDays === 1 ? '' : 's'}.`
+      `Your streak can still be restored within ${restoreMeta.remainingRestoreDays} day${restoreMeta.remainingRestoreDays === 1 ? '' : 's'}.`,
     );
   }
 
@@ -436,7 +438,7 @@ const serializeSprint = async (sprintDoc, options = {}) => {
   const completedTasks = tasks.filter((task) => task.isCompleted);
   const completedPoints = completedTasks.reduce((sum, task) => sum + (Number(task.points) || 1), 0);
   const overdueTasks = tasks.filter(
-    (task) => !task.isCompleted && taskDueDate(task) && taskDueDate(task) < new Date()
+    (task) => !task.isCompleted && taskDueDate(task) && taskDueDate(task) < new Date(),
   ).length;
   const progressPercent = calcWeightedProgress(tasks);
   const currentStreak = Number(sprint.currentStreak || sprint.streak || 0);
@@ -453,12 +455,12 @@ const serializeSprint = async (sprintDoc, options = {}) => {
     : clamp(
         progressPercent * 0.62 +
           (Math.min(currentStreak, 14) / 14) * 23 +
-          Math.min(completedInLastSevenDays, 10) * 1.5
+          Math.min(completedInLastSevenDays, 10) * 1.5,
       );
   const productivityScore = clamp(
     completedPoints * 4 + completedTasks.length * 5 - overdueTasks * 6,
     0,
-    100
+    100,
   );
   const previousProgress = previousSprint ? calcWeightedProgress(previousSprint.tasks || []) : 0;
   const previousCompleted = previousSprint
@@ -469,7 +471,7 @@ const serializeSprint = async (sprintDoc, options = {}) => {
     ? {
         policy: 'legacy-calendar-unresolved',
         canRestore: false,
-        reason: sprint.legacyAccess.reason
+        reason: sprint.legacyAccess.reason,
       }
     : buildRestoreMeta(sprint);
 
@@ -488,14 +490,14 @@ const serializeSprint = async (sprintDoc, options = {}) => {
     aiTaskCount: tasks.filter((task) => task.taskType === 'ai').length,
     manualTaskCount: tasks.filter((task) => task.taskType !== 'ai').length,
     completedInLastSevenDays,
-    dailyActivity: unresolved ? [] : buildDailyActivity(sprint, 14)
+    dailyActivity: unresolved ? [] : buildDailyActivity(sprint, 14),
   };
   sprint.comparison = {
     progressDelta: progressPercent - previousProgress,
     completedTasksDelta: completedTasks.length - previousCompleted,
     streakDelta:
       currentStreak - Number(previousSprint?.currentStreak || previousSprint?.streak || 0),
-    xpDelta: Number(sprint.xpPoints || 0) - previousXp
+    xpDelta: Number(sprint.xpPoints || 0) - previousXp,
   };
   sprint.restoreMeta = sprint.legacyAccess.readOnly
     ? { ...restoreMeta, canRestore: false }
@@ -509,29 +511,29 @@ const serializeSprint = async (sprintDoc, options = {}) => {
         signals?.careerSprintSignal?.activeLearningFocus ||
           sprint.goalTechnology ||
           sprint.goalStack ||
-          ''
+          '',
       ).trim(),
-      streak: Number(signals?.careerSprintSignal?.streak || currentStreak)
+      streak: Number(signals?.careerSprintSignal?.streak || currentStreak),
     },
     weeklyReport: {
       status: String(signals?.weeklyReportSignal?.status || 'Unavailable'),
       weeklyProgressScore: Number(signals?.weeklyReportSignal?.weeklyProgressScore || 0),
-      repeatedWeakAreas: signals?.weeklyReportSignal?.repeatedWeakAreas || []
+      repeatedWeakAreas: signals?.weeklyReportSignal?.repeatedWeakAreas || [],
     },
     portfolio: {
       completenessScore: Number(signals?.portfolioSignal?.completenessScore || 0),
-      projectPresentationQuality: Number(signals?.portfolioSignal?.projectPresentationQuality || 0)
+      projectPresentationQuality: Number(signals?.portfolioSignal?.projectPresentationQuality || 0),
     },
     integrations: {
       usedProviders: signals?.integrationSignal?.usedProviders || [],
-      strongestProof: signals?.integrationSignal?.strongestProof || []
-    }
+      strongestProof: signals?.integrationSignal?.strongestProof || [],
+    },
   };
   sprint.insights = buildInsights({
     analytics: sprint.analytics,
     comparison: sprint.comparison,
     restoreMeta,
-    signals: sprint.signalsUsed
+    signals: sprint.signalsUsed,
   });
 
   // Normalize ids to stable strings so cache clones and API clients never see ObjectId artifacts.
@@ -539,7 +541,7 @@ const serializeSprint = async (sprintDoc, options = {}) => {
   sprint.userId = sprint.userId != null ? String(sprint.userId) : sprint.userId;
   sprint.tasks = tasks.map((task) => ({
     ...task,
-    _id: task?._id != null ? String(task._id) : task?._id
+    _id: task?._id != null ? String(task._id) : task?._id,
   }));
   if (Array.isArray(sprint.aiPlans)) {
     const context =
@@ -548,7 +550,7 @@ const serializeSprint = async (sprintDoc, options = {}) => {
     sprint.aiPlans = sprint.aiPlans.map((plan) => ({
       ...(context ? { compatibility: draftContext.compatibility(plan, context) } : {}),
       ...plan,
-      _id: plan?._id != null ? String(plan._id) : plan?._id
+      _id: plan?._id != null ? String(plan._id) : plan?._id,
     }));
   }
 
@@ -557,27 +559,30 @@ const serializeSprint = async (sprintDoc, options = {}) => {
 
 const createSprint = async (opts) => {
   const preference = await preferences.getPreference(opts.userId);
-  const payload = buildSprintPayload({ ...opts, timeZone: preference.timeZone });
+  const payload = buildSprintPayload({
+    ...opts,
+    timeZone: preference.timeZone,
+  });
   payload._id = new mongoose.Types.ObjectId(
     crypto
       .createHash('sha256')
       .update(String(opts.userId) + payload.creationKey)
       .digest('hex')
-      .slice(0, 24)
+      .slice(0, 24),
   );
   const existing = await CareerSprint.findOne({
     userId: opts.userId,
     $or: [
       {
         sprintStartDate: { $lte: payload.sprintEndDate },
-        sprintEndDate: { $gte: payload.sprintStartDate }
+        sprintEndDate: { $gte: payload.sprintStartDate },
       },
       {
         sprintStartDate: null,
         weekStartDate: { $lte: payload.sprintEndDate },
-        weekEndDate: { $gte: payload.sprintStartDate }
-      }
-    ]
+        weekEndDate: { $gte: payload.sprintStartDate },
+      },
+    ],
   });
   if (existing) {
     if (
@@ -593,13 +598,16 @@ const createSprint = async (opts) => {
     opts.userId,
     payload._id,
     payload.sprintStartDate,
-    payload.sprintEndDate
+    payload.sprintEndDate,
   );
   payload.scheduleToken = token;
   try {
     sprint = await CareerSprint.create(payload);
   } catch (error) {
-    sprint = await CareerSprint.findOne({ userId: opts.userId, creationKey: payload.creationKey });
+    sprint = await CareerSprint.findOne({
+      userId: opts.userId,
+      creationKey: payload.creationKey,
+    });
     if (
       (sprint && sprint.scheduleToken !== token) ||
       (!sprint &&
@@ -620,8 +628,8 @@ const findPreviousSprint = async (userId, sprint) => {
     _id: { $ne: sprint._id },
     $or: [
       { sprintEndDate: { $lt: pivotDate } },
-      { sprintEndDate: null, weekEndDate: { $lt: pivotDate } }
-    ]
+      { sprintEndDate: null, weekEndDate: { $lt: pivotDate } },
+    ],
   })
     .select('tasks xpPoints currentStreak streak weekStartDate')
     .sort({ sprintEndDate: -1, weekEndDate: -1 })
@@ -638,10 +646,10 @@ const loadCurrentSprint = async (userId, timer = createStageTimer(), forceRefres
     CareerSprint.findOne({
       userId,
       sprintStartDate: { $lte: now },
-      sprintEndDate: { $gte: now }
+      sprintEndDate: { $gte: now },
     })
       .sort({ updatedAt: -1, _id: -1 })
-      .lean()
+      .lean(),
   );
 
   if (!sprint) {
@@ -651,10 +659,10 @@ const loadCurrentSprint = async (userId, timer = createStageTimer(), forceRefres
         sprintStartDate: null,
         sprintEndDate: null,
         weekStartDate: { $lte: now },
-        weekEndDate: { $gte: now }
+        weekEndDate: { $gte: now },
       })
         .sort({ updatedAt: -1, _id: -1 })
-        .lean()
+        .lean(),
     );
   }
 
@@ -666,7 +674,7 @@ const loadCurrentSprint = async (userId, timer = createStageTimer(), forceRefres
   if (!sprint) {
     throw createHttpError(
       409,
-      'An existing sprint conflicts with the default week. Choose a non-overlapping window.'
+      'An existing sprint conflicts with the default week. Choose a non-overlapping window.',
     );
   }
 
@@ -678,7 +686,12 @@ const loadCurrentSprint = async (userId, timer = createStageTimer(), forceRefres
     await timer.measure('persistence', async () => {
       runtimeCounters.persistenceOperations += 1;
       const result = await CareerSprint.updateOne(
-        { _id: sprint._id, userId, __v: sprint.__v, lastActiveDate: sprint.lastActiveDate },
+        {
+          _id: sprint._id,
+          userId,
+          __v: sprint.__v,
+          lastActiveDate: sprint.lastActiveDate,
+        },
         {
           $inc: { __v: 1 },
           $set: {
@@ -688,9 +701,9 @@ const loadCurrentSprint = async (userId, timer = createStageTimer(), forceRefres
             streakWarning: mutable.streakWarning,
             streakStatus: mutable.streakStatus,
             currentStreak: mutable.currentStreak,
-            streak: mutable.streak
-          }
-        }
+            streak: mutable.streak,
+          },
+        },
       );
       if (result.matchedCount === 0) {
         Object.assign(mutable, await CareerSprint.findOne({ _id: sprint._id, userId }).lean());
@@ -701,21 +714,31 @@ const loadCurrentSprint = async (userId, timer = createStageTimer(), forceRefres
 
   const previousSprint = await previousRequest;
   const context = sprint.aiPlans?.length ? await draftContext.currentContext(userId) : null;
-  const integrationRevision = await require('../models/integrationInsight')
-    .findOne({ userId })
-    .select('updatedAt')
-    .lean();
+  const integrationRevision = mongoose.Types.ObjectId.isValid(String(userId || ''))
+    ? await require('../models/integrationInsight')
+        .findOne({ userId })
+        .select('updatedAt')
+        .lean()
+        .catch(() => null)
+    : null;
   return overviewCache.load(
     sprint,
     previousSprint,
     async () => {
       runtimeCounters.signalCalls++;
       const signals = await getDeveloperSignals(userId).catch(() => ({}));
-      return serializeSprint(sprint, { previousSprint, signals, draftContext: context });
+      return serializeSprint(sprint, {
+        previousSprint,
+        signals,
+        draftContext: context,
+      });
     },
     runtimeCounters,
     forceRefresh,
-    { draft: context, integrationRevision: integrationRevision?.updatedAt || null }
+    {
+      draft: context,
+      integrationRevision: integrationRevision?.updatedAt || null,
+    },
   );
 };
 
@@ -727,7 +750,7 @@ const getCurrentSprint = async (userId, { forceRefresh = false } = {}) => {
 const assertUniqueTask = (sprint, title) => {
   const normalizedTitle = normalizeTitle(title).toLowerCase();
   const duplicate = (sprint.tasks || []).some(
-    (task) => normalizeTitle(task.title).toLowerCase() === normalizedTitle
+    (task) => normalizeTitle(task.title).toLowerCase() === normalizedTitle,
   );
   if (duplicate) {
     const error = new Error('A task with this title already exists in the sprint.');
@@ -775,9 +798,13 @@ const toggleTaskCompletion = async (userId, sprintId, taskId, isCompleted) => {
           title: 'Sprint Task Completed',
           message: 'A Career Sprint task was completed.',
           eventId: `sprint_completed:${sprintId}:${taskId}:${task.completedAt?.toISOString() || Number(sprint.__v || 0) + 1}`,
-          meta: { sprintId: String(sprintId), taskId: String(taskId), target: '/app/career-sprint' }
+          meta: {
+            sprintId: String(sprintId),
+            taskId: String(taskId),
+            target: '/app/career-sprint',
+          },
         }
-      : null
+      : null,
   );
   invalidateCareerSprintCache(userId);
 
@@ -794,13 +821,13 @@ const addTaskToSprint = async (userId, sprintId, task) => {
   const [normalized] = await provenance.attach(
     userId,
     [task],
-    [normalizeTask(task, 'manual', false, sprint)]
+    [normalizeTask(task, 'manual', false, sprint)],
   );
   const duplicate = (sprint.tasks || []).some(
     (item) =>
       normalizeTitle(item.title).toLowerCase() === normalized.title.toLowerCase() ||
       (normalized.sourceRecommendationId &&
-        item.sourceRecommendationId === normalized.sourceRecommendationId)
+        item.sourceRecommendationId === normalized.sourceRecommendationId),
   );
   if (duplicate) return serializeSprint(sprint, { signals: null });
   if (sprint.tasks.length >= 500) throw createHttpError(413, 'Sprint task limit reached.');
@@ -826,7 +853,7 @@ const restoreStreak = async (userId, sprintId) => {
     title: 'Career Streak Restored',
     message: `Your ${Number(sprint.currentStreak || sprint.streak || 0)} day streak is active again.`,
     eventId: `sprint_restored:${sprintId}:${Number(sprint.__v || 0) + 1}`,
-    meta: { sprintId: String(sprintId), target: '/app/career-sprint' }
+    meta: { sprintId: String(sprintId), target: '/app/career-sprint' },
   });
   invalidateCareerSprintCache(userId);
   const previousSprint = await findPreviousSprint(userId, sprint);
@@ -841,7 +868,7 @@ const updateSprintDates = async (userId, sprintId, sprintStartDate, sprintEndDat
 
   const nextStart = sprintStartDate
     ? calendar(sprint).start(
-        sprint.calendarPolicy ? sprintStartDate : parseDateOrNull(sprintStartDate)
+        sprint.calendarPolicy ? sprintStartDate : parseDateOrNull(sprintStartDate),
       )
     : sprint.sprintStartDate || sprint.weekStartDate;
   const nextEnd = sprintEndDate
@@ -852,7 +879,7 @@ const updateSprintDates = async (userId, sprintId, sprintStartDate, sprintEndDat
     userId,
     _id: { $ne: sprintId },
     sprintStartDate: { $lte: nextEnd },
-    sprintEndDate: { $gte: nextStart }
+    sprintEndDate: { $gte: nextStart },
   }).lean();
   if (overlap) throw createHttpError(409, 'Sprint dates overlap an existing sprint.');
 
@@ -887,7 +914,7 @@ const summarizeHistoryItem = (sprint) => {
   const progressPercent = calcWeightedProgress(tasks);
   const completedTasks = tasks.filter((task) => task.isCompleted).length;
   const overdueTasks = tasks.filter(
-    (task) => !task.isCompleted && taskDueDate(task) && taskDueDate(task) < new Date()
+    (task) => !task.isCompleted && taskDueDate(task) && taskDueDate(task) < new Date(),
   ).length;
 
   return {
@@ -899,9 +926,9 @@ const summarizeHistoryItem = (sprint) => {
       overdueTasks,
       consistencyScore: clamp(
         progressPercent * 0.65 +
-          Math.min(Number(sprint.currentStreak || sprint.streak || 0), 10) * 3.5
-      )
-    }
+          Math.min(Number(sprint.currentStreak || sprint.streak || 0), 10) * 3.5,
+      ),
+    },
   };
 };
 
@@ -919,8 +946,8 @@ const getSprintHistory = async (userId, limit = 6) => {
     legacyAccess: legacyPolicy.access(item),
     aiPlans: (item.aiPlans || []).map((plan) => ({
       ...plan,
-      ...(context ? { compatibility: draftContext.compatibility(plan, context) } : {})
-    }))
+      ...(context ? { compatibility: draftContext.compatibility(plan, context) } : {}),
+    })),
   }));
 };
 
@@ -963,24 +990,24 @@ const saveAiPlanToSprint = async (userId, sprintId, payload = {}, trustedSource 
     goalStack: sanitizeBoundedText(
       payload.goalStack || sprint.goalStack || '',
       LIMITS.goalField,
-      'Goal stack'
+      'Goal stack',
     ),
     goalTechnology: sanitizeBoundedText(
       payload.goalTechnology || sprint.goalTechnology || '',
       LIMITS.goalField,
-      'Goal technology'
+      'Goal technology',
     ),
     goalExperienceLevel: sanitizeBoundedText(
       payload.goalExperienceLevel || sprint.goalExperienceLevel || '',
       LIMITS.goalField,
-      'Experience level'
+      'Experience level',
     ),
     summary: sanitizeBoundedText(payload.summary || '', LIMITS.summary, 'Plan summary'),
     confidenceScore: clamp(
-      Number.isFinite(Number(payload.confidenceScore)) ? Number(payload.confidenceScore) : 0
+      Number.isFinite(Number(payload.confidenceScore)) ? Number(payload.confidenceScore) : 0,
     ),
     consistencyScore: clamp(
-      Number.isFinite(Number(payload.consistencyScore)) ? Number(payload.consistencyScore) : 0
+      Number.isFinite(Number(payload.consistencyScore)) ? Number(payload.consistencyScore) : 0,
     ),
     signalsUsed: Array.isArray(payload.signalsUsed)
       ? payload.signalsUsed
@@ -988,11 +1015,11 @@ const saveAiPlanToSprint = async (userId, sprintId, payload = {}, trustedSource 
           .filter(Boolean)
           .slice(0, LIMITS.signalsUsed)
       : [],
-    tasks
+    tasks,
   };
 
   const sameName = (sprint.aiPlans || []).find(
-    (item) => normalizeTitle(item.name).toLowerCase() === plan.name.toLowerCase()
+    (item) => normalizeTitle(item.name).toLowerCase() === plan.name.toLowerCase(),
   );
   if (sameName) {
     const content = (items) =>
@@ -1006,20 +1033,20 @@ const saveAiPlanToSprint = async (userId, sprintId, payload = {}, trustedSource 
         task.startDate || null,
         task.endDate || null,
         String(task.sourceScenarioId || ''),
-        ...provenance.fields.map((key) => task[key] || '')
+        ...provenance.fields.map((key) => task[key] || ''),
       ]);
     const sameTasks =
       draftContext.digest(content(sameName.tasks)) === draftContext.digest(content(tasks));
     if (sameTasks) return serializeSprint(sprint, { signals: null, draftContext: context });
     throw createHttpError(
       409,
-      'A different draft already uses this name. Preserve it or delete it explicitly.'
+      'A different draft already uses this name. Preserve it or delete it explicitly.',
     );
   }
   if ((sprint.aiPlans || []).length >= 8)
     throw createHttpError(
       409,
-      'Eight saved drafts already exist. Delete a draft before saving another.'
+      'Eight saved drafts already exist. Delete a draft before saving another.',
     );
   sprint.aiPlans.push(plan);
   await sprint.save();
@@ -1031,6 +1058,9 @@ const saveAiPlanToSprint = async (userId, sprintId, payload = {}, trustedSource 
 
 const importScenarioPlanToSprint = async (userId, sprintId, scenarioId = '') => {
   assertObjectId(sprintId, 'Sprint');
+  const sprint = await CareerSprint.findOne({ _id: sprintId, userId });
+  if (!sprint) return null;
+  legacyPolicy.assertWritable(sprint);
   if (scenarioId) assertObjectId(scenarioId, 'Scenario');
   const scenario = scenarioId
     ? await ScenarioSimulation.findOne({ _id: scenarioId, userId }).lean()
@@ -1040,7 +1070,7 @@ const importScenarioPlanToSprint = async (userId, sprintId, scenarioId = '') => 
     userId,
     sprintId,
     scenario,
-    'draft'
+    'draft',
   );
   return serializeSprint(exported.sprint, { signals: null });
 };
@@ -1077,7 +1107,7 @@ const editTask = async (userId, sprintId, taskId, payload = {}) => {
     { ...task.toObject(), ...payload },
     task.taskType,
     false,
-    sprint
+    sprint,
   );
   if (normalizeTitle(task.title).toLowerCase() !== normalized.title.toLowerCase())
     assertUniqueTask(sprint, normalized.title);
@@ -1091,7 +1121,7 @@ const editTask = async (userId, sprintId, taskId, payload = {}) => {
     sourceRecommendationSnapshotId: task.sourceRecommendationSnapshotId || undefined,
     sourceRecommendationHash: task.sourceRecommendationHash || undefined,
     sourceRule: task.sourceRule || undefined,
-    evidenceLimitation: task.evidenceLimitation || undefined
+    evidenceLimitation: task.evidenceLimitation || undefined,
   };
   Object.assign(task, normalized, preservedProvenance);
   await sprint.save();
@@ -1140,15 +1170,15 @@ const mutateDraft = async (userId, sprintId, planId, selection = null, acknowled
       selected,
       sprint.tasks.map((task) => task.title),
       true,
-      sprint
+      sprint,
     ).filter(
       (task) =>
         (!task.sourceRecommendationId ||
           !sprint.tasks.some(
-            (existing) => existing.sourceRecommendationId === task.sourceRecommendationId
+            (existing) => existing.sourceRecommendationId === task.sourceRecommendationId,
           )) &&
         (!task.sourceScenarioItemKey ||
-          !(sprint.scenarioIngestedItems || []).includes(task.sourceScenarioItemKey))
+          !(sprint.scenarioIngestedItems || []).includes(task.sourceScenarioItemKey)),
     );
     if (sprint.tasks.length + tasks.length > 500)
       throw createHttpError(413, 'Sprint task limit reached.');
@@ -1161,8 +1191,8 @@ const mutateDraft = async (userId, sprintId, planId, selection = null, acknowled
     sprint.scenarioIngestedItems = [
       ...new Set([
         ...(sprint.scenarioIngestedItems || []),
-        ...tasks.map((task) => task.sourceScenarioItemKey).filter(Boolean)
-      ])
+        ...tasks.map((task) => task.sourceScenarioItemKey).filter(Boolean),
+      ]),
     ];
     sprint.tasks.push(...tasks);
   }
@@ -1188,7 +1218,7 @@ const mergeProposedTasks = async (userId, sprintId, proposedTasks) => {
     proposedTasks,
     sprint.tasks.map((task) => task.title),
     true,
-    sprint
+    sprint,
   );
   if (sprint.tasks.length + tasks.length > 500)
     throw createHttpError(413, 'Sprint task limit reached.');
@@ -1230,5 +1260,5 @@ module.exports = {
   LIMITS,
   CAREER_SPRINT_OVERVIEW_VERSION,
   SPRINT_REDIS_BUDGET_MS,
-  STAGE_TIMINGS_ENABLED
+  STAGE_TIMINGS_ENABLED,
 };

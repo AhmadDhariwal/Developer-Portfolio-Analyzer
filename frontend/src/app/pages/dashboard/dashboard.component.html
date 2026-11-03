@@ -8,7 +8,7 @@
     <p class="header-sub">{{ dashboardScoreLine }}</p>
     <p class="header-sub">{{ sourceHealthLine }}</p>
   </div>
-  
+
   <div class="header-actions">
     <div class="role-selector">
       <label class="role-label" for="dashboard-career-stack">Career Stack</label>
@@ -48,28 +48,44 @@
 
 <div class="alert-banner alert-info" *ngIf="tenantTeamAnalytics && tenantTeamName">
   <span>
-    Team context active: {{ tenantTeamName }} | Members: {{ tenantTeamAnalytics.totalMembers }} | Team Score: {{ tenantTeamAnalytics.teamScore || tenantTeamAnalytics.averageReadinessScore }} | Activity: {{ tenantTeamAnalytics.teamActivity || 0 }} | Recruiter Engagement: {{ tenantTeamAnalytics.recruiterEngagement || 0 }} | Hiring Performance: {{ tenantTeamAnalytics.hiringPerformance || 0 }}
+    Team context active: {{ tenantTeamName }} | Members: {{ tenantTeamAnalytics.totalMembers }} |
+    Team Score: {{ tenantTeamAnalytics.teamScore || tenantTeamAnalytics.averageReadinessScore }} |
+    Activity: {{ tenantTeamAnalytics.teamActivity || 0 }} | Recruiter Engagement:
+    {{ tenantTeamAnalytics.recruiterEngagement || 0 }} | Hiring Performance:
+    {{ tenantTeamAnalytics.hiringPerformance || 0 }}
   </span>
 </div>
 
 <div *ngIf="dashboardStale && !isLoading" class="alert-banner alert-warning">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="alert-icon">
-    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    <circle cx="12" cy="12" r="10" />
+    <line x1="12" y1="8" x2="12" y2="12" />
+    <line x1="12" y1="16" x2="12.01" y2="16" />
   </svg>
   <span>{{ dashboardRefreshMessage || 'Analysis refresh recommended' }}</span>
 </div>
 
 <div *ngIf="rateLimitWarning" class="alert-banner alert-warning">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="alert-icon">
-    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    <circle cx="12" cy="12" r="10" />
+    <line x1="12" y1="8" x2="12" y2="12" />
+    <line x1="12" y1="16" x2="12.01" y2="16" />
   </svg>
-  <span>GitHub API rate limit reached. Showing cached data. Add a <code>GITHUB_TOKEN</code> to your <code>.env</code> for higher limits.</span>
+  <span
+    >GitHub API rate limit reached. Showing cached data. Add a <code>GITHUB_TOKEN</code> to your
+    <code>.env</code> for higher limits.</span
+  >
 </div>
 <div *ngIf="noGithubUsername && !isLoading" class="alert-banner alert-info">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="alert-icon">
-    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    <circle cx="12" cy="12" r="10" />
+    <line x1="12" y1="8" x2="12" y2="12" />
+    <line x1="12" y1="16" x2="12.01" y2="16" />
   </svg>
-  <span>No GitHub username set. Go to <a routerLink="/app/profile">Profile Settings</a> and add your GitHub handle to load real data.</span>
+  <span
+    >No GitHub username set. Go to <a routerLink="/app/profile">Profile Settings</a> and add your
+    GitHub handle to load real data.</span
+  >
 </div>
 
 <div class="row-top">
@@ -80,28 +96,55 @@
     </div>
     <div class="score-body">
       <app-score-meter [score]="developerScore" [maxScore]="100" size="lg"></app-score-meter>
-      <div class="score-trend" [class.trend-down]="!scoreTrendUp" [class.trend-neutral]="scoreChangeFromLastMonth === 0">
-        <svg *ngIf="scoreTrendUp && scoreChangeFromLastMonth !== 0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <div
+        class="score-trend"
+        [class.trend-down]="!scoreTrendUp"
+        [class.trend-neutral]="scoreChangeFromLastMonth === 0"
+      >
+        <svg
+          *ngIf="scoreTrendUp && scoreChangeFromLastMonth !== 0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
           <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
           <polyline points="16 7 22 7 22 13"></polyline>
         </svg>
-        <svg *ngIf="!scoreTrendUp" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <svg
+          *ngIf="!scoreTrendUp"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
           <polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline>
           <polyline points="16 17 22 17 22 11"></polyline>
         </svg>
-        <svg *ngIf="scoreChangeFromLastMonth === 0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <svg
+          *ngIf="scoreChangeFromLastMonth === 0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
         {{ scoreTrendLabel }}
       </div>
-      <p class="percentile-note">You're in the <span>{{ percentileLabel }}</span> of developers</p>
+      <p class="percentile-note">
+        You're in the <span>{{ percentileLabel }}</span> of developers
+      </p>
     </div>
   </div>
 
   <div class="mini-stats-grid">
     <div class="card stat-card" *ngFor="let card of statCards">
       <div class="stat-top">
-        <div [class]="'stat-icon ' + card.iconType" [innerHTML]="statIconHtml[card.iconType] || statIconHtml['repos']"></div>
+        <div
+          [class]="'stat-icon ' + card.iconType"
+          [innerHTML]="statIconHtml[card.iconType] || statIconHtml['repos']"
+        ></div>
         <div class="trend-arrow">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="7" y1="17" x2="17" y2="7"></line>
@@ -125,13 +168,17 @@
     <span class="context-pill" *ngIf="contextVersion">{{ contextVersion }}</span>
   </div>
   <div class="readiness-grid">
-    <div class="card readiness-card" *ngFor="let item of readinessCenter" [class]="'card readiness-card tone-' + (item.tone || 'primary')">
+    <div
+      class="card readiness-card"
+      *ngFor="let item of readinessCenter"
+      [class]="'card readiness-card tone-' + (item.tone || 'primary')"
+    >
       <div class="readiness-card__top">
         <span>{{ item.label }}</span>
-        <strong>{{ item.value }}%</strong>
+        <strong>{{ item.value === null ? 'Unavailable' : item.value + '%' }}</strong>
       </div>
       <div class="readiness-track">
-        <div class="readiness-fill" [style.width.%]="item.value"></div>
+        <div class="readiness-fill" [style.width.%]="item.value ?? 0"></div>
       </div>
     </div>
   </div>
@@ -226,7 +273,10 @@
         <p>Loading skill gap analysis...</p>
       </div>
 
-      <div *ngIf="!isLoading && topSkills.length === 0 && missingSkills.length === 0" class="empty-state">
+      <div
+        *ngIf="!isLoading && topSkills.length === 0 && missingSkills.length === 0"
+        class="empty-state"
+      >
         <p>No skill data available. Please ensure your GitHub profile is analyzed.</p>
       </div>
 
@@ -272,11 +322,17 @@
             </span>
           </div>
           <div class="progress-track">
-            <div class="progress-fill" [style.width.%]="coveragePercentage"></div>
+            <div class="progress-fill" [style.width.%]="coveragePercentage ?? 0"></div>
           </div>
           <div class="cov-footer">
-            <span>{{ coveragePercentage }}% coverage vs industry</span>
-            <span class="cov-score">{{ coveragePercentage }}/100</span>
+            <span>{{
+              coveragePercentage === null
+                ? 'Coverage unavailable'
+                : coveragePercentage + '% coverage vs industry'
+            }}</span>
+            <span class="cov-score">{{
+              coveragePercentage === null ? 'Unavailable' : coveragePercentage + '/100'
+            }}</span>
           </div>
         </div>
       </div>
@@ -302,7 +358,10 @@
   <div class="rec-grid">
     <div class="card rec-card" *ngFor="let rec of recommendations">
       <div class="rec-top">
-        <div class="rec-icon" [innerHTML]="recIconHtml[rec.icon] || recIconHtml['technology']"></div>
+        <div
+          class="rec-icon"
+          [innerHTML]="recIconHtml[rec.icon] || recIconHtml['technology']"
+        ></div>
         <span [class]="'priority-badge ' + rec.priorityType">{{ rec.priority }}</span>
       </div>
       <p class="rec-title">{{ rec.title }}</p>
@@ -319,7 +378,11 @@
     </div>
   </div>
   <div class="freshness-grid">
-    <div class="card freshness-card" *ngFor="let source of sourceFreshnessRows" [class.is-stale]="source.refreshRecommended">
+    <div
+      class="card freshness-card"
+      *ngFor="let source of sourceFreshnessRows"
+      [class.is-stale]="source.refreshRecommended"
+    >
       <div class="freshness-card__top">
         <strong>{{ source.label }}</strong>
         <span>{{ source.status === 'fresh' ? 'Fresh' : 'Refresh Recommended' }}</span>
@@ -341,10 +404,10 @@
       <div class="insight-row" *ngFor="let row of scoreBreakdownRows">
         <div class="insight-row__head">
           <span>{{ row.label }}</span>
-          <span>{{ row.value }}%</span>
+          <span>{{ row.value === null ? 'Unavailable' : row.value + '%' }}</span>
         </div>
         <div class="insight-bar">
-          <div class="insight-bar__fill" [style.width.%]="row.value"></div>
+          <div class="insight-bar__fill" [style.width.%]="row.value ?? 0"></div>
         </div>
       </div>
     </div>
@@ -361,10 +424,10 @@
       <div class="insight-row" *ngFor="let row of profileSignalRows">
         <div class="insight-row__head">
           <span>{{ row.label }}</span>
-          <span>{{ row.value }}%</span>
+          <span>{{ row.value === null ? 'Unavailable' : row.value + '%' }}</span>
         </div>
         <div class="insight-bar is-alt">
-          <div class="insight-bar__fill" [style.width.%]="row.value"></div>
+          <div class="insight-bar__fill" [style.width.%]="row.value ?? 0"></div>
         </div>
       </div>
     </div>
@@ -382,10 +445,10 @@
       <div class="insight-row" *ngFor="let row of explainabilityRows">
         <div class="insight-row__head">
           <span>{{ row.label }} ({{ row.weight }}%)</span>
-          <span>{{ row.value }}%</span>
+          <span>{{ row.value === null ? 'Unavailable' : row.value + '%' }}</span>
         </div>
         <div class="insight-bar">
-          <div class="insight-bar__fill" [style.width.%]="row.value"></div>
+          <div class="insight-bar__fill" [style.width.%]="row.value ?? 0"></div>
         </div>
       </div>
       <ul class="reason-list" *ngIf="scoreReasons.length">
@@ -402,10 +465,15 @@
       </div>
     </div>
     <div class="integration-rows">
-      <div class="integration-row" *ngFor="let card of integrationAnalyticsCards; let index = index">
+      <div
+        class="integration-row"
+        *ngFor="let card of integrationAnalyticsCards; let index = index"
+      >
         <div class="integration-row__top">
           <span class="provider-name">#{{ index + 1 }} {{ providerName(card.provider) }}</span>
-          <span class="provider-delta" [class.negative]="card.trendDelta < 0">{{ card.trendDelta >= 0 ? '+' : '' }}{{ card.trendDelta }} trend</span>
+          <span class="provider-delta" [class.negative]="card.trendDelta < 0"
+            >{{ card.trendDelta >= 0 ? '+' : '' }}{{ card.trendDelta }} trend</span
+          >
         </div>
         <div class="integration-metrics">
           <span>Activity {{ card.activityScore }}%</span>
@@ -440,9 +508,14 @@
             <span class="detail-label">LinkedIn signals</span>
             <div class="detail-grid">
               <span>Name {{ insight.normalized.profile?.name || '—' }}</span>
-              <span>Profile completeness {{ insight.normalized.activity?.profileCompleteness || 0 }}%</span>
+              <span
+                >Profile completeness
+                {{ insight.normalized.activity?.profileCompleteness || 0 }}%</span
+              >
               <span>Account trust {{ insight.normalized.activity?.accountTrust || 0 }}%</span>
-              <span>Activity proxy {{ insight.normalized.activity?.accountActivityProxy || 0 }}%</span>
+              <span
+                >Activity proxy {{ insight.normalized.activity?.accountActivityProxy || 0 }}%</span
+              >
             </div>
           </div>
         </div>

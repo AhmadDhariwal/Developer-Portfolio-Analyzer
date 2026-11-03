@@ -12,7 +12,10 @@ const start = async () => {
   const port = probe.address().port;
   await new Promise((resolve) => probe.close(resolve));
   const child = spawn(
-    process.env.SCENARIO_TEST_MONGOD || 'mongod',
+    process.env.SCENARIO_TEST_MONGOD ||
+      (fs.existsSync('C:\\Program Files\\MongoDB\\Server\\8.2\\bin\\mongod.exe')
+        ? 'C:\\Program Files\\MongoDB\\Server\\8.2\\bin\\mongod.exe'
+        : 'mongod'),
     [
       '--dbpath',
       directory,
@@ -47,7 +50,12 @@ const start = async () => {
     const owned = fs.realpathSync(directory);
     if (path.dirname(owned) !== root || !path.basename(owned).startsWith('devinsight-scenario-'))
       throw Error('Unsafe fixture cleanup path.');
-    fs.rmSync(owned, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+    fs.rmSync(owned, {
+      recursive: true,
+      force: true,
+      maxRetries: 5,
+      retryDelay: 100,
+    });
   };
   try {
     const until = Date.now() + 15000;

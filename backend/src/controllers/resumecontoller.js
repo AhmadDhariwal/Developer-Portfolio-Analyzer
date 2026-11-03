@@ -900,7 +900,10 @@ const parsePreviewResume = async (req, res) => {
     let text = await extractTextFromPDF(req.file.path);
     if (text.length > 50000) text = text.substring(0, 50000);
     requireReadableContent(text);
-    const previewResume = await createPreviewResume(text);
+    const previewResume = await createPreviewResume(
+      text,
+      req.user?._id ? `account:${req.user._id}` : `guest:${req.ip}`
+    );
 
     await fs.unlink(req.file.path).catch(() => {});
     return res.json(previewResume);

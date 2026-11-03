@@ -21,7 +21,7 @@ const rank = (items) =>
     (a, b) =>
       priorityWeight(b.priority) - priorityWeight(a.priority) ||
       (number(b.estimatedImpact) ?? 0) - (number(a.estimatedImpact) ?? 0) ||
-      a.id.localeCompare(b.id, 'en'),
+      a.id.localeCompare(b.id, 'en')
   );
 
 // Only current, owned, explicitly versioned snapshots can supply coverage or skill status.
@@ -39,6 +39,11 @@ const compatibleSkillGap = (cache, context) => {
     cache.resumeAnalysisId !== context.resumeAnalysisId
   )
     return null;
+  if (data.evidencePolicyVersion && context.profileRevision) {
+    const profile = (data.sourceReferences || []).find((source) => source.type === 'profile');
+    if (!profile || timestamp(profile.timestamp) !== timestamp(context.profileRevision))
+      return null;
+  }
   const references = data.sourceReferences || data.evidenceCompleteness?.sources || [];
   for (const [type, current] of Object.entries(context.sources || {})) {
     const source = references.find((item) => item.type === type);
@@ -92,7 +97,7 @@ const resumeSignals = (analysis, legacy = {}) => {
         : []
     ).slice(0, 40),
     lastAnalyzedAt: analysis.analyzedAt || analysis.createdAt || null,
-    scoring: scoring || null,
+    scoring: scoring || null
   };
 };
 
@@ -113,11 +118,11 @@ const sourceMetadata = ({ username, githubData = {}, resumeAnalysis, resumeInsig
         !githubData.unavailable &&
         (githubData.repositories?.length ||
           github.repositories?.length ||
-          githubData.dataAvailability?.repositories === 'complete'),
+          githubData.dataAvailability?.repositories === 'complete')
       ),
       timestamp: timestamp(githubTime),
       freshness: freshness(githubTime, githubData.cache?.stale),
-      ruleVersion: github.scoring?.ruleVersion || githubData.scoring?.ruleVersion || null,
+      ruleVersion: github.scoring?.ruleVersion || githubData.scoring?.ruleVersion || null
     },
     resume: {
       type: 'resume',
@@ -128,8 +133,8 @@ const sourceMetadata = ({ username, githubData = {}, resumeAnalysis, resumeInsig
       ruleVersion:
         resumeAnalysis?.resumeSignals?.scoring?.ruleVersion ||
         resumeAnalysis?.scoring?.ruleVersion ||
-        null,
-    },
+        null
+    }
   };
 };
 
@@ -141,7 +146,7 @@ const buildPlan = ({
   resumeAnalysis,
   resumeInsights = {},
   skillGap = null,
-  supportingSignals = {},
+  supportingSignals = {}
 }) => {
   const sources = sourceMetadata({ username, githubData, resumeAnalysis, resumeInsights });
   sources.profile = {
@@ -150,11 +155,11 @@ const buildPlan = ({
     available: true,
     timestamp: null,
     freshness: 'SELECTED_CONTEXT',
-    ruleVersion: null,
+    ruleVersion: null
   };
   for (const [type, signal] of [
     ['portfolio', supportingSignals.portfolioSignal],
-    ['careerSprint', supportingSignals.careerSprintSignal],
+    ['careerSprint', supportingSignals.careerSprintSignal]
   ]) {
     sources[type] = {
       type,
@@ -162,7 +167,7 @@ const buildPlan = ({
       available: Boolean(signal?.present),
       timestamp: timestamp(signal?.updatedAt),
       freshness: freshness(signal?.updatedAt),
-      ruleVersion: null,
+      ruleVersion: null
     };
   }
   const cards = [];
@@ -177,7 +182,7 @@ const buildPlan = ({
     source,
     status = null,
     confidence = 'UNKNOWN',
-    requirement = null,
+    requirement = null
   }) => {
     const meta =
       source === 'skillGap'
@@ -186,7 +191,7 @@ const buildPlan = ({
             id: skillGap?.signalHash || skillGap?.cacheMetadata?.signalHash || SKILL_RULE,
             timestamp: timestamp(skillGap?.calculatedAt),
             freshness: freshness(skillGap?.calculatedAt),
-            ruleVersion: SKILL_RULE,
+            ruleVersion: SKILL_RULE
           }
         : sources[source];
     const id = stableId(category, target);
@@ -239,11 +244,11 @@ const buildPlan = ({
           route: '/app/career-sprint',
           recommendationId: id,
           skill: category === 'learning' ? target : '',
-          requiresAuthentication: true,
-        },
+          requiresAuthentication: true
+        }
       },
       ruleVersion: RULE_VERSION,
-      aiGenerated: false,
+      aiGenerated: false
     });
   };
   const skills = skillGap
@@ -257,7 +262,7 @@ const buildPlan = ({
     if (!['PARTIAL', 'CLAIMED_ONLY', 'NOT_EVIDENCED', 'UNKNOWN'].includes(skill.status)) continue;
     const unknown = skill.status === 'UNKNOWN';
     const projected = [...(skillGap.yourSkills || []), ...(skillGap.missingSkills || [])].find(
-      (item) => item.name === name,
+      (item) => item.name === name
     );
     const approvedPriority =
       skill.priority || projected?.priority || requirements.metadata(name).priority || 'Medium';
@@ -281,7 +286,7 @@ const buildPlan = ({
       source: 'skillGap',
       status: skill.status,
       confidence: skill.evidenceConfidence,
-      requirement: skill.requirement,
+      requirement: skill.requirement
     });
   }
   const resume = resumeAnalysis?.resumeSignals || {};
@@ -296,7 +301,7 @@ const buildPlan = ({
         'Review text extraction and readability, then upload a readable version of this resume.',
       facts: ['Resume contentQualityState.scoreable: false'],
       source: 'resume',
-      confidence: 'RECORDED',
+      confidence: 'RECORDED'
     });
   if (!skillGap && sources.resume.available) {
     for (const name of [...new Set(resumeInsights.skills || [])].slice(0, 12)) {
@@ -310,7 +315,7 @@ const buildPlan = ({
         facts: [`Selected resume lists: ${name}`],
         source: 'resume',
         status: 'CLAIMED_ONLY',
-        confidence: 'LOW',
+        confidence: 'LOW'
       });
     }
   }
@@ -338,7 +343,7 @@ const buildPlan = ({
           : `Review ${code.replaceAll('_', ' ')} in the selected resume and reanalyze it.`,
       facts: [`Selected resume analysis: ${sources.resume.id}`, `Warning: ${code}`],
       source: 'resume',
-      confidence: 'RECORDED',
+      confidence: 'RECORDED'
     });
   }
   for (const repo of (
@@ -360,7 +365,7 @@ const buildPlan = ({
           'Add setup instructions, purpose, usage and verified project outcomes to the README.',
         facts: [`Repository: ${name}`, 'hasReadme: false'],
         source: 'github',
-        confidence: 'RECORDED',
+        confidence: 'RECORDED'
       });
     if (repo.hasTests === false || repo.testing?.hasTests === false)
       add({
@@ -371,7 +376,7 @@ const buildPlan = ({
         action: 'Add relevant automated tests and document how to run them.',
         facts: [`Repository: ${name}`, 'hasTests: false'],
         source: 'github',
-        confidence: 'RECORDED',
+        confidence: 'RECORDED'
       });
     // A supported next step for a known repository, without asserting a weakness.
     if (hasReadme == null && text(repo.description))
@@ -383,14 +388,14 @@ const buildPlan = ({
         priority: 'Low',
         action: 'Review implementation, documentation and tests before choosing an improvement.',
         facts: [`Repository: ${name}`],
-        source: 'github',
+        source: 'github'
       });
   }
   const portfolio = supportingSignals.portfolioSignal;
   const dimensions = Object.entries(githubData.scoring?.breakdown || {})
     .map(([name, value]) => ({
       name: value?.id || name,
-      score: number(value?.score ?? value?.value),
+      score: number(value?.score ?? value?.value)
     }))
     .filter((item) => item.score !== null)
     .sort((a, b) => a.score - b.score || a.name.localeCompare(b.name));
@@ -409,9 +414,9 @@ const buildPlan = ({
         'Inspect the source repositories and quality evidence before choosing a concrete improvement.',
       facts: [
         `Recorded dimension: ${dimensions[0].name} ${dimensions[0].score}`,
-        'Repository quality signals may be sampled.',
+        'Repository quality signals may be sampled.'
       ],
-      source: 'github',
+      source: 'github'
     });
   if (portfolio?.present && number(portfolio.listedProjects) === 0)
     add({
@@ -422,7 +427,7 @@ const buildPlan = ({
       action:
         'Choose an existing project and add a verifiable description and links to your portfolio.',
       facts: ['Portfolio listedProjects: 0'],
-      source: 'portfolio',
+      source: 'portfolio'
     });
   const sprint = supportingSignals.careerSprintSignal;
   if (
@@ -438,7 +443,7 @@ const buildPlan = ({
         'Career Sprint records repeated incomplete learning actions in the current focus.',
       action: `Review unfinished tasks for ${text(sprint.activeLearningFocus, 100)} and choose one concrete next step.`,
       facts: [`Sprint focus: ${text(sprint.activeLearningFocus, 100)}`],
-      source: 'careerSprint',
+      source: 'careerSprint'
     });
   if (!cards.length)
     add({
@@ -450,14 +455,14 @@ const buildPlan = ({
       action:
         'Review the active profile and available analyses before selecting the next career action.',
       facts: [`Target stack: ${careerStack}`],
-      source: 'profile',
+      source: 'profile'
     });
   const sorted = rank([...new Map(cards.map((card) => [card.id, card])).values()]).slice(0, 40);
   const grouped = Object.fromEntries(
     ['learning', 'projects', 'resume', 'careerPaths'].map((category) => [
       category,
-      sorted.filter((card) => card.category === category),
-    ]),
+      sorted.filter((card) => card.category === category)
+    ])
   );
   return {
     username,
@@ -474,20 +479,20 @@ const buildPlan = ({
       impact: null,
       estimatedWeeks: '',
       whyThisProject: card.reason,
-      startUrl: card.actionUrl,
+      startUrl: card.actionUrl
     })),
     technologies: grouped.learning.map((card) => ({
       ...card,
       name: card.targetSkill,
       priorityRaw: card.priority,
-      jobDemand: null,
+      jobDemand: null
     })),
     careerPaths: grouped.careerPaths.map((card) => ({
       ...card,
       match: null,
       actionItems: [card.actionableNextStep],
       exploreUrl: '/app/profile',
-      hiringCompanies: [],
+      hiringCompanies: []
     })),
     resumeRecommendations: grouped.resume.map((card) => card.actionableNextStep),
     portfolioRecommendations: [],
@@ -500,10 +505,10 @@ const buildPlan = ({
           ? githubData.scoring.score
           : githubData.githubSignals?.scoring
             ? githubData.githubSignals.scoring.score
-            : githubData.scores?.healthScore,
+            : githubData.scores?.healthScore
       ),
       resumeOverall: number(resumeInsights.overallScore),
-      skillEvidenceCoverage: number(skillGap?.coverage),
+      skillEvidenceCoverage: number(skillGap?.coverage)
     },
     recommendationScores: Object.fromEntries(
       [
@@ -513,12 +518,12 @@ const buildPlan = ({
         'interviewScore',
         'marketReadinessScore',
         'careerGrowthScore',
-        'overallRecommendationScore',
-      ].map((key) => [key, null]),
+        'overallRecommendationScore'
+      ].map((key) => [key, null])
     ),
     scoreProvenance: {
       legacyComposite: 'unavailable',
-      reason: 'Evidence coverage is not a readiness or hiring score.',
+      reason: 'Evidence coverage is not a readiness or hiring score.'
     },
     roadmap: {
       immediateActions: sorted.slice(0, 4),
@@ -527,13 +532,13 @@ const buildPlan = ({
       next90Days: [],
       phases: [],
       learningSequence: grouped.learning.map((card) => card.targetSkill),
-      suggestedProjects: grouped.projects.map((card) => card.title),
+      suggestedProjects: grouped.projects.map((card) => card.title)
     },
     supportingContext: {
       portfolioAvailable: Boolean(supportingSignals.portfolioSignal?.present),
       sprintAvailable: Boolean(supportingSignals.careerSprintSignal?.present),
-      weeklyProgressAvailable: Boolean(supportingSignals.weeklyReportSignal?.present),
-    },
+      weeklyProgressAvailable: Boolean(supportingSignals.weeklyReportSignal?.present)
+    }
   };
 };
 
@@ -549,16 +554,16 @@ const safeSuggestions = (enrichment, plan) => {
         value.length <= 500 &&
         /^(practice|explore|try|review|build|test|document|compare|implement)\b/i.test(value) &&
         !/\d|https?:|\b(you|your|because|already|expert|mastered|strong|lack|missing|weak|poor|guarantee|hiring|salary|score|percent|days?|weeks?|months?|years?)\b/i.test(
-          value,
+          value
         ) &&
-        targets.some((target) => value.toLowerCase().includes(target.toLowerCase())),
+        targets.some((target) => value.toLowerCase().includes(target.toLowerCase()))
     )
     .slice(0, 4)
     .map((suggestion) => ({
       suggestion,
       aiGenerated: true,
       kind: 'learningIdea',
-      ruleVersion: RULE_VERSION,
+      ruleVersion: RULE_VERSION
     }));
 };
 
@@ -577,19 +582,19 @@ const versionChanges = (current, previous) => {
           score: number(previous.recommendationScores?.overallRecommendationScore),
           count: before.length,
           ruleVersion: previous.ruleVersion || 'legacy',
-          legacy: previous.ruleVersion !== RULE_VERSION,
+          legacy: previous.ruleVersion !== RULE_VERSION
         }
       : null,
     delta: {
       scoreChange: null,
       newCount: added.length,
       obsoleteCount: obsolete.length,
-      completedCount: 0,
+      completedCount: 0
     },
     newRecommendations: added.slice(0, 8),
     obsoleteRecommendations: obsolete.slice(0, 8),
     completedRecommendations: [],
-    note: 'Disappearance or a changed context does not establish task completion.',
+    note: 'Disappearance or a changed context does not establish task completion.'
   };
 };
 
@@ -599,10 +604,10 @@ const sourceFingerprint = ({ githubData, resumeInsights, skillGap }) =>
       repositories: githubData.repositories || [],
       scoring: githubData.scoring || githubData.githubSignals?.scoring || null,
       timestamp: githubData.githubSignals?.analyzedAt || githubData.fetchedAt || null,
-      stale: Boolean(githubData.cache?.stale),
+      stale: Boolean(githubData.cache?.stale)
     },
     resume: resumeInsights,
-    skillGap,
+    skillGap
   });
 
 module.exports = {
@@ -618,5 +623,5 @@ module.exports = {
   buildPlan,
   safeSuggestions,
   versionChanges,
-  sourceFingerprint,
+  sourceFingerprint
 };

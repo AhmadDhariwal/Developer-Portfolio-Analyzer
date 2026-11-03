@@ -3,6 +3,7 @@
 // Migrated verbatim from Skill Gap's existing expected-skill hints and category
 // filter. There were no per-skill weights or explicit optional entries.
 const MATRIX_VERSION = "skill-gap-requirements-v1";
+const TAXONOMY_VERSION = "skill-gap-taxonomy-v1";
 const DEFAULT_SKILLS = [
   "Testing",
   "System Design",
@@ -18,18 +19,10 @@ const DEFAULT_SKILLS = [
   "Caching Strategies",
   "Scalability Patterns",
   "Accessibility",
-  "Documentation",
+  "Documentation"
 ];
 const STACK_SKILLS = {
-  Frontend: [
-    "React",
-    "TypeScript",
-    "Next.js",
-    "Accessibility",
-    "Testing",
-    "CI/CD",
-    "Deployment",
-  ],
+  Frontend: ["React", "TypeScript", "Next.js", "Accessibility", "Testing", "CI/CD", "Deployment"],
   Backend: [
     "Node.js",
     "REST APIs",
@@ -38,7 +31,7 @@ const STACK_SKILLS = {
     "Docker",
     "CI/CD",
     "Caching Strategies",
-    "Deployment",
+    "Deployment"
   ],
   "Full Stack": [
     "React",
@@ -48,17 +41,9 @@ const STACK_SKILLS = {
     "SQL",
     "Docker",
     "CI/CD",
-    "Deployment",
+    "Deployment"
   ],
-  "AI/ML": [
-    "Python",
-    "SQL",
-    "Docker",
-    "AWS",
-    "CI/CD",
-    "Deployment",
-    "Monitoring and Observability",
-  ],
+  "AI/ML": ["Python", "SQL", "Docker", "AWS", "CI/CD", "Deployment", "Monitoring and Observability"]
 };
 const LEVEL_SKILLS = {
   Student: ["Git", "Testing", "Documentation", "Deployment"],
@@ -66,40 +51,17 @@ const LEVEL_SKILLS = {
   "0-1 years": ["Testing", "SQL", "Deployment", "Documentation"],
   "1-2 years": ["Testing", "SQL", "CI/CD", "Deployment"],
   "2-3 years": ["System Design", "CI/CD", "Docker", "Performance Optimization"],
-  "3-5 years": [
-    "System Design",
-    "CI/CD",
-    "Monitoring and Observability",
-    "Security Basics",
-  ],
+  "3-5 years": ["System Design", "CI/CD", "Monitoring and Observability", "Security Basics"],
   "5+ years": [
     "System Design",
     "Scalability Patterns",
     "Security Basics",
-    "Monitoring and Observability",
-  ],
+    "Monitoring and Observability"
+  ]
 };
 const STACK_CATEGORIES = {
-  Frontend: [
-    "Frontend",
-    "Language",
-    "Testing",
-    "Tools",
-    "DevOps",
-    "Cloud",
-    "Backend",
-    "General",
-  ],
-  Backend: [
-    "Backend",
-    "Language",
-    "Database",
-    "Testing",
-    "Tools",
-    "DevOps",
-    "Cloud",
-    "General",
-  ],
+  Frontend: ["Frontend", "Language", "Testing", "Tools", "DevOps", "Cloud", "Backend", "General"],
+  Backend: ["Backend", "Language", "Database", "Testing", "Tools", "DevOps", "Cloud", "General"],
   "Full Stack": [
     "Frontend",
     "Backend",
@@ -109,18 +71,9 @@ const STACK_CATEGORIES = {
     "Tools",
     "DevOps",
     "Cloud",
-    "General",
+    "General"
   ],
-  "AI/ML": [
-    "Language",
-    "Database",
-    "DevOps",
-    "Cloud",
-    "Testing",
-    "Tools",
-    "AI/ML",
-    "General",
-  ],
+  "AI/ML": ["Language", "Database", "DevOps", "Cloud", "Testing", "Tools", "AI/ML", "General"]
 };
 
 const { INDUSTRY_SKILLS } = require("../utils/skilldetector");
@@ -130,11 +83,9 @@ const EXTRA_SKILLS = [
   { name: ".NET", category: "Backend" },
   { name: "Ruby on Rails", category: "Backend" },
   { name: "Shell", category: "Language" },
-  { name: "HCL", category: "Language" },
+  { name: "HCL", category: "Language" }
 ];
-const CATALOG = new Map(
-  [...INDUSTRY_SKILLS, ...EXTRA_SKILLS].map((skill) => [skill.name, skill]),
-);
+const CATALOG = new Map([...INDUSTRY_SKILLS, ...EXTRA_SKILLS].map((skill) => [skill.name, skill]));
 const ALIASES = Object.freeze({
   "react.js": "React",
   reactjs: "React",
@@ -167,27 +118,21 @@ const ALIASES = Object.freeze({
   "react-native": "React Native",
   reactnative: "React Native",
   dotnet: ".NET",
-  rails: "Ruby on Rails",
+  rails: "Ruby on Rails"
 });
 const key = (value) =>
-  typeof value === "string"
-    ? value.trim().replace(/\s+/g, " ").toLowerCase()
-    : "";
+  typeof value === "string" ? value.trim().replace(/\s+/g, " ").toLowerCase() : "";
 const names = new Map([...CATALOG.keys()].map((name) => [key(name), name]));
 const canonicalize = (value) =>
-  names.get(key(value)) ||
-  (Object.hasOwn(ALIASES, key(value)) ? ALIASES[key(value)] : "");
+  names.get(key(value)) || (Object.hasOwn(ALIASES, key(value)) ? ALIASES[key(value)] : "");
 const normalize = (values) => [
   ...new Set(
     (Array.isArray(values) ? values : [])
-      .map((value) =>
-        canonicalize(typeof value === "string" ? value : value?.name),
-      )
-      .filter(Boolean),
-  ),
+      .map((value) => canonicalize(typeof value === "string" ? value : value?.name))
+      .filter(Boolean)
+  )
 ];
-const metadata = (name) =>
-  CATALOG.get(canonicalize(name)) || { name: "", category: "General" };
+const metadata = (name) => CATALOG.get(canonicalize(name)) || { name: "", category: "General" };
 const resolveRequirements = (careerStack, experienceLevel) => {
   const missingEntries = [];
   if (!Object.hasOwn(STACK_SKILLS, careerStack))
@@ -199,27 +144,26 @@ const resolveRequirements = (careerStack, experienceLevel) => {
       available: false,
       version: MATRIX_VERSION,
       skills: [],
-      missingEntries,
+      missingEntries
     };
   const skills = normalize([
     ...STACK_SKILLS[careerStack],
     ...LEVEL_SKILLS[experienceLevel],
-    ...DEFAULT_SKILLS,
+    ...DEFAULT_SKILLS
   ])
-    .filter((name) =>
-      STACK_CATEGORIES[careerStack].includes(metadata(name).category),
-    )
+    .filter((name) => STACK_CATEGORIES[careerStack].includes(metadata(name).category))
     .map((name) => ({
       name,
       category: metadata(name).category,
       requirement: "REQUIRED",
-      weight: 1,
+      weight: 1
     }));
   return { available: true, version: MATRIX_VERSION, skills, missingEntries };
 };
 
 module.exports = {
   MATRIX_VERSION,
+  TAXONOMY_VERSION,
   DEFAULT_SKILLS,
   STACK_SKILLS,
   LEVEL_SKILLS,
@@ -228,5 +172,5 @@ module.exports = {
   canonicalize,
   normalize,
   metadata,
-  resolveRequirements,
+  resolveRequirements
 };

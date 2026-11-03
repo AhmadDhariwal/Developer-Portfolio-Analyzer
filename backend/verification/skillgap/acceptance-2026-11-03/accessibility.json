@@ -1,0 +1,158 @@
+{
+  "status": "FAIL",
+  "engine": "axe-core 4.14.0",
+  "scope": "Skill Gap page; six mobile/desktop theme scans; keyboard/interactions tested separately",
+  "audits": [
+    {
+      "theme": "light",
+      "width": 375,
+      "engine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      },
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 7
+        }
+      ]
+    },
+    {
+      "theme": "light",
+      "width": 1440,
+      "engine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      },
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 19
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "width": 375,
+      "engine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      },
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": [
+                ".status-key > summary"
+              ],
+              "html": "<summary>Understand the five evidence classifications</summary>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.82 (foreground color: #4f46e5, background color: #111827, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 7
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "width": 1440,
+      "engine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      },
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": [
+                ".status-key > summary"
+              ],
+              "html": "<summary>Understand the five evidence classifications</summary>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.82 (foreground color: #4f46e5, background color: #111827, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 19
+        }
+      ]
+    },
+    {
+      "theme": "system",
+      "width": 375,
+      "engine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      },
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": [
+                ".status-key > summary"
+              ],
+              "html": "<summary>Understand the five evidence classifications</summary>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.82 (foreground color: #4f46e5, background color: #111827, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 7
+        }
+      ]
+    },
+    {
+      "theme": "system",
+      "width": 1440,
+      "engine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      },
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": [
+            {
+              "target": [
+                ".status-key > summary"
+              ],
+              "html": "<summary>Understand the five evidence classifications</summary>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 2.82 (foreground color: #4f46e5, background color: #111827, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 19
+        }
+      ]
+    }
+  ],
+  "manualReviewRequired": true
+}

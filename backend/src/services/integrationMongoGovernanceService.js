@@ -297,6 +297,7 @@ async function resumeLease(owner, file, reservation = null) {
 }
 
 module.exports = {
+  transaction,
   resumeLease,
   resumeWindow,
   admit,
