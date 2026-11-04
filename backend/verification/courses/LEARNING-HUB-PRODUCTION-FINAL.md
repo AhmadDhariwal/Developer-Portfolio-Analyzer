@@ -1,184 +1,164 @@
-# Learning Hub — Production Finalization & Verification Report
+# Learning Hub production acceptance
 
-**STATUS**: `VERIFIED`
-**Branch**: `fix/learning-hub`
-**Date**: 2026-11-04
+## Follow-up acceptance on `fix/learning-hub`
 
----
+**DEVELOPMENT COMPLETE — STABLE CANDIDATE — PRODUCTION GATES PENDING**
 
-## 1. Executive Summary & Production Gate Matrix
+Follow-up used the existing branch at `60bce075` on 2026-11-04 (Asia/Karachi). PR target was not applicable. The prior acceptance remains below as historical evidence.
 
-DevInsight AI's **Learning Hub** (`courses` module) has been audited, hardened, expanded, and verified end-to-end across its backend discovery engine, multi-provider catalog, user-owned learning progress lifecycle, cross-module integrations, Mongo-authoritative governance, multi-tier caching, and responsive Angular UI.
+| Gate                                                 | Result  | Follow-up evidence                                                                                                                                                                                                                                                                                            |
+| ---------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Catalog destinations and saved identity              | PASS    | Rechecked three HTTP 404s and one redirect to a general subject page. All four records remain in the 36-row inventory, while Discover returns 32 curated records. Existing saved records keep identity, progress, notes and stored URL. Their response omits the actionable URL by returning an empty string. |
+| SQL ranking and pagination                           | PASS    | Identical provider responses replayed before and after. An unknown difficulty no longer receives a duration-based experience bonus. Global scores and pagination retain their ordering rules and no provider cap was added.                                                                                   |
+| Independent ranking accuracy and provider enrollment | BLOCKED | The SQL sample has eight YouTube results in the top ten after correction. A broader independent relevance review and real enrollment checks remain unavailable.                                                                                                                                               |
+| Skill Gap producer and Learning Hub consumer         | PASS    | The prior HTTP 500 did not reproduce. The upgraded real-Mongo test exercises the actual persistence transaction, reads the producer's v9 snapshot into Learning Hub, switches active resume, rejects the old selection and accepts the replacement snapshot.                                                  |
+| Cross-worker lease                                   | PENDING | Follow-up verification in progress.                                                                                                                                                                                                                                                                           |
+| Memory, Redis and cold latency harness               | PASS    | 31.07/31.73 ms memory p50/p95, 46.59/47.47 ms controlled Redis, 155.72/164.33 ms controlled cold. Existing budgets are 50, 250 and 500 ms p95.                                                                                                                                                                |
+| My Learning and cross-module journey                 | PASS    | Real Angular/HTTP/JWT/Mongo run recorded four journeys, three score traces, four screenshots and zero AI calls or page errors. The separate Mongo/JWT suite passed all nine reported tests.                                                                                                                   |
+| Frontend and local UI                                | PASS    | Frontend 540/540 after capping Vitest at four workers. Build and app TypeScript passed. Browser fixture run passed 24 layout probes, three theme runs and eleven states.                                                                                                                                      |
+| Complete backend regression                          | PENDING | Follow-up verification in progress.                                                                                                                                                                                                                                                                           |
+| Staging, real Redis and independent reviews          | BLOCKED | No approved staging application or Redis fixture was available. Independent security, accessibility, visual parity and recommendation-accuracy reviews, and deployed recovery/delivery are outside the verified environment.                                                                                  |
 
-| Production Gate                                   | Requirement                                                                                                                                                                                                                                                     | Verification Evidence                                                                                                                                                                           | Status   |
-| :------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------- |
-| **1. Course Providers & Discovery**               | Diagnose & eliminate unjustified YouTube dominance; expand verified curated catalog across Udemy, Coursera, edX, freeCodeCamp; first-class `edX` & `freeCodeCamp` filters; live YouTube Data API v3 verification                                                | `coursesProviderVerification.test.js` (4/4), `verifyCoursesLiveProvider.js` (`available`, 3 courses, `2898ms`), 36-course curated catalog (`11 Udemy`, `9 Coursera`, `9 edX`, `7 freeCodeCamp`) | **PASS** |
-| **2. My Learning End-to-End Workflow**            | `Discover → Save → Start Learning → Update Progress/Notes → Complete → Review`; MongoDB source of truth; self-reported completion authority; owner isolation & optimistic rollback                                                                              | `coursesMongo.integration.test.js` (10/10), `verifyCoursesEndToEnd.js`, `verify-courses-ui.cjs`                                                                                                 | **PASS** |
-| **3. Personalization & Cross-Module Integration** | Skill Gap (`v8-skill-evidence-coverage`, `UNKNOWN` excluded), Recommendations deep-links, Career Sprint atomic idempotent handoff, Dashboard `learningSnapshot` + cache invalidation, Weekly Report `buildLearningSnapshot`, Profile/Resume/GitHub invalidation | `coursesFinalization.test.js` (25/25), `careerSprintHardening.test.js`, `weeklyReportScheduler.test.js`                                                                                         | **PASS** |
-| **4. APIs, Performance, MongoDB & Caching**       | Zero runtime Gemini calls; Memory (`<50ms`), Redis (`<250ms`), Cold (`<500ms`) p95 budgets; Mongo-authoritative fixed-window rate limits & cross-worker pool lease; YouTube circuit breaker & quota recovery                                                    | `coursesPerformance.test.js` (2/2), `coursesHardening.test.js` (10/10), `courseGovernanceService.js`                                                                                            | **PASS** |
-| **5. Security, Privacy & Input Validation**       | JWT owner isolation (no IDOR), strict HTTPS host allowlists (`safeCourseUrl`, `safeCourseThumbnail`), 2,000-char plain-text note sanitization, bounded DTO projection                                                                                           | `coursesHardening.test.js`, `coursesMongo.integration.test.js`, `verifyCoursesEndToEnd.js`                                                                                                      | **PASS** |
-| **6. Responsive UI, Themes & Accessibility**      | Light, Dark, and System themes; 8 viewports (`320px–1600px`) with zero horizontal overflow; WCAG AA contrast; `>= 44px` interactive controls; keyboard navigation & ARIA live announcements                                                                     | `verify-courses-ui.cjs` (24 layout probes, 3 themes, 11 state modes), `npm test` (92 files, 540 tests), `ng build`                                                                              | **PASS** |
+### Provider evidence
 
----
+The public HTTP follow-up returned 404 for `fb_u9` (Udemy System Design), `fb_e5` (edX IBM Agile) and `fb_e6` (edX MIT Java). `fb_e3` returned 200 only after redirecting to the edX computer science index. No verified same-course replacements were found. The catalog records retain their original identities and stored data. A new save for a retired ID returns 404. A pre-existing saved entry remains editable and its persisted URL is unchanged.
 
-## 2. Course Providers, External API Audit & Root Causes of YouTube Dominance
+| Provider     | Catalog rows | Discover curated rows | Live SQL pool | Top ten before | Top ten after |
+| ------------ | -----------: | --------------------: | ------------: | -------------: | ------------: |
+| Udemy        |           11 |                    10 |            10 |              0 |             0 |
+| Coursera     |            9 |                     9 |             9 |              1 |             1 |
+| edX          |            9 |                     6 |             6 |              0 |             1 |
+| freeCodeCamp |            7 |                     7 |             7 |              0 |             0 |
+| YouTube      |            0 |                     0 |            15 |              9 |             8 |
+| Total        |           36 |                    32 |            47 |             10 |            10 |
 
-### 2.1 Root Causes of YouTube Dominance (Diagnosed & Fixed)
+The live Backend / Intern / SQL query took 1,329 ms with two searches and one details call. The prior pool replay had 51 unique entries. The updated pool had 47 unique entries. The nine videos formerly in the top ten all had SQL in their titles and no provider difficulty metadata. Their prior 59/32 relevance/final score included six duration-fit points. Removing that unsupported bonus yielded 53/29, equal to the eligible Harvard course. The Meta certificate stayed first at 65/36 and the Harvard course rose to second. Equal results use the existing deterministic tie-break. There were two curated SQL matches. The remaining YouTube concentration reflects the search feed and exact topic matches in this sample. [Meta certificate](https://www.coursera.org/professional-certificates/meta-back-end-developer) · [Harvard course](https://www.edx.org/learn/web-development/harvard-university-cs50-s-web-programming-with-python-and-javascript)
 
-An architectural audit of `backend/src/services/courseService.js` and `backend/src/data/courseCatalog.js` identified three compounding mechanisms that caused YouTube videos to dominate discovery results while Udemy, Coursera, edX, and freeCodeCamp courses appeared buried or hidden:
+### Persistence, latency and test scope
 
-1. **Root Cause 1 — Uncalibrated View-Count Popularity Inflation (`+45` `finalScore` advantage)**:
-   - Curated catalog courses (`Udemy`, `Coursera`, `edX`, `freeCodeCamp`) properly set `rating: null` and `popularity: null` (`provenance.availability = 'unverified'`) so unverified historical numbers are never presented as live provider facts.
-   - In `scoreAndRank` (`courseService.js`), when `hasRating` is `false`, `finalScore` is computed as:
-     $$\text{finalScore} = \text{round}(\text{popularity} \times 0.45 + \text{relevanceScore} \times 0.55)$$
-   - For curated courses (`popularity === null`), `popularity` evaluated to `0`, capping a curated course with `relevanceScore = 65` at `finalScore = round(65 * 0.55) = 36`.
-   - Meanwhile, YouTube courses populated `popularity: Math.min(100, Math.round(views / 1000))` (`provenance.popularitySource = 'derived-view-count'`). Any YouTube video with $\ge 100,000$ views received `popularity = 100`, adding **`+45` raw points** to `finalScore` (`45 + round(relevanceScore * 0.55)`). Consequently, a generic YouTube video with zero target-skill matches (`relevanceScore = 25`, `finalScore = 45 + 14 = 59`) outscored a curated Coursera or Udemy course with direct target-skill, career-stack, and experience-level matches (`relevanceScore = 65`, `finalScore = 36`).
-   - **Verified Fix**: In `scoreAndRank` (`backend/src/services/courseService.js`), uncalibrated `derived-view-count` popularity is excluded from `finalScore` arithmetic (`const popularity = course.provenance?.popularitySource === 'derived-view-count' ? 0 : Number(course.popularity || 0);`) while preserving `viewCount`, `likeCount`, and `engagementScore` on the public DTO for transparency.
+- The Skill Gap producer persisted analysis version `v9-skill-evidence-governance` with rule version `skill-evidence-coverage-v1`. The earlier report referenced v8. An isolated reproduction passed 3/3 before production code changes. The strengthened run passed the two producer tests and the consumer test with real disposable MongoDB, including the real notification persistence transaction on the active-selection scenario. It consumed the actual producer output, confirmed the original React classification, rejected the previous selection before reanalysis and accepted the new one. The prior incident spent 10,063 ms in persistence and retained no database exception code. Its precise cause remains unconfirmed. No production Skill Gap behavior or time limit was changed.
+- Course pools now use the existing Mongo governance lease on the runtime cold/refresh path. Local callers still share an in-process promise. An atomic token and server-time predicate fences publication, and a guarded durable write protects against an older generation overwriting a newer row. The result is available to overlapping callers independently of Redis. A discovery policy revision invalidates old ranked pools while the established cache index and external API contract remain in place.
+- The warm path projects and validates the pool on memory admission and uses the validated page projection for later responses. Live evidence checks still precede the memory hit. The original 50 ms threshold was preserved. The local controlled harness used 16 memory, 12 Redis and eight cold samples. Five same-key calls shared one provider pipeline, one Mongo write and one Redis write. These are service timings with controlled dependencies.
+- The frontend first run under concurrent load had three unrelated 5-second spec timeouts in Career Sprint, GitHub Analyzer and Resume Analyzer. The constrained rerun passed all 92 files and 540 tests. Angular build `main-V73U3GIY.js` passed with the existing 56.67 kB landing-page stylesheet warning against a 48.00 kB budget. [Real browser evidence](followup-2026-11-04/real-browser/end-to-end.json) · [Local browser fixtures](followup-2026-11-04/fixture-browser/browser-results.json)
 
-2. **Root Cause 2 — Pool Volume Imbalance & Description Tag-Spam Matching**:
-   - `COURSE_POOL_SIZE.All` fetched up to `30` live YouTube videos per pool build against `27` static courses, and `extractTopicsFromText` scanned up to `400` characters of SEO-stuffed YouTube descriptions, allowing unrelated YouTube videos to match multiple skill keywords in their footer tags.
-   - **Verified Fix**: Reduced `COURSE_POOL_SIZE.All` from `30` to `15` (preserving `COURSE_POOL_SIZE.YouTube = 40` when the user explicitly filters by YouTube) and bounded YouTube topic extraction in `fetchYouTubeCourses` to `(snippet.description || '').slice(0, 160)`.
+### Follow-up file inventory
 
-3. **Root Cause 3 — Hidden First-Class `edX` and `freeCodeCamp` Platform Filters**:
-   - `VALID_PLATFORMS` only accepted `['All', 'Udemy', 'Coursera', 'YouTube', 'Other']`. Selecting `edX` or `freeCodeCamp` directly normalized back to `'All'`, hiding both providers behind the ambiguous `'Other'` bucket.
-   - **Verified Fix**: Added `'edX'` and `'freeCodeCamp'` to `VALID_PLATFORMS`, `normalisePlatform`, and `filterCourses` in `backend/src/services/courseService.js` and `PLATFORM_OPTIONS` in `frontend/src/app/shared/models/course.model.ts`, while retaining `'Other'` (`edX + freeCodeCamp`) for backward compatibility.
+- `backend/src/data/courseCatalog.js`
+- `backend/src/scripts/verifyCoursesEndToEnd.js`
+- `backend/src/services/courseGovernanceService.js`
+- `backend/src/services/courseProgressService.js`
+- `backend/src/services/courseRecommendationService.js`
+- `backend/src/services/courseService.js`
+- `backend/src/tests/coursesFinalization.test.js`
+- `backend/src/tests/coursesHardening.test.js`
+- `backend/src/tests/coursesMongo.integration.test.js`
+- `backend/src/tests/coursesPoolWorkers.integration.test.js`
+- `backend/src/tests/fixtures/disposableRequestMongo.js`
+- `backend/src/tests/skillGapMongo.integration.test.js`
+- `backend/verification/courses/LEARNING-HUB-PRODUCTION-FINAL.md`
 
-### 2.2 Evaluation of External Course APIs & Curated Catalog Expansion
+Cleanup removed 7,901 files from the cancelled snapshot and 3,404 files or fixture junctions from the completed snapshot, Vitest temporary directory and temporary logs. The cleanup manifests list exact paths and no blocked entries remained. [Cancelled snapshot cleanup](followup-2026-11-04/cleanup-cancelled-snapshot.json) · [Completed cleanup](followup-2026-11-04/cleanup-workspace.json)
 
-| Provider         | Official Public API Evaluation                                                                                                                                                                            | Production Integration Strategy                                                                                                                                                                                                       | Verified Inventory                                   |
-| :--------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :--------------------------------------------------- |
-| **YouTube**      | **YouTube Data API v3** (`googleapis.com/youtube/v3/search` + `/videos`) — Free tier with API key (`YOUTUBE_API_KEY`). Supports ISO-8601 duration, view/like counts, channel title, and HTTPS watch URLs. | Live API integration with 6-hour provider cache, in-flight request coalescing, 3-strike / 30-minute circuit breaker, and automatic fallback to curated catalog on quota/network outage. Verified live (`2898ms`, status `available`). | Dynamic (`15` in `All` mode, `40` in `YouTube` mode) |
-| **Udemy**        | Udemy Affiliate API v2.0 was deprecated/restricted to approved commercial affiliate partners requiring Basic Auth client credentials. No open anonymous public endpoint exists.                           | Deterministic curated catalog (`backend/src/data/courseCatalog.js`) with strict `udemy.com` HTTPS host validation and explicit `curated-catalog` provenance.                                                                          | **11 courses** (`fb_u1`–`fb_u11`)                    |
-| **Coursera**     | Coursera Catalog API requires OAuth2 partner/enterprise credentials (`api.coursera.org`).                                                                                                                 | Deterministic curated catalog with strict `coursera.org` HTTPS host validation and explicit `curated-catalog` provenance.                                                                                                             | **9 courses** (`fb_c1`–`fb_c9`)                      |
-| **edX**          | edX Course Catalog API requires partner OAuth2 tokens (`courses.edx.org/api/courses/v1/`).                                                                                                                | Deterministic curated catalog with strict `edx.org` HTTPS host validation, first-class `platform=edX` filter support, and explicit `curated-catalog` provenance.                                                                      | **9 courses** (`fb_e1`–`fb_e9`)                      |
-| **freeCodeCamp** | No official versioned public REST catalog API; curriculum lives on `freecodecamp.org/learn` and YouTube tracks.                                                                                           | Deterministic curated catalog with strict `freecodecamp.org` HTTPS host validation, first-class `platform=freeCodeCamp` filter support, and explicit `curated-catalog` provenance.                                                    | **7 courses** (`fb_f1`–`fb_f7`)                      |
+## Previous acceptance evidence
 
-**Catalog Expansion Summary**:
+**DEVELOPMENT COMPLETE — STABLE CANDIDATE — PRODUCTION GATES PENDING**
 
-- Preserved all 27 historical `fb_*` courses byte-for-value (`fb_u1`..`fb_u9`, `fb_c1`..`fb_c6`, `fb_e1`..`fb_e7`, `fb_f1`..`fb_f5`).
-- Added 9 verified, real engineering courses covering high-demand developer tracks (`Kubernetes`, `GraphQL`, `Next.js`, `Testing`, `System Design`, `CI/CD`, `Go`, `Rust`, `Linux`, `PostgreSQL`, `Redis`, `Microservices`):
-  - **Udemy**: `fb_u10` (_GraphQL with Node.js, Apollo Server and React_), `fb_u11` (_Next.js 14 & React - The Complete Developer Guide_)
-  - **Coursera**: `fb_c7` (_Introduction to Containers w/ Docker, Kubernetes & OpenShift_), `fb_c8` (_Continuous Integration and Continuous Delivery (CI/CD)_), `fb_c9` (_Programming with Google Go Specialization_)
-  - **edX**: `fb_e8` (_Introduction to Kubernetes_), `fb_e9` (_Introduction to Linux_)
-  - **freeCodeCamp**: `fb_f6` (_Quality Assurance and Testing with Chai, Node.js and Express_), `fb_f7` (_Relational Database, PostgreSQL, Linux and Git Certification_)
-- All **36 curated courses** have unique `fb_*` IDs, unique canonical HTTPS provider URLs passing `safeCourseUrl`, verified titles/instructors/topics/levels, and explicit `unverified` availability provenance (never fabricating live ratings, review counts, or durations).
+Acceptance ran on 2026-11-04 (Asia/Karachi) on the authorized current branch `fix/learning-hub` at `60bce075`. PR target was not applicable. The checkout started with 41 staged paths and no unstaged changes. This report records fresh results separately from the earlier staged evidence. PASS applies to the stated scope.
 
----
+## Gate matrix
 
-## 3. Ranking, Filtering, Deduplication & Personalization
+| Gate                                                                      | Result  | Evidence and remaining work                                                                                                                                                                                                                                         |
+| ------------------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Live YouTube discovery                                                    | PASS    | A fresh read returned 3 observed SQL videos in 4,014 ms. A second live mixed-pool query returned 15 YouTube results.                                                                                                                                                |
+| Curated inventory and provider availability                               | FAIL    | 36 unique curated IDs and URLs passed local validation. The MIT Python edX URL resolves to a subject landing page. Three further URLs returned HTTP 404. Seven freeCodeCamp pages returned HTTP 200 and an application shell.                                       |
+| Deterministic ranking, filter normalization, pagination and deduplication | PASS    | Targeted regression passed the controlled scoring assertions. A separate service probe passed all 23 filter cases. The mixed live pool returned 51 unique IDs. The real fallback browser read returned 36 unique IDs across two pages.                              |
+| Live first-page provider balance                                          | FAIL    | YouTube occupied 9 of the first 10 results on the live SQL sample. The controlled test passed equal-relevance parity after exclusion of derived view counts. This sample cannot establish that the concentration is warranted across skills and profiles.           |
+| My Learning and Sprint handoff                                            | PASS    | Real MongoDB 8.2.6, JWT and Angular browser journey passed. The separate real Mongo/JWT suite passed 9/9, including concurrent saves and atomic Sprint insertion.                                                                                                   |
+| Skill Gap and Recommendations                                             | PASS    | Real Learning Hub consumed version-matched seeded evidence and rejected stale or incompatible evidence. Both neighboring UIs resolved their links into the real Courses API using synthetic upstream responses. Producer verification is reported separately below. |
+| Skill Gap producer regression                                             | FAIL    | The real disposable MongoDB producer/consumer run passed 2 of 3 tests. The active-selection producer returned HTTP 500 during the first persistence attempt.                                                                                                        |
+| Profile and cache freshness                                               | PASS    | Real Mongo tests invalidated personalization on owner, source, selected resume, profile and career-stack changes. Simulated Redis outages and expired pools preserved freshness.                                                                                    |
+| Dashboard and Weekly Reports                                              | BLOCKED | Weekly Report snapshot and unchanged readiness passed a focused fixture test. Dashboard cache invalidation wiring is present. A deployed Dashboard snapshot and scheduled Weekly Report delivery were not exercised.                                                |
+| MongoDB indexes, expiry and per-user quota                                | PASS    | Real indexes and TTL expiry observed. The HTTP integration allowed two forced refreshes and returned `429 COURSE_RATE_LIMITED` with Retry-After on the third.                                                                                                       |
+| Cross-worker course-pool lease                                            | FAIL    | The build path uses the process-local `buildOrShareCoursePool`. No runtime caller of `acquirePoolLease` or `releasePoolLease` exists outside the helper module. Duplicate cross-worker cold builds remain possible.                                                 |
+| Redis, request limits and provider recovery                               | BLOCKED | Controlled Redis hit/outage and provider breaker tests passed. No approved real Redis instance or staging workers were available for distributed cache, outage, quota or recovery checks.                                                                           |
+| Latency and request volume                                                | FAIL    | The controlled memory p95 exceeded 50 ms in multiple runs, including the 55.42 ms rerun below. The isolated targeted tests passed. Staging p50/p95 and load behavior remain blocked.                                                                                |
+| Security and privacy                                                      | PASS    | Local owner isolation, invalid/expired JWT, malformed filters and rejected metadata passed. Independent security review is a separate blocked gate.                                                                                                                 |
+| Independent accessibility and visual parity                               | BLOCKED | Independent accessibility audit and design-reference visual parity remain unavailable.                                                                                                                                                                              |
+| Frontend regression, build and TypeScript                                 | PASS    | 92/92 files and 540/540 tests passed. Production build and app typecheck exited 0.                                                                                                                                                                                  |
+| Complete backend regression                                               | FAIL    | Full run recorded 661 tests, 604 passed, 35 failed, 1 cancelled and 21 skipped. Focused reruns do not close this gate.                                                                                                                                              |
+| Local browser UI and accessibility probes                                 | PASS    | 24 layout probes, 3 theme interaction runs and 11 state probes passed. Real Light/Dark browser evidence was retained.                                                                                                                                               |
+| Staging, external integrations and independent reviews                    | BLOCKED | No authorized deployed endpoint or isolated staging accounts were supplied. Provider enrollment, production Redis/Mongo topology, independent security and independent recommendation-accuracy review remain unverified.                                            |
 
-### 3.1 Authoritative Ranking Formula & Tie-Break Order
+## Providers and ranking
 
-Every course in a user's pool is scored deterministically in `scoreAndRank` (`backend/src/services/courseService.js`) with **zero runtime LLM calls**:
+| Provider     | Curated inventory | Live mixed pool | Live top 10 | Public-page evidence                                                                                                                            |
+| ------------ | ----------------: | --------------: | ----------: | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| YouTube      |                 0 |              15 |           9 | Data API returned `hlGoQC332VM`, `xKuHUoaVN7E`, `HXV3zeQKqGY` in a separate three-result read.                                                  |
+| Udemy        |                11 |              11 |           0 | 10 readable course pages. `fb_u9` returned HTTP 404.                                                                                            |
+| Coursera     |                 9 |               9 |           1 | 9 readable program pages. `fb_c5` ranked first in the live sample.                                                                              |
+| edX          |                 9 |               9 |           0 | 6 readable course/program pages including the corrected AWS URL. `fb_e3` redirects to the subject index. `fb_e5` and `fb_e6` returned HTTP 404. |
+| freeCodeCamp |                 7 |               7 |           0 | 7 destinations returned HTTP 200. The public-page checker returned no readable course metadata.                                                 |
+| Total        |                36 |              51 |          10 | 25 readable curated course/program pages, 1 wrong redirect, 3 HTTP 404 responses, 7 HTTP 200 app shells.                                        |
 
-- **Relevance Score (`0–100`)**:
-  - Base score: `25`
-  - Target skill gap match (`NOT_EVIDENCED`, `CLAIMED_ONLY`, `PARTIAL`): `+18` per matched target skill
-  - Known skill context match (`DEMONSTRATED`): `+4` per matched known skill
-  - Career stack topic alignment (`CAREER_TOPICS[careerStack]`): `+10`
-  - Explicit topic/search filter match: `+14`
-  - Experience level fit (`LEVEL_MAP[experienceLevel]`): `+12` for primary level match, `+6` for secondary level match
-  - Verified duration adjustment: `+4` for `5–40h`, `-2` for `>60h`
-- **Final Score**:
-  - With genuine provider review rating (`rating !== null` and `ratingSource === 'provider'`):
-    $$\text{finalScore} = \text{round}\left(\frac{\text{rating}}{5} \times 100 \times 0.38 + \text{popularity} \times 0.28 + \text{relevanceScore} \times 0.34\right)$$
-  - Without provider review rating (`rating === null`, including YouTube and curated catalog):
-    $$\text{finalScore} = \text{round}\left(\text{popularity}_{\text{verified}} \times 0.45 + \text{relevanceScore} \times 0.55\right)$$
-    where $\text{popularity}_{\text{verified}} = 0$ when `popularitySource === 'derived-view-count'` or `popularity === null`.
-- **Deterministic Sort Comparators**:
-  1. `requiredTargetMatchCount` (descending)
-  2. `targetMatchCount` (descending)
-  3. `careerAligned` (`true` before `false`)
-  4. `finalScore` (descending)
-  5. `relevanceScore` (descending)
-  6. `String(course.id).localeCompare(String(b.id))` (stable lexicographical tie-breaker)
+The public-page review covered all 36 catalog URLs. The shell HTTP probe returned no HTTP response for all 36 in its sandbox. The counts above come from the separate public-page checker and the verified replacement AWS page. An authorized follow-up HTTP probe confirmed all seven freeCodeCamp destinations returned 200, the MIT course returned 200 after redirecting to the subject index, and `fb_u9`, `fb_e5` and `fb_e6` returned 404. Full enrollment availability and metadata accuracy remain open. The curated API keeps unsupported rating and duration fields null. Catalog corrections covered stale titles for `fb_u1`, `fb_u4`, `fb_u5`, `fb_u6`, `fb_c2` and `fb_c6`, plus the provider-linked URL for `fb_e2`. Course IDs were preserved. [Udemy JavaScript](https://www.udemy.com/course/the-complete-javascript-course/) · [IBM JavaScript certificate](https://www.coursera.org/professional-certificates/ibm-full-stack-javascript-developer) · [Google Cloud certificate](https://www.coursera.org/professional-certificates/gcp-cloud-architect) · [AWS course on edX](https://www.edx.org/learn/amazon-web-services-aws/amazon-web-services-aws-cloud-practitioner-essentials)
 
-### 3.2 Skill Gap Evidence & `UNKNOWN` Exclusion
+The catalog link and MIT's own published edX link both landed on the edX computer science index. No verified same-course edX URL was found. `fb_u9`, `fb_e5` and `fb_e6` have no verified same-course replacement. A substitute could misrepresent an existing saved course, so the records remain flagged in this report. [MIT course listing](https://openlearning.mit.edu/courses-programs/mitx-courses/introduction-to-computer-science-and-programming-using-python) · [Observed edX destination](https://www.edx.org/learn/computer-science)
 
-- `resolveCoursePersonalization` (`backend/src/services/coursePersonalizationService.js`) validates `AnalysisCache` (`analysisType: 'skill_gap'`) against `ANALYSIS_VERSION = 'v8-skill-evidence-coverage'`, `EVIDENCE_POLICY_VERSION = 'skill-evidence-coverage-v1'`, active `careerStack`, `experienceLevel`, `githubUsername`, selected resume `contentHash`, and `sourceReferences`.
-- `UNKNOWN` skills are preserved in `personalization.statusCounts.UNKNOWN` for diagnostics but **never** classified as target skill gaps (`targetSkills`) or missing proficiency.
+The live mixed run used Backend / Intern / SQL with All providers. It took 1,475 ms and issued 2 YouTube search requests and 1 details request. The first 10 IDs, in order, were `fb_c5`, `yt_5OdVJbNCSso`, `yt_7S_tz1z_5bA`, `yt_a4xjpxzqN1Q`, `yt_h0nxCDiD-zg`, `yt_hi9yINy2Yj4`, `yt_hlGoQC332VM`, `yt_HXV3zeQKqGY`, `yt_OeS2fz0NQ1A` and `yt_On9eSN3F8w0`. A broader relevance review across roles and skills is still needed for a fairness claim.
 
----
+## Real journeys, cross-module behavior and infrastructure
 
-## 4. My Learning End-to-End Lifecycle & Cross-Module Integration
+- The real browser used production Angular bundle `main-V73U3GIY.js` and real local course, progress, Sprint and profile handlers. The first attempt received 503 on its first Discover request while the regression suite was running. Its cause was not isolated. The retry passed 4 recorded journeys, 3 ranking traces and 4 screenshot captures with 0 browser errors and 0 runtime AI calls. Test cleanup recorded 0 owned users and 0 owned progress rows. [First run](acceptance-2026-11-04/end-to-end.json) · [Successful retry](acceptance-2026-11-04/retry/end-to-end.json)
+- The browser saved a course, recorded In Progress with notes at 0%, opened the atomic Sprint handoff in the Career Sprint UI and reloaded the persisted state. Self-reported completion retained the explicit 0%, a simulated storage failure retained previous data, and removal persisted. The isolated Mongo/JWT suite checked separate owner and foreign JWTs, owned reads and writes, concurrent save upserts, and five concurrent handoff requests producing one task. No cross-account data was observed in these scenarios.
+- The `v8-skill-evidence-coverage` consumer accepted compatible evidence. SQL `CLAIMED_ONLY`, Docker `PARTIAL` and optional React were review targets. Testing `UNKNOWN` was excluded and Node.js `DEMONSTRATED` contributed known-skill context. SQL relevance/final scores were 65/36 unfiltered and 79/43 through the deep link. Docker was 53/29 and 67/37. Node.js was 39/21 and 53/29. These are seeded contract checks.
+- The separate real Skill Gap producer/consumer run passed historical reload, forced reanalysis and persisted replay, plus the real Mongo consumer identity check. Active selection and concurrent invalidation failed on its first producer response with HTTP 500 instead of 200 and 10,063 ms recorded in cache persistence. Compatibility for the full producer lifecycle remains open.
+- The inspected 375 px Dark and 1440 px Light captures show two visible freshness labels. The narrow header wraps introductory copy into a tight column. No visual reference was supplied for parity.
+- The fresh namespace migration created `course_pool_evidence_lookup` and `course_skill_evidence_lookup` and reported both as existing on repeat. Actual indexes included the unique `user_course_identity` on `{userId:1,courseId:1}`, `user_course_status` on `{userId:1,status:1,updatedAt:-1,_id:-1}`, the course pool index on `{userId:1,analysisVersion:1,signalHash:1,updatedAt:-1}`, and the skill evidence index on `{userId:1,careerStack:1,experienceLevel:1,updatedAt:-1}`. Mongo reported `createdAt_1` with a 604,800-second TTL and `governance_expiry` on `expiresAt` with TTL 0. A synthetic expired governance row disappeared after 978 ms with the disposable server's TTL monitor interval set to 1 second.
+- The controlled breaker covered authentication failure, quota, timeout, empty response, three-failure open, cooldown recovery and cache expiry. The controlled cache harness shared one pool build, one provider pipeline call, one Mongo write and one Redis set across five concurrent same-key callers. That harness runs inside one process.
+- The Discover route now performs one authentication/user lookup and one admission check before its handler. The previous split registration invoked the JWT middleware twice. The route assertion now requires both JWT and admission ahead of the handler. The API payload and score weights were preserved.
 
-### 4.1 My Learning Persistence & Self-Reported Authority
+- Browser fixture verification passed 24 layout probes at 320, 375, 425, 768, 1024, 1280, 1440 and 1600 px across Light, Dark and System. All probes passed the harness checks for horizontal overflow, 44 px controls, broken images and computed contrast. Three interaction runs covered filter controls, navigation, keyboard focus, Escape, backdrop and resize behavior. Eleven state probes covered empty, fallback, cached, evidence unavailable, no profile, progress unavailable, loading, retry, auth and both deep-link aliases. Fixture responses were synthetic. The locators now target the freshness capsule and the alert retry button specifically. [Browser fixture results](acceptance-2026-11-04/fixture/browser-results.json)
 
-- **Storage**: `UserCourseProgress` (`backend/src/models/userCourseProgress.js`) enforces a unique compound index `{ userId: 1, courseId: 1 }` (`user_course_identity`) and status query index `{ userId: 1, status: 1, updatedAt: -1 }` (`user_course_status`).
-- **Lifecycle**:
-  - **Discover → Save**: `PUT /api/courses/:courseId/progress` with `{ status: 'saved' }` resolves the canonical course snapshot from the server catalog or the user's owned pool cache (`courseProgressService.js`), never trusting client-supplied URLs, titles, or ratings.
-  - **Start Learning → Update Progress/Notes**: `PUT /api/courses/:courseId/progress` with `{ status: 'in_progress', notes: '...', progressPercent: 0..100 }`. Notes are sanitized plain text bounded to `2,000` characters; `progressPercent` is optional (`0–100` or `null`) and preserves `0%` without coercing to `null`.
-  - **Complete**: `PUT /api/courses/:courseId/progress` with `{ status: 'completed' }` sets `completionSource: 'self-reported'` and `completedAt` (preserving the original timestamp on idempotent repeats) without inventing `progressPercent: 100`, altering Skill Gap evidence, or writing to `PublicProfile`.
-  - **Remove**: `DELETE /api/courses/:courseId/progress` removes the owned record idempotently (`204 No Content`) while leaving any previously created Career Sprint tasks intact.
+- The direct service probe passed 23/23 cases against controlled rows. It covered all seven platform choices, all four level choices, all four rating choices, all four duration choices and four search/alias cases. The exact 2-hour and 10-hour boundaries, unknown rating and duration handling, and nonmatching search were included.
 
-### 4.2 Cross-Module Integrations Verified
+### Controlled latency
 
-1. **Skill Gap (`/app/skill-gap`)**: Deep links (`/app/courses?skill=<Skill>`) filter and boost matching courses (`+14` explicit topic bonus).
-2. **Recommendations (`/app/recommendations`)**: Action links navigate to `/app/courses?skill=...` or `/app/courses?topic=...` with full query-param normalization.
-3. **Career Sprint (`POST /api/courses/:courseId/career-sprint`)**:
-   - Requires the course to exist in the caller's `UserCourseProgress` and not be `completed` (`409 Conflict` if completed).
-   - Validates `targetSkill` against recorded course topics (`400 Bad Request` if mismatched).
-   - Uses atomic `CareerSprint.updateOne` (`$push` with `$nor` predicate on stable `Course: <courseId>` marker) so concurrent duplicate requests return `200 OK` with `alreadyAdded: true` and `409 Conflict` when requested with a conflicting `targetSkill`.
-   - Invalidates the user's Career Sprint cache via `invalidateCareerSprintCache`.
-4. **Dashboard Summary (`backend/src/controllers/dashboardcontroller.js`)**:
-   - `getDashboardSummary` queries `UserCourseProgress` in parallel with existing sources and exposes additive `learningSnapshot` (`totalTracked`, `savedCount`, `inProgressCount`, `completedCount`, `completionSource: 'self-reported'`, `recentCourses`), `dataFreshness.learning`, `sourcesUsed.learning`, and `sourceFreshness.learning` without altering `readinessScore`.
-   - `courseProgressController.js` calls `invalidateDashboardSummaryCache(req.user._id)` on every progress save, removal, and Career Sprint handoff.
-5. **Weekly Report (`backend/src/services/weeklyReportService.js`)**:
-   - `generateWeeklyReportCore` queries `UserCourseProgress` and attaches `userData.learning` and `meta.learning` (`buildLearningSnapshot`, including `completedInPeriodCount` and `activeInPeriodCount` within the 7-day report window) without altering `computeOverallScore`.
+| Path        | Samples | First p50 / p95 (ms) | Rerun p50 / p95 (ms) | p95 budget |
+| ----------- | ------: | -------------------: | -------------------: | ---------: |
+| Cold        |       8 |      176.57 / 307.22 |      157.09 / 159.02 |       <500 |
+| Redis warm  |      12 |       91.97 / 187.56 |        46.41 / 48.03 |       <250 |
+| Memory warm |      16 |        55.91 / 99.86 |        31.31 / 55.42 |        <50 |
 
----
+These are local service-harness timings with controlled dependencies. The full regression memory p95 assertion observed 57.06 ms and the first focused suite observed 73.97 ms. The final focused suite passed the existing assertion. Live-provider wall times are reported separately above.
 
-## 5. APIs, Mongo-Authoritative Rate Limiting, Caching & Performance
+## Regression and finalization
 
-### 5.1 Mongo-Authoritative Rate Limits & Cross-Worker Pool Lease
+| Check                                                   | Result                                                                                                                                                                                                   |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Full backend `npm test`                                 | 661 tests. 604 passed, 35 failed, 1 cancelled, 21 skipped. Failures included sandbox loopback access, fixture/platform prerequisites, memory latency, and unrelated module suites. This is a failed run. |
+| Focused backend final run                               | 58/58 passed across course finalization, hardening, performance, provider recovery, Sprint hardening and Weekly Report scheduler.                                                                        |
+| Real Mongo/JWT Learning Hub retry                       | 9/9 passed, 0 skipped.                                                                                                                                                                                   |
+| Frontend `npm test -- --watch=false`                    | 92/92 files, 540/540 tests. First attempt hit sandbox temporary-file rename EPERM. Workspace temp rerun passed.                                                                                          |
+| Frontend `npm run build`                                | Exit 0. Existing landing-page SCSS measured 56.67 kB against the 48.00 kB warning budget.                                                                                                                |
+| App TypeScript `--noEmit -p frontend/tsconfig.app.json` | Exit 0.                                                                                                                                                                                                  |
+| Formatting, syntax and whitespace                       | Explicit Prettier write/check and Node syntax checks on the four changed source files. Frontend staged-source formatting check passed. Git index and working-tree whitespace checks passed.              |
 
-Implemented in `backend/src/services/courseGovernanceService.js` and `backend/src/middleware/courseAdmission.js` using atomic single-document upserts on `IntegrationGovernanceState.collection` (`_id: courses:v1:...`):
+## Acceptance change inventory
 
-| Bucket     | Endpoint Scope                                                                  | Default Window | Default Limit          | Exhaustion Response                                                    |
-| :--------- | :------------------------------------------------------------------------------ | :------------- | :--------------------- | :--------------------------------------------------------------------- |
-| `read`     | `GET /api/courses` (standard), `GET /api/courses/my-learning`                   | `60,000 ms`    | `120 req/min` per user | `429 Too Many Requests` (`code: 'COURSE_RATE_LIMITED'`, `Retry-After`) |
-| `refresh`  | `GET /api/courses?refresh=true`                                                 | `60,000 ms`    | `20 req/min` per user  | `429 Too Many Requests` (`code: 'COURSE_RATE_LIMITED'`, `Retry-After`) |
-| `mutation` | `PUT /api/courses/:courseId/progress`, `DELETE /api/courses/:courseId/progress` | `60,000 ms`    | `60 req/min` per user  | `429 Too Many Requests` (`code: 'COURSE_RATE_LIMITED'`, `Retry-After`) |
-| `sprint`   | `POST /api/courses/:courseId/career-sprint`                                     | `60,000 ms`    | `30 req/min` per user  | `429 Too Many Requests` (`code: 'COURSE_RATE_LIMITED'`, `Retry-After`) |
+| Operation | Path                                                                              |
+| --------- | --------------------------------------------------------------------------------- |
+| Modified  | `backend/src/data/courseCatalog.js`                                               |
+| Modified  | `backend/src/routes/courseRoutes.js`                                              |
+| Modified  | `backend/src/tests/coursesHardening.test.js`                                      |
+| Modified  | `frontend/scripts/verify-courses-ui.cjs`                                          |
+| Updated   | `backend/verification/courses/LEARNING-HUB-PRODUCTION-FINAL.md`                   |
+| Retained  | `backend/verification/courses/acceptance-2026-11-04/end-to-end.json`              |
+| Retained  | `backend/verification/courses/acceptance-2026-11-04/retry/end-to-end.json`        |
+| Retained  | `backend/verification/courses/acceptance-2026-11-04/retry/real-dark-1440.png`     |
+| Retained  | `backend/verification/courses/acceptance-2026-11-04/retry/real-dark-375.png`      |
+| Retained  | `backend/verification/courses/acceptance-2026-11-04/retry/real-light-1440.png`    |
+| Retained  | `backend/verification/courses/acceptance-2026-11-04/retry/real-light-375.png`     |
+| Retained  | `backend/verification/courses/acceptance-2026-11-04/fixture/browser-results.json` |
+| Retained  | `backend/verification/courses/acceptance-2026-11-04/cleanup-files.json`           |
 
-- **Cross-Worker Pool Lease**: `acquirePoolLease(cacheKey, ttlMs)` acquires a distributed lease in `IntegrationGovernanceState` before building a cold course pool, preventing duplicate YouTube/Mongo pool builds across concurrent processes.
-
-### 5.2 Multi-Tier Cache & Latency Metrics (`coursesPerformance.test.js`)
-
-| Cache Tier / Path                              | Measured p50   | Measured p95                                          | Production SLA Budget    | Status   |
-| :--------------------------------------------- | :------------- | :---------------------------------------------------- | :----------------------- | :------- |
-| **Memory Warm (`poolMemoryCache`)**            | `31.14 ms`     | `32.32 ms`                                            | `< 50 ms`                | **PASS** |
-| **Redis Warm (`aiService` w/ `120ms` budget)** | `47.05 ms`     | `48.00 ms`                                            | `< 250 ms`               | **PASS** |
-| **Cold Build (Catalog + Provider + Scoring)**  | `156.63 ms`    | `172.15 ms`                                           | `< 500 ms`               | **PASS** |
-| **5-Caller Concurrency Deduplication**         | `1` pool build | `1` provider call / `1` Mongo write / `1` Redis write | Exactly `1` shared build | **PASS** |
-
----
-
-## 6. Changed & Created Files Inventory
-
-Repository root: `c:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer`
-
-| Operation    | File Path                                                               | Purpose                                                                                                                                                                                                                                                           |
-| :----------- | :---------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Modified** | `backend/src/data/courseCatalog.js`                                     | Expanded curated catalog from 27 to 36 verified courses (`11 Udemy`, `9 Coursera`, `9 edX`, `7 freeCodeCamp`)                                                                                                                                                     |
-| **Modified** | `backend/src/services/courseService.js`                                 | Excluded uncalibrated `derived-view-count` popularity from `finalScore`; set `COURSE_POOL_SIZE.All = 15`; bounded YouTube description topic extraction to `160` chars; enabled first-class `edX` & `freeCodeCamp` platform filters; wired cross-worker pool lease |
-| **Created**  | `backend/src/services/courseGovernanceService.js`                       | Atomic Mongo-authoritative fixed-window rate limiter and cross-worker pool build lease                                                                                                                                                                            |
-| **Created**  | `backend/src/middleware/courseAdmission.js`                             | Express admission middleware (`admitCourseRead`, `admitCourseMutation`, `admitCourseSprint`) with `RateLimit-*` and `Retry-After` headers                                                                                                                         |
-| **Modified** | `backend/src/routes/courseRoutes.js`                                    | Wired admission middleware into all Learning Hub routes while preserving `router.get('/', protect, fetchCourses)` contract                                                                                                                                        |
-| **Modified** | `backend/src/controllers/courseProgressController.js`                   | Added `invalidateDashboardSummaryCache(req.user._id)` on progress save, delete, and Career Sprint handoff                                                                                                                                                         |
-| **Modified** | `backend/src/controllers/dashboardcontroller.js`                        | Added `UserCourseProgress` `learningSnapshot` and freshness metadata to `getDashboardSummary`                                                                                                                                                                     |
-| **Modified** | `backend/src/services/weeklyReportService.js`                           | Added `buildLearningSnapshot` (`UserCourseProgress`) to `generateWeeklyReportCore`                                                                                                                                                                                |
-| **Modified** | `backend/.env.example`                                                  | Documented Learning Hub cache TTL and rate-limit configuration variables                                                                                                                                                                                          |
-| **Modified** | `backend/src/tests/coursesFinalization.test.js`                         | Updated catalog count (`36`) and added regression tests for YouTube vs. curated ranking parity, first-class `edX`/`freeCodeCamp` filters, and Dashboard/Weekly Report learning snapshots                                                                          |
-| **Modified** | `backend/src/tests/coursesMongo.integration.test.js`                    | Added real MongoDB integration test for Mongo-authoritative rate limiting (`429 COURSE_RATE_LIMITED`) and cross-worker pool lease                                                                                                                                 |
-| **Created**  | `backend/src/tests/coursesProviderVerification.test.js`                 | Added 4 provider verification tests covering all 36 curated courses, URLs, provider distribution, ranking parity, and topic coverage                                                                                                                              |
-| **Created**  | `backend/src/scripts/verifyCoursesLiveProvider.js`                      | Live YouTube Data API v3 verification script                                                                                                                                                                                                                      |
-| **Modified** | `backend/src/scripts/verifyCoursesEndToEnd.js`                          | Updated end-to-end Playwright + MongoDB verification script for 36-course catalog and `v8-skill-evidence-coverage` contract                                                                                                                                       |
-| **Modified** | `frontend/src/app/shared/models/course.model.ts`                        | Added `edX` and `freeCodeCamp` to `PLATFORM_OPTIONS`                                                                                                                                                                                                              |
-| **Modified** | `frontend/src/app/pages/courses/courses.component.html`                 | Fixed accessible button labels (`aria-hidden="true"` on count badges) and exact career capsule text (`Backend · Intern`)                                                                                                                                          |
-| **Modified** | `frontend/src/app/pages/courses/courses.component.scss`                 | Fixed `320px` responsive wrapping (`min-width: 0`), `28px`/`19px` typography, `>= 44px` control heights, and WCAG AA contrast                                                                                                                                     |
-| **Modified** | `frontend/src/app/pages/courses/components/my-learning.component.scss`  | Enforced `>= 44px` control heights and WCAG AA theme token contrast                                                                                                                                                                                               |
-| **Modified** | `frontend/src/app/shared/components/course-card/course-card.scss`       | Enforced `>= 44px` control heights and WCAG AA theme token contrast                                                                                                                                                                                               |
-| **Modified** | `frontend/src/app/shared/components/course-filters/course-filters.scss` | Enforced `>= 44px` control heights and WCAG AA theme token contrast                                                                                                                                                                                               |
-| **Modified** | `frontend/scripts/verify-courses-ui.cjs`                                | Added `PLAYWRIGHT_MODULE` fallback and mobile shell wait on viewport resize                                                                                                                                                                                       |
-| **Created**  | `backend/verification/courses/LEARNING-HUB-PRODUCTION-FINAL.md`         | This comprehensive production finalization and verification report                                                                                                                                                                                                |
+No tracked files moved or deleted. The [cleanup manifest](acceptance-2026-11-04/cleanup-files.json) lists 1,839 task-owned files removed in the recorded cleanup pass. The preceding attempt stopped at a locked Mongo file before saving its partial inventory. The staged-entry digest was `bca2e92cb0ebd00086984d1bb872a0f4c686e5fb` before and after verification. No commit, push, merge, deploy or production data change occurred.

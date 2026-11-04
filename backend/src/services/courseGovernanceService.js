@@ -1,6 +1,7 @@
 'use strict';
 const crypto = require('node:crypto');
 const mongoose = require('mongoose');
+const { setTimeout: delay } = require('node:timers/promises');
 const State = require('../models/integrationGovernanceState');
 const mongo = require('./integrationMongoGovernanceService');
 
@@ -14,6 +15,12 @@ const windowKey = (bucket, scope, windowSlot) =>
   `courses:v1:rate:${bucket}:${digest(scope)}:${windowSlot}`;
 
 const leaseKey = (signalHash) => `courses:v1:lease:${digest(signalHash)}`;
+const POOL_LEASE_MS = 30_000;
+const POOL_STORE_TIMEOUT_MS = 2000;
+const poolBusy = () =>
+  Object.assign(new Error('Course pool temporarily unavailable.'), {
+    status: 503,
+  });
 
 async function window(
   bucket,
@@ -73,7 +80,7 @@ async function window(
   };
 }
 
-async function acquirePoolLease(signalHash, leaseMs = 15000) {
+async function acquirePoolLease(signalHash, leaseMs = POOL_LEASE_MS) {
   if (mongoose.connection.readyState !== 1) {
     return { acquired: true, token: null };
   }
@@ -81,7 +88,7 @@ async function acquirePoolLease(signalHash, leaseMs = 15000) {
     await mongo.initialize();
     const key = leaseKey(signalHash);
     const token = crypto.randomUUID();
-    const durationMs = Math.max(1000, Math.trunc(Number(leaseMs) || 15000));
+    const durationMs = Math.max(1000, Math.trunc(Number(leaseMs) || POOL_LEASE_MS));
     const now = Date.now();
     const nowDate = new Date(now);
     const until = new Date(now + durationMs);
@@ -97,14 +104,14 @@ async function acquirePoolLease(signalHash, leaseMs = 15000) {
           expiresAt: new Date(until.getTime() + 60000),
         },
       },
-      { upsert: true },
+      { upsert: true, timeoutMS: POOL_STORE_TIMEOUT_MS },
     );
     return { acquired: true, token };
   } catch (error) {
     if (error?.code === 11000) {
       return { acquired: false, token: null };
     }
-    return { acquired: true, token: null };
+    throw poolBusy();
   }
 }
 
@@ -112,14 +119,87 @@ async function releasePoolLease(signalHash, token) {
   if (!token || mongoose.connection.readyState !== 1) return;
   try {
     const key = leaseKey(signalHash);
-    await State.collection.deleteOne({ _id: key, 'leases.token': token });
+    await State.collection.updateOne(
+      { _id: key, 'leases.token': token },
+      { $set: { leases: [] } },
+      { timeoutMS: POOL_STORE_TIMEOUT_MS },
+    );
   } catch {
     // Non-fatal lease release failure; TTL/until recovers automatically.
   }
+}
+
+async function runPoolBuild(signalHash, { forceRefresh, startedAt, build, persist }) {
+  if (mongoose.connection.readyState !== 1) {
+    const pool = await build();
+    await persist(pool);
+    return pool;
+  }
+  await mongo.initialize().catch(() => {
+    throw poolBusy();
+  });
+  const key = leaseKey(signalHash);
+  const readCompleted = async () => {
+    const row = await State.collection
+      .findOne(
+        {
+          _id: key,
+          ...(forceRefresh
+            ? { 'completed.at': { $gte: startedAt } }
+            : {
+                $or: [
+                  { 'completed.at': { $gte: startedAt } },
+                  {
+                    'completed.at': { $gte: new Date(Date.now() - 60_000) },
+                    'completed.pool.total': { $gt: 0 },
+                  },
+                ],
+              }),
+        },
+        { projection: { 'completed.pool': 1 }, timeoutMS: POOL_STORE_TIMEOUT_MS },
+      )
+      .catch(() => {
+        throw poolBusy();
+      });
+    return row?.completed?.pool;
+  };
+  const deadline = Date.now() + POOL_LEASE_MS + POOL_STORE_TIMEOUT_MS;
+  while (Date.now() < deadline) {
+    const completed = await readCompleted();
+    if (completed) return completed;
+    const { acquired, token } = await acquirePoolLease(signalHash);
+    if (!acquired) {
+      await delay(150);
+      continue;
+    }
+    if (!token) throw poolBusy();
+    try {
+      const winner = await readCompleted();
+      if (winner) return winner;
+      const pool = await build();
+      const now = new Date();
+      const published = await State.collection.updateOne(
+        {
+          _id: key,
+          'leases.token': token,
+          $expr: { $gt: [{ $arrayElemAt: ['$leases.until', 0] }, '$$NOW'] },
+        },
+        { $set: { completed: { at: now, pool: { ...pool, updatedAt: now } } } },
+        { timeoutMS: POOL_STORE_TIMEOUT_MS },
+      );
+      if (!published.matchedCount) throw poolBusy();
+      await persist(pool, { governed: true, publishedAt: now });
+      return { ...pool, updatedAt: now };
+    } finally {
+      await releasePoolLease(signalHash, token);
+    }
+  }
+  throw poolBusy();
 }
 
 module.exports = {
   window,
   acquirePoolLease,
   releasePoolLease,
+  runPoolBuild,
 };

@@ -7,6 +7,8 @@ const { startMongo } = require("./fixtures/disposableRequestMongo");
 const ResumeFile = require("../models/resumeFile");
 const ResumeAnalysis = require("../models/resumeAnalysis");
 const AnalysisCache = require("../models/analysisCache");
+const User = require("../models/user");
+const GitHubCache = require("../models/githubAnalysisCache");
 const mock = (path, exports) => {
   const filename = require.resolve(path);
   require.cache[filename] = { id: filename, filename, loaded: true, exports };
@@ -27,6 +29,13 @@ test("Skill Gap Mongo: active selection, reanalysis, source revisions, history a
   });
   const owner = new mongoose.Types.ObjectId();
   const foreign = new mongoose.Types.ObjectId();
+  await Promise.all([User.init(), AnalysisCache.init(), ResumeFile.init(), ResumeAnalysis.init()]);
+  await User.create({
+    _id: owner,
+    name: "Skill Gap fixture",
+    email: owner + "@fixture.test",
+    password: "fixture"
+  });
   t.after(async () => {
     await Promise.all([
       ResumeFile.deleteMany({ userId: { $in: [owner, foreign] } }),
@@ -125,9 +134,6 @@ test("Skill Gap Mongo: active selection, reanalysis, source revisions, history a
     },
     recordDeterministicSkip: () => {}
   });
-  mock("../services/notificationPersistenceService", {
-    commit: async (_owner, work) => work(null)
-  });
   mock("../services/aiVersionService", { createVersion: async () => {} });
   mock("../services/notificationService", {
     createNotification: async () => {}
@@ -185,6 +191,18 @@ test("Skill Gap Mongo: active selection, reanalysis, source revisions, history a
   }).lean();
   assert.ok(mongoFirst);
   assert.equal(mongoFirst.analysisData.ruleVersion, "skill-evidence-coverage-v1");
+  assert.equal(mongoFirst.analysisVersion, "v9-skill-evidence-governance");
+  await GitHubCache.create({
+    githubUsername: "fixture",
+    normalizedUsername: "fixture",
+    result: github,
+    expiresAt: new Date(Date.now() + 60_000)
+  });
+  const { resolveSkillSignals } = require("../services/coursePersonalizationService");
+  const learningSignals = () => resolveSkillSignals(owner, "Frontend", "Student", null, user);
+  const firstLearning = await learningSignals();
+  assert.equal(firstLearning.personalization.status, "evidence-informed");
+  assert.equal(firstLearning.targets.find((target) => target.name === "React").status, "PARTIAL");
 
   controller.clearSkillGapMemoryCache();
   shared.clear();
@@ -196,7 +214,9 @@ test("Skill Gap Mongo: active selection, reanalysis, source revisions, history a
   assert.deepEqual(databaseHit.skills, first.skills);
 
   user.activeResumeFileId = files[1]._id;
+  assert.equal((await learningSignals()).personalization.status, "career-context-only");
   const switched = await call();
+  assert.equal((await learningSignals()).personalization.status, "evidence-informed");
   assert.deepEqual(switched.resumeSkills, ["SQL"]);
   assert.notEqual(switched.cacheMetadata.signalHash, first.cacheMetadata.signalHash);
   assert.equal(switched.coverage, first.coverage); // Claims alone do not change coverage.

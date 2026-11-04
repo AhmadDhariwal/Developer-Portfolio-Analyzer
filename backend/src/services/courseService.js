@@ -432,9 +432,15 @@ function computeRelevance(course, context = {}) {
   if (course.level === inferredLevel) score += 12;
   else if (course.level === 'All Levels') score += 6;
 
-  if (course.durationHours > 0 && course.durationHours <= 10 && inferredLevel === 'Beginner')
+  if (
+    course.durationHours > 0 &&
+    course.durationHours <= 10 &&
+    course.level === 'Beginner' &&
+    inferredLevel === 'Beginner'
+  )
     score += 6;
-  if (course.durationHours > 10 && inferredLevel === 'Advanced') score += 4;
+  if (course.durationHours > 10 && course.level === 'Advanced' && inferredLevel === 'Advanced')
+    score += 4;
 
   return clamp(Math.round(score), 0, 100);
 }
@@ -686,8 +692,14 @@ function setYouTubeCache(key, result, ttlMs) {
   }
 }
 
+const courseCatalog = require('../data/courseCatalog');
+const unavailableCourseIds = new Set(
+  courseCatalog.filter((course) => course.discoveryUnavailable).map((course) => course.id),
+);
+
 function buildFallbackPool(platform = 'All', count = 20) {
-  const allCourses = require('../data/courseCatalog')
+  const allCourses = courseCatalog
+    .filter((course) => !course.discoveryUnavailable)
     .map((course) => ({
       ...course,
       rating: null,
@@ -846,6 +858,7 @@ module.exports = {
   sanitizeSkillList,
   hasValidCourseUrl,
   buildFallbackPool,
+  isUnavailableCatalogCourse: (courseId) => unavailableCourseIds.has(courseId),
   dedupeCourses,
   fetchYouTubeCourses,
   clearYouTubeCache,

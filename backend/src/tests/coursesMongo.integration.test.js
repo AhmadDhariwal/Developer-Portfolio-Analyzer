@@ -556,6 +556,28 @@ test('Learning Hub real Mongo/JWT: current evidence, cache identity, owned learn
       assert.equal((await http('/my-learning', 'GET', undefined, foreign)).body.total, 0);
       assert.equal((await http('/fb_u2/progress', 'DELETE')).status, 204);
       assert.equal((await http('/fb_u2/progress', 'DELETE')).status, 204);
+      const { id, title, platform, url } = require('../data/courseCatalog').find(
+        (item) => item.id === 'fb_e3',
+      );
+      assert.equal((await http('/fb_e3/progress', 'PUT', { status: 'saved' })).status, 404);
+      await Progress.create({
+        userId: owner,
+        courseId: id,
+        course: { id, title, platform, url },
+        status: 'saved',
+      });
+      const retired = await http('/fb_e3/progress', 'PUT', {
+        status: 'in_progress',
+        notes: 'Keep my notes',
+      });
+      assert.equal(retired.status, 200);
+      assert.equal(retired.body.courseId, id);
+      assert.equal(retired.body.course.url, '');
+      assert.equal(retired.body.notes, 'Keep my notes');
+      assert.equal(
+        (await Progress.findOne({ userId: owner, courseId: id }).lean()).course.url,
+        url,
+      );
       assert.equal(aiCalls, 0);
     },
   );

@@ -242,6 +242,7 @@ module.exports = [
   },
   {
     id: 'fb_e3',
+    discoveryUnavailable: true,
     title: 'MIT Introduction to Computer Science and Programming Using Python',
     platform: 'edX',
     instructor: 'MIT',
@@ -276,6 +277,7 @@ module.exports = [
   },
   {
     id: 'fb_e5',
+    discoveryUnavailable: true,
     title: 'Agile Development and Scrum',
     platform: 'edX',
     instructor: 'IBM',
@@ -377,6 +379,7 @@ module.exports = [
   },
   {
     id: 'fb_u9',
+    discoveryUnavailable: true,
     title: "System Design Interview – An Insider's Guide",
     platform: 'Udemy',
     instructor: 'Alex Xu',
@@ -411,6 +414,7 @@ module.exports = [
   },
   {
     id: 'fb_e6',
+    discoveryUnavailable: true,
     title: 'Software Construction in Java',
     platform: 'edX',
     instructor: 'MIT',

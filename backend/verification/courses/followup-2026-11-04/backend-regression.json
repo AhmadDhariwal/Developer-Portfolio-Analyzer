@@ -1,0 +1,192 @@
+{
+  "command": "node --test --test-concurrency=2 --test-reporter=tap src/tests/**/*.test.js",
+  "totals": {
+    "tests": 765,
+    "pass": 734,
+    "fail": 18,
+    "cancelled": 0,
+    "skipped": 13
+  },
+  "failures": [
+    {
+      "test": "disposable Mongo + fixture S3: existing upload APIs, privacy, replacement, cleanup, restart and legacy reads",
+      "location": "src/tests/b2Storage.test.js:154:1'",
+      "failureType": "'testCodeFailure'",
+      "error": "The input did not match the regular expression /^mongodb:\\/\\/127\\.0\\.0\\.1:27140\\//. Input:",
+      "code": "'ERR_ASSERTION'"
+    },
+    {
+      "test": "isolated Mongo: legacy exceptions preserve history, enforce read-only access and reserve both overlaps",
+      "location": "src/tests/careerSprintLegacy.integration.test.js:14:1'",
+      "failureType": "'testCodeFailure'",
+      "error": "'An explicitly isolated loopback database is required.'",
+      "code": "'ERR_ASSERTION'"
+    },
+    {
+      "test": "bounded two-worker simulation: 1000 users, 500 same public username",
+      "location": "src/tests/integrationPublicSnapshot.test.js:349:13'",
+      "failureType": "'testCodeFailure'",
+      "error": "'Worker failed'",
+      "code": "'ERR_TEST_FAILURE'"
+    },
+    {
+      "test": "public observations: isolation, fencing, quotas and bounded 1000-user simulation",
+      "location": "src/tests/integrationPublicSnapshot.test.js:10:1'",
+      "failureType": "'subtestsFailed'",
+      "error": "'1 subtest failed'",
+      "code": "'ERR_TEST_FAILURE'"
+    },
+    {
+      "test": "fresh same-account Connect is a no-op; Sync retains its mutation/history semantics",
+      "location": "src/tests/integrationRepeatedRequests.test.js:160:13'",
+      "failureType": "'testCodeFailure'",
+      "error": "Expected values to be strictly equal:",
+      "code": "'ERR_ASSERTION'"
+    },
+    {
+      "test": "Connect cannot clear or replace an active Sync lease; expired owned freshness is not a no-op",
+      "location": "src/tests/integrationRepeatedRequests.test.js:203:13'",
+      "failureType": "'testCodeFailure'",
+      "error": "Expected values to be strictly equal:",
+      "code": "'ERR_ASSERTION'"
+    },
+    {
+      "test": "repeated Connect/Sync and optional Redis read-through audit",
+      "location": "src/tests/integrationRepeatedRequests.test.js:9:1'",
+      "failureType": "'subtestsFailed'",
+      "error": "'2 subtests failed'",
+      "code": "'ERR_TEST_FAILURE'"
+    },
+    {
+      "test": "authenticated Integrations local API acceptance and persisted downstream propagation",
+      "location": "src/tests/integrationsLocalAcceptance.test.js:8:1'",
+      "failureType": "'testCodeFailure'",
+      "error": "'Disposable Mongo did not stop.'",
+      "code": "'ERR_TEST_FAILURE'"
+    },
+    {
+      "test": "Integrations production acceptance on disposable Mongo replica set and Redis",
+      "location": "src/tests/integrationsProduction.integration.test.js:82:1'",
+      "failureType": "'testCodeFailure'",
+      "error": "'Disposable Mongo did not stop.'",
+      "code": "'ERR_TEST_FAILURE'"
+    },
+    {
+      "test": "disposable replica set: CRUD, ownership, concurrency, upload, deletion rollback and cleanup",
+      "location": "src/tests/profileSettingsProduction.test.js:170:1'",
+      "failureType": "'testCodeFailure'",
+      "error": "'Only the task-owned loopback replica set is allowed'",
+      "code": "'ERR_ASSERTION'"
+    },
+    {
+      "test": "isolated Mongo + namespaced configured Upstash: critical portfolio flows",
+      "location": "src/tests/publicPortfolio.integration.test.js:15:1'",
+      "failureType": "'testCodeFailure'",
+      "error": "'Configured Upstash Redis required'",
+      "code": "'ERR_ASSERTION'"
+    },
+    {
+      "test": "independent PDF field golds: standard, changed layout and columns",
+      "location": "src/tests/resumeProduction.test.js:21:1'",
+      "failureType": "'testCodeFailure'",
+      "error": "src/tests/fixtures/resume/standard.pdf'\"",
+      "code": "'ENOENT'"
+    },
+    {
+      "test": "resource limits and scanned, encrypted, empty and corrupt PDF classification",
+      "location": "src/tests/resumeProduction.test.js:82:1'",
+      "failureType": "'testCodeFailure'",
+      "error": "src/tests/fixtures/resume/empty.pdf'\"",
+      "code": "'ENOENT'"
+    },
+    {
+      "test": "negative claims, common verbs, repeated aliases, all twelve domains and monthly overlaps",
+      "location": "src/tests/resumeProduction.test.js:108:1'",
+      "failureType": "'testCodeFailure'",
+      "error": "src/tests/fixtures/resume/standard.pdf'\"",
+      "code": "'ENOENT'"
+    },
+    {
+      "test": "AI timeout aborts the provider signal and sends no resume PII; success does not abort",
+      "location": "src/tests/resumeProduction.test.js:136:1'",
+      "failureType": "'testCodeFailure'",
+      "error": "src/tests/fixtures/resume/standard.pdf'\"",
+      "code": "'ENOENT'"
+    },
+    {
+      "test": "Redis timeout and rejection are optional; Mongo remains authoritative",
+      "location": "src/tests/resumeProduction.test.js:164:1'",
+      "failureType": "'testCodeFailure'",
+      "error": "src/tests/fixtures/resume/standard.pdf'\"",
+      "code": "'ENOENT'"
+    },
+    {
+      "test": "two workers: one logical analysis, owner isolation, Redis outage, quotas, lease recovery and exact index",
+      "location": "src/tests/resumeProductionMongo.test.js:45:1'",
+      "failureType": "'testCodeFailure'",
+      "error": "src/tests/fixtures/resume/standard.pdf'\"",
+      "code": "'ENOENT'"
+    },
+    {
+      "test": "disposable Mongo provisioning is additive/idempotent; retry batch respects backoff and preserves records",
+      "location": "src/tests/storageSecurityFinal.test.js:126:1'",
+      "failureType": "'testCodeFailure'",
+      "error": "Expected values to be strictly equal:",
+      "code": "'ERR_ASSERTION'"
+    }
+  ],
+  "skips": [
+    {
+      "test": "local Redis executes actual Lua for shared admission, cooldown, concurrency and ownership",
+      "reason": "Set JOBS_TEST_REDIS_URL to an isolated local Redis service"
+    },
+    {
+      "test": "local Mongo verifies real upserts, owner isolation, persistence, expiry and cache indexes",
+      "reason": "Set JOBS_TEST_MONGODB_URI to an isolated local MongoDB service"
+    },
+    {
+      "test": "isolated Upstash Redis TLS validates Jobs Hub integration",
+      "reason": "Dedicated disposable Upstash test database required"
+    },
+    {
+      "test": "isolated adaptive demand selects a topic, reserves governed prewarm work and persists through the worker",
+      "reason": null
+    },
+    {
+      "test": "isolated catalog: scheduled ingestion, discovery, indexed history, shared tags, refresh and worker caches",
+      "reason": null
+    },
+    {
+      "test": "isolated Redis/Upstash discovery queue is atomic, bounded, recoverable and fenced across workers",
+      "reason": null
+    },
+    {
+      "test": "atomic discovery accounting, reserved capacity, deduplication and expired quota revalidation",
+      "reason": null
+    },
+    {
+      "test": "isolated free-text HTTP search, Redis worker and Mongo publication round trip",
+      "reason": null
+    },
+    {
+      "test": "disposable Upstash: atomic quotas, cooldown, circuits, leases, shared cache and outage fallback",
+      "reason": null
+    },
+    {
+      "test": "approved live metadata search through an isolated governed worker and Mongo cache",
+      "reason": null
+    },
+    {
+      "test": "isolated scheduled provider pipeline: all sources persist with attribution, retention, shared pacing and cache invalidation",
+      "reason": null
+    },
+    {
+      "test": "isolated refresh: exact EC2 interval, shared headroom, manual dedup, Mongo publication and cross-worker version visibility",
+      "reason": null
+    },
+    {
+      "test": "isolated upstream cooldown propagates precise reason and expiry without a retry",
+      "reason": null
+    }
+  ]
+}

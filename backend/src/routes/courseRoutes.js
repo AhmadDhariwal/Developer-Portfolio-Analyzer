@@ -12,8 +12,7 @@ const router = express.Router();
 
 // GET /api/courses
 // Query params: stack, experience, platform, rating, level, topic, duration, page, limit
-router.get('/', protect, admitCourseRead);
-router.get('/', protect, fetchCourses);
+router.get('/', protect, admitCourseRead, fetchCourses);
 router.get('/my-learning', protect, admitCourseRead, progress.listProgress);
 router.put('/:courseId/progress', protect, admitCourseMutation, progress.saveProgress);
 router.delete('/:courseId/progress', protect, admitCourseMutation, progress.removeProgress);

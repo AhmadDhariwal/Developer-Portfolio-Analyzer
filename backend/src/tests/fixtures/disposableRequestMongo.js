@@ -12,6 +12,7 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function startMongo({
   replicaSet = "integration-live",
   temporaryRoot = os.tmpdir(),
+  readinessAttempts = 50,
 } = {}) {
   assert.match(replicaSet, /^[a-zA-Z0-9_-]{1,64}$/);
   const binary =
@@ -87,7 +88,7 @@ async function startMongo({
     };
   }
   try {
-    for (let attempt = 0; attempt < 50; attempt++) {
+    for (let attempt = 0; attempt < readinessAttempts; attempt++) {
       if (launchError) throw launchError;
       if (child.exitCode !== null)
         throw Error("Disposable Mongo exited before readiness");

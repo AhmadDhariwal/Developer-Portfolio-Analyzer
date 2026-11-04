@@ -605,7 +605,10 @@ async function mobileFilters(page) {
       else if (mode === 'error') {
         await page.getByText('Courses could not be loaded', { exact: true }).waitFor();
         controls.mode = 'normal';
-        await page.getByRole('button', { name: 'Retry courses', exact: true }).click();
+        await page
+          .getByRole('alert')
+          .getByRole('button', { name: 'Retry courses', exact: true })
+          .click();
         await count(page.locator('app-courses app-course-card'), 10);
       } else if (mode === 'loading') {
         await page.getByLabel('Loading courses', { exact: true }).waitFor();
@@ -618,7 +621,11 @@ async function mobileFilters(page) {
               exact: true,
             })
             .waitFor();
-        if (mode === 'cached') await page.getByText(/cached source pool/).waitFor();
+        if (mode === 'cached')
+          await page
+            .locator('.sync-capsule')
+            .getByText(/cached source pool/)
+            .waitFor();
         if (mode === 'evidence-unavailable')
           await page
             .getByText(

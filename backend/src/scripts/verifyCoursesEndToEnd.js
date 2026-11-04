@@ -37,7 +37,9 @@ const { ANALYSIS_VERSION } = require('../services/skillGapCacheContract');
 const { EVIDENCE_POLICY_VERSION } = require('../services/skillGapEvidenceService');
 const { TAXONOMY_VERSION, MATRIX_VERSION } = require('../services/skillGapRequirements');
 const ai = require('../services/aiservice');
-const CATALOG_SIZE = require('../data/courseCatalog').length;
+const CATALOG_SIZE = require('../data/courseCatalog').filter(
+  (course) => !course.discoveryUnavailable,
+).length;
 let aiCalls = 0;
 const originalAI = ai.runAIAnalysis;
 ai.runAIAnalysis = async () => {

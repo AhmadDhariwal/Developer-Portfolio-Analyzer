@@ -1,6 +1,7 @@
 'use strict';
 const developerContext = require('./developerContextService');
 const crypto = require('node:crypto');
+const { Types } = require('mongoose');
 const {
   buildCoursePoolWithMetadata,
   publicCourse,
@@ -11,12 +12,14 @@ const {
 } = require('./courseService');
 const AnalysisCache = require('../models/analysisCache');
 const aiService = require('./aiservice');
+const { runPoolBuild } = require('./courseGovernanceService');
 
 const {
   resolveSkillSignals,
   SKILL_GAP_ANALYSIS_VERSION,
 } = require('./coursePersonalizationService');
 const COURSE_POOL_VERSION = 'courses_pool_v6_evidence';
+const DISCOVERY_POLICY_REVISION = 2;
 const COURSE_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const MAX_COURSE_CACHE_VARIANTS = 40;
 const COURSE_MEMORY_TTL_MS = Math.min(
@@ -146,15 +149,22 @@ const readCourseMemory = (key) => {
 
 const writeCourseMemory = (key, payload) => {
   if (!key || !payload || !Array.isArray(payload.allCourses) || !payload.allCourses.length) return;
+  const allCourses = payload.allCourses.map(publicCourse);
+  if (allCourses.some((course) => !course)) return;
+  const now = Date.now();
+  const updatedAt = payload.updatedAt || new Date(now).toISOString();
+  const validUntil =
+    new Date(updatedAt).getTime() +
+    (payload.sourceMetadata?.fallbackUsed ? 60_000 : COURSE_CACHE_TTL_MS);
   courseMemoryCache.set(key, {
     ...payload,
-    updatedAt: payload.updatedAt || new Date().toISOString(),
-    expiresAt:
-      Date.now() +
-      Math.min(
-        COURSE_MEMORY_TTL_MS,
-        payload.sourceMetadata?.fallbackUsed ? 15_000 : COURSE_MEMORY_TTL_MS,
-      ),
+    allCourses,
+    updatedAt,
+    projected: true,
+    expiresAt: Math.min(
+      validUntil,
+      now + (payload.sourceMetadata?.fallbackUsed ? 15_000 : COURSE_MEMORY_TTL_MS),
+    ),
   });
   while (courseMemoryCache.size > MAX_COURSE_MEMORY_ENTRIES) {
     const oldest = courseMemoryCache.keys().next().value;
@@ -190,6 +200,7 @@ const buildPoolCacheKey = ({
   evidenceFingerprint = 'unavailable',
 }) => {
   const poolSeed = JSON.stringify({
+    discoveryPolicy: DISCOVERY_POLICY_REVISION,
     careerStack,
     experienceLevel,
     skillGaps: uniqueStrings(skillGaps, 12),
@@ -285,6 +296,7 @@ const paginatePool = (pool, filters) => {
   const startIndex = (safePage - 1) * filters.limit;
   return {
     courses: allCourses.slice(startIndex, startIndex + filters.limit),
+    projected: pool?.projected === true,
     total,
     page: safePage,
     totalPages,
@@ -339,39 +351,58 @@ const pruneCourseCache = async (userId) => {
   }
 };
 
-const persistCoursePoolAsync = ({
+const persistCoursePool = async ({
   cacheLookup,
   redisKey,
   allCourses,
   total,
   sourceMetadata,
   userId,
+  governed,
+  publishedAt,
 }) => {
-  setImmediate(() => {
+  const write = async () => {
     courseRuntimeCounters.persistenceOperations += 1;
-    AnalysisCache.findOneAndUpdate(
-      cacheLookup,
+    const cacheId = governed
+      ? new Types.ObjectId(crypto.createHash('sha256').update(redisKey).digest('hex').slice(0, 24))
+      : null;
+    const mongoWrite = AnalysisCache.findOneAndUpdate(
+      governed ? { _id: cacheId, updatedAt: { $lte: publishedAt } } : cacheLookup,
       {
         $set: {
           ...cacheLookup,
+          ...(governed ? { updatedAt: publishedAt } : {}),
           analysisData: {
             allCourses,
             total,
             sourceMetadata,
           },
         },
+        ...(governed ? { $setOnInsert: { createdAt: publishedAt } } : {}),
       },
-      { upsert: true, setDefaultsOnInsert: true },
-    ).catch(() => null);
+      {
+        upsert: true,
+        setDefaultsOnInsert: true,
+        ...(governed ? { timeoutMS: 2000, timestamps: false } : {}),
+      },
+    );
+    if (governed) {
+      try {
+        await mongoWrite;
+      } catch {
+        // The fenced publication remains available if an optional cache mirror fails.
+        return;
+      }
+    } else mongoWrite.catch(() => null);
 
-    aiService
+    const redisWrite = aiService
       .setSharedCache(
         redisKey,
         {
           allCourses,
           total,
           sourceMetadata,
-          updatedAt: new Date().toISOString(),
+          updatedAt: publishedAt || new Date().toISOString(),
         },
         COURSE_REDIS_TTL_SECONDS,
         'courses:result',
@@ -379,7 +410,10 @@ const persistCoursePoolAsync = ({
       .catch(() => {});
 
     pruneCourseCache(userId).catch(() => null);
-  });
+    if (governed) await withBudget(redisWrite, COURSE_REDIS_LOOKUP_BUDGET_MS);
+  };
+  if (governed) await write();
+  else setImmediate(() => write().catch(() => null));
 };
 
 const buildOrShareCoursePool = async (inflightKey, buildFn) => {
@@ -410,7 +444,9 @@ const buildResponsePayload = ({
   personalization,
   requestedSkills,
 }) => ({
-  courses: pageResult.courses.map(publicCourse).filter(Boolean),
+  courses: pageResult.projected
+    ? pageResult.courses
+    : pageResult.courses.map(publicCourse).filter(Boolean),
   total: pageResult.total,
   page: pageResult.page,
   totalPages: pageResult.totalPages,
@@ -440,6 +476,7 @@ const buildResponsePayload = ({
 
 const fetchCourses = async (req, res) => {
   const stageTimer = createStageTimer();
+  const startedAt = new Date();
   try {
     const validationStarted = process.hrtime.bigint();
     const userId = req.user?._id;
@@ -498,7 +535,7 @@ const fetchCourses = async (req, res) => {
     const memoryHit = await stageTimer.measure('cache', () =>
       Promise.resolve(forceRefresh ? null : readCourseMemory(memoryKey)),
     );
-    if (validPool(memoryHit)) {
+    if (memoryHit) {
       courseRuntimeCounters.memoryHits += 1;
       const pageResult = paginatePool(memoryHit, filters);
       return res.json(
@@ -600,41 +637,52 @@ const fetchCourses = async (req, res) => {
     }
 
     const inflightKey = `${userId}:${poolHash}`;
-    const built = await buildOrShareCoursePool(inflightKey, async () => {
-      courseRuntimeCounters.pipelineExecutions += 1;
-      courseRuntimeCounters.providerCalls += 1;
-      const providerStarted = process.hrtime.bigint();
-      const result = await buildCoursePoolWithMetadata({
-        careerStack,
-        experienceLevel,
-        skillGaps,
-        knownSkills: skillSignals.knownSkills,
-        targets: skillSignals.targets,
+    const built = await buildOrShareCoursePool(inflightKey, () =>
+      runPoolBuild(memoryKey, {
         forceRefresh,
-        ...filters,
-      });
-      // Only the winning request owns this timer; waiters still share the pool result.
-      stageTimer.mark('external provider', providerStarted);
+        startedAt,
+        build: async () => {
+          courseRuntimeCounters.pipelineExecutions += 1;
+          courseRuntimeCounters.providerCalls += 1;
+          const providerStarted = process.hrtime.bigint();
+          const result = await buildCoursePoolWithMetadata({
+            careerStack,
+            experienceLevel,
+            skillGaps,
+            knownSkills: skillSignals.knownSkills,
+            targets: skillSignals.targets,
+            forceRefresh,
+            ...filters,
+          });
+          // Only the winning request owns this timer; waiters still share the pool result.
+          stageTimer.mark('external provider', providerStarted);
 
-      const allCourses = Array.isArray(result.courses) ? result.courses : [];
-      const total = allCourses.length;
-      const sourceMetadata = result.sourceMetadata || {};
+          const allCourses = Array.isArray(result.courses) ? result.courses : [];
+          if (allCourses.length && !isPersistableCoursePool(allCourses))
+            throw new Error('Invalid course pool.');
+          const total = allCourses.length;
+          const sourceMetadata = result.sourceMetadata || {};
 
-      if (isPersistableCoursePool(allCourses)) {
-        writeCourseMemory(memoryKey, { allCourses, total, sourceMetadata });
-        stageTimer.mark('persistence', process.hrtime.bigint());
-        persistCoursePoolAsync({
-          cacheLookup,
-          redisKey,
-          allCourses,
-          total,
-          sourceMetadata,
-          userId,
-        });
-      }
-
-      return { allCourses, total, sourceMetadata };
-    });
+          return { allCourses, total, sourceMetadata };
+        },
+        persist: async ({ allCourses, total, sourceMetadata }, { governed, publishedAt } = {}) => {
+          if (!isPersistableCoursePool(allCourses)) return;
+          const persistenceStarted = process.hrtime.bigint();
+          await persistCoursePool({
+            cacheLookup,
+            redisKey,
+            allCourses,
+            total,
+            sourceMetadata,
+            userId,
+            governed,
+            publishedAt,
+          });
+          stageTimer.mark('persistence', persistenceStarted);
+        },
+      }),
+    );
+    if (isPersistableCoursePool(built.allCourses)) writeCourseMemory(memoryKey, built);
 
     const pageResult = await stageTimer.measure('deterministic processing', async () =>
       paginatePool(built, filters),
@@ -657,6 +705,10 @@ const fetchCourses = async (req, res) => {
       ),
     );
   } catch (error) {
+    if (error.status === 503)
+      return res
+        .status(503)
+        .json({ message: 'Course pool temporarily unavailable. Please retry.' });
     console.error('[CourseController] Unhandled error:', error.message);
     return res.status(500).json({
       message: 'Failed to fetch course recommendations. Please try again.',

@@ -40,7 +40,7 @@ const {
 } = require('../controllers/courseController');
 
 test('Learning Hub route requires JWT protect middleware', () => {
-  assert.match(routesSource, /router\.get\('\/', protect, fetchCourses\)/);
+  assert.match(routesSource, /router\.get\('\/', protect, admitCourseRead, fetchCourses\)/);
 });
 
 test('controller never returns provider tokens, stack traces, or raw error.message', () => {
@@ -272,7 +272,10 @@ test('unsafe work is never cached: controller requires persistable pool before u
   assert.match(controllerSource, /isPersistableCoursePool\(allCourses\)/);
   assert.match(controllerSource, /buildOrShareCoursePool/);
   assert.match(controllerSource, /coursePoolInflight/);
-  assert.match(controllerSource, /persistCoursePoolAsync/);
+  assert.match(
+    controllerSource,
+    /if \(!isPersistableCoursePool\(allCourses\)\) return;\s*(?:const[^;]+;\s*)?await persistCoursePool\(/,
+  );
   assert.match(controllerSource, /setImmediate\(/);
   assert.match(controllerSource, /withBudget\(/);
   assert.match(controllerSource, /COURSE_REDIS_LOOKUP_BUDGET_MS/);

@@ -1,7 +1,11 @@
 'use strict';
 const UserCourseProgress = require('../models/userCourseProgress');
 const AnalysisCache = require('../models/analysisCache');
-const { buildFallbackPool, normaliseCourse } = require('./courseService');
+const {
+  buildFallbackPool,
+  isUnavailableCatalogCourse,
+  normaliseCourse,
+} = require('./courseService');
 const { safeCourseUrl, validCourseId } = require('../utils/courseIdentity');
 const { COURSE_POOL_VERSION, findCachedCourse } = require('./courseRecommendationService');
 const STATUSES = ['saved', 'in_progress', 'completed'];
@@ -30,7 +34,10 @@ const snapshot = (course) => ({
 });
 const dto = (row) => ({
   courseId: row.courseId,
-  course: snapshot(row.course),
+  course: {
+    ...snapshot(row.course),
+    ...(isUnavailableCatalogCourse(row.courseId) ? { url: '' } : {}),
+  },
   status: row.status,
   notes: row.notes,
   progressPercent: row.progressPercent,
@@ -41,6 +48,7 @@ const dto = (row) => ({
   updatedAt: row.updatedAt,
 });
 const resolveCourse = async (userId, courseId) => {
+  if (isUnavailableCatalogCourse(courseId)) return null;
   const catalog = buildFallbackPool('All', 100).find((course) => course.id === courseId);
   if (catalog) return catalog;
   const memory = findCachedCourse(userId, courseId);

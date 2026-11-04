@@ -113,7 +113,19 @@ test('missing metadata stays null; provider review scores and curated history re
   assert.equal(provider.reviewCount, 0);
   assert.equal(provider.provenance.ratingSource, 'provider-reviews');
   const curated = service.buildFallbackPool('All', 100);
-  assert.equal(curated.length, require('../data/courseCatalog').length);
+  const inventory = require('../data/courseCatalog');
+  assert.equal(inventory.length, 36);
+  assert.equal(curated.length, 32);
+  assert.deepEqual(
+    inventory
+      .filter((item) => item.discoveryUnavailable)
+      .map((item) => item.id)
+      .sort(),
+    ['fb_e3', 'fb_e5', 'fb_e6', 'fb_u9'],
+  );
+  assert.ok(
+    curated.every((item) => !inventory.find((row) => row.id === item.id).discoveryUnavailable),
+  );
   assert.ok(
     curated.every(
       (item) =>
@@ -164,7 +176,7 @@ test('edX and freeCodeCamp are directly filterable while Other preserves combine
   const edxPool = service.buildFallbackPool('edX', 50);
   const fccPool = service.buildFallbackPool('freeCodeCamp', 50);
   const otherPool = service.buildFallbackPool('Other', 50);
-  assert.ok(edxPool.length >= 9);
+  assert.equal(edxPool.length, 6);
   assert.ok(edxPool.every((item) => item.platform === 'edX'));
   assert.ok(fccPool.length >= 7);
   assert.ok(fccPool.every((item) => item.platform === 'freeCodeCamp'));
@@ -204,6 +216,13 @@ test('YouTube derived view counts do not inflate finalScore above equally releva
   });
   assert.equal(ranked[0].id, 'fb_u2');
   assert.ok(ranked[0].finalScore >= ranked[1].finalScore);
+  const intern = { careerStack: 'Backend', experienceLevel: 'Intern', skillGaps: ['Node.js'] };
+  const unknownLevel = { ...youtubeCourse, durationHours: 3 };
+  const [withDuration] = service.scoreAndRank([unknownLevel], intern);
+  const [withoutDuration] = service.scoreAndRank([youtubeCourse], intern);
+  assert.equal(withDuration.relevanceScore, withoutDuration.relevanceScore);
+  const [beginner] = service.scoreAndRank([{ ...unknownLevel, level: 'Beginner' }], intern);
+  assert.equal(beginner.relevanceScore - withDuration.relevanceScore, 18);
 });
 test('All platform order follows ranking across page boundaries, without quota displacement', async () => {
   const previous = process.env.YOUTUBE_API_KEY;
