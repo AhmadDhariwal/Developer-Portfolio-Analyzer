@@ -4,6 +4,7 @@ const AnalysisCache = require('../models/analysisCache');
 const GitHubAnalysisCache = require('../models/githubAnalysisCache');
 const { buildResumeCacheIdentity } = require('./developerSignalService');
 const { compatibleSkillGap, sourceMetadata, SKILL_RULE } = require('./recommendationEngineService');
+const { buildScope } = require('./skillGapCacheContract');
 const { digest, skills } = require('../utils/courseIdentity');
 const STATUSES = new Set(['DEMONSTRATED', 'PARTIAL', 'CLAIMED_ONLY', 'NOT_EVIDENCED', 'UNKNOWN']);
 const resolveSkillSignals = async (userId, careerStack, experienceLevel, _timer, user = {}) => {
@@ -27,27 +28,22 @@ const resolveSkillSignals = async (userId, careerStack, experienceLevel, _timer,
   });
   try {
     // Fresh indexed source reads precede pool-cache hits. A TTL alone cannot detect a new analysis.
-    const [resume, github, snapshot] = await Promise.all([
+    const [resume, github] = await Promise.all([
       developerContext.resolveResumeAnalysis(userId, user),
       username
         ? GitHubAnalysisCache.findOne({ normalizedUsername: username })
             .sort({ updatedAt: -1 })
             .lean()
-        : null,
-      AnalysisCache.findOne({
-        userId,
-        githubUsername: {
-          $regex: '^' + username.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$',
-          $options: 'i'
-        },
-        careerStack,
-        experienceLevel,
-        'analysisData.ruleVersion': SKILL_RULE
-      })
-        .sort({ updatedAt: -1 })
-        .lean()
+        : null
     ]);
     const resumeIdentity = buildResumeCacheIdentity({ resumeAnalysis: resume });
+    const snapshot = await AnalysisCache.findOne({
+      ...buildScope({ userId, user, resumeIdentity }),
+      careerStack,
+      experienceLevel
+    })
+      .sort({ updatedAt: -1 })
+      .lean();
     const githubData = github?.result
       ? {
           ...github.result,
