@@ -7,7 +7,7 @@
         "$and": [
           {
             "oauthState": {
-              "$eq": "fd7de7084fd8c7be16f74a5747aa842712e46a9cafbec33a462ae0d94061d67c"
+              "$eq": "1e2b5714ce148571979b2e4918444a15c33014943aac91069c3321026266b5cd"
             }
           },
           {
@@ -17,7 +17,7 @@
           },
           {
             "oauthStateExpiresAt": {
-              "$gt": "2026-11-03T12:14:23.196Z"
+              "$gt": "2026-11-04T12:55:15.780Z"
             }
           }
         ]
@@ -38,7 +38,7 @@
           "$and": [
             {
               "oauthState": {
-                "$eq": "fd7de7084fd8c7be16f74a5747aa842712e46a9cafbec33a462ae0d94061d67c"
+                "$eq": "1e2b5714ce148571979b2e4918444a15c33014943aac91069c3321026266b5cd"
               }
             },
             {
@@ -48,7 +48,7 @@
             },
             {
               "oauthStateExpiresAt": {
-                "$gt": "2026-11-03T12:14:23.196Z"
+                "$gt": "2026-11-04T12:55:15.780Z"
               }
             }
           ]
@@ -70,7 +70,7 @@
           "$and": [
             {
               "oauthState": {
-                "$eq": "fd7de7084fd8c7be16f74a5747aa842712e46a9cafbec33a462ae0d94061d67c"
+                "$eq": "1e2b5714ce148571979b2e4918444a15c33014943aac91069c3321026266b5cd"
               }
             },
             {
@@ -80,7 +80,7 @@
             },
             {
               "oauthStateExpiresAt": {
-                "$gt": "2026-11-03T12:14:23.196Z"
+                "$gt": "2026-11-04T12:55:15.780Z"
               }
             }
           ]
@@ -104,16 +104,16 @@
       "find": "integrationconnections",
       "filter": {
         "provider": "leetcode",
-        "oauthState": "fd7de7084fd8c7be16f74a5747aa842712e46a9cafbec33a462ae0d94061d67c",
+        "oauthState": "1e2b5714ce148571979b2e4918444a15c33014943aac91069c3321026266b5cd",
         "oauthStateExpiresAt": {
-          "$gt": "2026-11-03T12:14:23.196Z"
+          "$gt": "2026-11-04T12:55:15.780Z"
         }
       },
       "$db": "integration_acceptance"
     },
     "serverInfo": {
       "host": "ICOMM-AHMAD-HASS",
-      "port": 51227,
+      "port": 51847,
       "version": "8.2.6",
       "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
     },
@@ -132,7 +132,7 @@
     "ok": 1,
     "$clusterTime": {
       "clusterTime": {
-        "$timestamp": "7703917469156507658"
+        "$timestamp": "7704299085590691859"
       },
       "signature": {
         "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -140,7 +140,7 @@
       }
     },
     "operationTime": {
-      "$timestamp": "7703917469156507658"
+      "$timestamp": "7704299085590691859"
     }
   },
   "webhookBefore": {
@@ -220,7 +220,7 @@
     "executionStats": {
       "executionSuccess": true,
       "nReturned": 0,
-      "executionTimeMillis": 1,
+      "executionTimeMillis": 3,
       "totalKeysExamined": 0,
       "totalDocsExamined": 1204,
       "executionStages": {
@@ -254,7 +254,7 @@
           ]
         },
         "nReturned": 0,
-        "executionTimeMillisEstimate": 0,
+        "executionTimeMillisEstimate": 3,
         "works": 1205,
         "advanced": 0,
         "needTime": 1204,
@@ -285,7 +285,7 @@
     },
     "serverInfo": {
       "host": "ICOMM-AHMAD-HASS",
-      "port": 51227,
+      "port": 51847,
       "version": "8.2.6",
       "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
     },
@@ -304,7 +304,7 @@
     "ok": 1,
     "$clusterTime": {
       "clusterTime": {
-        "$timestamp": "7703917469156507658"
+        "$timestamp": "7704299085590691859"
       },
       "signature": {
         "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -312,7 +312,7 @@
       }
     },
     "operationTime": {
-      "$timestamp": "7703917469156507658"
+      "$timestamp": "7704299085590691859"
     }
   },
   "before": {
@@ -331,7 +331,7 @@
                 },
                 {
                   "leaseUntil": {
-                    "$lte": "2026-11-03T12:24:23.181Z"
+                    "$lte": "2026-11-04T13:05:15.768Z"
                   }
                 }
               ]
@@ -345,7 +345,7 @@
                 },
                 {
                   "nextSyncAt": {
-                    "$lte": "2026-11-03T12:24:23.181Z"
+                    "$lte": "2026-11-04T13:05:15.768Z"
                   }
                 }
               ]
@@ -364,7 +364,7 @@
         "queryHash": "C88D2353",
         "planCacheShapeHash": "C88D2353",
         "planCacheKey": "41534C6E",
-        "optimizationTimeMillis": 4,
+        "optimizationTimeMillis": 0,
         "maxIndexedOrSolutionsReached": false,
         "maxIndexedAndSolutionsReached": false,
         "maxScansToExplodeReached": false,
@@ -391,7 +391,7 @@
                     },
                     {
                       "leaseUntil": {
-                        "$lte": "2026-11-03T12:24:23.181Z"
+                        "$lte": "2026-11-04T13:05:15.768Z"
                       }
                     }
                   ]
@@ -405,7 +405,7 @@
                     },
                     {
                       "nextSyncAt": {
-                        "$lte": "2026-11-03T12:24:23.181Z"
+                        "$lte": "2026-11-04T13:05:15.768Z"
                       }
                     }
                   ]
@@ -428,7 +428,7 @@
       "executionStats": {
         "executionSuccess": true,
         "nReturned": 7,
-        "executionTimeMillis": 8,
+        "executionTimeMillis": 3,
         "totalKeysExamined": 0,
         "totalDocsExamined": 1204,
         "executionStages": {
@@ -468,7 +468,7 @@
                     },
                     {
                       "leaseUntil": {
-                        "$lte": "2026-11-03T12:24:23.181Z"
+                        "$lte": "2026-11-04T13:05:15.768Z"
                       }
                     }
                   ]
@@ -482,7 +482,7 @@
                     },
                     {
                       "nextSyncAt": {
-                        "$lte": "2026-11-03T12:24:23.181Z"
+                        "$lte": "2026-11-04T13:05:15.768Z"
                       }
                     }
                   ]
@@ -524,7 +524,7 @@
                 },
                 {
                   "nextSyncAt": {
-                    "$lte": "2026-11-03T12:24:23.181Z"
+                    "$lte": "2026-11-04T13:05:15.768Z"
                   }
                 }
               ]
@@ -536,7 +536,7 @@
                 },
                 {
                   "leaseUntil": {
-                    "$lte": "2026-11-03T12:24:23.181Z"
+                    "$lte": "2026-11-04T13:05:15.768Z"
                   }
                 }
               ]
@@ -557,7 +557,7 @@
       },
       "serverInfo": {
         "host": "ICOMM-AHMAD-HASS",
-        "port": 51227,
+        "port": 51847,
         "version": "8.2.6",
         "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
       },
@@ -576,7 +576,7 @@
       "ok": 1,
       "$clusterTime": {
         "clusterTime": {
-          "$timestamp": "7703917469156507658"
+          "$timestamp": "7704299085590691859"
         },
         "signature": {
           "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -584,7 +584,7 @@
         }
       },
       "operationTime": {
-        "$timestamp": "7703917469156507658"
+        "$timestamp": "7704299085590691859"
       }
     },
     "history": {
@@ -595,12 +595,12 @@
           "$and": [
             {
               "userId": {
-                "$eq": "6ae9d0143c301f5439fa574f"
+                "$eq": "6aeb2b1850efb16358d0fecd"
               }
             },
             {
               "createdAt": {
-                "$gte": "2026-11-02T12:14:23.223Z"
+                "$gte": "2026-11-03T12:55:15.806Z"
               }
             }
           ]
@@ -629,12 +629,12 @@
               "$and": [
                 {
                   "userId": {
-                    "$eq": "6ae9d0143c301f5439fa574f"
+                    "$eq": "6aeb2b1850efb16358d0fecd"
                   }
                 },
                 {
                   "createdAt": {
-                    "$gte": "2026-11-02T12:14:23.223Z"
+                    "$gte": "2026-11-03T12:55:15.806Z"
                   }
                 }
               ]
@@ -647,14 +647,14 @@
       "executionStats": {
         "executionSuccess": true,
         "nReturned": 106,
-        "executionTimeMillis": 2,
+        "executionTimeMillis": 5,
         "totalKeysExamined": 0,
         "totalDocsExamined": 1206,
         "executionStages": {
           "isCached": false,
           "stage": "SORT",
           "nReturned": 106,
-          "executionTimeMillisEstimate": 1,
+          "executionTimeMillisEstimate": 2,
           "works": 1314,
           "advanced": 106,
           "needTime": 1207,
@@ -680,18 +680,18 @@
               "$and": [
                 {
                   "userId": {
-                    "$eq": "6ae9d0143c301f5439fa574f"
+                    "$eq": "6aeb2b1850efb16358d0fecd"
                   }
                 },
                 {
                   "createdAt": {
-                    "$gte": "2026-11-02T12:14:23.223Z"
+                    "$gte": "2026-11-03T12:55:15.806Z"
                   }
                 }
               ]
             },
             "nReturned": 106,
-            "executionTimeMillisEstimate": 1,
+            "executionTimeMillisEstimate": 2,
             "works": 1207,
             "advanced": 106,
             "needTime": 1100,
@@ -709,9 +709,9 @@
       "command": {
         "find": "integrationsynclogs",
         "filter": {
-          "userId": "6ae9d0143c301f5439fa574f",
+          "userId": "6aeb2b1850efb16358d0fecd",
           "createdAt": {
-            "$gte": "2026-11-02T12:14:23.223Z"
+            "$gte": "2026-11-03T12:55:15.806Z"
           }
         },
         "sort": {
@@ -722,7 +722,7 @@
       },
       "serverInfo": {
         "host": "ICOMM-AHMAD-HASS",
-        "port": 51227,
+        "port": 51847,
         "version": "8.2.6",
         "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
       },
@@ -741,7 +741,7 @@
       "ok": 1,
       "$clusterTime": {
         "clusterTime": {
-          "$timestamp": "7703917469156507658"
+          "$timestamp": "7704299085590691859"
         },
         "signature": {
           "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -749,7 +749,7 @@
         }
       },
       "operationTime": {
-        "$timestamp": "7703917469156507658"
+        "$timestamp": "7704299085590691859"
       }
     },
     "ownership": {
@@ -765,7 +765,7 @@
             },
             {
               "userId": {
-                "$eq": "6ae9d0143c301f5439fa574f"
+                "$eq": "6aeb2b1850efb16358d0fecd"
               }
             }
           ]
@@ -804,7 +804,7 @@
               "direction": "forward",
               "indexBounds": {
                 "userId": [
-                  "[ObjectId('6ae9d0143c301f5439fa574f'), ObjectId('6ae9d0143c301f5439fa574f')]"
+                  "[ObjectId('6aeb2b1850efb16358d0fecd'), ObjectId('6aeb2b1850efb16358d0fecd')]"
                 ],
                 "provider": [
                   "[\"leetcode\", \"leetcode\"]"
@@ -875,7 +875,7 @@
               "direction": "forward",
               "indexBounds": {
                 "userId": [
-                  "[ObjectId('6ae9d0143c301f5439fa574f'), ObjectId('6ae9d0143c301f5439fa574f')]"
+                  "[ObjectId('6aeb2b1850efb16358d0fecd'), ObjectId('6aeb2b1850efb16358d0fecd')]"
                 ],
                 "provider": [
                   "[\"leetcode\", \"leetcode\"]"
@@ -893,7 +893,7 @@
       "command": {
         "find": "integrationconnections",
         "filter": {
-          "userId": "6ae9d0143c301f5439fa574f",
+          "userId": "6aeb2b1850efb16358d0fecd",
           "provider": "leetcode"
         },
         "limit": 1,
@@ -902,7 +902,7 @@
       },
       "serverInfo": {
         "host": "ICOMM-AHMAD-HASS",
-        "port": 51227,
+        "port": 51847,
         "version": "8.2.6",
         "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
       },
@@ -921,7 +921,7 @@
       "ok": 1,
       "$clusterTime": {
         "clusterTime": {
-          "$timestamp": "7703917469156507658"
+          "$timestamp": "7704299085590691859"
         },
         "signature": {
           "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -929,7 +929,7 @@
         }
       },
       "operationTime": {
-        "$timestamp": "7703917469156507658"
+        "$timestamp": "7704299085590691859"
       }
     }
   },
@@ -939,7 +939,7 @@
       "namespace": "integration_acceptance.integrationsynclogs",
       "parsedQuery": {
         "expiresAt": {
-          "$lte": "2026-11-03T12:14:23.230Z"
+          "$lte": "2026-11-04T12:55:15.820Z"
         }
       },
       "indexFilterSet": false,
@@ -959,7 +959,7 @@
           "stage": "COLLSCAN",
           "filter": {
             "expiresAt": {
-              "$lte": "2026-11-03T12:14:23.230Z"
+              "$lte": "2026-11-04T12:55:15.820Z"
             }
           },
           "direction": "forward"
@@ -970,7 +970,7 @@
     "executionStats": {
       "executionSuccess": true,
       "nReturned": 0,
-      "executionTimeMillis": 1,
+      "executionTimeMillis": 2,
       "totalKeysExamined": 0,
       "totalDocsExamined": 1206,
       "executionStages": {
@@ -990,7 +990,7 @@
           "stage": "COLLSCAN",
           "filter": {
             "expiresAt": {
-              "$lte": "2026-11-03T12:14:23.230Z"
+              "$lte": "2026-11-04T12:55:15.820Z"
             }
           },
           "nReturned": 0,
@@ -1012,7 +1012,7 @@
       "find": "integrationsynclogs",
       "filter": {
         "expiresAt": {
-          "$lte": "2026-11-03T12:14:23.230Z"
+          "$lte": "2026-11-04T12:55:15.820Z"
         }
       },
       "limit": 100,
@@ -1020,7 +1020,7 @@
     },
     "serverInfo": {
       "host": "ICOMM-AHMAD-HASS",
-      "port": 51227,
+      "port": 51847,
       "version": "8.2.6",
       "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
     },
@@ -1039,7 +1039,7 @@
     "ok": 1,
     "$clusterTime": {
       "clusterTime": {
-        "$timestamp": "7703917469156507658"
+        "$timestamp": "7704299085590691859"
       },
       "signature": {
         "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -1047,7 +1047,7 @@
       }
     },
     "operationTime": {
-      "$timestamp": "7703917469156507658"
+      "$timestamp": "7704299085590691859"
     }
   },
   "callbackAfter": {
@@ -1058,7 +1058,7 @@
         "$and": [
           {
             "oauthState": {
-              "$eq": "fd7de7084fd8c7be16f74a5747aa842712e46a9cafbec33a462ae0d94061d67c"
+              "$eq": "1e2b5714ce148571979b2e4918444a15c33014943aac91069c3321026266b5cd"
             }
           },
           {
@@ -1068,7 +1068,7 @@
           },
           {
             "oauthStateExpiresAt": {
-              "$gt": "2026-11-03T12:14:23.989Z"
+              "$gt": "2026-11-04T12:55:17.674Z"
             }
           }
         ]
@@ -1076,7 +1076,7 @@
       "indexFilterSet": false,
       "queryHash": "13730262",
       "planCacheShapeHash": "13730262",
-      "planCacheKey": "A11512B9",
+      "planCacheKey": "1F365191",
       "optimizationTimeMillis": 0,
       "maxIndexedOrSolutionsReached": false,
       "maxIndexedAndSolutionsReached": false,
@@ -1087,7 +1087,7 @@
         "stage": "FETCH",
         "filter": {
           "oauthStateExpiresAt": {
-            "$gt": "2026-11-03T12:14:23.989Z"
+            "$gt": "2026-11-04T12:55:17.674Z"
           }
         },
         "inputStage": {
@@ -1112,7 +1112,7 @@
               "[\"leetcode\", \"leetcode\"]"
             ],
             "oauthState": [
-              "[\"fd7de7084fd8c7be16f74a5747aa842712e46a9cafbec33a462ae0d94061d67c\", \"fd7de7084fd8c7be16f74a5747aa842712e46a9cafbec33a462ae0d94061d67c\"]"
+              "[\"1e2b5714ce148571979b2e4918444a15c33014943aac91069c3321026266b5cd\", \"1e2b5714ce148571979b2e4918444a15c33014943aac91069c3321026266b5cd\"]"
             ]
           }
         }
@@ -1122,7 +1122,7 @@
     "executionStats": {
       "executionSuccess": true,
       "nReturned": 1,
-      "executionTimeMillis": 16,
+      "executionTimeMillis": 45,
       "totalKeysExamined": 1,
       "totalDocsExamined": 1,
       "executionStages": {
@@ -1130,11 +1130,11 @@
         "stage": "FETCH",
         "filter": {
           "oauthStateExpiresAt": {
-            "$gt": "2026-11-03T12:14:23.989Z"
+            "$gt": "2026-11-04T12:55:17.674Z"
           }
         },
         "nReturned": 1,
-        "executionTimeMillisEstimate": 11,
+        "executionTimeMillisEstimate": 45,
         "works": 2,
         "advanced": 1,
         "needTime": 0,
@@ -1147,7 +1147,7 @@
         "inputStage": {
           "stage": "IXSCAN",
           "nReturned": 1,
-          "executionTimeMillisEstimate": 11,
+          "executionTimeMillisEstimate": 45,
           "works": 2,
           "advanced": 1,
           "needTime": 0,
@@ -1175,7 +1175,7 @@
               "[\"leetcode\", \"leetcode\"]"
             ],
             "oauthState": [
-              "[\"fd7de7084fd8c7be16f74a5747aa842712e46a9cafbec33a462ae0d94061d67c\", \"fd7de7084fd8c7be16f74a5747aa842712e46a9cafbec33a462ae0d94061d67c\"]"
+              "[\"1e2b5714ce148571979b2e4918444a15c33014943aac91069c3321026266b5cd\", \"1e2b5714ce148571979b2e4918444a15c33014943aac91069c3321026266b5cd\"]"
             ]
           },
           "keysExamined": 1,
@@ -1191,16 +1191,16 @@
       "find": "integrationconnections",
       "filter": {
         "provider": "leetcode",
-        "oauthState": "fd7de7084fd8c7be16f74a5747aa842712e46a9cafbec33a462ae0d94061d67c",
+        "oauthState": "1e2b5714ce148571979b2e4918444a15c33014943aac91069c3321026266b5cd",
         "oauthStateExpiresAt": {
-          "$gt": "2026-11-03T12:14:23.989Z"
+          "$gt": "2026-11-04T12:55:17.674Z"
         }
       },
       "$db": "integration_acceptance"
     },
     "serverInfo": {
       "host": "ICOMM-AHMAD-HASS",
-      "port": 51227,
+      "port": 51847,
       "version": "8.2.6",
       "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
     },
@@ -1219,7 +1219,7 @@
     "ok": 1,
     "$clusterTime": {
       "clusterTime": {
-        "$timestamp": "7703917469156507683"
+        "$timestamp": "7704299094180626440"
       },
       "signature": {
         "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -1227,7 +1227,7 @@
       }
     },
     "operationTime": {
-      "$timestamp": "7703917469156507683"
+      "$timestamp": "7704299094180626440"
     }
   },
   "webhookAfter": {
@@ -1264,8 +1264,8 @@
       "indexFilterSet": false,
       "queryHash": "CB7E35C4",
       "planCacheShapeHash": "CB7E35C4",
-      "planCacheKey": "FCDE01D6",
-      "optimizationTimeMillis": 21,
+      "planCacheKey": "CACEEF08",
+      "optimizationTimeMillis": 65,
       "maxIndexedOrSolutionsReached": false,
       "maxIndexedAndSolutionsReached": false,
       "maxScansToExplodeReached": false,
@@ -1364,7 +1364,7 @@
     "executionStats": {
       "executionSuccess": true,
       "nReturned": 0,
-      "executionTimeMillis": 21,
+      "executionTimeMillis": 65,
       "totalKeysExamined": 0,
       "totalDocsExamined": 0,
       "executionStages": {
@@ -1379,7 +1379,7 @@
           }
         },
         "nReturned": 0,
-        "executionTimeMillisEstimate": 15,
+        "executionTimeMillisEstimate": 56,
         "works": 2,
         "advanced": 0,
         "needTime": 0,
@@ -1392,7 +1392,7 @@
         "inputStage": {
           "stage": "IXSCAN",
           "nReturned": 0,
-          "executionTimeMillisEstimate": 15,
+          "executionTimeMillisEstimate": 56,
           "works": 1,
           "advanced": 0,
           "needTime": 0,
@@ -1432,7 +1432,7 @@
       "allPlansExecution": [
         {
           "nReturned": 0,
-          "executionTimeMillisEstimate": 15,
+          "executionTimeMillisEstimate": 56,
           "totalKeysExamined": 0,
           "totalDocsExamined": 0,
           "score": 2.0002,
@@ -1448,7 +1448,7 @@
               }
             },
             "nReturned": 0,
-            "executionTimeMillisEstimate": 15,
+            "executionTimeMillisEstimate": 56,
             "works": 1,
             "advanced": 0,
             "needTime": 0,
@@ -1461,7 +1461,7 @@
             "inputStage": {
               "stage": "IXSCAN",
               "nReturned": 0,
-              "executionTimeMillisEstimate": 15,
+              "executionTimeMillisEstimate": 56,
               "works": 1,
               "advanced": 0,
               "needTime": 0,
@@ -1501,7 +1501,7 @@
         },
         {
           "nReturned": 0,
-          "executionTimeMillisEstimate": 6,
+          "executionTimeMillisEstimate": 9,
           "totalKeysExamined": 1,
           "totalDocsExamined": 1,
           "score": 1.0002,
@@ -1528,7 +1528,7 @@
               ]
             },
             "nReturned": 0,
-            "executionTimeMillisEstimate": 6,
+            "executionTimeMillisEstimate": 9,
             "works": 1,
             "advanced": 0,
             "needTime": 1,
@@ -1541,7 +1541,7 @@
             "inputStage": {
               "stage": "IXSCAN",
               "nReturned": 1,
-              "executionTimeMillisEstimate": 6,
+              "executionTimeMillisEstimate": 9,
               "works": 1,
               "advanced": 1,
               "needTime": 0,
@@ -1600,7 +1600,7 @@
     },
     "serverInfo": {
       "host": "ICOMM-AHMAD-HASS",
-      "port": 51227,
+      "port": 51847,
       "version": "8.2.6",
       "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
     },
@@ -1619,7 +1619,7 @@
     "ok": 1,
     "$clusterTime": {
       "clusterTime": {
-        "$timestamp": "7703917469156507683"
+        "$timestamp": "7704299094180626440"
       },
       "signature": {
         "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -1627,7 +1627,7 @@
       }
     },
     "operationTime": {
-      "$timestamp": "7703917469156507683"
+      "$timestamp": "7704299094180626440"
     }
   },
   "after": {
@@ -1646,7 +1646,7 @@
                 },
                 {
                   "leaseUntil": {
-                    "$lte": "2026-11-03T12:24:23.181Z"
+                    "$lte": "2026-11-04T13:05:15.768Z"
                   }
                 }
               ]
@@ -1660,7 +1660,7 @@
                 },
                 {
                   "nextSyncAt": {
-                    "$lte": "2026-11-03T12:24:23.181Z"
+                    "$lte": "2026-11-04T13:05:15.768Z"
                   }
                 }
               ]
@@ -1704,7 +1704,7 @@
                 },
                 {
                   "leaseUntil": {
-                    "$lte": "2026-11-03T12:24:23.181Z"
+                    "$lte": "2026-11-04T13:05:15.768Z"
                   }
                 }
               ]
@@ -1770,7 +1770,7 @@
                       "[\"error\", \"error\"]"
                     ],
                     "nextSyncAt": [
-                      "[new Date(-9223372036854775808), new Date(1793708663181)]"
+                      "[new Date(-9223372036854775808), new Date(1793797515768)]"
                     ]
                   }
                 }
@@ -1796,7 +1796,7 @@
                       },
                       {
                         "leaseUntil": {
-                          "$lte": "2026-11-03T12:24:23.181Z"
+                          "$lte": "2026-11-04T13:05:15.768Z"
                         }
                       }
                     ]
@@ -1810,7 +1810,7 @@
                       },
                       {
                         "nextSyncAt": {
-                          "$lte": "2026-11-03T12:24:23.181Z"
+                          "$lte": "2026-11-04T13:05:15.768Z"
                         }
                       }
                     ]
@@ -1922,7 +1922,7 @@
                 },
                 {
                   "leaseUntil": {
-                    "$lte": "2026-11-03T12:24:23.181Z"
+                    "$lte": "2026-11-04T13:05:15.768Z"
                   }
                 }
               ]
@@ -2043,7 +2043,7 @@
                       "[\"error\", \"error\"]"
                     ],
                     "nextSyncAt": [
-                      "[new Date(-9223372036854775808), new Date(1793708663181)]"
+                      "[new Date(-9223372036854775808), new Date(1793797515768)]"
                     ]
                   },
                   "keysExamined": 9,
@@ -2097,7 +2097,7 @@
                     },
                     {
                       "leaseUntil": {
-                        "$lte": "2026-11-03T12:24:23.181Z"
+                        "$lte": "2026-11-04T13:05:15.768Z"
                       }
                     }
                   ]
@@ -2218,7 +2218,7 @@
                           "[\"error\", \"error\"]"
                         ],
                         "nextSyncAt": [
-                          "[new Date(-9223372036854775808), new Date(1793708663181)]"
+                          "[new Date(-9223372036854775808), new Date(1793797515768)]"
                         ]
                       },
                       "keysExamined": 9,
@@ -2263,7 +2263,7 @@
                         },
                         {
                           "leaseUntil": {
-                            "$lte": "2026-11-03T12:24:23.181Z"
+                            "$lte": "2026-11-04T13:05:15.768Z"
                           }
                         }
                       ]
@@ -2277,7 +2277,7 @@
                         },
                         {
                           "nextSyncAt": {
-                            "$lte": "2026-11-03T12:24:23.181Z"
+                            "$lte": "2026-11-04T13:05:15.768Z"
                           }
                         }
                       ]
@@ -2409,7 +2409,7 @@
                 },
                 {
                   "nextSyncAt": {
-                    "$lte": "2026-11-03T12:24:23.181Z"
+                    "$lte": "2026-11-04T13:05:15.768Z"
                   }
                 }
               ]
@@ -2421,7 +2421,7 @@
                 },
                 {
                   "leaseUntil": {
-                    "$lte": "2026-11-03T12:24:23.181Z"
+                    "$lte": "2026-11-04T13:05:15.768Z"
                   }
                 }
               ]
@@ -2442,7 +2442,7 @@
       },
       "serverInfo": {
         "host": "ICOMM-AHMAD-HASS",
-        "port": 51227,
+        "port": 51847,
         "version": "8.2.6",
         "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
       },
@@ -2461,7 +2461,7 @@
       "ok": 1,
       "$clusterTime": {
         "clusterTime": {
-          "$timestamp": "7703917469156507683"
+          "$timestamp": "7704299094180626440"
         },
         "signature": {
           "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -2469,7 +2469,7 @@
         }
       },
       "operationTime": {
-        "$timestamp": "7703917469156507683"
+        "$timestamp": "7704299094180626440"
       }
     },
     "history": {
@@ -2480,12 +2480,12 @@
           "$and": [
             {
               "userId": {
-                "$eq": "6ae9d0143c301f5439fa574f"
+                "$eq": "6aeb2b1850efb16358d0fecd"
               }
             },
             {
               "createdAt": {
-                "$gte": "2026-11-02T12:14:24.039Z"
+                "$gte": "2026-11-03T12:55:17.797Z"
               }
             }
           ]
@@ -2524,10 +2524,10 @@
               "direction": "forward",
               "indexBounds": {
                 "userId": [
-                  "[ObjectId('6ae9d0143c301f5439fa574f'), ObjectId('6ae9d0143c301f5439fa574f')]"
+                  "[ObjectId('6aeb2b1850efb16358d0fecd'), ObjectId('6aeb2b1850efb16358d0fecd')]"
                 ],
                 "createdAt": [
-                  "[new Date(9223372036854775807), new Date(1793621664039)]"
+                  "[new Date(9223372036854775807), new Date(1793710517797)]"
                 ]
               }
             }
@@ -2538,45 +2538,45 @@
       "executionStats": {
         "executionSuccess": true,
         "nReturned": 106,
-        "executionTimeMillis": 8,
+        "executionTimeMillis": 36,
         "totalKeysExamined": 106,
         "totalDocsExamined": 106,
         "executionStages": {
           "isCached": false,
           "stage": "LIMIT",
           "nReturned": 106,
-          "executionTimeMillisEstimate": 6,
+          "executionTimeMillisEstimate": 36,
           "works": 107,
           "advanced": 106,
           "needTime": 0,
           "needYield": 0,
-          "saveState": 0,
-          "restoreState": 0,
+          "saveState": 1,
+          "restoreState": 1,
           "isEOF": 1,
           "limitAmount": 5000,
           "inputStage": {
             "stage": "FETCH",
             "nReturned": 106,
-            "executionTimeMillisEstimate": 6,
+            "executionTimeMillisEstimate": 36,
             "works": 107,
             "advanced": 106,
             "needTime": 0,
             "needYield": 0,
-            "saveState": 0,
-            "restoreState": 0,
+            "saveState": 1,
+            "restoreState": 1,
             "isEOF": 1,
             "docsExamined": 106,
             "alreadyHasObj": 0,
             "inputStage": {
               "stage": "IXSCAN",
               "nReturned": 106,
-              "executionTimeMillisEstimate": 6,
+              "executionTimeMillisEstimate": 36,
               "works": 107,
               "advanced": 106,
               "needTime": 0,
               "needYield": 0,
-              "saveState": 0,
-              "restoreState": 0,
+              "saveState": 1,
+              "restoreState": 1,
               "isEOF": 1,
               "keyPattern": {
                 "userId": 1,
@@ -2595,10 +2595,10 @@
               "direction": "forward",
               "indexBounds": {
                 "userId": [
-                  "[ObjectId('6ae9d0143c301f5439fa574f'), ObjectId('6ae9d0143c301f5439fa574f')]"
+                  "[ObjectId('6aeb2b1850efb16358d0fecd'), ObjectId('6aeb2b1850efb16358d0fecd')]"
                 ],
                 "createdAt": [
-                  "[new Date(9223372036854775807), new Date(1793621664039)]"
+                  "[new Date(9223372036854775807), new Date(1793710517797)]"
                 ]
               },
               "keysExamined": 106,
@@ -2614,9 +2614,9 @@
       "command": {
         "find": "integrationsynclogs",
         "filter": {
-          "userId": "6ae9d0143c301f5439fa574f",
+          "userId": "6aeb2b1850efb16358d0fecd",
           "createdAt": {
-            "$gte": "2026-11-02T12:14:24.039Z"
+            "$gte": "2026-11-03T12:55:17.797Z"
           }
         },
         "sort": {
@@ -2627,7 +2627,7 @@
       },
       "serverInfo": {
         "host": "ICOMM-AHMAD-HASS",
-        "port": 51227,
+        "port": 51847,
         "version": "8.2.6",
         "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
       },
@@ -2646,7 +2646,7 @@
       "ok": 1,
       "$clusterTime": {
         "clusterTime": {
-          "$timestamp": "7703917469156507683"
+          "$timestamp": "7704299094180626440"
         },
         "signature": {
           "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -2654,7 +2654,7 @@
         }
       },
       "operationTime": {
-        "$timestamp": "7703917469156507683"
+        "$timestamp": "7704299094180626440"
       }
     },
     "ownership": {
@@ -2670,7 +2670,7 @@
             },
             {
               "userId": {
-                "$eq": "6ae9d0143c301f5439fa574f"
+                "$eq": "6aeb2b1850efb16358d0fecd"
               }
             }
           ]
@@ -2709,7 +2709,7 @@
               "direction": "forward",
               "indexBounds": {
                 "userId": [
-                  "[ObjectId('6ae9d0143c301f5439fa574f'), ObjectId('6ae9d0143c301f5439fa574f')]"
+                  "[ObjectId('6aeb2b1850efb16358d0fecd'), ObjectId('6aeb2b1850efb16358d0fecd')]"
                 ],
                 "provider": [
                   "[\"leetcode\", \"leetcode\"]"
@@ -2780,7 +2780,7 @@
               "direction": "forward",
               "indexBounds": {
                 "userId": [
-                  "[ObjectId('6ae9d0143c301f5439fa574f'), ObjectId('6ae9d0143c301f5439fa574f')]"
+                  "[ObjectId('6aeb2b1850efb16358d0fecd'), ObjectId('6aeb2b1850efb16358d0fecd')]"
                 ],
                 "provider": [
                   "[\"leetcode\", \"leetcode\"]"
@@ -2798,7 +2798,7 @@
       "command": {
         "find": "integrationconnections",
         "filter": {
-          "userId": "6ae9d0143c301f5439fa574f",
+          "userId": "6aeb2b1850efb16358d0fecd",
           "provider": "leetcode"
         },
         "limit": 1,
@@ -2807,7 +2807,7 @@
       },
       "serverInfo": {
         "host": "ICOMM-AHMAD-HASS",
-        "port": 51227,
+        "port": 51847,
         "version": "8.2.6",
         "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
       },
@@ -2826,7 +2826,7 @@
       "ok": 1,
       "$clusterTime": {
         "clusterTime": {
-          "$timestamp": "7703917469156507683"
+          "$timestamp": "7704299094180626440"
         },
         "signature": {
           "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -2834,7 +2834,7 @@
         }
       },
       "operationTime": {
-        "$timestamp": "7703917469156507683"
+        "$timestamp": "7704299094180626440"
       }
     }
   },
@@ -2844,7 +2844,7 @@
       "namespace": "integration_acceptance.integrationsynclogs",
       "parsedQuery": {
         "expiresAt": {
-          "$lte": "2026-11-03T12:14:24.052Z"
+          "$lte": "2026-11-04T12:55:17.839Z"
         }
       },
       "indexFilterSet": false,
@@ -2879,7 +2879,7 @@
             "direction": "forward",
             "indexBounds": {
               "expiresAt": [
-                "[new Date(-9223372036854775808), new Date(1793708064052)]"
+                "[new Date(-9223372036854775808), new Date(1793796917839)]"
               ]
             }
           }
@@ -2890,14 +2890,14 @@
     "executionStats": {
       "executionSuccess": true,
       "nReturned": 0,
-      "executionTimeMillis": 7,
+      "executionTimeMillis": 24,
       "totalKeysExamined": 0,
       "totalDocsExamined": 0,
       "executionStages": {
         "isCached": false,
         "stage": "LIMIT",
         "nReturned": 0,
-        "executionTimeMillisEstimate": 7,
+        "executionTimeMillisEstimate": 17,
         "works": 1,
         "advanced": 0,
         "needTime": 0,
@@ -2909,7 +2909,7 @@
         "inputStage": {
           "stage": "FETCH",
           "nReturned": 0,
-          "executionTimeMillisEstimate": 7,
+          "executionTimeMillisEstimate": 17,
           "works": 1,
           "advanced": 0,
           "needTime": 0,
@@ -2922,7 +2922,7 @@
           "inputStage": {
             "stage": "IXSCAN",
             "nReturned": 0,
-            "executionTimeMillisEstimate": 7,
+            "executionTimeMillisEstimate": 17,
             "works": 1,
             "advanced": 0,
             "needTime": 0,
@@ -2945,7 +2945,7 @@
             "direction": "forward",
             "indexBounds": {
               "expiresAt": [
-                "[new Date(-9223372036854775808), new Date(1793708064052)]"
+                "[new Date(-9223372036854775808), new Date(1793796917839)]"
               ]
             },
             "keysExamined": 0,
@@ -2961,7 +2961,7 @@
       "find": "integrationsynclogs",
       "filter": {
         "expiresAt": {
-          "$lte": "2026-11-03T12:14:24.052Z"
+          "$lte": "2026-11-04T12:55:17.839Z"
         }
       },
       "limit": 100,
@@ -2969,7 +2969,7 @@
     },
     "serverInfo": {
       "host": "ICOMM-AHMAD-HASS",
-      "port": 51227,
+      "port": 51847,
       "version": "8.2.6",
       "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
     },
@@ -2988,7 +2988,7 @@
     "ok": 1,
     "$clusterTime": {
       "clusterTime": {
-        "$timestamp": "7703917469156507683"
+        "$timestamp": "7704299094180626440"
       },
       "signature": {
         "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -2996,7 +2996,7 @@
       }
     },
     "operationTime": {
-      "$timestamp": "7703917469156507683"
+      "$timestamp": "7704299094180626440"
     }
   },
   "indexes": {

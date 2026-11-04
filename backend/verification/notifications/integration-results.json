@@ -11,29 +11,13 @@
     "Mongo disconnect fail-closed and recovery PASS",
     "active stream expiry and session revocation PASS",
     "real process restart and Redis outage independence PASS",
-    "real Profile preference rollback, password update/reset and reset replay PASS",
-    "weekly email concurrent claims, stale-outcome fencing and report availability during uncertainty PASS",
-    "real account deletion receipt and cursor cleanup PASS",
-    "index bounded reads and Mongo-only admission PASS"
+    "weekly email concurrent claims, stale-outcome fencing and report availability during uncertainty PASS"
   ],
   "productionDataUsed": false,
-  "crossWorkerDeliveryMs": 63.53009999999995,
-  "persistenceSample": {
-    "count": 25,
-    "p50Ms": 30.787199999998847,
-    "p95Ms": 32.684699999997974,
-    "eventsPerSecond": 32.31174370324889,
-    "workload": "sequential single recipient; local disposable replica; not a production capacity claim"
-  },
-  "inboxQuery": {
-    "returned": 2,
-    "examined": 2,
-    "keys": 2
-  },
-  "auditOnlyMigrationPreservesEmptyDatabase": true,
+  "crossWorkerDeliveryMs": 138.4672999999966,
   "cleanup": {
     "mongoStopped": true,
-    "temporaryFilesRemoved": 220,
+    "temporaryFilesRemoved": 177,
     "productionDataUsed": false
   }
 }

@@ -16,7 +16,7 @@ const windowKey = (bucket, scope, windowSlot) =>
 
 const leaseKey = (signalHash) => `courses:v1:lease:${digest(signalHash)}`;
 const POOL_LEASE_MS = 30_000;
-const POOL_STORE_TIMEOUT_MS = 2000;
+const POOL_STORE_TIMEOUT_MS = Number(process.env.COURSES_POOL_STORE_TIMEOUT_MS || 2000);
 const poolBusy = () =>
   Object.assign(new Error('Course pool temporarily unavailable.'), {
     status: 503,
@@ -178,15 +178,19 @@ async function runPoolBuild(signalHash, { forceRefresh, startedAt, build, persis
       if (winner) return winner;
       const pool = await build();
       const now = new Date();
-      const published = await State.collection.updateOne(
-        {
-          _id: key,
-          'leases.token': token,
-          $expr: { $gt: [{ $arrayElemAt: ['$leases.until', 0] }, '$$NOW'] },
-        },
-        { $set: { completed: { at: now, pool: { ...pool, updatedAt: now } } } },
-        { timeoutMS: POOL_STORE_TIMEOUT_MS },
-      );
+      const published = await State.collection
+        .updateOne(
+          {
+            _id: key,
+            'leases.token': token,
+            $expr: { $gt: [{ $arrayElemAt: ['$leases.until', 0] }, '$$NOW'] },
+          },
+          { $set: { completed: { at: now, pool: { ...pool, updatedAt: now } } } },
+          { timeoutMS: POOL_STORE_TIMEOUT_MS },
+        )
+        .catch(() => {
+          throw poolBusy();
+        });
       if (!published.matchedCount) throw poolBusy();
       await persist(pool, { governed: true, publishedAt: now });
       return { ...pool, updatedAt: now };

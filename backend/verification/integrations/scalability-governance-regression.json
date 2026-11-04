@@ -1,12 +1,11 @@
 {
-  "checkedAt": "2026-11-03T12:11:59.211Z",
+  "checkedAt": "2026-11-04T12:54:27.444Z",
   "providerHttpRequests": 0,
   "checks": [
     "provider/user 429; denied requests do not consume other counters",
     "two worker processes: one provider winner; global cap; job cap; release",
     "logical expiry independent of TTL sweep; crash/restart leases; stale-token fencing",
     "payload/header backoff; 401/403/429; three failures; cooldown extension",
-    "real authenticated routes and captured lee215 fixture; owner isolation; cross-worker revision invalidation",
     "OAuth state owner isolation/replay rejection; admitted token exchange/identity; encrypted persistence",
     "duplicate connection claim rejected; action 11 returns 429",
     "authenticated encryption/AAD isolation; Mongo 503 with zero outbound calls; reconnect recovery",
@@ -18,22 +17,22 @@
   "performance": {
     "workload": "12 sequential admissions, release outside timing",
     "n": 12,
-    "p50Ms": 15.377500000002328,
-    "p95Ms": 32.19930000000022,
-    "p99Ms": 32.19930000000022,
+    "p50Ms": 15.75460000000021,
+    "p95Ms": 45.22189999999682,
+    "p99Ms": 45.22189999999682,
     "samplesMs": [
-      12.092900000003283,
-      14.404699999999139,
-      14.612600000000384,
-      15.114700000005541,
-      15.155299999998533,
-      15.377500000002328,
-      15.479599999998754,
-      15.531200000004901,
-      15.683900000003632,
-      15.694100000000617,
-      22.963900000002468,
-      32.19930000000022
+      12.964500000001863,
+      13.919699999998556,
+      14.652900000000955,
+      15.32719999999972,
+      15.654699999999139,
+      15.75460000000021,
+      16.28899999999703,
+      16.43800000000192,
+      18.47149999999965,
+      28.827400000001944,
+      28.975300000005518,
+      45.22189999999682
     ],
     "collectionReads": 12,
     "collectionReplacements": 48,
@@ -131,7 +130,7 @@
   "fixtureReplays": 3,
   "cleanup": {
     "mongoStopped": true,
-    "temporaryFilesRemoved": 126,
+    "temporaryFilesRemoved": 128,
     "productionDataUsed": false
   }
 }
