@@ -138,16 +138,22 @@ test('Learning Hub real Mongo/JWT: current evidence, cache identity, owned learn
     result: githubData,
     expiresAt: new Date(Date.now() + 3600000),
   });
+  const { ANALYSIS_VERSION } = require('../services/skillGapCacheContract');
+  const { EVIDENCE_POLICY_VERSION } = require('../services/skillGapEvidenceService');
+  const { TAXONOMY_VERSION, MATRIX_VERSION } = require('../services/skillGapRequirements');
   const snapshotData = {
     ruleVersion: engine.SKILL_RULE,
+    evidencePolicyVersion: EVIDENCE_POLICY_VERSION,
+    taxonomyVersion: TAXONOMY_VERSION,
+    requirementMatrixVersion: MATRIX_VERSION,
     coverage: null,
-    sourceReferences: Object.values(
-      engine.sourceMetadata({
-        username,
-        githubData,
-        resumeAnalysis: resume.toObject(),
-      }),
-    ),
+    missingSkills: [],
+    sourceReferences: [
+      ...Object.values(
+        engine.sourceMetadata({ username, githubData, resumeAnalysis: resume.toObject() }),
+      ),
+      { type: 'profile', timestamp: (await User.findById(owner).lean()).updatedAt },
+    ],
     skills: [
       { name: 'SQL', status: 'CLAIMED_ONLY', requirement: 'REQUIRED' },
       { name: 'Docker', status: 'PARTIAL', requirement: 'REQUIRED' },
@@ -162,9 +168,18 @@ test('Learning Hub real Mongo/JWT: current evidence, cache identity, owned learn
     careerStack: 'Backend',
     experienceLevel: 'Intern',
     ...signals.buildResumeCacheIdentity({ resumeAnalysis: resume.toObject() }),
-    analysisVersion: 'v8-skill-evidence-coverage',
+    analysisVersion: ANALYSIS_VERSION,
     signalHash: 'snapshot-1',
     analysisData: snapshotData,
+  });
+  // A newer historical snapshot must not mask the current assessment.
+  const historical = snapshot.toObject();
+  delete historical._id;
+  await AnalysisCache.create({
+    ...historical,
+    analysisVersion: 'v8-skill-evidence-coverage',
+    updatedAt: new Date(Date.now() + 1000),
+    signalHash: 'historical-snapshot',
   });
   const user = () => User.findById(owner).lean();
   const resolve = async () =>

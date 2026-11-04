@@ -41,6 +41,9 @@ const skill = (name, status, requirement = 'REQUIRED') => ({
 });
 const snapshot = (coverage = null) => ({
   ruleVersion: engine.SKILL_RULE,
+  evidencePolicyVersion: require('../services/skillGapEvidenceService').EVIDENCE_POLICY_VERSION,
+  taxonomyVersion: require('../services/skillGapRequirements').TAXONOMY_VERSION,
+  requirementMatrixVersion: require('../services/skillGapRequirements').MATRIX_VERSION,
   coverage,
   calculatedAt: date,
   skills: [
@@ -57,6 +60,7 @@ const snapshot = (coverage = null) => ({
 const cache = (coverage) => ({
   ...context,
   githubUsername: context.username,
+  analysisVersion: require('../services/skillGapCacheContract').ANALYSIS_VERSION,
   analysisData: snapshot(coverage),
   updatedAt: date,
 });
@@ -96,7 +100,7 @@ test('ownership, identity, selected resume, stack, level, rule and timestamps ar
     assert.equal(
       engine.compatibleSkillGap({ ...cache(), ...changes }, context),
       null,
-      JSON.stringify(changes),
+      JSON.stringify(changes)
     );
   }
   const changedSources = {
@@ -112,7 +116,7 @@ test('ownership, identity, selected resume, stack, level, rule and timestamps ar
       ...context,
       sources: { ...context.sources, github: { ...context.sources.github, freshness: 'STALE' } },
     }),
-    null,
+    null
   );
 });
 
@@ -122,14 +126,14 @@ test('claims, partial technical evidence and absent proof have distinct actionab
     assert.ok(result.recommendations.some((card) => card.evidenceStatus === status));
   assert.equal(
     result.technologies.some((item) => item.name === 'Node.js'),
-    false,
+    false
   );
   const unknown = result.recommendations.find((card) => card.evidenceStatus === 'UNKNOWN');
   assert.equal(unknown.priority, 'Low');
   assert.match(unknown.actionableNextStep, /Review/);
   assert.doesNotMatch(
     JSON.stringify(result),
-    /developer lacks|does not know|must learn|hiring probability|weeks/,
+    /developer lacks|does not know|must learn|hiring probability|weeks/
   );
 });
 
@@ -138,11 +142,11 @@ test('stable IDs, priority order, required/optional rules and cross-source dedup
   const reverse = plan({ skillGap: { ...snapshot(0), skills: [...snapshot(0).skills].reverse() } });
   assert.deepEqual(
     first.recommendations.map((item) => item.id),
-    reverse.recommendations.map((item) => item.id),
+    reverse.recommendations.map((item) => item.id)
   );
   assert.equal(
     new Set(first.recommendations.map((item) => item.id)).size,
-    first.recommendations.length,
+    first.recommendations.length
   );
   assert.equal(first.technologies.filter((item) => item.name === 'SQL').length, 1);
   assert.equal(first.technologies.find((item) => item.name === 'Optional').priority, 'Medium');
@@ -154,7 +158,7 @@ test('stable IDs, priority order, required/optional rules and cross-source dedup
         { id: 'high-a', priority: 'High', estimatedImpact: 6 },
       ])
       .map((item) => item.id),
-    ['high-a', 'high-b', 'low'],
+    ['high-a', 'high-b', 'low']
   );
 });
 
@@ -165,7 +169,7 @@ test('current completion evidence suppresses resolved repository, skill and metr
   assert.equal(result.projects.length, 0);
   assert.equal(
     result.resumeRecommendations.some((item) => /outcomes/.test(item)),
-    false,
+    false
   );
   const changes = engine.versionChanges(result, plan());
   assert.ok(changes.obsoleteRecommendations.length);
@@ -199,7 +203,7 @@ test('AI ideas remain supplemental and unsupported facts, numbers, URLs and guar
         'Learn a completely unrelated language',
       ],
     },
-    result,
+    result
   );
   assert.equal(accepted.length, 1);
   assert.equal(accepted[0].aiGenerated, true);
@@ -218,20 +222,20 @@ test('modern null scores never fall back to legacy ATS or convert boolean/empty 
 test('source/profile revisions affect fingerprints; optional profile context stays factual', () => {
   assert.notEqual(
     engine.hash({ resumeAnalysis }),
-    engine.hash({ resumeAnalysis: { ...resumeAnalysis, fileId: 'file-b' } }),
+    engine.hash({ resumeAnalysis: { ...resumeAnalysis, fileId: 'file-b' } })
   );
   const result = plan({
     supportingSignals: { portfolioSignal: { present: true, listedProjects: 0, updatedAt: date } },
   });
   assert.ok(
     result.recommendations.some((item) =>
-      item.factualSignals.some((fact) => fact.fact === 'Portfolio listedProjects: 0'),
-    ),
+      item.factualSignals.some((fact) => fact.fact === 'Portfolio listedProjects: 0')
+    )
   );
   assert.ok(
     result.recommendations.every(
       (item) =>
-        item.ruleVersion === engine.RULE_VERSION && item.actionableNextStep && item.sources.length,
-    ),
+        item.ruleVersion === engine.RULE_VERSION && item.actionableNextStep && item.sources.length
+    )
   );
 });

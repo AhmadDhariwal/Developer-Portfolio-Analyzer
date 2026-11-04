@@ -2,6 +2,8 @@
 
 const crypto = require('node:crypto');
 const requirements = require('./skillGapRequirements');
+const { EVIDENCE_POLICY_VERSION } = require('./skillGapEvidenceService');
+const { ANALYSIS_VERSION: SKILL_ANALYSIS_VERSION } = require('./skillGapCacheContract');
 const { numeric } = require('./scoring/math');
 const RULE_VERSION = 'recommendations-evidence-v1';
 const SKILL_RULE = 'skill-evidence-coverage-v1';
@@ -30,6 +32,10 @@ const compatibleSkillGap = (cache, context) => {
   if (
     !data ||
     data.ruleVersion !== SKILL_RULE ||
+    data.evidencePolicyVersion !== EVIDENCE_POLICY_VERSION ||
+    data.taxonomyVersion !== requirements.TAXONOMY_VERSION ||
+    data.requirementMatrixVersion !== requirements.MATRIX_VERSION ||
+    cache.analysisVersion !== SKILL_ANALYSIS_VERSION ||
     data.cacheMetadata?.temporary ||
     String(cache.userId) !== String(context.userId) ||
     String(cache.githubUsername).toLowerCase() !== context.username.toLowerCase() ||
@@ -328,7 +334,7 @@ const buildPlan = ({
       number(resumeAnalysis?.scoring?.evidence?.facts?.quantifiedAchievementCount) >= 2
     )
       continue;
-    const section = code.startsWith('missing_') ? code.slice(8) : '';
+    const section = code.startsWith('missing_') ? code.slice(8).replace(/_section$/, '') : '';
     if (resume.sectionPresence?.[section] === true) continue;
     add({
       category: 'resume',
@@ -367,7 +373,7 @@ const buildPlan = ({
         source: 'github',
         confidence: 'RECORDED'
       });
-    if (repo.hasTests === false || repo.testing?.hasTests === false)
+    if ((repo.hasTests ?? repo.testing?.hasTests) === false)
       add({
         category: 'projects',
         target: `${username}/${name}:testing`,
@@ -527,9 +533,10 @@ const buildPlan = ({
     },
     roadmap: {
       immediateActions: sorted.slice(0, 4),
-      next30Days: [],
-      next60Days: [],
-      next90Days: [],
+      next30Days: sorted.slice(4, 12),
+      next60Days: sorted.slice(12, 24),
+      next90Days: sorted.slice(24),
+      schedulingBasis: 'Suggested review horizons in priority order; not completion estimates.',
       phases: [],
       learningSequence: grouped.learning.map((card) => card.targetSkill),
       suggestedProjects: grouped.projects.map((card) => card.title)
@@ -553,7 +560,7 @@ const safeSuggestions = (enrichment, plan) => {
         typeof value === 'string' &&
         value.length <= 500 &&
         /^(practice|explore|try|review|build|test|document|compare|implement)\b/i.test(value) &&
-        !/\d|https?:|\b(you|your|because|already|expert|mastered|strong|lack|missing|weak|poor|guarantee|hiring|salary|score|percent|days?|weeks?|months?|years?)\b/i.test(
+        !/\d|https?:|\b(you|your|because|already|expert|mastered|strong|lack|missing|weak|poor|guarantee|hiring|salary|score|percent|days?|weeks?|months?|years?|ignore|instructions?|system|prompt|secrets?|password|tokens?|credentials?)\b/i.test(
           value
         ) &&
         targets.some((target) => value.toLowerCase().includes(target.toLowerCase()))

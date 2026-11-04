@@ -1,0 +1,99 @@
+{
+  "status": "DEVELOPMENT COMPLETE — STABLE CANDIDATE — PRODUCTION GATES PENDING",
+  "branch": "fix/recommendation",
+  "prTarget": null,
+  "backend": {
+    "exitCode": 0,
+    "durationMs": 93191,
+    "files": [
+      "src/tests/recommendationEngine.test.js",
+      "src/tests/recommendationGeneration.test.js",
+      "src/tests/recommendationGovernance.test.js",
+      "src/tests/recommendationsAccuracy.test.js",
+      "src/tests/recommendationsHardening.test.js",
+      "src/tests/recommendationsMongo.integration.test.js",
+      "src/tests/recommendationsPerformance.test.js",
+      "src/tests/skillGapConsumerContracts.test.js",
+      "src/tests/skillGapConsumerMongo.test.js"
+    ],
+    "summary": [
+      "ℹ tests 47",
+      "ℹ suites 0",
+      "ℹ pass 47",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 92481.234"
+    ],
+    "cleanup": {
+      "mongoStopped": true,
+      "temporaryFilesRemoved": 193,
+      "productionDataUsed": false
+    }
+  },
+  "broadBackend": {
+    "tests": 339,
+    "passed": 327,
+    "failed": 12,
+    "skipped": 0,
+    "gate": "FAIL; see retained log and final report"
+  },
+  "frontendFull": {
+    "files": 92,
+    "tests": 540,
+    "passed": 540,
+    "failed": 0
+  },
+  "frontendFinalFocused": {
+    "files": 3,
+    "tests": 22,
+    "passed": 22,
+    "failed": 0
+  },
+  "browser": {
+    "layouts": 24,
+    "interactionThemes": 3,
+    "states": 7,
+    "screenshots": 12,
+    "accessibilityFailures": 0,
+    "runtimeErrors": 0,
+    "gate": "PASS locally"
+  },
+  "accuracy": {
+    "cases": 6,
+    "expectedActions": 10,
+    "falsePositives": 0,
+    "missingLegitimateActions": 0
+  },
+  "formatting": "PASS: explicit changed source files written and checked; report/evidence checked",
+  "javascriptSyntax": "PASS",
+  "typeScriptNoEmit": "PASS",
+  "productionBuild": "PASS with existing landing-page stylesheet budget warning",
+  "gitDiffCheck": "PASS",
+  "gitCachedDiffCheck": "PASS; externally staged changes preserved. Final working tree includes later unstaged fixes.",
+  "cleanup": {
+    "initialWorkingTree": "clean",
+    "restoredHistoricalReports": [
+      "backend/verification/notifications/integration-results.json",
+      "backend/verification/notifications/retention-results.json",
+      "backend/verification/skillgap/acceptance-2026-11-03/temporary-pdf-routing.json",
+      "backend/verification/skillgap/golden-accuracy.json",
+      "backend/verification/skillgap/production-results.json",
+      "backend/verification/skillgap/public-source-replay.json"
+    ],
+    "newEvidence": "cross-module-evidence",
+    "deletedFiles": [],
+    "movedSourceFiles": []
+  },
+  "productionGates": [
+    "Broad cross-module fixture/contract failures",
+    "Authorized live-provider and multi-host full-pipeline acceptance",
+    "Deployed performance, memory, index/TTL/soak acceptance",
+    "Retention/privacy and rollout policy acceptance",
+    "Matching all-theme before/after visual baseline"
+  ],
+  "operationalSecurityIncident": "A process diagnostic printed an unrelated Google API key from another process command line into tool output. It was not used or saved into repository files. Revoke/rotate that key.",
+  "autoReview": "Increasing saved-preview payload cap from 40KB to 256KB was rejected; 40KB retained.",
+  "indexNote": "Tests cover final working-tree content, not the earlier staged snapshots."
+}

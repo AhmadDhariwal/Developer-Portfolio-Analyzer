@@ -82,3 +82,61 @@ test('passive reads skip locks and AI; provider exceptions release the lease and
   assert.equal((await service.enrich({ ...args, enabled: true })).ok, false);
   assert.equal(released, 1);
 });
+
+test('Redis acquisition/release failures preserve bounded deterministic fallback and correct provider counts', async () => {
+  let calls = 0;
+  const service = load({
+    acquireCacheLock: async () => {
+      throw Error('Redis unavailable');
+    },
+    releaseCacheLock: async () => {
+      throw Error('Redis unavailable');
+    },
+  });
+  const args = {
+    enabled: true,
+    identity: 'owner',
+    signalHash: 'hash',
+    prompt: 'Synthetic evidence',
+    aiService: {
+      runAIAnalysis: async () => {
+        calls++;
+        throw Error('Provider timeout');
+      },
+    },
+  };
+  const result = await service.enrich(args);
+  assert.equal(calls, 1);
+  assert.equal(result.ok, false);
+  assert.equal(result.aiCalled, true);
+  const abort = new AbortController();
+  abort.abort();
+  assert.equal((await service.enrich({ ...args, governance: { signal: abort.signal } })).ok, false);
+  assert.equal(calls, 1);
+});
+
+test('Mongo AI budget exhaustion makes no provider call and leaves deterministic actions available', async (t) => {
+  const controls = require('../services/recommendationGovernanceService');
+  const original = { consume: controls.consume, transaction: controls.transaction };
+  t.after(() => Object.assign(controls, original));
+  controls.transaction = async () => {};
+  controls.consume = async () => {
+    throw controls.failure(429);
+  };
+  const service = load({
+    acquireCacheLock: async () => true,
+    releaseCacheLock: async () => {
+      throw Error('Redis release unavailable');
+    },
+  });
+  const result = await service.enrich({
+    enabled: true,
+    identity: 'owner',
+    signalHash: 'hash',
+    prompt: 'Synthetic evidence',
+    governance: { owner: 'owner', ip: 'fixture', signal: new AbortController().signal },
+    aiService: { runAIAnalysis: async () => assert.fail('No paid work after budget exhaustion') },
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.aiCalled, false);
+});

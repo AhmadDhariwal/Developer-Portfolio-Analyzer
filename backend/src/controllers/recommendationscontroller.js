@@ -35,7 +35,7 @@ const previewStrings = (values, max = 12) =>
     Array.isArray(values)
       ? values.map((value) => (typeof value === 'string' ? value : value?.name))
       : [],
-    max,
+    max
   );
 const previewSkills = (values, max = 16) =>
   (Array.isArray(values) ? values : [])
@@ -124,7 +124,7 @@ const buildSavedPreviewSummary = (module, result = {}) => {
     recommendationScores: Object.fromEntries(
       Object.entries(result.recommendationScores || {})
         .filter(([, value]) => Number.isFinite(Number(value)))
-        .map(([key, value]) => [key, engine.number(value)]),
+        .map(([key, value]) => [key, engine.number(value)])
     ),
     actions: Object.values(result.structuredRecommendations || {})
       .flatMap((cards) => recommendationPreviewCards(cards, 6))
@@ -269,7 +269,8 @@ const getRecommendations = async (req, res) => {
       forceRefresh: forceRefresh === true || forceRefresh === 'true',
     });
   } catch (error) {
-    console.error('Recommendations Error:', error.message);
+    if (error.status === 429 || error.status === 503)
+      res.set?.('Retry-After', String(error.retryAfter || 2));
     return res.status(error.status || 500).json({
       message: error.status ? error.message : 'Failed to generate recommendations.',
     });
@@ -374,7 +375,8 @@ const generateRecommendations = async (req, res) => {
       forceRefresh,
     });
   } catch (error) {
-    console.error('Generate Recommendations Error:', error.message);
+    if (error.status === 429 || error.status === 503)
+      res.set?.('Retry-After', String(error.retryAfter || 2));
     return res.status(error.status || 500).json({
       message: error.status ? error.message : 'Failed to generate recommendations.',
     });

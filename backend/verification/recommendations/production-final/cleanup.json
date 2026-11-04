@@ -1,0 +1,14 @@
+{
+  "initialWorkingTree": "clean",
+  "restoredHistoricalReports": [
+    "backend/verification/notifications/integration-results.json",
+    "backend/verification/notifications/retention-results.json",
+    "backend/verification/skillgap/acceptance-2026-11-03/temporary-pdf-routing.json",
+    "backend/verification/skillgap/golden-accuracy.json",
+    "backend/verification/skillgap/production-results.json",
+    "backend/verification/skillgap/public-source-replay.json"
+  ],
+  "newEvidence": "cross-module-evidence",
+  "deletedFiles": [],
+  "movedSourceFiles": []
+}

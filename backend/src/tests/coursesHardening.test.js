@@ -52,7 +52,20 @@ test('controller never returns provider tokens, stack traces, or raw error.messa
 });
 
 test('skill signals are scoped to user, active stack, experience, and skill-gap version', () => {
-  assert.match(controllerSource, /'analysisData.ruleVersion': SKILL_RULE/);
+  const { buildScope } = require('../services/skillGapCacheContract');
+  assert.match(controllerSource, /\.\.\.buildScope\(\{ userId, user, resumeIdentity \}\)/);
+  const scope = buildScope({
+    userId: 'user-a',
+    user: { activeCareerStack: 'Backend', activeExperienceLevel: 'Intern' },
+    resumeIdentity: { resumeHash: 'resume-a', resumeAnalysisId: 'analysis-a' },
+  });
+  assert.equal(scope.userId, 'user-a');
+  assert.equal(scope.careerStack, 'Backend');
+  assert.equal(scope.experienceLevel, 'Intern');
+  assert.equal(scope.resumeHash, 'resume-a');
+  assert.equal(scope.resumeAnalysisId, 'analysis-a');
+  assert.equal(scope['analysisData.ruleVersion'], SKILL_GAP_ANALYSIS_VERSION);
+  assert.equal(scope['analysisData.cacheMetadata.temporary'].$ne, true);
   assert.match(controllerSource, /careerStack,\s*experienceLevel/);
   assert.equal(SKILL_GAP_ANALYSIS_VERSION, 'skill-evidence-coverage-v1');
   assert.match(controllerSource, /resolveSkillSignals\([\s\S]{0,100}userId,/);

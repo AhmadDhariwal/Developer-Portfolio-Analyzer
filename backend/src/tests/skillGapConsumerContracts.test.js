@@ -32,10 +32,13 @@ test('current consumer compatibility rejects a changed profile revision while le
   const cache = {
     ...context,
     githubUsername: 'fixture',
+    analysisVersion: require('../services/skillGapCacheContract').ANALYSIS_VERSION,
     updatedAt: at,
     analysisData: {
       ruleVersion: 'skill-evidence-coverage-v1',
       evidencePolicyVersion: 'skill-gap-evidence-policy-v2',
+      taxonomyVersion: require('../services/skillGapRequirements').TAXONOMY_VERSION,
+      requirementMatrixVersion: require('../services/skillGapRequirements').MATRIX_VERSION,
       sourceReferences: [{ type: 'profile', timestamp: at }]
     }
   };

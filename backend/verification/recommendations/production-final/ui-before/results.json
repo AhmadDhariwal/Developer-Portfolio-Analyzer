@@ -1,0 +1,1485 @@
+{
+  "synthetic": true,
+  "layouts": [
+    {
+      "theme": "light",
+      "width": 320,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "26px",
+      "section": "17px",
+      "titleWeight": "600",
+      "workspaceWidth": 292,
+      "layout": {
+        "paddingLeft": 14,
+        "paddingRight": 14,
+        "shellClientWidth": 320,
+        "pagePadding": "0px",
+        "bodySize": "14px",
+        "controlRadius": "8px",
+        "minimumControlHeight": 18.59375
+      },
+      "contrast": {
+        "checked": 211,
+        "failures": [
+          {
+            "text": "Urgent",
+            "ratio": 4.240455995629598
+          },
+          {
+            "text": "Live",
+            "ratio": 3.429953655471221
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "🚀 Practical Proof",
+            "ratio": 2.0135913495672018
+          },
+          {
+            "text": "2 suggestions",
+            "ratio": 2.5640413904962034
+          },
+          {
+            "text": "Recorded skills & next steps",
+            "ratio": 2.5640413904962034
+          },
+          {
+            "text": "AI enrichment is not in use. Your evidence-based recommendat",
+            "ratio": 2.4100198703992675
+          },
+          {
+            "text": "Placeholder: Search actions or evidence",
+            "ratio": 4.205792581234125
+          }
+        ]
+      }
+    },
+    {
+      "theme": "light",
+      "width": 375,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "26px",
+      "section": "17px",
+      "titleWeight": "600",
+      "workspaceWidth": 347,
+      "layout": {
+        "paddingLeft": 14,
+        "paddingRight": 14,
+        "shellClientWidth": 375,
+        "pagePadding": "0px",
+        "bodySize": "14px",
+        "controlRadius": "8px",
+        "minimumControlHeight": 17.8125
+      },
+      "contrast": {
+        "checked": 211,
+        "failures": [
+          {
+            "text": "Urgent",
+            "ratio": 4.240455995629598
+          },
+          {
+            "text": "Live",
+            "ratio": 3.429953655471221
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "🚀 Practical Proof",
+            "ratio": 2.0135913495672018
+          },
+          {
+            "text": "2 suggestions",
+            "ratio": 2.5640413904962034
+          },
+          {
+            "text": "Recorded skills & next steps",
+            "ratio": 2.5640413904962034
+          },
+          {
+            "text": "AI enrichment is not in use. Your evidence-based recommendat",
+            "ratio": 2.4100198703992675
+          },
+          {
+            "text": "Placeholder: Search actions or evidence",
+            "ratio": 4.205792581234125
+          }
+        ]
+      }
+    },
+    {
+      "theme": "light",
+      "width": 425,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "26px",
+      "section": "17px",
+      "titleWeight": "600",
+      "workspaceWidth": 397,
+      "layout": {
+        "paddingLeft": 14,
+        "paddingRight": 14,
+        "shellClientWidth": 425,
+        "pagePadding": "0px",
+        "bodySize": "14px",
+        "controlRadius": "8px",
+        "minimumControlHeight": 17.8125
+      },
+      "contrast": {
+        "checked": 211,
+        "failures": [
+          {
+            "text": "Urgent",
+            "ratio": 4.240455995629598
+          },
+          {
+            "text": "Live",
+            "ratio": 3.429953655471221
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "🚀 Practical Proof",
+            "ratio": 2.0135913495672018
+          },
+          {
+            "text": "2 suggestions",
+            "ratio": 2.5640413904962034
+          },
+          {
+            "text": "Recorded skills & next steps",
+            "ratio": 2.5640413904962034
+          },
+          {
+            "text": "AI enrichment is not in use. Your evidence-based recommendat",
+            "ratio": 2.4100198703992675
+          },
+          {
+            "text": "Placeholder: Search actions or evidence",
+            "ratio": 4.205792581234125
+          }
+        ]
+      }
+    },
+    {
+      "theme": "light",
+      "width": 768,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "26px",
+      "section": "17px",
+      "titleWeight": "600",
+      "workspaceWidth": 740,
+      "layout": {
+        "paddingLeft": 14,
+        "paddingRight": 14,
+        "shellClientWidth": 768,
+        "pagePadding": "0px",
+        "bodySize": "14px",
+        "controlRadius": "8px",
+        "minimumControlHeight": 17.8125
+      },
+      "contrast": {
+        "checked": 211,
+        "failures": [
+          {
+            "text": "Urgent",
+            "ratio": 4.240455995629598
+          },
+          {
+            "text": "Live",
+            "ratio": 3.429953655471221
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "🚀 Practical Proof",
+            "ratio": 2.0135913495672018
+          },
+          {
+            "text": "2 suggestions",
+            "ratio": 2.5640413904962034
+          },
+          {
+            "text": "Recorded skills & next steps",
+            "ratio": 2.5640413904962034
+          },
+          {
+            "text": "AI enrichment is not in use. Your evidence-based recommendat",
+            "ratio": 2.4100198703992675
+          },
+          {
+            "text": "Placeholder: Search actions or evidence",
+            "ratio": 4.205792581234125
+          }
+        ]
+      }
+    },
+    {
+      "theme": "light",
+      "width": 1024,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "26px",
+      "section": "17px",
+      "titleWeight": "600",
+      "workspaceWidth": 904,
+      "layout": {
+        "paddingLeft": 24,
+        "paddingRight": 24,
+        "shellClientWidth": 952,
+        "pagePadding": "0px",
+        "bodySize": "14px",
+        "controlRadius": "8px",
+        "minimumControlHeight": 18.59375
+      },
+      "contrast": {
+        "checked": 211,
+        "failures": [
+          {
+            "text": "Urgent",
+            "ratio": 4.240455995629598
+          },
+          {
+            "text": "Live",
+            "ratio": 3.429953655471221
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "🚀 Practical Proof",
+            "ratio": 2.0135913495672018
+          },
+          {
+            "text": "2 suggestions",
+            "ratio": 2.5640413904962034
+          },
+          {
+            "text": "Recorded skills & next steps",
+            "ratio": 2.5640413904962034
+          },
+          {
+            "text": "AI enrichment is not in use. Your evidence-based recommendat",
+            "ratio": 2.4100198703992675
+          },
+          {
+            "text": "Placeholder: Search actions or evidence",
+            "ratio": 4.205792581234125
+          }
+        ]
+      }
+    },
+    {
+      "theme": "light",
+      "width": 1280,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "26px",
+      "section": "17px",
+      "titleWeight": "600",
+      "workspaceWidth": 1160,
+      "layout": {
+        "paddingLeft": 24,
+        "paddingRight": 24,
+        "shellClientWidth": 1208,
+        "pagePadding": "0px",
+        "bodySize": "14px",
+        "controlRadius": "8px",
+        "minimumControlHeight": 17.8125
+      },
+      "contrast": {
+        "checked": 211,
+        "failures": [
+          {
+            "text": "Urgent",
+            "ratio": 4.240455995629598
+          },
+          {
+            "text": "Live",
+            "ratio": 3.429953655471221
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "🚀 Practical Proof",
+            "ratio": 2.0135913495672018
+          },
+          {
+            "text": "2 suggestions",
+            "ratio": 2.5640413904962034
+          },
+          {
+            "text": "Recorded skills & next steps",
+            "ratio": 2.5640413904962034
+          },
+          {
+            "text": "AI enrichment is not in use. Your evidence-based recommendat",
+            "ratio": 2.4100198703992675
+          },
+          {
+            "text": "Placeholder: Search actions or evidence",
+            "ratio": 4.205792581234125
+          }
+        ]
+      }
+    },
+    {
+      "theme": "light",
+      "width": 1440,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "26px",
+      "section": "17px",
+      "titleWeight": "600",
+      "workspaceWidth": 1320,
+      "layout": {
+        "paddingLeft": 24,
+        "paddingRight": 24,
+        "shellClientWidth": 1368,
+        "pagePadding": "0px",
+        "bodySize": "14px",
+        "controlRadius": "8px",
+        "minimumControlHeight": 17.8125
+      },
+      "contrast": {
+        "checked": 211,
+        "failures": [
+          {
+            "text": "Urgent",
+            "ratio": 4.240455995629598
+          },
+          {
+            "text": "Live",
+            "ratio": 3.429953655471221
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "🚀 Practical Proof",
+            "ratio": 2.0135913495672018
+          },
+          {
+            "text": "2 suggestions",
+            "ratio": 2.5640413904962034
+          },
+          {
+            "text": "Recorded skills & next steps",
+            "ratio": 2.5640413904962034
+          },
+          {
+            "text": "AI enrichment is not in use. Your evidence-based recommendat",
+            "ratio": 2.4100198703992675
+          },
+          {
+            "text": "Placeholder: Search actions or evidence",
+            "ratio": 4.205792581234125
+          }
+        ]
+      }
+    },
+    {
+      "theme": "light",
+      "width": 1600,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "26px",
+      "section": "17px",
+      "titleWeight": "600",
+      "workspaceWidth": 1480,
+      "layout": {
+        "paddingLeft": 24,
+        "paddingRight": 24,
+        "shellClientWidth": 1528,
+        "pagePadding": "0px",
+        "bodySize": "14px",
+        "controlRadius": "8px",
+        "minimumControlHeight": 17.8125
+      },
+      "contrast": {
+        "checked": 211,
+        "failures": [
+          {
+            "text": "Urgent",
+            "ratio": 4.240455995629598
+          },
+          {
+            "text": "Live",
+            "ratio": 3.429953655471221
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "Add to Career Sprint",
+            "ratio": 1
+          },
+          {
+            "text": "🚀 Practical Proof",
+            "ratio": 2.0135913495672018
+          },
+          {
+            "text": "2 suggestions",
+            "ratio": 2.5640413904962034
+          },
+          {
+            "text": "Recorded skills & next steps",
+            "ratio": 2.5640413904962034
+          },
+          {
+            "text": "AI enrichment is not in use. Your evidence-based recommendat",
+            "ratio": 2.4100198703992675
+          },
+          {
+            "text": "Placeholder: Search actions or evidence",
+            "ratio": 4.205792581234125
+          }
+        ]
+      }
+    }
+  ],
+  "interactions": [
+    {
+      "theme": "light",
+      "firstViewportPriorities": [
+        {
+          "title": "Build technical proof for Node.js",
+          "bottom": 775.796875
+        },
+        {
+          "title": "Build technical proof for SQL",
+          "bottom": 1068.84375
+        },
+        {
+          "title": "Build technical proof for TypeScript",
+          "bottom": 1361.890625
+        }
+      ],
+      "firstViewportPrioritiesVisible": false
+    }
+  ],
+  "states": [],
+  "screenshots": [
+    "light-1440.png",
+    "light-375.png",
+    "light-375-actions.png",
+    "light-375-filters.png",
+    "light-1440-explorer.png",
+    "light-1440-focus-resources.png"
+  ],
+  "accessibilityFailures": [
+    {
+      "theme": "light",
+      "width": 320,
+      "check": "minimum-target-height",
+      "actual": 18.59375
+    },
+    {
+      "theme": "light",
+      "width": 320,
+      "check": "text-contrast",
+      "failures": [
+        {
+          "text": "Urgent",
+          "ratio": 4.240455995629598
+        },
+        {
+          "text": "Live",
+          "ratio": 3.429953655471221
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "🚀 Practical Proof",
+          "ratio": 2.0135913495672018
+        },
+        {
+          "text": "2 suggestions",
+          "ratio": 2.5640413904962034
+        },
+        {
+          "text": "Recorded skills & next steps",
+          "ratio": 2.5640413904962034
+        },
+        {
+          "text": "AI enrichment is not in use. Your evidence-based recommendat",
+          "ratio": 2.4100198703992675
+        },
+        {
+          "text": "Placeholder: Search actions or evidence",
+          "ratio": 4.205792581234125
+        }
+      ]
+    },
+    {
+      "theme": "light",
+      "width": 375,
+      "check": "minimum-target-height",
+      "actual": 17.8125
+    },
+    {
+      "theme": "light",
+      "width": 375,
+      "check": "text-contrast",
+      "failures": [
+        {
+          "text": "Urgent",
+          "ratio": 4.240455995629598
+        },
+        {
+          "text": "Live",
+          "ratio": 3.429953655471221
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "🚀 Practical Proof",
+          "ratio": 2.0135913495672018
+        },
+        {
+          "text": "2 suggestions",
+          "ratio": 2.5640413904962034
+        },
+        {
+          "text": "Recorded skills & next steps",
+          "ratio": 2.5640413904962034
+        },
+        {
+          "text": "AI enrichment is not in use. Your evidence-based recommendat",
+          "ratio": 2.4100198703992675
+        },
+        {
+          "text": "Placeholder: Search actions or evidence",
+          "ratio": 4.205792581234125
+        }
+      ]
+    },
+    {
+      "theme": "light",
+      "width": 425,
+      "check": "minimum-target-height",
+      "actual": 17.8125
+    },
+    {
+      "theme": "light",
+      "width": 425,
+      "check": "text-contrast",
+      "failures": [
+        {
+          "text": "Urgent",
+          "ratio": 4.240455995629598
+        },
+        {
+          "text": "Live",
+          "ratio": 3.429953655471221
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "🚀 Practical Proof",
+          "ratio": 2.0135913495672018
+        },
+        {
+          "text": "2 suggestions",
+          "ratio": 2.5640413904962034
+        },
+        {
+          "text": "Recorded skills & next steps",
+          "ratio": 2.5640413904962034
+        },
+        {
+          "text": "AI enrichment is not in use. Your evidence-based recommendat",
+          "ratio": 2.4100198703992675
+        },
+        {
+          "text": "Placeholder: Search actions or evidence",
+          "ratio": 4.205792581234125
+        }
+      ]
+    },
+    {
+      "theme": "light",
+      "width": 768,
+      "check": "minimum-target-height",
+      "actual": 17.8125
+    },
+    {
+      "theme": "light",
+      "width": 768,
+      "check": "text-contrast",
+      "failures": [
+        {
+          "text": "Urgent",
+          "ratio": 4.240455995629598
+        },
+        {
+          "text": "Live",
+          "ratio": 3.429953655471221
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "🚀 Practical Proof",
+          "ratio": 2.0135913495672018
+        },
+        {
+          "text": "2 suggestions",
+          "ratio": 2.5640413904962034
+        },
+        {
+          "text": "Recorded skills & next steps",
+          "ratio": 2.5640413904962034
+        },
+        {
+          "text": "AI enrichment is not in use. Your evidence-based recommendat",
+          "ratio": 2.4100198703992675
+        },
+        {
+          "text": "Placeholder: Search actions or evidence",
+          "ratio": 4.205792581234125
+        }
+      ]
+    },
+    {
+      "theme": "light",
+      "width": 1024,
+      "check": "minimum-target-height",
+      "actual": 18.59375
+    },
+    {
+      "theme": "light",
+      "width": 1024,
+      "check": "text-contrast",
+      "failures": [
+        {
+          "text": "Urgent",
+          "ratio": 4.240455995629598
+        },
+        {
+          "text": "Live",
+          "ratio": 3.429953655471221
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "🚀 Practical Proof",
+          "ratio": 2.0135913495672018
+        },
+        {
+          "text": "2 suggestions",
+          "ratio": 2.5640413904962034
+        },
+        {
+          "text": "Recorded skills & next steps",
+          "ratio": 2.5640413904962034
+        },
+        {
+          "text": "AI enrichment is not in use. Your evidence-based recommendat",
+          "ratio": 2.4100198703992675
+        },
+        {
+          "text": "Placeholder: Search actions or evidence",
+          "ratio": 4.205792581234125
+        }
+      ]
+    },
+    {
+      "theme": "light",
+      "width": 1280,
+      "check": "minimum-target-height",
+      "actual": 17.8125
+    },
+    {
+      "theme": "light",
+      "width": 1280,
+      "check": "text-contrast",
+      "failures": [
+        {
+          "text": "Urgent",
+          "ratio": 4.240455995629598
+        },
+        {
+          "text": "Live",
+          "ratio": 3.429953655471221
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "🚀 Practical Proof",
+          "ratio": 2.0135913495672018
+        },
+        {
+          "text": "2 suggestions",
+          "ratio": 2.5640413904962034
+        },
+        {
+          "text": "Recorded skills & next steps",
+          "ratio": 2.5640413904962034
+        },
+        {
+          "text": "AI enrichment is not in use. Your evidence-based recommendat",
+          "ratio": 2.4100198703992675
+        },
+        {
+          "text": "Placeholder: Search actions or evidence",
+          "ratio": 4.205792581234125
+        }
+      ]
+    },
+    {
+      "theme": "light",
+      "width": 1440,
+      "check": "minimum-target-height",
+      "actual": 17.8125
+    },
+    {
+      "theme": "light",
+      "width": 1440,
+      "check": "text-contrast",
+      "failures": [
+        {
+          "text": "Urgent",
+          "ratio": 4.240455995629598
+        },
+        {
+          "text": "Live",
+          "ratio": 3.429953655471221
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "🚀 Practical Proof",
+          "ratio": 2.0135913495672018
+        },
+        {
+          "text": "2 suggestions",
+          "ratio": 2.5640413904962034
+        },
+        {
+          "text": "Recorded skills & next steps",
+          "ratio": 2.5640413904962034
+        },
+        {
+          "text": "AI enrichment is not in use. Your evidence-based recommendat",
+          "ratio": 2.4100198703992675
+        },
+        {
+          "text": "Placeholder: Search actions or evidence",
+          "ratio": 4.205792581234125
+        }
+      ]
+    },
+    {
+      "theme": "light",
+      "width": 1600,
+      "check": "minimum-target-height",
+      "actual": 17.8125
+    },
+    {
+      "theme": "light",
+      "width": 1600,
+      "check": "text-contrast",
+      "failures": [
+        {
+          "text": "Urgent",
+          "ratio": 4.240455995629598
+        },
+        {
+          "text": "Live",
+          "ratio": 3.429953655471221
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "Add to Career Sprint",
+          "ratio": 1
+        },
+        {
+          "text": "🚀 Practical Proof",
+          "ratio": 2.0135913495672018
+        },
+        {
+          "text": "2 suggestions",
+          "ratio": 2.5640413904962034
+        },
+        {
+          "text": "Recorded skills & next steps",
+          "ratio": 2.5640413904962034
+        },
+        {
+          "text": "AI enrichment is not in use. Your evidence-based recommendat",
+          "ratio": 2.4100198703992675
+        },
+        {
+          "text": "Placeholder: Search actions or evidence",
+          "ratio": 4.205792581234125
+        }
+      ]
+    }
+  ],
+  "error": "locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('link', { name: 'Inspect GitHub analysis', exact: true })\u001b[22m\n"
+}
