@@ -1,4 +1,4 @@
-const { chromium } = require('../../backend/node_modules/playwright');
+const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const { catalog, profile, discover } = require('./courses-browser-fixture.cjs');
 const http = require('node:http');
 const fs = require('node:fs');
@@ -26,6 +26,10 @@ const server = http.createServer((req, res) => {
 });
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function settle(page) {
+  await page.waitForFunction(() => {
+    const shell = document.querySelector('.shell-body');
+    return !shell || shell.classList.contains('shell-body--mobile') === innerWidth <= 768;
+  });
   await page.evaluate(async () => {
     await document.fonts.ready;
     await Promise.all(

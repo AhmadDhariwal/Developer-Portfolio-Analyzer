@@ -28,11 +28,11 @@
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
             <circle cx="12" cy="7" r="4" />
           </svg>
-          <span class="capsule-text"
-            ><strong>{{ currentCareerStack }}</strong> · {{ currentExperienceLevel }}</span
+          <strong class="capsule-text"
+            >{{ currentCareerStack }} · {{ currentExperienceLevel }}</strong
           >
           <a routerLink="/app/profile" class="capsule-link" title="Change career stack in profile"
-            >Edit</a
+            >Change in profile</a
           >
         </div>
         <div class="capsule warning-capsule" *ngIf="!hasCareerContext">
@@ -91,7 +91,7 @@
     </div>
   </header>
 
-  <!-- Executive Learning Momentum & Metrics Strip (High Production-Value Addition) -->
+  <!-- Executive Learning Momentum & Metrics Strip -->
   <section class="learning-metrics-strip" aria-label="Learning momentum and analytics">
     <div class="metric-card">
       <div class="metric-icon-wrap target-icon">
@@ -234,9 +234,11 @@
           [class.active]="activeFilters.topic.toLowerCase() === skill.toLowerCase()"
           (click)="onQuickTopicSelect(skill)"
         >
-          <span class="pill-target">🎯</span>
           <span class="pill-name">{{ skill }}</span>
-          <span class="pill-state" *ngIf="activeFilters.topic.toLowerCase() === skill.toLowerCase()"
+          <span
+            class="pill-state"
+            aria-hidden="true"
+            *ngIf="activeFilters.topic.toLowerCase() === skill.toLowerCase()"
             >✓ Active</span
           >
         </button>
@@ -278,7 +280,9 @@
           <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
         </svg>
         <span>Discover Courses</span>
-        <span class="tab-count-badge" *ngIf="totalCourses > 0">{{ totalCourses }}</span>
+        <span class="tab-count-badge" aria-hidden="true" *ngIf="totalCourses > 0">{{
+          totalCourses
+        }}</span>
       </button>
 
       <button
@@ -299,7 +303,7 @@
           <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
         </svg>
         <span>My Learning</span>
-        <span class="tab-count-badge accent" *ngIf="totalSavedCourses > 0">{{
+        <span class="tab-count-badge accent" aria-hidden="true" *ngIf="totalSavedCourses > 0">{{
           totalSavedCourses
         }}</span>
       </button>
@@ -349,6 +353,7 @@
           fill="none"
           stroke="currentColor"
           stroke-width="2"
+          aria-hidden="true"
         >
           <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
         </svg>
@@ -356,7 +361,7 @@
       </button>
     </div>
 
-    <!-- Quick Presets Filter Strip (1-Click Productivity Booster) -->
+    <!-- Quick Presets Filter Strip -->
     <div class="quick-presets-bar" aria-label="Quick course filters">
       <span class="presets-label">Quick filter:</span>
       <div class="presets-scroll">
@@ -398,7 +403,7 @@
           [class.active]="isPresetActive('short')"
           (click)="onQuickPreset('short')"
         >
-          Quick (< 2h)
+          Quick (&lt; 2h)
         </button>
         <button
           type="button"
@@ -529,13 +534,10 @@
     <div class="load-more" *ngIf="canShowLoadMore">
       <button type="button" class="load-more-btn" [disabled]="isLoadingMore" (click)="loadMore()">
         <span class="btn-spinner" *ngIf="isLoadingMore"></span>
-        <span>{{
-          isLoadingMore
-            ? 'Loading more…'
-            : 'Load more courses (' +
-              (hiddenCount || totalCourses - displayedCourses.length) +
-              ' remaining)'
-        }}</span>
+        <span>{{ isLoadingMore ? 'Loading more…' : 'Load more courses' }}</span>
+        <span class="remaining-count" aria-hidden="true" *ngIf="!isLoadingMore">
+          ({{ hiddenCount || totalCourses - displayedCourses.length }} remaining)
+        </span>
       </button>
     </div>
   </section>
@@ -561,7 +563,7 @@
         </svg>
         <span>How recommendations and learning records work</span>
       </div>
-      <span class="methodology-arrow">▾</span>
+      <span class="methodology-arrow" aria-hidden="true">▾</span>
     </summary>
     <div class="methodology-content">
       <div class="method-cards-grid">
@@ -606,23 +608,23 @@
     <a routerLink="/app/skill-gap" class="tool-link-card">
       <div class="tool-info">
         <span class="tool-title">Skill Gap Analyzer</span>
-        <span class="tool-desc">Audit missing skills across your portfolio & resume</span>
+        <span class="tool-desc">Audit missing skills across your portfolio &amp; resume</span>
       </div>
-      <span class="tool-arrow">→</span>
+      <span class="tool-arrow" aria-hidden="true">→</span>
     </a>
     <a routerLink="/app/recommendations" class="tool-link-card">
       <div class="tool-info">
         <span class="tool-title">Recommendations</span>
         <span class="tool-desc">Practical steps tailored for your next career move</span>
       </div>
-      <span class="tool-arrow">→</span>
+      <span class="tool-arrow" aria-hidden="true">→</span>
     </a>
     <a routerLink="/app/career-sprint" class="tool-link-card highlight-tool">
       <div class="tool-info">
         <span class="tool-title">Career Sprint</span>
-        <span class="tool-desc">Turn courses into weekly execution tasks & earn XP</span>
+        <span class="tool-desc">Turn courses into weekly execution tasks &amp; earn XP</span>
       </div>
-      <span class="tool-arrow">→</span>
+      <span class="tool-arrow" aria-hidden="true">→</span>
     </a>
   </nav>
 

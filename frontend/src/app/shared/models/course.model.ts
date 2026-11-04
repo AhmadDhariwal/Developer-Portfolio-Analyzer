@@ -102,6 +102,8 @@ export const PLATFORM_OPTIONS: { value: CoursePlatform | 'All'; label: string }[
   { value: 'All', label: 'All Platforms' },
   { value: 'Udemy', label: 'Udemy' },
   { value: 'Coursera', label: 'Coursera' },
+  { value: 'edX', label: 'edX' },
+  { value: 'freeCodeCamp', label: 'freeCodeCamp' },
   { value: 'YouTube', label: 'YouTube' },
   { value: 'Other', label: 'Other (edX, freeCodeCamp)' },
 ];

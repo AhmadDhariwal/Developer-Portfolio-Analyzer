@@ -19,7 +19,7 @@ const youtubeInflight = new Map();
 let youtubeFailureCount = 0;
 let youtubeCircuitOpenUntil = 0;
 const COURSE_POOL_SIZE = {
-  All: 30,
+  All: 15,
   YouTube: 40,
 };
 const COURSE_LIMITS = {
@@ -29,7 +29,7 @@ const COURSE_LIMITS = {
   maxLimit: 20,
 };
 
-const VALID_PLATFORMS = ['All', 'Udemy', 'Coursera', 'YouTube', 'Other'];
+const VALID_PLATFORMS = ['All', 'Udemy', 'Coursera', 'YouTube', 'edX', 'freeCodeCamp', 'Other'];
 const VALID_LEVELS = ['All', 'Beginner', 'Intermediate', 'Advanced'];
 const DURATION_ALIASES = {
   '0-2': '0-2',
@@ -118,12 +118,9 @@ function normalisePlatform(raw) {
   if (value.includes('udemy')) return 'Udemy';
   if (value.includes('coursera')) return 'Coursera';
   if (value.includes('youtube')) return 'YouTube';
-  if (
-    value.includes('edx') ||
-    value.includes('freecodecamp') ||
-    value.includes('free code') ||
-    value === 'other'
-  ) {
+  if (value.includes('edx')) return 'edX';
+  if (value.includes('freecodecamp') || value.includes('free code')) return 'freeCodeCamp';
+  if (value === 'other') {
     return 'Other';
   }
   return 'All';
@@ -475,7 +472,11 @@ function scoreAndRank(courses = [], context = {}) {
     .map((course) => {
       const relevanceScore = computeRelevance(course, context);
       const hasRating = Number.isFinite(Number(course.rating)) && Number(course.rating) > 0;
-      const popularity = Number(course.popularity || 0);
+      // Derived YouTube view counts must not inflate finalScore above curated catalog providers whose popularity is unverified (null).
+      const popularity =
+        course.provenance?.popularitySource === 'derived-view-count'
+          ? 0
+          : Number(course.popularity || 0);
       const finalScore = hasRating
         ? Math.round(
             (Number(course.rating) / 5) * 100 * 0.38 + popularity * 0.28 + relevanceScore * 0.34,
@@ -643,7 +644,7 @@ async function requestYouTubeCourses(query, maxResults = 20, options = {}) {
               snippet.thumbnails?.default?.url ||
               '',
             url: `https://www.youtube.com/watch?v=${item.id}`,
-            topics: extractTopics(snippet.title, snippet.description),
+            topics: extractTopics(snippet.title, (snippet.description || '').slice(0, 160)),
             popularity: Number.isFinite(Number.parseInt(statistics.viewCount, 10))
               ? Math.min(100, Math.max(0, Math.round((views / 200000) * 100)))
               : null,

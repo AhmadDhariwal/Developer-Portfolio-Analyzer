@@ -1,6 +1,7 @@
 'use strict';
 const progress = require('../services/courseProgressService');
 const { handoff } = require('../services/courseHandoffService');
+const { invalidateDashboardSummaryCache } = require('./dashboardcontroller');
 const endpoint = (work) => async (req, res) => {
   if (!req.user?._id) return res.status(401).json({ message: 'Authentication required.' });
   res.set?.('Cache-Control', 'private, no-store');
@@ -19,14 +20,19 @@ module.exports = {
   listProgress: endpoint(async (req, res) =>
     res.json(await progress.listProgress(req.user._id, req.query)),
   ),
-  saveProgress: endpoint(async (req, res) =>
-    res.json(await progress.saveProgress(req.user._id, req.params.courseId, req.body)),
-  ),
+  saveProgress: endpoint(async (req, res) => {
+    const saved = await progress.saveProgress(req.user._id, req.params.courseId, req.body);
+    invalidateDashboardSummaryCache(req.user._id);
+    return res.json(saved);
+  }),
   removeProgress: endpoint(async (req, res) => {
     await progress.removeProgress(req.user._id, req.params.courseId);
+    invalidateDashboardSummaryCache(req.user._id);
     return res.status(204).send();
   }),
-  handoffToSprint: endpoint(async (req, res) =>
-    res.json(await handoff(req.user._id, req.params.courseId, req.body)),
-  ),
+  handoffToSprint: endpoint(async (req, res) => {
+    const result = await handoff(req.user._id, req.params.courseId, req.body);
+    invalidateDashboardSummaryCache(req.user._id);
+    return res.json(result);
+  }),
 };

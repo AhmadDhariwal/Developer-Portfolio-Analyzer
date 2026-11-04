@@ -155,6 +155,56 @@ test('required evidence targets rank before optional/known context without repla
     ['a', 'b'],
   );
 });
+test('edX and freeCodeCamp are directly filterable while Other preserves combined compatibility', () => {
+  assert.equal(service.normaliseCourseFilters({ platform: 'edX' }).platform, 'edX');
+  assert.equal(
+    service.normaliseCourseFilters({ platform: 'freeCodeCamp' }).platform,
+    'freeCodeCamp',
+  );
+  const edxPool = service.buildFallbackPool('edX', 50);
+  const fccPool = service.buildFallbackPool('freeCodeCamp', 50);
+  const otherPool = service.buildFallbackPool('Other', 50);
+  assert.ok(edxPool.length >= 9);
+  assert.ok(edxPool.every((item) => item.platform === 'edX'));
+  assert.ok(fccPool.length >= 7);
+  assert.ok(fccPool.every((item) => item.platform === 'freeCodeCamp'));
+  assert.equal(otherPool.length, edxPool.length + fccPool.length);
+  assert.equal(service.applyCourseFilters(otherPool, { platform: 'edX' }).length, edxPool.length);
+  assert.equal(
+    service.applyCourseFilters(otherPool, { platform: 'freeCodeCamp' }).length,
+    fccPool.length,
+  );
+});
+test('YouTube derived view counts do not inflate finalScore above equally relevant curated courses', () => {
+  const curatedCourse = course('fb_u2', 'Udemy', {
+    title: 'Node.js, Express, MongoDB & More: The Complete Bootcamp',
+    topics: ['Node.js', 'Express', 'MongoDB'],
+    level: 'Intermediate',
+  });
+  const youtubeCourse = service.normaliseCourse({
+    id: 'yt_nodebootcamp',
+    title: 'Node.js and Express Tutorial',
+    platform: 'YouTube',
+    url: 'https://www.youtube.com/watch?v=nodeboot123',
+    topics: ['Node.js', 'Express', 'MongoDB'],
+    popularity: 100,
+    engagementScore: 95,
+    provenance: {
+      source: 'youtube-api',
+      ratingSource: 'unavailable',
+      popularitySource: 'derived-view-count',
+      engagementSource: 'derived-views-likes',
+      durationSource: 'youtube-content-details',
+    },
+  });
+  const ranked = service.scoreAndRank([youtubeCourse, curatedCourse], {
+    careerStack: 'Backend',
+    experienceLevel: 'Intermediate',
+    skillGaps: ['Node.js'],
+  });
+  assert.equal(ranked[0].id, 'fb_u2');
+  assert.ok(ranked[0].finalScore >= ranked[1].finalScore);
+});
 test('All platform order follows ranking across page boundaries, without quota displacement', async () => {
   const previous = process.env.YOUTUBE_API_KEY;
   process.env.YOUTUBE_API_KEY = '';
@@ -310,6 +360,37 @@ test('career-only fallback ranks actual track topics ahead of unrelated subjects
   assert.equal(ranked[0].id, 'react');
   assert.deepEqual(ranked[0].matchedCareerSkills, ['React']);
   assert.match(ranked[0].whyRecommended, /React.*Frontend/);
+});
+
+test('weekly report learning snapshot summarizes self-reported progress without altering readiness score', () => {
+  const weeklyReportService = require('../services/weeklyReportService');
+  const now = new Date();
+  const weekStart = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
+  const weekEnd = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
+  const snapshot = weeklyReportService.__test.buildLearningSnapshot(
+    [
+      {
+        courseId: 'fb_u2',
+        status: 'completed',
+        completedAt: now,
+        updatedAt: now,
+        course: { title: 'Node.js Bootcamp', platform: 'Udemy' },
+      },
+      {
+        courseId: 'fb_c5',
+        status: 'in_progress',
+        updatedAt: now,
+        course: { title: 'SQL for Data Science', platform: 'Coursera' },
+      },
+    ],
+    weekStart,
+    weekEnd,
+  );
+  assert.equal(snapshot.totalTracked, 2);
+  assert.equal(snapshot.completedCount, 1);
+  assert.equal(snapshot.inProgressCount, 1);
+  assert.equal(snapshot.completedThisWeek, 1);
+  assert.equal(snapshot.completionSource, 'self-reported');
 });
 
 test('course migration creates indexes on a fresh namespace and remains idempotent', async () => {
