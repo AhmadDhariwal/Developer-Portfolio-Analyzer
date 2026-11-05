@@ -1,11 +1,9 @@
 {
   "baseline": "c612ae80c466f47ab7def651da6537d8cf330b0a",
   "checks": [
+    "redis-toggle-and-logical-expiry",
     "two-process-concurrency-and-restart",
-    "forwarded-header-spoofing-rejected",
-    "authenticated-avatar-portfolio-resume-real-admission",
     "mongo-failure-before-parsing-storage-mail",
-    "upload-and-contact-no-bypass",
     "disconnect-recovery-retains-budget"
   ],
   "indexes": [
@@ -31,18 +29,18 @@
     "productionDataUsed": false
   },
   "admissionMs": [
-    8.45,
-    12.24,
-    13.76,
-    14.46,
-    18,
-    19.17,
-    22.05,
-    29.78,
-    31.93,
-    44.1,
-    53.69,
-    77.93
+    10.49,
+    14.63,
+    14.7,
+    15.21,
+    15.43,
+    15.45,
+    15.54,
+    15.66,
+    15.93,
+    16.03,
+    16.04,
+    16.29
   ],
-  "completed": 6
+  "completed": 4
 }

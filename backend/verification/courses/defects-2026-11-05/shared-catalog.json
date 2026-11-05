@@ -1,0 +1,496 @@
+{
+  "scope": "Disposable real Mongo; synthetic provider; direct catalog service callers, not deployed HTTP load",
+  "simulatedWarmCallers": 3000,
+  "warmProviderPipelines": 0,
+  "estimatedUncachedHttpRequestsAvoided": 9000,
+  "avoidanceBaseline": "Counterfactual uncached pipeline: two searches and one details request per caller; no live cost measurement",
+  "warmHitRate": 1,
+  "p50Ms": 3.0393999999996595,
+  "p95Ms": 9.96810000000005,
+  "metrics": {
+    "memoryHits": 3001,
+    "mongoHits": 4,
+    "builds": 6,
+    "staleHits": 1,
+    "budgetDenied": 1,
+    "memoryEntries": 0,
+    "inflight": 0,
+    "waiting": 0
+  },
+  "indexes": [
+    {
+      "v": 2,
+      "key": {
+        "_id": 1
+      },
+      "name": "_id_"
+    },
+    {
+      "v": 2,
+      "key": {
+        "courses.id": 1
+      },
+      "name": "catalog_course_identity"
+    },
+    {
+      "v": 2,
+      "key": {
+        "version": 1,
+        "freshUntil": 1,
+        "_id": 1
+      },
+      "name": "catalog_refresh_schedule"
+    },
+    {
+      "v": 2,
+      "key": {
+        "_fts": "text",
+        "_ftsx": 1
+      },
+      "name": "catalog_full_text",
+      "weights": {
+        "courses.description": 1,
+        "courses.title": 1,
+        "courses.topics": 1
+      },
+      "default_language": "none",
+      "language_override": "__catalogTextLanguage",
+      "textIndexVersion": 3
+    },
+    {
+      "v": 2,
+      "key": {
+        "updatedAt": -1
+      },
+      "name": "catalog_publication_revision"
+    },
+    {
+      "v": 2,
+      "key": {
+        "courses.platform": 1
+      },
+      "name": "catalog_provider"
+    }
+  ],
+  "explain": {
+    "explainVersion": "1",
+    "queryPlanner": {
+      "namespace": "integration_live_acceptance.shared_course_catalog",
+      "parsedQuery": {
+        "$and": [
+          {
+            "version": {
+              "$eq": "shared-courses-v1"
+            }
+          },
+          {
+            "freshUntil": {
+              "$lte": "2026-11-05T12:09:29.270Z"
+            }
+          }
+        ]
+      },
+      "indexFilterSet": false,
+      "queryHash": "38889499",
+      "planCacheShapeHash": "38889499",
+      "planCacheKey": "2F2EEEA3",
+      "optimizationTimeMillis": 0,
+      "maxIndexedOrSolutionsReached": false,
+      "maxIndexedAndSolutionsReached": false,
+      "maxScansToExplodeReached": false,
+      "prunedSimilarIndexes": false,
+      "winningPlan": {
+        "isCached": false,
+        "stage": "LIMIT",
+        "limitAmount": 2,
+        "inputStage": {
+          "stage": "FETCH",
+          "inputStage": {
+            "stage": "IXSCAN",
+            "keyPattern": {
+              "version": 1,
+              "freshUntil": 1,
+              "_id": 1
+            },
+            "indexName": "catalog_refresh_schedule",
+            "isMultiKey": false,
+            "multiKeyPaths": {
+              "version": [],
+              "freshUntil": [],
+              "_id": []
+            },
+            "isUnique": false,
+            "isSparse": false,
+            "isPartial": false,
+            "indexVersion": 2,
+            "direction": "forward",
+            "indexBounds": {
+              "version": [
+                "[\"shared-courses-v1\", \"shared-courses-v1\"]"
+              ],
+              "freshUntil": [
+                "[new Date(-9223372036854775808), new Date(1793880569270)]"
+              ],
+              "_id": [
+                "[MinKey, MaxKey]"
+              ]
+            }
+          }
+        }
+      },
+      "rejectedPlans": []
+    },
+    "executionStats": {
+      "executionSuccess": true,
+      "nReturned": 0,
+      "executionTimeMillis": 0,
+      "totalKeysExamined": 0,
+      "totalDocsExamined": 0,
+      "executionStages": {
+        "isCached": false,
+        "stage": "LIMIT",
+        "nReturned": 0,
+        "executionTimeMillisEstimate": 0,
+        "works": 1,
+        "advanced": 0,
+        "needTime": 0,
+        "needYield": 0,
+        "saveState": 0,
+        "restoreState": 0,
+        "isEOF": 1,
+        "limitAmount": 2,
+        "inputStage": {
+          "stage": "FETCH",
+          "nReturned": 0,
+          "executionTimeMillisEstimate": 0,
+          "works": 1,
+          "advanced": 0,
+          "needTime": 0,
+          "needYield": 0,
+          "saveState": 0,
+          "restoreState": 0,
+          "isEOF": 1,
+          "docsExamined": 0,
+          "alreadyHasObj": 0,
+          "inputStage": {
+            "stage": "IXSCAN",
+            "nReturned": 0,
+            "executionTimeMillisEstimate": 0,
+            "works": 1,
+            "advanced": 0,
+            "needTime": 0,
+            "needYield": 0,
+            "saveState": 0,
+            "restoreState": 0,
+            "isEOF": 1,
+            "keyPattern": {
+              "version": 1,
+              "freshUntil": 1,
+              "_id": 1
+            },
+            "indexName": "catalog_refresh_schedule",
+            "isMultiKey": false,
+            "multiKeyPaths": {
+              "version": [],
+              "freshUntil": [],
+              "_id": []
+            },
+            "isUnique": false,
+            "isSparse": false,
+            "isPartial": false,
+            "indexVersion": 2,
+            "direction": "forward",
+            "indexBounds": {
+              "version": [
+                "[\"shared-courses-v1\", \"shared-courses-v1\"]"
+              ],
+              "freshUntil": [
+                "[new Date(-9223372036854775808), new Date(1793880569270)]"
+              ],
+              "_id": [
+                "[MinKey, MaxKey]"
+              ]
+            },
+            "keysExamined": 0,
+            "seeks": 1,
+            "dupsTested": 0,
+            "dupsDropped": 0
+          }
+        }
+      }
+    },
+    "queryShapeHash": "DF358221547C37EF78076349510779A630471A3A4BF2EB0533A5B6C33D8A0C9F",
+    "command": {
+      "find": "shared_course_catalog",
+      "filter": {
+        "version": "shared-courses-v1",
+        "freshUntil": {
+          "$lte": "2026-11-05T12:09:29.270Z"
+        }
+      },
+      "sort": {
+        "freshUntil": 1,
+        "_id": 1
+      },
+      "limit": 2,
+      "$db": "integration_live_acceptance"
+    },
+    "serverInfo": {
+      "host": "ICOMM-AHMAD-HASS",
+      "port": 62148,
+      "version": "8.2.6",
+      "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
+    },
+    "serverParameters": {
+      "internalQueryFacetBufferSizeBytes": 104857600,
+      "internalQueryFacetMaxOutputDocSizeBytes": 104857600,
+      "internalLookupStageIntermediateDocumentMaxSizeBytes": 104857600,
+      "internalDocumentSourceGroupMaxMemoryBytes": 104857600,
+      "internalQueryMaxBlockingSortMemoryUsageBytes": 104857600,
+      "internalQueryProhibitBlockingMergeOnMongoS": 0,
+      "internalQueryMaxAddToSetBytes": 104857600,
+      "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": 104857600,
+      "internalQueryFrameworkControl": "trySbeRestricted",
+      "internalQueryPlannerIgnoreIndexWithCollationForRegex": 1
+    },
+    "ok": 1,
+    "$clusterTime": {
+      "clusterTime": {
+        "$timestamp": "7704658376784871435"
+      },
+      "signature": {
+        "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "keyId": 0
+      }
+    },
+    "operationTime": {
+      "$timestamp": "7704658376784871433"
+    }
+  },
+  "identityExplain": {
+    "explainVersion": "1",
+    "queryPlanner": {
+      "namespace": "integration_live_acceptance.shared_course_catalog",
+      "parsedQuery": {
+        "courses.id": {
+          "$eq": "yt_abcdefghijk"
+        }
+      },
+      "indexFilterSet": false,
+      "queryHash": "C189CC5A",
+      "planCacheShapeHash": "C189CC5A",
+      "planCacheKey": "AB9CCCC8",
+      "optimizationTimeMillis": 0,
+      "maxIndexedOrSolutionsReached": false,
+      "maxIndexedAndSolutionsReached": false,
+      "maxScansToExplodeReached": false,
+      "prunedSimilarIndexes": false,
+      "winningPlan": {
+        "isCached": false,
+        "stage": "FETCH",
+        "inputStage": {
+          "stage": "IXSCAN",
+          "keyPattern": {
+            "courses.id": 1
+          },
+          "indexName": "catalog_course_identity",
+          "isMultiKey": true,
+          "multiKeyPaths": {
+            "courses.id": [
+              "courses"
+            ]
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "courses.id": [
+              "[\"yt_abcdefghijk\", \"yt_abcdefghijk\"]"
+            ]
+          }
+        }
+      },
+      "rejectedPlans": []
+    },
+    "executionStats": {
+      "executionSuccess": true,
+      "nReturned": 1,
+      "executionTimeMillis": 0,
+      "totalKeysExamined": 1,
+      "totalDocsExamined": 1,
+      "executionStages": {
+        "isCached": false,
+        "stage": "FETCH",
+        "nReturned": 1,
+        "executionTimeMillisEstimate": 0,
+        "works": 2,
+        "advanced": 1,
+        "needTime": 0,
+        "needYield": 0,
+        "saveState": 0,
+        "restoreState": 0,
+        "isEOF": 1,
+        "docsExamined": 1,
+        "alreadyHasObj": 0,
+        "inputStage": {
+          "stage": "IXSCAN",
+          "nReturned": 1,
+          "executionTimeMillisEstimate": 0,
+          "works": 2,
+          "advanced": 1,
+          "needTime": 0,
+          "needYield": 0,
+          "saveState": 0,
+          "restoreState": 0,
+          "isEOF": 1,
+          "keyPattern": {
+            "courses.id": 1
+          },
+          "indexName": "catalog_course_identity",
+          "isMultiKey": true,
+          "multiKeyPaths": {
+            "courses.id": [
+              "courses"
+            ]
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "courses.id": [
+              "[\"yt_abcdefghijk\", \"yt_abcdefghijk\"]"
+            ]
+          },
+          "keysExamined": 1,
+          "seeks": 1,
+          "dupsTested": 1,
+          "dupsDropped": 0
+        }
+      }
+    },
+    "queryShapeHash": "79037CAD54BE00708FF391E7D17E307B14EF45A0130DF8F3B24AACCC769B2F31",
+    "command": {
+      "find": "shared_course_catalog",
+      "filter": {
+        "courses.id": "yt_abcdefghijk"
+      },
+      "$db": "integration_live_acceptance"
+    },
+    "serverInfo": {
+      "host": "ICOMM-AHMAD-HASS",
+      "port": 62148,
+      "version": "8.2.6",
+      "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
+    },
+    "serverParameters": {
+      "internalQueryFacetBufferSizeBytes": 104857600,
+      "internalQueryFacetMaxOutputDocSizeBytes": 104857600,
+      "internalLookupStageIntermediateDocumentMaxSizeBytes": 104857600,
+      "internalDocumentSourceGroupMaxMemoryBytes": 104857600,
+      "internalQueryMaxBlockingSortMemoryUsageBytes": 104857600,
+      "internalQueryProhibitBlockingMergeOnMongoS": 0,
+      "internalQueryMaxAddToSetBytes": 104857600,
+      "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": 104857600,
+      "internalQueryFrameworkControl": "trySbeRestricted",
+      "internalQueryPlannerIgnoreIndexWithCollationForRegex": 1
+    },
+    "ok": 1,
+    "$clusterTime": {
+      "clusterTime": {
+        "$timestamp": "7704658376784871435"
+      },
+      "signature": {
+        "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "keyId": 0
+      }
+    },
+    "operationTime": {
+      "$timestamp": "7704658376784871433"
+    }
+  },
+  "topicExplain": {
+    "explainVersion": "1",
+    "queryPlanner": {
+      "namespace": "integration_live_acceptance.shared_course_catalog",
+      "parsedQuery": {
+        "_id": {
+          "$eq": "youtube:SQL"
+        }
+      },
+      "indexFilterSet": false,
+      "queryHash": "B774D27B",
+      "planCacheShapeHash": "B774D27B",
+      "planCacheKey": "A6F73AFD",
+      "optimizationTimeMillis": 0,
+      "maxIndexedOrSolutionsReached": false,
+      "maxIndexedAndSolutionsReached": false,
+      "maxScansToExplodeReached": false,
+      "prunedSimilarIndexes": false,
+      "winningPlan": {
+        "isCached": false,
+        "stage": "EXPRESS_IXSCAN",
+        "keyPattern": "{ _id: 1 }",
+        "indexName": "_id_"
+      },
+      "rejectedPlans": []
+    },
+    "executionStats": {
+      "executionSuccess": true,
+      "nReturned": 1,
+      "executionTimeMillis": 0,
+      "totalKeysExamined": 1,
+      "totalDocsExamined": 1,
+      "executionStages": {
+        "isCached": false,
+        "stage": "EXPRESS_IXSCAN",
+        "keyPattern": "{ _id: 1 }",
+        "indexName": "_id_",
+        "keysExamined": 1,
+        "docsExamined": 1,
+        "nReturned": 1
+      }
+    },
+    "command": {
+      "find": "shared_course_catalog",
+      "filter": {
+        "_id": "youtube:SQL"
+      },
+      "$db": "integration_live_acceptance"
+    },
+    "serverInfo": {
+      "host": "ICOMM-AHMAD-HASS",
+      "port": 62148,
+      "version": "8.2.6",
+      "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
+    },
+    "serverParameters": {
+      "internalQueryFacetBufferSizeBytes": 104857600,
+      "internalQueryFacetMaxOutputDocSizeBytes": 104857600,
+      "internalLookupStageIntermediateDocumentMaxSizeBytes": 104857600,
+      "internalDocumentSourceGroupMaxMemoryBytes": 104857600,
+      "internalQueryMaxBlockingSortMemoryUsageBytes": 104857600,
+      "internalQueryProhibitBlockingMergeOnMongoS": 0,
+      "internalQueryMaxAddToSetBytes": 104857600,
+      "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": 104857600,
+      "internalQueryFrameworkControl": "trySbeRestricted",
+      "internalQueryPlannerIgnoreIndexWithCollationForRegex": 1
+    },
+    "ok": 1,
+    "$clusterTime": {
+      "clusterTime": {
+        "$timestamp": "7704658376784871436"
+      },
+      "signature": {
+        "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "keyId": 0
+      }
+    },
+    "operationTime": {
+      "$timestamp": "7704658376784871434"
+    }
+  }
+}

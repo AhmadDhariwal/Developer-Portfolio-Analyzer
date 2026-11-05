@@ -54,6 +54,9 @@ const TOPICS = [
   'Data Science',
   'Statistics',
   'C++',
+  'Generative AI',
+  'LLM',
+  'RAG',
 ];
 const STACKS = ['Frontend', 'Backend', 'Full Stack', 'AI/ML'];
 const FRESH_MS = 6 * 60 * 60 * 1000;
@@ -105,6 +108,23 @@ async function initialize() {
       await collection().createIndex(
         { version: 1, freshUntil: 1, _id: 1 },
         { name: 'catalog_refresh_schedule', timeoutMS: STORE_MS },
+      );
+      await collection().createIndex(
+        { 'courses.title': 'text', 'courses.description': 'text', 'courses.topics': 'text' },
+        {
+          name: 'catalog_full_text',
+          default_language: 'none',
+          language_override: '__catalogTextLanguage',
+          timeoutMS: STORE_MS,
+        },
+      );
+      await collection().createIndex(
+        { updatedAt: -1 },
+        { name: 'catalog_publication_revision', timeoutMS: STORE_MS },
+      );
+      await collection().createIndex(
+        { 'courses.platform': 1 },
+        { name: 'catalog_provider', timeoutMS: STORE_MS },
       );
     })().catch((error) => {
       initialization = null;
@@ -294,9 +314,18 @@ async function build(key, topic, fingerprint, fetchProvider) {
   }
 }
 
-async function getYouTube({ topic, careerStack, fingerprint, fetchProvider, background = false }) {
+async function getYouTube({
+  topic,
+  careerStack,
+  fingerprint,
+  fetchProvider,
+  background = false,
+  admittedTopic = false,
+}) {
   await initialize();
-  const canonical = canonicalTopic(topic, careerStack);
+  const canonical = admittedTopic
+    ? require('./courseCatalogSearchService').canonicalQuery(topic)
+    : canonicalTopic(topic, careerStack);
   const key = `youtube:${canonical}`;
   const cached = memory.get(key);
   if (cached?.until > Date.now() && valid(cached.row, fingerprint)) {
@@ -354,11 +383,11 @@ async function ingestCurated(courses, version) {
   );
 }
 
-async function getCurated(courses, version) {
+async function getCurated(courses, version, { returnCourses = true } = {}) {
   await initialize();
   const cached = curatedMemory.get(version);
   if (cached?.db === initializedDb && cached.until > Date.now())
-    return structuredClone(cached.courses);
+    return returnCourses ? structuredClone(cached.courses) : undefined;
   let row = await read('curated');
   if (row?.version !== version) {
     await ingestCurated(courses, version);
@@ -367,7 +396,7 @@ async function getCurated(courses, version) {
   const active = row.courses.filter((course) => !row.audits?.[course.id]?.archived);
   curatedMemory.clear();
   curatedMemory.set(version, { db: initializedDb, until: Date.now() + 30_000, courses: active });
-  return structuredClone(active);
+  return returnCourses ? structuredClone(active) : undefined;
 }
 
 async function revision() {
@@ -379,7 +408,12 @@ async function revision() {
     { _id: 'curated' },
     { projection: { version: 1, auditRevision: 1 }, timeoutMS: STORE_MS },
   );
-  const value = `${VERSION}:${row?.version || 'initial'}:${row?.auditRevision || 'initial'}`;
+  const latest = await collection()
+    .find({ courses: { $exists: true } }, { projection: { updatedAt: 1 }, timeoutMS: STORE_MS })
+    .sort({ updatedAt: -1 })
+    .limit(1)
+    .next();
+  const value = `${VERSION}:${row?.version || 'initial'}:${row?.auditRevision || 'initial'}:${latest?.updatedAt?.getTime() || 0}`;
   revisionMemory = { db: initializedDb, value, until: Date.now() + 30_000 };
   return value;
 }

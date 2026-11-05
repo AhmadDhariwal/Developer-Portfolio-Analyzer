@@ -5,8 +5,8 @@
   "estimatedUncachedHttpRequestsAvoided": 9000,
   "avoidanceBaseline": "Counterfactual uncached pipeline: two searches and one details request per caller; no live cost measurement",
   "warmHitRate": 1,
-  "p50Ms": 3.0307000000002517,
-  "p95Ms": 6.947100000000319,
+  "p50Ms": 4.52599999999984,
+  "p95Ms": 9.299999999999272,
   "metrics": {
     "memoryHits": 3001,
     "mongoHits": 4,
@@ -40,6 +40,36 @@
         "_id": 1
       },
       "name": "catalog_refresh_schedule"
+    },
+    {
+      "v": 2,
+      "key": {
+        "_fts": "text",
+        "_ftsx": 1
+      },
+      "name": "catalog_full_text",
+      "weights": {
+        "courses.description": 1,
+        "courses.title": 1,
+        "courses.topics": 1
+      },
+      "default_language": "none",
+      "language_override": "__catalogTextLanguage",
+      "textIndexVersion": 3
+    },
+    {
+      "v": 2,
+      "key": {
+        "updatedAt": -1
+      },
+      "name": "catalog_publication_revision"
+    },
+    {
+      "v": 2,
+      "key": {
+        "courses.platform": 1
+      },
+      "name": "catalog_provider"
     }
   ],
   "explain": {
@@ -55,7 +85,7 @@
           },
           {
             "freshUntil": {
-              "$lte": "2026-11-05T09:12:54.877Z"
+              "$lte": "2026-11-05T11:41:44.140Z"
             }
           }
         ]
@@ -99,7 +129,7 @@
                 "[\"shared-courses-v1\", \"shared-courses-v1\"]"
               ],
               "freshUntil": [
-                "[new Date(-9223372036854775808), new Date(1793869974877)]"
+                "[new Date(-9223372036854775808), new Date(1793878904140)]"
               ],
               "_id": [
                 "[MinKey, MaxKey]"
@@ -175,7 +205,7 @@
                 "[\"shared-courses-v1\", \"shared-courses-v1\"]"
               ],
               "freshUntil": [
-                "[new Date(-9223372036854775808), new Date(1793869974877)]"
+                "[new Date(-9223372036854775808), new Date(1793878904140)]"
               ],
               "_id": [
                 "[MinKey, MaxKey]"
@@ -195,7 +225,7 @@
       "filter": {
         "version": "shared-courses-v1",
         "freshUntil": {
-          "$lte": "2026-11-05T09:12:54.877Z"
+          "$lte": "2026-11-05T11:41:44.140Z"
         }
       },
       "sort": {
@@ -207,7 +237,7 @@
     },
     "serverInfo": {
       "host": "ICOMM-AHMAD-HASS",
-      "port": 58985,
+      "port": 59241,
       "version": "8.2.6",
       "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
     },
@@ -226,7 +256,7 @@
     "ok": 1,
     "$clusterTime": {
       "clusterTime": {
-        "$timestamp": "7704612871606370356"
+        "$timestamp": "7704651225664323590"
       },
       "signature": {
         "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -234,7 +264,7 @@
       }
     },
     "operationTime": {
-      "$timestamp": "7704612871606370353"
+      "$timestamp": "7704651225664323587"
     }
   },
   "identityExplain": {
@@ -352,7 +382,7 @@
     },
     "serverInfo": {
       "host": "ICOMM-AHMAD-HASS",
-      "port": 58985,
+      "port": 59241,
       "version": "8.2.6",
       "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
     },
@@ -371,7 +401,7 @@
     "ok": 1,
     "$clusterTime": {
       "clusterTime": {
-        "$timestamp": "7704612871606370356"
+        "$timestamp": "7704651225664323590"
       },
       "signature": {
         "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -379,7 +409,7 @@
       }
     },
     "operationTime": {
-      "$timestamp": "7704612871606370353"
+      "$timestamp": "7704651225664323588"
     }
   },
   "topicExplain": {
@@ -433,7 +463,7 @@
     },
     "serverInfo": {
       "host": "ICOMM-AHMAD-HASS",
-      "port": 58985,
+      "port": 59241,
       "version": "8.2.6",
       "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
     },
@@ -452,7 +482,7 @@
     "ok": 1,
     "$clusterTime": {
       "clusterTime": {
-        "$timestamp": "7704612871606370356"
+        "$timestamp": "7704651225664323591"
       },
       "signature": {
         "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -460,7 +490,7 @@
       }
     },
     "operationTime": {
-      "$timestamp": "7704612871606370353"
+      "$timestamp": "7704651225664323588"
     }
   }
 }

@@ -9,6 +9,13 @@ const endpoint = (work) => async (req, res) => {
     return await work(req, res);
   } catch (error) {
     const status = [400, 404, 409, 503].includes(error.status) ? error.status : 503;
+    if (status === 503) {
+      res.set?.('Retry-After', '5');
+      console.warn('[Courses] Learning storage unavailable', {
+        code: error.code || error.name,
+        requestId: req.id,
+      });
+    }
     return res.status(status).json({
       message: error.status
         ? error.message

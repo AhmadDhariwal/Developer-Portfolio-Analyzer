@@ -139,7 +139,7 @@ async function releasePoolLease(signalHash, token) {
 
 async function runPoolBuild(
   signalHash,
-  { forceRefresh, startedAt, build, persist, isReusable = () => true },
+  { forceRefresh, startedAt, build, persist, isReusable = () => true, cacheable = () => true },
 ) {
   if (mongoose.connection.readyState !== 1) {
     const pool = await build();
@@ -189,6 +189,10 @@ async function runPoolBuild(
       const winner = await readCompleted();
       if (winner) return winner;
       const pool = await build();
+      if (!cacheable(pool)) {
+        await persist(pool);
+        return { ...pool, updatedAt: new Date() };
+      }
       const now = new Date();
       const published = await State.collection
         .updateOne(

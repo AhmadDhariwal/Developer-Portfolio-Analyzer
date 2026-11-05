@@ -27,7 +27,6 @@ export class CourseCardComponent implements OnChanges {
   @Output() remove = new EventEmitter<void>();
   @Output() sprint = new EventEmitter<void>();
   @Output() topicClick = new EventEmitter<string>();
-  thumbnailError = false;
   logoError = false;
   private readonly providerLogos: Record<string, string> = {
     YouTube: 'youtube',
@@ -47,7 +46,6 @@ export class CourseCardComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['course']) this.logoError = false;
-    if (changes['course']?.previousValue?.id !== this.course.id) this.thumbnailError = false;
     const previous = changes['progress']?.previousValue as UserCourseProgress | null;
     if (
       changes['progress'] &&
@@ -61,20 +59,6 @@ export class CourseCardComponent implements OnChanges {
   }
   get externalUrl(): string | null {
     return safeCourseUrl(this.course.url, this.course.platform);
-  }
-  get thumbnail(): string | null {
-    try {
-      const url = new URL(this.course.thumbnail || '');
-      return url.protocol === 'https:' &&
-        ['i.ytimg.com', 'img.youtube.com'].includes(url.hostname) &&
-        !url.username &&
-        !url.password &&
-        !url.port
-        ? url.href
-        : null;
-    } catch {
-      return null;
-    }
   }
   get providerRating(): boolean {
     return (

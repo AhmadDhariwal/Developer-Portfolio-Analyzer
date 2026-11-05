@@ -20,7 +20,7 @@ const {
   SKILL_GAP_ANALYSIS_VERSION,
 } = require('./coursePersonalizationService');
 const COURSE_POOL_VERSION = 'courses_pool_v6_evidence';
-const DISCOVERY_POLICY_REVISION = 3;
+const DISCOVERY_POLICY_REVISION = 4;
 const COURSE_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const MAX_COURSE_CACHE_VARIANTS = 40;
 const COURSE_MEMORY_TTL_MS = Math.min(
@@ -85,6 +85,8 @@ const sourceExpiry = (pool) =>
   pool.sourceMetadata?.catalogStaleUntil
     ? new Date(pool.sourceMetadata.catalogStaleUntil).getTime()
     : Infinity;
+const cacheableProjection = (courses) =>
+  courses.length <= 200 && Buffer.byteLength(JSON.stringify(courses)) <= 256 * 1024;
 
 const createStageTimer = () => {
   const startedAt = process.hrtime.bigint();
@@ -171,6 +173,7 @@ const writeCourseMemory = (key, payload) => {
   courseMemoryCache.set(key, {
     ...payload,
     allCourses,
+    byteSize: Buffer.byteLength(JSON.stringify(allCourses)),
     updatedAt,
     projected: true,
     expiresAt: Math.min(
@@ -178,7 +181,11 @@ const writeCourseMemory = (key, payload) => {
       now + (payload.sourceMetadata?.fallbackUsed ? 15_000 : COURSE_MEMORY_TTL_MS),
     ),
   });
-  while (courseMemoryCache.size > MAX_COURSE_MEMORY_ENTRIES) {
+  while (
+    courseMemoryCache.size > MAX_COURSE_MEMORY_ENTRIES ||
+    [...courseMemoryCache.values()].reduce((total, entry) => total + (entry.byteSize || 0), 0) >
+      32 * 1024 * 1024
+  ) {
     const oldest = courseMemoryCache.keys().next().value;
     courseMemoryCache.delete(oldest);
   }
@@ -214,6 +221,7 @@ const buildPoolCacheKey = ({
 }) => {
   const poolSeed = JSON.stringify({
     discoveryPolicy: DISCOVERY_POLICY_REVISION,
+    view: filters.view || 'for-you',
     catalogRevision,
     careerStack,
     experienceLevel,
@@ -297,7 +305,10 @@ const buildRecommendedBasedOn = ({
     skillGapsUsed,
     activeFilters,
     fromCache,
-    summary,
+    summary:
+      filters.view === 'discover'
+        ? 'Browse matching courses across the shared catalog. Use For You for learning matched to your profile and skill evidence.'
+        : summary,
     ...sourceMetadata,
   };
 };
@@ -379,6 +390,7 @@ const persistCoursePool = async ({
   governed,
   publishedAt,
 }) => {
+  if (!cacheableProjection(allCourses)) return;
   const write = async () => {
     courseRuntimeCounters.persistenceOperations += 1;
     const cacheId = governed
@@ -437,7 +449,7 @@ const persistCoursePool = async ({
 const buildOrShareCoursePool = async (inflightKey, buildFn) => {
   const existing = coursePoolInflight.get(inflightKey);
   if (existing) return existing;
-  if (coursePoolInflight.size >= 200) {
+  if (coursePoolInflight.size >= 8) {
     throw Object.assign(new Error('Course build capacity reached.'), { status: 503 });
   }
 
@@ -523,6 +535,7 @@ const fetchCourses = async (req, res) => {
             'page',
             'limit',
             'refresh',
+            'view',
           ].includes(key) && typeof value !== 'string',
       )
     ) {
@@ -531,14 +544,25 @@ const fetchCourses = async (req, res) => {
     const filters = normaliseCourseFilters(req.query);
     stageTimer.mark('validation', validationStarted);
 
-    const skillSignals = await resolveSkillSignals(
-      userId,
-      careerStack,
-      experienceLevel,
-      stageTimer,
-      req.user,
-    );
-    const requestedSkills = sanitizeSkillList(req.query.skillGaps, 12);
+    if (req.query.view && !['discover', 'for-you'].includes(req.query.view)) {
+      return res.status(400).json({ message: 'Unknown Learning Hub view.' });
+    }
+    const skillSignals =
+      filters.view === 'discover'
+        ? {
+            skillGaps: [],
+            knownSkills: [],
+            targets: [],
+            fingerprint: 'global-discover',
+            personalization: {
+              status: 'career-context-only',
+              ruleVersion: 'catalog-discover-v1',
+              limitation: 'Browse the shared course catalog.',
+            },
+          }
+        : await resolveSkillSignals(userId, careerStack, experienceLevel, stageTimer, req.user);
+    const requestedSkills =
+      filters.view === 'discover' ? [] : sanitizeSkillList(req.query.skillGaps, 12);
     const skillGaps = uniqueStrings([...requestedSkills, ...skillSignals.skillGaps], 12);
     const personalization = skillSignals.personalization;
     const forceRefresh = req.query.refresh === 'true';
@@ -664,14 +688,15 @@ const fetchCourses = async (req, res) => {
       runPoolBuild(memoryKey, {
         forceRefresh,
         startedAt,
+        cacheable: (pool) => cacheableProjection(pool.allCourses),
         isReusable: (pool) =>
           new Date(pool.updatedAt).getTime() + poolTtl(pool) > Date.now() &&
           sourceExpiry(pool) > Date.now(),
         build: async () => {
           courseRuntimeCounters.pipelineExecutions += 1;
-          courseRuntimeCounters.providerCalls += 1;
           const providerStarted = process.hrtime.bigint();
           const result = await buildCoursePoolWithMetadata({
+            catalogOnly: true,
             careerStack,
             experienceLevel,
             skillGaps,
@@ -681,7 +706,7 @@ const fetchCourses = async (req, res) => {
             ...filters,
           });
           // Only the winning request owns this timer; waiters still share the pool result.
-          stageTimer.mark('external provider', providerStarted);
+          stageTimer.mark('deterministic processing', providerStarted);
 
           const allCourses = Array.isArray(result.courses) ? result.courses : [];
           if (allCourses.length && !isPersistableCoursePool(allCourses))

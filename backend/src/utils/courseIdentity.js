@@ -37,6 +37,16 @@ const ALIASES = {
   'amazon web services': 'AWS',
   tailwind: 'Tailwind CSS',
   'tailwind css': 'Tailwind CSS',
+  genai: 'Generative AI',
+  'generative ai': 'Generative AI',
+  'generative artificial intelligence': 'Generative AI',
+  llm: 'LLM',
+  llms: 'LLM',
+  'large language model': 'LLM',
+  'large language models': 'LLM',
+  rag: 'RAG',
+  'retrieval augmented generation': 'RAG',
+  'retrieval-augmented generation': 'RAG',
 };
 const canonicalizeSkillName = (value) => ALIASES[String(value).toLowerCase()] || '';
 const skillAliases = (name) => [

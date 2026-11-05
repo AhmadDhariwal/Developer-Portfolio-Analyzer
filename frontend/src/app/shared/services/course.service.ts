@@ -40,7 +40,7 @@ export class CourseService {
     filters: Partial<CourseFilters> = {},
     page = 1,
     limit = 10,
-    options: { refresh?: boolean } = {},
+    options: { refresh?: boolean; view?: 'discover' | 'for-you' } = {},
   ): Observable<CoursesResponse> {
     const normalizedFilters = normalizeCourseFilters(filters);
     const safePage = Math.max(1, page);
@@ -50,10 +50,12 @@ export class CourseService {
       page: safePage,
       limit: safeLimit,
       refresh: options.refresh || false,
+      view: options.view || 'for-you',
     });
     let params = new HttpParams().set('page', String(safePage)).set('limit', String(safeLimit));
 
     if (options.refresh) params = params.set('refresh', 'true');
+    if (options.view) params = params.set('view', options.view);
     if (normalizedFilters.platform !== 'All')
       params = params.set('platform', normalizedFilters.platform);
     if (normalizedFilters.rating) params = params.set('rating', normalizedFilters.rating);

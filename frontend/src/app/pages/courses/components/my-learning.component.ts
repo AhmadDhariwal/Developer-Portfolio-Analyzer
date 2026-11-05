@@ -41,6 +41,9 @@ export class MyLearningComponent {
   totalPages = 1;
   total = 0;
   failedPage = 1;
+  get hasUnavailableDetails(): boolean {
+    return this.records.some((record) => record.recoveryRequired);
+  }
 
   get savedCount(): number {
     return Object.values(this.learning.records()).filter((r) => r.status === 'saved').length;
@@ -93,6 +96,7 @@ export class MyLearningComponent {
     this.load(1);
   }
   load(page: number): void {
+    const revisionAtStart = this.learning.revision();
     this.request?.unsubscribe();
     this.loading = true;
     this.error = '';
@@ -101,6 +105,10 @@ export class MyLearningComponent {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (result) => {
+          if (this.learning.revision() !== revisionAtStart) {
+            this.load(page);
+            return;
+          }
           this.learning.records.update((records) => ({
             ...records,
             ...Object.fromEntries(result.courses.map((record) => [record.courseId, record])),

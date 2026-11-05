@@ -9,7 +9,9 @@ const { startMongo } = require('../tests/fixtures/disposableRequestMongo');
 async function main() {
   const runtime = await startMongo({ replicaSet: 'learning-regression', readinessAttempts: 100 });
   const root = path.resolve(__dirname, '../..');
-  const reportDir = path.join(root, 'verification/courses/production-2026-11-05');
+  const reportDir = process.env.LEARNING_VERIFICATION_OUTPUT
+    ? path.resolve(process.env.LEARNING_VERIFICATION_OUTPUT)
+    : path.join(root, 'verification/courses/defects-2026-11-05');
   fs.mkdirSync(reportDir, { recursive: true });
   try {
     const mode = process.argv[2] || 'courses';
@@ -31,7 +33,11 @@ async function main() {
               ? 'src/scripts/verifyCoursesEndToEnd.js'
               : 'src/scripts/auditCourseCatalog.js',
           ]
-        : ['--test', '--test-concurrency=2', ...files.map((file) => `src/tests/${file}`)];
+        : [
+            '--test',
+            `--test-concurrency=${process.env.LEARNING_TEST_CONCURRENCY === '1' ? '1' : '2'}`,
+            ...files.map((file) => `src/tests/${file}`),
+          ];
     const output = fs.createWriteStream(path.join(reportDir, `${mode}.log`));
     const child = spawn(process.execPath, args, {
       cwd: root,
@@ -55,6 +61,7 @@ async function main() {
         UPSTASH_REDIS_TOKEN: '',
         YOUTUBE_API_KEY: '',
         COURSES_POOL_STORE_TIMEOUT_MS: '5000',
+        LEARNING_BASELINE_REF: 'aae00e2a',
         COURSES_E2E_OUTPUT: path.join(reportDir, 'browser'),
         COURSES_E2E_SCREENSHOTS: path.join(reportDir, 'browser'),
         COURSES_AUDIT_OUTPUT: path.join(reportDir, 'catalog-audit.json'),

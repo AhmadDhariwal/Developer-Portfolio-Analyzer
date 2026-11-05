@@ -55,32 +55,45 @@ async function worker() {
         })
       : null;
     let status = 200;
-    const result = fetchCourses(
-      {
-        user: { _id: input.owner, activeCareerStack: 'Backend', activeExperienceLevel: 'Intern' },
-        query: {
-          topic: input.topic || 'SQL',
-          skillGaps: ['SQL'].join(','),
-          refresh: 'true',
-          limit: '50',
-        },
-      },
-      {
-        status(code) {
-          status = code;
-          return this;
-        },
-        json(body) {
-          process.send({
-            status,
-            total: body.total,
-            signalHash: body.cacheMetadata?.signalHash,
-            providerCounts: body.providerCounts,
-            providers: body.courses?.map((course) => course.platform),
-          });
-        },
-      },
-    );
+    const result = input.work
+      ? require('./src/services/sharedCourseCatalogService')
+          .getYouTube({
+            topic: input.topic || 'SQL',
+            fingerprint: require('./src/services/courseService').providerConfigurationFingerprint(),
+            fetchProvider: require('./src/services/courseService').fetchYouTubeCourses,
+          })
+          .then((pool) => process.send({ status: 200, total: pool.courses.length }))
+          .catch((error) => process.send({ status: error.status || 500 }))
+      : fetchCourses(
+          {
+            user: {
+              _id: input.owner,
+              activeCareerStack: 'Backend',
+              activeExperienceLevel: 'Intern',
+            },
+            query: {
+              topic: input.topic || 'SQL',
+              skillGaps: ['SQL'].join(','),
+              refresh: 'true',
+              limit: '50',
+            },
+          },
+          {
+            status(code) {
+              status = code;
+              return this;
+            },
+            json(body) {
+              process.send({
+                status,
+                total: body.total,
+                signalHash: body.cacheMetadata?.signalHash,
+                providerCounts: body.providerCounts,
+                providers: body.courses?.map((course) => course.platform),
+              });
+            },
+          },
+        );
     process.send({ started: true });
     await result;
   });
@@ -142,7 +155,7 @@ test(
       return {
         child,
         stages,
-        request(owner, hold = false, topic = 'SQL') {
+        request(owner, hold = false, topic = 'SQL', work = false) {
           return new Promise((resolve) => {
             const onMessage = (message) => {
               if (!message.status) return;
@@ -150,7 +163,7 @@ test(
               resolve(message);
             };
             child.on('message', onMessage);
-            child.send({ owner, hold, topic });
+            child.send({ owner, hold, topic, work });
           });
         },
         waitFor(predicate) {
@@ -197,7 +210,7 @@ test(
     const hold = async (worker, ownerId, topic = 'SQL') => {
       for (let attempt = 1; ; attempt++) {
         const provider = worker.waitFor(atProvider);
-        const result = worker.request(ownerId, true, topic);
+        const result = worker.request(ownerId, true, topic, true);
         const outcome = await Promise.race([provider.then(() => 'provider'), result]);
         if (outcome === 'provider') return { result };
         if (outcome.status !== 503 || attempt === MAX_ATTEMPTS) {
@@ -208,7 +221,9 @@ test(
     };
     const first = (await hold(a, owner)).result;
     const started = b.waitFor((message) => message.started);
-    const second = settle(() => b.request(String(new mongoose.Types.ObjectId())));
+    const second = settle(() =>
+      b.request(String(new mongoose.Types.ObjectId()), false, 'SQL', true),
+    );
     await started;
     a.child.send('release');
     const results = await Promise.all([first, second]);
@@ -218,17 +233,21 @@ test(
     );
     assert.ok(results[0].total > 0);
     assert.equal(results[0].total, results[1].total);
+    const served = await Promise.all([
+      a.request(owner),
+      b.request(String(new mongoose.Types.ObjectId())),
+    ]);
     assert.ok(
-      results.every((row) => row.providers.includes('YouTube')),
+      served.every((row) => row.providers.includes('YouTube')),
       'All includes YouTube for both owners',
     );
     assert.equal(
-      Object.values(results[0].providerCounts).reduce((sum, count) => sum + count, 0),
-      results[0].total,
+      Object.values(served[0].providerCounts).reduce((sum, count) => sum + count, 0),
+      served[0].total,
     );
     assert.notEqual(
-      results[0].signalHash,
-      results[1].signalHash,
+      served[0].signalHash,
+      served[1].signalHash,
       'personalized evidence remains owner-scoped',
     );
     assert.deepEqual(a.stages, ['search', 'search', 'videos']);
@@ -241,11 +260,7 @@ test(
         { _id: /^courses:v1:lease:/, 'leases.0': { $exists: true } },
         { $set: { 'leases.0.until': new Date(0) } },
       );
-      assert.equal(
-        expired.modifiedCount,
-        2,
-        'expire the active personalized lease and shared provider slot',
-      );
+      assert.equal(expired.modifiedCount, 1, 'expire the active shared provider slot');
       const raw = await mongoose.connection.db
         .collection('shared_course_catalog')
         .updateOne({ leaseToken: { $exists: true } }, { $set: { leaseUntil: new Date(0) } });
@@ -254,7 +269,7 @@ test(
     const fenceOwner = String(new mongoose.Types.ObjectId());
     const fenced = (await hold(a, fenceOwner, 'Python')).result;
     await expireActiveLease();
-    const replacement = await settle(() => b.request(fenceOwner, false, 'Python'), {
+    const replacement = await settle(() => b.request(fenceOwner, false, 'Python', true), {
       orphans: true,
     });
     assert.equal(replacement.status, 200);
@@ -269,7 +284,7 @@ test(
     await exited;
     await expireActiveLease();
     assert.equal(
-      (await settle(() => b.request(crashOwner, false, 'React'), { orphans: true })).status,
+      (await settle(() => b.request(crashOwner, false, 'React', true), { orphans: true })).status,
       200,
     );
     assert.deepEqual(b.stages, ['search', 'search', 'videos', 'search', 'search', 'videos']);

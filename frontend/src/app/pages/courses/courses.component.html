@@ -10,8 +10,7 @@
         </span>
       </div>
       <p class="dev-description">
-        Curated, deterministic course recommendations designed to close your target skill gaps and
-        accelerate your career.
+        Discover courses, find learning for your goals and keep track of your progress.
       </p>
 
       <!-- Career Context & System Status Capsule Bar -->
@@ -54,10 +53,7 @@
 
         <div class="capsule sync-capsule" *ngIf="loadedAt">
           <span class="sync-dot" [class.cached]="recommendedBasedOn?.fromCache"></span>
-          <span
-            >Loaded {{ loadedAt | date: 'shortTime'
-            }}{{ recommendedBasedOn?.fromCache ? ' · cached source pool' : ' · live pool' }}</span
-          >
+          <span>Loaded {{ loadedAt | date: 'shortTime' }}</span>
         </div>
       </div>
     </div>
@@ -85,8 +81,7 @@
         <span>{{ isRefreshing ? 'Refreshing…' : 'Refresh courses' }}</span>
       </button>
       <span class="metadata refresh-meta" *ngIf="loadedAt">
-        Loaded {{ loadedAt | date: 'shortTime'
-        }}{{ recommendedBasedOn?.fromCache ? ' · cached source pool' : '' }}
+        Loaded {{ loadedAt | date: 'shortTime' }}
       </span>
     </div>
   </header>
@@ -142,10 +137,12 @@
       <div class="metric-body">
         <div class="metric-header">
           <span class="metric-label">Matched Courses</span>
-          <span class="metric-pill neutral">Deterministic</span>
+          <span class="metric-pill neutral">Available</span>
         </div>
         <div class="metric-value">{{ totalCourses }}</div>
-        <div class="metric-sub">Ranked for {{ currentCareerStack }}</div>
+        <div class="metric-sub">
+          {{ view === 'discover' ? 'Browse all providers' : 'Ranked for ' + currentCareerStack }}
+        </div>
       </div>
     </div>
 
@@ -266,7 +263,7 @@
         type="button"
         class="tab-btn"
         [attr.aria-pressed]="view === 'discover'"
-        (click)="view = 'discover'"
+        (click)="setView('discover')"
       >
         <svg
           class="tab-icon"
@@ -288,8 +285,16 @@
       <button
         type="button"
         class="tab-btn"
+        [attr.aria-pressed]="view === 'for-you'"
+        (click)="setView('for-you')"
+      >
+        <span>For You</span>
+      </button>
+      <button
+        type="button"
+        class="tab-btn"
         [attr.aria-pressed]="view === 'learning'"
-        (click)="view = 'learning'"
+        (click)="setView('learning')"
       >
         <svg
           class="tab-icon"
@@ -327,14 +332,14 @@
 
   <!-- DISCOVER COURSES VIEW -->
   <section
-    *ngIf="view === 'discover'"
+    *ngIf="view !== 'learning'"
     class="discover-section"
     aria-labelledby="discover-heading"
     [attr.aria-busy]="isLoading || isRefreshing || isLoadingMore"
   >
     <div class="section-header">
       <div>
-        <h2 id="discover-heading">Discover Courses</h2>
+        <h2 id="discover-heading">{{ view === 'for-you' ? 'For You' : 'Discover Courses' }}</h2>
         <p class="metadata">
           Provider destinations open in a new tab. Confirm current details with the provider.
         </p>
@@ -507,8 +512,7 @@
     <!-- Results Count Bar -->
     <div class="results-bar" *ngIf="allCourses.length">
       <p class="result-count metadata" role="status">
-        Showing {{ displayedCourses.length }} of {{ totalCourses }} courses · backend recommendation
-        order
+        Showing {{ displayedCourses.length }} of {{ totalCourses }} courses
       </p>
       <span class="page-count-tag" *ngIf="totalPages > 1"
         >Page {{ currentPage }} of {{ totalPages }}</span
@@ -516,13 +520,6 @@
     </div>
 
     <!-- Course Cards Grid -->
-    <p
-      class="metadata"
-      *ngIf="allCourses.length && providerSummary"
-      aria-label="Provider counts for all matching courses"
-    >
-      {{ providerSummary }}
-    </p>
     <div class="course-grid" *ngIf="!isLoading">
       <app-course-card
         *ngFor="let course of displayedCourses; trackBy: trackById"
@@ -550,7 +547,7 @@
   </section>
 
   <!-- MY LEARNING VIEW -->
-  <app-my-learning *ngIf="view === 'learning'" (discover)="view = 'discover'" />
+  <app-my-learning *ngIf="view === 'learning'" (discover)="setView('discover')" />
 
   <!-- Structured Methodology & Intelligence Accordion -->
   <details class="methodology">
@@ -575,20 +572,17 @@
     <div class="methodology-content">
       <div class="method-cards-grid">
         <div class="method-card">
-          <h4>Deterministic Scoring</h4>
+          <h4>Learning for your goals</h4>
           <p>
-            Courses are ranked by the backend using career context, target skills and available
-            evidence. Ranking scores describe ordering, not readiness or proficiency. Skill evidence
-            may be incomplete or unavailable.
+            For You uses your career context and skill evidence to suggest learning. Suggestions do
+            not change your readiness or proficiency. Discover Courses searches the shared catalog.
           </p>
         </div>
         <div class="method-card">
-          <h4>Multi-Tier Resilience</h4>
+          <h4>Course availability</h4>
           <p>
-            Source pools may be cached. “Loaded” shows when this page received a response, not when
-            your skill evidence or a provider changed. Refresh requests a new source pool where
-            provider availability permits. Curated courses remain available when an external
-            provider cannot respond.
+            “Loaded” shows when this page received its courses. The shared catalog is refreshed in
+            the background. Confirm current details with the provider before enrolling.
           </p>
         </div>
         <div class="method-card">

@@ -67,11 +67,12 @@
   <div class="course-heading">
     <div class="thumbnail" aria-hidden="true">
       <img
-        *ngIf="thumbnail && !thumbnailError; else fallback"
-        [src]="thumbnail"
+        *ngIf="providerLogo; else fallback"
+        class="provider-thumbnail"
+        [src]="providerLogo"
         alt=""
         loading="lazy"
-        (error)="thumbnailError = true"
+        (error)="logoError = true"
       />
       <ng-template #fallback>
         <div class="thumbnail-fallback">

@@ -7,6 +7,7 @@ const catalog = require('./sharedCourseCatalogService');
 const { safeCourseUrl, digest } = require('../utils/courseIdentity');
 const { acquirePoolLease, releasePoolLease } = require('./courseGovernanceService');
 let task;
+let discoveryTask;
 let running = false;
 
 // Only public allowlisted destinations; no page content is downloaded or republished.
@@ -114,17 +115,30 @@ function start() {
   task = cron.schedule('17 * * * *', () =>
     maintain().catch(() => console.warn('[Courses] Catalog maintenance deferred.')),
   );
+  if (process.env.COURSES_GAP_DISCOVERY_ENABLED !== 'false')
+    discoveryTask = cron.schedule('* * * * *', () =>
+      require('./courseCatalogSearchService')
+        .processDiscoveryQueue()
+        .catch(() => console.warn('[Courses] Shared topic discovery deferred.')),
+    );
 }
 function stop() {
   task?.stop();
   task = null;
+  discoveryTask?.stop();
+  discoveryTask = null;
 }
 async function coverageReport() {
   await catalog.initialize();
   const rows = await mongoose.connection.db
     .collection('shared_course_catalog')
     .find({ courses: { $exists: true } })
-    .limit(catalog.TOPICS.length + catalog.STACKS.length + 1)
+    .limit(
+      catalog.TOPICS.length +
+        catalog.STACKS.length +
+        require('./courseCatalogSearchService').MAX_GAPS +
+        1,
+    )
     .maxTimeMS(5000)
     .toArray();
   const unique = new Map();

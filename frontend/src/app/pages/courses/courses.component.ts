@@ -50,7 +50,7 @@ const PAGE_SIZE = 10;
 export class CoursesComponent implements OnInit, OnDestroy {
   @ViewChild('filterDialog') filterDialog!: ElementRef<HTMLDialogElement>;
   @ViewChild('filterTrigger') filterTrigger!: ElementRef<HTMLButtonElement>;
-  view: 'discover' | 'learning' = 'discover';
+  view: 'discover' | 'for-you' | 'learning' = 'discover';
   loadedAt: Date | null = null;
   personalization: CoursePersonalization | null = null;
   private scrollContainer: HTMLElement | null = null;
@@ -70,12 +70,6 @@ export class CoursesComponent implements OnInit, OnDestroy {
   totalPages = 1;
   totalCourses = 0;
   providerCounts: Record<string, number> = {};
-  get providerSummary(): string {
-    return Object.entries(this.providerCounts)
-      .filter(([, count]) => count > 0)
-      .map(([provider, count]) => `${provider}: ${count}`)
-      .join(' · ');
-  }
 
   activeFilters: CourseFilters = { ...DEFAULT_FILTERS };
   recommendedBasedOn: RecommendedBasedOn | null = null;
@@ -163,7 +157,12 @@ export class CoursesComponent implements OnInit, OnDestroy {
   }
 
   get sourceNotice(): string {
-    return this.recommendedBasedOn?.sourceMessage || '';
+    const message = this.recommendedBasedOn?.sourceMessage || '';
+    return message.startsWith('No verified course')
+      ? message
+      : this.isFallbackSource
+        ? 'Some providers are temporarily unavailable. Available courses are shown.'
+        : '';
   }
 
   get isFallbackSource(): boolean {
@@ -255,6 +254,11 @@ export class CoursesComponent implements OnInit, OnDestroy {
       this.route.snapshot.queryParamMap.get('skill') ||
         this.route.snapshot.queryParamMap.get('topic'),
     );
+    if (
+      this.route.snapshot.queryParamMap.get('skill') ||
+      this.route.snapshot.queryParamMap.get('topic')
+    )
+      this.view = 'for-you';
 
     this.subscriptions.add(
       this.route.queryParamMap
@@ -264,6 +268,7 @@ export class CoursesComponent implements OnInit, OnDestroy {
         )
         .subscribe((topic) => {
           if (!topic && !this.previousQueryTopic) return;
+          if (topic) this.view = 'for-you';
           this.previousQueryTopic = topic;
           const nextFilters = normalizeCourseFilters({ ...this.activeFilters, topic });
           if (JSON.stringify(nextFilters) === JSON.stringify(this.activeFilters)) return;
@@ -299,6 +304,11 @@ export class CoursesComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.closeMobileFilters(false);
     this.subscriptions.unsubscribe();
+  }
+  setView(view: 'discover' | 'for-you' | 'learning'): void {
+    if (this.view === view) return;
+    this.view = view;
+    if (view !== 'learning') this.resetAndFetch();
   }
 
   onFiltersChange(filters: CourseFilters): void {
@@ -507,68 +517,73 @@ export class CoursesComponent implements OnInit, OnDestroy {
     const refresh = this.forceRefresh;
     this.forceRefresh = false;
     this.subscriptions.add(
-      this.courseService.getCourses(this.activeFilters, page, PAGE_SIZE, { refresh }).subscribe({
-        next: (response) => {
-          if (currentRequest !== this.requestToken) {
-            return;
-          }
+      this.courseService
+        .getCourses(this.activeFilters, page, PAGE_SIZE, {
+          refresh,
+          view: this.view === 'discover' ? 'discover' : 'for-you',
+        })
+        .subscribe({
+          next: (response) => {
+            if (currentRequest !== this.requestToken) {
+              return;
+            }
 
-          const incoming = Array.isArray(response.courses) ? response.courses : [];
-          this.allCourses = append ? this.mergeCourses(this.allCourses, incoming) : incoming;
+            const incoming = Array.isArray(response.courses) ? response.courses : [];
+            this.allCourses = append ? this.mergeCourses(this.allCourses, incoming) : incoming;
 
-          this.displayCount = append
-            ? this.allCourses.length
-            : Math.min(INITIAL_DISPLAY, this.allCourses.length);
+            this.displayCount = append
+              ? this.allCourses.length
+              : Math.min(INITIAL_DISPLAY, this.allCourses.length);
 
-          this.loadedAt = new Date();
-          this.personalization =
-            response.personalization || response.recommendedBasedOn?.personalization || null;
-          this.loadMoreFailed = false;
-          this.currentPage = response.page ?? page;
-          this.totalPages = response.totalPages ?? 1;
-          this.totalCourses = response.total ?? this.allCourses.length;
-          this.providerCounts = Object.fromEntries(
-            Object.entries(response.providerCounts || {}).map(([provider, count]) => [
-              provider,
-              Number(count) || 0,
-            ]),
-          );
-          this.recommendedBasedOn = response.recommendedBasedOn
-            ? {
-                ...response.recommendedBasedOn,
-                fromCache: Boolean(response.fromCache || response.fromFrontendCache),
-              }
-            : null;
-          this.errorMessage = '';
-          this.isLoading = false;
-          this.isLoadingMore = false;
-          this.isRefreshing = false;
-          this.cdr.markForCheck();
-        },
-        error: (error) => {
-          if (currentRequest !== this.requestToken) {
-            return;
-          }
+            this.loadedAt = new Date();
+            this.personalization =
+              response.personalization || response.recommendedBasedOn?.personalization || null;
+            this.loadMoreFailed = false;
+            this.currentPage = response.page ?? page;
+            this.totalPages = response.totalPages ?? 1;
+            this.totalCourses = response.total ?? this.allCourses.length;
+            this.providerCounts = Object.fromEntries(
+              Object.entries(response.providerCounts || {}).map(([provider, count]) => [
+                provider,
+                Number(count) || 0,
+              ]),
+            );
+            this.recommendedBasedOn = response.recommendedBasedOn
+              ? {
+                  ...response.recommendedBasedOn,
+                  fromCache: Boolean(response.fromCache || response.fromFrontendCache),
+                }
+              : null;
+            this.errorMessage = '';
+            this.isLoading = false;
+            this.isLoadingMore = false;
+            this.isRefreshing = false;
+            this.cdr.markForCheck();
+          },
+          error: (error) => {
+            if (currentRequest !== this.requestToken) {
+              return;
+            }
 
-          this.errorMessage = learningError(error);
-          this.loadMoreFailed = append;
-          this.isLoading = false;
-          this.isLoadingMore = false;
-          this.isRefreshing = false;
+            this.errorMessage = learningError(error);
+            this.loadMoreFailed = append;
+            this.isLoading = false;
+            this.isLoadingMore = false;
+            this.isRefreshing = false;
 
-          if (preservePrevious && options.previousResult) {
-            this.allCourses = options.previousResult.courses;
-            this.displayCount = options.previousResult.displayCount;
-            this.currentPage = options.previousResult.page;
-            this.totalPages = options.previousResult.totalPages;
-            this.totalCourses = options.previousResult.totalCourses;
-            this.providerCounts = options.previousResult.providerCounts;
-            this.recommendedBasedOn = options.previousResult.recommendedBasedOn;
-          }
+            if (preservePrevious && options.previousResult) {
+              this.allCourses = options.previousResult.courses;
+              this.displayCount = options.previousResult.displayCount;
+              this.currentPage = options.previousResult.page;
+              this.totalPages = options.previousResult.totalPages;
+              this.totalCourses = options.previousResult.totalCourses;
+              this.providerCounts = options.previousResult.providerCounts;
+              this.recommendedBasedOn = options.previousResult.recommendedBasedOn;
+            }
 
-          this.cdr.markForCheck();
-        },
-      }),
+            this.cdr.markForCheck();
+          },
+        }),
     );
   }
 

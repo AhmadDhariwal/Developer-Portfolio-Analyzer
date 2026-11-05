@@ -61,6 +61,7 @@ describe('Learning Hub discovery lifecycle', () => {
     expect(component.errorMessage).toBe('Provider unavailable');
     expect(api.getCourses).toHaveBeenLastCalledWith(component.activeFilters, 1, 10, {
       refresh: true,
+      view: 'for-you',
     });
   });
   it('ignores stale responses after filters change', () => {
@@ -87,6 +88,13 @@ describe('Learning Hub discovery lifecycle', () => {
     component.onFiltersChange({ ...component.activeFilters, platform: 'YouTube' });
     expect(api.getCourses).toHaveBeenCalledTimes(before + 1);
     expect(api.getCourses.mock.calls.at(-1)?.[0].platform).toBe('YouTube');
+  });
+  it('separates Discover and For You while keeping skill deep links personalized', () => {
+    expect(component.view).toBe('for-you');
+    component.setView('discover');
+    expect(api.getCourses.mock.calls.at(-1)?.[3].view).toBe('discover');
+    component.setView('for-you');
+    expect(api.getCourses.mock.calls.at(-1)?.[3].view).toBe('for-you');
   });
   it('tears down pending discovery subscriptions', () => {
     const pending = new Subject<CoursesResponse>();

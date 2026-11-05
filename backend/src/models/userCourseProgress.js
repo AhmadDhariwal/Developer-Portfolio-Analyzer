@@ -36,4 +36,5 @@ const schema = new mongoose.Schema(
 );
 schema.index({ userId: 1, courseId: 1 }, { unique: true, name: 'user_course_identity' });
 schema.index({ userId: 1, status: 1, updatedAt: -1, _id: -1 }, { name: 'user_course_status' });
+schema.index({ userId: 1, updatedAt: -1, _id: -1 }, { name: 'user_course_recent' });
 module.exports = mongoose.model('UserCourseProgress', schema);

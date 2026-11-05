@@ -98,6 +98,9 @@ const KNOWN_TOPICS = [
   'Next.js',
   'Tailwind',
   'Flutter',
+  'Generative AI',
+  'LLM',
+  'RAG',
 ];
 
 const EXPERIENCE_LEVEL_MAP = {
@@ -180,6 +183,7 @@ function normaliseCourseFilters(query = {}) {
 
   return {
     platform: VALID_PLATFORMS.includes(platform) ? platform : 'All',
+    view: query.view === 'discover' ? 'discover' : 'for-you',
     rating,
     level: VALID_LEVELS.includes(level) ? level : 'All',
     topic,
@@ -809,6 +813,23 @@ async function buildCoursePoolWithMetadata(options = {}) {
   const experienceLevel = toTrimmedString(options.experienceLevel) || 'Student';
   const skillGaps = sanitizeSkillList(options.skillGaps, 12);
   const knownSkills = sanitizeSkillList(options.knownSkills, 20);
+  if (options.catalogOnly) {
+    const catalog = await require('./courseCatalogSearchService').load(filters);
+    return {
+      courses:
+        filters.view === 'discover'
+          ? catalog.courses
+          : scoreAndRank(catalog.courses, {
+              careerStack,
+              experienceLevel,
+              skillGaps,
+              knownSkills,
+              topic: filters.topic,
+              targets: options.targets || [],
+            }),
+      sourceMetadata: { ...catalog.sourceMetadata, coverage: catalog.coverage },
+    };
+  }
   const query = filters.topic
     ? `${filters.topic} ${careerStack}`
     : `${careerStack} ${skillGaps.slice(0, 3).join(' ')} programming`.trim();

@@ -122,6 +122,10 @@
   </div>
 
   <!-- Loading State -->
+  <p role="status" class="metadata" *ngIf="hasUnavailableDetails">
+    Some saved course details need recovery. Your notes and progress are preserved; unavailable
+    links cannot be opened.
+  </p>
   <p role="status" class="loading-status" *ngIf="loading && !records.length">
     Loading your learning records…
   </p>

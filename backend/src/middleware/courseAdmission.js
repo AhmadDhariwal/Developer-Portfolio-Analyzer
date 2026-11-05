@@ -54,6 +54,15 @@ async function admitCourseMutation(req, res, next) {
   const max = Number(process.env.COURSES_MUTATION_RATE_LIMIT_MAX || 60);
   return enforceBucket(req, res, next, 'mutation', max);
 }
+async function admitCourseLearningRead(req, res, next) {
+  return enforceBucket(
+    req,
+    res,
+    next,
+    'learning-read',
+    Number(process.env.COURSES_READ_RATE_LIMIT_MAX || 120),
+  );
+}
 
 async function admitCourseSprint(req, res, next) {
   const max = Number(process.env.COURSES_SPRINT_RATE_LIMIT_MAX || 30);
@@ -62,6 +71,7 @@ async function admitCourseSprint(req, res, next) {
 
 module.exports = {
   admitCourseRead,
+  admitCourseLearningRead,
   admitCourseMutation,
   admitCourseSprint,
 };

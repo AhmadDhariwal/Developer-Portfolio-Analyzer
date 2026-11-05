@@ -225,6 +225,7 @@ export interface CourseProgressUpdate {
   progressPercent?: number | null;
 }
 export interface UserCourseProgress {
+  recoveryRequired?: boolean;
   courseId: string;
   course: Course;
   status: LearningStatus;

@@ -2,8 +2,90 @@
   "productionDataUsed": false,
   "liveProviders": false,
   "checks": [
+    "two-process duplicate analysis prevention",
+    "owner isolation and warm AI budget",
+    "cross-process anonymous IP quota",
+    "fail-closed governance, payload limits, refresh exhaustion",
     "lease expiry, fencing and stale release isolation",
-    "cached market provenance, aliases, expiry and deduplication"
+    "cache query plan and durable history TTL isolation",
+    "cached market provenance, aliases, expiry and deduplication",
+    "downstream career context invalidation"
+  ],
+  "coldConcurrent": [
+    1180.6450000000004,
+    1266.2651999999998
+  ],
+  "warm": {
+    "samples": 8,
+    "p50": 47.09270000000106,
+    "p95": 67.08729999999923,
+    "note": "small local synthetic fixture, not deployed capacity"
+  },
+  "exactLookup": {
+    "documentsExamined": 1,
+    "keysExamined": 1
+  },
+  "indexes": [
+    {
+      "name": "_id_",
+      "key": {
+        "_id": 1
+      }
+    },
+    {
+      "name": "createdAt_1",
+      "key": {
+        "createdAt": 1
+      },
+      "expireAfterSeconds": 604800
+    },
+    {
+      "name": "userId_1_githubUsername_1_careerStack_1_experienceLevel_1_analysisVersion_1_resumeHash_1_resumeAnalysisId_1_signalHash_1",
+      "key": {
+        "userId": 1,
+        "githubUsername": 1,
+        "careerStack": 1,
+        "experienceLevel": 1,
+        "analysisVersion": 1,
+        "resumeHash": 1,
+        "resumeAnalysisId": 1,
+        "signalHash": 1
+      }
+    },
+    {
+      "name": "userId_1_analysisVersion_1_updatedAt_-1",
+      "key": {
+        "userId": 1,
+        "analysisVersion": 1,
+        "updatedAt": -1
+      }
+    },
+    {
+      "name": "skill_gap_signal_lookup",
+      "key": {
+        "userId": 1,
+        "updatedAt": -1
+      }
+    },
+    {
+      "name": "course_skill_signal_lookup",
+      "key": {
+        "userId": 1,
+        "careerStack": 1,
+        "experienceLevel": 1,
+        "analysisVersion": 1,
+        "updatedAt": -1
+      }
+    },
+    {
+      "name": "course_pool_lookup",
+      "key": {
+        "userId": 1,
+        "analysisVersion": 1,
+        "signalHash": 1,
+        "updatedAt": -1
+      }
+    }
   ],
   "market": {
     "present": true,
@@ -23,7 +105,7 @@
       "Bounded cache sample; not representative of the entire job market.",
       "Demand is an uncalibrated scaled frequency, not a live market percentage."
     ],
-    "expiresAt": "2026-11-04T13:58:57.590Z",
+    "expiresAt": "2026-11-05T13:10:33.777Z",
     "topSkills": [
       {
         "name": "Python",
@@ -36,11 +118,11 @@
         "postings": 1
       }
     ],
-    "updatedAt": "2026-11-04T12:58:57.593Z"
+    "updatedAt": "2026-11-05T12:10:33.779Z"
   },
   "cleanup": {
     "mongoStopped": true,
-    "temporaryFilesRemoved": 153,
+    "temporaryFilesRemoved": 156,
     "productionDataUsed": false
   }
 }

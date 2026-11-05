@@ -329,7 +329,8 @@ test('Learning Hub real Mongo/JWT: current evidence, cache identity, owned learn
       assert.equal((await call({ platform: { $ne: 'All' } })).status, 400);
       const yt = await call({ platform: 'YouTube' });
       assert.equal(yt.body.total, 0);
-      assert.equal(yt.body.recommendedBasedOn.youtubeStatus, 'unavailable');
+      assert.equal(yt.body.recommendedBasedOn.youtubeStatus, 'not-requested');
+      assert.equal(yt.body.cacheMetadata.requestCounters.providerCalls, 0);
       const deepLink = await call({ skill: 'SQL', platform: 'Coursera' });
       assert.ok(deepLink.body.courses.length > 0);
       assert.ok(

@@ -323,8 +323,9 @@ test(
     };
     const output = path.resolve(
       __dirname,
-      '../../verification/courses/shared-catalog-2026-11-05.json',
+      '../../verification/courses/defects-2026-11-05/shared-catalog.json',
     );
+    fs.mkdirSync(path.dirname(output), { recursive: true });
     fs.writeFileSync(output, JSON.stringify(report, null, 2) + '\n');
     t.diagnostic(
       JSON.stringify({ p50Ms: report.p50Ms, p95Ms: report.p95Ms, warmHitRate: report.warmHitRate }),
