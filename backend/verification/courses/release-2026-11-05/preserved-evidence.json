@@ -1,0 +1,102 @@
+[
+  {
+    "path": "backend/verification/courses/defects-2026-11-05/browser.log",
+    "sha256": "0197a69357f8fc4d65f380b9ff23ea2fa2698902fa2ba5d33bddf97f37b46b1e"
+  },
+  {
+    "path": "backend/verification/courses/defects-2026-11-05/browser/real-dark-1440.png",
+    "sha256": "728e3bfca42ed46f3b3f78bfd58a11bff37f33c9c5ad92a17c772ed9435ad15b"
+  },
+  {
+    "path": "backend/verification/courses/defects-2026-11-05/browser/real-dark-375.png",
+    "sha256": "a2d111eb15aa28bb01d339318efcaa1bb2fad17993d6a9dd44f7d80e11c6c8c2"
+  },
+  {
+    "path": "backend/verification/courses/defects-2026-11-05/browser/real-light-1440.png",
+    "sha256": "7bcb17d4313196e71ad4fd60791170feccdc62e19f410468ac912873dd39075d"
+  },
+  {
+    "path": "backend/verification/courses/defects-2026-11-05/browser/real-light-375.png",
+    "sha256": "164e3de09cd7325a77e1b27aa7b16615f80cb7038787eae28e91b2aa17829f69"
+  },
+  {
+    "path": "backend/verification/courses/defects-2026-11-05/build.log",
+    "sha256": "1720e5325110ed90cc1556b849a9201766e72af41c4ebd80f36238da5ec447f1"
+  },
+  {
+    "path": "backend/verification/courses/defects-2026-11-05/courses.log",
+    "sha256": "4d9870b00422923800e358c127cccfc06a4e5ad81d3eca10b04e06c206cb23c2"
+  },
+  {
+    "path": "backend/verification/courses/defects-2026-11-05/cross-module-recovery.log",
+    "sha256": "f3f6ef12a4b239b77682b6a62406400f9732614b74a76d97b0916914c15d59c9"
+  },
+  {
+    "path": "backend/verification/courses/defects-2026-11-05/fixture.log",
+    "sha256": "adf90a5cae53548b6bff177a5acb93282074898bb8bab69832f23aa8af4e2f0a"
+  },
+  {
+    "path": "backend/verification/courses/defects-2026-11-05/fixture/dark-1440-discover.png",
+    "sha256": "1e2545992edef137cff1157da083fa2f5e194d5694461be9dae61610573ae6f4"
+  },
+  {
+    "path": "backend/verification/courses/defects-2026-11-05/fixture/dark-1440-learning.png",
+    "sha256": "c7004a3cd05303dddf4586df4a3d7cefc748d3503bd9c2a532fa2ab01c966fce"
+  },
+  {
+    "path": "backend/verification/courses/defects-2026-11-05/fixture/dark-375-course.png",
+    "sha256": "3fd2776e0162acb037899d36eeb5bb47431c58c65d0266fb90141f64805024ff"
+  },
+  {
+    "path": "backend/verification/courses/defects-2026-11-05/fixture/dark-375-discover.png",
+    "sha256": "42324969bb17ecaba25a6e6a58641704ff24fd82b739a8e1112227159bbec026"
+  },
+  {
+    "path": "backend/verification/courses/defects-2026-11-05/fixture/dark-375-filters.png",
+    "sha256": "0ba2e49ac0d42d1723795e0df80dbf6a1368b2429e059985c95d1eeb0c08856b"
+  },
+  {
+    "path": "backend/verification/courses/defects-2026-11-05/fixture/dark-375-learning.png",
+    "sha256": "ab3fed5e1b82d6862bb295fbef8890535024fe7c95346f634b171b8c59a04bad"
+  },
+  {
+    "path": "backend/verification/courses/defects-2026-11-05/fixture/light-1440-discover.png",
+    "sha256": "90a21b0ee807430127152cc5c00dd4514a1638067276041cfc3febd9519a3401"
+  },
+  {
+    "path": "backend/verification/courses/defects-2026-11-05/fixture/light-1440-learning.png",
+    "sha256": "689c481b507f9ec272f2d67d4af48fc3b501d4bb1b55cb5d514b0150197fd5ef"
+  },
+  {
+    "path": "backend/verification/courses/defects-2026-11-05/fixture/light-375-course.png",
+    "sha256": "553faaa7357c640ac90b578f99cb12805caf211ea10dda294cfea2236fb951f3"
+  },
+  {
+    "path": "backend/verification/courses/defects-2026-11-05/fixture/light-375-discover.png",
+    "sha256": "d8be65da3b98b8188c668521a54e77f3abba36f81b67fc6332b0c477b2a389da"
+  },
+  {
+    "path": "backend/verification/courses/defects-2026-11-05/fixture/light-375-filters.png",
+    "sha256": "bca60cc59b84d3a791a6041970f7b4c6d0c363acb720efb3087654c0069ab42c"
+  },
+  {
+    "path": "backend/verification/courses/defects-2026-11-05/fixture/light-375-learning.png",
+    "sha256": "bcf22bf34b2a65dbc97896a4ee83720fc86f9e986d26c29cd18c93153001e225"
+  },
+  {
+    "path": "backend/verification/courses/defects-2026-11-05/frontend.log",
+    "sha256": "c408a10c6f4a186f54fd24bdf5a840e9b116315e3bb955c1fe8097e06017b8ca"
+  },
+  {
+    "path": "backend/verification/courses/defects-2026-11-05/full-interrupted.log",
+    "sha256": "57fc44174c50fc828bb746d25c551129dac342dd1b419038c08a1a6f9afaee7d"
+  },
+  {
+    "path": "backend/verification/courses/defects-2026-11-05/full.log",
+    "sha256": "94f3afc0c500ca9359a7d9e958da9be129c1de03c6f193b58945f5dafa2116b8"
+  },
+  {
+    "path": "backend/verification/courses/defects-unit.log",
+    "sha256": "0e3260a084bd2acb7d70ef7e838062619db31c5a7edb14ccc3345eba59d5642a"
+  }
+]

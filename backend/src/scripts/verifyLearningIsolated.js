@@ -53,6 +53,16 @@ async function main() {
         ),
         B2_ACCEPTANCE_MONGO: '',
         PROFILE_ACCEPTANCE_MONGO: '',
+        STORAGE_SECURITY_MONGO: '',
+        INTERVIEW_TEST_MONGO_URI:
+          process.env.LEARNING_VERIFY_LOCAL_MONGO === 'true' ? runtime.uri : '',
+        JOBS_TEST_MONGODB_URI:
+          process.env.LEARNING_VERIFY_LOCAL_MONGO === 'true' ? runtime.uri : '',
+        NEWS_TEST_MONGODB_URI:
+          process.env.LEARNING_VERIFY_LOCAL_MONGO === 'true' ? runtime.uri : '',
+        JOBS_TEST_REDIS_URL: '',
+        NEWS_TEST_REDIS_URL: '',
+        NEWS_TEST_LIVE_PROVIDERS: 'false',
         LEARNING_VERIFICATION_MONGO_URI: runtime.uri.replace(
           '/integration_live_acceptance?',
           '/devinsight_learning_isolated?',

@@ -1,0 +1,51 @@
+{
+  "at": "2026-11-05T15:01:30.050Z",
+  "branch": "fix/learning-hub-p1",
+  "head": "e86592bd44e993b3e32fabbd366181e4526acfce",
+  "indexPreserved": false,
+  "sourceChanges": [],
+  "full": {
+    "tests": 797,
+    "pass": 777,
+    "fail": 5,
+    "cancelled": 0,
+    "skipped": 15
+  },
+  "failures": [
+    "✖ authenticated Integrations local API acceptance and persisted downstream propagation (40300.1786ms)",
+    "✖ Integrations production acceptance on disposable Mongo replica set and Redis (49372.1644ms)",
+    "✖ isolated Mongo + namespaced configured Upstash: critical portfolio flows (2210.545ms)",
+    "✖ shared request authority: failures, windows, workers and authenticated upload flows (39231.1921ms)",
+    "✖ failing tests:",
+    "✖ authenticated Integrations local API acceptance and persisted downstream propagation (40300.1786ms)",
+    "✖ Integrations production acceptance on disposable Mongo replica set and Redis (49372.1644ms)",
+    "✖ isolated Mongo + namespaced configured Upstash: critical portfolio flows (2210.545ms)",
+    "✖ untrusted forwarded headers cannot rotate anonymous admission identities (2464.6766ms)"
+  ],
+  "skips": [
+    "﹣ disposable Mongo + fixture S3: existing upload APIs, privacy, replacement, cleanup, restart and legacy reads (0.3478ms) # SKIP",
+    "﹣ local Redis executes actual Lua for shared admission, cooldown, concurrency and ownership (0.9184ms) # Set JOBS_TEST_REDIS_URL to an isolated local Redis service",
+    "﹣ isolated Upstash Redis TLS validates Jobs Hub integration (0.762ms) # Dedicated disposable Upstash test database required",
+    "﹣ isolated adaptive demand selects a topic, reserves governed prewarm work and persists through the worker (1.4565ms) # SKIP",
+    "﹣ isolated catalog: scheduled ingestion, discovery, indexed history, shared tags, refresh and worker caches (1.0952ms) # SKIP",
+    "﹣ isolated Redis/Upstash discovery queue is atomic, bounded, recoverable and fenced across workers (1.0038ms) # SKIP",
+    "﹣ atomic discovery accounting, reserved capacity, deduplication and expired quota revalidation (1.5763ms) # SKIP",
+    "﹣ isolated free-text HTTP search, Redis worker and Mongo publication round trip (1.1075ms) # SKIP",
+    "﹣ disposable Upstash: atomic quotas, cooldown, circuits, leases, shared cache and outage fallback (7.1292ms) # SKIP",
+    "﹣ approved live metadata search through an isolated governed worker and Mongo cache (1.5963ms) # SKIP",
+    "﹣ isolated scheduled provider pipeline: all sources persist with attribution, retention, shared pacing and cache invalidation (2.4735ms) # SKIP",
+    "﹣ isolated refresh: exact EC2 interval, shared headroom, manual dedup, Mongo publication and cross-worker version visibility (1.4238ms) # SKIP",
+    "﹣ isolated upstream cooldown propagates precise reason and expiry without a retry (0.1799ms) # SKIP",
+    "﹣ disposable replica set: CRUD, ownership, concurrency, upload, deletion rollback and cleanup (0.6639ms) # SKIP",
+    "﹣ disposable Mongo provisioning is additive/idempotent; retry batch respects backoff and preserves records (0.2353ms) # SKIP"
+  ],
+  "crossModule": {
+    "tests": 39,
+    "pass": 34,
+    "fail": 4,
+    "cancelled": 1,
+    "skipped": 0
+  },
+  "frontend": "542",
+  "originalInfrastructure": "No production database, credentials or external provider enrollment used"
+}

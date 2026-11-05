@@ -17,12 +17,12 @@
     "index bounded reads and Mongo-only admission PASS"
   ],
   "productionDataUsed": false,
-  "crossWorkerDeliveryMs": 49.62169999999969,
+  "crossWorkerDeliveryMs": 97.79569999999876,
   "persistenceSample": {
     "count": 25,
-    "p50Ms": 31.81000000000131,
-    "p95Ms": 56.27740000000267,
-    "eventsPerSecond": 27.670937214643505,
+    "p50Ms": 31.335900000005495,
+    "p95Ms": 55.82240000000456,
+    "eventsPerSecond": 29.054726553184263,
     "workload": "sequential single recipient; local disposable replica; not a production capacity claim"
   },
   "inboxQuery": {

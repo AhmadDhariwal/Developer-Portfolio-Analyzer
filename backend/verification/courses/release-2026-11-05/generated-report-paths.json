@@ -1,0 +1,14 @@
+[
+  "backend/verification/architecture/request-flow-governance-results.json",
+  "backend/verification/courses/defects-2026-11-05/mongo-network.json",
+  "backend/verification/courses/defects-2026-11-05/shared-catalog.json",
+  "backend/verification/integrations/final-scalability-acceptance.json",
+  "backend/verification/integrations/query-plans.json",
+  "backend/verification/integrations/repeated-requests-cache-audit.json",
+  "backend/verification/integrations/scalability-governance-regression.json",
+  "backend/verification/notifications/integration-results.json",
+  "backend/verification/notifications/retention-results.json",
+  "backend/verification/resume/extraction-accuracy.json",
+  "backend/verification/resume/mongo-acceptance.json",
+  "backend/verification/skillgap/production-results.json"
+]
