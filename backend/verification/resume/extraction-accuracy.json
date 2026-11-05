@@ -4,21 +4,21 @@
       "fixture": "standard",
       "assertions": 27,
       "correct": 27,
-      "milliseconds": 265,
+      "milliseconds": 234,
       "score": 78
     },
     {
       "fixture": "layout-shift",
       "assertions": 27,
       "correct": 27,
-      "milliseconds": 244,
+      "milliseconds": 224,
       "score": 78
     },
     {
       "fixture": "columns",
       "assertions": 27,
       "correct": 27,
-      "milliseconds": 307,
+      "milliseconds": 322,
       "score": 78
     }
   ],

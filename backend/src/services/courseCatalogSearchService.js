@@ -30,8 +30,9 @@ const canonicalQuery = (value) => {
     .slice(0, 60);
   const canonical = skills([normalized], 1)[0] || '';
   return (
-    shared.TOPICS.find((topic) => topic.toLowerCase() === canonical.toLowerCase()) ||
-    canonical.toLowerCase()
+    [...shared.TOPICS, ...shared.STACKS].find(
+      (topic) => topic.toLowerCase() === canonical.toLowerCase(),
+    ) || canonical.toLowerCase()
   );
 };
 const escaped = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -61,7 +62,9 @@ async function ensureInventory() {
         ...require('../data/openLearningCatalog'),
       ]),
     };
-  return shared.getCurated(reviewedInventory.courses, reviewedInventory.version, { returnCourses: false });
+  return shared.getCurated(reviewedInventory.courses, reviewedInventory.version, {
+    returnCourses: false,
+  });
 }
 
 function pipeline(topic, platform = 'All') {
@@ -199,6 +202,13 @@ async function load(filters) {
         unique.set(identity, course);
     }
     const matching = [...unique.values()];
+    if (
+      !topic &&
+      ['All', 'YouTube'].includes(filters.platform) &&
+      !matching.some((course) => course.platform === 'YouTube')
+    ) {
+      await recordGap('Full Stack');
+    }
     const coverage = topic && !matching.length ? await recordGap(topic) : null;
     const courses = service.applyCourseFilters(matching, { ...filters, topic: '' });
     if (topic && stale && matching.length) await recordGap(topic);
@@ -273,8 +283,13 @@ async function processDiscoveryQueue({
         item.nextAttemptAt <= new Date() && ['queued', 'running', 'cooldown'].includes(item.state),
     );
     if (!entry) return;
-    await queue().updateOne(
-      { _id: 'topics', 'topics.key': entry.key },
+    const claimed = await queue().updateOne(
+      {
+        _id: 'topics',
+        topics: {
+          $elemMatch: { key: entry.key, state: entry.state, nextAttemptAt: entry.nextAttemptAt },
+        },
+      },
       {
         $set: {
           'topics.$.state': 'running',
@@ -285,6 +300,8 @@ async function processDiscoveryQueue({
       },
       { timeoutMS: 5000 },
     );
+    // A paused lease holder must not overwrite a successor's newer queue state.
+    if (!claimed.modifiedCount) return;
     let state = 'cooldown';
     let until = 15 * 60_000;
     try {

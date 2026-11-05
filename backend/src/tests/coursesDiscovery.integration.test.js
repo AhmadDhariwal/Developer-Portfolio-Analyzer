@@ -68,7 +68,22 @@ test(
         ...require('../data/openLearningCatalog'),
       ]),
     );
-    await search.load(courses.normaliseCourseFilters({}));
+    await t.test(
+      'a cold catalog queues one shared YouTube bootstrap without an inline provider call',
+      async () => {
+        await Promise.all(
+          Array.from({ length: 10 }, () =>
+            search.load(courses.normaliseCourseFilters({ view: 'discover' })),
+          ),
+        );
+        const bootstrap = await mongoose.connection.db
+          .collection('course_catalog_discovery')
+          .findOne({ _id: 'topics' });
+        assert.equal(bootstrap.topics.length, 1);
+        assert.equal(bootstrap.topics[0].topic, 'Full Stack');
+        assert.equal(externalCalls, 0);
+      },
+    );
     const raw = mongoose.connection.db.collection('shared_course_catalog');
     const video = (index, topic) =>
       courses.normaliseCourse({
@@ -96,6 +111,16 @@ test(
       });
     catalog.clearMemory();
     search.clearMemory();
+    // The supplied verified video fixtures now satisfy cold provider availability.
+    await mongoose.connection.db.collection('course_catalog_discovery').updateOne(
+      { _id: 'topics', 'topics.topic': 'Full Stack' },
+      {
+        $set: {
+          'topics.$.state': 'covered',
+          'topics.$.nextAttemptAt': new Date(Date.now() + 86_400_000),
+        },
+      },
+    );
     const app = express();
     app.use(express.json());
     app.use('/api/courses', require('../routes/courseRoutes'));
@@ -108,6 +133,7 @@ test(
         issuer: 'devinsight-api',
         audience: 'devinsight-web',
         expiresIn: '1h',
+        jwtid: require('node:crypto').randomUUID(),
       });
     const network = [];
     async function request(
@@ -136,11 +162,22 @@ test(
         total: data?.total,
         admissionAttempt,
       });
-      if (method === 'GET' && result.status === 503 && data?.code === 'COURSE_ADMISSION_UNAVAILABLE' && admissionAttempt < 2) {
+      if (
+        method === 'GET' &&
+        result.status === 503 &&
+        data?.code === 'COURSE_ADMISSION_UNAVAILABLE' &&
+        admissionAttempt < 2
+      ) {
         const seconds = Number(result.headers.get('retry-after'));
         assert.ok(Number.isInteger(seconds) && seconds > 0 && seconds <= 60);
         await new Promise((resolve) => setTimeout(resolve, seconds * 1000));
-        return request(route, { user, method, body, authenticated, admissionAttempt: admissionAttempt + 1 });
+        return request(route, {
+          user,
+          method,
+          body,
+          authenticated,
+          admissionAttempt: admissionAttempt + 1,
+        });
       }
       return { status: result.status, data, retryAfter: result.headers.get('retry-after') };
     }
@@ -215,7 +252,7 @@ test(
         const queued = await mongoose.connection.db
           .collection('course_catalog_discovery')
           .findOne({ _id: 'topics' });
-        assert.equal(queued.topics.length, 3);
+        assert.equal(queued.topics.length, 4);
         assert.equal(externalCalls, 0);
         let providerPipelines = 0;
         await Promise.all(
@@ -237,6 +274,50 @@ test(
         assert.equal(externalCalls, 0);
       },
     );
+    await t.test('a delayed discovery claim cannot overwrite a successor queue state', async () => {
+      const queue = mongoose.connection.db.collection('course_catalog_discovery');
+      const prototype = Object.getPrototypeOf(queue);
+      const original = prototype.updateOne;
+      let supersededKey;
+      let providerPipelines = 0;
+      prototype.updateOne = async function (filter, update, options) {
+        if (
+          this.collectionName === 'course_catalog_discovery' &&
+          update.$inc?.['topics.$.attempts'] &&
+          !supersededKey
+        ) {
+          supersededKey = filter.topics?.$elemMatch.key || filter['topics.key'];
+          await original.call(
+            this,
+            { _id: 'topics', 'topics.key': supersededKey },
+            {
+              $set: {
+                'topics.$.state': 'covered',
+                'topics.$.nextAttemptAt': new Date(Date.now() + 3_600_000),
+                'topics.$.workerToken': 'successor-fixture',
+              },
+            },
+          );
+        }
+        return original.call(this, filter, update, options);
+      };
+      try {
+        await search.processDiscoveryQueue({
+          fetchProvider: async () => {
+            providerPipelines++;
+            return { courses: [], status: 'empty' };
+          },
+        });
+      } finally {
+        prototype.updateOne = original;
+      }
+      assert.ok(supersededKey);
+      const row = await queue.findOne({ _id: 'topics' });
+      const entry = row.topics.find((item) => item.key === supersededKey);
+      assert.equal(entry.state, 'covered');
+      assert.equal(entry.workerToken, 'successor-fixture');
+      assert.equal(providerPipelines, 0);
+    });
     const progress = require('../models/userCourseProgress');
     await t.test(
       'JWT, save/start, notes, explicit progress, completion, another session and owner isolation',
@@ -408,7 +489,9 @@ test(
       async () => {
         const filters = courses.normaliseCourseFilters({ topic: 'Docker' });
         const original = await search.load(filters);
-        assert.throws(() => { original.courses[0].title = 'poisoned shared entry'; }, TypeError);
+        assert.throws(() => {
+          original.courses[0].title = 'poisoned shared entry';
+        }, TypeError);
         for (let batch = 0; batch < 30; batch++)
           await Promise.all(
             Array.from({ length: 100 }, async () => {
@@ -443,20 +526,54 @@ test(
         assert.equal(externalCalls, 0);
       },
     );
-    await t.test('large full-catalog pools are paginated without durable per-user inventory copies', async () => {
-      for (const [index, topic] of ['SQL', 'React', 'Python', 'Java', 'Angular', 'Git'].entries()) {
-        await raw.insertOne({ _id: `youtube:${topic}`, version: catalog.VERSION,
-          fingerprint: courses.providerConfigurationFingerprint(), topic,
-          courses: Array.from({ length: 40 }, (_, item) => video(1000 + index * 40 + item, topic)),
-          updatedAt: new Date(), freshUntil: new Date(Date.now() + 3600_000), staleUntil: new Date(Date.now() + 86_400_000), status: 'available' });
-      }
-      catalog.clearMemory(); search.clearMemory();
-      const large = await request('?view=discover&refresh=true&limit=20');
-      assert.equal(large.status, 200); assert.equal(large.data.total, 336); assert.equal(large.data.courses.length, 20);
-      assert.equal(await require('../models/analysisCache').countDocuments({ userId: owner, analysisVersion: 'courses_pool_v6_evidence', signalHash: large.data.cacheMetadata.signalHash }), 0);
-      assert.equal(await mongoose.connection.db.collection('integrationgovernancestates').countDocuments({ 'completed.pool.total': 336 }), 0);
-      assert.equal(externalCalls, 0);
-    });
+    await t.test(
+      'large full-catalog pools are paginated without durable per-user inventory copies',
+      async () => {
+        for (const [index, topic] of [
+          'SQL',
+          'React',
+          'Python',
+          'Java',
+          'Angular',
+          'Git',
+        ].entries()) {
+          await raw.insertOne({
+            _id: `youtube:${topic}`,
+            version: catalog.VERSION,
+            fingerprint: courses.providerConfigurationFingerprint(),
+            topic,
+            courses: Array.from({ length: 40 }, (_, item) =>
+              video(1000 + index * 40 + item, topic),
+            ),
+            updatedAt: new Date(),
+            freshUntil: new Date(Date.now() + 3600_000),
+            staleUntil: new Date(Date.now() + 86_400_000),
+            status: 'available',
+          });
+        }
+        catalog.clearMemory();
+        search.clearMemory();
+        const large = await request('?view=discover&refresh=true&limit=20');
+        assert.equal(large.status, 200);
+        assert.equal(large.data.total, 336);
+        assert.equal(large.data.courses.length, 20);
+        assert.equal(
+          await require('../models/analysisCache').countDocuments({
+            userId: owner,
+            analysisVersion: 'courses_pool_v6_evidence',
+            signalHash: large.data.cacheMetadata.signalHash,
+          }),
+          0,
+        );
+        assert.equal(
+          await mongoose.connection.db
+            .collection('integrationgovernancestates')
+            .countDocuments({ 'completed.pool.total': 336 }),
+          0,
+        );
+        assert.equal(externalCalls, 0);
+      },
+    );
     await t.test(
       'Mongo primary interruption recovers saved data without a false JWT expiry',
       async () => {

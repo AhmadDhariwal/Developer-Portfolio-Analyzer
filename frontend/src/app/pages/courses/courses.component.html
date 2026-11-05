@@ -104,17 +104,27 @@
       </div>
       <div class="metric-body">
         <div class="metric-header">
-          <span class="metric-label">Target Skill Gaps</span>
+          <span class="metric-label">{{
+            view === 'discover' ? 'Learning Priorities' : 'Target Skill Gaps'
+          }}</span>
           <span class="metric-pill" [class.active]="targetSkillGaps.length > 0">
-            {{ targetSkillGaps.length > 0 ? 'High Priority' : 'Aligned' }}
+            {{
+              view === 'discover'
+                ? 'For You'
+                : targetSkillGaps.length > 0
+                  ? 'High Priority'
+                  : 'Aligned'
+            }}
           </span>
         </div>
-        <div class="metric-value">{{ targetSkillGaps.length }}</div>
+        <div class="metric-value">{{ view === 'discover' ? '—' : targetSkillGaps.length }}</div>
         <div class="metric-sub">
           {{
-            targetSkillGaps.length > 0
-              ? 'Identified from portfolio analysis'
-              : 'No unresolved gaps found'
+            view === 'discover'
+              ? 'Open For You to view your skill priorities'
+              : targetSkillGaps.length > 0
+                ? 'Identified from portfolio analysis'
+                : 'No unresolved gaps found'
           }}
         </div>
       </div>

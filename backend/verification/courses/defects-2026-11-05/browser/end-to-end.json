@@ -1,9 +1,9 @@
 {
-  "startedAt": "2026-11-05T11:48:16.885Z",
-  "bundle": "main-VBQSZPYO.js",
+  "startedAt": "2026-11-05T13:56:28.640Z",
+  "bundle": "main-T77ZNOPD.js",
   "fixtureOwners": [
-    "6aec6d000372ca0ffa29b336",
-    "6aec6d000372ca0ffa29b337"
+    "6aec8b0cbea61aef3acf6eb6",
+    "6aec8b0cbea61aef3acf6eb7"
   ],
   "environment": "Real local MongoDB, real JWT middleware, production course/progress/Sprint/profile HTTP handlers, production Angular bundle. Owned seeded evidence, no pre-existing users. Redis configured off.",
   "traces": [
@@ -42,7 +42,7 @@
       },
       "uiTitle": "Meta Back-End Developer Professional Certificate",
       "uiReason": "Learning/evidence review targets: SQL • Matches your SQL filter",
-      "sourceHash": "14f833ed29ae414e449d"
+      "sourceHash": "3d62ddd402af47cb6baf"
     },
     {
       "id": "fb_u3",
@@ -79,7 +79,7 @@
       },
       "uiTitle": "Docker & Kubernetes: The Practical Guide",
       "uiReason": "Learning/evidence review targets: Docker • Matches your Docker filter",
-      "sourceHash": "e3f141ea021463d8838b"
+      "sourceHash": "dcc36c5223c33fc8417c"
     },
     {
       "id": "fb_u2",
@@ -116,7 +116,7 @@
       },
       "uiTitle": "Node.js, Express, MongoDB & More: The Complete Bootcamp",
       "uiReason": "Matches your Node.js filter • Covers Node.js, Express, MongoDB for your Backend track",
-      "sourceHash": "7ec4e8f64406dd8a3e67"
+      "sourceHash": "0587c349243c859d68b2"
     }
   ],
   "security": [
@@ -192,7 +192,7 @@
       "ruleVersion": "skill-evidence-coverage-v1",
       "limitation": "Skill classifications describe recorded evidence, not verified proficiency or inability."
     },
-    "signalHash": "cc9bfa4aea97c6a396a7",
+    "signalHash": "23fe8c8739bd7f558958",
     "aiCalls": 0
   },
   "catalog": [

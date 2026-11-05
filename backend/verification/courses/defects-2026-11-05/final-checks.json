@@ -1,0 +1,184 @@
+{
+  "checkedAt": "2026-11-05T13:57:50.586Z",
+  "sources": [
+    "backend/src/controllers/courseProgressController.js",
+    "backend/src/middleware/authmiddleware.js",
+    "backend/src/middleware/courseAdmission.js",
+    "backend/src/models/userCourseProgress.js",
+    "backend/src/routes/courseRoutes.js",
+    "backend/src/scripts/verifyLearningIsolated.js",
+    "backend/src/services/courseCatalogMaintenanceService.js",
+    "backend/src/services/courseCatalogSearchService.js",
+    "backend/src/services/courseGovernanceService.js",
+    "backend/src/services/courseProgressService.js",
+    "backend/src/services/courseRecommendationService.js",
+    "backend/src/services/courseService.js",
+    "backend/src/services/sharedCourseCatalogService.js",
+    "backend/src/tests/coursesDiscovery.integration.test.js",
+    "backend/src/tests/coursesMongo.integration.test.js",
+    "backend/src/tests/coursesPoolWorkers.integration.test.js",
+    "backend/src/tests/sharedCourseCatalog.integration.test.js",
+    "backend/src/utils/courseIdentity.js",
+    "frontend/scripts/verify-courses-ui.cjs",
+    "frontend/src/app/pages/courses/components/my-learning.component.html",
+    "frontend/src/app/pages/courses/components/my-learning.component.ts",
+    "frontend/src/app/pages/courses/courses.component.html",
+    "frontend/src/app/pages/courses/courses.component.spec.ts",
+    "frontend/src/app/pages/courses/courses.component.ts",
+    "frontend/src/app/pages/courses/services/course-learning.store.spec.ts",
+    "frontend/src/app/pages/courses/services/course-learning.store.ts",
+    "frontend/src/app/shared/components/course-card/course-card.html",
+    "frontend/src/app/shared/components/course-card/course-card.scss",
+    "frontend/src/app/shared/components/course-card/course-card.ts",
+    "frontend/src/app/shared/models/course.model.ts",
+    "frontend/src/app/shared/services/course.service.ts",
+    "backend/src/scripts/finalizeLearningDefects.js"
+  ],
+  "checks": [
+    {
+      "name": "Prettier write",
+      "exitCode": 0,
+      "error": null,
+      "output": "backend/src/controllers/courseProgressController.js 57ms (unchanged)\nbackend/src/middleware/authmiddleware.js 27ms (unchanged)\nbackend/src/middleware/courseAdmission.js 11ms (unchanged)\nbackend/src/models/userCourseProgress.js 6ms (unchanged)\nbackend/src/routes/courseRoutes.js 4ms (unchanged)\nbackend/src/scripts/verifyLearningIsolated.js 14ms (unchanged)\nbackend/src/services/courseCatalogMaintenanceService.js 20ms (unchanged)\nbackend/src/services/courseCatalogSearchService.js 30ms (unchanged)\nbackend/src/services/courseGovernanceService.js 18ms (unchanged)\nbackend/src/services/courseProgressService.js 19ms (unchanged)\nbackend/src/services/courseRecommendationService.js 64ms (unchanged)\nbackend/src/services/courseService.js 87ms (unchanged)\nbackend/src/services/sharedCourseCatalogService.js 38ms (unchanged)\nbackend/src/tests/coursesDiscovery.integration.test.js 53ms (unchanged)\nbackend/src/tests/coursesMongo.integration.test.js 54ms (unchanged)\nbackend/src/tests/coursesPoolWorkers.integration.test.js 28ms (unchanged)\nbackend/src/tests/sharedCourseCatalog.integration.test.js 23ms (unchanged)\nbackend/src/utils/courseIdentity.js 9ms (unchanged)\nfrontend/scripts/verify-courses-ui.cjs 65ms (unchanged)\nfrontend/src/app/pages/courses/components/my-learning.component.html 294ms (unchanged)\nfrontend/src/app/pages/courses/components/my-learning.component.ts 123ms (unchanged)\nfrontend/src/app/pages/courses/courses.component.html 144ms (unchanged)\nfrontend/src/app/pages/courses/courses.component.spec.ts 28ms (unchanged)\nfrontend/src/app/pages/courses/courses.component.ts 77ms (unchanged)\nfrontend/src/app/pages/courses/services/course-learning.store.spec.ts 26ms (unchanged)\nfrontend/src/app/pages/courses/services/course-learning.store.ts 17ms (unchanged)\nfrontend/src/app/shared/components/course-card/course-card.html 74ms (unchanged)\nfrontend/src/app/shared/components/course-card/course-card.scss 122ms (unchanged)\nfrontend/src/app/shared/components/course-card/course-card.ts 16ms (unchanged)\nfrontend/src/app/shared/models/course.model.ts 21ms (unchanged)\nfrontend/src/app/shared/services/course.service.ts 32ms (unchanged)\nbackend/src/scripts/finalizeLearningDefects.js 15ms (unchanged)\nbackend/verification/courses/LEARNING-HUB-PRODUCTION-FINAL.md 190ms"
+    },
+    {
+      "name": "Prettier check",
+      "exitCode": 0,
+      "error": null,
+      "output": "Checking formatting...\nAll matched files use Prettier code style!"
+    },
+    {
+      "name": "Syntax backend/src/controllers/courseProgressController.js",
+      "exitCode": 0,
+      "error": null,
+      "output": ""
+    },
+    {
+      "name": "Syntax backend/src/middleware/authmiddleware.js",
+      "exitCode": 0,
+      "error": null,
+      "output": ""
+    },
+    {
+      "name": "Syntax backend/src/middleware/courseAdmission.js",
+      "exitCode": 0,
+      "error": null,
+      "output": ""
+    },
+    {
+      "name": "Syntax backend/src/models/userCourseProgress.js",
+      "exitCode": 0,
+      "error": null,
+      "output": ""
+    },
+    {
+      "name": "Syntax backend/src/routes/courseRoutes.js",
+      "exitCode": 0,
+      "error": null,
+      "output": ""
+    },
+    {
+      "name": "Syntax backend/src/scripts/verifyLearningIsolated.js",
+      "exitCode": 0,
+      "error": null,
+      "output": ""
+    },
+    {
+      "name": "Syntax backend/src/services/courseCatalogMaintenanceService.js",
+      "exitCode": 0,
+      "error": null,
+      "output": ""
+    },
+    {
+      "name": "Syntax backend/src/services/courseCatalogSearchService.js",
+      "exitCode": 0,
+      "error": null,
+      "output": ""
+    },
+    {
+      "name": "Syntax backend/src/services/courseGovernanceService.js",
+      "exitCode": 0,
+      "error": null,
+      "output": ""
+    },
+    {
+      "name": "Syntax backend/src/services/courseProgressService.js",
+      "exitCode": 0,
+      "error": null,
+      "output": ""
+    },
+    {
+      "name": "Syntax backend/src/services/courseRecommendationService.js",
+      "exitCode": 0,
+      "error": null,
+      "output": ""
+    },
+    {
+      "name": "Syntax backend/src/services/courseService.js",
+      "exitCode": 0,
+      "error": null,
+      "output": ""
+    },
+    {
+      "name": "Syntax backend/src/services/sharedCourseCatalogService.js",
+      "exitCode": 0,
+      "error": null,
+      "output": ""
+    },
+    {
+      "name": "Syntax backend/src/tests/coursesDiscovery.integration.test.js",
+      "exitCode": 0,
+      "error": null,
+      "output": ""
+    },
+    {
+      "name": "Syntax backend/src/tests/coursesMongo.integration.test.js",
+      "exitCode": 0,
+      "error": null,
+      "output": ""
+    },
+    {
+      "name": "Syntax backend/src/tests/coursesPoolWorkers.integration.test.js",
+      "exitCode": 0,
+      "error": null,
+      "output": ""
+    },
+    {
+      "name": "Syntax backend/src/tests/sharedCourseCatalog.integration.test.js",
+      "exitCode": 0,
+      "error": null,
+      "output": ""
+    },
+    {
+      "name": "Syntax backend/src/utils/courseIdentity.js",
+      "exitCode": 0,
+      "error": null,
+      "output": ""
+    },
+    {
+      "name": "Syntax backend/src/scripts/finalizeLearningDefects.js",
+      "exitCode": 0,
+      "error": null,
+      "output": ""
+    },
+    {
+      "name": "App TypeScript",
+      "exitCode": 0,
+      "error": null,
+      "output": ""
+    },
+    {
+      "name": "Working-tree whitespace",
+      "exitCode": 0,
+      "error": null,
+      "output": "warning: in the working copy of 'backend/src/services/courseCatalogSearchService.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/tests/coursesDiscovery.integration.test.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/verification/architecture/request-flow-governance-results.json', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/verification/courses/LEARNING-HUB-PRODUCTION-FINAL.md', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/verification/courses/defects-2026-11-05/browser/end-to-end.json', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/verification/courses/defects-2026-11-05/cleanup-browser.json', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/verification/courses/defects-2026-11-05/cleanup-courses.json', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/verification/courses/defects-2026-11-05/cleanup-full.json', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/verification/courses/defects-2026-11-05/fixture/browser-results.json', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/verification/courses/defects-2026-11-05/mongo-network.json', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/verification/courses/defects-2026-11-05/shared-catalog.json', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/verification/integrations/cleanup.json', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/verification/integrations/final-scalability-acceptance.json', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/verification/integrations/local-acceptance/api-results.json', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/verification/integrations/query-plans.json', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/verification/integrations/repeated-requests-cache-audit.json', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/verification/integrations/scalability-governance-regression.json', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/verification/notifications/integration-results.json', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/verification/notifications/retention-results.json', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/verification/profile/ui-media/media-comparison.json', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/verification/resume/extraction-accuracy.json', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/verification/resume/mongo-acceptance.json', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/verification/skillgap/acceptance-2026-11-03/temporary-pdf-routing.json', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/verification/skillgap/golden-accuracy.json', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/verification/skillgap/production-results.json', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/verification/skillgap/public-source-replay.json', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/scripts/verify-courses-ui.cjs', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/pages/courses/courses.component.html', LF will be replaced by CRLF the next time Git touches it"
+    },
+    {
+      "name": "Index whitespace",
+      "exitCode": 0,
+      "error": null,
+      "output": ""
+    }
+  ],
+  "index": "Externally staged work preserved; no staging/unstaging/commit performed"
+}

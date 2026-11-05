@@ -5,8 +5,8 @@
   "estimatedUncachedHttpRequestsAvoided": 9000,
   "avoidanceBaseline": "Counterfactual uncached pipeline: two searches and one details request per caller; no live cost measurement",
   "warmHitRate": 1,
-  "p50Ms": 3.0393999999996595,
-  "p95Ms": 9.96810000000005,
+  "p50Ms": 2.707800000000134,
+  "p95Ms": 11.619599999999991,
   "metrics": {
     "memoryHits": 3001,
     "mongoHits": 4,
@@ -85,7 +85,7 @@
           },
           {
             "freshUntil": {
-              "$lte": "2026-11-05T12:09:29.270Z"
+              "$lte": "2026-11-05T13:46:33.633Z"
             }
           }
         ]
@@ -129,7 +129,7 @@
                 "[\"shared-courses-v1\", \"shared-courses-v1\"]"
               ],
               "freshUntil": [
-                "[new Date(-9223372036854775808), new Date(1793880569270)]"
+                "[new Date(-9223372036854775808), new Date(1793886393633)]"
               ],
               "_id": [
                 "[MinKey, MaxKey]"
@@ -205,7 +205,7 @@
                 "[\"shared-courses-v1\", \"shared-courses-v1\"]"
               ],
               "freshUntil": [
-                "[new Date(-9223372036854775808), new Date(1793880569270)]"
+                "[new Date(-9223372036854775808), new Date(1793886393633)]"
               ],
               "_id": [
                 "[MinKey, MaxKey]"
@@ -225,7 +225,7 @@
       "filter": {
         "version": "shared-courses-v1",
         "freshUntil": {
-          "$lte": "2026-11-05T12:09:29.270Z"
+          "$lte": "2026-11-05T13:46:33.633Z"
         }
       },
       "sort": {
@@ -237,7 +237,7 @@
     },
     "serverInfo": {
       "host": "ICOMM-AHMAD-HASS",
-      "port": 62148,
+      "port": 63606,
       "version": "8.2.6",
       "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
     },
@@ -256,7 +256,7 @@
     "ok": 1,
     "$clusterTime": {
       "clusterTime": {
-        "$timestamp": "7704658376784871435"
+        "$timestamp": "7704683390674403373"
       },
       "signature": {
         "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -264,7 +264,7 @@
       }
     },
     "operationTime": {
-      "$timestamp": "7704658376784871433"
+      "$timestamp": "7704683390674403370"
     }
   },
   "identityExplain": {
@@ -382,7 +382,7 @@
     },
     "serverInfo": {
       "host": "ICOMM-AHMAD-HASS",
-      "port": 62148,
+      "port": 63606,
       "version": "8.2.6",
       "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
     },
@@ -401,7 +401,7 @@
     "ok": 1,
     "$clusterTime": {
       "clusterTime": {
-        "$timestamp": "7704658376784871435"
+        "$timestamp": "7704683390674403373"
       },
       "signature": {
         "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -409,7 +409,7 @@
       }
     },
     "operationTime": {
-      "$timestamp": "7704658376784871433"
+      "$timestamp": "7704683390674403370"
     }
   },
   "topicExplain": {
@@ -463,7 +463,7 @@
     },
     "serverInfo": {
       "host": "ICOMM-AHMAD-HASS",
-      "port": 62148,
+      "port": 63606,
       "version": "8.2.6",
       "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
     },
@@ -482,7 +482,7 @@
     "ok": 1,
     "$clusterTime": {
       "clusterTime": {
-        "$timestamp": "7704658376784871436"
+        "$timestamp": "7704683390674403373"
       },
       "signature": {
         "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -490,7 +490,7 @@
       }
     },
     "operationTime": {
-      "$timestamp": "7704658376784871434"
+      "$timestamp": "7704683390674403370"
     }
   }
 }

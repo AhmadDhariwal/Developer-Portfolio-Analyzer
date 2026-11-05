@@ -344,6 +344,16 @@ async function mobileFilters(page) {
         .click();
       await count(cards, 10);
       assert.equal(controls.requests.at(-1).view, 'discover');
+      assert.ok(
+        (await page.locator('.learning-metrics-strip').innerText()).includes(
+          'Open For You to view your skill priorities',
+        ),
+      );
+      assert.ok(
+        !(await page.locator('.learning-metrics-strip').innerText()).includes(
+          'No unresolved gaps found',
+        ),
+      );
       const providerImages = await cards
         .first()
         .locator('img')
