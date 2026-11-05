@@ -58,7 +58,12 @@ async function worker() {
     const result = fetchCourses(
       {
         user: { _id: input.owner, activeCareerStack: 'Backend', activeExperienceLevel: 'Intern' },
-        query: { skillGaps: ['SQL'].join(','), refresh: 'true', limit: '50' },
+        query: {
+          topic: input.topic || 'SQL',
+          skillGaps: ['SQL'].join(','),
+          refresh: 'true',
+          limit: '50',
+        },
       },
       {
         status(code) {
@@ -66,7 +71,13 @@ async function worker() {
           return this;
         },
         json(body) {
-          process.send({ status, total: body.total, signalHash: body.cacheMetadata?.signalHash });
+          process.send({
+            status,
+            total: body.total,
+            signalHash: body.cacheMetadata?.signalHash,
+            providerCounts: body.providerCounts,
+            providers: body.courses?.map((course) => course.platform),
+          });
         },
       },
     );
@@ -131,7 +142,7 @@ test(
       return {
         child,
         stages,
-        request(owner, hold = false) {
+        request(owner, hold = false, topic = 'SQL') {
           return new Promise((resolve) => {
             const onMessage = (message) => {
               if (!message.status) return;
@@ -139,7 +150,7 @@ test(
               resolve(message);
             };
             child.on('message', onMessage);
-            child.send({ owner, hold });
+            child.send({ owner, hold, topic });
           });
         },
         waitFor(predicate) {
@@ -183,10 +194,10 @@ test(
         await backoff(attempt, orphans);
       }
     };
-    const hold = async (worker, ownerId) => {
+    const hold = async (worker, ownerId, topic = 'SQL') => {
       for (let attempt = 1; ; attempt++) {
         const provider = worker.waitFor(atProvider);
-        const result = worker.request(ownerId, true);
+        const result = worker.request(ownerId, true, topic);
         const outcome = await Promise.race([provider.then(() => 'provider'), result]);
         if (outcome === 'provider') return { result };
         if (outcome.status !== 503 || attempt === MAX_ATTEMPTS) {
@@ -197,7 +208,7 @@ test(
     };
     const first = (await hold(a, owner)).result;
     const started = b.waitFor((message) => message.started);
-    const second = settle(() => b.request(owner));
+    const second = settle(() => b.request(String(new mongoose.Types.ObjectId())));
     await started;
     a.child.send('release');
     const results = await Promise.all([first, second]);
@@ -205,39 +216,62 @@ test(
       results.map((row) => row.status),
       [200, 200],
     );
-    assert.deepEqual(
-      results.map((row) => row.total),
-      [33, 33],
+    assert.ok(results[0].total > 0);
+    assert.equal(results[0].total, results[1].total);
+    assert.ok(
+      results.every((row) => row.providers.includes('YouTube')),
+      'All includes YouTube for both owners',
     );
-    assert.equal(results[0].signalHash, results[1].signalHash);
+    assert.equal(
+      Object.values(results[0].providerCounts).reduce((sum, count) => sum + count, 0),
+      results[0].total,
+    );
+    assert.notEqual(
+      results[0].signalHash,
+      results[1].signalHash,
+      'personalized evidence remains owner-scoped',
+    );
     assert.deepEqual(a.stages, ['search', 'search', 'videos']);
     assert.deepEqual(b.stages, []);
     t.diagnostic('Two successful requests shared two search calls and one details call.');
 
     const expireActiveLease = async () => {
       // Move the disposable lease deadline into the past to exercise recovery without a 30 s sleep.
-      const expired = await State.collection.updateOne(
+      const expired = await State.collection.updateMany(
         { _id: /^courses:v1:lease:/, 'leases.0': { $exists: true } },
         { $set: { 'leases.0.until': new Date(0) } },
       );
-      assert.equal(expired.modifiedCount, 1);
+      assert.equal(
+        expired.modifiedCount,
+        2,
+        'expire the active personalized lease and shared provider slot',
+      );
+      const raw = await mongoose.connection.db
+        .collection('shared_course_catalog')
+        .updateOne({ leaseToken: { $exists: true } }, { $set: { leaseUntil: new Date(0) } });
+      assert.equal(raw.modifiedCount, 1);
     };
     const fenceOwner = String(new mongoose.Types.ObjectId());
-    const fenced = (await hold(a, fenceOwner)).result;
+    const fenced = (await hold(a, fenceOwner, 'Python')).result;
     await expireActiveLease();
-    const replacement = await settle(() => b.request(fenceOwner), { orphans: true });
+    const replacement = await settle(() => b.request(fenceOwner, false, 'Python'), {
+      orphans: true,
+    });
     assert.equal(replacement.status, 200);
     a.child.send('release');
     assert.equal((await fenced).status, 503);
     t.diagnostic('Replacement completed and the expired worker was fenced.');
 
     const crashOwner = String(new mongoose.Types.ObjectId());
-    await hold(a, crashOwner);
+    await hold(a, crashOwner, 'React');
     const exited = once(a.child, 'exit');
     a.child.kill();
     await exited;
     await expireActiveLease();
-    assert.equal((await settle(() => b.request(crashOwner), { orphans: true })).status, 200);
+    assert.equal(
+      (await settle(() => b.request(crashOwner, false, 'React'), { orphans: true })).status,
+      200,
+    );
     assert.deepEqual(b.stages, ['search', 'search', 'videos', 'search', 'search', 'videos']);
     t.diagnostic('Surviving worker recovered after the crashed worker lease deadline.');
     t.diagnostic(

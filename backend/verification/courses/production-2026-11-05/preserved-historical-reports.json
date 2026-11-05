@@ -1,0 +1,42 @@
+[
+  {
+    "restored": "backend/verification/architecture/request-flow-governance-results.json",
+    "retained": "backend/verification/courses/production-2026-11-05/regression-artifacts/backend/verification/architecture/request-flow-governance-results.json"
+  },
+  {
+    "restored": "backend/verification/integrations/final-scalability-acceptance.json",
+    "retained": "backend/verification/courses/production-2026-11-05/regression-artifacts/backend/verification/integrations/final-scalability-acceptance.json"
+  },
+  {
+    "restored": "backend/verification/integrations/query-plans.json",
+    "retained": "backend/verification/courses/production-2026-11-05/regression-artifacts/backend/verification/integrations/query-plans.json"
+  },
+  {
+    "restored": "backend/verification/integrations/repeated-requests-cache-audit.json",
+    "retained": "backend/verification/courses/production-2026-11-05/regression-artifacts/backend/verification/integrations/repeated-requests-cache-audit.json"
+  },
+  {
+    "restored": "backend/verification/integrations/scalability-governance-regression.json",
+    "retained": "backend/verification/courses/production-2026-11-05/regression-artifacts/backend/verification/integrations/scalability-governance-regression.json"
+  },
+  {
+    "restored": "backend/verification/notifications/integration-results.json",
+    "retained": "backend/verification/courses/production-2026-11-05/regression-artifacts/backend/verification/notifications/integration-results.json"
+  },
+  {
+    "restored": "backend/verification/notifications/retention-results.json",
+    "retained": "backend/verification/courses/production-2026-11-05/regression-artifacts/backend/verification/notifications/retention-results.json"
+  },
+  {
+    "restored": "backend/verification/skillgap/production-results.json",
+    "retained": "backend/verification/courses/production-2026-11-05/regression-artifacts/backend/verification/skillgap/production-results.json"
+  },
+  {
+    "restored": "backend/verification/resume/extraction-accuracy.json",
+    "retained": "backend/verification/courses/production-2026-11-05/regression-artifacts/backend/verification/resume/extraction-accuracy.json"
+  },
+  {
+    "restored": "backend/verification/resume/mongo-acceptance.json",
+    "retained": "backend/verification/courses/production-2026-11-05/regression-artifacts/backend/verification/resume/mongo-acceptance.json"
+  }
+]

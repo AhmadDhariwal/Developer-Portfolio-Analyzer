@@ -13,13 +13,14 @@ const {
 const AnalysisCache = require('../models/analysisCache');
 const aiService = require('./aiservice');
 const { runPoolBuild } = require('./courseGovernanceService');
+const sharedCatalog = require('./sharedCourseCatalogService');
 
 const {
   resolveSkillSignals,
   SKILL_GAP_ANALYSIS_VERSION,
 } = require('./coursePersonalizationService');
 const COURSE_POOL_VERSION = 'courses_pool_v6_evidence';
-const DISCOVERY_POLICY_REVISION = 2;
+const DISCOVERY_POLICY_REVISION = 3;
 const COURSE_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const MAX_COURSE_CACHE_VARIANTS = 40;
 const COURSE_MEMORY_TTL_MS = Math.min(
@@ -74,6 +75,16 @@ const courseRuntimeCounters = {
 };
 
 const uniqueStrings = (values = [], limit = 8) => sanitizeSkillList(values, limit);
+const poolTtl = (pool) =>
+  pool.sourceMetadata?.catalogStale
+    ? 15_000
+    : pool.sourceMetadata?.fallbackUsed
+      ? 60_000
+      : COURSE_CACHE_TTL_MS;
+const sourceExpiry = (pool) =>
+  pool.sourceMetadata?.catalogStaleUntil
+    ? new Date(pool.sourceMetadata.catalogStaleUntil).getTime()
+    : Infinity;
 
 const createStageTimer = () => {
   const startedAt = process.hrtime.bigint();
@@ -153,9 +164,10 @@ const writeCourseMemory = (key, payload) => {
   if (allCourses.some((course) => !course)) return;
   const now = Date.now();
   const updatedAt = payload.updatedAt || new Date(now).toISOString();
-  const validUntil =
-    new Date(updatedAt).getTime() +
-    (payload.sourceMetadata?.fallbackUsed ? 60_000 : COURSE_CACHE_TTL_MS);
+  const validUntil = Math.min(
+    new Date(updatedAt).getTime() + poolTtl(payload),
+    sourceExpiry(payload),
+  );
   courseMemoryCache.set(key, {
     ...payload,
     allCourses,
@@ -186,8 +198,8 @@ const validPool = (pool) =>
     pool.total === pool.allCourses.length &&
     Number.isFinite(new Date(pool.updatedAt).getTime()) &&
     new Date(pool.updatedAt).getTime() <= Date.now() + 300_000 &&
-    Date.now() - new Date(pool.updatedAt).getTime() <
-      (pool.sourceMetadata?.fallbackUsed ? 60_000 : COURSE_CACHE_TTL_MS),
+    Date.now() - new Date(pool.updatedAt).getTime() < poolTtl(pool) &&
+    sourceExpiry(pool) > Date.now(),
   );
 
 const buildPoolCacheKey = ({
@@ -198,9 +210,11 @@ const buildPoolCacheKey = ({
   knownSkills,
   filters,
   evidenceFingerprint = 'unavailable',
+  catalogRevision = 'initial',
 }) => {
   const poolSeed = JSON.stringify({
     discoveryPolicy: DISCOVERY_POLICY_REVISION,
+    catalogRevision,
     careerStack,
     experienceLevel,
     skillGaps: uniqueStrings(skillGaps, 12),
@@ -296,6 +310,10 @@ const paginatePool = (pool, filters) => {
   const startIndex = (safePage - 1) * filters.limit;
   return {
     courses: allCourses.slice(startIndex, startIndex + filters.limit),
+    providerCounts: allCourses.reduce((counts, course) => {
+      counts[course.platform] = (counts[course.platform] || 0) + 1;
+      return counts;
+    }, {}),
     projected: pool?.projected === true,
     total,
     page: safePage,
@@ -419,6 +437,9 @@ const persistCoursePool = async ({
 const buildOrShareCoursePool = async (inflightKey, buildFn) => {
   const existing = coursePoolInflight.get(inflightKey);
   if (existing) return existing;
+  if (coursePoolInflight.size >= 200) {
+    throw Object.assign(new Error('Course build capacity reached.'), { status: 503 });
+  }
 
   const workPromise = Promise.resolve()
     .then(buildFn)
@@ -448,6 +469,7 @@ const buildResponsePayload = ({
     ? pageResult.courses
     : pageResult.courses.map(publicCourse).filter(Boolean),
   total: pageResult.total,
+  providerCounts: pageResult.providerCounts,
   page: pageResult.page,
   totalPages: pageResult.totalPages,
   hasMore: pageResult.page < pageResult.totalPages,
@@ -530,6 +552,7 @@ const fetchCourses = async (req, res) => {
       knownSkills: skillSignals.knownSkills,
       filters,
       evidenceFingerprint: skillSignals.fingerprint,
+      catalogRevision: await sharedCatalog.revision(),
     });
 
     const memoryHit = await stageTimer.measure('cache', () =>
@@ -641,6 +664,9 @@ const fetchCourses = async (req, res) => {
       runPoolBuild(memoryKey, {
         forceRefresh,
         startedAt,
+        isReusable: (pool) =>
+          new Date(pool.updatedAt).getTime() + poolTtl(pool) > Date.now() &&
+          sourceExpiry(pool) > Date.now(),
         build: async () => {
           courseRuntimeCounters.pipelineExecutions += 1;
           courseRuntimeCounters.providerCalls += 1;
@@ -705,10 +731,12 @@ const fetchCourses = async (req, res) => {
       ),
     );
   } catch (error) {
-    if (error.status === 503)
+    if (error.status === 503) {
+      res.set?.('Retry-After', '5');
       return res
         .status(503)
         .json({ message: 'Course pool temporarily unavailable. Please retry.' });
+    }
     console.error('[CourseController] Unhandled error:', error.message);
     return res.status(500).json({
       message: 'Failed to fetch course recommendations. Please try again.',

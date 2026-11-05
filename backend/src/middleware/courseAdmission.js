@@ -12,18 +12,28 @@ async function enforceBucket(req, res, next, bucket, max) {
   try {
     const scope = String(req.user?._id || req.user?.id || req.ip || 'anonymous');
     const result = await window(bucket, scope, max);
+    const ipResult =
+      result.allowed && req.ip
+        ? await window(
+            `${bucket}:ip`,
+            req.ip,
+            Math.max(max, Number(process.env.COURSES_IP_RATE_LIMIT_MAX || 600)),
+          )
+        : result;
     res.setHeader('RateLimit-Limit', String(result.limit));
-    res.setHeader('RateLimit-Remaining', String(result.remaining));
-    if (!result.allowed) {
-      res.setHeader('Retry-After', String(result.retryAfterSeconds));
+    res.setHeader('RateLimit-Remaining', String(Math.min(result.remaining, ipResult.remaining)));
+    if (!result.allowed || !ipResult.allowed) {
+      const retryAfterSeconds = Math.max(result.retryAfterSeconds, ipResult.retryAfterSeconds);
+      res.setHeader('Retry-After', String(retryAfterSeconds));
       return res.status(429).json({
         code: 'COURSE_RATE_LIMITED',
         message: 'Course request limit reached. Please retry shortly.',
-        retryAfterSeconds: result.retryAfterSeconds,
+        retryAfterSeconds,
       });
     }
     return next();
   } catch (error) {
+    res.setHeader('Retry-After', '5');
     return res.status(Number(error?.statusCode) || 503).json({
       code: 'COURSE_ADMISSION_UNAVAILABLE',
       message: error?.publicMessage || 'Course admission is temporarily unavailable.',

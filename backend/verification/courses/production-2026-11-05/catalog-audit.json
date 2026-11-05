@@ -1,0 +1,376 @@
+{
+  "generatedAt": "2026-11-05T08:43:03.225Z",
+  "catalogVersion": "shared-courses-v1",
+  "coverageDocuments": 1,
+  "uniqueCourses": 35,
+  "overlappingCoverageRows": 0,
+  "providers": {
+    "Udemy": 10,
+    "Coursera": 9,
+    "edX": 6,
+    "freeCodeCamp": 7,
+    "MDN": 1,
+    "The Odin Project": 1,
+    "Full Stack Open": 1
+  },
+  "topics": {
+    "JavaScript": 10,
+    "ES6": 1,
+    "OOP": 4,
+    "Node.js": 6,
+    "Express": 2,
+    "MongoDB": 3,
+    "Docker": 3,
+    "Kubernetes": 6,
+    "DevOps": 7,
+    "Angular": 1,
+    "TypeScript": 4,
+    "RxJS": 1,
+    "React": 7,
+    "Redux": 2,
+    "Hooks": 1,
+    "Python": 9,
+    "Scripting": 2,
+    "GraphQL": 2,
+    "APIs": 3,
+    "Automation": 1,
+    "Git": 1,
+    "Machine Learning": 2,
+    "AI": 1,
+    "HTML": 5,
+    "CSS": 4,
+    "Django": 2,
+    "SQL": 3,
+    "AWS": 1,
+    "Cloud": 4,
+    "Algorithms": 2,
+    "Data Structures": 2,
+    "Flexbox": 1,
+    "Grid": 1,
+    "Bootstrap": 1,
+    "jQuery": 1,
+    "Microservices": 3,
+    "GCP": 1,
+    "Cloud Architecture": 1,
+    "Data Science": 1,
+    "Statistics": 1,
+    "R": 1,
+    "Security": 2,
+    "Penetration Testing": 1,
+    "Networking": 2,
+    "Frontend": 2,
+    "Vue": 1,
+    "Linux": 2,
+    "CI/CD": 1,
+    "System Design": 1,
+    "C#": 1,
+    ".NET": 1,
+    "Accessibility": 1
+  },
+  "uncoveredTopics": [
+    "PostgreSQL",
+    "Azure",
+    "REST",
+    "API",
+    "Testing",
+    "Java",
+    "PHP",
+    "FastAPI",
+    "Spring",
+    "Next.js",
+    "Tailwind CSS",
+    "Flutter",
+    "C++"
+  ],
+  "coverage": [
+    {
+      "key": "curated",
+      "version": "2d05c126dbb1309471eceb71ab811f0646d057edfcf4661892c52329fd0b1ed3",
+      "count": 35,
+      "freshUntil": null,
+      "staleUntil": null
+    }
+  ],
+  "urlAudits": {
+    "fb_u1": {
+      "status": 403,
+      "url": "https://www.udemy.com/course/the-complete-javascript-course/",
+      "redirected": false,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:44.001Z"
+    },
+    "fb_u2": {
+      "status": 403,
+      "url": "https://www.udemy.com/course/nodejs-express-mongodb-bootcamp/",
+      "redirected": false,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:44.044Z"
+    },
+    "fb_u3": {
+      "status": 403,
+      "url": "https://www.udemy.com/course/docker-kubernetes-the-practical-guide/",
+      "redirected": false,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:44.092Z"
+    },
+    "fb_u4": {
+      "status": 403,
+      "url": "https://www.udemy.com/course/the-complete-guide-to-angular-2/",
+      "redirected": false,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:44.136Z"
+    },
+    "fb_u5": {
+      "status": 403,
+      "url": "https://www.udemy.com/course/react-the-complete-guide-incl-redux/",
+      "redirected": false,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:44.223Z"
+    },
+    "fb_u6": {
+      "status": 403,
+      "url": "https://www.udemy.com/course/complete-python-bootcamp/",
+      "redirected": false,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:44.258Z"
+    },
+    "fb_u7": {
+      "status": 403,
+      "url": "https://www.udemy.com/course/graphql-with-react-course/",
+      "redirected": false,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:44.316Z"
+    },
+    "fb_c1": {
+      "status": 200,
+      "url": "https://www.coursera.org/professional-certificates/google-it-automation",
+      "redirected": false,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:45.317Z"
+    },
+    "fb_c2": {
+      "status": 200,
+      "url": "https://www.coursera.org/professional-certificates/ibm-full-stack-javascript-developer",
+      "redirected": false,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:46.215Z"
+    },
+    "fb_c3": {
+      "status": 200,
+      "url": "https://www.coursera.org/specializations/deep-learning",
+      "redirected": false,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:46.982Z"
+    },
+    "fb_c4": {
+      "status": 200,
+      "url": "https://www.coursera.org/professional-certificates/meta-front-end-developer",
+      "redirected": false,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:47.795Z"
+    },
+    "fb_c5": {
+      "status": 200,
+      "url": "https://www.coursera.org/professional-certificates/meta-back-end-developer",
+      "redirected": false,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:49.054Z"
+    },
+    "fb_e1": {
+      "status": 200,
+      "url": "https://www.edx.org/learn/web-development/harvard-university-cs50-s-web-programming-with-python-and-javascript",
+      "redirected": false,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:49.897Z"
+    },
+    "fb_e2": {
+      "status": 200,
+      "url": "https://www.edx.org/learn/amazon-web-services-aws/amazon-web-services-aws-cloud-practitioner-essentials",
+      "redirected": false,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:50.319Z"
+    },
+    "fb_e4": {
+      "status": 200,
+      "url": "https://www.edx.org/certificates/professional-certificate/harvardx-computer-science-for-web-programming",
+      "redirected": true,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:50.748Z"
+    },
+    "fb_f1": {
+      "status": 200,
+      "url": "https://www.freecodecamp.org/learn/javascript-algorithms-and-data-structures",
+      "redirected": true,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:51.883Z"
+    },
+    "fb_f2": {
+      "status": 200,
+      "url": "https://www.freecodecamp.org/learn/2022/responsive-web-design",
+      "redirected": true,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:52.461Z"
+    },
+    "fb_f3": {
+      "status": 200,
+      "url": "https://www.freecodecamp.org/learn/back-end-development-and-apis",
+      "redirected": true,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:52.988Z"
+    },
+    "fb_f4": {
+      "status": 200,
+      "url": "https://www.freecodecamp.org/learn/front-end-development-libraries",
+      "redirected": true,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:53.519Z"
+    },
+    "fb_u8": {
+      "status": 403,
+      "url": "https://www.udemy.com/course/microservices-with-node-js-and-react/",
+      "redirected": false,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:53.561Z"
+    },
+    "fb_c6": {
+      "status": 200,
+      "url": "https://www.coursera.org/professional-certificates/gcp-cloud-architect",
+      "redirected": false,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:54.329Z"
+    },
+    "fb_e7": {
+      "status": 200,
+      "url": "https://www.edx.org/learn/data-science/harvard-university-data-science-inference-and-modeling",
+      "redirected": false,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:54.909Z"
+    },
+    "fb_f5": {
+      "status": 200,
+      "url": "https://www.freecodecamp.org/learn/information-security",
+      "redirected": true,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:55.470Z"
+    },
+    "fb_u10": {
+      "status": 403,
+      "url": "https://www.udemy.com/course/understanding-typescript/",
+      "redirected": false,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:55.526Z"
+    },
+    "fb_u11": {
+      "status": 403,
+      "url": "https://www.udemy.com/course/vuejs-2-the-complete-guide/",
+      "redirected": false,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:55.646Z"
+    },
+    "fb_c7": {
+      "status": 200,
+      "url": "https://www.coursera.org/professional-certificates/google-cybersecurity",
+      "redirected": false,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:56.461Z"
+    },
+    "fb_c8": {
+      "status": 200,
+      "url": "https://www.coursera.org/professional-certificates/devops-and-software-engineering",
+      "redirected": false,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:57.492Z"
+    },
+    "fb_c9": {
+      "status": 200,
+      "url": "https://www.coursera.org/specializations/gcp-architecture",
+      "redirected": false,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:58.550Z"
+    },
+    "fb_e8": {
+      "status": 200,
+      "url": "https://www.edx.org/learn/kubernetes/the-linux-foundation-introduction-to-kubernetes",
+      "redirected": false,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:58.940Z"
+    },
+    "fb_e9": {
+      "status": 200,
+      "url": "https://www.edx.org/learn/linux/the-linux-foundation-introduction-to-linux",
+      "redirected": false,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:59.333Z"
+    },
+    "fb_f6": {
+      "status": 200,
+      "url": "https://www.freecodecamp.org/learn/scientific-computing-with-python",
+      "redirected": true,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:42:59.883Z"
+    },
+    "fb_f7": {
+      "status": 200,
+      "url": "https://www.freecodecamp.org/learn/foundational-c-sharp-with-microsoft",
+      "redirected": true,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:43:00.404Z"
+    },
+    "fb_m1": {
+      "status": 200,
+      "url": "https://developer.mozilla.org/en-US/docs/Learn_web_development",
+      "redirected": false,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:43:01.262Z"
+    },
+    "fb_o1": {
+      "status": 200,
+      "url": "https://www.theodinproject.com/paths/full-stack-javascript",
+      "redirected": false,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:43:02.883Z"
+    },
+    "fb_h1": {
+      "status": 200,
+      "url": "https://fullstackopen.com/en/",
+      "redirected": false,
+      "missingCount": 0,
+      "archived": false,
+      "checkedAt": "2026-11-05T08:43:03.187Z"
+    }
+  }
+}

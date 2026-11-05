@@ -37,6 +37,17 @@
 }
 
 /* Card Top Bar & Platform Capsule */
+.provider-logo {
+  width: 16px;
+  height: 16px;
+  padding: 2px;
+  box-sizing: content-box;
+  border-radius: 3px;
+  background: #fff;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 .card-top-bar {
   display: flex;
   align-items: center;

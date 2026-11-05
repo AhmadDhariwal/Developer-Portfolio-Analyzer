@@ -42,7 +42,7 @@ const careerSprintroute = require('./src/routes/careerSprint.routes');
 const newsroute = require('./src/routes/newsRoutes');
 const {
   startNewsIngestionScheduler,
-  stopNewsIngestionScheduler
+  stopNewsIngestionScheduler,
 } = require('./src/services/newsService');
 const supportroute = require('./src/routes/support.routes');
 const previewroute = require('./src/routes/preview.routes');
@@ -58,10 +58,10 @@ const { startJobSourceSyncWorker } = require('./src/services/jobSourceSyncServic
 const { startWeeklyReportScheduler } = require('./src/services/weeklyReportService');
 const { initRedisCache, closeRedisCache } = require('./src/services/redisCacheService');
 const {
-  startInterviewQuestionIngestionScheduler
+  startInterviewQuestionIngestionScheduler,
 } = require('./src/services/interviewQuestionIngestionService');
 const {
-  startInterviewQuestionMaintenanceScheduler
+  startInterviewQuestionMaintenanceScheduler,
 } = require('./src/services/interviewQuestionMaintenanceService');
 const { getSettingsSnapshotSync, getSettings } = require('./src/services/platformSettingsService');
 
@@ -81,7 +81,7 @@ const cspConnectSources = [
   ...configuredFrontendOrigins,
   ...configuredApiOrigins,
   ...parseCsv(process.env.CSP_CONNECT_SRC),
-  ...localDevOrigins
+  ...localDevOrigins,
 ];
 const cspImageSources = [
   "'self'",
@@ -90,7 +90,7 @@ const cspImageSources = [
   ...configuredFrontendOrigins,
   ...configuredApiOrigins,
   ...parseCsv(process.env.CSP_IMG_SRC),
-  ...localDevOrigins
+  ...localDevOrigins,
 ];
 
 // Middleware
@@ -113,17 +113,17 @@ app.use(
         imgSrc: [...new Set(cspImageSources)],
         scriptSrc: ["'self'", "'unsafe-inline'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
-        frameAncestors: ["'none'"]
-      }
+        frameAncestors: ["'none'"],
+      },
     },
-    crossOriginEmbedderPolicy: false
-  })
+    crossOriginEmbedderPolicy: false,
+  }),
 );
 app.use(cors());
 app.use(globalRateLimiter);
 app.use(requestContextMiddleware);
 app.use(
-  express.json({ limit: '100kb', verify: require('./src/middleware/integrationWebhookBody') })
+  express.json({ limit: '100kb', verify: require('./src/middleware/integrationWebhookBody') }),
 );
 app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 
@@ -152,7 +152,7 @@ app.use(
   '/uploads',
   require('./src/middleware/storedImageMiddleware').storedImage,
   require('./src/middleware/publicUploadAccess'),
-  express.static(require('./src/services/publicImageStorageService').root())
+  express.static(require('./src/services/publicImageStorageService').root()),
 );
 app.use(metricsMiddleware);
 if (shouldLogRequests) {
@@ -160,7 +160,7 @@ if (shouldLogRequests) {
     logger.info('request', {
       requestId: req.requestId,
       method: req.method,
-      path: requestLogPath(req)
+      path: requestLogPath(req),
     });
     next();
   });
@@ -207,7 +207,7 @@ app.get('/metrics', metricsHandler);
 app.use((error, _req, res, next) => {
   if (error?.type === 'entity.too.large' || error?.status === 413) {
     return res.status(413).json({
-      message: 'Request too large. Please upload a smaller resume or use file upload.'
+      message: 'Request too large. Please upload a smaller resume or use file upload.',
     });
   }
   return next(error);
@@ -224,7 +224,7 @@ const initializeRedisAtStartup = async () => {
       new Promise((resolve) => {
         timer = setTimeout(() => resolve(null), REDIS_STARTUP_TIMEOUT_MS);
         timer.unref?.();
-      })
+      }),
     ]);
     if (redis) {
       console.log('[redis] connected');
@@ -253,6 +253,7 @@ const startServer = async () => {
     startIntegrationSyncWorker();
     startJobSourceSyncWorker();
     startNewsIngestionScheduler();
+    require('./src/services/courseCatalogMaintenanceService').start();
     initTracing();
     startWeeklyReportScheduler();
     startInterviewQuestionIngestionScheduler();
@@ -277,14 +278,14 @@ const startServer = async () => {
     const joobleConfigured = Boolean(String(process.env.JOOBLE_API_KEY || '').trim());
     const adzunaConfigured = Boolean(
       String(process.env.ADZUNA_APP_ID || '').trim() &&
-      String(process.env.ADZUNA_APP_KEY || '').trim()
+      String(process.env.ADZUNA_APP_KEY || '').trim(),
     );
     // Jobs Hub cache health startup check
     const { getCacheHealth } = require('./src/services/jobService');
     getCacheHealth()
       .then((health) => {
         console.log(
-          `[JobsHub] Cache status: ${health.cacheStatus} (${health.totalCachedJobs} jobs)`
+          `[JobsHub] Cache status: ${health.cacheStatus} (${health.totalCachedJobs} jobs)`,
         );
         if (health.cacheStatus === 'LOW') {
           console.warn('[JobsHub] WARNING: Job cache size below recommended threshold (100 jobs).');
@@ -307,6 +308,7 @@ const shutdown = () => {
     .stop()
     .catch(() => {});
   stopNewsIngestionScheduler();
+  require('./src/services/courseCatalogMaintenanceService').stop();
   Promise.allSettled([closeRedisCache(), shutdownTracing()]);
 };
 

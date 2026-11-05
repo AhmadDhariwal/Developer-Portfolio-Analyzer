@@ -182,6 +182,11 @@ export class CourseService {
       personalization: response?.personalization,
       requestedSkills: response?.requestedSkills,
       cacheMetadata: response?.cacheMetadata,
+      providerCounts: Object.fromEntries(
+        Object.entries(response?.providerCounts || {}).filter(
+          ([, count]) => Number.isInteger(count) && Number(count) >= 0,
+        ),
+      ),
       courses,
       total,
       page,
@@ -218,6 +223,9 @@ export class CourseService {
       'YouTube',
       'edX',
       'freeCodeCamp',
+      'MDN',
+      'The Odin Project',
+      'Full Stack Open',
     ];
 
     if (!id || !title || !validPlatforms.includes(platform) || !/^https?:\/\//i.test(url))
@@ -258,6 +266,8 @@ export class CourseService {
       engagementScore: numeric(course?.engagementScore),
       viewCount: numeric(course?.viewCount),
       likeCount: numeric(course?.likeCount),
+      language: course?.language,
+      courseType: course?.courseType,
       matchedRequiredTargets: course?.matchedRequiredTargets,
       matchedTargets: course?.matchedTargets,
       matchedCareerSkills: course?.matchedCareerSkills,

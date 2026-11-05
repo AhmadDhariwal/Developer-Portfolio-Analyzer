@@ -1,0 +1,166 @@
+{
+  "checkedAt": "2026-11-05T09:08:04.173Z",
+  "scope": "Official YouTube Data API, disposable Mongo, one admitted pipeline, two differently personalized service builds",
+  "status": "PASS",
+  "coldMs": 1635.8515999999995,
+  "warmMs": 36.99290000000019,
+  "calls": [
+    "search",
+    "search",
+    "details"
+  ],
+  "coldCalls": 3,
+  "warmAdditionalCalls": 0,
+  "sourceMetadata": {
+    "source": "mixed",
+    "youtubeStatus": "available",
+    "fallbackUsed": false,
+    "catalogStale": false,
+    "catalogStaleUntil": "2026-11-12T09:08:05.882Z",
+    "sourceMessage": ""
+  },
+  "secondSourceMetadata": {
+    "source": "mixed",
+    "youtubeStatus": "cached",
+    "fallbackUsed": false,
+    "catalogStale": false,
+    "catalogStaleUntil": "2026-11-12T09:08:05.882Z",
+    "sourceMessage": "YouTube results were reused from the provider cache."
+  },
+  "providerCounts": {
+    "Coursera": 1,
+    "edX": 1,
+    "The Odin Project": 1,
+    "YouTube": 39
+  },
+  "youtubeCourses": 39,
+  "verifiedChannelIds": [
+    "UC8butISFwT-Wl7EV0hUK0BQ",
+    "UCFqInmJykuVFKzi6uQl_ySg",
+    "UC1CgfNVk8NFzJJ1exEmPiCw",
+    "UC0T6MVd3wQDB5ICAe45OxaQ",
+    "UC4SVo0Ue36XCfOyb5Lh1viQ",
+    "UCsvqVGtbbyHaMoevxPAq9Fg",
+    "UCxZC-5v-UccF6FXGI7VXgoQ",
+    "UCLLw7jmFsvfIVaUFsLs8mlQ",
+    "UCWv7vMbMWH4-V0ZXdmDpPBA",
+    "UCRDhrUdd9yoVoFFQqadR4FQ",
+    "UCrHDY6lrJ8NXCKxFppomr3A",
+    "UCVwjk5MHGdNQQmVeHXOhXMw",
+    "UC8_RSKwbU1OmZWNEoLV1tQg",
+    "UCfJT_eYDTmDE-ovKaxVE1ig",
+    "UCNQ6FEtztATuaVhZKCY28Yw",
+    "UCBwmMxybNva6P_5VmxjzwqA",
+    "UCuaf89M0Lt5pmXzaUssXHvw",
+    "UC8uU_wruBMHeeRma49dtZKA",
+    "UCCWi3hpnq_Pe03nGxuS7isg",
+    "UCBlphb6_k7X1P28OCYXMsWg",
+    "UC3rY5HOgbBvGmq7RnDfwF7A",
+    "UC7cs8q-gJRlGwj4A8OmCmXg",
+    "UCCktnahuRFYIBtNnKT5IYyg",
+    "UCkw4JCwteGrDHIsyIIKo4tQ",
+    "UCh2qyVE6LxxtvcjvAPrpYmg",
+    "UCEO7KQgRI6K6XsyTJlF79nw",
+    "UCV26kRmZIQALWhCkO_XKA-Q",
+    "UC4fxiAHHYmtQB4QYT41isnA",
+    "UC9x0AN7BWHpCDHSm9NiJFJQ",
+    "UCBOs6624oqScw8PaU-Jzw9A",
+    "UCJihyK0A38SZ6SdJirEdIOw",
+    "UCeVMnSShP_Iviwkknt83cww",
+    "UCu7lQE-L5gzt8aD7zuuufjw",
+    "UC63URkuUvnugRBeTNqmToKg"
+  ],
+  "sample": [
+    {
+      "id": "yt_-fW2X7fh7Yg",
+      "title": "SQL Tutorial for Beginners (and Technical Interview Questions Solved)",
+      "url": "https://www.youtube.com/watch?v=-fW2X7fh7Yg",
+      "channelId": "UC8butISFwT-Wl7EV0hUK0BQ",
+      "durationHours": 5.43,
+      "rating": null,
+      "provenance": {
+        "source": "youtube-api",
+        "ratingSource": "unavailable",
+        "popularitySource": "derived-view-count",
+        "engagementSource": "derived-views-likes",
+        "metadataVerifiedAt": "2026-11-05T09:08:05.870Z",
+        "availability": "observed",
+        "durationSource": "youtube-api"
+      }
+    },
+    {
+      "id": "yt_-u-kCJmJHCk",
+      "title": "Learn 12 Advanced SQL Concepts in 20 Minutes (project files included!)",
+      "url": "https://www.youtube.com/watch?v=-u-kCJmJHCk",
+      "channelId": "UCFqInmJykuVFKzi6uQl_ySg",
+      "durationHours": 0.36,
+      "rating": null,
+      "provenance": {
+        "source": "youtube-api",
+        "ratingSource": "unavailable",
+        "popularitySource": "derived-view-count",
+        "engagementSource": "derived-views-likes",
+        "metadataVerifiedAt": "2026-11-05T09:08:05.871Z",
+        "availability": "observed",
+        "durationSource": "youtube-api"
+      }
+    },
+    {
+      "id": "yt_1egh1UTNTdE",
+      "title": "SQL Full Course — Learn SQL From Beginner to Advanced (2026 Edition)",
+      "url": "https://www.youtube.com/watch?v=1egh1UTNTdE",
+      "channelId": "UC1CgfNVk8NFzJJ1exEmPiCw",
+      "durationHours": 6.3,
+      "rating": null,
+      "provenance": {
+        "source": "youtube-api",
+        "ratingSource": "unavailable",
+        "popularitySource": "derived-view-count",
+        "engagementSource": "derived-views-likes",
+        "metadataVerifiedAt": "2026-11-05T09:08:05.867Z",
+        "availability": "observed",
+        "durationSource": "youtube-api"
+      }
+    },
+    {
+      "id": "yt_2w-M4z-iQpk",
+      "title": "SQL Course for Beginners: Learn 90% of SQL in 1 Hour",
+      "url": "https://www.youtube.com/watch?v=2w-M4z-iQpk",
+      "channelId": "UC0T6MVd3wQDB5ICAe45OxaQ",
+      "durationHours": 1.36,
+      "rating": null,
+      "provenance": {
+        "source": "youtube-api",
+        "ratingSource": "unavailable",
+        "popularitySource": "derived-view-count",
+        "engagementSource": "derived-views-likes",
+        "metadataVerifiedAt": "2026-11-05T09:08:05.872Z",
+        "availability": "observed",
+        "durationSource": "youtube-api"
+      }
+    },
+    {
+      "id": "yt_5OdVJbNCSso",
+      "title": "SQL Full Course for free 🐬",
+      "url": "https://www.youtube.com/watch?v=5OdVJbNCSso",
+      "channelId": "UC4SVo0Ue36XCfOyb5Lh1viQ",
+      "durationHours": 3,
+      "rating": null,
+      "provenance": {
+        "source": "youtube-api",
+        "ratingSource": "unavailable",
+        "popularitySource": "derived-view-count",
+        "engagementSource": "derived-views-likes",
+        "metadataVerifiedAt": "2026-11-05T09:08:05.860Z",
+        "availability": "observed",
+        "durationSource": "youtube-api"
+      }
+    }
+  ],
+  "limitation": "Read-only Data API metadata; not enrollment, independent relevance assessment or deployed HTTP load",
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 60,
+    "productionDataUsed": false
+  }
+}

@@ -8,6 +8,8 @@ const {
 } = require('./courseService');
 const { safeCourseUrl, validCourseId } = require('../utils/courseIdentity');
 const { COURSE_POOL_VERSION, findCachedCourse } = require('./courseRecommendationService');
+const mongoose = require('mongoose');
+const sharedCatalog = require('./sharedCourseCatalogService');
 const STATUSES = ['saved', 'in_progress', 'completed'];
 const fail = (status, message) => {
   const error = new Error(message);
@@ -49,6 +51,17 @@ const dto = (row) => ({
 });
 const resolveCourse = async (userId, courseId) => {
   if (isUnavailableCatalogCourse(courseId)) return null;
+  if (mongoose.connection.readyState === 1) {
+    const inventory = buildFallbackPool('All', 200);
+    const { digest } = require('../utils/courseIdentity');
+    await sharedCatalog.getCurated(
+      inventory,
+      digest([...require('../data/courseCatalog'), ...require('../data/openLearningCatalog')]),
+    );
+    const shared = await sharedCatalog.findCourse(courseId);
+    if (shared) return shared;
+    if (inventory.some((course) => course.id === courseId)) return null;
+  }
   const catalog = buildFallbackPool('All', 100).find((course) => course.id === courseId);
   if (catalog) return catalog;
   const memory = findCachedCourse(userId, courseId);

@@ -516,6 +516,13 @@
     </div>
 
     <!-- Course Cards Grid -->
+    <p
+      class="metadata"
+      *ngIf="allCourses.length && providerSummary"
+      aria-label="Provider counts for all matching courses"
+    >
+      {{ providerSummary }}
+    </p>
     <div class="course-grid" *ngIf="!isLoading">
       <app-course-card
         *ngFor="let course of displayedCourses; trackBy: trackById"

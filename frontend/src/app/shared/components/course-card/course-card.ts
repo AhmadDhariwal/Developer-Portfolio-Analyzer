@@ -28,10 +28,25 @@ export class CourseCardComponent implements OnChanges {
   @Output() sprint = new EventEmitter<void>();
   @Output() topicClick = new EventEmitter<string>();
   thumbnailError = false;
+  logoError = false;
+  private readonly providerLogos: Record<string, string> = {
+    YouTube: 'youtube',
+    Udemy: 'udemy',
+    Coursera: 'coursera',
+    edX: 'edx',
+    freeCodeCamp: 'freecodecamp',
+    MDN: 'mdnwebdocs',
+    'The Odin Project': 'theodinproject',
+  };
+  get providerLogo(): string | null {
+    const slug = this.providerLogos[this.course.platform];
+    return slug && !this.logoError ? `/providers/${slug}.svg` : null;
+  }
   notes = '';
   percent: number | null = null;
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['course']) this.logoError = false;
     if (changes['course']?.previousValue?.id !== this.course.id) this.thumbnailError = false;
     const previous = changes['progress']?.previousValue as UserCourseProgress | null;
     if (

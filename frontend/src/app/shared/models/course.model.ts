@@ -4,6 +4,9 @@ export type CoursePlatform =
   | 'YouTube'
   | 'edX'
   | 'freeCodeCamp'
+  | 'MDN'
+  | 'The Odin Project'
+  | 'Full Stack Open'
   | 'All'
   | 'Other';
 export type CourseLevel = 'Beginner' | 'Intermediate' | 'Advanced' | 'All Levels' | 'All';
@@ -36,6 +39,8 @@ export interface Course {
   engagementScore?: number | null;
   viewCount?: number | null;
   likeCount?: number | null;
+  language?: string | null;
+  courseType?: string | null;
   matchedRequiredTargets?: string[];
   matchedTargets?: string[];
   matchedCareerSkills?: string[];
@@ -67,6 +72,7 @@ export interface RecommendedBasedOn {
 
 export interface CoursesResponse {
   courses: Course[];
+  providerCounts?: Partial<Record<CoursePlatform, number>>;
   total: number;
   page: number;
   totalPages: number;
@@ -105,6 +111,9 @@ export const PLATFORM_OPTIONS: { value: CoursePlatform | 'All'; label: string }[
   { value: 'edX', label: 'edX' },
   { value: 'freeCodeCamp', label: 'freeCodeCamp' },
   { value: 'YouTube', label: 'YouTube' },
+  { value: 'MDN', label: 'MDN' },
+  { value: 'The Odin Project', label: 'The Odin Project' },
+  { value: 'Full Stack Open', label: 'Full Stack Open' },
   { value: 'Other', label: 'Other (edX, freeCodeCamp)' },
 ];
 
@@ -258,6 +267,9 @@ export function safeCourseUrl(value: string, platform: CoursePlatform): string |
       YouTube: ['youtube.com', 'youtu.be'],
       edX: ['edx.org'],
       freeCodeCamp: ['freecodecamp.org'],
+      MDN: ['developer.mozilla.org'],
+      'The Odin Project': ['theodinproject.com'],
+      'Full Stack Open': ['fullstackopen.com'],
     };
     return url.protocol === 'https:' &&
       !url.username &&

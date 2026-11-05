@@ -5,8 +5,11 @@ const {
   digest,
   skills: canonicalSkills,
   skillAliases,
+  COURSE_PROVIDERS,
 } = require('../utils/courseIdentity');
 const axios = require('axios');
+const mongoose = require('mongoose');
+const sharedCatalog = require('./sharedCourseCatalogService');
 
 const YOUTUBE_API_BASE = 'https://www.googleapis.com/youtube/v3';
 const YOUTUBE_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
@@ -19,7 +22,7 @@ const youtubeInflight = new Map();
 let youtubeFailureCount = 0;
 let youtubeCircuitOpenUntil = 0;
 const COURSE_POOL_SIZE = {
-  All: 15,
+  All: 40,
   YouTube: 40,
 };
 const COURSE_LIMITS = {
@@ -29,7 +32,7 @@ const COURSE_LIMITS = {
   maxLimit: 20,
 };
 
-const VALID_PLATFORMS = ['All', 'Udemy', 'Coursera', 'YouTube', 'edX', 'freeCodeCamp', 'Other'];
+const VALID_PLATFORMS = ['All', ...COURSE_PROVIDERS, 'Other'];
 const VALID_LEVELS = ['All', 'Beginner', 'Intermediate', 'Advanced'];
 const DURATION_ALIASES = {
   '0-2': '0-2',
@@ -48,6 +51,9 @@ const PLATFORM_COLORS = {
   edX: { bg: '#02262b', text: '#ffffff' },
   freeCodeCamp: { bg: '#006400', text: '#ffffff' },
   YouTube: { bg: '#ff0000', text: '#ffffff' },
+  MDN: { bg: '#1b1b1b', text: '#ffffff' },
+  'The Odin Project': { bg: '#734f24', text: '#ffffff' },
+  'Full Stack Open': { bg: '#33265d', text: '#ffffff' },
 };
 
 const KNOWN_TOPICS = [
@@ -120,6 +126,9 @@ function normalisePlatform(raw) {
   if (value.includes('youtube')) return 'YouTube';
   if (value.includes('edx')) return 'edX';
   if (value.includes('freecodecamp') || value.includes('free code')) return 'freeCodeCamp';
+  if (value === 'mdn') return 'MDN';
+  if (value === 'the odin project') return 'The Odin Project';
+  if (value === 'full stack open') return 'Full Stack Open';
   if (value === 'other') {
     return 'Other';
   }
@@ -235,9 +244,7 @@ const optionalNumber = (value, min = 0, max = Number.MAX_SAFE_INTEGER) =>
 function normaliseCourse(course = {}) {
   if (!course || typeof course !== 'object') return null;
   const title = toTrimmedString(course.title).slice(0, 200);
-  const platform = ['Udemy', 'Coursera', 'YouTube', 'edX', 'freeCodeCamp'].includes(course.platform)
-    ? course.platform
-    : null;
+  const platform = COURSE_PROVIDERS.includes(course.platform) ? course.platform : null;
   const url = platform && safeCourseUrl(course.url, platform);
   if (!title || !platform || !url) return null;
   const key = canonicalCourseKey({ platform, url });
@@ -274,6 +281,11 @@ function normaliseCourse(course = {}) {
     engagementScore: optionalNumber(course.engagementScore, 0, 5),
     viewCount: optionalNumber(course.viewCount),
     likeCount: optionalNumber(course.likeCount),
+    channelId: /^UC[A-Za-z0-9_-]{22}$/.test(course.channelId || '') ? course.channelId : null,
+    language: typeof course.language === 'string' ? course.language.slice(0, 20) : null,
+    courseType: ['curriculum', 'course', 'tutorial', 'learning-path'].includes(course.courseType)
+      ? course.courseType
+      : null,
     provenance: {
       source,
       ratingSource: rating === null ? 'unavailable' : 'provider-reviews',
@@ -287,10 +299,7 @@ function normaliseCourse(course = {}) {
         optionalNumber(course.engagementScore, 0, 5) === null
           ? 'unavailable'
           : 'derived-views-likes',
-      metadataVerifiedAt:
-        source === 'youtube-api'
-          ? course.provenance?.metadataVerifiedAt || new Date().toISOString()
-          : null,
+      metadataVerifiedAt: course.provenance?.metadataVerifiedAt || null,
       availability: source === 'youtube-api' ? 'observed' : 'unverified',
       durationSource: durationHours === null ? 'unavailable' : source,
     },
@@ -474,7 +483,7 @@ function buildWhyRecommended(course, context = {}) {
 }
 
 function scoreAndRank(courses = [], context = {}) {
-  return courses
+  const ranked = courses
     .map((course) => {
       const relevanceScore = computeRelevance(course, context);
       const hasRating = Number.isFinite(Number(course.rating)) && Number(course.rating) > 0;
@@ -513,6 +522,31 @@ function scoreAndRank(courses = [], context = {}) {
         right.finalScore - left.finalScore ||
         left.id.localeCompare(right.id, 'en'),
     );
+  // Soft diversity only breaks exact ranking ties. Never displace a more relevant
+  // result, change score weights, cap a provider or rebalance individual pages.
+  const tier = (course) =>
+    JSON.stringify([
+      course.matchedRequiredTargets.length,
+      course.matchedTargets.length,
+      course.matchedCareerSkills.length > 0,
+      course.finalScore,
+      course.relevanceScore,
+    ]);
+  for (let index = 1; index < ranked.length; index++) {
+    if (ranked[index - 1].platform !== ranked[index].platform) continue;
+    const key = tier(ranked[index]);
+    let alternate = index + 1;
+    while (
+      alternate < ranked.length &&
+      tier(ranked[alternate]) === key &&
+      ranked[alternate].platform === ranked[index - 1].platform
+    )
+      alternate++;
+    if (alternate < ranked.length && tier(ranked[alternate]) === key) {
+      ranked.splice(index, 0, ranked.splice(alternate, 1)[0]);
+    }
+  }
+  return ranked;
 }
 
 async function requestYouTubeCourses(query, maxResults = 20, options = {}) {
@@ -635,12 +669,16 @@ async function requestYouTubeCourses(query, maxResults = 20, options = {}) {
             description: (snippet.description || '').slice(0, 240),
             platform: 'YouTube',
             instructor: snippet.channelTitle || null,
+            channelId: snippet.channelId,
             rating: null,
             reviewCount: null,
             engagementScore: calcYouTubeEngagementScore(views, likes),
             viewCount: optionalNumber(Number.parseInt(statistics.viewCount, 10)),
             likeCount: optionalNumber(Number.parseInt(statistics.likeCount, 10)),
             metadataSource: 'youtube-api',
+            language: snippet.defaultAudioLanguage || snippet.defaultLanguage || null,
+            courseType: 'tutorial',
+            provenance: { metadataVerifiedAt: new Date().toISOString() },
             duration,
             durationHours: Number(durationMeta.totalHours.toFixed(2)),
             level: null,
@@ -692,7 +730,10 @@ function setYouTubeCache(key, result, ttlMs) {
   }
 }
 
-const courseCatalog = require('../data/courseCatalog');
+const courseCatalog = [
+  ...require('../data/courseCatalog'),
+  ...require('../data/openLearningCatalog'),
+];
 const unavailableCourseIds = new Set(
   courseCatalog.filter((course) => course.discoveryUnavailable).map((course) => course.id),
 );
@@ -742,7 +783,7 @@ function isPersistableCoursePool(courses = []) {
       toTrimmedString(course.id) &&
       toTrimmedString(course.title) &&
       Boolean(safeCourseUrl(course.url, course.platform)) &&
-      ['Udemy', 'Coursera', 'YouTube', 'edX', 'freeCodeCamp'].includes(course.platform),
+      COURSE_PROVIDERS.includes(course.platform),
   );
 }
 
@@ -785,9 +826,36 @@ async function buildCoursePoolWithMetadata(options = {}) {
 
   const [youtubeResult, curatedCourses] = await Promise.all([
     youtubeCount > 0
-      ? fetchYouTubeCourses(query, youtubeCount, { forceRefresh: options.forceRefresh })
+      ? !process.env.YOUTUBE_API_KEY || process.env.YOUTUBE_API_KEY === 'your_youtube_api_key'
+        ? fetchYouTubeCourses(query, youtubeCount)
+        : mongoose.connection.readyState === 1
+          ? sharedCatalog
+              .getYouTube({
+                topic: filters.topic || skillGaps[0],
+                careerStack,
+                fingerprint: digest(process.env.YOUTUBE_API_KEY || ''),
+                fetchProvider: fetchYouTubeCourses,
+              })
+              .catch((error) => {
+                if (filters.platform === 'YouTube' || error.status !== 503) throw error;
+                return {
+                  courses: [],
+                  status: 'unavailable',
+                  reason: 'YouTube refresh is deferred. Showing ranked catalog alternatives.',
+                  fromCache: false,
+                };
+              })
+          : process.env.NODE_ENV === 'production'
+            ? Promise.reject(
+                Object.assign(new Error('Catalog storage unavailable.'), { status: 503 }),
+              )
+            : fetchYouTubeCourses(query, youtubeCount, { forceRefresh: options.forceRefresh })
       : Promise.resolve({ courses: [], status: 'not-requested', reason: '', fromCache: false }),
-    Promise.resolve(buildFallbackPool(filters.platform, curatedCount)),
+    mongoose.connection.readyState === 1 && curatedCount > 0
+      ? sharedCatalog
+          .getCurated(buildFallbackPool('All', 200), digest(courseCatalog))
+          .then((courses) => courses.filter((course) => matchesPlatform(course, filters.platform)))
+      : Promise.resolve(buildFallbackPool(filters.platform, curatedCount)),
   ]);
 
   let pool = dedupeCourses([...youtubeResult.courses, ...curatedCourses].filter(Boolean));
@@ -811,13 +879,17 @@ async function buildCoursePoolWithMetadata(options = {}) {
           : 'curated',
       youtubeStatus: youtubeResult.fromCache ? 'cached' : youtubeResult.status,
       fallbackUsed,
+      catalogStale: youtubeResult.stale === true,
+      catalogStaleUntil: youtubeResult.staleUntil || null,
       sourceMessage: fallbackUsed
         ? filters.platform === 'YouTube'
           ? 'YouTube is unavailable. No courses match this platform; select All for catalog alternatives.'
           : youtubeResult.reason || 'YouTube is unavailable. Showing ranked provider alternatives.'
-        : youtubeResult.fromCache
-          ? 'YouTube results were reused from the provider cache.'
-          : '',
+        : youtubeResult.stale
+          ? 'Cached courses are being refreshed.'
+          : youtubeResult.fromCache
+            ? 'YouTube results were reused from the provider cache.'
+            : '',
     },
   };
 }

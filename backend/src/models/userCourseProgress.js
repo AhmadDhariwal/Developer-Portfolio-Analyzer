@@ -8,7 +8,7 @@ const courseSchema = new mongoose.Schema(
     platform: {
       type: String,
       required: true,
-      enum: ['Udemy', 'Coursera', 'YouTube', 'edX', 'freeCodeCamp'],
+      enum: require('../utils/courseIdentity').COURSE_PROVIDERS,
     },
     topics: { type: [String], default: [] },
     instructor: { type: String, maxlength: 120, default: null },

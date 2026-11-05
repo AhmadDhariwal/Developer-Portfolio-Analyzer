@@ -8,7 +8,7 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../.env'), quiet: t
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const express = require('express');
-const { chromium } = require('playwright');
+const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const uri =
   process.env.LEARNING_VERIFICATION_MONGO_URI ||
   'mongodb://127.0.0.1:27018/devinsight_learning_browser';
@@ -37,17 +37,19 @@ const { ANALYSIS_VERSION } = require('../services/skillGapCacheContract');
 const { EVIDENCE_POLICY_VERSION } = require('../services/skillGapEvidenceService');
 const { TAXONOMY_VERSION, MATRIX_VERSION } = require('../services/skillGapRequirements');
 const ai = require('../services/aiservice');
-const CATALOG_SIZE = require('../data/courseCatalog').filter(
-  (course) => !course.discoveryUnavailable,
-).length;
+const CATALOG_SIZE = require('../services/courseService').buildFallbackPool('All', 200).length;
 let aiCalls = 0;
 const originalAI = ai.runAIAnalysis;
 ai.runAIAnalysis = async () => {
   aiCalls++;
   throw new Error('Ordinary learning reads must not invoke AI.');
 };
-const output = path.resolve(__dirname, '../../verification/courses/final');
-const screenshotOutput = path.resolve(__dirname, '../../../frontend/verification/courses/final');
+const output = process.env.COURSES_E2E_OUTPUT
+  ? path.resolve(process.env.COURSES_E2E_OUTPUT)
+  : path.resolve(__dirname, '../../verification/courses/final');
+const screenshotOutput = process.env.COURSES_E2E_SCREENSHOTS
+  ? path.resolve(process.env.COURSES_E2E_SCREENSHOTS)
+  : path.resolve(__dirname, '../../../frontend/verification/courses/final');
 const webRoot = path.resolve(__dirname, '../../../frontend/dist/frontend/browser');
 const owner = new mongoose.Types.ObjectId(),
   foreign = new mongoose.Types.ObjectId();
@@ -571,6 +573,7 @@ async function capture(page, name) {
     { $set: { 'analysisData.ruleVersion': 'legacy' } },
   );
   const incompatible = await request('/courses?limit=20');
+  assert.equal(incompatible.status, 200, JSON.stringify(incompatible.body));
   assert.equal(incompatible.body.personalization.status, 'career-context-only');
   assert.deepEqual(incompatible.body.recommendedBasedOn.skillGapsUsed, []);
   result.sourceFreshness = { changedFingerprint: true, incompatibleEvidenceExcluded: true };

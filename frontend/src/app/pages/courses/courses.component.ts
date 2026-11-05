@@ -69,6 +69,13 @@ export class CoursesComponent implements OnInit, OnDestroy {
   currentPage = 0;
   totalPages = 1;
   totalCourses = 0;
+  providerCounts: Record<string, number> = {};
+  get providerSummary(): string {
+    return Object.entries(this.providerCounts)
+      .filter(([, count]) => count > 0)
+      .map(([provider, count]) => `${provider}: ${count}`)
+      .join(' · ');
+  }
 
   activeFilters: CourseFilters = { ...DEFAULT_FILTERS };
   recommendedBasedOn: RecommendedBasedOn | null = null;
@@ -442,6 +449,7 @@ export class CoursesComponent implements OnInit, OnDestroy {
           page: this.currentPage,
           totalPages: this.totalPages,
           totalCourses: this.totalCourses,
+          providerCounts: this.providerCounts,
           recommendedBasedOn: this.recommendedBasedOn,
         }
       : null;
@@ -453,6 +461,7 @@ export class CoursesComponent implements OnInit, OnDestroy {
       this.currentPage = 0;
       this.totalPages = 1;
       this.totalCourses = 0;
+      this.providerCounts = {};
       this.recommendedBasedOn = null;
       this.personalization = null;
       this.loadedAt = null;
@@ -472,6 +481,7 @@ export class CoursesComponent implements OnInit, OnDestroy {
         page: number;
         totalPages: number;
         totalCourses: number;
+        providerCounts: Record<string, number>;
         recommendedBasedOn: RecommendedBasedOn | null;
       } | null;
     } = {},
@@ -517,6 +527,12 @@ export class CoursesComponent implements OnInit, OnDestroy {
           this.currentPage = response.page ?? page;
           this.totalPages = response.totalPages ?? 1;
           this.totalCourses = response.total ?? this.allCourses.length;
+          this.providerCounts = Object.fromEntries(
+            Object.entries(response.providerCounts || {}).map(([provider, count]) => [
+              provider,
+              Number(count) || 0,
+            ]),
+          );
           this.recommendedBasedOn = response.recommendedBasedOn
             ? {
                 ...response.recommendedBasedOn,
@@ -546,6 +562,7 @@ export class CoursesComponent implements OnInit, OnDestroy {
             this.currentPage = options.previousResult.page;
             this.totalPages = options.previousResult.totalPages;
             this.totalCourses = options.previousResult.totalCourses;
+            this.providerCounts = options.previousResult.providerCounts;
             this.recommendedBasedOn = options.previousResult.recommendedBasedOn;
           }
 

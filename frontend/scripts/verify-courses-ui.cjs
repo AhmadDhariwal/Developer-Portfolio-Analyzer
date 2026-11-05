@@ -453,7 +453,7 @@ async function mobileFilters(page) {
       await external.focus();
       await page.keyboard.press('Enter');
       const popup = await popupPromise;
-      await popup.waitForLoadState('domcontentloaded');
+      await popup.waitForURL('https://www.youtube.com/**');
       assert.match(popup.url(), /youtube.com/);
       await popup.close();
       controls.mutation = 'error';

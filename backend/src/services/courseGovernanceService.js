@@ -11,8 +11,7 @@ const digest = (value) =>
     .update(String(value || ''))
     .digest('hex');
 
-const windowKey = (bucket, scope, windowSlot) =>
-  `courses:v1:rate:${bucket}:${digest(scope)}:${windowSlot}`;
+const windowKey = (bucket, scope) => `courses:v1:rate:${bucket}:${digest(scope)}`;
 
 const leaseKey = (signalHash) => `courses:v1:lease:${digest(signalHash)}`;
 const POOL_LEASE_MS = 30_000;
@@ -31,28 +30,31 @@ async function window(
   await mongo.initialize();
   const limit = Math.max(1, Math.trunc(Number(max) || 60));
   const durationMs = Math.max(1000, Math.trunc(Number(windowMs) || 60000));
-  const now = Date.now();
-  const slot = Math.floor(now / durationMs);
-  const untilMs = (slot + 1) * durationMs;
-  const until = new Date(untilMs);
-  const key = windowKey(bucket, scope, slot);
-  const retryAfterSeconds = Math.max(1, Math.ceil((untilMs - now) / 1000));
+  const key = windowKey(bucket, scope);
+  const serverSlot = { $floor: { $divide: [{ $toLong: '$$NOW' }, durationMs] } };
 
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
       const updated = await State.collection.findOneAndUpdate(
         { _id: key },
-        {
-          $inc: { count: 1 },
-          $setOnInsert: {
-            leases: [],
-            expiresAt: until,
+        [
+          {
+            $set: {
+              count: { $cond: [{ $eq: ['$windowSlot', serverSlot] }, { $add: ['$count', 1] }, 1] },
+              windowSlot: serverSlot,
+              serverNow: '$$NOW',
+              expiresAt: { $toDate: { $multiply: [{ $add: [serverSlot, 1] }, durationMs] } },
+            },
           },
-        },
-        { upsert: true, returnDocument: 'after' },
+        ],
+        { upsert: true, returnDocument: 'after', timeoutMS: POOL_STORE_TIMEOUT_MS },
       );
       const doc = updated?.value ?? updated;
       const count = Number(doc?.count || 1);
+      const retryAfterSeconds = Math.max(
+        1,
+        Math.ceil((doc.expiresAt.getTime() - doc.serverNow.getTime()) / 1000),
+      );
       if (count > limit) {
         return {
           allowed: false,
@@ -72,12 +74,7 @@ async function window(
       throw error;
     }
   }
-  return {
-    allowed: true,
-    limit,
-    remaining: Math.max(0, limit - 1),
-    retryAfterSeconds: 0,
-  };
+  throw poolBusy();
 }
 
 async function acquirePoolLease(signalHash, leaseMs = POOL_LEASE_MS) {
@@ -90,23 +87,34 @@ async function acquirePoolLease(signalHash, leaseMs = POOL_LEASE_MS) {
     const token = crypto.randomUUID();
     const durationMs = Math.max(1000, Math.trunc(Number(leaseMs) || POOL_LEASE_MS));
     const now = Date.now();
-    const nowDate = new Date(now);
-    const until = new Date(now + durationMs);
-    await State.collection.updateOne(
+    await State.collection
+      .updateOne(
+        { _id: key },
+        { $setOnInsert: { leases: [], expiresAt: new Date(now + durationMs + 60000) } },
+        { upsert: true, timeoutMS: POOL_STORE_TIMEOUT_MS },
+      )
+      .catch((error) => {
+        if (error.code !== 11000) throw error;
+      });
+    const acquired = await State.collection.updateOne(
       {
         _id: key,
-        $or: [{ 'leases.0': { $exists: false } }, { 'leases.until': { $lte: nowDate } }],
-      },
-      {
-        $set: {
-          count: 1,
-          leases: [{ token, until }],
-          expiresAt: new Date(until.getTime() + 60000),
+        $expr: {
+          $lte: [{ $ifNull: [{ $arrayElemAt: ['$leases.until', 0] }, new Date(0)] }, '$$NOW'],
         },
       },
-      { upsert: true, timeoutMS: POOL_STORE_TIMEOUT_MS },
+      [
+        {
+          $set: {
+            count: 1,
+            leases: [{ token, until: { $add: ['$$NOW', durationMs] } }],
+            expiresAt: { $add: ['$$NOW', durationMs + 60000] },
+          },
+        },
+      ],
+      { timeoutMS: POOL_STORE_TIMEOUT_MS },
     );
-    return { acquired: true, token };
+    return { acquired: acquired.matchedCount === 1, token: acquired.matchedCount ? token : null };
   } catch (error) {
     if (error?.code === 11000) {
       return { acquired: false, token: null };
@@ -129,7 +137,10 @@ async function releasePoolLease(signalHash, token) {
   }
 }
 
-async function runPoolBuild(signalHash, { forceRefresh, startedAt, build, persist }) {
+async function runPoolBuild(
+  signalHash,
+  { forceRefresh, startedAt, build, persist, isReusable = () => true },
+) {
   if (mongoose.connection.readyState !== 1) {
     const pool = await build();
     await persist(pool);
@@ -161,7 +172,8 @@ async function runPoolBuild(signalHash, { forceRefresh, startedAt, build, persis
       .catch(() => {
         throw poolBusy();
       });
-    return row?.completed?.pool;
+    const pool = row?.completed?.pool;
+    return pool && isReusable(pool) ? pool : null;
   };
   const deadline = Date.now() + POOL_LEASE_MS + POOL_STORE_TIMEOUT_MS;
   while (Date.now() < deadline) {
