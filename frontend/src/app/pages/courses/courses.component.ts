@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Subscription, timeout } from 'rxjs';
 import { distinctUntilChanged, map } from 'rxjs/operators';
 import { CourseService } from '../../shared/services/course.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
@@ -18,6 +18,7 @@ import {
   ActiveCourseFilterChip,
   Course,
   CourseFilters,
+  CourseDiscoveryStatus,
   CoursePersonalization,
   DEFAULT_FILTERS,
   RecommendedBasedOn,
@@ -52,6 +53,12 @@ export class CoursesComponent implements OnInit, OnDestroy {
   @ViewChild('filterTrigger') filterTrigger!: ElementRef<HTMLButtonElement>;
   view: 'discover' | 'for-you' | 'learning' = 'discover';
   loadedAt: Date | null = null;
+  discovery: CourseDiscoveryStatus | null = null;
+  discoveryTimedOut = false;
+  private discoveryTimer?: ReturnType<typeof setTimeout>;
+  private discoveryRequest?: Subscription;
+  private discoveryDeadline = 0;
+  private discoveryAttempts = 0;
   personalization: CoursePersonalization | null = null;
   private scrollContainer: HTMLElement | null = null;
   private previousOverflow = '';
@@ -302,11 +309,15 @@ export class CoursesComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.stopDiscovery();
+    this.requestToken++;
     this.closeMobileFilters(false);
     this.subscriptions.unsubscribe();
   }
   setView(view: 'discover' | 'for-you' | 'learning'): void {
     if (this.view === view) return;
+    this.stopDiscovery();
+    this.requestToken++;
     this.view = view;
     if (view !== 'learning') this.resetAndFetch();
   }
@@ -451,6 +462,11 @@ export class CoursesComponent implements OnInit, OnDestroy {
   }
 
   private resetAndFetch(options: { preserveOnFailure?: boolean } = {}): void {
+    this.stopDiscovery();
+    this.discovery = null;
+    this.discoveryTimedOut = false;
+    this.discoveryAttempts = 0;
+    this.discoveryDeadline = Date.now() + 120_000;
     const preserveOnFailure = Boolean(options.preserveOnFailure) && this.allCourses.length > 0;
     const previousResult = preserveOnFailure
       ? {
@@ -485,6 +501,7 @@ export class CoursesComponent implements OnInit, OnDestroy {
     append: boolean,
     options: {
       preserveOnFailure?: boolean;
+      poll?: boolean;
       previousResult?: {
         courses: Course[];
         displayCount: number;
@@ -499,7 +516,9 @@ export class CoursesComponent implements OnInit, OnDestroy {
     const currentRequest = ++this.requestToken;
     const preservePrevious = Boolean(options.preserveOnFailure) && Boolean(options.previousResult);
 
-    if (append) {
+    if (options.poll) {
+      // Background checks keep the current cards and pagination visible.
+    } else if (append) {
       this.isLoadingMore = true;
       this.isRefreshing = false;
     } else if (preservePrevious) {
@@ -516,75 +535,146 @@ export class CoursesComponent implements OnInit, OnDestroy {
 
     const refresh = this.forceRefresh;
     this.forceRefresh = false;
-    this.subscriptions.add(
-      this.courseService
-        .getCourses(this.activeFilters, page, PAGE_SIZE, {
-          refresh,
-          view: this.view === 'discover' ? 'discover' : 'for-you',
-        })
-        .subscribe({
-          next: (response) => {
-            if (currentRequest !== this.requestToken) {
-              return;
+    const source = this.courseService.getCourses(this.activeFilters, page, PAGE_SIZE, {
+      refresh,
+      view: this.view === 'discover' ? 'discover' : 'for-you',
+    });
+    const request = (
+      options.poll
+        ? source.pipe(
+            timeout({ first: Math.min(15_000, Math.max(1, this.discoveryDeadline - Date.now())) }),
+          )
+        : source
+    ).subscribe({
+      next: (response) => {
+        if (currentRequest !== this.requestToken) {
+          return;
+        }
+
+        const unchanged = options.poll && this.discovery?.revision === response.discovery?.revision;
+        this.discovery = response.discovery || null;
+        if (unchanged) {
+          this.scheduleDiscovery();
+          this.cdr.markForCheck();
+          return;
+        }
+        const incoming = Array.isArray(response.courses) ? response.courses : [];
+        this.allCourses = append ? this.mergeCourses(this.allCourses, incoming) : incoming;
+
+        this.displayCount = append
+          ? this.allCourses.length
+          : Math.min(INITIAL_DISPLAY, this.allCourses.length);
+
+        this.loadedAt = new Date();
+        this.personalization =
+          response.personalization || response.recommendedBasedOn?.personalization || null;
+        this.loadMoreFailed = false;
+        this.currentPage = response.page ?? page;
+        this.totalPages = response.totalPages ?? 1;
+        this.totalCourses = response.total ?? this.allCourses.length;
+        this.providerCounts = Object.fromEntries(
+          Object.entries(response.providerCounts || {}).map(([provider, count]) => [
+            provider,
+            Number(count) || 0,
+          ]),
+        );
+        this.recommendedBasedOn = response.recommendedBasedOn
+          ? {
+              ...response.recommendedBasedOn,
+              fromCache: Boolean(response.fromCache || response.fromFrontendCache),
             }
+          : null;
+        this.errorMessage = '';
+        this.scheduleDiscovery();
+        this.isLoading = false;
+        this.isLoadingMore = false;
+        this.isRefreshing = false;
+        this.cdr.markForCheck();
+      },
+      error: (error) => {
+        if (currentRequest !== this.requestToken) {
+          return;
+        }
 
-            const incoming = Array.isArray(response.courses) ? response.courses : [];
-            this.allCourses = append ? this.mergeCourses(this.allCourses, incoming) : incoming;
+        this.stopDiscovery();
+        if (options.poll) this.discoveryTimedOut = true;
+        this.errorMessage = learningError(error);
+        this.loadMoreFailed = append;
+        this.isLoading = false;
+        this.isLoadingMore = false;
+        this.isRefreshing = false;
 
-            this.displayCount = append
-              ? this.allCourses.length
-              : Math.min(INITIAL_DISPLAY, this.allCourses.length);
+        if (preservePrevious && options.previousResult) {
+          this.allCourses = options.previousResult.courses;
+          this.displayCount = options.previousResult.displayCount;
+          this.currentPage = options.previousResult.page;
+          this.totalPages = options.previousResult.totalPages;
+          this.totalCourses = options.previousResult.totalCourses;
+          this.providerCounts = options.previousResult.providerCounts;
+          this.recommendedBasedOn = options.previousResult.recommendedBasedOn;
+        }
 
-            this.loadedAt = new Date();
-            this.personalization =
-              response.personalization || response.recommendedBasedOn?.personalization || null;
-            this.loadMoreFailed = false;
-            this.currentPage = response.page ?? page;
-            this.totalPages = response.totalPages ?? 1;
-            this.totalCourses = response.total ?? this.allCourses.length;
-            this.providerCounts = Object.fromEntries(
-              Object.entries(response.providerCounts || {}).map(([provider, count]) => [
-                provider,
-                Number(count) || 0,
-              ]),
-            );
-            this.recommendedBasedOn = response.recommendedBasedOn
-              ? {
-                  ...response.recommendedBasedOn,
-                  fromCache: Boolean(response.fromCache || response.fromFrontendCache),
-                }
-              : null;
-            this.errorMessage = '';
-            this.isLoading = false;
-            this.isLoadingMore = false;
-            this.isRefreshing = false;
-            this.cdr.markForCheck();
-          },
-          error: (error) => {
-            if (currentRequest !== this.requestToken) {
-              return;
-            }
+        this.cdr.markForCheck();
+      },
+    });
+    this.subscriptions.add(request);
+    if (options.poll) this.discoveryRequest = request;
+  }
 
-            this.errorMessage = learningError(error);
-            this.loadMoreFailed = append;
-            this.isLoading = false;
-            this.isLoadingMore = false;
-            this.isRefreshing = false;
+  get discoveryMessage(): string {
+    if (this.discoveryTimedOut) return 'Automatic checking has stopped. You can check again later.';
+    if (this.discovery?.status === 'pending')
+      return this.allCourses.length
+        ? 'Finding more courses. Available courses are shown below.'
+        : 'Discovery pending. We are checking permitted sources for matching courses.';
+    if (!this.discovery?.insufficient) return '';
+    if (this.discovery.reason === 'missing-verified-metadata')
+      return 'Some courses lack verified details for these filters. Try broader filters.';
+    return 'More matching courses are not available from automatic discovery right now. Try broader filters or check again later.';
+  }
 
-            if (preservePrevious && options.previousResult) {
-              this.allCourses = options.previousResult.courses;
-              this.displayCount = options.previousResult.displayCount;
-              this.currentPage = options.previousResult.page;
-              this.totalPages = options.previousResult.totalPages;
-              this.totalCourses = options.previousResult.totalCourses;
-              this.providerCounts = options.previousResult.providerCounts;
-              this.recommendedBasedOn = options.previousResult.recommendedBasedOn;
-            }
+  @HostListener('document:visibilitychange') onVisibilityChange(): void {
+    if (document.hidden) {
+      this.stopDiscovery();
+    } else {
+      this.scheduleDiscovery();
+    }
+  }
 
-            this.cdr.markForCheck();
-          },
-        }),
+  private stopDiscovery(): void {
+    clearTimeout(this.discoveryTimer);
+    this.discoveryTimer = undefined;
+    this.discoveryRequest?.unsubscribe();
+    this.discoveryRequest = undefined;
+  }
+
+  private scheduleDiscovery(): void {
+    clearTimeout(this.discoveryTimer);
+    if (this.view === 'learning' || this.discovery?.status !== 'pending') return;
+    if (Date.now() >= this.discoveryDeadline || this.discoveryAttempts >= 6) {
+      this.discoveryTimedOut = true;
+      return;
+    }
+    if (document.hidden) return;
+    const delay = Math.min(
+      Math.max(0, this.discoveryDeadline - Date.now()),
+      30_000,
+      Math.max(5000, this.discovery.pollAfterMs || 5000) * 2 ** this.discoveryAttempts,
     );
+    this.discoveryTimer = setTimeout(() => {
+      if (Date.now() >= this.discoveryDeadline) {
+        this.discoveryTimedOut = true;
+        this.cdr.markForCheck();
+        return;
+      }
+      if (document.hidden || this.view === 'learning') return;
+      if (this.isLoading || this.isLoadingMore || this.isRefreshing) {
+        this.scheduleDiscovery();
+        return;
+      }
+      this.discoveryAttempts++;
+      this.fetchPage(1, false, { poll: true });
+    }, delay);
   }
 
   private mergeCourses(existing: Course[], incoming: Course[]): Course[] {

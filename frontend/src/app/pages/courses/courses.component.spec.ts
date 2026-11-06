@@ -104,4 +104,123 @@ describe('Learning Hub discovery lifecycle', () => {
     pending.next(response(['after-destroy']));
     expect(component.allCourses).toHaveLength(0);
   });
+  it('polls pending discovery with backoff and replaces cards only on catalog revision change', () => {
+    vi.useFakeTimers();
+    const pending = {
+      ...response(['available']),
+      discovery: {
+        status: 'pending' as const,
+        revision: 'one',
+        insufficient: true,
+        reason: 'missing-courses' as const,
+        pollAfterMs: 5000,
+        retryAfterSeconds: null,
+      },
+    };
+    api.getCourses.mockReturnValue(of(pending));
+    component.onFiltersChange({ ...component.activeFilters, topic: 'Unseen' });
+    expect(component.allCourses[0].id).toBe('available');
+    vi.advanceTimersByTime(5000);
+    expect(component.allCourses[0].id).toBe('available');
+    expect(component.isLoading).toBe(false);
+    api.getCourses.mockReturnValue(
+      of({
+        ...response(['new']),
+        discovery: {
+          ...pending.discovery,
+          status: 'ready',
+          revision: 'two',
+          insufficient: false,
+        },
+      }),
+    );
+    vi.advanceTimersByTime(10000);
+    expect(component.allCourses[0].id).toBe('new');
+    const calls = api.getCourses.mock.calls.length;
+    vi.advanceTimersByTime(120000);
+    expect(api.getCourses).toHaveBeenCalledTimes(calls);
+    vi.useRealTimers();
+  });
+  it('bounds polling and offers manual retry through normal reads without forcing providers', () => {
+    vi.useFakeTimers();
+    api.getCourses.mockReturnValue(
+      of({
+        ...response([]),
+        discovery: {
+          status: 'pending',
+          revision: 'one',
+          insufficient: true,
+          reason: 'missing-courses',
+          pollAfterMs: 5000,
+          retryAfterSeconds: null,
+        },
+      }),
+    );
+    component.onFiltersChange({ ...component.activeFilters, topic: 'Pending' });
+    vi.advanceTimersByTime(120000);
+    expect(component.discoveryTimedOut).toBe(true);
+    expect(api.getCourses.mock.calls.length).toBeLessThanOrEqual(8);
+    component.retryLoad();
+    expect(api.getCourses.mock.calls.at(-1)?.[3].refresh).toBe(false);
+    vi.useRealTimers();
+  });
+  it('pauses while hidden and stops on My Learning navigation', () => {
+    vi.useFakeTimers();
+    api.getCourses.mockReturnValue(
+      of({
+        ...response([]),
+        discovery: {
+          status: 'pending',
+          revision: 'one',
+          insufficient: true,
+          reason: 'missing-courses',
+          pollAfterMs: 5000,
+          retryAfterSeconds: null,
+        },
+      }),
+    );
+    component.onFiltersChange({ ...component.activeFilters, topic: 'Pending' });
+    const hidden = vi.spyOn(document, 'hidden', 'get').mockReturnValue(true);
+    component.onVisibilityChange();
+    const calls = api.getCourses.mock.calls.length;
+    vi.advanceTimersByTime(15000);
+    expect(api.getCourses).toHaveBeenCalledTimes(calls);
+    hidden.mockReturnValue(false);
+    component.onVisibilityChange();
+    vi.advanceTimersByTime(5000);
+    expect(api.getCourses).toHaveBeenCalledTimes(calls + 1);
+    component.setView('learning');
+    vi.advanceTimersByTime(120000);
+    expect(api.getCourses).toHaveBeenCalledTimes(calls + 1);
+    hidden.mockRestore();
+    vi.useRealTimers();
+  });
+
+  it('stops a hung poll and preserves available cards', () => {
+    vi.useFakeTimers();
+    api.getCourses
+      .mockReturnValueOnce(
+        of({
+          ...response(['available']),
+          discovery: {
+            status: 'pending',
+            revision: 'one',
+            insufficient: true,
+            reason: 'missing-courses',
+            pollAfterMs: 5000,
+            retryAfterSeconds: null,
+          },
+        }),
+      )
+      .mockReturnValue(new Subject<CoursesResponse>());
+    component.onFiltersChange({ ...component.activeFilters, topic: 'Hung' });
+    vi.advanceTimersByTime(20000);
+    expect(component.discoveryTimedOut).toBe(true);
+    expect(component.allCourses[0].id).toBe('available');
+    expect(component.errorMessage).toBeTruthy();
+    const calls = api.getCourses.mock.calls.length;
+    vi.advanceTimersByTime(120000);
+    expect(api.getCourses).toHaveBeenCalledTimes(calls);
+    vi.useRealTimers();
+  });
 });

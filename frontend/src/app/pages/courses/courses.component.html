@@ -471,6 +471,23 @@
       Refreshing recommendations. Current courses remain available.
     </p>
 
+    <div
+      *ngIf="discoveryMessage && !isLoading"
+      class="metadata refresh-status"
+      role="status"
+      aria-live="polite"
+    >
+      <p>{{ discoveryMessage }}</p>
+      <button
+        type="button"
+        *ngIf="discovery?.status !== 'pending' || discoveryTimedOut"
+        [disabled]="isLoading || isRefreshing"
+        (click)="retryLoad()"
+      >
+        Check again
+      </button>
+    </div>
+
     <!-- Skeleton Shimmer Loader -->
     <div class="course-grid skeleton-grid" *ngIf="isLoading" aria-label="Loading courses">
       <div class="skeleton-card" *ngFor="let item of skeletonItems" aria-hidden="true">
@@ -500,7 +517,11 @@
     <div class="empty-state" *ngIf="!isLoading && !errorMessage && !allCourses.length">
       <div class="state-icon" aria-hidden="true">🔍</div>
       <h3>
-        {{ hasActiveFilters ? 'No courses match these filters' : 'No courses available yet' }}
+        {{
+          discovery?.status === 'pending' && !discoveryTimedOut
+            ? 'Discovery pending'
+            : 'No verified matches in the catalog yet'
+        }}
       </h3>
       <p>
         {{

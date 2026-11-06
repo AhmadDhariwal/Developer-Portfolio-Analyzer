@@ -70,7 +70,22 @@ export interface RecommendedBasedOn {
   requestedSkills?: string[];
 }
 
+export interface CourseDiscoveryStatus {
+  status: 'pending' | 'ready' | 'cooldown' | 'unavailable';
+  revision: string;
+  insufficient: boolean;
+  reason:
+    | 'missing-courses'
+    | 'missing-verified-metadata'
+    | 'filter-mismatch'
+    | 'stale-coverage'
+    | null;
+  pollAfterMs: number | null;
+  retryAfterSeconds: number | null;
+}
+
 export interface CoursesResponse {
+  discovery?: CourseDiscoveryStatus;
   courses: Course[];
   providerCounts?: Partial<Record<CoursePlatform, number>>;
   total: number;

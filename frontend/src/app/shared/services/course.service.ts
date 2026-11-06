@@ -181,6 +181,7 @@ export class CourseService {
     );
 
     return {
+      discovery: response?.discovery,
       personalization: response?.personalization,
       requestedSkills: response?.requestedSkills,
       cacheMetadata: response?.cacheMetadata,

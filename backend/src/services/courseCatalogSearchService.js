@@ -240,6 +240,7 @@ async function load(filters) {
   if (pending.has(key)) return pending.get(key);
   if (pending.size >= 8) throw busy();
   const work = (async () => {
+    const catalogReadAt = new Date();
     // The text index chooses coverage documents; per-course matching then prevents
     // unrelated siblings in the same coverage document from becoming false matches.
     const rows = await collection().aggregate(pipeline(topic), { maxTimeMS: 5000 }).toArray();
@@ -273,34 +274,6 @@ async function load(filters) {
         unique.set(identity, course);
     }
     const matching = [...unique.values()];
-    if (
-      !topic &&
-      ['All', 'YouTube'].includes(filters.platform) &&
-      !matching.some((course) => course.platform === 'YouTube')
-    ) {
-      await recordGap('Full Stack', { retrievalAllowed: Boolean(process.env.YOUTUBE_API_KEY) });
-    }
-    const providers =
-      filters.platform === 'All'
-        ? undefined
-        : filters.platform === 'Other'
-          ? ['edX', 'freeCodeCamp']
-          : [filters.platform];
-    const selected = matching.filter((course) => !providers || providers.includes(course.platform));
-    const coverage =
-      topic && !selected.length
-        ? await recordGap(topic, {
-            retrievalAllowed:
-              ['All', 'YouTube'].includes(filters.platform) && Boolean(process.env.YOUTUBE_API_KEY),
-          })
-        : null;
-    if (topic)
-      await require('./courseCatalogCoverageService').observe(topic, matching, {
-        revision,
-        freshness,
-        providers,
-        requestDiscovery: recordGap,
-      });
     const courses = service.applyCourseFilters(matching, { ...filters, topic: '' });
     courses.sort(
       (a, b) => matchScore(b, topic) - matchScore(a, topic) || a.id.localeCompare(b.id, 'en'),
@@ -319,7 +292,8 @@ async function load(filters) {
     }
     const value = {
       courses,
-      coverage,
+      coverage: null,
+      discoveryContext: { topic, matching, freshness, catalogReadAt },
       revision,
       fromCache: false,
       sourceMetadata: {
@@ -328,11 +302,7 @@ async function load(filters) {
           ? 'cached'
           : 'not-requested',
         fallbackUsed: false,
-        sourceMessage: coverage
-          ? ['capacity', 'unsupported', 'curation-required'].includes(coverage.status)
-            ? 'No verified course matches yet. Try a broader topic or check again later.'
-            : 'No verified course matches yet. Shared catalog discovery has been requested.'
-          : '',
+        sourceMessage: '',
         catalogStale: stale,
         catalogStaleUntil: Number.isFinite(sourceDeadline)
           ? new Date(sourceDeadline).toISOString()
@@ -444,12 +414,14 @@ async function processDiscoveryQueue({
             $set: {
               'topics.$.state': state,
               'topics.$.nextAttemptAt': retryAt,
+              'topics.$.completedAt': new Date(),
             },
           },
           { session },
         );
       }, 5000);
       shared.clearMemory();
+      require('./courseDiscoveryStatusService').clearMemory();
       cache.clear();
       cachedBytes = 0;
     }
@@ -461,7 +433,16 @@ async function processDiscoveryQueue({
 module.exports = {
   load: async (filters) => {
     try {
-      return await load(filters);
+      const result = await load(filters);
+      const discovery = await require('./courseDiscoveryStatusService').describe({
+        ...result.discoveryContext,
+        courses: result.courses,
+        revision: result.revision,
+        filters,
+        requestDiscovery: recordGap,
+      });
+      const { discoveryContext, ...publicResult } = result;
+      return { ...publicResult, discovery };
     } catch {
       throw busy();
     }
@@ -476,6 +457,7 @@ module.exports = {
   MAX_COVERAGE_DOCUMENTS,
   MAX_RESULTS,
   clearMemory: () => {
+    require('./courseDiscoveryStatusService').clearMemory();
     cache.clear();
     cachedBytes = 0;
   },

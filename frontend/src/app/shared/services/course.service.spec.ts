@@ -23,6 +23,27 @@ describe('CourseService caching', () => {
     httpMock.verify();
   });
 
+  it('preserves discovery status and catalog revision when normalizing an empty response', async () => {
+    const result = firstValueFrom(service.getCourses({ topic: 'Unseen' }));
+    const discovery = {
+      status: 'pending',
+      revision: 'catalog-two',
+      insufficient: true,
+      reason: 'missing-courses',
+      pollAfterMs: 5000,
+      retryAfterSeconds: null,
+    };
+    httpMock.expectOne(`${environment.apiBaseUrl}/courses?page=1&limit=10&topic=Unseen`).flush({
+      courses: [],
+      total: 0,
+      page: 1,
+      totalPages: 1,
+      hasMore: false,
+      discovery,
+    });
+    expect((await result).discovery).toEqual(discovery);
+  });
+
   it('shares one request for repeated getCourses subscriptions with the same params', async () => {
     const firstPromise = firstValueFrom(service.getCourses({ topic: 'Angular' }, 1, 10));
     const secondPromise = firstValueFrom(service.getCourses({ topic: 'Angular' }, 1, 10));

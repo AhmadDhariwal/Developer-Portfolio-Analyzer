@@ -73,7 +73,7 @@ async function admitted(topic) {
 async function observe(
   topic,
   courses,
-  { revision, freshness = {}, providers = COURSE_PROVIDERS, requestDiscovery } = {},
+  { revision, freshness = {}, providers = COURSE_PROVIDERS, requestDiscovery, catalogReadAt } = {},
 ) {
   topic = taxonomy.canonical(topic);
   if (!topic || !(await admitted(topic))) return [];
@@ -203,7 +203,21 @@ async function observe(
     writes.push({
       updateOne: {
         filter: { _id, technology: topic, provider },
-        update: { $set: fields },
+        // A provider may finish between the snapshot read and this write. Preserve
+        // its newer outcome atomically, including across separate API workers.
+        update: catalogReadAt
+          ? [
+              {
+                $replaceWith: {
+                  $cond: [
+                    { $gt: [{ $ifNull: ['$lastProviderCheckAt', new Date(0)] }, catalogReadAt] },
+                    '$$ROOT',
+                    { $mergeObjects: ['$$ROOT', { $literal: fields }] },
+                  ],
+                },
+              },
+            ]
+          : { $set: fields },
         upsert: true,
       },
     });

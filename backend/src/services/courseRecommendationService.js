@@ -13,7 +13,6 @@ const {
 const AnalysisCache = require('../models/analysisCache');
 const aiService = require('./aiservice');
 const { runPoolBuild } = require('./courseGovernanceService');
-const sharedCatalog = require('./sharedCourseCatalogService');
 
 const {
   resolveSkillSignals,
@@ -476,7 +475,9 @@ const buildResponsePayload = ({
   poolHash,
   personalization,
   requestedSkills,
+  discovery,
 }) => ({
+  discovery,
   courses: pageResult.projected
     ? pageResult.courses
     : pageResult.courses.map(publicCourse).filter(Boolean),
@@ -568,6 +569,8 @@ const fetchCourses = async (req, res) => {
     const forceRefresh = req.query.refresh === 'true';
     res.set?.('Cache-Control', 'private, no-store');
 
+    const catalog = await require('./courseCatalogSearchService').load(filters);
+    const discovery = catalog.discovery;
     const { cacheLookup, poolHash, memoryKey, redisKey } = buildPoolCacheKey({
       userId,
       careerStack,
@@ -576,7 +579,7 @@ const fetchCourses = async (req, res) => {
       knownSkills: skillSignals.knownSkills,
       filters,
       evidenceFingerprint: skillSignals.fingerprint,
-      catalogRevision: await sharedCatalog.revision(),
+      catalogRevision: catalog.revision,
     });
 
     const memoryHit = await stageTimer.measure('cache', () =>
@@ -598,6 +601,7 @@ const fetchCourses = async (req, res) => {
             poolHash,
             personalization,
             requestedSkills,
+            discovery,
           }),
         ),
       );
@@ -640,6 +644,7 @@ const fetchCourses = async (req, res) => {
             poolHash,
             personalization,
             requestedSkills,
+            discovery,
           }),
         ),
       );
@@ -678,6 +683,7 @@ const fetchCourses = async (req, res) => {
             poolHash,
             personalization,
             requestedSkills,
+            discovery,
           }),
         ),
       );
@@ -752,6 +758,7 @@ const fetchCourses = async (req, res) => {
           poolHash,
           personalization,
           requestedSkills,
+          discovery,
         }),
       ),
     );
