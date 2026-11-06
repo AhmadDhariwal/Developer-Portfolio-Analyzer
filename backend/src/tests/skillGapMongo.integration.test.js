@@ -213,6 +213,47 @@ test("Skill Gap Mongo: active selection, reanalysis, source revisions, history a
   assert.equal(databaseHit.calculatedAt, first.calculatedAt);
   assert.deepEqual(databaseHit.skills, first.skills);
 
+  // Reproduce the current target with persisted selected-resume evidence and the
+  // producer's sampled GitHub contract, without reading any real account data.
+  user.activeCareerStack = "Full Stack";
+  user.activeExperienceLevel = "2-3 years";
+  const fullStack = await call();
+  assert.equal(fullStack.coverage, null);
+  assert.equal(fullStack.coverageUnavailableReason, "required_evidence_unknown");
+  assert.deepEqual(fullStack.scoring.coverage.evidence.inputs, {
+    weightedCredit: 1,
+    requiredWeight: 20
+  });
+  assert.equal(fullStack.requiredSkills.length, 20);
+  assert.equal(fullStack.unknownSkills.length, 18);
+  assert.equal(fullStack.partialSkills.length, 2);
+  const persistedFullStack = await AnalysisCache.findOne({
+    userId: owner,
+    signalHash: fullStack.cacheMetadata.signalHash
+  }).lean();
+  assert.equal(persistedFullStack.analysisData.coverage, null);
+  assert.equal(
+    persistedFullStack.analysisData.coverageUnavailableReason,
+    "required_evidence_unknown"
+  );
+  controller.clearSkillGapMemoryCache();
+  shared.clear();
+  const reloadedFullStack = await call();
+  assert.equal(reloadedFullStack.fromCache, true);
+  assert.deepEqual(reloadedFullStack.skills, fullStack.skills);
+  assert.equal(reloadedFullStack.coverage, null);
+  const refreshedFullStack = await call({ forceRefresh: true });
+  assert.equal(refreshedFullStack.coverageUnavailableReason, "required_evidence_unknown");
+  assert.deepEqual(refreshedFullStack.skills, fullStack.skills);
+  const fullStackLearning = await resolveSkillSignals(owner, "Full Stack", "2-3 years", null, user);
+  assert.equal(fullStackLearning.personalization.status, "evidence-informed");
+  assert.equal(
+    fullStackLearning.targets.find((target) => target.name === "React").status,
+    "PARTIAL"
+  );
+  user.activeCareerStack = "Frontend";
+  user.activeExperienceLevel = "Student";
+
   user.activeResumeFileId = files[1]._id;
   assert.equal((await learningSignals()).personalization.status, "career-context-only");
   const switched = await call();
