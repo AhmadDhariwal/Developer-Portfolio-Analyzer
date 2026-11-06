@@ -4,6 +4,9 @@ export type CoursePlatform =
   | 'YouTube'
   | 'edX'
   | 'freeCodeCamp'
+  | 'MDN'
+  | 'The Odin Project'
+  | 'Full Stack Open'
   | 'All'
   | 'Other';
 export type CourseLevel = 'Beginner' | 'Intermediate' | 'Advanced' | 'All Levels' | 'All';
@@ -36,6 +39,8 @@ export interface Course {
   engagementScore?: number | null;
   viewCount?: number | null;
   likeCount?: number | null;
+  language?: string | null;
+  courseType?: string | null;
   matchedRequiredTargets?: string[];
   matchedTargets?: string[];
   matchedCareerSkills?: string[];
@@ -65,8 +70,24 @@ export interface RecommendedBasedOn {
   requestedSkills?: string[];
 }
 
+export interface CourseDiscoveryStatus {
+  status: 'pending' | 'ready' | 'cooldown' | 'unavailable';
+  revision: string;
+  insufficient: boolean;
+  reason:
+    | 'missing-courses'
+    | 'missing-verified-metadata'
+    | 'filter-mismatch'
+    | 'stale-coverage'
+    | null;
+  pollAfterMs: number | null;
+  retryAfterSeconds: number | null;
+}
+
 export interface CoursesResponse {
+  discovery?: CourseDiscoveryStatus;
   courses: Course[];
+  providerCounts?: Partial<Record<CoursePlatform, number>>;
   total: number;
   page: number;
   totalPages: number;
@@ -105,6 +126,9 @@ export const PLATFORM_OPTIONS: { value: CoursePlatform | 'All'; label: string }[
   { value: 'edX', label: 'edX' },
   { value: 'freeCodeCamp', label: 'freeCodeCamp' },
   { value: 'YouTube', label: 'YouTube' },
+  { value: 'MDN', label: 'MDN' },
+  { value: 'The Odin Project', label: 'The Odin Project' },
+  { value: 'Full Stack Open', label: 'Full Stack Open' },
   { value: 'Other', label: 'Other (edX, freeCodeCamp)' },
 ];
 
@@ -204,6 +228,13 @@ export interface CourseProvenance {
 
 export interface CoursePersonalization {
   status: 'evidence-informed' | 'career-context-only';
+  learningState?:
+    | 'ready'
+    | 'analysis-required'
+    | 'no-recommended-skills'
+    | 'skill-not-recommended'
+    | 'evidence-unavailable';
+  eligibleSkills?: string[];
   ruleVersion: string;
   limitation: string;
   targets?: { name: string; status: string; requirement: string }[];
@@ -216,6 +247,7 @@ export interface CourseProgressUpdate {
   progressPercent?: number | null;
 }
 export interface UserCourseProgress {
+  recoveryRequired?: boolean;
   courseId: string;
   course: Course;
   status: LearningStatus;
@@ -258,6 +290,9 @@ export function safeCourseUrl(value: string, platform: CoursePlatform): string |
       YouTube: ['youtube.com', 'youtu.be'],
       edX: ['edx.org'],
       freeCodeCamp: ['freecodecamp.org'],
+      MDN: ['developer.mozilla.org'],
+      'The Odin Project': ['theodinproject.com'],
+      'Full Stack Open': ['fullstackopen.com'],
     };
     return url.protocol === 'https:' &&
       !url.username &&

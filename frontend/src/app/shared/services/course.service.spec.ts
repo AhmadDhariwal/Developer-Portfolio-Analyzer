@@ -22,6 +22,91 @@ describe('CourseService caching', () => {
   afterEach(() => {
     httpMock.verify();
   });
+  it('notifies the active learning view when resume/profile evidence is invalidated', () => {
+    const notified = vi.fn();
+    const subscription = service.invalidated$.subscribe(notified);
+    TestBed.inject(FrontendCacheInvalidationService).clearCoursesCaches();
+    expect(notified).toHaveBeenCalledOnce();
+    subscription.unsubscribe();
+  });
+  it('isolates view requests and preserves the authenticated eligible-skill state', async () => {
+    const discover = firstValueFrom(service.getCourses({}, 1, 10, { view: 'discover' }));
+    const personalized = firstValueFrom(service.getCourses({}, 1, 10, { view: 'for-you' }));
+    httpMock
+      .expectOne((request) => request.params.get('view') === 'discover')
+      .flush({ courses: [], total: 1781 });
+    httpMock
+      .expectOne((request) => request.params.get('view') === 'for-you')
+      .flush({
+        courses: [],
+        total: 2,
+        personalization: {
+          status: 'evidence-informed',
+          learningState: 'ready',
+          eligibleSkills: ['Docker'],
+          ruleVersion: 'fixture',
+          limitation: 'Evidence informed',
+        },
+      });
+    expect((await discover).total).toBe(1781);
+    expect((await personalized).total).toBe(2);
+    expect((await personalized).personalization?.eligibleSkills).toEqual(['Docker']);
+  });
+
+  it('sends exact compound topics and isolates Quantum Computing from Cloud Computing requests', async () => {
+    const quantum = firstValueFrom(
+      service.getCourses({ topic: 'Quantum Computing' }, 1, 10, { view: 'discover' }),
+    );
+    const cloud = firstValueFrom(
+      service.getCourses({ topic: 'Cloud Computing' }, 1, 10, { view: 'discover' }),
+    );
+    const discovery = {
+      status: 'pending',
+      revision: 'strict-policy',
+      insufficient: true,
+      reason: 'missing-courses',
+      pollAfterMs: 5000,
+      retryAfterSeconds: null,
+    };
+    httpMock
+      .expectOne(
+        (request) =>
+          request.params.get('topic') === 'Quantum Computing' &&
+          request.params.get('view') === 'discover',
+      )
+      .flush({ courses: [], total: 0, page: 1, totalPages: 1, discovery });
+    httpMock
+      .expectOne(
+        (request) =>
+          request.params.get('topic') === 'Cloud Computing' &&
+          request.params.get('view') === 'discover',
+      )
+      .flush({ courses: [], total: 58, page: 1, totalPages: 6 });
+    expect((await quantum).total).toBe(0);
+    expect((await quantum).discovery?.status).toBe('pending');
+    expect((await cloud).total).toBe(58);
+  });
+
+  it('preserves discovery status and catalog revision when normalizing an empty response', async () => {
+    const result = firstValueFrom(service.getCourses({ topic: 'Unseen' }));
+    const discovery = {
+      status: 'pending',
+      revision: 'catalog-two',
+      insufficient: true,
+      reason: 'missing-courses',
+      pollAfterMs: 5000,
+      retryAfterSeconds: null,
+    };
+    httpMock.expectOne(`${environment.apiBaseUrl}/courses?page=1&limit=10&topic=Unseen`).flush({
+      courses: [],
+      total: 0,
+      page: 1,
+      totalPages: 1,
+      hasMore: false,
+      discovery,
+    });
+    expect((await result).discovery).toEqual(discovery);
+  });
 
   it('shares one request for repeated getCourses subscriptions with the same params', async () => {
     const firstPromise = firstValueFrom(service.getCourses({ topic: 'Angular' }, 1, 10));

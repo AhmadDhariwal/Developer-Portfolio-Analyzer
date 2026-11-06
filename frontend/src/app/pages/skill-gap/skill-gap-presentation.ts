@@ -30,6 +30,8 @@ export function warningLabel(warning: string): string {
       'Some evidence sources are unavailable. Coverage uses the available analyzed evidence.',
     career_requirements_unavailable:
       'Career requirements are unavailable. Configure your career target.',
+    required_evidence_unknown:
+      'Coverage cannot be calculated because evidence for one or more required skills is unknown.',
     github_and_resume_evidence_unavailable: 'No analyzed GitHub or resume evidence is available.',
     stale_source: 'This source is marked stale. Reanalyze it to update the evidence.',
     source_timestamp_unavailable: 'The source has no recorded timestamp.',

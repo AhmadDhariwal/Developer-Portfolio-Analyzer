@@ -115,7 +115,7 @@ test('missing metadata stays null; provider review scores and curated history re
   const curated = service.buildFallbackPool('All', 100);
   const inventory = require('../data/courseCatalog');
   assert.equal(inventory.length, 36);
-  assert.equal(curated.length, 32);
+  assert.equal(curated.length, 61);
   assert.deepEqual(
     inventory
       .filter((item) => item.discoveryUnavailable)
@@ -124,7 +124,7 @@ test('missing metadata stays null; provider review scores and curated history re
     ['fb_e3', 'fb_e5', 'fb_e6', 'fb_u9'],
   );
   assert.ok(
-    curated.every((item) => !inventory.find((row) => row.id === item.id).discoveryUnavailable),
+    curated.every((item) => !inventory.find((row) => row.id === item.id)?.discoveryUnavailable),
   );
   assert.ok(
     curated.every(
@@ -167,6 +167,22 @@ test('required evidence targets rank before optional/known context without repla
     ['a', 'b'],
   );
 });
+
+test('soft provider diversity breaks exact ties without displacing relevance or imposing quotas', () => {
+  const a = course('a', 'Udemy');
+  const b = course('b', 'Udemy');
+  const c = course('c', 'Coursera');
+  const ranked = service.scoreAndRank([a, b, c]);
+  assert.deepEqual(
+    ranked.map((item) => item.id),
+    ['a', 'c', 'b'],
+  );
+  assert.equal(new Set(ranked.map((item) => item.finalScore)).size, 1);
+  const relevant = service.scoreAndRank([a, b, c], { skillGaps: ['SQL'] });
+  assert.equal(relevant.length, 3);
+  const higher = course('d', 'Udemy', { topics: ['SQL'] });
+  assert.equal(service.scoreAndRank([a, b, c, higher], { skillGaps: ['SQL'] })[0].id, 'd');
+});
 test('edX and freeCodeCamp are directly filterable while Other preserves combined compatibility', () => {
   assert.equal(service.normaliseCourseFilters({ platform: 'edX' }).platform, 'edX');
   assert.equal(
@@ -176,9 +192,9 @@ test('edX and freeCodeCamp are directly filterable while Other preserves combine
   const edxPool = service.buildFallbackPool('edX', 50);
   const fccPool = service.buildFallbackPool('freeCodeCamp', 50);
   const otherPool = service.buildFallbackPool('Other', 50);
-  assert.equal(edxPool.length, 6);
+  assert.equal(edxPool.length, 7);
   assert.ok(edxPool.every((item) => item.platform === 'edX'));
-  assert.ok(fccPool.length >= 7);
+  assert.equal(fccPool.length, 17);
   assert.ok(fccPool.every((item) => item.platform === 'freeCodeCamp'));
   assert.equal(otherPool.length, edxPool.length + fccPool.length);
   assert.equal(service.applyCourseFilters(otherPool, { platform: 'edX' }).length, edxPool.length);

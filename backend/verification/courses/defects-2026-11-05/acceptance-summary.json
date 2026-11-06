@@ -1,0 +1,73 @@
+{
+  "checkedAt": "2026-11-05T13:57:34.158Z",
+  "branch": "fix/learning-hub-p1",
+  "sourceCommit": "aae00e2a353efe9976dcf5fff997723124cff98a",
+  "authorizedBranch": "fix/learning-hub-p1 (explicit user confirmation)",
+  "prTarget": "not applicable",
+  "full": {
+    "status": "FAIL",
+    "counts": {
+      "tests": 802,
+      "pass": 774,
+      "fail": 7,
+      "cancelled": 0,
+      "skipped": 21
+    },
+    "failures": [
+      "✖ isolated Mongo + namespaced configured Upstash: critical portfolio flows (1473.3658ms)",
+      "✖ Skill Gap real Mongo: HTTP, two workers, budgets, fencing, ownership, TTL and query plans (41799.1818ms)",
+      "✖ Support uses Mongo as the durable authority when Redis fails and recovers (24181.7657ms)",
+      "✖ failing tests:",
+      "✖ isolated Mongo + namespaced configured Upstash: critical portfolio flows (1473.3658ms)",
+      "✖ two HTTP workers share one calculation/AI/write for an identical active source snapshot (11579.3716ms)",
+      "✖ warm requests validate sources without another AI call and owner contexts are isolated (2037.5203ms)",
+      "✖ existing exact lookup index and seven-day cache-only TTL remain usable (4.2327ms)",
+      "✖ developer signal consumers use the current owned career and resume context (33.1884ms)",
+      "✖ Support uses Mongo as the durable authority when Redis fails and recovers (24181.7657ms)"
+    ],
+    "lastLines": [
+      "      at Timeout._onTimeout (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\node_modules\\mongodb\\lib\\cmap\\connection.js:140:26)",
+      "      at listOnTimeout (node:internal/timers:635:17)",
+      "      at process.processTimers (node:internal/timers:571:7) {",
+      "    errorLabelSet: Set(1) { 'RetryableWriteError' },",
+      "    beforeHandshake: false,",
+      "    [cause]: undefined",
+      "  }",
+      ""
+    ]
+  },
+  "focused": {
+    "tests": 102,
+    "pass": 102,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "crossModuleRecovery": {
+    "tests": 10,
+    "pass": 10,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "frontend": "542",
+  "browser": "VERIFIED",
+  "fixture": "VERIFIED",
+  "network": {
+    "externalCalls": 0,
+    "baselineRef": "aae00e2a",
+    "warmApi": {
+      "samples": 24,
+      "p50Ms": 47.01729999999952,
+      "p95Ms": 107.70110000000022
+    },
+    "warmService": {
+      "samples": 3000,
+      "concurrency": 100,
+      "p50Ms": 5.481900000000678,
+      "p95Ms": 8.378500000000713
+    },
+    "admissionRetries": 0
+  },
+  "originalLiveSession": "BLOCKED: Computer Use could not verify the existing browser URL; no further interaction with that session"
+}

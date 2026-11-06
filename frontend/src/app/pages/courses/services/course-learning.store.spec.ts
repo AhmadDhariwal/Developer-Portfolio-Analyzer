@@ -112,4 +112,27 @@ describe('Learning Hub server-confirmed progress', () => {
     expect(store.error()).toContain('temporarily unavailable');
     expect(api.saveProgress).not.toHaveBeenCalled();
   });
+  it('reloads a stale read that races a committed mutation instead of reverting progress', () => {
+    store.load();
+    const write = new Subject<UserCourseProgress>();
+    const read = new Subject();
+    const updated = {
+      ...record,
+      status: 'in_progress' as const,
+      notes: 'committed',
+      progressPercent: 27,
+    };
+    api.saveProgress.mockReturnValue(write);
+    store.save(record.courseId, { status: 'in_progress', notes: 'committed', progressPercent: 27 });
+    api.getMyLearning
+      .mockReturnValueOnce(read)
+      .mockReturnValueOnce(of({ courses: [updated], page: 1, totalPages: 1, total: 1 }));
+    store.load();
+    write.next(updated);
+    write.complete();
+    read.next({ courses: [record], page: 1, totalPages: 1, total: 1 });
+    read.complete();
+    expect(store.records()[record.courseId]).toEqual(updated);
+    expect(store.ready()).toBe(true);
+  });
 });

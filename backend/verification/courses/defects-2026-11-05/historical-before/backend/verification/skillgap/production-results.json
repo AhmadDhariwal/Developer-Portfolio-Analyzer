@@ -1,0 +1,46 @@
+{
+  "productionDataUsed": false,
+  "liveProviders": false,
+  "checks": [
+    "lease expiry, fencing and stale release isolation",
+    "cached market provenance, aliases, expiry and deduplication"
+  ],
+  "market": {
+    "present": true,
+    "sampledJobs": 2,
+    "kind": "cached-provider-sample",
+    "demandScoreKind": "legacy-scaled-heuristic",
+    "live": false,
+    "geography": "mixed-unfiltered",
+    "role": "mixed-unfiltered",
+    "seniority": "mixed-unfiltered",
+    "sources": [
+      "fixture-one",
+      "fixture-two"
+    ],
+    "duplicatesRemoved": 1,
+    "limitations": [
+      "Bounded cache sample; not representative of the entire job market.",
+      "Demand is an uncalibrated scaled frequency, not a live market percentage."
+    ],
+    "expiresAt": "2026-11-04T13:58:57.590Z",
+    "topSkills": [
+      {
+        "name": "Python",
+        "demandScore": 100,
+        "postings": 1
+      },
+      {
+        "name": "TypeScript",
+        "demandScore": 100,
+        "postings": 1
+      }
+    ],
+    "updatedAt": "2026-11-04T12:58:57.593Z"
+  },
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 153,
+    "productionDataUsed": false
+  }
+}

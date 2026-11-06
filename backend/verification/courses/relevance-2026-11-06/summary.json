@@ -1,0 +1,55 @@
+{
+  "branch": "fix/learning-hub-p1",
+  "baselineHead": "b345ad23be19d73693e6279b4b7bcc145110a9e5",
+  "finalHead": "b345ad23be19d73693e6279b4b7bcc145110a9e5",
+  "target": "not applicable",
+  "initialTreeAndIndex": "clean",
+  "stagedFiles": [],
+  "backendDistinctChecks": {
+    "total": 44,
+    "pass": 44,
+    "fail": 0,
+    "skipped": 0,
+    "explanation": "30 predicate/cache + 5 real Mongo/JWT + 9 existing intelligent discovery; overlapping run totals must not be added"
+  },
+  "runs": {
+    "focused-backend.log": {
+      "pass": 43,
+      "fail": 0,
+      "skipped": 0
+    },
+    "final-backend.log": {
+      "pass": 35,
+      "fail": 0,
+      "skipped": 0
+    },
+    "post-cleanup-unit.log": {
+      "pass": 30,
+      "fail": 0,
+      "skipped": 0
+    },
+    "frontend.log": {
+      "pass": 12,
+      "fail": 0,
+      "skipped": 0
+    }
+  },
+  "reproduction": {
+    "before": 58,
+    "after": 0,
+    "cloudMatchesRetained": 57,
+    "afterBackgroundAcquisition": 1,
+    "withQiskitAndQubits": 3,
+    "dataset": "disposable controlled fixture; no production database accessed"
+  },
+  "realExternalProviderCalls": 0,
+  "syntheticBackgroundPipelines": 1,
+  "formatSyntaxTypeScriptGit": "PASS",
+  "frontendTestCompilation": "PASS",
+  "fullSuitesRun": false,
+  "fullFrontendProductionBuild": "not rerun; frontend implementation unchanged",
+  "scoringWeightsChanged": false,
+  "productionDataSecretsCommitsPushesDeploymentsChanged": false,
+  "productionAcceptance": "BLOCKED by existing staging/security/load/provider deployment gates",
+  "cleanup": "cleanup.json; task-owned baseline log moved beside evidence; no deleted files or source moves"
+}

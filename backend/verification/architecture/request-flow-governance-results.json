@@ -1,6 +1,7 @@
 {
   "baseline": "c612ae80c466f47ab7def651da6537d8cf330b0a",
   "checks": [
+    "redis-toggle-and-logical-expiry",
     "two-process-concurrency-and-restart",
     "forwarded-header-spoofing-rejected",
     "authenticated-avatar-portfolio-resume-real-admission",
@@ -31,18 +32,18 @@
     "productionDataUsed": false
   },
   "admissionMs": [
-    8.45,
-    12.24,
-    13.76,
-    14.46,
-    18,
-    19.17,
-    22.05,
-    29.78,
-    31.93,
-    44.1,
-    53.69,
-    77.93
+    5.93,
+    6.83,
+    7.16,
+    7.31,
+    7.52,
+    7.68,
+    7.89,
+    8,
+    8.08,
+    8.19,
+    8.24,
+    8.26
   ],
-  "completed": 6
+  "completed": 7
 }

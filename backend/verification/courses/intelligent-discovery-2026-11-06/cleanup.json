@@ -1,0 +1,24 @@
+{
+  "taskCreatedRoot": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\intelligent-discovery-2026-11-06",
+  "sourceFilesMovedOrDeleted": [],
+  "obsoleteTaskLogs": [
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\intelligent-discovery-2026-11-06\\backend-mongo.log",
+      "sha256": "e1b30db325fd47a3ff98da0f656efac1d0a706bc63019e20f9e4a9d303b55333",
+      "reason": "Task-owned superseded successful intermediate run; final-code checks and source-specific failure evidence retained.",
+      "result": "8 passed, 0 failed, 0 skipped"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\intelligent-discovery-2026-11-06\\frontend.log",
+      "sha256": "7deeded45f5413aa6ed01a4245fcaffaa6af8828e4909d0179a907c9ab2df8b0",
+      "reason": "Task-owned superseded successful intermediate run; final-code checks and source-specific failure evidence retained.",
+      "result": "20 passed, 0 failed"
+    },
+    {
+      "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\intelligent-discovery-2026-11-06\\frontend-final.log",
+      "sha256": "727b4654c2e4ade33bf35b1b117b850603915df99feb1aa5ecd1fcaa4985b22f",
+      "reason": "Task-owned superseded successful intermediate run; final-code checks and source-specific failure evidence retained.",
+      "result": "21 passed, 0 failed"
+    }
+  ]
+}

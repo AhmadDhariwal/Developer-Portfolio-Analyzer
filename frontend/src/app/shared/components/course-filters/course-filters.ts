@@ -29,6 +29,19 @@ import {
 export class CourseFiltersComponent implements OnInit, OnChanges {
   @Input() initialFilters: Partial<CourseFilters> = {};
   @Input() isApplying = false;
+  @Input() personalized = false;
+  @Input() recommendedSkills: string[] = [];
+
+  get skillOptions(): string[] {
+    const seen = new Set<string>();
+    return this.recommendedSkills
+      .map((skill) => skill.trim())
+      .filter((skill) => {
+        if (!skill || seen.has(skill.toLowerCase())) return false;
+        seen.add(skill.toLowerCase());
+        return true;
+      });
+  }
   @Output() filtersChange = new EventEmitter<CourseFilters>();
   @Output() filtersReset = new EventEmitter<void>();
 
@@ -77,6 +90,8 @@ export class CourseFiltersComponent implements OnInit, OnChanges {
   }
 
   applyFilters(): void {
+    if (this.personalized && !this.skillOptions.includes(this.filters.topic))
+      this.filters.topic = '';
     this.filters = normalizeCourseFilters(this.filters);
     this.appliedFilters = { ...this.filters };
     this.filtersChange.emit({ ...this.filters });

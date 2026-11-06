@@ -332,6 +332,35 @@ async function mobileFilters(page) {
         await cards.locator('h3').allTextContents(),
         catalog.slice(0, 10).map((course) => course.title),
       );
+      await page
+        .locator('.view-tabs')
+        .getByRole('button', { name: 'For You', exact: true })
+        .click();
+      await count(cards, 10);
+      assert.equal(controls.requests.at(-1).view, 'for-you');
+      await page
+        .locator('.view-tabs')
+        .getByRole('button', { name: 'Discover Courses', exact: true })
+        .click();
+      await count(cards, 10);
+      assert.equal(controls.requests.at(-1).view, 'discover');
+      assert.ok(
+        (await page.locator('.learning-metrics-strip').innerText()).includes(
+          'Open For You to view your skill priorities',
+        ),
+      );
+      assert.ok(
+        !(await page.locator('.learning-metrics-strip').innerText()).includes(
+          'No unresolved gaps found',
+        ),
+      );
+      const providerImages = await cards
+        .first()
+        .locator('img')
+        .evaluateAll((images) => images.map((image) => image.getAttribute('src')));
+      assert.equal(providerImages.length, 2);
+      assert.ok(providerImages.every((src) => src?.startsWith('/providers/')));
+      assert.equal(providerImages[0], providerImages[1]);
       for (const width of [320, 375, 425, 768, 1024, 1280, 1440, 1600]) {
         await page.setViewportSize({ width, height: width <= 768 ? 900 : 1000 });
         await settle(page);
@@ -453,7 +482,7 @@ async function mobileFilters(page) {
       await external.focus();
       await page.keyboard.press('Enter');
       const popup = await popupPromise;
-      await popup.waitForLoadState('domcontentloaded');
+      await popup.waitForURL('https://www.youtube.com/**');
       assert.match(popup.url(), /youtube.com/);
       await popup.close();
       controls.mutation = 'error';
@@ -617,15 +646,20 @@ async function mobileFilters(page) {
         await count(page.locator('app-courses app-course-card'), 10);
         if (mode === 'fallback')
           await page
-            .getByText('YouTube is unavailable. Showing ranked provider alternatives.', {
+            .getByText('Some providers are temporarily unavailable. Available courses are shown.', {
               exact: true,
             })
             .waitFor();
-        if (mode === 'cached')
+        if (mode === 'cached') {
           await page
             .locator('.sync-capsule')
-            .getByText(/cached source pool/)
+            .getByText(/Loaded/)
             .waitFor();
+          assert.doesNotMatch(
+            await page.locator('app-courses').innerText(),
+            /cached source pool|backend recommendation order/,
+          );
+        }
         if (mode === 'evidence-unavailable')
           await page
             .getByText(
