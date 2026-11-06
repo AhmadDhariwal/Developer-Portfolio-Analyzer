@@ -23,6 +23,40 @@ describe('CourseService caching', () => {
     httpMock.verify();
   });
 
+  it('sends exact compound topics and isolates Quantum Computing from Cloud Computing requests', async () => {
+    const quantum = firstValueFrom(
+      service.getCourses({ topic: 'Quantum Computing' }, 1, 10, { view: 'discover' }),
+    );
+    const cloud = firstValueFrom(
+      service.getCourses({ topic: 'Cloud Computing' }, 1, 10, { view: 'discover' }),
+    );
+    const discovery = {
+      status: 'pending',
+      revision: 'strict-policy',
+      insufficient: true,
+      reason: 'missing-courses',
+      pollAfterMs: 5000,
+      retryAfterSeconds: null,
+    };
+    httpMock
+      .expectOne(
+        (request) =>
+          request.params.get('topic') === 'Quantum Computing' &&
+          request.params.get('view') === 'discover',
+      )
+      .flush({ courses: [], total: 0, page: 1, totalPages: 1, discovery });
+    httpMock
+      .expectOne(
+        (request) =>
+          request.params.get('topic') === 'Cloud Computing' &&
+          request.params.get('view') === 'discover',
+      )
+      .flush({ courses: [], total: 58, page: 1, totalPages: 6 });
+    expect((await quantum).total).toBe(0);
+    expect((await quantum).discovery?.status).toBe('pending');
+    expect((await cloud).total).toBe(58);
+  });
+
   it('preserves discovery status and catalog revision when normalizing an empty response', async () => {
     const result = firstValueFrom(service.getCourses({ topic: 'Unseen' }));
     const discovery = {

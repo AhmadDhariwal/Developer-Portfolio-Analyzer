@@ -19,7 +19,7 @@ const {
   SKILL_GAP_ANALYSIS_VERSION,
 } = require('./coursePersonalizationService');
 const COURSE_POOL_VERSION = 'courses_pool_v6_evidence';
-const DISCOVERY_POLICY_REVISION = 4;
+const DISCOVERY_POLICY_REVISION = 5;
 const COURSE_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const MAX_COURSE_CACHE_VARIANTS = 40;
 const COURSE_MEMORY_TTL_MS = Math.min(

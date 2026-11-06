@@ -67,7 +67,8 @@ function pipeline(topic, platform = 'All') {
   };
   if (topic)
     match.$text = {
-      $search: queryTerms(topic)
+      $search: taxonomy
+        .searchTerms(topic)
         .map((term) => term.replace(/["\\]/g, ' '))
         .join(' '),
     };
@@ -225,8 +226,9 @@ async function recordGap(topic, { retrievalAllowed = true } = {}) {
 
 async function load(filters) {
   await ensureInventory();
-  const revision = await shared.revision();
+  const revision = `${taxonomy.SEARCH_POLICY}:${await shared.revision()}`;
   const topic = canonicalQuery(filters.topic);
+  const eligible = taxonomy.topicPredicate(topic);
   const key = digest({
     revision,
     topic,
@@ -252,7 +254,7 @@ async function load(filters) {
     const freshness = {};
     for (const raw of rows) {
       const course = service.normaliseCourse(raw);
-      if (!course || (topic && !matchScore(course, topic))) continue;
+      if (!course || !eligible(course)) continue;
       if (raw.catalogSourceStaleUntil)
         sourceDeadline = Math.min(sourceDeadline, new Date(raw.catalogSourceStaleUntil).getTime());
       if (raw.catalogSourceFreshUntil && raw.catalogSourceFreshUntil <= new Date()) stale = true;
@@ -382,7 +384,7 @@ async function processDiscoveryQueue({
       if (
         result?.status === 'available' &&
         !result.stale &&
-        result.courses.some((course) => matchScore(course, entry.topic))
+        result.courses.some(taxonomy.topicPredicate(entry.topic))
       ) {
         state = 'covered';
         until = 6 * 60 * 60_000;

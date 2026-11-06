@@ -1,0 +1,371 @@
+{
+  "requests": [
+    {
+      "query": {
+        "view": "discover",
+        "topic": "Quantum Computing",
+        "limit": "20"
+      },
+      "status": 200,
+      "admissionAttempt": 0,
+      "total": 58,
+      "discovery": {
+        "status": "pending",
+        "revision": "shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793964820733",
+        "insufficient": false,
+        "reason": "stale-coverage",
+        "pollAfterMs": 5000,
+        "retryAfterSeconds": null
+      },
+      "ids": [
+        "yt_00000000001",
+        "yt_00000000002",
+        "yt_00000000003",
+        "yt_00000000004",
+        "yt_00000000005",
+        "yt_00000000006",
+        "yt_00000000007",
+        "yt_00000000008",
+        "yt_00000000009",
+        "yt_00000000010",
+        "yt_00000000011",
+        "yt_00000000012",
+        "yt_00000000013",
+        "yt_00000000014",
+        "yt_00000000015",
+        "yt_00000000016",
+        "yt_00000000017",
+        "yt_00000000018",
+        "yt_00000000019",
+        "yt_00000000020"
+      ],
+      "titles": [
+        "AWS Cloud Computing foundations 0",
+        "AWS Cloud Computing foundations 1",
+        "AWS Cloud Computing foundations 2",
+        "AWS Cloud Computing foundations 3",
+        "AWS Cloud Computing foundations 4",
+        "AWS Cloud Computing foundations 5",
+        "AWS Cloud Computing foundations 6",
+        "AWS Cloud Computing foundations 7",
+        "AWS Cloud Computing foundations 8",
+        "AWS Cloud Computing foundations 9",
+        "AWS Cloud Computing foundations 10",
+        "AWS Cloud Computing foundations 11",
+        "AWS Cloud Computing foundations 12",
+        "AWS Cloud Computing foundations 13",
+        "AWS Cloud Computing foundations 14",
+        "AWS Cloud Computing foundations 15",
+        "AWS Cloud Computing foundations 16",
+        "AWS Cloud Computing foundations 17",
+        "AWS Cloud Computing foundations 18",
+        "AWS Cloud Computing foundations 19"
+      ]
+    },
+    {
+      "query": {
+        "view": "discover",
+        "topic": "Quantum Computing",
+        "limit": "20"
+      },
+      "status": 200,
+      "admissionAttempt": 0,
+      "total": 59,
+      "discovery": {
+        "status": "cooldown",
+        "revision": "shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793964824844",
+        "insufficient": false,
+        "reason": "stale-coverage",
+        "pollAfterMs": null,
+        "retryAfterSeconds": 21600
+      },
+      "ids": [
+        "yt_00000000100",
+        "yt_00000000001",
+        "yt_00000000002",
+        "yt_00000000003",
+        "yt_00000000004",
+        "yt_00000000005",
+        "yt_00000000006",
+        "yt_00000000007",
+        "yt_00000000008",
+        "yt_00000000009",
+        "yt_00000000010",
+        "yt_00000000011",
+        "yt_00000000012",
+        "yt_00000000013",
+        "yt_00000000014",
+        "yt_00000000015",
+        "yt_00000000016",
+        "yt_00000000017",
+        "yt_00000000018",
+        "yt_00000000019"
+      ],
+      "titles": [
+        "Quantum Computing foundations",
+        "AWS Cloud Computing foundations 0",
+        "AWS Cloud Computing foundations 1",
+        "AWS Cloud Computing foundations 2",
+        "AWS Cloud Computing foundations 3",
+        "AWS Cloud Computing foundations 4",
+        "AWS Cloud Computing foundations 5",
+        "AWS Cloud Computing foundations 6",
+        "AWS Cloud Computing foundations 7",
+        "AWS Cloud Computing foundations 8",
+        "AWS Cloud Computing foundations 9",
+        "AWS Cloud Computing foundations 10",
+        "AWS Cloud Computing foundations 11",
+        "AWS Cloud Computing foundations 12",
+        "AWS Cloud Computing foundations 13",
+        "AWS Cloud Computing foundations 14",
+        "AWS Cloud Computing foundations 15",
+        "AWS Cloud Computing foundations 16",
+        "AWS Cloud Computing foundations 17",
+        "AWS Cloud Computing foundations 18"
+      ]
+    },
+    {
+      "query": {
+        "view": "discover",
+        "topic": "Quantum Computing",
+        "limit": "20"
+      },
+      "status": 200,
+      "admissionAttempt": 0,
+      "total": 61,
+      "discovery": {
+        "status": "cooldown",
+        "revision": "shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793964825941",
+        "insufficient": false,
+        "reason": "stale-coverage",
+        "pollAfterMs": null,
+        "retryAfterSeconds": 21599
+      },
+      "ids": [
+        "yt_00000000100",
+        "yt_00000000001",
+        "yt_00000000002",
+        "yt_00000000003",
+        "yt_00000000004",
+        "yt_00000000005",
+        "yt_00000000006",
+        "yt_00000000007",
+        "yt_00000000008",
+        "yt_00000000009",
+        "yt_00000000010",
+        "yt_00000000011",
+        "yt_00000000012",
+        "yt_00000000013",
+        "yt_00000000014",
+        "yt_00000000015",
+        "yt_00000000016",
+        "yt_00000000017",
+        "yt_00000000018",
+        "yt_00000000019"
+      ],
+      "titles": [
+        "Quantum Computing foundations",
+        "AWS Cloud Computing foundations 0",
+        "AWS Cloud Computing foundations 1",
+        "AWS Cloud Computing foundations 2",
+        "AWS Cloud Computing foundations 3",
+        "AWS Cloud Computing foundations 4",
+        "AWS Cloud Computing foundations 5",
+        "AWS Cloud Computing foundations 6",
+        "AWS Cloud Computing foundations 7",
+        "AWS Cloud Computing foundations 8",
+        "AWS Cloud Computing foundations 9",
+        "AWS Cloud Computing foundations 10",
+        "AWS Cloud Computing foundations 11",
+        "AWS Cloud Computing foundations 12",
+        "AWS Cloud Computing foundations 13",
+        "AWS Cloud Computing foundations 14",
+        "AWS Cloud Computing foundations 15",
+        "AWS Cloud Computing foundations 16",
+        "AWS Cloud Computing foundations 17",
+        "AWS Cloud Computing foundations 18"
+      ]
+    },
+    {
+      "query": {
+        "view": "discover",
+        "topic": "Java",
+        "limit": "20",
+        "platform": "YouTube"
+      },
+      "status": 200,
+      "admissionAttempt": 0,
+      "total": 1,
+      "discovery": {
+        "status": "pending",
+        "revision": "shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793964826254",
+        "insufficient": true,
+        "reason": "missing-courses",
+        "pollAfterMs": 5000,
+        "retryAfterSeconds": null
+      },
+      "ids": [
+        "yt_00000000201"
+      ],
+      "titles": [
+        "Java concurrency"
+      ]
+    },
+    {
+      "query": {
+        "view": "discover",
+        "topic": "JavaScript",
+        "limit": "20",
+        "platform": "YouTube"
+      },
+      "status": 200,
+      "admissionAttempt": 0,
+      "total": 1,
+      "discovery": {
+        "status": "pending",
+        "revision": "shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793964826254",
+        "insufficient": true,
+        "reason": "missing-courses",
+        "pollAfterMs": 5000,
+        "retryAfterSeconds": null
+      },
+      "ids": [
+        "yt_00000000202"
+      ],
+      "titles": [
+        "JavaScript concurrency"
+      ]
+    },
+    {
+      "query": {
+        "view": "discover",
+        "topic": "Nebula Widgets",
+        "limit": "20",
+        "platform": "YouTube"
+      },
+      "status": 200,
+      "admissionAttempt": 0,
+      "total": 2,
+      "discovery": {
+        "status": "pending",
+        "revision": "shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793964826254",
+        "insufficient": true,
+        "reason": "missing-courses",
+        "pollAfterMs": 5000,
+        "retryAfterSeconds": null
+      },
+      "ids": [
+        "yt_00000000203",
+        "yt_00000000204"
+      ],
+      "titles": [
+        "Nebula Widgets laboratory",
+        "Generic Widgets introduction"
+      ]
+    }
+  ],
+  "providerPipelines": 1,
+  "inlineCalls": 0,
+  "directQuantum": {
+    "count": 58,
+    "titles": [
+      "AWS Cloud Computing foundations 0",
+      "AWS Cloud Computing foundations 1",
+      "AWS Cloud Computing foundations 2",
+      "AWS Cloud Computing foundations 3",
+      "AWS Cloud Computing foundations 4",
+      "AWS Cloud Computing foundations 5",
+      "AWS Cloud Computing foundations 6",
+      "AWS Cloud Computing foundations 7",
+      "AWS Cloud Computing foundations 8",
+      "AWS Cloud Computing foundations 9",
+      "AWS Cloud Computing foundations 10",
+      "AWS Cloud Computing foundations 11",
+      "AWS Cloud Computing foundations 12",
+      "AWS Cloud Computing foundations 13",
+      "AWS Cloud Computing foundations 14",
+      "AWS Cloud Computing foundations 15",
+      "AWS Cloud Computing foundations 16",
+      "AWS Cloud Computing foundations 17",
+      "AWS Cloud Computing foundations 18",
+      "AWS Cloud Computing foundations 19",
+      "AWS Cloud Computing foundations 20",
+      "AWS Cloud Computing foundations 21",
+      "AWS Cloud Computing foundations 22",
+      "AWS Cloud Computing foundations 23",
+      "AWS Cloud Computing foundations 24",
+      "AWS Cloud Computing foundations 25",
+      "AWS Cloud Computing foundations 26",
+      "AWS Cloud Computing foundations 27",
+      "AWS Cloud Computing foundations 28",
+      "AWS Cloud Computing foundations 29",
+      "AWS Cloud Computing foundations 30",
+      "AWS Cloud Computing foundations 31",
+      "AWS Cloud Computing foundations 32",
+      "AWS Cloud Computing foundations 33",
+      "AWS Cloud Computing foundations 34",
+      "AWS Cloud Computing foundations 35",
+      "AWS Cloud Computing foundations 36",
+      "AWS Cloud Computing foundations 37",
+      "AWS Cloud Computing foundations 38",
+      "AWS Cloud Computing foundations 39",
+      "AWS Cloud Computing foundations 40",
+      "AWS Cloud Computing foundations 41",
+      "AWS Cloud Computing foundations 42",
+      "AWS Cloud Computing foundations 43",
+      "AWS Cloud Computing foundations 44",
+      "AWS Cloud Computing foundations 45",
+      "AWS Cloud Computing foundations 46",
+      "AWS Cloud Computing foundations 47",
+      "AWS Cloud Computing foundations 48",
+      "AWS Cloud Computing foundations 49",
+      "AWS Cloud Computing foundations 50",
+      "AWS Cloud Computing foundations 51",
+      "AWS Cloud Computing foundations 52",
+      "AWS Cloud Computing foundations 53",
+      "AWS Cloud Computing foundations 54",
+      "AWS Cloud Computing foundations 55",
+      "AWS Cloud Computing foundations 56",
+      "Scientific Computing with Python Certification"
+    ],
+    "discovery": {
+      "status": "pending",
+      "revision": "shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793964820733",
+      "insufficient": false,
+      "reason": "stale-coverage",
+      "pollAfterMs": 5000,
+      "retryAfterSeconds": null
+    }
+  },
+  "quantumCandidateRows": 118,
+  "quantumBeforeAcquisition": {
+    "total": 58,
+    "titles": [
+      "AWS Cloud Computing foundations 0",
+      "AWS Cloud Computing foundations 1",
+      "AWS Cloud Computing foundations 2",
+      "AWS Cloud Computing foundations 3",
+      "AWS Cloud Computing foundations 4",
+      "AWS Cloud Computing foundations 5",
+      "AWS Cloud Computing foundations 6",
+      "AWS Cloud Computing foundations 7",
+      "AWS Cloud Computing foundations 8",
+      "AWS Cloud Computing foundations 9",
+      "AWS Cloud Computing foundations 10",
+      "AWS Cloud Computing foundations 11",
+      "AWS Cloud Computing foundations 12",
+      "AWS Cloud Computing foundations 13",
+      "AWS Cloud Computing foundations 14",
+      "AWS Cloud Computing foundations 15",
+      "AWS Cloud Computing foundations 16",
+      "AWS Cloud Computing foundations 17",
+      "AWS Cloud Computing foundations 18",
+      "AWS Cloud Computing foundations 19"
+    ]
+  },
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 245,
+    "productionDataUsed": false
+  }
+}
