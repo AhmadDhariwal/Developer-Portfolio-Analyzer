@@ -22,6 +22,36 @@ describe('CourseService caching', () => {
   afterEach(() => {
     httpMock.verify();
   });
+  it('notifies the active learning view when resume/profile evidence is invalidated', () => {
+    const notified = vi.fn();
+    const subscription = service.invalidated$.subscribe(notified);
+    TestBed.inject(FrontendCacheInvalidationService).clearCoursesCaches();
+    expect(notified).toHaveBeenCalledOnce();
+    subscription.unsubscribe();
+  });
+  it('isolates view requests and preserves the authenticated eligible-skill state', async () => {
+    const discover = firstValueFrom(service.getCourses({}, 1, 10, { view: 'discover' }));
+    const personalized = firstValueFrom(service.getCourses({}, 1, 10, { view: 'for-you' }));
+    httpMock
+      .expectOne((request) => request.params.get('view') === 'discover')
+      .flush({ courses: [], total: 1781 });
+    httpMock
+      .expectOne((request) => request.params.get('view') === 'for-you')
+      .flush({
+        courses: [],
+        total: 2,
+        personalization: {
+          status: 'evidence-informed',
+          learningState: 'ready',
+          eligibleSkills: ['Docker'],
+          ruleVersion: 'fixture',
+          limitation: 'Evidence informed',
+        },
+      });
+    expect((await discover).total).toBe(1781);
+    expect((await personalized).total).toBe(2);
+    expect((await personalized).personalization?.eligibleSkills).toEqual(['Docker']);
+  });
 
   it('sends exact compound topics and isolates Quantum Computing from Cloud Computing requests', async () => {
     const quantum = firstValueFrom(

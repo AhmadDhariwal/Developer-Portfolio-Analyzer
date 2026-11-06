@@ -11,7 +11,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription, timeout } from 'rxjs';
-import { distinctUntilChanged, map } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 import { CourseService } from '../../shared/services/course.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
 import {
@@ -80,6 +80,22 @@ export class CoursesComponent implements OnInit, OnDestroy {
 
   activeFilters: CourseFilters = { ...DEFAULT_FILTERS };
   recommendedBasedOn: RecommendedBasedOn | null = null;
+  private readonly viewFilters: Record<'discover' | 'for-you', CourseFilters> = {
+    discover: { ...DEFAULT_FILTERS },
+    'for-you': { ...DEFAULT_FILTERS },
+  };
+  private learningSignalHash = '';
+
+  get recommendedSkills(): string[] {
+    return this.personalization?.eligibleSkills || [];
+  }
+  get personalizedSetupRequired(): boolean {
+    return (
+      this.view === 'for-you' &&
+      !!this.personalization?.learningState &&
+      this.personalization.learningState !== 'ready'
+    );
+  }
   isMobileFiltersOpen = false;
 
   readonly INITIAL_DISPLAY = INITIAL_DISPLAY;
@@ -206,6 +222,11 @@ export class CoursesComponent implements OnInit, OnDestroy {
   }
 
   onQuickTopicSelect(topic: string): void {
+    if (
+      this.view === 'for-you' &&
+      !this.recommendedSkills.some((skill) => skill.toLowerCase() === topic.toLowerCase())
+    )
+      return;
     const current = (this.activeFilters.topic || '').trim().toLowerCase();
     if (current === topic.trim().toLowerCase()) {
       this.clearFilter('topic');
@@ -257,6 +278,11 @@ export class CoursesComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.learning.load();
+    this.subscriptions.add(
+      this.courseService.invalidated$.pipe(debounceTime(50)).subscribe(() => {
+        if (this.profileReady && this.view === 'for-you') this.resetAndFetch();
+      }),
+    );
     this.applyTopicFromQuery(
       this.route.snapshot.queryParamMap.get('skill') ||
         this.route.snapshot.queryParamMap.get('topic'),
@@ -275,7 +301,16 @@ export class CoursesComponent implements OnInit, OnDestroy {
         )
         .subscribe((topic) => {
           if (!topic && !this.previousQueryTopic) return;
-          if (topic) this.view = 'for-you';
+          if (!topic && this.view !== 'for-you') {
+            this.viewFilters['for-you'] = { ...this.viewFilters['for-you'], topic: '' };
+            this.previousQueryTopic = '';
+            return;
+          }
+          if (topic && this.view !== 'for-you') {
+            if (this.view === 'discover') this.viewFilters.discover = { ...this.activeFilters };
+            this.activeFilters = { ...this.viewFilters['for-you'] };
+            this.view = 'for-you';
+          }
           this.previousQueryTopic = topic;
           const nextFilters = normalizeCourseFilters({ ...this.activeFilters, topic });
           if (JSON.stringify(nextFilters) === JSON.stringify(this.activeFilters)) return;
@@ -293,17 +328,19 @@ export class CoursesComponent implements OnInit, OnDestroy {
           distinctUntilChanged(
             (previous, current) =>
               previous.careerStack === current.careerStack &&
-              previous.experienceLevel === current.experienceLevel,
+              previous.experienceLevel === current.experienceLevel &&
+              previous.profileHash === current.profileHash,
           ),
         )
         .subscribe((profile) => {
-          const nextSignature = `${profile.careerStack}|${profile.experienceLevel}`.toLowerCase();
+          const nextSignature =
+            `${profile.careerStack}|${profile.experienceLevel}|${profile.profileHash || ''}`.toLowerCase();
           if (this.lastProfileSignature && this.lastProfileSignature !== nextSignature) {
             this.courseService.clearCache();
           }
           this.lastProfileSignature = nextSignature;
           this.profileReady = true;
-          this.resetAndFetch();
+          if (this.view !== 'learning') this.resetAndFetch();
         }),
     );
   }
@@ -318,7 +355,9 @@ export class CoursesComponent implements OnInit, OnDestroy {
     if (this.view === view) return;
     this.stopDiscovery();
     this.requestToken++;
+    if (this.view !== 'learning') this.viewFilters[this.view] = { ...this.activeFilters };
     this.view = view;
+    if (view !== 'learning') this.activeFilters = { ...this.viewFilters[view] };
     if (view !== 'learning') this.resetAndFetch();
   }
 
@@ -462,6 +501,7 @@ export class CoursesComponent implements OnInit, OnDestroy {
   }
 
   private resetAndFetch(options: { preserveOnFailure?: boolean } = {}): void {
+    if (this.view !== 'learning') this.viewFilters[this.view] = { ...this.activeFilters };
     this.stopDiscovery();
     this.discovery = null;
     this.discoveryTimedOut = false;
@@ -551,7 +591,12 @@ export class CoursesComponent implements OnInit, OnDestroy {
           return;
         }
 
-        const unchanged = options.poll && this.discovery?.revision === response.discovery?.revision;
+        const unchanged =
+          options.poll &&
+          this.discovery?.revision === response.discovery?.revision &&
+          (this.view === 'discover' ||
+            this.learningSignalHash === response.cacheMetadata?.signalHash);
+        this.learningSignalHash = response.cacheMetadata?.signalHash || '';
         this.discovery = response.discovery || null;
         if (unchanged) {
           this.scheduleDiscovery();
@@ -568,6 +613,17 @@ export class CoursesComponent implements OnInit, OnDestroy {
         this.loadedAt = new Date();
         this.personalization =
           response.personalization || response.recommendedBasedOn?.personalization || null;
+        if (
+          this.view === 'for-you' &&
+          this.personalization?.learningState === 'ready' &&
+          response.recommendedBasedOn
+        ) {
+          this.activeFilters = {
+            ...this.activeFilters,
+            topic: response.recommendedBasedOn.activeFilters.topic,
+          };
+          this.viewFilters['for-you'] = { ...this.activeFilters };
+        }
         this.loadMoreFailed = false;
         this.currentPage = response.page ?? page;
         this.totalPages = response.totalPages ?? 1;
@@ -604,7 +660,15 @@ export class CoursesComponent implements OnInit, OnDestroy {
         this.isLoadingMore = false;
         this.isRefreshing = false;
 
-        if (preservePrevious && options.previousResult) {
+        if (this.view === 'for-you' && error?.error?.code === 'COURSE_EVIDENCE_UNAVAILABLE') {
+          this.allCourses = [];
+          this.totalCourses = 0;
+          this.totalPages = 1;
+          this.currentPage = 0;
+          this.personalization = null;
+          this.recommendedBasedOn = null;
+          this.providerCounts = {};
+        } else if (preservePrevious && options.previousResult) {
           this.allCourses = options.previousResult.courses;
           this.displayCount = options.previousResult.displayCount;
           this.currentPage = options.previousResult.page;

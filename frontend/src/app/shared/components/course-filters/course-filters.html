@@ -1,5 +1,5 @@
 <form class="filter-toolbar" (ngSubmit)="applyFilters()">
-  <label class="search-field"
+  <label *ngIf="!personalized" class="search-field"
     >Search topic or skill
     <div class="search-control">
       <input
@@ -20,6 +20,18 @@
       </button>
     </div></label
   >
+  <label *ngIf="personalized" class="search-field"
+    >Recommended skill
+    <select
+      name="topic"
+      aria-label="Recommended skill"
+      [ngModel]="skillOptions.includes(filters.topic) ? filters.topic : ''"
+      (ngModelChange)="filters.topic = $event; onFilterChange()"
+    >
+      <option value="">All Recommended Skills</option>
+      <option *ngFor="let skill of skillOptions" [value]="skill">{{ skill }}</option>
+    </select>
+  </label>
   <label
     >Platform<select
       name="platform"

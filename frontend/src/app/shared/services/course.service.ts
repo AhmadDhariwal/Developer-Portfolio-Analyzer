@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, catchError, finalize, map, shareReplay, tap, throwError } from 'rxjs';
+import { Observable, Subject, catchError, finalize, map, shareReplay, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 import {
@@ -28,12 +28,17 @@ export class CourseService {
   // Share only pending HTTP requests. Backend source identity must be rechecked on every later read.
   private readonly cacheTtlMs = 60 * 1000;
   private readonly maxCacheEntries = 50;
+  private readonly invalidated = new Subject<void>();
+  readonly invalidated$ = this.invalidated.asObservable();
 
   constructor(
     private readonly http: HttpClient,
     private readonly cacheInvalidation: FrontendCacheInvalidationService,
   ) {
-    this.cacheInvalidation.register('courses', () => this.clearCache());
+    this.cacheInvalidation.register('courses', () => {
+      this.clearCache();
+      this.invalidated.next();
+    });
   }
 
   getCourses(

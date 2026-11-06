@@ -23,21 +23,28 @@ const response = (ids = ['z', 'a'], page = 1): CoursesResponse => ({
 });
 describe('Learning Hub discovery lifecycle', () => {
   let component: CoursesComponent;
-  const api = { getCourses: vi.fn(), clearCache: vi.fn() };
+  let profileSource: BehaviorSubject<{
+    careerStack: string;
+    experienceLevel: string;
+    profileHash: string;
+  }>;
+  const api = { getCourses: vi.fn(), clearCache: vi.fn(), invalidated$: new Subject<void>() };
   beforeEach(() => {
     vi.resetAllMocks();
     api.getCourses.mockReturnValue(of(response()));
     const query = convertToParamMap({ skill: 'Angular' });
+    profileSource = new BehaviorSubject({
+      careerStack: 'Frontend',
+      experienceLevel: 'Student',
+      profileHash: 'one',
+    });
     component = new CoursesComponent(
       api as unknown as CourseService,
       {
         careerStack: 'Frontend',
         experienceLevel: 'Student',
         isConfigured: true,
-        careerProfile$: new BehaviorSubject({
-          careerStack: 'Frontend',
-          experienceLevel: 'Student',
-        }),
+        careerProfile$: profileSource,
       } as unknown as CareerProfileService,
       { snapshot: { queryParamMap: query }, queryParamMap: of(query) } as ActivatedRoute,
       { load: vi.fn() } as unknown as CourseLearningStore,
@@ -95,6 +102,50 @@ describe('Learning Hub discovery lifecycle', () => {
     expect(api.getCourses.mock.calls.at(-1)?.[3].view).toBe('discover');
     component.setView('for-you');
     expect(api.getCourses.mock.calls.at(-1)?.[3].view).toBe('for-you');
+  });
+  it('keeps independent filters through view switches and My Learning', () => {
+    component.setView('discover');
+    expect(component.activeFilters.topic).toBe('');
+    component.onFiltersChange({
+      ...component.activeFilters,
+      topic: 'Quantum Computing',
+      platform: 'YouTube',
+    });
+    component.setView('for-you');
+    expect(component.activeFilters.topic).toBe('Angular');
+    expect(component.activeFilters.platform).toBe('All');
+    component.onFiltersChange({
+      ...component.activeFilters,
+      topic: 'Docker',
+      platform: 'Coursera',
+    });
+    component.setView('discover');
+    expect(component.activeFilters.topic).toBe('Quantum Computing');
+    expect(component.activeFilters.platform).toBe('YouTube');
+    component.setView('learning');
+    component.setView('for-you');
+    expect(component.activeFilters.topic).toBe('Docker');
+    expect(component.activeFilters.platform).toBe('Coursera');
+  });
+  it('surfaces an analysis-required response without displaying a fallback catalog', () => {
+    api.getCourses.mockReturnValue(
+      of({
+        ...response([]),
+        total: 0,
+        personalization: {
+          status: 'career-context-only',
+          learningState: 'analysis-required',
+          eligibleSkills: [],
+          ruleVersion: 'fixture',
+          limitation: 'Analyze your selected resume and run Skill Gap.',
+        },
+      }),
+    );
+    component.refreshCourses();
+    expect(component.allCourses).toEqual([]);
+    expect(component.totalCourses).toBe(0);
+    expect(component.personalizedSetupRequired).toBe(true);
+    expect(component.recommendedSkills).toEqual([]);
   });
   it('tears down pending discovery subscriptions', () => {
     const pending = new Subject<CoursesResponse>();
@@ -221,6 +272,40 @@ describe('Learning Hub discovery lifecycle', () => {
     const calls = api.getCourses.mock.calls.length;
     vi.advanceTimersByTime(120000);
     expect(api.getCourses).toHaveBeenCalledTimes(calls);
+    vi.useRealTimers();
+  });
+  it('rechecks learning evidence when the selected profile identity changes', () => {
+    const before = api.getCourses.mock.calls.length;
+    profileSource.next({
+      careerStack: 'Frontend',
+      experienceLevel: 'Student',
+      profileHash: 'selected-resume-two',
+    });
+    expect(api.getCourses).toHaveBeenCalledTimes(before + 1);
+    expect(api.clearCache).toHaveBeenCalled();
+  });
+  it('clears stale personalized cards and skill options if evidence cannot be checked', () => {
+    api.getCourses.mockReturnValue(
+      throwError(() => ({
+        status: 503,
+        error: { code: 'COURSE_EVIDENCE_UNAVAILABLE', message: 'Evidence unavailable' },
+      })),
+    );
+    component.refreshCourses();
+    expect(component.allCourses).toEqual([]);
+    expect(component.recommendedSkills).toEqual([]);
+    expect(component.errorMessage).toBe('Evidence unavailable');
+  });
+  it('rechecks selected-resume and analysis invalidations without reusing old cards', () => {
+    vi.useFakeTimers();
+    api.getCourses.mockReturnValue(new Subject<CoursesResponse>());
+    const calls = api.getCourses.mock.calls.length;
+    api.invalidated$.next();
+    api.invalidated$.next();
+    vi.advanceTimersByTime(50);
+    expect(api.getCourses).toHaveBeenCalledTimes(calls + 1);
+    expect(component.allCourses).toEqual([]);
+    expect(component.recommendedSkills).toEqual([]);
     vi.useRealTimers();
   });
 });

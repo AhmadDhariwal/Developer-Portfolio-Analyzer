@@ -1,8 +1,8 @@
 <div class="courses-page dev-page">
   <!-- Enhanced Modern Workspace Header -->
-  <header class="dev-page-header">
+  <header class="page-header dev-page-header">
     <div class="header-main-content">
-      <span class="dev-eyebrow">Skill Acceleration Engine</span>
+      <span class="eyebrow">Skill Acceleration Engine</span>
       <div class="title-row">
         <h1 class="dev-page-title">Learning Hub</h1>
         <span class="catalog-badge" *ngIf="totalCourses > 0">
@@ -12,54 +12,11 @@
       <p class="dev-description">
         Discover courses, find learning for your goals and keep track of your progress.
       </p>
-
-      <!-- Career Context & System Status Capsule Bar -->
-      <div class="context-capsules-bar">
-        <div class="capsule career-capsule" *ngIf="hasCareerContext">
-          <svg
-            class="capsule-icon"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            aria-hidden="true"
-          >
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-          <strong class="capsule-text"
-            >{{ currentCareerStack }} · {{ currentExperienceLevel }}</strong
-          >
-          <a routerLink="/app/profile" class="capsule-link" title="Change career stack in profile"
-            >Change in profile</a
-          >
-        </div>
-        <div class="capsule warning-capsule" *ngIf="!hasCareerContext">
-          <svg
-            class="capsule-icon"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            aria-hidden="true"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="8" x2="12" y2="12" />
-            <line x1="12" y1="16" x2="12.01" y2="16" />
-          </svg>
-          <span>Set career context to refine discovery</span>
-          <a routerLink="/app/profile" class="capsule-link">Open profile</a>
-        </div>
-
-        <div class="capsule sync-capsule" *ngIf="loadedAt">
-          <span class="sync-dot" [class.cached]="recommendedBasedOn?.fromCache"></span>
-          <span>Loaded {{ loadedAt | date: 'shortTime' }}</span>
-        </div>
-      </div>
     </div>
 
     <!-- Header Refresh Controls -->
     <div class="header-actions">
+      <a routerLink="/app/profile" class="career-profile-link">Career profile</a>
       <button
         type="button"
         class="refresh-btn"
@@ -80,11 +37,41 @@
         </svg>
         <span>{{ isRefreshing ? 'Refreshing…' : 'Refresh courses' }}</span>
       </button>
-      <span class="metadata refresh-meta" *ngIf="loadedAt">
-        Loaded {{ loadedAt | date: 'shortTime' }}
-      </span>
     </div>
   </header>
+
+  <!-- Context Bar: Target, Experience, Freshness & Sync -->
+  <div class="context-bar">
+    <div class="context-meta">
+      <span class="eyebrow">Career target</span>
+      <strong class="context-role">{{
+        hasCareerContext ? currentCareerStack : 'Not configured'
+      }}</strong>
+      <span class="context-level">{{
+        hasCareerContext ? currentExperienceLevel : 'Choose your experience level'
+      }}</span>
+      <span
+        class="freshness-badge freshness-badge--fresh"
+        *ngIf="loadedAt && recommendedBasedOn?.fromCache"
+      >
+        Cached {{ loadedAt | date: 'shortTime' }}
+      </span>
+      <span
+        class="freshness-badge freshness-badge--fresh"
+        *ngIf="loadedAt && !recommendedBasedOn?.fromCache"
+      >
+        Loaded {{ loadedAt | date: 'shortTime' }}
+      </span>
+      <span class="freshness-badge freshness-badge--stale" *ngIf="!hasCareerContext">
+        Context unconfigured
+      </span>
+    </div>
+    <div class="context-actions">
+      <a routerLink="/app/profile" class="capsule-link" title="Change career stack in profile">
+        Change in profile
+      </a>
+    </div>
+  </div>
 
   <!-- Executive Learning Momentum & Metrics Strip -->
   <section class="learning-metrics-strip" aria-label="Learning momentum and analytics">
@@ -386,7 +373,7 @@
           [class.active]="isPresetActive('all')"
           (click)="onQuickPreset('all')"
         >
-          All Courses
+          {{ view === 'for-you' ? 'All Recommended Skills' : 'All Courses' }}
         </button>
         <button
           type="button"
@@ -435,6 +422,8 @@
     <app-course-filters
       class="desktop-filters"
       [initialFilters]="activeFilters"
+      [personalized]="view === 'for-you'"
+      [recommendedSkills]="recommendedSkills"
       [isApplying]="isLoading || isRefreshing"
       (filtersChange)="onFiltersChange($event)"
       (filtersReset)="onFiltersReset()"
@@ -513,8 +502,34 @@
       <button type="button" class="retry-btn" (click)="retryLoad()">Retry courses</button>
     </div>
 
+    <div
+      class="empty-state"
+      role="status"
+      *ngIf="!isLoading && !errorMessage && personalizedSetupRequired"
+    >
+      <h3>
+        {{
+          personalization?.learningState === 'no-recommended-skills'
+            ? 'No current learning targets'
+            : personalization?.learningState === 'skill-not-recommended'
+              ? 'Choose a recommended skill'
+              : 'Personalized analysis required'
+        }}
+      </h3>
+      <p>{{ personalization?.limitation }}</p>
+      <a routerLink="/app/resume-analyzer">Analyze selected resume</a>
+      <a routerLink="/app/skill-gap">Run Skill Gap</a>
+      <a routerLink="/app/profile">Career profile</a>
+      <button *ngIf="activeFilters.topic" type="button" (click)="clearFilter('topic')">
+        All Recommended Skills
+      </button>
+    </div>
+
     <!-- Empty state when no courses match -->
-    <div class="empty-state" *ngIf="!isLoading && !errorMessage && !allCourses.length">
+    <div
+      class="empty-state"
+      *ngIf="!isLoading && !errorMessage && !allCourses.length && !personalizedSetupRequired"
+    >
       <div class="state-icon" aria-hidden="true">🔍</div>
       <h3>
         {{
@@ -679,6 +694,8 @@
       <app-course-filters
         *ngIf="isMobileFiltersOpen"
         [initialFilters]="activeFilters"
+        [personalized]="view === 'for-you'"
+        [recommendedSkills]="recommendedSkills"
         [isApplying]="isLoading || isRefreshing"
         (filtersChange)="onFiltersChange($event)"
         (filtersReset)="onFiltersReset()"

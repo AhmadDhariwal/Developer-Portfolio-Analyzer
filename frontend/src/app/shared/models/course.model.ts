@@ -228,6 +228,13 @@ export interface CourseProvenance {
 
 export interface CoursePersonalization {
   status: 'evidence-informed' | 'career-context-only';
+  learningState?:
+    | 'ready'
+    | 'analysis-required'
+    | 'no-recommended-skills'
+    | 'skill-not-recommended'
+    | 'evidence-unavailable';
+  eligibleSkills?: string[];
   ruleVersion: string;
   limitation: string;
   targets?: { name: string; status: string; requirement: string }[];
