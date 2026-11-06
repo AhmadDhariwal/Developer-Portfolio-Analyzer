@@ -1,5 +1,74 @@
 # Learning Hub production acceptance
 
+## Catalog acquisition and coverage — 2026-11-06 — `fix/learning-hub-p1`
+
+**IMPLEMENTED; scoped acquisition/coverage gates PASS. Production acceptance remains BLOCKED by the earlier release gates below.** The user explicitly limited this task to affected tests; no full backend/frontend suite, frontend build or unrelated module audit was repeated.
+
+Preflight verified a clean working tree/index on the requested branch at `abe021c0b7e156186ddac8c9c94d47d85ef65b72`. PR/integration target is not applicable. No commit, push, merge, deployment, production-data operation or secret change was performed. Only `.env.example` documents the new legitimate public-source switch.
+
+### Initial expansion: measured catalog, not generated courses
+
+The reviewed seed expanded from **35 to 61 distinct active records**: 10 additional freeCodeCamp curricula, nine MDN modules, one Udemy course, five Coursera courses and one edX/IBM program. Existing IDs/URLs and saved snapshots were preserved. New records contain publisher titles, verified publisher links and editorial technology tags; ratings, review counts, prices, duration and unverified difficulty remain null. The edX entry is typed as a learning path, with unknown language left null.
+
+| Provider                   | Before |  After |
+| -------------------------- | -----: | -----: |
+| Udemy                      |     10 |     11 |
+| Coursera                   |      9 |     14 |
+| edX                        |      6 |      7 |
+| freeCodeCamp               |      7 |     17 |
+| MDN                        |      1 |     10 |
+| The Odin Project           |      1 |      1 |
+| Full Stack Open            |      1 |      1 |
+| YouTube                    |      0 |      0 |
+| **Distinct reviewed seed** | **35** | **61** |
+
+YouTube was deliberately unconfigured in the live-source verification; no videos or credentials were invented. Separate controlled-provider Mongo/JWT regressions retained **60 eligible YouTube records** in the **121-course** global Discover inventory, with full pagination, and verified a **362-course** larger pool without durable per-user inventory copies. Provider filters and relevance-first soft diversity remain intact.
+
+Representative before/after counts below use normalized catalog titles/topics, not enrollment or proficiency claims. The full **77-technology** inventory, aliases, per-provider states and uncovered technologies are retained in [actual catalog verification](acquisition-2026-11-06/catalog-verification.json) and [coverage/worker evidence](acquisition-2026-11-06/coverage.json).
+
+| Technology    | Before | After |
+| ------------- | -----: | ----: |
+| Angular       |      1 |     3 |
+| Generative AI |      0 |     4 |
+| LLM           |      0 |     4 |
+| RAG           |      0 |     2 |
+| Docker        |      3 |     4 |
+| Kubernetes    |      6 |     7 |
+
+**34 of the 77 technologies still have no verified catalog metadata match.** They remain explicit gaps, not fabricated courses. Authorized YouTube retrieval can replenish them within the existing quotas; other providers require approved source mappings or controlled curation. Related technologies remain distinct (Java/JavaScript, C#/.NET, SQL/PostgreSQL), and Skill Gap/evidence/scoring formulas were not edited.
+
+### Ongoing provider-aware replenishment
+
+- New durable `course_catalog_coverage` records use canonical technology + provider identities, with policy version, source capability/authorization, quality counts, freshness (`fresh`/`stale`/`unknown`), last catalog/provider checks, source version, next retry and bounded failure reasons. The live audit persisted **616 technology/provider states**. The current registry admits at most **1,160 states**, including the reserved known technologies/stacks and 64 admitted unknown topics. `technology_provider` is unique; `coverage_refresh_due` supports due-state reads. Real `explain()` assertions verify both indexes.
+- Discover first searches the complete existing shared Mongo inventory. Missing, insufficient or stale **eligible provider** coverage requests one canonical background job; a provider-specific curation-only search cannot trigger unrelated YouTube/API work. Unknown freshness stays unknown. The three-result quality target guides replenishment; it does not exclude niche courses, impose result-provider quotas or alter ranking.
+- Registered technologies and four stacks have reserved slots, while arbitrary unknown-topic admission remains capped at **64**. Total queue capacity is **145**. This prevents unknown searches from consuming registered-topic capacity without unbounded storage. Oldest-due scheduling prevents repeated cooldown jobs from starving waiting topics. The source occurrence bound is **6,040**, with fail-closed checks rather than truncated global pagination.
+- YouTube retains its existing official authorized adapter, Mongo-authoritative rolling quota, four raw-provider slots, topic leases, negative caching, backoff, breaker and stale serving. Queue and provider-coverage outcomes now commit together under an active global lease fence. Superseded workers cannot overwrite successor coverage or queue state. Transactional operations inherit the existing five-second transaction deadline; no deadlines or assertions were relaxed.
+- A bounded official freeCodeCamp adapter retrieves exactly two fixed public JSON resources: [curriculum structure](https://raw.githubusercontent.com/freeCodeCamp/freeCodeCamp/main/curriculum/structure/curriculum.json) and [English titles](https://raw.githubusercontent.com/freeCodeCamp/freeCodeCamp/main/client/i18n/locales/english/intro.json). It imports only reviewed mappings present in the official manifest, preserves 17 existing/new identities, records content-hash source versions and attribution, and omits course prose/media. Unknown slugs require curation; manifest aliases are not falsely classified as unknown. The [BSD license](../../src/data/freeCodeCamp.LICENSE) and [source inventory/limitations](../../src/data/courseAcquisitionSources.md) are retained.
+- Official acquisition runs in the existing minute worker, under `COURSES_OFFICIAL_CATALOG_ENABLED`. A successful check is reused for 24 hours; there is a durable maximum of **four HTTP requests/day** for the two-resource source. Eight-second request timeouts, 2 MiB response bounds, redirect rejection, explicit credential/cookie exclusion, Mongo leases/fencing, and persisted one-hour-to-one-day backoff are enforced. Source failures preserve last-good courses without extending their freshness. Missing entries retain their prior freshness and await safe link audit/curation. Manifest-scope exhaustion and source cooldown are reflected in provider/topic states.
+- Hourly maintenance audits the active catalog and retains existing safe link retirement. Optional stale prewarming selects **only YouTube documents** and preserves registered topics outside the older fixed subset. Official documents cannot accidentally trigger a Full Stack YouTube query. Global archival also applies to duplicate official-source records; an archived seed cannot reappear through another coverage document. Saved notes, IDs and explicit progress remain editable.
+
+MDN, Udemy, Coursera, edX, The Odin Project and Full Stack Open use controlled curation where no authorized maintained retrieval source is configured. No restricted search API was scraped. Microsoft Learn remains disabled without authorized access. Mongo remains authoritative, Redis optional, and external API calls remain outside request handlers.
+
+### Actual source calls, link checks and scoped validation
+
+The disposable live verification made **two successful public JSON requests**, published **17 freeCodeCamp records**, and retained **61 distinct courses** after deduplication. A repeated acquisition call made **zero additional requests**. It probed the **26 new links** once each, using **36 HEAD requests including redirects**: **25 returned HTTP 200; Udemy returned HTTP 403**. Udemy's course listing was independently readable on its publisher page, but automated HEAD access/enrollment remains unverified. No 404/410 response was observed among the new links. HTTP 200 or an app shell does not certify enrollment or region-specific access. There were **zero real YouTube/paid-provider API calls and zero AI calls** in this task's verification.
+
+| Gate                                                                            | Result                      | Evidence                                                                                                                                                                                                                                                                                                   |
+| ------------------------------------------------------------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Affected regression subset                                                      | PASS                        | **82/82**, 0 failed/skipped/cancelled across seven directly relevant test files. [Log](acquisition-2026-11-06/focused.log)                                                                                                                                                                                 |
+| Final acquisition/coverage/discovery follow-up                                  | PASS                        | **36/36**, 0 failed/skipped/cancelled after final source-quality, credential-isolation and oldest-due checks. [Log](acquisition-2026-11-06/source-final.log)                                                                                                                                               |
+| Actual official-source acquisition/reuse                                        | PASS                        | 2 JSON requests; 17 published records; second refresh reused Mongo. [Verification](acquisition-2026-11-06/catalog-verification.json)                                                                                                                                                                       |
+| New-link audit                                                                  | PASS with access limitation | 25 HTTP 200, 1 HTTP 403; no 404/410. Udemy automated access remains unverified.                                                                                                                                                                                                                            |
+| Cross-worker/budget/failure/archival                                            | PASS                        | Two real workers shared one two-resource fixture fetch; denied source budget issued no network call; source and topic fencing, crash recovery, cooldown, invalid URLs and saved-progress preservation passed. [Evidence](acquisition-2026-11-06/coverage.json)                                             |
+| Query/ranking/private contracts                                                 | PASS                        | Global 121/362-course pagination, same-catalog For You parity, multi-session JWT persistence, owner isolation, cache reuse, safe archival, raw worker reuse and source deadlines. [Network/query plans](acquisition-2026-11-06/mongo-network.json), [raw pool](acquisition-2026-11-06/shared-catalog.json) |
+| Syntax/format/Git finalization                                                  | PASS                        | Explicit formatter write/check, syntax checks on all 16 changed JavaScript files, and working/index whitespace checks passed. [Results](acquisition-2026-11-06/final-checks.json)                                                                                                                          |
+| Full backend/frontend suites and frontend build                                 | NOT RUN — scoped out        | No frontend files changed; the user explicitly requested only compulsory/affected verification. Previous release FAIL/BLOCKED gates are not cleared by this task.                                                                                                                                          |
+| Deployment/staging, real authorized YouTube refresh and independent assessments | BLOCKED                     | No deployment or production-data access; real YouTube refresh requires approved credentials/quotas and a later release gate.                                                                                                                                                                               |
+
+The final discovery follow-up measured 24 warm authenticated requests at **p50 46.39 ms / p95 124.88 ms**, and 3,000 shared-cache reads at batch concurrency 100 at **p50 3.75 ms / p95 12.67 ms**. These are local fixtures, not production capacity or financial savings. Discover/For You/My Learning APIs, evidence/scoring formulas, UI/logos, deep links and Sprint handoff remain unchanged; the tests verify the affected contracts. Dashboard and Weekly Report implementation files were not changed.
+
+Exact changed/added paths and finalization results are retained in the [change inventory](acquisition-2026-11-06/change-inventory.json) and [final checks](acquisition-2026-11-06/final-checks.json). Two verified task-created intermediate logs were removed after retaining their summaries/hashes in the [cleanup manifest](acquisition-2026-11-06/file-cleanup.json); the compulsory post-cleanup metadata checks passed **4/4** ([log](acquisition-2026-11-06/final-unit.log)). A discovery test's default historical output was copied into the new evidence folder and the prior report was restored to its original Git blob ([preservation evidence](acquisition-2026-11-06/evidence-preservation.json)). No source, user work, historical report, screenshot, fixture, asset or license was deleted or moved. Successful disposable Mongo cleanup results are retained separately. No full-project tests were added to the task's verification scope.
+
 ## Release stabilization — 2026-11-05 — `fix/learning-hub-p1`
 
 **NOT ACCEPTED FOR PRODUCTION. The final-code full backend invocation is FAIL; unavailable infrastructure and deployment gates remain BLOCKED.** This section supersedes the historical acceptance results below.

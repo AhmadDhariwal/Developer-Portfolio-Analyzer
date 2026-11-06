@@ -218,6 +218,18 @@ async function runPoolBuild(
 }
 
 module.exports = {
+  fencePoolLease: async (signalHash, token, session) => {
+    const result = await State.collection.updateOne(
+      {
+        _id: leaseKey(signalHash),
+        'leases.token': token,
+        $expr: { $gt: [{ $arrayElemAt: ['$leases.until', 0] }, '$$NOW'] },
+      },
+      { $set: { lastCoverageFenceAt: new Date() } },
+      session ? { session } : { timeoutMS: POOL_STORE_TIMEOUT_MS },
+    );
+    return result.matchedCount === 1;
+  },
   window,
   acquirePoolLease,
   releasePoolLease,

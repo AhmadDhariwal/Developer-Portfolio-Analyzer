@@ -158,6 +158,7 @@ const result = (row) => ({
   fromCache: true,
   stale: row.freshUntil <= new Date(),
   staleUntil: row.staleUntil,
+  freshUntil: row.freshUntil,
 });
 
 async function read(key) {
@@ -420,6 +421,16 @@ async function revision() {
 
 async function findCourse(courseId) {
   await initialize();
+  if (
+    await collection().findOne(
+      { _id: 'curated', [`audits.${courseId}.archived`]: true },
+      {
+        projection: { _id: 1 },
+        timeoutMS: STORE_MS,
+      },
+    )
+  )
+    return null;
   const row = await collection().findOne(
     {
       'courses.id': courseId,

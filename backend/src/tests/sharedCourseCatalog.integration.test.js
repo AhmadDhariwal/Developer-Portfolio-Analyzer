@@ -249,7 +249,7 @@ test(
       async () => {
         for (const platform of ['MDN', 'The Odin Project', 'Full Stack Open']) {
           const pool = service.buildFallbackPool(platform, 200);
-          assert.equal(pool.length, 1);
+          assert.equal(pool.length, platform === 'MDN' ? 10 : 1);
           assert.equal(service.normaliseCourseFilters({ platform }).platform, platform);
           assert.ok(require('../utils/courseIdentity').validCourseId(pool[0].id));
           assert.ok(service.isPersistableCoursePool(pool));
@@ -321,10 +321,12 @@ test(
       identityExplain,
       topicExplain,
     };
-    const output = path.resolve(
-      __dirname,
-      '../../verification/courses/defects-2026-11-05/shared-catalog.json',
-    );
+    const output = process.env.COURSES_ACQUISITION_OUTPUT
+      ? path.join(process.env.COURSES_ACQUISITION_OUTPUT, 'shared-catalog.json')
+      : path.resolve(
+          __dirname,
+          '../../verification/courses/defects-2026-11-05/shared-catalog.json',
+        );
     fs.mkdirSync(path.dirname(output), { recursive: true });
     fs.writeFileSync(output, JSON.stringify(report, null, 2) + '\n');
     t.diagnostic(

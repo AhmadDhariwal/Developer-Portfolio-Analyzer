@@ -1,12 +1,16 @@
 'use strict';
 
 const mongoose = require('mongoose');
-const { skills, skillAliases, digest, canonicalCourseKey } = require('../utils/courseIdentity');
+const { digest, canonicalCourseKey } = require('../utils/courseIdentity');
 const shared = require('./sharedCourseCatalogService');
+const taxonomy = require('./courseCatalogTaxonomy');
 const { acquirePoolLease, releasePoolLease } = require('./courseGovernanceService');
 
 const MAX_GAPS = 64;
-const MAX_RESULTS = 200 + (shared.TOPICS.length + shared.STACKS.length + MAX_GAPS) * 40;
+const KNOWN_TOPICS = [...new Set([...taxonomy.technologies, ...shared.STACKS])];
+const MAX_QUEUE_TOPICS = KNOWN_TOPICS.length + MAX_GAPS;
+const MAX_COVERAGE_DOCUMENTS = MAX_QUEUE_TOPICS + 2; // curated inventory + official manifest
+const MAX_RESULTS = 200 + (MAX_COVERAGE_DOCUMENTS - 1) * 40;
 const CACHE_BYTES = 16 * 1024 * 1024;
 const cache = new Map();
 const pending = new Map();
@@ -22,24 +26,14 @@ const immutable = (value) => {
   }
   return value;
 };
-const canonicalQuery = (value) => {
-  const normalized = String(value || '')
-    .normalize('NFKC')
-    .trim()
-    .replace(/\s+/g, ' ')
-    .slice(0, 60);
-  const canonical = skills([normalized], 1)[0] || '';
-  return (
-    [...shared.TOPICS, ...shared.STACKS].find(
-      (topic) => topic.toLowerCase() === canonical.toLowerCase(),
-    ) || canonical.toLowerCase()
-  );
-};
+const canonicalQuery = taxonomy.canonical;
 const escaped = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-const aliases = (topic) => [...new Set(skillAliases(topic))].slice(0, 12);
+const aliases = taxonomy.aliases;
 const pattern = (term) => new RegExp(`(?:^|[^a-z0-9_+#])${escaped(term)}(?:[^a-z0-9_+#]|$)`, 'i');
 const queryTerms = (topic) =>
-  shared.TOPICS.includes(topic) ? aliases(topic) : topic.split(/\s+/).filter(Boolean).slice(0, 8);
+  taxonomy.technologies.includes(topic)
+    ? aliases(topic)
+    : topic.split(/\s+/).filter(Boolean).slice(0, 8);
 const matchScore = (course, topic) => {
   if (!topic) return 0;
   return queryTerms(topic).reduce((score, term) => {
@@ -81,6 +75,13 @@ function pipeline(topic, platform = 'All') {
   return [
     { $match: match },
     {
+      $lookup: {
+        from: 'shared_course_catalog',
+        pipeline: [{ $match: { _id: 'curated' } }, { $project: { audits: 1 } }],
+        as: 'catalogAudit',
+      },
+    },
+    {
       $project: {
         courses: 1,
         catalogFreshUntil: '$freshUntil',
@@ -89,7 +90,14 @@ function pipeline(topic, platform = 'All') {
           $map: {
             input: {
               $filter: {
-                input: { $objectToArray: { $ifNull: ['$audits', {}] } },
+                input: {
+                  $objectToArray: {
+                    $mergeObjects: [
+                      { $ifNull: ['$audits', {}] },
+                      { $ifNull: [{ $arrayElemAt: ['$catalogAudit.audits', 0] }, {}] },
+                    ],
+                  },
+                },
                 as: 'audit',
                 cond: { $eq: ['$$audit.v.archived', true] },
               },
@@ -108,7 +116,9 @@ function pipeline(topic, platform = 'All') {
           $mergeObjects: [
             '$courses',
             {
-              catalogSourceFreshUntil: '$catalogFreshUntil',
+              catalogSourceFreshUntil: {
+                $ifNull: ['$courses.catalogMetadataFreshUntil', '$catalogFreshUntil'],
+              },
               catalogSourceStaleUntil: '$catalogStaleUntil',
             },
           ],
@@ -119,7 +129,8 @@ function pipeline(topic, platform = 'All') {
   ];
 }
 
-async function recordGap(topic) {
+async function recordGap(topic, { retrievalAllowed = true } = {}) {
+  topic = canonicalQuery(topic);
   if (!topic || !/^[\p{L}\p{N}+#. /-]{2,60}$/u.test(topic)) return { status: 'unsupported' };
   const key = digest(topic).slice(0, 24);
   await queue()
@@ -133,10 +144,41 @@ async function recordGap(topic) {
     });
   const now = new Date();
   const admitted = await queue().updateOne(
-    { _id: 'topics', 'topics.key': { $ne: key }, $expr: { $lt: [{ $size: '$topics' }, MAX_GAPS] } },
+    {
+      _id: 'topics',
+      'topics.key': { $ne: key },
+      $expr: {
+        $and: [
+          { $lt: [{ $size: '$topics' }, MAX_QUEUE_TOPICS] },
+          KNOWN_TOPICS.includes(topic)
+            ? true
+            : {
+                $lt: [
+                  {
+                    $size: {
+                      $filter: {
+                        input: '$topics',
+                        as: 'entry',
+                        cond: { $not: [{ $in: ['$$entry.topic', KNOWN_TOPICS] }] },
+                      },
+                    },
+                  },
+                  MAX_GAPS,
+                ],
+              },
+        ],
+      },
+    },
     {
       $push: {
-        topics: { key, topic, state: 'queued', nextAttemptAt: now, firstSeenAt: now, attempts: 0 },
+        topics: {
+          key,
+          topic,
+          state: retrievalAllowed ? 'queued' : 'curation-required',
+          nextAttemptAt: now,
+          firstSeenAt: now,
+          attempts: 0,
+        },
       },
     },
     { timeoutMS: 5000 },
@@ -147,6 +189,14 @@ async function recordGap(topic) {
   );
   const entry = row?.topics?.[0];
   if (!entry) return { status: 'capacity', retryAfterSeconds: 3600 };
+  if (retrievalAllowed && entry.state === 'curation-required') {
+    await queue().updateOne(
+      { _id: 'topics', topics: { $elemMatch: { key, state: 'curation-required' } } },
+      { $set: { 'topics.$.state': 'queued', 'topics.$.nextAttemptAt': now } },
+      { timeoutMS: 5000 },
+    );
+    return { status: 'queued', topic };
+  }
   if (['covered', 'cooldown'].includes(entry.state) && entry.nextAttemptAt <= now) {
     await queue().updateOne(
       {
@@ -163,7 +213,14 @@ async function recordGap(topic) {
       { timeoutMS: 5000 },
     );
   }
-  return { status: admitted.modifiedCount ? 'queued' : entry.state, topic };
+  return {
+    status: admitted.modifiedCount
+      ? retrievalAllowed
+        ? 'queued'
+        : 'curation-required'
+      : entry.state,
+    topic,
+  };
 }
 
 async function load(filters) {
@@ -191,14 +248,28 @@ async function load(filters) {
     const unique = new Map();
     let sourceDeadline = Infinity;
     let stale = false;
+    const freshness = {};
     for (const raw of rows) {
       const course = service.normaliseCourse(raw);
       if (!course || (topic && !matchScore(course, topic))) continue;
       if (raw.catalogSourceStaleUntil)
         sourceDeadline = Math.min(sourceDeadline, new Date(raw.catalogSourceStaleUntil).getTime());
       if (raw.catalogSourceFreshUntil && raw.catalogSourceFreshUntil <= new Date()) stale = true;
+      if (raw.catalogSourceFreshUntil)
+        freshness[course.platform] = new Date(
+          Math.min(
+            freshness[course.platform]?.getTime() || Infinity,
+            raw.catalogSourceFreshUntil.getTime(),
+          ),
+        );
       const identity = canonicalCourseKey(course);
-      if (!unique.has(identity) || course.id.localeCompare(unique.get(identity).id) < 0)
+      if (
+        !unique.has(identity) ||
+        course.id.localeCompare(unique.get(identity).id) < 0 ||
+        (course.id === unique.get(identity).id &&
+          new Date(course.provenance.metadataVerifiedAt || 0) >
+            new Date(unique.get(identity).provenance.metadataVerifiedAt || 0))
+      )
         unique.set(identity, course);
     }
     const matching = [...unique.values()];
@@ -207,11 +278,30 @@ async function load(filters) {
       ['All', 'YouTube'].includes(filters.platform) &&
       !matching.some((course) => course.platform === 'YouTube')
     ) {
-      await recordGap('Full Stack');
+      await recordGap('Full Stack', { retrievalAllowed: Boolean(process.env.YOUTUBE_API_KEY) });
     }
-    const coverage = topic && !matching.length ? await recordGap(topic) : null;
+    const providers =
+      filters.platform === 'All'
+        ? undefined
+        : filters.platform === 'Other'
+          ? ['edX', 'freeCodeCamp']
+          : [filters.platform];
+    const selected = matching.filter((course) => !providers || providers.includes(course.platform));
+    const coverage =
+      topic && !selected.length
+        ? await recordGap(topic, {
+            retrievalAllowed:
+              ['All', 'YouTube'].includes(filters.platform) && Boolean(process.env.YOUTUBE_API_KEY),
+          })
+        : null;
+    if (topic)
+      await require('./courseCatalogCoverageService').observe(topic, matching, {
+        revision,
+        freshness,
+        providers,
+        requestDiscovery: recordGap,
+      });
     const courses = service.applyCourseFilters(matching, { ...filters, topic: '' });
-    if (topic && stale && matching.length) await recordGap(topic);
     courses.sort(
       (a, b) => matchScore(b, topic) - matchScore(a, topic) || a.id.localeCompare(b.id, 'en'),
     );
@@ -239,7 +329,7 @@ async function load(filters) {
           : 'not-requested',
         fallbackUsed: false,
         sourceMessage: coverage
-          ? ['capacity', 'unsupported'].includes(coverage.status)
+          ? ['capacity', 'unsupported', 'curation-required'].includes(coverage.status)
             ? 'No verified course matches yet. Try a broader topic or check again later.'
             : 'No verified course matches yet. Shared catalog discovery has been requested.'
           : '',
@@ -278,10 +368,13 @@ async function processDiscoveryQueue({
   if (!lease.acquired) return;
   try {
     const row = await queue().findOne({ _id: 'topics' }, { timeoutMS: 5000 });
-    const entry = row?.topics?.find(
-      (item) =>
-        item.nextAttemptAt <= new Date() && ['queued', 'running', 'cooldown'].includes(item.state),
-    );
+    const entry = row?.topics
+      ?.filter(
+        (item) =>
+          item.nextAttemptAt <= new Date() &&
+          ['queued', 'running', 'cooldown'].includes(item.state),
+      )
+      .sort((a, b) => a.nextAttemptAt - b.nextAttemptAt || a.firstSeenAt - b.firstSeenAt)[0];
     if (!entry) return;
     const claimed = await queue().updateOne(
       {
@@ -302,8 +395,11 @@ async function processDiscoveryQueue({
     );
     // A paused lease holder must not overwrite a successor's newer queue state.
     if (!claimed.modifiedCount) return;
+    await require('./courseCatalogCoverageService').initialize();
     let state = 'cooldown';
     let until = 15 * 60_000;
+    let providerResult;
+    let providerError;
     try {
       const result = await shared.getYouTube({
         topic: entry.topic,
@@ -312,21 +408,47 @@ async function processDiscoveryQueue({
         fingerprint: require('./courseService').providerConfigurationFingerprint(),
         fetchProvider,
       });
-      if (result?.courses.some((course) => matchScore(course, entry.topic))) {
+      providerResult = result;
+      if (
+        result?.status === 'available' &&
+        !result.stale &&
+        result.courses.some((course) => matchScore(course, entry.topic))
+      ) {
         state = 'covered';
         until = 6 * 60 * 60_000;
       } else until = Math.min(6 * 60 * 60_000, 10 * 60_000 * 2 ** Math.min(entry.attempts, 5));
+    } catch (error) {
+      providerError = error;
+      throw error;
     } finally {
-      await queue().updateOne(
-        { _id: 'topics', topics: { $elemMatch: { key: entry.key, workerToken: lease.token } } },
-        {
-          $set: {
-            'topics.$.state': state,
-            'topics.$.nextAttemptAt': new Date(Date.now() + until),
+      const retryAt = new Date(Date.now() + until);
+      await require('./integrationMongoGovernanceService').transaction(async (session) => {
+        if (
+          !(await require('./courseGovernanceService').fencePoolLease(
+            'catalog-gap-worker',
+            lease.token,
+            session,
+          ))
+        )
+          return;
+        await require('./courseCatalogCoverageService').recordOutcome(
+          'YouTube',
+          entry.topic,
+          providerResult,
+          providerError,
+          { session, retryAt },
+        );
+        await queue().updateOne(
+          { _id: 'topics', topics: { $elemMatch: { key: entry.key, workerToken: lease.token } } },
+          {
+            $set: {
+              'topics.$.state': state,
+              'topics.$.nextAttemptAt': retryAt,
+            },
           },
-        },
-        { timeoutMS: 5000 },
-      );
+          { session },
+        );
+      }, 5000);
       shared.clearMemory();
       cache.clear();
       cachedBytes = 0;
@@ -349,6 +471,9 @@ module.exports = {
   canonicalQuery,
   pipeline,
   MAX_GAPS,
+  KNOWN_TOPICS,
+  MAX_QUEUE_TOPICS,
+  MAX_COVERAGE_DOCUMENTS,
   MAX_RESULTS,
   clearMemory: () => {
     cache.clear();

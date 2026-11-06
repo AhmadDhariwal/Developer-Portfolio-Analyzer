@@ -1,0 +1,25 @@
+{
+  "focused": {
+    "skipped": 0,
+    "tests": 82,
+    "pass": 82,
+    "cancelled": 0,
+    "fail": 0
+  },
+  "finalAcquisitionDiscovery": {
+    "skipped": 0,
+    "tests": 36,
+    "pass": 36,
+    "cancelled": 0,
+    "fail": 0
+  },
+  "catalogBefore": 35,
+  "catalogAfter": 61,
+  "technologyCount": 77,
+  "coverageStates": 616,
+  "sourceHttpCalls": 2,
+  "linkHttpCalls": 36,
+  "liveYouTubeCalls": 0,
+  "fullSuites": "Not run; explicitly out of scope",
+  "productionAcceptance": "BLOCKED by retained release/staging gates"
+}

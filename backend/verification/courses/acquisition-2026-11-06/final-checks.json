@@ -1,0 +1,111 @@
+{
+  "checkedAt": "2026-11-06T09:17:52.7202171Z",
+  "formattedPaths": [
+    "backend/src/data/courseAcquisitionCatalog.js",
+    "backend/src/data/openLearningCatalog.js",
+    "backend/src/scripts/verifyCourseAcquisition.js",
+    "backend/src/services/courseCatalogAcquisitionService.js",
+    "backend/src/services/courseCatalogCoverageService.js",
+    "backend/src/services/courseCatalogMaintenanceService.js",
+    "backend/src/services/courseCatalogSearchService.js",
+    "backend/src/services/courseCatalogTaxonomy.js",
+    "backend/src/services/courseGovernanceService.js",
+    "backend/src/services/sharedCourseCatalogService.js",
+    "backend/src/tests/courseCatalogAcquisition.test.js",
+    "backend/src/tests/courseCatalogCoverage.integration.test.js",
+    "backend/src/tests/coursesDiscovery.integration.test.js",
+    "backend/src/tests/coursesFinalization.test.js",
+    "backend/src/tests/fixtures/courseAcquisitionWorker.js",
+    "backend/src/tests/sharedCourseCatalog.integration.test.js",
+    "backend/src/data/courseAcquisitionSources.md",
+    "backend/verification/courses/LEARNING-HUB-PRODUCTION-FINAL.md"
+  ],
+  "formatterWrite": 0,
+  "formatterCheck": 0,
+  "syntax": [
+    {
+      "path": "backend/src/data/courseAcquisitionCatalog.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "backend/src/data/openLearningCatalog.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "backend/src/scripts/verifyCourseAcquisition.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "backend/src/services/courseCatalogAcquisitionService.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "backend/src/services/courseCatalogCoverageService.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "backend/src/services/courseCatalogMaintenanceService.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "backend/src/services/courseCatalogSearchService.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "backend/src/services/courseCatalogTaxonomy.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "backend/src/services/courseGovernanceService.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "backend/src/services/sharedCourseCatalogService.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "backend/src/tests/courseCatalogAcquisition.test.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "backend/src/tests/courseCatalogCoverage.integration.test.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "backend/src/tests/coursesDiscovery.integration.test.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "backend/src/tests/coursesFinalization.test.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "backend/src/tests/fixtures/courseAcquisitionWorker.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "path": "backend/src/tests/sharedCourseCatalog.integration.test.js",
+      "exitCode": 0,
+      "output": ""
+    }
+  ],
+  "gitWorking": 0,
+  "gitIndex": 0,
+  "frontend": "Not run: no frontend changes; user explicitly scoped verification",
+  "fullBackend": "Not run: user explicitly scoped verification"
+}

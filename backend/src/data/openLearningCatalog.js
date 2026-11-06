@@ -3,6 +3,7 @@
 // Link-only discovery records, reviewed against official publisher pages 2026-11-05.
 // No curriculum text, imagery, ratings, duration or licensed course content is copied.
 module.exports = [
+  ...require('./courseAcquisitionCatalog').courses,
   {
     id: 'fb_m1',
     title: 'MDN Learn Web Development',

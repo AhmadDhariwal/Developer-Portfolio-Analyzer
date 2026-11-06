@@ -85,10 +85,13 @@ async function maintain({ probeCourse = probe } = {}) {
       );
     }
     catalog.clearMemory();
+    await require('./courseCatalogCoverageService').auditInventory({
+      requestDiscovery: require('./courseCatalogSearchService').recordGap,
+    });
     if (process.env.COURSES_BACKGROUND_INGESTION === 'true' && process.env.YOUTUBE_API_KEY) {
       // Two existing stale coverages per tick; no speculative crawling or unbounded queue.
       const stale = await db
-        .find({ version: catalog.VERSION, freshUntil: { $lte: new Date() } })
+        .find({ _id: /^youtube:/, version: catalog.VERSION, freshUntil: { $lte: new Date() } })
         .sort({ freshUntil: 1, _id: 1 })
         .limit(2)
         .maxTimeMS(5000)
@@ -100,6 +103,7 @@ async function maintain({ probeCourse = probe } = {}) {
             fingerprint: courses.providerConfigurationFingerprint(),
             fetchProvider: courses.fetchYouTubeCourses,
             background: true,
+            admittedTopic: true,
           })
           .catch(() => {});
       }
@@ -117,8 +121,9 @@ function start() {
   );
   if (process.env.COURSES_GAP_DISCOVERY_ENABLED !== 'false')
     discoveryTask = cron.schedule('* * * * *', () =>
-      require('./courseCatalogSearchService')
-        .processDiscoveryQueue()
+      require('./courseCatalogAcquisitionService')
+        .refresh()
+        .then(() => require('./courseCatalogSearchService').processDiscoveryQueue())
         .catch(() => console.warn('[Courses] Shared topic discovery deferred.')),
     );
 }
@@ -133,24 +138,18 @@ async function coverageReport() {
   const rows = await mongoose.connection.db
     .collection('shared_course_catalog')
     .find({ courses: { $exists: true } })
-    .limit(
-      catalog.TOPICS.length +
-        catalog.STACKS.length +
-        require('./courseCatalogSearchService').MAX_GAPS +
-        1,
-    )
+    .limit(require('./courseCatalogSearchService').MAX_COVERAGE_DOCUMENTS + 1)
     .maxTimeMS(5000)
     .toArray();
-  const unique = new Map();
-  let duplicateRows = 0;
-  for (const row of rows)
-    for (const course of row.courses) {
-      if (unique.has(course.id)) duplicateRows++;
-      unique.set(course.id, course);
-    }
+  if (rows.length > require('./courseCatalogSearchService').MAX_COVERAGE_DOCUMENTS)
+    throw Error('Catalog coverage admission bound exceeded.');
+  const active = await require('./courseCatalogCoverageService').inventory();
+  const service = require('./courseService');
+  const courses = service.dedupeCourses(active.map(service.normaliseCourse).filter(Boolean));
+  const duplicateRows = active.length - courses.length;
   const providers = {};
   const topics = {};
-  for (const course of unique.values()) {
+  for (const course of courses) {
     providers[course.platform] = (providers[course.platform] || 0) + 1;
     for (const topic of course.topics || []) topics[topic] = (topics[topic] || 0) + 1;
   }
@@ -158,7 +157,7 @@ async function coverageReport() {
     generatedAt: new Date().toISOString(),
     catalogVersion: catalog.VERSION,
     coverageDocuments: rows.length,
-    uniqueCourses: unique.size,
+    uniqueCourses: courses.length,
     overlappingCoverageRows: duplicateRows,
     providers,
     topics,
@@ -171,6 +170,7 @@ async function coverageReport() {
       staleUntil: row.staleUntil || null,
     })),
     urlAudits: rows.find((row) => row._id === 'curated')?.audits || {},
+    providerCoverage: await require('./courseCatalogCoverageService').report(),
   };
 }
 module.exports = { start, stop, maintain, probe, coverageReport };

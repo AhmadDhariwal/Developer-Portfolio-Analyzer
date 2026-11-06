@@ -186,7 +186,7 @@ test(
       async () => {
         const first = await request('?view=discover&limit=20');
         assert.equal(first.status, 200);
-        assert.equal(first.data.total, 95);
+        assert.equal(first.data.total, 121);
         assert.equal(first.data.providerCounts.YouTube, 60);
         const ids = new Set();
         for (let page = 1; page <= first.data.totalPages; page++) {
@@ -197,7 +197,7 @@ test(
             ids.add(course.id);
           }
         }
-        assert.equal(ids.size, 95);
+        assert.equal(ids.size, 121);
         assert.equal(externalCalls, 0);
         const filtered = await request('?view=discover&platform=YouTube&topic=k8s&limit=20');
         assert.equal(filtered.data.total, 30);
@@ -206,7 +206,7 @@ test(
             (course) => course.platform === 'YouTube' && course.title.includes('Kubernetes'),
           ),
         );
-        assert.equal((await request('?view=discover&topic=Docker')).data.total, 33);
+        assert.equal((await request('?view=discover&topic=Docker')).data.total, 34);
       },
     );
     await t.test(
@@ -214,7 +214,7 @@ test(
       async () => {
         const response = await request('?view=for-you&topic=Docker&skillGaps=Docker');
         assert.equal(response.status, 200);
-        assert.equal(response.data.total, 33);
+        assert.equal(response.data.total, 34);
         const expected = courses.scoreAndRank(
           (await search.load(courses.normaliseCourseFilters({ topic: 'Docker' }))).courses,
           {
@@ -234,7 +234,7 @@ test(
       },
     );
     await t.test(
-      'unseen GenAI/LLM/RAG queries record one shared gap per canonical topic without inline calls',
+      'expanded GenAI/LLM/RAG inventory queues missing YouTube coverage once without inline calls',
       async () => {
         for (const topic of [
           'GenAI',
@@ -246,7 +246,7 @@ test(
         ]) {
           const result = await request('?view=discover&topic=' + encodeURIComponent(topic));
           assert.equal(result.status, 200);
-          assert.equal(result.data.total, 0);
+          assert.equal(result.data.total, /^(RAG|retrieval)/.test(topic) ? 2 : 4);
         }
         await Promise.all(Array.from({ length: 50 }, () => search.recordGap('RAG')));
         const queued = await mongoose.connection.db
@@ -270,7 +270,7 @@ test(
         );
         assert.equal(providerPipelines, 1);
         const populated = await request('?view=discover&topic=GenAI&refresh=true');
-        assert.equal(populated.data.total, 1);
+        assert.equal(populated.data.total, 5);
         assert.equal(externalCalls, 0);
       },
     );
@@ -477,7 +477,7 @@ test(
             user: index % 2 ? owner : foreign,
           });
           assert.equal(result.status, 200);
-          assert.equal(result.data.total, 33);
+          assert.equal(result.data.total, 34);
           warmApi.push(performance.now() - started);
         }
         assert.equal(externalCalls, 0);
@@ -498,7 +498,7 @@ test(
               const started = performance.now();
               const result = await search.load(filters);
               warmService.push(performance.now() - started);
-              assert.equal(result.courses.length, 33);
+              assert.equal(result.courses.length, 34);
             }),
           );
         assert.equal(externalCalls, 0);
@@ -517,13 +517,19 @@ test(
         const row = await mongoose.connection.db
           .collection('course_catalog_discovery')
           .findOne({ _id: 'topics' });
-        assert.equal(row.topics.length, search.MAX_GAPS);
-        assert.equal(new Set(row.topics.map((entry) => entry.key)).size, search.MAX_GAPS);
+        assert.equal(
+          row.topics.filter((entry) => !search.KNOWN_TOPICS.includes(entry.topic)).length,
+          search.MAX_GAPS,
+        );
+        assert.equal(new Set(row.topics.map((entry) => entry.key)).size, row.topics.length);
+        assert.ok(row.topics.length <= search.MAX_QUEUE_TOPICS);
         assert.equal(
           (await search.recordGap('another distinct missing technology')).status,
           'capacity',
         );
         assert.equal(externalCalls, 0);
+        // Known Skill Gap technologies retain reserved capacity after arbitrary misses exhaust their slots.
+        assert.equal((await search.recordGap('Terraform')).status, 'queued');
       },
     );
     await t.test(
@@ -555,7 +561,7 @@ test(
         search.clearMemory();
         const large = await request('?view=discover&refresh=true&limit=20');
         assert.equal(large.status, 200);
-        assert.equal(large.data.total, 336);
+        assert.equal(large.data.total, 362);
         assert.equal(large.data.courses.length, 20);
         assert.equal(
           await require('../models/analysisCache').countDocuments({
@@ -568,7 +574,7 @@ test(
         assert.equal(
           await mongoose.connection.db
             .collection('integrationgovernancestates')
-            .countDocuments({ 'completed.pool.total': 336 }),
+            .countDocuments({ 'completed.pool.total': 362 }),
           0,
         );
         assert.equal(externalCalls, 0);
@@ -611,7 +617,9 @@ test(
       .filter((entry) => entry.route.startsWith('?'))
       .map((entry) => entry.durationMs)
       .sort((a, b) => a - b);
-    const output = path.resolve(__dirname, '../../verification/courses/defects-2026-11-05');
+    const output =
+      process.env.COURSES_ACQUISITION_OUTPUT ||
+      path.resolve(__dirname, '../../verification/courses/defects-2026-11-05');
     fs.mkdirSync(output, { recursive: true });
     fs.writeFileSync(
       path.join(output, 'mongo-network.json'),
