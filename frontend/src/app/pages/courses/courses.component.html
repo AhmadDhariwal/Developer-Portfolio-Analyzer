@@ -193,8 +193,12 @@
     </div>
   </section>
 
-  <!-- Recommendation Intelligence Banner -->
-  <section class="overview-intelligence" aria-labelledby="overview-heading">
+  <!-- Recommendation Intelligence Banner (Only shown in personalized 'For You' view) -->
+  <section
+    class="overview-intelligence"
+    aria-labelledby="overview-heading"
+    *ngIf="view === 'for-you'"
+  >
     <div class="intelligence-header">
       <div class="spark-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -253,8 +257,8 @@
     </div>
   </section>
 
-  <!-- Segmented View Tabs (Discover Courses & My Learning) -->
-  <div class="view-tabs-container">
+  <!-- Unified View Navigation & Control Bar -->
+  <div class="view-navigation-bar">
     <div class="view-tabs" role="group" aria-label="Learning Hub views">
       <button
         type="button"
@@ -310,6 +314,30 @@
         }}</span>
       </button>
     </div>
+
+    <div class="view-nav-meta" *ngIf="view !== 'learning'">
+      <span class="meta-notice">Provider destinations open in a new tab.</span>
+      <button
+        #filterTrigger
+        type="button"
+        class="mobile-filter-trigger"
+        aria-haspopup="dialog"
+        [attr.aria-expanded]="isMobileFiltersOpen"
+        (click)="openMobileFilters()"
+      >
+        <svg
+          class="trigger-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+        </svg>
+        <span>Filters{{ hasActiveFilters ? ' (' + activeFilterChips.length + ')' : '' }}</span>
+      </button>
+    </div>
   </div>
 
   <!-- Operational Notices & Error Banners -->
@@ -334,34 +362,9 @@
     aria-labelledby="discover-heading"
     [attr.aria-busy]="isLoading || isRefreshing || isLoadingMore"
   >
-    <div class="section-header">
-      <div>
-        <h2 id="discover-heading">{{ view === 'for-you' ? 'For You' : 'Discover Courses' }}</h2>
-        <p class="metadata">
-          Provider destinations open in a new tab. Confirm current details with the provider.
-        </p>
-      </div>
-      <button
-        #filterTrigger
-        type="button"
-        class="mobile-filter-trigger"
-        aria-haspopup="dialog"
-        [attr.aria-expanded]="isMobileFiltersOpen"
-        (click)="openMobileFilters()"
-      >
-        <svg
-          class="trigger-icon"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          aria-hidden="true"
-        >
-          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-        </svg>
-        <span>Filters{{ hasActiveFilters ? ' (' + activeFilterChips.length + ')' : '' }}</span>
-      </button>
-    </div>
+    <h2 id="discover-heading" class="sr-only">
+      {{ view === 'for-you' ? 'For You' : 'Discover Courses' }}
+    </h2>
 
     <!-- Quick Presets Filter Strip -->
     <div class="quick-presets-bar" aria-label="Quick course filters">
