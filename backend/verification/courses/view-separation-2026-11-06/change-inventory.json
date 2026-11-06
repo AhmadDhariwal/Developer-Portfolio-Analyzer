@@ -1,0 +1,108 @@
+{
+  "taskChangedFiles": [
+    {
+      "relative": "backend/src/services/coursePersonalizationService.js",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\services\\coursePersonalizationService.js"
+    },
+    {
+      "relative": "backend/src/services/courseService.js",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\services\\courseService.js"
+    },
+    {
+      "relative": "backend/src/services/courseRecommendationService.js",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\services\\courseRecommendationService.js"
+    },
+    {
+      "relative": "backend/src/tests/coursePersonalizedEligibility.test.js",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\coursePersonalizedEligibility.test.js"
+    },
+    {
+      "relative": "backend/src/tests/courseViewSeparation.integration.test.js",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\courseViewSeparation.integration.test.js"
+    },
+    {
+      "relative": "backend/src/tests/courseSearchRelevance.integration.test.js",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\courseSearchRelevance.integration.test.js"
+    },
+    {
+      "relative": "backend/src/tests/coursesDiscovery.integration.test.js",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\coursesDiscovery.integration.test.js"
+    },
+    {
+      "relative": "backend/src/tests/coursesPoolWorkers.integration.test.js",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\coursesPoolWorkers.integration.test.js"
+    },
+    {
+      "relative": "frontend/src/app/shared/models/course.model.ts",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\models\\course.model.ts"
+    },
+    {
+      "relative": "frontend/src/app/shared/services/course.service.ts",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\services\\course.service.ts"
+    },
+    {
+      "relative": "frontend/src/app/shared/services/course.service.spec.ts",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\services\\course.service.spec.ts"
+    },
+    {
+      "relative": "frontend/src/app/shared/components/course-filters/course-filters.ts",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\components\\course-filters\\course-filters.ts"
+    },
+    {
+      "relative": "frontend/src/app/shared/components/course-filters/course-filters.html",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\components\\course-filters\\course-filters.html"
+    },
+    {
+      "relative": "frontend/src/app/shared/components/course-filters/course-filters.spec.ts",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\components\\course-filters\\course-filters.spec.ts"
+    },
+    {
+      "relative": "frontend/src/app/pages/courses/courses.component.ts",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\pages\\courses\\courses.component.ts"
+    },
+    {
+      "relative": "frontend/src/app/pages/courses/courses.component.html",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\pages\\courses\\courses.component.html"
+    },
+    {
+      "relative": "frontend/src/app/pages/courses/courses.component.spec.ts",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\pages\\courses\\courses.component.spec.ts"
+    },
+    {
+      "relative": "backend/verification/courses/LEARNING-HUB-PRODUCTION-FINAL.md",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\LEARNING-HUB-PRODUCTION-FINAL.md"
+    }
+  ],
+  "concurrentFilesNotOwned": [
+    "frontend/src/app/pages/courses/courses.component.scss",
+    "frontend/src/app/pages/courses/components/my-learning.component.html",
+    "frontend/src/app/pages/courses/components/my-learning.component.scss",
+    "frontend/src/app/shared/components/course-card/course-card.scss"
+  ],
+  "evidenceFiles": [
+    "backend\\verification\\courses\\view-separation-2026-11-06\\backend-cycle.log",
+    "backend\\verification\\courses\\view-separation-2026-11-06\\before.json",
+    "backend\\verification\\courses\\view-separation-2026-11-06\\build.log",
+    "backend\\verification\\courses\\view-separation-2026-11-06\\evidence-preservation.json",
+    "backend\\verification\\courses\\view-separation-2026-11-06\\final-checks.json",
+    "backend\\verification\\courses\\view-separation-2026-11-06\\format-backend-check.log",
+    "backend\\verification\\courses\\view-separation-2026-11-06\\format-backend-write.log",
+    "backend\\verification\\courses\\view-separation-2026-11-06\\format-component-write.log",
+    "backend\\verification\\courses\\view-separation-2026-11-06\\format-final-backend-write.log",
+    "backend\\verification\\courses\\view-separation-2026-11-06\\format-final-template-write.log",
+    "backend\\verification\\courses\\view-separation-2026-11-06\\format-frontend-check.log",
+    "backend\\verification\\courses\\view-separation-2026-11-06\\format-frontend-write.log",
+    "backend\\verification\\courses\\view-separation-2026-11-06\\format-notifications-write.log",
+    "backend\\verification\\courses\\view-separation-2026-11-06\\format-report-check.log",
+    "backend\\verification\\courses\\view-separation-2026-11-06\\format-report-write.log",
+    "backend\\verification\\courses\\view-separation-2026-11-06\\frontend-cycle.log",
+    "backend\\verification\\courses\\view-separation-2026-11-06\\git-index-whitespace.log",
+    "backend\\verification\\courses\\view-separation-2026-11-06\\git-whitespace.log",
+    "backend\\verification\\courses\\view-separation-2026-11-06\\mongo-jwt.json",
+    "backend\\verification\\courses\\view-separation-2026-11-06\\relevance-mongo.json",
+    "backend\\verification\\courses\\view-separation-2026-11-06\\summary.json",
+    "backend\\verification\\courses\\view-separation-2026-11-06\\typescript.log"
+  ],
+  "sourceMovesOrDeletes": [],
+  "indexUntouched": true
+}

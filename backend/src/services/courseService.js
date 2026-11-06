@@ -815,17 +815,43 @@ async function buildCoursePoolWithMetadata(options = {}) {
   const knownSkills = sanitizeSkillList(options.knownSkills, 20);
   if (options.catalogOnly) {
     const catalog = await require('./courseCatalogSearchService').load(filters);
+    const predicates = (options.learningSkills || []).slice(0, 100).map((skill) => ({
+      skill,
+      matches: require('./courseCatalogTaxonomy').topicPredicate(skill),
+    }));
+    const stage = { Beginner: 1, Intermediate: 2, Advanced: 3 };
+    const personalized =
+      filters.view === 'discover'
+        ? []
+        : catalog.courses.filter(
+            (course) =>
+              (!stage[course.level] ||
+                stage[course.level] <= stage[normaliseExperienceLevel(experienceLevel)]) &&
+              predicates.some((target) => target.matches(course)),
+          );
     return {
       courses:
         filters.view === 'discover'
           ? catalog.courses
-          : scoreAndRank(catalog.courses, {
+          : scoreAndRank(personalized, {
               careerStack,
               experienceLevel,
               skillGaps,
               knownSkills,
               topic: filters.topic,
               targets: options.targets || [],
+            }).map((course) => {
+              const matches = predicates
+                .filter((target) => target.matches(course))
+                .map((target) => target.skill)
+                .slice(0, 3);
+              return {
+                ...course,
+                matchedTargets: matches,
+                whyRecommended: course.matchedTargets.length
+                  ? course.whyRecommended
+                  : `Learning/evidence review targets: ${matches.join(', ')} • ${course.whyRecommended}`,
+              };
             }),
       sourceMetadata: { ...catalog.sourceMetadata, coverage: catalog.coverage },
     };

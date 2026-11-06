@@ -89,6 +89,7 @@ async function worker() {
                 total: body.total,
                 signalHash: body.cacheMetadata?.signalHash,
                 providerCounts: body.providerCounts,
+                learningState: body.personalization?.learningState,
                 providers: body.courses?.map((course) => course.platform),
               });
             },
@@ -238,8 +239,8 @@ test(
       b.request(String(new mongoose.Types.ObjectId())),
     ]);
     assert.ok(
-      served.every((row) => row.providers.includes('YouTube')),
-      'All includes YouTube for both owners',
+      served.every((row) => row.total === 0 && row.learningState === 'analysis-required'),
+      'For You does not borrow the shared provider pool without current evidence',
     );
     assert.equal(
       Object.values(served[0].providerCounts).reduce((sum, count) => sum + count, 0),

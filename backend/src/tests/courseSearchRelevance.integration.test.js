@@ -237,7 +237,8 @@ test(
         assert.equal((await request('Quantum Computing', { level: 'Advanced' })).total, 0);
         assert.equal((await request('Quantum Computing', { platform: 'Udemy' })).total, 0);
         const personalized = await request('Quantum Computing', { view: 'for-you' });
-        assert.equal(personalized.total, 3);
+        assert.equal(personalized.total, 0);
+        assert.equal(personalized.personalization.learningState, 'analysis-required');
         assert.ok(personalized.courses.every((course) => course.id !== 'yt_00000000103'));
       },
     );

@@ -210,26 +210,13 @@ test(
       },
     );
     await t.test(
-      'For You uses the same inventory without changing scoring formulas or making provider requests',
+      'For You requires current evidence and never borrows the complete Discover inventory',
       async () => {
         const response = await request('?view=for-you&topic=Docker&skillGaps=Docker');
         assert.equal(response.status, 200);
-        assert.equal(response.data.total, 34);
-        const expected = courses.scoreAndRank(
-          (await search.load(courses.normaliseCourseFilters({ topic: 'Docker' }))).courses,
-          {
-            careerStack: 'Backend',
-            experienceLevel: 'Intern',
-            skillGaps: ['Docker'],
-            knownSkills: [],
-            topic: 'Docker',
-            targets: [],
-          },
-        );
-        assert.deepEqual(
-          response.data.courses.map((course) => course.id),
-          expected.slice(0, 10).map((course) => course.id),
-        );
+        assert.equal(response.data.total, 0);
+        assert.deepEqual(response.data.courses, []);
+        assert.equal(response.data.personalization.learningState, 'analysis-required');
         assert.equal(externalCalls, 0);
       },
     );

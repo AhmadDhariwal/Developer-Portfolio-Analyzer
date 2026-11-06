@@ -16,10 +16,11 @@ const { runPoolBuild } = require('./courseGovernanceService');
 
 const {
   resolveSkillSignals,
+  learningSkills,
   SKILL_GAP_ANALYSIS_VERSION,
 } = require('./coursePersonalizationService');
 const COURSE_POOL_VERSION = 'courses_pool_v6_evidence';
-const DISCOVERY_POLICY_REVISION = 5;
+const DISCOVERY_POLICY_REVISION = 6;
 const COURSE_CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const MAX_COURSE_CACHE_VARIANTS = 40;
 const COURSE_MEMORY_TTL_MS = Math.min(
@@ -307,7 +308,10 @@ const buildRecommendedBasedOn = ({
     summary:
       filters.view === 'discover'
         ? 'Browse matching courses across the shared catalog. Use For You for learning matched to your profile and skill evidence.'
-        : summary,
+        : sourceMetadata.personalization?.learningState &&
+            sourceMetadata.personalization.learningState !== 'ready'
+          ? sourceMetadata.personalization.limitation
+          : summary,
     ...sourceMetadata,
   };
 };
@@ -562,12 +566,73 @@ const fetchCourses = async (req, res) => {
             },
           }
         : await resolveSkillSignals(userId, careerStack, experienceLevel, stageTimer, req.user);
+    const eligibleSkills = learningSkills(skillSignals, careerStack);
     const requestedSkills =
-      filters.view === 'discover' ? [] : sanitizeSkillList(req.query.skillGaps, 12);
-    const skillGaps = uniqueStrings([...requestedSkills, ...skillSignals.skillGaps], 12);
-    const personalization = skillSignals.personalization;
+      filters.view === 'discover'
+        ? []
+        : sanitizeSkillList(req.query.skillGaps, 12).filter((skill) =>
+            eligibleSkills.includes(require('./courseCatalogTaxonomy').canonical(skill)),
+          );
+    const skillGaps = uniqueStrings(
+      [...requestedSkills, ...skillSignals.skillGaps].filter((skill) =>
+        eligibleSkills.includes(require('./courseCatalogTaxonomy').canonical(skill)),
+      ),
+      12,
+    );
+    const selectedSkill =
+      filters.topic &&
+      eligibleSkills.find(
+        (skill) => skill === require('./courseCatalogTaxonomy').canonical(filters.topic),
+      );
+    const learningState =
+      skillSignals.personalization.learningState ||
+      (skillSignals.personalization.status !== 'evidence-informed'
+        ? 'analysis-required'
+        : !eligibleSkills.length
+          ? 'no-recommended-skills'
+          : filters.topic && !selectedSkill
+            ? 'skill-not-recommended'
+            : 'ready');
+    const personalization =
+      filters.view === 'discover'
+        ? skillSignals.personalization
+        : {
+            ...skillSignals.personalization,
+            eligibleSkills,
+            learningState,
+            limitation:
+              learningState === 'no-recommended-skills'
+                ? 'Your current analysis has no missing or partial learning targets. Demonstrated skills are not repeated.'
+                : learningState === 'skill-not-recommended'
+                  ? 'This skill is not a learning target in your current analysis. Select a recommended skill or browse Discover.'
+                  : skillSignals.personalization.limitation,
+          };
     const forceRefresh = req.query.refresh === 'true';
     res.set?.('Cache-Control', 'private, no-store');
+
+    if (filters.view === 'for-you' && learningState !== 'ready') {
+      if (learningState === 'evidence-unavailable') {
+        res.set?.('Retry-After', '5');
+        return res
+          .status(503)
+          .json({ code: 'COURSE_EVIDENCE_UNAVAILABLE', message: personalization.limitation });
+      }
+      return res.json(
+        buildResponsePayload({
+          pageResult: paginatePool({ allCourses: [], total: 0 }, filters),
+          fromCache: false,
+          cacheLayer: 'miss',
+          careerStack,
+          experienceLevel,
+          skillGaps: [],
+          filters,
+          poolHash: skillSignals.fingerprint,
+          personalization,
+          requestedSkills,
+        }),
+      );
+    }
+    if (selectedSkill) filters.topic = selectedSkill;
 
     const catalog = await require('./courseCatalogSearchService').load(filters);
     const discovery = catalog.discovery;
@@ -708,6 +773,7 @@ const fetchCourses = async (req, res) => {
             skillGaps,
             knownSkills: skillSignals.knownSkills,
             targets: skillSignals.targets,
+            learningSkills: eligibleSkills,
             forceRefresh,
             ...filters,
           });
