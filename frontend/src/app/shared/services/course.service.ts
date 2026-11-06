@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, catchError, finalize, map, shareReplay, tap, throwError } from 'rxjs';
+import { Observable, Subject, catchError, finalize, map, shareReplay, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 import {
@@ -28,19 +28,24 @@ export class CourseService {
   // Share only pending HTTP requests. Backend source identity must be rechecked on every later read.
   private readonly cacheTtlMs = 60 * 1000;
   private readonly maxCacheEntries = 50;
+  private readonly invalidated = new Subject<void>();
+  readonly invalidated$ = this.invalidated.asObservable();
 
   constructor(
     private readonly http: HttpClient,
     private readonly cacheInvalidation: FrontendCacheInvalidationService,
   ) {
-    this.cacheInvalidation.register('courses', () => this.clearCache());
+    this.cacheInvalidation.register('courses', () => {
+      this.clearCache();
+      this.invalidated.next();
+    });
   }
 
   getCourses(
     filters: Partial<CourseFilters> = {},
     page = 1,
     limit = 10,
-    options: { refresh?: boolean } = {},
+    options: { refresh?: boolean; view?: 'discover' | 'for-you' } = {},
   ): Observable<CoursesResponse> {
     const normalizedFilters = normalizeCourseFilters(filters);
     const safePage = Math.max(1, page);
@@ -50,10 +55,12 @@ export class CourseService {
       page: safePage,
       limit: safeLimit,
       refresh: options.refresh || false,
+      view: options.view || 'for-you',
     });
     let params = new HttpParams().set('page', String(safePage)).set('limit', String(safeLimit));
 
     if (options.refresh) params = params.set('refresh', 'true');
+    if (options.view) params = params.set('view', options.view);
     if (normalizedFilters.platform !== 'All')
       params = params.set('platform', normalizedFilters.platform);
     if (normalizedFilters.rating) params = params.set('rating', normalizedFilters.rating);
@@ -179,9 +186,15 @@ export class CourseService {
     );
 
     return {
+      discovery: response?.discovery,
       personalization: response?.personalization,
       requestedSkills: response?.requestedSkills,
       cacheMetadata: response?.cacheMetadata,
+      providerCounts: Object.fromEntries(
+        Object.entries(response?.providerCounts || {}).filter(
+          ([, count]) => Number.isInteger(count) && Number(count) >= 0,
+        ),
+      ),
       courses,
       total,
       page,
@@ -218,6 +231,9 @@ export class CourseService {
       'YouTube',
       'edX',
       'freeCodeCamp',
+      'MDN',
+      'The Odin Project',
+      'Full Stack Open',
     ];
 
     if (!id || !title || !validPlatforms.includes(platform) || !/^https?:\/\//i.test(url))
@@ -258,6 +274,8 @@ export class CourseService {
       engagementScore: numeric(course?.engagementScore),
       viewCount: numeric(course?.viewCount),
       likeCount: numeric(course?.likeCount),
+      language: course?.language,
+      courseType: course?.courseType,
       matchedRequiredTargets: course?.matchedRequiredTargets,
       matchedTargets: course?.matchedTargets,
       matchedCareerSkills: course?.matchedCareerSkills,

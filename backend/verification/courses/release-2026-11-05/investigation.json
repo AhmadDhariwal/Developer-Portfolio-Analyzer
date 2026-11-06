@@ -1,0 +1,50 @@
+{
+  "previousRun": { "tests": 802, "passed": 774, "failed": 7, "skipped": 21 },
+  "failureGroups": [
+    {
+      "file": "backend/src/tests/publicPortfolio.integration.test.js",
+      "count": 1,
+      "observation": "Configured Upstash Redis required assertion. The isolated runner deliberately supplies empty Redis credentials.",
+      "classification": "Unavailable dedicated Redis/Upstash fixture; BLOCKED infrastructure gate, not an exercised application assertion.",
+      "action": "Preserve the assertion and raw failure; do not connect to runtime Redis credentials or substitute mocks for this integration gate."
+    },
+    {
+      "file": "backend/src/tests/skillGapProduction.test.js",
+      "count": 5,
+      "observation": "Two initial/warm HTTP subtests received fail-closed admission 503. The index subtest then read a missing cache row, the consumer subtest lacked the expected persisted evidence, and the parent failed.",
+      "classification": "Two primary admission failures, two dependent assertions and one failed parent. A persistent application defect is not established by the previous run; the unchanged isolated suite subsequently passed.",
+      "action": "Re-exercise real concurrent workers in the full final-code suite; retain unchanged admission deadlines, score formulas and assertions."
+    },
+    {
+      "file": "backend/src/tests/supportRedisFallback.test.js",
+      "count": 1,
+      "observation": "MongoNetworkTimeoutError against its own loopback disposable server with a five-second socket deadline.",
+      "classification": "Local database transport timeout; the unchanged isolated test subsequently passed. No saved-data corruption or reproducible Support logic defect was established.",
+      "action": "Re-exercise the real Mongo/controlled Redis outage sequence without extending deadlines or introducing retries that hide errors."
+    }
+  ],
+  "previousSkips": [
+    { "file": "backend/src/tests/b2Storage.test.js", "gate": "B2_ACCEPTANCE_MONGO", "availability": "BLOCKED: dedicated owned replica at port 27140 plus fixture S3; arbitrary existing services must not be reused" },
+    { "file": "backend/src/tests/interviewPrepFinalization.integration.test.js", "gate": "INTERVIEW_TEST_MONGO_URI", "availability": "Enabled with this run's owned loopback Mongo replica; test chooses a random disposable database" },
+    { "file": "backend/src/tests/jobsHubLocal.integration.test.js", "gate": "JOBS_TEST_REDIS_URL", "availability": "BLOCKED: dedicated local Redis executing actual Lua is unavailable" },
+    { "file": "backend/src/tests/jobsHubLocal.integration.test.js", "gate": "JOBS_TEST_MONGODB_URI", "availability": "Enabled with owned loopback Mongo; random disposable database" },
+    { "file": "backend/src/tests/jobsHubUpstash.integration.test.js", "gate": "JOBS_TEST_REDIS_URL", "availability": "BLOCKED: dedicated disposable Upstash TLS fixture unavailable" },
+    { "file": "backend/src/tests/newsAdaptiveRuntime.integration.test.js", "gate": "NEWS_TEST_REDIS_URL and NEWS_TEST_MONGODB_URI", "availability": "BLOCKED: Redis fixture unavailable; owned Mongo is configured" },
+    { "file": "backend/src/tests/newsCatalog.integration.test.js", "gate": "NEWS_TEST_REDIS_URL and NEWS_TEST_MONGODB_URI", "availability": "BLOCKED: Redis fixture unavailable; owned Mongo is configured" },
+    { "file": "backend/src/tests/newsContractMongo.integration.test.js", "gate": "NEWS_TEST_MONGODB_URI", "availability": "Enabled with owned loopback Mongo; random disposable database" },
+    { "file": "backend/src/tests/newsDiscovery.integration.test.js", "gate": "NEWS_TEST_MONGODB_URI", "availability": "Enabled with owned loopback Mongo; random disposable database" },
+    { "file": "backend/src/tests/newsDiscovery.integration.test.js", "gate": "NEWS_TEST_REDIS_URL", "availability": "BLOCKED: Redis fixture unavailable" },
+    { "file": "backend/src/tests/newsFlow.integration.test.js", "gate": "NEWS_TEST_REDIS_URL", "availability": "BLOCKED: Redis fixture unavailable" },
+    { "file": "backend/src/tests/newsFreeText.integration.test.js", "gate": "NEWS_TEST_REDIS_URL and NEWS_TEST_MONGODB_URI", "availability": "BLOCKED: Redis fixture unavailable; owned Mongo is configured" },
+    { "file": "backend/src/tests/newsHub.integration.test.js", "gate": "NEWS_TEST_REDIS_URL", "availability": "BLOCKED: Redis fixture unavailable" },
+    { "file": "backend/src/tests/newsHub.integration.test.js", "gate": "NEWS_TEST_MONGODB_URI", "availability": "Enabled with owned loopback Mongo; random disposable database" },
+    { "file": "backend/src/tests/newsLiveSearch.integration.test.js", "gate": "NEWS_TEST_LIVE_PROVIDERS and NEWS_TEST_REDIS_URL and NEWS_TEST_MONGODB_URI", "availability": "BLOCKED: no approved live-provider run or dedicated Redis fixture; live requests remain disabled" },
+    { "file": "backend/src/tests/newsProviders.integration.test.js", "gate": "NEWS_TEST_REDIS_URL and NEWS_TEST_MONGODB_URI", "availability": "BLOCKED: Redis fixture unavailable; owned Mongo is configured" },
+    { "file": "backend/src/tests/newsRefresh.integration.test.js", "gate": "NEWS_TEST_REDIS_URL and NEWS_TEST_MONGODB_URI", "availability": "BLOCKED: Redis fixture unavailable; owned Mongo is configured" },
+    { "file": "backend/src/tests/newsRefresh.integration.test.js", "gate": "NEWS_TEST_REDIS_URL", "availability": "BLOCKED: Redis fixture unavailable" },
+    { "file": "backend/src/tests/newsSearchCorrections.integration.test.js", "gate": "NEWS_TEST_MONGODB_URI", "availability": "Enabled with owned loopback Mongo; random disposable database" },
+    { "file": "backend/src/tests/profileSettingsProduction.test.js", "gate": "PROFILE_ACCEPTANCE_MONGO", "availability": "BLOCKED: dedicated owned replica at port 27139 is not provisioned" },
+    { "file": "backend/src/tests/storageSecurityFinal.test.js", "gate": "STORAGE_SECURITY_MONGO", "availability": "BLOCKED: dedicated owned profileB2Security replica at port 27141 is not provisioned" }
+  ],
+  "constraints": "No application behavior or test assertion changed. No production data, runtime credentials, scoring, UI, catalog or My Learning changes. Final raw counts and any new failures are reported separately."
+}

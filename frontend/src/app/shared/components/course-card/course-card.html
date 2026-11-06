@@ -9,7 +9,21 @@
   <!-- Card Header with Badges & Thumbnail -->
   <div class="card-top-bar">
     <div class="platform-capsule" [class]="'platform-' + course.platform.toLowerCase()">
-      <span class="platform-icon" [ngSwitch]="course.platform">
+      <img
+        *ngIf="providerLogo"
+        class="provider-logo"
+        [src]="providerLogo"
+        alt=""
+        width="16"
+        height="16"
+        (error)="logoError = true"
+      />
+      <span
+        *ngIf="!providerLogo"
+        class="platform-icon"
+        [ngSwitch]="course.platform"
+        aria-hidden="true"
+      >
         <svg *ngSwitchCase="'YouTube'" viewBox="0 0 24 24" fill="currentColor" class="p-svg">
           <path
             d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"
@@ -53,11 +67,12 @@
   <div class="course-heading">
     <div class="thumbnail" aria-hidden="true">
       <img
-        *ngIf="thumbnail && !thumbnailError; else fallback"
-        [src]="thumbnail"
+        *ngIf="providerLogo; else fallback"
+        class="provider-thumbnail"
+        [src]="providerLogo"
         alt=""
         loading="lazy"
-        (error)="thumbnailError = true"
+        (error)="logoError = true"
       />
       <ng-template #fallback>
         <div class="thumbnail-fallback">
@@ -100,7 +115,7 @@
         [attr.title]="'Filter courses for ' + topic"
         (click)="onTopicClicked(topic, $event)"
       >
-        <span class="hash">#</span>{{ topic }}
+        <span class="hash" aria-hidden="true">#</span>{{ topic }}
       </button>
     </div>
   </div>
@@ -118,7 +133,7 @@
       >
         <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
       </svg>
-      {{ course.level || 'Level not supplied' }}
+      <span>{{ course.level || 'Level not supplied' }}</span>
     </span>
     <span class="meta-pill duration">
       <svg
@@ -132,15 +147,16 @@
         <circle cx="12" cy="12" r="10" />
         <polyline points="12 6 12 12 16 14" />
       </svg>
-      {{ course.duration || 'Duration not supplied' }}
+      <span>{{ course.duration || 'Duration not supplied' }}</span>
     </span>
     <span class="meta-pill rating" *ngIf="providerRating; else noReview">
-      <span class="star-icon">★</span>
-      <strong>{{ course.rating | number: '1.1-1' }}</strong
-      >/5 provider rating
-      <span *ngIf="course.reviewCount != null" class="review-sub">
-        · {{ course.reviewCount | number }} reviews
-      </span>
+      <span class="star-icon" aria-hidden="true">★</span>
+      <span
+        ><strong>{{ course.rating | number: '1.1-1' }}</strong
+        >/5 provider rating<span *ngIf="course.reviewCount != null" class="review-sub">
+          · {{ course.reviewCount | number }} reviews</span
+        ></span
+      >
     </span>
     <ng-template #noReview>
       <span class="meta-pill neutral">Provider rating unavailable</span>
@@ -157,11 +173,17 @@
         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
         <circle cx="12" cy="12" r="3" />
       </svg>
-      {{ course.viewCount | number }} views
-      <span *ngIf="course.likeCount != null"> · {{ course.likeCount | number }} likes</span>
+      <span
+        >{{ course.viewCount | number }} views<span *ngIf="course.likeCount != null">
+          · {{ course.likeCount | number }} likes</span
+        ></span
+      >
     </span>
     <span class="meta-pill engagement" *ngIf="course.engagementScore != null">
-      ⚡ {{ course.engagementScore | number: '1.1-1' }}/5 derived engagement · not a review rating
+      <span
+        >⚡ {{ course.engagementScore | number: '1.1-1' }}/5 derived engagement · not a review
+        rating</span
+      >
     </span>
   </div>
 
@@ -249,10 +271,12 @@
           fill="none"
           stroke="currentColor"
           stroke-width="2"
+          aria-hidden="true"
         >
           <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
         </svg>
-        Open Career Sprint →
+        <span>Open Career Sprint</span>
+        <span aria-hidden="true">→</span>
       </a>
       <button
         *ngIf="!action.sprintAdded && progress.status !== 'completed'"
@@ -267,6 +291,7 @@
           fill="none"
           stroke="currentColor"
           stroke-width="2"
+          aria-hidden="true"
         >
           <path d="M12 5v14M5 12h14" />
         </svg>
@@ -278,7 +303,7 @@
     <details class="drawer-panel">
       <summary>
         <span>Notes and progress</span>
-        <span class="drawer-arrow">▾</span>
+        <span class="drawer-arrow" aria-hidden="true">▾</span>
       </summary>
       <form (ngSubmit)="saveDetails()">
         <label>
@@ -305,7 +330,7 @@
               placeholder="e.g. 50"
               [disabled]="busy"
             />
-            <span class="percent-symbol">%</span>
+            <span class="percent-symbol" aria-hidden="true">%</span>
           </div>
         </label>
         <p class="metadata character-count">
@@ -332,7 +357,7 @@
   <details class="source-details">
     <summary>
       <span>Course and source details</span>
-      <span class="drawer-arrow">▾</span>
+      <span class="drawer-arrow" aria-hidden="true">▾</span>
     </summary>
     <div class="source-content">
       <p *ngIf="course.description" class="course-desc">{{ course.description }}</p>

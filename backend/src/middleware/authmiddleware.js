@@ -26,11 +26,23 @@ const protect = async (req, res, next) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET, {
         algorithms: ['HS256'],
         issuer: process.env.JWT_ISSUER || 'devinsight-api',
-        audience: process.env.JWT_AUDIENCE || 'devinsight-web'
+        audience: process.env.JWT_AUDIENCE || 'devinsight-web',
       });
 
       // Get user from the token
-      req.user = await User.findById(decoded.id).select('-password');
+      try {
+        req.user = await User.findById(decoded.id, null, { timeoutMS: 5000 }).select('-password');
+      } catch (error) {
+        if (error.name === 'CastError')
+          return res.status(401).json({ message: 'Not authorized, token failed' });
+        res.set?.('Retry-After', '5');
+        console.warn('[Auth] User storage unavailable', { code: error.code || error.name });
+        const response = {
+          code: 'AUTH_STORAGE_UNAVAILABLE',
+          message: 'Authentication is temporarily unavailable. Please retry.',
+        };
+        return res.status(503).json(response);
+      }
 
       if (!req.user) {
         return res.status(401).json({ message: 'Not authorized, user not found' });
@@ -41,12 +53,11 @@ const protect = async (req, res, next) => {
 
       if (req.user.isActive === false) {
         return res.status(403).json({
-          message: 'Your access has been revoked by Super Admin. Please contact support.'
+          message: 'Your access has been revoked by Super Admin. Please contact support.',
         });
       }
 
-      req.user.careerStack =
-        developerContext.resolveCareerStack(req.user) || req.user.careerStack;
+      req.user.careerStack = developerContext.resolveCareerStack(req.user) || req.user.careerStack;
       req.user.experienceLevel =
         developerContext.resolveExperienceLevel(req.user) || req.user.experienceLevel;
 
@@ -71,11 +82,10 @@ const attachOptionalUser = async (req, _res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET, {
       algorithms: ['HS256'],
       issuer: process.env.JWT_ISSUER || 'devinsight-api',
-      audience: process.env.JWT_AUDIENCE || 'devinsight-web'
+      audience: process.env.JWT_AUDIENCE || 'devinsight-web',
     });
     const user = await User.findById(decoded.id).select('-password');
-    if (user?.isActive !== false && sessions.matches(user, decoded))
-      req.user = user || undefined;
+    if (user?.isActive !== false && sessions.matches(user, decoded)) req.user = user || undefined;
   } catch {
     // Public routes remain accessible without a valid token; protected preview checks handle the absence of req.user.
   }
@@ -116,7 +126,7 @@ const optionalProtect = (req, res, next) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET, {
           algorithms: ['HS256'],
           issuer: process.env.JWT_ISSUER || 'devinsight-api',
-          audience: process.env.JWT_AUDIENCE || 'devinsight-web'
+          audience: process.env.JWT_AUDIENCE || 'devinsight-web',
         });
         User.findById(decoded.id)
           .select('-password')
@@ -128,7 +138,7 @@ const optionalProtect = (req, res, next) => {
               return res.status(401).json({ message: 'Not authorized, session expired' });
             if (user.isActive === false) {
               return res.status(403).json({
-                message: 'Your access has been revoked by Super Admin. Please contact support.'
+                message: 'Your access has been revoked by Super Admin. Please contact support.',
               });
             }
             req.user = user;
@@ -158,5 +168,5 @@ module.exports = {
   authorizeRoles,
   normalizeUserRole,
   optionalProtect,
-  attachOptionalUser
+  attachOptionalUser,
 };

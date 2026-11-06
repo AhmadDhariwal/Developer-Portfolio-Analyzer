@@ -1,7 +1,7 @@
 {
-  "startedAt": "2026-10-14T12:43:59.901Z",
-  "bundle": "main-ME5VABAA.js",
-  "fixtureOwners": ["6acf790f0eb927072ff8c6a6", "6acf790f0eb927072ff8c6a7"],
+  "startedAt": "2026-11-04T09:56:02.106Z",
+  "bundle": "main-FICQIPKO.js",
+  "fixtureOwners": ["6aeb013273c5dcf51cb24339", "6aeb013273c5dcf51cb2433a"],
   "environment": "Real local MongoDB, real JWT middleware, production course/progress/Sprint/profile HTTP handlers, production Angular bundle. Owned seeded evidence, no pre-existing users. Redis configured off.",
   "traces": [
     {
@@ -39,7 +39,7 @@
       },
       "uiTitle": "Meta Back-End Developer Professional Certificate",
       "uiReason": "Learning/evidence review targets: SQL • Matches your SQL filter",
-      "sourceHash": "f1127807cdbf1ce9e3aa"
+      "sourceHash": "c4c5389bf47520baf8b6"
     },
     {
       "id": "fb_u3",
@@ -76,7 +76,7 @@
       },
       "uiTitle": "Docker & Kubernetes: The Practical Guide",
       "uiReason": "Learning/evidence review targets: Docker • Matches your Docker filter",
-      "sourceHash": "b63b534d11ee089a980e"
+      "sourceHash": "049ed3bb835fd0d25a5c"
     },
     {
       "id": "fb_u2",
@@ -113,7 +113,7 @@
       },
       "uiTitle": "Node.js, Express, MongoDB & More: The Complete Bootcamp",
       "uiReason": "Matches your Node.js filter • Covers Node.js, Express, MongoDB for your Backend track",
-      "sourceHash": "aec48b407e6d73c52d56"
+      "sourceHash": "51c301794c997dcd0a42"
     }
   ],
   "security": [
@@ -155,7 +155,7 @@
     ]
   },
   "initial": {
-    "total": 27,
+    "total": 36,
     "source": "curated-fallback",
     "personalization": {
       "status": "evidence-informed",
@@ -189,15 +189,15 @@
       "ruleVersion": "skill-evidence-coverage-v1",
       "limitation": "Skill classifications describe recorded evidence, not verified proficiency or inability."
     },
-    "signalHash": "4b61e2c1c3818f5010f3",
+    "signalHash": "3bcac92e7b71b922a68f",
     "aiCalls": 0
   },
   "catalog": [
     {
       "id": "fb_e1",
-      "relevanceScore": 89,
-      "finalScore": 49,
-      "whyRecommended": "Learning/evidence review targets: SQL, Testing, React • Covers SQL, Python, Testing for your Backend track"
+      "relevanceScore": 71,
+      "finalScore": 39,
+      "whyRecommended": "Learning/evidence review targets: SQL, React • Covers SQL, Python, Testing for your Backend track"
     },
     {
       "id": "fb_c2",
@@ -218,22 +218,22 @@
       "whyRecommended": "Learning/evidence review targets: SQL • Fits your Intern learning stage"
     },
     {
-      "id": "fb_e6",
-      "relevanceScore": 53,
-      "finalScore": 29,
-      "whyRecommended": "Learning/evidence review targets: Testing • Covers Java, Testing for your Backend track"
-    },
-    {
-      "id": "fb_f5",
-      "relevanceScore": 53,
-      "finalScore": 29,
-      "whyRecommended": "Learning/evidence review targets: Testing • Covers Python, Testing for your Backend track"
-    },
-    {
       "id": "fb_u3",
       "relevanceScore": 53,
       "finalScore": 29,
       "whyRecommended": "Learning/evidence review targets: Docker • Covers Docker for your Backend track"
+    },
+    {
+      "id": "fb_e6",
+      "relevanceScore": 35,
+      "finalScore": 19,
+      "whyRecommended": "Covers Java, Testing for your Backend track"
+    },
+    {
+      "id": "fb_f5",
+      "relevanceScore": 35,
+      "finalScore": 19,
+      "whyRecommended": "Covers Python, Testing for your Backend track"
     },
     {
       "id": "fb_u7",
@@ -266,6 +266,12 @@
       "whyRecommended": "Fits your Intern learning stage • Covers Python, Git for your Backend track"
     },
     {
+      "id": "fb_c7",
+      "relevanceScore": 47,
+      "finalScore": 26,
+      "whyRecommended": "Fits your Intern learning stage • Covers Python, Linux for your Backend track"
+    },
+    {
       "id": "fb_e3",
       "relevanceScore": 47,
       "finalScore": 26,
@@ -276,6 +282,18 @@
       "relevanceScore": 47,
       "finalScore": 26,
       "whyRecommended": "Fits your Intern learning stage • Covers Python for your Backend track"
+    },
+    {
+      "id": "fb_e9",
+      "relevanceScore": 47,
+      "finalScore": 26,
+      "whyRecommended": "Fits your Intern learning stage • Covers Linux for your Backend track"
+    },
+    {
+      "id": "fb_f7",
+      "relevanceScore": 47,
+      "finalScore": 26,
+      "whyRecommended": "Fits your Intern learning stage • Covers C#, .NET for your Backend track"
     },
     {
       "id": "fb_u6",
@@ -297,6 +315,18 @@
     },
     {
       "id": "fb_c3",
+      "relevanceScore": 35,
+      "finalScore": 19,
+      "whyRecommended": "Covers Python for your Backend track"
+    },
+    {
+      "id": "fb_c8",
+      "relevanceScore": 35,
+      "finalScore": 19,
+      "whyRecommended": "Covers CI/CD for your Backend track"
+    },
+    {
+      "id": "fb_f6",
       "relevanceScore": 35,
       "finalScore": 19,
       "whyRecommended": "Covers Python for your Backend track"
@@ -338,13 +368,37 @@
       "whyRecommended": "Catalog option for your selected career context"
     },
     {
+      "id": "fb_c9",
+      "relevanceScore": 25,
+      "finalScore": 14,
+      "whyRecommended": "Catalog option for your selected career context"
+    },
+    {
       "id": "fb_e7",
       "relevanceScore": 25,
       "finalScore": 14,
       "whyRecommended": "Catalog option for your selected career context"
     },
     {
+      "id": "fb_e8",
+      "relevanceScore": 25,
+      "finalScore": 14,
+      "whyRecommended": "Catalog option for your selected career context"
+    },
+    {
       "id": "fb_f1",
+      "relevanceScore": 25,
+      "finalScore": 14,
+      "whyRecommended": "Catalog option for your selected career context"
+    },
+    {
+      "id": "fb_u10",
+      "relevanceScore": 25,
+      "finalScore": 14,
+      "whyRecommended": "Catalog option for your selected career context"
+    },
+    {
+      "id": "fb_u11",
       "relevanceScore": 25,
       "finalScore": 14,
       "whyRecommended": "Catalog option for your selected career context"

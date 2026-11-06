@@ -1,0 +1,39 @@
+{
+  "syntax": [
+    {
+      "path": "backend/src/services/courseCatalogTaxonomy.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/services/courseCatalogSearchService.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/services/courseRecommendationService.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/tests/courseTopicRelevance.test.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/tests/courseSearchRelevance.integration.test.js",
+      "exitCode": 0
+    }
+  ],
+  "typeScriptExitCode": 0,
+  "workingWhitespaceExitCode": 0,
+  "indexWhitespaceExitCode": 0,
+  "formatterBackend": [
+    "Checking formatting...",
+    "All matched files use Prettier code style!"
+  ],
+  "formatterFrontend": [
+    "Checking formatting...",
+    "All matched files use Prettier code style!"
+  ],
+  "formatterReport": [
+    "Checking formatting...",
+    "All matched files use Prettier code style!"
+  ]
+}

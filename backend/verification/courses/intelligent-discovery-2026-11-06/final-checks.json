@@ -1,0 +1,38 @@
+{
+  "syntax": [
+    {
+      "path": "backend/src/services/courseCatalogCoverageService.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/services/courseDiscoveryStatusService.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/services/courseCatalogSearchService.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/services/courseRecommendationService.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/tests/courseIntelligentDiscovery.integration.test.js",
+      "exitCode": 0
+    }
+  ],
+  "workingWhitespaceExitCode": 0,
+  "indexWhitespaceExitCode": 0,
+  "formatterBackend": [
+    "Checking formatting...",
+    "All matched files use Prettier code style!"
+  ],
+  "formatterFrontend": [
+    "Checking formatting...",
+    "All matched files use Prettier code style!"
+  ],
+  "formatterReport": [
+    "Checking formatting...",
+    "All matched files use Prettier code style!"
+  ]
+}

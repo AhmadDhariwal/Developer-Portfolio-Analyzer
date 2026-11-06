@@ -1,10 +1,10 @@
 {
-  "checkedAt": "2026-10-14T12:18:27.564Z",
+  "checkedAt": "2026-11-04T09:05:44.948Z",
   "configured": true,
   "realNetwork": true,
   "status": "available",
   "reason": "",
-  "milliseconds": 1409,
+  "milliseconds": 2898,
   "courses": [
     {
       "id": "yt_hlGoQC332VM",
@@ -17,7 +17,23 @@
         "ratingSource": "unavailable",
         "popularitySource": "derived-view-count",
         "engagementSource": "derived-views-likes",
-        "metadataVerifiedAt": "2026-10-14T12:18:27.527Z",
+        "metadataVerifiedAt": "2026-11-04T09:05:44.832Z",
+        "availability": "observed",
+        "durationSource": "youtube-api"
+      }
+    },
+    {
+      "id": "yt_xKuHUoaVN7E",
+      "title": "SQL Full Course 2026–2027 | Beginner to Advanced | Complete SQL Tutorial with Projects #sql",
+      "url": "https://www.youtube.com/watch?v=xKuHUoaVN7E",
+      "rating": null,
+      "engagementScore": 4.7,
+      "provenance": {
+        "source": "youtube-api",
+        "ratingSource": "unavailable",
+        "popularitySource": "derived-view-count",
+        "engagementSource": "derived-views-likes",
+        "metadataVerifiedAt": "2026-11-04T09:05:44.861Z",
         "availability": "observed",
         "durationSource": "youtube-api"
       }
@@ -33,23 +49,7 @@
         "ratingSource": "unavailable",
         "popularitySource": "derived-view-count",
         "engagementSource": "derived-views-likes",
-        "metadataVerifiedAt": "2026-10-14T12:18:27.536Z",
-        "availability": "observed",
-        "durationSource": "youtube-api"
-      }
-    },
-    {
-      "id": "yt_yE6tIle64tU",
-      "title": "SQL Tutorial for Beginners (Complete Course using MySQL)",
-      "url": "https://www.youtube.com/watch?v=yE6tIle64tU",
-      "rating": null,
-      "engagementScore": 4.5,
-      "provenance": {
-        "source": "youtube-api",
-        "ratingSource": "unavailable",
-        "popularitySource": "derived-view-count",
-        "engagementSource": "derived-views-likes",
-        "metadataVerifiedAt": "2026-10-14T12:18:27.537Z",
+        "metadataVerifiedAt": "2026-11-04T09:05:44.865Z",
         "availability": "observed",
         "durationSource": "youtube-api"
       }

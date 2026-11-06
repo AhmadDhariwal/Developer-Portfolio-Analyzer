@@ -1,4 +1,4 @@
-const { chromium } = require('../../backend/node_modules/playwright');
+const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const { catalog, profile, discover } = require('./courses-browser-fixture.cjs');
 const http = require('node:http');
 const fs = require('node:fs');
@@ -26,6 +26,10 @@ const server = http.createServer((req, res) => {
 });
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function settle(page) {
+  await page.waitForFunction(() => {
+    const shell = document.querySelector('.shell-body');
+    return !shell || shell.classList.contains('shell-body--mobile') === innerWidth <= 768;
+  });
   await page.evaluate(async () => {
     await document.fonts.ready;
     await Promise.all(
@@ -328,6 +332,35 @@ async function mobileFilters(page) {
         await cards.locator('h3').allTextContents(),
         catalog.slice(0, 10).map((course) => course.title),
       );
+      await page
+        .locator('.view-tabs')
+        .getByRole('button', { name: 'For You', exact: true })
+        .click();
+      await count(cards, 10);
+      assert.equal(controls.requests.at(-1).view, 'for-you');
+      await page
+        .locator('.view-tabs')
+        .getByRole('button', { name: 'Discover Courses', exact: true })
+        .click();
+      await count(cards, 10);
+      assert.equal(controls.requests.at(-1).view, 'discover');
+      assert.ok(
+        (await page.locator('.learning-metrics-strip').innerText()).includes(
+          'Open For You to view your skill priorities',
+        ),
+      );
+      assert.ok(
+        !(await page.locator('.learning-metrics-strip').innerText()).includes(
+          'No unresolved gaps found',
+        ),
+      );
+      const providerImages = await cards
+        .first()
+        .locator('img')
+        .evaluateAll((images) => images.map((image) => image.getAttribute('src')));
+      assert.equal(providerImages.length, 2);
+      assert.ok(providerImages.every((src) => src?.startsWith('/providers/')));
+      assert.equal(providerImages[0], providerImages[1]);
       for (const width of [320, 375, 425, 768, 1024, 1280, 1440, 1600]) {
         await page.setViewportSize({ width, height: width <= 768 ? 900 : 1000 });
         await settle(page);
@@ -449,7 +482,7 @@ async function mobileFilters(page) {
       await external.focus();
       await page.keyboard.press('Enter');
       const popup = await popupPromise;
-      await popup.waitForLoadState('domcontentloaded');
+      await popup.waitForURL('https://www.youtube.com/**');
       assert.match(popup.url(), /youtube.com/);
       await popup.close();
       controls.mutation = 'error';
@@ -601,7 +634,10 @@ async function mobileFilters(page) {
       else if (mode === 'error') {
         await page.getByText('Courses could not be loaded', { exact: true }).waitFor();
         controls.mode = 'normal';
-        await page.getByRole('button', { name: 'Retry courses', exact: true }).click();
+        await page
+          .getByRole('alert')
+          .getByRole('button', { name: 'Retry courses', exact: true })
+          .click();
         await count(page.locator('app-courses app-course-card'), 10);
       } else if (mode === 'loading') {
         await page.getByLabel('Loading courses', { exact: true }).waitFor();
@@ -610,11 +646,20 @@ async function mobileFilters(page) {
         await count(page.locator('app-courses app-course-card'), 10);
         if (mode === 'fallback')
           await page
-            .getByText('YouTube is unavailable. Showing ranked provider alternatives.', {
+            .getByText('Some providers are temporarily unavailable. Available courses are shown.', {
               exact: true,
             })
             .waitFor();
-        if (mode === 'cached') await page.getByText(/cached source pool/).waitFor();
+        if (mode === 'cached') {
+          await page
+            .locator('.sync-capsule')
+            .getByText(/Loaded/)
+            .waitFor();
+          assert.doesNotMatch(
+            await page.locator('app-courses').innerText(),
+            /cached source pool|backend recommendation order/,
+          );
+        }
         if (mode === 'evidence-unavailable')
           await page
             .getByText(

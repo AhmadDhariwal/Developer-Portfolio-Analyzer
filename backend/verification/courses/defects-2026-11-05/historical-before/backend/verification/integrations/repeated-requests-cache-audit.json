@@ -1,0 +1,84 @@
+{
+  "checkedAt": "2026-11-04T12:54:28.357Z",
+  "providerHttpRequests": 0,
+  "checks": [
+    "active lease returns 409 without reset; commit fence preserves a newly claimed Sync; stale/credential-bearing connections do not shortcut",
+    "warm read-through measured at two payload sizes; generation mismatch falls back to Mongo; expired metadata bypasses Redis; quota/timeout/unavailable/recovered return authoritative data"
+  ],
+  "readThrough": [
+    {
+      "payloadBytes": 615,
+      "mongoOnlyMs": {
+        "n": 12,
+        "p50": 2.023800000002666,
+        "p95": 3.8145000000004075,
+        "p99": 3.8145000000004075
+      },
+      "readThroughMs": {
+        "n": 12,
+        "p50": 3.283900000002177,
+        "p95": 4.244400000003225,
+        "p99": 4.244400000003225
+      },
+      "mongoReads": 24,
+      "redisGets": 12
+    },
+    {
+      "payloadBytes": 30103,
+      "mongoOnlyMs": {
+        "n": 12,
+        "p50": 2.2026000000005297,
+        "p95": 3.583200000000943,
+        "p99": 3.583200000000943
+      },
+      "readThroughMs": {
+        "n": 12,
+        "p50": 2.863100000002305,
+        "p95": 4.741699999998673,
+        "p99": 4.741699999998673
+      },
+      "mongoReads": 24,
+      "redisGets": 12
+    }
+  ],
+  "prototypeCommands": {
+    "mongoReads": 53,
+    "redisGets": 25,
+    "redisSets": 3
+  },
+  "prototypeFailureModes": [
+    {
+      "mode": "quota",
+      "ms": 5.864900000000489,
+      "mongoReads": 2,
+      "redisGets": 1,
+      "redisSets": 1
+    },
+    {
+      "mode": "timeout",
+      "ms": 165.61849999999686,
+      "mongoReads": 2,
+      "redisGets": 1,
+      "redisSets": 1
+    },
+    {
+      "mode": "unavailable",
+      "ms": 2.0799000000006345,
+      "mongoReads": 1,
+      "redisGets": 0,
+      "redisSets": 0
+    },
+    {
+      "mode": "recovered",
+      "ms": 4.933000000000902,
+      "mongoReads": 2,
+      "redisGets": 1,
+      "redisSets": 1
+    }
+  ],
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 128,
+    "productionDataUsed": false
+  }
+}

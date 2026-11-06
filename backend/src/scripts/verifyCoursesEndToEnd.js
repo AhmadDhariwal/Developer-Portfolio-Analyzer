@@ -8,7 +8,7 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../.env'), quiet: t
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const express = require('express');
-const { chromium } = require('playwright');
+const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const uri =
   process.env.LEARNING_VERIFICATION_MONGO_URI ||
   'mongodb://127.0.0.1:27018/devinsight_learning_browser';
@@ -30,22 +30,32 @@ const AnalysisCache = require('../models/analysisCache');
 const Progress = require('../models/userCourseProgress');
 const CareerSprint = require('../models/careerSprint');
 const PublicProfile = require('../models/publicProfile');
+const IntegrationGovernanceState = require('../models/integrationGovernanceState');
 const signals = require('../services/developerSignalService');
 const engine = require('../services/recommendationEngineService');
+const { ANALYSIS_VERSION } = require('../services/skillGapCacheContract');
+const { EVIDENCE_POLICY_VERSION } = require('../services/skillGapEvidenceService');
+const { TAXONOMY_VERSION, MATRIX_VERSION } = require('../services/skillGapRequirements');
 const ai = require('../services/aiservice');
+const CATALOG_SIZE = require('../services/courseService').buildFallbackPool('All', 200).length;
 let aiCalls = 0;
 const originalAI = ai.runAIAnalysis;
 ai.runAIAnalysis = async () => {
   aiCalls++;
   throw new Error('Ordinary learning reads must not invoke AI.');
 };
-const output = path.resolve(__dirname, '../../verification/courses/final');
-const screenshotOutput = path.resolve(__dirname, '../../../frontend/verification/courses/final');
+const output = process.env.COURSES_E2E_OUTPUT
+  ? path.resolve(process.env.COURSES_E2E_OUTPUT)
+  : path.resolve(__dirname, '../../verification/courses/final');
+const screenshotOutput = process.env.COURSES_E2E_SCREENSHOTS
+  ? path.resolve(process.env.COURSES_E2E_SCREENSHOTS)
+  : path.resolve(__dirname, '../../../frontend/verification/courses/final');
 const webRoot = path.resolve(__dirname, '../../../frontend/dist/frontend/browser');
 const owner = new mongoose.Types.ObjectId(),
   foreign = new mongoose.Types.ObjectId();
 const username = 'lh-final-' + owner.toString().slice(-10);
 const profile = {
+  ownerId: String(owner),
   careerStack: 'Backend',
   activeCareerStack: 'Backend',
   experienceLevel: 'Intern',
@@ -155,6 +165,7 @@ async function capture(page, name) {
     fileSize: 1,
   });
   await User.updateOne({ _id: owner }, { activeResumeFileId: file._id });
+  const ownerUser = await User.findById(owner).lean();
   const resume = await ResumeAnalysis.create({
     userId: owner,
     fileId: file._id,
@@ -179,10 +190,21 @@ async function capture(page, name) {
   });
   const evidence = {
     ruleVersion: engine.SKILL_RULE,
+    evidencePolicyVersion: EVIDENCE_POLICY_VERSION,
+    taxonomyVersion: TAXONOMY_VERSION,
+    requirementMatrixVersion: MATRIX_VERSION,
     coverage: null,
-    sourceReferences: Object.values(
-      engine.sourceMetadata({ username, githubData, resumeAnalysis: resume.toObject() }),
-    ),
+    missingSkills: [],
+    sourceReferences: [
+      ...Object.values(
+        engine.sourceMetadata({ username, githubData, resumeAnalysis: resume.toObject() }),
+      ),
+      {
+        type: 'profile',
+        id: String(owner),
+        timestamp: (ownerUser.updatedAt || new Date()).toISOString(),
+      },
+    ],
     skills: [
       { name: 'SQL', status: 'CLAIMED_ONLY', requirement: 'REQUIRED' },
       { name: 'Docker', status: 'PARTIAL', requirement: 'REQUIRED' },
@@ -197,7 +219,7 @@ async function capture(page, name) {
     careerStack: 'Backend',
     experienceLevel: 'Intern',
     ...signals.buildResumeCacheIdentity({ resumeAnalysis: resume.toObject() }),
-    analysisVersion: 'v8-skill-evidence-coverage',
+    analysisVersion: ANALYSIS_VERSION,
     signalHash: 'owned-final-verification',
     analysisData: evidence,
   });
@@ -234,14 +256,9 @@ async function capture(page, name) {
   assert.equal(first.body.personalization.status, 'evidence-informed');
   const second = await request('/courses?limit=20&page=2');
   const catalog = [...first.body.courses, ...second.body.courses];
-  assert.equal(catalog.length, 27);
-  assert.equal(new Set(catalog.map((course) => course.id)).size, 27);
-  assert.deepEqual(first.body.recommendedBasedOn.skillGapsUsed, [
-    'SQL',
-    'Docker',
-    'Testing',
-    'React',
-  ]);
+  assert.equal(catalog.length, CATALOG_SIZE);
+  assert.equal(new Set(catalog.map((course) => course.id)).size, CATALOG_SIZE);
+  assert.deepEqual(first.body.recommendedBasedOn.skillGapsUsed, ['SQL', 'Docker', 'React']);
   result.initial = {
     total: first.body.total,
     source: first.body.recommendedBasedOn.source,
@@ -263,7 +280,7 @@ async function capture(page, name) {
   assert.equal((await request('/courses?platform=Udemy&platform=Coursera')).status, 400);
   const bracketQuery = await request('/courses?platform[$ne]=All');
   assert.equal(bracketQuery.status, 200);
-  assert.equal(bracketQuery.body.total, 27);
+  assert.equal(bracketQuery.body.total, CATALOG_SIZE);
   assert.equal((await request('/courses/bad-id/progress', 'PUT', { status: 'saved' })).status, 400);
   assert.equal(
     (
@@ -556,6 +573,7 @@ async function capture(page, name) {
     { $set: { 'analysisData.ruleVersion': 'legacy' } },
   );
   const incompatible = await request('/courses?limit=20');
+  assert.equal(incompatible.status, 200, JSON.stringify(incompatible.body));
   assert.equal(incompatible.body.personalization.status, 'career-context-only');
   assert.deepEqual(incompatible.body.recommendedBasedOn.skillGapsUsed, []);
   result.sourceFreshness = { changedFingerprint: true, incompatibleEvidenceExcluded: true };
@@ -594,6 +612,7 @@ async function capture(page, name) {
           (model) => model.deleteMany({ userId: { $in: [owner, foreign] } }),
         ),
         GitHubCache.deleteMany({ normalizedUsername: username }),
+        IntegrationGovernanceState.collection.deleteMany({ _id: /^courses:v1:/ }).catch(() => {}),
       ]);
       result.cleanup = {
         ownedUsersRemaining: await User.countDocuments({ _id: { $in: [owner, foreign] } }),

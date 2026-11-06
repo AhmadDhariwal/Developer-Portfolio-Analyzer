@@ -29,6 +29,7 @@ export class CourseLearningStore {
   readonly revision = signal(0);
 
   load(): void {
+    const revisionAtStart = this.revision();
     this.indexRequest?.unsubscribe();
     this.ready.set(false);
     this.loading.set(true);
@@ -45,6 +46,10 @@ export class CourseLearningStore {
       )
       .subscribe({
         next: (records) => {
+          if (this.revision() !== revisionAtStart) {
+            this.load();
+            return;
+          }
           this.records.set(Object.fromEntries(records.map((record) => [record.courseId, record])));
           this.ready.set(true);
           this.loading.set(false);

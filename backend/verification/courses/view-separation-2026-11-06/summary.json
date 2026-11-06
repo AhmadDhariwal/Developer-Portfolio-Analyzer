@@ -1,0 +1,62 @@
+{
+  "branch": "fix/learning-hub-p1",
+  "baselineHead": "b345ad23be19d73693e6279b4b7bcc145110a9e5",
+  "finalHead": "b345ad23be19d73693e6279b4b7bcc145110a9e5",
+  "integrationTarget": "not applicable",
+  "preexistingStagedWorkPreserved": true,
+  "initialAndFinalIndexFingerprint": "5164a2daaa90707ac9428317058810217dba9986",
+  "focusedVerificationCycles": 1,
+  "narrowFailureReruns": 0,
+  "backend": {
+    "tests": 45,
+    "pass": 45,
+    "fail": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "log": "backend-cycle.log"
+  },
+  "frontend": {
+    "tests": 34,
+    "pass": 34,
+    "fail": 0,
+    "skipped": 0,
+    "log": "frontend-cycle.log"
+  },
+  "typeScript": "PASS",
+  "build": {
+    "status": "PASS",
+    "log": "build.log",
+    "warning": "Existing landing-page stylesheet 56.67 kB versus 48 kB warning budget"
+  },
+  "formatSyntaxGit": "PASS",
+  "controlledMongoCounts": {
+    "discover": 1781,
+    "discoverYouTube": 1720,
+    "backendInternDocker": 2,
+    "frontendInternAngular": 3,
+    "absentStaleIncompatibleEvidence": 0,
+    "allDemonstrated": 0
+  },
+  "newViewFixtureExternalCalls": 0,
+  "oldRankOnlySeedReproduction": {
+    "catalog": 61,
+    "forYou": 61,
+    "unrelatedToDocker": 57
+  },
+  "noFullSuitesOrLoadBenchmarks": true,
+  "runtimeScoringFormulasChanged": false,
+  "productionDataCredentialsCommitsPushesDeploymentsChanged": false,
+  "sourceFilesMovedOrDeleted": [],
+  "taskOwnedSourceFiles": 17,
+  "report": "../LEARNING-HUB-PRODUCTION-FINAL.md",
+  "historicalEvidencePreservation": "evidence-preservation.json",
+  "concurrentUserWorkPreserved": [
+    "frontend/src/app/pages/courses/courses.component.scss",
+    "frontend/src/app/pages/courses/components/my-learning.component.html",
+    "frontend/src/app/pages/courses/components/my-learning.component.scss",
+    "frontend/src/app/shared/components/course-card/course-card.scss"
+  ],
+  "sharedTemplateOwnership": "courses.component.html includes preserved concurrent visual edits",
+  "productionAcceptance": "BLOCKED by retained staging/security/provider/load deployment gates",
+  "modifiedLegacyDiscoveryTest": "Updated no-evidence assertion; unrelated/load cases not run under the testing budget. New JWT suite verifies the changed contract."
+}

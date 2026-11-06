@@ -1,6 +1,7 @@
 'use strict';
 const progress = require('../services/courseProgressService');
 const { handoff } = require('../services/courseHandoffService');
+const { invalidateDashboardSummaryCache } = require('./dashboardcontroller');
 const endpoint = (work) => async (req, res) => {
   if (!req.user?._id) return res.status(401).json({ message: 'Authentication required.' });
   res.set?.('Cache-Control', 'private, no-store');
@@ -8,6 +9,13 @@ const endpoint = (work) => async (req, res) => {
     return await work(req, res);
   } catch (error) {
     const status = [400, 404, 409, 503].includes(error.status) ? error.status : 503;
+    if (status === 503) {
+      res.set?.('Retry-After', '5');
+      console.warn('[Courses] Learning storage unavailable', {
+        code: error.code || error.name,
+        requestId: req.id,
+      });
+    }
     return res.status(status).json({
       message: error.status
         ? error.message
@@ -19,14 +27,19 @@ module.exports = {
   listProgress: endpoint(async (req, res) =>
     res.json(await progress.listProgress(req.user._id, req.query)),
   ),
-  saveProgress: endpoint(async (req, res) =>
-    res.json(await progress.saveProgress(req.user._id, req.params.courseId, req.body)),
-  ),
+  saveProgress: endpoint(async (req, res) => {
+    const saved = await progress.saveProgress(req.user._id, req.params.courseId, req.body);
+    invalidateDashboardSummaryCache(req.user._id);
+    return res.json(saved);
+  }),
   removeProgress: endpoint(async (req, res) => {
     await progress.removeProgress(req.user._id, req.params.courseId);
+    invalidateDashboardSummaryCache(req.user._id);
     return res.status(204).send();
   }),
-  handoffToSprint: endpoint(async (req, res) =>
-    res.json(await handoff(req.user._id, req.params.courseId, req.body)),
-  ),
+  handoffToSprint: endpoint(async (req, res) => {
+    const result = await handoff(req.user._id, req.params.courseId, req.body);
+    invalidateDashboardSummaryCache(req.user._id);
+    return res.json(result);
+  }),
 };

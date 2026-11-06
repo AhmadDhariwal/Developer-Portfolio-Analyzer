@@ -8,7 +8,7 @@ const courseSchema = new mongoose.Schema(
     platform: {
       type: String,
       required: true,
-      enum: ['Udemy', 'Coursera', 'YouTube', 'edX', 'freeCodeCamp'],
+      enum: require('../utils/courseIdentity').COURSE_PROVIDERS,
     },
     topics: { type: [String], default: [] },
     instructor: { type: String, maxlength: 120, default: null },
@@ -36,4 +36,5 @@ const schema = new mongoose.Schema(
 );
 schema.index({ userId: 1, courseId: 1 }, { unique: true, name: 'user_course_identity' });
 schema.index({ userId: 1, status: 1, updatedAt: -1, _id: -1 }, { name: 'user_course_status' });
+schema.index({ userId: 1, updatedAt: -1, _id: -1 }, { name: 'user_course_recent' });
 module.exports = mongoose.model('UserCourseProgress', schema);

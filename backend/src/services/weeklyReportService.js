@@ -16,6 +16,7 @@ const Repository = require('../models/repository');
 const Recommendation = require('../models/recommendation');
 const PublicProfile = require('../models/publicProfile');
 const IntegrationConnection = require('../models/integrationConnection');
+const UserCourseProgress = require('../models/userCourseProgress');
 const aiService = require('./aiservice');
 const { getDeveloperSignals, buildSignalsUsedSummary } = require('./developerSignalService');
 const { getWeeklyReportPrompt } = require('../prompts/weeklyReportPrompt');
@@ -78,8 +79,8 @@ const sendWithSmtp = async ({ to, subject, html, text }) => {
     secure: String(process.env.SMTP_SECURE || 'false').toLowerCase() === 'true',
     auth: {
       user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS
-    }
+      pass: process.env.SMTP_PASS,
+    },
   });
 
   await transporter.sendMail({
@@ -87,7 +88,7 @@ const sendWithSmtp = async ({ to, subject, html, text }) => {
     to,
     subject,
     html,
-    text
+    text,
   });
 };
 
@@ -109,7 +110,7 @@ const buildStableHash = (value) =>
 
 const updateWeeklyReportEmailStatus = async (
   reportId,
-  { status = 'skipped', error = '', contentHash = undefined } = {}
+  { status = 'skipped', error = '', contentHash = undefined } = {},
 ) => {
   if (!reportId) return null;
   const existing = await WeeklyReport.findById(reportId).select('userId').lean();
@@ -125,10 +126,10 @@ const updateWeeklyReportEmailStatus = async (
             emailedAt: status === 'sent' ? new Date() : null,
             emailError: String(error || '')
               .trim()
-              .slice(0, 300)
-          }
+              .slice(0, 300),
+          },
         },
-        { returnDocument: 'after', session }
+        { returnDocument: 'after', session },
       ),
     status === 'failed'
       ? (report) =>
@@ -140,10 +141,10 @@ const updateWeeklyReportEmailStatus = async (
                   'Your report is ready, but email delivery could not be confirmed. Open the report online.',
                 eventId: `weekly_email_failed:${reportId}:${report.meta?.reportHash || 'legacy'}`,
                 preferenceKey: 'weeklyScoreReport',
-                meta: { reportId: String(reportId), emailStatus: 'failed' }
+                meta: { reportId: String(reportId), emailStatus: 'failed' },
               }
             : null
-      : null
+      : null,
   );
 };
 
@@ -159,7 +160,7 @@ const buildEmailHtml = ({
   predictedHiringReadiness,
   staleWarning = null,
   staleRecommendation = '',
-  reportLink
+  reportLink,
 }) => {
   const safeRecommendations = toCleanStrings(recommendations, 5);
   const safeAchievements = toCleanStrings(topAchievements, 3);
@@ -168,7 +169,7 @@ const buildEmailHtml = ({
   const readiness = predictedHiringReadiness || { score: 0, reason: '' };
   const readinessScore = clampPercent(readiness.score);
   const readinessReason = escapeHtml(
-    readiness.reason || 'Momentum remains stable if execution stays consistent next week.'
+    readiness.reason || 'Momentum remains stable if execution stays consistent next week.',
   );
 
   const recList = safeRecommendations
@@ -177,14 +178,14 @@ const buildEmailHtml = ({
     <li style="margin-bottom:12px; display:flex; align-items:flex-start;">
       <span style="color:#a3a6ff; margin-right:8px; font-weight:bold;">-</span>
       <span style="color:#dee5ff;">${escapeHtml(rec)}</span>
-    </li>`
+    </li>`,
     )
     .join('');
 
   const achievementsList = safeAchievements
     .map(
       (achievement) => `
-    <li style="margin-bottom:10px; color:#dee5ff; line-height:1.6;">${escapeHtml(achievement)}</li>`
+    <li style="margin-bottom:10px; color:#dee5ff; line-height:1.6;">${escapeHtml(achievement)}</li>`,
     )
     .join('');
 
@@ -284,7 +285,7 @@ const buildEmailText = ({
   predictedHiringReadiness,
   staleWarning = null,
   staleRecommendation = '',
-  reportLink
+  reportLink,
 }) => {
   const safeRecommendations = toCleanStrings(recommendations, 5);
   const safeAchievements = toCleanStrings(topAchievements, 3);
@@ -312,7 +313,7 @@ const buildEmailText = ({
     'Recommendations:',
     ...safeRecommendations.map((recommendation) => `- ${recommendation}`),
     '',
-    `View report: ${reportLink}`
+    `View report: ${reportLink}`,
   ].join('\n');
 };
 
@@ -338,7 +339,7 @@ const previousWeekRange = (weekStartDate) => {
   previousStart.setHours(0, 0, 0, 0);
   return {
     start: previousStart,
-    end: endOfWeek(previousStart)
+    end: endOfWeek(previousStart),
   };
 };
 
@@ -348,7 +349,7 @@ const computeResumeScore = (resumeAnalysis) => {
     toNumber(resumeAnalysis.atsScore),
     toNumber(resumeAnalysis.keywordDensity),
     toNumber(resumeAnalysis.formatScore),
-    toNumber(resumeAnalysis.contentQuality)
+    toNumber(resumeAnalysis.contentQuality),
   ];
   if (!scores.length) return 0;
   return clampPercent(sumNumbers(scores) / scores.length);
@@ -402,7 +403,7 @@ const extractSkillSignals = (skillGraph) => {
     currentSkillCount: currentNodes.length,
     missingSkillCount: missingNodes.length,
     averageProficiency,
-    coverageScore
+    coverageScore,
   };
 };
 
@@ -423,7 +424,7 @@ const buildActivitySnapshot = (repositories, weekStartDate) => {
     commits,
     weeklyCommitSignal: commits > 0 ? commits : activeRepositories * 3,
     stars,
-    forks
+    forks,
   };
 };
 
@@ -438,7 +439,7 @@ const buildSprintSnapshot = (sprint) => {
     tasksTotal,
     completionRate: clampPercent(completionRate),
     weeklyGoal: toNumber(sprint?.weeklyGoal),
-    streak: toNumber(sprint?.streak)
+    streak: toNumber(sprint?.streak),
   };
 };
 
@@ -448,9 +449,9 @@ const buildInterviewSnapshot = (sessions = []) => {
     sessions: safeSessions.length,
     questionsGenerated: sumNumbers(
       safeSessions.map((session) =>
-        Array.isArray(session?.questions) ? session.questions.length : 0
-      )
-    )
+        Array.isArray(session?.questions) ? session.questions.length : 0,
+      ),
+    ),
   };
 };
 
@@ -467,7 +468,7 @@ const buildRecommendationSnapshot = (recommendations = [], weeklyReportSignal = 
     highPriority: safeRecommendations.filter(
       (recommendation) =>
         String(recommendation?.priorityType || recommendation?.priority || '').toLowerCase() ===
-        'high'
+        'high',
     ).length,
     categories: Object.entries(categoryCounts)
       .sort((left, right) => right[1] - left[1])
@@ -478,7 +479,7 @@ const buildRecommendationSnapshot = (recommendations = [], weeklyReportSignal = 
       .map((recommendation) => String(recommendation?.title || '').trim())
       .filter(Boolean),
     completedRecommendations: weeklyReportSignal?.completedRecommendations,
-    missedRecommendations: weeklyReportSignal?.missedRecommendations
+    missedRecommendations: weeklyReportSignal?.missedRecommendations,
   };
 };
 
@@ -488,7 +489,7 @@ const buildPortfolioSnapshot = (profile, portfolioSignal = {}) => ({
   listedProjects: Number(portfolioSignal.listedProjects || 0),
   liveLinks: Number(portfolioSignal.liveLinks || 0),
   githubLinks: Number(portfolioSignal.githubLinks || 0),
-  projectPresentationQuality: clamp(portfolioSignal.projectPresentationQuality || 0)
+  projectPresentationQuality: clamp(portfolioSignal.projectPresentationQuality || 0),
 });
 
 const buildIntegrationSnapshot = (connections = [], integrationSignal = {}) => {
@@ -501,7 +502,29 @@ const buildIntegrationSnapshot = (connections = [], integrationSignal = {}) => {
       .length,
     integrationScore: clamp(integrationSignal.integrationScore || 0),
     strongestProof: toCleanStrings(integrationSignal.strongestProof || [], 4),
-    weakProof: toCleanStrings(integrationSignal.weakProof || [], 4)
+    weakProof: toCleanStrings(integrationSignal.weakProof || [], 4),
+  };
+};
+
+const buildLearningSnapshot = (courseProgress = [], weekStartDate, weekEndDate) => {
+  const records = Array.isArray(courseProgress) ? courseProgress : [];
+  const inWindow = (value) => {
+    if (!value) return false;
+    const date = new Date(value);
+    return !Number.isNaN(date.getTime()) && date >= weekStartDate && date <= weekEndDate;
+  };
+  return {
+    totalTracked: records.length,
+    savedCount: records.filter((item) => item?.status === 'saved').length,
+    inProgressCount: records.filter((item) => item?.status === 'in_progress').length,
+    completedCount: records.filter((item) => item?.status === 'completed').length,
+    completedThisWeek: records.filter(
+      (item) => item?.status === 'completed' && inWindow(item.completedAt || item.updatedAt),
+    ).length,
+    activeThisWeek: records.filter((item) => inWindow(item?.updatedAt || item?.createdAt)).length,
+    progressSource: 'user-entered',
+    completionSource: 'self-reported',
+    updatedAt: records[0]?.updatedAt || records[0]?.createdAt || null,
   };
 };
 
@@ -520,7 +543,7 @@ const buildWeeklySignalFromReports = (reports = []) => {
       skillsImprovedThisWeek: [],
       repeatedWeakAreas: [],
       trendDelta: 0,
-      updatedAt: null
+      updatedAt: null,
     };
   }
 
@@ -537,16 +560,16 @@ const buildWeeklySignalFromReports = (reports = []) => {
     missedRecommendations: null,
     skillsImprovedThisWeek: toCleanStrings(
       latest.meta?.skillFocus || latest.topAchievements || [],
-      6
+      6,
     ),
     repeatedWeakAreas: toCleanStrings(
       safeReports.flatMap((report) => [report.biggestRiskArea, ...(report.recommendations || [])]),
-      5
+      5,
     ),
     trendDelta: toNumber(
-      latest?.meta?.comparisons?.scoreDelta ?? toNumber(latest.score) - toNumber(previous?.score)
+      latest?.meta?.comparisons?.scoreDelta ?? toNumber(latest.score) - toNumber(previous?.score),
     ),
-    updatedAt: latest.weekEndDate || latest.updatedAt || null
+    updatedAt: latest.weekEndDate || latest.updatedAt || null,
   };
 };
 
@@ -555,7 +578,7 @@ const loadDefaultResumeAnalysis = (userId, user) =>
     User,
     ResumeAnalysis,
     select:
-      'atsScore keywordDensity formatScore contentQuality keyAchievements analyzedAt updatedAt createdAt fileId fileName'
+      'atsScore keywordDensity formatScore contentQuality keyAchievements analyzedAt updatedAt createdAt fileId fileName',
   });
 
 const toSourceFreshness = (lastAnalyzedAt) => {
@@ -574,17 +597,19 @@ const buildDataSourcesUsed = ({
   currentInterviewSessions,
   publicProfile,
   integrationConnections,
-  developerSignals
+  courseProgress = [],
+  developerSignals,
 }) => {
   const portfolioSignal = developerSignals?.portfolioSignal || {};
   const integrationSignal = developerSignals?.integrationSignal || {};
   const sprintSignal = developerSignals?.careerSprintSignal || {};
+  const learningRecords = Array.isArray(courseProgress) ? courseProgress : [];
 
   const sources = {
     github: {
       connected: Boolean(analysis),
       lastAnalyzedAt: analysis?.updatedAt || analysis?.createdAt || null,
-      status: analysis ? 'Connected' : 'Unavailable'
+      status: analysis ? 'Connected' : 'Unavailable',
     },
     resume: {
       analyzed: Boolean(resumeAnalysis),
@@ -593,7 +618,7 @@ const buildDataSourcesUsed = ({
         resumeAnalysis?.updatedAt ||
         resumeAnalysis?.createdAt ||
         null,
-      status: resumeAnalysis ? 'Analyzed' : 'Unavailable'
+      status: resumeAnalysis ? 'Analyzed' : 'Unavailable',
     },
     skillGap: {
       analyzed: Boolean(skillGraph || developerSignals?.skillGapSignals?.present),
@@ -602,18 +627,18 @@ const buildDataSourcesUsed = ({
         skillGraph?.createdAt ||
         developerSignals?.skillGapSignals?.updatedAt ||
         null,
-      status: skillGraph || developerSignals?.skillGapSignals?.present ? 'Analyzed' : 'Unavailable'
+      status: skillGraph || developerSignals?.skillGapSignals?.present ? 'Analyzed' : 'Unavailable',
     },
     recommendations: {
       available: recommendations.length > 0,
       lastAnalyzedAt: recommendations[0]?.createdAt || null,
-      status: recommendations.length ? `${recommendations.length} active` : 'Unavailable'
+      status: recommendations.length ? `${recommendations.length} active` : 'Unavailable',
     },
     careerSprint: {
       connected: Boolean(currentSprint),
       lastAnalyzedAt:
         currentSprint?.updatedAt || currentSprint?.createdAt || sprintSignal?.updatedAt || null,
-      status: currentSprint ? String(sprintSignal?.status || 'Active') : 'Unavailable'
+      status: currentSprint ? String(sprintSignal?.status || 'Active') : 'Unavailable',
     },
     interviewPrep: {
       analyzed: currentInterviewSessions.length > 0,
@@ -621,12 +646,19 @@ const buildDataSourcesUsed = ({
         currentInterviewSessions[0]?.updatedAt || currentInterviewSessions[0]?.createdAt || null,
       status: currentInterviewSessions.length
         ? `${currentInterviewSessions.length} sessions`
-        : 'Unavailable'
+        : 'Unavailable',
+    },
+    learning: {
+      available: learningRecords.length > 0,
+      lastAnalyzedAt: learningRecords[0]?.updatedAt || learningRecords[0]?.createdAt || null,
+      status: learningRecords.length
+        ? `${learningRecords.length} tracked (self-reported)`
+        : 'Unavailable',
     },
     portfolio: {
       connected: Boolean(publicProfile || portfolioSignal?.present),
       lastAnalyzedAt: publicProfile?.updatedAt || portfolioSignal?.updatedAt || null,
-      status: publicProfile ? (publicProfile.isPublic ? 'Public' : 'Draft') : 'Unavailable'
+      status: publicProfile ? (publicProfile.isPublic ? 'Public' : 'Draft') : 'Unavailable',
     },
     integrations: {
       connected: integrationConnections.some((connection) => connection?.status === 'connected'),
@@ -637,8 +669,8 @@ const buildDataSourcesUsed = ({
         null,
       status: integrationConnections.some((connection) => connection?.status === 'connected')
         ? `${integrationConnections.filter((connection) => connection?.status === 'connected').length} connected`
-        : 'Unavailable'
-    }
+        : 'Unavailable',
+    },
   };
 
   // Attach freshness to each source
@@ -666,7 +698,7 @@ const buildSourceFreshnessWarning = (dataSourcesUsed) => {
   const labels = {
     github: 'GitHub analysis',
     resume: 'Resume analysis',
-    skillGap: 'Skill gap analysis'
+    skillGap: 'Skill gap analysis',
   };
   const staleLabels = staleSources.map((key) => labels[key] || key);
 
@@ -676,7 +708,7 @@ const buildSourceFreshnessWarning = (dataSourcesUsed) => {
     message: `${staleLabels.join(', ')} data is over 7 days old. Analysis refresh is recommended before trusting this report's insights.`,
     severity: staleSources.length >= 2 ? 'high' : 'medium',
     recommendation:
-      'Run a fresh analysis from the Dashboard to update your GitHub, resume, and skill gap data before generating the next weekly report.'
+      'Run a fresh analysis from the Dashboard to update your GitHub, resume, and skill gap data before generating the next weekly report.',
   };
 };
 
@@ -687,7 +719,7 @@ const buildBasePreviousSnapshot = ({ previousSprint, previousInterview }) => ({
     commits: 0,
     weeklyCommitSignal: 0,
     stars: 0,
-    forks: 0
+    forks: 0,
   },
   skills: {
     focus: [],
@@ -696,7 +728,7 @@ const buildBasePreviousSnapshot = ({ previousSprint, previousInterview }) => ({
     currentSkillCount: 0,
     missingSkillCount: 0,
     averageProficiency: 0,
-    coverageScore: 0
+    coverageScore: 0,
   },
   github: {
     score: 0,
@@ -704,7 +736,7 @@ const buildBasePreviousSnapshot = ({ previousSprint, previousInterview }) => ({
     stars: 0,
     forks: 0,
     followers: 0,
-    contributionCount: 0
+    contributionCount: 0,
   },
   resume: {
     score: 0,
@@ -712,14 +744,14 @@ const buildBasePreviousSnapshot = ({ previousSprint, previousInterview }) => ({
     keywordDensity: 0,
     formatScore: 0,
     contentQuality: 0,
-    achievementsCount: 0
+    achievementsCount: 0,
   },
   sprint: previousSprint,
   interview: previousInterview,
   score: {
     overall: 0,
-    readiness: 0
-  }
+    readiness: 0,
+  },
 });
 
 const buildSnapshotFromReport = (report) => {
@@ -731,27 +763,27 @@ const buildSnapshotFromReport = (report) => {
 
   return {
     activity: {
-      ...report.meta?.activity
+      ...report.meta?.activity,
     },
     skills: {
-      focus: toCleanStrings(report.meta?.skillFocus || [], 6)
+      focus: toCleanStrings(report.meta?.skillFocus || [], 6),
     },
     github: {
-      score: toNumber(report.meta?.githubScore)
+      score: toNumber(report.meta?.githubScore),
     },
     resume: {
-      score: toNumber(report.meta?.resumeScore)
+      score: toNumber(report.meta?.resumeScore),
     },
     sprint: {
-      ...report.meta?.sprint
+      ...report.meta?.sprint,
     },
     interview: {
-      ...report.meta?.interview
+      ...report.meta?.interview,
     },
     score: {
       overall: toNumber(report.score),
-      readiness: toNumber(report.score)
-    }
+      readiness: toNumber(report.score),
+    },
   };
 };
 
@@ -764,7 +796,7 @@ const mergeSnapshots = (base, override = {}) => ({
   resume: { ...base.resume, ...override.resume },
   sprint: { ...base.sprint, ...override.sprint },
   interview: { ...base.interview, ...override.interview },
-  score: { ...base.score, ...override.score }
+  score: { ...base.score, ...override.score },
 });
 
 const computeOverallScore = ({
@@ -772,14 +804,14 @@ const computeOverallScore = ({
   resumeScore,
   sprintCompletionRate,
   interviewSignal,
-  skillCoverage
+  skillCoverage,
 }) => {
   return clampPercent(
     githubScore * 0.3 +
       resumeScore * 0.25 +
       sprintCompletionRate * 0.2 +
       interviewSignal * 0.15 +
-      skillCoverage * 0.1
+      skillCoverage * 0.1,
   );
 };
 
@@ -806,7 +838,7 @@ const buildComparisons = ({ current, previous }) => ({
   missingSkillsDelta:
     toNumber(current?.skills?.missingSkillCount) - toNumber(previous?.skills?.missingSkillCount),
   coverageDelta:
-    toNumber(current?.skills?.coverageScore) - toNumber(previous?.skills?.coverageScore)
+    toNumber(current?.skills?.coverageScore) - toNumber(previous?.skills?.coverageScore),
 });
 
 const buildTopAchievements = ({ userData, previousData, comparisons }) => {
@@ -815,42 +847,42 @@ const buildTopAchievements = ({ userData, previousData, comparisons }) => {
   if (comparisons.githubDelta > 0) {
     achievements.push({
       impact: Math.abs(comparisons.githubDelta) + 25,
-      text: `GitHub score improved from ${clampPercent(toNumber(previousData?.github?.score))}% to ${clampPercent(userData.github.score)}% (${signed(comparisons.githubDelta)}), with ${userData.activity.activeRepositories} active repositories this week.`
+      text: `GitHub score improved from ${clampPercent(toNumber(previousData?.github?.score))}% to ${clampPercent(userData.github.score)}% (${signed(comparisons.githubDelta)}), with ${userData.activity.activeRepositories} active repositories this week.`,
     });
   }
 
   if (userData.sprint.tasksCompleted > 0) {
     achievements.push({
       impact: userData.sprint.tasksCompleted * 4 + Math.max(0, comparisons.sprintCompletionDelta),
-      text: `Completed ${userData.sprint.tasksCompleted}/${userData.sprint.tasksTotal} sprint tasks (${userData.sprint.completionRate}%), shifting execution by ${signed(comparisons.sprintCompletionDelta)} points week-over-week.`
+      text: `Completed ${userData.sprint.tasksCompleted}/${userData.sprint.tasksTotal} sprint tasks (${userData.sprint.completionRate}%), shifting execution by ${signed(comparisons.sprintCompletionDelta)} points week-over-week.`,
     });
   }
 
   if (userData.interview.sessions > 0 || userData.interview.questionsGenerated > 0) {
     achievements.push({
       impact: userData.interview.sessions * 8 + userData.interview.questionsGenerated,
-      text: `Ran ${userData.interview.sessions} interview prep sessions and practiced ${userData.interview.questionsGenerated} questions, a delta of ${signed(comparisons.interviewQuestionsDelta)} questions vs last week.`
+      text: `Ran ${userData.interview.sessions} interview prep sessions and practiced ${userData.interview.questionsGenerated} questions, a delta of ${signed(comparisons.interviewQuestionsDelta)} questions vs last week.`,
     });
   }
 
   if (comparisons.resumeDelta > 0) {
     achievements.push({
       impact: Math.abs(comparisons.resumeDelta) + 18,
-      text: `Resume score climbed from ${clampPercent(toNumber(previousData?.resume?.score))}% to ${clampPercent(userData.resume.score)}% (${signed(comparisons.resumeDelta)}), improving recruiter-facing quality signals.`
+      text: `Resume score climbed from ${clampPercent(toNumber(previousData?.resume?.score))}% to ${clampPercent(userData.resume.score)}% (${signed(comparisons.resumeDelta)}), improving recruiter-facing quality signals.`,
     });
   }
 
   if (comparisons.coverageDelta > 0 || comparisons.missingSkillsDelta < 0) {
     achievements.push({
       impact: Math.abs(comparisons.coverageDelta) + Math.abs(comparisons.missingSkillsDelta * 2),
-      text: `Skill coverage rose by ${signed(comparisons.coverageDelta)} points and missing skills moved by ${signed(comparisons.missingSkillsDelta)}, indicating better stack alignment.`
+      text: `Skill coverage rose by ${signed(comparisons.coverageDelta)} points and missing skills moved by ${signed(comparisons.missingSkillsDelta)}, indicating better stack alignment.`,
     });
   }
 
   if (userData.activity.weeklyCommitSignal > 0) {
     achievements.push({
       impact: Math.min(20, userData.activity.weeklyCommitSignal),
-      text: `Sustained coding momentum with a weekly activity signal of ${userData.activity.weeklyCommitSignal} and ${userData.activity.repositoriesTracked} tracked repositories.`
+      text: `Sustained coding momentum with a weekly activity signal of ${userData.activity.weeklyCommitSignal} and ${userData.activity.repositoriesTracked} tracked repositories.`,
     });
   }
 
@@ -865,7 +897,7 @@ const buildTopAchievements = ({ userData, previousData, comparisons }) => {
   const fallback = [
     `Overall score reached ${userData.score.overall}% (${signed(comparisons.scoreDelta)} vs previous period).`,
     `GitHub and resume signals now stand at ${userData.github.score}% and ${userData.resume.score}% respectively.`,
-    `Sprint completion is ${userData.sprint.completionRate}% with ${userData.sprint.tasksCompleted} completed tasks.`
+    `Sprint completion is ${userData.sprint.completionRate}% with ${userData.sprint.tasksCompleted} completed tasks.`,
   ];
 
   return [...unique, ...fallback.filter((item) => !unique.includes(item))].slice(0, 3);
@@ -877,7 +909,7 @@ const determineBiggestRiskArea = ({ userData, comparisons }) => {
   if (userData.sprint.completionRate < 50) {
     risks.push({
       severity: 90,
-      message: `Sprint consistency risk: only ${userData.sprint.tasksCompleted}/${userData.sprint.tasksTotal} tasks completed (${userData.sprint.completionRate}%), which can reduce delivery credibility.`
+      message: `Sprint consistency risk: only ${userData.sprint.tasksCompleted}/${userData.sprint.tasksTotal} tasks completed (${userData.sprint.completionRate}%), which can reduce delivery credibility.`,
     });
   }
 
@@ -885,28 +917,28 @@ const determineBiggestRiskArea = ({ userData, comparisons }) => {
     risks.push({
       severity: 85,
       message:
-        'Interview readiness risk: no interview sessions were logged this week, reducing short-term interview confidence.'
+        'Interview readiness risk: no interview sessions were logged this week, reducing short-term interview confidence.',
     });
   }
 
   if (comparisons.githubDelta < 0) {
     risks.push({
       severity: 75,
-      message: `GitHub momentum risk: activity score dropped by ${Math.abs(Math.round(comparisons.githubDelta))} points from last week.`
+      message: `GitHub momentum risk: activity score dropped by ${Math.abs(Math.round(comparisons.githubDelta))} points from last week.`,
     });
   }
 
   if (comparisons.resumeDelta < 0) {
     risks.push({
       severity: 72,
-      message: `Resume quality risk: resume score decreased by ${Math.abs(Math.round(comparisons.resumeDelta))} points, which can hurt shortlist probability.`
+      message: `Resume quality risk: resume score decreased by ${Math.abs(Math.round(comparisons.resumeDelta))} points, which can hurt shortlist probability.`,
     });
   }
 
   if (userData.skills.missingSkillCount >= 6) {
     risks.push({
       severity: 70,
-      message: `${userData.skills.missingSkillCount} missing skills are still open, creating a stack-fit risk for current target roles.`
+      message: `${userData.skills.missingSkillCount} missing skills are still open, creating a stack-fit risk for current target roles.`,
     });
   }
 
@@ -950,17 +982,17 @@ const transformIntoAIInput = ({
   biggestRiskArea,
   predictedHiringReadiness,
   dataSourcesUsed,
-  signalsUsedSummary
+  signalsUsedSummary,
 }) => {
   return {
     reportingPeriod: {
       weekStart: weekStartDate.toISOString(),
-      weekEnd: weekEndDate.toISOString()
+      weekEnd: weekEndDate.toISOString(),
     },
     profile: {
       name: user?.name || 'Developer',
       careerStack: developerContext.resolveCareerStack(user) || 'Full Stack',
-      experienceLevel: developerContext.resolveExperienceLevel(user) || 'Student'
+      experienceLevel: developerContext.resolveExperienceLevel(user) || 'Student',
     },
     current: userData,
     previous: previousData,
@@ -968,7 +1000,7 @@ const transformIntoAIInput = ({
     deterministicSignals: {
       topAchievements,
       biggestRiskArea,
-      predictedHiringReadiness
+      predictedHiringReadiness,
     },
     dataSourcesUsed,
     signalsUsedSummary,
@@ -979,8 +1011,8 @@ const transformIntoAIInput = ({
       'Top achievements must contain exactly three bullets.',
       'Include one clear biggest risk area.',
       'Predict next-week hiring readiness as a number and reason.',
-      'Use AI only to summarize deterministic inputs and never invent source data.'
-    ]
+      'Use AI only to summarize deterministic inputs and never invent source data.',
+    ],
   };
 };
 
@@ -991,20 +1023,20 @@ const normalizeReadiness = (input, fallback) => {
   if (input && typeof input === 'object') {
     return {
       score: clampPercent(input.score ?? input.value ?? fallbackScore),
-      reason: String(input.reason || input.summary || fallbackReason).trim() || fallbackReason
+      reason: String(input.reason || input.summary || fallbackReason).trim() || fallbackReason,
     };
   }
 
   if (Number.isFinite(Number(input))) {
     return {
       score: clampPercent(input),
-      reason: fallbackReason
+      reason: fallbackReason,
     };
   }
 
   return {
     score: fallbackScore,
-    reason: fallbackReason
+    reason: fallbackReason,
   };
 };
 
@@ -1035,8 +1067,8 @@ const normalizeReport = (result, fallback) => {
     biggestRiskArea: fallback.biggestRiskArea,
     predictedHiringReadiness: normalizeReadiness(
       fallback.predictedHiringReadiness,
-      fallback.predictedHiringReadiness
-    )
+      fallback.predictedHiringReadiness,
+    ),
   };
 };
 
@@ -1045,7 +1077,7 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
 
   const user = await User.findById(userId)
     .select(
-      'name email githubUsername activeGithubUsername careerStack experienceLevel activeCareerStack activeExperienceLevel defaultResumeFileId notifications activeResumeFileId'
+      'name email githubUsername activeGithubUsername careerStack experienceLevel activeCareerStack activeExperienceLevel defaultResumeFileId notifications activeResumeFileId',
     )
     .lean();
   if (!user) return null;
@@ -1058,7 +1090,7 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
     Analysis.findOne({ userId })
       .sort({ updatedAt: -1 })
       .select(
-        'githubScore readinessScore githubStats githubSignals languageDistribution contributionActivity updatedAt createdAt'
+        'githubScore readinessScore githubStats githubSignals languageDistribution contributionActivity updatedAt createdAt',
       )
       .lean(),
     loadDefaultResumeAnalysis(userId, user),
@@ -1068,7 +1100,7 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
       .lean(),
     Repository.find({ ownerId: userId })
       .select('repoName language stars forks commits lastUpdated')
-      .lean()
+      .lean(),
   ]);
 
   const [
@@ -1081,7 +1113,8 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
     recommendations,
     publicProfile,
     integrationConnections,
-    developerSignals
+    courseProgressRecords,
+    developerSignals,
   ] = await Promise.all([
     WeeklyReport.findOne({ userId, weekStartDate, weekEndDate }).lean(),
     WeeklyReport.find({ userId })
@@ -1092,7 +1125,7 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
     CareerSprint.findOne({
       userId,
       weekStartDate: { $lte: weekEndDate },
-      weekEndDate: { $gte: weekStartDate }
+      weekEndDate: { $gte: weekStartDate },
     })
       .sort({ updatedAt: -1 })
       .select('tasks weeklyGoal streak updatedAt createdAt')
@@ -1100,7 +1133,7 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
     CareerSprint.findOne({
       userId,
       weekStartDate: { $lte: previousWeek.end },
-      weekEndDate: { $gte: previousWeek.start }
+      weekEndDate: { $gte: previousWeek.start },
     })
       .sort({ updatedAt: -1 })
       .select('tasks weeklyGoal streak updatedAt createdAt')
@@ -1110,7 +1143,7 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
       .lean(),
     InterviewPrepSession.find({
       userId,
-      createdAt: { $gte: previousWeek.start, $lte: previousWeek.end }
+      createdAt: { $gte: previousWeek.start, $lte: previousWeek.end },
     })
       .select('questions updatedAt createdAt')
       .lean(),
@@ -1124,24 +1157,27 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
       .sort({ lastSyncedAt: -1, updatedAt: -1 })
       .select('provider status lastSyncedAt updatedAt')
       .lean(),
+    Promise.resolve(
+      UserCourseProgress.find?.({ userId })?.sort?.({ updatedAt: -1 })?.lean?.(),
+    ).catch(() => []),
     getDeveloperSignals(userId, {
       githubSource: { analysis, repositories },
-      resumeAnalysis
-    })
+      resumeAnalysis,
+    }),
   ]);
 
   const previousReport =
     recentReports.find(
-      (report) => !existingReport || String(report._id) !== String(existingReport._id)
+      (report) => !existingReport || String(report._id) !== String(existingReport._id),
     ) || null;
   const previousWeeklyReports = recentReports.filter(
-    (report) => !existingReport || String(report._id) !== String(existingReport._id)
+    (report) => !existingReport || String(report._id) !== String(existingReport._id),
   );
   const previousWeeklySignal = buildWeeklySignalFromReports(previousWeeklyReports);
   const reportDeveloperSignals = {
     ...developerSignals,
     weeklyReportSignal: previousWeeklySignal,
-    weeklyReportSignals: previousWeeklySignal
+    weeklyReportSignals: previousWeeklySignal,
   };
 
   const githubScore = clampPercent(toNumber(analysis?.githubScore));
@@ -1160,22 +1196,23 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
   const recommendationSnapshot = buildRecommendationSnapshot(recommendations, weeklySignal);
   const portfolioSnapshot = buildPortfolioSnapshot(publicProfile, portfolioSignal);
   const integrationSnapshot = buildIntegrationSnapshot(integrationConnections, integrationSignal);
+  const learningSnapshot = buildLearningSnapshot(courseProgressRecords, weekStartDate, weekEndDate);
 
   const interviewSignal = clampPercent(
-    interviewSnapshot.sessions * 20 + interviewSnapshot.questionsGenerated * 3
+    interviewSnapshot.sessions * 20 + interviewSnapshot.questionsGenerated * 3,
   );
   const score = computeOverallScore({
     githubScore,
     resumeScore,
     sprintCompletionRate: sprintSnapshot.completionRate,
     interviewSignal,
-    skillCoverage: skillSignals.coverageScore
+    skillCoverage: skillSignals.coverageScore,
   });
 
   const readiness = clampPercent(toNumber(analysis?.readinessScore) || score);
 
   const contributionCount = sumNumbers(
-    (analysis?.contributionActivity || []).map((entry) => entry.count)
+    (analysis?.contributionActivity || []).map((entry) => entry.count),
   );
 
   const userData = {
@@ -1187,7 +1224,7 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
       currentSkillCount: skillSignals.currentSkillCount,
       missingSkillCount: skillSignals.missingSkillCount,
       averageProficiency: skillSignals.averageProficiency,
-      coverageScore: skillSignals.coverageScore
+      coverageScore: skillSignals.coverageScore,
     },
     github: {
       score: githubScore,
@@ -1195,7 +1232,7 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
       stars: toNumber(analysis?.githubStats?.stars),
       forks: toNumber(analysis?.githubStats?.forks),
       followers: toNumber(analysis?.githubStats?.followers),
-      contributionCount
+      contributionCount,
     },
     resume: {
       score: resumeScore,
@@ -1203,10 +1240,11 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
       keywordDensity: clampPercent(toNumber(resumeAnalysis?.keywordDensity)),
       formatScore: clampPercent(toNumber(resumeAnalysis?.formatScore)),
       contentQuality: clampPercent(toNumber(resumeAnalysis?.contentQuality)),
-      achievementsCount: toCleanStrings(resumeAnalysis?.keyAchievements, 10).length
+      achievementsCount: toCleanStrings(resumeAnalysis?.keyAchievements, 10).length,
     },
     sprint: sprintSnapshot,
     interview: interviewSnapshot,
+    learning: learningSnapshot,
     recommendations: recommendationSnapshot,
     portfolio: portfolioSnapshot,
     integrations: integrationSnapshot,
@@ -1214,7 +1252,7 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
       sampledJobs: Number(reportDeveloperSignals?.jobsDemandSignal?.sampledJobs || 0),
       topSkills: Array.isArray(reportDeveloperSignals?.jobsDemandSignal?.topSkills)
         ? reportDeveloperSignals.jobsDemandSignal.topSkills.slice(0, 10)
-        : []
+        : [],
     },
     weeklySignals: {
       progressScore: clamp(weeklySignal.weeklyProgressScore || 0),
@@ -1223,25 +1261,25 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
       repeatedWeakAreas: toCleanStrings(weeklySignal.repeatedWeakAreas || [], 5),
       recommendationCompletion: {
         completed: weeklySignal.completedRecommendations,
-        missed: weeklySignal.missedRecommendations
-      }
+        missed: weeklySignal.missedRecommendations,
+      },
     },
     consistency: {
       sprintConsistencyScore: clamp(
-        careerSprintSignal.consistencyScore || sprintSnapshot.completionRate
+        careerSprintSignal.consistencyScore || sprintSnapshot.completionRate,
       ),
       streak: toNumber(careerSprintSignal.streak || sprintSnapshot.streak),
-      activeLearningFocus: String(careerSprintSignal.activeLearningFocus || '').trim()
+      activeLearningFocus: String(careerSprintSignal.activeLearningFocus || '').trim(),
     },
     score: {
       overall: score,
-      readiness
-    }
+      readiness,
+    },
   };
 
   const previousBase = buildBasePreviousSnapshot({
     previousSprint: previousSprintSnapshot,
-    previousInterview: previousInterviewSnapshot
+    previousInterview: previousInterviewSnapshot,
   });
 
   const previousFromReport = buildSnapshotFromReport(previousReport);
@@ -1268,7 +1306,8 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
     currentInterviewSessions,
     publicProfile,
     integrationConnections,
-    developerSignals: reportDeveloperSignals
+    courseProgress: courseProgressRecords,
+    developerSignals: reportDeveloperSignals,
   });
   const signalsUsedSummary = buildSignalsUsedSummary({
     username: developerContext.resolveGithubUsername(user) || (analysis ? 'github-connected' : ''),
@@ -1283,14 +1322,14 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
         null,
       skills: reportDeveloperSignals?.resumeSignals?.skills || [],
       atsScore: userData.resume.atsScore,
-      experienceLevel: developerContext.resolveExperienceLevel(user) || ''
+      experienceLevel: developerContext.resolveExperienceLevel(user) || '',
     },
     githubInsights: {
       repoCount: userData.github.repos,
       developerLevel:
-        userData.github.score >= 75 ? 'Strong' : userData.github.score >= 50 ? 'Growing' : 'Early'
+        userData.github.score >= 75 ? 'Strong' : userData.github.score >= 50 ? 'Growing' : 'Early',
     },
-    signals: reportDeveloperSignals
+    signals: reportDeveloperSignals,
   });
 
   const aiInput = transformIntoAIInput({
@@ -1304,7 +1343,7 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
     biggestRiskArea,
     predictedHiringReadiness,
     dataSourcesUsed,
-    signalsUsedSummary
+    signalsUsedSummary,
   });
 
   const signalHash = buildStableHash({
@@ -1316,7 +1355,7 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
     previous: previousData,
     deltas: comparisons,
     dataSourcesUsed,
-    signalsUsedSummary
+    signalsUsedSummary,
   });
 
   if (existingReport?.meta?.signalHash === signalHash && !forceRefresh) {
@@ -1328,7 +1367,7 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
     name: user.name,
     careerStack: developerContext.resolveCareerStack(user) || 'Full Stack',
     experienceLevel: developerContext.resolveExperienceLevel(user) || 'Student',
-    aiInput
+    aiInput,
   });
 
   const fallback = {
@@ -1337,17 +1376,17 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
       `GitHub momentum is ${userData.github.score}% with ${userData.activity.activeRepositories} active repositories and a commit signal of ${userData.activity.weeklyCommitSignal}.`,
       `Resume quality is ${userData.resume.score}% with ATS ${userData.resume.atsScore}% and content quality ${userData.resume.contentQuality}%.`,
       `Sprint completion changed by ${signed(comparisons.sprintCompletionDelta)} to ${userData.sprint.completionRate}%, indicating ${userData.sprint.completionRate >= 70 ? 'strong' : 'inconsistent'} execution cadence.`,
-      `Interview prep logged ${userData.interview.sessions} sessions and ${userData.interview.questionsGenerated} questions (${signed(comparisons.interviewQuestionsDelta)} vs last period), while portfolio completeness is ${userData.portfolio.completenessScore}% and integrations score is ${userData.integrations.integrationScore}%.`
+      `Interview prep logged ${userData.interview.sessions} sessions and ${userData.interview.questionsGenerated} questions (${signed(comparisons.interviewQuestionsDelta)} vs last period), while portfolio completeness is ${userData.portfolio.completenessScore}% and integrations score is ${userData.integrations.integrationScore}%.`,
     ],
     recommendations: [
       `Increase sprint completion to at least 70% by finishing ${Math.max(0, Math.ceil(0.7 * Math.max(1, userData.sprint.tasksTotal) - userData.sprint.tasksCompleted))} more tasks next week.`,
       `Run at least 2 interview sessions and solve 15+ questions to stabilize hiring readiness.`,
       `Prioritize one missing skill (${userData.skills.missing[0] || 'core stack skill'}) and ship one small project artifact around it.`,
-      `Raise resume score by 5+ points by adding quantified outcomes from this week's work, and review ${userData.recommendations.titles[0] || 'your highest-priority recommendation'} for execution next week.`
+      `Raise resume score by 5+ points by adding quantified outcomes from this week's work, and review ${userData.recommendations.titles[0] || 'your highest-priority recommendation'} for execution next week.`,
     ],
     topAchievements,
     biggestRiskArea,
-    predictedHiringReadiness
+    predictedHiringReadiness,
   };
 
   let aiResult = fallback;
@@ -1390,7 +1429,7 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
     ...normalized.insights.map((insight) => `- ${insight}`),
     '',
     'Recommendations:',
-    ...normalized.recommendations.map((recommendation) => `- ${recommendation}`)
+    ...normalized.recommendations.map((recommendation) => `- ${recommendation}`),
   ].join('\n');
 
   const scoreBreakdown = {
@@ -1398,14 +1437,14 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
     resume: { label: 'Resume', score: resumeScore, weight: 25 },
     sprint: { label: 'Sprint completion', score: sprintSnapshot.completionRate, weight: 20 },
     interview: { label: 'Interview prep', score: interviewSignal, weight: 15 },
-    skillCoverage: { label: 'Skill coverage', score: skillSignals.coverageScore, weight: 10 }
+    skillCoverage: { label: 'Skill coverage', score: skillSignals.coverageScore, weight: 10 },
   };
 
   const reportHash = buildStableHash({
     signalHash,
     score,
     normalized,
-    reportText
+    reportText,
   });
 
   const payload = {
@@ -1430,6 +1469,7 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
       activity: activitySnapshot,
       sprint: sprintSnapshot,
       interview: interviewSnapshot,
+      learning: learningSnapshot,
       comparisons,
       dataSourcesUsed,
       signalHash,
@@ -1440,12 +1480,12 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
       guaranteed: false,
       fallbackUsed,
       dataSourceFreshness: Object.fromEntries(
-        Object.entries(dataSourcesUsed).map(([key, source]) => [key, source.freshness])
+        Object.entries(dataSourcesUsed).map(([key, source]) => [key, source.freshness]),
       ),
       scoreBreakdown,
       sourceFreshness: buildSourceFreshnessWarning(dataSourcesUsed),
-      snapshot: userData
-    }
+      snapshot: userData,
+    },
   };
 
   const savedReport = await notificationPersistence.commit(
@@ -1462,7 +1502,7 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
         ? {
             ...current.emailDelivery,
             pendingContentHash:
-              current.emailDelivery.contentHash === reportHash ? undefined : reportHash
+              current.emailDelivery.contentHash === reportHash ? undefined : reportHash,
           }
         : deliveredSame
           ? { ...current.emailDelivery, status: 'sent', contentHash: reportHash }
@@ -1473,7 +1513,7 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
                 status: 'pending',
                 contentHash: reportHash,
                 attempts: 0,
-                nextAttemptAt: new Date()
+                nextAttemptAt: new Date(),
               };
       const report = await WeeklyReport.findOneAndUpdate(
         { userId, weekStartDate, weekEndDate },
@@ -1485,10 +1525,10 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
             emailDelivery: delivery,
             emailError: unresolved
               ? 'Previous email delivery needs reconciliation. The latest report remains available online.'
-              : payload.emailError
-          }
+              : payload.emailError,
+          },
         },
-        { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true, session }
+        { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true, session },
       );
       return report;
     },
@@ -1498,8 +1538,8 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
       message: 'Your latest weekly progress report is ready.',
       eventId: `weekly_report:${report._id}:${reportHash}`,
       preferenceKey: 'weeklyScoreReport',
-      meta: { reportId: report._id, emailStatus: 'generated' }
-    })
+      meta: { reportId: report._id, emailStatus: 'generated' },
+    }),
   );
 
   try {
@@ -1516,7 +1556,7 @@ const generateWeeklyReport = (userId, options = {}) => {
   const weekKey = `${String(userId)}:${startOfWeek().toISOString()}:${Boolean(options.forceRefresh)}`;
   if (generationInflight.has(weekKey)) return generationInflight.get(weekKey);
   const pending = generateWeeklyReportCore(userId, options).finally(() =>
-    generationInflight.delete(weekKey)
+    generationInflight.delete(weekKey),
   );
   generationInflight.set(weekKey, pending);
   return pending;
@@ -1529,7 +1569,7 @@ const sendWeeklyReportEmailCore = async (report, user, { resend = false } = {}) 
     await updateWeeklyReportEmailStatus(report?._id, {
       contentHash: report?.meta?.reportHash || null,
       status: 'skipped',
-      error: 'Missing report or recipient email.'
+      error: 'Missing report or recipient email.',
     });
     return { sent: false, reason: 'Missing report or email.' };
   }
@@ -1543,7 +1583,7 @@ const sendWeeklyReportEmailCore = async (report, user, { resend = false } = {}) 
     await updateWeeklyReportEmailStatus(report._id, {
       contentHash: report?.meta?.reportHash || null,
       status: 'skipped',
-      error: 'No email provider configured.'
+      error: 'No email provider configured.',
     });
     return { sent: false, reason: 'No email provider configured.' };
   }
@@ -1556,7 +1596,7 @@ const sendWeeklyReportEmailCore = async (report, user, { resend = false } = {}) 
     : '';
   const reportLink = `${FRONTEND_BASE_URL}/app/weekly-reports`;
   const subject = staleWarning
-    ? `[Insight] ${report.score}% Weekly � Refresh Recommended`
+    ? `[Insight] ${report.score}% Weekly – Refresh Recommended`
     : `[Insight] Your Weekly Performance Report: ${report.score}%`;
   const message = {
     to: user.email,
@@ -1573,7 +1613,7 @@ const sendWeeklyReportEmailCore = async (report, user, { resend = false } = {}) 
       predictedHiringReadiness: report.predictedHiringReadiness,
       staleWarning,
       staleRecommendation,
-      reportLink
+      reportLink,
     }),
     text: buildEmailText({
       name: user.name,
@@ -1584,8 +1624,8 @@ const sendWeeklyReportEmailCore = async (report, user, { resend = false } = {}) 
       predictedHiringReadiness: report.predictedHiringReadiness,
       staleWarning,
       staleRecommendation,
-      reportLink
-    })
+      reportLink,
+    }),
   };
 
   let lastError = null;
@@ -1596,7 +1636,7 @@ const sendWeeklyReportEmailCore = async (report, user, { resend = false } = {}) 
       await updateWeeklyReportEmailStatus(report._id, {
         status: 'sent',
         error: '',
-        contentHash: report.meta?.reportHash || null
+        contentHash: report.meta?.reportHash || null,
       });
       return { sent: true, provider };
     } catch (error) {
@@ -1615,7 +1655,7 @@ const sendWeeklyReportEmailCore = async (report, user, { resend = false } = {}) 
     contentHash: report.meta?.reportHash || null,
     status: 'failed',
     error:
-      'Weekly report email delivery could not be confirmed. Check provider status before resending.'
+      'Weekly report email delivery could not be confirmed. Check provider status before resending.',
   });
   throw lastError || new Error('Email send failed.');
 };
@@ -1639,7 +1679,7 @@ const runWeeklyReportBatch = async ({
   usersOverride = null,
   generate = generateWeeklyReport,
   sendEmail = sendWeeklyReportEmail,
-  updateEmailStatus = updateWeeklyReportEmailStatus
+  updateEmailStatus = updateWeeklyReportEmailStatus,
 } = {}) => {
   const batchLimit = positiveEnvInt(process.env.WEEKLY_REPORT_BATCH_LIMIT, 100, 1000);
   const concurrency = positiveEnvInt(process.env.WEEKLY_REPORT_CONCURRENCY, 3, 10);
@@ -1647,7 +1687,7 @@ const runWeeklyReportBatch = async ({
     ? usersOverride.slice(0, batchLimit)
     : await User.find({ 'notifications.weeklyScoreReport': { $ne: false } })
         .select(
-          'name email notifications careerStack experienceLevel activeCareerStack activeExperienceLevel'
+          'name email notifications careerStack experienceLevel activeCareerStack activeExperienceLevel',
         )
         .limit(batchLimit)
         .lean();
@@ -1657,14 +1697,14 @@ const runWeeklyReportBatch = async ({
     skipped: 0,
     emailed: 0,
     failed: 0,
-    dryRun
+    dryRun,
   };
 
   console.log('[WeeklyReportScheduler] batch started', {
     usersScanned: stats.usersScanned,
     batchLimit,
     concurrency,
-    dryRun
+    dryRun,
   });
   for (let index = 0; index < users.length; index += concurrency) {
     const batch = users.slice(index, index + concurrency);
@@ -1685,7 +1725,7 @@ const runWeeklyReportBatch = async ({
             ? await sendEmail(report, user)
             : await updateEmailStatus(report._id, {
                 status: 'skipped',
-                error: 'No user email is configured.'
+                error: 'No user email is configured.',
               }).then(() => ({ sent: false }));
           if (emailResult?.sent) stats.emailed += 1;
           else stats.skipped += 1;
@@ -1693,10 +1733,10 @@ const runWeeklyReportBatch = async ({
           stats.failed += 1;
           console.error('[WeeklyReportScheduler] user failed', {
             userId: String(user?._id || ''),
-            error: error.message
+            error: error.message,
           });
         }
-      })
+      }),
     );
   }
 
@@ -1708,7 +1748,7 @@ const isEnabledFlag = (value) =>
   ['1', 'true', 'yes', 'on'].includes(
     String(value || '')
       .trim()
-      .toLowerCase()
+      .toLowerCase(),
   );
 
 const startWeeklyReportScheduler = () => {
@@ -1743,20 +1783,20 @@ const startWeeklyReportScheduler = () => {
       runWeeklyReportBatch({ dryRun }).catch((error) => {
         console.error('[WeeklyReportScheduler] batch failed', { error: error.message });
       }),
-    timezone ? { timezone } : undefined
+    timezone ? { timezone } : undefined,
   );
 
   console.info(
-    `[WeeklyReports] Scheduler enabled (${scheduleExpr})${timezone ? ` in ${timezone}` : ' using server timezone'}${dryRun ? ' in dry-run mode' : ''}.`
+    `[WeeklyReports] Scheduler enabled (${scheduleExpr})${timezone ? ` in ${timezone}` : ' using server timezone'}${dryRun ? ' in dry-run mode' : ''}.`,
   );
   return weeklyReportSchedulerTask;
 };
 module.exports = {
-  __test: { loadDefaultResumeAnalysis },
+  __test: { loadDefaultResumeAnalysis, buildLearningSnapshot },
   generateWeeklyReport,
   wasWeeklyReportSmartSkipped,
   sendWeeklyReportEmail,
   updateWeeklyReportEmailStatus,
   startWeeklyReportScheduler,
-  runWeeklyReportBatch
+  runWeeklyReportBatch,
 };

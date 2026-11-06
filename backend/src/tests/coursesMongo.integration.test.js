@@ -16,6 +16,7 @@ const GitHubAnalysisCache = require('../models/githubAnalysisCache');
 const AnalysisCache = require('../models/analysisCache');
 const CareerSprint = require('../models/careerSprint');
 const Progress = require('../models/userCourseProgress');
+const IntegrationGovernanceState = require('../models/integrationGovernanceState');
 const engine = require('../services/recommendationEngineService');
 const signals = require('../services/developerSignalService');
 const mock = (request, exports) => {
@@ -75,6 +76,7 @@ test('Learning Hub real Mongo/JWT: current evidence, cache identity, owned learn
         model.deleteMany({ userId: { $in: [owner, foreign] } }),
       ),
       GitHubAnalysisCache.deleteMany({ normalizedUsername: username }),
+      IntegrationGovernanceState.collection.deleteMany({ _id: /^courses:v1:/ }).catch(() => {}),
     ]);
     if (previousYoutubeKey === undefined) delete process.env.YOUTUBE_API_KEY;
     else process.env.YOUTUBE_API_KEY = previousYoutubeKey;
@@ -327,7 +329,8 @@ test('Learning Hub real Mongo/JWT: current evidence, cache identity, owned learn
       assert.equal((await call({ platform: { $ne: 'All' } })).status, 400);
       const yt = await call({ platform: 'YouTube' });
       assert.equal(yt.body.total, 0);
-      assert.equal(yt.body.recommendedBasedOn.youtubeStatus, 'unavailable');
+      assert.equal(yt.body.recommendedBasedOn.youtubeStatus, 'not-requested');
+      assert.equal(yt.body.cacheMetadata.requestCounters.providerCalls, 0);
       const deepLink = await call({ skill: 'SQL', platform: 'Coursera' });
       assert.ok(deepLink.body.courses.length > 0);
       assert.ok(
@@ -475,10 +478,27 @@ test('Learning Hub real Mongo/JWT: current evidence, cache identity, owned learn
           status: response.status,
           body: response.status === 204 ? null : await response.json(),
           cache: response.headers.get('cache-control'),
+          rateLimit: response.headers.get('ratelimit-limit'),
+          retryAfter: response.headers.get('retry-after'),
         };
       };
       assert.equal((await http('/my-learning', 'GET', undefined, null)).status, 401);
-      assert.equal((await http('/fb_u2/progress', 'PUT', { status: 'saved' })).status, 200);
+      const savedRes = await http('/fb_u2/progress', 'PUT', { status: 'saved' });
+      assert.equal(savedRes.status, 200);
+      assert.ok(Number(savedRes.rateLimit) > 0);
+      const prevRefreshLimit = process.env.COURSES_REFRESH_RATE_LIMIT_MAX;
+      process.env.COURSES_REFRESH_RATE_LIMIT_MAX = '2';
+      try {
+        assert.equal((await http('?refresh=true', 'GET', undefined, foreign)).status, 200);
+        assert.equal((await http('?refresh=true', 'GET', undefined, foreign)).status, 200);
+        const throttled = await http('?refresh=true', 'GET', undefined, foreign);
+        assert.equal(throttled.status, 429);
+        assert.equal(throttled.body.code, 'COURSE_RATE_LIMITED');
+        assert.ok(Number(throttled.retryAfter) >= 1);
+      } finally {
+        if (prevRefreshLimit === undefined) delete process.env.COURSES_REFRESH_RATE_LIMIT_MAX;
+        else process.env.COURSES_REFRESH_RATE_LIMIT_MAX = prevRefreshLimit;
+      }
       assert.equal((await http('/fb_u2/career-sprint', 'POST', {}, foreign)).status, 404);
       assert.equal(
         (await http('/fb_u2/career-sprint', 'POST', { targetSkill: 'Java' })).status,
@@ -537,6 +557,28 @@ test('Learning Hub real Mongo/JWT: current evidence, cache identity, owned learn
       assert.equal((await http('/my-learning', 'GET', undefined, foreign)).body.total, 0);
       assert.equal((await http('/fb_u2/progress', 'DELETE')).status, 204);
       assert.equal((await http('/fb_u2/progress', 'DELETE')).status, 204);
+      const { id, title, platform, url } = require('../data/courseCatalog').find(
+        (item) => item.id === 'fb_e3',
+      );
+      assert.equal((await http('/fb_e3/progress', 'PUT', { status: 'saved' })).status, 404);
+      await Progress.create({
+        userId: owner,
+        courseId: id,
+        course: { id, title, platform, url },
+        status: 'saved',
+      });
+      const retired = await http('/fb_e3/progress', 'PUT', {
+        status: 'in_progress',
+        notes: 'Keep my notes',
+      });
+      assert.equal(retired.status, 200);
+      assert.equal(retired.body.courseId, id);
+      assert.equal(retired.body.course.url, '');
+      assert.equal(retired.body.notes, 'Keep my notes');
+      assert.equal(
+        (await Progress.findOne({ userId: owner, courseId: id }).lean()).course.url,
+        url,
+      );
       assert.equal(aiCalls, 0);
     },
   );

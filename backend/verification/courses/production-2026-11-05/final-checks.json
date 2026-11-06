@@ -1,0 +1,159 @@
+{
+  "checkedAt": "2026-11-05T09:18:54.219Z",
+  "branch": "fix/learning-hub",
+  "sourceCommit": "c11bce3d5929b535c1842dde3579a2915a9d0581",
+  "prTarget": "not applicable",
+  "initialWorktree": "clean",
+  "indexObservation": "Changes became staged outside agent commands during finalization; preserved without staging, unstaging or committing",
+  "stagedFileCount": 61,
+  "formatterWriteCompleted": true,
+  "sourceFiles": [
+    "backend/index.js",
+    "backend/src/data/openLearningCatalog.js",
+    "backend/src/middleware/courseAdmission.js",
+    "backend/src/models/userCourseProgress.js",
+    "backend/src/scripts/auditCourseCatalog.js",
+    "backend/src/scripts/verifyCoursesEndToEnd.js",
+    "backend/src/scripts/verifyLearningIsolated.js",
+    "backend/src/services/courseCatalogMaintenanceService.js",
+    "backend/src/services/courseGovernanceService.js",
+    "backend/src/services/courseProgressService.js",
+    "backend/src/services/courseRecommendationService.js",
+    "backend/src/services/courseService.js",
+    "backend/src/services/sharedCourseCatalogService.js",
+    "backend/src/tests/coursesFinalization.test.js",
+    "backend/src/tests/coursesPoolWorkers.integration.test.js",
+    "backend/src/tests/sharedCourseCatalog.integration.test.js",
+    "backend/src/utils/courseIdentity.js",
+    "frontend/scripts/courses-verification.vitest.mjs",
+    "frontend/scripts/verify-courses-ui.cjs",
+    "frontend/src/app/pages/courses/courses.component.html",
+    "frontend/src/app/pages/courses/courses.component.ts",
+    "frontend/src/app/shared/components/course-card/course-card.html",
+    "frontend/src/app/shared/components/course-card/course-card.scss",
+    "frontend/src/app/shared/components/course-card/course-card.ts",
+    "frontend/src/app/shared/models/course.model.ts",
+    "frontend/src/app/shared/services/course.service.ts"
+  ],
+  "checks": [
+    {
+      "name": "explicit Prettier check",
+      "exitCode": 0,
+      "output": "Checking formatting...\nAll matched files use Prettier code style!"
+    },
+    {
+      "name": "node --check backend/index.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "name": "node --check backend/src/data/openLearningCatalog.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "name": "node --check backend/src/middleware/courseAdmission.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "name": "node --check backend/src/models/userCourseProgress.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "name": "node --check backend/src/scripts/auditCourseCatalog.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "name": "node --check backend/src/scripts/verifyCoursesEndToEnd.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "name": "node --check backend/src/scripts/verifyLearningIsolated.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "name": "node --check backend/src/services/courseCatalogMaintenanceService.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "name": "node --check backend/src/services/courseGovernanceService.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "name": "node --check backend/src/services/courseProgressService.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "name": "node --check backend/src/services/courseRecommendationService.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "name": "node --check backend/src/services/courseService.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "name": "node --check backend/src/services/sharedCourseCatalogService.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "name": "node --check backend/src/tests/coursesFinalization.test.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "name": "node --check backend/src/tests/coursesPoolWorkers.integration.test.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "name": "node --check backend/src/tests/sharedCourseCatalog.integration.test.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "name": "node --check backend/src/utils/courseIdentity.js",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "name": "app TypeScript",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "name": "git diff --check",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "name": "git diff --cached --check",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "name": "final git diff --check",
+      "exitCode": 0,
+      "output": "warning: in the working copy of 'backend/verification/courses/production-2026-11-05/final-checks.json', LF will be replaced by CRLF the next time Git touches it"
+    },
+    {
+      "name": "final git diff --cached --check",
+      "exitCode": 0,
+      "output": ""
+    }
+  ],
+  "stagedSourceValidation": {
+    "matchedCheckedWorkingSource": 26,
+    "independentlyChecked": []
+  }
+}

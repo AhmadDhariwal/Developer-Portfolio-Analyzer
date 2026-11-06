@@ -165,6 +165,28 @@ describe('Skill Gap evidence presentation', () => {
       expect(component.skills[0].status).toBe(status);
     },
   );
+  it('explains unknown required evidence after refresh while preserving null coverage and counters', () => {
+    const value = {
+      ...result(null),
+      careerStack: 'Full Stack',
+      experienceLevel: '2-3 years',
+      coverageUnavailableReason: 'required_evidence_unknown',
+    };
+    api.analyze.mockReturnValue(of({ data: value } as SkillGapResult));
+    component.refreshAnalysis();
+    fixture.detectChanges();
+    expect(component.result?.coverage).toBeNull();
+    expect(component.skills).toEqual(value.skills!);
+    expect(text()).toContain(
+      'Coverage cannot be calculated because evidence for one or more required skills is unknown.',
+    );
+    expect(fixture.nativeElement.querySelector('[data-testid=coverage]').textContent.trim()).toBe(
+      'Unavailable',
+    );
+    expect(fixture.nativeElement.querySelector('[role=progressbar]')).toBeNull();
+    expect(text()).not.toContain('required evidence unknown');
+    expect(text()).toContain('Legacy readiness: 91%');
+  });
   it('keeps optional designation separate and does not infer demonstrated skills from metadata, claims or AI', () => {
     expect(component.skills.some((s) => s.status === 'DEMONSTRATED')).toBe(false);
     component.requirementFilter = 'OPTIONAL';

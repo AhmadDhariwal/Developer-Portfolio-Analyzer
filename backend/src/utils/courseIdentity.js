@@ -37,6 +37,16 @@ const ALIASES = {
   'amazon web services': 'AWS',
   tailwind: 'Tailwind CSS',
   'tailwind css': 'Tailwind CSS',
+  genai: 'Generative AI',
+  'generative ai': 'Generative AI',
+  'generative artificial intelligence': 'Generative AI',
+  llm: 'LLM',
+  llms: 'LLM',
+  'large language model': 'LLM',
+  'large language models': 'LLM',
+  rag: 'RAG',
+  'retrieval augmented generation': 'RAG',
+  'retrieval-augmented generation': 'RAG',
 };
 const canonicalizeSkillName = (value) => ALIASES[String(value).toLowerCase()] || '';
 const skillAliases = (name) => [
@@ -49,6 +59,9 @@ const HOSTS = {
   YouTube: ['youtube.com', 'youtu.be'],
   edX: ['edx.org'],
   freeCodeCamp: ['freecodecamp.org'],
+  MDN: ['developer.mozilla.org'],
+  'The Odin Project': ['theodinproject.com'],
+  'Full Stack Open': ['fullstackopen.com'],
 };
 const digest = (value) => crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
 const safeCourseUrl = (value, platform) => {
@@ -105,4 +118,12 @@ const skills = (values, limit = 12) => {
 const validCourseId = (value) =>
   typeof value === 'string' &&
   /^(?:fb_[a-z][0-9]{1,4}|yt_[A-Za-z0-9_-]{11}|course_[a-f0-9]{24})$/.test(value);
-module.exports = { safeCourseUrl, canonicalCourseKey, digest, skills, validCourseId, skillAliases };
+module.exports = {
+  safeCourseUrl,
+  canonicalCourseKey,
+  digest,
+  skills,
+  validCourseId,
+  skillAliases,
+  COURSE_PROVIDERS: Object.keys(HOSTS),
+};

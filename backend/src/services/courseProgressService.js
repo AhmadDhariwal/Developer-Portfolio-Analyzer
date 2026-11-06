@@ -1,9 +1,15 @@
 'use strict';
 const UserCourseProgress = require('../models/userCourseProgress');
 const AnalysisCache = require('../models/analysisCache');
-const { buildFallbackPool, normaliseCourse } = require('./courseService');
+const {
+  buildFallbackPool,
+  isUnavailableCatalogCourse,
+  normaliseCourse,
+} = require('./courseService');
 const { safeCourseUrl, validCourseId } = require('../utils/courseIdentity');
 const { COURSE_POOL_VERSION, findCachedCourse } = require('./courseRecommendationService');
+const mongoose = require('mongoose');
+const sharedCatalog = require('./sharedCourseCatalogService');
 const STATUSES = ['saved', 'in_progress', 'completed'];
 const fail = (status, message) => {
   const error = new Error(message);
@@ -15,11 +21,13 @@ const assertCourseId = (courseId) => {
 };
 const ownedProgress = async (userId, courseId) => {
   assertCourseId(courseId);
-  const row = await UserCourseProgress.findOne({ userId, courseId }).lean();
+  const row = await UserCourseProgress.findOne({ userId, courseId }, null, {
+    timeoutMS: 5000,
+  }).lean();
   if (!row) fail(404, 'Save this course to My Learning first.');
   return row;
 };
-const snapshot = (course) => ({
+const snapshot = (course = {}) => ({
   id: course.id,
   title: course.title,
   url: safeCourseUrl(course.url, course.platform),
@@ -30,7 +38,15 @@ const snapshot = (course) => ({
 });
 const dto = (row) => ({
   courseId: row.courseId,
-  course: snapshot(row.course),
+  course: {
+    ...snapshot(row.course || {}),
+    id: row.course?.id || row.courseId,
+    title: row.course?.title || 'Saved course details unavailable',
+    platform: row.course?.platform || 'Other',
+    topics: Array.isArray(row.course?.topics) ? row.course.topics : [],
+    url: safeCourseUrl(row.course?.url, row.course?.platform) || '',
+    ...(isUnavailableCatalogCourse(row.courseId) ? { url: '' } : {}),
+  },
   status: row.status,
   notes: row.notes,
   progressPercent: row.progressPercent,
@@ -39,8 +55,21 @@ const dto = (row) => ({
   completedAt: row.completedAt,
   createdAt: row.createdAt,
   updatedAt: row.updatedAt,
+  recoveryRequired: !row.course?.title || !safeCourseUrl(row.course?.url, row.course?.platform),
 });
 const resolveCourse = async (userId, courseId) => {
+  if (isUnavailableCatalogCourse(courseId)) return null;
+  if (mongoose.connection.readyState === 1) {
+    const inventory = buildFallbackPool('All', 200);
+    const { digest } = require('../utils/courseIdentity');
+    await sharedCatalog.getCurated(
+      inventory,
+      digest([...require('../data/courseCatalog'), ...require('../data/openLearningCatalog')]),
+    );
+    const shared = await sharedCatalog.findCourse(courseId);
+    if (shared) return shared;
+    if (inventory.some((course) => course.id === courseId)) return null;
+  }
   const catalog = buildFallbackPool('All', 100).find((course) => course.id === courseId);
   if (catalog) return catalog;
   const memory = findCachedCourse(userId, courseId);
@@ -75,9 +104,11 @@ const saveProgress = async (userId, courseId, body = {}) => {
       body.progressPercent > 100)
   )
     fail(400, 'Progress must be an explicit number from 0 to 100, or null.');
-  const existing = await UserCourseProgress.findOne({ userId, courseId }).lean();
+  const existing = await UserCourseProgress.findOne({ userId, courseId }, null, {
+    timeoutMS: 5000,
+  }).lean();
   const course = existing?.course || (await resolveCourse(userId, courseId));
-  if (!course || !safeCourseUrl(course.url, course.platform))
+  if (!existing && (!course || !safeCourseUrl(course.url, course.platform)))
     fail(404, 'Course is unavailable. Reload the catalog and try again.');
   const set = {
     status: body.status,
@@ -87,43 +118,63 @@ const saveProgress = async (userId, courseId, body = {}) => {
     set.notes = body.notes.trim().replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '');
   if (body.progressPercent !== undefined) set.progressPercent = body.progressPercent;
   const query = { userId, courseId };
-  const update = { $set: set, $setOnInsert: { userId, courseId, course: snapshot(course) } };
+  const update = {
+    $set: set,
+    ...(!existing ? { $setOnInsert: { userId, courseId, course: snapshot(course) } } : {}),
+  };
   let row;
   try {
     row = await UserCourseProgress.findOneAndUpdate(query, update, {
-      upsert: true,
+      upsert: !existing,
       returnDocument: 'after',
       runValidators: true,
+      timeoutMS: 5000,
     }).lean();
   } catch (error) {
     if (error.code !== 11000) throw error;
     row = await UserCourseProgress.findOneAndUpdate(
       query,
       { $set: set },
-      { returnDocument: 'after', runValidators: true },
+      { returnDocument: 'after', runValidators: true, timeoutMS: 5000 },
     ).lean();
   }
+  if (!row) fail(409, 'This learning record changed. Refresh My Learning and try again.');
   return dto(row);
 };
 const listProgress = async (userId, query = {}) => {
+  if (
+    ['status', 'page', 'limit'].some(
+      (key) => query[key] !== undefined && typeof query[key] !== 'string',
+    )
+  )
+    fail(400, 'Learning filters must be single text values.');
   const filter = { userId };
   if (query.status && !STATUSES.includes(query.status)) fail(400, 'Invalid learning status.');
   if (query.status) filter.status = query.status;
   const page = Math.min(10000, Math.max(1, Number.parseInt(query.page, 10) || 1));
   const limit = Math.min(50, Math.max(1, Number.parseInt(query.limit, 10) || 20));
   const [rows, total] = await Promise.all([
-    UserCourseProgress.find(filter)
+    UserCourseProgress.find(filter, null, { timeoutMS: 5000 })
       .sort({ updatedAt: -1, _id: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
       .lean(),
-    UserCourseProgress.countDocuments(filter),
+    UserCourseProgress.countDocuments(filter, { timeoutMS: 5000 }),
   ]);
-  return { courses: rows.map(dto), total, page, totalPages: Math.max(1, Math.ceil(total / limit)) };
+  const courses = rows.map(dto);
+  return {
+    courses,
+    total,
+    page,
+    totalPages: Math.max(1, Math.ceil(total / limit)),
+    integrity: {
+      unavailableCourseDetails: courses.filter((course) => course.recoveryRequired).length,
+    },
+  };
 };
 const removeProgress = async (userId, courseId) => {
   assertCourseId(courseId);
-  await UserCourseProgress.deleteOne({ userId, courseId });
+  await UserCourseProgress.deleteOne({ userId, courseId }, { timeoutMS: 5000 });
 };
 module.exports = {
   saveProgress,

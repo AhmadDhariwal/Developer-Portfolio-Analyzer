@@ -1,0 +1,182 @@
+{
+  "baseline": "f71a043c73600ef8efb2ff26929b1830e2864458",
+  "branch": "fix/learning-hub-p1",
+  "target": "not applicable",
+  "paths": [
+    {
+      "path": "backend/src/services/courseCatalogCoverageService.js",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\services\\courseCatalogCoverageService.js",
+      "sha256": "57aad1248b7b53fd8cdc97f9409739afc0084abec6e401be13a3e5d721a700a5"
+    },
+    {
+      "path": "backend/src/services/courseCatalogSearchService.js",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\services\\courseCatalogSearchService.js",
+      "sha256": "646b725208f4a8981bd1a3831cf11f4f97b22a75ad024acd6ef14ebebb6fc463"
+    },
+    {
+      "path": "backend/src/services/courseDiscoveryStatusService.js",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\services\\courseDiscoveryStatusService.js",
+      "sha256": "72e566cc457fb08afd8e500a0cba2f507804a0fe29f091de16c5abc99aa27a90"
+    },
+    {
+      "path": "backend/src/services/courseRecommendationService.js",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\services\\courseRecommendationService.js",
+      "sha256": "26029f28474aa422c73ec71f375ef9f60680021ed3a6ea5ff5706b94a8c19ea4"
+    },
+    {
+      "path": "backend/src/tests/courseIntelligentDiscovery.integration.test.js",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\courseIntelligentDiscovery.integration.test.js",
+      "sha256": "5f0cb314d1655ea39347cfa88b1440d51a29a600234525c8d0d731bee1f27e33"
+    },
+    {
+      "path": "backend/verification/courses/LEARNING-HUB-PRODUCTION-FINAL.md",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\LEARNING-HUB-PRODUCTION-FINAL.md",
+      "sha256": "845f4802e8031c0b6e0bfba9384abc9e21c4b345001f2953e8cb7c83a6a621d9"
+    },
+    {
+      "path": "backend/verification/courses/intelligent-discovery-2026-11-06/affected-backend.log",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\intelligent-discovery-2026-11-06\\affected-backend.log",
+      "sha256": "3b245ef1c73a1b60d69e2ec33a79afc7c3bb7bc482cdbdcb11ec50c8c32500bb"
+    },
+    {
+      "path": "backend/verification/courses/intelligent-discovery-2026-11-06/backend-final.log",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\intelligent-discovery-2026-11-06\\backend-final.log",
+      "sha256": "fcfc6fe5f93c342229b14fae55380b54da65619dd09a634f2168cc0ffd77eb98"
+    },
+    {
+      "path": "backend/verification/courses/intelligent-discovery-2026-11-06/backend-verified.log",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\intelligent-discovery-2026-11-06\\backend-verified.log",
+      "sha256": "66f807dfa431cff01dee0ff6ccf55bc74d25425a11a6683f45814f60f3e8a555"
+    },
+    {
+      "path": "backend/verification/courses/intelligent-discovery-2026-11-06/build.log",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\intelligent-discovery-2026-11-06\\build.log",
+      "sha256": "0b015de57c04b8d4ce192784dd1fefd7899aeac474d7c681f2296a99632fb1bc"
+    },
+    {
+      "path": "backend/verification/courses/intelligent-discovery-2026-11-06/cleanup.json",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\intelligent-discovery-2026-11-06\\cleanup.json",
+      "sha256": "651338569a568cc3a93217c9fd69f20326f7bff73bec970953bb75711f780e9d"
+    },
+    {
+      "path": "backend/verification/courses/intelligent-discovery-2026-11-06/component-final.log",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\intelligent-discovery-2026-11-06\\component-final.log",
+      "sha256": "7718b63ed08b9ab55e65617c8b3422e4712ef17806b6b40a01d1ea69a979c748"
+    },
+    {
+      "path": "backend/verification/courses/intelligent-discovery-2026-11-06/discovery-final.log",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\intelligent-discovery-2026-11-06\\discovery-final.log",
+      "sha256": "453401c0e2f16597b4bd2771535dc6b741f2e468128202d716880abbccf48fe4"
+    },
+    {
+      "path": "backend/verification/courses/intelligent-discovery-2026-11-06/final-checks.json",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\intelligent-discovery-2026-11-06\\final-checks.json",
+      "sha256": "ee34a465da274fd1965fc6aee6cf96e88f7b2876a9c947f180b4d54601994a81"
+    },
+    {
+      "path": "backend/verification/courses/intelligent-discovery-2026-11-06/focused-backend.log",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\intelligent-discovery-2026-11-06\\focused-backend.log",
+      "sha256": "0f06d2554539746ec0e384b20b4169b7d7f900710c8749d37213bba8aa4ab402"
+    },
+    {
+      "path": "backend/verification/courses/intelligent-discovery-2026-11-06/focused-frontend.log",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\intelligent-discovery-2026-11-06\\focused-frontend.log",
+      "sha256": "362b110eabb2672e07e3b20080748e8a2426cba2b046cdb26317c144007a8365"
+    },
+    {
+      "path": "backend/verification/courses/intelligent-discovery-2026-11-06/format-backend-check.log",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\intelligent-discovery-2026-11-06\\format-backend-check.log",
+      "sha256": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20"
+    },
+    {
+      "path": "backend/verification/courses/intelligent-discovery-2026-11-06/format-backend-write.log",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\intelligent-discovery-2026-11-06\\format-backend-write.log",
+      "sha256": "0f013a30cc477206c89d5afbbb0677030622188ebac94529c94310fbe7c65323"
+    },
+    {
+      "path": "backend/verification/courses/intelligent-discovery-2026-11-06/format-frontend-check.log",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\intelligent-discovery-2026-11-06\\format-frontend-check.log",
+      "sha256": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20"
+    },
+    {
+      "path": "backend/verification/courses/intelligent-discovery-2026-11-06/format-frontend-write.log",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\intelligent-discovery-2026-11-06\\format-frontend-write.log",
+      "sha256": "f602241d5ff548a1e954cdb6d807fd716b7522f2e6a22286ed1c2bd3af1a61af"
+    },
+    {
+      "path": "backend/verification/courses/intelligent-discovery-2026-11-06/format-report-check.log",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\intelligent-discovery-2026-11-06\\format-report-check.log",
+      "sha256": "17aa973d3f004560237d9a95171210b0671deff23d61628eecf7322ff5938f20"
+    },
+    {
+      "path": "backend/verification/courses/intelligent-discovery-2026-11-06/format-report-write.log",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\intelligent-discovery-2026-11-06\\format-report-write.log",
+      "sha256": "24912cec6797ca7a9815f23bbf7a124b927712b1dcd7a5b9daacf2ce3344640a"
+    },
+    {
+      "path": "backend/verification/courses/intelligent-discovery-2026-11-06/frontend-verified.log",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\intelligent-discovery-2026-11-06\\frontend-verified.log",
+      "sha256": "67ce61c838cf58892c317584cb30c1afd9825f0a857ec42c84da50afa957ead0"
+    },
+    {
+      "path": "backend/verification/courses/intelligent-discovery-2026-11-06/git-index-whitespace.log",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\intelligent-discovery-2026-11-06\\git-index-whitespace.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "backend/verification/courses/intelligent-discovery-2026-11-06/git-whitespace.log",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\intelligent-discovery-2026-11-06\\git-whitespace.log",
+      "sha256": "15a1d09455a03822d5edef237c96167dc0f14fc0d376ff61195688cf49e22d56"
+    },
+    {
+      "path": "backend/verification/courses/intelligent-discovery-2026-11-06/mongo-network.json",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\intelligent-discovery-2026-11-06\\mongo-network.json",
+      "sha256": "0f665377edf2df4fabf6eaaa2eacb1c8f5a7c5cc9e9fd4d8d755d163aec15b83"
+    },
+    {
+      "path": "backend/verification/courses/intelligent-discovery-2026-11-06/routes-final.log",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\intelligent-discovery-2026-11-06\\routes-final.log",
+      "sha256": "c0b7ad04de40c2a6c127d8d9278226d34ad803a1604c27d92cc42488ae24ec0a"
+    },
+    {
+      "path": "backend/verification/courses/intelligent-discovery-2026-11-06/summary.json",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\intelligent-discovery-2026-11-06\\summary.json",
+      "sha256": "b9288ba9b8b86248c4457af1a3702228f642ac8b710b32644005f77f09c0fd59"
+    },
+    {
+      "path": "backend/verification/courses/intelligent-discovery-2026-11-06/typescript.log",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\intelligent-discovery-2026-11-06\\typescript.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "frontend/src/app/pages/courses/courses.component.html",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\pages\\courses\\courses.component.html",
+      "sha256": "8c679e1c07290f19045d62b05ac7dc11858b32cb2c0ad6eb6aa23d1caac4c259"
+    },
+    {
+      "path": "frontend/src/app/pages/courses/courses.component.spec.ts",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\pages\\courses\\courses.component.spec.ts",
+      "sha256": "be290fd235de34743944a2aa40be9b174e25c7511285dcf808ee60b5fd8177e4"
+    },
+    {
+      "path": "frontend/src/app/pages/courses/courses.component.ts",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\pages\\courses\\courses.component.ts",
+      "sha256": "470660db535ce0509fb87e7dd166f293e0b079a81162117c83ab41e399b24bc0"
+    },
+    {
+      "path": "frontend/src/app/shared/models/course.model.ts",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\models\\course.model.ts",
+      "sha256": "f2503f96b0b427e74ce5b0ea9139392b137de0aa7b3d185d3d02dddb73ca6c56"
+    },
+    {
+      "path": "frontend/src/app/shared/services/course.service.spec.ts",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\services\\course.service.spec.ts",
+      "sha256": "d7c31653ba86049bffc246b0613d228bce89caf0b87a1e374b6c8360cac07d85"
+    },
+    {
+      "path": "frontend/src/app/shared/services/course.service.ts",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\services\\course.service.ts",
+      "sha256": "5b32ad150593d1990161750fac1c4e3e341f39a412484a53cb7bcc785b52a6d2"
+    }
+  ]
+}
