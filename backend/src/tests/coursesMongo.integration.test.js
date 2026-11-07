@@ -318,12 +318,54 @@ test('Learning Hub real Mongo/JWT: current evidence, cache identity, owned learn
   );
   await t.test(
     'filters, paging, forced refresh, invalid input and no-provider fallback remain accurate',
-    async () => {
+    async (child) => {
       const a = await call({ platform: 'Coursera', page: '1', limit: '2' });
       const b = await call({ platform: 'Coursera', page: '2', limit: '2' });
+      child.diagnostic(
+        JSON.stringify({
+          eligibility: a.body.personalization,
+          page1: {
+            status: a.status,
+            total: a.body.total,
+            ids: a.body.courses.map((item) => item.id),
+          },
+          page2: {
+            status: b.status,
+            total: b.body.total,
+            ids: b.body.courses.map((item) => item.id),
+          },
+        }),
+      );
+      assert.equal(ANALYSIS_VERSION, 'v9-skill-evidence-governance');
+      assert.equal(a.status, 200);
+      assert.equal(b.status, 200);
       assert.equal(a.body.total, b.body.total);
-      assert.ok(a.body.courses.every((item) => item.platform === 'Coursera'));
-      assert.equal(new Set([...a.body.courses, ...b.body.courses].map((item) => item.id)).size, 4);
+      // SQL/CLAIMED_ONLY and Docker/PARTIAL are the only Backend learning targets.
+      // React is outside this stack, Testing is UNKNOWN and Node.js is DEMONSTRATED.
+      assert.deepEqual(a.body.personalization.eligibleSkills, ['SQL', 'Docker']);
+      const pages = [...a.body.courses, ...b.body.courses];
+      assert.ok(pages.every((item) => item.platform === 'Coursera'));
+      assert.equal(a.body.total, 3);
+      assert.equal(a.body.courses.length, 2);
+      assert.equal(b.body.courses.length, 1);
+      assert.deepEqual(pages.map((item) => item.id).sort(), ['fb_c12', 'fb_c2', 'fb_c5']);
+      assert.equal(new Set(pages.map((item) => item.id)).size, pages.length);
+      assert.deepEqual([a.body.page, a.body.totalPages, a.body.hasMore], [1, 2, true]);
+      assert.deepEqual([b.body.page, b.body.totalPages, b.body.hasMore], [2, 2, false]);
+      assert.ok(
+        pages.every(
+          (item) =>
+            item.matchedTargets.length > 0 &&
+            item.matchedTargets.every((skill) => ['SQL', 'Docker'].includes(skill)),
+        ),
+      );
+      assert.ok(pages.every((item) => !item.level || item.level === 'Beginner'));
+      const beyond = await call({ platform: 'Coursera', page: '99', limit: '2' });
+      assert.equal(beyond.body.page, 2);
+      assert.deepEqual(
+        beyond.body.courses.map((item) => item.id),
+        b.body.courses.map((item) => item.id),
+      );
       assert.equal(a.body.cacheMetadata.signalHash, b.body.cacheMetadata.signalHash);
       assert.equal((await call({ platform: 'Coursera', refresh: 'true' })).body.fromCache, false);
       assert.equal((await call({ platform: { $ne: 'All' } })).status, 400);
@@ -338,11 +380,25 @@ test('Learning Hub real Mongo/JWT: current evidence, cache identity, owned learn
           /sql/i.test([item.title, item.description, ...item.topics].join(' ')),
         ),
       );
+      for (const skill of ['Node.js', 'Testing', 'React']) {
+        const excluded = await call({ view: 'for-you', platform: 'Coursera', skill });
+        assert.equal(excluded.status, 200);
+        assert.equal(excluded.body.personalization.learningState, 'skill-not-recommended', skill);
+        assert.equal(excluded.body.total, 0, skill);
+        assert.deepEqual(excluded.body.courses, [], skill);
+      }
+      const discover = await call({ view: 'discover', platform: 'Coursera', skill: 'React' });
+      assert.equal(discover.status, 200);
+      assert.ok(
+        discover.body.courses.some((item) => item.id === 'fb_c4'),
+        'Discover retains the React catalog course excluded from For You.',
+      );
+      assert.equal(aiCalls, 0);
     },
   );
   await t.test(
     'expired pool caches and evidence/Redis/Mongo outages never serve obsolete personalization',
-    async () => {
+    async (child) => {
       await call({ platform: 'Coursera' });
       await new Promise((resolve) => setTimeout(resolve, 50));
       controller.clearCourseMemoryCache();
@@ -358,27 +414,77 @@ test('Learning Hub real Mongo/JWT: current evidence, cache identity, owned learn
       const find = AnalysisCache.findOne;
       redisOffline = true;
       controller.clearCourseMemoryCache();
-      AnalysisCache.findOne = () => ({
-        sort() {
-          return this;
-        },
-        select() {
-          return this;
-        },
-        lean: async () => {
-          throw new Error('Mongo unavailable');
-        },
-      });
+      const redisFallback = await call({ view: 'for-you', platform: 'Coursera' });
+      assert.equal(
+        redisFallback.status,
+        200,
+        'Redis failure alone must preserve owned v9 personalization.',
+      );
+      assert.equal(redisFallback.body.personalization.status, 'evidence-informed');
+      assert.equal(redisFallback.body.total, 3);
+      // Keep the valid personalized pool warm: evidence must still be checked
+      // before a memory hit. Fail only the v9 evidence query, not catalog storage.
+      AnalysisCache.findOne = function (query, ...args) {
+        if (query.analysisVersion !== ANALYSIS_VERSION) return find.call(this, query, ...args);
+        return {
+          sort() {
+            return this;
+          },
+          select() {
+            return this;
+          },
+          lean: async () => {
+            throw new Error('Mongo unavailable');
+          },
+        };
+      };
       try {
         const fallback = await call({ platform: 'Coursera' });
-        assert.equal(fallback.status, 200);
-        assert.ok(fallback.body.courses.length > 0);
-        assert.equal(fallback.body.personalization.status, 'career-context-only');
-        assert.deepEqual(fallback.body.recommendedBasedOn.skillGapsUsed, []);
+        child.diagnostic(JSON.stringify({ evidenceUnavailable: fallback }));
+        assert.equal(fallback.status, 503);
+        assert.equal(fallback.body.code, 'COURSE_EVIDENCE_UNAVAILABLE');
+        assert.equal(
+          Object.hasOwn(fallback.body, 'courses'),
+          false,
+          'Never serve the warm personalized pool when evidence cannot be checked.',
+        );
+        const app = express();
+        // Exercise HTTP response semantics on synthetic loopback data. Production
+        // auth/admission middleware is unchanged and outside these two assertions.
+        app.get('/courses', async (req, res) =>
+          controller.fetchCourses({ user: await user(), query: req.query }, res),
+        );
+        const httpServer = app.listen(0, '127.0.0.1');
+        await new Promise((resolve) => httpServer.once('listening', resolve));
+        try {
+          const base = `http://127.0.0.1:${httpServer.address().port}/courses`;
+          const unavailable = await fetch(`${base}?view=for-you&platform=Coursera`);
+          assert.equal(unavailable.status, 503);
+          assert.equal(unavailable.headers.get('retry-after'), '5');
+          assert.equal(unavailable.headers.get('cache-control'), 'private, no-store');
+          assert.equal((await unavailable.json()).code, 'COURSE_EVIDENCE_UNAVAILABLE');
+          const discovery = await fetch(`${base}?view=discover&platform=Coursera`);
+          assert.equal(discovery.status, 200, 'Discover does not require personalized evidence.');
+          const catalog = await discovery.json();
+          assert.ok(catalog.courses.length > 0);
+          assert.equal(catalog.personalization.ruleVersion, 'catalog-discover-v1');
+          assert.deepEqual(catalog.requestedSkills, []);
+        } finally {
+          await new Promise((resolve) => httpServer.close(resolve));
+        }
       } finally {
         AnalysisCache.findOne = find;
         redisOffline = false;
       }
+      const recovered = await call({ view: 'for-you', platform: 'Coursera' });
+      assert.equal(recovered.status, 200);
+      assert.equal(recovered.body.personalization.status, 'evidence-informed');
+      assert.equal(recovered.body.total, 3);
+      assert.deepEqual(
+        (await AnalysisCache.findById(snapshot._id)).analysisData.skills,
+        snapshotData.skills,
+      );
+      assert.equal(aiCalls, 0);
     },
   );
   await t.test(

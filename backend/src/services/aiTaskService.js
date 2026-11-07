@@ -14,6 +14,7 @@ const aiService = require('./aiservice');
 const { getDeveloperSignals } = require('./developerSignalService');
 const { getCareerSprintPrompt } = require('../prompts/careerSprintPrompt');
 const selection = require('./sprintAiSelectionService');
+const aiAdmission = require('./sprintAiAdmissionService');
 const { currentActions } = require('./sprintRecommendationAdapter');
 const { getTasksForTechnology, getTaskForMissingSkill, getTaskForGitHubWeakness } = require('../utils/taskTemplates');
 
@@ -821,19 +822,27 @@ const generateAiTasksWithLLM = async (input) =>
     const prompt = getCareerSprintPrompt({ baselineTasks: deterministicPlan.tasks });
 
     const aiFallback = { __fallback: true, tasks: [] };
-    planRuntimeCounters.aiCalls += 1;
-    const aiMeta = await timer.measure('AI', () =>
-      withBudget(
-        aiService
-          .runAIAnalysis(prompt, aiFallback, 0, {
-            returnMeta: true,
-            timeoutMs: AI_TIMEOUT_MS
-          })
-          .catch(() => null),
-        AI_TIMEOUT_MS,
-        null
-      )
-    );
+    const aiMeta = await timer.measure('AI', async () => {
+      const reservation = await aiAdmission.acquire(userId);
+      if (!reservation) return null;
+      try {
+        planRuntimeCounters.aiCalls += 1;
+        return await withBudget(
+          aiService
+            .runAIAnalysis(prompt, aiFallback, 0, {
+              returnMeta: true,
+              timeoutMs: AI_TIMEOUT_MS,
+              signal: AbortSignal.timeout(AI_TIMEOUT_MS),
+              requestPolicy: { maxAttempts: 1 }
+            })
+            .catch(() => null),
+          AI_TIMEOUT_MS,
+          null
+        );
+      } finally {
+        await aiAdmission.release(reservation);
+      }
+    });
     const validated = await timer.measure('validation', async () =>
       selection.validate(aiMeta?.value, deterministicPlan.tasks)
     );

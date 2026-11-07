@@ -393,7 +393,9 @@ export class CareerSprintService {
   }
 
   restoreStreak(sprintId: string): Observable<CareerSprint> {
-    return this.api.restoreCareerStreak(sprintId).pipe(tap(() => this.invalidateMutationCaches()));
+    return this.api
+      .restoreCareerStreak(sprintId)
+      .pipe(tap(() => this.invalidateMutationCaches(false)));
   }
 
   generateAiTasks(payload: GenerateAiTasksPayload): Observable<GenerateAiTasksResponse> {
@@ -407,13 +409,13 @@ export class CareerSprintService {
   saveAiPlan(sprintId: string, payload: Record<string, unknown>): Observable<CareerSprint> {
     return this.api
       .saveCareerSprintAiPlan(sprintId, payload)
-      .pipe(tap(() => this.invalidateMutationCaches()));
+      .pipe(tap(() => this.invalidateMutationCaches(false)));
   }
 
   importScenarioPlan(sprintId: string, scenarioId?: string): Observable<CareerSprint> {
     return this.api
       .importCareerSprintScenarioPlan(sprintId, scenarioId)
-      .pipe(tap(() => this.invalidateMutationCaches()));
+      .pipe(tap(() => this.invalidateMutationCaches(false)));
   }
 
   editTask(sprintId: string, taskId: string, payload: SprintTaskInput): Observable<CareerSprint> {
@@ -438,7 +440,7 @@ export class CareerSprintService {
       .delete<CareerSprint>(
         `${this.baseUrl}/${encodeURIComponent(sprintId)}/ai-plans/${encodeURIComponent(planId)}`,
       )
-      .pipe(tap(() => this.invalidateMutationCaches()));
+      .pipe(tap(() => this.invalidateMutationCaches(false)));
   }
 
   importDraft(
@@ -470,13 +472,13 @@ export class CareerSprintService {
     return this.api.getScenarioSimulationHistory(8, true);
   }
 
-  private invalidateMutationCaches(): void {
+  private invalidateMutationCaches(newsContextChanged = true): void {
     // Only clear caches that actually store career-sprint-derived data.
     this.cacheInvalidation.clearCareerSprintCaches();
     this.cacheInvalidation.clearDashboardCaches();
     this.cacheInvalidation.clearWeeklyReportCaches();
     this.cacheInvalidation.clearScenarioCaches();
-    this.cacheInvalidation.clearNewsCaches();
+    if (newsContextChanged) this.cacheInvalidation.clearNewsCaches();
     this.cacheInvalidation.clearRecommendationsCaches();
     this.cacheInvalidation.clearJobsCaches();
   }

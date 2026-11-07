@@ -49,6 +49,9 @@ const load = async (sprint, previous, build, counters, forceRefresh = false, con
   if (!forceRefresh) {
     const entry = cache.get(key);
     if (entry?.expiresAt > Date.now() && valid(entry)) {
+      // Refresh recency without extending the original serialization TTL.
+      cache.delete(key);
+      cache.set(key, entry);
       counters.memoryHits++;
       return clone(entry.value);
     }

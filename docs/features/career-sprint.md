@@ -90,4 +90,15 @@ this is an operator deployment step, never an ordinary API side effect.
 Safety limits remain 366 days per new window, 500 tasks per sprint, eight drafts,
 120-character task titles, and finite points from 1 to 10. Completed tasks must be
 reopened before editing/deleting. The frontend must surface context acknowledgement
-and legacy/current policy metadata; frontend implementation is a separate task.
+and legacy/current policy metadata. The current frontend implements these controls,
+optimistic completion/reopening with rollback, and server-owned XP/progress values.
+Draft-only operations and streak restoration preserve News personalization caches;
+task/context changes still invalidate them. Optional AI sequencing has one provider
+attempt and a cancellation deadline, followed by deterministic fallback.
+Approved shared Mongo admission permits five uncached AI planning attempts per
+owner per fixed hour, one active attempt per owner and eight globally. Cache hits
+and identical in-flight callers reuse work. Admission failure uses deterministic
+planning. Token-scoped leases expire after ten seconds; release never refunds quota.
+
+Latest audit, exact validation results and remaining release gates:
+`backend/verification/career-sprint/production-finalization-2026-11-07/REPORT.md`.
