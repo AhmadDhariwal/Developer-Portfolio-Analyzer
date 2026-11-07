@@ -1,0 +1,224 @@
+<div class="panel top-bar-panel context-card">
+  <!-- Section 1: Pre-fill Context & Signals -->
+  <section class="panel-section context-section" [class.mobile-collapsed]="!showMobileContext">
+    <div class="section-head">
+      <div>
+        <span class="section-kicker">Signals</span>
+        <h2>Scenario Prefill Context</h2>
+      </div>
+      <div class="section-status">
+        <span class="loading-chip" [class.cached]="contextCacheHit">
+          <span class="pulse-dot"></span>
+          {{ contextCacheLabel }}
+        </span>
+        <button
+          class="mobile-toggle"
+          type="button"
+          (click)="showMobileContextChange.emit(!showMobileContext)"
+          aria-label="Toggle context panel"
+        >
+          {{ showMobileContext ? 'Collapse' : 'Expand' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="context-summary" *ngIf="context as ctx; else contextSkeleton">
+      <p class="summary-text">{{ ctx.summary }}</p>
+
+      <div class="context-metrics">
+        <div class="mini-stat">
+          <span class="mini-label">Career Stack</span>
+          <strong>{{ ctx.profile.careerStack }}</strong>
+        </div>
+        <div class="mini-stat">
+          <span class="mini-label">Experience</span>
+          <strong>{{ ctx.profile.experienceLevel }}</strong>
+        </div>
+        <div class="mini-stat">
+          <span class="mini-label">Known Skills</span>
+          <strong>{{ ctx.signals.knownSkills.length }}</strong>
+        </div>
+        <div class="mini-stat">
+          <span class="mini-label">Missing Skills</span>
+          <strong class="highlight-missing">{{ ctx.signals.missingSkills.length }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #contextSkeleton>
+      <div class="context-skeleton" *ngIf="isLoadingContext">
+        <span class="skel-line"></span>
+        <span class="skel-line"></span>
+        <span class="skel-line"></span>
+      </div>
+    </ng-template>
+
+    <!-- Top Missing Skills Suggestions -->
+    <div class="signal-group" *ngIf="context?.signals?.missingSkills?.length">
+      <span class="signal-label">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+        </svg>
+        Top Missing Skills (Click to add)
+      </span>
+      <div class="signal-chips">
+        <button
+          type="button"
+          class="signal-chip missing-chip"
+          *ngFor="let skill of context?.signals?.missingSkills; trackBy: trackBySkill"
+          (click)="addSuggestedSkillRequested.emit(skill)"
+          [title]="'Add ' + skill + ' to plan'"
+        >
+          <span class="chip-plus">+</span>
+          <span>{{ skill }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Top Demanded Skills Suggestions -->
+    <div class="signal-group" *ngIf="context?.signals?.topDemandedSkills?.length">
+      <span class="signal-label">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+          <polyline points="17 6 23 6 23 12"></polyline>
+        </svg>
+        Market High-Demand Skills
+      </span>
+      <div class="signal-chips">
+        <button
+          type="button"
+          class="signal-chip market-chip"
+          *ngFor="let skill of context?.signals?.topDemandedSkills; trackBy: trackBySkill"
+          (click)="addSuggestedSkillRequested.emit(skill)"
+          [title]="'Add ' + skill + ' to plan'"
+        >
+          <span class="chip-plus">+</span>
+          <span>{{ skill }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Suggested Projects -->
+    <div class="signal-group" *ngIf="context?.suggestedInputs?.projects?.length">
+      <span class="signal-label">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+          <polyline points="2 17 12 22 22 17"></polyline>
+          <polyline points="2 12 12 17 22 12"></polyline>
+        </svg>
+        Suggested Showcase Projects
+      </span>
+      <div class="signal-chips">
+        <button
+          type="button"
+          class="signal-chip project-chip"
+          *ngFor="let project of context?.suggestedInputs?.projects; trackBy: trackByProject"
+          (click)="addSuggestedProjectRequested.emit(project)"
+          [title]="'Add project ' + project.name"
+        >
+          <span class="chip-plus">+</span>
+          <span>{{ project.name }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Connected Sources Strip -->
+    <div class="source-strip" *ngIf="context?.sources?.length">
+      <div
+        class="source-pill"
+        *ngFor="let source of context?.sources; trackBy: trackBySource"
+        [class.connected]="source.connected"
+      >
+        <span class="dot"></span>
+        <span>{{ source.label }}</span>
+        <small>{{ source.status || (source.connected ? 'Connected' : 'Missing') }}</small>
+      </div>
+    </div>
+  </section>
+</div>
+<div class="panel top-bar-panel template-card-panel">
+  <!-- Section 2: Quick Scenario Templates -->
+  <section class="panel-section template-section">
+    <div class="section-head compact">
+      <div>
+        <span class="section-kicker">Templates</span>
+        <h2>Quick Scenario Templates</h2>
+      </div>
+    </div>
+
+    <div class="template-grid">
+      <button
+        class="template-card"
+        type="button"
+        *ngFor="let template of templates"
+        (click)="applyTemplateRequested.emit(template)"
+      >
+        <div class="template-card-top">
+          <span class="template-icon" [ngSwitch]="template.key">
+            <svg
+              *ngSwitchCase="'focused'"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <circle cx="12" cy="12" r="6"></circle>
+              <circle cx="12" cy="12" r="2"></circle>
+            </svg>
+            <svg
+              *ngSwitchCase="'portfolio'"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+            </svg>
+            <svg
+              *ngSwitchDefault
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <line x1="18" y1="20" x2="18" y2="10"></line>
+              <line x1="12" y1="20" x2="12" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+          </span>
+          <div class="template-heading-group">
+            <strong>{{ template.label }}</strong>
+            <span class="template-duration-badge">{{ template.durationWeeks }}w</span>
+          </div>
+        </div>
+        <p>{{ template.description }}</p>
+        <div class="template-card-bottom">
+          <span class="apply-tag">Apply Template &rarr;</span>
+        </div>
+      </button>
+    </div>
+  </section>
+</div>

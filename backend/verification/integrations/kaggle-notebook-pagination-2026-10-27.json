@@ -1,0 +1,197 @@
+{
+  "checkedAt": "2026-10-27T11:54:26.344Z",
+  "publicAccount": "dansbecker",
+  "config": {
+    "ok": true,
+    "missing": []
+  },
+  "requests": [
+    {
+      "endpoint": "https://api.kaggle.com/v1/kernels.KernelsApiService/ListKernels",
+      "status": 200,
+      "contentType": "application/json",
+      "keys": ["kernels"],
+      "rowCount": 20,
+      "identitySamples": [
+        {
+          "ref": "dansbecker/building-models-from-convolutions-daily",
+          "title": "Building Models From Convolutions Daily",
+          "author": "DanB"
+        },
+        {
+          "ref": "dansbecker/transfer-learning-daily",
+          "title": "Transfer Learning Daily",
+          "author": "DanB"
+        },
+        {
+          "ref": "dansbecker/shap-values-daily",
+          "title": "SHAP Values Daily",
+          "author": "DanB"
+        },
+        {
+          "ref": "dansbecker/hello-seaborn-test",
+          "title": "Hello, Seaborn test",
+          "author": "DanB"
+        },
+        {
+          "ref": "dansbecker/random-forests-testing",
+          "title": "Random Forests testing",
+          "author": "DanB"
+        }
+      ],
+      "returnedFieldNames": ["ref", "title", "author", "lastRunTime", "totalVotes"]
+    }
+  ],
+  "status": "RESOURCE_READ_PASS",
+  "notebooks": {
+    "status": "PASS",
+    "resources": [
+      {
+        "ref": "dansbecker/building-models-from-convolutions-daily",
+        "title": "Building Models From Convolutions Daily",
+        "author": "DanB",
+        "lastRunTime": "2019-03-22T18:56:42.557Z",
+        "totalVotes": 16
+      },
+      {
+        "ref": "dansbecker/transfer-learning-daily",
+        "title": "Transfer Learning Daily",
+        "author": "DanB",
+        "lastRunTime": "2019-03-22T18:56:57.817Z",
+        "totalVotes": 14
+      },
+      {
+        "ref": "dansbecker/shap-values-daily",
+        "title": "SHAP Values Daily",
+        "author": "DanB",
+        "lastRunTime": "2019-04-23T17:28:23.543Z",
+        "totalVotes": 14
+      },
+      {
+        "ref": "dansbecker/hello-seaborn-test",
+        "title": "Hello, Seaborn test",
+        "author": "DanB",
+        "lastRunTime": "2019-03-27T22:07:15.780Z",
+        "totalVotes": 13
+      },
+      {
+        "ref": "dansbecker/random-forests-testing",
+        "title": "Random Forests testing",
+        "author": "DanB",
+        "lastRunTime": "2019-09-19T11:51:33.183Z",
+        "totalVotes": 62
+      },
+      {
+        "ref": "dansbecker/exercise-underfitting-and-overfitting-testing",
+        "title": "Exercise: Underfitting and Overfitting testing",
+        "author": "DanB",
+        "lastRunTime": "2019-09-19T11:51:30.263Z",
+        "totalVotes": 62
+      },
+      {
+        "ref": "dansbecker/explore-your-data-daily-challenge",
+        "title": "Explore Your Data (Daily Challenge)",
+        "author": "DanB",
+        "lastRunTime": "2018-11-30T18:37:16.903Z",
+        "totalVotes": 8
+      },
+      {
+        "ref": "dansbecker/exercise-indexing-selecting-assigning-daily",
+        "title": "Exercise: Indexing, Selecting & Assigning Daily",
+        "author": "DanB",
+        "lastRunTime": "2019-07-09T18:07:15.250Z",
+        "totalVotes": 7
+      },
+      {
+        "ref": "dansbecker/underfitting-and-overfitting-testing",
+        "title": "Underfitting and Overfitting testing",
+        "author": "DanB",
+        "lastRunTime": "2019-09-19T11:51:23.397Z",
+        "totalVotes": 7
+      },
+      {
+        "ref": "dansbecker/data-types-and-missing-data-workbook",
+        "title": "Data types and missing data workbook",
+        "author": "DanB",
+        "lastRunTime": "2019-04-18T23:21:01.173Z",
+        "totalVotes": 7
+      },
+      {
+        "ref": "dansbecker/how-models-work-daily-challenge",
+        "title": "How Models Work (Daily Challenge)",
+        "author": "DanB",
+        "lastRunTime": "2018-11-30T18:37:24.167Z",
+        "totalVotes": 7
+      },
+      {
+        "ref": "dansbecker/exercise-data-types-and-missing-values",
+        "title": "Exercise: Data Types and Missing Values",
+        "author": "DanB",
+        "lastRunTime": "2019-07-09T17:36:55.877Z",
+        "totalVotes": 6
+      },
+      {
+        "ref": "dansbecker/exercise-summary-functions-and-maps-daily",
+        "title": "Exercise: Summary Functions and Maps Daily",
+        "author": "DanB",
+        "lastRunTime": "2019-07-09T18:07:29.793Z",
+        "totalVotes": 6
+      },
+      {
+        "ref": "dansbecker/summary-functions-and-maps-workbook-daily",
+        "title": "Summary functions and maps workbook Daily",
+        "author": "DanB",
+        "lastRunTime": "2019-05-14T00:09:28.780Z",
+        "totalVotes": 6
+      },
+      {
+        "ref": "dansbecker/data-types-and-missing-data-workbook-daily",
+        "title": "Data types and missing data workbook Daily",
+        "author": "DanB",
+        "lastRunTime": "2019-05-14T00:06:43.663Z",
+        "totalVotes": 6
+      },
+      {
+        "ref": "dansbecker/advanced-uses-of-shap-values-daily",
+        "title": "Advanced Uses of SHAP Values Daily",
+        "author": "DanB",
+        "lastRunTime": "2019-04-23T17:28:14.940Z",
+        "totalVotes": 6
+      },
+      {
+        "ref": "dansbecker/exercise-explore-your-data-daily-challenge",
+        "title": "Exercise: Explore Your Data (Daily Challenge)",
+        "author": "DanB",
+        "lastRunTime": "2018-11-30T18:37:21.173Z",
+        "totalVotes": 6
+      },
+      {
+        "ref": "dansbecker/exercise-model-validation-daily-challenge",
+        "title": "Exercise: Model Validation (Daily Challenge)",
+        "author": "DanB",
+        "lastRunTime": "2018-11-30T18:37:19.190Z",
+        "totalVotes": 6
+      },
+      {
+        "ref": "dansbecker/exercise-random-forests-daily-challenge",
+        "title": "Exercise: Random Forests (Daily Challenge)",
+        "author": "DanB",
+        "lastRunTime": "2018-11-30T18:37:13.493Z",
+        "totalVotes": 6
+      },
+      {
+        "ref": "dansbecker/exercise-renaming-and-combining-daily",
+        "title": "Exercise: Renaming-And-Combining Daily",
+        "author": "DanB",
+        "lastRunTime": "2019-07-08T21:00:08.073Z",
+        "totalVotes": 5
+      }
+    ],
+    "nextPageToken": null,
+    "pageSize": 20,
+    "page": 2,
+    "completeness": "bounded sample; missing next-page token does not prove a complete catalog",
+    "scope": "public resource sample",
+    "ownershipVerified": false
+  }
+}

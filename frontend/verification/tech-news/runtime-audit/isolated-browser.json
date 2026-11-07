@@ -1,0 +1,14 @@
+{
+  "status": "VERIFIED",
+  "authenticatedApi": true,
+  "infrastructure": "disposable local Redis/Mongo",
+  "upstreamResponses": "controlled fixtures, not real publisher articles",
+  "states": ["queued", "searching", "ready", "cooldown"],
+  "cardsVisibleDuringWork": 12,
+  "beforeTotal": 14,
+  "afterTotal": 15,
+  "automaticCatalogPoll": true,
+  "providerCalls": 2,
+  "errors": [],
+  "mobileDarkNoOverflow": true
+}

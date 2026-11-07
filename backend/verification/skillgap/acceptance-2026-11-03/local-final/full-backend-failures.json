@@ -1,0 +1,120 @@
+{
+  "count": 23,
+  "failures": [
+    {
+      "location": "test at backend\\src\\tests\\careerSprintLegacy.integration.test.js:14:1",
+      "summary": "✖ isolated Mongo: legacy exceptions preserve history, enforce read-only access and reserve both overlaps (3.8745ms)\n  AssertionError [ERR_ASSERTION]: An explicitly isolated loopback database is required.\n      at TestContext.<anonymous> (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\careerSprintLegacy.integration.test.js:16:10)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1382:25)\n      at Test.start (node:internal/test_runner/test:1242:17)\n      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {\n    generatedMessage: false,",
+      "latestDisposition": "FAIL: retry with valid isolated database still reports 404 versus expected 409"
+    },
+    {
+      "location": "test at backend\\src\\tests\\careerSprintPerformance.test.js:259:1",
+      "summary": "✖ database-validated memory serialization stays under 50ms p95 and skips optional signals (374.2077ms)\n  Error [CastError]: Cast to ObjectId failed for value \"u-mem\" (type string) at path \"userId\" for model \"IntegrationInsight\"\n      at SchemaObjectId.cast (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\schema\\objectId.js:253:11)\n      at SchemaType.applySetters (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\schemaType.js:1279:12)\n      at SchemaType.castForQuery (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\schemaType.js:1705:17)\n      at cast (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\cast.js:386:32)\n      at Query.cast (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\query.js:5088:12)\n      at Query._castConditions (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\query.js:2376:10)",
+      "latestDisposition": "FAIL: unchanged module fixture/contract assertion; no unrelated fix or assertion weakening authorized"
+    },
+    {
+      "location": "test at backend\\src\\tests\\careerSprintPerformance.test.js:274:1",
+      "summary": "✖ Redis serialization is bounded and always validates fresh database snapshots (38.748ms)\n  Error [CastError]: Cast to ObjectId failed for value \"u-redis\" (type string) at path \"userId\" for model \"IntegrationInsight\"\n      at SchemaObjectId.cast (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\schema\\objectId.js:253:11)\n      at SchemaType.applySetters (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\schemaType.js:1279:12)\n      at SchemaType.castForQuery (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\schemaType.js:1705:17)\n      at cast (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\cast.js:386:32)\n      at Query.cast (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\query.js:5088:12)\n      at Query._castConditions (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\query.js:2376:10)",
+      "latestDisposition": "FAIL: unchanged module fixture/contract assertion; no unrelated fix or assertion weakening authorized"
+    },
+    {
+      "location": "test at backend\\src\\tests\\careerSprintPerformance.test.js:295:1",
+      "summary": "✖ five identical callers share one expensive pipeline (46.5939ms)\n  Error [CastError]: Cast to ObjectId failed for value \"u-concurrent\" (type string) at path \"userId\" for model \"IntegrationInsight\"\n      at SchemaObjectId.cast (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\schema\\objectId.js:253:11)\n      at SchemaType.applySetters (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\schemaType.js:1279:12)\n      at SchemaType.castForQuery (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\schemaType.js:1705:17)\n      at cast (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\cast.js:386:32)\n      at Query.cast (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\query.js:5088:12)\n      at Query._castConditions (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\query.js:2376:10)",
+      "latestDisposition": "FAIL: unchanged module fixture/contract assertion; no unrelated fix or assertion weakening authorized"
+    },
+    {
+      "location": "test at backend\\src\\tests\\careerSprintPerformance.test.js:335:1",
+      "summary": "✖ non-AI current sprint cold path stays under 500ms p95 (38.6188ms)\n  Error [CastError]: Cast to ObjectId failed for value \"u-cold-0\" (type string) at path \"userId\" for model \"IntegrationInsight\"\n      at SchemaObjectId.cast (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\schema\\objectId.js:253:11)\n      at SchemaType.applySetters (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\schemaType.js:1279:12)\n      at SchemaType.castForQuery (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\schemaType.js:1705:17)\n      at cast (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\cast.js:386:32)\n      at Query.cast (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\query.js:5088:12)\n      at Query._castConditions (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\query.js:2376:10)",
+      "latestDisposition": "FAIL: unchanged module fixture/contract assertion; no unrelated fix or assertion weakening authorized"
+    },
+    {
+      "location": "test at backend\\src\\tests\\careerSprintPerformance.test.js:367:1",
+      "summary": "✖ after metrics improve or hold targets versus measured before snapshot (38.6893ms)\n  Error [CastError]: Cast to ObjectId failed for value \"u-after\" (type string) at path \"userId\" for model \"IntegrationInsight\"\n      at SchemaObjectId.cast (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\schema\\objectId.js:253:11)\n      at SchemaType.applySetters (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\schemaType.js:1279:12)\n      at SchemaType.castForQuery (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\schemaType.js:1705:17)\n      at cast (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\cast.js:386:32)\n      at Query.cast (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\query.js:5088:12)\n      at Query._castConditions (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\query.js:2376:10)",
+      "latestDisposition": "FAIL: unchanged module fixture/contract assertion; no unrelated fix or assertion weakening authorized"
+    },
+    {
+      "location": "test at backend\\src\\tests\\coursesMongo.integration.test.js:174:11",
+      "summary": "✖ current version and all five evidence classes are preserved; claimed skills are not proficiency (41.845ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n  + actual - expected\n  \n    [\n      'SQL',\n      'Docker',\n  -   'Testing',",
+      "latestDisposition": "FAIL: unchanged module fixture/contract assertion; no unrelated fix or assertion weakening authorized"
+    },
+    {
+      "location": "test at backend\\src\\tests\\coursesMongo.integration.test.js:188:11",
+      "summary": "✖ memory, Redis and Mongo reuse current pools; source changes bypass every tier (80.2999ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  \n  'miss' !== 'memory'\n  \n      at TestContext.<anonymous> (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\coursesMongo.integration.test.js:193:14)\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n      at async Test.run (node:internal/test_runner/test:1389:7)",
+      "latestDisposition": "FAIL: unchanged module fixture/contract assertion; no unrelated fix or assertion weakening authorized"
+    },
+    {
+      "location": "test at backend\\src\\tests\\integrationsLocalAcceptance.test.js:8:1",
+      "summary": "✖ authenticated Integrations local API acceptance and persisted downstream propagation (1532.8785ms)\n  Error: spawn mongod ENOENT\n      at ChildProcess._handle.onexit (node:internal/child_process:287:19)\n      at onErrorNT (node:internal/child_process:525:16)\n      at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {\n    errno: -4058,\n    code: 'ENOENT',\n    syscall: 'spawn mongod',",
+      "latestDisposition": "BLOCKED: existing fixture requires WSL Redis; WSL is not installed"
+    },
+    {
+      "location": "test at backend\\src\\tests\\integrationsProduction.integration.test.js:82:1",
+      "summary": "✖ Integrations production acceptance on disposable Mongo replica set and Redis (470.4128ms)\n  Error: spawn mongod ENOENT\n      at ChildProcess._handle.onexit (node:internal/child_process:287:19)\n      at onErrorNT (node:internal/child_process:525:16)\n      at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {\n    errno: -4058,\n    code: 'ENOENT',\n    syscall: 'spawn mongod',",
+      "latestDisposition": "BLOCKED: existing fixture requires WSL Redis; WSL is not installed"
+    },
+    {
+      "location": "test at backend\\src\\tests\\newsContract.test.js:41:1",
+      "summary": "✖ news provenance reuses Skill Gap statuses without promoting claims, inferred summaries or recommendations (10.2278ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  + actual - expected\n  \n  + 'UNKNOWN'\n  - 'NOT_EVIDENCED'\n  \n      at TestContext.<anonymous> (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\newsContract.test.js:46:10)",
+      "latestDisposition": "FAIL: unchanged module fixture/contract assertion; no unrelated fix or assertion weakening authorized"
+    },
+    {
+      "location": "test at backend\\src\\tests\\newsFreeText.test.js:63:1",
+      "summary": "✖ free-text provider requests use fixed keyword APIs and exclude unrelated fixed feeds (31.5121ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  + actual - expected\n  \n  + 'Cloudflare (CC BY 4.0)'\n  - 'Cloudflare Changelog'\n                ^\n  ",
+      "latestDisposition": "FAIL: unchanged module fixture/contract assertion; no unrelated fix or assertion weakening authorized"
+    },
+    {
+      "location": "test at backend\\src\\tests\\newsPagination.test.js:5:1",
+      "summary": "✖ news pages filter and slice the entire cached pool without calling providers (396.0982ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  \n  36 !== 31\n  \n      at TestContext.<anonymous> (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\newsPagination.test.js:49:14)\n      at async Test.run (node:internal/test_runner/test:1389:7)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {",
+      "latestDisposition": "FAIL: unchanged module fixture/contract assertion; no unrelated fix or assertion weakening authorized"
+    },
+    {
+      "location": "test at backend\\src\\tests\\profileSettingsProduction.test.js:170:1",
+      "summary": "✖ disposable replica set: CRUD, ownership, concurrency, upload, deletion rollback and cleanup (307.6212ms)\n  AssertionError [ERR_ASSERTION]: Only the task-owned loopback replica set is allowed\n      at TestContext.<anonymous> (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\profileSettingsProduction.test.js:181:12)\n      at Test.runInAsyncScope (node:async_hooks:227:14)\n      at Test.run (node:internal/test_runner/test:1382:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:960:18)\n      at Test.postRun (node:internal/test_runner/test:1522:19)\n      at Test.run (node:internal/test_runner/test:1447:12)",
+      "latestDisposition": "BLOCKED: test requires a separately provisioned task-owned replica on loopback port 27139"
+    },
+    {
+      "location": "test at backend\\src\\tests\\publicPortfolio.integration.test.js:15:1",
+      "summary": "✖ isolated Mongo + namespaced configured Upstash: critical portfolio flows (871.1171ms)\n  AssertionError [ERR_ASSERTION]: Configured Upstash Redis required\n      at TestContext.<anonymous> (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\publicPortfolio.integration.test.js:56:12)\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n      at async Test.run (node:internal/test_runner/test:1389:7)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {\n    generatedMessage: false,\n    code: 'ERR_ASSERTION',",
+      "latestDisposition": "BLOCKED: approved disposable Upstash Redis configuration is absent"
+    },
+    {
+      "location": "test at backend\\src\\tests\\scenarioSimulatorMongo.integration.test.js:21:1",
+      "summary": "✖ P1 disposable Mongo: unique immutable snapshots, replay, ownership and cursor history (80.2665ms)\n  Error: spawn mongod ENOENT\n      at ChildProcess._handle.onexit (node:internal/child_process:287:19)\n      at onErrorNT (node:internal/child_process:525:16)\n      at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {\n    errno: -4058,\n    code: 'ENOENT',\n    syscall: 'spawn mongod',",
+      "latestDisposition": "PASS after installed Mongo executable/PATH retry"
+    },
+    {
+      "location": "test at backend\\src\\tests\\scenarioSimulatorWorkers.integration.test.js:46:1",
+      "summary": "✖ P3 two real workers: atomic saves, export receipts, fresh history and restart (80.9593ms)\n  Error: spawn mongod ENOENT\n      at ChildProcess._handle.onexit (node:internal/child_process:287:19)\n      at onErrorNT (node:internal/child_process:525:16)\n      at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {\n    errno: -4058,\n    code: 'ENOENT',\n    syscall: 'spawn mongod',",
+      "latestDisposition": "PASS after installed Mongo executable/PATH retry"
+    },
+    {
+      "location": "test at backend\\src\\tests\\scenarioSprintExport.test.js:11:1",
+      "summary": "✖ P2 owned atomic receipts survive concurrent replay, edit, delete and draft ingestion (85.1715ms)\n  Error: spawn mongod ENOENT\n      at ChildProcess._handle.onexit (node:internal/child_process:287:19)\n      at onErrorNT (node:internal/child_process:525:16)\n      at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {\n    errno: -4058,\n    code: 'ENOENT',\n    syscall: 'spawn mongod',",
+      "latestDisposition": "PASS after installed Mongo executable/PATH retry"
+    },
+    {
+      "location": "test at backend\\src\\tests\\skillGapProduction.test.js:142:13",
+      "summary": "✖ two HTTP workers share one calculation/AI/write for an identical active source snapshot (2132.8393ms)\n  AssertionError [ERR_ASSERTION]: [{\"status\":503,\"body\":{\"message\":\"Skill Gap controls temporarily unavailable.\"}},{\"status\":503,\"body\":{\"message\":\"Skill Gap controls temporarily unavailable.\"}}]\n      at TestContext.<anonymous> (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\skillGapProduction.test.js:146:16)\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n      at async Test.run (node:internal/test_runner/test:1389:7)\n      at async TestContext.<anonymous> (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\skillGapProduction.test.js:142:5)\n      at async Test.run (node:internal/test_runner/test:1389:7)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {",
+      "latestDisposition": "PASS in 17-check isolated Skill Gap rerun; full-run cascade not reproduced"
+    },
+    {
+      "location": "test at backend\\src\\tests\\skillGapProduction.test.js:171:13",
+      "summary": "✖ warm requests validate sources without another AI call and owner contexts are isolated (2022.7487ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  \n  503 !== 200\n  \n      at TestContext.<anonymous> (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\skillGapProduction.test.js:177:18)\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n      at async Test.run (node:internal/test_runner/test:1389:7)",
+      "latestDisposition": "PASS in 17-check isolated Skill Gap rerun; full-run cascade not reproduced"
+    },
+    {
+      "location": "test at backend\\src\\tests\\skillGapProduction.test.js:196:13",
+      "summary": "✖ guest username rotation cannot bypass the IP quota or persist user analyses (2026.4834ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  \n  503 !== 200\n  \n      at TestContext.<anonymous> (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\skillGapProduction.test.js:211:18)\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n      at async Test.run (node:internal/test_runner/test:1389:7)",
+      "latestDisposition": "PASS in 17-check isolated Skill Gap rerun; full-run cascade not reproduced"
+    },
+    {
+      "location": "test at backend\\src\\tests\\skillGapProduction.test.js:303:13",
+      "summary": "✖ existing exact lookup index and seven-day cache-only TTL remain usable (2.7465ms)\n  TypeError: Cannot read properties of null (reading 'userId')\n      at C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\skillGapProduction.test.js:317:31\n      at Array.map (<anonymous>)\n      at TestContext.<anonymous> (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\skillGapProduction.test.js:317:13)\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n      at async Test.run (node:internal/test_runner/test:1389:7)\n      at async TestContext.<anonymous> (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\skillGapProduction.test.js:303:5)",
+      "latestDisposition": "PASS in 17-check isolated Skill Gap rerun; full-run cascade not reproduced"
+    },
+    {
+      "location": "test at backend\\src\\tests\\skillGapProduction.test.js:415:13",
+      "summary": "✖ developer signal consumers use the current owned career and resume context (13.7698ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  \n  false !== true\n  \n      at TestContext.<anonymous> (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\skillGapProduction.test.js:420:16)\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n      at async Test.run (node:internal/test_runner/test:1389:7)",
+      "latestDisposition": "PASS in 17-check isolated Skill Gap rerun; full-run cascade not reproduced"
+    }
+  ]
+}

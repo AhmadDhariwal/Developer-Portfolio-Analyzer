@@ -1,27 +1,105 @@
-<div class="auth-page">
-  <div class="auth-container">
-    <app-ui-card class="auth-card" (keydown.enter)="submit()">
-      <div class="form-content">
-        <h2>Verify OTP</h2>
-        <p class="hint">Enter the 6-digit code sent to your {{ type === 'phone' ? 'phone' : 'email' }}.
-          <span *ngIf="expiryDisplay" class="expiry-timer">({{ expiryDisplay }})</span>
-        </p>
+<div class="auth-themed" [ngClass]="'theme--' + selectedTheme">
+  <div class="auth-page">
+    <!-- Back Button (Top Left) -->
+    <a
+      [routerLink]="purpose === 'forgot-password' ? '/auth/forgot-password' : '/auth/signup'"
+      class="home-link"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="home-icon"
+      >
+        <path d="M19 12H5M12 19l-7-7 7-7" />
+      </svg>
+      Back
+    </a>
 
-        <div *ngIf="error" class="error-message">{{ error }}</div>
-        <div *ngIf="info" class="success-message">{{ info }}</div>
+    <div class="auth-container">
+      <!-- Brand Section -->
+      <div class="auth-brand">
+        <h1 class="logo">DevInsight<span>AI</span></h1>
+        <p class="tagline">INTELLIGENCE IN MOTION.</p>
+      </div>
+
+      <!-- Auth Card -->
+      <app-ui-card class="auth-card" (keydown.enter)="submit()">
+        <div class="auth-header">
+          <h2>Verify Identity</h2>
+          <p class="hint">
+            Enter the 6-digit code sent to your {{ type === 'phone' ? 'phone' : 'email' }}
+            <span *ngIf="email || phoneNumber" class="recipient-tag"
+              >({{ type === 'phone' ? countryCode + ' ' + phoneNumber : email }})</span
+            >
+          </p>
+          <div
+            *ngIf="expiryDisplay"
+            class="expiry-badge"
+            [class.expired]="expiryDisplay === 'OTP Expired'"
+          >
+            <span class="expiry-dot"></span>
+            <span>{{ expiryDisplay }}</span>
+          </div>
+        </div>
+
+        <div *ngIf="error" class="error-message" role="alert">
+          <svg class="error-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path
+              fill-rule="evenodd"
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          {{ error }}
+        </div>
+
+        <div *ngIf="info" class="success-message" role="status">
+          <svg class="success-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path
+              fill-rule="evenodd"
+              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          {{ info }}
+        </div>
 
         <app-otp-input (otpChange)="onOtpChange($event)"></app-otp-input>
 
-        <app-ui-button variant="primary" [fullWidth]="true" [loading]="isLoading" (click)="submit()">
-          Verify OTP
+        <app-ui-button
+          variant="primary"
+          [fullWidth]="true"
+          [loading]="isLoading"
+          (click)="submit()"
+        >
+          Verify Code
         </app-ui-button>
 
-        <button type="button" class="resend-btn" [disabled]="resendSeconds > 0 || isResending" (click)="resendOtp()">
-          {{ resendSeconds > 0 ? ('Resend OTP in ' + resendSeconds + 's') : 'Resend OTP' }}
-        </button>
+        <div class="resend-row">
+          <button
+            type="button"
+            class="resend-btn"
+            [disabled]="resendSeconds > 0 || isResending"
+            (click)="resendOtp()"
+          >
+            {{
+              resendSeconds > 0
+                ? 'Resend code in ' + resendSeconds + 's'
+                : isResending
+                  ? 'Sending...'
+                  : 'Resend Code'
+            }}
+          </button>
+        </div>
 
-        <a routerLink="/auth/login" class="back-link">Back to login</a>
-      </div>
-    </app-ui-card>
+        <div class="auth-footer-bottom">
+          <p><a routerLink="/auth/login">Return to Sign In</a></p>
+        </div>
+      </app-ui-card>
+    </div>
   </div>
 </div>

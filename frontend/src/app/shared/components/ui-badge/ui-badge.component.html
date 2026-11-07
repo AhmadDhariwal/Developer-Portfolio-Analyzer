@@ -1,3 +1,17 @@
 <span [class]="'ui-badge ' + variant + ' ' + size + (outlined ? ' outlined' : '')">
-  <ng-content></ng-content>
+  <span *ngIf="dot" class="badge-dot" aria-hidden="true"></span>
+  <span class="badge-label">
+    <ng-content></ng-content>
+  </span>
+  <button
+    *ngIf="removable"
+    type="button"
+    class="badge-remove-btn"
+    aria-label="Remove badge"
+    (click)="onRemove($event)">
+    <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2.5" fill="none">
+      <line x1="18" y1="6" x2="6" y2="18"></line>
+      <line x1="6" y1="6" x2="18" y2="18"></line>
+    </svg>
+  </button>
 </span>

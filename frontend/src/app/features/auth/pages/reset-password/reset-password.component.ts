@@ -6,12 +6,17 @@ import { AuthService } from '../../../../shared/services/auth.service';
 import { UiButtonComponent } from '../../../../shared/components/ui-button/ui-button.component';
 import { UiCardComponent } from '../../../../shared/components/ui-card/ui-card.component';
 
+import {
+  LandingThemeId,
+  LandingThemeService,
+} from '../../../../shared/services/landing-theme.service';
+
 @Component({
   selector: 'app-reset-password',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink, UiButtonComponent, UiCardComponent],
   templateUrl: './reset-password.component.html',
-  styleUrl: './reset-password.component.scss'
+  styleUrl: './reset-password.component.scss',
 })
 export class ResetPasswordComponent implements OnInit {
   resetToken = '';
@@ -21,7 +26,15 @@ export class ResetPasswordComponent implements OnInit {
   error = '';
   success = '';
 
-  constructor(private readonly authService: AuthService, private readonly router: Router) {}
+  get selectedTheme(): LandingThemeId {
+    return this.themeService.selectedTheme;
+  }
+
+  constructor(
+    private readonly authService: AuthService,
+    private readonly router: Router,
+    private readonly themeService: LandingThemeService,
+  ) {}
 
   ngOnInit(): void {
     this.resetToken = String(history.state?.resetToken || '');
@@ -44,16 +57,18 @@ export class ResetPasswordComponent implements OnInit {
     this.isLoading = true;
     this.error = '';
     this.success = '';
-    this.authService.resetPassword({ resetToken: this.resetToken, newPassword: this.newPassword }).subscribe({
-      next: (res) => {
-        this.isLoading = false;
-        this.success = res.message || 'Password reset successful.';
-        setTimeout(() => this.router.navigate(['/auth/login']), 1200);
-      },
-      error: (err) => {
-        this.isLoading = false;
-        this.error = err?.error?.message || 'Failed to reset password.';
-      }
-    });
+    this.authService
+      .resetPassword({ resetToken: this.resetToken, newPassword: this.newPassword })
+      .subscribe({
+        next: (res) => {
+          this.isLoading = false;
+          this.success = res.message || 'Password reset successful.';
+          setTimeout(() => this.router.navigate(['/auth/login']), 1200);
+        },
+        error: (err) => {
+          this.isLoading = false;
+          this.error = err?.error?.message || 'Failed to reset password.';
+        },
+      });
   }
 }

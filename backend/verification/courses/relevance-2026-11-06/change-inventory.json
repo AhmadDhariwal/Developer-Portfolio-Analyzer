@@ -1,0 +1,113 @@
+{
+  "paths": [
+    {
+      "relative": "backend/src/services/courseCatalogSearchService.js",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\services\\courseCatalogSearchService.js"
+    },
+    {
+      "relative": "backend/src/services/courseCatalogTaxonomy.js",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\services\\courseCatalogTaxonomy.js"
+    },
+    {
+      "relative": "backend/src/services/courseRecommendationService.js",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\services\\courseRecommendationService.js"
+    },
+    {
+      "relative": "backend/src/tests/courseSearchRelevance.integration.test.js",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\courseSearchRelevance.integration.test.js"
+    },
+    {
+      "relative": "backend/src/tests/courseTopicRelevance.test.js",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\courseTopicRelevance.test.js"
+    },
+    {
+      "relative": "backend/verification/courses/LEARNING-HUB-PRODUCTION-FINAL.md",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\LEARNING-HUB-PRODUCTION-FINAL.md"
+    },
+    {
+      "relative": "backend/verification/courses/relevance-2026-11-06/after.json",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\relevance-2026-11-06\\after.json"
+    },
+    {
+      "relative": "backend/verification/courses/relevance-2026-11-06/before.json",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\relevance-2026-11-06\\before.json"
+    },
+    {
+      "relative": "backend/verification/courses/relevance-2026-11-06/before.log",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\relevance-2026-11-06\\before.log"
+    },
+    {
+      "relative": "backend/verification/courses/relevance-2026-11-06/change-inventory.json",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\relevance-2026-11-06\\change-inventory.json"
+    },
+    {
+      "relative": "backend/verification/courses/relevance-2026-11-06/cleanup.json",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\relevance-2026-11-06\\cleanup.json"
+    },
+    {
+      "relative": "backend/verification/courses/relevance-2026-11-06/final-backend.log",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\relevance-2026-11-06\\final-backend.log"
+    },
+    {
+      "relative": "backend/verification/courses/relevance-2026-11-06/final-checks.json",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\relevance-2026-11-06\\final-checks.json"
+    },
+    {
+      "relative": "backend/verification/courses/relevance-2026-11-06/focused-backend.log",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\relevance-2026-11-06\\focused-backend.log"
+    },
+    {
+      "relative": "backend/verification/courses/relevance-2026-11-06/format-backend-check.log",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\relevance-2026-11-06\\format-backend-check.log"
+    },
+    {
+      "relative": "backend/verification/courses/relevance-2026-11-06/format-backend-write.log",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\relevance-2026-11-06\\format-backend-write.log"
+    },
+    {
+      "relative": "backend/verification/courses/relevance-2026-11-06/format-frontend-check.log",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\relevance-2026-11-06\\format-frontend-check.log"
+    },
+    {
+      "relative": "backend/verification/courses/relevance-2026-11-06/format-frontend-write.log",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\relevance-2026-11-06\\format-frontend-write.log"
+    },
+    {
+      "relative": "backend/verification/courses/relevance-2026-11-06/format-report-check.log",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\relevance-2026-11-06\\format-report-check.log"
+    },
+    {
+      "relative": "backend/verification/courses/relevance-2026-11-06/format-report-write.log",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\relevance-2026-11-06\\format-report-write.log"
+    },
+    {
+      "relative": "backend/verification/courses/relevance-2026-11-06/frontend.log",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\relevance-2026-11-06\\frontend.log"
+    },
+    {
+      "relative": "backend/verification/courses/relevance-2026-11-06/git-index-whitespace.log",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\relevance-2026-11-06\\git-index-whitespace.log"
+    },
+    {
+      "relative": "backend/verification/courses/relevance-2026-11-06/git-whitespace.log",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\relevance-2026-11-06\\git-whitespace.log"
+    },
+    {
+      "relative": "backend/verification/courses/relevance-2026-11-06/post-cleanup-unit.log",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\relevance-2026-11-06\\post-cleanup-unit.log"
+    },
+    {
+      "relative": "backend/verification/courses/relevance-2026-11-06/summary.json",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\relevance-2026-11-06\\summary.json"
+    },
+    {
+      "relative": "backend/verification/courses/relevance-2026-11-06/typescript.log",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\relevance-2026-11-06\\typescript.log"
+    },
+    {
+      "relative": "frontend/src/app/shared/services/course.service.spec.ts",
+      "absolute": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\services\\course.service.spec.ts"
+    }
+  ],
+  "sourceFilesMovedOrDeleted": []
+}

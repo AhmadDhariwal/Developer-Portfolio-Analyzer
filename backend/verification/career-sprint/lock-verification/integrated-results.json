@@ -1,0 +1,96 @@
+{
+  "startedAt": "2026-10-17T19:10:09.473Z",
+  "checks": [
+    {
+      "name": "JWT rejects unauthenticated request",
+      "status": "PASS"
+    },
+    {
+      "name": "independent mathematics: weighted partial",
+      "status": "PASS",
+      "detail": {
+        "name": "weighted partial",
+        "tasks": [
+          [10, "high"],
+          [5, "medium"],
+          [1, "low"]
+        ],
+        "done": [0],
+        "xp": 25,
+        "level": 1,
+        "progress": 63,
+        "equation": "XP=15+10=25; level=1; progress=round(10/16*100)=63 (integer score contract)",
+        "reversalXp": 0,
+        "replayRequests": 5,
+        "persisted": true
+      }
+    },
+    {
+      "name": "independent mathematics: level boundary",
+      "status": "PASS",
+      "detail": {
+        "name": "level boundary",
+        "tasks": [
+          [10, "high"],
+          [10, "high"],
+          [10, "high"],
+          [10, "high"],
+          [10, "high"]
+        ],
+        "done": [0, 1, 2, 3],
+        "xp": 100,
+        "level": 2,
+        "progress": 80,
+        "equation": "XP=4*(15+10)=100; level=2; progress=40/50*100=80",
+        "reversalXp": 75,
+        "replayRequests": 5,
+        "persisted": true
+      }
+    },
+    {
+      "name": "independent mathematics: mixed all complete",
+      "status": "PASS",
+      "detail": {
+        "name": "mixed all complete",
+        "tasks": [
+          [1, "low"],
+          [4, "medium"],
+          [8, "high"]
+        ],
+        "done": [0, 1, 2],
+        "xp": 43,
+        "level": 1,
+        "progress": 100,
+        "equation": "XP=(5+1)+(10+4)+(15+8)=43; level=1; progress=13/13*100=100",
+        "reversalXp": 37,
+        "replayRequests": 5,
+        "persisted": true
+      }
+    },
+    {
+      "name": "Learning Hub handoff replay after Sprint task edit",
+      "status": "PASS"
+    },
+    {
+      "name": "all 15 actual legacy records: read-only source, isolated HTTP rejection and preservation",
+      "status": "FAIL",
+      "message": "Expected values to be strictly equal:\n\n0 !== 15\n"
+    }
+  ],
+  "limitations": [
+    "External AI provider success is controlled in existing tests; this run injects provider unavailability and makes no paid provider request."
+  ],
+  "courseReplay": {
+    "beforeEdit": 200,
+    "edit": 200,
+    "afterEdit": 200,
+    "response": {
+      "sprintId": "6cba16967f5ce351011f1ce9",
+      "courseId": "fb_u2",
+      "targetSkill": "Node.js",
+      "alreadyAdded": true,
+      "route": "/app/career-sprint"
+    },
+    "taskCount": 1
+  }
+}

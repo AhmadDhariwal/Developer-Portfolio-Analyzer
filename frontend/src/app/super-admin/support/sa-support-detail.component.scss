@@ -1,0 +1,144 @@
+@use '../shared/super-admin' as *;
+
+.sad {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  color: var(--text-primary);
+}
+
+.sad__meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px 24px;
+}
+
+.sad__row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sad__label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.sad__value {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.sad__block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sad__heading {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.sad__subject {
+  margin: 0;
+  font-weight: 600;
+}
+
+.sad__message {
+  margin: 0;
+  white-space: pre-wrap;
+  color: var(--text-primary);
+}
+
+select,
+textarea {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color var(--transition-fast);
+  font-family: inherit;
+
+  &:focus {
+    border-color: var(--color-primary);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.sad__thread {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.sad__reply {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.03);
+
+  &--admin {
+    border-color: rgba(99, 102, 241, 0.28);
+    background: rgba(99, 102, 241, 0.08);
+  }
+}
+
+.sad__reply-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.sad__reply-author {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.sad__reply-time {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.sad__reply-body {
+  margin: 0;
+  white-space: pre-wrap;
+  font-size: 0.85rem;
+}
+
+.sad__empty {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.sad__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.sad__error {
+  color: #f87171;
+  font-size: 0.8rem;
+}
+
+.sad__cap {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}

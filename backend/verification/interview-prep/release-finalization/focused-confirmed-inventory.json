@@ -1,0 +1,66 @@
+{
+  "counts": {
+    "tests": 61,
+    "suites": 0,
+    "pass": 59,
+    "fail": 2,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "duration_ms": 126374.441
+  },
+  "records": [
+    {
+      "id": "TAP-1",
+      "line": 378,
+      "indent": 4,
+      "name": "image endpoint enforces auth, MIME, size, structure and generated storage names",
+      "parents": [
+        "isolated Mongo + namespaced configured Upstash: critical portfolio flows"
+      ],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-release-final-GbWpkE\\\\source\\\\backend\\\\src\\\\tests\\\\publicPortfolio.integration.test.js:393:13",
+      "file": "backend/src/tests/publicPortfolio.integration.test.js",
+      "error": "Expected values to be strictly equal:\n\n503 !== 201\n",
+      "stack": "TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-release-final-GbWpkE\\source\\backend\\src\\tests\\publicPortfolio.integration.test.js:405:16)\nprocess.processTicksAndRejections (node:internal/process/task_queues:104:5)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-release-final-GbWpkE\\source\\backend\\src\\tests\\publicPortfolio.integration.test.js:393:5)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "    not ok 9 - image endpoint enforces auth, MIME, size, structure and generated storage names",
+      "rawDiagnostics": "      ---\n      duration_ms: 100.4116\n      type: 'test'\n      location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-release-final-GbWpkE\\\\source\\\\backend\\\\src\\\\tests\\\\publicPortfolio.integration.test.js:393:13'\n      failureType: 'testCodeFailure'\n      error: |-\n        Expected values to be strictly equal:\n        \n        503 !== 201\n        \n      code: 'ERR_ASSERTION'\n      name: 'AssertionError'\n      expected: 201\n      actual: 503\n      operator: 'strictEqual'\n      stack: |-\n        TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-release-final-GbWpkE\\source\\backend\\src\\tests\\publicPortfolio.integration.test.js:405:16)\n        process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n        async Test.run (node:internal/test_runner/test:1389:7)\n        async TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-release-final-GbWpkE\\source\\backend\\src\\tests\\publicPortfolio.integration.test.js:393:5)\n        async Test.run (node:internal/test_runner/test:1389:7)\n        async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n      ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "MONGODB_URI",
+        "MONGO_URI",
+        "JWT_SECRET",
+        "JWT_ISSUER",
+        "JWT_AUDIENCE"
+      ]
+    },
+    {
+      "id": "TAP-2",
+      "line": 415,
+      "indent": 0,
+      "name": "isolated Mongo + namespaced configured Upstash: critical portfolio flows",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "parent-summary",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-release-final-GbWpkE\\\\source\\\\backend\\\\src\\\\tests\\\\publicPortfolio.integration.test.js:15:1",
+      "file": "backend/src/tests/publicPortfolio.integration.test.js",
+      "error": "1 subtest failed",
+      "stack": null,
+      "failureType": "subtestsFailed",
+      "skipReason": null,
+      "rawResult": "not ok 32 - isolated Mongo + namespaced configured Upstash: critical portfolio flows",
+      "rawDiagnostics": "  ---\n  duration_ms: 13876.1787\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-release-final-GbWpkE\\\\source\\\\backend\\\\src\\\\tests\\\\publicPortfolio.integration.test.js:15:1'\n  failureType: 'subtestsFailed'\n  error: '1 subtest failed'\n  code: 'ERR_TEST_FAILURE'\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "MONGODB_URI",
+        "MONGO_URI",
+        "JWT_SECRET",
+        "JWT_ISSUER",
+        "JWT_AUDIENCE"
+      ]
+    }
+  ]
+}

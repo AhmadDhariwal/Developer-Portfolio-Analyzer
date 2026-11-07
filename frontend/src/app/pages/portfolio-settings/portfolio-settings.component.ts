@@ -1,6 +1,16 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { distinctUntilChanged, map } from 'rxjs';
+import { AuthService } from '../../shared/services/auth.service';
+import { ThemeService } from '../../shared/services/theme.service';
+import {
+  normalizePortfolio,
+  portfolioError,
+  portfolioImage,
+  portfolioLink,
+} from '../../shared/utils/public-profile.utils';
 import {
   PublicProfileService,
   PublicProfilePayload,
@@ -10,7 +20,7 @@ import {
   PublicProfileWorkExperience,
   PublicProfileUpcomingProject,
   PublicProfileTestimonial,
-  PublicProfileCompletedCourse
+  PublicProfileCompletedCourse,
 } from '../../shared/services/public-profile.service';
 
 @Component({
@@ -18,212 +28,244 @@ import {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './portfolio-settings.component.html',
-  styleUrl: './portfolio-settings.component.scss'
+  styleUrl: './portfolio-settings.component.scss',
 })
-export class PortfolioSettingsComponent implements OnInit {
+export class PortfolioSettingsComponent implements OnInit, OnDestroy {
   profile: PublicProfilePayload | null = null;
   analytics: PublicProfileAnalytics | null = null;
   isLoading = true;
   isSaving = false;
   message = '';
   copyFeedback = '';
+  errorMessage = '';
+  analyticsError = '';
+  analyticsLoading = false;
+  activeTab = 'profile';
+  published = false;
+  savedSlug = '';
+  needsReload = false;
+  private sessionReloadRequired = false;
+  messageIsError = false;
+  private generation = 0;
+  private account = '';
+  private savedSnapshot = '';
+  private readonly uploads = new Map<object, { preview: string; busy: boolean; error: string }>();
+  readonly tabs = [
+    { id: 'profile', label: 'Profile & copy' },
+    { id: 'projects', label: 'Projects' },
+    { id: 'skills', label: 'Skills' },
+    { id: 'credentials', label: 'Experience & credentials' },
+    { id: 'sharing', label: 'Sharing & SEO' },
+  ];
+  readonly image = portfolioImage;
 
   constructor(
     private readonly profileService: PublicProfileService,
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
+    readonly theme: ThemeService,
+    private readonly auth: AuthService,
+    private readonly destroy: DestroyRef,
   ) {}
 
   ngOnInit(): void {
-    this.loadProfile();
+    this.profileService.sessionChanged$.pipe(takeUntilDestroyed(this.destroy)).subscribe(() => {
+      this.generation++;
+      this.clearUploads();
+      this.profile = null;
+      this.analytics = null;
+      this.published = false;
+      this.savedSnapshot = '';
+      this.savedSlug = '';
+      this.isSaving = false;
+      this.isLoading = false;
+      this.sessionReloadRequired = true;
+      this.errorMessage = 'Your account session changed. Reload this page to continue.';
+      this.cdr.markForCheck();
+    });
+    this.auth.currentUser$
+      .pipe(
+        map((user) => String(user?._id || '')),
+        distinctUntilChanged(),
+        takeUntilDestroyed(this.destroy),
+      )
+      .subscribe((account) => {
+        this.sessionReloadRequired = false;
+        this.account = account;
+        this.generation++;
+        this.clearUploads();
+        this.profile = null;
+        this.analytics = null;
+        this.isSaving = false;
+        if (account) this.loadProfile();
+        else {
+          this.isLoading = false;
+          this.errorMessage = 'Sign in to manage your portfolio.';
+        }
+      });
+    this.profileService.invalidated$.pipe(takeUntilDestroyed(this.destroy)).subscribe(() => {
+      if (
+        this.sessionReloadRequired ||
+        this.isSaving ||
+        this.account !== String(this.auth.getCurrentUser()?._id || '')
+      )
+        return;
+      this.published = false;
+      this.analytics = null;
+      if (this.profile && JSON.stringify(this.profile) !== this.savedSnapshot) {
+        this.needsReload = true;
+        this.errorMessage =
+          'Portfolio state changed elsewhere. Reload the saved version before saving or previewing.';
+      } else this.loadProfile();
+      this.cdr.markForCheck();
+    });
   }
 
   loadProfile(): void {
+    if (this.sessionReloadRequired) return;
+    const generation = ++this.generation;
+    this.clearUploads();
+    this.savedSnapshot = '';
+    this.profile = null;
+    this.analytics = null;
+    this.errorMessage = '';
+    this.message = '';
+    this.needsReload = false;
     this.isLoading = true;
-    this.profileService.getMyPublicProfile().subscribe({
-      next: (profile) => {
-        this.profile = this.ensureProfileShape(profile);
-        this.isLoading = false;
-        this.loadAnalytics();
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.isLoading = false;
-        this.cdr.detectChanges();
-      }
-    });
+    this.profileService
+      .getMyPublicProfile()
+      .pipe(takeUntilDestroyed(this.destroy))
+      .subscribe({
+        next: (profile) => {
+          if (generation !== this.generation) return;
+          this.profile = this.forEditing(profile);
+          this.published = profile.isPublic === true;
+          this.savedSlug = profile.slug;
+          this.savedSnapshot = JSON.stringify(this.profile);
+          this.isLoading = false;
+          this.loadAnalytics();
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          if (generation !== this.generation) return;
+          this.isLoading = false;
+          this.errorMessage = portfolioError(error, 'Unable to load portfolio settings.');
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   loadAnalytics(): void {
-    this.profileService.getAnalytics().subscribe({
-      next: (analytics) => {
-        this.analytics = analytics;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.cdr.detectChanges();
-      }
-    });
+    const generation = this.generation;
+    this.analytics = null;
+    this.analyticsError = '';
+    this.analyticsLoading = true;
+    this.profileService
+      .getAnalytics()
+      .pipe(takeUntilDestroyed(this.destroy))
+      .subscribe({
+        next: (analytics) => {
+          if (generation !== this.generation) return;
+          this.analytics = analytics;
+          this.analyticsLoading = false;
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          if (generation !== this.generation) return;
+          this.analyticsLoading = false;
+          this.analyticsError = portfolioError(error, 'Analytics is unavailable.');
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   get shareUrl(): string {
-    if (!this.profile) return '';
-    const origin = globalThis.location?.origin || '';
-    return `${origin}/p/${this.profile.slug}`;
+    return this.savedSlug
+      ? (globalThis.location?.origin || '') + '/p/' + encodeURIComponent(this.savedSlug)
+      : '';
+  }
+  reloadSettings(): void {
+    if (this.sessionReloadRequired) globalThis.location.reload();
+    else this.loadProfile();
+  }
+  get uploading(): boolean {
+    return [...this.uploads.values()].some((item) => item.busy);
+  }
+  get analyticsMax(): number {
+    return Math.max(1, ...(this.analytics?.last7Days || []).map((day) => day.count));
+  }
+  uploadState(project: object) {
+    return this.uploads.get(project);
+  }
+  projectImage(project: { imageUrl?: string }): string {
+    return this.uploads.get(project)?.preview || portfolioImage(project.imageUrl);
+  }
+  uploadProjectImage(event: Event, project: { imageUrl?: string }): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file || this.isSaving) return;
+    const previous = this.uploads.get(project);
+    if (previous?.busy) return;
+    if (previous?.preview) URL.revokeObjectURL(previous.preview);
+    if (
+      !['image/jpeg', 'image/png', 'image/webp'].includes(file.type) ||
+      file.size > 2 * 1024 * 1024 ||
+      file.size === 0
+    ) {
+      this.uploads.set(project, {
+        preview: '',
+        busy: false,
+        error: 'Choose a PNG, JPG or WebP image up to 2 MiB.',
+      });
+      return;
+    }
+    const generation = this.generation;
+    const state = { preview: URL.createObjectURL(file), busy: true, error: '' };
+    this.uploads.set(project, state);
+    this.profileService
+      .uploadImage(file)
+      .pipe(takeUntilDestroyed(this.destroy))
+      .subscribe({
+        next: (result) => {
+          if (generation !== this.generation || this.uploads.get(project) !== state) return;
+          state.busy = false;
+          if (portfolioImage(result.imageUrl)) project.imageUrl = result.imageUrl;
+          else state.error = 'The server returned an invalid image address.';
+          URL.revokeObjectURL(state.preview);
+          state.preview = '';
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          if (generation !== this.generation || this.uploads.get(project) !== state) return;
+          state.busy = false;
+          state.error = portfolioError(error, 'Image upload failed. Try another file.');
+          URL.revokeObjectURL(state.preview);
+          state.preview = '';
+          this.cdr.markForCheck();
+        },
+      });
+  }
+  private forgetImage(project: object): void {
+    const state = this.uploads.get(project);
+    if (state?.preview) URL.revokeObjectURL(state.preview);
+    this.uploads.delete(project);
+  }
+  private clearUploads(): void {
+    for (const state of this.uploads.values())
+      if (state.preview) URL.revokeObjectURL(state.preview);
+    this.uploads.clear();
+  }
+  ngOnDestroy(): void {
+    this.savedSnapshot = '';
+    this.generation++;
+    this.clearUploads();
   }
 
-  private ensureProfileShape(profile: PublicProfilePayload): PublicProfilePayload {
-    const defaultSections: PublicProfileSections = {
-      hero: {
-        greetingLabel: 'Hello! I Am',
-        roleLabel: 'A Developer who',
-        titleLineOne: 'Judges a book',
-        titleLineTwo: 'by its',
-        titleHighlight: 'cover',
-        titleLineSuffix: '...',
-        tagline: 'Because if the cover does not impress you what else can?'
-      },
-      skills: {
-        headline: "I'm currently looking to join a",
-        highlight: 'cross-functional',
-        headlineSuffix: 'team',
-        subheadline: "that values improving people's lives through accessible design"
-      },
-      contact: {
-        heading: 'Contact',
-        message: "I'm currently looking to join a cross-functional team that values improving people's lives through accessible design. Or have a project in mind? Let's connect.",
-        email: String(profile.user?.email || '').trim().toLowerCase()
-      },
-      upcoming: {
-        heading: 'Upcoming Projects',
-        subheading: 'Currently in development and planned next milestones.'
-      },
-      testimonials: {
-        heading: 'Testimonials',
-        subheading: 'What collaborators and clients say about working together.'
-      },
-      cta: {
-        heading: "Let's Work Together",
-        subtext: 'Open to impactful product, platform, and AI-focused opportunities.',
-        primaryLabel: 'Contact Me',
-        secondaryLabel: 'Download Resume',
-        resumeUrl: ''
-      },
-      visibility: {
-        projects: true,
-        upcoming: true,
-        testimonials: true,
-        cta: true
-      }
-    };
-
-    const heroOverride = profile.sections?.hero as Partial<PublicProfileSections['hero']> | undefined;
-    const skillsOverride = profile.sections?.skills as Partial<PublicProfileSections['skills']> | undefined;
-    const contactOverride = profile.sections?.contact as Partial<PublicProfileSections['contact']> | undefined;
-
-    const heroSection: PublicProfileSections['hero'] = {
-      ...defaultSections.hero,
-      ...heroOverride
-    };
-    const skillsSection: PublicProfileSections['skills'] = {
-      ...defaultSections.skills,
-      ...skillsOverride
-    };
-    const contactSection: PublicProfileSections['contact'] = {
-      ...defaultSections.contact,
-      ...contactOverride
-    };
-    const upcomingOverride = profile.sections?.upcoming as Partial<PublicProfileSections['upcoming']> | undefined;
-    const testimonialsOverride = profile.sections?.testimonials as Partial<PublicProfileSections['testimonials']> | undefined;
-    const ctaOverride = profile.sections?.cta as Partial<PublicProfileSections['cta']> | undefined;
-    const visibilityOverride = profile.sections?.visibility as Partial<PublicProfileSections['visibility']> | undefined;
-    const upcomingSection: PublicProfileSections['upcoming'] = {
-      ...defaultSections.upcoming,
-      ...upcomingOverride
-    };
-    const testimonialsSection: PublicProfileSections['testimonials'] = {
-      ...defaultSections.testimonials,
-      ...testimonialsOverride
-    };
-    const ctaSection: PublicProfileSections['cta'] = {
-      ...defaultSections.cta,
-      ...ctaOverride
-    };
-    const visibilitySection: PublicProfileSections['visibility'] = {
-      ...defaultSections.visibility,
-      ...visibilityOverride
-    };
-
-    return {
-      ...profile,
-      skills: Array.isArray(profile.skills) ? profile.skills : [],
-      projects: Array.isArray(profile.projects)
-        ? profile.projects.map((project) => ({
-          ...project,
-          repoUrl: String(project.repoUrl || ''),
-          imageUrl: String(project.imageUrl || ''),
-          expectedDate: String(project.expectedDate || ''),
-          status: (project.status || 'completed') as 'completed' | 'in-progress' | 'upcoming' | 'planned'
-        }))
-        : [],
-      upcomingProjects: Array.isArray(profile.upcomingProjects)
-        ? profile.upcomingProjects.map((project) => ({
-          ...project,
-          expectedDate: String(project.expectedDate || ''),
-          techStack: Array.isArray(project.techStack) ? project.techStack : [],
-          status: (project.status || 'planned') as 'in-progress' | 'planned',
-          url: String(project.url || ''),
-          repoUrl: String(project.repoUrl || ''),
-          imageUrl: String(project.imageUrl || '')
-        }))
-        : [],
-      testimonials: Array.isArray(profile.testimonials)
-        ? profile.testimonials.map((testimonial) => ({
-          ...testimonial,
-          quote: String(testimonial.quote || ''),
-          name: String(testimonial.name || ''),
-          role: String(testimonial.role || ''),
-          avatarUrl: String(testimonial.avatarUrl || '')
-        }))
-        : [],
-      workExperiences: Array.isArray(profile.workExperiences) ? profile.workExperiences : [],
-      completedCourses: Array.isArray(profile.completedCourses)
-        ? profile.completedCourses.map((course) => ({
-          ...course,
-          title: String(course.title || ''),
-          provider: String(course.provider || ''),
-          category: String(course.category || ''),
-          completionDate: course.completionDate || null,
-          duration: String(course.duration || ''),
-          certificateUrl: String(course.certificateUrl || ''),
-          credentialId: String(course.credentialId || ''),
-          description: String(course.description || ''),
-          order: Number.isFinite(Number(course.order)) ? Number(course.order) : 0,
-          isVisible: course.isVisible !== false,
-          skills: Array.isArray(course.skills) ? course.skills : []
-        }))
-        : [],
-      sections: {
-        hero: heroSection,
-        skills: skillsSection,
-        contact: contactSection,
-        upcoming: upcomingSection,
-        testimonials: testimonialsSection,
-        cta: ctaSection,
-        visibility: visibilitySection
-      },
-      socialLinks: {
-        website: profile.socialLinks?.website || '',
-        twitter: profile.socialLinks?.twitter || '',
-        linkedin: profile.socialLinks?.linkedin || '',
-        github: profile.socialLinks?.github || ''
-      },
-      analytics: profile.analytics || {
-        totalViews: 0,
-        uniqueViews: 0,
-        lastViewedAt: null,
-        last7Days: []
-      }
-    };
+  private forEditing(value: PublicProfilePayload): PublicProfilePayload {
+    const profile = normalizePortfolio(value);
+    if (profile.defaultResumeUrl && profile.sections.cta.resumeUrl === profile.defaultResumeUrl)
+      profile.sections.cta.resumeUrl = '';
+    return profile;
   }
 
   private normalizeSlugValue(value: string): string {
@@ -237,10 +279,15 @@ export class PortfolioSettingsComponent implements OnInit {
 
   normalizeSlug(): void {
     if (!this.profile) return;
-    this.profile.slug = this.normalizeSlugValue(this.profile.slug);
+    if (this.profile.slug !== this.savedSlug)
+      this.profile.slug = this.normalizeSlugValue(this.profile.slug);
   }
 
   copyShareUrl(): void {
+    if (!this.published) {
+      this.copyFeedback = 'Publish your portfolio before sharing its public link.';
+      return;
+    }
     const url = this.shareUrl;
     if (!url || typeof navigator === 'undefined' || !navigator.clipboard) {
       this.copyFeedback = 'Copy is unavailable in this browser.';
@@ -248,7 +295,8 @@ export class PortfolioSettingsComponent implements OnInit {
       return;
     }
 
-    navigator.clipboard.writeText(url)
+    navigator.clipboard
+      .writeText(url)
       .then(() => {
         this.copyFeedback = 'Share link copied';
         this.cdr.detectChanges();
@@ -261,7 +309,8 @@ export class PortfolioSettingsComponent implements OnInit {
 
   openPublicPreview(): void {
     if (!this.profile) return;
-    const previewUrl = `${this.shareUrl}${this.shareUrl.includes('?') ? '&' : '?'}preview=${Date.now()}`;
+    if (!this.savedSlug || this.needsReload || this.isSaving) return;
+    const previewUrl = this.shareUrl + '?preview=1';
     globalThis.open(previewUrl, '_blank', 'noopener,noreferrer');
   }
 
@@ -270,8 +319,8 @@ export class PortfolioSettingsComponent implements OnInit {
   }
 
   addSkill(): void {
-    if (!this.profile) return;
-    this.profile.skills = [...this.profile.skills, { name: 'New Skill', score: 60 }];
+    if (!this.profile || (this.profile.skills?.length || 0) >= 12) return;
+    this.profile.skills = [...this.profile.skills, { name: '', score: 0 }];
   }
 
   removeSkill(index: number): void {
@@ -280,24 +329,25 @@ export class PortfolioSettingsComponent implements OnInit {
   }
 
   addProject(): void {
-    if (!this.profile) return;
+    if (!this.profile || (this.profile.projects?.length || 0) >= 12) return;
     this.profile.projects = [
       ...this.profile.projects,
       {
-        title: 'New Project',
+        title: '',
         description: '',
         url: '',
         repoUrl: '',
         imageUrl: '',
         status: 'completed',
         expectedDate: '',
-        tech: ['Angular']
-      }
+        tech: [],
+      },
     ];
   }
 
   removeProject(index: number): void {
     if (!this.profile) return;
+    this.forgetImage(this.profile.projects[index]);
     this.profile.projects.splice(index, 1);
   }
 
@@ -305,7 +355,7 @@ export class PortfolioSettingsComponent implements OnInit {
     if (!this.profile) return;
     const project = this.profile.projects[projectIndex];
     if (!project) return;
-    project.tech = [...(project.tech || []), 'New Tech'];
+    if (project.tech.length < 10) project.tech = [...project.tech, ''];
   }
 
   removeProjectTech(projectIndex: number, techIndex: number): void {
@@ -316,24 +366,25 @@ export class PortfolioSettingsComponent implements OnInit {
   }
 
   addUpcomingProject(): void {
-    if (!this.profile) return;
+    if (!this.profile || (this.profile.upcomingProjects?.length || 0) >= 12) return;
     this.profile.upcomingProjects = [
       ...(this.profile.upcomingProjects || []),
       {
-        title: 'New Upcoming Project',
+        title: '',
         description: '',
         expectedDate: '',
-        techStack: ['Angular'],
+        techStack: [],
         status: 'planned',
         url: '',
         repoUrl: '',
-        imageUrl: ''
-      }
+        imageUrl: '',
+      },
     ];
   }
 
   removeUpcomingProject(index: number): void {
     if (!this.profile) return;
+    this.forgetImage(this.profile.upcomingProjects[index]);
     this.profile.upcomingProjects.splice(index, 1);
   }
 
@@ -341,7 +392,7 @@ export class PortfolioSettingsComponent implements OnInit {
     if (!this.profile) return;
     const project = this.profile.upcomingProjects[projectIndex];
     if (!project) return;
-    project.techStack = [...(project.techStack || []), 'New Tech'];
+    if (project.techStack.length < 10) project.techStack = [...project.techStack, ''];
   }
 
   removeUpcomingTech(projectIndex: number, techIndex: number): void {
@@ -352,15 +403,15 @@ export class PortfolioSettingsComponent implements OnInit {
   }
 
   addTestimonial(): void {
-    if (!this.profile) return;
+    if (!this.profile || (this.profile.testimonials?.length || 0) >= 12) return;
     this.profile.testimonials = [
       ...(this.profile.testimonials || []),
       {
-        quote: 'Great to collaborate with, highly dependable and focused on outcomes.',
-        name: 'New Reference',
-        role: 'Manager',
-        avatarUrl: ''
-      }
+        quote: '',
+        name: '',
+        role: '',
+        avatarUrl: '',
+      },
     ];
   }
 
@@ -370,16 +421,16 @@ export class PortfolioSettingsComponent implements OnInit {
   }
 
   addWorkExperience(): void {
-    if (!this.profile) return;
+    if (!this.profile || (this.profile.workExperiences?.length || 0) >= 8) return;
     this.profile.workExperiences = [
       ...(this.profile.workExperiences || []),
       {
-        title: 'New Experience',
+        title: '',
         description: '',
         icon: 'mdi-rocket-launch',
         ctaLabel: 'Learn More',
-        ctaUrl: ''
-      }
+        ctaUrl: '',
+      },
     ];
   }
 
@@ -389,11 +440,11 @@ export class PortfolioSettingsComponent implements OnInit {
   }
 
   addCourse(): void {
-    if (!this.profile) return;
+    if (!this.profile || (this.profile.completedCourses?.length || 0) >= 50) return;
     this.profile.completedCourses = [
       ...(this.profile.completedCourses || []),
       {
-        title: 'New Course',
+        title: '',
         provider: '',
         category: '',
         skills: [],
@@ -403,8 +454,8 @@ export class PortfolioSettingsComponent implements OnInit {
         credentialId: '',
         description: '',
         order: (this.profile.completedCourses || []).length,
-        isVisible: true
-      }
+        isVisible: true,
+      },
     ];
   }
 
@@ -417,7 +468,7 @@ export class PortfolioSettingsComponent implements OnInit {
     if (!this.profile) return;
     const course = this.profile.completedCourses![courseIndex];
     if (!course) return;
-    course.skills = [...(course.skills || []), 'New Skill'];
+    if ((course.skills?.length || 0) < 10) course.skills = [...(course.skills || []), ''];
   }
 
   removeCourseSkill(courseIndex: number, skillIndex: number): void {
@@ -427,16 +478,89 @@ export class PortfolioSettingsComponent implements OnInit {
     course.skills!.splice(skillIndex, 1);
   }
 
-  getStrengthTip(score: number): string {
-    if (score < 40) return 'Add more project outcomes and specific skills to improve your recruiter visibility.';
-    if (score < 70) return 'You have a solid foundation. Adding a professional summary and social links will push you to the top tier.';
-    if (score < 90) return 'Great portfolio! A bit more measurable impact in your project descriptions will make it perfect.';
-    return 'Outstanding! Your portfolio is high-signal and ready for premium recruiter engagement.';
+  private validateDraft(): string {
+    if (!this.profile) return 'Portfolio is unavailable.';
+    if (!this.profile.slug.trim()) return 'Enter a portfolio URL slug.';
+    if (this.normalizeSlugValue(this.profile.slug) === 'me')
+      return 'Choose a different URL slug; “me” is reserved.';
+    for (const [items, label] of [
+      [this.profile.projects, 'project'],
+      [this.profile.upcomingProjects, 'upcoming project'],
+      [this.profile.workExperiences, 'experience'],
+      [this.profile.completedCourses || [], 'course'],
+    ] as const) {
+      if (items.some((item) => !item.title.trim()))
+        return 'Add a title to every ' + label + ', or remove the empty entry.';
+    }
+    if (this.profile.skills.some((skill) => !skill.name.trim()))
+      return 'Name each skill or remove the empty entry.';
+    if (this.profile.testimonials.some((item) => !item.name.trim() || !item.quote.trim()))
+      return 'Each testimonial needs an author and a quote.';
+    let error = '';
+    const inspect = (value: unknown, key = ''): void => {
+      if (typeof value === 'string') {
+        if (/[<>]/.test(value)) error = 'Use plain text without HTML markup.';
+        if (
+          value &&
+          [
+            'url',
+            'repoUrl',
+            'imageUrl',
+            'avatarUrl',
+            'ctaUrl',
+            'certificateUrl',
+            'resumeUrl',
+            'website',
+            'twitter',
+            'linkedin',
+            'github',
+          ].includes(key)
+        ) {
+          if (
+            !(key === 'imageUrl' || key === 'avatarUrl'
+              ? portfolioImage(value)
+              : portfolioLink(value))
+          )
+            error = 'Check your links: use a valid HTTP or HTTPS address.';
+        }
+      } else if (Array.isArray(value)) value.forEach((item) => inspect(item));
+      else if (value && typeof value === 'object')
+        Object.entries(value).forEach(([name, item]) => inspect(item, name));
+    };
+    inspect({
+      headline: this.profile.headline,
+      summary: this.profile.summary,
+      sections: {
+        ...this.profile.sections,
+        cta: {
+          ...this.profile.sections.cta,
+          resumeUrl:
+            this.profile.sections.cta.resumeUrl === this.profile.defaultResumeUrl
+              ? ''
+              : this.profile.sections.cta.resumeUrl,
+        },
+      },
+      projects: this.profile.projects,
+      upcomingProjects: this.profile.upcomingProjects,
+      testimonials: this.profile.testimonials,
+      completedCourses: this.profile.completedCourses,
+      workExperiences: this.profile.workExperiences,
+      socialLinks: this.profile.socialLinks,
+    });
+    return error;
   }
 
   saveProfile(): void {
-    if (!this.profile) return;
+    if (!this.profile || this.isSaving || this.uploading || this.needsReload) return;
+    const validation = this.validateDraft();
+    if (validation) {
+      this.message = validation;
+      this.messageIsError = true;
+      return;
+    }
+    const generation = this.generation;
     this.isSaving = true;
+    this.messageIsError = false;
     this.message = '';
     this.copyFeedback = '';
 
@@ -445,7 +569,7 @@ export class PortfolioSettingsComponent implements OnInit {
     const normalizedSkills = this.profile.skills
       .map((skill) => ({
         name: String(skill?.name || '').trim(),
-        score: Math.max(0, Math.min(100, Math.round(Number(skill?.score || 0))))
+        score: Math.max(0, Math.min(100, Math.round(Number(skill?.score || 0)))),
       }))
       .filter((skill) => skill.name);
 
@@ -456,11 +580,13 @@ export class PortfolioSettingsComponent implements OnInit {
         url: String(project?.url || '').trim(),
         repoUrl: String(project?.repoUrl || '').trim(),
         imageUrl: String(project?.imageUrl || '').trim(),
-        status: (String(project?.status || 'completed').trim().toLowerCase() || 'completed') as 'completed' | 'in-progress' | 'upcoming' | 'planned',
+        status: (String(project?.status || 'completed')
+          .trim()
+          .toLowerCase() || 'completed') as 'completed' | 'in-progress' | 'upcoming' | 'planned',
         expectedDate: String(project?.expectedDate || '').trim(),
         tech: Array.isArray(project?.tech)
           ? project.tech.map((tech) => String(tech || '').trim()).filter(Boolean)
-          : []
+          : [],
       }))
       .filter((project) => project.title);
 
@@ -469,13 +595,17 @@ export class PortfolioSettingsComponent implements OnInit {
         title: String(project?.title || '').trim(),
         description: String(project?.description || '').trim(),
         expectedDate: String(project?.expectedDate || '').trim(),
-        status: (String(project?.status || 'planned').trim().toLowerCase() === 'in-progress' ? 'in-progress' : 'planned') as 'in-progress' | 'planned',
+        status: (String(project?.status || 'planned')
+          .trim()
+          .toLowerCase() === 'in-progress'
+          ? 'in-progress'
+          : 'planned') as 'in-progress' | 'planned',
         url: String(project?.url || '').trim(),
         repoUrl: String(project?.repoUrl || '').trim(),
         imageUrl: String(project?.imageUrl || '').trim(),
         techStack: Array.isArray(project?.techStack)
           ? project.techStack.map((tech) => String(tech || '').trim()).filter(Boolean)
-          : []
+          : [],
       }))
       .filter((project) => project.title);
 
@@ -484,7 +614,7 @@ export class PortfolioSettingsComponent implements OnInit {
         quote: String(testimonial?.quote || '').trim(),
         name: String(testimonial?.name || '').trim(),
         role: String(testimonial?.role || '').trim(),
-        avatarUrl: String(testimonial?.avatarUrl || '').trim()
+        avatarUrl: String(testimonial?.avatarUrl || '').trim(),
       }))
       .filter((testimonial) => testimonial.quote && testimonial.name);
 
@@ -494,7 +624,7 @@ export class PortfolioSettingsComponent implements OnInit {
         description: String(experience?.description || '').trim(),
         icon: String(experience?.icon || '').trim(),
         ctaLabel: String(experience?.ctaLabel || '').trim(),
-        ctaUrl: String(experience?.ctaUrl || '').trim()
+        ctaUrl: String(experience?.ctaUrl || '').trim(),
       }))
       .filter((experience) => experience.title);
 
@@ -512,7 +642,7 @@ export class PortfolioSettingsComponent implements OnInit {
         credentialId: String(course?.credentialId || '').trim(),
         description: String(course?.description || '').trim(),
         order: Number.isFinite(Number(course?.order)) ? Number(course.order) : 0,
-        isVisible: course?.isVisible !== false
+        isVisible: course?.isVisible !== false,
       }))
       .filter((course) => course.title);
 
@@ -524,44 +654,49 @@ export class PortfolioSettingsComponent implements OnInit {
         titleLineTwo: String(this.profile.sections?.hero?.titleLineTwo || '').trim(),
         titleHighlight: String(this.profile.sections?.hero?.titleHighlight || '').trim(),
         titleLineSuffix: String(this.profile.sections?.hero?.titleLineSuffix || '').trim(),
-        tagline: String(this.profile.sections?.hero?.tagline || '').trim()
+        tagline: String(this.profile.sections?.hero?.tagline || '').trim(),
       },
       skills: {
         headline: String(this.profile.sections?.skills?.headline || '').trim(),
         highlight: String(this.profile.sections?.skills?.highlight || '').trim(),
         headlineSuffix: String(this.profile.sections?.skills?.headlineSuffix || '').trim(),
-        subheadline: String(this.profile.sections?.skills?.subheadline || '').trim()
+        subheadline: String(this.profile.sections?.skills?.subheadline || '').trim(),
       },
       contact: {
         heading: String(this.profile.sections?.contact?.heading || '').trim(),
         message: String(this.profile.sections?.contact?.message || '').trim(),
-        email: String(this.profile.sections?.contact?.email || '').trim().toLowerCase()
+        email: String(this.profile.sections?.contact?.email || '')
+          .trim()
+          .toLowerCase(),
       },
       upcoming: {
         heading: String(this.profile.sections?.upcoming?.heading || '').trim(),
-        subheading: String(this.profile.sections?.upcoming?.subheading || '').trim()
+        subheading: String(this.profile.sections?.upcoming?.subheading || '').trim(),
       },
       testimonials: {
         heading: String(this.profile.sections?.testimonials?.heading || '').trim(),
-        subheading: String(this.profile.sections?.testimonials?.subheading || '').trim()
+        subheading: String(this.profile.sections?.testimonials?.subheading || '').trim(),
       },
       cta: {
         heading: String(this.profile.sections?.cta?.heading || '').trim(),
         subtext: String(this.profile.sections?.cta?.subtext || '').trim(),
         primaryLabel: String(this.profile.sections?.cta?.primaryLabel || '').trim(),
         secondaryLabel: String(this.profile.sections?.cta?.secondaryLabel || '').trim(),
-        resumeUrl: String(this.profile.sections?.cta?.resumeUrl || '').trim()
+        resumeUrl:
+          this.profile.sections.cta.resumeUrl === this.profile.defaultResumeUrl
+            ? ''
+            : String(this.profile.sections.cta.resumeUrl || '').trim(),
       },
       visibility: {
         projects: Boolean(this.profile.sections?.visibility?.projects ?? true),
         upcoming: Boolean(this.profile.sections?.visibility?.upcoming ?? true),
         testimonials: Boolean(this.profile.sections?.visibility?.testimonials ?? true),
-        cta: Boolean(this.profile.sections?.visibility?.cta ?? true)
-      }
+        cta: Boolean(this.profile.sections?.visibility?.cta ?? true),
+      },
     };
 
     const payload = {
-      slug: this.profile.slug,
+      ...(this.profile.slug !== this.savedSlug ? { slug: this.profile.slug } : {}),
       isPublic: this.profile.isPublic,
       headline: this.profile.headline,
       summary: this.profile.summary,
@@ -574,35 +709,35 @@ export class PortfolioSettingsComponent implements OnInit {
       workExperiences: normalizedWorkExperiences as PublicProfileWorkExperience[],
       completedCourses: normalizedCompletedCourses as PublicProfileCompletedCourse[],
       sections: normalizedSections,
-      socialLinks: this.profile.socialLinks
+      socialLinks: this.profile.socialLinks,
     };
 
-    this.profileService.updateMyPublicProfile(payload).subscribe({
-      next: (profile) => {
-        const savedProfile = this.ensureProfileShape(profile);
-        this.profile = savedProfile;
-        this.isSaving = false;
+    this.profileService
+      .updateMyPublicProfile(payload)
+      .pipe(takeUntilDestroyed(this.destroy))
+      .subscribe({
+        next: (profile) => {
+          if (generation !== this.generation) return;
+          const savedProfile = normalizePortfolio(profile);
+          this.profile = savedProfile;
+          this.isSaving = false;
 
-        const expectedHeadline = String(payload.headline || '').trim();
-        const savedHeadline = String(savedProfile.headline || '').trim();
-
-        if (expectedHeadline && expectedHeadline !== savedHeadline) {
-          this.message = 'Saved with warning: headline response mismatch. Please click Deploy Changes once more.';
-        } else {
-          this.message = 'Profile updated successfully.';
-        }
-
-        this.loadAnalytics();
-        if (typeof globalThis.scrollTo === 'function') {
-          globalThis.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.isSaving = false;
-        this.message = err?.error?.message || 'Failed to update profile.';
-        this.cdr.detectChanges();
-      }
-    });
+          this.clearUploads();
+          this.savedSlug = savedProfile.slug;
+          this.published = savedProfile.isPublic === true;
+          this.savedSnapshot = JSON.stringify(savedProfile);
+          this.message = 'Portfolio changes saved.';
+          this.messageIsError = false;
+          this.loadAnalytics();
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          if (generation !== this.generation) return;
+          this.isSaving = false;
+          this.messageIsError = true;
+          this.message = portfolioError(err, 'Failed to update portfolio.');
+          this.cdr.detectChanges();
+        },
+      });
   }
 }

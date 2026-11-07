@@ -1,0 +1,15 @@
+{
+  "kind": "recorded-public-source-replay",
+  "freshLiveCall": false,
+  "profile": "octocat",
+  "collectedAt": "2026-11-01T11:56:11.030Z",
+  "source": "https://api.github.com/users/octocat/repos",
+  "sourceSha256": "2ea64d316c54c44dd5ef4f8ca02ddfa6363e2802ab6944ff924ab3f126506e5b",
+  "independentlyChecked": {
+    "HTML": "PARTIAL",
+    "CSS": "PARTIAL",
+    "Ruby": "excluded fork-only metadata",
+    "demonstrated": 0
+  },
+  "evidencePolicyVersion": "skill-gap-evidence-policy-v2"
+}

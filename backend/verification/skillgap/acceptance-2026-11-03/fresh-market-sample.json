@@ -1,0 +1,237 @@
+{
+  "source": {
+    "url": "https://www.arbeitnow.com/api/job-board-api",
+    "collectedAt": "2026-11-03T07:07:20.036Z",
+    "sourceDate": "Tue, 03 Nov 2026 07:07:19 GMT",
+    "sha256": "c0f78590eb93b47001b13662a96b54992b7ebb3af022a3adeab89590b37660ed"
+  },
+  "rows": [
+    {
+      "slug": "senior-document-manager-charlottenburg-275731",
+      "tags": [],
+      "url": "https://www.arbeitnow.com/jobs/companies/tis-gmbh/senior-document-manager-charlottenburg-275731"
+    },
+    {
+      "slug": "senior-fpa-controller-gilching-212366",
+      "tags": [
+        "People & Finance"
+      ],
+      "url": "https://www.arbeitnow.com/jobs/companies/quantum-systems-gmbh/senior-fpa-controller-gilching-212366"
+    },
+    {
+      "slug": "senior-software-engineer-systems-integration-munich-146873",
+      "tags": [
+        "Software"
+      ],
+      "url": "https://www.arbeitnow.com/jobs/companies/hypersonica/senior-software-engineer-systems-integration-munich-146873"
+    },
+    {
+      "slug": "senior-software-engineer-mission-planning-munich-133920",
+      "tags": [
+        "Software"
+      ],
+      "url": "https://www.arbeitnow.com/jobs/companies/hypersonica/senior-software-engineer-mission-planning-munich-133920"
+    },
+    {
+      "slug": "senior-sap-ewm-consultant-heidelberg-germany-400164",
+      "tags": [
+        "Europe"
+      ],
+      "url": "https://www.arbeitnow.com/jobs/companies/westernacher/senior-sap-ewm-consultant-heidelberg-germany-400164"
+    },
+    {
+      "slug": "solution-architect-dach-berlin-germany-196939",
+      "tags": [
+        "Customer Success"
+      ],
+      "url": "https://www.arbeitnow.com/jobs/companies/insider-one/solution-architect-dach-berlin-germany-196939"
+    },
+    {
+      "slug": "remote-head-of-data-science-and-analytics-jetbrains-air-450936",
+      "tags": [
+        "JCP Growth"
+      ],
+      "url": "https://www.arbeitnow.com/jobs/companies/jetbrains/remote-head-of-data-science-and-analytics-jetbrains-air-450936"
+    },
+    {
+      "slug": "remote-founding-ml-engineer-spectrum-168717",
+      "tags": [
+        "Spectrum"
+      ],
+      "url": "https://www.arbeitnow.com/jobs/companies/jetbrains/remote-founding-ml-engineer-spectrum-168717"
+    },
+    {
+      "slug": "senior-specialist-information-security-berlin-berlin-255507",
+      "tags": [
+        "Legal & Compliance & Risk"
+      ],
+      "url": "https://www.arbeitnow.com/jobs/companies/bitpanda/senior-specialist-information-security-berlin-berlin-255507"
+    },
+    {
+      "slug": "director-european-government-operations-munich-37411",
+      "tags": [],
+      "url": "https://www.arbeitnow.com/jobs/companies/rocket-lab-corporation/director-european-government-operations-munich-37411"
+    },
+    {
+      "slug": "software-engineer-berlin-184324",
+      "tags": [
+        "Software"
+      ],
+      "url": "https://www.arbeitnow.com/jobs/companies/focused/software-engineer-berlin-184324"
+    },
+    {
+      "slug": "senior-executive-assistant-to-the-ceo-berlin-58351",
+      "tags": [
+        "Administrative"
+      ],
+      "url": "https://www.arbeitnow.com/jobs/companies/focused/senior-executive-assistant-to-the-ceo-berlin-58351"
+    },
+    {
+      "slug": "account-manager-dach-germany-140617",
+      "tags": [
+        "Revenue"
+      ],
+      "url": "https://www.arbeitnow.com/jobs/companies/elevenlabs/account-manager-dach-germany-140617"
+    },
+    {
+      "slug": "remote-full-stack-engineer-backend-leaning-studio-284608",
+      "tags": [
+        "Engineering & Product"
+      ],
+      "url": "https://www.arbeitnow.com/jobs/companies/elevenlabs/remote-full-stack-engineer-backend-leaning-studio-284608"
+    },
+    {
+      "slug": "praktikum-im-business-development-prozessautomatisierung-berlin-154895",
+      "tags": [
+        "Business Development"
+      ],
+      "url": "https://www.arbeitnow.com/jobs/companies/pflegia/praktikum-im-business-development-prozessautomatisierung-berlin-154895"
+    },
+    {
+      "slug": "praktikum-im-business-development-datenanalyse-plattformmanagement-berlin-404205",
+      "tags": [
+        "Business Development"
+      ],
+      "url": "https://www.arbeitnow.com/jobs/companies/pflegia/praktikum-im-business-development-datenanalyse-plattformmanagement-berlin-404205"
+    },
+    {
+      "slug": "social-media-marketing-managerin-mit-schwerpunkt-videos-hamburg-429787",
+      "tags": [
+        "Social Media Manager"
+      ],
+      "url": "https://www.arbeitnow.com/jobs/companies/diems-gmbh-brandmatch/social-media-marketing-managerin-mit-schwerpunkt-videos-hamburg-429787"
+    },
+    {
+      "slug": "operations-manager-fur-warmecontracting-hamburg-185878",
+      "tags": [
+        "Business Operations"
+      ],
+      "url": "https://www.arbeitnow.com/jobs/companies/kola-invest-gmbh/operations-manager-fur-warmecontracting-hamburg-185878"
+    },
+    {
+      "slug": "test-engineer-aachen-north-rhine-westphalia-447583",
+      "tags": [
+        "Test Engineering"
+      ],
+      "url": "https://www.arbeitnow.com/jobs/companies/asteralabs/test-engineer-aachen-north-rhine-westphalia-447583"
+    },
+    {
+      "slug": "senior-sourcing-specialist-germany-operations-manufacturing-aachen-north-rhine-westphalia-55685",
+      "tags": [
+        "Business Operations"
+      ],
+      "url": "https://www.arbeitnow.com/jobs/companies/asteralabs/senior-sourcing-specialist-germany-operations-manufacturing-aachen-north-rhine-westphalia-55685"
+    },
+    {
+      "slug": "senior-principal-asic-design-engineer-21270",
+      "tags": [
+        "ASIC Engineering"
+      ],
+      "url": "https://www.arbeitnow.com/jobs/companies/asteralabs/senior-principal-asic-design-engineer-21270"
+    },
+    {
+      "slug": "senior-people-systems-analytics-specialist-parsdorf-bavaria-268966",
+      "tags": [
+        "Talent"
+      ],
+      "url": "https://www.arbeitnow.com/jobs/companies/isaraerospace/senior-people-systems-analytics-specialist-parsdorf-bavaria-268966"
+    },
+    {
+      "slug": "senior-learning-development-specialist-parsdorf-bavaria-319377",
+      "tags": [
+        "Talent"
+      ],
+      "url": "https://www.arbeitnow.com/jobs/companies/isaraerospace/senior-learning-development-specialist-parsdorf-bavaria-319377"
+    },
+    {
+      "slug": "senior-general-ledger-accountant-parsdorf-bavaria-22122",
+      "tags": [
+        "Finance"
+      ],
+      "url": "https://www.arbeitnow.com/jobs/companies/isaraerospace/senior-general-ledger-accountant-parsdorf-bavaria-22122"
+    },
+    {
+      "slug": "senior-engine-cycle-engineer-parsdorf-bavaria-393338",
+      "tags": [
+        "Propulsion"
+      ],
+      "url": "https://www.arbeitnow.com/jobs/companies/isaraerospace/senior-engine-cycle-engineer-parsdorf-bavaria-393338"
+    },
+    {
+      "slug": "senior-devx-engineer-parsdorf-bavaria-164513",
+      "tags": [
+        "Ground Systems"
+      ],
+      "url": "https://www.arbeitnow.com/jobs/companies/isaraerospace/senior-devx-engineer-parsdorf-bavaria-164513"
+    },
+    {
+      "slug": "director-customer-compensation-policy-berlin-berlin-334076",
+      "tags": [
+        "Marketing"
+      ],
+      "url": "https://www.arbeitnow.com/jobs/companies/hellofresh/director-customer-compensation-policy-berlin-berlin-334076"
+    },
+    {
+      "slug": "team-lead-operations-automation-ai-all-genders-munich-bavaria-127964",
+      "tags": [
+        "Operations Excellence"
+      ],
+      "url": "https://www.arbeitnow.com/jobs/companies/skdse/team-lead-operations-automation-ai-all-genders-munich-bavaria-127964"
+    },
+    {
+      "slug": "machine-learning-engineer-all-genders-munich-bavaria-32400",
+      "tags": [
+        "Operations Excellence"
+      ],
+      "url": "https://www.arbeitnow.com/jobs/companies/skdse/machine-learning-engineer-all-genders-munich-bavaria-32400"
+    },
+    {
+      "slug": "automation-engineer-all-genders-munich-bavaria-116743",
+      "tags": [
+        "Operations Excellence"
+      ],
+      "url": "https://www.arbeitnow.com/jobs/companies/skdse/automation-engineer-all-genders-munich-bavaria-116743"
+    }
+  ],
+  "signal": {
+    "present": true,
+    "sampledJobs": 30,
+    "kind": "cached-provider-sample",
+    "demandScoreKind": "legacy-scaled-heuristic",
+    "live": false,
+    "geography": "mixed-unfiltered",
+    "role": "mixed-unfiltered",
+    "seniority": "mixed-unfiltered",
+    "sources": [
+      "arbeitnow"
+    ],
+    "duplicatesRemoved": 0,
+    "limitations": [
+      "Bounded cache sample; not representative of the entire job market.",
+      "Demand is an uncalibrated scaled frequency, not a live market percentage."
+    ],
+    "expiresAt": "2026-11-03T08:07:22.968Z",
+    "topSkills": [],
+    "updatedAt": "2026-11-03T07:07:22.968Z"
+  }
+}

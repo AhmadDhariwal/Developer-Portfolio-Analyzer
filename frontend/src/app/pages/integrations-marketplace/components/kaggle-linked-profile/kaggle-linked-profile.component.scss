@@ -1,0 +1,201 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.card-fallback-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.85rem 0.95rem;
+  background: var(--surface-secondary, #f8fafc);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 10px;
+  font-size: 0.78rem;
+  color: var(--text-primary, #0f172a);
+  box-sizing: border-box;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+
+  &:hover {
+    border-color: var(--border-strong, #cbd5e1);
+  }
+
+  .fallback-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+
+    .fallback-title-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      font-size: 0.78rem;
+      color: var(--text-primary, #0f172a);
+
+      .fallback-icon {
+        color: var(--color-primary, #4f46e5);
+        flex-shrink: 0;
+      }
+    }
+
+    .ownership-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--color-warning-text, #92400e);
+      background: var(--color-warning-soft, #fef3c7);
+      border: 1px solid var(--color-warning-border, #fde68a);
+      padding: 1px 7px;
+      border-radius: 4px;
+      line-height: 1.4;
+    }
+  }
+
+  .fallback-note {
+    margin: 0;
+    line-height: 1.4;
+    font-size: 0.73rem;
+    color: var(--text-secondary, #475569);
+  }
+
+  .saved-profile {
+    margin: 0.1rem 0;
+    padding: 6px 10px;
+    background: var(--surface-card, #ffffff);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    .profile-link {
+      color: var(--color-primary, #4f46e5);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.76rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      overflow-wrap: anywhere;
+
+      &:hover {
+        text-decoration: underline;
+        color: var(--color-primary-dark, #4338ca);
+      }
+    }
+
+    .unverified-note {
+      font-size: 0.68rem;
+      color: var(--text-muted, #64748b);
+    }
+  }
+
+  .fallback-form {
+    margin: 0.1rem 0 0;
+  }
+
+  .fallback-input-shell {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--surface-card, #ffffff);
+    border: 1px solid var(--border-strong, #cbd5e1);
+    border-radius: 8px;
+    padding: 3px 4px 3px 8px;
+    box-sizing: border-box;
+    transition: all 0.15s ease;
+
+    &:focus-within {
+      border-color: var(--color-primary, #4f46e5);
+      box-shadow: 0 0 0 2px var(--color-primary-soft, rgba(79, 70, 229, 0.15));
+    }
+
+    .input-prefix {
+      display: flex;
+      align-items: center;
+      color: var(--text-muted, #94a3b8);
+      flex-shrink: 0;
+    }
+
+    input {
+      flex: 1 1 120px;
+      min-width: 0;
+      background: transparent;
+      border: none;
+      padding: 5px 6px;
+      color: var(--text-primary, #0f172a);
+      font-size: 0.78rem;
+      font-family: inherit;
+      outline: none;
+      box-sizing: border-box;
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      &::placeholder {
+        color: var(--text-muted, #94a3b8);
+      }
+    }
+
+    .fallback-btn-group {
+      display: inline-flex;
+      gap: 0.3rem;
+      flex-shrink: 0;
+    }
+
+    button {
+      padding: 6px 11px;
+      border-radius: 6px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: wait;
+      }
+    }
+
+    .btn-fallback-save {
+      background: var(--color-primary-soft, #eef2ff);
+      color: var(--color-primary-text, #4338ca);
+      border-color: var(--color-primary-border, #c7d2fe);
+
+      &:hover:not(:disabled) {
+        background: var(--color-primary, #4f46e5);
+        border-color: var(--color-primary, #4f46e5);
+        color: #ffffff;
+      }
+    }
+
+    .btn-fallback-remove {
+      background: var(--color-danger-soft, #fef2f2);
+      color: var(--color-danger-text, #991b1b);
+      border-color: var(--color-danger-border, #fecaca);
+
+      &:hover:not(:disabled) {
+        background: #fee2e2;
+        color: #b91c1c;
+      }
+    }
+  }
+
+  .fallback-error {
+    margin: 3px 0 0;
+    font-size: 0.72rem;
+    color: var(--color-danger, #ef4444);
+    font-weight: 500;
+  }
+}

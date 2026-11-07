@@ -1,0 +1,257 @@
+{
+  "requests": [
+    {
+      "owner": 2,
+      "query": {
+        "view": "discover"
+      },
+      "status": 200,
+      "total": 1781,
+      "attempt": 0
+    },
+    {
+      "owner": 2,
+      "query": {
+        "view": "discover",
+        "platform": "YouTube"
+      },
+      "status": 200,
+      "total": 1720,
+      "attempt": 0
+    },
+    {
+      "owner": 2,
+      "query": {
+        "view": "discover",
+        "topic": "Quantum Computing"
+      },
+      "status": 200,
+      "total": 0,
+      "attempt": 0
+    },
+    {
+      "owner": 2,
+      "query": {
+        "view": "discover",
+        "topic": "Docker"
+      },
+      "status": 200,
+      "total": 4,
+      "attempt": 0
+    },
+    {
+      "owner": 2,
+      "query": {},
+      "status": 200,
+      "total": 0,
+      "eligibleSkills": [],
+      "state": "analysis-required",
+      "attempt": 0
+    },
+    {
+      "owner": 0,
+      "query": {
+        "limit": "1"
+      },
+      "status": 200,
+      "total": 2,
+      "eligibleSkills": [
+        "Docker"
+      ],
+      "state": "ready",
+      "attempt": 0
+    },
+    {
+      "owner": 0,
+      "query": {
+        "limit": "1",
+        "page": "2"
+      },
+      "status": 200,
+      "total": 2,
+      "eligibleSkills": [
+        "Docker"
+      ],
+      "state": "ready",
+      "attempt": 0
+    },
+    {
+      "owner": 1,
+      "query": {},
+      "status": 200,
+      "total": 3,
+      "eligibleSkills": [
+        "Angular"
+      ],
+      "state": "ready",
+      "attempt": 0
+    },
+    {
+      "owner": 0,
+      "query": {
+        "platform": "Coursera"
+      },
+      "status": 200,
+      "total": 2,
+      "eligibleSkills": [
+        "Docker"
+      ],
+      "state": "ready",
+      "attempt": 0
+    },
+    {
+      "owner": 0,
+      "query": {
+        "platform": "YouTube"
+      },
+      "status": 200,
+      "total": 0,
+      "eligibleSkills": [
+        "Docker"
+      ],
+      "state": "ready",
+      "attempt": 0
+    },
+    {
+      "owner": 0,
+      "query": {
+        "skill": "docker"
+      },
+      "status": 200,
+      "total": 2,
+      "eligibleSkills": [
+        "Docker"
+      ],
+      "state": "ready",
+      "attempt": 0
+    },
+    {
+      "owner": 0,
+      "query": {
+        "topic": "JavaScript",
+        "skillGaps": "AWS,JavaScript"
+      },
+      "status": 200,
+      "total": 0,
+      "eligibleSkills": [
+        "Docker"
+      ],
+      "state": "skill-not-recommended",
+      "attempt": 0
+    },
+    {
+      "owner": 0,
+      "query": {},
+      "status": 200,
+      "total": 2,
+      "eligibleSkills": [
+        "Docker"
+      ],
+      "state": "ready",
+      "attempt": 0
+    },
+    {
+      "owner": 1,
+      "query": {
+        "topic": "angular"
+      },
+      "status": 200,
+      "total": 3,
+      "eligibleSkills": [
+        "Angular"
+      ],
+      "state": "ready",
+      "attempt": 0
+    },
+    {
+      "owner": 1,
+      "query": {},
+      "status": 200,
+      "total": 0,
+      "eligibleSkills": [],
+      "state": "analysis-required",
+      "attempt": 0
+    },
+    {
+      "owner": 1,
+      "query": {},
+      "status": 200,
+      "total": 3,
+      "eligibleSkills": [
+        "Angular"
+      ],
+      "state": "ready",
+      "attempt": 0
+    },
+    {
+      "owner": 0,
+      "query": {},
+      "status": 200,
+      "total": 0,
+      "eligibleSkills": [],
+      "state": "analysis-required",
+      "attempt": 0
+    },
+    {
+      "owner": 0,
+      "query": {},
+      "status": 200,
+      "total": 0,
+      "eligibleSkills": [],
+      "state": "analysis-required",
+      "attempt": 0
+    },
+    {
+      "owner": 0,
+      "query": {},
+      "status": 200,
+      "total": 0,
+      "eligibleSkills": [],
+      "state": "no-recommended-skills",
+      "attempt": 0
+    },
+    {
+      "owner": 0,
+      "query": {},
+      "status": 200,
+      "total": 4,
+      "eligibleSkills": [
+        "Node.js"
+      ],
+      "state": "ready",
+      "attempt": 0
+    },
+    {
+      "owner": 0,
+      "query": {},
+      "status": 200,
+      "total": 0,
+      "eligibleSkills": [],
+      "state": "analysis-required",
+      "attempt": 0
+    },
+    {
+      "owner": 1,
+      "query": {},
+      "status": 503,
+      "attempt": 0
+    },
+    {
+      "owner": 1,
+      "query": {},
+      "status": 200,
+      "total": 3,
+      "eligibleSkills": [
+        "Angular"
+      ],
+      "state": "ready",
+      "attempt": 0
+    }
+  ],
+  "externalCalls": 0,
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 245,
+    "productionDataUsed": false
+  }
+}

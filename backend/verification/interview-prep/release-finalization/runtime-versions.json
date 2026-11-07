@@ -1,0 +1,7 @@
+{
+  "node": "v24.19.0",
+  "mongoVersionOutput": "db version v8.2.2\r\nBuild Info: {\r\n    \"version\": \"8.2.2\",\r\n    \"gitVersion\": \"594f839ceec1f4385be9a690131412d67b249a0a\",\r\n    \"modules\": [],\r\n    \"allocator\": \"tcmalloc-gperf\",\r\n    \"environment\": {\r\n        \"distmod\": \"windows\"\r\n    }\r\n}\r\n",
+  "disposableRedisVersionOutput": "Redis server v=7.0.15 sha=00000000:0 malloc=jemalloc-5.3.0 bits=64 build=d064f9f48c901a92\n",
+  "configuredCloudRedisVersion": "Not established by PING; no version or cloud load claim",
+  "staleFixtureMetadata": "newsCatalog integration report hardcodes Redis 7.2.7; runtime evidence here is authoritative for this run"
+}

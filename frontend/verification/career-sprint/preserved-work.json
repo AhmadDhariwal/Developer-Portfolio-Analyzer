@@ -1,0 +1,28 @@
+{
+  "scope": "Existing staged backend work preserved; no frontend changes were present at start.",
+  "stagedDiffSha256": "b261dc5b06a08c11cced4885c1556e53e89c94e87c45276045efa89c53906261",
+  "stagedPaths": [
+    "backend/src/models/careerSprint.js",
+    "backend/src/scripts/migrateCareerSprintReservations.js",
+    "backend/src/services/careerSprintService.js",
+    "backend/src/services/courseHandoffService.js",
+    "backend/src/services/recommendationHandoffService.js",
+    "backend/src/services/sprintLegacyPolicy.js",
+    "backend/src/services/sprintOverviewCacheService.js",
+    "backend/src/services/sprintReservationMigrationService.js",
+    "backend/src/tests/careerSprintFinalization.test.js",
+    "backend/src/tests/careerSprintHardening.test.js",
+    "backend/src/tests/careerSprintLegacy.integration.test.js",
+    "backend/src/tests/careerSprintLegacyPolicy.test.js",
+    "backend/src/tests/careerSprintPerformance.test.js",
+    "backend/src/tests/recommendationsMongo.integration.test.js",
+    "backend/verification/career-sprint/legacy-unblocking/REPORT.md",
+    "backend/verification/career-sprint/legacy-unblocking/data-audit.json",
+    "backend/verification/career-sprint/legacy-unblocking/file-inventory.json",
+    "backend/verification/career-sprint/legacy-unblocking/legacy-exceptions.json",
+    "backend/verification/career-sprint/legacy-unblocking/live-baseline-dry-run.json",
+    "backend/verification/career-sprint/legacy-unblocking/live-exceptions-dry-run.json",
+    "backend/verification/career-sprint/legacy-unblocking/timezone-findings.json",
+    "backend/verification/career-sprint/legacy-unblocking/validation.json"
+  ]
+}

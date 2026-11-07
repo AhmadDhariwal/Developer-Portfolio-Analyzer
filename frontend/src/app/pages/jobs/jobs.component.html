@@ -1,281 +1,482 @@
 <div class="jobs-page">
+  <!-- Header -->
   <header class="page-header">
-    <div class="header-copy">
-      <div class="title-badge">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-        </svg>
-      </div>
-
-      <div class="header-text">
+    <div class="header-main">
+      <span class="eyebrow">CAREER OPPORTUNITIES</span>
+      <div class="title-row">
         <h1>Jobs Hub</h1>
-        <p>Personalized jobs based on your profile, real skills, and current growth gaps.</p>
+        @if (total > 0 && view === 'discover') {
+          <span class="total-pill">
+            <span class="pulse-dot" aria-hidden="true"></span>
+            {{ total }} {{ total === 1 ? 'match' : 'matches' }}
+          </span>
+        }
       </div>
+      <p class="subtitle">
+        Curated developer roles matched to your active stack, skills, and experience level.
+      </p>
     </div>
-
     <div class="header-actions">
-      <div class="header-stats" *ngIf="!isLoading && totalJobs > 0">
-        <div class="stat-chip">
-          <span class="stat-label">Jobs</span>
-          <strong>{{ totalJobs }}</strong>
-        </div>
-        <div class="stat-chip">
-          <span class="stat-label">Page</span>
-          <strong>{{ currentPage || 1 }}/{{ totalPages }}</strong>
-        </div>
-        <div class="stat-chip accent" *ngIf="fromCache || frontendCached">
-          <span class="stat-label">Pool</span>
-          <strong>{{ isStale ? 'Stale' : 'Cached' }}</strong>
-        </div>
-      </div>
-
-      <button class="secondary-button" type="button" (click)="refreshJobs()" [disabled]="isLoading || isLoadingMore">
-        Refresh Jobs
-      </button>
-
-      <button class="btn-mobile-filters" type="button" (click)="toggleMobileFilters()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-        </svg>
-        Filters
-        <span class="mobile-filter-count" *ngIf="hasActiveFilters">{{ activeFilterChips.length }}</span>
+      <button
+        type="button"
+        class="btn-refresh"
+        [disabled]="isLoading || coolingDown || offline"
+        (click)="revalidate()"
+      >
+        <span class="refresh-icon" [class.spinning]="isLoading" aria-hidden="true">↻</span>
+        <span>{{ isLoading ? 'Refreshing…' : 'Refresh listings' }}</span>
       </button>
     </div>
   </header>
 
-  <button
-    class="mobile-insights-toggle"
-    type="button"
-    (click)="toggleMobileInsights()"
-    [attr.aria-expanded]="isMobileInsightsOpen"
-  >
-    {{ isMobileInsightsOpen ? 'Hide job insights' : 'Show job insights and source status' }}
-  </button>
-
-  <div class="upper-insights" [class.mobile-expanded]="isMobileInsightsOpen">
-  <section class="insight-strip" [class.with-filters]="hasActiveFilters">
-    <article class="insight-card recommendation-card" [class.expanded]="!hasActiveFilters">
-      <div class="insight-header">
-        <div>
-          <span class="eyebrow">Recommended Based On</span>
-          <h2>Your current developer context</h2>
-        </div>
-        <span class="cache-pill stale" *ngIf="isStale; else cachedPool">Stale fallback</span>
-        <ng-template #cachedPool><span class="cache-pill" *ngIf="fromCache || frontendCached">Cached pool</span></ng-template>
-      </div>
-
-      <p class="insight-summary">{{ recommendationSummary }}</p>
-
-      <div class="context-grid">
-        <div class="context-pill">
-          <span>Career Stack</span>
-          <strong>{{ recommendedBasedOn?.careerStack || currentCareerStack }}</strong>
-        </div>
-        <div class="context-pill">
-          <span>Experience</span>
-          <strong>{{ recommendedBasedOn?.experienceLevel || currentExperienceLevel }}</strong>
-        </div>
-        <div class="context-pill" *ngIf="recommendedBasedOn?.knownSkills?.length">
-          <span>Known Skills</span>
-          <strong>{{ recommendedBasedOn?.knownSkills?.join(', ') }}</strong>
-        </div>
-        <div class="context-pill" *ngIf="recommendedBasedOn?.skillGaps?.length">
-          <span>Skill Gaps</span>
-          <strong>{{ recommendedBasedOn?.skillGaps?.join(', ') }}</strong>
-        </div>
-      </div>
-    </article>
-
-    <article class="insight-card filter-chip-card" *ngIf="hasActiveFilters">
-      <div class="insight-header compact">
-        <div>
-          <span class="eyebrow">Active Filters</span>
-          <h2>Narrowed feed</h2>
-        </div>
-        <button class="link-button" type="button" (click)="onFiltersReset()">Reset all</button>
-      </div>
-
-      <div class="active-filter-list">
-        <button
-          *ngFor="let chip of activeFilterChips"
-          class="active-filter-chip"
-          type="button"
-          (click)="clearFilter(chip.key)"
-        >
-          <span>{{ chip.label }}</span>
-          <strong>{{ chip.value }}</strong>
-        </button>
-      </div>
-    </article>
-  </section>
-
-  <div class="source-banner" *ngIf="!isLoading && sourceMessage">
-    <div class="source-copy">
-      <span class="eyebrow">Source Status</span>
-      <p>{{ sourceMessage }}</p>
-    </div>
-
-    <div class="source-meta">
-      <span class="source-pill" *ngIf="primarySource">Primary: {{ primarySource }}</span>
-      <span class="source-pill" *ngIf="!jsearchConfigured">Live source offline</span>
-      <span class="source-pill" *ngFor="let item of sourceSummaryItems">
-        {{ item.label }}: {{ item.count }}
-      </span>
-      <span class="source-pill warning" *ngFor="let failure of sourceFailureItems" [title]="failure.reason">
-        {{ failure.label }}: {{ failure.reason }}
-      </span>
-    </div>
-  </div>
-  </div>
-
-  <div class="jobs-layout">
-    <aside class="filters-sidebar" [class.mobile-open]="isMobileFiltersOpen">
+  <!-- Navigation Tabs -->
+  <nav class="view-tabs" aria-label="Jobs Hub views">
+    @for (tab of tabs; track tab.id) {
       <button
-        class="mobile-overlay"
-        *ngIf="isMobileFiltersOpen"
         type="button"
-        tabindex="0"
-        aria-label="Close filters"
-        (click)="toggleMobileFilters()"
-      ></button>
+        class="tab-btn"
+        [class.active]="view === tab.id"
+        [attr.aria-current]="view === tab.id ? 'page' : null"
+        (click)="setView(tab.id)"
+      >
+        {{ tab.label }}
+      </button>
+    }
+  </nav>
 
-      <div class="filters-sidebar-inner">
+  <!-- Alerts & Status Messages -->
+  @if (offline) {
+    <div class="message warning" role="status">
+      <span class="msg-text"
+        >You are currently offline. Retained results remain visible; reconnect to sync your
+        activity.</span
+      >
+    </div>
+  }
+  @if (errorMessage) {
+    <div class="message warning" role="alert">
+      <span class="msg-text">
+        {{ errorMessage }}
+        @if (coolingDown) {
+          Retry in {{ (retryAt - now) / 1000 | number: '1.0-0' }} seconds.
+        }
+      </span>
+      <button
+        type="button"
+        class="btn-retry"
+        [disabled]="coolingDown || offline || isLoading"
+        (click)="revalidate()"
+      >
+        Try again
+      </button>
+    </div>
+  }
+  @if (notice) {
+    <div class="message info" role="status">
+      <span class="msg-text">{{ notice }}</span>
+    </div>
+  }
+
+  <!-- Legacy Import Banner -->
+  @if (legacyCount) {
+    <section class="legacy-banner" aria-label="Browser activity import">
+      <div class="legacy-content">
+        <strong>Sync local browser activity</strong>
+        <p>
+          {{ legacyCount }} local records found for this account. Import up to 10 at a time to
+          synchronize across devices.
+        </p>
+      </div>
+      <button
+        type="button"
+        class="btn-import"
+        [disabled]="
+          importing ||
+          actionBlocked ||
+          !actions.legacyImportableCount ||
+          now < actions.migrationRetryAt
+        "
+        (click)="importActivity()"
+      >
+        {{ importing ? 'Reconciling…' : 'Import browser activity' }}
+      </button>
+    </section>
+  }
+
+  <!-- DISCOVER VIEW -->
+  @if (view === 'discover') {
+    <!-- Personalized Profile Context Banner -->
+    <section class="context-banner">
+      <div class="context-info">
+        <span class="context-badge">Profile Context</span>
+        <div class="context-details">
+          <span class="context-stack">{{ profile.careerStack }}</span>
+          <span class="context-sep" aria-hidden="true">·</span>
+          <span class="context-level">{{ profile.experienceLevel }}</span>
+          <span class="context-desc"
+            >Ranked and filtered according to your active developer signals</span
+          >
+        </div>
+      </div>
+      <a class="context-link" routerLink="/app/skill-gap">
+        Review skill evidence <span aria-hidden="true">→</span>
+      </a>
+    </section>
+
+    <!-- Search Toolbar -->
+    <form class="search-toolbar" (ngSubmit)="applyFilters()">
+      <div class="search-input-wrap">
+        <span class="search-icon" aria-hidden="true">⌕</span>
+        <input
+          type="search"
+          name="search"
+          class="search-input"
+          maxlength="60"
+          [ngModel]="pendingFilters.skills"
+          (ngModelChange)="search($event)"
+          placeholder="Search by role, company, or technical skill (e.g. Angular, Node.js)…"
+        />
+      </div>
+      <button
+        class="btn-search-submit"
+        type="submit"
+        [disabled]="isLoading || coolingDown || offline"
+      >
+        Search jobs
+      </button>
+      <button
+        class="btn-mobile-filters"
+        type="button"
+        [attr.aria-expanded]="filtersOpen"
+        aria-controls="jobs-filter-panel"
+        (click)="filtersOpen = !filtersOpen"
+      >
+        <span>Filters</span>
+      </button>
+    </form>
+
+    <!-- Workspace: Filters Sidebar + Results Grid -->
+    <div class="workspace-layout">
+      <aside id="jobs-filter-panel" class="filter-sidebar" [class.open]="filtersOpen">
         <app-job-filters
           [initialFilters]="pendingFilters"
           [activeFilters]="activeFilters"
-          [isApplying]="isLoading || isLoadingMore"
-          (filtersChange)="onFiltersChange($event)"
-          (filtersReset)="onFiltersReset()"
-        ></app-job-filters>
+          [isApplying]="isLoading"
+          (filtersChange)="stage($event)"
+          (filtersReset)="resetFilters()"
+        />
 
-        <div class="filter-actions">
-          <button class="secondary-button" type="button" (click)="onFiltersReset()" [disabled]="isLoading && !hasActiveFilters && !hasPendingFilterChanges">
-            Reset Filters
-          </button>
-          <button class="primary-button" type="button" (click)="applyFilters()" [disabled]="!hasPendingFilterChanges || isLoading">
-            Apply Filters
-          </button>
-        </div>
-      </div>
-    </aside>
+        <button
+          type="button"
+          class="btn-apply-filters"
+          [disabled]="isLoading || coolingDown || offline"
+          (click)="applyFilters()"
+        >
+          Apply filters
+        </button>
 
-    <main class="jobs-content">
-      <ng-container *ngIf="isLoading">
-        <div class="loading-header">
-          <div class="shimmer-block large"></div>
-          <div class="shimmer-block small"></div>
-        </div>
-
-        <div class="jobs-grid">
-          <div class="skeleton-card" *ngFor="let item of skeletonItems">
-            <div class="sk-header">
-              <div class="sk-logo"></div>
-              <div class="sk-title-block">
-                <div class="sk-line sk-long"></div>
-                <div class="sk-line sk-medium"></div>
-              </div>
-            </div>
-            <div class="sk-line sk-full"></div>
-            <div class="sk-line sk-full"></div>
-            <div class="sk-line sk-medium"></div>
+        <div class="learning-hint-card">
+          <div class="hint-header">
+            <span class="hint-icon" aria-hidden="true">💡</span>
+            <strong>Skill Readiness</strong>
           </div>
+          <p>Bridge missing requirements and level up with targeted courses.</p>
+          <a class="hint-link" routerLink="/app/courses">Open Learning Hub →</a>
         </div>
-      </ng-container>
 
-      <div class="error-state" *ngIf="!isLoading && errorMessage">
-        <div class="state-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="8" x2="12" y2="12"></line>
-            <line x1="12" y1="16" x2="12.01" y2="16"></line>
-          </svg>
+        <div class="sidebar-tips-card">
+          <div class="card-header-row">
+            <span class="card-icon" aria-hidden="true">✦</span>
+            <strong>Search & Matching Tips</strong>
+          </div>
+          <ul class="tips-list">
+            <li>
+              Roles are prioritized using skills confirmed across your GitHub profile and resume.
+            </li>
+            <li>Filter by location or "Remote" to find roles matching your timezone.</li>
+          </ul>
         </div>
-        <h3>Failed to load jobs</h3>
-        <p>{{ errorMessage }}</p>
-        <button class="primary-button" type="button" (click)="retry()">Try Again</button>
-      </div>
 
-      <div class="empty-state" *ngIf="!isLoading && !errorMessage && displayedJobs.length === 0 && currentPage > 0">
-        <div class="state-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-          </svg>
+        <div class="sidebar-tools-card">
+          <div class="card-header-row">
+            <span class="card-icon" aria-hidden="true">⚡</span>
+            <strong>Career Toolkit</strong>
+          </div>
+          <nav class="tools-nav">
+            <a routerLink="/app/skill-gap" class="tool-item">
+              <span>Skill Gap Analysis</span>
+              <span class="tool-arrow" aria-hidden="true">→</span>
+            </a>
+            <a routerLink="/app/career-sprint" class="tool-item">
+              <span>Career Sprint</span>
+              <span class="tool-arrow" aria-hidden="true">→</span>
+            </a>
+            <a routerLink="/app/interview-prep" class="tool-item">
+              <span>Interview Prep</span>
+              <span class="tool-arrow" aria-hidden="true">→</span>
+            </a>
+          </nav>
         </div>
-        <h3>{{ isJSearchUnavailableWithoutCache ? 'JSearch is temporarily unavailable' : 'No jobs match these filters' }}</h3>
-        <p>{{ isJSearchUnavailableWithoutCache ? 'JSearch is temporarily unavailable and no cached jobs are available.' : 'Try broadening the location or skill search, or reset filters to reload your default recommendations.' }}</p>
-        <button class="primary-button" type="button" (click)="onFiltersReset()">Reset Filters</button>
-      </div>
+      </aside>
 
-      <ng-container *ngIf="!isLoading && !errorMessage && displayedJobs.length > 0">
-        <div class="section-header">
+      <section
+        class="results-container"
+        aria-labelledby="results-heading"
+        [attr.aria-busy]="isLoading"
+      >
+        <div class="results-header">
           <div>
-            <span class="eyebrow">Recommended Jobs</span>
-            <h2>Your personalized discovery feed</h2>
+            <h2 id="results-heading" class="results-title">Opportunities for You</h2>
+            <p class="results-count">{{ total }} matching listings found</p>
           </div>
-
-          <div class="section-meta">
-            <span>Showing {{ displayedJobs.length }} of {{ visibleJobs.length }} visible jobs</span>
-            <span *ngIf="hasActiveFilters">Filtered results</span>
+          <div class="sort-control">
+            <label for="jobs-sort-select" class="sort-label">Sort by</label>
+            <select
+              id="jobs-sort-select"
+              class="sort-select"
+              [(ngModel)]="sort"
+              aria-label="Sort opportunities"
+            >
+              <option value="match">Best match</option>
+              <option value="newest">Newest posted</option>
+              <option value="company">Company A–Z</option>
+            </select>
           </div>
         </div>
 
-        <div class="progress-strip" *ngIf="visibleJobs.length > 0">
-          <div class="progress-fill" [style.width.%]="(displayedJobs.length / visibleJobs.length) * 100"></div>
-        </div>
+        @if (response?.diagnostics?.cacheFallback?.stale) {
+          <div class="message warning" role="status">
+            Showing retained listings while sources refresh. Confirm current availability with the
+            employer.
+          </div>
+        }
+        @if (response?.diagnostics?.refreshScheduled) {
+          <p class="feed-note" role="status">
+            A source refresh is scheduled. Recheck shortly; refreshing repeatedly will not bypass
+            source limits.
+          </p>
+        }
+        @if (response?.sourceFailures?.length) {
+          <p class="feed-note">
+            Some source feeds are temporarily unavailable or quota-limited. Cached listings are
+            presented.
+          </p>
+        }
+        @if (response?.personalization?.limitation) {
+          <p class="feed-note">{{ response?.personalization?.limitation }}</p>
+        }
 
-        <div class="jobs-grid">
-          <app-job-card
-            *ngFor="let job of displayedJobs; trackBy: trackById"
-            [job]="job"
-            [uiState]="getUiState(job.id)"
-            (save)="onSave($event)"
-            (markApplied)="onMarkApplied($event)"
-            (hide)="onHide($event)"
-            (similar)="onSimilar($event)"
-          ></app-job-card>
-        </div>
-
-        <div class="loading-more-grid" *ngIf="isLoadingMore">
-          <div class="skeleton-card mini" *ngFor="let item of [1, 2, 3, 4]">
-            <div class="sk-header">
-              <div class="sk-logo"></div>
-              <div class="sk-title-block">
-                <div class="sk-line sk-long"></div>
-                <div class="sk-line sk-medium"></div>
+        <!-- Loading Skeletons -->
+        @if (isLoading && !jobs.length) {
+          <div class="jobs-grid">
+            @for (item of [1, 2, 3, 4]; track item) {
+              <div class="skeleton-card" aria-hidden="true">
+                <div class="skeleton-line line-header"></div>
+                <div class="skeleton-line line-title"></div>
+                <div class="skeleton-line line-meta"></div>
+                <div class="skeleton-line line-tags"></div>
+                <div class="skeleton-line line-action"></div>
               </div>
-            </div>
+            }
           </div>
-        </div>
-
-        <div class="load-more-section" *ngIf="canShowLoadMore || visibleJobs.length > 0">
-          <div class="progress-wrap" *ngIf="visibleJobs.length > 0">
-            <div class="progress-label">
-              <span>{{ displayedJobs.length }} of {{ visibleJobs.length }} visible jobs</span>
-              <span>{{ ((displayedJobs.length / visibleJobs.length) * 100) | number:'1.0-0' }}%</span>
-            </div>
+          <span class="sr-only" role="status">Loading opportunities</span>
+        } @else if (displayedJobs.length) {
+          <div class="jobs-grid" [class.updating]="isLoading">
+            @for (job of displayedJobs; track job.id) {
+              <app-job-card
+                [job]="job"
+                [uiState]="actions.state(job.id)"
+                [busy]="actions.isBusy(job.id) || actionBlocked"
+                (save)="mutate(job.id, 'saved')"
+                (markApplied)="mutate(job.id, 'applied')"
+                (hide)="mutate(job.id, 'hidden')"
+              />
+            }
           </div>
-
-          <div class="load-more-wrap" *ngIf="canShowLoadMore">
-            <button class="primary-button load-more-button" type="button" [disabled]="isLoadingMore" (click)="loadMore()">
-              <ng-container *ngIf="!isLoadingMore && hasHiddenJobs">Show {{ hiddenCount }} more jobs</ng-container>
-              <ng-container *ngIf="!isLoadingMore && hasMorePages">Load More Jobs</ng-container>
-              <ng-container *ngIf="isLoadingMore">
-                <span class="spinner"></span>
-                Loading...
-              </ng-container>
+        } @else if (!errorMessage) {
+          <div class="empty-state">
+            <div class="empty-icon" aria-hidden="true">⌕</div>
+            <h3>No matching roles found</h3>
+            <p>
+              Try adjusting your filters, clearing your search keywords, or selecting broader
+              criteria.
+            </p>
+            <button
+              type="button"
+              class="btn-reset-filters"
+              (click)="resetFilters()"
+              [disabled]="coolingDown || offline"
+            >
+              Reset all filters
             </button>
           </div>
+        }
 
-          <div class="all-loaded" *ngIf="!canShowLoadMore && visibleJobs.length > 0 && !isLoadingMore">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-            All visible jobs loaded
-          </div>
+        @if (response?.sourceMessage) {
+          <p class="feed-note">
+            {{ response?.sourceMessage }} Listings can change at any time. Confirm compensation and
+            details at the employer site.
+          </p>
+        }
+
+        <!-- Pagination -->
+        <nav class="pagination" aria-label="Job results pagination">
+          <button
+            type="button"
+            class="btn-page"
+            [disabled]="page <= 1 || isLoading || coolingDown || offline"
+            (click)="load(page - 1)"
+          >
+            ← Previous
+          </button>
+          <span class="page-indicator">Page {{ page }} of {{ totalPages }}</span>
+          <button
+            type="button"
+            class="btn-page"
+            [disabled]="!hasMore || isLoading || coolingDown || offline"
+            (click)="load(page + 1)"
+          >
+            Next →
+          </button>
+        </nav>
+      </section>
+    </div>
+  } @else {
+    <!-- SAVED / APPLIED / HIDDEN VIEWS -->
+    <section class="library-container" [attr.aria-busy]="isLoading">
+      <div class="library-header">
+        <div>
+          <h2>
+            {{
+              view === 'saved'
+                ? 'Saved Opportunities'
+                : view === 'applied'
+                  ? 'Application Tracker'
+                  : 'Hidden Listings'
+            }}
+          </h2>
+          <p>
+            {{
+              view === 'applied'
+                ? 'A personal record of jobs you marked as applied. DevInsight does not submit applications on your behalf.'
+                : 'Stored securely in your account and synchronized across devices.'
+            }}
+          </p>
         </div>
-      </ng-container>
-    </main>
-  </div>
+      </div>
+
+      @if (isLoading) {
+        <p role="status" class="feed-note">Syncing your account records…</p>
+      }
+
+      <div class="jobs-grid">
+        @for (row of rows; track row.action.jobId) {
+          @if (row.job) {
+            <app-job-card
+              [job]="row.job"
+              [uiState]="actions.state(row.action.jobId)"
+              [busy]="actions.isBusy(row.action.jobId) || actionBlocked"
+              (save)="mutate(row.action.jobId, 'saved')"
+              (markApplied)="mutate(row.action.jobId, 'applied')"
+              (hide)="mutate(row.action.jobId, 'hidden')"
+            />
+          } @else {
+            <article class="unavailable-card">
+              <span class="badge-retained">ACTIVITY RETAINED</span>
+              <h3>{{ row.action.hidden ? 'Hidden listing' : 'Listing currently unavailable' }}</h3>
+              <p>
+                Source details may have expired or are temporarily unreachable. Your account
+                tracking remains intact.
+              </p>
+              <div class="meta-row">
+                <small
+                  >Reference: {{ row.action.jobId }} · Updated
+                  {{ date(row.action.updatedAt) }}</small
+                >
+              </div>
+              <div class="history-actions">
+                @if (actions.state(row.action.jobId).saved) {
+                  <button
+                    type="button"
+                    class="btn-subtle"
+                    [disabled]="actions.isBusy(row.action.jobId) || actionBlocked"
+                    (click)="mutate(row.action.jobId, 'saved')"
+                  >
+                    Remove saved
+                  </button>
+                }
+                @if (actions.state(row.action.jobId).applied) {
+                  <button
+                    type="button"
+                    class="btn-subtle"
+                    [disabled]="actions.isBusy(row.action.jobId) || actionBlocked"
+                    (click)="mutate(row.action.jobId, 'applied')"
+                  >
+                    Unmark applied
+                  </button>
+                }
+                @if (actions.state(row.action.jobId).hidden) {
+                  <button
+                    type="button"
+                    class="btn-subtle"
+                    [disabled]="actions.isBusy(row.action.jobId) || actionBlocked"
+                    (click)="mutate(row.action.jobId, 'hidden')"
+                  >
+                    Unhide
+                  </button>
+                }
+              </div>
+            </article>
+          }
+        }
+      </div>
+
+      @if (!isLoading && !rows.length && !errorMessage) {
+        <div class="empty-state">
+          <div class="empty-icon" aria-hidden="true">✦</div>
+          <h3>
+            {{
+              view === 'saved'
+                ? 'No saved jobs yet'
+                : view === 'applied'
+                  ? 'No tracked applications yet'
+                  : 'No hidden listings'
+            }}
+          </h3>
+          <p>
+            {{
+              view === 'saved'
+                ? 'Bookmark roles from Discover to easily compare them later.'
+                : view === 'applied'
+                  ? 'Mark roles as applied to keep track of your active job search.'
+                  : 'Jobs you choose to hide will appear here for reference.'
+            }}
+          </p>
+          <button type="button" class="btn-primary" (click)="setView('discover')">
+            Explore opportunities
+          </button>
+        </div>
+      }
+
+      <nav class="pagination" aria-label="Activity pagination">
+        <button
+          type="button"
+          class="btn-page"
+          [disabled]="page <= 1 || isLoading || coolingDown || offline"
+          (click)="load(page - 1)"
+        >
+          ← Previous
+        </button>
+        <span class="page-indicator">Page {{ page }}</span>
+        <button
+          type="button"
+          class="btn-page"
+          [disabled]="!hasMore || isLoading || coolingDown || offline"
+          (click)="load(page + 1)"
+        >
+          Next →
+        </button>
+      </nav>
+    </section>
+  }
 </div>

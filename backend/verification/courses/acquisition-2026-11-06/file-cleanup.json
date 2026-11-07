@@ -1,0 +1,28 @@
+[
+  {
+    "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\acquisition-focused-2026-11-06.log",
+    "sha256": "BD12BE3796B96C9203D9D7ADE732CCAD2054BD1F73DBC8EFDEEBE2DBB6167AAF",
+    "createdByCurrentTask": true,
+    "retainedSummary": [
+      "ℹ tests 46",
+      "ℹ pass 44",
+      "ℹ fail 2",
+      "ℹ cancelled 0",
+      "ℹ skipped 0"
+    ],
+    "reason": "Superseded task-created intermediate log; final focused/source logs retained"
+  },
+  {
+    "path": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\acquisition-unit-2026-11-06.log",
+    "sha256": "523129691D878415387B43E8BFD70E90D35411475A8A3C899EB16D1A84BD47BC",
+    "createdByCurrentTask": true,
+    "retainedSummary": [
+      "ℹ tests 4",
+      "ℹ pass 4",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0"
+    ],
+    "reason": "Superseded task-created intermediate log; final focused/source logs retained"
+  }
+]

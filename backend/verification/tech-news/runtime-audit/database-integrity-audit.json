@@ -1,0 +1,210 @@
+{
+  "timestamp": "2026-10-24T19:40:28.201Z",
+  "totalArticles": 692,
+  "perSource": [
+    {
+      "_id": "Hacker News",
+      "total": 480,
+      "unexpired": 480,
+      "expired": 0,
+      "minPublished": "2026-09-29T06:30:25.000Z",
+      "maxPublished": "2026-10-24T19:19:43.000Z",
+      "minExpires": "2026-11-03T06:30:25.000Z",
+      "maxExpires": "2026-11-28T19:19:43.000Z"
+    },
+    {
+      "_id": "Dev.to",
+      "total": 102,
+      "unexpired": 102,
+      "expired": 0,
+      "minPublished": "2026-10-16T21:22:38.000Z",
+      "maxPublished": "2026-10-24T11:30:37.000Z",
+      "minExpires": "2026-11-20T21:22:38.000Z",
+      "maxExpires": "2026-11-28T11:30:37.000Z"
+    },
+    {
+      "_id": "GitHub Security Advisories",
+      "total": 89,
+      "unexpired": 89,
+      "expired": 0,
+      "minPublished": "2026-10-22T16:40:35.000Z",
+      "maxPublished": "2026-10-23T22:28:41.000Z",
+      "minExpires": "2026-11-26T16:40:35.000Z",
+      "maxExpires": "2026-11-27T22:28:41.000Z"
+    },
+    {
+      "_id": "GitHub Releases",
+      "total": 21,
+      "unexpired": 21,
+      "expired": 0,
+      "minPublished": "2026-09-22T09:02:46.000Z",
+      "maxPublished": "2026-10-22T14:14:46.000Z",
+      "minExpires": "2026-10-27T09:02:46.000Z",
+      "maxExpires": "2026-11-26T14:14:46.000Z"
+    }
+  ],
+  "duplicateCanonicalCount": 0,
+  "duplicateUrlCount": 0,
+  "sameTitleDifferentUrlCount": 1,
+  "sameTitleDifferentUrlExamples": [
+    {
+      "_id": "i built a saas with ai. two months later, i have zero active users",
+      "urls": [
+        "https://news.ycombinator.com/",
+        "https://medium.com/@ivan_43200/i-built-a-saas-with-ai-two-months-later-i-have-zero-active-users-1e93436a5b39"
+      ],
+      "count": 2
+    }
+  ],
+  "malformed": {
+    "missingCanonicalId": 0,
+    "missingTitle": 0,
+    "missingUrl": 0,
+    "missingSource": 0,
+    "missingPublisher": 480,
+    "missingPublishedAt": 0,
+    "missingExpiresAt": 0,
+    "missingAttributionUrl": 0,
+    "missingCategory": 0,
+    "emptyTechnologies": 452,
+    "emptySearchTerms": 0
+  },
+  "articlesExceeding35Days": 0,
+  "expiredDocsCount": 0,
+  "indexes": [
+    {
+      "name": "_id_",
+      "key": {
+        "_id": 1
+      }
+    },
+    {
+      "name": "canonicalId_1",
+      "key": {
+        "canonicalId": 1
+      },
+      "unique": true
+    },
+    {
+      "name": "expiresAt_1",
+      "key": {
+        "expiresAt": 1
+      },
+      "expireAfterSeconds": 0
+    },
+    {
+      "name": "publishedAt_-1_canonicalId_1",
+      "key": {
+        "publishedAt": -1,
+        "canonicalId": 1
+      }
+    },
+    {
+      "name": "technologies_1_publishedAt_-1_canonicalId_1",
+      "key": {
+        "technologies": 1,
+        "publishedAt": -1,
+        "canonicalId": 1
+      }
+    },
+    {
+      "name": "searchTerms_1_publishedAt_-1_canonicalId_1",
+      "key": {
+        "searchTerms": 1,
+        "publishedAt": -1,
+        "canonicalId": 1
+      }
+    },
+    {
+      "name": "source_1_publishedAt_-1_canonicalId_1",
+      "key": {
+        "source": 1,
+        "publishedAt": -1,
+        "canonicalId": 1
+      }
+    },
+    {
+      "name": "category_1_publishedAt_-1_canonicalId_1",
+      "key": {
+        "category": 1,
+        "publishedAt": -1,
+        "canonicalId": 1
+      }
+    }
+  ],
+  "queryPlanSummary": {
+    "categoryFilter": {
+      "stage": "LIMIT",
+      "inputStage": "FETCH",
+      "indexUsed": "category_1_publishedAt_-1_canonicalId_1",
+      "totalKeysExamined": 20,
+      "totalDocsExamined": 20,
+      "nReturned": 20
+    },
+    "technologyFilter": {
+      "stage": "LIMIT",
+      "inputStage": "FETCH",
+      "indexUsed": "technologies_1_publishedAt_-1_canonicalId_1",
+      "totalKeysExamined": 20,
+      "totalDocsExamined": 20,
+      "nReturned": 20
+    },
+    "searchTermFilter": {
+      "stage": "LIMIT",
+      "inputStage": "FETCH",
+      "indexUsed": "searchTerms_1_publishedAt_-1_canonicalId_1",
+      "totalKeysExamined": 3,
+      "totalDocsExamined": 3,
+      "nReturned": 3
+    },
+    "sourceFilter": {
+      "stage": "LIMIT",
+      "inputStage": "FETCH",
+      "indexUsed": "source_1_publishedAt_-1_canonicalId_1",
+      "totalKeysExamined": 20,
+      "totalDocsExamined": 20,
+      "nReturned": 20
+    }
+  },
+  "savedItems": {
+    "total": 5,
+    "usersCount": 1,
+    "duplicateSavesCount": 0,
+    "indexes": [
+      {
+        "name": "_id_",
+        "key": {
+          "_id": 1
+        }
+      },
+      {
+        "name": "userId_1",
+        "key": {
+          "userId": 1
+        }
+      },
+      {
+        "name": "userId_1_url_1_type_1",
+        "key": {
+          "userId": 1,
+          "url": 1,
+          "type": 1
+        },
+        "unique": true
+      },
+      {
+        "name": "userId_1_type_1_createdAt_-1",
+        "key": {
+          "userId": 1,
+          "type": 1,
+          "createdAt": -1
+        }
+      }
+    ]
+  },
+  "legacyCaches": {
+    "poolPresent": true,
+    "poolItemsCount": 100,
+    "topicCacheCount": 3
+  }
+}

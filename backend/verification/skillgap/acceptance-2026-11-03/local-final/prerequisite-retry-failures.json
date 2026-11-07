@@ -1,0 +1,16 @@
+{
+  "failures": [
+    {
+      "location": "test at backend\\src\\tests\\careerSprintLegacy.integration.test.js:14:1",
+      "detail": "✖ isolated Mongo: legacy exceptions preserve history, enforce read-only access and reserve both overlaps (658.1723ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n  + actual - expected\n  \n    Comparison {\n  +   statusCode: 404"
+    },
+    {
+      "location": "test at backend\\src\\tests\\integrationsLocalAcceptance.test.js:8:1",
+      "detail": "✖ authenticated Integrations local API acceptance and persisted downstream propagation (3043.037ms)\n  Error: Disposable Redis exited before readiness: The Windows Subsystem for Linux is not installed. You can install by running 'wsl.exe --install'.\r\n  For more information please visit https://aka.ms/wslinstall\r\n  \n      at Object.start (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\fixtures\\integrationsRuntime.js:153:15)\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)"
+    },
+    {
+      "location": "test at backend\\src\\tests\\integrationsProduction.integration.test.js:82:1",
+      "detail": "✖ Integrations production acceptance on disposable Mongo replica set and Redis (2239.6876ms)\n  Error: Disposable Redis exited before readiness: The Windows Subsystem for Linux is not installed. You can install by running 'wsl.exe --install'.\r\n  For more information please visit https://aka.ms/wslinstall\r\n  \n      at Object.start (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\fixtures\\integrationsRuntime.js:153:15)\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)"
+    }
+  ]
+}

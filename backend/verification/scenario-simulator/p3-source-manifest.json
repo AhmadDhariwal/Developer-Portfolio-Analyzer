@@ -1,0 +1,108 @@
+{
+  "sourceBranch": "task/simulator",
+  "targetBranch": "not applicable: local verification, no PR or integration requested",
+  "sourceCommit": "f3883e6efa5e89893cb05711a7544d2245ca6067",
+  "files": [
+    {
+      "path": "backend/src/config/db.js",
+      "sha256": "05a1d0acf02d096889315d8ce7cb7054934718a007a64043908e54785440559b"
+    },
+    {
+      "path": "backend/src/controllers/scenarioSimulatorController.js",
+      "sha256": "87a3e835b12027d691ae9d2d4534c553b9b7b4b085230d730f28164f9fcb0bbd"
+    },
+    {
+      "path": "backend/src/middleware/authmiddleware.js",
+      "sha256": "34963cddacea4570175b1f1962129f1dd1a4d81148fb78d8ba5014d115a4dcb7"
+    },
+    {
+      "path": "backend/src/middleware/scenarioSimulatorMiddleware.js",
+      "sha256": "4911d9872b7c7749d96772b53c311d000e3cb9d34a00aeba5c02a7a6134fb655"
+    },
+    {
+      "path": "backend/src/models/careerSprint.js",
+      "sha256": "ab08dc9d4d7dfb13b7475ac37e7477e490dcb1dbeba8ace030a760c1b67698d8"
+    },
+    {
+      "path": "backend/src/models/scenarioSimulation.js",
+      "sha256": "30f046515904bb1a159681e70937ded98cb801b4f5d759b0e76bacc583f24b3e"
+    },
+    {
+      "path": "backend/src/routes/scenarioSimulator.routes.js",
+      "sha256": "074759956e7268ab38ef96ae7c4a82dc8a03a20d662caa05611af42abb05adca"
+    },
+    {
+      "path": "backend/src/services/careerSprintService.js",
+      "sha256": "28ddb50566888357829312106f2e0b87c1e191cc04c9a6b463276efdb1df0456"
+    },
+    {
+      "path": "backend/src/services/redisCacheService.js",
+      "sha256": "a064d307bd96b86b23046b6ce9731ee209af02fc26be8cc88cfc9699621a2d14"
+    },
+    {
+      "path": "backend/src/services/scenarioContextService.js",
+      "sha256": "47bd28df36b4868001195a231f6526db1a9f7a7fb8dd80a2f5cb27415505a19c"
+    },
+    {
+      "path": "backend/src/services/scenarioSimulatorService.js",
+      "sha256": "c6c3c07b73df13e592ff650ffd86c294b7c25d5dae1ed720d8660592b6fb285c"
+    },
+    {
+      "path": "backend/src/services/scenarioSprintAdapter.js",
+      "sha256": "dc921379ca10d17f1c8e5ff38064ae67f98efbbf996d210a2287bed3b4c00b96"
+    },
+    {
+      "path": "backend/src/services/scenarioSprintExportService.js",
+      "sha256": "e304071ceee047c8262dff687ccebcd96af16fc360815721c77a457c384f18e3"
+    },
+    {
+      "path": "backend/src/services/scenarioTelemetryService.js",
+      "sha256": "524df6bde5d357cebd2568d95b2549c92fc95b75f6de5c8d0b7c33ecacc88c5c"
+    },
+    {
+      "path": "backend/src/services/scoring/scenarioPlanningLegacy.js",
+      "sha256": "66ea92640197fea246c3b9beb41edeb6e10a0983317bd42def06f5b7335bf696"
+    },
+    {
+      "path": "backend/src/services/scoring/scenarioPlanningRules.js",
+      "sha256": "d1521c0ac7ee9a2501bb3a93505fbb6673a855f07647cf770cc5e8e67e734f28"
+    },
+    {
+      "path": "backend/src/services/scoring/scenarioPlanningScore.js",
+      "sha256": "e1b03b6d91596afd26df938d48143fb4182d13c70361893ffc9be457e1e6a154"
+    },
+    {
+      "path": "backend/src/services/sprintDraftContextService.js",
+      "sha256": "332e95bfc53c3a31338549a57e1221937c39b42d9dcf62514cf8d09678a8fe45"
+    },
+    {
+      "path": "backend/src/services/sprintLegacyPolicy.js",
+      "sha256": "c1a6a1cc80d22a5ee6f9415ca37a19ad37b2528e8226aa9595a6bc90d808622d"
+    },
+    {
+      "path": "backend/src/utils/scenarioIdentity.js",
+      "sha256": "8246fb212394404252ca26fb545ab5e88b58228102e3f0565a3ce7ccccaecb74"
+    },
+    {
+      "path": "backend/src/utils/sprintCalendar.js",
+      "sha256": "610648d065bb3d27f9c351ccf9a36e32e971f50723c1f39cff79da2eacbaa9df"
+    }
+  ],
+  "fullRunSourceCheck": {
+    "unchanged": 21,
+    "total": 21,
+    "mismatches": []
+  },
+  "postFixChanges": [
+    {
+      "path": "backend/src/services/redisCacheService.js",
+      "before": "a064d307bd96b86b23046b6ce9731ee209af02fc26be8cc88cfc9699621a2d14",
+      "after": "9ff36cc9aed4457a3fab28657abbb72f07ed2f6d232bab13d580bc0b30dd6be6"
+    }
+  ],
+  "finalVerification": {
+    "matchingExpectedHashes": 21,
+    "total": 21,
+    "unexpectedChanges": []
+  }
+}

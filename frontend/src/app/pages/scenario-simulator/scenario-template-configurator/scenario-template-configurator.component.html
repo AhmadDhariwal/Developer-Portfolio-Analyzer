@@ -1,0 +1,89 @@
+<dialog
+  #dialog
+  aria-labelledby="template-title"
+  aria-describedby="template-purpose"
+  (cancel)="$event.preventDefault(); cancelled.emit()"
+>
+  <header>
+    <span class="eyebrow">Scenario template · Editable plan</span>
+    <h2 id="template-title">{{ template.label }}</h2>
+    <p id="template-purpose">{{ template.description }}</p>
+  </header>
+  <div class="fields">
+    <p class="notice" *ngIf="missingEvidence">
+      Suggestions use available compatible evidence only. Empty fields have no supporting
+      recommendation; enter your own plan.
+    </p>
+    <p>
+      Impact and effort are editable planning assumptions. Completed work earns no new project
+      recommendation.
+    </p>
+    <label
+      >Duration (weeks)<input
+        type="number"
+        min="1"
+        max="24"
+        step="1"
+        [(ngModel)]="draft.durationWeeks"
+    /></label>
+    <fieldset *ngIf="draft.skills.length">
+      <legend>Suggested skills · edit any selection</legend>
+      <label *ngFor="let skill of draft.skills; let i = index; trackBy: trackIndex"
+        >Skill {{ i + 1
+        }}<input [(ngModel)]="draft.skills[i]" maxlength="100" placeholder="Enter a skill to learn"
+      /></label>
+    </fieldset>
+    <fieldset *ngFor="let project of draft.projects; trackBy: trackIndex">
+      <legend>New portfolio project</legend>
+      <label
+        >Project name<input
+          [(ngModel)]="project.name"
+          maxlength="160"
+          placeholder="Enter a new portfolio project"
+      /></label>
+      <div class="project-grid">
+        <label
+          >Impact (0–100)<input type="number" min="0" max="100" [(ngModel)]="project.impact"
+        /></label>
+        <label
+          >Complexity<select [(ngModel)]="project.complexity">
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select></label
+        >
+        <label
+          >Project weeks<input type="number" min="1" max="24" step="1" [(ngModel)]="project.weeks"
+        /></label>
+      </div>
+    </fieldset>
+    <p class="notice" role="status">{{ workloadWarning }}</p>
+    <label class="consent"
+      ><input type="checkbox" [(ngModel)]="baselineConfirmed" />I confirm the planning baselines:
+      hiring score {{ baselineHiringScore }}/100 and role match {{ baselineJobMatch }}/100.</label
+    >
+    <label class="consent notice" *ngIf="dirty"
+      ><input type="checkbox" [(ngModel)]="replaceConfirmed" />Replace my current draft skills,
+      projects and duration. Unsaved edits will be lost.</label
+    >
+    <p class="validation" role="status">{{ validationError }}</p>
+    <p>
+      Evaluation uses deterministic planning rules. Estimates are not hiring probabilities or
+      demonstrated proficiency. Saving and Career Sprint export require separate actions.
+    </p>
+  </div>
+  <footer>
+    <button type="button" (click)="cancelled.emit()">Cancel</button>
+    <button type="button" [disabled]="!!validationError" (click)="commit(false)">
+      Apply to Scenario
+    </button>
+    <button
+      class="primary"
+      type="button"
+      [disabled]="!!validationError || !baselineConfirmed"
+      (click)="commit(true)"
+    >
+      Evaluate Scenario
+    </button>
+  </footer>
+</dialog>

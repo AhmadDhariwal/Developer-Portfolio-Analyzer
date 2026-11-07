@@ -1,0 +1,902 @@
+{
+  "verifiedAt": "2026-10-16T10:30:22.893Z",
+  "synthetic": true,
+  "scope": "Career Sprint frontend; production bundle with synthetic intercepted HTTP, no production data or backend writes",
+  "bundle": "main-WJ3M6P3M.js",
+  "layouts": [
+    {
+      "theme": "light",
+      "width": 320,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": [
+          {
+            "text": "Your career, in motion",
+            "ratio": 4.198568708168805
+          },
+          {
+            "text": "+ New Sprint",
+            "ratio": 1.0639088175117075
+          },
+          {
+            "text": "Current Sprint",
+            "ratio": 4.466894269549531
+          },
+          {
+            "text": "+ Add task",
+            "ratio": 1
+          },
+          {
+            "text": "Keep showing up",
+            "ratio": 4.466894269549531
+          },
+          {
+            "text": "high priority",
+            "ratio": 4.240455995629598
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.9523254855960968
+          },
+          {
+            "text": "✓",
+            "ratio": 1.02427561182975
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.887278414646569
+          },
+          {
+            "text": "Completed",
+            "ratio": 3.678877372825211
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.9523254855960968
+          },
+          {
+            "text": "✓",
+            "ratio": 1.02427561182975
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.887278414646569
+          },
+          {
+            "text": "Completed",
+            "ratio": 3.678877372825211
+          }
+        ]
+      },
+      "passed": false,
+      "failures": [
+        "light/320: text contrast\n+ actual - expected\n\n+ [\n+   {\n+     ratio: 4.198568708168805,\n+     text: 'Your career, in motion'\n+   },\n+   {\n+     ratio: 1.0639088175117075,\n+     text: '+ New Sprint'\n+   },\n+   {\n+     ratio: 4.466894269549531,\n+     text: 'Current Sprint'\n+   },\n+   {\n+     ratio: 1,\n+     text: '+ Add task'\n+   },\n+   {\n+     ratio: 4.466894269549531,\n+     text: 'Keep showing up'\n+   },\n+   {\n+     ratio: 4.240455995629598,\n+     text: 'high priority'\n+   },\n+   {\n+     ratio: 2.9523254855960968,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 1.02427561182975,\n+     text: '✓'\n+   },\n+   {\n+     ratio: 2.887278414646569,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 3.678877372825211,\n+     text: 'Completed'\n+   },\n+   {\n+     ratio: 2.9523254855960968,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 1.02427561182975,\n+     text: '✓'\n+   },\n+   {\n+     ratio: 2.887278414646569,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 3.678877372825211,\n+     text: 'Completed'\n+   }\n+ ]\n- []\n"
+      ]
+    },
+    {
+      "theme": "light",
+      "width": 375,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": [
+          {
+            "text": "Your career, in motion",
+            "ratio": 4.198568708168805
+          },
+          {
+            "text": "+ New Sprint",
+            "ratio": 1.0639088175117075
+          },
+          {
+            "text": "Current Sprint",
+            "ratio": 4.466894269549531
+          },
+          {
+            "text": "+ Add task",
+            "ratio": 1
+          },
+          {
+            "text": "Keep showing up",
+            "ratio": 4.466894269549531
+          },
+          {
+            "text": "high priority",
+            "ratio": 4.240455995629598
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.9523254855960968
+          },
+          {
+            "text": "✓",
+            "ratio": 1.02427561182975
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.887278414646569
+          },
+          {
+            "text": "Completed",
+            "ratio": 3.678877372825211
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.9523254855960968
+          },
+          {
+            "text": "✓",
+            "ratio": 1.02427561182975
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.887278414646569
+          },
+          {
+            "text": "Completed",
+            "ratio": 3.678877372825211
+          }
+        ]
+      },
+      "passed": false,
+      "failures": [
+        "light/375: text contrast\n+ actual - expected\n\n+ [\n+   {\n+     ratio: 4.198568708168805,\n+     text: 'Your career, in motion'\n+   },\n+   {\n+     ratio: 1.0639088175117075,\n+     text: '+ New Sprint'\n+   },\n+   {\n+     ratio: 4.466894269549531,\n+     text: 'Current Sprint'\n+   },\n+   {\n+     ratio: 1,\n+     text: '+ Add task'\n+   },\n+   {\n+     ratio: 4.466894269549531,\n+     text: 'Keep showing up'\n+   },\n+   {\n+     ratio: 4.240455995629598,\n+     text: 'high priority'\n+   },\n+   {\n+     ratio: 2.9523254855960968,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 1.02427561182975,\n+     text: '✓'\n+   },\n+   {\n+     ratio: 2.887278414646569,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 3.678877372825211,\n+     text: 'Completed'\n+   },\n+   {\n+     ratio: 2.9523254855960968,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 1.02427561182975,\n+     text: '✓'\n+   },\n+   {\n+     ratio: 2.887278414646569,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 3.678877372825211,\n+     text: 'Completed'\n+   }\n+ ]\n- []\n"
+      ]
+    },
+    {
+      "theme": "light",
+      "width": 425,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": [
+          {
+            "text": "Your career, in motion",
+            "ratio": 4.198568708168805
+          },
+          {
+            "text": "+ New Sprint",
+            "ratio": 1.0639088175117075
+          },
+          {
+            "text": "Current Sprint",
+            "ratio": 4.466894269549531
+          },
+          {
+            "text": "+ Add task",
+            "ratio": 1
+          },
+          {
+            "text": "Keep showing up",
+            "ratio": 4.466894269549531
+          },
+          {
+            "text": "high priority",
+            "ratio": 4.240455995629598
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.9523254855960968
+          },
+          {
+            "text": "✓",
+            "ratio": 1.02427561182975
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.887278414646569
+          },
+          {
+            "text": "Completed",
+            "ratio": 3.678877372825211
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.9523254855960968
+          },
+          {
+            "text": "✓",
+            "ratio": 1.02427561182975
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.887278414646569
+          },
+          {
+            "text": "Completed",
+            "ratio": 3.678877372825211
+          }
+        ]
+      },
+      "passed": false,
+      "failures": [
+        "light/425: text contrast\n+ actual - expected\n\n+ [\n+   {\n+     ratio: 4.198568708168805,\n+     text: 'Your career, in motion'\n+   },\n+   {\n+     ratio: 1.0639088175117075,\n+     text: '+ New Sprint'\n+   },\n+   {\n+     ratio: 4.466894269549531,\n+     text: 'Current Sprint'\n+   },\n+   {\n+     ratio: 1,\n+     text: '+ Add task'\n+   },\n+   {\n+     ratio: 4.466894269549531,\n+     text: 'Keep showing up'\n+   },\n+   {\n+     ratio: 4.240455995629598,\n+     text: 'high priority'\n+   },\n+   {\n+     ratio: 2.9523254855960968,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 1.02427561182975,\n+     text: '✓'\n+   },\n+   {\n+     ratio: 2.887278414646569,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 3.678877372825211,\n+     text: 'Completed'\n+   },\n+   {\n+     ratio: 2.9523254855960968,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 1.02427561182975,\n+     text: '✓'\n+   },\n+   {\n+     ratio: 2.887278414646569,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 3.678877372825211,\n+     text: 'Completed'\n+   }\n+ ]\n- []\n"
+      ]
+    },
+    {
+      "theme": "light",
+      "width": 768,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": [
+          {
+            "text": "Your career, in motion",
+            "ratio": 4.198568708168805
+          },
+          {
+            "text": "+ New Sprint",
+            "ratio": 1.0639088175117075
+          },
+          {
+            "text": "Current Sprint",
+            "ratio": 4.466894269549531
+          },
+          {
+            "text": "+ Add task",
+            "ratio": 1
+          },
+          {
+            "text": "Keep showing up",
+            "ratio": 4.466894269549531
+          },
+          {
+            "text": "high priority",
+            "ratio": 4.240455995629598
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.9523254855960968
+          },
+          {
+            "text": "✓",
+            "ratio": 1.02427561182975
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.887278414646569
+          },
+          {
+            "text": "Completed",
+            "ratio": 3.678877372825211
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.9523254855960968
+          },
+          {
+            "text": "✓",
+            "ratio": 1.02427561182975
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.887278414646569
+          },
+          {
+            "text": "Completed",
+            "ratio": 3.678877372825211
+          }
+        ]
+      },
+      "passed": false,
+      "failures": [
+        "light/768: text contrast\n+ actual - expected\n\n+ [\n+   {\n+     ratio: 4.198568708168805,\n+     text: 'Your career, in motion'\n+   },\n+   {\n+     ratio: 1.0639088175117075,\n+     text: '+ New Sprint'\n+   },\n+   {\n+     ratio: 4.466894269549531,\n+     text: 'Current Sprint'\n+   },\n+   {\n+     ratio: 1,\n+     text: '+ Add task'\n+   },\n+   {\n+     ratio: 4.466894269549531,\n+     text: 'Keep showing up'\n+   },\n+   {\n+     ratio: 4.240455995629598,\n+     text: 'high priority'\n+   },\n+   {\n+     ratio: 2.9523254855960968,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 1.02427561182975,\n+     text: '✓'\n+   },\n+   {\n+     ratio: 2.887278414646569,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 3.678877372825211,\n+     text: 'Completed'\n+   },\n+   {\n+     ratio: 2.9523254855960968,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 1.02427561182975,\n+     text: '✓'\n+   },\n+   {\n+     ratio: 2.887278414646569,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 3.678877372825211,\n+     text: 'Completed'\n+   }\n+ ]\n- []\n"
+      ]
+    },
+    {
+      "theme": "light",
+      "width": 1024,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": [
+          {
+            "text": "Your career, in motion",
+            "ratio": 4.198568708168805
+          },
+          {
+            "text": "+ New Sprint",
+            "ratio": 1.0639088175117075
+          },
+          {
+            "text": "Current Sprint",
+            "ratio": 4.466894269549531
+          },
+          {
+            "text": "+ Add task",
+            "ratio": 1
+          },
+          {
+            "text": "Keep showing up",
+            "ratio": 4.466894269549531
+          },
+          {
+            "text": "high priority",
+            "ratio": 4.240455995629598
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.9523254855960968
+          },
+          {
+            "text": "✓",
+            "ratio": 1.02427561182975
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.887278414646569
+          },
+          {
+            "text": "Completed",
+            "ratio": 3.678877372825211
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.9523254855960968
+          },
+          {
+            "text": "✓",
+            "ratio": 1.02427561182975
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.887278414646569
+          },
+          {
+            "text": "Completed",
+            "ratio": 3.678877372825211
+          }
+        ]
+      },
+      "passed": false,
+      "failures": [
+        "light/1024: text contrast\n+ actual - expected\n\n+ [\n+   {\n+     ratio: 4.198568708168805,\n+     text: 'Your career, in motion'\n+   },\n+   {\n+     ratio: 1.0639088175117075,\n+     text: '+ New Sprint'\n+   },\n+   {\n+     ratio: 4.466894269549531,\n+     text: 'Current Sprint'\n+   },\n+   {\n+     ratio: 1,\n+     text: '+ Add task'\n+   },\n+   {\n+     ratio: 4.466894269549531,\n+     text: 'Keep showing up'\n+   },\n+   {\n+     ratio: 4.240455995629598,\n+     text: 'high priority'\n+   },\n+   {\n+     ratio: 2.9523254855960968,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 1.02427561182975,\n+     text: '✓'\n+   },\n+   {\n+     ratio: 2.887278414646569,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 3.678877372825211,\n+     text: 'Completed'\n+   },\n+   {\n+     ratio: 2.9523254855960968,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 1.02427561182975,\n+     text: '✓'\n+   },\n+   {\n+     ratio: 2.887278414646569,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 3.678877372825211,\n+     text: 'Completed'\n+   }\n+ ]\n- []\n"
+      ]
+    },
+    {
+      "theme": "light",
+      "width": 1280,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": [
+          {
+            "text": "Your career, in motion",
+            "ratio": 4.198568708168805
+          },
+          {
+            "text": "+ New Sprint",
+            "ratio": 1.0639088175117075
+          },
+          {
+            "text": "Current Sprint",
+            "ratio": 4.466894269549531
+          },
+          {
+            "text": "+ Add task",
+            "ratio": 1
+          },
+          {
+            "text": "Keep showing up",
+            "ratio": 4.466894269549531
+          },
+          {
+            "text": "high priority",
+            "ratio": 4.240455995629598
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.9523254855960968
+          },
+          {
+            "text": "✓",
+            "ratio": 1.02427561182975
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.887278414646569
+          },
+          {
+            "text": "Completed",
+            "ratio": 3.678877372825211
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.9523254855960968
+          },
+          {
+            "text": "✓",
+            "ratio": 1.02427561182975
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.887278414646569
+          },
+          {
+            "text": "Completed",
+            "ratio": 3.678877372825211
+          }
+        ]
+      },
+      "passed": false,
+      "failures": [
+        "light/1280: text contrast\n+ actual - expected\n\n+ [\n+   {\n+     ratio: 4.198568708168805,\n+     text: 'Your career, in motion'\n+   },\n+   {\n+     ratio: 1.0639088175117075,\n+     text: '+ New Sprint'\n+   },\n+   {\n+     ratio: 4.466894269549531,\n+     text: 'Current Sprint'\n+   },\n+   {\n+     ratio: 1,\n+     text: '+ Add task'\n+   },\n+   {\n+     ratio: 4.466894269549531,\n+     text: 'Keep showing up'\n+   },\n+   {\n+     ratio: 4.240455995629598,\n+     text: 'high priority'\n+   },\n+   {\n+     ratio: 2.9523254855960968,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 1.02427561182975,\n+     text: '✓'\n+   },\n+   {\n+     ratio: 2.887278414646569,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 3.678877372825211,\n+     text: 'Completed'\n+   },\n+   {\n+     ratio: 2.9523254855960968,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 1.02427561182975,\n+     text: '✓'\n+   },\n+   {\n+     ratio: 2.887278414646569,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 3.678877372825211,\n+     text: 'Completed'\n+   }\n+ ]\n- []\n"
+      ]
+    },
+    {
+      "theme": "light",
+      "width": 1440,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": [
+          {
+            "text": "Your career, in motion",
+            "ratio": 4.198568708168805
+          },
+          {
+            "text": "+ New Sprint",
+            "ratio": 1.0639088175117075
+          },
+          {
+            "text": "Current Sprint",
+            "ratio": 4.466894269549531
+          },
+          {
+            "text": "+ Add task",
+            "ratio": 1
+          },
+          {
+            "text": "Keep showing up",
+            "ratio": 4.466894269549531
+          },
+          {
+            "text": "high priority",
+            "ratio": 4.240455995629598
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.9523254855960968
+          },
+          {
+            "text": "✓",
+            "ratio": 1.02427561182975
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.887278414646569
+          },
+          {
+            "text": "Completed",
+            "ratio": 3.678877372825211
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.9523254855960968
+          },
+          {
+            "text": "✓",
+            "ratio": 1.02427561182975
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.887278414646569
+          },
+          {
+            "text": "Completed",
+            "ratio": 3.678877372825211
+          }
+        ]
+      },
+      "passed": false,
+      "failures": [
+        "light/1440: text contrast\n+ actual - expected\n\n+ [\n+   {\n+     ratio: 4.198568708168805,\n+     text: 'Your career, in motion'\n+   },\n+   {\n+     ratio: 1.0639088175117075,\n+     text: '+ New Sprint'\n+   },\n+   {\n+     ratio: 4.466894269549531,\n+     text: 'Current Sprint'\n+   },\n+   {\n+     ratio: 1,\n+     text: '+ Add task'\n+   },\n+   {\n+     ratio: 4.466894269549531,\n+     text: 'Keep showing up'\n+   },\n+   {\n+     ratio: 4.240455995629598,\n+     text: 'high priority'\n+   },\n+   {\n+     ratio: 2.9523254855960968,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 1.02427561182975,\n+     text: '✓'\n+   },\n+   {\n+     ratio: 2.887278414646569,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 3.678877372825211,\n+     text: 'Completed'\n+   },\n+   {\n+     ratio: 2.9523254855960968,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 1.02427561182975,\n+     text: '✓'\n+   },\n+   {\n+     ratio: 2.887278414646569,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 3.678877372825211,\n+     text: 'Completed'\n+   }\n+ ]\n- []\n"
+      ]
+    },
+    {
+      "theme": "light",
+      "width": 1600,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": [
+          {
+            "text": "Your career, in motion",
+            "ratio": 4.198568708168805
+          },
+          {
+            "text": "+ New Sprint",
+            "ratio": 1.0639088175117075
+          },
+          {
+            "text": "Current Sprint",
+            "ratio": 4.466894269549531
+          },
+          {
+            "text": "+ Add task",
+            "ratio": 1
+          },
+          {
+            "text": "Keep showing up",
+            "ratio": 4.466894269549531
+          },
+          {
+            "text": "high priority",
+            "ratio": 4.240455995629598
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.9523254855960968
+          },
+          {
+            "text": "✓",
+            "ratio": 1.02427561182975
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.887278414646569
+          },
+          {
+            "text": "Completed",
+            "ratio": 3.678877372825211
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.9523254855960968
+          },
+          {
+            "text": "✓",
+            "ratio": 1.02427561182975
+          },
+          {
+            "text": "medium priority",
+            "ratio": 2.887278414646569
+          },
+          {
+            "text": "Completed",
+            "ratio": 3.678877372825211
+          }
+        ]
+      },
+      "passed": false,
+      "failures": [
+        "light/1600: text contrast\n+ actual - expected\n\n+ [\n+   {\n+     ratio: 4.198568708168805,\n+     text: 'Your career, in motion'\n+   },\n+   {\n+     ratio: 1.0639088175117075,\n+     text: '+ New Sprint'\n+   },\n+   {\n+     ratio: 4.466894269549531,\n+     text: 'Current Sprint'\n+   },\n+   {\n+     ratio: 1,\n+     text: '+ Add task'\n+   },\n+   {\n+     ratio: 4.466894269549531,\n+     text: 'Keep showing up'\n+   },\n+   {\n+     ratio: 4.240455995629598,\n+     text: 'high priority'\n+   },\n+   {\n+     ratio: 2.9523254855960968,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 1.02427561182975,\n+     text: '✓'\n+   },\n+   {\n+     ratio: 2.887278414646569,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 3.678877372825211,\n+     text: 'Completed'\n+   },\n+   {\n+     ratio: 2.9523254855960968,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 1.02427561182975,\n+     text: '✓'\n+   },\n+   {\n+     ratio: 2.887278414646569,\n+     text: 'medium priority'\n+   },\n+   {\n+     ratio: 3.678877372825211,\n+     text: 'Completed'\n+   }\n+ ]\n- []\n"
+      ]
+    },
+    {
+      "theme": "dark",
+      "width": 320,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 375,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 425,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 768,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 1024,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 1280,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 1440,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 1600,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 320,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 375,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 425,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 768,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 1024,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 1280,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 1440,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    },
+    {
+      "theme": "dark",
+      "width": 1600,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "title": "28px",
+      "padding": "0px",
+      "offenders": [],
+      "contrast": {
+        "checked": 155,
+        "failures": []
+      },
+      "passed": true,
+      "failures": []
+    }
+  ],
+  "interactions": [],
+  "states": [
+    {
+      "mode": "legacy",
+      "passed": true
+    },
+    {
+      "mode": "empty",
+      "passed": true
+    },
+    {
+      "mode": "unavailable",
+      "passed": true
+    },
+    {
+      "mode": "loading",
+      "passed": true
+    },
+    {
+      "mode": "history-error",
+      "passed": true
+    },
+    {
+      "mode": "restore",
+      "passed": true
+    },
+    {
+      "mode": "expired",
+      "passed": true
+    },
+    {
+      "mode": "boundary",
+      "passed": true
+    }
+  ],
+  "screenshots": [
+    "light-375-dashboard.png",
+    "light-1440-dashboard.png",
+    "light-desktop-planner.png",
+    "light-mobile-tasks.png",
+    "dark-375-dashboard.png",
+    "dark-1440-dashboard.png",
+    "dark-desktop-history.png",
+    "dark-mobile-tasks.png",
+    "light-mobile-legacy.png",
+    "light-loading.png"
+  ],
+  "interactionFailures": [
+    {
+      "theme": "light",
+      "error": "Expected values to be strictly equal:\n\nfalse !== true\n"
+    },
+    {
+      "theme": "dark",
+      "error": "Expected values to be strictly equal:\n\nfalse !== true\n"
+    },
+    {
+      "theme": "system",
+      "error": "Expected values to be strictly equal:\n\nfalse !== true\n"
+    }
+  ],
+  "status": "BLOCKED"
+}

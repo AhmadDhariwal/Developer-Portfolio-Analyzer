@@ -1,0 +1,10 @@
+{
+  "scope": "Strict project .env read-only probe; no application keys written",
+  "endpointSource": "REDIS_URL",
+  "declaredUrlHasRedisScheme": true,
+  "declaredUrlUsesTls": false,
+  "declaredUrlIsLoopback": true,
+  "declaredUrlIsUpstash": false,
+  "alternativeFieldsConfigured": true,
+  "projectEnvironmentPing": "PASS"
+}

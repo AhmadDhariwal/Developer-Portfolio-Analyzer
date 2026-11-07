@@ -4,8 +4,11 @@ const { getNewsFeed } = require('../services/newsService');
 const logger = require('../utils/logger');
 
 const normalizeSavedType = (value) => {
-  const normalized = String(value || '').trim().toLowerCase();
-  if (normalized === 'read_later' || normalized === 'read-later' || normalized === 'read later') return 'read_later';
+  const normalized = String(value || '')
+    .trim()
+    .toLowerCase();
+  if (normalized === 'read_later' || normalized === 'read-later' || normalized === 'read later')
+    return 'read_later';
   if (normalized === 'bookmark') return 'bookmark';
   return '';
 };
@@ -16,17 +19,7 @@ const sanitizeString = (value, maxLength, fallback = '') =>
     .replace(/\s+/g, ' ')
     .slice(0, maxLength) || fallback;
 
-const sanitizeUrl = (value) => {
-  const raw = sanitizeString(value, 500);
-  if (!raw) return '';
-  try {
-    const url = new URL(raw);
-    if (!['http:', 'https:'].includes(url.protocol)) return '';
-    return url.toString();
-  } catch {
-    return '';
-  }
-};
+const { safeNewsUrl: sanitizeUrl } = require('../utils/newsUrl');
 
 const normalizePublishedAt = (value) => {
   if (!value) return null;
@@ -45,7 +38,10 @@ const mapSavedItem = (item) => ({
   category: String(item?.category || 'Backend'),
   type: item?.type,
   createdAt: item?.createdAt || null,
-  readAt: item?.readAt || null
+  readAt: item?.readAt || null,
+  firstReadAt: item?.firstReadAt || item?.readAt || item?.lastReadAt || null,
+  lastReadAt: item?.lastReadAt || item?.readAt || null,
+  readCount: Math.max(Number(item?.readCount) || 0, item?.readAt || item?.lastReadAt ? 1 : 0)
 });
 
 const getNews = async (req, res) => {
@@ -56,16 +52,21 @@ const getNews = async (req, res) => {
     });
     const totalPages = Math.max(1, Math.ceil(payload.total / payload.filters.limit));
     res.json({
+      serverTime: new Date().toISOString(),
       items: payload.items,
       total: payload.total,
       page: payload.filters.page,
+      limit: payload.filters.limit,
       totalPages,
       hasMore: payload.filters.page < totalPages,
+      coverage: payload.coverage || null,
+      enrichment: payload.enrichment || null,
+      mode: payload.filters.mode || 'personalized',
       sourceSummary: payload.sourceSummary || {},
       trendingTopics: payload.trendingTopics || [],
       activeTab: payload.filters.tab,
       fromCache: payload.fromCache,
-      recommendedBasedOn: payload.recommendedBasedOn || {},
+      recommendedBasedOn: payload.filters.mode === 'explore' ? null : payload.recommendedBasedOn || {},
       telemetry: payload.telemetry || {
         cacheHit: false,
         providerFailureCount: 0,
@@ -93,9 +94,16 @@ const getSavedNews = async (req, res) => {
 
     const rawPage = req.query?.page;
     const rawLimit = req.query?.limit;
-    const page = rawPage === undefined ? 1 : Number.parseInt(rawPage, 10);
-    const limit = rawLimit === undefined ? 50 : Number.parseInt(rawLimit, 10);
-    if (!Number.isInteger(page) || page < 1 || !Number.isInteger(limit) || limit < 1 || limit > 100) {
+    const page = rawPage === undefined ? 1 : Number(rawPage);
+    const limit = rawLimit === undefined ? 50 : Number(rawLimit);
+    if (
+      !Number.isInteger(page) ||
+      page < 1 ||
+      page > 10000 ||
+      !Number.isInteger(limit) ||
+      limit < 1 ||
+      limit > 100
+    ) {
       return res.status(400).json({ message: 'Saved news pagination is invalid.' });
     }
 
@@ -104,7 +112,9 @@ const getSavedNews = async (req, res) => {
 
     const [items, total] = await Promise.all([
       NewsSavedItem.find(filter)
-        .select('articleId title url source image publishedAt category type createdAt readAt')
+        .select(
+          'articleId title url source image publishedAt category type createdAt readAt firstReadAt lastReadAt readCount'
+        )
         .sort({ createdAt: -1 })
         .skip((page - 1) * limit)
         .limit(limit)
@@ -132,6 +142,10 @@ const getSavedNews = async (req, res) => {
 
 const saveNews = async (req, res) => {
   try {
+    for (const key of ['articleId', 'title', 'url', 'source', 'image', 'category', 'type', 'publishedAt']) {
+      if (req.body?.[key] !== undefined && req.body[key] !== null && typeof req.body[key] !== 'string')
+        return res.status(400).json({ message: 'Saved news fields must be strings.' });
+    }
     const articleId = sanitizeString(req.body?.articleId, 160);
     const title = sanitizeString(req.body?.title, 220);
     const url = sanitizeUrl(req.body?.url);
@@ -141,7 +155,14 @@ const saveNews = async (req, res) => {
     const type = normalizeSavedType(req.body?.type);
     const publishedAt = normalizePublishedAt(req.body?.publishedAt);
 
-    if (!articleId || !title || !url || !type || (req.body?.publishedAt && !publishedAt) || (req.body?.image && !image)) {
+    if (
+      !articleId ||
+      !title ||
+      !url ||
+      !type ||
+      (req.body?.publishedAt && !publishedAt) ||
+      (req.body?.image && !image)
+    ) {
       return res.status(400).json({
         message: 'Valid articleId, title, url, and type are required.'
       });
@@ -189,9 +210,8 @@ const saveNews = async (req, res) => {
     if (error?.code === 11000) {
       const type = normalizeSavedType(req.body?.type);
       const url = sanitizeUrl(req.body?.url);
-      const existing = type && url
-        ? await NewsSavedItem.findOne({ userId: req.user._id, url, type }).lean()
-        : null;
+      const existing =
+        type && url ? await NewsSavedItem.findOne({ userId: req.user._id, url, type }).lean() : null;
       if (existing) {
         return res.status(200).json({
           item: mapSavedItem(existing),
@@ -239,15 +259,46 @@ const removeSavedNews = async (req, res) => {
 
 const markSavedNewsAsRead = async (req, res) => {
   try {
+    const body = req.body === undefined ? {} : req.body;
+    if (
+      !body ||
+      typeof body !== 'object' ||
+      Array.isArray(body) ||
+      Object.keys(body).some((key) => key !== 'read') ||
+      (Object.hasOwn(body, 'read') && typeof body.read !== 'boolean')
+    )
+      return res
+        .status(400)
+        .json({ message: 'Read status must be a boolean read field or an empty object.' });
+    const read = body.read !== false;
     const id = String(req.params.id || '').trim();
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: 'Saved news id is invalid.' });
     }
 
+    const previousRead = { $ifNull: ['$readAt', null] };
+    const previousHistory = { $ifNull: ['$lastReadAt', previousRead] };
+    // Atomic, lazy legacy hydration preserves the original completion before
+    // clearing readAt. A repeated state does not add a completion or change time.
+    const history = {
+      firstReadAt: { $ifNull: ['$firstReadAt', { $ifNull: [previousRead, previousHistory] }] },
+      lastReadAt: previousHistory,
+      readCount: {
+        $max: [{ $ifNull: ['$readCount', 0] }, { $cond: [{ $ne: [previousHistory, null] }, 1, 0] }]
+      }
+    };
+    const transition = read
+      ? {
+          firstReadAt: { $ifNull: ['$firstReadAt', '$$NOW'] },
+          lastReadAt: { $cond: [{ $ne: [previousRead, null] }, '$lastReadAt', '$$NOW'] },
+          readAt: { $ifNull: ['$readAt', '$$NOW'] },
+          readCount: { $add: ['$readCount', { $cond: [{ $ne: [previousRead, null] }, 0, 1] }] }
+        }
+      : { readAt: null };
     const item = await NewsSavedItem.findOneAndUpdate(
       { _id: id, userId: req.user._id, type: 'read_later' },
-      { $set: { readAt: new Date() } },
-      { returnDocument: 'after' }
+      [{ $set: history }, { $set: transition }],
+      { returnDocument: 'after', updatePipeline: true }
     ).lean();
 
     if (!item) {
@@ -256,7 +307,7 @@ const markSavedNewsAsRead = async (req, res) => {
 
     res.json({
       item: mapSavedItem(item),
-      message: 'Read later item marked as read.'
+      message: read ? 'Read later item marked as read.' : 'Read later item marked as unread.'
     });
   } catch (error) {
     logger.error('saved news read update failed', {

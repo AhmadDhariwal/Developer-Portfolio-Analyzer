@@ -1,0 +1,56 @@
+<div class="section-heading">
+  <div>
+    <span class="eyebrow">Actionable priorities</span>
+    <h2 id="opportunities-title">Priority improvement opportunities</h2>
+    <p>
+      Backend-supplied priorities identify required skills whose practical use is not yet
+      demonstrated. You may already use them; strengthen the evidence where appropriate.
+    </p>
+  </div>
+  <span class="tag">{{ opportunities.length }} gaps</span>
+</div>
+<ol class="opportunities">
+  @for (opportunity of opportunities.slice(0, 3); track opportunity.name) {
+    <li>
+      <div class="opportunity-header">
+        <strong>{{ opportunity.name }}</strong>
+        <span class="priority-badge" [attr.data-priority]="opportunity.priority"
+          >{{ opportunity.priority }} priority</span
+        >
+      </div>
+      <p class="opportunity-why">
+        {{
+          opportunity.whyItMatters ||
+            opportunity.whyExists ||
+            'Add concrete, relevant project examples to strengthen the available evidence.'
+        }}
+      </p>
+      @if (opportunity.suggestedProject; as project) {
+        <div class="opportunity-project">
+          <span>Suggested project</span>
+          <strong>{{ project.title }}</strong>
+          <small>{{ project.deliverable || project.outcome }}</small>
+        </div>
+      }
+      <div class="opportunity-links">
+        <a class="btn-action" routerLink="/app/courses" [queryParams]="{ skill: opportunity.name }"
+          >Find courses →</a
+        >
+        <a
+          class="btn-action btn-action--secondary"
+          routerLink="/app/career-sprint"
+          [queryParams]="{ skill: opportunity.name }"
+          >Sprint action →</a
+        >
+      </div>
+    </li>
+  } @empty {
+    <li>No improvement priorities were supplied for this snapshot.</li>
+  }
+</ol>
+@if (opportunities.length > 3) {
+  <p class="more-notice">
+    Showing top 3 high-leverage priorities. Explore all
+    {{ opportunities.length }} requirement gaps in the Career Skill Explorer below.
+  </p>
+}

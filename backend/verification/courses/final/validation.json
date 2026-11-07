@@ -1,0 +1,301 @@
+{
+  "status": "VERIFIED",
+  "readyToLock": true,
+  "scope": "Learning Hub final local end-to-end verification; no business-rule or locked Sprint calculation changes",
+  "bundle": "main-ME5VABAA.js",
+  "functionalSourceUpdates": [
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/scripts/migrateCourseIndexes.js",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/tests/coursesFinalization.test.js",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/shared/services/course.service.ts",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/shared/services/course.service.spec.ts",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/scripts/verify-courses-ui.cjs"
+  ],
+  "addedSourceFiles": [
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/scripts/verifyCoursesEndToEnd.js",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/scripts/verifyCoursesLiveProvider.js",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/tests/coursesProviderVerification.test.js"
+  ],
+  "auditedAndFormattedBackend": [
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/controllers/courseController.js",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/controllers/courseProgressController.js",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/data/courseCatalog.js",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/models/userCourseProgress.js",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/routes/courseRoutes.js",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/scripts/coursesPerfMeasure.js",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/scripts/migrateCourseIndexes.js",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/services/courseHandoffService.js",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/services/coursePersonalizationService.js",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/services/courseProgressService.js",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/services/courseRecommendationService.js",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/services/courseService.js",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/tests/coursesFinalization.test.js",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/tests/coursesHardening.test.js",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/tests/coursesMongo.integration.test.js",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/tests/coursesPerformance.test.js",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/utils/courseIdentity.js",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/scripts/verifyCoursesEndToEnd.js",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/scripts/verifyCoursesLiveProvider.js",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/tests/coursesProviderVerification.test.js"
+  ],
+  "auditedAndFormattedFrontend": [
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/pages/courses/courses.component.ts",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/pages/courses/courses.component.html",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/pages/courses/courses.component.scss",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/shared/components/course-card/course-card.ts",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/shared/components/course-card/course-card.html",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/shared/components/course-card/course-card.scss",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/shared/components/course-filters/course-filters.ts",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/shared/components/course-filters/course-filters.html",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/shared/components/course-filters/course-filters.scss",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/shared/models/course.model.ts",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/shared/services/course.service.ts",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/shared/services/course.service.spec.ts",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/pages/courses/courses.component.spec.ts",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/pages/courses/components/my-learning.component.ts",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/pages/courses/components/my-learning.component.html",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/pages/courses/components/my-learning.component.scss",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/pages/courses/components/my-learning.component.spec.ts",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/pages/courses/services/course-learning.store.ts",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/pages/courses/services/course-learning.store.spec.ts",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/shared/components/course-card/course-card.spec.ts",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/shared/components/course-filters/course-filters.spec.ts",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/scripts/courses-browser-fixture.cjs",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/scripts/verify-courses-ui.cjs"
+  ],
+  "retainedEvidence": [
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/final/REPORT.md",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/final/validation.json",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/final/end-to-end.json",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/final/live-provider.json",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/final/performance.json",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/final/mathematics.json",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/final/cleanup.json",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/final-backend-tests.log",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/final-focused-tests.log",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/final-end-to-end.log",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/verification/courses/final/synthetic/browser-results.json",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/verification/courses/final/real-light-1440.png",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/verification/courses/final/real-light-375.png",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/verification/courses/final/real-dark-1440.png",
+    "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/verification/courses/final/real-dark-375.png"
+  ],
+  "sourceHashes": {
+    "backend/src/controllers/courseController.js": "5a716fd2a16986f4f4382c573ac3a13ddc127aebf5872ded5ad70080e95a0dc0",
+    "backend/src/controllers/courseProgressController.js": "76ad8965f6bf764d052622f1e73ab38a6f2a152146b9b641f1e17cdd8c6e2edc",
+    "backend/src/data/courseCatalog.js": "1c2505a2ccfb34c261c310869a6fbcd52651e183110c43e8fb2c52026be6d534",
+    "backend/src/models/userCourseProgress.js": "b5ecebc3ee1a1628f8f6fc1573e0cd6bb787feeefe77e4ff28b867cadfabcfb2",
+    "backend/src/routes/courseRoutes.js": "3e1e3940e0c0f6c90d7b6357dcaf654b7abf8e96a31f4caf16a912d4dbd7981e",
+    "backend/src/scripts/coursesPerfMeasure.js": "929384a53955a81d26e7312a49c2a85a568123a6869b125de8e71f01c24518f3",
+    "backend/src/scripts/migrateCourseIndexes.js": "9f9aa03a6b1bc87c14c064d740e60f4e4a0415948ab8fe6e55374f6bf67f8cf5",
+    "backend/src/services/courseHandoffService.js": "e41fcfd1cc3f359fae775e8081fbb74e012cbf5f226983c8930ba24eb6cbd03d",
+    "backend/src/services/coursePersonalizationService.js": "e752915fcd791ee8c4498fc4726d0e3da86d83fcbc416c84bd27b9747496322c",
+    "backend/src/services/courseProgressService.js": "c47c715d6cea509674c0a982cc7003558bc526f7fb6a917fd5d383fb7daaae4d",
+    "backend/src/services/courseRecommendationService.js": "61d9f8b446edef361d6138efc628a4237118b5a8c394521db74c1da7ebf71802",
+    "backend/src/services/courseService.js": "34e92531b164ac17fa3dbddc58949ad6b2ed32772a7f18217a3804216015bd5e",
+    "backend/src/tests/coursesFinalization.test.js": "58a75065b2d3854d1554c2a6f7ff7b264683c8ded4abd9bbdfc22b5f2edf8ff4",
+    "backend/src/tests/coursesHardening.test.js": "73b1d2e7ea7a9280884e7e5d879fa92a1b62dd5afe78963f202cf08d9e6d5936",
+    "backend/src/tests/coursesMongo.integration.test.js": "8f88ae61a9f2143f6c3567672c9f6d5e3ced1d827abea1ea2be767d91d54466b",
+    "backend/src/tests/coursesPerformance.test.js": "65b44a86cbc68274c1a992a615470c13805f549deaac70cf3a72b297bb14d2b8",
+    "backend/src/utils/courseIdentity.js": "6f9139665df8a33a826e18b3eaf6fe15f5ebe5c7a95d24c3530ff8a174ff3e08",
+    "backend/src/scripts/verifyCoursesEndToEnd.js": "6ad7a6e0b4eab826c8bb585fb51e75656b1ca19d548a8f44dc594f6d11f98ba3",
+    "backend/src/scripts/verifyCoursesLiveProvider.js": "4c9ff8aa014cd226a2c8926d52c3b273cd6fe5dc486e4695d91b361a2424b795",
+    "backend/src/tests/coursesProviderVerification.test.js": "6c5bdbe5ab38a3bf31ee7b07fe5bedf3fb554f0b3f910bdb51ba9bc7f699d566",
+    "frontend/src/app/pages/courses/courses.component.ts": "63316f67974808591e8ccdf4661d425df053d3308f17e713e5ecc4ebde5f8512",
+    "frontend/src/app/pages/courses/courses.component.html": "bdbef32fdd3aec20626856883914dd6099d77554cb96e3423418f966e1c77c30",
+    "frontend/src/app/pages/courses/courses.component.scss": "2e4bc0bdfef1d1376ed304326b88a8b89a99d9f6ddb8915eef6b8ad86b32386c",
+    "frontend/src/app/shared/components/course-card/course-card.ts": "6f33e19ad6934c3ac5bbc14ec8623de9644f713045aad2de5e76fa20f7b0eb19",
+    "frontend/src/app/shared/components/course-card/course-card.html": "bc7a7c07cf54d17178d1a73716e4ddd5bfe04d810ff7e212b3643188d7b79098",
+    "frontend/src/app/shared/components/course-card/course-card.scss": "1d4e0157bc172cb6542d42933549776b3317a4921e15af7c6a2b9e47c4d657a8",
+    "frontend/src/app/shared/components/course-filters/course-filters.ts": "d989ce0dbeec977096cae097d66b686f9f0854725576cee0488809115a457c2a",
+    "frontend/src/app/shared/components/course-filters/course-filters.html": "6dc8de6d6b0f4da36a314331035116c62ac0c3b1e272456c4dc57059f22ebf3a",
+    "frontend/src/app/shared/components/course-filters/course-filters.scss": "97030fc8f72bc6aa5cd4520eb6002eebe18c6291f595286c33e8e516f4ce6f49",
+    "frontend/src/app/shared/models/course.model.ts": "fb5d16b70b80dbda2ee79b2b4e7b8e2b7b5e071433ce25a3eae2502597536b56",
+    "frontend/src/app/shared/services/course.service.ts": "18acba7b2b0269c002d1d70caf43d9500fc69b1f0ff7da15d1311b723b652b41",
+    "frontend/src/app/shared/services/course.service.spec.ts": "700be6d5be1b82e52970b022d6bc438b0e2b0a8c31d5baa48e36a33ddea3c7ce",
+    "frontend/src/app/pages/courses/courses.component.spec.ts": "0f66af61e98cc9d9912d4c1dc606c152b1381b6e521be644de20d35f0a274895",
+    "frontend/src/app/pages/courses/components/my-learning.component.ts": "cf6f6643014a2a4b21584a027da5e89581d5bf28c0ad40bd227a2802e7c873e0",
+    "frontend/src/app/pages/courses/components/my-learning.component.html": "b84a31193ab15ff521d6a4918ede574bb873a0bd0efe25c234467caed523ea9a",
+    "frontend/src/app/pages/courses/components/my-learning.component.scss": "ed381286929a6c738af9e8afa8029d981743c55e943c630f92af3a521461f0a1",
+    "frontend/src/app/pages/courses/components/my-learning.component.spec.ts": "a614e52aa5b43090613242d1229a40f169860bb5fdef00d65b5e05345a28563d",
+    "frontend/src/app/pages/courses/services/course-learning.store.ts": "965355d62c2fcce235d2c6db9853f4cc5bf5080dc0125774b6a172025abd9915",
+    "frontend/src/app/pages/courses/services/course-learning.store.spec.ts": "437167c7f629c14b0f0dcb65714dd5d38b7047458cc42d6dafdb1e58350586a5",
+    "frontend/src/app/shared/components/course-card/course-card.spec.ts": "68defbcf570002bd334e18370d08c7fc5267ba231e93d3426f11c144d96822ef",
+    "frontend/src/app/shared/components/course-filters/course-filters.spec.ts": "01e319b83bf800bdde00adaf89f0e9060295be9887e99deac25fb44856225631",
+    "frontend/scripts/courses-browser-fixture.cjs": "7b1b10fb13fe856bb6e90474790e617bd7accebfe1318f935c094b0f533492a4",
+    "frontend/scripts/verify-courses-ui.cjs": "bd0094975300f437a3c1d753fb2e2011db583cebcabc82cf7cafab1710eb508c"
+  },
+  "checks": {
+    "backendFull": {
+      "tests": 350,
+      "passed": 350,
+      "failed": 0,
+      "skipped": 0,
+      "command": "node --test --test-concurrency=1 src/tests/*.test.js"
+    },
+    "backendCourses": {
+      "tests": 48,
+      "passed": 48,
+      "includes": "8 Mongo/JWT subtests plus parent; provider failures/recovery and current-evidence checks"
+    },
+    "frontendFull": {
+      "tests": 225,
+      "files": 45,
+      "passed": 225
+    },
+    "frontendCourses": {
+      "tests": 32,
+      "files": 6,
+      "passed": 32
+    },
+    "typescript": "PASS",
+    "productionBuild": "PASS",
+    "prettierWriteCheck": {
+      "backendFiles": 20,
+      "frontendFiles": 23,
+      "result": "PASS"
+    },
+    "javascriptSyntax": "PASS",
+    "gitWorkingWhitespace": "PASS",
+    "gitStagedWhitespace": "PASS",
+    "realEndToEnd": {
+      "traces": 3,
+      "journeys": 4,
+      "screenshots": 4,
+      "status": "VERIFIED",
+      "aiCalls": 0
+    },
+    "syntheticBrowser": {
+      "layouts": 24,
+      "themeJourneys": 3,
+      "states": 11,
+      "status": "VERIFIED"
+    },
+    "liveYouTube": {
+      "realNetwork": true,
+      "courses": 3,
+      "milliseconds": 1409,
+      "status": "available"
+    }
+  },
+  "performance": {
+    "cold": {
+      "label": "cold",
+      "p50": 155.8,
+      "p95": 163.19
+    },
+    "redisWarm": {
+      "label": "redis_warm",
+      "p50": 47.13,
+      "p95": 48.1
+    },
+    "memoryWarm": {
+      "label": "memory_warm",
+      "p50": 31.23,
+      "p95": 32.4
+    },
+    "concurrent": {
+      "poolBuilds": 1,
+      "providerCalls": 1,
+      "mongoWrites": 1,
+      "redisSets": 1
+    }
+  },
+  "cleanup": {
+    "isolatedLocalOnly": true,
+    "port": 27018,
+    "databases": [
+      {
+        "name": "devinsight_learning_browser",
+        "documentCountsBeforeCleanup": {
+          "recommendations": 0,
+          "integrationinsights": 0,
+          "platformsettings": 0,
+          "newsprovidercircuits": 0,
+          "integrationsynclogs": 0,
+          "users": 2,
+          "integrationconnections": 0,
+          "githubanalysiscaches": 1,
+          "publicprofileviews": 0,
+          "newscaches": 0,
+          "weeklyreports": 0,
+          "jobcaches": 0,
+          "usercourseprogresses": 1,
+          "resumeanalyses": 1,
+          "publicprofiles": 0,
+          "analyses": 0,
+          "analysiscaches": 5,
+          "resumefiles": 1,
+          "notifications": 0,
+          "scenariosimulations": 0,
+          "careersprints": 1,
+          "repositories": 0,
+          "skillgraphs": 0
+        },
+        "dropped": true
+      },
+      {
+        "name": "devinsight_learning_final",
+        "documentCountsBeforeCleanup": {
+          "skillgraphs": 0,
+          "analyses": 0,
+          "resumeanalyses": 0,
+          "supporttickets": 0,
+          "careersprints": 0,
+          "repositories": 0,
+          "platformsettings": 0,
+          "analysiscaches": 0,
+          "notifications": 0,
+          "weeklyreports": 0,
+          "savedpreviews": 0,
+          "integrationinsights": 0,
+          "recommendations": 0,
+          "usercourseprogresses": 0,
+          "supportticketdedupes": 0,
+          "githubanalysiscaches": 0,
+          "supportticketquotas": 0,
+          "publicprofiles": 0,
+          "jobcaches": 0,
+          "scenariosimulations": 0,
+          "users": 0,
+          "publicprofileviews": 0,
+          "resumefiles": 0
+        },
+        "dropped": true
+      }
+    ],
+    "remainingOwnedDatabases": [],
+    "repositoryFilesDeleted": [],
+    "processCleanup": "Owned mongod PID 38936 on port 27018 stopped; exact owned temporary directory verified and removed.",
+    "temporaryMongoFilesRemoved": 26
+  },
+  "priorFindings": [
+    {
+      "issue": "Fresh Mongo namespace index inspection failed before collection creation",
+      "resolution": "Handle Mongo NamespaceNotFound only; create indexes, prove native fresh namespace and repeat idempotency; preserve genuine failures."
+    },
+    {
+      "issue": "Previously cached Career Sprint omitted a new course handoff task",
+      "resolution": "Invalidate existing Sprint client cache only after confirmed successful handoff; real returning-user browser flow and service regression pass."
+    },
+    {
+      "issue": "Concurrent regression/browser workload hit existing Recommendations memory p95 threshold at 52.16 ms",
+      "resolution": "Unmodified thresholds; final isolated complete suite passed 350/350."
+    },
+    {
+      "issue": "Workspace commit/staging replaced the fresh-namespace fix during verification",
+      "resolution": "Restored the fix and its two tests, verified new native collection, final complete 350-test run passed. No agent staging, commit or reset commands."
+    }
+  ],
+  "externalLimitations": [
+    "Real YouTube success was verified; 401/403/quota/timeout/circuit recovery use controlled provider responses and time shifts, not deliberate live quota exhaustion.",
+    "Real Mongo, JWT, course/progress/profile/Sprint handlers and production Angular bundle were exercised locally with owned seeded evidence. Redis service and all deployment configurations were not live-certified.",
+    "Skill Gap and Recommendations browser smoke use existing synthetic source fixtures then follow actual links into the real Learning Hub API/UI. Their backend regressions and Mongo integration suites also passed.",
+    "Current enrollment, course pricing, certificates and external uptime are not guaranteed; curated availability remains unverified."
+  ],
+  "remainingIssues": [
+    "Existing unrelated landing-page stylesheet budget warning: 55.89 kB vs 48 kB.",
+    "Existing unrelated jsdom canvas/navigation notices."
+  ],
+  "repositoryFilesMoved": [],
+  "repositoryFilesDeleted": []
+}

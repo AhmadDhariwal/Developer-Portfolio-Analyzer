@@ -1,0 +1,6 @@
+{
+  "scope": "Read-only alternative Upstash configuration probe; project REDIS_URL unchanged; no application key writes",
+  "tls": true,
+  "hostIsUpstash": true,
+  "ping": "BLOCKED"
+}

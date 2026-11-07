@@ -1,6 +1,7 @@
 # Database
 
 ## Technology
+
 - **Database**: MongoDB
 - **ODM**: Mongoose 9
 - **Connection**: `backend/src/config/db.js`
@@ -38,9 +39,11 @@ erDiagram
 ## Core Models
 
 ### User (`models/user.js`)
+
 **Purpose**: Central identity for all platform users.
 
 Key fields:
+
 - `organizationId` (ObjectId, ref Organization) — org membership
 - `email` (String, unique, required)
 - `password` (String, hashed with bcryptjs)
@@ -62,10 +65,12 @@ What depends on it: Auth middleware, RBAC, org scoping, dashboard aggregation
 Backward compatibility: Do NOT remove existing fields; rename is NOT supported
 
 ### Organization (`models/organization.js`)
+
 - Tenant/company container
 - Links users, teams, memberships
 
 ### Analysis (`models/analysis.js`)
+
 **Purpose**: Aggregated analysis results per user.
 
 - `userId` — owner
@@ -80,102 +85,134 @@ Backward compatibility: Do NOT remove existing fields; rename is NOT supported
 Who uses it: dashboardcontroller, githubcontroller, resumecontroller, weeklyReportService
 
 ### AnalysisCache (`models/analysisCache.js`)
+
 Generic analysis cache for non-GitHub analysis results.
 
 ### ResumeAnalysis (`models/resumeAnalysis.js`)
+
 Per-user resume analysis results with AI feedback.
 
 ### ResumeFile (`models/resumeFile.js`)
+
 Uploaded resume file metadata. Stored on disk in `uploads/`.
 
 ### Repository (`models/repository.js`)
+
 GitHub repository metadata linked to user.
 
 ### Skill / SkillGraph (`models/skill.js`, `models/skillGraph.js`)
+
 User's detected skills and skill relationship graph.
 
 ### Recommendation (`models/recommendation.js`)
+
 AI-generated recommendations for learning and career growth.
 
 ### CareerSprint (`models/careerSprint.js`)
+
 Structured career acceleration plans with milestones.
 
 ### WeeklyReport (`models/weeklyReport.js`)
+
 Auto-generated weekly progress reports.
 
 ### Job / JobCache / JobSourceHealth (`models/Job.js`, `models/jobCache.js`, `models/jobSourceHealth.js`)
+
 Job listings from external APIs (JSearch, Jooble, Adzuna) with source health tracking.
 
 ### InterviewQuestionBank (`models/interviewQuestionBank.js`)
+
 Self-growing question pool with topic buckets.
+
 - `topicKey`, `topicType`, `topicDimensions`
 - `sourceType` (ai_generated, scraped, user_asked, seed)
 - `confidence` score
 - Deduplication fields
 
 ### InterviewPrepSession (`models/interviewPrepSession.js`)
+
 User interview practice sessions.
 
 ### ScenarioSimulation (`models/scenarioSimulation.js`)
+
 Career scenario "what-if" modeling results.
 
 ### Recruiter / RecruiterMatch / RecruiterShortlist (`models/Recruiter.js`, `models/RecruiterMatch.js`, `models/RecruiterShortlist.js`)
+
 Recruiter-side candidate discovery pipeline.
 
 ### IntegrationConnection / IntegrationInsight / IntegrationSyncLog (`models/integrationConnection.js`, `models/integrationInsight.js`, `models/integrationSyncLog.js`)
+
 Third-party integration state and sync tracking.
 
 ### PlatformSettings (`models/platformSettings.js`)
+
 Global platform configuration (maintenance mode, AI provider settings, integration secrets).
 
 ### PublicProfile / PublicProfileView (`models/publicProfile.js`, `models/publicProfileView.js`)
+
 Shareable developer portfolios with view tracking.
 
 ### Notification (`models/notification.js`)
+
 User notifications with deduplication support.
 
 ### AuditLog (`models/auditLog.js`)
+
 Persistent audit trail for sensitive operations.
 
 ### WorkflowRun (`models/workflowRun.js`)
+
 Workflow execution records.
 
 ### AiVersion (`models/aiVersion.js`)
+
 AI model version tracking for analysis reproducibility.
 
 ### Stats (`models/stats.js`)
+
 Platform-wide usage statistics.
 
 ### Membership / Team (`models/membership.js`, `models/team.js`)
+
 Org-level membership and team structures.
 
 ### Invitation (`models/invitation.js`)
+
 Team/organization invitations.
 
 ### Otp / PendingRegistration (`models/otp.js`, `models/pendingRegistration.js`)
+
 Temporary records for OTP-based registration flow.
 
 ### EmailDeliveryJob (`models/emailDeliveryJob.js`)
+
 Queue for email delivery with retry tracking.
 
 ### GithubAnalysisCache (`models/githubAnalysisCache.js`)
+
 Cached GitHub analysis results with versioning and snapshot history.
 
 ## Data Migration Scripts
 
-| Script | Purpose |
-|--------|---------|
-| `scripts/seedInterviewQuestionBank.js` | Seeds 20+ prebuilt questions per topic |
-| `scripts/migrateInterviewQuestionBankTopicFields.js` | Backfills topic fields on existing questions |
-| `scripts/migrateInterviewQuestionBankStructuredAnswers.js` | Migrates answer format |
-| `scripts/backfillJobCacheFromAnalysisCache.js` | Backfills job cache from analysis data |
-| `scripts/cleanupInvalidMemberships.js` | Cleans stale membership records |
+| Script                                                     | Purpose                                      |
+| ---------------------------------------------------------- | -------------------------------------------- |
+| `scripts/seedInterviewQuestionBank.js`                     | Seeds 20+ prebuilt questions per topic       |
+| `scripts/migrateInterviewQuestionBankTopicFields.js`       | Backfills topic fields on existing questions |
+| `scripts/migrateInterviewQuestionBankStructuredAnswers.js` | Migrates answer format                       |
+| `scripts/backfillJobCacheFromAnalysisCache.js`             | Backfills job cache from analysis data       |
+| `scripts/cleanupInvalidMemberships.js`                     | Cleans stale membership records              |
 
 ## Important: Modifying Models
 
 When modifying a Mongoose model:
+
 1. Check `DATABASE.md` for who depends on it
 2. Never remove fields — use `default` for new fields
 3. Run migration scripts for existing documents
 4. Update indexes if query patterns change
 5. Test with existing data
+
+## Integrations persistence and explicit indexes
+
+IntegrationConnection adds externalAccountId, ownershipVerified, oauthAttempt, leaseId and leaseUntil; token strings are versioned AES-GCM envelopes. IntegrationInsight provider records add ownershipVerified/evidenceKind. IntegrationSyncLog adds expiresAt only for new writes. User integrationMutationVersion is an internal native Mongo fencing counter. The integrationWebhookReceipts collection stores only hashed delivery/body identifiers and creation times. Existing unique user/provider and insight/user indexes remain. Candidate due/history/retention indexes are created only by the explicit inspection script after explain evidence. See [Integrations](features/integrations.md).

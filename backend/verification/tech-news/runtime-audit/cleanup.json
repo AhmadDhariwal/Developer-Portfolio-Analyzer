@@ -1,0 +1,12 @@
+{
+  "disposableRedisStopped": true,
+  "remainingKeysBeforeShutdown": 0,
+  "removedOwnedPaths": [
+    "WSL Ubuntu:/tmp/devinsight-runtime-y9O31m",
+    "WSL Ubuntu:/tmp/devinsight-runtime-F7PQdO",
+    "WSL Ubuntu:/redis.tar.gz"
+  ],
+  "resolvedPathsAndOwnershipVerified": true,
+  "applicationBackendLeftRunning": true,
+  "applicationRedisUnchanged": true
+}

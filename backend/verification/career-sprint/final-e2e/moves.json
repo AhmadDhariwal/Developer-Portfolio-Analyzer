@@ -1,0 +1,10 @@
+[
+  {
+    "from": "frontend/verification/career-sprint/final-e2e-frontend-full.log",
+    "to": "frontend/verification/career-sprint/final-e2e/frontend-full.log"
+  },
+  {
+    "from": "frontend/verification/career-sprint/final-e2e-frontend-focused.log",
+    "to": "frontend/verification/career-sprint/final-e2e/frontend-focused.log"
+  }
+]

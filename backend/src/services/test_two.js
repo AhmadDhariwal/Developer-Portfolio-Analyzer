@@ -1,4 +1,4 @@
-{
+module.exports = {
   "python": [
     {
       "difficulty": "medium",

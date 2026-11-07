@@ -1,530 +1,888 @@
-<div class="career-sprint">
+<div class="sprint-page dev-page" [attr.aria-busy]="isLoading || isRefreshing">
   <header class="page-header">
-    <div class="header-copy">
-      <span class="eyebrow">Execution System</span>
-      <h2>Career Sprint</h2>
-      <p>Plan, execute, and review weekly progress with streaks, XP, AI drafts, and connected developer signals.</p>
+    <div>
+      <span class="eyebrow">Your career, in motion</span>
+      <h1>Career Sprint</h1>
+      <p class="description">
+        Make room for focused work. Turn your next steps into visible progress.
+      </p>
+      <div class="context-line">
+        <span class="context-pill"
+          >{{ careerStack || 'Career growth' }} <span aria-hidden="true">·</span>
+          {{ experienceLevel || 'Your own pace' }}</span
+        >
+        @if (sprint) {
+          <span class="context-pill"
+            ><span class="status-dot" [class.warning]="readOnly || stale"></span
+            >{{
+              stale
+                ? 'Showing last loaded data'
+                : readOnly
+                  ? 'Preserved legacy Sprint'
+                  : 'Backend-synced progress'
+            }}</span
+          >
+        }
+      </div>
     </div>
-
     <div class="header-actions">
-      <span class="cache-status" *ngIf="isCached">Cached</span>
-      <span class="cache-status offline" *ngIf="isOffline">Offline</span>
-      <button class="ghost-btn" type="button" (click)="showSetupPanel = !showSetupPanel">
-        {{ showSetupPanel ? 'Hide AI Setup' : 'AI Sprint Setup' }}
-      </button>
-      <button class="ghost-btn" type="button" (click)="loadData(true)" [disabled]="isRefreshing || isLoading">
-        {{ isRefreshing ? 'Refreshing...' : 'Refresh Sprint' }}
+      <button
+        type="button"
+        (click)="settingsOpen = !settingsOpen"
+        [attr.aria-expanded]="settingsOpen"
+        aria-controls="sprint-settings"
+      >
+        Calendar settings</button
+      ><button
+        type="button"
+        (click)="loadData(true)"
+        [disabled]="isLoading || isRefreshing || !!busy"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          aria-hidden="true"
+        >
+          <path d="M20 7v5h-5M4 17v-5h5" />
+          <path d="M6 7a7 7 0 0 1 12-1l2 3M4 15l2 3a7 7 0 0 0 12-1" /></svg
+        >{{ isRefreshing ? 'Refreshing…' : 'Refresh' }}</button
+      ><button
+        type="button"
+        class="primary"
+        (click)="openNewSprint()"
+        [attr.aria-expanded]="newSprintOpen"
+        aria-controls="new-sprint"
+      >
+        + New Sprint
       </button>
     </div>
   </header>
 
-  <div class="message-row" *ngIf="errorMessage || actionMessage">
-    <div class="message-card error" *ngIf="errorMessage">{{ errorMessage }}</div>
-    <div class="message-card" [class.success]="actionTone === 'success'" [class.warning]="actionTone === 'info'" [class.error]="actionTone === 'error'" *ngIf="actionMessage">
+  @if (errorMessage) {
+    <div class="notice error" role="alert">
+      <strong>{{ stale ? 'Could not refresh your Sprint' : 'Let’s reconnect' }}</strong>
+      <p>{{ errorMessage }}</p>
+      <button type="button" (click)="loadData(true)" [disabled]="isLoading || isRefreshing">
+        Retry loading Sprint
+      </button>
+    </div>
+  }
+  @if (actionMessage) {
+    <div
+      class="notice action-message"
+      [class.error]="actionFailed"
+      [class.success]="!actionFailed"
+      role="status"
+    >
       {{ actionMessage }}
+      @if (actionFailed) {
+        <button type="button" (click)="loadData(true)" [disabled]="isRefreshing">
+          Refresh Sprint
+        </button>
+      }
     </div>
-  </div>
+  }
 
-  <div class="refresh-bar" *ngIf="isRefreshing"><span></span></div>
-
-  <div *ngIf="isLoading" class="loading-shell">
-    <div class="skeleton-block hero-skeleton"></div>
-    <div class="skeleton-grid">
-      <div class="skeleton-block"></div>
-      <div class="skeleton-block"></div>
-      <div class="skeleton-block"></div>
-      <div class="skeleton-block"></div>
-    </div>
-  </div>
-
-  <ng-container *ngIf="!isLoading && sprint">
-    <section class="hero-grid">
-      <article class="card hero-card">
-        <div class="hero-top">
-          <div class="hero-identity">
-            <div class="avatar-shell">
-              <img *ngIf="userAvatar; else avatarFallback" [src]="getAvatarSrc()" [alt]="userName || 'Developer'" />
-              <ng-template #avatarFallback>
-                <span>{{ userInitial }}</span>
-              </ng-template>
-            </div>
-
-            <div class="hero-copy">
-              <span class="goal-kicker">Current Sprint</span>
-              <h3>{{ sprint.title }}</h3>
-              <p class="hero-date-line">
-                {{ effectiveStartDate | date: 'MMM d' }} to {{ effectiveEndDate | date: 'MMM d' }}
-                <span class="duration-chip">{{ sprintDaysLabel }}</span>
-              </p>
-            </div>
-          </div>
-
-          <div class="hero-status">
-            <div class="status-pill" [class.warning]="getStreakStatus() === 'warning'" [class.broken]="getStreakStatus() === 'broken'">
-              {{ getStreakStatus() === 'active' ? 'On Track' : getStreakStatus() === 'warning' ? 'Streak At Risk' : 'Streak Broken' }}
-            </div>
-            <div class="status-pill accent">
-              {{ analytics?.completedTasks || 0 }} / {{ analytics?.totalTasks || 0 }} tasks done
-            </div>
-          </div>
+  @if (settingsOpen) {
+    <section class="surface settings" id="sprint-settings" aria-labelledby="calendar-heading">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">A calendar that fits you</span>
+          <h2 id="calendar-heading">Calendar settings</h2>
+          <p>Timezone changes apply to future Sprints. Existing dates and calendars stay intact.</p>
         </div>
-
-        <div class="hero-main">
-          <div class="progress-cluster">
-            <div class="progress-ring-shell">
-              <svg class="progress-ring" width="140" height="140">
-                <circle class="ring-track" stroke-width="10" fill="transparent" r="45" cx="70" cy="70"></circle>
-                <circle
-                  class="ring-fill"
-                  stroke-width="10"
-                  fill="transparent"
-                  r="45"
-                  cx="70"
-                  cy="70"
-                  [style.stroke-dasharray]="2 * 3.14159 * 45"
-                  [style.stroke-dashoffset]="progressRingOffset"
-                ></circle>
-              </svg>
-              <div class="ring-content">
-                <strong>{{ progressPercent }}%</strong>
-                <span>{{ motivationalText }}</span>
-              </div>
-            </div>
-
-            <div class="xp-card">
-              <div class="xp-header">
-                <span class="level-badge">Level {{ level }}</span>
-                <span>{{ xpPoints }} XP</span>
-              </div>
-              <div class="xp-track">
-                <div class="xp-fill" [style.width.%]="xpProgressPercent"></div>
-              </div>
-              <small>{{ xpInCurrentLevel }} / 100 XP this level. Next level at {{ xpToNextLevel }} XP.</small>
-            </div>
-          </div>
-
-          <div class="hero-metrics">
-            <div class="metric-card">
-              <span class="metric-label">Consistency</span>
-              <strong>{{ analytics?.consistencyScore || 0 }}%</strong>
-              <small>Execution reliability this sprint</small>
-            </div>
-
-            <div class="metric-card">
-              <span class="metric-label">Productivity</span>
-              <strong>{{ analytics?.productivityScore || 0 }}%</strong>
-              <small>Based on points completed and overdue load</small>
-            </div>
-
-            <div class="metric-card">
-              <span class="metric-label">Current Streak</span>
-              <strong>{{ currentStreak }}d</strong>
-              <small>Best: {{ longestStreak }} days</small>
-            </div>
-
-            <div class="metric-card">
-              <span class="metric-label">Overdue</span>
-              <strong>{{ overdueCount }}</strong>
-              <small>Tasks needing attention now</small>
-            </div>
-          </div>
-        </div>
-
-        <div class="sprint-summary-strip">
-          <div *ngIf="sprint.weeklyGoal > 0"><span>Weekly goal</span><strong>{{ sprint.weeklyGoal }}</strong></div>
-          <div><span>Total tasks</span><strong>{{ allTasks.length }}</strong></div>
-          <div><span>Completed</span><strong>{{ completedCount }}</strong></div>
-          <div><span>Pending</span><strong>{{ remainingTasksCount }}</strong></div>
-          <div *ngIf="generatedTaskCount > 0"><span>Suggestions added</span><strong>{{ generatedTaskCount }}</strong></div>
-        </div>
-
-        <div class="restore-banner" *ngIf="restoreMeta">
-          <div>
-            <strong>Restore window</strong>
-            <span>{{ restoreMeta.reason }}</span>
-          </div>
-          <button type="button" class="restore-btn" *ngIf="restoreMeta.canRestore" (click)="restoreStreak()">Restore Streak</button>
-        </div>
-      </article>
-
-      <article class="card trend-card compact-card">
-        <div class="section-head">
-          <div>
-            <span class="section-kicker">Trend</span>
-            <h3>Productivity Trend</h3>
-          </div>
-          <span class="mini-badge">{{ analytics?.completedInLastSevenDays || 0 }} tasks in 7d</span>
-        </div>
-
-        <div class="trend-weekdays" *ngIf="trendActivity.length">
-          <span *ngFor="let day of trendActivity; trackBy: trackByActivity">{{ day.label }}</span>
-        </div>
-
-        <div class="activity-grid compact" *ngIf="trendActivity.length">
-          <div class="activity-cell compact" *ngFor="let day of trendActivity; trackBy: trackByActivity" [class.active]="day.active" [style.--level]="day.count">
-            <span>{{ day.count > 0 ? day.count : '•' }}</span>
-          </div>
-        </div>
-
-        <div class="activity-legend">
-          <span>Low</span>
-          <div class="legend-bar"></div>
-          <span>High</span>
-        </div>
-
-        <div class="comparison-strip" *ngIf="comparison">
-          <div>
-            <span>Progress vs previous</span>
-            <strong>{{ comparison.progressDelta >= 0 ? '+' : '' }}{{ comparison.progressDelta }} pts</strong>
-          </div>
-          <div>
-            <span>Completed tasks delta</span>
-            <strong>{{ comparison.completedTasksDelta >= 0 ? '+' : '' }}{{ comparison.completedTasksDelta }}</strong>
-          </div>
-        </div>
-      </article>
-    </section>
-
-    <section class="analytics-grid">
-      <article class="card insight-card" *ngIf="hasInsights">
-        <div class="section-head">
-          <div>
-            <span class="section-kicker">Insights</span>
-            <h3>Sprint Completion Insights</h3>
-          </div>
-        </div>
-        <ul class="insight-list">
-          <li *ngFor="let insight of sprint.insights || []">{{ insight }}</li>
-        </ul>
-        <button class="text-link-btn" type="button" (click)="plannerFilter = 'week'">View planner focus</button>
-      </article>
-
-      <article class="card signals-card" *ngIf="hasSignalContext">
-        <div class="section-head">
-          <div>
-            <span class="section-kicker">Signals Used</span>
-            <h3>Connected Context</h3>
-          </div>
-        </div>
-
-        <div class="signals-grid">
-          <div class="signal-box" *ngIf="hasCareerFocusSignal">
-            <strong>Career Focus</strong>
-            <span>{{ sprint.signalsUsed?.careerSprint?.activeLearningFocus }}</span>
-          </div>
-          <div class="signal-box" *ngIf="hasWeeklySignal">
-            <strong>Weekly Report</strong>
-            <span>{{ sprint.signalsUsed?.weeklyReport?.status }} · {{ sprint.signalsUsed?.weeklyReport?.weeklyProgressScore }}%</span>
-          </div>
-          <div class="signal-box" *ngIf="hasPortfolioSignal">
-            <strong>Portfolio</strong>
-            <span>{{ sprint.signalsUsed?.portfolio?.completenessScore }}% complete</span>
-          </div>
-          <div class="signal-box" *ngIf="hasIntegrationSignal">
-            <strong>Integrations</strong>
-            <span>{{ (sprint.signalsUsed?.integrations?.usedProviders || []).join(', ') }}</span>
-          </div>
-        </div>
-      </article>
-
-      <article class="card history-card">
-        <div class="section-head">
-          <div>
-            <span class="section-kicker">History</span>
-            <h3>Week-over-Week Comparison</h3>
-          </div>
-        </div>
-
-        <div class="history-list" *ngIf="latestHistory; else noHistory">
-          <div class="history-row featured" *ngIf="latestHistory">
-            <div>
-              <strong>{{ latestHistory.title }}</strong>
-              <span>{{ latestHistory.weekStartDate | date: 'MMM d' }} - {{ latestHistory.weekEndDate | date: 'MMM d' }}</span>
-            </div>
-            <div class="history-stats">
-              <span>{{ latestHistory.summary?.progressPercent || 0 }}%</span>
-              <small>{{ latestHistory.summary?.completedTasks || 0 }}/{{ latestHistory.summary?.totalTasks || 0 }} done</small>
-            </div>
-          </div>
-        </div>
-
-        <ng-template #noHistory>
-          <p class="empty-copy">Sprint history will appear here once you build up a few cycles.</p>
-        </ng-template>
-        <button class="text-link-btn" type="button" (click)="plannerFilter = 'all'" *ngIf="history.length > 1">View full history</button>
-      </article>
-    </section>
-
-    <section class="setup-and-drafts">
-      <article class="card setup-card" *ngIf="showSetupPanel">
-        <div class="section-head">
-          <div>
-            <span class="section-kicker">AI Setup</span>
-            <h3>Plan a Smarter Sprint</h3>
-          </div>
-          <span class="mini-badge" *ngIf="generatedPlanMeta?.confidenceScore">{{ generatedPlanMeta?.confidenceScore }}% confidence</span>
-        </div>
-
-        <p class="setup-desc">
-          Generate balanced study, build, and polish tasks using your profile, skill-gap signals, GitHub weak areas, weekly reports, and recommendations.
+      </div>
+      <form (ngSubmit)="savePreference()" class="settings-form">
+        <label
+          >IANA timezone for future Sprints<input
+            name="timezone"
+            [(ngModel)]="preferenceZone"
+            list="sprint-timezones"
+            required
+            maxlength="100"
+            placeholder="e.g. Asia/Karachi"
+            [disabled]="!!busy" /><datalist id="sprint-timezones">
+            @for (zoneName of zones; track zoneName) {
+              <option [value]="zoneName"></option>
+            }</datalist></label
+        ><button type="submit" [disabled]="!!busy || !preferenceZone.trim()">
+          {{ busy === 'zone' ? 'Saving…' : 'Save timezone' }}
+        </button>
+      </form>
+      @if (preferenceError) {
+        <p class="form-error" role="status">
+          {{ preferenceError }}
+          <button type="button" (click)="loadPreferences()">Retry preferences</button>
         </p>
-
-        <div class="date-range-row">
-          <div class="setup-field">
-            <label>Sprint Start</label>
-            <input type="date" [(ngModel)]="sprintStartDate" />
-          </div>
-          <div class="setup-field">
-            <label>Sprint End</label>
-            <input type="date" [(ngModel)]="sprintEndDate" />
-          </div>
-          <button class="save-dates-btn" type="button" (click)="saveDates()" [disabled]="isSavingDates || !sprintStartDate || !sprintEndDate">
-            {{ isSavingDates ? 'Saving...' : 'Save Dates' }}
-          </button>
+      }
+      @if (sprint) {
+        <p class="meta">
+          Current Sprint calendar:
+          {{ zone || 'Original timezone unconfirmed. Exact timestamps are shown in UTC.' }}
+        </p>
+        <form (ngSubmit)="saveDates()">
+          <fieldset class="date-fields" [disabled]="mutationsDisabled">
+            <legend>Adjust current Sprint dates</legend>
+            <label
+              >Start date<input
+                type="date"
+                name="sprintStartDate"
+                [(ngModel)]="sprintStartDate"
+                required /></label
+            ><label
+              >End date<input
+                type="date"
+                name="sprintEndDate"
+                [(ngModel)]="sprintEndDate"
+                [min]="sprintStartDate"
+                required /></label
+            ><button
+              type="submit"
+              [disabled]="
+                mutationsDisabled ||
+                !sprintStartDate ||
+                !sprintEndDate ||
+                sprintStartDate > sprintEndDate
+              "
+            >
+              {{ busy === 'dates' ? 'Saving…' : 'Update dates' }}
+            </button>
+          </fieldset>
+        </form>
+      }
+    </section>
+  }
+  @if (newSprintOpen) {
+    <section class="surface" id="new-sprint" aria-labelledby="new-sprint-heading">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">A fresh chapter</span>
+          <h2 id="new-sprint-heading">Create a Sprint</h2>
+          <p>Choose a window of up to 366 calendar days. Existing Sprint windows cannot overlap.</p>
         </div>
+        <button type="button" (click)="newSprintOpen = false" [disabled]="!!busy">Close</button>
+      </div>
+      <p class="meta">
+        A new Sprint needs its own dates. To add work to your current Sprint, use Tasks or Sprint
+        studio. Suggested dates check loaded history; the server verifies all saved windows.
+      </p>
+      <button type="button" (click)="useAvailableDates()" [disabled]="!!busy || !preferencesLoaded">
+        Use next available dates
+      </button>
+      @if (newSprintConflict; as conflict) {
+        <p class="notice error" role="status">
+          These dates overlap “{{ conflict.title || 'Career Sprint' }}”. Choose another window or
+          use the existing Sprint. Refreshing alone will not remove an overlap.
+          @if (conflict._id === sprint?._id && !mutationsDisabled) {
+            <button type="button" (click)="newSprintOpen = false; view = 'plans'">
+              Plan current Sprint
+            </button>
+          }
+        </p>
+      }
+      <form #newSprintForm="ngForm" (ngSubmit)="createSprint()" class="new-sprint-form">
+        <label
+          >Sprint title<input
+            name="newTitle"
+            [(ngModel)]="newTitle"
+            required
+            maxlength="120" /></label
+        ><label
+          >New Sprint start<input
+            type="date"
+            name="newStart"
+            [(ngModel)]="newStart"
+            required /></label
+        ><label
+          >New Sprint end<input
+            type="date"
+            name="newEnd"
+            [(ngModel)]="newEnd"
+            [min]="newStart"
+            required /></label
+        ><button
+          class="primary"
+          type="submit"
+          [disabled]="
+            !!busy ||
+            !preferencesLoaded ||
+            newSprintForm.invalid ||
+            newStart > newEnd ||
+            !!newSprintConflict
+          "
+        >
+          {{ busy === 'create' ? 'Creating…' : 'Create Sprint' }}
+        </button>
+      </form>
+      <p class="meta">
+        Uses your saved timezone: {{ savedPreferenceZone || 'Unavailable' }}. Future Sprints appear
+        in history until their start date.
+      </p>
+      @if (!preferencesLoaded) {
+        <p class="notice">
+          Load or save a valid timezone in Calendar settings before creating a Sprint.
+        </p>
+      }
+    </section>
+  }
 
-        <div class="setup-fields">
-          <div class="setup-field">
-            <label>Career Stack</label>
-            <select [(ngModel)]="goalStack">
-              <option value="">Use profile default</option>
-              <option value="Frontend">Frontend</option>
-              <option value="Backend">Backend</option>
-              <option value="Full Stack">Full Stack</option>
-              <option value="AI/ML">AI/ML</option>
-              <option value="DevOps">DevOps</option>
-            </select>
-          </div>
-
-          <div class="setup-field">
-            <label>Technology Focus</label>
-            <input [(ngModel)]="goalTechnology" placeholder="e.g. React, Docker, Testing" />
-          </div>
-
-          <div class="setup-field">
-            <label>Experience Level</label>
-            <select [(ngModel)]="goalExperienceLevel">
-              <option value="">Use profile default</option>
-              <option value="Student">Student</option>
-              <option value="Intern">Intern</option>
-              <option value="0-1 years">0-1 years</option>
-              <option value="1-2 years">1-2 years</option>
-              <option value="2-3 years">2-3 years</option>
-              <option value="3-5 years">3-5 years</option>
-              <option value="5+ years">5+ years</option>
-            </select>
-          </div>
+  @if (isLoading) {
+    <div class="loading-state" role="status">
+      <div class="skeleton large"></div>
+      <div class="loading-grid">
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+      </div>
+      <span>Loading your Sprint and progress…</span>
+    </div>
+  }
+  @if (sprint && !isLoading) {
+    @if (readOnly) {
+      <div class="notice legacy-notice" role="note">
+        <span class="notice-icon" aria-hidden="true">▤</span>
+        <div>
+          <strong>History preserved. This Sprint is read-only.</strong>
+          <p>
+            The original calendar timezone could not be confirmed, or this window is a grandfathered
+            legacy exception. Tasks, XP, streaks and exact dates are preserved. Calendar analytics
+            are unavailable; nothing has been reset to zero. Start a new, non-overlapping Sprint to
+            continue.
+          </p>
         </div>
-
-        <div class="setup-actions dual-actions">
-          <button class="secondary-btn action-btn" type="button" (click)="generateAiPlan()" [disabled]="isGeneratingPlan || isGeneratingAi">
-            {{ isGeneratingPlan ? 'Generating Plan...' : 'Generate Plan' }}
-          </button>
-          <button class="primary-btn action-btn" type="button" (click)="generateLlmAiPlan()" [disabled]="isGeneratingAi || isGeneratingPlan">
-            {{ isGeneratingAi ? 'Generating AI Plan...' : 'Generate AI Plan' }}
-          </button>
-          <button class="secondary-btn" type="button" (click)="saveGeneratedPlan()" [disabled]="!generatedTasks.length || isSavingAiPlan">
-            {{ isSavingAiPlan ? 'Saving...' : 'Save AI Draft' }}
-          </button>
-          <button class="ghost-btn" type="button" (click)="importScenarioPlan()" [disabled]="isImportingScenario">
-            {{ isImportingScenario ? 'Importing...' : 'Use Scenario Simulator Plan' }}
-          </button>
-        </div>
-
-        <div class="generated-summary" *ngIf="generatedPlanMeta">
+      </div>
+    }
+    <div class="overview-grid">
+      <section class="surface sprint-overview" aria-labelledby="current-sprint-heading">
+        <div class="section-heading">
           <div>
-            <strong>Plan type</strong>
-            <span>{{ getGeneratedModeLabel() }}{{ generatedPlanMeta.providerLabel ? ' - ' + generatedPlanMeta.providerLabel : '' }}</span>
+            <span class="eyebrow">Current Sprint</span>
+            <h2 id="current-sprint-heading">{{ sprint.title }}</h2>
+            <p class="sprint-dates">
+              {{ date(sprint.sprintStartDate || sprint.weekStartDate) }}
+              <span aria-hidden="true">→</span>
+              {{ date(sprint.sprintEndDate || sprint.weekEndDate) }}
+            </p>
           </div>
-          <div *ngIf="generatedPlanMeta.summary">
-            <strong>Draft summary</strong>
-            <span>{{ generatedPlanMeta.summary }}</span>
+          <span class="badge" [class.warning-badge]="readOnly">{{
+            readOnly ? 'Read-only' : 'In progress'
+          }}</span>
+        </div>
+        <div class="overview-content">
+          <div
+            class="progress-visual"
+            role="img"
+            [attr.aria-label]="'Weighted task progress: ' + metric(progress, '%')"
+          >
+            <svg viewBox="0 0 160 160" aria-hidden="true">
+              <circle class="ring-track" cx="80" cy="80" r="65" />
+              <circle
+                class="ring-value"
+                cx="80"
+                cy="80"
+                r="65"
+                pathLength="100"
+                [attr.stroke-dasharray]="(progress ?? 0) + ' 100'"
+              />
+            </svg>
+            <div>
+              <strong>{{ metric(progress, '%') }}</strong
+              ><span>weighted progress</span>
+            </div>
           </div>
-          <div *ngIf="generatedPlanMeta.signalsUsed.length">
-            <strong>Signals</strong>
-            <span>{{ generatedPlanMeta.signalsUsed.join(', ') }}</span>
-          </div>
-          <div *ngIf="generatedPlanMeta.consistencyScore > 0">
-            <strong>Consistency</strong>
-            <span>{{ generatedPlanMeta.consistencyScore }}%</span>
-          </div>
-          <div *ngIf="generatedPlanMeta.confidenceScore > 0">
-            <strong>Confidence</strong>
-            <span>{{ generatedPlanMeta.confidenceScore }}%</span>
+          <div class="overview-copy">
+            <h3>
+              {{ progress === 100 ? 'A Sprint worth celebrating.' : 'Small steps. Real momentum.' }}
+            </h3>
+            <p>
+              {{ metric(analytics?.completedTasks) }} of {{ metric(analytics?.totalTasks) }} tasks
+              completed · {{ metric(analytics?.completedPoints) }} /
+              {{ metric(analytics?.totalPoints) }} points
+            </p>
+            <div class="xp-heading">
+              <strong class="level-badge">Level {{ sprint.level }}</strong
+              ><span>{{ sprint.xpPoints }} <small>Sprint XP</small></span>
+            </div>
+            <div
+              class="xp-track"
+              role="progressbar"
+              aria-label="XP within current level"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              [attr.aria-valuenow]="xpProgress"
+            >
+              <span [style.width.%]="xpProgress"></span>
+            </div>
+            <p class="meta">
+              {{ xpProgress }} / 100 XP this level · Level and XP confirmed by your Sprint
+            </p>
+            <div class="overview-actions">
+              <button
+                type="button"
+                class="primary"
+                (click)="view = 'tasks'; openEditor()"
+                [disabled]="mutationsDisabled"
+              >
+                + Add task</button
+              ><button type="button" (click)="exploreSprintStudio()">
+                Explore Sprint studio →
+              </button>
+            </div>
           </div>
         </div>
-
-        <div class="fallback-state" *ngIf="generatedPlanMeta?.generationMode === 'deterministic' && !isGeneratingAi">
-          Rules-based fallback active. These are deterministic task suggestions generated from available developer signals.
+        <div class="sprint-footer">
+          <span>{{ zone || 'Original calendar unconfirmed · UTC timestamps' }}</span
+          ><span>{{ metric(analytics?.activeWindowDays, ' calendar days') }}</span
+          ><span>Welcome back, {{ userName }}.</span>
         </div>
-
-        <div class="generated-preview" *ngIf="generatedTasks.length">
-          <div class="preview-header">
-            <strong>{{ generatedTasks.length }} task suggestions</strong>
-            <button class="primary-btn small" type="button" (click)="addGeneratedTasksToSprint()" [disabled]="isMutationSaving">{{ isMutationSaving ? 'Saving...' : 'Add All to Sprint' }}</button>
+      </section>
+      <section class="surface rhythm-panel" aria-labelledby="rhythm-heading">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">Keep showing up</span>
+            <h2 id="rhythm-heading">Your rhythm</h2>
           </div>
-
-          <div class="timeline-list">
-            <article class="timeline-card" *ngFor="let task of generatedTasks; trackBy: trackByTask">
-              <div class="timeline-top">
-                <span class="task-type-badge ai">Suggestion</span>
-                <span class="priority-pill" [style.color]="getPriorityColor(task.priority)">{{ task.priority }}</span>
+          <span class="rhythm-icon" aria-hidden="true">↗</span>
+        </div>
+        <div class="streak-value">
+          <strong>{{ sprint.currentStreak ?? sprint.streak }}</strong
+          ><span
+            >day streak<small>Personal best: {{ sprint.longestStreak }} days</small></span
+          >
+        </div>
+        <div class="streak-state" [class.at-risk]="!readOnly && sprint.streakStatus !== 'active'">
+          {{
+            readOnly
+              ? 'Historical streak preserved'
+              : sprint.streakStatus === 'warning'
+                ? 'A little progress today keeps your streak going.'
+                : sprint.streakStatus === 'broken'
+                  ? 'A fresh start is always a step forward.'
+                  : 'One focused action at a time.'
+          }}
+        </div>
+        <div class="activity-heading">
+          <h3>Last 7 days</h3>
+          <span>{{ metric(analytics?.completedInLastSevenDays, ' completions') }}</span>
+        </div>
+        @if (zone && activity.length) {
+          <div class="activity-chart" aria-label="Weekly task activity">
+            @for (day of activity; track day.date) {
+              <div class="activity-day">
+                <span class="activity-count">{{ day.count }}</span>
+                <div class="bar-track">
+                  <span [style.height.%]="day.count ? 20 + Math.min(day.count, 8) * 10 : 0"></span>
+                </div>
+                <span>{{ day.label }}</span
+                ><span class="sr-only">{{ day.date }}: {{ day.count }} tasks completed</span>
               </div>
-              <strong>{{ task.title }}</strong>
-              <p>{{ task.description }}</p>
-              <div class="timeline-meta">
-                <span>{{ getCategoryIcon(task.category) }}</span>
-                <span *ngIf="getTaskDateRange(task)">{{ getTaskDateRange(task) }}</span>
-                <span>{{ task.points }} pts</span>
-              </div>
-            </article>
+            }
           </div>
+        } @else {
+          <div class="activity-unavailable">
+            <span aria-hidden="true">—</span>
+            <p>Weekly activity unavailable</p>
+            <small>{{
+              readOnly
+                ? 'Original calendar provenance is unresolved.'
+                : 'No activity series was supplied for this Sprint.'
+            }}</small>
+          </div>
+        }
+      </section>
+    </div>
+    <section class="metric-grid" aria-label="Sprint performance">
+      <article class="metric-tile">
+        <span class="metric-icon" aria-hidden="true">▤</span>
+        <div>
+          <span class="metric-label">Tasks remaining</span
+          ><strong>{{ metric(analytics?.pendingTasks) }}</strong
+          ><small>{{ metric(analytics?.totalTasks) }} tasks in your Sprint</small>
         </div>
       </article>
-
-      <article class="card drafts-card">
-        <div class="section-head drafts-header">
-          <div>
-            <span class="section-kicker">Drafts</span>
-            <h3>Saved AI Plans</h3>
-            <p class="empty-copy section-subcopy">Generate or import a plan to keep reusable sprint templates.</p>
-          </div>
-          <button class="primary-btn small create-plan-btn" type="button" (click)="openSetupPanel()">Create AI Plan</button>
+      <article class="metric-tile">
+        <span class="metric-icon danger-icon" aria-hidden="true">◷</span>
+        <div>
+          <span class="metric-label">Overdue tasks</span
+          ><strong>{{ metric(analytics?.overdueTasks) }}</strong
+          ><small>Open tasks past their deadline</small>
         </div>
-
-        <div class="drafts-list" *ngIf="(sprint.aiPlans || []).length; else noDrafts">
-          <article class="draft-row" *ngFor="let plan of sprint.aiPlans || []; trackBy: trackByDraft" [class.selected]="selectedDraftId === plan._id">
-            <div class="draft-copy">
-              <strong>{{ plan.name }}</strong>
-              <span>{{ getDraftModeLabel(plan) }} - {{ plan.confidenceScore }}% confidence</span>
-              <div class="draft-meta-line">
-                <span>{{ plan.tasks.length }} tasks</span>
-                <span *ngIf="plan.goalTechnology">{{ plan.goalTechnology }}</span>
-                <span>{{ plan.createdAt | date: 'MMM d, y' }}</span>
-              </div>
-            </div>
-            <button class="secondary-btn small" type="button" (click)="loadDraft(plan)">Load Draft</button>
-          </article>
+      </article>
+      <article class="metric-tile">
+        <span class="metric-icon success-icon" aria-hidden="true">↗</span>
+        <div>
+          <span class="metric-label">Productivity</span
+          ><strong>{{ metric(analytics?.productivityScore, '%') }}</strong
+          ><small>Completed points and overdue work</small>
         </div>
-
-        <ng-template #noDrafts>
-          <div class="drafts-empty-state">
-            <div class="empty-orb">✦</div>
-            <p class="empty-copy">No saved AI drafts yet. Generate or import a plan to keep reusable sprint templates.</p>
-          </div>
-        </ng-template>
+      </article>
+      <article class="metric-tile">
+        <span class="metric-icon warning-icon" aria-hidden="true">◈</span>
+        <div>
+          <span class="metric-label">Consistency</span
+          ><strong [class.unavailable]="analytics?.consistencyScore == null">{{
+            metric(analytics?.consistencyScore, '%')
+          }}</strong
+          ><small>{{
+            analytics?.consistencyScore == null
+              ? 'Calendar analytics unavailable'
+              : 'Your recent execution pattern'
+          }}</small>
+        </div>
       </article>
     </section>
-
-    <section class="planner-grid">
-      <article class="card planner-card">
-        <div class="planner-header">
+    @if (sprint.restoreMeta?.expiresAt && !readOnly && sprint.streakStatus === 'broken') {
+      <section class="notice restore-panel" aria-labelledby="restore-heading">
+        <div>
+          <strong id="restore-heading">{{
+            canRestore ? 'Your streak has a recovery window' : 'Streak recovery window closed'
+          }}</strong>
+          <p>
+            Recovery lasts exactly 48 elapsed hours from the break instant. It creates no activity
+            or XP and can be used once per interval.
+          </p>
+          <p class="meta">
+            Deadline: {{ sprint.restoreMeta?.expiresAt | date: 'medium' }} (your device time) ·
+            {{ restoreCountdown }} remaining
+          </p>
+        </div>
+        <button type="button" (click)="restoreStreak()" [disabled]="!canRestore">
+          {{ busy === 'restore' ? 'Restoring…' : 'Restore streak' }}
+        </button>
+      </section>
+    }
+    <nav class="workspace-nav" aria-label="Sprint workspace">
+      <button
+        type="button"
+        [class.active]="view === 'tasks'"
+        [attr.aria-pressed]="view === 'tasks'"
+        (click)="view = 'tasks'"
+      >
+        Tasks <span>{{ sprint.tasks.length }}</span></button
+      ><button
+        type="button"
+        [class.active]="view === 'plans'"
+        [attr.aria-pressed]="view === 'plans'"
+        (click)="view = 'plans'"
+      >
+        Sprint studio <span>{{ sprint.aiPlans?.length || 0 }}</span></button
+      ><button
+        type="button"
+        [class.active]="view === 'history'"
+        [attr.aria-pressed]="view === 'history'"
+        (click)="view = 'history'"
+      >
+        Sprint history <span>{{ history.length }}</span>
+      </button>
+    </nav>
+    @if (view === 'tasks') {
+      <section class="task-workspace" aria-labelledby="tasks-heading">
+        <div class="section-heading">
           <div>
-            <span class="section-kicker">Planner</span>
-            <h3>Task Planner</h3>
+            <h2 id="tasks-heading">The work that moves you forward</h2>
+            <p>Plan clearly, make progress, and keep a record of what you finish.</p>
           </div>
-
-          <div class="planner-tabs">
-            <button [class.active]="plannerFilter === 'all'" (click)="plannerFilter = 'all'">All</button>
-            <button [class.active]="plannerFilter === 'sprint'" (click)="plannerFilter = 'sprint'">Sprint</button>
-            <button [class.active]="plannerFilter === 'today'" (click)="plannerFilter = 'today'">Today</button>
-            <button [class.active]="plannerFilter === 'week'" (click)="plannerFilter = 'week'">Pending</button>
-            <button [class.active]="plannerFilter === 'overdue'" (click)="plannerFilter = 'overdue'">Overdue</button>
-            <button [class.active]="plannerFilter === 'custom'" (click)="plannerFilter = 'custom'">Custom</button>
+          <button type="button" (click)="openEditor()" [disabled]="mutationsDisabled">
+            + Add task
+          </button>
+        </div>
+        @if (showEditor) {
+          <app-sprint-task-editor
+            [task]="taskToEdit"
+            [zone]="zone"
+            [disabled]="readOnly || stale || isRefreshing"
+            [busy]="busy === 'task'"
+            (saved)="saveTask($event)"
+            (cancelled)="showEditor = false"
+          />
+        }
+        <div class="surface task-inventory">
+          <div class="task-filters">
+            <label class="search-field"
+              >Search tasks<input
+                type="search"
+                [(ngModel)]="search"
+                placeholder="Search title or description" /></label
+            ><label
+              >Status<select aria-label="Status" [(ngModel)]="statusFilter">
+                <option value="all">All statuses</option>
+                <option value="pending">Pending</option>
+                <option value="completed">Completed</option>
+              </select></label
+            ><label
+              >Priority<select aria-label="Priority" [(ngModel)]="priorityFilter">
+                <option value="all">All priorities</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select></label
+            ><label
+              >Category<select aria-label="Category" [(ngModel)]="categoryFilter">
+                <option value="all">All categories</option>
+                <option value="learning">Learning</option>
+                <option value="project">Project</option>
+                <option value="practice">Practice</option>
+              </select></label
+            ><label
+              >Schedule<select aria-label="Schedule" [(ngModel)]="dateFilter">
+                <option value="all">Any date</option>
+                <option value="sprint">Within Sprint</option>
+                <option value="today" [disabled]="!zone">Today</option>
+                <option value="week" [disabled]="!zone">This week</option>
+                <option value="overdue">Overdue</option>
+                <option value="unscheduled">Unscheduled</option>
+                <option value="custom" [disabled]="!zone">Custom range</option>
+              </select></label
+            >
           </div>
-        </div>
-
-        <div class="custom-range-row" *ngIf="plannerFilter === 'custom'">
-          <input type="date" [(ngModel)]="customRangeStart" />
-          <span>to</span>
-          <input type="date" [(ngModel)]="customRangeEnd" />
-        </div>
-
-        <div class="task-stack" *ngIf="plannerTasks.length; else plannerEmpty">
-          <article class="task-card" *ngFor="let task of plannerTasks; trackBy: trackByTask" [class.task-active]="isTaskActive(task)" [class.completed-row]="task.isCompleted">
-            <label class="task-checkbox">
-              <input type="checkbox" [checked]="task.isCompleted" (change)="toggleTask(task)" [disabled]="isMutationSaving" />
-              <span class="checkmark"></span>
-            </label>
-
-            <div class="task-body">
-              <div class="task-top">
-                <strong>{{ task.title }}</strong>
-                <span class="task-type-badge" [class.ai]="task.taskType === 'ai'" [class.manual]="task.taskType === 'manual'">
-                  {{ task.taskType === 'ai' ? 'Suggestion' : 'Manual' }}
-                </span>
-              </div>
-              <p *ngIf="task.description">{{ task.description }}</p>
-              <div class="task-meta">
-                <span class="category-chip">{{ getCategoryIcon(task.category) }}</span>
-                <span class="priority-chip" [style.color]="getPriorityColor(task.priority)">{{ task.priority }}</span>
-                <span class="date-chip" *ngIf="getTaskDateRange(task)">{{ getTaskDateRange(task) }}</span>
-                <span class="points-chip">{{ task.points }} pts</span>
-              </div>
+          @if (dateFilter === 'custom') {
+            <div class="custom-dates">
+              <label>Filter start<input type="date" [(ngModel)]="customStart" /></label
+              ><label
+                >Filter end<input type="date" [(ngModel)]="customEnd" [min]="customStart"
+              /></label>
             </div>
-          </article>
-        </div>
-
-        <ng-template #plannerEmpty>
-          <div class="planner-empty-state">
-            <div class="planner-empty-icon">☰</div>
-            <strong>No tasks in this planner view yet.</strong>
-            <p class="empty-copy">Add a task or change the filter.</p>
-          </div>
-        </ng-template>
-      </article>
-
-      <article class="card composer-card">
-        <div class="section-head">
-          <div>
-            <span class="section-kicker">Manual Input</span>
-            <h3>Add Manual Task</h3>
-          </div>
-        </div>
-
-        <div class="composer-grid">
-          <div class="input-group full">
-            <label>Task title</label>
-            <input [(ngModel)]="newTaskTitle" placeholder="What do you need to accomplish?" />
-          </div>
-
-          <div class="input-group full">
-            <label>Description</label>
-            <textarea [(ngModel)]="newTaskDescription" rows="4" placeholder="Optional details, acceptance criteria, or implementation notes"></textarea>
-          </div>
-
-          <div class="input-group">
-            <label>Priority</label>
-            <select [(ngModel)]="newTaskPriority">
-              <option *ngFor="let priority of priorityOptions" [value]="priority">{{ priority | titlecase }}</option>
-            </select>
-          </div>
-
-          <div class="input-group">
-            <label>Category</label>
-            <select [(ngModel)]="newTaskCategory">
-              <option *ngFor="let category of categoryOptions" [value]="category">{{ category | titlecase }}</option>
-            </select>
-          </div>
-
-          <div class="input-group">
-            <label>Points</label>
-            <input type="number" min="1" max="10" [(ngModel)]="newTaskPoints" />
-          </div>
-
-          <div class="composer-actions">
-            <button class="primary-btn" type="button" (click)="addTask()" [disabled]="!newTaskTitle.trim() || isAddingTask">
-              {{ isAddingTask ? 'Adding...' : 'Add Task' }}
+          }
+          <div class="inventory-heading">
+            <span
+              >{{ visibleTasks.length }} matching
+              {{ visibleTasks.length === 1 ? 'task' : 'tasks' }}</span
+            ><button type="button" class="text-button" (click)="resetFilters()">
+              Reset filters
             </button>
           </div>
+          <ul class="task-list">
+            @for (task of visibleTasks; track task._id || $index) {
+              <li class="task-row" [class.completed]="task.isCompleted">
+                <button
+                  type="button"
+                  class="task-check"
+                  [attr.aria-label]="(task.isCompleted ? 'Reopen ' : 'Complete ') + task.title"
+                  [attr.aria-pressed]="task.isCompleted"
+                  [disabled]="mutationsDisabled"
+                  (click)="toggleTask(task)"
+                >
+                  <span aria-hidden="true">{{ task.isCompleted ? '✓' : '' }}</span>
+                </button>
+                <div class="task-content">
+                  <div class="task-title-line">
+                    <h3>{{ task.title }}</h3>
+                    <span class="priority-badge" [attr.data-priority]="task.priority"
+                      >{{ task.priority }} priority</span
+                    >
+                  </div>
+                  <p>{{ taskDescription(task).body }}</p>
+                  @if (taskDescription(task).sourceDetails) {
+                    <details class="task-provenance">
+                      <summary>Recorded source details</summary>
+                      <p>{{ taskDescription(task).sourceDetails }}</p>
+                    </details>
+                  }
+                  <div class="task-meta">
+                    <span>{{ task.category }}</span
+                    ><span>{{ task.points }} points</span
+                    ><span class="source-label">{{ source(task) }}</span>
+                    @if (overdue(task)) {
+                      <span class="overdue-label">Overdue</span>
+                    }
+                    @if (task.isCompleted) {
+                      <span class="completed-label">Completed</span>
+                    }
+                  </div>
+                  <p class="task-date">
+                    {{ task.startDate ? date(task.startDate) + ' → ' : ''
+                    }}{{ date(task.endDate || task.deadline || task.dueDate) }}
+                  </p>
+                  @if (task.evidenceLimitation) {
+                    <details class="task-provenance">
+                      <summary>Source limitation</summary>
+                      <p>{{ task.evidenceLimitation }}</p>
+                    </details>
+                  }
+                  @if (task.isCompleted && !readOnly) {
+                    <p class="meta">Reopen this task before editing or deleting it.</p>
+                  }
+                  @if (deleteTaskId === task._id) {
+                    <div class="notice delete-confirm">
+                      <p>Delete “{{ task.title }}”? This removes the task from this Sprint.</p>
+                      <button
+                        class="danger"
+                        type="button"
+                        (click)="deleteTask(task)"
+                        [disabled]="mutationsDisabled"
+                      >
+                        Confirm delete task</button
+                      ><button type="button" (click)="deleteTaskId = ''" [disabled]="!!busy">
+                        Keep task
+                      </button>
+                    </div>
+                  }
+                </div>
+                <div class="task-actions">
+                  <button
+                    type="button"
+                    (click)="openEditor(task)"
+                    [disabled]="mutationsDisabled || task.isCompleted"
+                    [attr.aria-label]="'Edit ' + task.title"
+                  >
+                    Edit</button
+                  ><button
+                    type="button"
+                    (click)="deleteTaskId = task._id || ''"
+                    [disabled]="mutationsDisabled || task.isCompleted"
+                    [attr.aria-label]="'Delete ' + task.title"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </li>
+            } @empty {
+              <li class="empty-state">
+                <span class="empty-icon" aria-hidden="true">▤</span>
+                <h3>
+                  {{
+                    sprint.tasks.length
+                      ? 'No tasks match these filters'
+                      : 'A little focus goes a long way'
+                  }}
+                </h3>
+                <p>
+                  {{
+                    sprint.tasks.length
+                      ? 'Try a broader search or reset your filters.'
+                      : 'Create your first task or build a plan in Sprint studio.'
+                  }}
+                </p>
+                @if (sprint.tasks.length) {
+                  <button type="button" (click)="resetFilters()">Clear filters</button>
+                } @else {
+                  <button
+                    class="primary"
+                    type="button"
+                    (click)="openEditor()"
+                    [disabled]="mutationsDisabled"
+                  >
+                    Create your first task
+                  </button>
+                }
+              </li>
+            }
+          </ul>
         </div>
-      </article>
+      </section>
+    }
+    @if (view === 'plans') {
+      <section class="surface" aria-label="Choose a Sprint to plan">
+        <h2>Choose a Sprint to plan</h2>
+        <p>
+          The dashboard shows your current Sprint. You can also prepare AI plans for a separate
+          writable Sprint, including a future one.
+        </p>
+        @if (writablePlanningSprints.length) {
+          <label
+            >Writable Sprint
+            <select
+              aria-label="Writable Sprint to plan"
+              [ngModel]="plannerSprint?._id"
+              (ngModelChange)="selectPlanningSprint($event)"
+              [disabled]="!!busy || isRefreshing"
+            >
+              @if (planningReadOnly) {
+                <option [value]="plannerSprint?._id" disabled>Select a writable Sprint</option>
+              }
+              @for (record of writablePlanningSprints; track record._id) {
+                <option [value]="record._id">
+                  {{ record.title }} ·
+                  {{ date(record.sprintStartDate || record.weekStartDate, record) }} –
+                  {{ date(record.sprintEndDate || record.weekEndDate, record) }}
+                </option>
+              }
+            </select>
+          </label>
+        }
+        <button type="button" (click)="beginPlanningSprint()" [disabled]="!!busy || isRefreshing">
+          Create writable Sprint
+        </button>
+        @if (planningTarget) {
+          <p role="status">
+            Planning for “{{ planningTarget.title }}” ({{
+              date(planningTarget.sprintStartDate || planningTarget.weekStartDate, planningTarget)
+            }}
+            –
+            {{ date(planningTarget.sprintEndDate || planningTarget.weekEndDate, planningTarget) }}).
+            Current Sprint history, XP and dates stay unchanged.
+          </p>
+        }
+      </section>
+      @if (plannerSprint; as target) {
+        <app-sprint-planner
+          id="sprint-planner-section"
+          [sprint]="target"
+          [disabled]="planningDisabled"
+          [disabledReason]="planningDisabledReason"
+          (updated)="plannerUpdated($event)"
+          (refreshRequested)="loadData(true)"
+        />
+      }
+    }
+    @if (view === 'history') {
+      <section aria-labelledby="history-heading">
+        <div class="section-heading">
+          <div>
+            <h2 id="history-heading">Every Sprint tells a story</h2>
+            <p>
+              Up to 12 recent Sprints, including preserved overlapping records. Open a Sprint to
+              inspect its tasks.
+            </p>
+          </div>
+          <button type="button" (click)="loadData(true)" [disabled]="isRefreshing">
+            Refresh history
+          </button>
+        </div>
+        @if (historyError) {
+          <p class="notice error" role="status">{{ historyError }}</p>
+        }
+        <div class="history-list">
+          @for (record of history; track record._id) {
+            <details class="surface history-entry">
+              <summary>
+                <div>
+                  <span class="eyebrow">{{
+                    record._id === sprint._id ? 'Current Sprint' : 'Sprint record'
+                  }}</span
+                  ><strong>{{ record.title }}</strong>
+                  <p>
+                    {{ date(record.sprintStartDate || record.weekStartDate, record) }} →
+                    {{ date(record.sprintEndDate || record.weekEndDate, record) }}
+                  </p>
+                </div>
+                <span class="history-xp"
+                  >{{ record.xpPoints }} XP<small>Level {{ record.level }}</small></span
+                ><span class="badge">{{
+                  record.legacyAccess?.readOnly ? 'Read-only legacy' : 'View record'
+                }}</span>
+              </summary>
+              <div class="history-body">
+                <div class="history-metrics">
+                  <span>{{ metric(record.summary?.progressPercent, '%') }} progress</span
+                  ><span>{{ record.currentStreak ?? record.streak }} day streak</span
+                  ><span>{{ record.tasks.length }} tasks</span>
+                </div>
+                @if (record.legacyAccess?.readOnly) {
+                  <p class="notice">
+                    Preserved historical record. Mutations are disabled; the original calendar is
+                    {{
+                      record.legacyAccess?.calendarStatus === 'provenance-unresolved'
+                        ? 'unconfirmed'
+                        : 'recorded'
+                    }}.
+                  </p>
+                }
+                <ul>
+                  @for (task of record.tasks; track task._id || $index) {
+                    <li>
+                      <span aria-hidden="true">{{ task.isCompleted ? '✓' : '○' }}</span>
+                      <div>
+                        <strong>{{ task.title }}</strong>
+                        <p>{{ taskDescription(task).body }}</p>
+                        @if (taskDescription(task).sourceDetails) {
+                          <details class="task-provenance">
+                            <summary>Recorded source details</summary>
+                            <p>{{ taskDescription(task).sourceDetails }}</p>
+                          </details>
+                        }
+                        <small
+                          >{{ task.isCompleted ? 'Completed' : 'Pending' }} ·
+                          {{ task.points }} points · {{ task.priority }} priority ·
+                          {{ source(task) }}</small
+                        >
+                        <p>
+                          {{ date(task.startDate, record) }} →
+                          {{ date(task.endDate || task.deadline || task.dueDate, record) }}
+                        </p>
+                      </div>
+                    </li>
+                  } @empty {
+                    <li>No tasks were recorded in this Sprint.</li>
+                  }
+                </ul>
+              </div>
+            </details>
+          } @empty {
+            <div class="surface empty-state">
+              <h3>No history to show yet</h3>
+              <p>Your Sprint records will appear here.</p>
+            </div>
+          }
+        </div>
+      </section>
+    }
+    <section class="connected-section" aria-labelledby="connected-heading">
+      <div class="section-heading">
+        <div>
+          <h2 id="connected-heading">Connect your next step</h2>
+          <p>Bring proposed work into your Sprint without duplicating what you already added.</p>
+        </div>
+      </div>
+      <div class="connected-grid">
+        <a routerLink="/app/recommendations"
+          ><span class="connect-icon" aria-hidden="true">↗</span>
+          <div>
+            <strong>Recommendations</strong><span>Start a current, evidence-informed action.</span>
+          </div>
+          <span aria-hidden="true">→</span></a
+        ><a routerLink="/app/courses"
+          ><span class="connect-icon" aria-hidden="true">▤</span>
+          <div>
+            <strong>Learning Hub</strong><span>Turn a saved course into a study task.</span>
+          </div>
+          <span aria-hidden="true">→</span></a
+        ><a routerLink="/app/scenario-simulator"
+          ><span class="connect-icon" aria-hidden="true">◇</span>
+          <div>
+            <strong>Scenario Simulator</strong><span>Explore a direction before committing.</span>
+          </div>
+          <span aria-hidden="true">→</span></a
+        >
+      </div>
     </section>
-  </ng-container>
-
-  <div *ngIf="!isLoading && !sprint" class="empty-state-global">
-    <div class="empty-icon">Sprint</div>
-    <h3>No active sprint found</h3>
-    <p>Refresh the page or create a fresh sprint to start tracking developer execution.</p>
-  </div>
+    @if (sprint.insights?.length || sprint.signalsUsed) {
+      <details class="insights-disclosure">
+        <summary>Progress insights & connected signals</summary>
+        <div class="comparison-line">
+          Compared with the previous Sprint:
+          {{ metric(sprint.comparison?.progressDelta, ' progress points') }} ·
+          {{ metric(sprint.comparison?.xpDelta, ' XP') }} ·
+          {{ metric(sprint.comparison?.completedTasksDelta, ' completed tasks') }} ·
+          {{ metric(sprint.comparison?.streakDelta, ' streak days') }}
+        </div>
+        <div class="insights-grid">
+          <ul>
+            @for (insight of sprint.insights || []; track $index) {
+              <li>{{ insight }}</li>
+            }
+          </ul>
+          <dl>
+            <dt>Career focus</dt>
+            <dd>{{ sprint.signalsUsed?.careerSprint?.activeLearningFocus || 'Unavailable' }}</dd>
+            <dt>Weekly report</dt>
+            <dd>
+              {{ sprint.signalsUsed?.weeklyReport?.status || 'Unavailable' }} ·
+              {{ metric(sprint.signalsUsed?.weeklyReport?.weeklyProgressScore) }}
+            </dd>
+            <dt>Portfolio completeness</dt>
+            <dd>{{ metric(sprint.signalsUsed?.portfolio?.completenessScore, '%') }}</dd>
+            <dt>Connected providers</dt>
+            <dd>
+              {{ sprint.signalsUsed?.integrations?.usedProviders?.join(', ') || 'None recorded' }}
+            </dd>
+          </dl>
+        </div>
+        <p class="meta">Sprint completion records your activity. It is not proof of proficiency.</p>
+      </details>
+    }
+  }
 </div>

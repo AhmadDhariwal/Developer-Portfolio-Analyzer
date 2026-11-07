@@ -1,0 +1,343 @@
+{
+  "safe": false,
+  "recordCount": 15,
+  "conflicts": [
+    {
+      "owner": "69e9efd85a0084c767771781",
+      "ids": ["6a4e4ff719b693d01b6dc086", "6a5482ee19b693d01b6dc300"],
+      "windows": [
+        {
+          "id": "6a4e4ff719b693d01b6dc086",
+          "start": "2026-07-05T19:00:00.000Z",
+          "end": "2026-07-12T18:59:59.999Z"
+        },
+        {
+          "id": "6a5482ee19b693d01b6dc300",
+          "start": "2026-07-10T19:00:00.000Z",
+          "end": "2026-07-22T18:59:59.999Z"
+        }
+      ],
+      "reason": "historical-window-overlap"
+    },
+    {
+      "owner": "69cb7bef2a3592cb0892c5f0",
+      "ids": ["69cb89cd2a3592cb0892c7ae", "69d353735f845da253033315"],
+      "reason": "calendar-reservation-conflict"
+    },
+    {
+      "owner": "69cb7bef2a3592cb0892c5f0",
+      "ids": ["69e72d29aa2cdea0a8ffc9f7", "69f1bcfcf27c336c4e1fde82"],
+      "reason": "calendar-reservation-conflict"
+    },
+    {
+      "owner": "69e9efd85a0084c767771781",
+      "ids": ["6a1eafbfe47387fa951fd44d", "6a2910e8ca9c1a48a40252a4"],
+      "reason": "calendar-reservation-conflict"
+    },
+    {
+      "owner": "69e9efd85a0084c767771781",
+      "ids": ["6a2910e8ca9c1a48a40252a4", "6a2fea5531d790519d0180e8"],
+      "reason": "calendar-reservation-conflict"
+    },
+    {
+      "owner": "69e9efd85a0084c767771781",
+      "ids": ["6a4394c73484a5beee511dff", "6a4e4ff719b693d01b6dc086"],
+      "reason": "calendar-reservation-conflict"
+    }
+  ],
+  "problems": [],
+  "proposals": [
+    {
+      "id": "69cb89cd2a3592cb0892c7ae",
+      "owner": "69cb7bef2a3592cb0892c5f0",
+      "start": "2026-03-29T19:00:00.000Z",
+      "end": "2026-04-05T18:59:59.999Z",
+      "version": 2,
+      "timeZone": "UTC",
+      "occupiedDays": [
+        "legacy:UTC:2026-03-29",
+        "legacy:UTC:2026-03-30",
+        "legacy:UTC:2026-03-31",
+        "legacy:UTC:2026-04-01",
+        "legacy:UTC:2026-04-02",
+        "legacy:UTC:2026-04-03",
+        "legacy:UTC:2026-04-04",
+        "legacy:UTC:2026-04-05"
+      ],
+      "reservationPolicy": "legacy-reservations-v1"
+    },
+    {
+      "id": "69d353735f845da253033315",
+      "owner": "69cb7bef2a3592cb0892c5f0",
+      "start": "2026-04-05T19:00:00.000Z",
+      "end": "2026-04-12T18:59:59.999Z",
+      "version": 0,
+      "timeZone": "UTC",
+      "occupiedDays": [
+        "legacy:UTC:2026-04-05",
+        "legacy:UTC:2026-04-06",
+        "legacy:UTC:2026-04-07",
+        "legacy:UTC:2026-04-08",
+        "legacy:UTC:2026-04-09",
+        "legacy:UTC:2026-04-10",
+        "legacy:UTC:2026-04-11",
+        "legacy:UTC:2026-04-12"
+      ],
+      "reservationPolicy": "legacy-reservations-v1"
+    },
+    {
+      "id": "69e5ff4864eb4700684907fa",
+      "owner": "69e5caff43b4a0c2a8792ee0",
+      "start": "2026-04-19T19:00:00.000Z",
+      "end": "2026-04-26T18:59:59.999Z",
+      "version": 0,
+      "timeZone": "UTC",
+      "occupiedDays": [
+        "legacy:UTC:2026-04-19",
+        "legacy:UTC:2026-04-20",
+        "legacy:UTC:2026-04-21",
+        "legacy:UTC:2026-04-22",
+        "legacy:UTC:2026-04-23",
+        "legacy:UTC:2026-04-24",
+        "legacy:UTC:2026-04-25",
+        "legacy:UTC:2026-04-26"
+      ],
+      "reservationPolicy": "legacy-reservations-v1"
+    },
+    {
+      "id": "69e72d29aa2cdea0a8ffc9f7",
+      "owner": "69cb7bef2a3592cb0892c5f0",
+      "start": "2026-04-18T19:00:00.000Z",
+      "end": "2026-04-26T18:59:59.999Z",
+      "version": 44,
+      "timeZone": "UTC",
+      "occupiedDays": [
+        "legacy:UTC:2026-04-18",
+        "legacy:UTC:2026-04-19",
+        "legacy:UTC:2026-04-20",
+        "legacy:UTC:2026-04-21",
+        "legacy:UTC:2026-04-22",
+        "legacy:UTC:2026-04-23",
+        "legacy:UTC:2026-04-24",
+        "legacy:UTC:2026-04-25",
+        "legacy:UTC:2026-04-26"
+      ],
+      "reservationPolicy": "legacy-reservations-v1"
+    },
+    {
+      "id": "69e7505aaa2cdea0a8ffceef",
+      "owner": "69e74e10aa2cdea0a8ffcc29",
+      "start": "2026-04-19T19:00:00.000Z",
+      "end": "2026-04-26T18:59:59.999Z",
+      "version": 0,
+      "timeZone": "UTC",
+      "occupiedDays": [
+        "legacy:UTC:2026-04-19",
+        "legacy:UTC:2026-04-20",
+        "legacy:UTC:2026-04-21",
+        "legacy:UTC:2026-04-22",
+        "legacy:UTC:2026-04-23",
+        "legacy:UTC:2026-04-24",
+        "legacy:UTC:2026-04-25",
+        "legacy:UTC:2026-04-26"
+      ],
+      "reservationPolicy": "legacy-reservations-v1"
+    },
+    {
+      "id": "69f1bcfcf27c336c4e1fde82",
+      "owner": "69cb7bef2a3592cb0892c5f0",
+      "start": "2026-04-26T19:00:00.000Z",
+      "end": "2026-05-03T18:59:59.999Z",
+      "version": 0,
+      "timeZone": "UTC",
+      "occupiedDays": [
+        "legacy:UTC:2026-04-26",
+        "legacy:UTC:2026-04-27",
+        "legacy:UTC:2026-04-28",
+        "legacy:UTC:2026-04-29",
+        "legacy:UTC:2026-04-30",
+        "legacy:UTC:2026-05-01",
+        "legacy:UTC:2026-05-02",
+        "legacy:UTC:2026-05-03"
+      ],
+      "reservationPolicy": "legacy-reservations-v1"
+    },
+    {
+      "id": "6a030a6eab79ad1781e90abb",
+      "owner": "69fb1593acc018164c80f7a8",
+      "start": "2026-05-10T19:00:00.000Z",
+      "end": "2026-05-17T18:59:59.999Z",
+      "version": 0,
+      "timeZone": "UTC",
+      "occupiedDays": [
+        "legacy:UTC:2026-05-10",
+        "legacy:UTC:2026-05-11",
+        "legacy:UTC:2026-05-12",
+        "legacy:UTC:2026-05-13",
+        "legacy:UTC:2026-05-14",
+        "legacy:UTC:2026-05-15",
+        "legacy:UTC:2026-05-16",
+        "legacy:UTC:2026-05-17"
+      ],
+      "reservationPolicy": "legacy-reservations-v1"
+    },
+    {
+      "id": "6a1eafbfe47387fa951fd44d",
+      "owner": "69e9efd85a0084c767771781",
+      "start": "2026-05-31T19:00:00.000Z",
+      "end": "2026-06-07T18:59:59.999Z",
+      "version": 0,
+      "timeZone": "UTC",
+      "occupiedDays": [
+        "legacy:UTC:2026-05-31",
+        "legacy:UTC:2026-06-01",
+        "legacy:UTC:2026-06-02",
+        "legacy:UTC:2026-06-03",
+        "legacy:UTC:2026-06-04",
+        "legacy:UTC:2026-06-05",
+        "legacy:UTC:2026-06-06",
+        "legacy:UTC:2026-06-07"
+      ],
+      "reservationPolicy": "legacy-reservations-v1"
+    },
+    {
+      "id": "6a2910e8ca9c1a48a40252a4",
+      "owner": "69e9efd85a0084c767771781",
+      "start": "2026-06-07T19:00:00.000Z",
+      "end": "2026-06-14T18:59:59.999Z",
+      "version": 0,
+      "timeZone": "UTC",
+      "occupiedDays": [
+        "legacy:UTC:2026-06-07",
+        "legacy:UTC:2026-06-08",
+        "legacy:UTC:2026-06-09",
+        "legacy:UTC:2026-06-10",
+        "legacy:UTC:2026-06-11",
+        "legacy:UTC:2026-06-12",
+        "legacy:UTC:2026-06-13",
+        "legacy:UTC:2026-06-14"
+      ],
+      "reservationPolicy": "legacy-reservations-v1"
+    },
+    {
+      "id": "6a2fea5531d790519d0180e8",
+      "owner": "69e9efd85a0084c767771781",
+      "start": "2026-06-14T19:00:00.000Z",
+      "end": "2026-06-21T18:59:59.999Z",
+      "version": 0,
+      "timeZone": "UTC",
+      "occupiedDays": [
+        "legacy:UTC:2026-06-14",
+        "legacy:UTC:2026-06-15",
+        "legacy:UTC:2026-06-16",
+        "legacy:UTC:2026-06-17",
+        "legacy:UTC:2026-06-18",
+        "legacy:UTC:2026-06-19",
+        "legacy:UTC:2026-06-20",
+        "legacy:UTC:2026-06-21"
+      ],
+      "reservationPolicy": "legacy-reservations-v1"
+    },
+    {
+      "id": "6a4394c73484a5beee511dff",
+      "owner": "69e9efd85a0084c767771781",
+      "start": "2026-06-28T19:00:00.000Z",
+      "end": "2026-07-05T18:59:59.999Z",
+      "version": 0,
+      "timeZone": "UTC",
+      "occupiedDays": [
+        "legacy:UTC:2026-06-28",
+        "legacy:UTC:2026-06-29",
+        "legacy:UTC:2026-06-30",
+        "legacy:UTC:2026-07-01",
+        "legacy:UTC:2026-07-02",
+        "legacy:UTC:2026-07-03",
+        "legacy:UTC:2026-07-04",
+        "legacy:UTC:2026-07-05"
+      ],
+      "reservationPolicy": "legacy-reservations-v1"
+    },
+    {
+      "id": "6a4e4ff719b693d01b6dc086",
+      "owner": "69e9efd85a0084c767771781",
+      "start": "2026-07-05T19:00:00.000Z",
+      "end": "2026-07-12T18:59:59.999Z",
+      "version": 0,
+      "timeZone": "UTC",
+      "occupiedDays": [
+        "legacy:UTC:2026-07-05",
+        "legacy:UTC:2026-07-06",
+        "legacy:UTC:2026-07-07",
+        "legacy:UTC:2026-07-08",
+        "legacy:UTC:2026-07-09",
+        "legacy:UTC:2026-07-10",
+        "legacy:UTC:2026-07-11",
+        "legacy:UTC:2026-07-12"
+      ],
+      "reservationPolicy": "legacy-reservations-v1"
+    },
+    {
+      "id": "6a5482ee19b693d01b6dc300",
+      "owner": "69e9efd85a0084c767771781",
+      "start": "2026-07-10T19:00:00.000Z",
+      "end": "2026-07-22T18:59:59.999Z",
+      "version": 22,
+      "timeZone": "UTC",
+      "occupiedDays": [
+        "legacy:UTC:2026-07-10",
+        "legacy:UTC:2026-07-11",
+        "legacy:UTC:2026-07-12",
+        "legacy:UTC:2026-07-13",
+        "legacy:UTC:2026-07-14",
+        "legacy:UTC:2026-07-15",
+        "legacy:UTC:2026-07-16",
+        "legacy:UTC:2026-07-17",
+        "legacy:UTC:2026-07-18",
+        "legacy:UTC:2026-07-19",
+        "legacy:UTC:2026-07-20",
+        "legacy:UTC:2026-07-21",
+        "legacy:UTC:2026-07-22"
+      ],
+      "reservationPolicy": "legacy-reservations-v1"
+    },
+    {
+      "id": "6a67630448b4bbcacc0dfb1e",
+      "owner": "69e9efd85a0084c767771781",
+      "start": "2026-07-26T19:00:00.000Z",
+      "end": "2026-08-02T18:59:59.999Z",
+      "version": 0,
+      "timeZone": "UTC",
+      "occupiedDays": [
+        "legacy:UTC:2026-07-26",
+        "legacy:UTC:2026-07-27",
+        "legacy:UTC:2026-07-28",
+        "legacy:UTC:2026-07-29",
+        "legacy:UTC:2026-07-30",
+        "legacy:UTC:2026-07-31",
+        "legacy:UTC:2026-08-01",
+        "legacy:UTC:2026-08-02"
+      ],
+      "reservationPolicy": "legacy-reservations-v1"
+    },
+    {
+      "id": "6ad0ba6f116d4a0d4aa83c64",
+      "owner": "69e9efd85a0084c767771781",
+      "start": "2026-10-11T19:00:00.000Z",
+      "end": "2026-10-18T18:59:59.999Z",
+      "version": 0,
+      "timeZone": "UTC",
+      "occupiedDays": [
+        "legacy:UTC:2026-10-11",
+        "legacy:UTC:2026-10-12",
+        "legacy:UTC:2026-10-13",
+        "legacy:UTC:2026-10-14",
+        "legacy:UTC:2026-10-15",
+        "legacy:UTC:2026-10-16",
+        "legacy:UTC:2026-10-17",
+        "legacy:UTC:2026-10-18"
+      ],
+      "reservationPolicy": "legacy-reservations-v1"
+    }
+  ],
+  "pendingOrOrphanedReservations": []
+}

@@ -1,4 +1,4 @@
-@import '../../shared/styles/auth-theme';
+@use '../../shared/styles/auth-theme' as *;
 
 /* Reusing Auth page styles for consistent aesthetic */
 .auth-page {
@@ -24,8 +24,8 @@
     text-decoration: none;
     padding: 6px 12px;
     border-radius: 20px;
-    border: 1px solid var(--auth-home-border, rgba(175, 115, 75, 0.25));
-    background: var(--auth-home-bg, rgba(233, 218, 200, 0.9));
+    border: 1px solid var(--auth-home-border, var(--border-color, #e2e8f0));
+    background: var(--auth-home-bg, var(--surface-card, #ffffff));
     transition: all 0.2s ease;
     z-index: 20;
 
@@ -44,7 +44,7 @@
 
 .auth-container {
   width: 100%;
-  max-width: 460px;
+  max-width: 580px;
   position: relative;
   z-index: 10;
   display: flex;
@@ -58,11 +58,11 @@
 
   .logo {
     font-size: 2.25rem;
-    font-weight: 700;
+    font-weight: 800;
     color: var(--auth-brand);
     margin: 0 0 var(--spacing-xs) 0;
-    font-family: 'Inter', sans-serif;
-    letter-spacing: -0.02em;
+    font-family: var(--font-heading, 'Manrope', 'Plus Jakarta Sans', sans-serif);
+    letter-spacing: -0.025em;
 
     span {
       background: var(--auth-brand-accent);
@@ -76,8 +76,8 @@
   .tagline {
     color: var(--auth-tagline);
     font-size: 0.75rem;
-    font-family: 'JetBrains Mono', monospace;
-    letter-spacing: 0.15em;
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    letter-spacing: 0.12em;
     margin: 0;
   }
 }
@@ -88,9 +88,23 @@
   border-radius: 1.5rem;
   border: 1px solid var(--auth-card-border);
   box-shadow: var(--auth-shadow);
+  overflow: hidden;
+  --surface-card: var(--auth-card-bg);
+  --border-color: var(--auth-input-border);
+  --text-primary: var(--auth-ink);
+  --text-secondary: var(--auth-muted);
 
-  &:deep(.card-body) {
+  ::ng-deep .ui-card {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: inherit !important;
+    border-radius: inherit;
+  }
+
+  ::ng-deep .card-body {
     padding: var(--spacing-2xl);
+    background: transparent !important;
   }
 
   .auth-header {
@@ -99,15 +113,18 @@
 
     h2 {
       font-size: 1.5rem;
-      font-weight: 600;
+      font-weight: 700;
       margin: 0 0 var(--spacing-xs) 0;
       color: var(--auth-ink);
+      font-family: var(--font-heading, 'Manrope', 'Plus Jakarta Sans', sans-serif);
+      letter-spacing: -0.02em;
     }
 
     p {
       color: var(--auth-muted);
       font-size: 0.875rem;
       margin: 0;
+      font-family: var(--font-sans, 'Inter', sans-serif);
     }
   }
 
@@ -213,8 +230,8 @@
       }
 
       &:not(:disabled):focus-visible {
-        outline-color: #4285F4;
-        border-color: #4285F4;
+        outline-color: #4285f4;
+        border-color: #4285f4;
       }
     }
 
@@ -254,22 +271,61 @@
     flex-direction: column;
     gap: var(--spacing-lg);
 
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--spacing-md);
+
+      @media (max-width: 600px) {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+      }
+
+      &.phone-row {
+        grid-template-columns: 140px minmax(0, 1fr);
+
+        @media (max-width: 600px) {
+          grid-template-columns: 1fr;
+        }
+      }
+    }
+
     .form-group {
       display: flex;
       flex-direction: column;
 
       .otp-type-row {
         display: flex;
-        gap: var(--spacing-lg);
+        gap: 10px;
+        align-items: center;
+        min-height: 42px;
 
-        label {
+        .radio-label {
+          flex: 1;
           display: inline-flex;
           align-items: center;
-          gap: 6px;
-          margin-bottom: 0;
-          font-weight: 500;
-          text-transform: none;
+          justify-content: center;
+          gap: 8px;
+          min-height: 42px;
+          padding: 6px 14px;
+          background: var(--auth-input-bg);
+          border: 1px solid var(--auth-input-border);
+          border-radius: 0.75rem;
+          font-size: 0.85rem;
+          cursor: pointer;
+          transition: all 0.2s ease;
           color: var(--auth-ink);
+          user-select: none;
+
+          &:hover {
+            border-color: var(--auth-input-border-focus);
+          }
+
+          input[type='radio'] {
+            accent-color: var(--lp-primary);
+            margin: 0;
+            cursor: pointer;
+          }
         }
       }
 
@@ -281,13 +337,13 @@
         text-transform: capitalize;
       }
 
-      input:not([type="checkbox"]):not([type="radio"]) {
+      input:not([type='checkbox']):not([type='radio']) {
         padding: 10px var(--spacing-md);
         background: var(--auth-input-bg);
         border: 1px solid var(--auth-input-border);
         border-radius: 0.75rem;
         color: var(--auth-ink);
-        font-family: 'Inter', sans-serif;
+        font-family: var(--font-sans, 'Inter', sans-serif);
         font-size: 0.9rem;
         min-height: 42px;
         transition: all var(--transition-fast, 0.15s ease);
@@ -318,7 +374,7 @@
       }
 
       // Highlight input border red when field has an error
-      &.has-error input:not([type="checkbox"]):not([type="radio"]) {
+      &.has-error input:not([type='checkbox']):not([type='radio']) {
         border-color: var(--color-danger, #ef4444);
 
         &:focus {
@@ -342,7 +398,7 @@
         align-items: center;
         gap: var(--spacing-sm);
 
-        input[type="checkbox"] {
+        input[type='checkbox'] {
           width: 1.25rem;
           height: 1.25rem;
           cursor: pointer;
@@ -478,5 +534,7 @@
 
 // Spinner keyframes
 @keyframes oauth-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }

@@ -1,0 +1,174 @@
+{
+  "formatting": "PASS",
+  "syntax": [
+    {
+      "file": "backend/index.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/controllers/integrationscontroller.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/controllers/profilecontroller.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/controllers/skillgapcontroller.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/controllers/superAdminController.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/middleware/integrationWebhookBody.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/models/integrationConnection.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/models/integrationInsight.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/models/integrationSyncLog.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/routes/integrations.routes.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/scripts/migrateIntegrationTokens.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/scripts/inspectIntegrationIndexes.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/services/careerSprintService.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/services/developerSignalService.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/services/integrationGovernanceService.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/services/integrationInsightService.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/services/integrationPersistenceService.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/services/integrationSyncService.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/services/integrationTokenService.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/services/integrations/index.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/services/integrations/baseAdapter.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/services/integrations/certificationsAdapter.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/services/integrations/devBlogsAdapter.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/services/integrations/githubAdapter.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/services/integrations/kaggleAdapter.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/services/integrations/linkedinAdapter.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/services/integrations/portfolioScannerAdapter.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/services/integrations/stackoverflowAdapter.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/tests/fixtures/integrationsRuntime.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/tests/fixtures/integrationsWorker.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/tests/integrationSyncService.test.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/tests/integrationsAdapters.test.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/tests/integrationsLifecycle.test.js",
+      "pass": true
+    },
+    {
+      "file": "backend/src/tests/integrationsProduction.integration.test.js",
+      "pass": true
+    }
+  ],
+  "typeScript": "PASS",
+  "baseline": {
+    "tests": 19,
+    "pass": 19
+  },
+  "regression": {
+    "tests": 87,
+    "pass": 87
+  },
+  "notes": ["Final post-format focused acceptance and regression results are retained separately."],
+  "finalCombinedBackend": {
+    "tests": 127,
+    "pass": 127,
+    "fail": 0,
+    "skipped": 0,
+    "durationMs": 41276.7906
+  },
+  "frontendContracts": {
+    "tests": 2,
+    "pass": 2
+  },
+  "build": {
+    "status": "FAIL",
+    "reason": "Unchanged Scenario Simulator stylesheet 83.09 kB exceeds 64 kB error budget; concurrent Landing Page warning 56.17 kB."
+  },
+  "documentation": "PASS (37 Markdown files, 17 feature docs)",
+  "envExample": "PASS (10/10 new keys)",
+  "whitespace": {
+    "workingTree": "PASS",
+    "index": "PASS"
+  },
+  "applicationEnvironmentEdited": false,
+  "dependenciesAdded": 0
+}

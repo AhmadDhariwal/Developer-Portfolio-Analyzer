@@ -1,0 +1,8 @@
+{
+  "taskOwnedEvidenceMovedFrom": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\relevance-before-2026-11-06.log",
+  "movedTo": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\relevance-2026-11-06\\before.log",
+  "sha256": "9832F907772FF7DA96A897F483E2A1D21F14A9F9ECE487A24D15EAE1560AC9AF",
+  "deletedFiles": [],
+  "sourceFilesMovedOrDeleted": [],
+  "reason": "Retained pre-fix reproduction beside final verification evidence."
+}

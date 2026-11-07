@@ -1,0 +1,153 @@
+{
+  "controlledSources": true,
+  "realHttp": true,
+  "realMongo": true,
+  "mockedServices": [],
+  "externalAiDisabledForFailureTest": true,
+  "database": "devinsight_rec_e2e_0069705dec20",
+  "checks": [
+    {
+      "name": "Authenticated first generation, active context, ranking, null versus zero and stored snapshot",
+      "pass": true,
+      "count": 3,
+      "signalHash": "8f1d419ec1988b300ce9c6360382e0542bdb095f51d197337f0e91d265b85c4b"
+    },
+    {
+      "name": "Cached reload retains identity and authoritative content",
+      "pass": true,
+      "cacheLayer": "memory"
+    },
+    {
+      "name": "Concurrent HTTP requests share one persisted snapshot",
+      "pass": true
+    },
+    {
+      "name": "Real shared-cache lookup preserves authoritative content",
+      "pass": true,
+      "connected": true,
+      "cacheLayer": "mongo"
+    },
+    {
+      "name": "Real Mongo reload after application cache clear and Redis disconnect",
+      "pass": true,
+      "cacheLayer": "mongo"
+    },
+    {
+      "name": "JWT ownership prevents foreign context, history and resume selection",
+      "pass": true
+    },
+    {
+      "name": "Angular uses real authenticated recommendations and creates a database-backed visible Sprint task",
+      "pass": true
+    },
+    {
+      "name": "Skill-specific Courses navigation retains the backend target skill",
+      "pass": true,
+      "skill": "SQL"
+    },
+    {
+      "name": "Fresh Angular session reloads persisted data, repeated handoff is idempotent and Courses/analyzers navigate",
+      "pass": true
+    },
+    {
+      "name": "Actual active Resume API invalidates context without borrowing Skill Gap evidence",
+      "pass": true
+    },
+    {
+      "name": "Controlled Skill Gap recalculation invalidates cache and suppresses resolved SQL work",
+      "pass": true
+    },
+    {
+      "name": "Controlled GitHub reanalysis invalidates cache, clears resolved documentation and incompatible Skill Gap",
+      "pass": true
+    },
+    {
+      "name": "Stale GitHub evidence is low priority and recovers after a fresh source snapshot",
+      "pass": true
+    },
+    {
+      "name": "Actual active career-context API invalidates recommendation identity",
+      "pass": true
+    },
+    {
+      "name": "Concurrent explicit refresh with real AI no-provider failure preserves authoritative facts/ranking",
+      "pass": true
+    },
+    {
+      "name": "History remains distinguishable from current snapshots",
+      "pass": true,
+      "snapshots": 10
+    }
+  ],
+  "traces": [
+    {
+      "category": "learning",
+      "id": "learning_702c5227a3ee07f4bca0",
+      "title": "Build technical proof for SQL",
+      "sourceFacts": ["SQL: CLAIMED_ONLY", "Requirement: REQUIRED"],
+      "evidenceStatus": "CLAIMED_ONLY",
+      "finalPriority": "High",
+      "rank": 1,
+      "explanation": "SQL is CLAIMED_ONLY in the current evidence snapshot. This describes available proof, not inability.",
+      "nextStep": "Choose a focused SQL exercise or project and record implementation, tests and an explanation.",
+      "rule": "Required SQL CLAIMED_ONLY with recorded High priority; claims do not demonstrate implementation.",
+      "tieBreak": "High before Medium before Low; equal impact/null then stable ID ascending."
+    },
+    {
+      "category": "projects",
+      "id": "projects_16791182447fd010c0af",
+      "title": "Document controlled-api",
+      "sourceFacts": ["Repository: controlled-api", "hasReadme: false"],
+      "evidenceStatus": null,
+      "finalPriority": "High",
+      "rank": 2,
+      "explanation": "The repository analysis records no README for controlled-api.",
+      "nextStep": "Add setup instructions, purpose, usage and verified project outcomes to the README.",
+      "rule": "Recorded hasReadme=false yields High priority documentation action.",
+      "tieBreak": "High before Medium before Low; equal impact/null then stable ID ascending."
+    },
+    {
+      "category": "resume",
+      "id": "resume_5be284e74cb334b3f6a0",
+      "title": "Review resume: missing metrics",
+      "sourceFacts": [
+        "Selected resume analysis: 6acf30293b15c8e473f06116",
+        "Warning: missing_metrics"
+      ],
+      "evidenceStatus": null,
+      "finalPriority": "High",
+      "rank": 3,
+      "explanation": "The selected resume analysis reports: No quantified achievements in the controlled source..",
+      "nextStep": "Add verifiable outcomes to relevant achievement bullets, then reanalyze this resume.",
+      "rule": "Recorded missing_metrics warning with high severity yields High priority resume action.",
+      "tieBreak": "High before Medium before Low; equal impact/null then stable ID ascending."
+    }
+  ],
+  "browser": [
+    {
+      "theme": "light",
+      "realApi": true,
+      "topOrder": true,
+      "evidence": true,
+      "sprintCreatedAndVisible": true,
+      "errors": []
+    },
+    {
+      "theme": "dark",
+      "freshBrowserStorage": true,
+      "persistenceReload": true,
+      "duplicateHandoff": true,
+      "coursesAndAnalyzersNavigation": true,
+      "errors": []
+    }
+  ],
+  "cleanup": {
+    "ownedDatabaseRemoved": true
+  },
+  "redis": {
+    "configured": true,
+    "connected": true,
+    "ping": "PONG"
+  },
+  "status": "VERIFIED"
+}

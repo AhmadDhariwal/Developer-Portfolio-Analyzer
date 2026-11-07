@@ -1,0 +1,73 @@
+{
+  "status": "verified",
+  "backendFocused": {
+    "passed": 41,
+    "failed": 0
+  },
+  "mongoJwt": {
+    "passed": 9,
+    "failed": 0,
+    "skipped": 0
+  },
+  "backendFullSerial": {
+    "passed": 343,
+    "failed": 0,
+    "thresholdsChanged": false,
+    "exitCode": 0,
+    "command": "node --test --test-concurrency=1 --test-reporter=dot src/tests/**/*.test.js"
+  },
+  "backendInitialParallel": {
+    "passed": 338,
+    "failed": 2,
+    "tests": 340,
+    "failures": [
+      "recommendationsPerformance memory p95 59.25ms",
+      "skillgapPerformance memory p95 60.52ms"
+    ]
+  },
+  "frontendFocused": {
+    "passed": 7,
+    "failed": 0
+  },
+  "typescript": "passed",
+  "backendSyntaxFiles": 17,
+  "formattedSourceFiles": 19,
+  "catalogRecordsPreserved": 27,
+  "sourceFilesModified": [
+    "backend/src/controllers/courseController.js",
+    "backend/src/routes/courseRoutes.js",
+    "backend/src/scripts/coursesPerfMeasure.js",
+    "backend/src/scripts/migrateCourseIndexes.js",
+    "backend/src/services/courseService.js",
+    "backend/src/tests/coursesHardening.test.js",
+    "backend/src/tests/coursesPerformance.test.js",
+    "frontend/src/app/shared/services/course.service.ts",
+    "frontend/src/app/shared/services/course.service.spec.ts"
+  ],
+  "sourceFilesAdded": [
+    "backend/src/controllers/courseProgressController.js",
+    "backend/src/data/courseCatalog.js",
+    "backend/src/models/userCourseProgress.js",
+    "backend/src/services/courseHandoffService.js",
+    "backend/src/services/coursePersonalizationService.js",
+    "backend/src/services/courseProgressService.js",
+    "backend/src/services/courseRecommendationService.js",
+    "backend/src/tests/coursesFinalization.test.js",
+    "backend/src/tests/coursesMongo.integration.test.js",
+    "backend/src/utils/courseIdentity.js"
+  ],
+  "sourceFilesMoved": [],
+  "filesDeleted": [],
+  "frontendFull": {
+    "passed": 200,
+    "failed": 0,
+    "files": 40,
+    "command": "npm test -- --watch=false"
+  },
+  "frontendBuild": {
+    "status": "passed",
+    "existingWarning": "landing-page SCSS 55.89kB / 48kB"
+  },
+  "prettier": "passed",
+  "gitWhitespace": "passed"
+}

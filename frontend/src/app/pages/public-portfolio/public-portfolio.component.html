@@ -1,504 +1,1051 @@
-<div class="portfolio-wrapper" *ngIf="!isLoading && profile; else fallback">
-  <!-- Background Effects -->
-  <div class="bg-gradient"></div>
-  <div class="bg-glow top-glow"></div>
-  <div class="bg-glow bottom-glow"></div>
-  <div class="portfolio-cache-state" *ngIf="cacheState !== 'network'" [class.stale]="cacheState === 'stale'">
-    {{ cacheState === 'stale' ? 'Showing cached portfolio while refresh is unavailable' : 'Loaded from cache' }}
+<div class="portfolio-page">
+  <!-- 3D Stitch Kinetic Terminal Atmospheric Background Decor -->
+  <div class="portfolio-background-decor" aria-hidden="true">
+    <div class="decor-glow decor-glow-top"></div>
+    <div class="decor-glow decor-glow-center"></div>
+    <div class="decor-glow decor-glow-bottom"></div>
+    <div class="decor-grid-pattern"></div>
+    <div class="decor-floating-orb orb-1"></div>
+    <div class="decor-floating-orb orb-2"></div>
+    <div class="decor-floating-orb orb-3"></div>
   </div>
 
-  <!-- Navbar - Figma exact style -->
-  <nav class="navbar">
-    <div class="nav-container">
-      <div class="nav-logo">
-        <svg class="logo-z" viewBox="0 0 40 40" fill="none">
-          <path d="M8 12 L20 12 L8 28 L8 32" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-          <path d="M20 12 L20 28" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-        </svg>
-      </div>
-
-      <button title="menu button" class="mobile-menu-btn" type="button" (click)="toggleMobileMenu()" [attr.aria-expanded]="mobileMenuOpen">
-        <i class="mdi" [ngClass]="mobileMenuOpen ? 'mdi-close' : 'mdi-menu'"></i>
-      </button>
-
-      <div class="nav-links" [class.mobile-open]="mobileMenuOpen">
-        <a href="#home" class="nav-link" [class.active]="activeSection === 'home'" (click)="scrollToSection('home', $event)">Home</a>
-        <a href="#about" class="nav-link" [class.active]="activeSection === 'about'" (click)="scrollToSection('about', $event)">About</a>
-        <a href="#projects" class="nav-link" [class.active]="activeSection === 'projects'" (click)="scrollToSection('projects', $event)" *ngIf="isSectionVisible('projects')">Projects</a>
-        <a href="#upcoming" class="nav-link" [class.active]="activeSection === 'upcoming'" (click)="scrollToSection('upcoming', $event)" *ngIf="shouldShowUpcomingNav()">Upcoming</a>
-        <a href="#contact" class="nav-link" [class.active]="activeSection === 'contact'" (click)="scrollToSection('contact', $event)">Contact</a>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Hero Section - Figma exact style -->
-  <section class="hero-section reveal-on-scroll" id="home">
-    <div class="hero-container">
-      <!-- Left side with avatar -->
-      <div class="hero-left">
-        <!-- Greeting text with arrow -->
-        <div class="greeting-wrapper">
-          <span class="greeting-text">{{ profile.sections.hero.greetingLabel }} <span class="name-purple">{{ profile.user.name }}</span></span>
-          <svg class="greeting-arrow" viewBox="0 0 30 40" fill="none">
-            <path d="M15 5 L15 30 M8 23 L15 30 L22 23" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+  <!-- Edge-to-Edge Sticky Preview Mode Strip (Only shown to authenticated owner) -->
+  <div class="preview-mode-bar" *ngIf="preview && profile && isOwner" role="note">
+    <div class="preview-mode-container">
+      <div class="preview-mode-left">
+        <div class="preview-mode-badge">
+          <span class="preview-dot"></span>
+          <span>OWNER PREVIEW</span>
         </div>
-        
-        <!-- Avatar with laptop -->
-        <div class="avatar-container">
-          <div class="avatar-glow"></div>
-          <img title="Profile Avatar" [src]="userAvatarSrc" [alt]="profile.user.name" class="avatar-image" (error)="onUserAvatarError($event)">
-          <div class="laptop-overlay">
-            <div class="laptop-screen"></div>
-            <div class="apple-logo">
-              <i class="mdi mdi-apple"></i>
-            </div>
-          </div>
-        </div>
+        <span class="preview-mode-desc">Saved content preview · Views not tracked</span>
       </div>
-      
-      <!-- Right side with text -->
-      <div class="hero-right">
-        <p class="hero-subtitle-small" *ngIf="profile.headline || profile.sections.hero.roleLabel">{{ profile.headline || profile.sections.hero.roleLabel }}</p>
-        <h1 class="hero-title" *ngIf="profile.sections.hero.titleLineOne || profile.sections.hero.titleLineTwo || profile.sections.hero.titleHighlight">
-          {{ profile.sections.hero.titleLineOne }}<br>
-          {{ profile.sections.hero.titleLineTwo }} <span class="cover-word">{{ profile.sections.hero.titleHighlight }}</span>{{ profile.sections.hero.titleLineSuffix }}
-        </h1>
-        <p class="hero-tagline" *ngIf="profile.sections.hero.tagline">{{ profile.sections.hero.tagline }}</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Bio Section -->
-  <section class="bio-section reveal-on-scroll" id="about" *ngIf="getProfileLabel() || getSummaryText() || getTopSkillsText() || profile.user.githubUsername || profile.socialLinks.linkedin">
-    <div class="bio-container">
-      <h2 class="bio-title">I'm a {{ getProfileLabel() }}.<span class="cursor">|</span></h2>
-      <p class="bio-company" *ngIf="profile.user.jobTitle">Currently, {{ profile.user.jobTitle }}</p>
-      <div class="bio-description" *ngIf="getSummaryText()">
-        <p>{{ getSummaryText() }}</p>
-      </div>
-
-      <div class="bio-description bio-description--meta">
-        <p><strong>Name:</strong> {{ profile.user.name }}</p>
-        <p *ngIf="getTopSkillsText()"><strong>Skills:</strong> {{ getTopSkillsText() }}</p>
-        <p *ngIf="profile.user.githubUsername"><strong>GitHub:</strong> @{{ profile.user.githubUsername }}</p>
-        <p *ngIf="profile.socialLinks.linkedin"><strong>LinkedIn:</strong> {{ profile.socialLinks.linkedin }}</p>
-        <p *ngIf="hasPhoneNumber()"><strong>Phone:</strong> <a [href]="getPhoneHref()">{{ getPhoneNumber() }}</a></p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Skills Section with Orbital Design -->
-  <section class="skills-section reveal-on-scroll" *ngIf="profile.skills.length > 0">
-    <div class="skills-container">
-      <!-- Section Header -->
-      <div class="skills-header">
-        <h2 class="skills-title">
-          {{ profile.sections.skills.headline }} <span class="highlight-purple">{{ profile.sections.skills.highlight }}</span> {{ profile.sections.skills.headlineSuffix }}
-        </h2>
-        <p class="skills-subtitle">{{ profile.sections.skills.subheadline }}</p>
-      </div>
-
-      <!-- Top Row Skills Icons -->
-      <div class="skills-row top-row">
-        <div 
-          class="skill-icon-circle" 
-          *ngFor="let skill of getTopSkillIcons(); let i = index"
-          [attr.data-skill]="skill.displayName"
-          [attr.title]="skill.displayName"
-          [attr.aria-label]="skill.displayName"
-          [style.animation-delay]="i * 0.1 + 's'">
-          <div class="icon-bg" [style.background]="skill.color + '15'">
-            <i class="mdi" [ngClass]="skill.mdiIcon" [style.color]="skill.color"></i>
-          </div>
-          <div class="connector-line" [style.--line-angle]="getLineAngle(i, 7)"></div>
-        </div>
-      </div>
-
-      <!-- Bottom Row Skills Icons -->
-      <div class="skills-row bottom-row">
-        <div 
-          class="skill-icon-circle" 
-          *ngFor="let skill of getBottomSkillIcons().slice(0, 6); let i = index"
-          [attr.data-skill]="skill.displayName"
-          [attr.title]="skill.displayName"
-          [attr.aria-label]="skill.displayName"
-          [style.animation-delay]="(i + 7) * 0.1 + 's'">
-          <div class="icon-bg" [style.background]="skill.color + '15'">
-            <i class="mdi" [ngClass]="skill.mdiIcon" [style.color]="skill.color"></i>
-          </div>
-          <div class="connector-line bottom" [style.--line-angle]="getLineAngle(i, 6)"></div>
-        </div>
-      </div>
-
-      <!-- Central Orb with Logo -->
-      <div class="central-orb-container">
-        <div class="orb-glow-outer"></div>
-        <div class="orb-glow-inner"></div>
-        <div class="central-orb">
-          <svg class="orb-logo" viewBox="0 0 60 60" fill="none">
-            <path d="M12 18 L30 18 L12 42 L12 48" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M30 18 L30 42" stroke="white" stroke-width="3" stroke-linecap="round"/>
-            <path d="M30 42 L48 42 L30 18" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-
-        <!-- Orbit Rings -->
-        <div class="orbit orbit-1">
-          <div class="orbit-icon orbit-pos-0">
-            <i class="mdi mdi-linkedin"></i>
-          </div>
-        </div>
-        <div class="orbit orbit-2">
-          <div class="orbit-icon orbit-pos-45">
-            <i class="mdi mdi-google"></i>
-          </div>
-          <div class="orbit-icon orbit-pos-180">
-            <i class="mdi mdi-code-tags"></i>
-          </div>
-        </div>
-        <div class="orbit orbit-3">
-          <div class="orbit-icon orbit-pos-90">
-            <i class="mdi mdi-react"></i>
-          </div>
-          <div class="orbit-icon orbit-pos-270">
-            <i class="mdi mdi-language-javascript"></i>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Work Experience Section -->
-  <section class="work-section reveal-on-scroll" *ngIf="getWorkExperiences().length > 0">
-    <div class="work-container">
-      <h2 class="section-title">Work Experience</h2>
-      
-      <div class="experience-grid">
-        <div 
-          class="experience-card" 
-          *ngFor="let exp of getWorkExperiences(); let i = index"
-          [class.card-1]="i === 0"
-          [class.card-2]="i === 1"
-          [class.card-3]="i === 2"
-          [class.card-4]="i === 3">
-          <div class="card-top-border"></div>
-          <div class="card-content">
-            <div class="card-icon">
-              <div class="icon-3d" [class]="'icon-style-' + (i + 1)">
-                <i class="mdi" [ngClass]="exp.icon"></i>
-              </div>
-            </div>
-            <div class="card-info">
-              <h3 class="card-title">{{ exp.title }}</h3>
-              <p class="card-description">{{ exp.description }}</p>
-              <a
-                class="learn-more-btn"
-                [href]="toExternalLink(exp.ctaUrl)"
-                [class.disabled]="!exp.ctaUrl"
-                [attr.aria-disabled]="!exp.ctaUrl"
-                target="_blank"
-                rel="noopener"
-                (click)="!exp.ctaUrl && $event.preventDefault()"
-              >{{ exp.ctaLabel || 'LEARN MORE' }}</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="courses-section reveal-on-scroll" *ngIf="completedCourses.length > 0">
-    <div class="courses-container">
-      <div class="section-header">
-        <h2 class="section-title">Academic & Professional Courses</h2>
-        <p class="section-subtitle">A collection of completed certifications and specialized learning tracks</p>
-      </div>
-      
-      <div class="courses-grid">
-        <article class="course-card" *ngFor="let course of completedCourses; trackBy: trackByCourse">
-          <div class="card-top-border"></div>
-          
-          <div class="course-heading">
-            <div class="heading-left">
-              <span class="course-category" *ngIf="course.category">{{ course.category }}</span>
-              <h3 class="course-title">{{ course.title }}</h3>
-              <div class="provider-row" *ngIf="course.provider">
-                <i class="mdi mdi-school-outline"></i>
-                <span class="course-provider">{{ course.provider }}</span>
-              </div>
-            </div>
-            <div class="heading-right" *ngIf="course.completionDate">
-              <div class="date-badge">
-                <i class="mdi mdi-calendar-check-outline"></i>
-                <time [attr.datetime]="course.completionDate">{{ course.completionDate | date:'mediumDate' }}</time>
-              </div>
-            </div>
-          </div>
-          
-          <p class="course-description" *ngIf="course.description">{{ course.description }}</p>
-          
-          <div class="course-skills" *ngIf="course.skills?.length">
-            <span class="skill-badge" *ngFor="let skill of course.skills">{{ skill }}</span>
-          </div>
-          
-          <div class="course-meta-grid" *ngIf="course.duration || course.credentialId">
-            <div class="meta-item" *ngIf="course.duration">
-              <i class="mdi mdi-clock-outline"></i>
-              <span>{{ course.duration }}</span>
-            </div>
-            <div class="meta-item" *ngIf="course.credentialId">
-              <i class="mdi mdi-shield-check-outline"></i>
-              <span class="credential-text" title="Credential ID: {{ course.credentialId }}">ID: {{ course.credentialId }}</span>
-            </div>
-          </div>
-          
-          <div class="course-actions" *ngIf="course.certificateUrl">
-            <a class="certificate-btn" [href]="toExternalLink(course.certificateUrl)" target="_blank" rel="noopener noreferrer">
-              <span>View Certificate</span>
-              <i class="mdi mdi-open-in-new"></i>
-            </a>
-          </div>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <!-- Featured Projects Section -->
-  <section class="projects-section reveal-on-scroll" id="projects" *ngIf="isSectionVisible('projects') && getFeaturedProjects().length > 0">
-    <div class="projects-container">
-      <div class="section-header">
-        <h2 class="section-title">Featured Projects</h2>
-        <p class="section-subtitle">Showcasing my best work and achievements</p>
-      </div>
-      <app-project-card
-        *ngFor="let project of getFeaturedProjects(); let even = even; let i = index"
-        [project]="project"
-        [reverse]="!even"
-        [primaryLink]="getProjectPrimaryLink(project)"
-        [repositoryLink]="getProjectRepositoryLink(project)"
-        [previewImage]="getProjectPreview(project)"
-      ></app-project-card>
-    </div>
-  </section>
-
-  <app-upcoming-projects-section
-    *ngIf="isSectionVisible('upcoming')"
-    [heading]="profile.sections.upcoming.heading"
-    [subheading]="profile.sections.upcoming.subheading"
-    [projects]="getUpcomingProjects()"
-    [previewResolver]="previewResolver"
-    [primaryLinkResolver]="primaryLinkResolver"
-    [repoLinkResolver]="repoLinkResolver"
-  ></app-upcoming-projects-section>
-
-  <app-testimonials-section
-    *ngIf="isSectionVisible('testimonials')"
-    [heading]="profile.sections.testimonials.heading"
-    [subheading]="profile.sections.testimonials.subheading"
-    [testimonials]="getTestimonials()"
-  ></app-testimonials-section>
-
-  <app-cta-section
-    *ngIf="isSectionVisible('cta')"
-    [heading]="profile.sections.cta.heading"
-    [subtext]="profile.sections.cta.subtext"
-    [primaryLabel]="profile.sections.cta.primaryLabel"
-    [secondaryLabel]="profile.sections.cta.secondaryLabel"
-    [resumeUrl]="getResumeDownloadUrl()"
-    [resumeAvailable]="hasResumeDownload()"
-    (primaryAction)="scrollToSection('contact')"
-  ></app-cta-section>
-
-  <!-- Contact Footer Section -->
-  <footer class="contact-section reveal-on-scroll" id="contact">
-    <div class="contact-container">
-      <h2 class="contact-title" *ngIf="profile.sections.contact.heading">{{ profile.sections.contact.heading }}</h2>
-      
-      <p class="contact-message" *ngIf="profile.sections.contact.message">{{ profile.sections.contact.message }}</p>
-
-      <div class="contact-actions">
-        <a *ngIf="hasContactEmail()" [href]="getEmailHref()" target="_blank" rel="noopener" class="contact-email">{{ getContactEmail() }}</a>
-
-        <a *ngIf="hasPhoneNumber()" [href]="getPhoneHref()" class="contact-email">{{ getPhoneNumber() }}</a>
-      </div>
-      
-      <div class="social-icons">
-        <a
-          *ngIf="profile.socialLinks.website"
-          [href]="toExternalLink(profile.socialLinks.website)"
-          target="_blank"
-          rel="noopener"
-          class="social-link"
-          title="Visit Website"
+      <div class="preview-mode-actions">
+        <button
+          type="button"
+          class="avatar-toggle-btn"
+          (click)="toggleAvatarMode()"
+          [title]="'Switch to ' + (avatarMode === '3d' ? 'uploaded avatar' : '3D developer avatar')"
         >
-          <i class="mdi mdi-web"></i>
-        </a>
-        <a 
-          *ngIf="profile.socialLinks.twitter" 
-          [href]="toExternalLink(profile.socialLinks.twitter)" 
-          target="_blank" 
-          rel="noopener"
-          class="social-link"
-          title="Follow on Twitter">
-          <i class="mdi mdi-twitter"></i>
-        </a>
-        <a 
-          *ngIf="profile.socialLinks.linkedin" 
-          [href]="toExternalLink(profile.socialLinks.linkedin)" 
-          target="_blank" 
-          rel="noopener"
-          class="social-link"
-          title="Connect on LinkedIn">
-          <i class="mdi mdi-linkedin"></i>
-        </a>
-        <a 
-          *ngIf="profile.user.githubUsername" 
-          [href]="'https://github.com/' + profile.user.githubUsername" 
-          target="_blank" 
-          rel="noopener"
-          class="social-link"
-          title="View GitHub Profile">
-          <i class="mdi mdi-github"></i>
-        </a>
+          <span class="avatar-toggle-label">Avatar:</span>
+          <strong>{{ avatarMode === '3d' ? '3D Character' : 'Profile Photo' }}</strong>
+        </button>
+        <button
+          type="button"
+          class="share-link-btn"
+          (click)="copyShareLink()"
+          title="Copy clean public link to share with anyone"
+        >
+          <span *ngIf="!linkCopied">Copy Public Link 📋</span>
+          <span *ngIf="linkCopied" class="copied-highlight">Link Copied! ✓</span>
+        </button>
       </div>
+    </div>
+  </div>
 
-      <!-- Footer Bottom Section -->
-      <div class="footer-bottom">
-        <div class="footer-content">
-          <!-- Logo and Tagline -->
-          <div class="footer-brand">
-            <div class="footer-logo">
-              <svg viewBox="0 0 40 40" fill="none">
-                <path d="M8 12 L20 12 L8 28 L8 32" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-                <path d="M20 12 L20 28" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-              </svg>
+  <!-- Floating Glassmorphic Fluid Navbar -->
+  <header class="portfolio-nav">
+    <div class="nav-container">
+      <a class="brand" routerLink="/" aria-label="DevInsight AI home">
+        <span class="brand-mark">d<span>.</span></span>
+        <span class="brand-text">DevInsight<span class="muted"> / Portfolio</span></span>
+      </a>
+      <div class="nav-actions">
+        @if (profile) {
+          <a href="#about" class="nav-anchor" (click)="scrollToSection('about', $event)">Home</a>
+          <a href="#about" class="nav-anchor" (click)="scrollToSection('about', $event)">About</a>
+          <a
+            href="#skills"
+            class="nav-anchor"
+            *ngIf="profile.skills.length"
+            (click)="scrollToSection('skills', $event)"
+            >Skills</a
+          >
+          <a
+            href="#projects"
+            class="nav-anchor"
+            *ngIf="profile.projects.length"
+            (click)="scrollToSection('projects', $event)"
+            >Projects</a
+          >
+          <a
+            href="#experience"
+            class="nav-anchor"
+            *ngIf="profile.workExperiences.length"
+            (click)="scrollToSection('experience', $event)"
+            >Experience</a
+          >
+          <a href="#contact" class="nav-anchor" (click)="scrollToSection('contact', $event)"
+            >Contact</a
+          >
+        }
+        <!-- Interactive Stitch Theme Toggle for Preview & Public Portfolio -->
+        <button
+          type="button"
+          class="theme-toggle-btn"
+          (click)="toggleThemeMode()"
+          [attr.aria-label]="'Switch to ' + (isDarkMode ? 'light' : 'dark') + ' mode'"
+          [title]="'Switch to ' + (isDarkMode ? 'light' : 'dark') + ' mode'"
+        >
+          <svg
+            *ngIf="!isDarkMode"
+            class="theme-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+          <svg
+            *ngIf="isDarkMode"
+            class="theme-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <span class="theme-mode-label">{{ isDarkMode ? 'Dark' : 'Light' }}</span>
+        </button>
+        <!-- Theme is globally synchronized; accessible select preserved for headless verification -->
+        <label class="theme-picker sr-only">
+          <span class="sr-only">Appearance</span>
+          <select
+            aria-label="Appearance"
+            [ngModel]="theme.preference()"
+            (ngModelChange)="theme.setTheme($event)"
+          >
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+            <option value="system">System</option>
+          </select>
+        </label>
+      </div>
+    </div>
+  </header>
+
+  <main id="main-content" class="portfolio-content">
+    @if (isLoading) {
+      <div class="section-container">
+        <section class="page-state" role="status">
+          <div class="skeleton-line"></div>
+          <h1>Opening portfolio</h1>
+          <p>Loading the latest published information.</p>
+        </section>
+      </div>
+    } @else if (!profile) {
+      <div class="section-container">
+        <section class="page-state" role="alert">
+          <span class="eyebrow">{{
+            errorStatus === 404 ? 'Portfolio unavailable' : 'Please try again'
+          }}</span>
+          <h1>
+            {{ errorStatus === 404 ? 'Nothing public here yet.' : 'Temporarily unavailable.' }}
+          </h1>
+          <p>{{ errorMessage }}</p>
+          <div class="page-state-actions">
+            <button class="button primary" (click)="retry()">Try again</button>
+            <a routerLink="/" class="button secondary">Back to DevInsight AI</a>
+          </div>
+        </section>
+      </div>
+    } @else {
+      <!-- 3D Holographic Hero Section (Fluid & Unbounded) -->
+      <section class="hero-section" id="about">
+        <div class="section-container hero-container">
+          <!-- Left Column: Hero Narrative, Name & Typewriter -->
+          <div class="hero-main">
+            <div class="hero-meta-row">
+              <span class="eyebrow">
+                <span class="small-dot"></span>
+                {{ profile.sections.hero.greetingLabel || 'Hello, I’m' }}
+              </span>
+              <span class="availability-badge">
+                <span class="pulse-bead" aria-hidden="true"></span>
+                Available for opportunities
+              </span>
             </div>
-            <p class="footer-tagline">Building the future, one line of code at a time.</p>
+
+            <!-- Prominent Developer Name Headline -->
+            <h1 class="hero-name">{{ profile.user.name }}</h1>
+
+            <!-- Role Lead Tagline -->
+            <p class="role-lead-label">
+              {{ profile.sections.hero.roleLabel || 'A Developer who' }}
+            </p>
+
+            <!-- Bold Statement Headline with Gradient Accent -->
+            <h2 class="hero-statement-title">
+              <span>{{ heroTitleMain }}</span>
+              <span class="neon-gradient-text">{{ heroTitleAccent }}</span>
+            </h2>
+
+            <!-- Animated Dynamic Typewriter Line -->
+            <div class="typewriter-line" aria-label="Role headline">
+              <span class="typewriter-prefix">I'm a </span>
+              <span class="typewriter-word">{{ typewriterText }}</span>
+              <span class="typewriter-cursor" aria-hidden="true">|</span>
+            </div>
+
+            <!-- Profile Summary & Tagline -->
+            <p class="summary" *ngIf="profile.summary">
+              {{ profile.summary }}
+            </p>
+            <p class="summary muted" *ngIf="!profile.summary && profile.headline">
+              {{ profile.headline }}
+            </p>
+            <p class="hero-tagline" *ngIf="profile.sections.hero.tagline">
+              {{ profile.sections.hero.tagline }}
+            </p>
+
+            <!-- Action CTAs Group -->
+            <div class="hero-actions">
+              <a
+                class="button primary hero-cta-btn"
+                href="#projects"
+                *ngIf="profile.projects.length"
+                (click)="scrollToSection('projects', $event)"
+              >
+                <span>Explore my work</span>
+                <span class="btn-arrow" aria-hidden="true">↗</span>
+              </a>
+              <a
+                class="button secondary hero-cta-btn"
+                href="#contact"
+                (click)="scrollToSection('contact', $event)"
+              >
+                <span>{{
+                  profile.sections.visibility.cta && profile.sections.cta.primaryLabel
+                    ? profile.sections.cta.primaryLabel
+                    : "Let's connect"
+                }}</span>
+              </a>
+              <button
+                class="button secondary hero-resume-btn"
+                *ngIf="profile.defaultResumeUrl"
+                [disabled]="downloadBusy"
+                (click)="downloadResume()"
+                title="Download verified resume PDF"
+              >
+                <span class="file-chip-tag" aria-hidden="true">PDF</span>
+                <span>{{
+                  downloadBusy
+                    ? 'Preparing PDF…'
+                    : profile.sections.cta.secondaryLabel || 'Download resume ↓'
+                }}</span>
+              </button>
+              <a
+                class="button secondary hero-resume-btn"
+                *ngIf="
+                  !profile.defaultResumeUrl &&
+                  profile.sections.visibility.cta &&
+                  link(profile.resumeUrl)
+                "
+                [href]="link(profile.resumeUrl)"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="View candidate resume"
+              >
+                <span class="file-chip-tag" aria-hidden="true">CV</span>
+                <span>{{ profile.sections.cta.secondaryLabel || 'View resume ↗' }}</span>
+              </a>
+              <button class="button text-button" *ngIf="!preview" (click)="copyLink()">
+                Copy portfolio link
+              </button>
+            </div>
+            <p class="muted copy-toast" aria-live="polite" *ngIf="copyFeedback">
+              {{ copyFeedback }}
+            </p>
           </div>
 
-          <!-- Quick Links -->
-          <div class="footer-links">
-            <div class="footer-column">
-              <h4 class="footer-column-title">Navigate</h4>
-              <ul class="footer-link-list">
-                <li><a href="#home" (click)="scrollToSection('home', $event)">Home</a></li>
+          <!-- Right Column: 3D Kinetic Avatar Stage (Fluid, Unbounded & Floating) -->
+          <div class="hero-avatar-stage">
+            <div class="avatar-kinetic-sphere">
+              <!-- Ambient light emission field behind avatar -->
+              <div class="ambient-light-halo" aria-hidden="true"></div>
+
+              <!-- Concentric cosmic aura rings rotating in space -->
+              <div class="cosmic-aura-ring aura-outer" aria-hidden="true"></div>
+              <div class="cosmic-aura-ring aura-middle" aria-hidden="true"></div>
+              <div class="cosmic-aura-ring aura-inner" aria-hidden="true"></div>
+
+              <!-- Floating 3D Character Hologram Aperture -->
+              <div class="avatar-hologram-frame">
+                <img
+                  [src]="avatarSrc"
+                  [alt]="profile.user.name"
+                  class="avatar-hologram-img"
+                  width="260"
+                  height="260"
+                  (error)="avatarFailed = true"
+                />
+                <div class="avatar-scanline-sheen" aria-hidden="true"></div>
+              </div>
+
+              <!-- Free-Floating Kinetic Orbital Chips -->
+              <div class="orbital-chip chip-status" aria-hidden="true">
+                <span class="chip-status-dot"></span>
+                <span>Available for work</span>
+              </div>
+              <div
+                class="orbital-chip chip-skills"
+                aria-hidden="true"
+                *ngIf="profile.skills.length"
+              >
+                <span class="chip-icon">⚡</span>
+                <span>{{ profile.skills.length }} Skills listed</span>
+              </div>
+              <div
+                class="orbital-chip chip-projects"
+                aria-hidden="true"
+                *ngIf="profile.projects.length"
+              >
+                <span class="chip-icon">🚀</span>
+                <span>{{ profile.projects.length }} Projects shared</span>
+              </div>
+              <div class="orbital-chip chip-social" *ngIf="socialLinks.length">
+                <a
+                  [href]="socialLinks[0].url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="orbital-social-link"
+                >
+                  <span>{{ socialLinks[0].label }}</span>
+                  <span aria-hidden="true">↗</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Interactive Tech Constellation & Skills Section -->
+      @if (profile.skills.length) {
+        <section class="section skills-section kinetic-block block-skills" id="skills">
+          <div class="section-container">
+            <div class="constellation-header">
+              <div class="constellation-header-meta">
+                <span class="eyebrow">Technical Ecosystem</span>
+                <span class="skills-owner-note">Listed by the portfolio owner</span>
+              </div>
+              <h2 class="constellation-title">
+                {{ profile.sections.skills.headline || 'Core Technical' }}
+                <span class="neon-gradient-text">{{
+                  profile.sections.skills.highlight || 'Architecture'
+                }}</span>
+                {{ profile.sections.skills.headlineSuffix || '& Ecosystem' }}
+              </h2>
+              <p class="constellation-subtitle">
+                {{
+                  profile.sections.skills.subheadline ||
+                    'A curated ecosystem of modern technologies, architectural patterns, and production engineering tools.'
+                }}
+              </p>
+            </div>
+
+            <!-- Constellation Diagram -->
+            <div class="tech-constellation-stage" aria-hidden="true">
+              <!-- Radial Laser Connector Beams (SVG) -->
+              <svg
+                class="constellation-svg-lines"
+                viewBox="0 0 1000 280"
+                preserveAspectRatio="none"
+              >
+                <defs>
+                  <linearGradient id="laserGradDark" x1="0%" y1="100%" x2="0%" y2="0%">
+                    <stop offset="0%" stop-color="#a855f7" stop-opacity="0.95" />
+                    <stop offset="60%" stop-color="#818cf8" stop-opacity="0.75" />
+                    <stop offset="100%" stop-color="#c084fc" stop-opacity="0.5" />
+                  </linearGradient>
+                  <linearGradient id="laserGradLight" x1="0%" y1="100%" x2="0%" y2="0%">
+                    <stop offset="0%" stop-color="#7c3aed" stop-opacity="0.95" />
+                    <stop offset="60%" stop-color="#6366f1" stop-opacity="0.8" />
+                    <stop offset="100%" stop-color="#818cf8" stop-opacity="0.55" />
+                  </linearGradient>
+                </defs>
+                <!-- Dynamically routed laser beams from bottom center beacon (500, 240) to exact pill centers -->
+                <line
+                  *ngIf="constellationSkills.length >= 1"
+                  class="laser-beam-line"
+                  x1="500"
+                  y1="240"
+                  x2="100"
+                  y2="75"
+                  stroke-width="2.2"
+                  stroke-dasharray="5 3"
+                />
+                <line
+                  *ngIf="constellationSkills.length >= 2"
+                  class="laser-beam-line"
+                  x1="500"
+                  y1="240"
+                  x2="230"
+                  y2="42"
+                  stroke-width="2.2"
+                  stroke-dasharray="5 3"
+                />
+                <line
+                  *ngIf="constellationSkills.length >= 3"
+                  class="laser-beam-line"
+                  x1="500"
+                  y1="240"
+                  x2="370"
+                  y2="20"
+                  stroke-width="2.2"
+                  stroke-dasharray="5 3"
+                />
+                <line
+                  *ngIf="constellationSkills.length >= 4"
+                  class="laser-beam-line"
+                  x1="500"
+                  y1="240"
+                  x2="500"
+                  y2="12"
+                  stroke-width="2.2"
+                  stroke-dasharray="5 3"
+                />
+                <line
+                  *ngIf="constellationSkills.length >= 5"
+                  class="laser-beam-line"
+                  x1="500"
+                  y1="240"
+                  x2="630"
+                  y2="20"
+                  stroke-width="2.2"
+                  stroke-dasharray="5 3"
+                />
+                <line
+                  *ngIf="constellationSkills.length >= 6"
+                  class="laser-beam-line"
+                  x1="500"
+                  y1="240"
+                  x2="770"
+                  y2="42"
+                  stroke-width="2.2"
+                  stroke-dasharray="5 3"
+                />
+                <line
+                  *ngIf="constellationSkills.length >= 7"
+                  class="laser-beam-line"
+                  x1="500"
+                  y1="240"
+                  x2="900"
+                  y2="75"
+                  stroke-width="2.2"
+                  stroke-dasharray="5 3"
+                />
+              </svg>
+
+              <!-- Orbital Skill Nodes Cluster (Pinned to exact coordinates matching the beams) -->
+              <div class="constellation-nodes-row">
+                <div
+                  class="constellation-node"
+                  *ngFor="let skill of constellationSkills; let idx = index"
+                  [ngStyle]="getConstellationNodeStyle(idx, constellationSkills.length)"
+                >
+                  <div class="node-pill">
+                    <span class="node-icon-glow"></span>
+                    <span class="node-tech-name">{{ skill.name }}</span>
+                    <span class="node-pct" *ngIf="skill.score">{{ skill.score }}%</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Central Power Beacon (Quantum Tech Core) -->
+              <div class="constellation-central-core">
+                <div class="beacon-sonar-shell">
+                  <div class="beacon-wave-ring wave-1"></div>
+                  <div class="beacon-wave-ring wave-2"></div>
+                  <div class="beacon-wave-ring wave-3"></div>
+                  <div class="beacon-orb" title="Core Technology Engine">
+                    <svg
+                      width="26"
+                      height="26"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="beacon-core-icon"
+                    >
+                      <rect x="4" y="4" width="16" height="16" rx="3"></rect>
+                      <rect x="9" y="9" width="6" height="6" rx="1"></rect>
+                      <line x1="9" y1="1" x2="9" y2="4"></line>
+                      <line x1="15" y1="1" x2="15" y2="4"></line>
+                      <line x1="9" y1="20" x2="9" y2="23"></line>
+                      <line x1="15" y1="20" x2="15" y2="23"></line>
+                      <line x1="20" y1="9" x2="23" y2="9"></line>
+                      <line x1="20" y1="15" x2="23" y2="15"></line>
+                      <line x1="1" y1="9" x2="4" y2="9"></line>
+                      <line x1="1" y1="15" x2="4" y2="15"></line>
+                    </svg>
+                  </div>
+                </div>
+                <div class="beacon-core-pill">
+                  <span class="beacon-pill-dot" aria-hidden="true"></span>
+                  <span>Core Stack</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Complete Toolkit Breakdown -->
+            <div class="skills-toolkit-grid">
+              <div class="toolkit-card" *ngFor="let skill of profile.skills">
+                <div class="toolkit-head">
+                  <div class="toolkit-name-group">
+                    <span class="toolkit-dot" aria-hidden="true"></span>
+                    <span class="toolkit-name">{{ skill.name }}</span>
+                  </div>
+                  <span class="toolkit-score" *ngIf="skill.score">{{ skill.score }}%</span>
+                </div>
+                <div class="toolkit-gauge-track" *ngIf="skill.score">
+                  <div
+                    class="toolkit-gauge-fill"
+                    [style.width.%]="skill.score > 100 ? 100 : skill.score || 0"
+                  ></div>
+                </div>
+                <div class="toolkit-footer" *ngIf="skill.score">
+                  <span
+                    class="toolkit-tier-badge"
+                    [ngClass]="{
+                      'tier-advanced': skill.score >= 70,
+                      'tier-proficient': skill.score >= 40 && skill.score < 70,
+                      'tier-familiar': skill.score < 40,
+                    }"
+                    >{{
+                      skill.score >= 70 ? 'Advanced' : skill.score >= 40 ? 'Proficient' : 'Familiar'
+                    }}</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- 3D Work Experience Cards Section -->
+      @if (profile.workExperiences.length) {
+        <section class="section experience-section kinetic-block block-experience" id="experience">
+          <div class="section-container">
+            <div class="section-heading">
+              <div>
+                <span class="eyebrow">The Journey</span>
+                <h2>Work Experience</h2>
+              </div>
+              <p>Engineering contributions, technical leadership, and production impact.</p>
+            </div>
+            <div class="experience-3d-grid">
+              <article
+                *ngFor="let experience of profile.workExperiences; let expIndex = index"
+                class="experience-card-3d"
+              >
+                <!-- Neon Glowing 3D Icon Badge -->
+                <div
+                  class="card-icon-3d"
+                  [attr.data-icon-type]="getExperienceIcon(experience.icon, expIndex)"
+                >
+                  <!-- Dynamic SVG representation -->
+                  <svg
+                    *ngIf="getExperienceIcon(experience.icon, expIndex) === 'rocket'"
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"
+                    ></path>
+                    <path
+                      d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"
+                    ></path>
+                    <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path>
+                    <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path>
+                  </svg>
+                  <svg
+                    *ngIf="getExperienceIcon(experience.icon, expIndex) === 'lightbulb'"
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <line x1="9" y1="18" x2="15" y2="18"></line>
+                    <line x1="10" y1="22" x2="14" y2="22"></line>
+                    <path
+                      d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"
+                    ></path>
+                  </svg>
+                  <svg
+                    *ngIf="getExperienceIcon(experience.icon, expIndex) === 'code'"
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polyline points="16 18 22 12 16 6"></polyline>
+                    <polyline points="8 6 2 12 8 18"></polyline>
+                  </svg>
+                  <svg
+                    *ngIf="getExperienceIcon(experience.icon, expIndex) === 'server'"
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                    <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                    <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                    <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                  </svg>
+                  <svg
+                    *ngIf="getExperienceIcon(experience.icon, expIndex) === 'globe'"
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="2" y1="12" x2="22" y2="12"></line>
+                    <path
+                      d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+                    ></path>
+                  </svg>
+                  <svg
+                    *ngIf="getExperienceIcon(experience.icon, expIndex) === 'palette'"
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="13.5" cy="6.5" r=".5"></circle>
+                    <circle cx="17.5" cy="10.5" r=".5"></circle>
+                    <circle cx="8.5" cy="7.5" r=".5"></circle>
+                    <circle cx="6.5" cy="12.5" r=".5"></circle>
+                    <path
+                      d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"
+                    ></path>
+                  </svg>
+                </div>
+
+                <div class="experience-card-body">
+                  <h3>{{ experience.title }}</h3>
+                  <p class="experience-desc">{{ experience.description }}</p>
+                  <a
+                    *ngIf="link(experience.ctaUrl)"
+                    [href]="link(experience.ctaUrl)"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="experience-learn-btn"
+                  >
+                    <span>{{ experience.ctaLabel || 'Learn More' }}</span>
+                    <span aria-hidden="true">↗</span>
+                  </a>
+                </div>
+              </article>
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- Academic & Professional Courses Section -->
+      @if (profile.completedCourses?.length) {
+        <section
+          class="section credentials-section kinetic-block block-credentials"
+          id="credentials"
+        >
+          <div class="section-container">
+            <div class="section-heading">
+              <div>
+                <span class="eyebrow">Continuous Learning</span>
+                <h2>Academic & Professional Courses</h2>
+              </div>
+              <p>A collection of completed coursework and specialized learning paths.</p>
+            </div>
+            <div class="courses-3d-grid">
+              <article class="course-card-3d" *ngFor="let course of profile.completedCourses">
+                <div class="course-card-top">
+                  <span class="course-provider-pill">{{ course.provider || 'Accredited' }}</span>
+                  <span class="course-date" *ngIf="course.completionDate">
+                    {{ course.completionDate | date: 'MMM yyyy' : 'UTC' }}
+                  </span>
+                </div>
+                <h3>{{ course.title }}</h3>
+                <p class="course-desc" *ngIf="course.description">{{ course.description }}</p>
+                <div class="course-skills-list" *ngIf="course.skills?.length">
+                  <span class="course-skill-tag" *ngFor="let skill of course.skills">{{
+                    skill
+                  }}</span>
+                </div>
+                <a
+                  *ngIf="link(course.certificateUrl)"
+                  [href]="link(course.certificateUrl)"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="course-cred-btn"
+                >
+                  <span>View credential</span>
+                  <span aria-hidden="true">↗</span>
+                </a>
+              </article>
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- Selected Projects Section -->
+      @if (profile.projects.length) {
+        <section class="section projects-section kinetic-block block-projects" id="projects">
+          <div class="section-container">
+            <div class="section-heading">
+              <div>
+                <span class="eyebrow">Ideas into outcomes</span>
+                <h2>
+                  Selected projects<span class="count">{{ profile.projects.length }}</span>
+                </h2>
+              </div>
+              <p>A closer look at real-world engineering solutions.</p>
+            </div>
+            <div class="project-grid">
+              <app-project-card *ngFor="let project of profile.projects" [project]="project" />
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- Upcoming Roadmap Section -->
+      @if (upcomingCards.length) {
+        <section class="section upcoming-section kinetic-block block-upcoming" id="upcoming">
+          <div class="section-container">
+            <div class="section-heading">
+              <div>
+                <span class="eyebrow">What's next</span>
+                <h2>{{ profile.sections.upcoming.heading || 'In the making' }}</h2>
+              </div>
+              <p>{{ profile.sections.upcoming.subheading }}</p>
+            </div>
+            <div class="project-grid">
+              <app-project-card *ngFor="let project of upcomingCards" [project]="project" />
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- Testimonials Section -->
+      @if (profile.testimonials.length) {
+        <section
+          class="section testimonials-section kinetic-block block-testimonials"
+          id="testimonials"
+        >
+          <div class="section-container">
+            <div class="section-heading">
+              <div>
+                <span class="eyebrow">In good company</span>
+                <h2>{{ profile.sections.testimonials.heading || 'Testimonials' }}</h2>
+              </div>
+              <p>
+                {{
+                  profile.sections.testimonials.subheading ||
+                    'What collaborators say about our work together'
+                }}
+              </p>
+            </div>
+            <div class="testimonial-grid">
+              <figure *ngFor="let item of profile.testimonials" class="testimonial-card">
+                <span class="quote-mark" aria-hidden="true">“</span>
+                <blockquote>{{ item.quote }}</blockquote>
+                <figcaption>
+                  <strong>{{ item.name }}</strong>
+                  <span>{{ item.role }}</span>
+                </figcaption>
+              </figure>
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- "Let's Work Together" Glassmorphic CTA Card -->
+      <section class="section cta-glass-section">
+        <div class="section-container">
+          <div class="lets-work-card">
+            <div class="cta-inner-glow" aria-hidden="true"></div>
+            <h2>Let's Work Together</h2>
+            <p class="cta-subtext">
+              {{
+                profile.sections.cta.subtext ||
+                  "Have an opportunity or ambitious project in mind? Let's connect and build something meaningful."
+              }}
+            </p>
+            <div class="lets-work-actions">
+              <a
+                class="button primary cta-main-btn"
+                href="#contact"
+                (click)="scrollToSection('contact', $event)"
+              >
+                <span>Contact Me</span>
+                <span aria-hidden="true">↗</span>
+              </a>
+              <button
+                class="button secondary cta-resume-btn"
+                *ngIf="profile.defaultResumeUrl"
+                [disabled]="downloadBusy"
+                (click)="downloadResume()"
+              >
+                <span>{{ downloadBusy ? 'Preparing PDF…' : 'Download Resume ↓' }}</span>
+              </button>
+              <a
+                class="button secondary cta-resume-btn"
+                *ngIf="
+                  !profile.defaultResumeUrl &&
+                  profile.sections.visibility.cta &&
+                  link(profile.resumeUrl)
+                "
+                [href]="link(profile.resumeUrl)"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span>View Resume ↗</span>
+              </a>
+            </div>
+            <p class="error-text" role="alert" *ngIf="downloadError">{{ downloadError }}</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Contact Section -->
+      <section class="section contact-section kinetic-block block-contact" id="contact">
+        <div class="section-container contact-container">
+          <div class="contact-intro">
+            <span class="eyebrow">Start a conversation</span>
+            <h2>{{ profile.sections.contact.heading || "Let's build something meaningful." }}</h2>
+            <p class="contact-message">{{ profile.sections.contact.message }}</p>
+            <div class="social-links" *ngIf="socialLinks.length">
+              <a
+                *ngFor="let social of socialLinks"
+                [href]="social.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="social-badge"
+              >
+                <span>{{ social.label }}</span>
+                <span aria-hidden="true">↗</span>
+              </a>
+            </div>
+          </div>
+
+          <div class="contact-panel">
+            @if (canContact) {
+              @if (contactSent) {
+                <div class="contact-success" role="status">
+                  <span class="success-icon" aria-hidden="true">✓</span>
+                  <h3>Message accepted for delivery.</h3>
+                  <p>
+                    The mail server acknowledged your enquiry. Replies go to your account email;
+                    inbox delivery is not guaranteed.
+                  </p>
+                </div>
+              } @else {
+                <form (ngSubmit)="sendContact()" class="contact-form">
+                  <h3>Send a recruiter enquiry</h3>
+                  <p class="form-desc">
+                    Your account email is used for replies. Recruiter access and verification are
+                    checked before sending.
+                  </p>
+                  <label for="contact-message">Your message</label>
+                  <textarea
+                    id="contact-message"
+                    name="message"
+                    [(ngModel)]="contactMessage"
+                    minlength="20"
+                    maxlength="4000"
+                    rows="5"
+                    required
+                    placeholder="Introduce the opportunity and what caught your attention…"
+                    [disabled]="contactBusy"
+                  ></textarea>
+                  <div class="honeypot" aria-hidden="true">
+                    <label for="contact-website">Leave this empty</label>
+                    <input
+                      id="contact-website"
+                      name="website"
+                      [(ngModel)]="website"
+                      tabindex="-1"
+                      autocomplete="off"
+                    />
+                  </div>
+                  <p class="error-text" role="alert" *ngIf="contactError">{{ contactError }}</p>
+                  <button
+                    class="button primary send-btn"
+                    type="submit"
+                    [disabled]="contactBusy || contactMessage.trim().length < 20"
+                  >
+                    {{ contactBusy ? 'Sending…' : 'Send enquiry ↗' }}
+                  </button>
+                </form>
+              }
+            } @else {
+              <div class="contact-restricted">
+                <span class="eyebrow">Professional connections</span>
+                <h3>A good conversation starts here.</h3>
+                <p *ngIf="socialLinks.length; else noSocial">
+                  Use one of the professional links listed by the owner to get in touch.
+                </p>
+                <ng-template #noSocial>
+                  <p>The owner hasn't listed a public contact link yet.</p>
+                </ng-template>
+                <p class="muted">
+                  Direct enquiries are available to signed-in, verified recruiters.
+                </p>
+                <a
+                  *ngIf="!auth.isLoggedIn()"
+                  class="button secondary recruiter-login-btn"
+                  routerLink="/auth/login"
+                >
+                  Recruiter sign in ↗
+                </a>
+                <p class="muted eligibility-notice" *ngIf="auth.isLoggedIn()">
+                  Your account is not eligible for recruiter enquiries.
+                </p>
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- Comprehensive Production Portfolio Footer -->
+      <footer class="portfolio-footer" role="contentinfo">
+        <div class="footer-container">
+          <div class="footer-grid">
+            <!-- Brand & Identity Column -->
+            <div class="footer-brand-col">
+              <div class="footer-brand-badge">
+                <div class="brand-avatar-mini" aria-hidden="true">
+                  <img
+                    *ngIf="avatarSrc && !avatarFailed"
+                    [src]="avatarSrc"
+                    [alt]="profile.user.name"
+                    class="brand-avatar-img"
+                  />
+                  <span *ngIf="!avatarSrc || avatarFailed">{{ initials }}</span>
+                </div>
+                <div class="brand-info">
+                  <h3 class="brand-name">{{ profile.user.name }}</h3>
+                  <span class="brand-role">{{
+                    profile.user.jobTitle || 'Full-Stack Developer'
+                  }}</span>
+                </div>
+              </div>
+              <p class="footer-bio-summary">
+                {{
+                  profile.headline ||
+                    'Engineering high-impact web architectures, scalable backend systems, and modern interactive experiences.'
+                }}
+              </p>
+              <div class="footer-powered-chip">
+                <span>Built with <strong>DevInsight AI</strong></span>
+              </div>
+            </div>
+
+            <!-- Quick Navigation Column -->
+            <div class="footer-nav-col">
+              <h4 class="footer-heading">Navigation</h4>
+              <ul class="footer-nav-list">
                 <li><a href="#about" (click)="scrollToSection('about', $event)">About</a></li>
-                <li *ngIf="isSectionVisible('projects')"><a href="#projects" (click)="scrollToSection('projects', $event)">Projects</a></li>
-                <li *ngIf="shouldShowUpcomingNav()"><a href="#upcoming" (click)="scrollToSection('upcoming', $event)">Upcoming</a></li>
+                <li *ngIf="profile.skills.length">
+                  <a href="#skills" (click)="scrollToSection('skills', $event)">Skills</a>
+                </li>
+                <li *ngIf="profile.projects.length">
+                  <a href="#projects" (click)="scrollToSection('projects', $event)">Projects</a>
+                </li>
+                <li *ngIf="profile.workExperiences.length">
+                  <a href="#experience" (click)="scrollToSection('experience', $event)"
+                    >Experience</a
+                  >
+                </li>
+                <li *ngIf="profile.completedCourses?.length">
+                  <a href="#credentials" (click)="scrollToSection('credentials', $event)"
+                    >Courses</a
+                  >
+                </li>
                 <li><a href="#contact" (click)="scrollToSection('contact', $event)">Contact</a></li>
               </ul>
             </div>
 
-            <div class="footer-column">
-              <h4 class="footer-column-title">Connect</h4>
-              <ul class="footer-link-list">
-                <li *ngIf="profile.user.githubUsername">
-                  <a [href]="'https://github.com/' + profile.user.githubUsername" target="_blank" rel="noopener">
-                    <i class="mdi mdi-github"></i> GitHub
-                  </a>
-                </li>
-                <li *ngIf="profile.socialLinks.linkedin">
-                  <a [href]="toExternalLink(profile.socialLinks.linkedin)" target="_blank" rel="noopener">
-                    <i class="mdi mdi-linkedin"></i> LinkedIn
-                  </a>
-                </li>
-                <li *ngIf="profile.socialLinks.twitter">
-                  <a [href]="toExternalLink(profile.socialLinks.twitter)" target="_blank" rel="noopener">
-                    <i class="mdi mdi-twitter"></i> Twitter
-                  </a>
-                </li>
-                <li *ngIf="hasContactEmail()">
-                  <a [href]="getEmailHref()" target="_blank" rel="noopener">
-                    <i class="mdi mdi-email"></i> Email
-                  </a>
-                </li>
-                <li *ngIf="hasPhoneNumber()">
-                  <a [href]="getPhoneHref()">
-                    <i class="mdi mdi-phone"></i> Phone
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            <div class="footer-column">
-              <h4 class="footer-column-title">Resources</h4>
-              <ul class="footer-link-list">
-                <li *ngIf="profile.socialLinks.website">
-                  <a [href]="toExternalLink(profile.socialLinks.website)" target="_blank" rel="noopener">
-                    <i class="mdi mdi-web"></i> Portfolio
-                  </a>
-                </li>
-                <li class="share-menu-item">
-                  <button type="button" class="footer-share-trigger" (click)="toggleShareMenu($event)">
-                    <i class="mdi mdi-share-variant"></i> Share Profile
-                  </button>
-
-                  <div class="share-menu" *ngIf="shareMenuOpen" (click)="$event.stopPropagation()">
-                    <button *ngIf="canUseNativeShare()" type="button" class="share-option" (click)="useNativeShare($event)">
-                      <i class="mdi mdi-share-all-outline"></i> Share via device
-                    </button>
-                    <button type="button" class="share-option" (click)="shareTo('whatsapp', $event)">
-                      <i class="mdi mdi-whatsapp"></i> WhatsApp
-                    </button>
-                    <button type="button" class="share-option" (click)="shareTo('linkedin', $event)">
-                      <i class="mdi mdi-linkedin"></i> LinkedIn
-                    </button>
-                    <button type="button" class="share-option" (click)="shareTo('twitter', $event)">
-                      <i class="mdi mdi-twitter"></i> X / Twitter
-                    </button>
-                    <button type="button" class="share-option" (click)="shareTo('facebook', $event)">
-                      <i class="mdi mdi-facebook"></i> Facebook
-                    </button>
-                    <button type="button" class="share-option" (click)="shareTo('email', $event)">
-                      <i class="mdi mdi-email-fast-outline"></i> Email
-                    </button>
-                    <button type="button" class="share-option" (click)="copyShareLink()">
-                      <i class="mdi mdi-content-copy"></i> Copy link
-                    </button>
-                  </div>
-                  <span *ngIf="copyFeedback" class="share-feedback">{{ copyFeedback }}</span>
-                </li>
-              </ul>
+            <!-- Social / Professional Links Column -->
+            <div class="footer-social-col">
+              <h4 class="footer-heading">Connect</h4>
+              <div class="footer-social-links">
+                <a
+                  *ngFor="let social of socialLinks"
+                  [href]="social.url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="footer-social-item"
+                >
+                  <span>{{ social.label }}</span>
+                  <span aria-hidden="true">↗</span>
+                </a>
+              </div>
+              <p class="footer-status-indicator">
+                <span class="status-pulse-dot" aria-hidden="true"></span>
+                <span>Open for engineering opportunities</span>
+              </p>
             </div>
           </div>
-        </div>
 
-        <!-- Copyright -->
-        <div class="footer-copyright">
-          <div class="copyright-content">
-            <p>&copy; {{ getCurrentYear() }} {{ profile.user.name }}. All rights reserved.</p>
-            <div class="footer-meta">
-              <span class="location" *ngIf="profile.user.location">
-                <i class="mdi mdi-map-marker"></i> {{ profile.user.location }}
-              </span>
-              <span class="divider" *ngIf="profile.user.location">•</span>
-              <span class="powered-by">Powered by DevInsight AI</span>
-            </div>
+          <!-- Bottom Copyright & Back to Top Row -->
+          <div class="footer-bottom-bar">
+            <span class="footer-copyright-text">
+              © {{ currentYear }} {{ profile.user.name }}. All rights reserved · Work, in its own
+              words.
+            </span>
+            <button
+              type="button"
+              class="back-to-top-btn"
+              (click)="scrollToTop()"
+              aria-label="Scroll back to top"
+            >
+              <span>Back to top</span>
+              <span aria-hidden="true">↑</span>
+            </button>
           </div>
         </div>
-      </div>
-    </div>
-  </footer>
+      </footer>
+    }
+  </main>
 </div>
-
-<!-- Loading & Error States -->
-<ng-template #fallback>
-  <div class="fallback-wrapper">
-    <div class="loading-spinner" *ngIf="isLoading">
-      <div class="spinner-orb">
-        <div class="spinner-glow"></div>
-      </div>
-      <p class="loading-text">Loading portfolio...</p>
-    </div>
-    
-    <div class="error-container" *ngIf="!isLoading && errorMessage">
-      <i class="mdi mdi-alert-circle error-icon"></i>
-      <h2 class="error-title">Unable to Load Portfolio</h2>
-      <p class="error-message">{{ errorMessage }}</p>
-      <a routerLink="/" class="back-link">
-        <i class="mdi mdi-arrow-left"></i> Back to Home
-      </a>
-    </div>
-  </div>
-</ng-template>

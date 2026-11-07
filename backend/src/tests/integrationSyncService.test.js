@@ -1,117 +1,102 @@
+'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const IntegrationConnection = require('../models/integrationConnection');
-const IntegrationInsight = require('../models/integrationInsight');
-const IntegrationSyncLog = require('../models/integrationSyncLog');
+const persistence = require('../services/integrationPersistenceService');
+const governance = require('../services/integrationGovernanceService');
 const { getAdapter } = require('../services/integrations');
-const { syncProviderForUser, buildDueConnectionFilter } = require('../services/integrationSyncService');
-
-const installModelMocks = (t, adapter, ingestData) => {
-  const originals = {
-    connectionFindOne: IntegrationConnection.findOne,
-    connectionUpdate: IntegrationConnection.findByIdAndUpdate,
-    insightFindOne: IntegrationInsight.findOne,
-    insightCreate: IntegrationInsight.create,
-    logCreate: IntegrationSyncLog.create,
-    ingestData: adapter.ingestData
-  };
-  t.after(() => {
-    IntegrationConnection.findOne = originals.connectionFindOne;
-    IntegrationConnection.findByIdAndUpdate = originals.connectionUpdate;
-    IntegrationInsight.findOne = originals.insightFindOne;
-    IntegrationInsight.create = originals.insightCreate;
-    IntegrationSyncLog.create = originals.logCreate;
-    adapter.ingestData = originals.ingestData;
-  });
-
-  const updates = [];
-  const logs = [];
-  IntegrationConnection.findOne = () => ({ lean: async () => ({
-    _id: 'connection-1', userId: 'owner-a', provider: adapter.provider, status: 'connected', externalUsername: 'mock-user'
-  }) });
-  IntegrationConnection.findByIdAndUpdate = async (_id, update) => { updates.push(update); };
-  IntegrationInsight.findOne = async () => null;
-  IntegrationInsight.create = async (payload) => payload;
-  IntegrationSyncLog.create = async (payload) => { logs.push(payload); return payload; };
-  adapter.ingestData = ingestData;
-  return { updates, logs };
-};
-
-test('sync success updates connection, insight, and exactly one success log', async (t) => {
+const {
+  syncProviderForUser,
+  buildDueConnectionFilter
+} = require('../services/integrationSyncService');
+function fixture(t, ingest) {
+  const savedJob = governance.withJob;
+  governance.withJob = async (_provider, operation) => operation();
+  t.after(() => (governance.withJob = savedJob));
   const adapter = getAdapter('leetcode');
-  const { updates, logs } = installModelMocks(t, adapter, async () => ({
+  const originals = {
+    claim: persistence.claim,
+    commit: persistence.commit,
+    fail: persistence.fail,
+    ingest: adapter.ingestData
+  };
+  const writes = [];
+  const failures = [];
+  persistence.claim = async (owner, provider) => ({
+    _id: 'id',
+    userId: owner,
+    provider,
+    leaseId: 'owned',
+    accessToken: '',
+    refreshToken: ''
+  });
+  persistence.commit = async (connection, insight, metadata) => {
+    writes.push({ connection, insight, metadata });
+    return { integrationScore: 20, mergedSkills: insight.inferredSkills };
+  };
+  persistence.fail = async (connection, message, reason) =>
+    failures.push({ connection, message, reason });
+  adapter.ingestData = ingest;
+  t.after(() => {
+    Object.assign(persistence, {
+      claim: originals.claim,
+      commit: originals.commit,
+      fail: originals.fail
+    });
+    adapter.ingestData = originals.ingest;
+  });
+  return { writes, failures };
+}
+test('sync routes provider data through the leased atomic commit', async (t) => {
+  const { writes, failures } = fixture(t, async () => ({
     profile: { solvedProblems: 120 },
-    activity: { easy: 50, medium: 40, hard: 10 },
+    activity: { easy: 50 },
     inferredSkills: ['Algorithms', 'algorithms']
   }));
-
   const result = await syncProviderForUser('owner-a', 'leetcode', 'manual_sync');
   assert.equal(result.ok, true);
-  assert.equal(logs.length, 1);
-  assert.equal(logs[0].status, 'success');
-  assert.equal(logs[0].reason, 'manual_sync');
-  assert.ok(updates.some((update) => update.$set.status === 'connected' && update.$set.lastSyncedAt instanceof Date));
-  assert.ok(updates.some((update) => update.$set.nextSyncAt instanceof Date && update.$set.lastSyncError === ''));
+  assert.equal(writes.length, 1);
+  assert.equal(failures.length, 0);
+  assert.equal(writes[0].connection.leaseId, 'owned');
+  assert.equal(writes[0].insight.ownershipVerified, false);
+  assert.equal(writes[0].metadata.reason, 'manual_sync');
 });
-
-test('provider failure is sanitized and records one failed log', async (t) => {
-  const adapter = getAdapter('leetcode');
-  const { updates, logs } = installModelMocks(t, adapter, async () => {
-    throw new Error('upstream secret token=abc123 from internal.provider.local');
+test('provider failure is sanitized and never overwrites the persisted good insight', async (t) => {
+  const { writes, failures } = fixture(t, async () => {
+    throw Error('token=abc123 internal.provider.local');
   });
-
-  const result = await syncProviderForUser('owner-a', 'leetcode', 'manual_sync');
-  assert.deepEqual(result, { ok: false, provider: 'leetcode', error: 'Provider sync failed.' });
-  assert.equal(logs.length, 1);
-  assert.equal(logs[0].error, 'Provider sync failed.');
-  assert.ok(updates.some((update) => update.$set.status === 'error' && update.$set.lastSyncError === 'Provider sync failed.'));
+  const result = await syncProviderForUser('owner-a', 'leetcode');
+  assert.equal(result.ok, false);
+  assert.equal(result.error, 'Provider sync failed.');
+  assert.equal(writes.length, 0);
+  assert.equal(failures.length, 1);
+  assert.equal(failures[0].message, 'Provider sync failed.');
 });
-
-test('token refresh failure marks the connection as error without leaking provider details', async (t) => {
-  const adapter = getAdapter('github');
-  const originalRefresh = adapter.refreshAccessToken;
-  const { updates, logs } = installModelMocks(t, adapter, async () => {
-    throw new Error('ingest must not run after refresh failure');
+test('an unclaimed connection never calls the provider', async (t) => {
+  let calls = 0;
+  fixture(t, async () => {
+    calls++;
   });
-  t.after(() => { adapter.refreshAccessToken = originalRefresh; });
-  adapter.refreshAccessToken = async () => { throw new Error('provider token expired: secret=abc123'); };
-  IntegrationConnection.findOne = () => ({ lean: async () => ({
-    _id: 'connection-1', userId: 'owner-a', provider: 'github', status: 'connected',
-    accessToken: 'old-token', refreshToken: 'old-refresh', tokenExpiresAt: new Date(0)
-  }) });
-
-  const result = await syncProviderForUser('owner-a', 'github', 'manual_sync');
-  assert.deepEqual(result, { ok: false, provider: 'github', error: 'Token refresh failed.' });
-  assert.ok(updates.some((update) => update.$set.status === 'error' && update.$set.lastSyncError === 'Token refresh failed.'));
-  assert.equal(logs[0].error, 'Token refresh failed.');
+  persistence.claim = async () => null;
+  const result = await syncProviderForUser('owner-a', 'leetcode');
+  assert.equal(result.status, 409);
+  assert.equal(calls, 0);
 });
-
-test('concurrent sync for the same owner/provider is deduplicated', async (t) => {
-  const adapter = getAdapter('leetcode');
-  let release;
-  const pending = new Promise((resolve) => { release = resolve; });
-  const { logs } = installModelMocks(t, adapter, async () => {
-    await pending;
-    return { profile: {}, activity: {}, inferredSkills: [] };
+test('plaintext credentials fail closed before external ingestion', async (t) => {
+  let calls = 0;
+  fixture(t, async () => {
+    calls++;
   });
-
-  const first = syncProviderForUser('owner-a', 'leetcode', 'manual_sync');
-  await Promise.resolve();
-  const second = await syncProviderForUser('owner-a', 'leetcode', 'manual_sync');
-  assert.deepEqual(second, { ok: false, provider: 'leetcode', error: 'Sync already in progress.' });
-  release();
-  assert.equal((await first).ok, true);
-  assert.equal(logs.length, 1);
+  persistence.claim = async () => ({
+    userId: 'owner-a',
+    provider: 'leetcode',
+    accessToken: 'legacy-secret'
+  });
+  assert.equal((await syncProviderForUser('owner-a', 'leetcode')).ok, false);
+  assert.equal(calls, 0);
 });
-
-test('background polling filter selects only connected due connections', () => {
-  const now = new Date('2026-07-18T12:00:00.000Z');
-  assert.deepEqual(buildDueConnectionFilter(now), {
-    status: 'connected',
-    $or: [
-      { nextSyncAt: { $exists: false } },
-      { nextSyncAt: null },
-      { nextSyncAt: { $lte: now } }
-    ]
-  });
+test('polling retries errored connections and excludes live leases', () => {
+  const now = new Date();
+  const filter = buildDueConnectionFilter(now);
+  assert.deepEqual(filter.status, { $in: ['connected', 'error'] });
+  assert.equal(filter.$and[1].$or[1].leaseUntil.$lte, now);
 });

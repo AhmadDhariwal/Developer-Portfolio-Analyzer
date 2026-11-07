@@ -1,0 +1,117 @@
+<div class="avatar-wrap">
+  <div class="avatar-ring">
+    <div class="avatar-circle">
+      <button
+        class="avatar-preview-button"
+        type="button"
+        [disabled]="!profile.avatar"
+        [attr.aria-label]="'Preview ' + (profile.name || 'profile') + ' photo'"
+        title="Preview profile photo"
+        (click)="openAvatarPreviewIntent.emit()"
+      >
+        <img
+          *ngIf="profile.avatar"
+          [src]="avatarSrc"
+          [alt]="profile.name || 'User'"
+          (error)="onAvatarErrorIntent.emit($event)"
+        />
+        <span *ngIf="!profile.avatar" class="avatar-initials">{{ initials }}</span>
+      </button>
+    </div>
+  </div>
+  <input
+    #avatarInput
+    id="profile-avatar-input"
+    type="file"
+    accept="image/jpeg,image/png,image/webp"
+    (change)="onAvatarFileSelectedIntent.emit($event)"
+    hidden
+  />
+  <button
+    class="avatar-cam"
+    type="button"
+    title="Upload custom avatar (JPG, PNG, WebP ≤ 2MB)"
+    aria-label="Change profile photo"
+    [disabled]="isUploadingAvatar || isSaving"
+    (click)="avatarInput.click()"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      aria-hidden="true"
+    >
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+      <circle cx="12" cy="13" r="4" />
+    </svg>
+  </button>
+</div>
+<div class="avatar-pending" *ngIf="isAvatarChangePending" aria-live="polite">
+  <span>Photo preview — save profile changes to apply.</span>
+  <button type="button" (click)="discardAvatarChangeIntent.emit()" [disabled]="isSaving">
+    Discard
+  </button>
+</div>
+
+<div class="avatar-meta">
+  <h2 class="avatar-name">{{ profile.name || 'Your Name' }}</h2>
+  <p class="avatar-title">{{ profile.jobTitle || 'Software Engineer' }}</p>
+</div>
+
+<p class="avatar-handle" *ngIf="profile.githubUsername">
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    aria-hidden="true"
+  >
+    <path
+      d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61
+                     c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77
+                     5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0
+                     C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77
+                     a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7
+                     A3.37 3.37 0 0 0 9 18.13V22"
+    />
+  </svg>
+  <span>&#64;{{ profile.githubUsername }}</span>
+</p>
+
+<div class="avatar-bio-quote" *ngIf="profile.bio">
+  <p>{{ profile.bio }}</p>
+</div>
+
+<div class="github-connected" *ngIf="profile.githubUsername">
+  <span class="live-dot" aria-hidden="true"></span>
+  <span class="live-text">GitHub Connected</span>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="13"
+    height="13"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2.5"
+    class="connected-check"
+    aria-hidden="true"
+  >
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+</div>
+
+<p *ngIf="isUploadingAvatar" role="status">
+  <span class="spinner-sm" aria-hidden="true"></span>
+  {{
+    uploadProgress !== null && uploadProgress < 100
+      ? 'Uploading photo ' + uploadProgress + '%'
+      : 'Processing and saving photo…'
+  }}
+</p>

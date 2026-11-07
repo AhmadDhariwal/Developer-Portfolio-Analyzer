@@ -1,0 +1,167 @@
+{
+  "counts": {
+    "tests": 61,
+    "suites": 0,
+    "pass": 55,
+    "fail": 6,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "duration_ms": 129308.3854
+  },
+  "records": [
+    {
+      "id": "TAP-1",
+      "line": 149,
+      "indent": 0,
+      "name": "isolated catalog: scheduled ingestion, discovery, indexed history, shared tags, refresh and worker caches",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-release-final-9Oh8m9\\\\source\\\\backend\\\\src\\\\tests\\\\newsCatalog.integration.test.js:6:1",
+      "file": "backend/src/tests/newsCatalog.integration.test.js",
+      "error": "ENOENT: no such file or directory, open 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-release-final-9Oh8m9\\\\source\\\\backend\\\\verification\\\\tech-news\\\\runtime-audit\\\\catalog-results.json'",
+      "stack": "Object.writeFileSync (node:fs:2483:20)\nTestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-release-final-9Oh8m9\\source\\backend\\src\\tests\\newsCatalog.integration.test.js:252:24)\nprocess.processTicksAndRejections (node:internal/process/task_queues:104:5)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "not ok 12 - isolated catalog: scheduled ingestion, discovery, indexed history, shared tags, refresh and worker caches",
+      "rawDiagnostics": "  ---\n  duration_ms: 4616.9098\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-release-final-9Oh8m9\\\\source\\\\backend\\\\src\\\\tests\\\\newsCatalog.integration.test.js:6:1'\n  failureType: 'testCodeFailure'\n  error: \"ENOENT: no such file or directory, open 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-release-final-9Oh8m9\\\\source\\\\backend\\\\verification\\\\tech-news\\\\runtime-audit\\\\catalog-results.json'\"\n  code: 'ENOENT'\n  stack: |-\n    Object.writeFileSync (node:fs:2483:20)\n    TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-release-final-9Oh8m9\\source\\backend\\src\\tests\\newsCatalog.integration.test.js:252:24)\n    process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    async Test.run (node:internal/test_runner/test:1389:7)\n    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "NEWS_TEST_MONGODB_URI",
+        "NEWS_TEST_REDIS_URL"
+      ]
+    },
+    {
+      "id": "TAP-2",
+      "line": 369,
+      "indent": 4,
+      "name": "distributed rate quotas share counters and expire",
+      "parents": [
+        "isolated Mongo + namespaced configured Upstash: critical portfolio flows"
+      ],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-release-final-9Oh8m9\\\\source\\\\backend\\\\src\\\\tests\\\\publicPortfolio.integration.test.js:300:13",
+      "file": "backend/src/tests/publicPortfolio.integration.test.js",
+      "error": "Invalid argument type",
+      "stack": "encodeCommand (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\@redis\\client\\dist\\lib\\client\\RESP2\\encoder.js:17:19)\nRedisCommandsQueue.getCommandToSend (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\@redis\\client\\dist\\lib\\client\\commands-queue.js:138:45)\nCommander._RedisClient_tick (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\@redis\\client\\dist\\lib\\client\\index.js:545:76)\nCommander._RedisClient_sendCommand (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\@redis\\client\\dist\\lib\\client\\index.js:532:82)\nCommander.commandsExecutor (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\@redis\\client\\dist\\lib\\client\\index.js:190:154)\nBaseClass.<computed> [as pTTL] (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\@redis\\client\\dist\\lib\\commander.js:8:29)\nC:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-release-final-9Oh8m9\\source\\backend\\src\\services\\redisCacheService.js:98:61\nprocess.processTicksAndRejections (node:internal/process/task_queues:104:5)\nasync runWithCommandTimeout (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-release-final-9Oh8m9\\source\\backend\\src\\services\\redisCacheService.js:66:12)\nasync TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-release-final-9Oh8m9\\source\\backend\\src\\tests\\publicPortfolio.integration.test.js:313:18)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "    not ok 6 - distributed rate quotas share counters and expire",
+      "rawDiagnostics": "      ---\n      duration_ms: 11.9938\n      type: 'test'\n      location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-release-final-9Oh8m9\\\\source\\\\backend\\\\src\\\\tests\\\\publicPortfolio.integration.test.js:300:13'\n      failureType: 'testCodeFailure'\n      error: 'Invalid argument type'\n      code: 'ERR_TEST_FAILURE'\n      name: 'TypeError'\n      stack: |-\n        encodeCommand (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\@redis\\client\\dist\\lib\\client\\RESP2\\encoder.js:17:19)\n        RedisCommandsQueue.getCommandToSend (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\@redis\\client\\dist\\lib\\client\\commands-queue.js:138:45)\n        Commander._RedisClient_tick (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\@redis\\client\\dist\\lib\\client\\index.js:545:76)\n        Commander._RedisClient_sendCommand (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\@redis\\client\\dist\\lib\\client\\index.js:532:82)\n        Commander.commandsExecutor (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\@redis\\client\\dist\\lib\\client\\index.js:190:154)\n        BaseClass.<computed> [as pTTL] (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\@redis\\client\\dist\\lib\\commander.js:8:29)\n        C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-release-final-9Oh8m9\\source\\backend\\src\\services\\redisCacheService.js:98:61\n        process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n        async runWithCommandTimeout (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-release-final-9Oh8m9\\source\\backend\\src\\services\\redisCacheService.js:66:12)\n        async TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-release-final-9Oh8m9\\source\\backend\\src\\tests\\publicPortfolio.integration.test.js:313:18)\n      ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "MONGODB_URI",
+        "MONGO_URI",
+        "JWT_SECRET",
+        "JWT_ISSUER",
+        "JWT_AUDIENCE"
+      ]
+    },
+    {
+      "id": "TAP-3",
+      "line": 403,
+      "indent": 4,
+      "name": "image endpoint enforces auth, MIME, size, structure and generated storage names",
+      "parents": [
+        "isolated Mongo + namespaced configured Upstash: critical portfolio flows"
+      ],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-release-final-9Oh8m9\\\\source\\\\backend\\\\src\\\\tests\\\\publicPortfolio.integration.test.js:383:13",
+      "file": "backend/src/tests/publicPortfolio.integration.test.js",
+      "error": "Expected values to be strictly equal:\n\n400 !== 201\n",
+      "stack": "TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-release-final-9Oh8m9\\source\\backend\\src\\tests\\publicPortfolio.integration.test.js:393:16)\nprocess.processTicksAndRejections (node:internal/process/task_queues:104:5)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-release-final-9Oh8m9\\source\\backend\\src\\tests\\publicPortfolio.integration.test.js:383:5)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "    not ok 9 - image endpoint enforces auth, MIME, size, structure and generated storage names",
+      "rawDiagnostics": "      ---\n      duration_ms: 154.3624\n      type: 'test'\n      location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-release-final-9Oh8m9\\\\source\\\\backend\\\\src\\\\tests\\\\publicPortfolio.integration.test.js:383:13'\n      failureType: 'testCodeFailure'\n      error: |-\n        Expected values to be strictly equal:\n        \n        400 !== 201\n        \n      code: 'ERR_ASSERTION'\n      name: 'AssertionError'\n      expected: 201\n      actual: 400\n      operator: 'strictEqual'\n      stack: |-\n        TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-release-final-9Oh8m9\\source\\backend\\src\\tests\\publicPortfolio.integration.test.js:393:16)\n        process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n        async Test.run (node:internal/test_runner/test:1389:7)\n        async TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-release-final-9Oh8m9\\source\\backend\\src\\tests\\publicPortfolio.integration.test.js:383:5)\n        async Test.run (node:internal/test_runner/test:1389:7)\n        async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n      ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "MONGODB_URI",
+        "MONGO_URI",
+        "JWT_SECRET",
+        "JWT_ISSUER",
+        "JWT_AUDIENCE"
+      ]
+    },
+    {
+      "id": "TAP-4",
+      "line": 434,
+      "indent": 4,
+      "name": "account privacy revocation unpublishes portfolios on warmed workers",
+      "parents": [
+        "isolated Mongo + namespaced configured Upstash: critical portfolio flows"
+      ],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-release-final-9Oh8m9\\\\source\\\\backend\\\\src\\\\tests\\\\publicPortfolio.integration.test.js:463:13",
+      "file": "backend/src/tests/publicPortfolio.integration.test.js",
+      "error": "Expected values to be strictly equal:\n\n200 !== 404\n",
+      "stack": "TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-release-final-9Oh8m9\\source\\backend\\src\\tests\\publicPortfolio.integration.test.js:481:16)\nprocess.processTicksAndRejections (node:internal/process/task_queues:104:5)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-release-final-9Oh8m9\\source\\backend\\src\\tests\\publicPortfolio.integration.test.js:463:5)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "    not ok 11 - account privacy revocation unpublishes portfolios on warmed workers",
+      "rawDiagnostics": "      ---\n      duration_ms: 105.9722\n      type: 'test'\n      location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-release-final-9Oh8m9\\\\source\\\\backend\\\\src\\\\tests\\\\publicPortfolio.integration.test.js:463:13'\n      failureType: 'testCodeFailure'\n      error: |-\n        Expected values to be strictly equal:\n        \n        200 !== 404\n        \n      code: 'ERR_ASSERTION'\n      name: 'AssertionError'\n      expected: 404\n      actual: 200\n      operator: 'strictEqual'\n      stack: |-\n        TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-release-final-9Oh8m9\\source\\backend\\src\\tests\\publicPortfolio.integration.test.js:481:16)\n        process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n        async Test.run (node:internal/test_runner/test:1389:7)\n        async TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-release-final-9Oh8m9\\source\\backend\\src\\tests\\publicPortfolio.integration.test.js:463:5)\n        async Test.run (node:internal/test_runner/test:1389:7)\n        async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n      ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "MONGODB_URI",
+        "MONGO_URI",
+        "JWT_SECRET",
+        "JWT_ISSUER",
+        "JWT_AUDIENCE"
+      ]
+    },
+    {
+      "id": "TAP-5",
+      "line": 459,
+      "indent": 0,
+      "name": "isolated Mongo + namespaced configured Upstash: critical portfolio flows",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "parent-summary",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-release-final-9Oh8m9\\\\source\\\\backend\\\\src\\\\tests\\\\publicPortfolio.integration.test.js:15:1",
+      "file": "backend/src/tests/publicPortfolio.integration.test.js",
+      "error": "3 subtests failed",
+      "stack": null,
+      "failureType": "subtestsFailed",
+      "skipReason": null,
+      "rawResult": "not ok 32 - isolated Mongo + namespaced configured Upstash: critical portfolio flows",
+      "rawDiagnostics": "  ---\n  duration_ms: 12554.6424\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-release-final-9Oh8m9\\\\source\\\\backend\\\\src\\\\tests\\\\publicPortfolio.integration.test.js:15:1'\n  failureType: 'subtestsFailed'\n  error: '3 subtests failed'\n  code: 'ERR_TEST_FAILURE'\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "MONGODB_URI",
+        "MONGO_URI",
+        "JWT_SECRET",
+        "JWT_ISSUER",
+        "JWT_AUDIENCE"
+      ]
+    },
+    {
+      "id": "TAP-6",
+      "line": 487,
+      "indent": 0,
+      "name": "disposable Mongo provisioning is additive/idempotent; retry batch respects backoff and preserves records",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-release-final-9Oh8m9\\\\source\\\\backend\\\\src\\\\tests\\\\storageSecurityFinal.test.js:126:1",
+      "file": "backend/src/tests/storageSecurityFinal.test.js",
+      "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'mongodb://127.0.0.1:27141/integration_live_acceptance?replicaSet=profileB2Security'\n- 'mongodb://127.0.0.1:27141/?replicaSet=profileB2Security'\n",
+      "stack": "TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-release-final-9Oh8m9\\source\\backend\\src\\tests\\storageSecurityFinal.test.js:132:12)\nTest.runInAsyncScope (node:async_hooks:227:14)\nTest.run (node:internal/test_runner/test:1382:25)\nTest.processPendingSubtests (node:internal/test_runner/test:960:18)\nTest.postRun (node:internal/test_runner/test:1522:19)\nTest.run (node:internal/test_runner/test:1447:12)\nasync Test.processPendingSubtests (node:internal/test_runner/test:960:7)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "not ok 36 - disposable Mongo provisioning is additive/idempotent; retry batch respects backoff and preserves records",
+      "rawDiagnostics": "  ---\n  duration_ms: 2.7135\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-release-final-9Oh8m9\\\\source\\\\backend\\\\src\\\\tests\\\\storageSecurityFinal.test.js:126:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    + actual - expected\n    \n    + 'mongodb://127.0.0.1:27141/integration_live_acceptance?replicaSet=profileB2Security'\n    - 'mongodb://127.0.0.1:27141/?replicaSet=profileB2Security'\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 'mongodb://127.0.0.1:27141/?replicaSet=profileB2Security'\n  actual: 'mongodb://127.0.0.1:27141/integration_live_acceptance?replicaSet=profileB2Security'\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-release-final-9Oh8m9\\source\\backend\\src\\tests\\storageSecurityFinal.test.js:132:12)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1382:25)\n    Test.processPendingSubtests (node:internal/test_runner/test:960:18)\n    Test.postRun (node:internal/test_runner/test:1522:19)\n    Test.run (node:internal/test_runner/test:1447:12)\n    async Test.processPendingSubtests (node:internal/test_runner/test:960:7)\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "JWT_SECRET",
+        "STORAGE_DRIVER",
+        "STORAGE_SECURITY_MONGO",
+        "PATH",
+        "TEMP"
+      ]
+    }
+  ]
+}

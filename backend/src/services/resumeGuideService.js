@@ -1,5 +1,3 @@
-const aiService = require('./aiservice');
-const { getResumeGuidePrompt } = require('../prompts/resumeGuidePrompt');
 const { renderGuideHtml } = require('../templates/resumeGuideTemplate');
 
 const clampScore = (value) => {
@@ -83,7 +81,9 @@ const buildFallbackGuide = (analysis) => {
 
 	const quickSuggestionSteps = suggestions.slice(0, 3).map((item) => {
 		const title = String(item?.title || 'Improve this section').trim();
-		const detail = String(item?.description || 'Apply focused edits for stronger outcomes.').trim();
+		const detail = String(
+			item?.description || 'Apply focused edits for stronger outcomes.'
+		).trim();
 		return `${title}: ${detail}`;
 	});
 
@@ -99,9 +99,10 @@ const buildFallbackGuide = (analysis) => {
 		'Data Modeling'
 	];
 
-	const roleSkills = experienceLevel === 'Senior'
-		? ['Architecture Leadership', 'Mentoring']
-		: ['Debugging', 'Git Collaboration'];
+	const roleSkills =
+		experienceLevel === 'Senior'
+			? ['Architecture Leadership', 'Mentoring']
+			: ['Debugging', 'Git Collaboration'];
 
 	const skillsToAdd = uniqueStrings([...baselineSkillsToAdd, ...roleSkills])
 		.slice(0, 10)
@@ -138,13 +139,15 @@ const buildFallbackGuide = (analysis) => {
 			title: 'ATS and Keyword Optimization',
 			score: keywordDensity,
 			status: statusFromScore(keywordDensity),
-			problem: 'Your keyword targeting determines whether recruiters and ATS systems discover your resume. Missing intent-aligned terms can suppress visibility even when your experience is strong.',
+			problem:
+				'Your keyword targeting determines whether recruiters and ATS systems discover your resume. Missing intent-aligned terms can suppress visibility even when your experience is strong.',
 			actionSteps: [
 				'Mirror exact role vocabulary from three target job postings.',
 				'Add missing skills to project bullets with context and outcomes.',
 				'Use consistent naming for tools and technologies across sections.'
 			],
-			example: 'Before: Built backend APIs. After: Built and documented Node.js REST APIs with JWT auth, reducing response latency by 28%.',
+			example:
+				'Before: Built backend APIs. After: Built and documented Node.js REST APIs with JWT auth, reducing response latency by 28%.',
 			impact: 'High',
 			timeToFix: '1-2 hrs'
 		},
@@ -152,7 +155,8 @@ const buildFallbackGuide = (analysis) => {
 			title: 'Professional Summary',
 			score: contentQuality,
 			status: statusFromScore(contentQuality),
-			problem: 'A weak summary does not communicate your level, specialization, and outcomes quickly enough for first-pass screening.',
+			problem:
+				'A weak summary does not communicate your level, specialization, and outcomes quickly enough for first-pass screening.',
 			actionSteps: [
 				'Start with years of experience and primary stack.',
 				'Include one quantified business impact in the first two lines.',
@@ -166,13 +170,15 @@ const buildFallbackGuide = (analysis) => {
 			title: 'Work Experience and Achievements',
 			score: atsScore,
 			status: statusFromScore(atsScore),
-			problem: 'Experience bullets should prove ownership and measurable outcomes. Generic responsibilities weaken competitiveness.',
+			problem:
+				'Experience bullets should prove ownership and measurable outcomes. Generic responsibilities weaken competitiveness.',
 			actionSteps: [
 				'Rewrite each bullet with action, context, and measurable outcome.',
 				'Prioritize results tied to performance, revenue, reliability, or time savings.',
 				'Keep each bullet concise and avoid repeating weak verbs.'
 			],
-			example: 'Before: Worked on dashboard features. After: Delivered analytics modules that reduced report generation time from 45s to 12s for 5k weekly users.',
+			example:
+				'Before: Worked on dashboard features. After: Delivered analytics modules that reduced report generation time from 45s to 12s for 5k weekly users.',
 			impact: 'High',
 			timeToFix: '1-2 hrs'
 		},
@@ -180,13 +186,15 @@ const buildFallbackGuide = (analysis) => {
 			title: 'Formatting and Readability',
 			score: formatScore,
 			status: statusFromScore(formatScore),
-			problem: 'Formatting consistency affects ATS parsing and recruiter scan speed. Dense layouts and inconsistent structure reduce clarity.',
+			problem:
+				'Formatting consistency affects ATS parsing and recruiter scan speed. Dense layouts and inconsistent structure reduce clarity.',
 			actionSteps: [
 				'Use standard section order and clear headings.',
 				'Maintain uniform bullet style, tense, and punctuation.',
 				'Remove low-impact lines to improve scanability.'
 			],
-			example: 'Use section headers: Summary, Skills, Experience, Projects, Education, Certifications.',
+			example:
+				'Use section headers: Summary, Skills, Experience, Projects, Education, Certifications.',
 			impact: 'Medium',
 			timeToFix: '30 min'
 		},
@@ -194,51 +202,122 @@ const buildFallbackGuide = (analysis) => {
 			title: 'Skills Positioning',
 			score: keywordDensity,
 			status: statusFromScore(keywordDensity),
-			problem: 'Skills should be grouped by relevance and validated with project evidence to improve trust and ranking.',
+			problem:
+				'Skills should be grouped by relevance and validated with project evidence to improve trust and ranking.',
 			actionSteps: [
 				'Split skills into core, supporting, and tooling categories.',
 				'Show one project bullet proving each core skill.',
 				'Remove outdated or low-confidence skills to reduce noise.'
 			],
-			example: 'Core: Node.js, Angular, MongoDB, Docker. Supporting: Redis, Nginx, Prometheus, Grafana.',
+			example:
+				'Core: Node.js, Angular, MongoDB, Docker. Supporting: Redis, Nginx, Prometheus, Grafana.',
 			impact: 'Medium',
 			timeToFix: '30 min'
 		}
 	];
 
 	if (quickSuggestionSteps.length) {
-		sections[2].actionSteps = uniqueStrings([...sections[2].actionSteps, ...quickSuggestionSteps]).slice(0, 4);
+		sections[2].actionSteps = uniqueStrings([
+			...sections[2].actionSteps,
+			...quickSuggestionSteps
+		]).slice(0, 4);
 	}
 
 	return {
 		executiveSummary: `Your resume currently scores ${atsScore}/100 on ATS readiness. The biggest gains will come from clearer quantified achievements, tighter keyword alignment, and cleaner section structure. This guide gives you a practical month-long plan to reach interview-ready quality.`,
 		overallGrade: overallGradeFromAts(atsScore),
 		priorityLevel: priorityFromAts(atsScore),
-		headline: atsScore < 70
-			? 'High-impact edits this week can significantly increase your interview callbacks.'
-			: 'You are close to a strong resume; focused optimization will improve conversion.',
+		headline:
+			atsScore < 70
+				? 'High-impact edits this week can significantly increase your interview callbacks.'
+				: 'You are close to a strong resume; focused optimization will improve conversion.',
 		sections,
 		skillsToAdd,
 		quickWins: [
-			{ action: 'Rewrite top three experience bullets using measurable outcomes.', timeEstimate: '15 min', impact: 'High' },
-			{ action: 'Add twelve role-specific ATS keywords across summary and projects.', timeEstimate: '15 min', impact: 'High' },
-			{ action: 'Normalize section headers and bullet formatting.', timeEstimate: '10 min', impact: 'Medium' },
-			{ action: 'Replace weak verbs with high-impact action verbs.', timeEstimate: '10 min', impact: 'Medium' },
-			{ action: 'Remove redundant lines to improve readability.', timeEstimate: '15 min', impact: 'Medium' }
+			{
+				action: 'Rewrite top three experience bullets using measurable outcomes.',
+				timeEstimate: '15 min',
+				impact: 'High'
+			},
+			{
+				action: 'Add twelve role-specific ATS keywords across summary and projects.',
+				timeEstimate: '15 min',
+				impact: 'High'
+			},
+			{
+				action: 'Normalize section headers and bullet formatting.',
+				timeEstimate: '10 min',
+				impact: 'Medium'
+			},
+			{
+				action: 'Replace weak verbs with high-impact action verbs.',
+				timeEstimate: '10 min',
+				impact: 'Medium'
+			},
+			{
+				action: 'Remove redundant lines to improve readability.',
+				timeEstimate: '15 min',
+				impact: 'Medium'
+			}
 		],
 		thirtyDayPlan: [
-			{ week: 1, focus: 'Foundation and targeting', tasks: ['Define target roles and collect five job descriptions', 'Rewrite summary for role alignment', 'Create ATS keyword bank'] },
-			{ week: 2, focus: 'Experience rewrite', tasks: ['Refactor bullets with quantified impact', 'Highlight ownership and architecture decisions', 'Add context for technical tradeoffs'] },
-			{ week: 3, focus: 'Skills and project proof', tasks: ['Reorganize skills by priority', 'Add evidence bullets for core tools', 'Trim outdated technologies'] },
-			{ week: 4, focus: 'Final polish and validation', tasks: ['Run final ATS check', 'Peer review for readability', 'Publish tailored versions for target job families'] }
+			{
+				week: 1,
+				focus: 'Foundation and targeting',
+				tasks: [
+					'Define target roles and collect five job descriptions',
+					'Rewrite summary for role alignment',
+					'Create ATS keyword bank'
+				]
+			},
+			{
+				week: 2,
+				focus: 'Experience rewrite',
+				tasks: [
+					'Refactor bullets with quantified impact',
+					'Highlight ownership and architecture decisions',
+					'Add context for technical tradeoffs'
+				]
+			},
+			{
+				week: 3,
+				focus: 'Skills and project proof',
+				tasks: [
+					'Reorganize skills by priority',
+					'Add evidence bullets for core tools',
+					'Trim outdated technologies'
+				]
+			},
+			{
+				week: 4,
+				focus: 'Final polish and validation',
+				tasks: [
+					'Run final ATS check',
+					'Peer review for readability',
+					'Publish tailored versions for target job families'
+				]
+			}
 		],
 		atsKeywords,
 		powerVerbs: [
-			'Achieved', 'Optimized', 'Delivered', 'Engineered', 'Led',
-			'Scaled', 'Automated', 'Designed', 'Implemented', 'Improved',
-			'Reduced', 'Accelerated', 'Refactored', 'Spearheaded', 'Orchestrated'
+			'Achieved',
+			'Optimized',
+			'Delivered',
+			'Engineered',
+			'Led',
+			'Scaled',
+			'Automated',
+			'Designed',
+			'Implemented',
+			'Improved',
+			'Reduced',
+			'Accelerated',
+			'Refactored',
+			'Spearheaded',
+			'Orchestrated'
 		],
-		industryInsight: 'Hiring teams increasingly prioritize outcomes, ownership, and production-grade engineering practices over long skill lists. Resumes that combine clear metrics with stack-specific keywords consistently outperform generic profiles.',
+		industryInsight:
+			'Hiring teams increasingly prioritize outcomes, ownership, and production-grade engineering practices over long skill lists. Resumes that combine clear metrics with stack-specific keywords consistently outperform generic profiles.',
 		finalNote: achievements.length
 			? 'You already have meaningful achievements. Frame them with stronger metrics and role alignment, and your resume can become significantly more competitive.'
 			: 'Once your achievements are quantified and keyword alignment is improved, your resume will present a much stronger interview case.'
@@ -278,7 +357,9 @@ const normalizeSection = (section, index, fallbackSection) => {
 const normalizeSections = (safe, fallback) => {
 	const fallbackSections = Array.isArray(fallback.sections) ? fallback.sections : [];
 	const incomingSections = Array.isArray(safe.sections) ? safe.sections : [];
-	let sections = incomingSections.map((item, index) => normalizeSection(item, index, fallbackSections[index] || fallbackSections[0]));
+	let sections = incomingSections.map((item, index) =>
+		normalizeSection(item, index, fallbackSections[index] || fallbackSections[0])
+	);
 	if (sections.length < 5) {
 		sections = sections.concat(fallbackSections.slice(0, 5 - sections.length));
 	}
@@ -289,15 +370,17 @@ const normalizeSkillsToAdd = (safe, fallback) => {
 	const fallbackSkills = Array.isArray(fallback.skillsToAdd) ? fallback.skillsToAdd : [];
 	const incomingSkills = Array.isArray(safe.skillsToAdd) ? safe.skillsToAdd : [];
 
-	let skills = incomingSkills.map((item, index) => {
-		const fallbackItem = fallbackSkills[index] || fallbackSkills[0] || {};
-		const priority = String(item?.priority || fallbackItem.priority || 'Must Have').trim();
-		return {
-			skill: String(item?.skill || fallbackItem.skill || '').trim(),
-			reason: String(item?.reason || fallbackItem.reason || '').trim(),
-			priority: priority === 'Nice to Have' ? 'Nice to Have' : 'Must Have'
-		};
-	}).filter((item) => item.skill);
+	let skills = incomingSkills
+		.map((item, index) => {
+			const fallbackItem = fallbackSkills[index] || fallbackSkills[0] || {};
+			const priority = String(item?.priority || fallbackItem.priority || 'Must Have').trim();
+			return {
+				skill: String(item?.skill || fallbackItem.skill || '').trim(),
+				reason: String(item?.reason || fallbackItem.reason || '').trim(),
+				priority: priority === 'Nice to Have' ? 'Nice to Have' : 'Must Have'
+			};
+		})
+		.filter((item) => item.skill);
 
 	if (skills.length < 6) {
 		skills = skills.concat(fallbackSkills.slice(0, 6 - skills.length));
@@ -316,15 +399,19 @@ const normalizeQuickWins = (safe, fallback) => {
 	const fallbackQuickWins = Array.isArray(fallback.quickWins) ? fallback.quickWins : [];
 	const incomingQuickWins = Array.isArray(safe.quickWins) ? safe.quickWins : [];
 
-	let quickWins = incomingQuickWins.map((item, index) => {
-		const fallbackItem = fallbackQuickWins[index] || fallbackQuickWins[0] || {};
-		const impact = String(item?.impact || fallbackItem.impact || 'Medium').trim();
-		return {
-			action: String(item?.action || fallbackItem.action || '').trim(),
-			timeEstimate: String(item?.timeEstimate || fallbackItem.timeEstimate || '15 min').trim(),
-			impact: impact === 'High' ? 'High' : 'Medium'
-		};
-	}).filter((item) => item.action);
+	let quickWins = incomingQuickWins
+		.map((item, index) => {
+			const fallbackItem = fallbackQuickWins[index] || fallbackQuickWins[0] || {};
+			const impact = String(item?.impact || fallbackItem.impact || 'Medium').trim();
+			return {
+				action: String(item?.action || fallbackItem.action || '').trim(),
+				timeEstimate: String(
+					item?.timeEstimate || fallbackItem.timeEstimate || '15 min'
+				).trim(),
+				impact: impact === 'High' ? 'High' : 'Medium'
+			};
+		})
+		.filter((item) => item.action);
 
 	if (quickWins.length < 4) {
 		quickWins = quickWins.concat(fallbackQuickWins.slice(0, 4 - quickWins.length));
@@ -338,7 +425,12 @@ const normalizeThirtyDayPlan = (safe, fallback) => {
 	const incomingPlan = Array.isArray(safe.thirtyDayPlan) ? safe.thirtyDayPlan : [];
 
 	let plan = incomingPlan.map((item, index) => {
-		const fallbackItem = fallbackPlan[index] || fallbackPlan[index % Math.max(fallbackPlan.length, 1)] || { week: index + 1, focus: 'Focus area', tasks: ['Task 1', 'Task 2', 'Task 3'] };
+		const fallbackItem = fallbackPlan[index] ||
+			fallbackPlan[index % Math.max(fallbackPlan.length, 1)] || {
+				week: index + 1,
+				focus: 'Focus area',
+				tasks: ['Task 1', 'Task 2', 'Task 3']
+			};
 		let tasks = toStringArray(item?.tasks).slice(0, 4);
 		if (!tasks.length) tasks = toStringArray(fallbackItem.tasks).slice(0, 4);
 		return {
@@ -356,7 +448,10 @@ const normalizeThirtyDayPlan = (safe, fallback) => {
 };
 
 const normalizeChipCollection = (safeValues, fallbackValues, min, max) => {
-	const collection = uniqueStrings([...toStringArray(safeValues), ...toStringArray(fallbackValues)]).slice(0, max);
+	const collection = uniqueStrings([
+		...toStringArray(safeValues),
+		...toStringArray(fallbackValues)
+	]).slice(0, max);
 	const fallbackList = toStringArray(fallbackValues);
 	while (collection.length < min && fallbackList.length) {
 		collection.push(fallbackList[collection.length % fallbackList.length]);
@@ -378,8 +473,12 @@ const normalizeGuide = (candidate, fallback) => {
 
 	return {
 		executiveSummary: String(safe.executiveSummary || fallback.executiveSummary || '').trim(),
-		overallGrade: ['A', 'B', 'C', 'D'].includes(gradeCandidate) ? gradeCandidate : fallback.overallGrade,
-		priorityLevel: ['Critical', 'High', 'Moderate', 'Strong'].includes(priorityCandidate) ? priorityCandidate : fallback.priorityLevel,
+		overallGrade: ['A', 'B', 'C', 'D'].includes(gradeCandidate)
+			? gradeCandidate
+			: fallback.overallGrade,
+		priorityLevel: ['Critical', 'High', 'Moderate', 'Strong'].includes(priorityCandidate)
+			? priorityCandidate
+			: fallback.priorityLevel,
 		headline: String(safe.headline || fallback.headline || '').trim(),
 		sections,
 		skillsToAdd,
@@ -393,9 +492,10 @@ const normalizeGuide = (candidate, fallback) => {
 };
 
 const normalizeAnalysis = (analysisInput) => {
-	const base = analysisInput && typeof analysisInput.toObject === 'function'
-		? analysisInput.toObject()
-		: (analysisInput || {});
+	const base =
+		analysisInput && typeof analysisInput.toObject === 'function'
+			? analysisInput.toObject()
+			: analysisInput || {};
 
 	return {
 		...base,
@@ -416,16 +516,10 @@ const normalizeAnalysis = (analysisInput) => {
 const generateResumeGuide = async (analysisInput) => {
 	const analysis = normalizeAnalysis(analysisInput);
 	const detectedSkills = uniqueStrings(mapSkillsToArray(analysis.skills));
-	const skillsFlat = detectedSkills.join(', ');
-
-	const prompt = getResumeGuidePrompt({
-		...analysis,
-		skillsFlat
-	});
-
+	// The downloadable guide uses the same deterministic evidence and validated
+	// qualitative suggestions as the analysis. No second unrestricted PII-bearing prompt.
 	const fallbackGuide = buildFallbackGuide(analysis);
-	const aiResult = await aiService.runAIAnalysis(prompt, fallbackGuide);
-	const guide = normalizeGuide(aiResult, fallbackGuide);
+	const guide = normalizeGuide(fallbackGuide, fallbackGuide);
 
 	return renderGuideHtml(guide, analysis, detectedSkills);
 };

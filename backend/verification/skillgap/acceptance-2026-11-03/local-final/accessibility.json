@@ -1,0 +1,170 @@
+{
+  "status": "PASS — scoped automated WCAG A/AA scans",
+  "audits": [
+    {
+      "theme": "light",
+      "width": 375,
+      "engine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      },
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 7
+        }
+      ]
+    },
+    {
+      "theme": "light",
+      "width": 1440,
+      "engine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      },
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 19
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "width": 375,
+      "engine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      },
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 7
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "width": 1440,
+      "engine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      },
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 19
+        }
+      ]
+    },
+    {
+      "theme": "system",
+      "width": 375,
+      "engine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      },
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 7
+        }
+      ]
+    },
+    {
+      "theme": "system",
+      "width": 1440,
+      "engine": {
+        "name": "axe-core",
+        "version": "4.14.0"
+      },
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "nodes": 19
+        }
+      ]
+    }
+  ],
+  "disclosureContrast": [
+    {
+      "theme": "light",
+      "width": 375,
+      "state": "evidence-key",
+      "foreground": "rgb(79, 70, 229)",
+      "background": [
+        255,
+        255,
+        255
+      ],
+      "ratio": 6.287528596095884
+    },
+    {
+      "theme": "light",
+      "width": 1440,
+      "state": "evidence-key",
+      "foreground": "rgb(79, 70, 229)",
+      "background": [
+        255,
+        255,
+        255
+      ],
+      "ratio": 6.287528596095884
+    },
+    {
+      "theme": "dark",
+      "width": 375,
+      "state": "evidence-key",
+      "foreground": "rgb(165, 180, 252)",
+      "background": [
+        17,
+        24,
+        39
+      ],
+      "ratio": 8.898600916846645
+    },
+    {
+      "theme": "dark",
+      "width": 1440,
+      "state": "evidence-key",
+      "foreground": "rgb(165, 180, 252)",
+      "background": [
+        17,
+        24,
+        39
+      ],
+      "ratio": 8.898600916846645
+    },
+    {
+      "theme": "system",
+      "width": 375,
+      "state": "evidence-key",
+      "foreground": "rgb(165, 180, 252)",
+      "background": [
+        17,
+        24,
+        39
+      ],
+      "ratio": 8.898600916846645
+    },
+    {
+      "theme": "system",
+      "width": 1440,
+      "state": "evidence-key",
+      "foreground": "rgb(165, 180, 252)",
+      "background": [
+        17,
+        24,
+        39
+      ],
+      "ratio": 8.898600916846645
+    }
+  ],
+  "manualIndependentApproval": "BLOCKED"
+}

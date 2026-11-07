@@ -1,0 +1,35 @@
+{
+  "productionDataUsed": false,
+  "historicalDataDeleted": false,
+  "checks": [
+    "Disabled/approval/configuration and no notification TTL PASS",
+    "Source/notification/revision/receipt atomic rollback PASS",
+    "Bounded Clear All, recipient/token isolation, new revision preservation and receipt tombstone PASS",
+    "Existing read/single/selected deletion and privacy PASS",
+    "Expiry feed/count visibility, read-state transition, explicit security/legacy exclusion PASS",
+    "Inactive account activity expires; audit history and account records remain PASS",
+    "Bounded worker cleanup, durable receipt non-recreation, security/legacy exclusion, two-process lease fencing PASS",
+    "Mongo failure and recovery without fallback authority PASS"
+  ],
+  "indexScan": {
+    "returned": 100,
+    "examined": 0,
+    "keys": 100
+  },
+  "multiWorker": [
+    {
+      "deletedCount": 100,
+      "examined": 100,
+      "owners": 1
+    },
+    {
+      "busy": true,
+      "deletedCount": 0
+    }
+  ],
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 97,
+    "productionDataUsed": false
+  }
+}

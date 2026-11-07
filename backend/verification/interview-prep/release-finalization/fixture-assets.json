@@ -1,0 +1,47 @@
+{
+  "command": "node backend/scripts/generate-resume-fixtures.js",
+  "pythonSelection": "RESUME_FIXTURE_PYTHON set to installed bundled runtime",
+  "scope": "Synthetic generated test fixtures, not resume uploads; generated after absent assets caused ENOENT",
+  "assets": [
+    {
+      "file": "backend/src/tests/fixtures/resume/standard.pdf",
+      "bytes": 42859,
+      "sha256": "b48f3e1eb6e11577cdb2014ce8f1663241b53890dfd74b07acc6b5649af1f287"
+    },
+    {
+      "file": "backend/src/tests/fixtures/resume/layout-shift.pdf",
+      "bytes": 42859,
+      "sha256": "1d3a6c942e67080084f19255779bedc23166ab286aba990016fb4ce4bb25de6b"
+    },
+    {
+      "file": "backend/src/tests/fixtures/resume/columns.pdf",
+      "bytes": 42873,
+      "sha256": "afc7751932945abcf1e5e38cdf75051930368eb6699a3133d846a65d21d3cc22"
+    },
+    {
+      "file": "backend/src/tests/fixtures/resume/empty.pdf",
+      "bytes": 1298,
+      "sha256": "d90f5c0ad72a67341295f79c67274f934f38c68518de29fc6f62b39f541629cf"
+    },
+    {
+      "file": "backend/src/tests/fixtures/resume/page-limit.pdf",
+      "bytes": 20933,
+      "sha256": "55cf59525050c43125e3002083c0384eee69adc72ff3253ecc571b0f18f4365e"
+    },
+    {
+      "file": "backend/src/tests/fixtures/resume/scanned.pdf",
+      "bytes": 3855,
+      "sha256": "9265102a2f761adfd3a8ac84f369f940e8e9eea3351d443766e6bec6e4e7f0ed"
+    },
+    {
+      "file": "backend/src/tests/fixtures/resume/encrypted.pdf",
+      "bytes": 42889,
+      "sha256": "87f97be9ad144e9d02b7f0f467f7ab5edc95a28e2f1adc77450193d79de65937"
+    },
+    {
+      "file": "backend/src/tests/fixtures/resume/corrupt.pdf",
+      "bytes": 34,
+      "sha256": "83e1caf5b18318069dd1598bb856ef327389b574ededc4fc63901167594ff9db"
+    }
+  ]
+}

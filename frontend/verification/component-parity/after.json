@@ -1,0 +1,5002 @@
+[
+  {
+    "name": "github-analyzer-light-1440",
+    "layout": [
+      {
+        "tag": "BUTTON",
+        "text": "Analysis Details & Audit",
+        "box": [
+          1115.5,
+          88,
+          165.27,
+          32
+        ],
+        "color": "rgb(79, 70, 229)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "500 13px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Refresh Analysis",
+        "box": [
+          1290.77,
+          88,
+          125.23,
+          32
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "font": "500 13px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "github.com/ Analyze Current: @fixture Saved Profile Analyzed:Oct 8, 2026, 10:00 AM•Fresh Analysis",
+        "box": [
+          284,
+          167.28,
+          1132,
+          81.36
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "GitHub Profile Selection",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          390.88,
+          187.95,
+          353.13,
+          40
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "GitHub username",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Analyze",
+        "box": [
+          755,
+          188.95,
+          85.45,
+          38
+        ],
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(79, 70, 229)",
+        "font": "600 14px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Executive IntelligenceGitHub Executive SummaryGitHub Health 82 / 100 Strong Full Stack Angular EngineerAI-assisted profile interpretationDemonstrates solid frontend development expertise.✓Strongest SignalConsistency (90/100)Push frequency and active repository updates over the past 6 months!Primary GapProject Impact (75/100)Community adoption, stars, forks, and project visibility→Recommended Action · AI-assistedAddress Identified GapLow project diversity in backend stack",
+        "box": [
+          284,
+          268.64,
+          1132,
+          374.34
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "Executive Summary",
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "GitHub Executive Summary",
+        "box": [
+          284,
+          296.17,
+          1132,
+          24.3
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "700 18px / 24.3px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H3",
+        "text": "Full Stack Angular Engineer",
+        "box": [
+          507,
+          366.59,
+          884,
+          22.09
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "600 17px / 22.1px Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Repositories84 original • 4 forkedSampled Commits320Top 5 active repositoriesLanguages4Primary languagesTotal Stars45Earned across reposCommunity Forks10Forks earned across repositoriesFollowers18Developer network",
+        "box": [
+          284,
+          662.98,
+          1132,
+          140.13
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "Key GitHub Metrics",
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Scoring telemetryScore BreakdownBackend scores and weighted contributions · github-health-score-v1 View Scoring Audit & Weights Code Quality24% weightRepo documentation, README cleanliness, and engineering stack depth85/ 100+20.4 pts Included Project Diversity17% weightLanguage distribution balance and tech stack breadth across projects78/ 100+13.3 pts Included Contribution Signal18% weightCommit depth across top active repositories (sampled contributor history)80/ 100+14.4 pts Included Consistency13% weightPush frequency and active repository updates over the past 6 months90/ 100+11.7 pts Included Project Impact14% weightCommunity adoption, stars, forks, and project visibility75/ 100+10.5 pts Included Profile Strength14% weightProfile completeness, follower network, and repository volume84/ 100+11.8 pts Included",
+        "box": [
+          284,
+          823.11,
+          1132,
+          582.09
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "Score Breakdown",
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Score Breakdown",
+        "box": [
+          309,
+          875.64,
+          409.56,
+          24.3
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "700 18px / 24.3px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "View Scoring Audit & Weights",
+        "box": [
+          1191.3,
+          848.11,
+          199.7,
+          32
+        ],
+        "color": "rgb(71, 85, 105)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "500 13px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Language Distribution Which languages constitute your codebase? (Primary languages) TypeScript56%Python24%JavaScript12%Go8%Support & Config Files: HTML 20% SCSS 15% Sampled Commit ActivityWhere is commit effort concentrated across top projects?Sampledℹ️Sampled repository contributor history (top 5 active repositories) — not lifetime total commits.atlas-api150 sampled commitscommerce-web125 sampled commitsdeveloper-tools100 sampled commitsinsight-cli75 sampled commitsportfolio-site50 sampled commits",
+        "box": [
+          284,
+          1425.2,
+          1132,
+          492.59
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "Languages and Activity",
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Language Distribution",
+        "box": [
+          307,
+          1446.2,
+          390.72,
+          24.3
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "700 18px / 24.3px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "CANVAS",
+        "text": "",
+        "box": [
+          307,
+          1516.64,
+          180,
+          180
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": "Language distribution; percentages listed alongside",
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Sampled Commit Activity",
+        "box": [
+          883,
+          1446.2,
+          345.22,
+          24.3
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "700 18px / 24.3px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "CANVAS",
+        "text": "",
+        "box": [
+          883,
+          1553.83,
+          510,
+          200
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": "Sampled repository commits; exact counts listed below",
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Repository signals Top Repositories Evaluated by code documentation, testing signals, commit cadence, and community adoption. View All Repositories (8) Sort by: Quality Score ↓ Stars Name RepositoryCategoryLanguageTech StackStarsForksQuality ScoreActionatlas-apiFirst public projectRepository evidenceREADME detected Yes README quality80Sampled commits150Last push Oct 12, 2026, 12:00 PM Repository size (KB)1400Quality signals are heuristic evidence, not a code review.ProductionTypeScriptAngularTypeScript 30 8 88 View ↗ commerce-webForkArchivedArchived demoRepository evidenceREADME detected Yes README quality77Sampled commits90Last push Oct 12, 2026, 12:00 PM Repository size (KB)1520Quality signals are heuristic evidence, not a code review.LearningTypeScriptNode.js 34 2 83 View ↗ developer-toolsFirst public projectRepository evidenceREADME detected Yes README quality74Sampled commits150Last push Oct 12, 2026, 12:00 PM Repository size (KB)1640Quality signals are heuristic evidence, not a code review.ProductionTypeScriptAngularTypeScript 38 8 78 View ↗ insight-cliForkArchivedArchived demoRepository evidenceREADME detected No README quality71Sampled commits90Last push Oct 12, 2026, 12:00 PM Repository size (KB)1760Quality signals are heuristic evidence, not a code review.LearningTypeScriptNode.js 42 2 73 View ↗ portfolio-siteFirst public projectRepository evidenceREADME detected Yes README quality68Sampled commits150Last push Oct 12, 2026, 12:00 PM Repository size (KB)1880Quality signals are heuristic evidence, not a code review.ProductionTypeScriptAngularTypeScript 46 8 68 View ↗",
+        "box": [
+          284,
+          1937.8,
+          1132,
+          714.56
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "Repository Evidence",
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Top Repositories",
+        "box": [
+          309,
+          1990.33,
+          560.94,
+          24.3
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "700 18px / 24.3px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "View All Repositories (8)",
+        "box": [
+          1221.06,
+          1962.8,
+          169.94,
+          32
+        ],
+        "color": "rgb(79, 70, 229)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "500 13px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Quality Score ↓",
+        "box": [
+          378.73,
+          2061.77,
+          109.69,
+          30.59
+        ],
+        "color": "rgb(67, 56, 202)",
+        "background": "rgb(238, 242, 255)",
+        "font": "600 12px / 18.6px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Stars",
+        "box": [
+          496.42,
+          2061.77,
+          51.86,
+          30.59
+        ],
+        "color": "rgb(71, 85, 105)",
+        "background": "rgb(255, 255, 255)",
+        "font": "500 12px / 18.6px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Name",
+        "box": [
+          556.28,
+          2061.77,
+          54.52,
+          30.59
+        ],
+        "color": "rgb(71, 85, 105)",
+        "background": "rgb(255, 255, 255)",
+        "font": "500 12px / 18.6px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "TABLE",
+        "text": "RepositoryCategoryLanguageTech StackStarsForksQuality ScoreActionatlas-apiFirst public projectRepository evidenceREADME detected Yes README quality80Sampled commits150Last push Oct 12, 2026, 12:00 PM Repository size (KB)1400Quality signals are heuristic evidence, not a code review.ProductionTypeScriptAngularTypeScript 30 8 88 View ↗ commerce-webForkArchivedArchived demoRepository evidenceREADME detected Yes README quality77Sampled commits90Last push Oct 12, 2026, 12:00 PM Repository size (KB)1520Quality signals are heuristic evidence, not a code review.LearningTypeScriptNode.js 34 2 83 View ↗ developer-toolsFirst public projectRepository evidenceREADME detected Yes README quality74Sampled commits150Last push Oct 12, 2026, 12:00 PM Repository size (KB)1640Quality signals are heuristic evidence, not a code review.ProductionTypeScriptAngularTypeScript 38 8 78 View ↗ insight-cliForkArchivedArchived demoRepository evidenceREADME detected No README quality71Sampled commits90Last push Oct 12, 2026, 12:00 PM Repository size (KB)1760Quality signals are heuristic evidence, not a code review.LearningTypeScriptNode.js 42 2 73 View ↗ portfolio-siteFirst public projectRepository evidenceREADME detected Yes README quality68Sampled commits150Last push Oct 12, 2026, 12:00 PM Repository size (KB)1880Quality signals are heuristic evidence, not a code review.ProductionTypeScriptAngularTypeScript 46 8 68 View ↗",
+        "box": [
+          310,
+          2105.36,
+          1080,
+          521
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "",
+        "display": "table",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Repository",
+        "box": [
+          324,
+          2125.88,
+          57.83,
+          17.05
+        ],
+        "color": "rgb(82, 96, 117)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "",
+        "display": "inline-block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Stars",
+        "box": [
+          1109.91,
+          2125.88,
+          28.47,
+          17.05
+        ],
+        "color": "rgb(82, 96, 117)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "",
+        "display": "inline-block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Quality Score",
+        "box": [
+          1241.97,
+          2117.36,
+          69.19,
+          34.09
+        ],
+        "color": "rgb(82, 96, 117)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "",
+        "display": "inline-block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Stack fingerprintDetected Technologies & Frameworks Libraries, tools, and frameworks detected across repository manifests and codebases. Backend1 Node.js Frontend1 Angular",
+        "box": [
+          284,
+          2672.36,
+          1132,
+          251.16
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "Detected Technologies",
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Detected Technologies & Frameworks",
+        "box": [
+          309,
+          2724.89,
+          512.7,
+          24.3
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "700 18px / 24.3px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Qualitative intelligenceProfile Insights & Talking Points Qualitative narrative and interview positioning grounded in verified repository signals. AI-assisted interpretation💡Scores and metrics come from deterministic backend rules and sampled GitHub evidence. The narrative below is AI-assisted interpretation, not an additional score or verified fact.Demonstrates solid frontend development expertise.High quality repositories with robust commit cadence.Engineering StrengthsStrong documentationConsistent commit rhythmPriority ImprovementsLow project diversity in backend stackInterview Talking PointsMaintains clean documentationProven Angular mastery",
+        "box": [
+          284,
+          2943.52,
+          1132,
+          440.14
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "Profile Insights",
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Profile Insights & Talking Points",
+        "box": [
+          309,
+          2996.05,
+          507.53,
+          24.3
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "700 18px / 24.3px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      }
+    ],
+    "overflow": false,
+    "errors": [],
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/api/notifications?limit=10&page=1"
+      },
+      {
+        "method": "GET",
+        "path": "/api/notifications/stream"
+      },
+      {
+        "method": "GET",
+        "path": "/api/tenant/organizations"
+      },
+      {
+        "method": "POST",
+        "path": "/api/github/analyze-save"
+      },
+      {
+        "method": "GET",
+        "path": "/api/notifications/stream"
+      },
+      {
+        "method": "GET",
+        "path": "/api/notifications/stream"
+      }
+    ],
+    "layoutEqual": true,
+    "sameDimensions": true,
+    "changedPixels": 0,
+    "significantPixels": 0,
+    "maximumChannelDelta": 0
+  },
+  {
+    "name": "github-analyzer-light-375",
+    "layout": [
+      {
+        "tag": "BUTTON",
+        "text": "Analysis Details & Audit",
+        "box": [
+          14,
+          174.97,
+          165.27,
+          32
+        ],
+        "color": "rgb(79, 70, 229)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "500 13px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Refresh Analysis",
+        "box": [
+          189.27,
+          174.97,
+          125.23,
+          32
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "font": "500 13px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "github.com/ Analyze Current: @fixture Saved Profile Analyzed:Oct 8, 2026, 10:00 AM•Fresh Analysis",
+        "box": [
+          14,
+          222.97,
+          347,
+          139.36
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "GitHub Profile Selection",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          40,
+          240.97,
+          203.55,
+          40
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "GitHub username",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Analyze",
+        "box": [
+          254.55,
+          241.97,
+          85.45,
+          38
+        ],
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(79, 70, 229)",
+        "font": "600 14px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Executive IntelligenceGitHub Executive SummaryGitHub Health 82 / 100 Strong Full Stack Angular EngineerAI-assisted profile interpretationDemonstrates solid frontend development expertise.✓Strongest SignalConsistency (90/100)Push frequency and active repository updates over the past 6 months!Primary GapProject Impact (75/100)Community adoption, stars, forks, and project visibility→Recommended Action · AI-assistedAddress Identified GapLow project diversity in backend stack",
+        "box": [
+          14,
+          378.33,
+          347,
+          712.05
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "Executive Summary",
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "GitHub Executive Summary",
+        "box": [
+          14,
+          405.86,
+          347,
+          24.3
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "700 18px / 24.3px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H3",
+        "text": "Full Stack Angular Engineer",
+        "box": [
+          31,
+          575.02,
+          313,
+          22.09
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "600 17px / 22.1px Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Repositories84 original • 4 forkedSampled Commits320Top 5 active repositoriesLanguages4Primary languagesTotal Stars45Earned across reposCommunity Forks10Forks earned across repositoriesFollowers18Developer network",
+        "box": [
+          14,
+          1106.38,
+          347,
+          404.23
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "Key GitHub Metrics",
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Scoring telemetryScore BreakdownBackend scores and weighted contributions · github-health-score-v1 View Scoring Audit & Weights Code Quality24% weightRepo documentation, README cleanliness, and engineering stack depth85/ 100+20.4 pts Included Project Diversity17% weightLanguage distribution balance and tech stack breadth across projects78/ 100+13.3 pts Included Contribution Signal18% weightCommit depth across top active repositories (sampled contributor history)80/ 100+14.4 pts Included Consistency13% weightPush frequency and active repository updates over the past 6 months90/ 100+11.7 pts Included Project Impact14% weightCommunity adoption, stars, forks, and project visibility75/ 100+10.5 pts Included Profile Strength14% weightProfile completeness, follower network, and repository volume84/ 100+11.8 pts Included",
+        "box": [
+          14,
+          1526.61,
+          347,
+          1056
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "Score Breakdown",
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Score Breakdown",
+        "box": [
+          39,
+          1579.14,
+          297,
+          24.3
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "700 18px / 24.3px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "View Scoring Audit & Weights",
+        "box": [
+          39,
+          1655.72,
+          199.7,
+          32
+        ],
+        "color": "rgb(71, 85, 105)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "500 13px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Language Distribution Which languages constitute your codebase? (Primary languages) TypeScript56%Python24%JavaScript12%Go8%Support & Config Files: HTML 20% SCSS 15% Sampled Commit ActivityWhere is commit effort concentrated across top projects?Sampledℹ️Sampled repository contributor history (top 5 active repositories) — not lifetime total commits.atlas-api150 sampled commitscommerce-web125 sampled commitsdeveloper-tools100 sampled commitsinsight-cli75 sampled commitsportfolio-site50 sampled commits",
+        "box": [
+          14,
+          2598.61,
+          347,
+          1108.64
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "Languages and Activity",
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Language Distribution",
+        "box": [
+          37,
+          2619.61,
+          301,
+          24.3
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "700 18px / 24.3px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "CANVAS",
+        "text": "",
+        "box": [
+          97.5,
+          2710.19,
+          180,
+          180
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": "Language distribution; percentages listed alongside",
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Sampled Commit Activity",
+        "box": [
+          37,
+          3179.94,
+          301,
+          24.3
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "700 18px / 24.3px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "CANVAS",
+        "text": "",
+        "box": [
+          37,
+          3343.28,
+          301,
+          200
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": "Sampled repository commits; exact counts listed below",
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Repository signals Top Repositories Evaluated by code documentation, testing signals, commit cadence, and community adoption. View All Repositories (8) Sort by: Quality Score ↓ Stars Name RepositoryCategoryLanguageTech StackStarsForksQuality ScoreActionatlas-apiFirst public projectRepository evidenceREADME detected Yes README quality80Sampled commits150Last push Oct 12, 2026, 12:00 PM Repository size (KB)1400Quality signals are heuristic evidence, not a code review.ProductionTypeScriptAngularTypeScript 30 8 88 View ↗ commerce-webForkArchivedArchived demoRepository evidenceREADME detected Yes README quality77Sampled commits90Last push Oct 12, 2026, 12:00 PM Repository size (KB)1520Quality signals are heuristic evidence, not a code review.LearningTypeScriptNode.js 34 2 83 View ↗ developer-toolsFirst public projectRepository evidenceREADME detected Yes README quality74Sampled commits150Last push Oct 12, 2026, 12:00 PM Repository size (KB)1640Quality signals are heuristic evidence, not a code review.ProductionTypeScriptAngularTypeScript 38 8 78 View ↗ insight-cliForkArchivedArchived demoRepository evidenceREADME detected No README quality71Sampled commits90Last push Oct 12, 2026, 12:00 PM Repository size (KB)1760Quality signals are heuristic evidence, not a code review.LearningTypeScriptNode.js 42 2 73 View ↗ portfolio-siteFirst public projectRepository evidenceREADME detected Yes README quality68Sampled commits150Last push Oct 12, 2026, 12:00 PM Repository size (KB)1880Quality signals are heuristic evidence, not a code review.ProductionTypeScriptAngularTypeScript 46 8 68 View ↗",
+        "box": [
+          14,
+          3723.25,
+          347,
+          856.44
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "Repository Evidence",
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Top Repositories",
+        "box": [
+          39,
+          3775.78,
+          297,
+          24.3
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "700 18px / 24.3px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "View All Repositories (8)",
+        "box": [
+          39,
+          3872.5,
+          169.94,
+          32
+        ],
+        "color": "rgb(79, 70, 229)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "500 13px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Quality Score ↓",
+        "box": [
+          108.73,
+          3931.5,
+          109.69,
+          30.59
+        ],
+        "color": "rgb(67, 56, 202)",
+        "background": "rgb(238, 242, 255)",
+        "font": "600 12px / 18.6px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Stars",
+        "box": [
+          226.42,
+          3931.5,
+          51.86,
+          30.59
+        ],
+        "color": "rgb(71, 85, 105)",
+        "background": "rgb(255, 255, 255)",
+        "font": "500 12px / 18.6px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Name",
+        "box": [
+          58,
+          3970.09,
+          54.52,
+          30.59
+        ],
+        "color": "rgb(71, 85, 105)",
+        "background": "rgb(255, 255, 255)",
+        "font": "500 12px / 18.6px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "TABLE",
+        "text": "RepositoryCategoryLanguageTech StackStarsForksQuality ScoreActionatlas-apiFirst public projectRepository evidenceREADME detected Yes README quality80Sampled commits150Last push Oct 12, 2026, 12:00 PM Repository size (KB)1400Quality signals are heuristic evidence, not a code review.ProductionTypeScriptAngularTypeScript 30 8 88 View ↗ commerce-webForkArchivedArchived demoRepository evidenceREADME detected Yes README quality77Sampled commits90Last push Oct 12, 2026, 12:00 PM Repository size (KB)1520Quality signals are heuristic evidence, not a code review.LearningTypeScriptNode.js 34 2 83 View ↗ developer-toolsFirst public projectRepository evidenceREADME detected Yes README quality74Sampled commits150Last push Oct 12, 2026, 12:00 PM Repository size (KB)1640Quality signals are heuristic evidence, not a code review.ProductionTypeScriptAngularTypeScript 38 8 78 View ↗ insight-cliForkArchivedArchived demoRepository evidenceREADME detected No README quality71Sampled commits90Last push Oct 12, 2026, 12:00 PM Repository size (KB)1760Quality signals are heuristic evidence, not a code review.LearningTypeScriptNode.js 42 2 73 View ↗ portfolio-siteFirst public projectRepository evidenceREADME detected Yes README quality68Sampled commits150Last push Oct 12, 2026, 12:00 PM Repository size (KB)1880Quality signals are heuristic evidence, not a code review.ProductionTypeScriptAngularTypeScript 46 8 68 View ↗",
+        "box": [
+          40,
+          4013.69,
+          295,
+          4978.45
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Repository",
+        "box": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "color": "rgb(82, 96, 117)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "",
+        "display": "inline-block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Stars",
+        "box": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "color": "rgb(82, 96, 117)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "",
+        "display": "inline-block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Quality Score",
+        "box": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "color": "rgb(82, 96, 117)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "",
+        "display": "inline-block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Stack fingerprintDetected Technologies & Frameworks Libraries, tools, and frameworks detected across repository manifests and codebases. Backend1 Node.js Frontend1 Angular",
+        "box": [
+          14,
+          4595.69,
+          347,
+          353.69
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "Detected Technologies",
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Detected Technologies & Frameworks",
+        "box": [
+          39,
+          4648.22,
+          297,
+          48.59
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "700 18px / 24.3px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Qualitative intelligenceProfile Insights & Talking Points Qualitative narrative and interview positioning grounded in verified repository signals. AI-assisted interpretation💡Scores and metrics come from deterministic backend rules and sampled GitHub evidence. The narrative below is AI-assisted interpretation, not an additional score or verified fact.Demonstrates solid frontend development expertise.High quality repositories with robust commit cadence.Engineering StrengthsStrong documentationConsistent commit rhythmPriority ImprovementsLow project diversity in backend stackInterview Talking PointsMaintains clean documentationProven Angular mastery",
+        "box": [
+          14,
+          4965.38,
+          347,
+          852.72
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "Profile Insights",
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Profile Insights & Talking Points",
+        "box": [
+          39,
+          5017.91,
+          297,
+          24.3
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "700 18px / 24.3px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      }
+    ],
+    "overflow": false,
+    "errors": [],
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/api/notifications?limit=10&page=1"
+      },
+      {
+        "method": "GET",
+        "path": "/api/notifications/stream"
+      },
+      {
+        "method": "GET",
+        "path": "/api/tenant/organizations"
+      },
+      {
+        "method": "POST",
+        "path": "/api/github/analyze-save"
+      },
+      {
+        "method": "GET",
+        "path": "/api/notifications/stream"
+      },
+      {
+        "method": "GET",
+        "path": "/api/notifications/stream"
+      }
+    ],
+    "layoutEqual": true,
+    "sameDimensions": true,
+    "changedPixels": 0,
+    "significantPixels": 0,
+    "maximumChannelDelta": 0
+  },
+  {
+    "name": "github-analyzer-dark-1440",
+    "layout": [
+      {
+        "tag": "BUTTON",
+        "text": "Analysis Details & Audit",
+        "box": [
+          1115.5,
+          88,
+          165.27,
+          32
+        ],
+        "color": "rgb(99, 102, 241)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "500 13px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Refresh Analysis",
+        "box": [
+          1290.77,
+          88,
+          125.23,
+          32
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(21, 29, 42)",
+        "font": "500 13px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "github.com/ Analyze Current: @fixture Saved Profile Analyzed:Oct 8, 2026, 10:00 AM•Fresh Analysis",
+        "box": [
+          284,
+          167.28,
+          1132,
+          81.36
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(17, 24, 39)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "GitHub Profile Selection",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          390.88,
+          187.95,
+          353.13,
+          40
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "GitHub username",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Analyze",
+        "box": [
+          755,
+          188.95,
+          85.45,
+          38
+        ],
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(79, 70, 229)",
+        "font": "600 14px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Executive IntelligenceGitHub Executive SummaryGitHub Health 82 / 100 Strong Full Stack Angular EngineerAI-assisted profile interpretationDemonstrates solid frontend development expertise.✓Strongest SignalConsistency (90/100)Push frequency and active repository updates over the past 6 months!Primary GapProject Impact (75/100)Community adoption, stars, forks, and project visibility→Recommended Action · AI-assistedAddress Identified GapLow project diversity in backend stack",
+        "box": [
+          284,
+          268.64,
+          1132,
+          374.34
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "Executive Summary",
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "GitHub Executive Summary",
+        "box": [
+          284,
+          296.17,
+          1132,
+          24.3
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "700 18px / 24.3px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H3",
+        "text": "Full Stack Angular Engineer",
+        "box": [
+          507,
+          366.59,
+          884,
+          22.09
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "600 17px / 22.1px Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Repositories84 original • 4 forkedSampled Commits320Top 5 active repositoriesLanguages4Primary languagesTotal Stars45Earned across reposCommunity Forks10Forks earned across repositoriesFollowers18Developer network",
+        "box": [
+          284,
+          662.98,
+          1132,
+          140.13
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "Key GitHub Metrics",
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Scoring telemetryScore BreakdownBackend scores and weighted contributions · github-health-score-v1 View Scoring Audit & Weights Code Quality24% weightRepo documentation, README cleanliness, and engineering stack depth85/ 100+20.4 pts Included Project Diversity17% weightLanguage distribution balance and tech stack breadth across projects78/ 100+13.3 pts Included Contribution Signal18% weightCommit depth across top active repositories (sampled contributor history)80/ 100+14.4 pts Included Consistency13% weightPush frequency and active repository updates over the past 6 months90/ 100+11.7 pts Included Project Impact14% weightCommunity adoption, stars, forks, and project visibility75/ 100+10.5 pts Included Profile Strength14% weightProfile completeness, follower network, and repository volume84/ 100+11.8 pts Included",
+        "box": [
+          284,
+          823.11,
+          1132,
+          582.09
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "Score Breakdown",
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Score Breakdown",
+        "box": [
+          309,
+          875.64,
+          409.56,
+          24.3
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "700 18px / 24.3px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "View Scoring Audit & Weights",
+        "box": [
+          1191.3,
+          848.11,
+          199.7,
+          32
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "500 13px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Language Distribution Which languages constitute your codebase? (Primary languages) TypeScript56%Python24%JavaScript12%Go8%Support & Config Files: HTML 20% SCSS 15% Sampled Commit ActivityWhere is commit effort concentrated across top projects?Sampledℹ️Sampled repository contributor history (top 5 active repositories) — not lifetime total commits.atlas-api150 sampled commitscommerce-web125 sampled commitsdeveloper-tools100 sampled commitsinsight-cli75 sampled commitsportfolio-site50 sampled commits",
+        "box": [
+          284,
+          1425.2,
+          1132,
+          492.59
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "Languages and Activity",
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Language Distribution",
+        "box": [
+          307,
+          1446.2,
+          390.72,
+          24.3
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "700 18px / 24.3px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "CANVAS",
+        "text": "",
+        "box": [
+          307,
+          1516.64,
+          180,
+          180
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": "Language distribution; percentages listed alongside",
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Sampled Commit Activity",
+        "box": [
+          883,
+          1446.2,
+          345.22,
+          24.3
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "700 18px / 24.3px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "CANVAS",
+        "text": "",
+        "box": [
+          883,
+          1553.83,
+          510,
+          200
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": "Sampled repository commits; exact counts listed below",
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Repository signals Top Repositories Evaluated by code documentation, testing signals, commit cadence, and community adoption. View All Repositories (8) Sort by: Quality Score ↓ Stars Name RepositoryCategoryLanguageTech StackStarsForksQuality ScoreActionatlas-apiFirst public projectRepository evidenceREADME detected Yes README quality80Sampled commits150Last push Oct 12, 2026, 12:00 PM Repository size (KB)1400Quality signals are heuristic evidence, not a code review.ProductionTypeScriptAngularTypeScript 30 8 88 View ↗ commerce-webForkArchivedArchived demoRepository evidenceREADME detected Yes README quality77Sampled commits90Last push Oct 12, 2026, 12:00 PM Repository size (KB)1520Quality signals are heuristic evidence, not a code review.LearningTypeScriptNode.js 34 2 83 View ↗ developer-toolsFirst public projectRepository evidenceREADME detected Yes README quality74Sampled commits150Last push Oct 12, 2026, 12:00 PM Repository size (KB)1640Quality signals are heuristic evidence, not a code review.ProductionTypeScriptAngularTypeScript 38 8 78 View ↗ insight-cliForkArchivedArchived demoRepository evidenceREADME detected No README quality71Sampled commits90Last push Oct 12, 2026, 12:00 PM Repository size (KB)1760Quality signals are heuristic evidence, not a code review.LearningTypeScriptNode.js 42 2 73 View ↗ portfolio-siteFirst public projectRepository evidenceREADME detected Yes README quality68Sampled commits150Last push Oct 12, 2026, 12:00 PM Repository size (KB)1880Quality signals are heuristic evidence, not a code review.ProductionTypeScriptAngularTypeScript 46 8 68 View ↗",
+        "box": [
+          284,
+          1937.8,
+          1132,
+          714.56
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "Repository Evidence",
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Top Repositories",
+        "box": [
+          309,
+          1990.33,
+          560.94,
+          24.3
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "700 18px / 24.3px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "View All Repositories (8)",
+        "box": [
+          1221.06,
+          1962.8,
+          169.94,
+          32
+        ],
+        "color": "rgb(99, 102, 241)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "500 13px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Quality Score ↓",
+        "box": [
+          378.73,
+          2061.77,
+          109.69,
+          30.59
+        ],
+        "color": "rgb(165, 180, 252)",
+        "background": "rgba(79, 70, 229, 0.2)",
+        "font": "600 12px / 18.6px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Stars",
+        "box": [
+          496.42,
+          2061.77,
+          51.86,
+          30.59
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(31, 41, 55)",
+        "font": "500 12px / 18.6px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Name",
+        "box": [
+          556.28,
+          2061.77,
+          54.52,
+          30.59
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(31, 41, 55)",
+        "font": "500 12px / 18.6px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "TABLE",
+        "text": "RepositoryCategoryLanguageTech StackStarsForksQuality ScoreActionatlas-apiFirst public projectRepository evidenceREADME detected Yes README quality80Sampled commits150Last push Oct 12, 2026, 12:00 PM Repository size (KB)1400Quality signals are heuristic evidence, not a code review.ProductionTypeScriptAngularTypeScript 30 8 88 View ↗ commerce-webForkArchivedArchived demoRepository evidenceREADME detected Yes README quality77Sampled commits90Last push Oct 12, 2026, 12:00 PM Repository size (KB)1520Quality signals are heuristic evidence, not a code review.LearningTypeScriptNode.js 34 2 83 View ↗ developer-toolsFirst public projectRepository evidenceREADME detected Yes README quality74Sampled commits150Last push Oct 12, 2026, 12:00 PM Repository size (KB)1640Quality signals are heuristic evidence, not a code review.ProductionTypeScriptAngularTypeScript 38 8 78 View ↗ insight-cliForkArchivedArchived demoRepository evidenceREADME detected No README quality71Sampled commits90Last push Oct 12, 2026, 12:00 PM Repository size (KB)1760Quality signals are heuristic evidence, not a code review.LearningTypeScriptNode.js 42 2 73 View ↗ portfolio-siteFirst public projectRepository evidenceREADME detected Yes README quality68Sampled commits150Last push Oct 12, 2026, 12:00 PM Repository size (KB)1880Quality signals are heuristic evidence, not a code review.ProductionTypeScriptAngularTypeScript 46 8 68 View ↗",
+        "box": [
+          310,
+          2105.36,
+          1080,
+          521
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "",
+        "display": "table",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Repository",
+        "box": [
+          324,
+          2125.88,
+          57.83,
+          17.05
+        ],
+        "color": "rgb(148, 163, 184)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "",
+        "display": "inline-block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Stars",
+        "box": [
+          1109.91,
+          2125.88,
+          28.47,
+          17.05
+        ],
+        "color": "rgb(148, 163, 184)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "",
+        "display": "inline-block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Quality Score",
+        "box": [
+          1241.97,
+          2117.36,
+          69.19,
+          34.09
+        ],
+        "color": "rgb(148, 163, 184)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "",
+        "display": "inline-block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Stack fingerprintDetected Technologies & Frameworks Libraries, tools, and frameworks detected across repository manifests and codebases. Backend1 Node.js Frontend1 Angular",
+        "box": [
+          284,
+          2672.36,
+          1132,
+          251.16
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "Detected Technologies",
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Detected Technologies & Frameworks",
+        "box": [
+          309,
+          2724.89,
+          512.7,
+          24.3
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "700 18px / 24.3px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Qualitative intelligenceProfile Insights & Talking Points Qualitative narrative and interview positioning grounded in verified repository signals. AI-assisted interpretation💡Scores and metrics come from deterministic backend rules and sampled GitHub evidence. The narrative below is AI-assisted interpretation, not an additional score or verified fact.Demonstrates solid frontend development expertise.High quality repositories with robust commit cadence.Engineering StrengthsStrong documentationConsistent commit rhythmPriority ImprovementsLow project diversity in backend stackInterview Talking PointsMaintains clean documentationProven Angular mastery",
+        "box": [
+          284,
+          2943.52,
+          1132,
+          440.14
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "Profile Insights",
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Profile Insights & Talking Points",
+        "box": [
+          309,
+          2996.05,
+          507.53,
+          24.3
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "700 18px / 24.3px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      }
+    ],
+    "overflow": false,
+    "errors": [],
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/api/notifications?limit=10&page=1"
+      },
+      {
+        "method": "GET",
+        "path": "/api/notifications/stream"
+      },
+      {
+        "method": "GET",
+        "path": "/api/tenant/organizations"
+      },
+      {
+        "method": "POST",
+        "path": "/api/github/analyze-save"
+      },
+      {
+        "method": "GET",
+        "path": "/api/notifications/stream"
+      }
+    ],
+    "layoutEqual": true,
+    "sameDimensions": true,
+    "changedPixels": 1,
+    "significantPixels": 0,
+    "maximumChannelDelta": 1
+  },
+  {
+    "name": "github-analyzer-dark-375",
+    "layout": [
+      {
+        "tag": "BUTTON",
+        "text": "Analysis Details & Audit",
+        "box": [
+          14,
+          174.97,
+          165.27,
+          32
+        ],
+        "color": "rgb(99, 102, 241)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "500 13px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Refresh Analysis",
+        "box": [
+          189.27,
+          174.97,
+          125.23,
+          32
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(21, 29, 42)",
+        "font": "500 13px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "github.com/ Analyze Current: @fixture Saved Profile Analyzed:Oct 8, 2026, 10:00 AM•Fresh Analysis",
+        "box": [
+          14,
+          222.97,
+          347,
+          139.36
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(17, 24, 39)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "GitHub Profile Selection",
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          40,
+          240.97,
+          203.55,
+          40
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "GitHub username",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Analyze",
+        "box": [
+          254.55,
+          241.97,
+          85.45,
+          38
+        ],
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(79, 70, 229)",
+        "font": "600 14px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Executive IntelligenceGitHub Executive SummaryGitHub Health 82 / 100 Strong Full Stack Angular EngineerAI-assisted profile interpretationDemonstrates solid frontend development expertise.✓Strongest SignalConsistency (90/100)Push frequency and active repository updates over the past 6 months!Primary GapProject Impact (75/100)Community adoption, stars, forks, and project visibility→Recommended Action · AI-assistedAddress Identified GapLow project diversity in backend stack",
+        "box": [
+          14,
+          378.33,
+          347,
+          712.05
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "Executive Summary",
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "GitHub Executive Summary",
+        "box": [
+          14,
+          405.86,
+          347,
+          24.3
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "700 18px / 24.3px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H3",
+        "text": "Full Stack Angular Engineer",
+        "box": [
+          31,
+          575.02,
+          313,
+          22.09
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "600 17px / 22.1px Inter, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Repositories84 original • 4 forkedSampled Commits320Top 5 active repositoriesLanguages4Primary languagesTotal Stars45Earned across reposCommunity Forks10Forks earned across repositoriesFollowers18Developer network",
+        "box": [
+          14,
+          1106.38,
+          347,
+          404.23
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "Key GitHub Metrics",
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Scoring telemetryScore BreakdownBackend scores and weighted contributions · github-health-score-v1 View Scoring Audit & Weights Code Quality24% weightRepo documentation, README cleanliness, and engineering stack depth85/ 100+20.4 pts Included Project Diversity17% weightLanguage distribution balance and tech stack breadth across projects78/ 100+13.3 pts Included Contribution Signal18% weightCommit depth across top active repositories (sampled contributor history)80/ 100+14.4 pts Included Consistency13% weightPush frequency and active repository updates over the past 6 months90/ 100+11.7 pts Included Project Impact14% weightCommunity adoption, stars, forks, and project visibility75/ 100+10.5 pts Included Profile Strength14% weightProfile completeness, follower network, and repository volume84/ 100+11.8 pts Included",
+        "box": [
+          14,
+          1526.61,
+          347,
+          1056
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "Score Breakdown",
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Score Breakdown",
+        "box": [
+          39,
+          1579.14,
+          297,
+          24.3
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "700 18px / 24.3px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "View Scoring Audit & Weights",
+        "box": [
+          39,
+          1655.72,
+          199.7,
+          32
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "500 13px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Language Distribution Which languages constitute your codebase? (Primary languages) TypeScript56%Python24%JavaScript12%Go8%Support & Config Files: HTML 20% SCSS 15% Sampled Commit ActivityWhere is commit effort concentrated across top projects?Sampledℹ️Sampled repository contributor history (top 5 active repositories) — not lifetime total commits.atlas-api150 sampled commitscommerce-web125 sampled commitsdeveloper-tools100 sampled commitsinsight-cli75 sampled commitsportfolio-site50 sampled commits",
+        "box": [
+          14,
+          2598.61,
+          347,
+          1108.64
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "Languages and Activity",
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Language Distribution",
+        "box": [
+          37,
+          2619.61,
+          301,
+          24.3
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "700 18px / 24.3px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "CANVAS",
+        "text": "",
+        "box": [
+          97.5,
+          2710.19,
+          180,
+          180
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": "Language distribution; percentages listed alongside",
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Sampled Commit Activity",
+        "box": [
+          37,
+          3179.94,
+          301,
+          24.3
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "700 18px / 24.3px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "CANVAS",
+        "text": "",
+        "box": [
+          37,
+          3343.28,
+          301,
+          200
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": "Sampled repository commits; exact counts listed below",
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Repository signals Top Repositories Evaluated by code documentation, testing signals, commit cadence, and community adoption. View All Repositories (8) Sort by: Quality Score ↓ Stars Name RepositoryCategoryLanguageTech StackStarsForksQuality ScoreActionatlas-apiFirst public projectRepository evidenceREADME detected Yes README quality80Sampled commits150Last push Oct 12, 2026, 12:00 PM Repository size (KB)1400Quality signals are heuristic evidence, not a code review.ProductionTypeScriptAngularTypeScript 30 8 88 View ↗ commerce-webForkArchivedArchived demoRepository evidenceREADME detected Yes README quality77Sampled commits90Last push Oct 12, 2026, 12:00 PM Repository size (KB)1520Quality signals are heuristic evidence, not a code review.LearningTypeScriptNode.js 34 2 83 View ↗ developer-toolsFirst public projectRepository evidenceREADME detected Yes README quality74Sampled commits150Last push Oct 12, 2026, 12:00 PM Repository size (KB)1640Quality signals are heuristic evidence, not a code review.ProductionTypeScriptAngularTypeScript 38 8 78 View ↗ insight-cliForkArchivedArchived demoRepository evidenceREADME detected No README quality71Sampled commits90Last push Oct 12, 2026, 12:00 PM Repository size (KB)1760Quality signals are heuristic evidence, not a code review.LearningTypeScriptNode.js 42 2 73 View ↗ portfolio-siteFirst public projectRepository evidenceREADME detected Yes README quality68Sampled commits150Last push Oct 12, 2026, 12:00 PM Repository size (KB)1880Quality signals are heuristic evidence, not a code review.ProductionTypeScriptAngularTypeScript 46 8 68 View ↗",
+        "box": [
+          14,
+          3723.25,
+          347,
+          856.44
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "Repository Evidence",
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Top Repositories",
+        "box": [
+          39,
+          3775.78,
+          297,
+          24.3
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "700 18px / 24.3px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "View All Repositories (8)",
+        "box": [
+          39,
+          3872.5,
+          169.94,
+          32
+        ],
+        "color": "rgb(99, 102, 241)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "500 13px Manrope, \"Segoe UI\", sans-serif",
+        "display": "inline-flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Quality Score ↓",
+        "box": [
+          108.73,
+          3931.5,
+          109.69,
+          30.59
+        ],
+        "color": "rgb(165, 180, 252)",
+        "background": "rgba(79, 70, 229, 0.2)",
+        "font": "600 12px / 18.6px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Stars",
+        "box": [
+          226.42,
+          3931.5,
+          51.86,
+          30.59
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(31, 41, 55)",
+        "font": "500 12px / 18.6px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Name",
+        "box": [
+          58,
+          3970.09,
+          54.52,
+          30.59
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(31, 41, 55)",
+        "font": "500 12px / 18.6px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "TABLE",
+        "text": "RepositoryCategoryLanguageTech StackStarsForksQuality ScoreActionatlas-apiFirst public projectRepository evidenceREADME detected Yes README quality80Sampled commits150Last push Oct 12, 2026, 12:00 PM Repository size (KB)1400Quality signals are heuristic evidence, not a code review.ProductionTypeScriptAngularTypeScript 30 8 88 View ↗ commerce-webForkArchivedArchived demoRepository evidenceREADME detected Yes README quality77Sampled commits90Last push Oct 12, 2026, 12:00 PM Repository size (KB)1520Quality signals are heuristic evidence, not a code review.LearningTypeScriptNode.js 34 2 83 View ↗ developer-toolsFirst public projectRepository evidenceREADME detected Yes README quality74Sampled commits150Last push Oct 12, 2026, 12:00 PM Repository size (KB)1640Quality signals are heuristic evidence, not a code review.ProductionTypeScriptAngularTypeScript 38 8 78 View ↗ insight-cliForkArchivedArchived demoRepository evidenceREADME detected No README quality71Sampled commits90Last push Oct 12, 2026, 12:00 PM Repository size (KB)1760Quality signals are heuristic evidence, not a code review.LearningTypeScriptNode.js 42 2 73 View ↗ portfolio-siteFirst public projectRepository evidenceREADME detected Yes README quality68Sampled commits150Last push Oct 12, 2026, 12:00 PM Repository size (KB)1880Quality signals are heuristic evidence, not a code review.ProductionTypeScriptAngularTypeScript 46 8 68 View ↗",
+        "box": [
+          40,
+          4013.69,
+          295,
+          4978.45
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Repository",
+        "box": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "color": "rgb(148, 163, 184)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "",
+        "display": "inline-block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Stars",
+        "box": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "color": "rgb(148, 163, 184)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "",
+        "display": "inline-block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Quality Score",
+        "box": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "color": "rgb(148, 163, 184)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "",
+        "display": "inline-block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Stack fingerprintDetected Technologies & Frameworks Libraries, tools, and frameworks detected across repository manifests and codebases. Backend1 Node.js Frontend1 Angular",
+        "box": [
+          14,
+          4595.69,
+          347,
+          353.69
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "Detected Technologies",
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Detected Technologies & Frameworks",
+        "box": [
+          39,
+          4648.22,
+          297,
+          48.59
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "700 18px / 24.3px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Qualitative intelligenceProfile Insights & Talking Points Qualitative narrative and interview positioning grounded in verified repository signals. AI-assisted interpretation💡Scores and metrics come from deterministic backend rules and sampled GitHub evidence. The narrative below is AI-assisted interpretation, not an additional score or verified fact.Demonstrates solid frontend development expertise.High quality repositories with robust commit cadence.Engineering StrengthsStrong documentationConsistent commit rhythmPriority ImprovementsLow project diversity in backend stackInterview Talking PointsMaintains clean documentationProven Angular mastery",
+        "box": [
+          14,
+          4965.38,
+          347,
+          852.72
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "14px / 21.7px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": "Profile Insights",
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Profile Insights & Talking Points",
+        "box": [
+          39,
+          5017.91,
+          297,
+          24.3
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "700 18px / 24.3px Manrope, \"Segoe UI\", sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      }
+    ],
+    "overflow": false,
+    "errors": [],
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/api/notifications?limit=10&page=1"
+      },
+      {
+        "method": "GET",
+        "path": "/api/notifications/stream"
+      },
+      {
+        "method": "GET",
+        "path": "/api/tenant/organizations"
+      },
+      {
+        "method": "POST",
+        "path": "/api/github/analyze-save"
+      },
+      {
+        "method": "GET",
+        "path": "/api/notifications/stream"
+      }
+    ],
+    "layoutEqual": true,
+    "sameDimensions": true,
+    "changedPixels": 0,
+    "significantPixels": 0,
+    "maximumChannelDelta": 0
+  },
+  {
+    "name": "notifications-light-1440",
+    "layout": [
+      {
+        "tag": "SECTION",
+        "text": "Activity & AlertsNotifications & Activities Track account activity, resume updates, GitHub events, and your organization alerts in one place. Personal notifications stay private. Clear All Refresh Mark All as Read Unread2Needs attentionTotal3Loaded notificationsRead Rate33%Inbox progressActive Filters0Current narrowing",
+        "box": [
+          284,
+          88,
+          1132,
+          220.25
+        ],
+        "color": "rgb(30, 41, 59)",
+        "background": "rgb(255, 255, 255)",
+        "font": "",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Notifications & Activities",
+        "box": [
+          305,
+          130.25,
+          614.88,
+          27.5
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Clear All",
+        "box": [
+          1060.02,
+          105,
+          77.03,
+          36
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Refresh",
+        "box": [
+          1145.05,
+          105,
+          94.64,
+          36
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Mark All as Read",
+        "box": [
+          1247.69,
+          105,
+          147.31,
+          36
+        ],
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(79, 70, 229)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Filter NotificationsSearch by message, narrow your inbox by type, organization, team, or date range. Apply Filters Reset All Unread GitHub Resumes Scores & Alerts Career System SearchFromToType All types Profile update Resume upload GitHub update Low score Career update System Success Warning Information Error OrganizationAll organizationsUnread only",
+        "box": [
+          284,
+          324.25,
+          1132,
+          172.69
+        ],
+        "color": "rgb(30, 41, 59)",
+        "background": "rgb(255, 255, 255)",
+        "font": "",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H3",
+        "text": "Filter Notifications",
+        "box": [
+          303,
+          337.25,
+          444.47,
+          18.19
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Apply Filters",
+        "box": [
+          1224.77,
+          338.34,
+          103.8,
+          36
+        ],
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(79, 70, 229)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Reset",
+        "box": [
+          1334.56,
+          338.34,
+          62.44,
+          36
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "All",
+        "box": [
+          303,
+          385.44,
+          36.25,
+          28
+        ],
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(79, 70, 229)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Unread",
+        "box": [
+          345.25,
+          385.44,
+          73.64,
+          28
+        ],
+        "color": "rgb(71, 85, 105)",
+        "background": "rgb(241, 245, 249)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "GitHub",
+        "box": [
+          424.89,
+          385.44,
+          62.13,
+          28
+        ],
+        "color": "rgb(71, 85, 105)",
+        "background": "rgb(241, 245, 249)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Resumes",
+        "box": [
+          493.02,
+          385.44,
+          74.88,
+          28
+        ],
+        "color": "rgb(71, 85, 105)",
+        "background": "rgb(241, 245, 249)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Scores & Alerts",
+        "box": [
+          573.89,
+          385.44,
+          108.92,
+          28
+        ],
+        "color": "rgb(71, 85, 105)",
+        "background": "rgb(241, 245, 249)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Career",
+        "box": [
+          688.81,
+          385.44,
+          61.08,
+          28
+        ],
+        "color": "rgb(71, 85, 105)",
+        "background": "rgb(241, 245, 249)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "System",
+        "box": [
+          755.89,
+          385.44,
+          64.95,
+          28
+        ],
+        "color": "rgb(71, 85, 105)",
+        "background": "rgb(241, 245, 249)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          303,
+          445.94,
+          274.66,
+          36
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "font": "13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          587.66,
+          445.94,
+          152.58,
+          36
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "font": "13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          750.23,
+          445.94,
+          152.59,
+          36
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "font": "13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SELECT",
+        "text": "All types Profile update Resume upload GitHub update Low score Career update System Success Warning Information Error",
+        "box": [
+          912.83,
+          445.94,
+          183.11,
+          36
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "font": "13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SELECT",
+        "text": "All organizations",
+        "box": [
+          1105.94,
+          445.94,
+          183.11,
+          36
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "font": "13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          1299.05,
+          456.44,
+          15,
+          15
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "font": "13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "0 selected Clear selection Delete selected Notification Feed2 unread • 3 totalPreviousPage 1 / 1NextGitHub synchronized Github Update Verified fixture notification for presentation acceptance. 1h ago •11/1/2026, 8:00:00 AM Unread Select Open Mark Read Delete Resume analyzed Resume Upload Verified fixture notification for presentation acceptance. 1h ago •11/1/2026, 8:00:00 AM Unread Select Open Mark Read Delete Readiness update Low Score Verified fixture notification for presentation acceptance. 1h ago •11/1/2026, 8:00:00 AM Read Select Open Delete PreviousPage 1 / 1Next",
+        "box": [
+          284,
+          512.94,
+          1132,
+          486.06
+        ],
+        "color": "rgb(30, 41, 59)",
+        "background": "rgb(255, 255, 255)",
+        "font": "",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Clear selection",
+        "box": [
+          1120.44,
+          542.53,
+          121.5,
+          34.38
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 12.8px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": true
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Delete selected",
+        "box": [
+          1252.33,
+          542.53,
+          125.28,
+          34.38
+        ],
+        "color": "rgb(220, 38, 38)",
+        "background": "rgb(254, 242, 242)",
+        "font": "600 12.8px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": true
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Previous",
+        "box": [
+          1186.19,
+          601.5,
+          79.86,
+          36
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": true
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Next",
+        "box": [
+          1341.73,
+          601.5,
+          55.27,
+          36
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": true
+      },
+      {
+        "tag": "ARTICLE",
+        "text": "GitHub synchronized Github Update Verified fixture notification for presentation acceptance. 1h ago •11/1/2026, 8:00:00 AM Unread Select Open Mark Read Delete",
+        "box": [
+          303,
+          656.5,
+          1094,
+          88.5
+        ],
+        "color": "rgb(30, 41, 59)",
+        "background": "rgb(255, 255, 255)",
+        "font": "",
+        "display": "grid",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          1126.69,
+          693.75,
+          14,
+          14
+        ],
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "13.3333px Arial",
+        "display": "block",
+        "label": "Select GitHub synchronized",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Open",
+        "box": [
+          1188.38,
+          685.75,
+          48.55,
+          30
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Mark Read",
+        "box": [
+          1242.92,
+          685.75,
+          77.36,
+          30
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Delete",
+        "box": [
+          1326.28,
+          685.75,
+          55.72,
+          30
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "ARTICLE",
+        "text": "Resume analyzed Resume Upload Verified fixture notification for presentation acceptance. 1h ago •11/1/2026, 8:00:00 AM Unread Select Open Mark Read Delete",
+        "box": [
+          303,
+          753,
+          1094,
+          88.5
+        ],
+        "color": "rgb(30, 41, 59)",
+        "background": "rgb(255, 255, 255)",
+        "font": "",
+        "display": "grid",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          1126.69,
+          790.25,
+          14,
+          14
+        ],
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "13.3333px Arial",
+        "display": "block",
+        "label": "Select Resume analyzed",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Open",
+        "box": [
+          1188.38,
+          782.25,
+          48.55,
+          30
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Mark Read",
+        "box": [
+          1242.92,
+          782.25,
+          77.36,
+          30
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Delete",
+        "box": [
+          1326.28,
+          782.25,
+          55.72,
+          30
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "ARTICLE",
+        "text": "Readiness update Low Score Verified fixture notification for presentation acceptance. 1h ago •11/1/2026, 8:00:00 AM Read Select Open Delete",
+        "box": [
+          303,
+          849.5,
+          1094,
+          86.5
+        ],
+        "color": "rgb(30, 41, 59)",
+        "background": "rgb(255, 255, 255)",
+        "font": "",
+        "display": "grid",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          1210.05,
+          885.75,
+          14,
+          14
+        ],
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "13.3333px Arial",
+        "display": "block",
+        "label": "Select Readiness update",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Open",
+        "box": [
+          1271.73,
+          877.75,
+          48.55,
+          30
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Delete",
+        "box": [
+          1326.28,
+          877.75,
+          55.72,
+          30
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Previous",
+        "box": [
+          1186.19,
+          946,
+          79.86,
+          36
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": true
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Next",
+        "box": [
+          1341.73,
+          946,
+          55.27,
+          36
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": true
+      }
+    ],
+    "overflow": false,
+    "errors": [],
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/api/notifications?limit=10&page=1"
+      },
+      {
+        "method": "GET",
+        "path": "/api/notifications/stream"
+      },
+      {
+        "method": "GET",
+        "path": "/api/tenant/organizations"
+      },
+      {
+        "method": "GET",
+        "path": "/api/notifications/stream"
+      }
+    ],
+    "layoutEqual": true,
+    "sameDimensions": true,
+    "changedPixels": 0,
+    "significantPixels": 0,
+    "maximumChannelDelta": 0
+  },
+  {
+    "name": "notifications-light-375",
+    "layout": [
+      {
+        "tag": "SECTION",
+        "text": "Activity & AlertsNotifications & Activities Track account activity, resume updates, GitHub events, and your organization alerts in one place. Personal notifications stay private. Clear All Refresh Mark All as Read Unread2Needs attentionTotal3Loaded notificationsRead Rate33%Inbox progressActive Filters0Current narrowing",
+        "box": [
+          14,
+          78,
+          347,
+          615.25
+        ],
+        "color": "rgb(30, 41, 59)",
+        "background": "rgb(255, 255, 255)",
+        "font": "",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Notifications & Activities",
+        "box": [
+          29,
+          120.25,
+          317,
+          27.5
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Clear All",
+        "box": [
+          29,
+          226.25,
+          77.03,
+          40
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Refresh",
+        "box": [
+          114.03,
+          226.25,
+          94.64,
+          40
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Mark All as Read",
+        "box": [
+          29,
+          274.25,
+          147.31,
+          40
+        ],
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(79, 70, 229)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Filter NotificationsSearch by message, narrow your inbox by type, organization, team, or date range. Apply Filters Reset All Unread GitHub Resumes Scores & Alerts Career System SearchFromToType All types Profile update Resume upload GitHub update Low score Career update System Success Warning Information Error OrganizationAll organizationsUnread only",
+        "box": [
+          14,
+          709.25,
+          347,
+          554.69
+        ],
+        "color": "rgb(30, 41, 59)",
+        "background": "rgb(255, 255, 255)",
+        "font": "",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H3",
+        "text": "Filter Notifications",
+        "box": [
+          29,
+          722.25,
+          317,
+          18.19
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Apply Filters",
+        "box": [
+          29,
+          790.44,
+          103.8,
+          40
+        ],
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(79, 70, 229)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Reset",
+        "box": [
+          138.8,
+          790.44,
+          62.44,
+          40
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "All",
+        "box": [
+          29,
+          840.44,
+          36.25,
+          28
+        ],
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(79, 70, 229)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Unread",
+        "box": [
+          71.25,
+          840.44,
+          73.64,
+          28
+        ],
+        "color": "rgb(71, 85, 105)",
+        "background": "rgb(241, 245, 249)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "GitHub",
+        "box": [
+          150.89,
+          840.44,
+          62.13,
+          28
+        ],
+        "color": "rgb(71, 85, 105)",
+        "background": "rgb(241, 245, 249)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Resumes",
+        "box": [
+          219.02,
+          840.44,
+          74.88,
+          28
+        ],
+        "color": "rgb(71, 85, 105)",
+        "background": "rgb(241, 245, 249)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Scores & Alerts",
+        "box": [
+          299.89,
+          840.44,
+          108.92,
+          28
+        ],
+        "color": "rgb(71, 85, 105)",
+        "background": "rgb(241, 245, 249)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Career",
+        "box": [
+          414.81,
+          840.44,
+          61.08,
+          28
+        ],
+        "color": "rgb(71, 85, 105)",
+        "background": "rgb(241, 245, 249)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "System",
+        "box": [
+          481.89,
+          840.44,
+          64.95,
+          28
+        ],
+        "color": "rgb(71, 85, 105)",
+        "background": "rgb(241, 245, 249)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          29,
+          900.94,
+          317,
+          36
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "font": "13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          29,
+          967.44,
+          317,
+          36
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "font": "13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          29,
+          1033.94,
+          317,
+          36
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "font": "13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SELECT",
+        "text": "All types Profile update Resume upload GitHub update Low score Career update System Success Warning Information Error",
+        "box": [
+          29,
+          1100.44,
+          317,
+          36
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "font": "13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SELECT",
+        "text": "All organizations",
+        "box": [
+          29,
+          1166.94,
+          317,
+          36
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "font": "13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          29,
+          1223.44,
+          15,
+          15
+        ],
+        "color": "rgb(15, 23, 42)",
+        "background": "rgb(255, 255, 255)",
+        "font": "13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "0 selected Clear selection Delete selected Notification Feed2 unread • 3 totalPreviousPage 1 / 1NextGitHub synchronized Github Update Verified fixture notification for presentation acceptance. 1h ago •11/1/2026, 8:00:00 AM Unread Select Open Mark Read Delete Resume analyzed Resume Upload Verified fixture notification for presentation acceptance. 1h ago •11/1/2026, 8:00:00 AM Unread Select Open Mark Read Delete Readiness update Low Score Verified fixture notification for presentation acceptance. 1h ago •11/1/2026, 8:00:00 AM Read Select Open Delete PreviousPage 1 / 1Next",
+        "box": [
+          14,
+          1279.94,
+          347,
+          916.31
+        ],
+        "color": "rgb(30, 41, 59)",
+        "background": "rgb(255, 255, 255)",
+        "font": "",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Clear selection",
+        "box": [
+          48.39,
+          1343.28,
+          121.5,
+          34.38
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 12.8px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": true
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Delete selected",
+        "box": [
+          180.28,
+          1343.28,
+          125.28,
+          34.38
+        ],
+        "color": "rgb(220, 38, 38)",
+        "background": "rgb(254, 242, 242)",
+        "font": "600 12.8px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": true
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Previous",
+        "box": [
+          29,
+          1435.25,
+          79.86,
+          40
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": true
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Next",
+        "box": [
+          184.55,
+          1435.25,
+          55.27,
+          40
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": true
+      },
+      {
+        "tag": "ARTICLE",
+        "text": "GitHub synchronized Github Update Verified fixture notification for presentation acceptance. 1h ago •11/1/2026, 8:00:00 AM Unread Select Open Mark Read Delete",
+        "box": [
+          29,
+          1494.25,
+          317,
+          207
+        ],
+        "color": "rgb(30, 41, 59)",
+        "background": "rgb(255, 255, 255)",
+        "font": "",
+        "display": "grid",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          46,
+          1663.25,
+          14,
+          14
+        ],
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "13.3333px Arial",
+        "display": "block",
+        "label": "Select GitHub synchronized",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Open",
+        "box": [
+          107.69,
+          1650.25,
+          48.55,
+          40
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Mark Read",
+        "box": [
+          162.23,
+          1650.25,
+          77.36,
+          40
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Delete",
+        "box": [
+          245.59,
+          1650.25,
+          55.72,
+          40
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "ARTICLE",
+        "text": "Resume analyzed Resume Upload Verified fixture notification for presentation acceptance. 1h ago •11/1/2026, 8:00:00 AM Unread Select Open Mark Read Delete",
+        "box": [
+          29,
+          1709.25,
+          317,
+          207
+        ],
+        "color": "rgb(30, 41, 59)",
+        "background": "rgb(255, 255, 255)",
+        "font": "",
+        "display": "grid",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          46,
+          1878.25,
+          14,
+          14
+        ],
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "13.3333px Arial",
+        "display": "block",
+        "label": "Select Resume analyzed",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Open",
+        "box": [
+          107.69,
+          1865.25,
+          48.55,
+          40
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Mark Read",
+        "box": [
+          162.23,
+          1865.25,
+          77.36,
+          40
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Delete",
+        "box": [
+          245.59,
+          1865.25,
+          55.72,
+          40
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "ARTICLE",
+        "text": "Readiness update Low Score Verified fixture notification for presentation acceptance. 1h ago •11/1/2026, 8:00:00 AM Read Select Open Delete",
+        "box": [
+          29,
+          1924.25,
+          317,
+          205
+        ],
+        "color": "rgb(30, 41, 59)",
+        "background": "rgb(255, 255, 255)",
+        "font": "",
+        "display": "grid",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          44,
+          2091.25,
+          14,
+          14
+        ],
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "13.3333px Arial",
+        "display": "block",
+        "label": "Select Readiness update",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Open",
+        "box": [
+          105.69,
+          2078.25,
+          48.55,
+          40
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Delete",
+        "box": [
+          160.23,
+          2078.25,
+          55.72,
+          40
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Previous",
+        "box": [
+          135.19,
+          2139.25,
+          79.86,
+          40
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": true
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Next",
+        "box": [
+          290.73,
+          2139.25,
+          55.27,
+          40
+        ],
+        "color": "rgb(51, 65, 85)",
+        "background": "rgb(255, 255, 255)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": true
+      }
+    ],
+    "overflow": false,
+    "errors": [],
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/api/notifications?limit=10&page=1"
+      },
+      {
+        "method": "GET",
+        "path": "/api/notifications/stream"
+      },
+      {
+        "method": "GET",
+        "path": "/api/tenant/organizations"
+      },
+      {
+        "method": "GET",
+        "path": "/api/notifications/stream"
+      }
+    ],
+    "layoutEqual": true,
+    "sameDimensions": true,
+    "changedPixels": 0,
+    "significantPixels": 0,
+    "maximumChannelDelta": 0
+  },
+  {
+    "name": "notifications-dark-1440",
+    "layout": [
+      {
+        "tag": "SECTION",
+        "text": "Activity & AlertsNotifications & Activities Track account activity, resume updates, GitHub events, and your organization alerts in one place. Personal notifications stay private. Clear All Refresh Mark All as Read Unread2Needs attentionTotal3Loaded notificationsRead Rate33%Inbox progressActive Filters0Current narrowing",
+        "box": [
+          284,
+          88,
+          1132,
+          220.25
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(21, 29, 42)",
+        "font": "",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Notifications & Activities",
+        "box": [
+          305,
+          130.25,
+          614.88,
+          27.5
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Clear All",
+        "box": [
+          1060.02,
+          105,
+          77.03,
+          36
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Refresh",
+        "box": [
+          1145.05,
+          105,
+          94.64,
+          36
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Mark All as Read",
+        "box": [
+          1247.69,
+          105,
+          147.31,
+          36
+        ],
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(79, 70, 229)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Filter NotificationsSearch by message, narrow your inbox by type, organization, team, or date range. Apply Filters Reset All Unread GitHub Resumes Scores & Alerts Career System SearchFromToType All types Profile update Resume upload GitHub update Low score Career update System Success Warning Information Error OrganizationAll organizationsUnread only",
+        "box": [
+          284,
+          324.25,
+          1132,
+          172.69
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(21, 29, 42)",
+        "font": "",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H3",
+        "text": "Filter Notifications",
+        "box": [
+          303,
+          337.25,
+          444.47,
+          18.19
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Apply Filters",
+        "box": [
+          1224.77,
+          338.34,
+          103.8,
+          36
+        ],
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(79, 70, 229)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Reset",
+        "box": [
+          1334.56,
+          338.34,
+          62.44,
+          36
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "All",
+        "box": [
+          303,
+          385.44,
+          36.25,
+          28
+        ],
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(79, 70, 229)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Unread",
+        "box": [
+          345.25,
+          385.44,
+          73.64,
+          28
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "GitHub",
+        "box": [
+          424.89,
+          385.44,
+          62.13,
+          28
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Resumes",
+        "box": [
+          493.02,
+          385.44,
+          74.88,
+          28
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Scores & Alerts",
+        "box": [
+          573.89,
+          385.44,
+          108.92,
+          28
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Career",
+        "box": [
+          688.81,
+          385.44,
+          61.08,
+          28
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "System",
+        "box": [
+          755.89,
+          385.44,
+          64.95,
+          28
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          303,
+          445.94,
+          274.66,
+          36
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(16, 22, 34)",
+        "font": "13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          587.66,
+          445.94,
+          152.58,
+          36
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(16, 22, 34)",
+        "font": "13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          750.23,
+          445.94,
+          152.59,
+          36
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(16, 22, 34)",
+        "font": "13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SELECT",
+        "text": "All types Profile update Resume upload GitHub update Low score Career update System Success Warning Information Error",
+        "box": [
+          912.83,
+          445.94,
+          183.11,
+          36
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(16, 22, 34)",
+        "font": "13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SELECT",
+        "text": "All organizations",
+        "box": [
+          1105.94,
+          445.94,
+          183.11,
+          36
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(16, 22, 34)",
+        "font": "13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          1299.05,
+          456.44,
+          15,
+          15
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(16, 22, 34)",
+        "font": "13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "0 selected Clear selection Delete selected Notification Feed2 unread • 3 totalPreviousPage 1 / 1NextGitHub synchronized Github Update Verified fixture notification for presentation acceptance. 1h ago •11/1/2026, 8:00:00 AM Unread Select Open Mark Read Delete Resume analyzed Resume Upload Verified fixture notification for presentation acceptance. 1h ago •11/1/2026, 8:00:00 AM Unread Select Open Mark Read Delete Readiness update Low Score Verified fixture notification for presentation acceptance. 1h ago •11/1/2026, 8:00:00 AM Read Select Open Delete PreviousPage 1 / 1Next",
+        "box": [
+          284,
+          512.94,
+          1132,
+          486.06
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(21, 29, 42)",
+        "font": "",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Clear selection",
+        "box": [
+          1120.44,
+          542.53,
+          121.5,
+          34.38
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgba(255, 255, 255, 0.04)",
+        "font": "600 12.8px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": true
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Delete selected",
+        "box": [
+          1252.33,
+          542.53,
+          125.28,
+          34.38
+        ],
+        "color": "rgb(252, 165, 165)",
+        "background": "rgba(244, 63, 94, 0.12)",
+        "font": "600 12.8px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": true
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Previous",
+        "box": [
+          1186.19,
+          601.5,
+          79.86,
+          36
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": true
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Next",
+        "box": [
+          1341.73,
+          601.5,
+          55.27,
+          36
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": true
+      },
+      {
+        "tag": "ARTICLE",
+        "text": "GitHub synchronized Github Update Verified fixture notification for presentation acceptance. 1h ago •11/1/2026, 8:00:00 AM Unread Select Open Mark Read Delete",
+        "box": [
+          303,
+          656.5,
+          1094,
+          88.5
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(16, 22, 34)",
+        "font": "",
+        "display": "grid",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          1126.69,
+          693.75,
+          14,
+          14
+        ],
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "13.3333px Arial",
+        "display": "block",
+        "label": "Select GitHub synchronized",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Open",
+        "box": [
+          1188.38,
+          685.75,
+          48.55,
+          30
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Mark Read",
+        "box": [
+          1242.92,
+          685.75,
+          77.36,
+          30
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Delete",
+        "box": [
+          1326.28,
+          685.75,
+          55.72,
+          30
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "ARTICLE",
+        "text": "Resume analyzed Resume Upload Verified fixture notification for presentation acceptance. 1h ago •11/1/2026, 8:00:00 AM Unread Select Open Mark Read Delete",
+        "box": [
+          303,
+          753,
+          1094,
+          88.5
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(16, 22, 34)",
+        "font": "",
+        "display": "grid",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          1126.69,
+          790.25,
+          14,
+          14
+        ],
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "13.3333px Arial",
+        "display": "block",
+        "label": "Select Resume analyzed",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Open",
+        "box": [
+          1188.38,
+          782.25,
+          48.55,
+          30
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Mark Read",
+        "box": [
+          1242.92,
+          782.25,
+          77.36,
+          30
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Delete",
+        "box": [
+          1326.28,
+          782.25,
+          55.72,
+          30
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "ARTICLE",
+        "text": "Readiness update Low Score Verified fixture notification for presentation acceptance. 1h ago •11/1/2026, 8:00:00 AM Read Select Open Delete",
+        "box": [
+          303,
+          849.5,
+          1094,
+          86.5
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(16, 22, 34)",
+        "font": "",
+        "display": "grid",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          1210.05,
+          885.75,
+          14,
+          14
+        ],
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "13.3333px Arial",
+        "display": "block",
+        "label": "Select Readiness update",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Open",
+        "box": [
+          1271.73,
+          877.75,
+          48.55,
+          30
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Delete",
+        "box": [
+          1326.28,
+          877.75,
+          55.72,
+          30
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Previous",
+        "box": [
+          1186.19,
+          946,
+          79.86,
+          36
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": true
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Next",
+        "box": [
+          1341.73,
+          946,
+          55.27,
+          36
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": true
+      }
+    ],
+    "overflow": false,
+    "errors": [],
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/api/notifications?limit=10&page=1"
+      },
+      {
+        "method": "GET",
+        "path": "/api/notifications/stream"
+      },
+      {
+        "method": "GET",
+        "path": "/api/tenant/organizations"
+      },
+      {
+        "method": "GET",
+        "path": "/api/notifications/stream"
+      }
+    ],
+    "layoutEqual": true,
+    "sameDimensions": true,
+    "changedPixels": 0,
+    "significantPixels": 0,
+    "maximumChannelDelta": 0
+  },
+  {
+    "name": "notifications-dark-375",
+    "layout": [
+      {
+        "tag": "SECTION",
+        "text": "Activity & AlertsNotifications & Activities Track account activity, resume updates, GitHub events, and your organization alerts in one place. Personal notifications stay private. Clear All Refresh Mark All as Read Unread2Needs attentionTotal3Loaded notificationsRead Rate33%Inbox progressActive Filters0Current narrowing",
+        "box": [
+          14,
+          78,
+          347,
+          615.25
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(21, 29, 42)",
+        "font": "",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H2",
+        "text": "Notifications & Activities",
+        "box": [
+          29,
+          120.25,
+          317,
+          27.5
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Clear All",
+        "box": [
+          29,
+          226.25,
+          77.03,
+          40
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Refresh",
+        "box": [
+          114.03,
+          226.25,
+          94.64,
+          40
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Mark All as Read",
+        "box": [
+          29,
+          274.25,
+          147.31,
+          40
+        ],
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(79, 70, 229)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "Filter NotificationsSearch by message, narrow your inbox by type, organization, team, or date range. Apply Filters Reset All Unread GitHub Resumes Scores & Alerts Career System SearchFromToType All types Profile update Resume upload GitHub update Low score Career update System Success Warning Information Error OrganizationAll organizationsUnread only",
+        "box": [
+          14,
+          709.25,
+          347,
+          554.69
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(21, 29, 42)",
+        "font": "",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "H3",
+        "text": "Filter Notifications",
+        "box": [
+          29,
+          722.25,
+          317,
+          18.19
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Apply Filters",
+        "box": [
+          29,
+          790.44,
+          103.8,
+          40
+        ],
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(79, 70, 229)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Reset",
+        "box": [
+          138.8,
+          790.44,
+          62.44,
+          40
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "All",
+        "box": [
+          29,
+          840.44,
+          36.25,
+          28
+        ],
+        "color": "rgb(255, 255, 255)",
+        "background": "rgb(79, 70, 229)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Unread",
+        "box": [
+          71.25,
+          840.44,
+          73.64,
+          28
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "GitHub",
+        "box": [
+          150.89,
+          840.44,
+          62.13,
+          28
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Resumes",
+        "box": [
+          219.02,
+          840.44,
+          74.88,
+          28
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Scores & Alerts",
+        "box": [
+          299.89,
+          840.44,
+          108.92,
+          28
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Career",
+        "box": [
+          414.81,
+          840.44,
+          61.08,
+          28
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "System",
+        "box": [
+          481.89,
+          840.44,
+          64.95,
+          28
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          29,
+          900.94,
+          317,
+          36
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(16, 22, 34)",
+        "font": "13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          29,
+          967.44,
+          317,
+          36
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(16, 22, 34)",
+        "font": "13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          29,
+          1033.94,
+          317,
+          36
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(16, 22, 34)",
+        "font": "13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SELECT",
+        "text": "All types Profile update Resume upload GitHub update Low score Career update System Success Warning Information Error",
+        "box": [
+          29,
+          1100.44,
+          317,
+          36
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(16, 22, 34)",
+        "font": "13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SELECT",
+        "text": "All organizations",
+        "box": [
+          29,
+          1166.94,
+          317,
+          36
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(16, 22, 34)",
+        "font": "13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          29,
+          1223.44,
+          15,
+          15
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(16, 22, 34)",
+        "font": "13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "SECTION",
+        "text": "0 selected Clear selection Delete selected Notification Feed2 unread • 3 totalPreviousPage 1 / 1NextGitHub synchronized Github Update Verified fixture notification for presentation acceptance. 1h ago •11/1/2026, 8:00:00 AM Unread Select Open Mark Read Delete Resume analyzed Resume Upload Verified fixture notification for presentation acceptance. 1h ago •11/1/2026, 8:00:00 AM Unread Select Open Mark Read Delete Readiness update Low Score Verified fixture notification for presentation acceptance. 1h ago •11/1/2026, 8:00:00 AM Read Select Open Delete PreviousPage 1 / 1Next",
+        "box": [
+          14,
+          1279.94,
+          347,
+          916.31
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(21, 29, 42)",
+        "font": "",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Clear selection",
+        "box": [
+          48.39,
+          1343.28,
+          121.5,
+          34.38
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgba(255, 255, 255, 0.04)",
+        "font": "600 12.8px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": true
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Delete selected",
+        "box": [
+          180.28,
+          1343.28,
+          125.28,
+          34.38
+        ],
+        "color": "rgb(252, 165, 165)",
+        "background": "rgba(244, 63, 94, 0.12)",
+        "font": "600 12.8px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "block",
+        "label": null,
+        "disabled": true
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Previous",
+        "box": [
+          29,
+          1435.25,
+          79.86,
+          40
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": true
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Next",
+        "box": [
+          184.55,
+          1435.25,
+          55.27,
+          40
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": true
+      },
+      {
+        "tag": "ARTICLE",
+        "text": "GitHub synchronized Github Update Verified fixture notification for presentation acceptance. 1h ago •11/1/2026, 8:00:00 AM Unread Select Open Mark Read Delete",
+        "box": [
+          29,
+          1494.25,
+          317,
+          207
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(16, 22, 34)",
+        "font": "",
+        "display": "grid",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          46,
+          1663.25,
+          14,
+          14
+        ],
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "13.3333px Arial",
+        "display": "block",
+        "label": "Select GitHub synchronized",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Open",
+        "box": [
+          107.69,
+          1650.25,
+          48.55,
+          40
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Mark Read",
+        "box": [
+          162.23,
+          1650.25,
+          77.36,
+          40
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Delete",
+        "box": [
+          245.59,
+          1650.25,
+          55.72,
+          40
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "ARTICLE",
+        "text": "Resume analyzed Resume Upload Verified fixture notification for presentation acceptance. 1h ago •11/1/2026, 8:00:00 AM Unread Select Open Mark Read Delete",
+        "box": [
+          29,
+          1709.25,
+          317,
+          207
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(16, 22, 34)",
+        "font": "",
+        "display": "grid",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          46,
+          1878.25,
+          14,
+          14
+        ],
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "13.3333px Arial",
+        "display": "block",
+        "label": "Select Resume analyzed",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Open",
+        "box": [
+          107.69,
+          1865.25,
+          48.55,
+          40
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Mark Read",
+        "box": [
+          162.23,
+          1865.25,
+          77.36,
+          40
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Delete",
+        "box": [
+          245.59,
+          1865.25,
+          55.72,
+          40
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "ARTICLE",
+        "text": "Readiness update Low Score Verified fixture notification for presentation acceptance. 1h ago •11/1/2026, 8:00:00 AM Read Select Open Delete",
+        "box": [
+          29,
+          1924.25,
+          317,
+          205
+        ],
+        "color": "rgb(248, 250, 252)",
+        "background": "rgb(16, 22, 34)",
+        "font": "",
+        "display": "grid",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "INPUT",
+        "text": "",
+        "box": [
+          44,
+          2091.25,
+          14,
+          14
+        ],
+        "color": "rgb(0, 0, 0)",
+        "background": "rgba(0, 0, 0, 0)",
+        "font": "13.3333px Arial",
+        "display": "block",
+        "label": "Select Readiness update",
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Open",
+        "box": [
+          105.69,
+          2078.25,
+          48.55,
+          40
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Delete",
+        "box": [
+          160.23,
+          2078.25,
+          55.72,
+          40
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 12px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Previous",
+        "box": [
+          135.19,
+          2139.25,
+          79.86,
+          40
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": true
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Next",
+        "box": [
+          290.73,
+          2139.25,
+          55.27,
+          40
+        ],
+        "color": "rgb(203, 213, 225)",
+        "background": "rgb(16, 22, 34)",
+        "font": "600 13px Manrope, \"Segoe UI\", -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        "display": "flex",
+        "label": null,
+        "disabled": true
+      }
+    ],
+    "overflow": false,
+    "errors": [],
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/api/notifications?limit=10&page=1"
+      },
+      {
+        "method": "GET",
+        "path": "/api/notifications/stream"
+      },
+      {
+        "method": "GET",
+        "path": "/api/tenant/organizations"
+      },
+      {
+        "method": "GET",
+        "path": "/api/notifications/stream"
+      }
+    ],
+    "layoutEqual": true,
+    "sameDimensions": true,
+    "changedPixels": 0,
+    "significantPixels": 0,
+    "maximumChannelDelta": 0
+  }
+]

@@ -1,0 +1,383 @@
+{
+  "safe": true,
+  "recordCount": 15,
+  "conflicts": [
+    {
+      "owner": "69e9efd85a0084c767771781",
+      "ids": ["6a4e4ff719b693d01b6dc086", "6a5482ee19b693d01b6dc300"],
+      "windows": [
+        {
+          "id": "6a4e4ff719b693d01b6dc086",
+          "start": "2026-07-05T19:00:00.000Z",
+          "end": "2026-07-12T18:59:59.999Z"
+        },
+        {
+          "id": "6a5482ee19b693d01b6dc300",
+          "start": "2026-07-10T19:00:00.000Z",
+          "end": "2026-07-22T18:59:59.999Z"
+        }
+      ],
+      "reason": "historical-window-overlap",
+      "grandfathered": true
+    }
+  ],
+  "problems": [],
+  "exceptions": [
+    {
+      "id": "69cb89cd2a3592cb0892c7ae",
+      "owner": "69cb7bef2a3592cb0892c5f0",
+      "start": "2026-03-29T19:00:00.000Z",
+      "end": "2026-04-05T18:59:59.999Z",
+      "reason": "timezone-provenance-unresolved",
+      "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+    },
+    {
+      "id": "69d353735f845da253033315",
+      "owner": "69cb7bef2a3592cb0892c5f0",
+      "start": "2026-04-05T19:00:00.000Z",
+      "end": "2026-04-12T18:59:59.999Z",
+      "reason": "timezone-provenance-unresolved",
+      "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+    },
+    {
+      "id": "69e5ff4864eb4700684907fa",
+      "owner": "69e5caff43b4a0c2a8792ee0",
+      "start": "2026-04-19T19:00:00.000Z",
+      "end": "2026-04-26T18:59:59.999Z",
+      "reason": "timezone-provenance-unresolved",
+      "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+    },
+    {
+      "id": "69e72d29aa2cdea0a8ffc9f7",
+      "owner": "69cb7bef2a3592cb0892c5f0",
+      "start": "2026-04-18T19:00:00.000Z",
+      "end": "2026-04-26T18:59:59.999Z",
+      "reason": "timezone-provenance-unresolved",
+      "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+    },
+    {
+      "id": "69e7505aaa2cdea0a8ffceef",
+      "owner": "69e74e10aa2cdea0a8ffcc29",
+      "start": "2026-04-19T19:00:00.000Z",
+      "end": "2026-04-26T18:59:59.999Z",
+      "reason": "timezone-provenance-unresolved",
+      "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+    },
+    {
+      "id": "69f1bcfcf27c336c4e1fde82",
+      "owner": "69cb7bef2a3592cb0892c5f0",
+      "start": "2026-04-26T19:00:00.000Z",
+      "end": "2026-05-03T18:59:59.999Z",
+      "reason": "timezone-provenance-unresolved",
+      "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+    },
+    {
+      "id": "6a030a6eab79ad1781e90abb",
+      "owner": "69fb1593acc018164c80f7a8",
+      "start": "2026-05-10T19:00:00.000Z",
+      "end": "2026-05-17T18:59:59.999Z",
+      "reason": "timezone-provenance-unresolved",
+      "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+    },
+    {
+      "id": "6a1eafbfe47387fa951fd44d",
+      "owner": "69e9efd85a0084c767771781",
+      "start": "2026-05-31T19:00:00.000Z",
+      "end": "2026-06-07T18:59:59.999Z",
+      "reason": "timezone-provenance-unresolved",
+      "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+    },
+    {
+      "id": "6a2910e8ca9c1a48a40252a4",
+      "owner": "69e9efd85a0084c767771781",
+      "start": "2026-06-07T19:00:00.000Z",
+      "end": "2026-06-14T18:59:59.999Z",
+      "reason": "timezone-provenance-unresolved",
+      "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+    },
+    {
+      "id": "6a2fea5531d790519d0180e8",
+      "owner": "69e9efd85a0084c767771781",
+      "start": "2026-06-14T19:00:00.000Z",
+      "end": "2026-06-21T18:59:59.999Z",
+      "reason": "timezone-provenance-unresolved",
+      "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+    },
+    {
+      "id": "6a4394c73484a5beee511dff",
+      "owner": "69e9efd85a0084c767771781",
+      "start": "2026-06-28T19:00:00.000Z",
+      "end": "2026-07-05T18:59:59.999Z",
+      "reason": "timezone-provenance-unresolved",
+      "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+    },
+    {
+      "id": "6a4e4ff719b693d01b6dc086",
+      "owner": "69e9efd85a0084c767771781",
+      "start": "2026-07-05T19:00:00.000Z",
+      "end": "2026-07-12T18:59:59.999Z",
+      "reason": "timezone-provenance-unresolved",
+      "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+    },
+    {
+      "id": "6a5482ee19b693d01b6dc300",
+      "owner": "69e9efd85a0084c767771781",
+      "start": "2026-07-10T19:00:00.000Z",
+      "end": "2026-07-22T18:59:59.999Z",
+      "reason": "timezone-provenance-unresolved",
+      "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+    },
+    {
+      "id": "6a67630448b4bbcacc0dfb1e",
+      "owner": "69e9efd85a0084c767771781",
+      "start": "2026-07-26T19:00:00.000Z",
+      "end": "2026-08-02T18:59:59.999Z",
+      "reason": "timezone-provenance-unresolved",
+      "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+    },
+    {
+      "id": "6ad0ba6f116d4a0d4aa83c64",
+      "owner": "69e9efd85a0084c767771781",
+      "start": "2026-10-11T19:00:00.000Z",
+      "end": "2026-10-18T18:59:59.999Z",
+      "reason": "timezone-provenance-unresolved",
+      "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+    }
+  ],
+  "proposals": [
+    {
+      "id": "69cb89cd2a3592cb0892c7ae",
+      "owner": "69cb7bef2a3592cb0892c5f0",
+      "start": "2026-03-29T19:00:00.000Z",
+      "end": "2026-04-05T18:59:59.999Z",
+      "version": 2,
+      "reservationPolicy": "legacy-read-only-exception-v1",
+      "legacyException": {
+        "owner": "69cb7bef2a3592cb0892c5f0",
+        "start": "2026-03-29T19:00:00.000Z",
+        "end": "2026-04-05T18:59:59.999Z",
+        "reason": "timezone-provenance-unresolved",
+        "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+      }
+    },
+    {
+      "id": "69d353735f845da253033315",
+      "owner": "69cb7bef2a3592cb0892c5f0",
+      "start": "2026-04-05T19:00:00.000Z",
+      "end": "2026-04-12T18:59:59.999Z",
+      "version": 0,
+      "reservationPolicy": "legacy-read-only-exception-v1",
+      "legacyException": {
+        "owner": "69cb7bef2a3592cb0892c5f0",
+        "start": "2026-04-05T19:00:00.000Z",
+        "end": "2026-04-12T18:59:59.999Z",
+        "reason": "timezone-provenance-unresolved",
+        "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+      }
+    },
+    {
+      "id": "69e5ff4864eb4700684907fa",
+      "owner": "69e5caff43b4a0c2a8792ee0",
+      "start": "2026-04-19T19:00:00.000Z",
+      "end": "2026-04-26T18:59:59.999Z",
+      "version": 0,
+      "reservationPolicy": "legacy-read-only-exception-v1",
+      "legacyException": {
+        "owner": "69e5caff43b4a0c2a8792ee0",
+        "start": "2026-04-19T19:00:00.000Z",
+        "end": "2026-04-26T18:59:59.999Z",
+        "reason": "timezone-provenance-unresolved",
+        "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+      }
+    },
+    {
+      "id": "69e72d29aa2cdea0a8ffc9f7",
+      "owner": "69cb7bef2a3592cb0892c5f0",
+      "start": "2026-04-18T19:00:00.000Z",
+      "end": "2026-04-26T18:59:59.999Z",
+      "version": 44,
+      "reservationPolicy": "legacy-read-only-exception-v1",
+      "legacyException": {
+        "owner": "69cb7bef2a3592cb0892c5f0",
+        "start": "2026-04-18T19:00:00.000Z",
+        "end": "2026-04-26T18:59:59.999Z",
+        "reason": "timezone-provenance-unresolved",
+        "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+      }
+    },
+    {
+      "id": "69e7505aaa2cdea0a8ffceef",
+      "owner": "69e74e10aa2cdea0a8ffcc29",
+      "start": "2026-04-19T19:00:00.000Z",
+      "end": "2026-04-26T18:59:59.999Z",
+      "version": 0,
+      "reservationPolicy": "legacy-read-only-exception-v1",
+      "legacyException": {
+        "owner": "69e74e10aa2cdea0a8ffcc29",
+        "start": "2026-04-19T19:00:00.000Z",
+        "end": "2026-04-26T18:59:59.999Z",
+        "reason": "timezone-provenance-unresolved",
+        "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+      }
+    },
+    {
+      "id": "69f1bcfcf27c336c4e1fde82",
+      "owner": "69cb7bef2a3592cb0892c5f0",
+      "start": "2026-04-26T19:00:00.000Z",
+      "end": "2026-05-03T18:59:59.999Z",
+      "version": 0,
+      "reservationPolicy": "legacy-read-only-exception-v1",
+      "legacyException": {
+        "owner": "69cb7bef2a3592cb0892c5f0",
+        "start": "2026-04-26T19:00:00.000Z",
+        "end": "2026-05-03T18:59:59.999Z",
+        "reason": "timezone-provenance-unresolved",
+        "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+      }
+    },
+    {
+      "id": "6a030a6eab79ad1781e90abb",
+      "owner": "69fb1593acc018164c80f7a8",
+      "start": "2026-05-10T19:00:00.000Z",
+      "end": "2026-05-17T18:59:59.999Z",
+      "version": 0,
+      "reservationPolicy": "legacy-read-only-exception-v1",
+      "legacyException": {
+        "owner": "69fb1593acc018164c80f7a8",
+        "start": "2026-05-10T19:00:00.000Z",
+        "end": "2026-05-17T18:59:59.999Z",
+        "reason": "timezone-provenance-unresolved",
+        "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+      }
+    },
+    {
+      "id": "6a1eafbfe47387fa951fd44d",
+      "owner": "69e9efd85a0084c767771781",
+      "start": "2026-05-31T19:00:00.000Z",
+      "end": "2026-06-07T18:59:59.999Z",
+      "version": 0,
+      "reservationPolicy": "legacy-read-only-exception-v1",
+      "legacyException": {
+        "owner": "69e9efd85a0084c767771781",
+        "start": "2026-05-31T19:00:00.000Z",
+        "end": "2026-06-07T18:59:59.999Z",
+        "reason": "timezone-provenance-unresolved",
+        "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+      }
+    },
+    {
+      "id": "6a2910e8ca9c1a48a40252a4",
+      "owner": "69e9efd85a0084c767771781",
+      "start": "2026-06-07T19:00:00.000Z",
+      "end": "2026-06-14T18:59:59.999Z",
+      "version": 0,
+      "reservationPolicy": "legacy-read-only-exception-v1",
+      "legacyException": {
+        "owner": "69e9efd85a0084c767771781",
+        "start": "2026-06-07T19:00:00.000Z",
+        "end": "2026-06-14T18:59:59.999Z",
+        "reason": "timezone-provenance-unresolved",
+        "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+      }
+    },
+    {
+      "id": "6a2fea5531d790519d0180e8",
+      "owner": "69e9efd85a0084c767771781",
+      "start": "2026-06-14T19:00:00.000Z",
+      "end": "2026-06-21T18:59:59.999Z",
+      "version": 0,
+      "reservationPolicy": "legacy-read-only-exception-v1",
+      "legacyException": {
+        "owner": "69e9efd85a0084c767771781",
+        "start": "2026-06-14T19:00:00.000Z",
+        "end": "2026-06-21T18:59:59.999Z",
+        "reason": "timezone-provenance-unresolved",
+        "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+      }
+    },
+    {
+      "id": "6a4394c73484a5beee511dff",
+      "owner": "69e9efd85a0084c767771781",
+      "start": "2026-06-28T19:00:00.000Z",
+      "end": "2026-07-05T18:59:59.999Z",
+      "version": 0,
+      "reservationPolicy": "legacy-read-only-exception-v1",
+      "legacyException": {
+        "owner": "69e9efd85a0084c767771781",
+        "start": "2026-06-28T19:00:00.000Z",
+        "end": "2026-07-05T18:59:59.999Z",
+        "reason": "timezone-provenance-unresolved",
+        "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+      }
+    },
+    {
+      "id": "6a4e4ff719b693d01b6dc086",
+      "owner": "69e9efd85a0084c767771781",
+      "start": "2026-07-05T19:00:00.000Z",
+      "end": "2026-07-12T18:59:59.999Z",
+      "version": 0,
+      "reservationPolicy": "legacy-read-only-exception-v1",
+      "legacyException": {
+        "owner": "69e9efd85a0084c767771781",
+        "start": "2026-07-05T19:00:00.000Z",
+        "end": "2026-07-12T18:59:59.999Z",
+        "reason": "timezone-provenance-unresolved",
+        "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+      }
+    },
+    {
+      "id": "6a5482ee19b693d01b6dc300",
+      "owner": "69e9efd85a0084c767771781",
+      "start": "2026-07-10T19:00:00.000Z",
+      "end": "2026-07-22T18:59:59.999Z",
+      "version": 22,
+      "reservationPolicy": "legacy-read-only-exception-v1",
+      "legacyException": {
+        "owner": "69e9efd85a0084c767771781",
+        "start": "2026-07-10T19:00:00.000Z",
+        "end": "2026-07-22T18:59:59.999Z",
+        "reason": "timezone-provenance-unresolved",
+        "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+      }
+    },
+    {
+      "id": "6a67630448b4bbcacc0dfb1e",
+      "owner": "69e9efd85a0084c767771781",
+      "start": "2026-07-26T19:00:00.000Z",
+      "end": "2026-08-02T18:59:59.999Z",
+      "version": 0,
+      "reservationPolicy": "legacy-read-only-exception-v1",
+      "legacyException": {
+        "owner": "69e9efd85a0084c767771781",
+        "start": "2026-07-26T19:00:00.000Z",
+        "end": "2026-08-02T18:59:59.999Z",
+        "reason": "timezone-provenance-unresolved",
+        "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+      }
+    },
+    {
+      "id": "6ad0ba6f116d4a0d4aa83c64",
+      "owner": "69e9efd85a0084c767771781",
+      "start": "2026-10-11T19:00:00.000Z",
+      "end": "2026-10-18T18:59:59.999Z",
+      "version": 0,
+      "reservationPolicy": "legacy-read-only-exception-v1",
+      "legacyException": {
+        "owner": "69e9efd85a0084c767771781",
+        "start": "2026-10-11T19:00:00.000Z",
+        "end": "2026-10-18T18:59:59.999Z",
+        "reason": "timezone-provenance-unresolved",
+        "evidence": "Retained read-only audit in backend/verification/career-sprint/unblocking/legacy-preflight-utc-assumption.json supplies exact instants only; historical server-local code records no IANA zone and deployment provenance is unavailable. UTC candidate is not confirmed."
+      }
+    }
+  ],
+  "scheduleOwnersToSeed": [
+    "69cb7bef2a3592cb0892c5f0",
+    "69e5caff43b4a0c2a8792ee0",
+    "69e74e10aa2cdea0a8ffcc29",
+    "69fb1593acc018164c80f7a8",
+    "69e9efd85a0084c767771781"
+  ],
+  "pendingOrOrphanedReservations": [],
+  "reservationMismatches": []
+}

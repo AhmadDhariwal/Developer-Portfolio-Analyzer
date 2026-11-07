@@ -1,0 +1,2055 @@
+{
+  "checks": [
+    {
+      "name": "real deterministic/AI fallback and persisted selective/bulk imports",
+      "status": "PASS",
+      "detail": {
+        "deterministic": {
+          "summary": "Generated a balanced Student sprint plan focused on React.",
+          "confidenceScore": 74,
+          "consistencyScore": 47,
+          "signalsUsed": [
+            "React"
+          ],
+          "generationMode": "deterministic",
+          "providerLabel": "Deterministic Plan",
+          "limitations": [
+            "A compatible current Skill Gap snapshot is unavailable. Results use career context and your explicit filters; absent evidence does not establish missing ability.",
+            "No compatible current Recommendation actions are available; general career suggestions are proposed work."
+          ],
+          "context": {
+            "careerStack": "Full Stack",
+            "experienceLevel": "Student",
+            "fingerprint": "82029719468cd640484305d1a9eec0cc7c755b5bbb7a34348970aed8b30cdfb1",
+            "timeZone": "UTC",
+            "proposedWorkOnly": true
+          }
+        },
+        "ai": {
+          "summary": "Generated a balanced Student sprint plan focused on React.",
+          "confidenceScore": 74,
+          "consistencyScore": 47,
+          "signalsUsed": [
+            "React"
+          ],
+          "generationMode": "deterministic",
+          "providerLabel": "Deterministic Plan",
+          "limitations": [
+            "A compatible current Skill Gap snapshot is unavailable. Results use career context and your explicit filters; absent evidence does not establish missing ability.",
+            "No compatible current Recommendation actions are available; general career suggestions are proposed work."
+          ],
+          "context": {
+            "careerStack": "Full Stack",
+            "experienceLevel": "Student",
+            "fingerprint": "82029719468cd640484305d1a9eec0cc7c755b5bbb7a34348970aed8b30cdfb1",
+            "timeZone": "UTC",
+            "proposedWorkOnly": true
+          }
+        },
+        "importedTaskCount": 3
+      }
+    },
+    {
+      "name": "real Recommendations context and handoff replay",
+      "status": "PASS",
+      "detail": {
+        "first": {
+          "status": 200,
+          "sprintId": "4ddfe97b0102bc83732db03a",
+          "recommendationId": "careerPaths_273974ed8c9f5b1fd14b",
+          "alreadyAdded": false,
+          "route": "/app/career-sprint"
+        },
+        "replay": {
+          "status": 200,
+          "sprintId": "4ddfe97b0102bc83732db03a",
+          "recommendationId": "careerPaths_273974ed8c9f5b1fd14b",
+          "alreadyAdded": true,
+          "route": "/app/career-sprint"
+        }
+      }
+    },
+    {
+      "name": "real browser task CRUD, completion, reversal and reload persistence",
+      "status": "PASS",
+      "detail": {
+        "persistedAcrossReload": true,
+        "deletedInMongo": true
+      }
+    },
+    {
+      "name": "real API dashboard and Weekly Reports freshness after mutation",
+      "status": "PASS",
+      "detail": {
+        "refreshed": true
+      }
+    }
+  ],
+  "screenshots": [
+    "live-desktop-light.png",
+    "live-mobile-light.png",
+    "live-mobile-dark.png",
+    "live-desktop-dark.png"
+  ],
+  "failures": [],
+  "planningStages": {
+    "deterministicCount": 8,
+    "save": 200,
+    "selective": {
+      "status": 200,
+      "body": {
+        "_id": "4ddfe97b0102bc83732db03a",
+        "userId": "6ad1fc8c159adb127da281ee",
+        "title": "Career Sprint",
+        "creationKey": "2026-10-12T00:00:00.000Z:2026-10-18T23:59:59.999Z",
+        "occupiedDays": [
+          "sprint-calendar-48h-v1:UTC:2026-10-12",
+          "sprint-calendar-48h-v1:UTC:2026-10-13",
+          "sprint-calendar-48h-v1:UTC:2026-10-14",
+          "sprint-calendar-48h-v1:UTC:2026-10-15",
+          "sprint-calendar-48h-v1:UTC:2026-10-16",
+          "sprint-calendar-48h-v1:UTC:2026-10-17",
+          "sprint-calendar-48h-v1:UTC:2026-10-18"
+        ],
+        "timeZone": "UTC",
+        "calendarPolicy": "sprint-calendar-48h-v1",
+        "tzdbVersion": "2026b",
+        "scheduleToken": "8cab1556-cfb7-47d1-86d7-c8ec7acefc8a",
+        "sprintStartDate": "2026-10-12T00:00:00.000Z",
+        "sprintEndDate": "2026-10-18T23:59:59.999Z",
+        "weekStartDate": "2026-10-12T00:00:00.000Z",
+        "weekEndDate": "2026-10-18T23:59:59.999Z",
+        "weeklyGoal": 5,
+        "currentStreak": 1,
+        "longestStreak": 1,
+        "lastActiveDate": "2026-10-16T10:29:34.851Z",
+        "streak": 1,
+        "lastCompletedWeekAt": null,
+        "streakBroken": false,
+        "streakBrokenAt": null,
+        "streakRestoredAt": null,
+        "streakWarning": false,
+        "streakStatus": "active",
+        "xpPoints": 25,
+        "level": 1,
+        "goalStack": "",
+        "goalTechnology": "",
+        "goalTitle": "",
+        "goalExperienceLevel": "",
+        "tasks": [
+          {
+            "title": "Independent task 0",
+            "description": "",
+            "points": 10,
+            "priority": "high",
+            "category": "project",
+            "taskType": "manual",
+            "isCompleted": true,
+            "completedAt": "2026-10-16T10:29:34.851Z",
+            "startDate": null,
+            "endDate": null,
+            "dueDate": null,
+            "deadline": null,
+            "sourceScenarioId": null,
+            "sourceScenarioHash": "",
+            "_id": "6ad1fc8e159adb127da28214"
+          },
+          {
+            "title": "Independent task 1",
+            "description": "",
+            "points": 5,
+            "priority": "medium",
+            "category": "project",
+            "taskType": "manual",
+            "isCompleted": false,
+            "completedAt": null,
+            "startDate": null,
+            "endDate": null,
+            "dueDate": null,
+            "deadline": null,
+            "sourceScenarioId": null,
+            "sourceScenarioHash": "",
+            "_id": "6ad1fc8e159adb127da2821d"
+          },
+          {
+            "title": "Independent task 2",
+            "description": "",
+            "points": 1,
+            "priority": "low",
+            "category": "project",
+            "taskType": "manual",
+            "isCompleted": false,
+            "completedAt": null,
+            "startDate": null,
+            "endDate": null,
+            "dueDate": null,
+            "deadline": null,
+            "sourceScenarioId": null,
+            "sourceScenarioHash": "",
+            "_id": "6ad1fc8e159adb127da28226"
+          },
+          {
+            "title": "Learn React hooks (useState, useEffect)",
+            "description": "Study the two most essential React hooks. Build 3 small components using useState for local state and useEffect for data fetching. Understand the dependency array and cleanup functions to avoid memory leaks. Goal: Write functional components without class syntax. Why now: Front-load fundamentals and confidence-building work. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+            "points": 5,
+            "priority": "high",
+            "category": "learning",
+            "taskType": "ai",
+            "isCompleted": false,
+            "completedAt": null,
+            "startDate": "2026-10-16T00:00:00.000Z",
+            "endDate": "2026-10-16T23:59:59.999Z",
+            "dueDate": null,
+            "deadline": null,
+            "sourceScenarioId": null,
+            "sourceScenarioHash": "",
+            "_id": "6ad1fccf159adb127da28469"
+          }
+        ],
+        "aiPlans": [
+          {
+            "compatibility": {
+              "status": "current",
+              "requiresAcknowledgement": false,
+              "currentFingerprint": "6d0f61bf981421299fb27e0899724e62f39c6f0f8b8e9110b1f0fcdf881c6427",
+              "recordedFingerprint": "6d0f61bf981421299fb27e0899724e62f39c6f0f8b8e9110b1f0fcdf881c6427",
+              "proposedWorkOnly": true
+            },
+            "name": "Real persisted preview 1792146639742",
+            "context": {
+              "version": "sprint-draft-context-v1",
+              "ownerId": "6ad1fc8c159adb127da281ee",
+              "careerStack": "Full Stack",
+              "experienceLevel": "Student",
+              "githubUsername": "",
+              "resumeFileId": "",
+              "evidenceFingerprint": "4c249a1bb601b1552bbe7d60f0086fb79ee07529b894266781523b97321469f1",
+              "fingerprint": "6d0f61bf981421299fb27e0899724e62f39c6f0f8b8e9110b1f0fcdf881c6427",
+              "sourceRule": "skill-evidence-coverage-v1",
+              "limitation": "A compatible current Skill Gap snapshot is unavailable. Results use career context and your explicit filters; absent evidence does not establish missing ability."
+            },
+            "origin": "deterministic",
+            "source": "ai",
+            "generatorType": "deterministic",
+            "goalStack": "",
+            "goalTechnology": "",
+            "goalExperienceLevel": "",
+            "summary": "",
+            "confidenceScore": 0,
+            "consistencyScore": 0,
+            "signalsUsed": [],
+            "tasks": [
+              {
+                "title": "Learn React hooks (useState, useEffect)",
+                "description": "Study the two most essential React hooks. Build 3 small components using useState for local state and useEffect for data fetching. Understand the dependency array and cleanup functions to avoid memory leaks. Goal: Write functional components without class syntax. Why now: Front-load fundamentals and confidence-building work. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+                "points": 5,
+                "priority": "high",
+                "category": "learning",
+                "taskType": "ai",
+                "startDate": "2026-10-16T00:00:00.000Z",
+                "endDate": "2026-10-16T23:59:59.999Z",
+                "sourceScenarioId": null,
+                "sourceScenarioHash": ""
+              },
+              {
+                "title": "Build a React UI component library",
+                "description": "Create reusable components: Button (with variants), Input (with validation), Modal, and Card. Use TypeScript props interfaces and document each component with usage examples. Goal: Have a personal component kit you can reuse across projects. Why now: Front-load fundamentals and confidence-building work. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+                "points": 5,
+                "priority": "high",
+                "category": "project",
+                "taskType": "ai",
+                "startDate": "2026-10-16T00:00:00.000Z",
+                "endDate": "2026-10-16T23:59:59.999Z",
+                "sourceScenarioId": null,
+                "sourceScenarioHash": ""
+              },
+              {
+                "title": "Manage state with Context API or Redux",
+                "description": "Implement a global state solution using React Context and useReducer. Create an auth context that persists login state across page refreshes using localStorage. Goal: Understand when to use local vs global state. Why now: Front-load fundamentals and confidence-building work. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+                "points": 5,
+                "priority": "high",
+                "category": "practice",
+                "taskType": "ai",
+                "startDate": "2026-10-17T00:00:00.000Z",
+                "endDate": "2026-10-17T23:59:59.999Z",
+                "sourceScenarioId": null,
+                "sourceScenarioHash": ""
+              },
+              {
+                "title": "Implement React Router navigation",
+                "description": "Add multi-page routing using React Router v6. Implement nested routes, dynamic route params, and a 404 page. Use useNavigate and useParams hooks. Goal: Build a multi-page SPA with clean URL structure. Why now: Move into execution and build work. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+                "points": 3,
+                "priority": "medium",
+                "category": "project",
+                "taskType": "ai",
+                "startDate": "2026-10-18T00:00:00.000Z",
+                "endDate": "2026-10-18T23:59:59.999Z",
+                "sourceScenarioId": null,
+                "sourceScenarioHash": ""
+              },
+              {
+                "title": "Write React component tests with Jest",
+                "description": "Add unit tests for 5 components using React Testing Library. Test user interactions, async state updates, and conditional rendering. Mock API calls and aim for 80%+ coverage. Goal: Build confidence that your UI works as expected. Why now: Move into execution and build work. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+                "points": 3,
+                "priority": "low",
+                "category": "practice",
+                "taskType": "ai",
+                "startDate": "2026-10-19T00:00:00.000Z",
+                "endDate": "2026-10-19T23:59:59.999Z",
+                "sourceScenarioId": null,
+                "sourceScenarioHash": ""
+              },
+              {
+                "title": "Deploy React app to Vercel/Netlify",
+                "description": "Connect your GitHub repo to Vercel. Configure environment variables, set up preview deployments for PRs, and add a custom domain. Verify the production build works and Lighthouse scores are above 90. Goal: Ship a production-ready React app. Why now: Move into execution and build work. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+                "points": 3,
+                "priority": "medium",
+                "category": "project",
+                "taskType": "ai",
+                "startDate": "2026-10-20T00:00:00.000Z",
+                "endDate": "2026-10-20T23:59:59.999Z",
+                "sourceScenarioId": null,
+                "sourceScenarioHash": ""
+              },
+              {
+                "title": "Fetch and display data from a REST API",
+                "description": "Build a data-fetching layer using useEffect and useState. Handle loading, error, and success states with proper UI feedback. Implement pagination or infinite scroll for a list of items. Goal: Connect a React app to a real backend API. Why now: Close with polish and consistency tasks. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+                "points": 3,
+                "priority": "medium",
+                "category": "practice",
+                "taskType": "ai",
+                "startDate": "2026-10-21T00:00:00.000Z",
+                "endDate": "2026-10-21T23:59:59.999Z",
+                "sourceScenarioId": null,
+                "sourceScenarioHash": ""
+              },
+              {
+                "title": "Build a full React CRUD application",
+                "description": "Create a complete task manager or notes app with Create, Read, Update, Delete operations. Use a backend API or localStorage. Include form validation, optimistic UI updates, and error boundaries. Goal: Demonstrate end-to-end React proficiency. Why now: Close with polish and consistency tasks. Execution note: Keep the task outcome measurable by the end of its timeline window.",
+                "points": 5,
+                "priority": "high",
+                "category": "project",
+                "taskType": "ai",
+                "startDate": "2026-10-22T00:00:00.000Z",
+                "endDate": "2026-10-22T23:59:59.999Z",
+                "sourceScenarioId": null,
+                "sourceScenarioHash": ""
+              }
+            ],
+            "_id": "6ad1fccf159adb127da2845a",
+            "createdAt": "2026-10-16T10:30:39.823Z"
+          }
+        ],
+        "createdAt": "2026-10-16T10:29:33.995Z",
+        "updatedAt": "2026-10-16T10:30:40.002Z",
+        "__v": 8,
+        "legacyAccess": {
+          "readOnly": false,
+          "calendarStatus": "recorded",
+          "reason": null,
+          "timeZone": "UTC"
+        },
+        "_canRestore": false,
+        "analytics": {
+          "totalTasks": 4,
+          "completedTasks": 1,
+          "pendingTasks": 3,
+          "overdueTasks": 0,
+          "totalPoints": 21,
+          "completedPoints": 10,
+          "progressPercent": 48,
+          "consistencyScore": 33,
+          "productivityScore": 45,
+          "activeWindowDays": 7,
+          "aiTaskCount": 1,
+          "manualTaskCount": 3,
+          "completedInLastSevenDays": 1,
+          "dailyActivity": [
+            {
+              "date": "2026-10-03T00:00:00.000Z",
+              "count": 0,
+              "active": false
+            },
+            {
+              "date": "2026-10-04T00:00:00.000Z",
+              "count": 0,
+              "active": false
+            },
+            {
+              "date": "2026-10-05T00:00:00.000Z",
+              "count": 0,
+              "active": false
+            },
+            {
+              "date": "2026-10-06T00:00:00.000Z",
+              "count": 0,
+              "active": false
+            },
+            {
+              "date": "2026-10-07T00:00:00.000Z",
+              "count": 0,
+              "active": false
+            },
+            {
+              "date": "2026-10-08T00:00:00.000Z",
+              "count": 0,
+              "active": false
+            },
+            {
+              "date": "2026-10-09T00:00:00.000Z",
+              "count": 0,
+              "active": false
+            },
+            {
+              "date": "2026-10-10T00:00:00.000Z",
+              "count": 0,
+              "active": false
+            },
+            {
+              "date": "2026-10-11T00:00:00.000Z",
+              "count": 0,
+              "active": false
+            },
+            {
+              "date": "2026-10-12T00:00:00.000Z",
+              "count": 0,
+              "active": false
+            },
+            {
+              "date": "2026-10-13T00:00:00.000Z",
+              "count": 0,
+              "active": false
+            },
+            {
+              "date": "2026-10-14T00:00:00.000Z",
+              "count": 0,
+              "active": false
+            },
+            {
+              "date": "2026-10-15T00:00:00.000Z",
+              "count": 0,
+              "active": false
+            },
+            {
+              "date": "2026-10-16T00:00:00.000Z",
+              "count": 1,
+              "active": true
+            }
+          ]
+        },
+        "comparison": {
+          "progressDelta": 48,
+          "completedTasksDelta": 1,
+          "streakDelta": 1,
+          "xpDelta": 25
+        },
+        "restoreMeta": {
+          "policy": "sprint-calendar-48h-v1",
+          "breakAt": "2026-10-18T00:00:00.000Z",
+          "expiresAt": "2026-10-20T00:00:00.000Z",
+          "intervalId": "2026-10-18T00:00:00.000Z",
+          "canRestore": false,
+          "remainingRestoreMs": 0,
+          "remainingRestoreDays": 0,
+          "reason": "Restore is not available."
+        },
+        "signalsUsed": {
+          "careerSprint": {
+            "consistencyScore": 33,
+            "activeLearningFocus": "",
+            "streak": 1
+          },
+          "weeklyReport": {
+            "status": "Unavailable",
+            "weeklyProgressScore": 0,
+            "repeatedWeakAreas": []
+          },
+          "portfolio": {
+            "completenessScore": 0,
+            "projectPresentationQuality": 0
+          },
+          "integrations": {
+            "usedProviders": [],
+            "strongestProof": []
+          }
+        },
+        "insights": [
+          "Execution is still early. Focus on completing one high-value task today to build momentum.",
+          "Consistency is slipping. Smaller daily tasks or tighter task scope would improve follow-through.",
+          "Week-over-week progress improved by 48 points compared with the previous sprint."
+        ]
+      }
+    },
+    "bulk": 200
+  },
+  "recommendationRead": {
+    "status": 200,
+    "body": {
+      "username": "",
+      "careerStack": "Full Stack",
+      "experienceLevel": "Student",
+      "ruleVersion": "recommendations-evidence-v1",
+      "analysisSummary": "Recommendations use the current Full Stack / Student context and recorded evidence. Unavailable evidence does not establish missing ability.",
+      "recommendations": [
+        {
+          "id": "careerPaths_273974ed8c9f5b1fd14b",
+          "type": "careerPaths",
+          "category": "careerPaths",
+          "title": "Review unfinished learning actions",
+          "description": "Career Sprint records repeated incomplete learning actions in the current focus.",
+          "priority": "Medium",
+          "reason": "Career Sprint records repeated incomplete learning actions in the current focus.",
+          "evidence": [
+            "Sprint focus: react"
+          ],
+          "factualSignals": [
+            {
+              "source": "careerSprint",
+              "fact": "Sprint focus: react"
+            }
+          ],
+          "sourceSignalsUsed": [
+            "careerSprintSignals"
+          ],
+          "sources": [
+            {
+              "type": "careerSprint",
+              "id": "careerSprint",
+              "available": true,
+              "timestamp": "2026-10-16T10:30:40.137Z",
+              "freshness": "RECORDED",
+              "ruleVersion": null
+            }
+          ],
+          "freshness": "RECORDED",
+          "actionLabel": "Review next step",
+          "actionableNextStep": "Review unfinished tasks for react and choose one concrete next step.",
+          "targetSkill": null,
+          "targetProject": null,
+          "evidenceStatus": null,
+          "requirement": null,
+          "sourceConfidence": "UNKNOWN",
+          "confidenceScore": null,
+          "estimatedImpact": null,
+          "estimatedEffort": "",
+          "actionUrl": "/app/career-sprint",
+          "navigation": {
+            "courses": {
+              "route": "/app/courses",
+              "query": {}
+            },
+            "careerSprint": {
+              "route": "/app/career-sprint",
+              "recommendationId": "careerPaths_273974ed8c9f5b1fd14b",
+              "skill": "",
+              "requiresAuthentication": true,
+              "api": {
+                "method": "POST",
+                "url": "/api/recommendations/careerPaths_273974ed8c9f5b1fd14b/career-sprint",
+                "body": {
+                  "signalHash": "1700c31e636f49d521f1269afcfc1a766138cc204e69c0494d60bf04832ccf90"
+                }
+              }
+            }
+          },
+          "ruleVersion": "recommendations-evidence-v1",
+          "aiGenerated": false
+        }
+      ],
+      "structuredRecommendations": {
+        "careerPaths": [
+          {
+            "id": "careerPaths_273974ed8c9f5b1fd14b",
+            "type": "careerPaths",
+            "category": "careerPaths",
+            "title": "Review unfinished learning actions",
+            "description": "Career Sprint records repeated incomplete learning actions in the current focus.",
+            "priority": "Medium",
+            "reason": "Career Sprint records repeated incomplete learning actions in the current focus.",
+            "evidence": [
+              "Sprint focus: react"
+            ],
+            "factualSignals": [
+              {
+                "source": "careerSprint",
+                "fact": "Sprint focus: react"
+              }
+            ],
+            "sourceSignalsUsed": [
+              "careerSprintSignals"
+            ],
+            "sources": [
+              {
+                "type": "careerSprint",
+                "id": "careerSprint",
+                "available": true,
+                "timestamp": "2026-10-16T10:30:40.137Z",
+                "freshness": "RECORDED",
+                "ruleVersion": null
+              }
+            ],
+            "freshness": "RECORDED",
+            "actionLabel": "Review next step",
+            "actionableNextStep": "Review unfinished tasks for react and choose one concrete next step.",
+            "targetSkill": null,
+            "targetProject": null,
+            "evidenceStatus": null,
+            "requirement": null,
+            "sourceConfidence": "UNKNOWN",
+            "confidenceScore": null,
+            "estimatedImpact": null,
+            "estimatedEffort": "",
+            "actionUrl": "/app/career-sprint",
+            "navigation": {
+              "courses": {
+                "route": "/app/courses",
+                "query": {}
+              },
+              "careerSprint": {
+                "route": "/app/career-sprint",
+                "recommendationId": "careerPaths_273974ed8c9f5b1fd14b",
+                "skill": "",
+                "requiresAuthentication": true,
+                "api": {
+                  "method": "POST",
+                  "url": "/api/recommendations/careerPaths_273974ed8c9f5b1fd14b/career-sprint",
+                  "body": {
+                    "signalHash": "1700c31e636f49d521f1269afcfc1a766138cc204e69c0494d60bf04832ccf90"
+                  }
+                }
+              }
+            },
+            "ruleVersion": "recommendations-evidence-v1",
+            "aiGenerated": false
+          }
+        ]
+      },
+      "projects": [],
+      "technologies": [],
+      "careerPaths": [
+        {
+          "id": "careerPaths_273974ed8c9f5b1fd14b",
+          "type": "careerPaths",
+          "category": "careerPaths",
+          "title": "Review unfinished learning actions",
+          "description": "Career Sprint records repeated incomplete learning actions in the current focus.",
+          "priority": "Medium",
+          "reason": "Career Sprint records repeated incomplete learning actions in the current focus.",
+          "evidence": [
+            "Sprint focus: react"
+          ],
+          "factualSignals": [
+            {
+              "source": "careerSprint",
+              "fact": "Sprint focus: react"
+            }
+          ],
+          "sourceSignalsUsed": [
+            "careerSprintSignals"
+          ],
+          "sources": [
+            {
+              "type": "careerSprint",
+              "id": "careerSprint",
+              "available": true,
+              "timestamp": "2026-10-16T10:30:40.137Z",
+              "freshness": "RECORDED",
+              "ruleVersion": null
+            }
+          ],
+          "freshness": "RECORDED",
+          "actionLabel": "Review next step",
+          "actionableNextStep": "Review unfinished tasks for react and choose one concrete next step.",
+          "targetSkill": null,
+          "targetProject": null,
+          "evidenceStatus": null,
+          "requirement": null,
+          "sourceConfidence": "UNKNOWN",
+          "confidenceScore": null,
+          "estimatedImpact": null,
+          "estimatedEffort": "",
+          "actionUrl": "/app/career-sprint",
+          "navigation": {
+            "courses": {
+              "route": "/app/courses",
+              "query": {}
+            },
+            "careerSprint": {
+              "route": "/app/career-sprint",
+              "recommendationId": "careerPaths_273974ed8c9f5b1fd14b",
+              "skill": "",
+              "requiresAuthentication": true,
+              "api": {
+                "method": "POST",
+                "url": "/api/recommendations/careerPaths_273974ed8c9f5b1fd14b/career-sprint",
+                "body": {
+                  "signalHash": "1700c31e636f49d521f1269afcfc1a766138cc204e69c0494d60bf04832ccf90"
+                }
+              }
+            }
+          },
+          "ruleVersion": "recommendations-evidence-v1",
+          "aiGenerated": false,
+          "match": null,
+          "actionItems": [
+            "Review unfinished tasks for react and choose one concrete next step."
+          ],
+          "exploreUrl": "/app/profile",
+          "hiringCompanies": []
+        }
+      ],
+      "resumeRecommendations": [],
+      "portfolioRecommendations": [],
+      "learningActions": [],
+      "interviewReadinessActions": [],
+      "sourceMetadata": {
+        "github": {
+          "type": "github",
+          "id": "",
+          "available": false,
+          "timestamp": null,
+          "freshness": "UNKNOWN",
+          "ruleVersion": null
+        },
+        "resume": {
+          "type": "resume",
+          "id": "no-resume",
+          "available": false,
+          "timestamp": null,
+          "freshness": "UNKNOWN",
+          "ruleVersion": null
+        },
+        "profile": {
+          "type": "profile",
+          "id": "Full Stack/Student",
+          "available": true,
+          "timestamp": null,
+          "freshness": "SELECTED_CONTEXT",
+          "ruleVersion": null
+        },
+        "portfolio": {
+          "type": "portfolio",
+          "id": "portfolio",
+          "available": false,
+          "timestamp": null,
+          "freshness": "UNKNOWN",
+          "ruleVersion": null
+        },
+        "careerSprint": {
+          "type": "careerSprint",
+          "id": "careerSprint",
+          "available": true,
+          "timestamp": "2026-10-16T10:30:40.137Z",
+          "freshness": "RECORDED",
+          "ruleVersion": null
+        }
+      },
+      "sourceScores": {
+        "githubHealth": null,
+        "resumeOverall": null,
+        "skillEvidenceCoverage": null
+      },
+      "recommendationScores": {
+        "readinessScore": null,
+        "portfolioScore": null,
+        "learningScore": null,
+        "interviewScore": null,
+        "marketReadinessScore": null,
+        "careerGrowthScore": null,
+        "overallRecommendationScore": null
+      },
+      "scoreProvenance": {
+        "legacyComposite": "unavailable",
+        "reason": "Evidence coverage is not a readiness or hiring score."
+      },
+      "roadmap": {
+        "immediateActions": [
+          {
+            "id": "careerPaths_273974ed8c9f5b1fd14b",
+            "type": "careerPaths",
+            "category": "careerPaths",
+            "title": "Review unfinished learning actions",
+            "description": "Career Sprint records repeated incomplete learning actions in the current focus.",
+            "priority": "Medium",
+            "reason": "Career Sprint records repeated incomplete learning actions in the current focus.",
+            "evidence": [
+              "Sprint focus: react"
+            ],
+            "factualSignals": [
+              {
+                "source": "careerSprint",
+                "fact": "Sprint focus: react"
+              }
+            ],
+            "sourceSignalsUsed": [
+              "careerSprintSignals"
+            ],
+            "sources": [
+              {
+                "type": "careerSprint",
+                "id": "careerSprint",
+                "available": true,
+                "timestamp": "2026-10-16T10:30:40.137Z",
+                "freshness": "RECORDED",
+                "ruleVersion": null
+              }
+            ],
+            "freshness": "RECORDED",
+            "actionLabel": "Review next step",
+            "actionableNextStep": "Review unfinished tasks for react and choose one concrete next step.",
+            "targetSkill": null,
+            "targetProject": null,
+            "evidenceStatus": null,
+            "requirement": null,
+            "sourceConfidence": "UNKNOWN",
+            "confidenceScore": null,
+            "estimatedImpact": null,
+            "estimatedEffort": "",
+            "actionUrl": "/app/career-sprint",
+            "navigation": {
+              "courses": {
+                "route": "/app/courses",
+                "query": {}
+              },
+              "careerSprint": {
+                "route": "/app/career-sprint",
+                "recommendationId": "careerPaths_273974ed8c9f5b1fd14b",
+                "skill": "",
+                "requiresAuthentication": true,
+                "api": {
+                  "method": "POST",
+                  "url": "/api/recommendations/careerPaths_273974ed8c9f5b1fd14b/career-sprint",
+                  "body": {
+                    "signalHash": "1700c31e636f49d521f1269afcfc1a766138cc204e69c0494d60bf04832ccf90"
+                  }
+                }
+              }
+            },
+            "ruleVersion": "recommendations-evidence-v1",
+            "aiGenerated": false
+          }
+        ],
+        "next30Days": [],
+        "next60Days": [],
+        "next90Days": [],
+        "phases": [],
+        "learningSequence": [],
+        "suggestedProjects": []
+      },
+      "supportingContext": {
+        "portfolioAvailable": false,
+        "sprintAvailable": true,
+        "weeklyProgressAvailable": false
+      },
+      "resumeInsights": {
+        "analyzed": false,
+        "analysisId": "no-resume",
+        "fileId": "",
+        "fileName": "",
+        "experienceLevel": "Student",
+        "experienceYears": 0,
+        "atsScore": null,
+        "keywordDensity": 0,
+        "formatScore": 0,
+        "contentQuality": 0,
+        "skills": [],
+        "technicalSkills": [],
+        "extractedSkills": [],
+        "experienceKeywords": [],
+        "strengths": [],
+        "weaknesses": [
+          "ATS structure needs improvement",
+          "Keyword coverage is thin",
+          "Formatting could be clearer",
+          "Content lacks strong impact language"
+        ],
+        "missingSections": [
+          "Achievements"
+        ],
+        "improvementSuggestions": [],
+        "keyAchievements": [],
+        "certifications": [],
+        "lastAnalyzedAt": null,
+        "statusMessage": "Resume not analyzed yet",
+        "overallScore": null
+      },
+      "githubInsights": {
+        "repoCount": 0,
+        "developerLevel": "",
+        "strengths": [],
+        "weakAreas": [],
+        "languageDistribution": [],
+        "repositories": [],
+        "scores": {}
+      },
+      "analysisBasedOn": {
+        "githubUsername": "",
+        "resumeAnalyzed": false,
+        "resumeStatus": "Resume not analyzed yet",
+        "careerStack": "Full Stack",
+        "experienceLevel": "Student",
+        "lastAnalyzedAt": null
+      },
+      "resumeStatusMessage": "Resume not analyzed yet",
+      "signalsUsed": {
+        "github": {
+          "connected": false,
+          "username": "",
+          "repoCount": 0,
+          "developerLevel": "",
+          "source": "fallback"
+        },
+        "resume": {
+          "analyzed": false,
+          "analysisId": "no-resume",
+          "fileName": "",
+          "lastAnalyzedAt": null,
+          "atsScore": null,
+          "experienceLevel": "Student",
+          "extractedSkills": [],
+          "experienceKeywords": [],
+          "strengths": [],
+          "weaknesses": [
+            "ATS structure needs improvement",
+            "Keyword coverage is thin",
+            "Formatting could be clearer",
+            "Content lacks strong impact language"
+          ],
+          "missingSections": [
+            "Achievements"
+          ],
+          "statusMessage": "Resume not analyzed yet",
+          "source": "fallback"
+        },
+        "skillGap": {
+          "present": false,
+          "coverage": null,
+          "knownSkills": [],
+          "missingSkills": [],
+          "weakSkills": [],
+          "ruleVersion": null
+        },
+        "portfolio": {
+          "present": false,
+          "completenessScore": 0,
+          "projectCount": 0,
+          "liveLinkCount": 0
+        },
+        "integrations": {
+          "providers": [],
+          "score": 0,
+          "strongestProof": []
+        },
+        "weeklyProgress": {
+          "status": "No weekly report",
+          "score": 0,
+          "trendDelta": 0
+        },
+        "careerSprint": {
+          "consistencyScore": 25,
+          "streak": 1,
+          "activeLearningFocus": "react"
+        },
+        "careerProfile": {
+          "careerStack": "Full Stack",
+          "experienceLevel": "Student",
+          "careerGoal": "",
+          "targetTimeline": "",
+          "learningPreference": "",
+          "profileHash": "9eef4517afbd835080111ae3415c179b47117d953b30de34ee98728e428aa842"
+        },
+        "jobsDemand": {
+          "sampledJobs": 0,
+          "topSkills": []
+        },
+        "recommendations": {
+          "present": false,
+          "priorityRecommendations": []
+        },
+        "scenarioSimulator": {
+          "present": false,
+          "savedCount": 0,
+          "latestScenarioHash": "",
+          "savedScenarios": []
+        }
+      },
+      "cacheMetadata": {
+        "loadedFromCache": false,
+        "cacheKey": {
+          "githubUsername": "",
+          "careerStack": "Full Stack",
+          "experienceLevel": "Student",
+          "resumeHash": "no-resume",
+          "resumeAnalysisId": "no-resume",
+          "signalHash": "1700c31e636f49d521f1269afcfc1a766138cc204e69c0494d60bf04832ccf90",
+          "analysisVersion": "v6-recommendations-evidence"
+        },
+        "signalHash": "1700c31e636f49d521f1269afcfc1a766138cc204e69c0494d60bf04832ccf90",
+        "analysisVersion": "v6-recommendations-evidence",
+        "recommendationVersion": "v6-recommendations-evidence",
+        "temporary": false,
+        "ttlHours": 24,
+        "cachedAt": null,
+        "stageTimingsMs": {
+          "validation": 0.1077,
+          "cache": 0.0374,
+          "Redis": 0.2275,
+          "Mongo": 17.9128,
+          "external provider": 0,
+          "AI": 0.2107,
+          "deterministic processing": 3.359,
+          "persistence": 0,
+          "total": 39.3306
+        },
+        "requestCounters": {
+          "pipelineExecutions": 1,
+          "githubCalls": 0,
+          "aiCalls": 0,
+          "persistenceOperations": 0,
+          "memoryHits": 0,
+          "redisHits": 0,
+          "mongoHits": 0
+        }
+      },
+      "recommendationSignals": {
+        "version": "v6-recommendations-evidence",
+        "generatedAt": "2026-10-16T10:30:40.196Z",
+        "signalHash": "1700c31e636f49d521f1269afcfc1a766138cc204e69c0494d60bf04832ccf90",
+        "cacheKey": {
+          "githubUsername": "",
+          "careerStack": "Full Stack",
+          "experienceLevel": "Student",
+          "resumeHash": "no-resume",
+          "resumeAnalysisId": "no-resume",
+          "signalHash": "1700c31e636f49d521f1269afcfc1a766138cc204e69c0494d60bf04832ccf90",
+          "analysisVersion": "v6-recommendations-evidence"
+        },
+        "scores": {
+          "readinessScore": null,
+          "portfolioScore": null,
+          "learningScore": null,
+          "interviewScore": null,
+          "marketReadinessScore": null,
+          "careerGrowthScore": null,
+          "overallRecommendationScore": null
+        },
+        "priorityRecommendations": [
+          {
+            "id": "careerPaths_273974ed8c9f5b1fd14b",
+            "category": "careerPaths",
+            "title": "Review unfinished learning actions",
+            "priority": "Medium",
+            "confidenceScore": null,
+            "estimatedImpact": null,
+            "sourceSignalsUsed": [
+              "careerSprintSignals"
+            ]
+          }
+        ],
+        "skills": {
+          "recommendedTechnologies": [],
+          "missingSkills": [],
+          "weakSkills": []
+        },
+        "roadmapSummary": {
+          "immediateActions": [
+            "Review unfinished learning actions"
+          ],
+          "next30Days": [],
+          "suggestedProjects": []
+        }
+      },
+      "recommendationVersioning": {
+        "currentRecommendation": {
+          "score": null,
+          "count": 1,
+          "ruleVersion": "recommendations-evidence-v1"
+        },
+        "previousRecommendation": null,
+        "delta": {
+          "scoreChange": null,
+          "newCount": 1,
+          "obsoleteCount": 0,
+          "completedCount": 0
+        },
+        "newRecommendations": [
+          {
+            "id": "careerPaths_273974ed8c9f5b1fd14b",
+            "type": "careerPaths",
+            "category": "careerPaths",
+            "title": "Review unfinished learning actions",
+            "description": "Career Sprint records repeated incomplete learning actions in the current focus.",
+            "priority": "Medium",
+            "reason": "Career Sprint records repeated incomplete learning actions in the current focus.",
+            "evidence": [
+              "Sprint focus: react"
+            ],
+            "factualSignals": [
+              {
+                "source": "careerSprint",
+                "fact": "Sprint focus: react"
+              }
+            ],
+            "sourceSignalsUsed": [
+              "careerSprintSignals"
+            ],
+            "sources": [
+              {
+                "type": "careerSprint",
+                "id": "careerSprint",
+                "available": true,
+                "timestamp": "2026-10-16T10:30:40.137Z",
+                "freshness": "RECORDED",
+                "ruleVersion": null
+              }
+            ],
+            "freshness": "RECORDED",
+            "actionLabel": "Review next step",
+            "actionableNextStep": "Review unfinished tasks for react and choose one concrete next step.",
+            "targetSkill": null,
+            "targetProject": null,
+            "evidenceStatus": null,
+            "requirement": null,
+            "sourceConfidence": "UNKNOWN",
+            "confidenceScore": null,
+            "estimatedImpact": null,
+            "estimatedEffort": "",
+            "actionUrl": "/app/career-sprint",
+            "navigation": {
+              "courses": {
+                "route": "/app/courses",
+                "query": {}
+              },
+              "careerSprint": {
+                "route": "/app/career-sprint",
+                "recommendationId": "careerPaths_273974ed8c9f5b1fd14b",
+                "skill": "",
+                "requiresAuthentication": true,
+                "api": {
+                  "method": "POST",
+                  "url": "/api/recommendations/careerPaths_273974ed8c9f5b1fd14b/career-sprint",
+                  "body": {
+                    "signalHash": "1700c31e636f49d521f1269afcfc1a766138cc204e69c0494d60bf04832ccf90"
+                  }
+                }
+              }
+            },
+            "ruleVersion": "recommendations-evidence-v1",
+            "aiGenerated": false
+          }
+        ],
+        "obsoleteRecommendations": [],
+        "completedRecommendations": [],
+        "note": "Disappearance or a changed context does not establish task completion."
+      },
+      "dataQuality": {
+        "hasGitHubData": false,
+        "hasResumeData": false,
+        "hasSkillGapData": false,
+        "hasPortfolioData": false,
+        "hasJobMarketData": false,
+        "dataCompleteness": 0,
+        "scoreAvailability": {
+          "readinessScore": false,
+          "portfolioScore": false,
+          "learningScore": false,
+          "interviewScore": false,
+          "marketReadinessScore": false,
+          "careerGrowthScore": false,
+          "overallRecommendationScore": false
+        }
+      },
+      "sourceFingerprint": "965ddcfff120f4c6f03e5259c2399a0efec6e1160e75ad303f5c3ad445ca2687",
+      "mode": "profile",
+      "isTemporary": false,
+      "savedToProfile": true,
+      "aiSuggestions": [],
+      "aiUsed": false
+    }
+  },
+  "recommendationFirst": {
+    "status": 200,
+    "body": {
+      "status": 200,
+      "sprintId": "4ddfe97b0102bc83732db03a",
+      "recommendationId": "careerPaths_273974ed8c9f5b1fd14b",
+      "alreadyAdded": false,
+      "route": "/app/career-sprint"
+    }
+  },
+  "recommendationReplay": {
+    "status": 200,
+    "body": {
+      "status": 200,
+      "sprintId": "4ddfe97b0102bc83732db03a",
+      "recommendationId": "careerPaths_273974ed8c9f5b1fd14b",
+      "alreadyAdded": true,
+      "route": "/app/career-sprint"
+    }
+  },
+  "httpErrors": [
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:4331/api/tenant/organizations"
+    },
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:4331/api/notifications"
+    },
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:4331/api/notifications/stream"
+    },
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:4331/api/notifications/stream"
+    },
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:4331/api/notifications/stream"
+    },
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:4331/api/notifications"
+    },
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:4331/api/tenant/organizations"
+    },
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:4331/api/notifications/stream"
+    },
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:4331/api/notifications/stream"
+    },
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:4331/api/notifications"
+    },
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:4331/api/tenant/organizations"
+    },
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:4331/api/notifications/stream"
+    },
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:4331/api/notifications"
+    },
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:4331/api/tenant/organizations"
+    },
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:4331/api/notifications/stream"
+    },
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:4331/api/tenant/organizations"
+    },
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:4331/api/notifications"
+    },
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:4331/api/notifications/stream"
+    },
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:4331/api/notifications"
+    },
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:4331/api/tenant/organizations"
+    },
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:4331/api/notifications/stream"
+    },
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:4331/api/notifications"
+    },
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:4331/api/tenant/organizations"
+    },
+    {
+      "status": 404,
+      "url": "http://127.0.0.1:4331/api/notifications/stream"
+    }
+  ],
+  "freshness": {
+    "dashboardBefore": {
+      "score": 0,
+      "readinessScore": 0,
+      "readinessBreakdown": {
+        "codeQuality": 0,
+        "skillCoverage": 0,
+        "industryReadiness": 0,
+        "projectImpact": 0
+      },
+      "scoreChangeFromLastMonth": null,
+      "repositories": 0,
+      "stars": 0,
+      "forks": 0,
+      "followers": 0,
+      "userName": "Isolated Sprint verifier",
+      "githubHandle": "",
+      "lastAnalyzedAt": "2026-10-16T10:30:56.410Z",
+      "updatedAt": "2026-10-16T10:30:56.410Z",
+      "languageSource": "missing",
+      "integration": {
+        "score": 0,
+        "providers": [],
+        "mergedSkills": [],
+        "updatedAt": null
+      },
+      "resume": {
+        "analyzed": false,
+        "atsScore": 0,
+        "keywordDensity": 0,
+        "formatScore": 0,
+        "contentQuality": 0,
+        "analyzedAt": null
+      },
+      "rateLimited": false,
+      "noUsername": true,
+      "recommendationSnapshot": {
+        "items": [],
+        "stale": false,
+        "status": "missing",
+        "updatedAt": null,
+        "message": ""
+      },
+      "skillsSnapshot": {
+        "topSkills": [],
+        "missingSkills": [],
+        "coveragePercentage": 0,
+        "stale": false,
+        "updatedAt": null
+      },
+      "readinessCenter": [
+        {
+          "key": "overall",
+          "label": "Overall Readiness",
+          "value": 0,
+          "tone": "primary"
+        },
+        {
+          "key": "resume",
+          "label": "Resume Readiness",
+          "value": 0,
+          "tone": "blue"
+        },
+        {
+          "key": "portfolio",
+          "label": "Portfolio Readiness",
+          "value": 0,
+          "tone": "green"
+        },
+        {
+          "key": "interview",
+          "label": "Interview Readiness",
+          "value": 5,
+          "tone": "amber"
+        },
+        {
+          "key": "market",
+          "label": "Market Readiness",
+          "value": 0,
+          "tone": "cyan"
+        },
+        {
+          "key": "integration",
+          "label": "Integration Readiness",
+          "value": 0,
+          "tone": "violet"
+        }
+      ],
+      "commandCenter": [
+        {
+          "key": "prioritySkill",
+          "label": "Top Priority Skill",
+          "value": "No priority skill yet",
+          "source": "Skill Gap",
+          "route": "/app/skill-gap"
+        },
+        {
+          "key": "skillGap",
+          "label": "Top Skill Gap",
+          "value": "No skill gap detected",
+          "source": "Skill Gap",
+          "route": "/app/skill-gap"
+        },
+        {
+          "key": "project",
+          "label": "Top Recommended Project",
+          "value": "Generate recommendations to pick a project",
+          "source": "Recommendations",
+          "route": "/app/recommendations"
+        },
+        {
+          "key": "sprint",
+          "label": "Top Sprint Task",
+          "value": "Learn React hooks (useState, useEffect)",
+          "source": "Career Sprint",
+          "route": "/app/career-sprint"
+        },
+        {
+          "key": "job",
+          "label": "Top Job Opportunity",
+          "value": "No current job snapshot",
+          "source": "Jobs",
+          "route": "/app/jobs"
+        },
+        {
+          "key": "news",
+          "label": "Top News Topic",
+          "value": "No news topic snapshot",
+          "source": "News",
+          "route": "/app/news"
+        }
+      ],
+      "sourceFreshness": {
+        "github": {
+          "connected": true,
+          "available": true,
+          "lastUpdated": "2026-10-16T10:30:56.410Z",
+          "status": "fresh",
+          "label": "Fresh",
+          "refreshRecommended": false,
+          "reason": ""
+        },
+        "resume": {
+          "connected": false,
+          "available": false,
+          "lastUpdated": null,
+          "status": "missing",
+          "label": "Refresh Recommended",
+          "refreshRecommended": true,
+          "reason": "Analysis refresh recommended"
+        },
+        "skillGap": {
+          "connected": false,
+          "available": false,
+          "lastUpdated": null,
+          "status": "missing",
+          "label": "Refresh Recommended",
+          "refreshRecommended": true,
+          "reason": "Analysis refresh recommended"
+        },
+        "recommendations": {
+          "connected": false,
+          "available": false,
+          "lastUpdated": null,
+          "status": "missing",
+          "label": "Refresh Recommended",
+          "refreshRecommended": true,
+          "reason": "Analysis refresh recommended"
+        },
+        "weeklyReports": {
+          "connected": false,
+          "available": false,
+          "lastUpdated": null,
+          "status": "missing",
+          "label": "Refresh Recommended",
+          "refreshRecommended": true,
+          "reason": "Analysis refresh recommended"
+        },
+        "jobs": {
+          "connected": false,
+          "available": false,
+          "lastUpdated": null,
+          "status": "missing",
+          "label": "Refresh Recommended",
+          "refreshRecommended": true,
+          "reason": "Analysis refresh recommended"
+        },
+        "news": {
+          "connected": false,
+          "available": false,
+          "lastUpdated": null,
+          "status": "missing",
+          "label": "Refresh Recommended",
+          "refreshRecommended": true,
+          "reason": "Analysis refresh recommended"
+        },
+        "integrations": {
+          "connected": true,
+          "available": true,
+          "lastUpdated": null,
+          "status": "missing",
+          "label": "Refresh Recommended",
+          "refreshRecommended": true,
+          "reason": "Analysis refresh recommended"
+        },
+        "weekly": {
+          "connected": false,
+          "available": false,
+          "lastUpdated": null,
+          "status": "missing",
+          "label": "Refresh Recommended",
+          "refreshRecommended": true,
+          "reason": "Analysis refresh recommended"
+        }
+      },
+      "dashboardContext": {
+        "signalHash": "04e0fafad9b143ba976a994ce95c6a58c8a1085fa7484e0337afe8240e2669b5",
+        "dependencySignalHash": "6aedb5ee131d529b29e2d47b17ea09c1c2445b371599c90095fd3ed5d16fd237",
+        "contextVersion": "dashboard:04e0fafad9b143ba",
+        "lastUpdated": "2026-10-16T10:30:56.410Z",
+        "careerStack": "Full Stack",
+        "experienceLevel": "Student",
+        "stale": false,
+        "refreshRecommended": false,
+        "message": ""
+      },
+      "signalMetadata": {
+        "signalHash": "04e0fafad9b143ba976a994ce95c6a58c8a1085fa7484e0337afe8240e2669b5",
+        "dependencySignalHash": "6aedb5ee131d529b29e2d47b17ea09c1c2445b371599c90095fd3ed5d16fd237",
+        "contextVersion": "dashboard:04e0fafad9b143ba",
+        "lastUpdated": "2026-10-16T10:30:56.410Z",
+        "staleSources": [],
+        "sourceFreshness": {
+          "github": {
+            "connected": true,
+            "available": true,
+            "lastUpdated": "2026-10-16T10:30:56.410Z",
+            "status": "fresh",
+            "label": "Fresh",
+            "refreshRecommended": false,
+            "reason": ""
+          },
+          "resume": {
+            "connected": false,
+            "available": false,
+            "lastUpdated": null,
+            "status": "missing",
+            "label": "Refresh Recommended",
+            "refreshRecommended": true,
+            "reason": "Analysis refresh recommended"
+          },
+          "skillGap": {
+            "connected": false,
+            "available": false,
+            "lastUpdated": null,
+            "status": "missing",
+            "label": "Refresh Recommended",
+            "refreshRecommended": true,
+            "reason": "Analysis refresh recommended"
+          },
+          "recommendations": {
+            "connected": false,
+            "available": false,
+            "lastUpdated": null,
+            "status": "missing",
+            "label": "Refresh Recommended",
+            "refreshRecommended": true,
+            "reason": "Analysis refresh recommended"
+          },
+          "weeklyReports": {
+            "connected": false,
+            "available": false,
+            "lastUpdated": null,
+            "status": "missing",
+            "label": "Refresh Recommended",
+            "refreshRecommended": true,
+            "reason": "Analysis refresh recommended"
+          },
+          "jobs": {
+            "connected": false,
+            "available": false,
+            "lastUpdated": null,
+            "status": "missing",
+            "label": "Refresh Recommended",
+            "refreshRecommended": true,
+            "reason": "Analysis refresh recommended"
+          },
+          "news": {
+            "connected": false,
+            "available": false,
+            "lastUpdated": null,
+            "status": "missing",
+            "label": "Refresh Recommended",
+            "refreshRecommended": true,
+            "reason": "Analysis refresh recommended"
+          },
+          "integrations": {
+            "connected": true,
+            "available": true,
+            "lastUpdated": null,
+            "status": "missing",
+            "label": "Refresh Recommended",
+            "refreshRecommended": true,
+            "reason": "Analysis refresh recommended"
+          },
+          "weekly": {
+            "connected": false,
+            "available": false,
+            "lastUpdated": null,
+            "status": "missing",
+            "label": "Refresh Recommended",
+            "refreshRecommended": true,
+            "reason": "Analysis refresh recommended"
+          }
+        }
+      },
+      "syncStatus": "queued",
+      "dataFreshness": {
+        "github": "fresh",
+        "resume": "missing",
+        "skillGap": "missing",
+        "recommendations": "missing",
+        "weeklyReports": "missing",
+        "careerSprint": "fresh",
+        "jobs": "missing",
+        "news": "missing",
+        "integrations": "missing"
+      },
+      "sourcesUsed": {
+        "github": {
+          "connected": false,
+          "available": true,
+          "status": "fresh"
+        },
+        "resume": {
+          "connected": false,
+          "available": false,
+          "status": "missing"
+        },
+        "skillGap": {
+          "connected": false,
+          "available": false,
+          "status": "missing"
+        },
+        "recommendations": {
+          "connected": false,
+          "available": false,
+          "status": "missing"
+        },
+        "weeklyReports": {
+          "connected": false,
+          "available": false,
+          "status": "missing"
+        },
+        "careerSprint": {
+          "connected": true,
+          "available": true,
+          "status": "fresh"
+        },
+        "jobs": {
+          "connected": false,
+          "available": false,
+          "status": "missing"
+        },
+        "news": {
+          "connected": false,
+          "available": false,
+          "status": "missing"
+        },
+        "integrations": {
+          "connected": false,
+          "available": true,
+          "status": "missing"
+        }
+      }
+    },
+    "dashboardAfter": {
+      "score": 0,
+      "readinessScore": 0,
+      "readinessBreakdown": {
+        "codeQuality": 0,
+        "skillCoverage": 0,
+        "industryReadiness": 0,
+        "projectImpact": 0
+      },
+      "scoreChangeFromLastMonth": null,
+      "repositories": 0,
+      "stars": 0,
+      "forks": 0,
+      "followers": 0,
+      "userName": "Isolated Sprint verifier",
+      "githubHandle": "",
+      "lastAnalyzedAt": "2026-10-18T18:59:59.999Z",
+      "updatedAt": "2026-10-18T18:59:59.999Z",
+      "languageSource": "missing",
+      "integration": {
+        "score": 0,
+        "providers": [],
+        "mergedSkills": [],
+        "updatedAt": null
+      },
+      "resume": {
+        "analyzed": false,
+        "atsScore": 0,
+        "keywordDensity": 0,
+        "formatScore": 0,
+        "contentQuality": 0,
+        "analyzedAt": null
+      },
+      "rateLimited": false,
+      "noUsername": true,
+      "recommendationSnapshot": {
+        "items": [],
+        "stale": false,
+        "status": "missing",
+        "updatedAt": null,
+        "message": ""
+      },
+      "skillsSnapshot": {
+        "topSkills": [],
+        "missingSkills": [],
+        "coveragePercentage": 0,
+        "stale": false,
+        "updatedAt": null
+      },
+      "readinessCenter": [
+        {
+          "key": "overall",
+          "label": "Overall Readiness",
+          "value": 0,
+          "tone": "primary"
+        },
+        {
+          "key": "resume",
+          "label": "Resume Readiness",
+          "value": 0,
+          "tone": "blue"
+        },
+        {
+          "key": "portfolio",
+          "label": "Portfolio Readiness",
+          "value": 0,
+          "tone": "green"
+        },
+        {
+          "key": "interview",
+          "label": "Interview Readiness",
+          "value": 10,
+          "tone": "amber"
+        },
+        {
+          "key": "market",
+          "label": "Market Readiness",
+          "value": 0,
+          "tone": "cyan"
+        },
+        {
+          "key": "integration",
+          "label": "Integration Readiness",
+          "value": 0,
+          "tone": "violet"
+        }
+      ],
+      "commandCenter": [
+        {
+          "key": "prioritySkill",
+          "label": "Top Priority Skill",
+          "value": "No priority skill yet",
+          "source": "Skill Gap",
+          "route": "/app/skill-gap"
+        },
+        {
+          "key": "skillGap",
+          "label": "Top Skill Gap",
+          "value": "No skill gap detected",
+          "source": "Skill Gap",
+          "route": "/app/skill-gap"
+        },
+        {
+          "key": "project",
+          "label": "Top Recommended Project",
+          "value": "Generate recommendations to pick a project",
+          "source": "Recommendations",
+          "route": "/app/recommendations"
+        },
+        {
+          "key": "sprint",
+          "label": "Top Sprint Task",
+          "value": "Learn React hooks (useState, useEffect)",
+          "source": "Career Sprint",
+          "route": "/app/career-sprint"
+        },
+        {
+          "key": "job",
+          "label": "Top Job Opportunity",
+          "value": "No current job snapshot",
+          "source": "Jobs",
+          "route": "/app/jobs"
+        },
+        {
+          "key": "news",
+          "label": "Top News Topic",
+          "value": "No news topic snapshot",
+          "source": "News",
+          "route": "/app/news"
+        }
+      ],
+      "sourceFreshness": {
+        "github": {
+          "connected": true,
+          "available": true,
+          "lastUpdated": "2026-10-16T10:30:56.955Z",
+          "status": "fresh",
+          "label": "Fresh",
+          "refreshRecommended": false,
+          "reason": ""
+        },
+        "resume": {
+          "connected": false,
+          "available": false,
+          "lastUpdated": null,
+          "status": "missing",
+          "label": "Refresh Recommended",
+          "refreshRecommended": true,
+          "reason": "Analysis refresh recommended"
+        },
+        "skillGap": {
+          "connected": false,
+          "available": false,
+          "lastUpdated": null,
+          "status": "missing",
+          "label": "Refresh Recommended",
+          "refreshRecommended": true,
+          "reason": "Analysis refresh recommended"
+        },
+        "recommendations": {
+          "connected": false,
+          "available": false,
+          "lastUpdated": null,
+          "status": "missing",
+          "label": "Refresh Recommended",
+          "refreshRecommended": true,
+          "reason": "Analysis refresh recommended"
+        },
+        "weeklyReports": {
+          "connected": true,
+          "available": true,
+          "lastUpdated": "2026-10-18T18:59:59.999Z",
+          "status": "fresh",
+          "label": "Fresh",
+          "refreshRecommended": false,
+          "reason": ""
+        },
+        "jobs": {
+          "connected": false,
+          "available": false,
+          "lastUpdated": null,
+          "status": "missing",
+          "label": "Refresh Recommended",
+          "refreshRecommended": true,
+          "reason": "Analysis refresh recommended"
+        },
+        "news": {
+          "connected": false,
+          "available": false,
+          "lastUpdated": null,
+          "status": "missing",
+          "label": "Refresh Recommended",
+          "refreshRecommended": true,
+          "reason": "Analysis refresh recommended"
+        },
+        "integrations": {
+          "connected": true,
+          "available": true,
+          "lastUpdated": null,
+          "status": "missing",
+          "label": "Refresh Recommended",
+          "refreshRecommended": true,
+          "reason": "Analysis refresh recommended"
+        },
+        "weekly": {
+          "connected": true,
+          "available": true,
+          "lastUpdated": "2026-10-18T18:59:59.999Z",
+          "status": "fresh",
+          "label": "Fresh",
+          "refreshRecommended": false,
+          "reason": ""
+        }
+      },
+      "dashboardContext": {
+        "signalHash": "c5a324578eab1675108b9f0043e65030ea32909c9850aee9560039fb6ebbde08",
+        "dependencySignalHash": "c16db3fe9ab84a46103e98794994b7b1f0018af3651a497861e4cff5bca308f5",
+        "contextVersion": "dashboard:c5a324578eab1675",
+        "lastUpdated": "2026-10-18T18:59:59.999Z",
+        "careerStack": "Full Stack",
+        "experienceLevel": "Student",
+        "stale": false,
+        "refreshRecommended": false,
+        "message": ""
+      },
+      "signalMetadata": {
+        "signalHash": "c5a324578eab1675108b9f0043e65030ea32909c9850aee9560039fb6ebbde08",
+        "dependencySignalHash": "c16db3fe9ab84a46103e98794994b7b1f0018af3651a497861e4cff5bca308f5",
+        "contextVersion": "dashboard:c5a324578eab1675",
+        "lastUpdated": "2026-10-18T18:59:59.999Z",
+        "staleSources": [],
+        "sourceFreshness": {
+          "github": {
+            "connected": true,
+            "available": true,
+            "lastUpdated": "2026-10-16T10:30:56.955Z",
+            "status": "fresh",
+            "label": "Fresh",
+            "refreshRecommended": false,
+            "reason": ""
+          },
+          "resume": {
+            "connected": false,
+            "available": false,
+            "lastUpdated": null,
+            "status": "missing",
+            "label": "Refresh Recommended",
+            "refreshRecommended": true,
+            "reason": "Analysis refresh recommended"
+          },
+          "skillGap": {
+            "connected": false,
+            "available": false,
+            "lastUpdated": null,
+            "status": "missing",
+            "label": "Refresh Recommended",
+            "refreshRecommended": true,
+            "reason": "Analysis refresh recommended"
+          },
+          "recommendations": {
+            "connected": false,
+            "available": false,
+            "lastUpdated": null,
+            "status": "missing",
+            "label": "Refresh Recommended",
+            "refreshRecommended": true,
+            "reason": "Analysis refresh recommended"
+          },
+          "weeklyReports": {
+            "connected": true,
+            "available": true,
+            "lastUpdated": "2026-10-18T18:59:59.999Z",
+            "status": "fresh",
+            "label": "Fresh",
+            "refreshRecommended": false,
+            "reason": ""
+          },
+          "jobs": {
+            "connected": false,
+            "available": false,
+            "lastUpdated": null,
+            "status": "missing",
+            "label": "Refresh Recommended",
+            "refreshRecommended": true,
+            "reason": "Analysis refresh recommended"
+          },
+          "news": {
+            "connected": false,
+            "available": false,
+            "lastUpdated": null,
+            "status": "missing",
+            "label": "Refresh Recommended",
+            "refreshRecommended": true,
+            "reason": "Analysis refresh recommended"
+          },
+          "integrations": {
+            "connected": true,
+            "available": true,
+            "lastUpdated": null,
+            "status": "missing",
+            "label": "Refresh Recommended",
+            "refreshRecommended": true,
+            "reason": "Analysis refresh recommended"
+          },
+          "weekly": {
+            "connected": true,
+            "available": true,
+            "lastUpdated": "2026-10-18T18:59:59.999Z",
+            "status": "fresh",
+            "label": "Fresh",
+            "refreshRecommended": false,
+            "reason": ""
+          }
+        }
+      },
+      "syncStatus": "queued",
+      "dataFreshness": {
+        "github": "fresh",
+        "resume": "missing",
+        "skillGap": "missing",
+        "recommendations": "missing",
+        "weeklyReports": "fresh",
+        "careerSprint": "fresh",
+        "jobs": "missing",
+        "news": "missing",
+        "integrations": "missing"
+      },
+      "sourcesUsed": {
+        "github": {
+          "connected": false,
+          "available": true,
+          "status": "fresh"
+        },
+        "resume": {
+          "connected": false,
+          "available": false,
+          "status": "missing"
+        },
+        "skillGap": {
+          "connected": false,
+          "available": false,
+          "status": "missing"
+        },
+        "recommendations": {
+          "connected": false,
+          "available": false,
+          "status": "missing"
+        },
+        "weeklyReports": {
+          "connected": true,
+          "available": true,
+          "status": "fresh"
+        },
+        "careerSprint": {
+          "connected": true,
+          "available": true,
+          "status": "fresh"
+        },
+        "jobs": {
+          "connected": false,
+          "available": false,
+          "status": "missing"
+        },
+        "news": {
+          "connected": false,
+          "available": false,
+          "status": "missing"
+        },
+        "integrations": {
+          "connected": false,
+          "available": true,
+          "status": "missing"
+        }
+      }
+    },
+    "weeklyBefore": {
+      "tasksCompleted": 1,
+      "tasksTotal": 7,
+      "completionRate": 14,
+      "weeklyGoal": 5,
+      "streak": 1
+    },
+    "weeklyAfter": {
+      "tasksCompleted": 2,
+      "tasksTotal": 7,
+      "completionRate": 29,
+      "weeklyGoal": 5,
+      "streak": 1
+    }
+  },
+  "status": "VERIFIED"
+}

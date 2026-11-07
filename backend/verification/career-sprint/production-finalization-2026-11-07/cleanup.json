@@ -1,0 +1,3088 @@
+{
+  "ownership": "All listed files were created by this task: isolated Mongo runtime or synthetic verifier session; initial Git preflight had no such directory.",
+  "mongoShutdownExitCode": 0,
+  "recursiveDeletion": false,
+  "deletedFiles": [
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo.log",
+      "bytes": 2406718
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo.log.2026-11-06T20-57-57",
+      "bytes": 0
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo.pid",
+      "bytes": 7
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\_mdb_catalog.wt",
+      "bytes": 192512
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-0304032f-679b-47b1-8f3f-d13e0bbe85dd.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-03f1b42f-d78c-4a24-b7a1-7fc8f089a3d6.wt",
+      "bytes": 45056
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-06b3b6c6-4ca9-455b-b36a-59c4c530131d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-06ccda34-3dc5-40c2-9b4c-2ef64ea64095.wt",
+      "bytes": 49152
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-08584ec9-1500-4faa-8ba0-fd542628e4f9.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-086db991-c395-4af7-b89a-bf199e47bc89.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-0c7ff0f2-cbe9-4c6b-8162-8951ab156166.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-0d36e4e4-0dde-4176-9223-205698f07cd0.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-0d70eb53-6e9c-4d3f-b665-fa17d58788bb.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-0efe4ef8-3fd3-46a6-a8de-9fecd07e3c99.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-10086c1e-5049-4e41-8a74-a067f8d978d7.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-13632457-b73b-4319-9dee-4c6352895552.wt",
+      "bytes": 45056
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-13b117c9-271a-4f0d-a8b5-70d004cdf177.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-152665a7-a4ac-4d85-b0b7-6d8eda51e724.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-17ea80b6-27b2-4ed8-880f-3191d3312eb8.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-1a638b4e-8b8b-4d7c-86b9-3bc6f13ca6b1.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-20ebaa30-177a-45cb-a7a5-2b36e559c3de.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-21144d93-f3c6-48b7-abb0-d3d94147c8dd.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-221a93a9-2106-437b-a35c-aa43218684a5.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-24eebeb1-ea4a-487f-8be9-8a7301731c64.wt",
+      "bytes": 577536
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-27f38a68-e7ae-4c37-a881-d3bb8385a6be.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-285735df-b4a1-4b67-bea5-4b6626bf07ef.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-2aec2b9b-3bee-4724-8bc9-a21f72504489.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-2af2d5c4-0a31-42e6-b317-e6d8f3e7c00f.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-2af5cabe-077b-46ee-a2fe-29978fbb660b.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-2c015a32-ca14-488e-ba89-75163019db1d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-2e10b4d5-eade-4f14-9e04-fd5ce4885336.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-2f32da89-b2d6-40b4-af69-80cf66fc8fa7.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-32e2a16d-1c35-413d-b1f4-ef0d553c64e1.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-33b47adb-bd66-4fdb-b255-d0a9dde9ba95.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-34539055-d937-4cdd-b9ac-2b1419976e8e.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-3525414c-3eda-4ce1-af9d-6336a9aac844.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-3aaa6109-4dec-4bd7-b4ef-ddcafd8216e3.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-3b0ba140-9f2a-4692-8b4c-46023dc4d8b3.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-3b8853b8-a244-4f9d-adfb-958108836ac4.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-3d3b33f3-9c37-43b8-a7af-c2adbdf66406.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-3e4520b3-0b58-4cc0-b8fc-d257e009aa83.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-3f453103-353d-4aee-9bd2-259f910071e9.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-42339ea8-028e-4e5e-9646-3f2c25cd8c7f.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-42697d11-0120-4e38-9e4e-d9bfdecbc41f.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-433294f9-299b-499b-9b0c-7ab53697c2d9.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-450b14e5-9006-4803-899f-1e0351a9c6e1.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-4524e574-fcdb-4b4d-a55a-f9a780685076.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-457e9129-5c53-4b87-a16e-8039261a6b1c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-4a20a2c0-422d-4bbf-bcd1-bc6ea2ca7195.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-4a5dd2fa-576c-49b5-b1bb-2d6f337c4ae5.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-50621cc6-76ef-4649-b4c1-9900c1b161e9.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-50a4fe81-14f1-499e-a6e7-9e787a379a57.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-50ab7034-c0c9-4522-a0e0-2b92a22e5c5a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-515ddbfd-4e26-4f1e-aaf8-97fc63f4d5e0.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-53281871-5b47-44eb-a575-22659083740a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-548b599d-90a8-4771-bc51-3f0054a1f0ab.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-569804b0-73d9-4ce4-91db-b754ebf87f23.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-570334c8-4b42-4393-8efb-f2a2c424e61d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-5dd3b94a-e297-4b2a-99b7-670f8d9e36a5.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-5fb61e57-7913-4fd4-9670-92c8aaa01ad7.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-63946d11-4ed9-474e-a972-8fb85ce621d8.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-6437268b-51ef-48ba-a3aa-f3bf9d729875.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-648988ae-ec29-4db1-baaf-2cca01ffffbe.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-64a55626-cb8e-4df2-8783-2fa997f6a7f0.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-6571c210-750c-48f4-bef4-d02aef969637.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-677364d2-9216-4a55-bf24-b1b03910ba4d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-71b510c4-b5cf-4dc0-a1c9-bc0a884bc18f.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-7394c0f8-514d-492a-8e94-25bc6c9ba913.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-765d68a1-aabc-4e63-a463-2c42428c72d7.wt",
+      "bytes": 40960
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-778115c9-b278-43ba-a472-19ce6e47921e.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-77ba9b70-a3dd-42c0-82e3-459b290917db.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-782cf17c-236f-4810-882d-86e2fd61e504.wt",
+      "bytes": 40960
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-78b27d6f-ea07-4674-b623-06770cbb53c9.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-7efc24d6-add4-4e29-938e-ee01be532942.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-7fccad74-82b0-49ae-9e30-6baad2d69dd4.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-80bc0b5c-8601-4de3-8a76-6280ee92dcca.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-841497e3-90ad-4c28-81ce-33353784e67f.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-863df70e-7558-4213-80f9-a04dbc511253.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-87ead5a3-9893-40fc-9c4f-6d6eec21b394.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-880aad89-4565-4069-a0a6-7fefa0187243.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-88322550-b04b-4346-898d-dc734d9019a6.wt",
+      "bytes": 8192
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-895aa365-ce12-4340-a6f5-badf2034790f.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-89c63312-1216-4840-973a-d97180a667f2.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-8d312131-a2ea-4f0b-a09b-ddf0dd9c4b0f.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-8ffb36eb-7c36-4a38-aaa3-b0ec81770437.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-9052bb5a-4108-49d9-a785-32c1d749a782.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-90902a1d-6dfa-4b59-90d9-8d22905a3a79.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-92f4d8f7-1fd8-4495-9865-9a7032e1b760.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-9475767d-c26c-4e95-a2b2-d3a3227defaf.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-94c8cc08-e430-4b84-81f0-aa80ab313e32.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-96ed14b5-d539-47bc-a711-6bb1c651be8c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-98d12eb6-e91e-4ffe-81a7-cdd96b056bb4.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-9bfe71c3-3895-4945-8e82-db8f9109c35a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-9c5234a6-96aa-409a-90a8-0e5a142388d5.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-9d6c54b7-33d1-4eb5-bedb-4bb4b2ccc57f.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-9dd61099-e2d5-47e9-947e-69c5d65bcdca.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-9efd256f-37fa-415e-bdd4-5ce3ee724786.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-a1f29f96-2394-447c-ad3d-da8544d43819.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-a2821fe7-0b4a-4205-ae1d-f94accbfdca2.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-a4fb291e-17e6-4c73-a508-3e79b01be9a1.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-a57cabc6-5b02-4501-85a5-15f1a02bc0ce.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-a5a70beb-c3a3-4f25-9f83-c149dfe5c785.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-a791755f-b84d-46fb-8b84-95ca35334be2.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-aa089f65-f548-4339-93d1-1f4a39a51916.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-ac2b69d4-1207-4876-b721-b083ea1fda51.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-af654738-5f37-46e9-855b-7b6301b40779.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-b0d77c5f-c308-4549-9e05-e88afe68a506.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-b63be756-949f-4626-a02a-8a2a596f785d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-b6674408-ed40-4280-bf3c-f719c4bf62a9.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-b68e4a73-6b54-41c0-83e7-7d7a306d3ba7.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-ba4c449b-05e1-48d1-8c7d-406e79cb7fa5.wt",
+      "bytes": 57344
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-bb8b7d3b-aad0-415d-8903-320f27140523.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-bba8cfda-de21-499e-912d-b7498f281e14.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-bc38ef14-5544-445a-ad92-2529a53289eb.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-bc81d478-5d1f-4567-9e03-43c87754a2ea.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-bcdd8110-c226-4736-a49f-368e7e84c608.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-bd74e4f8-6377-4c62-8db3-294b9ff2378a.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-be449deb-0501-43ee-9ed0-0a33b276804d.wt",
+      "bytes": 8192
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-be4955ae-8838-4771-8c59-c39766df8899.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-c0baf3b9-4ce1-4c10-bcad-9c77db16a100.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-c16a28c4-6eff-421d-8c48-b719c438fc6c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-c3d4566a-737f-40f0-a25b-1f004cfe6685.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-c51cbd69-90c8-4106-bdf9-c023921c79be.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-c701146e-02fb-45f4-9783-7f761681dcb7.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-cc2e9ed8-35c8-4920-9f53-3d450a5bd65f.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-cd4bd04b-07f4-47ca-a26e-e300de8afefb.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-ce1fd4fb-88cf-4eb0-9224-bee64ea0096c.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-d1456318-7065-4257-86f4-bc39a8a683b7.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-d15cad3b-90ef-4018-ae4a-f8c4f6ffac96.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-d2c869ba-ca41-431e-8afe-8163182bfcab.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-d8baaf7a-aa59-4215-b072-1426730c9418.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-d8cac442-e3bf-499f-8a55-b169e8cbd482.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-dfbeeadc-ba4b-4811-b41a-7880c57dabe1.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-e329010c-f5bf-4feb-9588-e7ccc1931187.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-e4af51f1-0046-4ae0-a504-cef646d34994.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-e6dc7d4c-5c56-4a99-a03c-889078298ea1.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-ea4209d4-6fc3-42be-b35a-ed77703600f5.wt",
+      "bytes": 53248
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-ebe3e239-773f-43e9-a434-af2e4f63006c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-ec89f717-91c4-446e-920f-4aeac4c92bc9.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-ecec9330-849e-43ec-9d31-e1b8851a20f6.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-f155ce03-be4a-43c3-828c-c3cc93aa1639.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-f449225c-cafc-4acc-920c-071af412bff2.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-f4714364-f14c-4abb-b72d-fb730b26b214.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-f530a4a5-bf5a-48a9-ab7e-a198245d9459.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-f5b3caab-41cc-44a9-94a5-a8406416520f.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-f6c2fea2-5ab3-49ac-bb3c-04a42b0400b3.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-f7e2bcfe-7b21-476a-b726-43556d77b57f.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-f8116e25-046b-4f90-ab68-6331b3e3f8b9.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-fb190ba3-a8cc-4a5f-ad35-0b73408b4f58.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\collection-ff6e013f-1030-4adc-8d90-0a7c2eaa2963.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-000560ea-6534-4940-ab56-a3819d0f430b.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-004979a3-a204-4d79-8b8e-a625fd6275e7.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-011a886c-f99b-419f-ba11-38c37ca9d741.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-016b8765-2209-4b0c-88e0-b0e0fabb4b7e.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-0228ee62-522f-437d-967b-4dd3421a0655.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-027dfea6-3d8e-4d0d-afd9-ebbf376cc04d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-029e95d8-ae81-4fa8-8d95-7b83ebe9df9b.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-02a5f7f7-692a-4796-9afb-c0b6c4b470c8.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-0386307f-0052-4f89-910b-01d4b52db6ae.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-039dd142-dd2b-4ded-8326-ea0ffec67ed8.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-03f6069b-d9e5-495b-9f4f-ef19cd570b56.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-04333e6d-41b4-49da-9a41-edfdacff52b2.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-04c59fd4-474f-479e-9ed5-8abb35b441f4.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-04f4ae75-f985-4fcb-9540-a91216bbf677.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-05568856-6fe9-4144-bf50-cb8139e702f8.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-059f4cfb-1f5f-4eee-8922-6b9e6426c7ee.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-05c44c65-ab23-49ca-bf9d-6f36afdd3cf1.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-05dcef06-137c-48b7-9dc6-a4d518c9bd3b.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-071259d6-40b2-45bb-99e1-64891ac48eab.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-077aee3a-590d-4251-9040-51e4b9d4aed3.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-07d7e215-bf76-4a66-b6c3-d7685078d3cd.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-08333e1f-8991-4f3f-bf6f-7715853c1efc.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-0889edc6-132b-45b3-a86f-1252e0a530e2.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-0891d054-bd1f-4568-888d-1175ffc37659.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-08d38e42-4751-4056-a89e-57f3cfbab817.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-096ab7c8-dfbf-4551-9710-690dc27c79e7.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-097571bb-9fb0-4dba-b568-d922f4525d49.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-09ea8416-14aa-4d00-b5c6-c30647715fbe.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-0a057a70-0b7e-41a3-92cf-4db879515b8f.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-0a0c63e6-678b-4c44-937d-a8d8989fbf99.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-0ba17d8f-f082-4150-a233-04f63d6c8f11.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-0bf9f17f-744a-41b8-bf79-c7a7bf17abac.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-0c17f8fc-70e3-4e96-a1ab-03bc6b5ab86d.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-0d519a16-1d6f-4758-b342-eb3d874c1d1a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-0d62d63f-1664-4dbc-8f10-f8c9b98845af.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-0d8cafcd-1aea-49c3-b1e8-4bfdf1ab7e76.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-0e62bebb-a6a9-4046-a38d-9e626e2ae8ce.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-0e96dfdd-1993-415b-a921-149d2dc6a1c1.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-0f07a290-f04f-40ec-8219-0440d7ed1479.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-0fc65c06-02e7-433f-becf-c2bbe05a2ad9.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-10087b12-0f31-43b8-a4cb-5eee24ba36b8.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-10297874-1c8c-4b59-91e6-0c4b8724870a.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-10f95f5f-bad0-48d6-8c73-e5c64e6dd544.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-1164e133-6d1f-4792-952b-97b7e0e0b25c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-117a8228-c464-4a48-9111-3ad47f55257f.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-121c1530-0e68-4ee4-87f9-a9df5cdd76ca.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-128d9d21-ceca-4dbc-96de-c2bfb0941427.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-12ce5855-1244-48f9-a23a-b83726125632.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-13405dfa-5dd1-459d-a8c1-cdcbfc8c5b98.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-1360e4de-8ff1-40df-b2c4-61ce06b3ae4c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-13bf7e27-cf17-424d-a161-83ca6da13e8c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-14068764-a748-4d9a-8fe6-58ab1800dda7.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-141296be-67c0-467d-b195-0d332629d4e8.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-149d4f36-67d3-40fa-b442-c21e67453e49.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-14a64839-cb49-449d-b3ff-8ed9c7c8cef5.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-14c595ae-73df-4254-a16f-ea268e66bf9d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-14eff4e1-5e59-48b4-8b75-32b5607633e4.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-151b6300-37e3-4931-8700-dad2f59d2105.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-1573f0df-63ea-485a-830a-7376ecae7a72.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-15ae2bf9-48ad-4949-ac01-ec6589f6be9f.wt",
+      "bytes": 8192
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-164db17c-879b-412a-a387-9fd2f4e87d9e.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-16622fa9-f2ee-4b47-9269-7d64b76266d2.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-16ed0535-675f-4226-89e7-21e41d4905a7.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-1741de51-d5f1-471f-9811-85dd19bc6e19.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-19db2942-ead6-4eba-bf48-54d6541f1939.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-1a76c101-b48b-4f0f-abbd-1f9bc4c1c267.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-1b7e0764-655d-4e0d-8895-212e8b9c3cbc.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-1c09d972-c327-4033-a1d7-864b099c4797.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-1c522b35-c1d2-4a3b-a288-90c9136b0e52.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-1d7aa2cf-ff28-4a26-b537-b3c1d08033c4.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-1e1e7678-8cb8-404f-9839-8201e4831cf6.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-1eb84850-01be-4d61-9780-61592aa360fe.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-1ef8ad2b-7c6e-4827-b287-8c584c541944.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-1f1ff4e8-86c5-4af6-8f64-7b4ed94a406d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-1f6ea7b8-6e1d-4e6b-a27f-406c6b834883.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-1facc402-12ea-4495-976e-ba96498f1dc2.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-1fc207a2-89ca-4523-b573-1668f58f2fc1.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-20ef021a-5029-43e4-8d2a-7c24cb251633.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-21346d55-86d6-4d9c-9458-64634a9b0767.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-21688d06-88cd-47b4-9d9c-c25af1e1140d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-222bd13f-02bb-4d1e-8677-db61a3639255.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-224aec63-9240-451c-8243-ec6a069eddf3.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-22b7ca2b-e155-4cc5-a8fa-944dde5bb6e7.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-22ba6b88-49a9-4acd-b217-cc4d50b29a21.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-22cdb7e2-c98c-4350-9de0-15e53eb34f28.wt",
+      "bytes": 8192
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-23083592-8539-4320-8ec5-84e12895d990.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-234f3ad4-b4ad-46c7-80fc-80fdd5737bac.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-236f558c-d79b-4ec7-b627-60dba23c4a00.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-237acd89-41c5-4e07-a203-ce3c964c4cca.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-23a9d9e9-1b3e-42fe-aed6-6ade4bfd7cc0.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-23dbe7a9-7c6f-4e1a-90b2-ed08852cbeaa.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-24055894-22e1-4892-a221-21626a9a40de.wt",
+      "bytes": 8192
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-2574a764-240f-43f6-a062-71b9d667aa9d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-25a6b430-a56f-4506-9f74-ccbdc094662d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-25e7467a-f99d-407f-b46f-5ded1c12d786.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-2663d886-89ab-4ee8-8315-174403771b5d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-26f22dd4-7152-4220-aea3-32e83c568b65.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-277d31cc-bfca-46a9-96a9-0809fdc398b9.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-27b7d4b6-e58d-4194-9571-9fd6f578428c.wt",
+      "bytes": 8192
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-27dbb6ed-d7f1-4f3a-be25-84477a72e289.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-27f4a22d-4733-46af-bc78-e10282bf3e4e.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-27f9555d-0981-4a52-a566-f1cd796e5d7c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-284768e8-e0ed-4bcc-847d-1c4058c3bb2d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-28c2846a-bab1-47ea-b0f5-9baa88baf704.wt",
+      "bytes": 8192
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-28e35209-01ee-4ca5-bafb-a84fee465c46.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-293e7c7b-d105-4ba7-97de-85e9a9e7328a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-29f0529d-4e60-4b03-b0b7-e67992fb9d75.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-2a0d050f-4526-4b24-9414-b971c11b6fe1.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-2a1c81ba-ed81-45a6-9373-fda78e2445a3.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-2a378ce7-bf8c-42c2-a066-78efca71c3d1.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-2a54bed8-89f6-4a0d-b406-1bb559dc4ef5.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-2ac8c7b8-d74f-4c1d-a36e-dcb84d526abe.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-2aceae58-530e-4b74-97c3-3ff66b7a6416.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-2ae18529-6b9c-4b12-8dca-ea929f4f9673.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-2b479865-bd05-465e-8ecb-88a5ecfffaee.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-2b5b1e62-aa61-4af1-b80b-e154e3bbc312.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-2c4da1d1-ba7d-4b85-98b9-74d5284e6688.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-2c59a550-e2d2-4fb3-8e1a-4ff0fb4c6060.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-2d2e8d9d-63b1-4c95-bf16-6c5722d680d9.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-2dc7256e-9e91-40e1-ad92-91cd06681ce5.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-2dd2f2f4-0a5d-441c-a9f1-ac64241351ec.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-2e12003b-66e0-474c-9b8a-4c6fd4099e5c.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-2ef7814f-a896-4d00-92cc-e187d70ae88d.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-2f0ca0e9-fbc6-432a-a2fb-248952e3fa0b.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-2f309b69-bef7-4860-9bcc-cd8d769d9c00.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-2f97973b-7972-447d-8501-c7340c0d472a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-2ffbfe71-daad-4f03-aa36-0d73d8f11f4e.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-3062d2a6-2b15-4989-b804-1581f3ffe137.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-30741586-298f-46f0-ae19-36a66bfeaff6.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-30b91c10-91c3-44b0-b65b-61e9c35c9f32.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-30d14d39-65f9-40e6-954b-7ddbad12da10.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-3102f842-f608-4a95-92f9-b3587bd6b3f2.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-316851f3-b747-450e-88e5-5dc26122e207.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-317d0a2c-5c00-4b41-a250-46d85edefa22.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-318b134f-d076-4e73-a84e-bee724300e41.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-32330bea-ccf3-4583-b67b-0cdd9e341866.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-3283abb4-cba9-4d64-b78b-f44f74f9e093.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-333e7903-8def-4266-9449-7403463ee633.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-33993760-d508-48cb-b810-74fdd34eb44c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-342f13c6-d8f2-4f7f-b26b-97d238965e5d.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-346e7702-a6d6-436b-a113-fed9eceba92d.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-34c32156-8bf4-4074-ae17-b4feb6e70796.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-34c5d4e8-34ee-48f6-9d18-eccb09bd0b22.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-34dbf6bd-edd5-4273-a08f-85af8d2ebcc6.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-369e619e-3fbc-4a0f-9359-f09863c2ddda.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-372fcba4-59c1-4fd9-a5ed-a3a3b8bed731.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-37562a7f-339b-4093-a346-531d44dc2a91.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-380aa204-1144-442f-af11-8de2faa49928.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-388a9a05-c2ce-4bc2-8bc2-db5a4b490037.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-3894127d-c07f-421b-a41f-893f8d1de551.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-38c2cdaa-6f89-41ce-857a-592bb8bad995.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-393533cd-a510-4034-be4c-d2f8093c6176.wt",
+      "bytes": 8192
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-39b46871-e5c4-4277-ae74-6d4e17d717f9.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-39b77155-df77-43f5-af91-b23d1ef260c3.wt",
+      "bytes": 8192
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-3a4f22fe-dda8-4ea8-9093-956ec745c9fc.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-3ab165b3-7510-42ab-906f-de046c82ca8b.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-3ad5e909-1fc7-4b6a-ae6e-4bb9bec79a68.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-3c903e61-70c2-4344-acc8-c82b34409278.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-3cd26093-8db4-4b69-aa33-539cfa02bdc9.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-3d665ba2-3861-4538-aee7-eaedd0da5a94.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-3e66d54c-0234-4034-8680-6243b374fb7c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-3e82a603-9649-48bf-9018-ad262771ecb6.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-3eefb570-c9e7-47b5-8ba0-f9670761cc72.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-3fc7ee1e-7d0e-477f-8e73-5b2ca0768efe.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-401b64c5-cf1e-4764-8a64-cdc9b1eb3018.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-406bd5b0-8fa3-427e-994d-5f15aa62d5c2.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-4083f58b-6269-4e7a-a8d2-64b19d317cd5.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-40873a32-6531-4dc1-b564-4219afc82e47.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-40a3927c-1c0d-4f13-9b54-2f1639c492a9.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-40e470f0-36f1-4197-a537-013d8600ede8.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-40e996a4-a894-4a54-8f77-d64b201f6756.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-412687cd-573c-4f4b-aa72-acbc821adb9a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-41565b8c-7db7-490c-896d-5d631f8c3b01.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-4162b3e7-7f9a-455e-b795-6d03ffef9046.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-41a2e6d9-4214-407c-aa5f-39b358929d1b.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-4201be66-2e49-4e6f-ac9f-6658a80eb3e9.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-42b3a1fc-85f4-4a32-88b3-f4e4eb747827.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-430fbbc3-507e-4739-80dc-b3a123e91761.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-4370d1cf-1647-432d-93f7-055e8641a0b0.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-438686c1-82cc-4754-8d72-c36e2bbe3b3c.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-4450cae7-5e4b-4b01-a796-917b3b8d1d40.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-45212c6b-a794-444a-8ee2-ab2586a6085a.wt",
+      "bytes": 49152
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-455100da-e262-435c-bfd9-eed64fb2fdbf.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-455afb29-403f-4000-abe4-1b0b72b85ad1.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-45b83dc9-15de-4241-9ed5-abca356e3ec7.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-45e4838c-4316-4a70-bf97-ba702cec7728.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-46099954-a773-49ed-8d21-bee49ae56f59.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-46219816-392d-445a-8971-5da45e157aad.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-476db213-ff8d-47ec-9589-f60f16f53920.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-47c6a35f-066f-4272-b9a6-1832b733be0d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-47fa8485-fde2-41db-b4f7-e5a431239db2.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-47ffbff3-6b69-4ffd-bfad-eca7d05f760a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-480fbfe1-bea7-4f2e-a0d7-90d352200c61.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-481cb562-be55-4ac9-8aed-b73351231a13.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-485515e2-9740-4c23-b4c2-1b49731f4422.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-48e4a1e6-8b6f-4402-a0f8-ae51fe7b0ff3.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-4922c9c9-464b-47fe-bee4-382b42e52588.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-49526fcb-a2c9-4237-97df-92c66008a465.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-4a529761-9776-48d5-bfb1-e7e44a66f992.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-4a8601eb-d599-4596-baac-257112d46a7a.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-4b6dee04-a327-4329-9571-c7a79a87adfc.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-4ba81a73-ab43-45d4-8902-55eb824b1dbd.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-4bf051be-92a9-432d-acb9-2500d26ff193.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-4c9120e0-a66b-442a-bf29-c16342f995db.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-4d542425-b2bf-4c9f-8d5e-bd4c12bb71de.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-4dc84c32-5df4-49b0-aab8-80131ca7b3de.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-4e56b4ed-c308-4ea0-b5a6-bd6d218614bd.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-4f011662-1ec6-482e-bf32-04e9666fa4ef.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-4fa001fb-e2ec-4c2a-98f0-f4cdcf8f2303.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-4ff9d009-de28-4693-b328-9599ec6a098c.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-5024ae6e-e0e7-4fea-b8cf-541a4ffb2b8a.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-5031b72a-1846-4c07-ba2a-4c17d8cff044.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-50928d92-1816-45b1-ae03-e368c10e81ac.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-51640db7-b247-4a77-bf31-3676ad0023a2.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-51faa3c4-1a5b-4a6a-ad21-2b84a65242de.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-522db701-24d6-41ee-a0ec-6a9820acc4d5.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-53a497a6-8942-415b-99a9-72e419ff0500.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-53b1ae1a-66ed-4954-a7de-2c4a4bd4df85.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-54f63b4c-0206-43f4-99ed-f78eae327deb.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-55086a71-6abc-46e2-ab6a-b3f18ba7acfe.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-5531e920-8594-41ad-8555-c2fd783a54b2.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-55f3babe-a1ba-49fc-8cbb-cfd24e273c1e.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-55f94ff4-f946-40fc-a30c-a765f2428b58.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-563fc790-84e2-42ca-939d-9e9a97e212a5.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-56ef43a7-72f0-489c-8ee5-64153beaa4e8.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-5726aa08-dce7-411a-a228-0e2ad6a6bfcf.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-5760c02d-a151-4b05-aa50-37b2e2d79fd6.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-57626999-906a-4a35-b60a-0d1e6540c4a5.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-578ca62c-16dd-406b-bc53-04cab15f14d7.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-57cff056-0590-4ea7-8085-514ba2011c61.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-57f013f8-f07c-4e12-9dc9-216ec411765b.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-5831c291-f1f5-422b-bf95-0fee66e908e6.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-58546bc2-acf1-44a1-8727-00ffcea6f5ac.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-58fc52f1-9c95-4ff5-86c6-d971350ba0c7.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-592299a9-7595-4391-b9fa-e9d3091805cb.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-5967fcd3-1a1b-4a28-9410-de6afcc28643.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-5a0b0305-dbdc-49b6-8db2-5afb0dda94be.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-5add8c9a-425c-40ab-a168-bc9a85ac889c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-5b3fef05-494a-4fc5-83dd-885ea898250d.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-5bb588f6-ccfe-4416-8a24-6feeabbe8cd8.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-5c804af1-ece7-4d4b-ad96-d45bdd25613e.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-5c9fd9a2-c627-45e6-9748-9355048e01e7.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-5ca218cf-db48-49cf-bc32-368ff498da2b.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-5ce02dce-fdf3-4e8e-b74d-f4bed388eb48.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-5d0c588f-8662-4f5e-90e6-427ac7193f21.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-5df887ca-e6c6-4f9e-bc10-4801f4f9a846.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-5f15db99-6bbc-4ba9-8e28-6a5460d72685.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-5fb59272-4e2d-45c8-a322-50ec00321fb4.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-61281de9-b71f-4951-8665-ea3384506928.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-6236381b-a1e9-4187-b8a9-35c4594d16c0.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-628f2899-7b06-43e5-957e-97a24a687eae.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-62c3d43b-7ec5-4f47-a0ca-246ebdc9a0e6.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-6573b978-f45a-463c-9ce2-3bdbf9300d13.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-65e7d16e-676a-44b8-b3b1-566d77a32c58.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-6623079f-c30f-4a4f-8282-76510877437d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-666a9392-cb91-4624-b9ad-900c47c913d6.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-668bc131-2551-4105-b553-f32eed81a00b.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-67b723a7-ad15-4d50-8182-96034fd3189d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-67bf04f1-423a-44c7-a2a9-e1e1fa7d61db.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-67e90ce3-69f5-4e1b-ad9c-5454788c2a8d.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-684c8069-9bab-4b10-a83d-52696157a8c0.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-68c72004-1d8b-40bc-a64c-5a772553eb16.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-68cc6d54-3f8b-4c0b-a078-a25bafb79656.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-68d4294a-0f4d-49c8-9d04-fb242ac7b52d.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-68d619cd-04c2-4979-aa28-4082006b5488.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-68f3a4e9-3c87-4961-b03d-3d4de3ef55a4.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-696ebe75-a7c3-4677-9f7f-c67ed4fbc187.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-69dab9b3-4e93-430e-814b-80336469d4bb.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-6a10ee51-458d-4b91-87c5-e3f57b70c735.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-6bd21ca4-3309-4d89-8556-7d2149fabe7c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-6c3606fd-e007-4a46-bb24-b7c18641a28e.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-6d5c51df-3ac3-448f-a8a1-a202037f21cc.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-6db5c193-7dbb-4e07-b7c9-207fa73dd9ca.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-6dff61bf-045c-4480-8df1-e170a6c44fd5.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-6e534547-abf3-4c4f-b7df-4c1abfddb0cc.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-6fdf95dc-3e27-427c-8dae-777b115bbba2.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-6fe2e3a5-1d95-45fb-9cf0-14c5e488afe0.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-7006c79a-2fe3-459f-bc41-ef2b1566f83e.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-71c1c468-88cc-4f08-a4bd-02a391884fb7.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-71d630e1-d35b-4272-8c33-5bdea4429e46.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-71e59c7a-ec30-4ae1-9452-10ef0621a919.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-72ddfc0e-a3ec-42b9-b5ee-1ac560ac99e9.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-73306563-647e-4157-ab14-0dc2e1637299.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-73c095b0-c2af-4b43-9c86-4edd2c441cd4.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-73cb27ea-421e-4408-901e-2d06e7c6e505.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-73ff7ecc-a80b-48d1-a7ec-0a00db5edb48.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-7425e4c4-2faa-47a4-a847-7667eb883f67.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-744ef20a-f8ee-4256-b561-03a1879d5010.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-7462c8d1-f871-4581-86f9-79a06df3b405.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-75d8ef88-9ed4-4607-a12a-1936feff26d5.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-75de3595-39ce-4d3e-b072-aa3cab9d81cf.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-7613002d-5820-412d-81af-62a7da6f0413.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-7630b670-e439-4e4e-b3f0-00f380f56a50.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-76470a0f-3fd9-48cb-ad29-e8fd14efc5c6.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-7690e465-e1f3-4e0a-b0e0-357b57241449.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-76a5a0f4-4a89-4af4-bb6a-4037ad10cd58.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-77338920-7b54-45af-bb91-8ff731da4a2f.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-77a8be46-20ae-4f3b-9a8f-236e83c09221.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-77e9acc0-298e-4d9e-91d3-8e9c21b238e6.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-7856fc0f-f3bd-4302-9549-218fa31e727a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-785ea317-219b-4657-a423-5de69fd682f9.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-78600aa6-964c-4486-8434-c4c630cf18ea.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-786e6900-952e-4164-90c1-355288baf59e.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-795aa8ec-8f7a-469d-a90c-e91a41047949.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-79f907e2-19a7-41a3-9b3a-873041e0b7b0.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-7a2583d0-5256-44a0-91b1-0e74cd82246f.wt",
+      "bytes": 49152
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-7a51523e-ea0a-4aed-982c-bb368d1fe3b5.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-7a9bb8f0-60a9-4ffa-8ffe-41bd3d72a140.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-7b5c3b98-d89a-486e-ae52-283c5925bf7e.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-7b98c705-eb1c-407c-ab00-2a1922b8f7ff.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-7bdfe7fb-c85c-4146-a731-544bc357a625.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-7be96046-f761-433f-bcf0-35713765ad29.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-7c903163-11fe-4412-9d9a-6cea1a894838.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-7d09a78a-f53f-43e9-86c8-32fb26f3da39.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-7d0f0222-d80d-4fb2-934c-3500c2b13060.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-7d5dcd7d-f8e4-4a7f-ae08-62a0e899a618.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-7d78668c-4f08-4765-b202-25670b2edf14.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-7da6d090-5c0f-4fd1-825e-4f4b172687b3.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-7dda39f3-f5ba-4ab5-b952-d25df9281d1e.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-7de5ebbd-8533-4f73-b1c4-c0a2e9ad43fa.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-7e35f385-ef05-4bcb-82d7-f2a25f34db98.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-7e374055-a21f-4722-be39-84e18c5ce3af.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-7e44c156-7519-4bca-913b-25457ec11f07.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-7ec2adb6-08bd-46c3-8eda-e3a41ea8341a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-801727bf-5115-4ff1-ba57-2c72f1587a0b.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-819ab6e1-9ae3-4593-b5e8-4e1d940cd145.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-820b8633-9f8d-4cee-b76e-8616c94fbce0.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-8210b7ca-dc69-41f6-9e5e-1bc8ebfeaa82.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-82b41f83-5bd1-4591-b14b-0bec6a9466fd.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-833ba7af-40f2-47bd-993b-36cc03974d65.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-83bcdd50-94d5-4026-ad7a-162df8b8a67e.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-85195c2b-e35a-4c45-b0fc-d98a6d79e506.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-852dc63d-d5f8-4513-ae4d-7b401e1eba62.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-85a458b1-b8de-417e-bde3-c8de984646dc.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-864cf8ed-b22a-4cfe-a6a0-e42f2a3a555a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-86969f84-6787-45aa-ac82-2bc84dd126c2.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-86a13d65-09ca-4f8f-afab-ccc863b46014.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-8798b5ca-3851-4fb7-a67c-774dc184dba7.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-87bf3120-a20b-4f0f-806d-a77ca22ca4c9.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-8842d3d1-0c45-4958-b231-7acf4a06f80c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-893db2b2-d386-4c8c-9ff6-62786d55a278.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-893fe559-db8b-4269-b2c4-ce1507437738.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-896fa85f-8ca7-44c4-9d75-0ee166ce2d5f.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-89e7be24-f87f-4180-a7c3-dfa693b4b807.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-8a8a0b2f-bc6f-4355-b8b6-116c7f9beaef.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-8b6edf78-f71d-434a-9b89-bb98ac06214b.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-8c155458-c7a6-439b-a58e-659877c3dcd3.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-8c401db3-0658-4f03-9602-2cf6a9600d05.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-8c97834d-7716-40ba-a8b9-f3f760c7e088.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-8ccdb6f9-1792-4243-9d4b-6288b6b23d19.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-8d4d4c40-7f45-4993-992f-85408aee9d98.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-8db11a33-7920-4f1c-bad2-bba8c39f12cb.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-8e74a09e-4631-4c15-aae9-2cff2db24ed3.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-8e8d0e99-b06a-44dd-bbfc-8ec99b9d8080.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-8f0a93bb-d983-4c4e-a55b-30027e79e08a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-8f2981d4-561b-4bad-9c2e-40a3c6b63e9e.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-8fbd7392-cb8f-43c6-87b4-fd1a44d7b49a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-8fd5a6ba-44af-400a-966e-961a203ab0b4.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-90e82d0c-b583-4692-8753-e389b25d9864.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-91053a50-e2d1-4e91-9525-08b7679610a5.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-910b6971-9f35-4577-b4a5-09143c29483c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-911075e9-49cc-439a-a756-190f27e6829f.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-922577a3-9201-47c4-b990-0c7714fdd1a4.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-92ddfae9-5d62-4bfb-824b-78d05534d5ea.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-92e17be5-f1d6-431f-b5e9-ee7b0f71c9df.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-9304f735-3bc7-46d7-a517-bc28c5928481.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-93319b75-64d7-4504-9d1d-fc97f646055c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-9343024c-e8c9-4bd0-be76-362dac6919eb.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-936270c3-b5a9-4389-a315-44c81a433cf1.wt",
+      "bytes": 45056
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-9388d332-65eb-4a8c-9ada-3df6b284a7b6.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-93dd48e5-e274-41f1-86ad-aabefb02ec3b.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-944ef935-bc7f-47ca-9ef6-bd908d3baffa.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-950ff8b6-3c2e-4a71-b2b0-5b5ff5e52ab4.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-95e7ac3b-1f54-420d-bc04-c2f121d29746.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-9615f897-3164-4a0c-8dd3-17e8e57010ac.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-96900aa6-6e4d-4997-b3b3-d438a6678b1d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-9715a5be-2f61-4a50-9993-cdd947b3098f.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-979a839e-adfc-491a-93f9-d1204bc59095.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-98cdccb1-ac17-4241-a23e-22bf234b9302.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-98ed6f9d-5be3-4d5b-8b4a-a2e72772339d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-99a50b38-3248-40c0-b698-83ab4a708bb1.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-99c3547e-350c-4a5f-a40e-1364640fc1f7.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-9aa16bbf-e69f-418b-8d80-ce9d22539572.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-9ac320f0-fd2b-4708-8490-346f4bd332db.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-9bd047fe-c7e8-4ad2-a1f9-91aeed44b7a8.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-9c143666-dfda-4551-802c-fdb2d7229c0a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-9c83e997-ea61-4907-a2a7-1e592d9443cd.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-9d17d6b6-d982-453e-a1cc-76b1a35036ba.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-9d6d547d-418e-4c59-a670-e527b41920bd.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-9d92b8f4-3474-45c2-8651-1d137fd91022.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-9e01ac1b-8ba4-4a51-a3c7-2723b51cc01e.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-9e1e98d2-eafb-4bbc-9a6e-d111acd2864f.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-9e3f6c1d-0e2d-4da9-ae14-0efa5ebb6b2d.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-9f2912b4-0f42-4bdb-ad8a-63f29c8bedfc.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-9f5d3783-fbce-493d-aa12-92d0a71d7a73.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-9fcc6bc3-f080-4be2-904c-23191b9799e7.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-9ff1e250-d5dd-439c-a2b8-a99af2d87c03.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-a02fca98-d2d2-4679-aa40-0970ce4c3f82.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-a062a5cc-3d16-40c5-9339-2dea9b2cd21b.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-a11c98b2-f658-48ad-a344-11ae68598e79.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-a179dc73-89c2-4585-bf38-0d734bf6057b.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-a1954044-4ed1-4d71-81c6-150790d9053c.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-a1ddeb0d-acfc-460f-a9cc-29cbd6809858.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-a3cbbbb8-0096-47e2-baf3-72a234f197af.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-a4199eb5-e4ed-4c7c-a566-fb166d1a4c30.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-a4ea3dbc-6d81-4cf8-ae84-71402c2010ad.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-a54f3b79-dc66-4466-b36e-ae9cd0db78ee.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-a568a8e2-a266-4afe-bf5b-230521c186eb.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-a581d822-b0fb-44e0-be18-8dd702e83744.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-a6696a65-56fc-42fa-85ae-16dbc2628298.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-a6af26df-654e-4e76-827d-782453b52efa.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-a7973204-ae7d-4853-8967-2e2945f14214.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-a7d944cc-77e9-4251-b754-546b128f53b3.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-a7f3edf1-288a-46ce-ae32-a9778237a918.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-a84b4d34-0e79-46f7-8e73-227f53167f15.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-a8a8e371-9527-458d-bdef-a7d07c07305c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-a94aed23-d447-4350-99c6-eb395aa870dc.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-a94c5142-9d6d-41f1-ac19-b2e818ae8f4e.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-aa2d0bef-a9a7-4316-997e-68f5624a2889.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-aabd429e-ec98-4b06-a3ca-a9a5e6f07110.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-ab9d2ee5-9d87-4831-b784-e3906459d4dd.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-abcd51e6-c06f-48e4-9840-199d264f84ec.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-ac4346e3-10d2-4a3b-8c86-1e4d7c3eaef4.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-acad762c-4ee4-4e95-a478-e9320c84c8cc.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-ad481a68-28eb-4beb-b167-43a0565a6c9d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-ad93608a-bc60-47ff-8c42-8eaa070cbb52.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-adaa7b54-dd1a-41bf-92ca-319135837aed.wt",
+      "bytes": 8192
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-adc5d337-03fe-4ef8-8299-90b1e9244715.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-ae4fa16a-28c5-42ae-b642-d7da04064317.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-af091f53-4acb-433a-a5b8-1b6ad7efbc1c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-afa1b803-a8a0-4fe6-9aef-398769752b6e.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-afe3cf96-23af-43e1-9206-294f7d039851.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-b011d8a0-9b01-425d-b5d7-e8b8cf611b57.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-b1a08736-6742-4dd5-8123-826295c1da93.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-b26312d0-2337-427c-8469-35fe9f148b44.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-b2f91288-9a74-4a12-8a40-41a6104807ad.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-b32c63d1-c6be-47c9-812f-1e14cf8816ea.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-b3e5ab24-07e0-467b-89cd-7b8f67ef89b8.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-b40dc690-3964-4c60-99b6-e86af50f6e69.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-b446730e-34dd-4d59-a54c-eb4ae5f279f3.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-b4affd0c-e8e7-489e-927f-d56e3bb1e55a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-b4c00b04-5284-4cf7-aaeb-42e3ea64e223.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-b4df28ca-ee49-4925-bc20-d5499e5defe1.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-b5d545bc-8bff-4304-8e76-2a9398cb3925.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-b6714fe8-2960-4c17-b1d0-05687f113f9e.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-b677bf3d-5ad4-40f6-9a89-25a42edd9017.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-b6959319-889f-41eb-a964-e5546d5742fa.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-b6aa30b8-2fe4-4ffa-b86c-3d49ad008752.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-b6cc7c59-3774-4aa3-8c0a-8637c5edbc4c.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-b802dcdc-e8b6-4b2d-80f5-7894126e8499.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-b8b5b533-000c-4820-8f29-9383e47d0906.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-b9285713-e633-4bcc-b5a5-46576d51d4ba.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-b92e1484-2ada-4382-9f65-04240e9fe9c8.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-b9c80008-41d5-4e87-8da9-933eb4d869c1.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-bb4768ce-6568-4328-9471-eb0b5f29a698.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-bb8cd723-f4be-4f2f-a5a8-a4c842d2b2c5.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-bd0c6fe2-44b4-4523-bfa0-8fd2f6be8135.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-bd734269-c850-4f52-a5b5-f6769c71f769.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-bd774718-8af1-4919-be1e-c116801c26da.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-bdd147ea-4dfe-42dc-86ef-68f7372d667c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-be4f0983-5405-441e-9d55-a74ab65b80c1.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-be8104eb-d87e-47fa-b652-c483ebb0e18e.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-be8c9785-c44a-4a7d-bcb9-76703c90147f.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-bebdb7dc-87e9-420e-b4e9-2513450ac06c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-bfca282d-b7f4-42a0-a303-62746076ae5a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-c004bdfb-e276-4bef-848f-b0c5a6755c91.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-c02db9ee-b9d0-492c-a949-3bdaa512c55b.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-c0383ac3-a7a8-44ce-a1f1-6421b1b2772f.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-c0424b05-18b0-4e5b-a1bb-284e251f8902.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-c06167bf-ec27-46bf-bcc9-0fab0a2c7228.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-c06e08f4-e14b-4a3c-b465-2c30e06a19db.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-c0a3534f-a8fa-402b-9c65-9807441fa58f.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-c0efc57f-fcd3-462a-8db1-f276a8f07534.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-c0fd5fb2-01c3-475f-a1ac-aa582d11e643.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-c12e3d53-0ddc-4eef-a30b-477008d4e428.wt",
+      "bytes": 8192
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-c15d21b2-ffe5-49de-86ce-39781bb747d9.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-c1a27980-8678-41d7-90cc-fd8f416c06be.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-c1dc42be-8a97-42d6-adda-23be2cc62a56.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-c20f11fd-fe7e-471e-9924-7e94ff6c8814.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-c426cc9c-5f2a-465b-ac98-990f66102cc8.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-c4b7aa7d-7a63-4625-9c96-cc92e0a29c34.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-c4f37b66-4ae9-44bc-864a-827cf09d8faf.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-c57f08d6-333b-4ab5-956d-e0948e6fddef.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-c63f7024-0569-47da-9638-8d8e7b92d301.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-c71f0521-faf2-4bd8-9f6c-171c7205767d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-c7b60715-46c7-45a5-8a78-b34e16472359.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-c8235b00-6c02-4dc7-9281-1d3bdc93719f.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-c84885ea-50aa-4514-8908-0bdf951afbeb.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-c87303f6-dca7-4216-bfe2-53be5dfa65c8.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-ca9c72b5-4139-4c8b-affa-f613b735fa60.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-cb880188-d726-4f93-89ce-9a1d003ac468.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-cc7c6a1b-00d0-4b50-ad4e-0ebd13fd8e72.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-cd3d679a-c9c5-4d4b-b230-25aa1a684a88.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-cd496d22-a356-421c-ad53-d6c27a69cc8a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-cf8c209a-2e66-4c13-9349-f0df3d12da2d.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-d0e64f1e-7c79-4c07-ba05-2987ad201e0f.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-d12c8aef-7807-4bfd-9782-074b7061df15.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-d1c71bbc-48ce-4c6f-bea6-ad17ceb0bff7.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-d203ed30-9b04-4d11-a8fc-fd5f91366e4b.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-d221f39e-2062-4db5-99ca-bccefd3397ff.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-d2f4ba91-e3c5-4bf7-a77b-f4a12964a862.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-d36415cc-f910-48c0-b208-f0638c6e148f.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-d40e45fe-342e-4967-bd19-daad53d794f3.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-d4b3fe0f-2ccb-4243-a38b-04fa89b958e9.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-d51d3627-d1e3-4ad7-b26d-f603a768429b.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-d5f6b0eb-9cd1-44ca-83a7-cfcaa39fd79a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-d61fc1b7-d065-4a23-ad8f-b1f4d9c5a8a8.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-d6356917-4b8b-4683-ac0e-14edd41c5dda.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-d652b11f-6b38-448a-ad37-99da27316e89.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-d65a9c58-7413-49a9-9c88-611a9e9c693a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-d8220959-6cc3-419f-a2a0-cadec8af3320.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-d82b04cb-9f11-4db2-98c2-29693085660c.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-d869ba21-a6ff-4e95-bf4a-95a30768134d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-d90f0daf-6cb0-4b22-9841-d61e40a7a895.wt",
+      "bytes": 8192
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-d9452231-97ff-4fc7-800f-2c651ceb6da0.wt",
+      "bytes": 8192
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-d998f44f-e376-4666-a1ea-7d052c3888cd.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-da024d31-3c0e-4936-9f9e-4a8c8d1615b9.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-da5d61dd-8533-420c-8182-6e812c64e199.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-dab04cec-156b-4a9b-90bf-8c7a7638dd03.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-db2e12fe-608d-4a0e-b914-47f0a2d2c137.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-db93c7af-2f4b-40fc-897f-78988185d8e3.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-dc84f6de-4d5e-4330-a32e-d11ca7e49be4.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-dc8ac99f-1c3f-43d4-a466-1ec7e4842015.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-dca07f6f-8a0e-41c7-ae08-cdf5de4ce826.wt",
+      "bytes": 8192
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-dcb518f6-249f-4419-b16d-ffd08edccd97.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-dd8dd73c-2345-4c13-a246-d823c0395ef8.wt",
+      "bytes": 45056
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-ddaaa57b-1fcb-4ef8-94af-8583e12cc5e1.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-de95cbc5-4934-4f4d-b906-b8fa37c59a5a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-deb9b2ec-f0a3-42a2-9fb8-b148b400b810.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-dfa934be-871b-4a23-af27-61c32c8a107c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-dfbc86da-ab5d-4531-9f26-0f6f61b497ad.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-e080d1a9-6234-441e-9c53-c90a18e08ba0.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-e0c34894-6ff6-4164-b6e9-36b8ae2968e4.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-e0eeb532-1f07-487c-b137-0da63d6b25de.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-e14c0e96-77f0-4e46-941b-3dcec3dbc7e5.wt",
+      "bytes": 8192
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-e2315bff-44de-4240-a3d1-d476784b80be.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-e2fc65bb-13a3-4dd8-9c97-00d59b87d54d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-e3025563-a517-4a0b-9f4b-29d73c0b3487.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-e32c034c-b24c-440f-9dca-aa6899d82e2a.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-e35c8c2a-3cf1-40de-9566-aa5d9987764d.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-e3de6a6d-56e6-4bfc-9b4d-ac8054fd7001.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-e3e362dc-6e1e-4c6e-97f4-0b46332a2245.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-e3f01717-dbc2-43ab-b4ab-8052601e6b96.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-e575530c-e640-4546-a81d-7ee249df3bb4.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-e58c18ad-e05c-4d53-af4a-69f698e01d67.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-e5b9f845-6975-421e-97a2-3e3366d5b53b.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-e6fc555f-2c8f-44b6-9c85-8694482a8347.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-e774a90f-1cbc-4dd1-9d5c-0ac67f7e0269.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-e8d8463a-3527-407f-80d2-26ab4652f26e.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-e9235fcd-32ad-4410-a62c-e5c0506cdad7.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-e9451dfd-cb31-4dc1-a6a8-7f728d9013a6.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-e9d2e358-ac01-494d-b7f5-a70f30d3ddad.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-e9f04176-0332-4022-ba21-264e3c789ae1.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-ea23321d-7986-4062-b857-d9b081cd7c44.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-eba6435e-cf66-45de-a746-e01fc8849434.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-ebbcbaf2-dce3-4bf9-a15b-6fddb7be1f2f.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-ebf7be61-23e1-493d-8cd8-99a839070f3a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-ec95c93b-75f0-4bd9-932e-159db627e527.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-ed1c2102-e878-4a8e-b48c-0fe6e783e033.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-ed6e73c5-5791-498d-b737-0186269f588c.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-eda08ff7-4c28-4c26-9565-390a95dff2d4.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-ee106a4c-1dc2-4d25-9fe6-ec49d4efe71d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-f0077617-f5aa-496c-b625-3482022119f8.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-f14f532a-9e40-48bb-abef-711b16d55420.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-f152ca2d-25a5-4a5f-bb56-251f0139d33a.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-f1b1f58f-856d-4284-9431-32e9d2140187.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-f27268c1-6417-4df7-a88e-8cd722b792e4.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-f3f172c8-fd6f-4ba7-b0c5-4b3ae4e3d6a8.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-f3fc1ebe-73be-47eb-845c-387600325931.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-f4956745-679f-4958-8752-b1d310996fba.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-f51c10d3-f7a9-4bb3-af57-20b41565ef9d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-f55078f7-796c-464f-b7d1-f1e2522551e4.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-f56f6339-aa63-47f2-b77b-f82dfb3dcb92.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-f5a2ea7a-a040-46d9-bf72-a30e64b30245.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-f6873307-155d-4d4b-8c55-b623096b2b16.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-f7dd6ac4-d783-472c-b317-1ba8a8094219.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-f80363ce-588b-435b-8952-acbfa25cf3f4.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-f8b3c18c-2168-4de6-9aff-3d20643a1baf.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-f8dbdf95-d3e1-4450-bc35-a96ef570e7f8.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-f8f8cfd2-e8fc-4039-b489-2ee7a87fe1ab.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-f93d3bad-d057-424a-81cd-62e229c26adc.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-f9652bd1-9961-485c-ad97-65963b745bdd.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-f9ea4ddd-883a-4460-bb32-e9a39317b71c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-fa33fbb3-0e9a-440c-a7a0-6d142461e1b9.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-fa8f45f0-d8ab-4652-931d-56cacd218ac1.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-fad83af1-949b-4521-a1bd-8d72aa3cd54b.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-fb1528af-dfe1-4db3-9ef6-8fb761f07446.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-fb6976f2-4286-4e4e-9b8e-017452f46495.wt",
+      "bytes": 45056
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-fb78287b-21a7-4556-9d16-8ec61e97561b.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-fb8a7531-4537-4f8c-b269-d60148723689.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-fcd7e5d1-80ba-491b-8454-b82574d1092f.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-fce6693f-89dd-4c92-9b8e-c7cf9bbf9a67.wt",
+      "bytes": 8192
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-fd215bec-2fec-40b5-b9ff-6b750fc09fdf.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-fd9c04b6-6b01-43e2-baac-fdbc1da34339.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-fda5d97a-9064-444a-ae96-3c1b039b9fbb.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-fe0729bf-5038-43dc-b999-a48b9d874a7a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-fe2d841a-cf49-4aca-a7a5-cf3fe1c30894.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-fe75f3c9-bdab-4161-aae0-2063aae346bc.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-fed2cee5-fae4-4dbd-89ee-4bea878d02fd.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-ff4f5304-52c6-4ef4-8b3c-de3e65758466.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-ffc97de9-4e80-4e10-b0e9-8eb270bbd914.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\index-ffda537c-4a5c-4768-95c6-beb2481fb20c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\mongod.lock",
+      "bytes": 0
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\sizeStorer.wt",
+      "bytes": 45056
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\storage.bson",
+      "bytes": 114
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\WiredTiger",
+      "bytes": 50
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\WiredTiger.lock",
+      "bytes": 21
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\WiredTiger.turtle",
+      "bytes": 1479
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\WiredTiger.wt",
+      "bytes": 3108864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\WiredTigerHS.wt",
+      "bytes": 180224
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\diagnostic.data\\metrics.2026-11-06T20-58-00Z-00000",
+      "bytes": 119954
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\diagnostic.data\\metrics.2026-11-06T21-00-32Z-00000",
+      "bytes": 576591
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\journal\\WiredTigerLog.0000000002",
+      "bytes": 104857600
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\journal\\WiredTigerPreplog.0000000001",
+      "bytes": 104857600
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\_tmp\\spilldb\\WiredTiger",
+      "bytes": 50
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\_tmp\\spilldb\\WiredTiger.lock",
+      "bytes": 21
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\_tmp\\spilldb\\WiredTiger.turtle",
+      "bytes": 1474
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\_tmp\\spilldb\\WiredTiger.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\runtime\\mongo\\_tmp\\spilldb\\WiredTigerHS.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\career-sprint\\production-finalization-2026-11-07\\browser-session.json",
+      "bytes": 384
+    }
+  ],
+  "preserved": "All source, tests, final screenshots, final verification JSON, historical evidence and user work."
+}

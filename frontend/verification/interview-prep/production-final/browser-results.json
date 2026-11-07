@@ -1,0 +1,14 @@
+{
+  "fixture": true,
+  "checks": [
+    "create → 10 persisted self-checks → complete; completion locks progress",
+    "history → resume preserves completed status and snapshots",
+    "390px mobile: no horizontal overflow"
+  ],
+  "errors": [],
+  "screenshots": [
+    "desktop-completed.png",
+    "mobile-completed.png"
+  ],
+  "status": "PASS"
+}

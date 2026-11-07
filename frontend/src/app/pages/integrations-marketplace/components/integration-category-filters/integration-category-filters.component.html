@@ -1,0 +1,60 @@
+<div class="category-tabs" role="tablist">
+  <button
+    type="button"
+    class="tab-btn"
+    [class.active]="activeCategory === 'all'"
+    (click)="activeCategoryChange.emit('all')"
+  >
+    All ({{ integrations.length }})
+  </button>
+
+  <button
+    type="button"
+    class="tab-btn"
+    [class.active]="activeCategory === 'connected'"
+    (click)="activeCategoryChange.emit('connected')"
+  >
+    <span class="tab-dot tab-dot--green"></span>
+    Connected ({{ connectedCount }})
+  </button>
+
+  <button
+    type="button"
+    class="tab-btn"
+    [class.active]="activeCategory === 'code'"
+    (click)="activeCategoryChange.emit('code')"
+  >
+    Code & Repos ({{ getCategoryTotal('code') }})
+  </button>
+
+  <button
+    type="button"
+    class="tab-btn"
+    [class.active]="activeCategory === 'algo'"
+    (click)="activeCategoryChange.emit('algo')"
+  >
+    Competitive & Algo ({{ getCategoryTotal('algo') }})
+  </button>
+
+  <button
+    type="button"
+    class="tab-btn"
+    [class.active]="activeCategory === 'community'"
+    (click)="activeCategoryChange.emit('community')"
+  >
+    Community & Authority ({{ getCategoryTotal('community') }})
+  </button>
+
+  <button
+    type="button"
+    class="tab-btn"
+    [class.active]="activeCategory === 'knowledge'"
+    (click)="activeCategoryChange.emit('knowledge')"
+  >
+    Certs & Writing ({{ getCategoryTotal('knowledge') }})
+  </button>
+</div>
+
+<div class="filter-count font-mono">
+  <span>{{ displayedCount }} platform{{ displayedCount === 1 ? '' : 's' }}</span>
+</div>

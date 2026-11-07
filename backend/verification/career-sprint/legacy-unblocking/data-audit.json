@@ -1,0 +1,33 @@
+{
+  "auditedAt": "2026-10-16T06:30:56.593Z",
+  "totalRecords": 15,
+  "unreservedLegacyRecords": 15,
+  "ownersWithMultipleActiveSprints": 0,
+  "invalidWindows": 0,
+  "indexes": [
+    {
+      "key": {
+        "userId": 1,
+        "creationKey": 1
+      },
+      "unique": true,
+      "partialFilterExpression": {
+        "creationKey": {
+          "$type": "string"
+        }
+      }
+    },
+    {
+      "key": {
+        "userId": 1,
+        "occupiedDays": 1
+      },
+      "unique": true,
+      "partialFilterExpression": {
+        "occupiedDays.0": {
+          "$exists": true
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "baseline": "c612ae80c466f47ab7def651da6537d8cf330b0a",
+  "checks": [
+    "redis-toggle-and-logical-expiry",
+    "two-process-concurrency-and-restart",
+    "forwarded-header-spoofing-rejected",
+    "authenticated-avatar-portfolio-resume-real-admission",
+    "mongo-failure-before-parsing-storage-mail",
+    "upload-and-contact-no-bypass",
+    "disconnect-recovery-retains-budget"
+  ],
+  "indexes": [
+    {
+      "v": 2,
+      "key": {
+        "_id": 1
+      },
+      "name": "_id_"
+    },
+    {
+      "v": 2,
+      "key": {
+        "expiresAt": 1
+      },
+      "name": "governance_expiry",
+      "expireAfterSeconds": 0
+    }
+  ],
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 104,
+    "productionDataUsed": false
+  },
+  "admissionMs": [
+    5.93,
+    6.83,
+    7.16,
+    7.31,
+    7.52,
+    7.68,
+    7.89,
+    8,
+    8.08,
+    8.19,
+    8.24,
+    8.26
+  ],
+  "completed": 7
+}

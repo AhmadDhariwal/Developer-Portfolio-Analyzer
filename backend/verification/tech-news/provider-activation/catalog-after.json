@@ -1,0 +1,155 @@
+{
+  "checkedAt": "2026-10-24T20:12:26.700Z",
+  "phase": "after",
+  "providerRequests": 0,
+  "articleWrites": 0,
+  "cacheWrites": "Ordinary version-keyed public catalog query caches only",
+  "duplicateCanonicalGroups": 0,
+  "indexes": [
+    {
+      "v": 2,
+      "key": {
+        "_id": 1
+      },
+      "name": "_id_"
+    },
+    {
+      "v": 2,
+      "key": {
+        "canonicalId": 1
+      },
+      "name": "canonicalId_1",
+      "unique": true
+    },
+    {
+      "v": 2,
+      "key": {
+        "expiresAt": 1
+      },
+      "name": "expiresAt_1",
+      "expireAfterSeconds": 0
+    },
+    {
+      "v": 2,
+      "key": {
+        "publishedAt": -1,
+        "canonicalId": 1
+      },
+      "name": "publishedAt_-1_canonicalId_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "technologies": 1,
+        "publishedAt": -1,
+        "canonicalId": 1
+      },
+      "name": "technologies_1_publishedAt_-1_canonicalId_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "searchTerms": 1,
+        "publishedAt": -1,
+        "canonicalId": 1
+      },
+      "name": "searchTerms_1_publishedAt_-1_canonicalId_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "source": 1,
+        "publishedAt": -1,
+        "canonicalId": 1
+      },
+      "name": "source_1_publishedAt_-1_canonicalId_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "category": 1,
+        "publishedAt": -1,
+        "canonicalId": 1
+      },
+      "name": "category_1_publishedAt_-1_canonicalId_1"
+    }
+  ],
+  "version": {
+    "_id": "news:catalog:version",
+    "version": 55
+  },
+  "providers": {
+    "NewsAPI": {
+      "approved": "true",
+      "daily": 2,
+      "monthly": 60,
+      "intervalMs": 43200000,
+      "retentionHours": 72,
+      "checkedRows": 48,
+      "invalid": {
+        "dates": 0,
+        "attribution": 0,
+        "indexes": 0,
+        "retention": 0,
+        "license": 0
+      },
+      "queryTotal": 48,
+      "queryVersion": 55,
+      "taggedRecords": 16,
+      "pool": {
+        "records": 0,
+        "eligibleNow": 0,
+        "ageHours": null,
+        "eligibleCatalogOwners": {}
+      }
+    },
+    "GNews": {
+      "approved": "true",
+      "daily": 2,
+      "monthly": 60,
+      "intervalMs": 43200000,
+      "retentionHours": 24,
+      "checkedRows": 0,
+      "invalid": {
+        "dates": 0,
+        "attribution": 0,
+        "indexes": 0,
+        "retention": 0,
+        "license": 0
+      },
+      "queryTotal": 0,
+      "queryVersion": 55,
+      "taggedRecords": 0,
+      "pool": {
+        "records": 0,
+        "eligibleNow": 0,
+        "ageHours": null,
+        "eligibleCatalogOwners": {}
+      }
+    },
+    "Cloudflare Changelog": {
+      "approved": "true",
+      "daily": 2,
+      "monthly": 60,
+      "intervalMs": 43200000,
+      "retentionHours": 840,
+      "checkedRows": 0,
+      "invalid": {
+        "dates": 0,
+        "attribution": 0,
+        "indexes": 0,
+        "retention": 0,
+        "license": 0
+      },
+      "queryTotal": 0,
+      "queryVersion": 55,
+      "taggedRecords": 0,
+      "pool": {
+        "records": 0,
+        "eligibleNow": 0,
+        "ageHours": null,
+        "eligibleCatalogOwners": {}
+      }
+    }
+  }
+}

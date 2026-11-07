@@ -1,0 +1,45 @@
+<div
+  *ngIf="isOpen"
+  class="ui-drawer-backdrop"
+  (click)="onBackdropClick($event)">
+
+  <div
+    class="ui-drawer-panel"
+    [class]="'pos-' + position + ' size-' + size"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-labelledby]="title ? titleId : null"
+    tabindex="-1">
+
+    <!-- Header -->
+    <div class="ui-drawer-header" *ngIf="title || showCloseButton">
+      <div class="header-titles">
+        <h3 *ngIf="title" [id]="titleId" class="drawer-title">{{ title }}</h3>
+        <p *ngIf="subtitle" class="drawer-subtitle">{{ subtitle }}</p>
+      </div>
+      <ng-content select="[drawer-header]"></ng-content>
+
+      <app-ui-icon-button
+        *ngIf="showCloseButton"
+        ariaLabel="Close drawer"
+        variant="ghost"
+        size="sm"
+        (clicked)="closeDrawer()">
+        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </app-ui-icon-button>
+    </div>
+
+    <!-- Body -->
+    <div class="ui-drawer-body">
+      <ng-content></ng-content>
+    </div>
+
+    <!-- Footer -->
+    <div class="ui-drawer-footer">
+      <ng-content select="[drawer-footer]"></ng-content>
+    </div>
+  </div>
+</div>

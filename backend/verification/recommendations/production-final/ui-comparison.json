@@ -1,0 +1,153 @@
+{
+  "geometry": [
+    {
+      "theme": "light",
+      "width": 320,
+      "fields": [
+        "overflow",
+        "font",
+        "title",
+        "section",
+        "titleWeight",
+        "workspaceWidth"
+      ],
+      "equal": true
+    },
+    {
+      "theme": "light",
+      "width": 375,
+      "fields": [
+        "overflow",
+        "font",
+        "title",
+        "section",
+        "titleWeight",
+        "workspaceWidth"
+      ],
+      "equal": true
+    },
+    {
+      "theme": "light",
+      "width": 425,
+      "fields": [
+        "overflow",
+        "font",
+        "title",
+        "section",
+        "titleWeight",
+        "workspaceWidth"
+      ],
+      "equal": true
+    },
+    {
+      "theme": "light",
+      "width": 768,
+      "fields": [
+        "overflow",
+        "font",
+        "title",
+        "section",
+        "titleWeight",
+        "workspaceWidth"
+      ],
+      "equal": true
+    },
+    {
+      "theme": "light",
+      "width": 1024,
+      "fields": [
+        "overflow",
+        "font",
+        "title",
+        "section",
+        "titleWeight",
+        "workspaceWidth"
+      ],
+      "equal": true
+    },
+    {
+      "theme": "light",
+      "width": 1280,
+      "fields": [
+        "overflow",
+        "font",
+        "title",
+        "section",
+        "titleWeight",
+        "workspaceWidth"
+      ],
+      "equal": true
+    },
+    {
+      "theme": "light",
+      "width": 1440,
+      "fields": [
+        "overflow",
+        "font",
+        "title",
+        "section",
+        "titleWeight",
+        "workspaceWidth"
+      ],
+      "equal": true
+    },
+    {
+      "theme": "light",
+      "width": 1600,
+      "fields": [
+        "overflow",
+        "font",
+        "title",
+        "section",
+        "titleWeight",
+        "workspaceWidth"
+      ],
+      "equal": true
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "light-1440-explorer.png",
+      "width": 1440,
+      "height": 1000,
+      "changedPixels": 170654,
+      "fractionChanged": 0.11851
+    },
+    {
+      "file": "light-1440-focus-resources.png",
+      "width": 1440,
+      "height": 1000,
+      "changedPixels": 95413,
+      "fractionChanged": 0.066259
+    },
+    {
+      "file": "light-1440.png",
+      "width": 1440,
+      "height": 1000,
+      "changedPixels": 12053,
+      "fractionChanged": 0.00837
+    },
+    {
+      "file": "light-375-actions.png",
+      "width": 375,
+      "height": 900,
+      "changedPixels": 1322,
+      "fractionChanged": 0.003917
+    },
+    {
+      "file": "light-375-filters.png",
+      "width": 375,
+      "height": 900,
+      "changedPixels": 37034,
+      "fractionChanged": 0.10973
+    },
+    {
+      "file": "light-375.png",
+      "width": 375,
+      "height": 900,
+      "changedPixels": 10664,
+      "fractionChanged": 0.031597
+    }
+  ],
+  "allowedDifferences": "Localized accessible text/button colors and 24px targets; before corpus includes light theme only. Exact all-theme pixel parity is not claimed."
+}

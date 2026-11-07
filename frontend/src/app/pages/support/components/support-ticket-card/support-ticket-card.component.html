@@ -1,0 +1,59 @@
+<div
+  class="ticket-item"
+  (click)="open.emit(ticket)"
+  role="button"
+  tabindex="0"
+  (keydown.enter)="open.emit(ticket)"
+  (keydown.space)="open.emit(ticket); $event.preventDefault()"
+>
+  <div class="ticket-item-left">
+    <div
+      class="ticket-icon"
+      [ngClass]="{
+        'icon-bug': ticket.category === 'bug',
+        'icon-feature': ticket.category === 'feature_request',
+        'icon-account': ticket.category === 'account_issue',
+        'icon-feedback': ticket.category === 'general_feedback',
+        'icon-support': ticket.category === 'other' || !ticket.category,
+      }"
+    >
+      <span class="material-symbols-outlined">{{ categoryIcon }}</span>
+    </div>
+
+    <div class="ticket-info">
+      <div class="ticket-subject" [title]="ticket.subject">{{ ticket.subject }}</div>
+      <div class="ticket-meta">
+        <span class="meta-tag">{{ formatCategory(ticket.category) }}</span>
+        <span class="meta-sep">&bull;</span>
+        <span class="meta-priority" [ngClass]="'prio-' + (ticket.priority || 'low')">
+          {{ ticket.priority | titlecase }}
+        </span>
+        <span class="ticket-id" *ngIf="ticket._id">
+          #TCK-{{ ticket._id.substring(ticket._id.length - 6).toUpperCase() }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="ticket-item-right">
+    <div
+      class="ticket-status"
+      [ngClass]="{
+        'status-open': ticket.status === 'open',
+        'status-in_progress': ticket.status === 'in_progress',
+        'status-resolved': ticket.status === 'resolved',
+        'status-closed': ticket.status === 'closed',
+        'status-default': !ticket.status,
+      }"
+    >
+      <span class="status-indicator"></span>
+      <span>{{ formatStatus(ticket.status) | titlecase }}</span>
+    </div>
+
+    <div class="ticket-time" *ngIf="ticket.createdAt">
+      {{ ticket.createdAt | date: 'shortDate' }}
+    </div>
+
+    <span class="material-symbols-outlined ticket-arrow">chevron_right</span>
+  </div>
+</div>

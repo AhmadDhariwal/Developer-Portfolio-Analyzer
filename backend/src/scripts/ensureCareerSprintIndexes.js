@@ -7,6 +7,18 @@
 const CareerSprint = require('../models/careerSprint');
 
 const REQUIRED_INDEXES = [
+  {
+    key: { userId: 1, occupiedDays: 1 },
+    name: 'career_sprint_occupied_days',
+    unique: true,
+    partialFilterExpression: { 'occupiedDays.0': { $exists: true } }
+  },
+  {
+    key: { userId: 1, creationKey: 1 },
+    name: 'career_sprint_creation_key',
+    unique: true,
+    partialFilterExpression: { creationKey: { $type: 'string' } }
+  },
   { key: { userId: 1, updatedAt: -1 }, name: 'career_sprint_user_updated_at' },
   { key: { userId: 1, sprintStartDate: 1, sprintEndDate: 1 }, name: 'career_sprint_user_sprint_window' },
   { key: { userId: 1, weekStartDate: -1 }, name: 'career_sprint_user_week_start_desc' },
@@ -17,21 +29,32 @@ const REQUIRED_INDEXES = [
 const ensureCareerSprintIndexes = async (model = CareerSprint) => {
   const collection = model.collection;
   const existing = await collection.indexes();
-  const existingNames = new Set(existing.map((index) => index.name));
   const created = [];
   const skipped = [];
 
   for (const index of REQUIRED_INDEXES) {
-    if (existingNames.has(index.name)) {
+    const matched = existing.find(
+      (item) => item.name === index.name || JSON.stringify(item.key) === JSON.stringify(index.key)
+    );
+    if (matched) {
+      if (
+        JSON.stringify(matched.key) !== JSON.stringify(index.key) ||
+        (index.unique &&
+          (matched.unique !== true ||
+            JSON.stringify(matched.partialFilterExpression) !== JSON.stringify(index.partialFilterExpression)))
+      ) {
+        throw new Error(
+          `Index ${index.name} requires an explicit safe deployment migration; existing index constraints differ.`
+        );
+      }
       skipped.push(index.name);
       continue;
     }
-    const alreadySameKey = existing.some((item) => JSON.stringify(item.key) === JSON.stringify(index.key));
-    if (alreadySameKey) {
-      skipped.push(index.name);
-      continue;
-    }
-    await collection.createIndex(index.key, { name: index.name, background: true });
+    await collection.createIndex(index.key, {
+      name: index.name,
+      background: true,
+      ...(index.unique ? { unique: true, partialFilterExpression: index.partialFilterExpression } : {})
+    });
     created.push(index.name);
   }
 
@@ -45,18 +68,26 @@ const ensureCareerSprintIndexes = async (model = CareerSprint) => {
 const explainCareerSprintQueryPlans = async (model = CareerSprint) => {
   const userId = new (require('mongoose').Types.ObjectId)();
   const now = new Date();
-  const current = await model.findOne({
-    userId,
-    $or: [
-      { sprintStartDate: { $lte: now }, sprintEndDate: { $gte: now } },
-      { weekStartDate: { $lte: now }, weekEndDate: { $gte: now } }
-    ]
-  }).sort({ updatedAt: -1 }).lean().explain('executionStats');
+  const current = await model
+    .findOne({
+      userId,
+      $or: [
+        { sprintStartDate: { $lte: now }, sprintEndDate: { $gte: now } },
+        { weekStartDate: { $lte: now }, weekEndDate: { $gte: now } }
+      ]
+    })
+    .sort({ updatedAt: -1 })
+    .lean()
+    .explain('executionStats');
 
-  const previous = await model.findOne({
-    userId,
-    weekStartDate: { $lt: now }
-  }).sort({ weekStartDate: -1 }).lean().explain('executionStats');
+  const previous = await model
+    .findOne({
+      userId,
+      weekStartDate: { $lt: now }
+    })
+    .sort({ weekStartDate: -1 })
+    .lean()
+    .explain('executionStats');
 
   return { current, previous };
 };
@@ -74,12 +105,15 @@ if (require.main === module) {
     console.error('MONGODB_URI is required');
     process.exit(1);
   }
-  mongoose.connect(uri).then(async () => {
-    const result = await ensureCareerSprintIndexes();
-    console.log(JSON.stringify(result, null, 2));
-    await mongoose.disconnect();
-  }).catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+  mongoose
+    .connect(uri)
+    .then(async () => {
+      const result = await ensureCareerSprintIndexes();
+      console.log(JSON.stringify(result, null, 2));
+      await mongoose.disconnect();
+    })
+    .catch((error) => {
+      console.error(error);
+      process.exit(1);
+    });
 }

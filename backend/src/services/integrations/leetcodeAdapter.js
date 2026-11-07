@@ -12,7 +12,8 @@ class LeetCodeAdapter extends BaseIntegrationAdapter {
   getManualAuthHints() {
     return {
       requiredFields: ['externalUsername'],
-      helpText: 'Provide your LeetCode username to fetch public contest and solved-problem data in real time.'
+      helpText:
+        'Provide your LeetCode username to fetch public contest and solved-problem data in real time.'
     };
   }
 
@@ -102,7 +103,8 @@ class LeetCodeAdapter extends BaseIntegrationAdapter {
         }
 
         return matchedUser;
-      } catch {
+      } catch (error) {
+        if (error.status || error.code === 'ERR_CANCELED') throw error;
         // Try next query variant when schema/rate rules differ.
       }
     }

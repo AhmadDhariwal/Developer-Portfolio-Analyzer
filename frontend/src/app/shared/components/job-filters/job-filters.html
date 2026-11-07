@@ -1,127 +1,121 @@
-<div class="filters-panel" [class.collapsed]="isCollapsed">
-  <div class="filters-header">
-    <div class="header-left">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="filter-icon">
-        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-      </svg>
-      <div>
-        <h3 class="filters-title">Refine Jobs</h3>
-        <p class="filters-subtitle">Stage filters, then apply them together</p>
-      </div>
-      <span class="active-dot" *ngIf="hasActiveFilters">{{ activeCount }}</span>
-    </div>
-
-    <div class="header-actions">
-      <span class="status-pill" *ngIf="isApplying">Applying...</span>
-      <button class="btn-clear" *ngIf="hasDraftFilters" (click)="resetFilters()">Reset</button>
-      <button
-        class="btn-collapse"
-        (click)="toggleCollapse()"
-        [attr.aria-label]="isCollapsed ? 'Expand filters' : 'Collapse filters'"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" [class.rotated]="isCollapsed">
-          <polyline points="18 15 12 9 6 15"></polyline>
-        </svg>
-      </button>
-    </div>
+<section class="filters-panel" aria-labelledby="job-filter-heading">
+  <div class="filter-heading">
+    <h2 id="job-filter-heading">Refine your search</h2>
+    <button type="button" (click)="resetFilters()">Reset</button>
   </div>
-
-  <div class="filters-body" *ngIf="!isCollapsed">
-    <div class="filter-group">
-      <label class="group-label">Skill Search</label>
-      <div class="skills-input-wrap">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </svg>
-        <input
-          type="text"
-          name="job-skills-search"
-          [(ngModel)]="filters.skills"
-          (ngModelChange)="onFilterChange()"
-          placeholder="Search React, Docker, APIs..."
-        />
-        <button class="btn-inline-clear" *ngIf="filters.skills" type="button" (click)="clearSkill()">Clear</button>
-      </div>
+  <div class="filter-group">
+    <label for="job-source">Source</label
+    ><select id="job-source" [(ngModel)]="filters.platform" (ngModelChange)="onFilterChange()">
+      @for (option of platformOptions; track option.value) {
+        <option [value]="option.value">{{ option.label }}</option>
+      }
+    </select>
+  </div>
+  <div class="filter-group">
+    <label for="job-location">Location</label
+    ><select id="job-location" [(ngModel)]="filters.location" (ngModelChange)="onFilterChange()">
+      @for (option of locationOptions; track option.value) {
+        <option [value]="option.value">{{ option.label }}</option>
+      }
+    </select>
+  </div>
+  <div class="filter-group">
+    <label for="job-experience">Experience</label
+    ><select
+      id="job-experience"
+      [(ngModel)]="filters.experienceLevel"
+      (ngModelChange)="onFilterChange()"
+    >
+      @for (option of experienceOptions; track option.value) {
+        <option [value]="option.value">{{ option.label }}</option>
+      }
+    </select>
+  </div>
+  <div class="filter-group">
+    <label for="job-type">Employment</label
+    ><select id="job-type" [(ngModel)]="filters.jobType" (ngModelChange)="onFilterChange()">
+      @for (option of jobTypeOptions; track option.value) {
+        <option [value]="option.value">{{ option.label }}</option>
+      }
+    </select>
+  </div>
+  <div class="filter-group skill-filter-group">
+    <div class="skill-group-header">
+      <span class="group-label">Explore skills</span>
+      @if (filters.skills) {
+        <button type="button" class="btn-clear-skill" (click)="clearSkill()">Clear</button>
+      }
     </div>
 
-    <div class="filter-group">
-      <label class="group-label">Platform</label>
-      <div class="btn-group">
+    @if (filters.skills) {
+      <div class="active-skill-pill">
+        <span class="pill-label">Selected:</span>
+        <strong class="pill-value">{{ filters.skills }}</strong>
         <button
-          *ngFor="let option of platformOptions"
-          class="filter-btn"
-          [class.active]="filters.platform === option.value"
-          (click)="filters.platform = option.value; onFilterChange()"
+          type="button"
+          class="btn-remove-pill"
+          (click)="clearSkill()"
+          aria-label="Remove skill filter"
         >
-          {{ option.label }}
+          ×
         </button>
       </div>
+    }
+
+    <div class="skill-search-box">
+      <input
+        type="text"
+        [(ngModel)]="skillSearchQuery"
+        placeholder="Filter or type a skill…"
+        class="skill-search-input"
+        aria-label="Filter skills list"
+        (keydown.enter)="applyCustomSkill()"
+      />
+      @if (skillSearchQuery) {
+        <button
+          type="button"
+          class="btn-clear-search"
+          (click)="skillSearchQuery = ''"
+          aria-label="Clear skill search"
+        >
+          ×
+        </button>
+      }
     </div>
 
-    <div class="filter-group">
-      <label class="group-label">Experience Level</label>
-      <div class="btn-group">
-        <button
-          *ngFor="let option of experienceOptions"
-          class="filter-btn"
-          [class.active]="filters.experienceLevel === option.value"
-          (click)="filters.experienceLevel = option.value; onFilterChange()"
-        >
-          {{ option.label }}
+    @if (isCustomSkillPending) {
+      <div class="custom-skill-prompt">
+        <button type="button" class="btn-custom-skill" (click)="applyCustomSkill()">
+          + Filter by "{{ skillSearchQuery.trim() }}"
         </button>
       </div>
-    </div>
+    }
 
-    <div class="filter-group">
-      <label class="group-label">Job Type</label>
-      <div class="btn-group">
+    <div class="skill-options">
+      @for (skill of filteredSkillOptions; track skill) {
         <button
-          *ngFor="let option of jobTypeOptions"
-          class="filter-btn"
-          [class.active]="filters.jobType === option.value"
-          (click)="filters.jobType = option.value; onFilterChange()"
-        >
-          {{ option.label }}
-        </button>
-      </div>
-    </div>
-
-    <div class="filter-group">
-      <label class="group-label">Location</label>
-      <div class="btn-group">
-        <button
-          *ngFor="let option of locationOptions"
-          class="filter-btn"
-          [class.active]="filters.location === option.value"
-          (click)="filters.location = option.value; onFilterChange()"
-        >
-          {{ option.label }}
-        </button>
-      </div>
-    </div>
-
-    <div class="filter-group">
-      <div class="label-row">
-        <label class="group-label">Suggested Skills</label>
-        <span class="helper-copy">Quick narrowing</span>
-      </div>
-      <div class="skill-pills">
-        <button
-          *ngFor="let skill of skillOptions"
-          class="skill-pill"
-          [class.active]="filters.skills === skill"
+          type="button"
+          [class.selected]="filters.skills.toLowerCase() === skill.toLowerCase()"
+          [attr.aria-pressed]="filters.skills.toLowerCase() === skill.toLowerCase()"
           (click)="selectSkill(skill)"
         >
           {{ skill }}
         </button>
-      </div>
+      }
+      @if (filteredSkillOptions.length === 0 && !isCustomSkillPending) {
+        <span class="no-skills-msg">No matching skills found</span>
+      }
     </div>
 
-    <div class="draft-note" [class.pending]="hasPendingChanges">
-      <span *ngIf="hasPendingChanges">You have unapplied filter changes.</span>
-      <span *ngIf="!hasPendingChanges && hasActiveFilters">Current results reflect your active filters.</span>
-      <span *ngIf="!hasPendingChanges && !hasActiveFilters">Showing your default personalized job feed.</span>
-    </div>
+    @if (!skillSearchQuery.trim() && skillOptions.length > initialSkillLimit) {
+      <button type="button" class="btn-toggle-skills" (click)="toggleShowAllSkills()">
+        {{
+          showAllSkills
+            ? 'Show fewer skills ↑'
+            : '+ Show all (' + skillOptions.length + ' skills) ↓'
+        }}
+      </button>
+    }
   </div>
-</div>
+  <p class="filter-note">Choose your filters, then select Search jobs to apply them together.</p>
+</section>

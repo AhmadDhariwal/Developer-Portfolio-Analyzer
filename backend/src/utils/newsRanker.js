@@ -33,7 +33,9 @@ const skillAppearsInText = (text = '', skill = '') => {
     .filter(([, canonical]) => canonical === normalizedSkill)
     .map(([alias]) => alias);
   const candidates = [...new Set([normalizedSkill, ...aliases])];
-  return candidates.some((candidate) => new RegExp(`(^|[^a-z0-9])${escapeRegExp(candidate)}(?=$|[^a-z0-9])`, 'i').test(text));
+  return candidates.some((candidate) =>
+    new RegExp(`(^|[^a-z0-9])${escapeRegExp(candidate)}(?=$|[^a-z0-9])`, 'i').test(text)
+  );
 };
 
 const normalizeCareerStack = (stack = '') => {
@@ -49,18 +51,22 @@ const deriveKeywordSet = (context = {}) => {
   const set = new Set();
   const stack = normalizeCareerStack(context.careerStack);
   (STACK_KEYWORDS[stack] || []).forEach((kw) => set.add(String(kw).toLowerCase()));
-  String(context.targetRole || '').split(/[^a-z0-9+#.]+/i).forEach((kw) => {
-    if (kw && kw.length > 1) set.add(String(kw).toLowerCase());
-  });
+  String(context.targetRole || '')
+    .split(/[^a-z0-9+#.]+/i)
+    .forEach((kw) => {
+      if (kw && kw.length > 1) set.add(String(kw).toLowerCase());
+    });
   (context.githubTechnologies || []).forEach((kw) => set.add(String(kw).toLowerCase()));
   (context.resumeSkills || []).forEach((kw) => set.add(String(kw).toLowerCase()));
   (context.knownSkills || []).forEach((kw) => set.add(String(kw).toLowerCase()));
   (context.skillGaps || []).forEach((kw) => set.add(String(kw).toLowerCase()));
   (context.jobDemandSkills || []).forEach((kw) => set.add(String(kw).toLowerCase()));
   (context.recommendationTechnologies || []).forEach((kw) => set.add(String(kw).toLowerCase()));
-  String(context.activeLearningFocus || '').split(/[^a-z0-9+#.]+/i).forEach((kw) => {
-    if (kw && kw.length > 1) set.add(String(kw).toLowerCase());
-  });
+  String(context.activeLearningFocus || '')
+    .split(/[^a-z0-9+#.]+/i)
+    .forEach((kw) => {
+      if (kw && kw.length > 1) set.add(String(kw).toLowerCase());
+    });
   return set;
 };
 
@@ -79,22 +85,22 @@ const findMatches = (item, values = [], limit = 4) => {
 };
 
 const buildRelevanceMetadata = (item, context = {}) => {
-  const relatedSkills = findMatches(item, [
-    ...(context.knownSkills || []),
-    ...(context.githubTechnologies || []),
-    ...(context.resumeSkills || []),
-    ...(context.recommendationTechnologies || [])
-  ], 5);
+  const relatedSkills = findMatches(
+    item,
+    [...(context.knownSkills || []), ...(context.githubTechnologies || []), ...(context.resumeSkills || [])],
+    5
+  );
   const relatedGaps = findMatches(item, context.skillGaps || [], 4);
   const demandTags = findMatches(item, context.jobDemandSkills || [], 4);
   const goalMatches = findMatches(item, [context.targetRole, context.careerStack, context.activeLearningFocus], 3);
   const reasons = [];
 
-  if (relatedSkills.length) reasons.push(`Matches your proven skills: ${relatedSkills.slice(0, 3).join(', ')}`);
+  if (relatedSkills.length) reasons.push(`Matches your detected skills: ${relatedSkills.slice(0, 3).join(', ')}`);
   if (relatedGaps.length) reasons.push(`Supports current growth gaps: ${relatedGaps.slice(0, 3).join(', ')}`);
   if (demandTags.length) reasons.push(`Connects to job-market demand: ${demandTags.slice(0, 3).join(', ')}`);
   if (goalMatches.length) reasons.push(`Aligned with ${goalMatches[0]}`);
-  if (!reasons.length && item.category === context.careerStack) reasons.push(`Aligned with your ${context.careerStack} track`);
+  if (!reasons.length && item.category === context.careerStack)
+    reasons.push(`Aligned with your ${context.careerStack} track`);
 
   return {
     relevanceReasons: reasons.slice(0, 3),
@@ -115,8 +121,7 @@ const relevanceScore = (item, keywords) => {
   return clamp(hits / Math.min(8, keywords.size), 0, 1);
 };
 
-const recencyScore = (publishedAt) => {
-  const now = Date.now();
+const recencyScore = (publishedAt, now) => {
   const ts = new Date(publishedAt).getTime();
   if (Number.isNaN(ts)) return 0.2;
   const ageHours = Math.max(1, (now - ts) / (1000 * 60 * 60));
@@ -128,12 +133,11 @@ const popularityScore = (popularity = 0) => {
   return clamp(Math.log10(1 + bounded) / 3.5, 0, 1);
 };
 
-const scoreItem = (item, context = {}) => {
-  const keywords = deriveKeywordSet(context);
+const scoreItem = (item, context, keywords, now) => {
   const relevance = relevanceScore(item, keywords);
-  const recency = recencyScore(item.publishedAt);
+  const recency = recencyScore(item.publishedAt, now);
   const popularity = popularityScore(item.popularity);
-  const total = (relevance * 0.5) + (recency * 0.3) + (popularity * 0.2);
+  const total = relevance * 0.5 + recency * 0.3 + popularity * 0.2;
   return {
     ...item,
     relevanceScore: Number((relevance * 100).toFixed(2)),
@@ -143,14 +147,25 @@ const scoreItem = (item, context = {}) => {
 };
 
 const rankNewsItems = (items = [], context = {}, mode = 'for-you') => {
-  const scored = items.map((item) => scoreItem(item, context));
+  const now = Date.now();
+  const keywords = deriveKeywordSet(context);
+  const scored = items.map((item) => scoreItem(item, context, keywords, now));
   if (mode === 'trending') {
-    return scored.sort((a, b) => (b.popularity || 0) - (a.popularity || 0) || b.rankScore - a.rankScore);
+    return scored.sort(
+      (a, b) =>
+        (b.popularity || 0) - (a.popularity || 0) ||
+        b.rankScore - a.rankScore ||
+        String(a.id).localeCompare(String(b.id))
+    );
   }
   if (mode === 'latest') {
-    return scored.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+    return scored.sort(
+      (a, b) =>
+        new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime() ||
+        String(a.id).localeCompare(String(b.id))
+    );
   }
-  return scored.sort((a, b) => b.rankScore - a.rankScore);
+  return scored.sort((a, b) => b.rankScore - a.rankScore || String(a.id).localeCompare(String(b.id)));
 };
 
 module.exports = { rankNewsItems };

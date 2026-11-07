@@ -1,140 +1,383 @@
-<section class="job-details-page">
-  <a class="back-link" routerLink="/app/jobs">
-    <span aria-hidden="true">&larr;</span>
-    Back to Jobs Hub
-  </a>
-
-  <div class="loading-state" *ngIf="isLoading">
-    <div class="shimmer hero"></div>
-    <div class="shimmer line"></div>
-    <div class="shimmer line short"></div>
+<div class="job-details-page">
+  <div class="navigation-row">
+    <a class="btn-back" routerLink="/app/jobs">
+      <span aria-hidden="true">←</span> Back to Jobs Hub
+    </a>
   </div>
 
-  <div class="error-state" *ngIf="!isLoading && errorMessage">
-    <div class="state-icon">!</div>
-    <h1>Job details unavailable</h1>
-    <p>{{ errorMessage }}</p>
-    <a class="secondary-action" routerLink="/app/jobs">Return to Jobs Hub</a>
-  </div>
-
-  <div class="error-state" *ngIf="!isLoading && !errorMessage && !job">
-    <div class="state-icon">?</div>
-    <h1>No job details found</h1>
-    <p>This job is not available in JobCache right now.</p>
-    <a class="secondary-action" routerLink="/app/jobs">Return to Jobs Hub</a>
-  </div>
-
-  <ng-container *ngIf="!isLoading && !errorMessage && job">
-    <header class="details-hero">
-      <div class="company-logo">
-        <img *ngIf="job.companyLogo" [src]="job.companyLogo" [alt]="job.company" />
-        <span *ngIf="!job.companyLogo">{{ job.company.charAt(0) }}</span>
-      </div>
-
-      <div class="hero-copy">
-        <div class="badge-row">
-          <span class="source-badge">{{ job.platform }}</span>
-          <span class="source-badge muted">{{ job.source || 'Live source' }}</span>
-          <span class="match-badge" *ngIf="job.matchScore">{{ job.matchScore }}% Match</span>
-        </div>
-        <h1>{{ job.title }}</h1>
-        <p>{{ job.company }} | {{ job.location }} | {{ job.jobType }} | {{ job.experienceLevel }}</p>
-      </div>
-
-      <button
-        class="primary-action"
-        type="button"
-        [disabled]="!hasApplyLink"
-        [title]="hasApplyLink ? 'Open external application link' : 'Apply link unavailable'"
-        (click)="applyNow()"
-      >
-        {{ hasApplyLink ? 'Apply Now' : 'Apply link unavailable' }}
+  @if (offline) {
+    <div class="message warning" role="status">
+      You are currently offline. Retained details remain visible; reconnect to sync your activity.
+    </div>
+  }
+  @if (stale) {
+    <div class="message info" role="status">
+      These details are from a retained listing. Confirm current availability and details at the
+      source.
+    </div>
+  }
+  @if (errorMessage) {
+    <div class="message warning" role="alert">
+      <span>{{ errorMessage }}</span>
+      <button type="button" class="btn-retry" [disabled]="blocked || isLoading" (click)="retry()">
+        Try again
       </button>
-    </header>
+    </div>
+  }
+  @if (notice) {
+    <div class="message info" role="status">{{ notice }}</div>
+  }
 
-    <div class="details-grid">
-      <main class="details-main">
-        <article class="panel">
-          <span class="eyebrow">Job Description</span>
-          <p class="description">{{ job.description }}</p>
-        </article>
+  @if (isLoading && !job) {
+    <div class="loading-state" role="status">
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Loading source details…</p>
+    </div>
+  }
 
-        <article class="panel" *ngIf="job.requirements.length">
-          <span class="eyebrow">Requirements</span>
-          <ul class="detail-list">
-            <li *ngFor="let requirement of job.requirements">{{ requirement }}</li>
-          </ul>
-        </article>
+  @if (job; as item) {
+    <header class="detail-header">
+      <div class="header-content">
+        <span class="source-tag">{{
+          decode(item.source || item.platform || 'DIRECT LISTING')
+        }}</span>
+        <h1 class="job-title">{{ cleanTitle(item.title) }}</h1>
+        <div class="company-row">
+          <strong class="company-name">{{ decode(item.company) }}</strong>
+          <span class="sep" aria-hidden="true">·</span>
+          <span class="location-text">{{ decode(item.location) || 'Location not specified' }}</span>
+          <span class="sep" aria-hidden="true">·</span>
+          <span class="posted-date">Posted {{ date(item.postedDate) }}</span>
+        </div>
 
-        <article class="panel" *ngIf="job.benefits.length">
-          <span class="eyebrow">Benefits</span>
-          <ul class="detail-list">
-            <li *ngFor="let benefit of job.benefits">{{ benefit }}</li>
-          </ul>
-        </article>
-      </main>
+        <div class="attribute-badges">
+          @if (item.jobType) {
+            <span class="badge">{{ decode(item.jobType) }}</span>
+          }
+          @if (item.experienceLevel) {
+            <span class="badge">{{ decode(item.experienceLevel) }}</span>
+          }
+          @if (hasSalary(item)) {
+            <span class="badge salary-badge">{{ salary(item) }}</span>
+          }
+        </div>
 
-      <aside class="details-side">
-        <article class="panel stat-panel">
-          <span class="eyebrow">Role Snapshot</span>
-          <div class="stat-row">
-            <span>Salary</span>
-            <strong>{{ job.salary || 'Competitive' }}</strong>
-          </div>
-          <div class="stat-row">
-            <span>Posted</span>
-            <strong>{{ postedLabel }}</strong>
-          </div>
-          <div class="stat-row">
-            <span>Source</span>
-            <strong>{{ job.source || job.platform }}</strong>
-          </div>
-          <div class="stat-row">
-            <span>Apply URL</span>
-            <strong>
-              <a *ngIf="hasApplyLink" [href]="applyLink" target="_blank" rel="noopener noreferrer">{{ applyLink }}</a>
-              <ng-container *ngIf="!hasApplyLink">Unavailable</ng-container>
-            </strong>
-          </div>
-        </article>
-
-        <article class="panel" *ngIf="job.skills.length">
-          <span class="eyebrow">Skills</span>
-          <div class="chips">
-            <span class="skill-chip" *ngFor="let skill of job.skills">{{ skill }}</span>
-          </div>
-        </article>
-
-        <article class="panel" *ngIf="job.whyMatched || job.missingSkills?.length">
-          <span class="eyebrow">Match Insight</span>
-          <p class="why" *ngIf="job.whyMatched">{{ job.whyMatched }}</p>
-          <div class="chips missing" *ngIf="job.missingSkills?.length">
-            <span class="missing-chip" *ngFor="let skill of job.missingSkills">{{ skill }}</span>
-          </div>
-        </article>
-
-        <article class="panel" *ngIf="job.recommendedCourse || job.recommendedSprintTask">
-          <span class="eyebrow">Career Signals</span>
-          <div class="signal-list">
+        <div class="header-actions">
+          @if (applyLink) {
             <a
-              class="signal-row"
-              *ngIf="job.recommendedCourse as course"
-              [href]="course.url"
+              class="btn-apply-primary"
+              [href]="applyLink"
               target="_blank"
               rel="noopener noreferrer"
+              referrerpolicy="no-referrer"
             >
-              <span>Recommended Course</span>
-              <strong>{{ course.title }}</strong>
-              <small *ngIf="course.whyRecommended">{{ course.whyRecommended }}</small>
+              Apply on Source Site
+              <span aria-hidden="true">↗</span>
             </a>
-            <div class="signal-row" *ngIf="job.recommendedSprintTask as task">
-              <span>Recommended Sprint Task</span>
-              <strong>{{ task.title }}</strong>
-              <small *ngIf="task.description">{{ task.description }}</small>
-            </div>
+          }
+          <button
+            type="button"
+            class="btn-action-outline"
+            [disabled]="blocked || actions.isBusy(item.id)"
+            [attr.aria-pressed]="actions.state(item.id).saved"
+            (click)="mutate('saved')"
+          >
+            {{ actions.state(item.id).saved ? '★ Saved' : '☆ Save job' }}
+          </button>
+          <button
+            type="button"
+            class="btn-action-outline"
+            [disabled]="blocked || actions.isBusy(item.id)"
+            [attr.aria-pressed]="actions.state(item.id).applied"
+            (click)="mutate('applied')"
+          >
+            {{ actions.state(item.id).applied ? '✓ Applied' : 'Mark applied' }}
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="detail-layout">
+      <!-- Main Content Column -->
+      <main class="detail-main">
+        <!-- Job Description & Overview -->
+        <section class="panel description-panel">
+          <div class="panel-header">
+            <h2>About this Opportunity</h2>
           </div>
-        </article>
+
+          @if (descriptionSections.length) {
+            <div class="formatted-description">
+              @for (sec of descriptionSections; track $index) {
+                <div class="desc-section">
+                  @if (sec.title) {
+                    <h3 class="section-title">{{ decode(sec.title) }}</h3>
+                  }
+                  @for (block of sec.blocks; track $index) {
+                    @if (block.type === 'paragraph') {
+                      <p class="description">{{ decode(block.content) }}</p>
+                    } @else if (block.type === 'bullets' && block.items?.length) {
+                      <ul class="bullet-list">
+                        @for (bullet of block.items; track $index) {
+                          <li>
+                            <span class="bullet-marker" aria-hidden="true">•</span>
+                            <span>{{ decode(bullet) }}</span>
+                          </li>
+                        }
+                      </ul>
+                    }
+                  }
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="description empty-text">
+              {{ decode(item.description) || 'The source did not provide a description.' }}
+            </p>
+          }
+        </section>
+
+        <!-- Requirements from Source (if structured) -->
+        @if (item.requirements.length) {
+          <section class="panel requirements-panel">
+            <div class="panel-header">
+              <h2>Key Qualifications & Requirements</h2>
+            </div>
+            <ul class="checklist">
+              @for (requirement of item.requirements; track $index) {
+                <li>
+                  <span class="check-icon" aria-hidden="true">✓</span>
+                  <span>{{ decode(requirement) }}</span>
+                </li>
+              }
+            </ul>
+          </section>
+        }
+
+        <!-- Benefits from Source (if structured) -->
+        @if (item.benefits.length) {
+          <section class="panel benefits-panel">
+            <div class="panel-header">
+              <h2>Benefits & Compensation</h2>
+            </div>
+            <ul class="checklist benefits-list">
+              @for (benefit of item.benefits; track $index) {
+                <li>
+                  <span class="star-icon" aria-hidden="true">✦</span>
+                  <span>{{ decode(benefit) }}</span>
+                </li>
+              }
+            </ul>
+          </section>
+        }
+
+        <!-- Skills in Listing -->
+        <section class="panel skills-panel">
+          <div class="panel-header">
+            <h2>Skills in this Listing</h2>
+          </div>
+          <div class="skills-grid">
+            @for (skill of item.skills; track skill) {
+              <span class="skill-tag">{{ decode(skill) }}</span>
+            } @empty {
+              <p class="muted-note">No explicit skills tags provided by the source.</p>
+            }
+          </div>
+        </section>
+
+        <!-- Recommended Learning / Next Steps -->
+        @if (item.recommendedCourse || item.recommendedSprintTask) {
+          <section class="panel learning-panel">
+            <span class="eyebrow">CAREER GROWTH</span>
+            <h2>Recommended Preparation</h2>
+            <p class="section-intro">
+              Targeted resources to strengthen your profile for this and similar roles.
+            </p>
+
+            @if (item.recommendedCourse; as course) {
+              <div class="recommendation-item">
+                <div class="item-content">
+                  <h4 class="item-title">{{ decode(course.title) }}</h4>
+                  <p class="item-desc">
+                    {{
+                      decode(course.whyRecommended) ||
+                        'A relevant course matched to skill signals in this listing.'
+                    }}
+                  </p>
+                </div>
+                @if (safeUrl(course.url)) {
+                  <a
+                    class="btn-course-link"
+                    [href]="safeUrl(course.url)"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    referrerpolicy="no-referrer"
+                  >
+                    View Course on {{ course.platform }} ↗
+                  </a>
+                }
+              </div>
+            }
+
+            @if (item.recommendedSprintTask; as task) {
+              <div class="recommendation-item">
+                <div class="item-content">
+                  <h4 class="item-title">{{ decode(task.title) }}</h4>
+                  <p class="item-desc">{{ decode(task.description) }}</p>
+                </div>
+                <a class="btn-sprint-link" routerLink="/app/career-sprint">
+                  Open in Career Sprint →
+                </a>
+              </div>
+            }
+          </section>
+        }
+      </main>
+
+      <!-- Sidebar Column -->
+      <aside class="detail-sidebar">
+        <!-- Match Intelligence Card -->
+        <section class="panel match-card">
+          <div class="match-header">
+            @if (item.matchScore !== undefined) {
+              <div class="score-display">
+                <span class="score-number">{{ item.matchScore }}</span>
+                <span class="score-percent">%</span>
+              </div>
+              <div class="score-meta">
+                <strong>Profile Match</strong>
+                <p>Based on your stack & skills</p>
+              </div>
+            } @else {
+              <div class="score-meta">
+                <strong>Match Score Unavailable</strong>
+              </div>
+            }
+          </div>
+
+          <p class="match-explanation">
+            {{
+              decode(item.whyMatched) || 'No personalized explanation was provided for this role.'
+            }}
+          </p>
+
+          @if (item.missingSkills?.length) {
+            <div class="missing-skills-block">
+              <span class="missing-label">Skill signals to review:</span>
+              <div class="missing-tags">
+                @for (skill of item.missingSkills; track skill) {
+                  <span class="missing-tag">{{ decode(skill) }}</span>
+                }
+              </div>
+              <p class="fine-print">
+                These represent gaps between your recorded skills and this listing's keywords.
+              </p>
+            </div>
+          }
+
+          <a class="btn-review-evidence" routerLink="/app/skill-gap"> Review skill evidence → </a>
+        </section>
+
+        <!-- Action Panel -->
+        <section class="panel action-card">
+          <h3>Your Next Step</h3>
+
+          @if (applyLink) {
+            <a
+              class="btn-apply-full"
+              [href]="applyLink"
+              target="_blank"
+              rel="noopener noreferrer"
+              referrerpolicy="no-referrer"
+            >
+              Visit Application Site ↗
+            </a>
+          } @else {
+            <p class="warning-text">
+              The direct application link is currently unavailable or expired.
+            </p>
+          }
+
+          <div class="action-buttons">
+            <button
+              type="button"
+              class="btn-action"
+              [disabled]="blocked || actions.isBusy(item.id)"
+              [attr.aria-pressed]="actions.state(item.id).saved"
+              (click)="mutate('saved')"
+            >
+              {{ actions.state(item.id).saved ? 'Remove saved job' : 'Save job' }}
+            </button>
+
+            <button
+              type="button"
+              class="btn-action"
+              [disabled]="blocked || actions.isBusy(item.id)"
+              [attr.aria-pressed]="actions.state(item.id).applied"
+              (click)="mutate('applied')"
+            >
+              {{ actions.state(item.id).applied ? 'Unmark applied' : 'Mark applied' }}
+            </button>
+
+            <button
+              type="button"
+              class="btn-action text-danger"
+              [disabled]="blocked || actions.isBusy(item.id)"
+              (click)="mutate('hidden')"
+            >
+              Hide this listing
+            </button>
+          </div>
+
+          <p class="action-disclaimer">
+            Opening the employer link does not submit an application. Marking applied updates your
+            local tracker.
+          </p>
+        </section>
+
+        <!-- Source Provenance Details -->
+        <section class="panel provenance-card">
+          <h3>Listing Provenance</h3>
+          <dl class="provenance-list">
+            <div class="prov-row">
+              <dt>Source platform</dt>
+              <dd>{{ item.source || item.platform || 'Direct' }}</dd>
+            </div>
+            <div class="prov-row">
+              <dt>Posted date</dt>
+              <dd>{{ date(item.postedDate) }}</dd>
+            </div>
+            <div class="prov-row">
+              <dt>Last synced</dt>
+              <dd>{{ date(item.lastSynced) }}</dd>
+            </div>
+            @if (item.validThrough) {
+              <div class="prov-row">
+                <dt>Source expiry</dt>
+                <dd>{{ date(item.validThrough) }}</dd>
+              </div>
+            }
+            @if (item.freshUntil) {
+              <div class="prov-row">
+                <dt>Cache fresh until</dt>
+                <dd>{{ date(item.freshUntil) }}</dd>
+              </div>
+            }
+          </dl>
+          <p class="fine-print">
+            Cached listings may change on the host site. Verify salary, eligibility, and dates
+            directly with the employer.
+          </p>
+        </section>
       </aside>
     </div>
-  </ng-container>
-</section>
+  } @else if (!isLoading && !errorMessage) {
+    <section class="panel unavailable-panel">
+      <h1>Listing hidden or unavailable</h1>
+      <p>This job listing may have expired or is hidden in your account.</p>
+      <a class="btn-primary" routerLink="/app/jobs" [queryParams]="{ view: 'hidden' }">
+        Manage hidden jobs →
+      </a>
+    </section>
+  }
+</div>

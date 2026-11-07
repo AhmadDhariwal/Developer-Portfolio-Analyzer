@@ -1,0 +1,36 @@
+<header class="ui-page-header">
+  <div class="breadcrumbs-slot">
+    <ng-content select="[page-breadcrumbs]"></ng-content>
+  </div>
+
+  <div class="header-main-row">
+    <div class="title-cluster">
+      <app-ui-icon-button
+        *ngIf="showBack"
+        [ariaLabel]="backLabel"
+        variant="ghost"
+        size="sm"
+        class="back-btn"
+        (clicked)="onBack()">
+        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+      </app-ui-icon-button>
+
+      <div class="titles">
+        <div class="title-badge-row">
+          <h1 class="page-title">{{ title }}</h1>
+          <app-ui-badge *ngIf="badgeText" [variant]="badgeVariant" size="sm">
+            {{ badgeText }}
+          </app-ui-badge>
+        </div>
+        <p *ngIf="subtitle" class="page-subtitle">{{ subtitle }}</p>
+      </div>
+    </div>
+
+    <div class="actions-slot">
+      <ng-content select="[page-actions]"></ng-content>
+    </div>
+  </div>
+</header>

@@ -1,0 +1,130 @@
+{
+  "requests": [
+    {
+      "method": "GET",
+      "url": "integrations/connections",
+      "status": 401
+    },
+    {
+      "method": "GET",
+      "url": "career-sprint/current",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "integrations/manual/connect",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "integrations/insights",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "integrations/insights",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "dashboard/integration-analytics",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "simulator/context",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "career-sprint/current",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "integrations/sync-now",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "integrations/sync-now",
+      "status": 502
+    },
+    {
+      "method": "GET",
+      "url": "integrations/insights",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "integrations/oauth/start",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "integrations/oauth/callback",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "integrations/oauth/callback",
+      "status": 400
+    },
+    {
+      "method": "POST",
+      "url": "integrations/ingest",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "analysis/portfolio-score",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "weekly-reports/generate",
+      "status": 200
+    },
+    {
+      "method": "DELETE",
+      "url": "integrations/connections/github",
+      "status": 200
+    },
+    {
+      "method": "DELETE",
+      "url": "integrations/connections/leetcode",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "integrations/insights",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "url": "career-sprint/current",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "url": "analysis/portfolio-score",
+      "status": 200
+    }
+  ],
+  "assertions": [],
+  "portfolioCache": {
+    "before": 70,
+    "after": 70,
+    "cached": true,
+    "beforeIntegration": 64,
+    "afterIntegration": 64
+  },
+  "cleanup": {
+    "mongoStopped": true,
+    "redisStopped": true,
+    "filesRemoved": 118,
+    "applicationDatabasesUsed": false,
+    "quotaResets": 0,
+    "recursiveDeletion": false
+  }
+}

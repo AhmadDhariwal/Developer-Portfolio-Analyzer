@@ -1,0 +1,92 @@
+{
+  "phase": "AFTER",
+  "BEFORE": {
+    "cold": {
+      "p50": 78.01,
+      "p95": 94.41
+    },
+    "memory": {
+      "p50": 0.08,
+      "p95": 0.14
+    },
+    "redis": {
+      "p50": null,
+      "p95": null
+    },
+    "concurrent": {
+      "signalCalls": 1,
+      "mongoReads": 2
+    }
+  },
+  "cold": {
+    "label": "cold_after",
+    "p50": 77.89,
+    "p95": 99.8
+  },
+  "memory": {
+    "label": "memory_after",
+    "p50": 0.04,
+    "p95": 0.09
+  },
+  "redis": {
+    "label": "redis_after",
+    "p50": 15.45,
+    "p95": 16.28
+  },
+  "deterministic": {
+    "label": "deterministic_plan_after",
+    "p50": 46.79,
+    "p95": 48.04
+  },
+  "ai": {
+    "label": "ai_plan_after",
+    "p50": 173.11,
+    "p95": 175.06
+  },
+  "concurrent": {
+    "signalCalls": 1,
+    "mongoReads": 2
+  },
+  "counters": {
+    "cold": {
+      "mongoReads": 24,
+      "mongoWrites": 0,
+      "signalCalls": 12,
+      "aiCalls": 0,
+      "redisGets": 0,
+      "redisSets": 12
+    },
+    "memory": {
+      "mongoReads": 2,
+      "mongoWrites": 0,
+      "signalCalls": 1,
+      "aiCalls": 0,
+      "redisGets": 0,
+      "redisSets": 1
+    },
+    "redis": {
+      "mongoReads": 2,
+      "mongoWrites": 0,
+      "signalCalls": 1,
+      "aiCalls": 0,
+      "redisGets": 12,
+      "redisSets": 1
+    },
+    "plan": {
+      "mongoReads": 24,
+      "mongoWrites": 0,
+      "signalCalls": 8,
+      "aiCalls": 0,
+      "redisGets": 0,
+      "redisSets": 1
+    },
+    "ai": {
+      "mongoReads": 18,
+      "mongoWrites": 0,
+      "signalCalls": 6,
+      "aiCalls": 6,
+      "redisGets": 0,
+      "redisSets": 6
+    }
+  }
+}

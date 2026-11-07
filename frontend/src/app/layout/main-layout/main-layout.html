@@ -1,21 +1,35 @@
-<div class="dashboard-shell">
+<div class="dashboard-shell" [class.developer-workspace]="developerWorkspace">
+  <a
+    class="skip-link"
+    href="#workspace-main"
+    (click)="focusWorkspace($event)"
+    [attr.inert]="isMobile() && sidebarOpen() ? '' : null"
+    >Skip to main content</a
+  >
   <div
     class="shell-backdrop"
     *ngIf="isMobile() && sidebarOpen()"
     (click)="closeSidebar()"
-    aria-hidden="true"></div>
+    aria-hidden="true"
+  ></div>
 
   <app-sidebar
+    #navigation
     [isOpen]="sidebarOpen()"
     [isMobile]="isMobile()"
-    (collapse)="closeSidebar()"></app-sidebar>
+    [developerWorkspace]="developerWorkspace"
+    (collapse)="closeSidebar()"
+  ></app-sidebar>
 
   <div
     class="shell-body"
+    [attr.inert]="isMobile() && sidebarOpen() ? '' : null"
+    [attr.aria-hidden]="isMobile() && sidebarOpen() ? 'true' : null"
     [class.sidebar-closed]="!sidebarOpen()"
-    [class.shell-body--mobile]="isMobile()">
+    [class.shell-body--mobile]="isMobile()"
+  >
     <app-navbar [sidebarOpen]="sidebarOpen()" (sidebarToggle)="toggleSidebar()"></app-navbar>
-    <main class="main-content">
+    <main #workspace id="workspace-main" class="main-content" tabindex="-1">
       <router-outlet></router-outlet>
     </main>
   </div>

@@ -1,0 +1,2037 @@
+[
+  {
+    "mount": "/api/auth",
+    "file": "backend/src/routes/auth.routes.js",
+    "method": "post",
+    "line": 19,
+    "args": ["'/register'", "authRateLimiter", "registerUser"]
+  },
+  {
+    "mount": "/api/auth",
+    "file": "backend/src/routes/auth.routes.js",
+    "method": "post",
+    "line": 20,
+    "args": ["'/login'", "authRateLimiter", "bruteForceGuard", "loginUser"]
+  },
+  {
+    "mount": "/api/auth",
+    "file": "backend/src/routes/auth.routes.js",
+    "method": "post",
+    "line": 21,
+    "args": ["'/send-otp'", "authRateLimiter", "sendOtp"]
+  },
+  {
+    "mount": "/api/auth",
+    "file": "backend/src/routes/auth.routes.js",
+    "method": "post",
+    "line": 22,
+    "args": ["'/verify-otp'", "authRateLimiter", "verifyOtp"]
+  },
+  {
+    "mount": "/api/auth",
+    "file": "backend/src/routes/auth.routes.js",
+    "method": "post",
+    "line": 23,
+    "args": ["'/forgot-password'", "authRateLimiter", "forgotPassword"]
+  },
+  {
+    "mount": "/api/auth",
+    "file": "backend/src/routes/auth.routes.js",
+    "method": "post",
+    "line": 24,
+    "args": ["'/reset-password'", "authRateLimiter", "resetPassword"]
+  },
+  {
+    "mount": "/api/auth",
+    "file": "backend/src/routes/auth.routes.js",
+    "method": "get",
+    "line": 25,
+    "args": ["'/invite-details/:token'", "getInviteDetails"]
+  },
+  {
+    "mount": "/api/auth",
+    "file": "backend/src/routes/auth.routes.js",
+    "method": "post",
+    "line": 26,
+    "args": ["'/accept-invite'", "authRateLimiter", "acceptInvite"]
+  },
+  {
+    "mount": "/api/auth",
+    "file": "backend/src/routes/auth.routes.js",
+    "method": "get",
+    "line": 27,
+    "args": ["'/google'", "authRateLimiter", "startGoogleOAuth"]
+  },
+  {
+    "mount": "/api/auth",
+    "file": "backend/src/routes/auth.routes.js",
+    "method": "get",
+    "line": 28,
+    "args": ["'/google/callback'", "authRateLimiter", "googleOAuthCallback"]
+  },
+  {
+    "mount": "/api/auth",
+    "file": "backend/src/routes/auth.routes.js",
+    "method": "get",
+    "line": 29,
+    "args": ["'/github'", "authRateLimiter", "startGitHubOAuth"]
+  },
+  {
+    "mount": "/api/auth",
+    "file": "backend/src/routes/auth.routes.js",
+    "method": "get",
+    "line": 30,
+    "args": ["'/github/callback'", "authRateLimiter", "githubOAuthCallback"]
+  },
+  {
+    "mount": "/api/github",
+    "file": "backend/src/routes/github.routes.js",
+    "method": "post",
+    "line": 7,
+    "args": ["'/analyze'", "analyzeGitHub"]
+  },
+  {
+    "mount": "/api/github",
+    "file": "backend/src/routes/github.routes.js",
+    "method": "post",
+    "line": 10,
+    "args": ["'/analyze-save'", "protect", "analyzeAndSaveGitHubProfile"]
+  },
+  {
+    "mount": "/api/github",
+    "file": "backend/src/routes/github.routes.js",
+    "method": "get",
+    "line": 13,
+    "args": ["'/active-username'", "protect", "getActiveUsername"]
+  },
+  {
+    "mount": "/api/resume",
+    "file": "backend/src/routes/resume.routes.js",
+    "method": "post",
+    "line": 17,
+    "args": [
+      "'/upload'",
+      "protect",
+      "require('../middleware/publicPortfolioRateLimit').uploadLimit",
+      "upload.resumePdf",
+      "uploadResume"
+    ]
+  },
+  {
+    "mount": "/api/resume",
+    "file": "backend/src/routes/resume.routes.js",
+    "method": "post",
+    "line": 26,
+    "args": ["'/analyze'", "protect", "analyzeResumeFile"]
+  },
+  {
+    "mount": "/api/resume",
+    "file": "backend/src/routes/resume.routes.js",
+    "method": "get",
+    "line": 29,
+    "args": ["'/result'", "protect", "getResumeAnalysis"]
+  },
+  {
+    "mount": "/api/resume",
+    "file": "backend/src/routes/resume.routes.js",
+    "method": "get",
+    "line": 32,
+    "args": ["'/files'", "protect", "getResumeFiles"]
+  },
+  {
+    "mount": "/api/resume",
+    "file": "backend/src/routes/resume.routes.js",
+    "method": "get",
+    "line": 35,
+    "args": ["'/active'", "protect", "getActiveResumeContext"]
+  },
+  {
+    "mount": "/api/resume",
+    "file": "backend/src/routes/resume.routes.js",
+    "method": "put",
+    "line": 38,
+    "args": ["'/active'", "protect", "setActiveResume"]
+  },
+  {
+    "mount": "/api/resume",
+    "file": "backend/src/routes/resume.routes.js",
+    "method": "get",
+    "line": 41,
+    "args": ["'/result/:userId'", "protect", "getResumeAnalysisByUserId"]
+  },
+  {
+    "mount": "/api/resume",
+    "file": "backend/src/routes/resume.routes.js",
+    "method": "get",
+    "line": 44,
+    "args": ["'/guide'", "protect", "downloadResumeGuide"]
+  },
+  {
+    "mount": "/api/analysis",
+    "file": "backend/src/routes/analysis.routes.js",
+    "method": "post",
+    "line": 10,
+    "args": ["'/portfolio-score'", "protect", "getPortfolioReadiness"]
+  },
+  {
+    "mount": "/api/dashboard",
+    "file": "backend/src/routes/dashboard.routes.js",
+    "method": "get",
+    "line": 14,
+    "args": ["'/summary'", "protect", "getDashboardSummary"]
+  },
+  {
+    "mount": "/api/dashboard",
+    "file": "backend/src/routes/dashboard.routes.js",
+    "method": "get",
+    "line": 15,
+    "args": ["'/contributions'", "protect", "getDashboardContributions"]
+  },
+  {
+    "mount": "/api/dashboard",
+    "file": "backend/src/routes/dashboard.routes.js",
+    "method": "get",
+    "line": 16,
+    "args": ["'/languages'", "protect", "getDashboardLanguages"]
+  },
+  {
+    "mount": "/api/dashboard",
+    "file": "backend/src/routes/dashboard.routes.js",
+    "method": "get",
+    "line": 17,
+    "args": ["'/skills'", "protect", "getDashboardSkills"]
+  },
+  {
+    "mount": "/api/dashboard",
+    "file": "backend/src/routes/dashboard.routes.js",
+    "method": "get",
+    "line": 18,
+    "args": ["'/recommendations'", "protect", "getDashboardRecommendations"]
+  },
+  {
+    "mount": "/api/dashboard",
+    "file": "backend/src/routes/dashboard.routes.js",
+    "method": "get",
+    "line": 19,
+    "args": ["'/integration-analytics'", "protect", "getDashboardIntegrationAnalytics"]
+  },
+  {
+    "mount": "/api/super-admin",
+    "file": "backend/src/routes/super-admin.routes.js",
+    "method": "use",
+    "line": 17,
+    "args": ["protect", "authorizeRoles('super_admin')"]
+  },
+  {
+    "mount": "/api/super-admin",
+    "file": "backend/src/routes/super-admin.routes.js",
+    "method": "get",
+    "line": 19,
+    "args": ["'/metrics'", "getPlatformMetrics"]
+  },
+  {
+    "mount": "/api/super-admin",
+    "file": "backend/src/routes/super-admin.routes.js",
+    "method": "get",
+    "line": 20,
+    "args": ["'/dashboard'", "getDashboard"]
+  },
+  {
+    "mount": "/api/super-admin",
+    "file": "backend/src/routes/super-admin.routes.js",
+    "method": "get",
+    "line": 21,
+    "args": ["'/analytics'", "getAnalytics"]
+  },
+  {
+    "mount": "/api/super-admin",
+    "file": "backend/src/routes/super-admin.routes.js",
+    "method": "get",
+    "line": 22,
+    "args": ["'/organizations'", "getAllOrganizations"]
+  },
+  {
+    "mount": "/api/super-admin",
+    "file": "backend/src/routes/super-admin.routes.js",
+    "method": "patch",
+    "line": 23,
+    "args": ["'/organizations/:id/suspend'", "suspendOrganization"]
+  },
+  {
+    "mount": "/api/super-admin",
+    "file": "backend/src/routes/super-admin.routes.js",
+    "method": "patch",
+    "line": 24,
+    "args": ["'/organizations/:id/activate'", "activateOrganization"]
+  },
+  {
+    "mount": "/api/super-admin",
+    "file": "backend/src/routes/super-admin.routes.js",
+    "method": "get",
+    "line": 25,
+    "args": ["'/admins'", "getAllAdmins"]
+  },
+  {
+    "mount": "/api/super-admin",
+    "file": "backend/src/routes/super-admin.routes.js",
+    "method": "get",
+    "line": 26,
+    "args": ["'/recruiters'", "getAllRecruiters"]
+  },
+  {
+    "mount": "/api/super-admin",
+    "file": "backend/src/routes/super-admin.routes.js",
+    "method": "get",
+    "line": 27,
+    "args": ["'/developers'", "getAllDevelopers"]
+  },
+  {
+    "mount": "/api/super-admin",
+    "file": "backend/src/routes/super-admin.routes.js",
+    "method": "get",
+    "line": 28,
+    "args": ["'/teams'", "getAllTeams"]
+  },
+  {
+    "mount": "/api/super-admin",
+    "file": "backend/src/routes/super-admin.routes.js",
+    "method": "get",
+    "line": 30,
+    "args": ["'/recruiters/:id/analytics'", "getRecruiterAnalytics"]
+  },
+  {
+    "mount": "/api/super-admin",
+    "file": "backend/src/routes/super-admin.routes.js",
+    "method": "post",
+    "line": 31,
+    "args": ["'/recruiters/:id/teams'", "assignTeamToRecruiter"]
+  },
+  {
+    "mount": "/api/super-admin",
+    "file": "backend/src/routes/super-admin.routes.js",
+    "method": "delete",
+    "line": 32,
+    "args": ["'/recruiters/:id/teams/:teamId'", "removeRecruiterTeam"]
+  },
+  {
+    "mount": "/api/super-admin",
+    "file": "backend/src/routes/super-admin.routes.js",
+    "method": "patch",
+    "line": 33,
+    "args": ["'/users/:id/toggle-active'", "toggleUserActive"]
+  },
+  {
+    "mount": "/api/super-admin",
+    "file": "backend/src/routes/super-admin.routes.js",
+    "method": "get",
+    "line": 34,
+    "args": ["'/users/:id'", "getUserDetails"]
+  },
+  {
+    "mount": "/api/super-admin",
+    "file": "backend/src/routes/super-admin.routes.js",
+    "method": "post",
+    "line": 35,
+    "args": ["'/users'", "createUser"]
+  },
+  {
+    "mount": "/api/super-admin",
+    "file": "backend/src/routes/super-admin.routes.js",
+    "method": "patch",
+    "line": 36,
+    "args": ["'/users/:id'", "updateUser"]
+  },
+  {
+    "mount": "/api/super-admin",
+    "file": "backend/src/routes/super-admin.routes.js",
+    "method": "delete",
+    "line": 37,
+    "args": ["'/users/:id'", "deleteUser"]
+  },
+  {
+    "mount": "/api/super-admin",
+    "file": "backend/src/routes/super-admin.routes.js",
+    "method": "get",
+    "line": 38,
+    "args": ["'/settings'", "getPlatformSettings"]
+  },
+  {
+    "mount": "/api/super-admin",
+    "file": "backend/src/routes/super-admin.routes.js",
+    "method": "put",
+    "line": 39,
+    "args": ["'/settings'", "updatePlatformSettings"]
+  },
+  {
+    "mount": "/api/skillgap",
+    "file": "backend/src/routes/skillgap.routes.js",
+    "method": "post",
+    "line": 16,
+    "args": [
+      "'/skill-gap'",
+      "markSkillGapRouteStart",
+      "optionalProtect",
+      "markSkillGapAuthComplete",
+      "analyzeSkillGap"
+    ]
+  },
+  {
+    "mount": "/api/recommendations",
+    "file": "backend/src/routes/recommendations.routes.js",
+    "method": "post",
+    "line": 15,
+    "args": ["'/'", "protect", "getRecommendations"]
+  },
+  {
+    "mount": "/api/recommendations",
+    "file": "backend/src/routes/recommendations.routes.js",
+    "method": "post",
+    "line": 18,
+    "args": ["'/generate'", "optionalProtect", "generateRecommendations"]
+  },
+  {
+    "mount": "/api/recommendations",
+    "file": "backend/src/routes/recommendations.routes.js",
+    "method": "post",
+    "line": 20,
+    "args": ["'/saved-previews'", "protect", "savePreview"]
+  },
+  {
+    "mount": "/api/recommendations",
+    "file": "backend/src/routes/recommendations.routes.js",
+    "method": "get",
+    "line": 21,
+    "args": ["'/saved-previews'", "protect", "listSavedPreviews"]
+  },
+  {
+    "mount": "/api/recommendations",
+    "file": "backend/src/routes/recommendations.routes.js",
+    "method": "delete",
+    "line": 22,
+    "args": ["'/saved-previews/:id'", "protect", "deleteSavedPreview"]
+  },
+  {
+    "mount": "/api/recommendations",
+    "file": "backend/src/routes/recommendations.routes.js",
+    "method": "post",
+    "line": 23,
+    "args": ["'/:id/career-sprint'", "protect", "handoffToCareerSprint"]
+  },
+  {
+    "mount": "/api/recommendations",
+    "file": "backend/src/routes/recommendations.routes.js",
+    "method": "get",
+    "line": 24,
+    "args": ["'/history'", "protect", "listRecommendationHistory"]
+  },
+  {
+    "mount": "/api/profile",
+    "file": "backend/src/routes/profile.routes.js",
+    "method": "use",
+    "line": 17,
+    "args": ["(_req, res, next) => { res.set('Cache-Control', 'private, no-store'); next(); }"]
+  },
+  {
+    "mount": "/api/profile",
+    "file": "backend/src/routes/profile.routes.js",
+    "method": "get",
+    "line": 22,
+    "args": ["'/me'", "protect", "mediaSession", "getProfile"]
+  },
+  {
+    "mount": "/api/profile",
+    "file": "backend/src/routes/profile.routes.js",
+    "method": "put",
+    "line": 23,
+    "args": ["'/me'", "protect", "mediaSession", "updateProfile"]
+  },
+  {
+    "mount": "/api/profile",
+    "file": "backend/src/routes/profile.routes.js",
+    "method": "put",
+    "line": 24,
+    "args": ["'/career'", "protect", "mediaSession", "updateCareerProfile"]
+  },
+  {
+    "mount": "/api/profile",
+    "file": "backend/src/routes/profile.routes.js",
+    "method": "put",
+    "line": 25,
+    "args": ["'/career/active'", "protect", "mediaSession", "updateActiveCareerProfile"]
+  },
+  {
+    "mount": "/api/profile",
+    "file": "backend/src/routes/profile.routes.js",
+    "method": "put",
+    "line": 26,
+    "args": ["'/password'", "protect", "mediaSession", "updatePassword"]
+  },
+  {
+    "mount": "/api/profile",
+    "file": "backend/src/routes/profile.routes.js",
+    "method": "put",
+    "line": 27,
+    "args": ["'/visibility'", "protect", "mediaSession", "updateProfileVisibility"]
+  },
+  {
+    "mount": "/api/profile",
+    "file": "backend/src/routes/profile.routes.js",
+    "method": "post",
+    "line": 28,
+    "args": [
+      "'/avatar'",
+      "protect",
+      "mediaSession",
+      "require('../middleware/publicPortfolioRateLimit').uploadLimit",
+      "avatarUpload.single('avatar')",
+      "uploadAvatar"
+    ]
+  },
+  {
+    "mount": "/api/profile",
+    "file": "backend/src/routes/profile.routes.js",
+    "method": "delete",
+    "line": 36,
+    "args": ["'/me'", "protect", "mediaSession", "deleteAccount"]
+  },
+  {
+    "mount": "/api/courses",
+    "file": "backend/src/routes/courseRoutes.js",
+    "method": "get",
+    "line": 10,
+    "args": ["'/'", "protect", "fetchCourses"]
+  },
+  {
+    "mount": "/api/courses",
+    "file": "backend/src/routes/courseRoutes.js",
+    "method": "get",
+    "line": 11,
+    "args": ["'/my-learning'", "protect", "progress.listProgress"]
+  },
+  {
+    "mount": "/api/courses",
+    "file": "backend/src/routes/courseRoutes.js",
+    "method": "put",
+    "line": 12,
+    "args": ["'/:courseId/progress'", "protect", "progress.saveProgress"]
+  },
+  {
+    "mount": "/api/courses",
+    "file": "backend/src/routes/courseRoutes.js",
+    "method": "delete",
+    "line": 13,
+    "args": ["'/:courseId/progress'", "protect", "progress.removeProgress"]
+  },
+  {
+    "mount": "/api/courses",
+    "file": "backend/src/routes/courseRoutes.js",
+    "method": "post",
+    "line": 14,
+    "args": ["'/:courseId/career-sprint'", "protect", "progress.handoffToSprint"]
+  },
+  {
+    "mount": "/api/jobs",
+    "file": "backend/src/routes/jobRoutes.js",
+    "method": "use",
+    "line": 21,
+    "args": ["protect", "validateJobsRequest", "jobsRateLimit"]
+  },
+  {
+    "mount": "/api/jobs",
+    "file": "backend/src/routes/jobRoutes.js",
+    "method": "get",
+    "line": 22,
+    "args": ["'/'", "jobsRefreshLimit", "fetchJobs"]
+  },
+  {
+    "mount": "/api/jobs",
+    "file": "backend/src/routes/jobRoutes.js",
+    "method": "get",
+    "line": 23,
+    "args": ["'/source-health'", "getSourceHealthStatus"]
+  },
+  {
+    "mount": "/api/jobs",
+    "file": "backend/src/routes/jobRoutes.js",
+    "method": "get",
+    "line": 24,
+    "args": ["'/cache-health'", "getCacheHealthStatus"]
+  },
+  {
+    "mount": "/api/jobs",
+    "file": "backend/src/routes/jobRoutes.js",
+    "method": "get",
+    "line": 25,
+    "args": ["'/actions'", "actions.list"]
+  },
+  {
+    "mount": "/api/jobs",
+    "file": "backend/src/routes/jobRoutes.js",
+    "method": "put",
+    "line": 26,
+    "args": ["'/:id/actions'", "validateJobsRequest", "actionRateLimit", "actions.update"]
+  },
+  {
+    "mount": "/api/jobs",
+    "file": "backend/src/routes/jobRoutes.js",
+    "method": "post",
+    "line": 32,
+    "args": [
+      "`/:id/${path}`",
+      "validateJobsRequest",
+      "actionRateLimit",
+      "actions.toggle(field, true)"
+    ]
+  },
+  {
+    "mount": "/api/jobs",
+    "file": "backend/src/routes/jobRoutes.js",
+    "method": "delete",
+    "line": 33,
+    "args": [
+      "`/:id/${path}`",
+      "validateJobsRequest",
+      "actionRateLimit",
+      "actions.toggle(field, false)"
+    ]
+  },
+  {
+    "mount": "/api/jobs",
+    "file": "backend/src/routes/jobRoutes.js",
+    "method": "get",
+    "line": 35,
+    "args": ["'/:id'", "validateJobsRequest", "getJobById"]
+  },
+  {
+    "mount": "/api/notifications",
+    "file": "backend/src/routes/notification.routes.js",
+    "method": "get",
+    "line": 12,
+    "args": ["'/'", "protect", "getNotifications"]
+  },
+  {
+    "mount": "/api/notifications",
+    "file": "backend/src/routes/notification.routes.js",
+    "method": "get",
+    "line": 13,
+    "args": ["'/stream'", "streamNotifications"]
+  },
+  {
+    "mount": "/api/notifications",
+    "file": "backend/src/routes/notification.routes.js",
+    "method": "put",
+    "line": 14,
+    "args": ["'/read-all'", "protect", "markAllNotificationsRead"]
+  },
+  {
+    "mount": "/api/notifications",
+    "file": "backend/src/routes/notification.routes.js",
+    "method": "put",
+    "line": 15,
+    "args": ["'/:id/read'", "protect", "markNotificationRead"]
+  },
+  {
+    "mount": "/api/notifications",
+    "file": "backend/src/routes/notification.routes.js",
+    "method": "delete",
+    "line": 16,
+    "args": ["'/:id'", "protect", "deleteNotification"]
+  },
+  {
+    "mount": "/api/audit-logs",
+    "file": "backend/src/routes/audit.routes.js",
+    "method": "get",
+    "line": 6,
+    "args": ["'/'", "protect", "getAuditLogs"]
+  },
+  {
+    "mount": "/api/audit-logs",
+    "file": "backend/src/routes/audit.routes.js",
+    "method": "delete",
+    "line": 7,
+    "args": ["'/:id'", "protect", "deleteAuditLog"]
+  },
+  {
+    "mount": "/api/workflows",
+    "file": "backend/src/routes/workflow.routes.js",
+    "method": "post",
+    "line": 10,
+    "args": ["'/'", "protect", "startWorkflow"]
+  },
+  {
+    "mount": "/api/workflows",
+    "file": "backend/src/routes/workflow.routes.js",
+    "method": "get",
+    "line": 11,
+    "args": ["'/'", "protect", "listWorkflows"]
+  },
+  {
+    "mount": "/api/workflows",
+    "file": "backend/src/routes/workflow.routes.js",
+    "method": "get",
+    "line": 12,
+    "args": ["'/:id'", "protect", "getWorkflowById"]
+  },
+  {
+    "mount": "/api/ai-versions",
+    "file": "backend/src/routes/aiversions.routes.js",
+    "method": "get",
+    "line": 11,
+    "args": ["'/'", "protect", "listVersions"]
+  },
+  {
+    "mount": "/api/ai-versions",
+    "file": "backend/src/routes/aiversions.routes.js",
+    "method": "post",
+    "line": 12,
+    "args": ["'/'", "protect", "createAiVersion"]
+  },
+  {
+    "mount": "/api/ai-versions",
+    "file": "backend/src/routes/aiversions.routes.js",
+    "method": "get",
+    "line": 13,
+    "args": ["'/:id/compare/:compareId'", "protect", "compareVersions"]
+  },
+  {
+    "mount": "/api/ai-versions",
+    "file": "backend/src/routes/aiversions.routes.js",
+    "method": "post",
+    "line": 14,
+    "args": ["'/:id/rollback'", "protect", "rollbackVersion"]
+  },
+  {
+    "mount": "/api/tenant",
+    "file": "backend/src/routes/tenant.routes.js",
+    "method": "post",
+    "line": 40,
+    "args": ["'/organizations'", "protect", "createOrganizationValidators", "createOrganization"]
+  },
+  {
+    "mount": "/api/tenant",
+    "file": "backend/src/routes/tenant.routes.js",
+    "method": "get",
+    "line": 41,
+    "args": ["'/organizations'", "protect", "listOrganizations"]
+  },
+  {
+    "mount": "/api/tenant",
+    "file": "backend/src/routes/tenant.routes.js",
+    "method": "post",
+    "line": 43,
+    "args": [
+      "'/organizations/:organizationId/teams'",
+      "protect",
+      "requireOrganizationRole('manager')",
+      "createTeamValidators",
+      "createTeam"
+    ]
+  },
+  {
+    "mount": "/api/tenant",
+    "file": "backend/src/routes/tenant.routes.js",
+    "method": "get",
+    "line": 51,
+    "args": [
+      "'/organizations/:organizationId/teams'",
+      "protect",
+      "requireOrganizationRole('member')",
+      "listTeamsValidators",
+      "listTeams"
+    ]
+  },
+  {
+    "mount": "/api/tenant",
+    "file": "backend/src/routes/tenant.routes.js",
+    "method": "post",
+    "line": 59,
+    "args": [
+      "'/organizations/:organizationId/invitations'",
+      "protect",
+      "requireOrganizationRole('manager')",
+      "inviteUserValidators",
+      "inviteUser"
+    ]
+  },
+  {
+    "mount": "/api/tenant",
+    "file": "backend/src/routes/tenant.routes.js",
+    "method": "get",
+    "line": 67,
+    "args": [
+      "'/organizations/:organizationId/invitations'",
+      "protect",
+      "requireOrganizationRole('manager')",
+      "listPendingInvitationsValidators",
+      "listPendingInvitations"
+    ]
+  },
+  {
+    "mount": "/api/tenant",
+    "file": "backend/src/routes/tenant.routes.js",
+    "method": "patch",
+    "line": 75,
+    "args": [
+      "'/organizations/:organizationId/invitations/:invitationId/revoke'",
+      "protect",
+      "requireOrganizationRole('manager')",
+      "revokeInvitationValidators",
+      "revokeInvitation"
+    ]
+  },
+  {
+    "mount": "/api/tenant",
+    "file": "backend/src/routes/tenant.routes.js",
+    "method": "post",
+    "line": 83,
+    "args": [
+      "'/invitations/:invitationId/accept'",
+      "protect",
+      "acceptInvitationValidators",
+      "acceptInvitation"
+    ]
+  },
+  {
+    "mount": "/api/tenant",
+    "file": "backend/src/routes/tenant.routes.js",
+    "method": "post",
+    "line": 84,
+    "args": [
+      "'/invitations/accept/:token'",
+      "protect",
+      "acceptInvitationTokenValidators",
+      "acceptInvitationByToken"
+    ]
+  },
+  {
+    "mount": "/api/tenant",
+    "file": "backend/src/routes/tenant.routes.js",
+    "method": "get",
+    "line": 85,
+    "args": [
+      "'/invitations/:token/details'",
+      "invitationDetailsValidators",
+      "getInvitationDetailsByToken"
+    ]
+  },
+  {
+    "mount": "/api/tenant",
+    "file": "backend/src/routes/tenant.routes.js",
+    "method": "post",
+    "line": 86,
+    "args": [
+      "'/invitations/accept/:token/onboard'",
+      "acceptInvitationOnboardValidators",
+      "acceptInvitationOnboard"
+    ]
+  },
+  {
+    "mount": "/api/tenant",
+    "file": "backend/src/routes/tenant.routes.js",
+    "method": "get",
+    "line": 88,
+    "args": [
+      "'/organizations/:organizationId/members'",
+      "protect",
+      "requireOrganizationRole('member')",
+      "listOrganizationMembersValidators",
+      "listOrganizationMembers"
+    ]
+  },
+  {
+    "mount": "/api/tenant",
+    "file": "backend/src/routes/tenant.routes.js",
+    "method": "get",
+    "line": 96,
+    "args": [
+      "'/teams/:teamId/members'",
+      "protect",
+      "requireTeamRole('member')",
+      "listTeamMembersValidators",
+      "listTeamMembers"
+    ]
+  },
+  {
+    "mount": "/api/tenant",
+    "file": "backend/src/routes/tenant.routes.js",
+    "method": "patch",
+    "line": 98,
+    "args": [
+      "'/memberships/:membershipId/role'",
+      "protect",
+      "updateMembershipRoleValidators",
+      "updateMembershipRole"
+    ]
+  },
+  {
+    "mount": "/api/tenant",
+    "file": "backend/src/routes/tenant.routes.js",
+    "method": "get",
+    "line": 100,
+    "args": [
+      "'/teams/:teamId/shared-dashboard'",
+      "protect",
+      "requireTeamRole('member')",
+      "getTeamSharedDashboardValidators",
+      "getTeamSharedDashboard"
+    ]
+  },
+  {
+    "mount": "/api/tenant",
+    "file": "backend/src/routes/tenant.routes.js",
+    "method": "get",
+    "line": 108,
+    "args": [
+      "'/teams/:teamId/analytics'",
+      "protect",
+      "requireTeamRole('member')",
+      "getTeamAnalyticsValidators",
+      "getTeamAnalytics"
+    ]
+  },
+  {
+    "mount": "/api/skill-graph",
+    "file": "backend/src/routes/skillgraph.routes.js",
+    "method": "post",
+    "line": 6,
+    "args": ["'/generate'", "protect", "generateSkillGraph"]
+  },
+  {
+    "mount": "/api/skill-graph",
+    "file": "backend/src/routes/skillgraph.routes.js",
+    "method": "get",
+    "line": 7,
+    "args": ["'/latest'", "protect", "getLatestSkillGraph"]
+  },
+  {
+    "mount": "/api/integrations",
+    "file": "backend/src/routes/integrations.routes.js",
+    "method": "use",
+    "line": 3,
+    "args": ["(_req, res, next) => { res.set('Cache-Control', 'private, no-store'); next(); }"]
+  },
+  {
+    "mount": "/api/integrations",
+    "file": "backend/src/routes/integrations.routes.js",
+    "method": "get",
+    "line": 30,
+    "args": ["'/marketplace'", "protect", "getMarketplace"]
+  },
+  {
+    "mount": "/api/integrations",
+    "file": "backend/src/routes/integrations.routes.js",
+    "method": "get",
+    "line": 31,
+    "args": ["'/linked-profiles/kaggle'", "protect", "kaggleLink.get"]
+  },
+  {
+    "mount": "/api/integrations",
+    "file": "backend/src/routes/integrations.routes.js",
+    "method": "post",
+    "line": 32,
+    "args": ["'/linked-profiles/kaggle'", "protect", "actionLimit('mutate')", "kaggleLink.save"]
+  },
+  {
+    "mount": "/api/integrations",
+    "file": "backend/src/routes/integrations.routes.js",
+    "method": "delete",
+    "line": 33,
+    "args": ["'/linked-profiles/kaggle'", "protect", "actionLimit('mutate')", "kaggleLink.remove"]
+  },
+  {
+    "mount": "/api/integrations",
+    "file": "backend/src/routes/integrations.routes.js",
+    "method": "get",
+    "line": 34,
+    "args": ["'/linked-profiles/hackerrank'", "protect", "getLinkedProfile"]
+  },
+  {
+    "mount": "/api/integrations",
+    "file": "backend/src/routes/integrations.routes.js",
+    "method": "post",
+    "line": 35,
+    "args": [
+      "'/linked-profiles/hackerrank'",
+      "protect",
+      "actionLimit('mutate')",
+      "saveLinkedProfile"
+    ]
+  },
+  {
+    "mount": "/api/integrations",
+    "file": "backend/src/routes/integrations.routes.js",
+    "method": "delete",
+    "line": 36,
+    "args": [
+      "'/linked-profiles/hackerrank'",
+      "protect",
+      "actionLimit('mutate')",
+      "removeLinkedProfile"
+    ]
+  },
+  {
+    "mount": "/api/integrations",
+    "file": "backend/src/routes/integrations.routes.js",
+    "method": "get",
+    "line": 37,
+    "args": ["'/connections'", "protect", "getConnections"]
+  },
+  {
+    "mount": "/api/integrations",
+    "file": "backend/src/routes/integrations.routes.js",
+    "method": "get",
+    "line": 38,
+    "args": ["'/insights'", "protect", "getIntegrationInsights"]
+  },
+  {
+    "mount": "/api/integrations",
+    "file": "backend/src/routes/integrations.routes.js",
+    "method": "get",
+    "line": 39,
+    "args": ["'/sync-trends'", "protect", "getSyncTrends"]
+  },
+  {
+    "mount": "/api/integrations",
+    "file": "backend/src/routes/integrations.routes.js",
+    "method": "get",
+    "line": 40,
+    "args": ["'/github/callback'", "actionLimit('callback', false)", "githubOauthCallback"]
+  },
+  {
+    "mount": "/api/integrations",
+    "file": "backend/src/routes/integrations.routes.js",
+    "method": "post",
+    "line": 41,
+    "args": ["'/oauth/start'", "protect", "actionLimit('mutate')", "startOAuth"]
+  },
+  {
+    "mount": "/api/integrations",
+    "file": "backend/src/routes/integrations.routes.js",
+    "method": "post",
+    "line": 42,
+    "args": ["'/oauth/callback'", "protect", "actionLimit('mutate')", "oauthCallback"]
+  },
+  {
+    "mount": "/api/integrations",
+    "file": "backend/src/routes/integrations.routes.js",
+    "method": "post",
+    "line": 43,
+    "args": ["'/manual/connect'", "protect", "actionLimit('mutate')", "manualConnectProvider"]
+  },
+  {
+    "mount": "/api/integrations",
+    "file": "backend/src/routes/integrations.routes.js",
+    "method": "post",
+    "line": 44,
+    "args": ["'/ingest'", "protect", "actionLimit('mutate')", "ingestProviderData"]
+  },
+  {
+    "mount": "/api/integrations",
+    "file": "backend/src/routes/integrations.routes.js",
+    "method": "post",
+    "line": 45,
+    "args": ["'/sync-now'", "protect", "actionLimit('mutate')", "syncNow"]
+  },
+  {
+    "mount": "/api/integrations",
+    "file": "backend/src/routes/integrations.routes.js",
+    "method": "post",
+    "line": 46,
+    "args": ["'/webhooks/github'", "actionLimit('webhook', false)", "githubWebhook"]
+  },
+  {
+    "mount": "/api/integrations",
+    "file": "backend/src/routes/integrations.routes.js",
+    "method": "delete",
+    "line": 47,
+    "args": ["'/connections/:provider'", "protect", "disconnectProvider"]
+  },
+  {
+    "mount": "/api/simulator",
+    "file": "backend/src/routes/scenarioSimulator.routes.js",
+    "method": "get",
+    "line": 15,
+    "args": ["'/context'", "protect", "contextLimit", "getScenarioSimulatorContext"]
+  },
+  {
+    "mount": "/api/simulator",
+    "file": "backend/src/routes/scenarioSimulator.routes.js",
+    "method": "get",
+    "line": 16,
+    "args": ["'/history'", "protect", "limits.history", "getScenarioSimulationHistory"]
+  },
+  {
+    "mount": "/api/simulator",
+    "file": "backend/src/routes/scenarioSimulator.routes.js",
+    "method": "post",
+    "line": 17,
+    "args": ["'/what-if'", "protect", "limits.evaluate", "runScenarioSimulation"]
+  },
+  {
+    "mount": "/api/simulator",
+    "file": "backend/src/routes/scenarioSimulator.routes.js",
+    "method": "post",
+    "line": 18,
+    "args": ["'/save'", "protect", "limits.save", "saveScenarioSimulation"]
+  },
+  {
+    "mount": "/api/simulator",
+    "file": "backend/src/routes/scenarioSimulator.routes.js",
+    "method": "post",
+    "line": 19,
+    "args": ["'/create-sprint'", "protect", "limits.export", "createSprintFromScenarioController"]
+  },
+  {
+    "mount": "/api/simulator",
+    "file": "backend/src/routes/scenarioSimulator.routes.js",
+    "method": "delete",
+    "line": 20,
+    "args": ["'/:id'", "protect", "limits.delete", "deleteScenarioSimulation"]
+  },
+  {
+    "mount": "/api/public-profiles",
+    "file": "backend/src/routes/publicProfile.routes.js",
+    "method": "use",
+    "line": 24,
+    "args": ["(req, res, next) => { res.set('Cache-Control', 'private, no-store'); next(); }"]
+  },
+  {
+    "mount": "/api/public-profiles",
+    "file": "backend/src/routes/publicProfile.routes.js",
+    "method": "param",
+    "line": 28,
+    "args": [
+      "'slug'",
+      "(req, res, next, slug) => { if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length > 60) return res.status(400).json({ message: 'Invalid slug.' }); next(); }"
+    ]
+  },
+  {
+    "mount": "/api/public-profiles",
+    "file": "backend/src/routes/publicProfile.routes.js",
+    "method": "get",
+    "line": 33,
+    "args": ["'/me'", "protect", "mediaSession", "analyticsLimit", "getMyPublicProfile"]
+  },
+  {
+    "mount": "/api/public-profiles",
+    "file": "backend/src/routes/publicProfile.routes.js",
+    "method": "put",
+    "line": 34,
+    "args": ["'/me'", "protect", "mediaSession", "mutationLimit", "updateMyPublicProfile"]
+  },
+  {
+    "mount": "/api/public-profiles",
+    "file": "backend/src/routes/publicProfile.routes.js",
+    "method": "post",
+    "line": 35,
+    "args": [
+      "'/me/project-image'",
+      "protect",
+      "mediaSession",
+      "uploadLimit",
+      "uploadPortfolioImage"
+    ]
+  },
+  {
+    "mount": "/api/public-profiles",
+    "file": "backend/src/routes/publicProfile.routes.js",
+    "method": "get",
+    "line": 36,
+    "args": [
+      "'/me/resume'",
+      "protect",
+      "mediaSession",
+      "resumeLimit",
+      "downloadPublicProfileResume"
+    ]
+  },
+  {
+    "mount": "/api/public-profiles",
+    "file": "backend/src/routes/publicProfile.routes.js",
+    "method": "get",
+    "line": 37,
+    "args": [
+      "'/me/analytics'",
+      "protect",
+      "mediaSession",
+      "analyticsLimit",
+      "getMyPublicProfileAnalytics"
+    ]
+  },
+  {
+    "mount": "/api/public-profiles",
+    "file": "backend/src/routes/publicProfile.routes.js",
+    "method": "post",
+    "line": 38,
+    "args": [
+      "'/:slug/contact'",
+      "protect",
+      "mediaSession",
+      "require('../services/publicPortfolioContactService').validateContactRequest",
+      "contactLimit",
+      "contactRecipientLimit",
+      "contactPublicProfile"
+    ]
+  },
+  {
+    "mount": "/api/public-profiles",
+    "file": "backend/src/routes/publicProfile.routes.js",
+    "method": "get",
+    "line": 47,
+    "args": ["'/:slug/resume'", "resumeLimit", "downloadPublicProfileResume"]
+  },
+  {
+    "mount": "/api/public-profiles",
+    "file": "backend/src/routes/publicProfile.routes.js",
+    "method": "get",
+    "line": 48,
+    "args": ["'/:slug'", "publicViewLimit", "attachOptionalUser", "getPublicProfile"]
+  },
+  {
+    "mount": "/api/recruiter",
+    "file": "backend/src/routes/recruiter.routes.js",
+    "method": "use",
+    "line": 18,
+    "args": [
+      "protect",
+      "authorizeRoles('recruiter')",
+      "requireRecruiterAccessEnabled",
+      "requireOrganizationContext(['recruiter'])"
+    ]
+  },
+  {
+    "mount": "/api/recruiter",
+    "file": "backend/src/routes/recruiter.routes.js",
+    "method": "get",
+    "line": 21,
+    "args": ["'/dashboard'", "getRecruiterDashboard"]
+  },
+  {
+    "mount": "/api/recruiter",
+    "file": "backend/src/routes/recruiter.routes.js",
+    "method": "get",
+    "line": 24,
+    "args": ["'/candidates'", "getRecruiterCandidates"]
+  },
+  {
+    "mount": "/api/recruiter",
+    "file": "backend/src/routes/recruiter.routes.js",
+    "method": "get",
+    "line": 25,
+    "args": ["'/candidate/:id'", "getRecruiterCandidateById"]
+  },
+  {
+    "mount": "/api/recruiter",
+    "file": "backend/src/routes/recruiter.routes.js",
+    "method": "post",
+    "line": 28,
+    "args": ["'/job'", "createRecruiterJob"]
+  },
+  {
+    "mount": "/api/recruiter",
+    "file": "backend/src/routes/recruiter.routes.js",
+    "method": "get",
+    "line": 29,
+    "args": ["'/jobs'", "getRecruiterJobs"]
+  },
+  {
+    "mount": "/api/recruiter",
+    "file": "backend/src/routes/recruiter.routes.js",
+    "method": "put",
+    "line": 30,
+    "args": ["'/job/:id'", "updateRecruiterJob"]
+  },
+  {
+    "mount": "/api/recruiter",
+    "file": "backend/src/routes/recruiter.routes.js",
+    "method": "delete",
+    "line": 31,
+    "args": ["'/job/:id'", "deleteRecruiterJob"]
+  },
+  {
+    "mount": "/api/recruiter",
+    "file": "backend/src/routes/recruiter.routes.js",
+    "method": "post",
+    "line": 34,
+    "args": ["'/match'", "matchCandidates"]
+  },
+  {
+    "mount": "/api/recruiter",
+    "file": "backend/src/routes/recruiter.routes.js",
+    "method": "post",
+    "line": 35,
+    "args": ["'/ai-rank'", "aiRankCandidates"]
+  },
+  {
+    "mount": "/api/recruiter-hub",
+    "file": "backend/src/routes/recruiter-hub/recruiterHubRoutes.js",
+    "method": "use",
+    "line": 17,
+    "args": [
+      "protect",
+      "authorizeRoles('recruiter')",
+      "requireRecruiterAccessEnabled",
+      "requireOrganizationContext(['recruiter'])"
+    ]
+  },
+  {
+    "mount": "/api/recruiter-hub",
+    "file": "backend/src/routes/recruiter-hub/recruiterHubRoutes.js",
+    "method": "use",
+    "line": 19,
+    "args": ["'/candidates'", "candidateRoutes"]
+  },
+  {
+    "mount": "/api/recruiter-hub",
+    "file": "backend/src/routes/recruiter-hub/recruiterHubRoutes.js",
+    "method": "use",
+    "line": 20,
+    "args": ["'/jobs'", "recruiterJobRoutes"]
+  },
+  {
+    "mount": "/api/recruiter-hub",
+    "file": "backend/src/routes/recruiter-hub/recruiterHubRoutes.js",
+    "method": "use",
+    "line": 21,
+    "args": ["'/matches'", "matchRoutes"]
+  },
+  {
+    "mount": "/api/recruiter-hub",
+    "file": "backend/src/routes/recruiter-hub/recruiterHubRoutes.js",
+    "method": "use",
+    "line": 22,
+    "args": ["'/shortlists'", "shortlistRoutes"]
+  },
+  {
+    "mount": "/api/recruiter-hub",
+    "file": "backend/src/routes/recruiter-hub/recruiterHubRoutes.js",
+    "method": "use",
+    "line": 23,
+    "args": ["'/analytics'", "analyticsRoutes"]
+  },
+  {
+    "mount": "/api/recruiter-hub",
+    "file": "backend/src/routes/recruiter-hub/recruiterHubRoutes.js",
+    "method": "use",
+    "line": 24,
+    "args": ["'/activity'", "activityRoutes"]
+  },
+  {
+    "mount": "/api/recruiter-hub",
+    "file": "backend/src/routes/recruiter-hub/recruiterHubRoutes.js",
+    "method": "post",
+    "line": 25,
+    "args": ["'/comparison'", "compare"]
+  },
+  {
+    "mount": "/api/recruiter-hub",
+    "file": "backend/src/routes/recruiter-hub/recruiterHubRoutes.js",
+    "method": "get",
+    "line": 26,
+    "args": ["'/profile'", "getProfile"]
+  },
+  {
+    "mount": "/api/recruiter-hub",
+    "file": "backend/src/routes/recruiter-hub/recruiterHubRoutes.js",
+    "method": "patch",
+    "line": 27,
+    "args": ["'/profile'", "patchProfile"]
+  },
+  {
+    "mount": "/api/admin",
+    "file": "backend/src/routes/admin.routes.js",
+    "method": "use",
+    "line": 23,
+    "args": ["protect", "authorizeRoles('admin')", "requireOrganizationContext(['admin'])"]
+  },
+  {
+    "mount": "/api/admin",
+    "file": "backend/src/routes/admin.routes.js",
+    "method": "get",
+    "line": 25,
+    "args": ["'/overview'", "getOrganizationOverview"]
+  },
+  {
+    "mount": "/api/admin",
+    "file": "backend/src/routes/admin.routes.js",
+    "method": "get",
+    "line": 26,
+    "args": ["'/recruiters'", "getRecruiters"]
+  },
+  {
+    "mount": "/api/admin",
+    "file": "backend/src/routes/admin.routes.js",
+    "method": "post",
+    "line": 27,
+    "args": ["'/invite-recruiter'", "inviteRecruiter"]
+  },
+  {
+    "mount": "/api/admin",
+    "file": "backend/src/routes/admin.routes.js",
+    "method": "post",
+    "line": 28,
+    "args": ["'/recruiter'", "inviteRecruiter"]
+  },
+  {
+    "mount": "/api/admin",
+    "file": "backend/src/routes/admin.routes.js",
+    "method": "post",
+    "line": 29,
+    "args": ["'/recruiters/direct'", "addRecruiterDirect"]
+  },
+  {
+    "mount": "/api/admin",
+    "file": "backend/src/routes/admin.routes.js",
+    "method": "put",
+    "line": 30,
+    "args": ["'/recruiters/:id'", "updateRecruiter"]
+  },
+  {
+    "mount": "/api/admin",
+    "file": "backend/src/routes/admin.routes.js",
+    "method": "patch",
+    "line": 31,
+    "args": ["'/recruiters/:id/active'", "setRecruiterActive"]
+  },
+  {
+    "mount": "/api/admin",
+    "file": "backend/src/routes/admin.routes.js",
+    "method": "patch",
+    "line": 32,
+    "args": ["'/recruiters/:id/revoke'", "revokeRecruiterAccess"]
+  },
+  {
+    "mount": "/api/admin",
+    "file": "backend/src/routes/admin.routes.js",
+    "method": "delete",
+    "line": 33,
+    "args": ["'/recruiters/:id'", "deleteRecruiter"]
+  },
+  {
+    "mount": "/api/admin",
+    "file": "backend/src/routes/admin.routes.js",
+    "method": "get",
+    "line": 34,
+    "args": ["'/invitations/pending'", "getPendingInvitations"]
+  },
+  {
+    "mount": "/api/admin",
+    "file": "backend/src/routes/admin.routes.js",
+    "method": "post",
+    "line": 35,
+    "args": ["'/invitations/:id/resend'", "resendInvitation"]
+  },
+  {
+    "mount": "/api/admin",
+    "file": "backend/src/routes/admin.routes.js",
+    "method": "patch",
+    "line": 36,
+    "args": ["'/invitations/:id/revoke'", "revokeInvitation"]
+  },
+  {
+    "mount": "/api/admin",
+    "file": "backend/src/routes/admin.routes.js",
+    "method": "patch",
+    "line": 37,
+    "args": ["'/invitations/:id/expire'", "expireInvitation"]
+  },
+  {
+    "mount": "/api/admin",
+    "file": "backend/src/routes/admin.routes.js",
+    "method": "delete",
+    "line": 38,
+    "args": ["'/invitations/:id'", "deleteInvitation"]
+  },
+  {
+    "mount": "/api/admin",
+    "file": "backend/src/routes/admin.routes.js",
+    "method": "get",
+    "line": 39,
+    "args": ["'/developers'", "getDevelopers"]
+  },
+  {
+    "mount": "/api/admin",
+    "file": "backend/src/routes/admin.routes.js",
+    "method": "get",
+    "line": 40,
+    "args": ["'/jobs'", "getAdminJobs"]
+  },
+  {
+    "mount": "/api/admin",
+    "file": "backend/src/routes/admin.routes.js",
+    "method": "post",
+    "line": 41,
+    "args": ["'/jobs'", "createAdminJob"]
+  },
+  {
+    "mount": "/api/admin",
+    "file": "backend/src/routes/admin.routes.js",
+    "method": "put",
+    "line": 42,
+    "args": ["'/jobs/:id'", "updateAdminJob"]
+  },
+  {
+    "mount": "/api/admin",
+    "file": "backend/src/routes/admin.routes.js",
+    "method": "patch",
+    "line": 43,
+    "args": ["'/jobs/:id/close'", "closeAdminJob"]
+  },
+  {
+    "mount": "/api/admin",
+    "file": "backend/src/routes/admin.routes.js",
+    "method": "delete",
+    "line": 44,
+    "args": ["'/jobs/:id'", "deleteAdminJob"]
+  },
+  {
+    "mount": "/api/admin",
+    "file": "backend/src/routes/admin.routes.js",
+    "method": "post",
+    "line": 45,
+    "args": ["'/ai-rank'", "aiRankCandidates"]
+  },
+  {
+    "mount": "/api/admin-console",
+    "file": "backend/src/routes/adminConsole.routes.js",
+    "method": "use",
+    "line": 29,
+    "args": ["protect", "authorizeRoles('admin')", "requireOrganizationContext(['admin'])"]
+  },
+  {
+    "mount": "/api/admin-console",
+    "file": "backend/src/routes/adminConsole.routes.js",
+    "method": "get",
+    "line": 31,
+    "args": ["'/overview'", "getConsoleOverview"]
+  },
+  {
+    "mount": "/api/admin-console",
+    "file": "backend/src/routes/adminConsole.routes.js",
+    "method": "get",
+    "line": 32,
+    "args": ["'/analytics'", "getConsoleAnalytics"]
+  },
+  {
+    "mount": "/api/admin-console",
+    "file": "backend/src/routes/adminConsole.routes.js",
+    "method": "get",
+    "line": 33,
+    "args": ["'/activity'", "getConsoleActivity"]
+  },
+  {
+    "mount": "/api/admin-console",
+    "file": "backend/src/routes/adminConsole.routes.js",
+    "method": "get",
+    "line": 34,
+    "args": ["'/performance'", "getConsolePerformance"]
+  },
+  {
+    "mount": "/api/admin-console",
+    "file": "backend/src/routes/adminConsole.routes.js",
+    "method": "get",
+    "line": 35,
+    "args": ["'/teams'", "getConsoleTeams"]
+  },
+  {
+    "mount": "/api/admin-console",
+    "file": "backend/src/routes/adminConsole.routes.js",
+    "method": "post",
+    "line": 36,
+    "args": ["'/teams'", "createConsoleTeam"]
+  },
+  {
+    "mount": "/api/admin-console",
+    "file": "backend/src/routes/adminConsole.routes.js",
+    "method": "patch",
+    "line": 37,
+    "args": ["'/teams/:id'", "updateConsoleTeam"]
+  },
+  {
+    "mount": "/api/admin-console",
+    "file": "backend/src/routes/adminConsole.routes.js",
+    "method": "patch",
+    "line": 38,
+    "args": ["'/teams/:id/active'", "toggleConsoleTeamActive"]
+  },
+  {
+    "mount": "/api/admin-console",
+    "file": "backend/src/routes/adminConsole.routes.js",
+    "method": "delete",
+    "line": 39,
+    "args": ["'/teams/:id'", "deleteConsoleTeam"]
+  },
+  {
+    "mount": "/api/admin-console",
+    "file": "backend/src/routes/adminConsole.routes.js",
+    "method": "post",
+    "line": 40,
+    "args": ["'/teams/:id/recruiters'", "assignRecruiterToConsoleTeam"]
+  },
+  {
+    "mount": "/api/admin-console",
+    "file": "backend/src/routes/adminConsole.routes.js",
+    "method": "delete",
+    "line": 41,
+    "args": ["'/teams/:id/recruiters/:recruiterId'", "removeRecruiterFromConsoleTeam"]
+  },
+  {
+    "mount": "/api/admin-console",
+    "file": "backend/src/routes/adminConsole.routes.js",
+    "method": "get",
+    "line": 42,
+    "args": ["'/preferences'", "getConsolePreferences"]
+  },
+  {
+    "mount": "/api/admin-console",
+    "file": "backend/src/routes/adminConsole.routes.js",
+    "method": "patch",
+    "line": 43,
+    "args": ["'/preferences'", "updateConsolePreferences"]
+  },
+  {
+    "mount": "/api/weekly-reports",
+    "file": "backend/src/routes/weeklyReport.routes.js",
+    "method": "post",
+    "line": 10,
+    "args": ["'/generate'", "protect", "generateReport"]
+  },
+  {
+    "mount": "/api/weekly-reports",
+    "file": "backend/src/routes/weeklyReport.routes.js",
+    "method": "get",
+    "line": 11,
+    "args": ["'/latest'", "protect", "getLatestReport"]
+  },
+  {
+    "mount": "/api/weekly-reports",
+    "file": "backend/src/routes/weeklyReport.routes.js",
+    "method": "get",
+    "line": 12,
+    "args": ["'/history'", "protect", "getReportHistory"]
+  },
+  {
+    "mount": "/api/interview-prep",
+    "file": "backend/src/routes/interviewPrep.routes.js",
+    "method": "use",
+    "line": 42,
+    "args": [
+      "protect",
+      "(req, res, next) => { const input = req.method === 'GET' ? req.query : req.body || {}; const fields = [ 'skill', 'topic', 'stack', 'technology', 'language', 'framework', 'difficulty', 'category', 'source', 'block', 'top', 'lookupOnly', 'q', 'query', 'question', 'tags', 'careerStack', 'experienceLevel' ]; for (const field of fields) { if ( input[field] !== undefined && (typeof input[field] !== 'string' || input[field].length > (['q', 'query', 'question', 'tags'].includes(field) ? 500 : 100)) ) { return res.status(400).json({ message: `Invalid ${field}.` }); } } for (const field of ['page', 'limit', 'target']) { if ( input[field] !== undefined && (!['string', 'number'].includes(typeof input[field]) || !Number.isFinite(Number(input[field])) || Number(input[field]) < 1) ) { return res.status(400).json({ message: `Invalid ${field}.` }); } } if (input.difficulty && !['easy', 'medium', 'hard', 'senior'].includes(input.difficulty)) return res.status(400).json({ message: 'Invalid difficulty.' }); next(); }"
+    ]
+  },
+  {
+    "mount": "/api/interview-prep",
+    "file": "backend/src/routes/interviewPrep.routes.js",
+    "method": "get",
+    "line": 88,
+    "args": ["'/questions'", "getInterviewPrepQuestions"]
+  },
+  {
+    "mount": "/api/interview-prep",
+    "file": "backend/src/routes/interviewPrep.routes.js",
+    "method": "get",
+    "line": 89,
+    "args": ["'/search'", "searchRateLimiter", "searchInterviewPrepQuestions"]
+  },
+  {
+    "mount": "/api/interview-prep",
+    "file": "backend/src/routes/interviewPrep.routes.js",
+    "method": "post",
+    "line": 90,
+    "args": ["'/generate'", "generateRateLimiter", "generateInterviewPrepQuestions"]
+  },
+  {
+    "mount": "/api/interview-prep",
+    "file": "backend/src/routes/interviewPrep.routes.js",
+    "method": "post",
+    "line": 91,
+    "args": ["'/ask-question'", "customQuestionRateLimiter", "askInterviewPrepQuestion"]
+  },
+  {
+    "mount": "/api/interview-prep",
+    "file": "backend/src/routes/interviewPrep.routes.js",
+    "method": "post",
+    "line": 92,
+    "args": ["'/'", "generateRateLimiter", "generateInterviewPrepSession"]
+  },
+  {
+    "mount": "/api/interview-prep",
+    "file": "backend/src/routes/interviewPrep.routes.js",
+    "method": "get",
+    "line": 93,
+    "args": ["'/history'", "getInterviewPrepHistory"]
+  },
+  {
+    "mount": "/api/career-sprints",
+    "file": "backend/src/routes/careerSprint.routes.js",
+    "method": "get",
+    "line": 22,
+    "args": ["'/current'", "protect", "getCurrentCareerSprint"]
+  },
+  {
+    "mount": "/api/career-sprints",
+    "file": "backend/src/routes/careerSprint.routes.js",
+    "method": "get",
+    "line": 23,
+    "args": ["'/preferences'", "protect", "preferenceController.read"]
+  },
+  {
+    "mount": "/api/career-sprints",
+    "file": "backend/src/routes/careerSprint.routes.js",
+    "method": "put",
+    "line": 24,
+    "args": ["'/preferences'", "protect", "preferenceController.update"]
+  },
+  {
+    "mount": "/api/career-sprints",
+    "file": "backend/src/routes/careerSprint.routes.js",
+    "method": "post",
+    "line": 25,
+    "args": ["'/'", "protect", "createCareerSprint"]
+  },
+  {
+    "mount": "/api/career-sprints",
+    "file": "backend/src/routes/careerSprint.routes.js",
+    "method": "post",
+    "line": 26,
+    "args": ["'/generate-plan'", "protect", "generateAiTasks"]
+  },
+  {
+    "mount": "/api/career-sprints",
+    "file": "backend/src/routes/careerSprint.routes.js",
+    "method": "post",
+    "line": 27,
+    "args": ["'/generate-ai-tasks'", "protect", "generateAiTasks"]
+  },
+  {
+    "mount": "/api/career-sprints",
+    "file": "backend/src/routes/careerSprint.routes.js",
+    "method": "post",
+    "line": 28,
+    "args": ["'/generate-ai-plan'", "protect", "generateTrueAiTasks"]
+  },
+  {
+    "mount": "/api/career-sprints",
+    "file": "backend/src/routes/careerSprint.routes.js",
+    "method": "post",
+    "line": 29,
+    "args": ["'/:id/ai-plans'", "protect", "saveAiPlanController"]
+  },
+  {
+    "mount": "/api/career-sprints",
+    "file": "backend/src/routes/careerSprint.routes.js",
+    "method": "post",
+    "line": 30,
+    "args": ["'/:id/import-scenario'", "protect", "importScenarioPlanController"]
+  },
+  {
+    "mount": "/api/career-sprints",
+    "file": "backend/src/routes/careerSprint.routes.js",
+    "method": "post",
+    "line": 31,
+    "args": ["'/:id/tasks'", "protect", "addCareerSprintTask"]
+  },
+  {
+    "mount": "/api/career-sprints",
+    "file": "backend/src/routes/careerSprint.routes.js",
+    "method": "put",
+    "line": 32,
+    "args": ["'/:id/tasks/:taskId'", "protect", "updateCareerSprintTask"]
+  },
+  {
+    "mount": "/api/career-sprints",
+    "file": "backend/src/routes/careerSprint.routes.js",
+    "method": "delete",
+    "line": 33,
+    "args": ["'/:id/tasks/:taskId'", "protect", "deleteCareerSprintTask"]
+  },
+  {
+    "mount": "/api/career-sprints",
+    "file": "backend/src/routes/careerSprint.routes.js",
+    "method": "delete",
+    "line": 34,
+    "args": ["'/:id/ai-plans/:planId'", "protect", "deleteAiPlanController"]
+  },
+  {
+    "mount": "/api/career-sprints",
+    "file": "backend/src/routes/careerSprint.routes.js",
+    "method": "post",
+    "line": 35,
+    "args": ["'/:id/ai-plans/:planId/tasks'", "protect", "addDraftTasksController"]
+  },
+  {
+    "mount": "/api/career-sprints",
+    "file": "backend/src/routes/careerSprint.routes.js",
+    "method": "put",
+    "line": 36,
+    "args": ["'/:id/dates'", "protect", "updateSprintDatesController"]
+  },
+  {
+    "mount": "/api/career-sprints",
+    "file": "backend/src/routes/careerSprint.routes.js",
+    "method": "get",
+    "line": 37,
+    "args": ["'/history'", "protect", "getCareerSprintHistory"]
+  },
+  {
+    "mount": "/api/career-sprints",
+    "file": "backend/src/routes/careerSprint.routes.js",
+    "method": "post",
+    "line": 38,
+    "args": ["'/:id/restore-streak'", "protect", "restoreCareerStreakController"]
+  },
+  {
+    "mount": "/api/news",
+    "file": "backend/src/routes/newsRoutes.js",
+    "method": "use",
+    "line": 13,
+    "args": ["protect"]
+  },
+  {
+    "mount": "/api/news",
+    "file": "backend/src/routes/newsRoutes.js",
+    "method": "use",
+    "line": 14,
+    "args": ["(_req, res, next) => { res.set('Cache-Control', 'private, no-store'); next(); }"]
+  },
+  {
+    "mount": "/api/news",
+    "file": "backend/src/routes/newsRoutes.js",
+    "method": "get",
+    "line": 19,
+    "args": ["'/'", "feedLimit", "validateFeed", "getNews"]
+  },
+  {
+    "mount": "/api/news",
+    "file": "backend/src/routes/newsRoutes.js",
+    "method": "get",
+    "line": 20,
+    "args": ["'/saved'", "feedLimit", "getSavedNews"]
+  },
+  {
+    "mount": "/api/news",
+    "file": "backend/src/routes/newsRoutes.js",
+    "method": "post",
+    "line": 21,
+    "args": ["'/save'", "mutationLimit", "saveNews"]
+  },
+  {
+    "mount": "/api/news",
+    "file": "backend/src/routes/newsRoutes.js",
+    "method": "delete",
+    "line": 22,
+    "args": ["'/save/:id'", "mutationLimit", "removeSavedNews"]
+  },
+  {
+    "mount": "/api/news",
+    "file": "backend/src/routes/newsRoutes.js",
+    "method": "patch",
+    "line": 23,
+    "args": ["'/save/:id/read'", "mutationLimit", "markSavedNewsAsRead"]
+  },
+  {
+    "mount": "/api/support",
+    "file": "backend/src/routes/support.routes.js",
+    "method": "post",
+    "line": 7,
+    "args": ["'/tickets'", "protect", "supportController.createTicket"]
+  },
+  {
+    "mount": "/api/support",
+    "file": "backend/src/routes/support.routes.js",
+    "method": "get",
+    "line": 8,
+    "args": ["'/my-tickets'", "protect", "supportController.getMyTickets"]
+  },
+  {
+    "mount": "/api/support",
+    "file": "backend/src/routes/support.routes.js",
+    "method": "get",
+    "line": 9,
+    "args": ["'/tickets/:id'", "protect", "supportController.getTicketById"]
+  },
+  {
+    "mount": "/api/support",
+    "file": "backend/src/routes/support.routes.js",
+    "method": "delete",
+    "line": 10,
+    "args": ["'/tickets/:id'", "protect", "supportController.deleteTicket"]
+  },
+  {
+    "mount": "/api/support",
+    "file": "backend/src/routes/support.routes.js",
+    "method": "get",
+    "line": 13,
+    "args": [
+      "'/admin/tickets'",
+      "protect",
+      "authorizeRoles('admin', 'super_admin')",
+      "supportController.getAdminTickets"
+    ]
+  },
+  {
+    "mount": "/api/support",
+    "file": "backend/src/routes/support.routes.js",
+    "method": "put",
+    "line": 14,
+    "args": [
+      "'/admin/tickets/:id/status'",
+      "protect",
+      "authorizeRoles('admin', 'super_admin')",
+      "supportController.updateTicketStatus"
+    ]
+  },
+  {
+    "mount": "/api/preview",
+    "file": "backend/src/routes/preview.routes.js",
+    "method": "post",
+    "line": 53,
+    "args": [
+      "'/resume/parse-text'",
+      "require('../middleware/publicPortfolioRateLimit').uploadLimit",
+      "previewResumePdfMiddleware",
+      "parsePreviewResume"
+    ]
+  },
+  {
+    "mount": "/api/recruiter-hub/candidates",
+    "file": "backend/src/routes/recruiter-hub/candidateRoutes.js",
+    "method": "get",
+    "line": 6,
+    "args": ["'/'", "listCandidates"]
+  },
+  {
+    "mount": "/api/recruiter-hub/candidates",
+    "file": "backend/src/routes/recruiter-hub/candidateRoutes.js",
+    "method": "get",
+    "line": 7,
+    "args": ["'/:id'", "getCandidateDetails"]
+  },
+  {
+    "mount": "/api/recruiter-hub/candidates",
+    "file": "backend/src/routes/recruiter-hub/candidateRoutes.js",
+    "method": "post",
+    "line": 8,
+    "args": ["'/:id/analyze'", "analyzeCandidate"]
+  },
+  {
+    "mount": "/api/recruiter-hub/jobs",
+    "file": "backend/src/routes/recruiter-hub/recruiterJobRoutes.js",
+    "method": "get",
+    "line": 13,
+    "args": ["'/'", "listJobs"]
+  },
+  {
+    "mount": "/api/recruiter-hub/jobs",
+    "file": "backend/src/routes/recruiter-hub/recruiterJobRoutes.js",
+    "method": "post",
+    "line": 14,
+    "args": ["'/'", "createJob"]
+  },
+  {
+    "mount": "/api/recruiter-hub/jobs",
+    "file": "backend/src/routes/recruiter-hub/recruiterJobRoutes.js",
+    "method": "get",
+    "line": 15,
+    "args": ["'/:id'", "getJobDetails"]
+  },
+  {
+    "mount": "/api/recruiter-hub/jobs",
+    "file": "backend/src/routes/recruiter-hub/recruiterJobRoutes.js",
+    "method": "patch",
+    "line": 16,
+    "args": ["'/:id'", "updateJob"]
+  },
+  {
+    "mount": "/api/recruiter-hub/jobs",
+    "file": "backend/src/routes/recruiter-hub/recruiterJobRoutes.js",
+    "method": "post",
+    "line": 17,
+    "args": ["'/:id/archive'", "archiveJob"]
+  },
+  {
+    "mount": "/api/recruiter-hub/jobs",
+    "file": "backend/src/routes/recruiter-hub/recruiterJobRoutes.js",
+    "method": "delete",
+    "line": 18,
+    "args": ["'/:id'", "deleteJob"]
+  },
+  {
+    "mount": "/api/recruiter-hub/matches",
+    "file": "backend/src/routes/recruiter-hub/matchRoutes.js",
+    "method": "get",
+    "line": 11,
+    "args": ["'/'", "listMatches"]
+  },
+  {
+    "mount": "/api/recruiter-hub/matches",
+    "file": "backend/src/routes/recruiter-hub/matchRoutes.js",
+    "method": "post",
+    "line": 12,
+    "args": ["'/generate'", "generateMatches"]
+  },
+  {
+    "mount": "/api/recruiter-hub/matches",
+    "file": "backend/src/routes/recruiter-hub/matchRoutes.js",
+    "method": "get",
+    "line": 13,
+    "args": ["'/:id'", "getMatchDetails"]
+  },
+  {
+    "mount": "/api/recruiter-hub/matches",
+    "file": "backend/src/routes/recruiter-hub/matchRoutes.js",
+    "method": "patch",
+    "line": 14,
+    "args": ["'/:id/status'", "patchMatchStatus"]
+  },
+  {
+    "mount": "/api/recruiter-hub/shortlists",
+    "file": "backend/src/routes/recruiter-hub/shortlistRoutes.js",
+    "method": "get",
+    "line": 11,
+    "args": ["'/'", "getShortlists"]
+  },
+  {
+    "mount": "/api/recruiter-hub/shortlists",
+    "file": "backend/src/routes/recruiter-hub/shortlistRoutes.js",
+    "method": "post",
+    "line": 12,
+    "args": ["'/'", "createShortlist"]
+  },
+  {
+    "mount": "/api/recruiter-hub/shortlists",
+    "file": "backend/src/routes/recruiter-hub/shortlistRoutes.js",
+    "method": "patch",
+    "line": 13,
+    "args": ["'/:id'", "patchShortlist"]
+  },
+  {
+    "mount": "/api/recruiter-hub/shortlists",
+    "file": "backend/src/routes/recruiter-hub/shortlistRoutes.js",
+    "method": "delete",
+    "line": 14,
+    "args": ["'/:id'", "deleteShortlist"]
+  },
+  {
+    "mount": "/api/recruiter-hub/analytics",
+    "file": "backend/src/routes/recruiter-hub/analyticsRoutes.js",
+    "method": "get",
+    "line": 7,
+    "args": ["'/dashboard'", "getDashboard"]
+  },
+  {
+    "mount": "/api/recruiter-hub/analytics",
+    "file": "backend/src/routes/recruiter-hub/analyticsRoutes.js",
+    "method": "get",
+    "line": 8,
+    "args": ["'/'", "getAnalytics"]
+  },
+  {
+    "mount": "/api/recruiter-hub/activity",
+    "file": "backend/src/routes/recruiter-hub/activityRoutes.js",
+    "method": "get",
+    "line": 6,
+    "args": ["'/'", "getActivity"]
+  }
+]

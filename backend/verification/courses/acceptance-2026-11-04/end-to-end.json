@@ -1,0 +1,42 @@
+{
+  "startedAt": "2026-11-04T11:20:01.513Z",
+  "bundle": "main-V73U3GIY.js",
+  "fixtureOwners": [
+    "6aeb14e16bb0ff14db446c38",
+    "6aeb14e16bb0ff14db446c39"
+  ],
+  "environment": "Real local MongoDB, real JWT middleware, production course/progress/Sprint/profile HTTP handlers, production Angular bundle. Owned seeded evidence, no pre-existing users. Redis configured off.",
+  "traces": [],
+  "security": [],
+  "journeys": [],
+  "screenshots": [],
+  "pageErrors": [],
+  "freshNamespaceMigration": {
+    "created": [
+      {
+        "name": "course_pool_evidence_lookup",
+        "action": "created"
+      },
+      {
+        "name": "course_skill_evidence_lookup",
+        "action": "created"
+      }
+    ],
+    "repeated": [
+      {
+        "name": "course_pool_evidence_lookup",
+        "action": "exists"
+      },
+      {
+        "name": "course_skill_evidence_lookup",
+        "action": "exists"
+      }
+    ]
+  },
+  "status": "BLOCKED",
+  "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n503 !== 200\n\n    at C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\scripts\\verifyCoursesEndToEnd.js:251:10\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)",
+  "cleanup": {
+    "ownedUsersRemaining": 0,
+    "ownedProgressRemaining": 0
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "applied": false,
+  "requirements": {
+    "uniqueCacheKey": true,
+    "absoluteExpiry": true,
+    "topicExpiry": true
+  },
+  "complete": true
+}

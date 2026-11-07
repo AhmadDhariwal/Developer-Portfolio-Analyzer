@@ -1,0 +1,85 @@
+{
+  "status": "VERIFIED",
+  "scope": "Focused local Tech News UI and DevOps acceptance; not production deployment approval",
+  "forYouFilterCorrected": true,
+  "exploreDevopsSearchVerified": true,
+  "backend": {
+    "passed": 23,
+    "failed": 0,
+    "skipped": 0,
+    "command": "node --test backend/src/tests/newsSearchCorrections.test.js backend/src/tests/newsHubHardening.test.js backend/src/tests/newsDiscovery.test.js backend/src/tests/newsBrowsingLimit.test.js"
+  },
+  "mongo": {
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "command": "NEWS_TEST_MONGODB_URI=mongodb://localhost:27017 node --test backend/src/tests/newsSearchCorrections.integration.test.js",
+    "isolatedDatabaseRemoved": true
+  },
+  "frontend": {
+    "passed": 52,
+    "failed": 0,
+    "files": 2,
+    "command": "npm test -- --watch=false --include=src/app/pages/news/news.component.spec.ts --include=src/app/shared/services/news.service.spec.ts"
+  },
+  "typescript": "passed",
+  "productionBuild": "passed; existing landing-page SCSS warning only",
+  "browser": {
+    "checks": [
+      "Real authenticated Explore submission returns stored DevOps articles",
+      "Date, pagination and Refresh Results remain catalog-only",
+      "Check for New Articles uses explicit governed refresh on page one",
+      "For You controls and request parameters remain corrected after switching views"
+    ],
+    "requests": 8,
+    "errors": [],
+    "controls": {
+      "categoryControls": 0,
+      "searchControls": 0,
+      "sourceControls": 1,
+      "dateControls": 1,
+      "technologyButtons": 0
+    },
+    "realAuthenticatedApi": true,
+    "mockedNews": false
+  },
+  "formatting": "Explicit paths formatted and checked; see report",
+  "syntax": "passed",
+  "whitespace": "working and staged checks passed",
+  "cleanup": {
+    "taskBrowserHelpersStopped": true,
+    "taskServersStopped": true,
+    "backendLeftRunning": true,
+    "moved": [],
+    "deleted": [],
+    "temporaryTaskFiles": []
+  },
+  "files": {
+    "modified": [
+      "D:/Developer-Portfolio-Analyzer/backend/src/middleware/newsMiddleware.js",
+      "D:/Developer-Portfolio-Analyzer/backend/src/services/newsService.js",
+      "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/news/news.component.html",
+      "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/news/news.component.ts",
+      "D:/Developer-Portfolio-Analyzer/frontend/src/app/pages/news/news.component.spec.ts",
+      "D:/Developer-Portfolio-Analyzer/frontend/src/app/shared/components/news-filters/news-filters.html",
+      "D:/Developer-Portfolio-Analyzer/frontend/src/app/shared/services/news.service.ts",
+      "D:/Developer-Portfolio-Analyzer/frontend/src/app/shared/services/news.service.spec.ts"
+    ],
+    "added": [
+      "D:/Developer-Portfolio-Analyzer/backend/src/scripts/verifyNewsSearch.js",
+      "D:/Developer-Portfolio-Analyzer/backend/src/tests/newsSearchCorrections.test.js",
+      "D:/Developer-Portfolio-Analyzer/backend/src/tests/newsSearchCorrections.integration.test.js",
+      "D:/Developer-Portfolio-Analyzer/frontend/scripts/verify-news-search.cjs",
+      "D:/Developer-Portfolio-Analyzer/backend/verification/tech-news/search-corrections/api-after.json",
+      "D:/Developer-Portfolio-Analyzer/backend/verification/tech-news/search-corrections/api-before.json",
+      "D:/Developer-Portfolio-Analyzer/backend/verification/tech-news/search-corrections/initial-observation.json",
+      "D:/Developer-Portfolio-Analyzer/backend/verification/tech-news/search-corrections/REPORT.md",
+      "D:/Developer-Portfolio-Analyzer/frontend/verification/tech-news/search-corrections/after-explore.png",
+      "D:/Developer-Portfolio-Analyzer/frontend/verification/tech-news/search-corrections/after.json",
+      "D:/Developer-Portfolio-Analyzer/frontend/verification/tech-news/search-corrections/after.png",
+      "D:/Developer-Portfolio-Analyzer/frontend/verification/tech-news/search-corrections/before.json",
+      "D:/Developer-Portfolio-Analyzer/frontend/verification/tech-news/search-corrections/before.png",
+      "D:/Developer-Portfolio-Analyzer/backend/verification/tech-news/search-corrections/validation.json"
+    ]
+  }
+}

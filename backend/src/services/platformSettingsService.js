@@ -107,7 +107,14 @@ const deepMerge = (target, source) => {
   if (!source || typeof source !== 'object') return output;
 
   for (const [key, value] of Object.entries(source)) {
-    if (value && typeof value === 'object' && !Array.isArray(value) && target?.[key] && typeof target[key] === 'object' && !Array.isArray(target[key])) {
+    if (
+      value &&
+      typeof value === 'object' &&
+      !Array.isArray(value) &&
+      target?.[key] &&
+      typeof target[key] === 'object' &&
+      !Array.isArray(target[key])
+    ) {
       output[key] = deepMerge(target[key], value);
     } else if (value !== undefined) {
       output[key] = value;
@@ -151,55 +158,150 @@ const buildStoredDocument = (input = {}, existing = null) => {
   next.ai.enabled = normalizeBoolean(input?.ai?.enabled, base.ai.enabled);
   next.ai.provider = normalizeString(input?.ai?.provider, base.ai.provider);
   next.ai.model = normalizeString(input?.ai?.model, base.ai.model);
-  next.ai.usageLimitPerDay = normalizeNumber(input?.ai?.usageLimitPerDay, base.ai.usageLimitPerDay, { min: 0, max: 1_000_000 });
-  next.ai.recommendationLimit = normalizeNumber(input?.ai?.recommendationLimit, base.ai.recommendationLimit, { min: 1, max: 100 });
+  next.ai.usageLimitPerDay = normalizeNumber(input?.ai?.usageLimitPerDay, base.ai.usageLimitPerDay, {
+    min: 0,
+    max: 1_000_000
+  });
+  next.ai.recommendationLimit = normalizeNumber(input?.ai?.recommendationLimit, base.ai.recommendationLimit, {
+    min: 1,
+    max: 100
+  });
   next.ai.promptTemplate = normalizeString(input?.ai?.promptTemplate, base.ai.promptTemplate);
   if (input?.ai?.providerApiKey !== undefined) {
-    next.ai.providerApiKey = normalizeString(input.ai.providerApiKey) ? encryptSecret(input.ai.providerApiKey) : (existing?.ai?.providerApiKey || '');
+    next.ai.providerApiKey = normalizeString(input.ai.providerApiKey)
+      ? encryptSecret(input.ai.providerApiKey)
+      : existing?.ai?.providerApiKey || '';
   }
 
-  next.organization.allowOrgCreation = normalizeBoolean(input?.organization?.allowOrgCreation, base.organization.allowOrgCreation);
-  next.organization.maxTeamsPerOrganization = normalizeNumber(input?.organization?.maxTeamsPerOrganization, base.organization.maxTeamsPerOrganization, { min: 1, max: 1000 });
-  next.organization.recruiterLimitPerOrg = normalizeNumber(input?.organization?.recruiterLimitPerOrg, base.organization.recruiterLimitPerOrg, { min: 1, max: 1000 });
-  next.organization.adminInvitesRequireApproval = normalizeBoolean(input?.organization?.adminInvitesRequireApproval, base.organization.adminInvitesRequireApproval);
+  next.organization.allowOrgCreation = normalizeBoolean(
+    input?.organization?.allowOrgCreation,
+    base.organization.allowOrgCreation
+  );
+  next.organization.maxTeamsPerOrganization = normalizeNumber(
+    input?.organization?.maxTeamsPerOrganization,
+    base.organization.maxTeamsPerOrganization,
+    { min: 1, max: 1000 }
+  );
+  next.organization.recruiterLimitPerOrg = normalizeNumber(
+    input?.organization?.recruiterLimitPerOrg,
+    base.organization.recruiterLimitPerOrg,
+    { min: 1, max: 1000 }
+  );
+  next.organization.adminInvitesRequireApproval = normalizeBoolean(
+    input?.organization?.adminInvitesRequireApproval,
+    base.organization.adminInvitesRequireApproval
+  );
 
-  next.recruiter.enableRecruiterAccess = normalizeBoolean(input?.recruiter?.enableRecruiterAccess, base.recruiter.enableRecruiterAccess);
-  next.recruiter.candidateVisibility = normalizeString(input?.recruiter?.candidateVisibility, base.recruiter.candidateVisibility);
-  next.recruiter.activityThresholdDays = normalizeNumber(input?.recruiter?.activityThresholdDays, base.recruiter.activityThresholdDays, { min: 1, max: 365 });
+  next.recruiter.enableRecruiterAccess = normalizeBoolean(
+    input?.recruiter?.enableRecruiterAccess,
+    base.recruiter.enableRecruiterAccess
+  );
+  next.recruiter.candidateVisibility = normalizeString(
+    input?.recruiter?.candidateVisibility,
+    base.recruiter.candidateVisibility
+  );
+  next.recruiter.activityThresholdDays = normalizeNumber(
+    input?.recruiter?.activityThresholdDays,
+    base.recruiter.activityThresholdDays,
+    { min: 1, max: 365 }
+  );
 
-  next.developer.publicPortfolioVisibility = normalizeBoolean(input?.developer?.publicPortfolioVisibility, base.developer.publicPortfolioVisibility);
-  next.developer.githubRequirement = normalizeBoolean(input?.developer?.githubRequirement, base.developer.githubRequirement);
-  next.developer.profileCompletionRequirement = normalizeNumber(input?.developer?.profileCompletionRequirement, base.developer.profileCompletionRequirement, { min: 0, max: 100 });
+  next.developer.publicPortfolioVisibility = normalizeBoolean(
+    input?.developer?.publicPortfolioVisibility,
+    base.developer.publicPortfolioVisibility
+  );
+  next.developer.githubRequirement = normalizeBoolean(
+    input?.developer?.githubRequirement,
+    base.developer.githubRequirement
+  );
+  next.developer.profileCompletionRequirement = normalizeNumber(
+    input?.developer?.profileCompletionRequirement,
+    base.developer.profileCompletionRequirement,
+    { min: 0, max: 100 }
+  );
 
   next.security.jwtExpiresIn = normalizeString(input?.security?.jwtExpiresIn, base.security.jwtExpiresIn);
-  next.security.otpExpiryMinutes = normalizeNumber(input?.security?.otpExpiryMinutes, base.security.otpExpiryMinutes, { min: 1, max: 120 });
-  next.security.otpMaxAttempts = normalizeNumber(input?.security?.otpMaxAttempts, base.security.otpMaxAttempts, { min: 1, max: 20 });
-  next.security.passwordMinLength = normalizeNumber(input?.security?.passwordMinLength, base.security.passwordMinLength, { min: 6, max: 64 });
-  next.security.requireStrongPassword = normalizeBoolean(input?.security?.requireStrongPassword, base.security.requireStrongPassword);
-  next.security.loginMaxFailures = normalizeNumber(input?.security?.loginMaxFailures, base.security.loginMaxFailures, { min: 1, max: 50 });
-  next.security.loginLockoutMinutes = normalizeNumber(input?.security?.loginLockoutMinutes, base.security.loginLockoutMinutes, { min: 1, max: 1440 });
-  next.security.globalRateLimitMax = normalizeNumber(input?.security?.globalRateLimitMax, base.security.globalRateLimitMax, { min: 10, max: 100000 });
+  next.security.otpExpiryMinutes = normalizeNumber(input?.security?.otpExpiryMinutes, base.security.otpExpiryMinutes, {
+    min: 1,
+    max: 120
+  });
+  next.security.otpMaxAttempts = normalizeNumber(input?.security?.otpMaxAttempts, base.security.otpMaxAttempts, {
+    min: 1,
+    max: 20
+  });
+  next.security.passwordMinLength = normalizeNumber(
+    input?.security?.passwordMinLength,
+    base.security.passwordMinLength,
+    { min: 6, max: 64 }
+  );
+  next.security.requireStrongPassword = normalizeBoolean(
+    input?.security?.requireStrongPassword,
+    base.security.requireStrongPassword
+  );
+  next.security.loginMaxFailures = normalizeNumber(input?.security?.loginMaxFailures, base.security.loginMaxFailures, {
+    min: 1,
+    max: 50
+  });
+  next.security.loginLockoutMinutes = normalizeNumber(
+    input?.security?.loginLockoutMinutes,
+    base.security.loginLockoutMinutes,
+    { min: 1, max: 1440 }
+  );
+  next.security.globalRateLimitMax = normalizeNumber(
+    input?.security?.globalRateLimitMax,
+    base.security.globalRateLimitMax,
+    { min: 10, max: 100000 }
+  );
 
-  next.analytics.refreshIntervalMinutes = normalizeNumber(input?.analytics?.refreshIntervalMinutes, base.analytics.refreshIntervalMinutes, { min: 1, max: 1440 });
-  next.analytics.dashboardCacheMinutes = normalizeNumber(input?.analytics?.dashboardCacheMinutes, base.analytics.dashboardCacheMinutes, { min: 1, max: 1440 });
-  next.analytics.enableStructuredLogging = normalizeBoolean(input?.analytics?.enableStructuredLogging, base.analytics.enableStructuredLogging);
+  next.analytics.refreshIntervalMinutes = normalizeNumber(
+    input?.analytics?.refreshIntervalMinutes,
+    base.analytics.refreshIntervalMinutes,
+    { min: 1, max: 1440 }
+  );
+  next.analytics.dashboardCacheMinutes = normalizeNumber(
+    input?.analytics?.dashboardCacheMinutes,
+    base.analytics.dashboardCacheMinutes,
+    { min: 1, max: 1440 }
+  );
+  next.analytics.enableStructuredLogging = normalizeBoolean(
+    input?.analytics?.enableStructuredLogging,
+    base.analytics.enableStructuredLogging
+  );
 
-  next.notifications.emailNotifications = normalizeBoolean(input?.notifications?.emailNotifications, base.notifications.emailNotifications);
-  next.notifications.systemAlerts = normalizeBoolean(input?.notifications?.systemAlerts, base.notifications.systemAlerts);
-  next.notifications.recruiterAlerts = normalizeBoolean(input?.notifications?.recruiterAlerts, base.notifications.recruiterAlerts);
+  next.notifications.emailNotifications = normalizeBoolean(
+    input?.notifications?.emailNotifications,
+    base.notifications.emailNotifications
+  );
+  next.notifications.systemAlerts = normalizeBoolean(
+    input?.notifications?.systemAlerts,
+    base.notifications.systemAlerts
+  );
+  next.notifications.recruiterAlerts = normalizeBoolean(
+    input?.notifications?.recruiterAlerts,
+    base.notifications.recruiterAlerts
+  );
   next.notifications.adminAlerts = normalizeBoolean(input?.notifications?.adminAlerts, base.notifications.adminAlerts);
 
-  next.integrations.github.enabled = normalizeBoolean(input?.integrations?.github?.enabled, base.integrations.github.enabled);
+  next.integrations.github.enabled = normalizeBoolean(
+    input?.integrations?.github?.enabled,
+    base.integrations.github.enabled
+  );
   next.integrations.news.enabled = normalizeBoolean(input?.integrations?.news?.enabled, base.integrations.news.enabled);
   next.integrations.jobs.enabled = normalizeBoolean(input?.integrations?.jobs?.enabled, base.integrations.jobs.enabled);
   if (input?.integrations?.github?.apiKey !== undefined) {
-    next.integrations.github.apiKey = normalizeString(input.integrations.github.apiKey) ? encryptSecret(input.integrations.github.apiKey) : (existing?.integrations?.github?.apiKey || '');
+    next.integrations.github.apiKey = normalizeString(input.integrations.github.apiKey)
+      ? encryptSecret(input.integrations.github.apiKey)
+      : existing?.integrations?.github?.apiKey || '';
   }
   if (input?.integrations?.news?.apiKey !== undefined) {
-    next.integrations.news.apiKey = normalizeString(input.integrations.news.apiKey) ? encryptSecret(input.integrations.news.apiKey) : (existing?.integrations?.news?.apiKey || '');
+    next.integrations.news.apiKey = normalizeString(input.integrations.news.apiKey)
+      ? encryptSecret(input.integrations.news.apiKey)
+      : existing?.integrations?.news?.apiKey || '';
   }
   if (input?.integrations?.jobs?.apiKey !== undefined) {
-    next.integrations.jobs.apiKey = normalizeString(input.integrations.jobs.apiKey) ? encryptSecret(input.integrations.jobs.apiKey) : (existing?.integrations?.jobs?.apiKey || '');
+    next.integrations.jobs.apiKey = normalizeString(input.integrations.jobs.apiKey)
+      ? encryptSecret(input.integrations.jobs.apiKey)
+      : existing?.integrations?.jobs?.apiKey || '';
   }
 
   return next;
@@ -305,6 +407,7 @@ const getAiSnapshotSync = () => {
   const ai = settings?.ai || DEFAULT_SETTINGS.ai;
   return {
     enabled: ai?.enabled !== false,
+    configured: Boolean(settingsCache.value?.ai),
     provider: String(ai?.provider || DEFAULT_SETTINGS.ai.provider),
     model: String(ai?.model || DEFAULT_SETTINGS.ai.model),
     apiKey: decryptSecret(ai?.providerApiKey || '')

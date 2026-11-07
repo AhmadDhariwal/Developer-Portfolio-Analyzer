@@ -1,0 +1,412 @@
+{
+  "runId": "9a04a822-90af-40af-ba93-fbee2578ef51",
+  "mode": "NETWORK_ACK_RECOVERY_ONLY",
+  "startedAt": "2026-10-25T14:30:00.814Z",
+  "status": "FAIL",
+  "productionDataModified": false,
+  "checks": [
+    {
+      "label": "Actual full unique user/hash index installed locally",
+      "passed": true
+    },
+    {
+      "label": "Actual compound history cursor index installed locally",
+      "passed": true
+    },
+    {
+      "label": "Two instances concurrently save 100 identical plans as one immutable snapshot",
+      "passed": true
+    },
+    {
+      "label": "Two instances concurrently export 50 requests as one durable receipt/item set",
+      "passed": true
+    },
+    {
+      "label": "Real JWT foreign scenario/Sprint export is not found",
+      "passed": true
+    },
+    {
+      "label": "Server committed immutable snapshot before TCP acknowledgement was discarded",
+      "passed": true,
+      "details": {
+        "saveOutcome": "connection 30 to 127.0.0.1:64326 closed",
+        "droppedReplies": 1
+      }
+    },
+    {
+      "label": "Cross-instance retry after lost save acknowledgement preserves one original snapshot",
+      "passed": true
+    },
+    {
+      "label": "Cross-instance retry after lost export acknowledgement replays the atomic receipt without duplicate work",
+      "passed": true,
+      "details": {
+        "exportOutcome": "connection 31 to 127.0.0.1:64326 closed",
+        "droppedReplies": 2
+      }
+    },
+    {
+      "label": "Isolated real context composition has a bounded measured command count",
+      "passed": true,
+      "details": {
+        "driverCommands": 8,
+        "sources": [
+          {
+            "key": "github",
+            "status": "missing"
+          },
+          {
+            "key": "resume",
+            "status": "missing"
+          },
+          {
+            "key": "skillGap",
+            "status": "missing"
+          },
+          {
+            "key": "recommendations",
+            "status": "missing"
+          },
+          {
+            "key": "careerSprint",
+            "status": "available"
+          },
+          {
+            "key": "portfolio",
+            "status": "available"
+          },
+          {
+            "key": "integrations",
+            "status": "available"
+          },
+          {
+            "key": "jobsDemand",
+            "status": "missing"
+          }
+        ],
+        "poolWaitP95Ms": 79
+      }
+    },
+    {
+      "label": "Lost acknowledgement/retry grants no completion or XP",
+      "passed": true
+    },
+    {
+      "label": "Redis SDK queue stays bounded across repeated timed-out command batches",
+      "passed": false,
+      "details": {
+        "snapshots": [
+          {
+            "queue": {
+              "toSend": 0,
+              "waitingForReply": 0,
+              "total": 0
+            },
+            "heap": 34748960
+          },
+          {
+            "batch": 0,
+            "queue": {
+              "toSend": 0,
+              "waitingForReply": 4000,
+              "total": 4000
+            },
+            "heap": 44164032,
+            "fulfilled": 0,
+            "rejected": 4000
+          },
+          {
+            "batch": 1,
+            "queue": {
+              "toSend": 0,
+              "waitingForReply": 8000,
+              "total": 8000
+            },
+            "heap": 53525280,
+            "fulfilled": 0,
+            "rejected": 4000
+          }
+        ]
+      }
+    },
+    {
+      "label": "Pending Redis command pressure keeps actual Scenario admission fail-closed",
+      "passed": true,
+      "details": {
+        "status": 503,
+        "elapsedMs": 257.41889999999876
+      }
+    },
+    {
+      "label": "Redis SDK pending commands drain after actual socket reset",
+      "passed": true,
+      "details": {
+        "queue": {
+          "toSend": 0,
+          "waitingForReply": 0,
+          "total": 0
+        },
+        "heap": 35208992
+      }
+    }
+  ],
+  "phases": [],
+  "samples": [],
+  "failures": [
+    "Redis SDK queue stays bounded across repeated timed-out command batches"
+  ],
+  "limitations": [],
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32",
+    "os": "10.0.26300",
+    "logicalCpus": 8,
+    "cpu": "Intel(R) Core(TM) i5-8365U CPU @ 1.60GHz",
+    "totalMemory": 16976740352,
+    "mongoose": "9.2.4",
+    "mongodb": "7.1.0",
+    "redisClient": "4.7.1",
+    "redisInfo": [
+      "redis_version:7.2.11",
+      "redis_mode:standalone",
+      "os:Linux 4.4.0-26100-Microsoft x86_64",
+      "arch_bits:64"
+    ],
+    "redisConfig": "bind 127.0.0.1\nport <ephemeral>\nprotected-mode yes\nsave \"\"\nappendonly no\nmaxmemory 64mb\nmaxmemory-policy noeviction\n",
+    "mongoBuild": {
+      "version": "8.2.2",
+      "allocator": "tcmalloc-gperf"
+    },
+    "workers": [28276, 11420],
+    "mongoClientOptions": {
+      "serverSelectionTimeoutMS": 30000,
+      "socketTimeoutMS": 45000,
+      "maxPoolSize": 100,
+      "waitQueueTimeoutMS": 0,
+      "directConnection": true,
+      "autoIndex": false
+    }
+  },
+  "indexes": [
+    {
+      "v": 2,
+      "key": {
+        "_id": 1
+      },
+      "name": "_id_"
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1
+      },
+      "name": "userId_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "scenarioHash": 1
+      },
+      "name": "scenarioHash_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1,
+        "createdAt": -1,
+        "_id": -1
+      },
+      "name": "scenario_history_cursor"
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1,
+        "scenarioHash": 1
+      },
+      "name": "userId_1_scenarioHash_1",
+      "unique": true
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1,
+        "role": 1,
+        "experienceLevel": 1
+      },
+      "name": "userId_1_role_1_experienceLevel_1"
+    }
+  ],
+  "isolatedContextRead": {
+    "driverCommands": 8,
+    "sources": [
+      {
+        "key": "github",
+        "status": "missing"
+      },
+      {
+        "key": "resume",
+        "status": "missing"
+      },
+      {
+        "key": "skillGap",
+        "status": "missing"
+      },
+      {
+        "key": "recommendations",
+        "status": "missing"
+      },
+      {
+        "key": "careerSprint",
+        "status": "available"
+      },
+      {
+        "key": "portfolio",
+        "status": "available"
+      },
+      {
+        "key": "integrations",
+        "status": "available"
+      },
+      {
+        "key": "jobsDemand",
+        "status": "missing"
+      }
+    ],
+    "poolWaitP95Ms": 79
+  },
+  "redisPressure": {
+    "snapshots": [
+      {
+        "queue": {
+          "toSend": 0,
+          "waitingForReply": 0,
+          "total": 0
+        },
+        "heap": 34748960
+      },
+      {
+        "batch": 0,
+        "queue": {
+          "toSend": 0,
+          "waitingForReply": 4000,
+          "total": 4000
+        },
+        "heap": 44164032,
+        "fulfilled": 0,
+        "rejected": 4000
+      },
+      {
+        "batch": 1,
+        "queue": {
+          "toSend": 0,
+          "waitingForReply": 8000,
+          "total": 8000
+        },
+        "heap": 53525280,
+        "fulfilled": 0,
+        "rejected": 4000
+      }
+    ]
+  },
+  "removedTemporaryFiles": [
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\collection-0c56678e-0381-49e1-b38f-92725dafb15b.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\collection-0f2f3891-3b40-431d-9a31-61edf7af2381.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\collection-22fe11e0-f1b2-4930-b6d2-6b57bc5da6bf.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\collection-33124271-6aa8-4ae1-ab2d-dcde4471d0d0.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\collection-3aeaedcd-cb53-42cf-a804-ce827dbcc982.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\collection-3b1a22ef-a44d-4ddd-b6ce-4119c9f70327.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\collection-4c992460-740b-4a3f-9467-29e32ba39ffe.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\collection-4ccb1f67-9ba6-4da8-9ad8-0e02b880f3db.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\collection-51fefd3c-8b13-4f65-9f27-d571253a7471.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\collection-56cb958b-6ab8-4b1e-a980-1db3ca527258.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\collection-6ad01106-9754-4073-a42d-06c16755e85f.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\collection-6c1eec9b-2f26-40bc-9876-0c89974cea88.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\collection-6d625aec-af9d-4422-a292-a2566e6db2d2.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\collection-7753e692-7496-4e8a-bdd8-f46a1bb937ec.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\collection-7add823c-0f14-4f50-a0ed-909de8210713.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\collection-8a57235d-d8e2-466a-9cec-186fd1689408.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\collection-90108728-60fa-48d5-b8c3-9a9541077458.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\collection-9aaff15e-575e-4696-b371-ebeb6cf87777.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\collection-a26fba6d-173b-46ee-b878-fb2c438abd6d.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\collection-a286c72b-26cf-468a-8a6e-662f4318a6da.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\collection-a871806f-2472-48be-be2d-978c86b74d08.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\collection-c222dcb3-1337-4d5c-8dce-17e5aae5a089.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\collection-d027e9d5-8195-4bd0-836f-05cbb262269c.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\collection-e6fcec95-e128-4e25-b252-85c4c0ad95bd.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-0b619ca6-da8a-4f4c-9bb6-7bac8788bb76.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-0e95e1dd-8f83-4378-a58c-e112e10af958.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-13488745-e3f3-4005-9cf8-aec598d05f85.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-14ed4234-4b25-49ca-82f4-ef6459ba6d5f.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-15b28d66-65d1-4c95-b538-061d691503ba.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-167db643-cbdc-4e68-a618-e411f89b1848.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-24e19e6c-4372-407e-8e14-db5cbe1de06a.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-24f2aa7b-dcb2-4cd9-9ae5-3c39d3bcb998.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-2b8ac2f1-168b-4b53-a4d5-97bc3f4a3340.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-2cd36a10-8214-4d9a-9504-487ff7665b2d.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-2f5f14d3-7a5b-4212-8046-c42c6ebbbf7f.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-310da099-f45e-423c-90c6-bfc2bba0fc65.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-377b2b23-5517-4feb-be28-08bd211ac84b.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-3e57a753-43f5-45df-90bf-ccb1c5f0ea8c.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-479e9f4b-8b76-4758-80ed-047fbea76efb.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-4b747f24-aadc-4b05-8fcb-14536d27b617.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-5483cb47-34db-4273-8c3d-a0c2fd5b01d7.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-55b91e40-db56-4663-ad00-7cdd076b6724.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-5816d082-e5b7-4ddb-9564-f3fe90220e31.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-5d89ff93-4824-48d2-9d2e-91fbaf88b546.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-6673c8e7-0bb6-4017-a633-049f40051a1e.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-6698e3a7-13c7-402b-9f2b-535428a66926.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-74b8da01-f5db-4f9f-88f7-8dc9fd89e14e.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-7969d351-1278-4f98-b8fc-766fbe127225.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-7ca27ea2-6e32-40a9-a7cb-68d0f188f047.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-8ccf0a0f-96fd-4f91-a192-316b84720ef2.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-8d290692-f8f0-444b-b74b-85314de6c3b2.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-91972d6a-fac9-46c8-bca7-70d0b4b7befc.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-9ae5777e-9e23-41bc-97d6-3c35512e2aa5.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-9b4c3fcf-c4a2-4ec9-8bad-f210b05c9bed.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-9e5224ed-faf7-4774-9bf7-404aca5f0187.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-a28fda24-59d9-4db6-9195-f9891e4df3e1.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-a725d571-8f4e-4570-bb2b-bb07d90cff1c.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-a821277f-fe75-4c9c-9af3-d73eaae5f6a4.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-a8fe3365-08b5-4ead-987c-bd05477b5908.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-b3df03f1-5fa7-41d4-981a-7c59befc87bb.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-baeabd78-36a2-4f8a-b9b1-013b6a6c2d82.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-beb3567d-058a-4ec9-99d5-e24704ea51e3.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-bf6d1b0a-d433-4c87-9c07-4d0c94631f1d.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-c62490ae-8859-46c3-8694-435ca2483dc8.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-c76cfc98-4ad6-41db-9825-33ce18eb8697.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-ccdbabe0-8964-4870-86c7-bd8270d7b9db.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-d680910b-d3cf-4273-862e-f405223820ea.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-d682f840-ab00-491c-b330-c990d9f0490c.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-dfb1c782-dabc-4e6b-be51-8671f6fe2c15.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-e843d806-b566-40e8-8cfc-0e011a9ff543.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-eb75557d-0926-4499-b214-b26d3b4e923c.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-ec6cf804-6691-48c7-a95d-d436cebad5eb.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-ee3e17ca-5af6-4f7a-9a36-20f40705acd0.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-f6cd4123-db7e-4a26-8b67-069a893752ee.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-f79b4a09-9f3a-4310-aa66-f65bcfc64ab2.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-f8802799-0e72-4a30-a9a6-6c311450e819.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\index-fdd5f933-bbbd-4f60-8e77-fe885eb34368.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\mongod.lock",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\sizeStorer.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\storage.bson",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\WiredTiger",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\WiredTiger.lock",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\WiredTiger.turtle",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\WiredTiger.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\WiredTigerHS.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\_mdb_catalog.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\journal\\WiredTigerLog.0000000001",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\journal\\WiredTigerPreplog.0000000001",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ\\diagnostic.data\\metrics.2026-10-25T14-30-04Z-00000"
+  ],
+  "finishedAt": "2026-10-25T14:30:13.854Z",
+  "runtimeDirectory": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-rB62QQ",
+  "cleanup": {
+    "workersStopped": true,
+    "mongoStopped": true,
+    "redisShutdownRequested": true,
+    "redisProcessExitCode": 0,
+    "recursiveDeletion": false
+  }
+}

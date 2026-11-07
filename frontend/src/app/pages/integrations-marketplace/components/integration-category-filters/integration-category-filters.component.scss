@@ -1,0 +1,91 @@
+:host {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding-top: 0.25rem;
+
+  .category-tabs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--surface-card, #ffffff);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: 8px;
+    padding: 7px 14px;
+    color: var(--text-secondary, #475569);
+    font-size: 0.78rem;
+    font-family: var(--font-sans, 'Inter', sans-serif);
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow-xs, 0 1px 2px rgba(0, 0, 0, 0.04));
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: var(--surface-secondary, #f8fafc);
+      color: var(--text-primary, #0f172a);
+      border-color: var(--border-strong, #cbd5e1);
+    }
+
+    &.active {
+      background: var(--color-primary-soft, #eef2ff);
+      color: var(--color-primary-text, #4338ca);
+      border-color: var(--color-primary-border, #c7d2fe);
+      font-weight: 700;
+      box-shadow: 0 0 0 1px var(--color-primary, #4f46e5);
+    }
+  }
+
+  .tab-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    &--green {
+      background: var(--color-success, #10b981);
+      box-shadow: 0 0 6px var(--color-success, #10b981);
+    }
+  }
+
+  .filter-count {
+    font-size: 0.74rem;
+    font-family: inherit;
+    color: var(--text-muted, #64748b);
+  }
+}
+
+:host-context([data-theme='dark']),
+:host-context(.dark) {
+  .tab-btn {
+    background: #151d2a;
+    border-color: rgba(255, 255, 255, 0.08);
+    color: #94a3b8;
+
+    &:hover {
+      background: #1e293b;
+      color: #f8fafc;
+      border-color: rgba(163, 166, 255, 0.3);
+    }
+
+    &.active {
+      background: rgba(163, 166, 255, 0.14);
+      color: #a3a6ff;
+      border-color: #a3a6ff;
+      box-shadow: 0 0 10px rgba(163, 166, 255, 0.18);
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  :host {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

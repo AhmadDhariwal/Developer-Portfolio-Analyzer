@@ -1,0 +1,60 @@
+[
+  {
+    "profile": "octocat",
+    "collectedAt": "2026-11-01T12:06:34.895Z",
+    "url": "https://api.github.com/repos/octocat/Hello-World/readme",
+    "params": {},
+    "status": 200,
+    "sourceDate": "Sun, 01 Nov 2026 12:06:35 GMT",
+    "rateRemaining": "1",
+    "rateReset": "1793537769",
+    "failed": false,
+    "data": {
+      "name": "README",
+      "path": "README",
+      "sha": "980a0d5f19a64b4b30a87d4206aade58726b60e3",
+      "size": 13,
+      "url": "https://api.github.com/repos/octocat/Hello-World/contents/README?ref=master",
+      "html_url": "https://github.com/octocat/Hello-World/blob/master/README",
+      "git_url": "https://api.github.com/repos/octocat/Hello-World/git/blobs/980a0d5f19a64b4b30a87d4206aade58726b60e3",
+      "download_url": "https://raw.githubusercontent.com/octocat/Hello-World/master/README",
+      "type": "file",
+      "content": "SGVsbG8gV29ybGQhCg==\n",
+      "encoding": "base64",
+      "_links": {
+        "self": "https://api.github.com/repos/octocat/Hello-World/contents/README?ref=master",
+        "git": "https://api.github.com/repos/octocat/Hello-World/git/blobs/980a0d5f19a64b4b30a87d4206aade58726b60e3",
+        "html": "https://github.com/octocat/Hello-World/blob/master/README"
+      }
+    }
+  },
+  {
+    "profile": "octocat",
+    "collectedAt": "2026-11-01T12:06:35.292Z",
+    "url": "https://api.github.com/repos/octocat/Spoon-Knife/readme",
+    "params": {},
+    "status": 200,
+    "sourceDate": "Sun, 01 Nov 2026 12:06:35 GMT",
+    "rateRemaining": "0",
+    "rateReset": "1793537769",
+    "failed": false,
+    "data": {
+      "name": "README.md",
+      "path": "README.md",
+      "sha": "f4790267d0d362a90d6799759ece092616c40779",
+      "size": 780,
+      "url": "https://api.github.com/repos/octocat/Spoon-Knife/contents/README.md?ref=main",
+      "html_url": "https://github.com/octocat/Spoon-Knife/blob/main/README.md",
+      "git_url": "https://api.github.com/repos/octocat/Spoon-Knife/git/blobs/f4790267d0d362a90d6799759ece092616c40779",
+      "download_url": "https://raw.githubusercontent.com/octocat/Spoon-Knife/main/README.md",
+      "type": "file",
+      "content": "IyMjIFdlbGwgaGVsbG8gdGhlcmUhCgpUaGlzIHJlcG9zaXRvcnkgaXMgbWVh\nbnQgdG8gcHJvdmlkZSBhbiBleGFtcGxlIGZvciAqZm9ya2luZyogYSByZXBv\nc2l0b3J5IG9uIEdpdEh1Yi4KCkNyZWF0aW5nIGEgKmZvcmsqIGlzIHByb2R1\nY2luZyBhIHBlcnNvbmFsIGNvcHkgb2Ygc29tZW9uZSBlbHNlJ3MgcHJvamVj\ndC4gRm9ya3MgYWN0IGFzIGEgc29ydCBvZiBicmlkZ2UgYmV0d2VlbiB0aGUg\nb3JpZ2luYWwgcmVwb3NpdG9yeSBhbmQgeW91ciBwZXJzb25hbCBjb3B5LiBZ\nb3UgY2FuIHN1Ym1pdCAqUHVsbCBSZXF1ZXN0cyogdG8gaGVscCBtYWtlIG90\naGVyIHBlb3BsZSdzIHByb2plY3RzIGJldHRlciBieSBvZmZlcmluZyB5b3Vy\nIGNoYW5nZXMgdXAgdG8gdGhlIG9yaWdpbmFsIHByb2plY3QuIEZvcmtpbmcg\naXMgYXQgdGhlIGNvcmUgb2Ygc29jaWFsIGNvZGluZyBhdCBHaXRIdWIuCgpB\nZnRlciBmb3JraW5nIHRoaXMgcmVwb3NpdG9yeSwgeW91IGNhbiBtYWtlIHNv\nbWUgY2hhbmdlcyB0byB0aGUgcHJvamVjdCwgYW5kIHN1Ym1pdCBbYSBQdWxs\nIFJlcXVlc3RdKGh0dHBzOi8vZ2l0aHViLmNvbS9vY3RvY2F0L1Nwb29uLUtu\naWZlL3B1bGxzKSBhcyBwcmFjdGljZS4KCkZvciBzb21lIG1vcmUgaW5mb3Jt\nYXRpb24gb24gaG93IHRvIGZvcmsgYSByZXBvc2l0b3J5LCBbY2hlY2sgb3V0\nIG91ciBndWlkZSwgIkZvcmtpbmcgUHJvamVjdHMiIl0oaHR0cDovL2d1aWRl\ncy5naXRodWIuY29tL292ZXJ2aWV3cy9mb3JraW5nLykuIFRoYW5rcyEgOnNw\nYXJrbGluZ19oZWFydDoK\n",
+      "encoding": "base64",
+      "_links": {
+        "self": "https://api.github.com/repos/octocat/Spoon-Knife/contents/README.md?ref=main",
+        "git": "https://api.github.com/repos/octocat/Spoon-Knife/git/blobs/f4790267d0d362a90d6799759ece092616c40779",
+        "html": "https://github.com/octocat/Spoon-Knife/blob/main/README.md"
+      }
+    }
+  }
+]

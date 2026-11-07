@@ -1,0 +1,20 @@
+[
+  "﹣ disposable Mongo + fixture S3: existing upload APIs, privacy, replacement, cleanup, restart and legacy reads (0.3295ms) # SKIP",
+  "﹣ Interview Prep isolated Mongo critical paths (1.1644ms) # SKIP",
+  "﹣ isolated adaptive demand selects a topic, reserves governed prewarm work and persists through the worker (18.087ms) # SKIP",
+  "﹣ isolated catalog: scheduled ingestion, discovery, indexed history, shared tags, refresh and worker caches (1.5734ms) # SKIP",
+  "﹣ isolated Mongo read/unread contract persists history atomically (0.9126ms) # SKIP",
+  "﹣ isolated Mongo discovery persistence, source expiry and cold-worker fallback preserve the general pool (2.1049ms) # SKIP",
+  "﹣ isolated Redis/Upstash discovery queue is atomic, bounded, recoverable and fenced across workers (0.3398ms) # SKIP",
+  "﹣ atomic discovery accounting, reserved capacity, deduplication and expired quota revalidation (2.1738ms) # SKIP",
+  "﹣ isolated free-text HTTP search, Redis worker and Mongo publication round trip (0.7886ms) # SKIP",
+  "﹣ disposable Upstash: atomic quotas, cooldown, circuits, leases, shared cache and outage fallback (1.3822ms) # SKIP",
+  "﹣ isolated local Mongo: actual cache persistence, indexes, JWT ownership and idempotent saved actions (0.3036ms) # SKIP",
+  "﹣ approved live metadata search through an isolated governed worker and Mongo cache (1.1715ms) # SKIP",
+  "﹣ isolated scheduled provider pipeline: all sources persist with attribution, retention, shared pacing and cache invalidation (6.5546ms) # SKIP",
+  "﹣ isolated refresh: exact EC2 interval, shared headroom, manual dedup, Mongo publication and cross-worker version visibility (3.3444ms) # SKIP",
+  "﹣ isolated upstream cooldown propagates precise reason and expiry without a retry (1.7347ms) # SKIP",
+  "﹣ isolated Mongo: indexed DevOps aliases, multi-tags, dates and totals update across warm worker caches (4.1631ms) # SKIP",
+  "﹣ disposable replica set: CRUD, ownership, concurrency, upload, deletion rollback and cleanup (1.1124ms) # SKIP",
+  "﹣ disposable Mongo provisioning is additive/idempotent; retry batch respects backoff and preserves records (0.2511ms) # SKIP"
+]

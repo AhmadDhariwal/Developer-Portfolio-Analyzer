@@ -1,0 +1,89 @@
+{
+  "modified": [
+    {
+      "file": "backend/src/tests/integrationsLocalAcceptance.test.js",
+      "sha256": "a03212cbb851fe734316292a1b6fd698cb446d5fc8e1b3c42141e2ac21cebc74"
+    },
+    {
+      "file": "backend/verification/integrations/PRODUCTION-FINALIZATION-REPORT.md",
+      "sha256": "ccb70ab96f357463a96c76fac418891355a3bf017dfbfc6cac263ff95f8e4076"
+    }
+  ],
+  "addedEvidence": [
+    {
+      "file": "backend/verification/integrations/final-local-acceptance/accepted-build-source-hashes.json",
+      "sha256": "1ae64b90416f3f9908309385f11bcda5753adb5414b2cba08241090a87311336",
+      "bytes": 94245
+    },
+    {
+      "file": "backend/verification/integrations/final-local-acceptance/accepted-build-stability.json",
+      "sha256": "5e77318a5332dd59c01bdedbdd7aefe1878474d0cd4c144ffe8e6f8425940e5a",
+      "bytes": 97
+    },
+    {
+      "file": "backend/verification/integrations/final-local-acceptance/accepted-production-build.txt",
+      "sha256": "abc93d84fdb72e8760701521c957749616427b6ad0960bb22c16b68a00f8374f",
+      "bytes": 1524
+    },
+    {
+      "file": "backend/verification/integrations/final-local-acceptance/api-results.json",
+      "sha256": "75f37e77c8f1f99b1a7dac70552a19985f92c7c7ecc127176427d970c808a8e7",
+      "bytes": 4329
+    },
+    {
+      "file": "backend/verification/integrations/final-local-acceptance/final-build-source-hashes.json",
+      "sha256": "73eaa8a74afee4deccfb578115b79376090d7834c6b10e37051fce34a0b73708",
+      "bytes": 94245
+    },
+    {
+      "file": "backend/verification/integrations/final-local-acceptance/final-checks.json",
+      "sha256": "182fcf8dfc5b0bf9a6e625228faf9741d560176c659d9304240b831372f17a21",
+      "bytes": 1480
+    },
+    {
+      "file": "backend/verification/integrations/final-local-acceptance/final-production-build.txt",
+      "sha256": "e0c03e85d6566a0f7d7b2399e510a534ddd007b54623cbb06544d2a716c31645",
+      "bytes": 1524
+    },
+    {
+      "file": "backend/verification/integrations/final-local-acceptance/focused-backend.tap",
+      "sha256": "2a5885fa8dfc311a8ff1cd6061ed1635fa379007ecf44d4a25550594b8fbb39d",
+      "bytes": 6524
+    },
+    {
+      "file": "backend/verification/integrations/final-local-acceptance/frontend-tests.txt",
+      "sha256": "195f5e5dfefb5b37c236649346f55257e2ffd353172194b9631444c26ef8a4cc",
+      "bytes": 6847
+    },
+    {
+      "file": "backend/verification/integrations/final-local-acceptance/preflight.json",
+      "sha256": "867e2c3d82d17e06ffc651738cc13a3afe1eec2917766b41226eb56f28f3563b",
+      "bytes": 163908
+    },
+    {
+      "file": "backend/verification/integrations/final-local-acceptance/production-build.txt",
+      "sha256": "7d4a7f10a5c8823b7276d66e66a1b51a6d34283a9acfa3b8c69d259974edd7fc",
+      "bytes": 1524
+    },
+    {
+      "file": "backend/verification/integrations/final-local-acceptance/reconciled-build-source-hashes.json",
+      "sha256": "01d18ed5b6c16bd902f09f4110f21aa0bbb755f29f8405a9e57c8d157fdc1644",
+      "bytes": 94245
+    },
+    {
+      "file": "backend/verification/integrations/final-local-acceptance/reconciled-production-build.txt",
+      "sha256": "1b74122a9e58d1c886f585059e6fbf342143ba87141c1d7906c304277735f4ce",
+      "bytes": 1524
+    },
+    {
+      "file": "backend/verification/integrations/final-local-acceptance/source-reconciliation.json",
+      "sha256": "9dc63cb54197b3fa0ed557de0ea6f791e049fa2468049f6e72e35e3ebaa009b8",
+      "bytes": 3923
+    }
+  ],
+  "manifest": "backend/verification/integrations/final-local-acceptance/file-inventory.json",
+  "moved": [],
+  "deleted": [],
+  "productionSourceChangesByTask": 0,
+  "finalSourceDrift": []
+}

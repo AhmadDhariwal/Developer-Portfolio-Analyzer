@@ -1,0 +1,17 @@
+{
+  "syntheticArithmeticChecks": true,
+  "providerRanking": {
+    "relevanceTerms": "25 + 18 + 10 + 12 + 6 = 71",
+    "weightedTerms": "round((4.5/5)*100*0.38 + 50*0.28 + 71*0.34) = 72",
+    "actualRelevance": 71,
+    "actualFinalScore": 72,
+    "reviewCount": 0
+  },
+  "engagement": {
+    "expression": "round-to-1dp(4 + clamp(likes/views*12,0,0.45) + clamp(log10(max(views,10))*0.12,0,0.35))",
+    "views1000Likes50": 4.8,
+    "views100Likes0": 4.2,
+    "zeroViews": null
+  },
+  "status": "VERIFIED"
+}

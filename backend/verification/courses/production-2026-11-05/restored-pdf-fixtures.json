@@ -1,0 +1,42 @@
+[
+  {
+    "path": "backend/src/tests/fixtures/resume/standard.pdf",
+    "sha256": "c74dcd95d85a59f4a16186a60d1d9085e2b2fe66a39f0e17b2279cec7fb65722",
+    "matchesHistorical": true
+  },
+  {
+    "path": "backend/src/tests/fixtures/resume/layout-shift.pdf",
+    "sha256": "9090e15e85b17790d7b0c54706225d9bf8e5d99388911f42fcf9de39c073c3bd",
+    "matchesHistorical": true
+  },
+  {
+    "path": "backend/src/tests/fixtures/resume/columns.pdf",
+    "sha256": "ce3e80e57712fb69953a5e7850024300b28936b739cb7b2c8bc4a9e8d77f0aef",
+    "matchesHistorical": true
+  },
+  {
+    "path": "backend/src/tests/fixtures/resume/empty.pdf",
+    "sha256": "de3f3c4698849df3101303c0dbd57fc01f746048808a2ab51488200c2415bf21",
+    "matchesHistorical": true
+  },
+  {
+    "path": "backend/src/tests/fixtures/resume/corrupt.pdf",
+    "sha256": "83e1caf5b18318069dd1598bb856ef327389b574ededc4fc63901167594ff9db",
+    "matchesHistorical": true
+  },
+  {
+    "path": "backend/src/tests/fixtures/resume/encrypted.pdf",
+    "sha256": "19ec70e245edf3882b74c27c925e5fa55ddf6271ad910bff55b2a2047f446915",
+    "matchesHistorical": true
+  },
+  {
+    "path": "backend/src/tests/fixtures/resume/scanned.pdf",
+    "sha256": "e3db18729f3cc08730f202287d33704820ef9356989895eaf3c9df2cf84f94f9",
+    "matchesHistorical": true
+  },
+  {
+    "path": "backend/src/tests/fixtures/resume/page-limit.pdf",
+    "sha256": "0e4277a2a41f8598637da4e7e40994f8adf19aab8a356f46d5eabd6b20d91c9f",
+    "matchesHistorical": true
+  }
+]

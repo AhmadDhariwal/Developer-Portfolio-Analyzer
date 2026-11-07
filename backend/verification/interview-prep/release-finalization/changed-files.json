@@ -1,0 +1,544 @@
+{
+  "branch": "fix/interview-prep",
+  "head": "62778518a4724aed356da306a9ababc73b1b2fdf",
+  "prTarget": "not applicable",
+  "files": [
+    {
+      "file": "backend/.env",
+      "kind": "local-environment-update",
+      "sha256": null,
+      "note": "Ignored secret-bearing file; values/hash omitted; new Claude credential preserved pending clarification"
+    },
+    {
+      "file": "backend/.env.example",
+      "kind": "modified",
+      "bytes": 33249,
+      "sha256": "05e0ba8489821bb2f5478a14ee9b6bb93eb3d671ec3c74a1b70aa084a78241cb"
+    },
+    {
+      "file": "backend/src/config/aiProviders.js",
+      "kind": "modified",
+      "bytes": 3047,
+      "sha256": "06ec3fd4d824e8ff197e5927eba7551fb9b0bc6b6b19e1f8f6935526b024a476"
+    },
+    {
+      "file": "backend/src/scripts/auditReleaseEnvironment.cjs",
+      "kind": "added",
+      "bytes": 3539,
+      "sha256": "a46581f698edd4dd05906cd116079b54d0d1b473bba1d5528b801ed540697948"
+    },
+    {
+      "file": "backend/src/scripts/configureSharedAiEnvironment.js",
+      "kind": "modified",
+      "bytes": 3580,
+      "sha256": "e28f1cf7aea6f2936c1c26532c71902aa91d45547ffe0c8d313f805ad0f6e181"
+    },
+    {
+      "file": "backend/src/scripts/verifyBackendRelease.cjs",
+      "kind": "added",
+      "bytes": 9319,
+      "sha256": "45aa49b535e060e8b46aad2ff3a74408076634d04e052c88a73a6ea6d84aad15"
+    },
+    {
+      "file": "backend/src/scripts/verifyCareerSprintAiLive.js",
+      "kind": "modified",
+      "bytes": 5596,
+      "sha256": "9199e8d3156b5ab2884a51b34a7c09083eaa8008dc1530f7df9fdb5ff802f95d"
+    },
+    {
+      "file": "backend/src/scripts/verifyReleaseIndexes.cjs",
+      "kind": "added",
+      "bytes": 2978,
+      "sha256": "211bb449c63bb5b32bf6296dbbee26d88e7537732edbce2c4b345522ebe02ea5"
+    },
+    {
+      "file": "backend/src/scripts/verifySharedAiProviders.js",
+      "kind": "modified",
+      "bytes": 3346,
+      "sha256": "09618b82d1b551fd51af68f6f36d8e763e11ca802014e2625f7e911e100fda0b"
+    },
+    {
+      "file": "backend/src/services/aiProviderManager.js",
+      "kind": "modified",
+      "bytes": 27028,
+      "sha256": "8445205b9b14f36ff5c4561eb0561cb845bf372379fd9a5393f73c807d8830af"
+    },
+    {
+      "file": "backend/src/services/courseRecommendationService.js",
+      "kind": "modified",
+      "bytes": 27217,
+      "sha256": "8170ab55f335e729bffed2c1b64f760c9e8039bca801c637d0c8e157d9e7f629"
+    },
+    {
+      "file": "backend/src/tests/aiProviderPlatform.test.js",
+      "kind": "modified",
+      "bytes": 13583,
+      "sha256": "d7f2b3aba7be33a7458ec70e4c477eb701ee3f7f1b692db1e631febe80ea5e3f"
+    },
+    {
+      "file": "backend/src/tests/coursesPerformance.test.js",
+      "kind": "modified",
+      "bytes": 15860,
+      "sha256": "9f06930cf440984a7791c638c2ccef317bc01643fe2bfb1c18469f911da42ea8"
+    },
+    {
+      "file": "backend/src/tests/fixtures/disposableRequestMongo.js",
+      "kind": "modified",
+      "bytes": 4924,
+      "sha256": "bb2d435d044b5e6ba658af2401cc211d8e30b098dcadbfa8f760c65cf539750f"
+    },
+    {
+      "file": "backend/src/tests/fixtures/resume/columns.pdf",
+      "kind": "added",
+      "bytes": 42873,
+      "sha256": "afc7751932945abcf1e5e38cdf75051930368eb6699a3133d846a65d21d3cc22"
+    },
+    {
+      "file": "backend/src/tests/fixtures/resume/corrupt.pdf",
+      "kind": "added",
+      "bytes": 34,
+      "sha256": "83e1caf5b18318069dd1598bb856ef327389b574ededc4fc63901167594ff9db"
+    },
+    {
+      "file": "backend/src/tests/fixtures/resume/empty.pdf",
+      "kind": "added",
+      "bytes": 1298,
+      "sha256": "d90f5c0ad72a67341295f79c67274f934f38c68518de29fc6f62b39f541629cf"
+    },
+    {
+      "file": "backend/src/tests/fixtures/resume/encrypted.pdf",
+      "kind": "added",
+      "bytes": 42889,
+      "sha256": "87f97be9ad144e9d02b7f0f467f7ab5edc95a28e2f1adc77450193d79de65937"
+    },
+    {
+      "file": "backend/src/tests/fixtures/resume/layout-shift.pdf",
+      "kind": "added",
+      "bytes": 42859,
+      "sha256": "1d3a6c942e67080084f19255779bedc23166ab286aba990016fb4ce4bb25de6b"
+    },
+    {
+      "file": "backend/src/tests/fixtures/resume/page-limit.pdf",
+      "kind": "added",
+      "bytes": 20933,
+      "sha256": "55cf59525050c43125e3002083c0384eee69adc72ff3253ecc571b0f18f4365e"
+    },
+    {
+      "file": "backend/src/tests/fixtures/resume/scanned.pdf",
+      "kind": "added",
+      "bytes": 3855,
+      "sha256": "9265102a2f761adfd3a8ac84f369f940e8e9eea3351d443766e6bec6e4e7f0ed"
+    },
+    {
+      "file": "backend/src/tests/fixtures/resume/standard.pdf",
+      "kind": "added",
+      "bytes": 42859,
+      "sha256": "b48f3e1eb6e11577cdb2014ce8f1663241b53890dfd74b07acc6b5649af1f287"
+    },
+    {
+      "file": "backend/src/tests/publicPortfolio.integration.test.js",
+      "kind": "modified",
+      "bytes": 22925,
+      "sha256": "224df35e9545f9b5e1e1c45ab7c8f1bb1582efdb440cd4b9c57f833d5d3fc08b"
+    },
+    {
+      "file": "backend/verification/interview-prep/BACKEND-REGRESSION-RECONCILIATION.md",
+      "kind": "modified",
+      "bytes": 73968,
+      "sha256": "856a2d13010c31bb06c55339e06ec336804192ba3f25c450f3675b0889c8b34d"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/changed-files.json",
+      "kind": "added",
+      "sha256": null,
+      "note": "Self-referential manifest"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/config-providers-targeted.tap",
+      "kind": "added",
+      "bytes": 7548,
+      "sha256": "28e01cfb6ae0927fff78dfb55582adb8635dc33c804c6de9d7e0540de721a472"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/consumer-targeted.tap",
+      "kind": "added",
+      "bytes": 9045,
+      "sha256": "e4208a8532f31abc3ff777036dc4a574e3db392a5763167b40eeeab4dc7a70b3"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/environment-inventory.json",
+      "kind": "added",
+      "bytes": 80506,
+      "sha256": "4f878324628b7a5ce28df95aaaed5b9d502d72f1fa89315d17638383bb90a294"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/final-benchmark-format.txt",
+      "kind": "added",
+      "bytes": 129,
+      "sha256": "557da305041d1ba8b88bdd531811f60b72be2c071b6a0d9d46ff65f2fc0e99d5"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/final-checks.json",
+      "kind": "added",
+      "bytes": 20046,
+      "sha256": "32a0768f3d3cefed69cc959aabcdf0f905cb7f363809f94fdb0f92272d7b2148"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/five-provider-targeted.tap",
+      "kind": "added",
+      "bytes": 7983,
+      "sha256": "27ec69866d0f3c3c14f860f9fd10dba0bbd8f69851e62f6e5863ea662f3414a8"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/fixture-assets.json",
+      "kind": "added",
+      "bytes": 1730,
+      "sha256": "f7f7065d61c6a8b144a258d844e1751f0a4748c1ad1d324d4b5e0bc977ceff7b"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/focused-confirmed-inventory.json",
+      "kind": "added",
+      "bytes": 4460,
+      "sha256": "92d4ebdad1842b633a5ff7b614dd4145c61a5b3629397db3d2d2ed83ac5cf0a4"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/focused-confirmed.json",
+      "kind": "added",
+      "bytes": 95383,
+      "sha256": "90a5072904120128a408de63cdd56201fa16eadd979637b8b57c17751c19cd3e"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/focused-confirmed.stderr.txt",
+      "kind": "added",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/focused-confirmed.tap",
+      "kind": "added",
+      "bytes": 26117,
+      "sha256": "d003d45e27e32dd0deabcf840fad451e4a8f2f3a283f205fb1c5cea0992c6ef2"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/focused-infrastructure-inventory.json",
+      "kind": "added",
+      "bytes": 17315,
+      "sha256": "cca6349fbd62d92f24ee67f57430db68d6f5c91f7afa5dca2c001f8904e92ae2"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/focused-infrastructure.json",
+      "kind": "added",
+      "bytes": 93253,
+      "sha256": "4860526a04971b76605d616d551f1644cae5edf7f52908d98c2883686c7fcf27"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/focused-infrastructure.stderr.txt",
+      "kind": "added",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/focused-infrastructure.tap",
+      "kind": "added",
+      "bytes": 27059,
+      "sha256": "9e8150364cf89e30a09019b6eaf9069209b403c9c6967f3ec877827f9ccc3f9b"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/full-preflight-abort-reason.json",
+      "kind": "added",
+      "bytes": 294,
+      "sha256": "898276d7af0b64e7b72067571293dc6fea6fd3325be437ece1207589e88a0197"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/full-preflight-aborted.json",
+      "kind": "added",
+      "bytes": 315054,
+      "sha256": "1d146af00b2982de5d538c87e40e512a15f66b4eabba5d3869ee0b11aa519425"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/full-preflight-aborted.stderr.txt",
+      "kind": "added",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/full-preflight-aborted.tap",
+      "kind": "added",
+      "bytes": 42187,
+      "sha256": "2917f4bf180f1ad4a7c513ec211383c34d44225158e471c415381746ee47b37d"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/full-regression-inventory.json",
+      "kind": "added",
+      "bytes": 18577,
+      "sha256": "4b55fb8c9c372d1c93db55d79e480e35a7422be2d76e3513f0e79a75859943a2"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/full-regression.json",
+      "kind": "added",
+      "bytes": 316586,
+      "sha256": "758e0fba9c12c4c2600d229d8a34c5a29643f34fb9cbb3fae8cbfdfb04215f02"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/full-regression.stderr.txt",
+      "kind": "added",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/full-regression.tap",
+      "kind": "added",
+      "bytes": 501877,
+      "sha256": "32157b5dd5f50f08e99b025f5b5533dd68cdcdfe3cc1631f224421d98c8b7a30"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/index-plans-initial.json",
+      "kind": "added",
+      "bytes": 17936,
+      "sha256": "53a8a76800e3da77f3623af5ac98d61070f1e6f4394f71ee2b444985e6337024"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/index-plans.json",
+      "kind": "added",
+      "bytes": 14644,
+      "sha256": "8446e2ab0dcc5fda4e28c05d95b2adad900262c33574c94c7f1070f647bf2be7"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/learning-before.tap",
+      "kind": "added",
+      "bytes": 2168,
+      "sha256": "24636e541558a21a2005508b26752ef86cb802e1b4851df6a76cac69913aa5f5"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/learning-controlled.tap",
+      "kind": "added",
+      "bytes": 853,
+      "sha256": "78445c32a515878bb3885fbaa7c9a94f92e71b86723776222db9e3ddabd467e6"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/learning-final-measurements.json",
+      "kind": "added",
+      "bytes": 3906,
+      "sha256": "24b75842543d6cbd09f70da262b9f2b5644d6a8acc67d276de065884646ab0b9"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/learning-measurements.json",
+      "kind": "added",
+      "bytes": 1422,
+      "sha256": "82e564be596c4bc0e6318833be90d4807510200013ca12df3d58e22332dee006"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/legacy-fixture-confirmed-inventory.json",
+      "kind": "added",
+      "bytes": 184,
+      "sha256": "3befff5e12ba4cee8aeea797c70ae5192abe3fbedfb9a581ff56e1bb0dc1699b"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/legacy-fixture-confirmed.json",
+      "kind": "added",
+      "bytes": 316611,
+      "sha256": "0d0f1ffea3ff51cbf3efbbfeeb6a21e69179415890c29b61c6239e30fd2c2552"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/legacy-fixture-confirmed.stderr.txt",
+      "kind": "added",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/legacy-fixture-confirmed.tap",
+      "kind": "added",
+      "bytes": 393,
+      "sha256": "addaa8b9827fe4ee6b9713a433e6e5c3109f3e2fcbc5ba9651523e019a12c8ca"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/news-catalog-index-results.json",
+      "kind": "added",
+      "bytes": 7793,
+      "sha256": "268fa03cb3a162470242974506f2f9ea526e672fac612c33215626173bb17b3a"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/news-targeted.tap",
+      "kind": "added",
+      "bytes": 882,
+      "sha256": "dc689fc0ac344938c54e90a2b9fb8a14ecee78277d22efae0132f61a89a05d23"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/opt-in-prerequisites.json",
+      "kind": "added",
+      "bytes": 13855,
+      "sha256": "35df9207d27920e65e08f24630e0198ff1291feacbe75ae4943f6e039e2e4cd3"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/portfolio-confirmed-inventory.json",
+      "kind": "added",
+      "bytes": 187,
+      "sha256": "78e82acd453a801fcdd954b25c9f29b0ed20daa261a8f3e9b274a4ee67f412e2"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/portfolio-confirmed.json",
+      "kind": "added",
+      "bytes": 316609,
+      "sha256": "e11b5a812ae4b3fcf96a8c3041f90436c979e925b2cefdbc4deadb330f12f168"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/portfolio-confirmed.stderr.txt",
+      "kind": "added",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/portfolio-confirmed.tap",
+      "kind": "added",
+      "bytes": 3918,
+      "sha256": "d7162d3f5ab158a1bc2011526eceac0791d1ff1c9944d769a6d5c36d3eb29eba"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/post-cleanup-focused.tap",
+      "kind": "added",
+      "bytes": 19472,
+      "sha256": "4578064c0770028d168f2adaea7e5c9b2c94e15a2897494e5ae5dddeb245b9b4"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/post-cleanup-inventory.json",
+      "kind": "added",
+      "bytes": 1875,
+      "sha256": "85131a9dd32f0a7d388309bafaf92550209577764465e1098c16291b43245b5d"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/post-cleanup-verified.tap",
+      "kind": "added",
+      "bytes": 19846,
+      "sha256": "1efbf256369e5601e96dd6eb7eef175119731d7486d70e2175fc10e8ae914126"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/provider-live-status.json",
+      "kind": "added",
+      "bytes": 645,
+      "sha256": "f98ed764ff7c61d0b01db7b0728477853895157b58c0f1f0bb0d821b64b59cfe"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/provider-status-final.json",
+      "kind": "added",
+      "bytes": 1897,
+      "sha256": "7999c34e89500a58f37bff2490496d497679ec4ba817b57955b38511f9757d03"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/providers-targeted.tap",
+      "kind": "added",
+      "bytes": 3971,
+      "sha256": "5ce2a5646bcb571646da4e205e2af74edbd9b90dc880a203ece14082cb634ad9"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/redis-cleanup.json",
+      "kind": "added",
+      "bytes": 146,
+      "sha256": "5e0c90bb8396f3ddf90bcbd64f78c5cbe4528ab5399e472643e0e43d6c0844e6"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/redis-configuration.json",
+      "kind": "added",
+      "bytes": 324,
+      "sha256": "dcbe3b617cd78f5dc1fd19fb559b02120b44d0854261b5d9e4572fa8c73123a8"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/redis-live-preflight.txt",
+      "kind": "added",
+      "bytes": 13,
+      "sha256": "f39c33f1a78b06c24d493c1d8594273eb3629841d23f9a7f28909738c762a294"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/release-regression-inventory.json",
+      "kind": "added",
+      "bytes": 1145,
+      "sha256": "0b5a7b92dcd2f29c24924d7050583634fde59b9f910e83a5ce793e9e501c7e16"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/release-regression.json",
+      "kind": "added",
+      "bytes": 317573,
+      "sha256": "e08beb71599527d25a5357fa94e67a3694638249d3a2b9bc7155bb3b14bbe716"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/release-regression.stderr.txt",
+      "kind": "added",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/release-regression.tap",
+      "kind": "added",
+      "bytes": 496012,
+      "sha256": "8e2d211bbb79ed9af92ea0ca6062152e11f8d8ea675ec99dbbd7b0526a01687e"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/resume-fixtures-confirmed-inventory.json",
+      "kind": "added",
+      "bytes": 185,
+      "sha256": "123143d4e855904c9f369aa2b4d5db52f69da940d85e51fc975798346ae82d20"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/resume-fixtures-confirmed.json",
+      "kind": "added",
+      "bytes": 317637,
+      "sha256": "04d655eb7ee3db975a83a129002aed72c19ac79e2b9727fe58f82e9916ad3549"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/resume-fixtures-confirmed.stderr.txt",
+      "kind": "added",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/resume-fixtures-confirmed.tap",
+      "kind": "added",
+      "bytes": 3429,
+      "sha256": "ae4dc2ac7160670fe1c9b3c7dc59ff46f3221688ab4fd7844925a7c228bb341c"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/runtime-versions.json",
+      "kind": "added",
+      "bytes": 689,
+      "sha256": "498cee0b22e45c3c827097e7923cb2ffcec0397c45ec0eef436be086ab4cb61f"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/source-finalization.json",
+      "kind": "added",
+      "bytes": 7414,
+      "sha256": "3cfc8cd225ad9f5506714d32409626a7de5d70b79755abe0a45116d9df02a5a3"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/startup-config.json",
+      "kind": "added",
+      "bytes": 249,
+      "sha256": "750e12c44ef767dba522f023b4cc2f5e2f14278d7b2f518c127f15a42e75bd91"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/upstash-diagnostic.json",
+      "kind": "added",
+      "bytes": 205,
+      "sha256": "e77993b581492dfcadc6fdd5eb216b5626d4937ab964f6daa436575973dad117"
+    },
+    {
+      "file": "backend/verification/interview-prep/release-finalization/upstash-readonly.json",
+      "kind": "added",
+      "bytes": 184,
+      "sha256": "8573f60ecfac9e4ce1be8f591e38afda64ab3ddb2c1b9e7c174c5c472ce00c64"
+    },
+    {
+      "file": "docs/AI_PIPELINE.md",
+      "kind": "modified",
+      "bytes": 12812,
+      "sha256": "f2f0d878287015ce2b5ad00f91fd8fe76a3a5e7c9f92f0e5956818fa090b9a11"
+    },
+    {
+      "file": "docs/ARCHITECTURE.md",
+      "kind": "modified",
+      "bytes": 10193,
+      "sha256": "00466bb668748689685bfee270ab2b1408e2501a843f96cec05fb325358540c7"
+    }
+  ],
+  "moved": [],
+  "deleted": [],
+  "stagedNames": []
+}

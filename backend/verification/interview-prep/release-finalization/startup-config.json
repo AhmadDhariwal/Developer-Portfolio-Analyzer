@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "scope": "Pure local startup validation and News/B2 configuration shapes; no service connection or data operation",
+  "warnings": [
+    "Existing NEWS_DISCOVERY_PREWARM_TOPICS is reported ignored/deprecated; preserved"
+  ]
+}

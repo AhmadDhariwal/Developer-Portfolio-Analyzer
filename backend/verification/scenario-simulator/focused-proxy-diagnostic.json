@@ -1,0 +1,683 @@
+{
+  "runId": "ed37e027-52ad-4cde-a1e9-f47417cabef0",
+  "mode": "FOCUSED_NOT_FULL_ACCEPTANCE",
+  "startedAt": "2026-10-25T15:30:03.628Z",
+  "status": "FOCUSED_FAIL",
+  "productionDataModified": false,
+  "checks": [
+    {
+      "label": "Actual full unique user/hash index installed locally",
+      "passed": true
+    },
+    {
+      "label": "Actual compound history cursor index installed locally",
+      "passed": true
+    },
+    {
+      "label": "proxy-burst: every offered request succeeds",
+      "passed": false,
+      "details": {
+        "200": 1370,
+        "201": 120,
+        "503": 10
+      }
+    },
+    {
+      "label": "proxy-burst: original latency thresholds",
+      "passed": false,
+      "details": {
+        "context": {
+          "count": 593,
+          "p95Ms": 407,
+          "p99Ms": 613,
+          "maxMs": 704.7122999999992,
+          "meanMs": 160.4789801011804
+        },
+        "evaluate": {
+          "count": 522,
+          "p95Ms": 295,
+          "p99Ms": 416,
+          "maxMs": 501.9542999999976,
+          "meanMs": 99.24343065134107
+        },
+        "history": {
+          "count": 225,
+          "p95Ms": 256,
+          "p99Ms": 340,
+          "maxMs": 349.4192000000039,
+          "meanMs": 40.87379377777803
+        },
+        "save": {
+          "count": 120,
+          "p95Ms": 178,
+          "p99Ms": 323,
+          "maxMs": 336.65350000000035,
+          "meanMs": 53.03873833333316
+        },
+        "export": {
+          "count": 30,
+          "p95Ms": 295,
+          "p99Ms": 375,
+          "maxMs": 374.3237999999983,
+          "meanMs": 82.08580333333254
+        }
+      }
+    }
+  ],
+  "phases": [
+    {
+      "label": "proxy-warmup",
+      "seconds": 10,
+      "rps": 20,
+      "scheduled": 200,
+      "completed": 200,
+      "statuses": {
+        "200": 184,
+        "201": 16
+      },
+      "errors": {},
+      "peakPending": 12,
+      "elapsedMs": 10006.891399999997,
+      "latency": {
+        "context": {
+          "count": 80,
+          "p95Ms": 398,
+          "p99Ms": 530,
+          "maxMs": 529.8441999999995,
+          "meanMs": 97.21121625000005
+        },
+        "evaluate": {
+          "count": 70,
+          "p95Ms": 25,
+          "p99Ms": 50,
+          "maxMs": 49.15869999999995,
+          "meanMs": 20.98766714285739
+        },
+        "history": {
+          "count": 30,
+          "p95Ms": 31,
+          "p99Ms": 40,
+          "maxMs": 39.53729999999996,
+          "meanMs": 23.00907333333404
+        },
+        "save": {
+          "count": 16,
+          "p95Ms": 54,
+          "p99Ms": 54,
+          "maxMs": 53.332799999996496,
+          "meanMs": 29.63688749999983
+        },
+        "export": {
+          "count": 4,
+          "p95Ms": 673,
+          "p99Ms": 673,
+          "maxMs": 672.4955999999984,
+          "meanMs": 336.0621999999994
+        }
+      },
+      "diagnostics": [
+        {
+          "quota": {
+            "count": 100,
+            "failures": 0,
+            "p95Ms": 28,
+            "p99Ms": 38
+          },
+          "loop": {
+            "p99Ms": 46.891007,
+            "maxMs": 266.207231
+          },
+          "cpu": {
+            "user": 4562000,
+            "system": 2296000
+          },
+          "memory": {
+            "rss": 127737856,
+            "heapTotal": 56975360,
+            "heapUsed": 41169192,
+            "external": 23213839,
+            "arrayBuffers": 19158784
+          },
+          "queue": {
+            "toSend": 0,
+            "waitingForReply": 0,
+            "total": 0
+          }
+        },
+        {
+          "quota": {
+            "count": 100,
+            "failures": 0,
+            "p95Ms": 20,
+            "p99Ms": 31
+          },
+          "loop": {
+            "p99Ms": 47.906815,
+            "maxMs": 340.787199
+          },
+          "cpu": {
+            "user": 4140000,
+            "system": 1937000
+          },
+          "memory": {
+            "rss": 172503040,
+            "heapTotal": 109404160,
+            "heapUsed": 41882808,
+            "external": 23218639,
+            "arrayBuffers": 19163584
+          },
+          "queue": {
+            "toSend": 0,
+            "waitingForReply": 0,
+            "total": 0
+          }
+        }
+      ],
+      "cpuPercentOneCore": [29.659560410538692, 26.851495560349548]
+    },
+    {
+      "label": "proxy-burst",
+      "seconds": 15,
+      "rps": 100,
+      "scheduled": 1500,
+      "completed": 1500,
+      "statuses": {
+        "200": 1370,
+        "201": 120,
+        "503": 10
+      },
+      "errors": {
+        "Shared Scenario quota service is unavailable.": 10
+      },
+      "peakPending": 55,
+      "elapsedMs": 15020.258699999998,
+      "latency": {
+        "context": {
+          "count": 593,
+          "p95Ms": 407,
+          "p99Ms": 613,
+          "maxMs": 704.7122999999992,
+          "meanMs": 160.4789801011804
+        },
+        "evaluate": {
+          "count": 522,
+          "p95Ms": 295,
+          "p99Ms": 416,
+          "maxMs": 501.9542999999976,
+          "meanMs": 99.24343065134107
+        },
+        "history": {
+          "count": 225,
+          "p95Ms": 256,
+          "p99Ms": 340,
+          "maxMs": 349.4192000000039,
+          "meanMs": 40.87379377777803
+        },
+        "save": {
+          "count": 120,
+          "p95Ms": 178,
+          "p99Ms": 323,
+          "maxMs": 336.65350000000035,
+          "meanMs": 53.03873833333316
+        },
+        "export": {
+          "count": 30,
+          "p95Ms": 295,
+          "p99Ms": 375,
+          "maxMs": 374.3237999999983,
+          "meanMs": 82.08580333333254
+        }
+      },
+      "diagnostics": [
+        {
+          "quota": {
+            "count": 750,
+            "failures": 0,
+            "p95Ms": 103,
+            "p99Ms": 160
+          },
+          "loop": {
+            "p99Ms": 96.993279,
+            "maxMs": 176.422911
+          },
+          "cpu": {
+            "user": 13953000,
+            "system": 3484000
+          },
+          "memory": {
+            "rss": 179474432,
+            "heapTotal": 113074176,
+            "heapUsed": 42744992,
+            "external": 23840210,
+            "arrayBuffers": 19790093
+          },
+          "queue": {
+            "toSend": 0,
+            "waitingForReply": 0,
+            "total": 0
+          }
+        },
+        {
+          "quota": {
+            "count": 750,
+            "failures": 0,
+            "p95Ms": 88,
+            "p99Ms": 155
+          },
+          "loop": {
+            "p99Ms": 87.425023,
+            "maxMs": 153.616383
+          },
+          "cpu": {
+            "user": 13468000,
+            "system": 2937000
+          },
+          "memory": {
+            "rss": 238284800,
+            "heapTotal": 182018048,
+            "heapUsed": 91260248,
+            "external": 24889655,
+            "arrayBuffers": 20834600
+          },
+          "queue": {
+            "toSend": 0,
+            "waitingForReply": 0,
+            "total": 0
+          }
+        }
+      ],
+      "cpuPercentOneCore": [69.91224458737186, 67.92159977910367]
+    }
+  ],
+  "samples": [
+    {
+      "label": "proxy-warmup",
+      "at": "2026-10-25T15:30:28.492Z",
+      "workers": [
+        {
+          "memoryBeforeGc": {
+            "rss": 127737856,
+            "heapTotal": 56975360,
+            "heapUsed": 41178088,
+            "external": 23213876,
+            "arrayBuffers": 19158821
+          },
+          "pid": 12504,
+          "memory": {
+            "rss": 126623744,
+            "heapTotal": 56975360,
+            "heapUsed": 36077552,
+            "external": 23213876,
+            "arrayBuffers": 18874061
+          },
+          "cpu": {
+            "user": 4640000,
+            "system": 2296000
+          },
+          "eventLoopP99Ms": 46.891007,
+          "pool": {
+            "connections": 19,
+            "peakConnections": 18,
+            "checkedOut": 0,
+            "peakCheckedOut": 17,
+            "waiting": 0,
+            "peakWaiting": 9,
+            "checkOutFailures": 0,
+            "commands": 430,
+            "commandsInFlight": 0,
+            "peakCommands": 17,
+            "waitP95Ms": 37
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 3,
+            "joiners": 0,
+            "pending": 3
+          },
+          "redisReady": true
+        },
+        {
+          "memoryBeforeGc": {
+            "rss": 172503040,
+            "heapTotal": 109404160,
+            "heapUsed": 41891704,
+            "external": 23218676,
+            "arrayBuffers": 19163621
+          },
+          "pid": 8624,
+          "memory": {
+            "rss": 171241472,
+            "heapTotal": 109666304,
+            "heapUsed": 36182424,
+            "external": 23218676,
+            "arrayBuffers": 18808557
+          },
+          "cpu": {
+            "user": 4250000,
+            "system": 1953000
+          },
+          "eventLoopP99Ms": 47.906815,
+          "pool": {
+            "connections": 21,
+            "peakConnections": 20,
+            "checkedOut": 0,
+            "peakCheckedOut": 19,
+            "waiting": 0,
+            "peakWaiting": 8,
+            "checkOutFailures": 0,
+            "commands": 432,
+            "commandsInFlight": 0,
+            "peakCommands": 19,
+            "waitP95Ms": 46
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 4,
+            "joiners": 0,
+            "pending": 4
+          },
+          "redisReady": true
+        }
+      ]
+    },
+    {
+      "label": "proxy-burst",
+      "at": "2026-10-25T15:30:43.565Z",
+      "workers": [
+        {
+          "memoryBeforeGc": {
+            "rss": 179474432,
+            "heapTotal": 113074176,
+            "heapUsed": 42752440,
+            "external": 23840247,
+            "arrayBuffers": 19790130
+          },
+          "pid": 12504,
+          "memory": {
+            "rss": 179798016,
+            "heapTotal": 110190592,
+            "heapUsed": 35998776,
+            "external": 23838842,
+            "arrayBuffers": 19595213
+          },
+          "cpu": {
+            "user": 14031000,
+            "system": 3484000
+          },
+          "eventLoopP99Ms": 96.993279,
+          "pool": {
+            "connections": 35,
+            "peakConnections": 34,
+            "checkedOut": 0,
+            "peakCheckedOut": 33,
+            "waiting": 0,
+            "peakWaiting": 9,
+            "checkOutFailures": 0,
+            "commands": 3469,
+            "commandsInFlight": 0,
+            "peakCommands": 33,
+            "waitP95Ms": 5
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 9,
+            "joiners": 0,
+            "pending": 9
+          },
+          "redisReady": true
+        },
+        {
+          "memoryBeforeGc": {
+            "rss": 238284800,
+            "heapTotal": 182018048,
+            "heapUsed": 91267688,
+            "external": 24889692,
+            "arrayBuffers": 20834637
+          },
+          "pid": 8624,
+          "memory": {
+            "rss": 237686784,
+            "heapTotal": 180183040,
+            "heapUsed": 37498872,
+            "external": 24884754,
+            "arrayBuffers": 19398573
+          },
+          "cpu": {
+            "user": 13500000,
+            "system": 2937000
+          },
+          "eventLoopP99Ms": 87.425023,
+          "pool": {
+            "connections": 33,
+            "peakConnections": 32,
+            "checkedOut": 0,
+            "peakCheckedOut": 31,
+            "waiting": 0,
+            "peakWaiting": 8,
+            "checkOutFailures": 0,
+            "commands": 3479,
+            "commandsInFlight": 0,
+            "peakCommands": 31,
+            "waitP95Ms": 3
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 8,
+            "joiners": 0,
+            "pending": 8
+          },
+          "redisReady": true
+        }
+      ]
+    }
+  ],
+  "failures": [
+    "proxy-burst: every offered request succeeds",
+    "proxy-burst: original latency thresholds"
+  ],
+  "limitations": [],
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32",
+    "os": "10.0.26300",
+    "logicalCpus": 8,
+    "cpu": "Intel(R) Core(TM) i5-8365U CPU @ 1.60GHz",
+    "totalMemory": 16976740352,
+    "mongoose": "9.2.4",
+    "mongodb": "7.1.0",
+    "redisClient": "4.7.1",
+    "redisInfo": [
+      "redis_version:7.2.11",
+      "redis_mode:standalone",
+      "os:Linux 4.4.0-26100-Microsoft x86_64",
+      "arch_bits:64"
+    ],
+    "redisConfig": "bind 127.0.0.1\nport <ephemeral>\nprotected-mode yes\nsave \"\"\nappendonly no\nmaxmemory 64mb\nmaxmemory-policy noeviction\n",
+    "mongoBuild": {
+      "version": "8.2.2",
+      "allocator": "tcmalloc-gperf"
+    },
+    "workers": [12504, 8624],
+    "mongoClientOptions": {
+      "serverSelectionTimeoutMS": 30000,
+      "socketTimeoutMS": 45000,
+      "maxPoolSize": 100,
+      "waitQueueTimeoutMS": 0,
+      "directConnection": true,
+      "autoIndex": false
+    }
+  },
+  "indexes": [
+    {
+      "v": 2,
+      "key": {
+        "_id": 1
+      },
+      "name": "_id_"
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1
+      },
+      "name": "userId_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "scenarioHash": 1
+      },
+      "name": "scenarioHash_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1,
+        "createdAt": -1,
+        "_id": -1
+      },
+      "name": "scenario_history_cursor"
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1,
+        "scenarioHash": 1
+      },
+      "name": "userId_1_scenarioHash_1",
+      "unique": true
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1,
+        "role": 1,
+        "experienceLevel": 1
+      },
+      "name": "userId_1_role_1_experienceLevel_1"
+    }
+  ],
+  "focused": {
+    "label": "proxy-diagnostic",
+    "longDurationAcceptance": false,
+    "profiles": [],
+    "cold": []
+  },
+  "removedTemporaryFiles": [
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\collection-00f332d2-31f2-4d6d-8a5e-130c7bf12c4a.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\collection-04b30333-1787-4431-a14a-2d8d5001feda.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\collection-05c12bc6-0a7b-49fb-8cdf-c93a31da54c7.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\collection-0793363b-8eed-4ad1-863b-b7e2426005bc.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\collection-07bd75e6-7555-4af3-94ef-d950b9a5c4ea.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\collection-0d537702-1e3a-44d4-af28-33d893b40bae.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\collection-0dfe109f-c565-41fc-bc88-c254a298ca06.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\collection-1287fac3-d4ad-48f0-9eb1-f76cf91e3257.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\collection-133fb875-0c5e-47d9-8180-bf4228ff9e47.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\collection-19d451bc-8118-4cf6-b765-50276dcba7bb.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\collection-2a7c18eb-1de6-424c-a4eb-80ac71ef889d.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\collection-2eac3847-710b-4916-bd8d-b38eaf2c43de.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\collection-361d280a-ab18-41db-a021-c4b2c13c755b.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\collection-63a21731-bd52-4a10-a198-58f4180cfc21.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\collection-69eeb063-fefd-4085-a5bd-1126ac45b7bf.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\collection-7ad11d53-2c11-4911-b95b-c48674830e1a.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\collection-94f1dc7a-62d8-44f9-a6b5-126216a172cf.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\collection-993360ef-ea4e-436a-85cd-b0ec3545dbcc.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\collection-a8b133a0-8479-482f-ba8d-f15933951d6d.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\collection-c532bc1a-50f7-4a28-9295-be46e448c9ec.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\collection-cb38f6ef-f8ec-438c-81e0-fb26371f7f45.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\collection-ead5aae1-ceef-4c53-aec7-1c45b245d167.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\collection-efcc83be-3971-481c-bc16-187be06287e9.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\collection-f470da62-c1f4-4983-b11e-e76701007181.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-00ec4bd1-f152-477f-b4e4-ea9ac84cabd9.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-01fea059-4467-499b-b2e9-451c637bb2ba.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-03f5ad6a-0612-4fe5-a9cd-3ff4ee1f9f5f.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-08a32080-12ed-449d-9494-46077e332622.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-1421ad0b-8a92-4778-aa7b-175b3da9335c.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-15295e0e-53a2-4c17-b66d-72fe754d74a4.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-165afb03-2ace-45fd-8d49-3561b2fc4dce.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-1e79de83-8d57-4938-bdaf-d2d419d79f4a.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-200bc292-4f10-48c3-ace0-9cfee2855145.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-2ac269b2-d8e6-4bd4-85ac-17d43fc2127e.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-2dc6bf40-77ad-4655-b076-bc9de6528949.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-2edac097-a02f-4ca6-8b51-b24b3c27a2d1.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-371e5ab9-de59-4560-9a13-e92f2b344fd1.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-3911c894-43d2-4097-8f1b-e33d21780a27.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-39c58dc5-05e2-411c-a1ee-59b21383acf9.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-45628fcd-616e-4567-845f-b4f40cdec75d.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-4a317a56-85ab-46e2-b9e7-56f6b2f9d57e.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-4a9d9f45-6fa0-42da-8910-323b8bfba8b8.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-4cdfd4f2-612b-4f7c-bc01-4e209c22afd9.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-50609a00-62a3-4b61-81f4-a9980f3a5a6d.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-53613b7f-b2db-4513-bbbe-fe9ef36c422c.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-550b0deb-d8df-4b39-b24d-95f7b1c81300.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-57308d6b-433a-420d-81a5-e04781b0dfd2.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-57e9d051-da0f-4faa-894c-1c1aa4579c50.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-5f81998d-aeae-4d21-b4bc-6613ac93226b.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-6798a2f9-8f9c-41b5-8b75-b5dfe0973cae.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-6c52cf9a-e30a-4ea6-99fc-1c4677c34639.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-70287591-62da-4c3f-8b6d-984d617a8ff6.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-7213492f-18ce-403b-83fc-ee573fe46c6f.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-7290af82-4d73-4f68-a7c0-401cdeee337b.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-743b9a16-9f11-4a25-9b56-146ca717dc6b.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-774d28ce-09ae-4c67-a202-ca7bb0170b05.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-77baba15-a3d2-4e1e-a935-de394286463d.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-7baa3b97-982c-4b2f-a4bb-277162d2bfc0.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-82d56463-0145-4902-a786-8f8bd4a1562d.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-8520a586-e260-4bc7-ab92-cfd12f69bfa9.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-86c04818-6ebd-4dc5-bf5c-c7e9e3c8c6a1.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-86d360c6-598a-4122-b05e-671038d9d200.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-9a66b1af-3109-4aee-addf-4cb866895617.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-9be4aec2-82bb-46d6-b78e-74f74b0419c4.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-9f2bc8a6-3135-45b4-9e5b-86beb9d8609e.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-a70f4cea-baa6-4503-a603-76c9b91b913d.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-ae18b8de-3289-4881-ae5a-bbebc7d75f00.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-c1b7c9ea-e76c-4c2b-925f-6c8cc4aa87db.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-c61dd21b-622a-40c8-b754-237152012360.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-cb2485ee-3a93-42f0-80d9-d193e119d813.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-cc31072c-ea71-4d6b-a798-2f6d185a8fbf.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-cec4c7b8-f5a3-447b-afdc-55c806349b0c.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-d0dc54bb-9637-409b-8de8-ce391ea7edad.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-d4451709-0160-482e-a35c-ac6694d6ac6f.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-e2cc7851-6e6f-4fee-9e4b-ca97ee1aca94.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-eb3c6571-29b5-4700-8f7e-8bea4f58f320.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\index-ed941770-e6ff-4b21-8ee5-bfff5e0dfcfc.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\mongod.lock",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\sizeStorer.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\storage.bson",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\WiredTiger",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\WiredTiger.lock",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\WiredTiger.turtle",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\WiredTiger.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\WiredTigerHS.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\_mdb_catalog.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\journal\\WiredTigerLog.0000000001",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\journal\\WiredTigerPreplog.0000000001",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\diagnostic.data\\metrics.2026-10-25T15-30-06Z-00000",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ\\diagnostic.data\\metrics.interim"
+  ],
+  "finishedAt": "2026-10-25T15:30:44.175Z",
+  "runtimeDirectory": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-X1eUJZ",
+  "cleanup": {
+    "workersStopped": true,
+    "mongoStopped": true,
+    "redisShutdownRequested": true,
+    "redisProcessExitCode": 0,
+    "recursiveDeletion": false
+  }
+}

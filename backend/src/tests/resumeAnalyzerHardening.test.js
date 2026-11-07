@@ -62,6 +62,12 @@ test('polluted AI narrative fields are ignored for resume insights', async (t) =
   });
 
   assert.equal(result.aiInsights.aiUsed, false);
+  assert.equal(result.resumeSignals.scoring.ruleVersion, 'resume-overall-score-v1');
+  assert.equal(result.resumeSignals.scoring.score, result.qualityScores.overallResumeScore);
+  assert.equal(result.resumeSignals.scoring.evidence.sources[0].id, result.resumeHash);
+  assert.ok(Buffer.byteLength(JSON.stringify(result.resumeSignals.scoring.evidence)) < 2048);
+  assert.equal(JSON.stringify(result.resumeSignals.scoring.evidence).includes('jane@example.com'), false);
+  assert.equal(JSON.stringify(result.resumeSignals.scoring.evidence).includes('Built Node.js APIs'), false);
   assert.deepEqual(result.aiInsights.strengths, []);
   assert.equal(String(result.recruiterPerspective.resumeSummary || '').includes('Fabricated'), false);
 });

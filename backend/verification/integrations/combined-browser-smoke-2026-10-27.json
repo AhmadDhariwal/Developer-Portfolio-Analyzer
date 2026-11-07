@@ -1,0 +1,103 @@
+[
+  {
+    "cards": 8,
+    "fallbackInsideKaggle": true,
+    "titles": [
+      "LinkedIn",
+      "GitHub",
+      "LeetCode",
+      "Kaggle Resources",
+      "Stack Overflow",
+      "Portfolio Website",
+      "Certifications",
+      "Dev.to"
+    ]
+  },
+  {
+    "persistedAfterRefresh": "Certifications\nLearning & Credentials\nCONNECTED\n\nRecord self-reported certification names; adding a name does not verify a credential.\n\nSelf-reported credentials\nInferred domain skills\nCertification catalog\nAWS Certified Solutions Architect\nSynced Oct 27, 21:25\nOn-Demand Ingestion Synced\nSync Now\nDisconnect"
+  },
+  {
+    "connectedCount": 2,
+    "resourceLabel": "Kaggle Resources\nData Science\nCONNECTED\n\nObserve up to 20 public notebooks and 20 datasets per sync. Ownership unverified; no scoring impact. Counts describe a sample.\n\nPublic resource observations\nNotebook & dataset samples\ndansbecker\nSynced Oct 27, 16:48\n\nPublic sample: 20 notebooks, 19 datasets. Ownership unverified; scoring unchanged.\n\nLinked Profile Fallback\nOWNERSHIP UNVERIFIED\n\nUser-entered reference; no scoring impact. Statistics syncing is unavailable.\n\nOpen dansbecker on Kaggle\nProfile existence and ownership have not been checked.\nUpdate\nRemove\nSync Now\nDisconnect",
+    "linkedFallbackSaved": true
+  },
+  {
+    "backendValidationError": true,
+    "controlsRestored": true
+  },
+  {
+    "cards": [
+      {
+        "right": 593,
+        "title": "LinkedIn",
+        "width": 309
+      },
+      {
+        "right": 921,
+        "title": "GitHub",
+        "width": 309
+      },
+      {
+        "right": 1250,
+        "title": "LeetCode",
+        "width": 309
+      },
+      {
+        "right": 593,
+        "title": "Kaggle Resources",
+        "width": 309
+      },
+      {
+        "right": 921,
+        "title": "Stack Overflow",
+        "width": 309
+      },
+      {
+        "right": 1250,
+        "title": "Portfolio Website",
+        "width": 309
+      },
+      {
+        "right": 593,
+        "title": "Certifications",
+        "width": 309
+      },
+      {
+        "right": 921,
+        "title": "Dev.to",
+        "width": 309
+      }
+    ],
+    "viewport": 1280
+  },
+  {
+    "resourceOnlyScoreZero": true,
+    "connectedCount": 1
+  },
+  {
+    "linkSurvivesResourceDisconnect": true
+  },
+  {
+    "allCardsWithinViewport": true,
+    "fallbackCount": 1,
+    "finalCards": [
+      "LinkedIn",
+      "GitHub",
+      "LeetCode",
+      "Kaggle Resources",
+      "Stack Overflow",
+      "Portfolio Website",
+      "Certifications",
+      "Dev.to"
+    ],
+    "hackerRankPanels": 0,
+    "visibleCounts": [
+      "All (8)",
+      "Connected (0)",
+      "Code & Repos (2)",
+      "Competitive & Algo (2)",
+      "Community & Authority (2)",
+      "Certs & Writing (2)"
+    ]
+  }
+]

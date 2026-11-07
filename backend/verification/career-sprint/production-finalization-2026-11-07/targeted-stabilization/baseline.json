@@ -1,0 +1,56 @@
+{
+  "branch": "fix/career-sprint",
+  "target": "not applicable",
+  "indexSha256": "4bbae2831508bfec7f8a6a70fdd90bcd8fc73f5c9ae6709ffae977100d092ef9",
+  "files": [
+    {
+      "path": "backend/src/services/careerSprintService.js",
+      "sha256": "cfbf0336af06c7a8361194ae45ac53bc1e1ca606c6452436cae17975e2c5db0f"
+    },
+    {
+      "path": "backend/src/services/sprintOverviewCacheService.js",
+      "sha256": "91acaa7c4ef963a88c9fbfff2446dfefd50fead0336cc0d7783c8e4236602efc"
+    },
+    {
+      "path": "backend/src/services/sprintAiAdmissionService.js",
+      "sha256": "37fead816ab66d95019d71dc0111172881a87d778d97a4f265877024c9b2a4ec"
+    },
+    {
+      "path": "backend/src/services/aiTaskService.js",
+      "sha256": "06f6b9da253acc46b07fe073e9229b75c1d6afdc7cc3b49f69b1d4cd6b31fbde"
+    },
+    {
+      "path": "backend/src/controllers/careerSprintController.js",
+      "sha256": "3cbf1b5aa3737c29b2cf5dadf28dfe9f35169edf8a231fa6a2a1a4cd840e5ea5"
+    },
+    {
+      "path": "backend/src/services/coursePersonalizationService.js",
+      "sha256": "5ce4e4aff71d436de8517ec42c3db5603f8eec8469fc52674db065f4e28017da"
+    },
+    {
+      "path": "backend/src/services/courseRecommendationService.js",
+      "sha256": "c95c68f385b2b165b4f941417077cadd126002176e4bcf21988bcb25342ca99c"
+    },
+    {
+      "path": "backend/src/services/skillGapCacheContract.js",
+      "sha256": "f6d8c4f8de6ed04e8cd670f53b5c5b8dc8eb195f8470bcb8514a7a53fcc32db2"
+    },
+    {
+      "path": "backend/src/services/weeklyReportService.js",
+      "sha256": "1a4a00dd1ce25eb24c26d8d8362cae1e6d67561e7cd8d1e41eb4b2e088278059"
+    },
+    {
+      "path": "backend/.env.example",
+      "sha256": "346225a0bb494413c5bfc40bc5d4a1d8ae3c262d1a49a765a24ae383ab455a8c"
+    },
+    {
+      "path": "backend/src/tests/careerSprintPerformance.test.js",
+      "sha256": "3793cf4a5e3f093658e4539dde5f4a714df331a4e1432bad4050351ef4941c6a"
+    },
+    {
+      "path": "backend/src/tests/coursesMongo.integration.test.js",
+      "sha256": "231a9c9a4bf4ed22417cf7146e11898b2cbbe158b751a870f34da23541ed3ab7"
+    }
+  ],
+  "note": "Pre-existing paths matched the index at preflight; index snapshots retain the baseline for the two instrumented tests."
+}

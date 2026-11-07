@@ -10,7 +10,9 @@ const clamp = (value, min = 0, max = 100) => Math.max(min, Math.min(max, toFinit
 const uniqLower = (arr = []) => {
   const seen = new Set();
   return arr.filter((item) => {
-    const key = String(item || '').trim().toLowerCase();
+    const key = String(item || '')
+      .trim()
+      .toLowerCase();
     if (!key || seen.has(key)) return false;
     seen.add(key);
     return true;
@@ -20,17 +22,24 @@ const uniqLower = (arr = []) => {
 const computeIntegrationScore = (providers = []) => {
   if (!providers.length) return 0;
 
-  const averageProfile = providers.reduce((sum, p) => sum + clamp(p.profileScore), 0) / providers.length;
-  const averageActivity = providers.reduce((sum, p) => sum + clamp(p.activityScore), 0) / providers.length;
-  const averageConfidence = providers.reduce((sum, p) => sum + clamp(p.confidence), 0) / providers.length;
+  const averageProfile =
+    providers.reduce((sum, p) => sum + clamp(p.profileScore), 0) / providers.length;
+  const averageActivity =
+    providers.reduce((sum, p) => sum + clamp(p.activityScore), 0) / providers.length;
+  const averageConfidence =
+    providers.reduce((sum, p) => sum + clamp(p.confidence), 0) / providers.length;
 
-  return clamp(Math.round((averageProfile * 0.38) + (averageActivity * 0.42) + (averageConfidence * 0.2)));
+  return clamp(
+    Math.round(averageProfile * 0.38 + averageActivity * 0.42 + averageConfidence * 0.2)
+  );
 };
 
-const upsertProviderInsight = async ({ userId, providerInsight }) => {
-  const existing = await IntegrationInsight.findOne({ userId });
+const upsertProviderInsight = async ({ userId, providerInsight, session = null }) => {
+  const existing = await IntegrationInsight.findOne({ userId }).session(session);
   const safeInsight = {
     provider: providerInsight.provider,
+    ownershipVerified: providerInsight.ownershipVerified === true,
+    evidenceKind: providerInsight.evidenceKind || 'provider-observed',
     profileScore: clamp(providerInsight.profileScore),
     activityScore: clamp(providerInsight.activityScore),
     confidence: clamp(providerInsight.confidence),
@@ -42,13 +51,19 @@ const upsertProviderInsight = async ({ userId, providerInsight }) => {
   if (!existing) {
     const mergedSkills = uniqLower(safeInsight.inferredSkills);
     const integrationScore = computeIntegrationScore([safeInsight]);
-    return IntegrationInsight.create({
-      userId,
-      providers: [safeInsight],
-      mergedSkills,
-      integrationScore,
-      updatedAt: new Date()
-    });
+    const [created] = await IntegrationInsight.create(
+      [
+        {
+          userId,
+          providers: [safeInsight],
+          mergedSkills,
+          integrationScore,
+          updatedAt: new Date()
+        }
+      ],
+      { session }
+    );
+    return created;
   }
 
   const providers = Array.isArray(existing.providers) ? [...existing.providers] : [];
@@ -61,7 +76,7 @@ const upsertProviderInsight = async ({ userId, providerInsight }) => {
   existing.mergedSkills = mergedSkills;
   existing.integrationScore = computeIntegrationScore(providers);
   existing.updatedAt = new Date();
-  await existing.save();
+  await existing.save({ session });
   return existing;
 };
 
@@ -83,18 +98,24 @@ const getIntegrationInsight = async (userId) => {
   };
 };
 
-const removeProviderInsight = async ({ userId, provider }) => {
-  const existing = await IntegrationInsight.findOne({ userId });
+const removeProviderInsight = async ({ userId, provider, session = null }) => {
+  const existing = await IntegrationInsight.findOne({ userId }).session(session);
   if (!existing) return null;
 
-  const providers = (Array.isArray(existing.providers) ? existing.providers : [])
-    .filter((item) => item.provider !== provider);
+  const providers = (Array.isArray(existing.providers) ? existing.providers : []).filter(
+    (item) => item.provider !== provider
+  );
   existing.providers = providers;
   existing.mergedSkills = uniqLower(providers.flatMap((item) => item.inferredSkills || []));
   existing.integrationScore = computeIntegrationScore(providers);
   existing.updatedAt = new Date();
-  await existing.save();
+  await existing.save({ session });
   return existing;
 };
 
-module.exports = { upsertProviderInsight, getIntegrationInsight, computeIntegrationScore, removeProviderInsight };
+module.exports = {
+  upsertProviderInsight,
+  getIntegrationInsight,
+  computeIntegrationScore,
+  removeProviderInsight
+};

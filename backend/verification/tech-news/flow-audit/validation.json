@@ -1,0 +1,81 @@
+{
+  "scope": "Local authenticated API/browser and isolated write-sensitive Redis/Mongo fixtures",
+  "backend": {
+    "passed": 37,
+    "failed": 0,
+    "skipped": 0,
+    "command": "node --test --test-concurrency=2 src/tests/newsDiscovery.test.js src/tests/newsFreeText.test.js src/tests/newsSearchCorrections.test.js src/tests/newsTopicCoverage.test.js src/tests/newsFlow.test.js src/tests/newsFlow.integration.test.js src/tests/newsFreeText.integration.test.js src/tests/newsSearchCorrections.integration.test.js src/tests/newsRefresh.integration.test.js src/tests/newsAdaptiveRuntime.integration.test.js",
+    "redis": "Disposable password-protected local WSL Redis, UUID-namespaced fixture keys",
+    "mongo": "Four UUID-named temporary local databases, dropped by fixture teardown",
+    "postCleanupFlowTestsPassed": 4,
+    "baselineReproductions": [
+      "Committed service incremented prewarm counter to 2 for two provider-denied candidates; corrected counter remains absent",
+      "Freshly ingested two-day-old publications admitted one stale discovery job; corrected implementation admits zero"
+    ],
+    "authenticatedQuotaFixture": {
+      "globalUsage": 12,
+      "globalLimit": 12,
+      "catalogMatchesStillReturned": 14,
+      "correctedKubernetesMatches": 6,
+      "k8sMatches": 6,
+      "typoAdditionalJobs": 0,
+      "additionalProviderRequests": 0,
+      "savedAndHistoryOwnershipPreserved": true
+    }
+  },
+  "frontend": {
+    "command": "npm test -- --watch=false --include=src/app/pages/news/news.component.spec.ts --include=src/app/shared/services/news.service.spec.ts",
+    "specFiles": 2,
+    "passed": 57,
+    "failed": 0,
+    "typescript": "node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.app.json: passed",
+    "build": "npm run build: passed after concurrent Sass edits completed",
+    "existingBuildWarning": "Unrelated landing-page.component.scss 55.89 kB exceeds its 48 kB warning budget"
+  },
+  "api": {
+    "requests": 12,
+    "allHttp200": true,
+    "catalogCount": 397,
+    "globalDiscoveryJobs": 1,
+    "globalDiscoveryLimit": 12,
+    "prewarmJobs": 0,
+    "readCountersUnchanged": true,
+    "workerHeartbeatPresent": true,
+    "missingExpectedTagsOrTerms": 0,
+    "initialRealDiscovery": "One governed local DevOps job, one HN and one DEV search request, 27 new accepted articles; no paid calls or quota resets"
+  },
+  "browser": {
+    "command": "node scripts/verify-news-search.cjs --flow-audit",
+    "engine": "Headless installed Microsoft Edge via Playwright",
+    "actualJwtAndLocalApi": true,
+    "feedRequests": 9,
+    "pageErrors": 0,
+    "counterOrder": ["globalJobs", "prewarmJobs", "hackernewsSearchDay", "devtoSearchDay"],
+    "countersBefore": [1, 0, 1, 1],
+    "countersAfter": [1, 0, 1, 1],
+    "checks": [
+      "Spelling suggestion and explicit correction preserve fixed-source filter",
+      "Stored DevOps search",
+      "Date/pagination/Refresh Results catalog-only",
+      "For You controls unchanged"
+    ]
+  },
+  "finalization": {
+    "formatter": "Installed frontend Prettier; explicit task-owned file lists, write then check",
+    "backendOptions": "--single-quote --trailing-comma none --print-width 110",
+    "frontendOptions": "--config frontend/.prettierrc",
+    "syntaxChecks": "node --check on every changed backend JavaScript file and browser verification script",
+    "whitespace": "git diff --check and git diff --cached --check",
+    "sourceFilesMovedOrDeleted": 0,
+    "configurationAssignmentsChanged": 0,
+    "productionDeploymentPerformed": false
+  },
+  "diagnosticRetries": [
+    "Restricted Vitest workers could not start; same affected command passed with escalation",
+    "Scoped two ambiguous browser locators to discovery panel/header",
+    "A build overlapped concurrent incomplete Sass writes; completed workspace subsequently built successfully",
+    "Audit Redis timeout corrected to supported 1500ms and initializer changed to probeOnly"
+  ],
+  "status": "VERIFIED_LOCAL",
+  "readyForProductionDeployment": false
+}

@@ -1,0 +1,64 @@
+{
+  "productionOrder": [
+    "gemini",
+    "openai",
+    "groq",
+    "anthropic",
+    "xai"
+  ],
+  "scope": "Independent live adapters plus current configuration; no staging admission/load sign-off",
+  "providers": [
+    {
+      "order": 1,
+      "provider": "gemini",
+      "keyVariable": "GEMINI_API_KEY",
+      "modelVariable": "GEMINI_MODEL",
+      "model": "gemini-2.5-flash",
+      "credentialPresent": true,
+      "status": "PASS",
+      "elapsedMs": 877,
+      "evidence": "provider-live-status.json"
+    },
+    {
+      "order": 2,
+      "provider": "openai",
+      "keyVariable": "OPENAI_API_KEY",
+      "modelVariable": "OPENAI_MODEL",
+      "model": "gpt-6-luna",
+      "credentialPresent": true,
+      "status": "PASS",
+      "elapsedMs": 2771,
+      "evidence": "provider-live-status.json"
+    },
+    {
+      "order": 3,
+      "provider": "groq",
+      "keyVariable": "GROQ_API_KEY",
+      "modelVariable": "GROQ_MODEL",
+      "model": "openai/gpt-oss-120b",
+      "credentialPresent": false,
+      "status": "BLOCKED_MISSING_CREDENTIAL",
+      "reason": "Intentionally empty placeholder; obtain/provide credential before independent live acceptance."
+    },
+    {
+      "order": 4,
+      "provider": "anthropic",
+      "keyVariable": "ANTHROPIC_API_KEY",
+      "modelVariable": "ANTHROPIC_MODEL",
+      "model": "claude-haiku-5-5",
+      "credentialPresent": true,
+      "status": "BLOCKED_USER_CLARIFICATION",
+      "reason": "New credential detected; preserved pending explicit empty-key clarification. No live request."
+    },
+    {
+      "order": 5,
+      "provider": "xai",
+      "keyVariable": "XAI_API_KEY",
+      "modelVariable": "XAI_MODEL",
+      "model": "grok-4.7",
+      "credentialPresent": false,
+      "status": "BLOCKED_MISSING_CREDENTIAL",
+      "reason": "Intentionally empty placeholder; obtain/provide credential before independent live acceptance."
+    }
+  ]
+}

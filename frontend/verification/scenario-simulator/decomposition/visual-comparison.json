@@ -1,0 +1,6 @@
+{
+  "cases": 20,
+  "relativeLayoutStyleMatches": 20,
+  "differences": [],
+  "normalization": "Page-relative geometry eliminates global scroll offsets; dimensions, colors, fonts, borders, padding and display remain exact."
+}

@@ -1,0 +1,138 @@
+@use '../styles/sprint-controls';
+
+:host {
+  display: block;
+}
+
+.source-details {
+  margin-top: 16px;
+  color: var(--text-secondary, #64748b);
+  font-size: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+
+  summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--text-primary, #0f172a);
+    user-select: none;
+
+    &:hover {
+      color: #6366f1;
+    }
+  }
+
+  p {
+    margin-top: 8px;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+    line-height: 1.5;
+  }
+}
+
+:host-context([data-theme='dark']) .source-details,
+:host-context(.dark) .source-details {
+  background: rgba(9, 19, 40, 0.6);
+  border-color: rgba(99, 102, 241, 0.15);
+
+  summary {
+    color: #dee5ff;
+
+    &:hover {
+      color: #a3a6ff;
+    }
+  }
+}
+
+.task-editor {
+  padding: 24px;
+  background: var(--surface-secondary, rgba(248, 250, 252, 0.95));
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 12px;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.04),
+    0 10px 30px -5px rgba(99, 102, 241, 0.06);
+}
+
+:host-context([data-theme='dark']) .task-editor,
+:host-context(.dark) .task-editor {
+  background: rgba(9, 19, 40, 0.9);
+  border-color: rgba(99, 102, 241, 0.35);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.editor-heading {
+  margin-bottom: 20px;
+
+  h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--text-primary, #0f172a);
+  }
+
+  p {
+    margin: 4px 0 0;
+    color: var(--text-secondary, #64748b);
+    font-size: 13px;
+  }
+}
+
+:host-context([data-theme='dark']) .editor-heading h3,
+:host-context(.dark) .editor-heading h3 {
+  color: #f8fafc;
+}
+
+fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+.editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color, rgba(148, 163, 184, 0.2));
+
+  span {
+    margin-right: auto;
+    color: var(--text-secondary, #64748b);
+    font-size: 12px;
+    font-weight: 500;
+  }
+}
+
+.error {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+:host-context([data-theme='dark']) .error,
+:host-context(.dark) .error {
+  color: #f87171;
+}
+
+@media (max-width: 600px) {
+  fieldset {
+    grid-template-columns: 1fr;
+  }
+
+  .task-editor {
+    padding: 16px;
+  }
+}

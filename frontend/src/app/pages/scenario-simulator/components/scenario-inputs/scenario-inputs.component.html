@@ -1,0 +1,399 @@
+<!-- Section 3: Scenario Plan Inputs -->
+<section class="panel-section plan-inputs-section">
+  <div class="section-head compact">
+    <div>
+      <span class="section-kicker">Scenario</span>
+      <h2>Plan Inputs</h2>
+    </div>
+  </div>
+
+  <div class="field-group full">
+    <label for="scenarioName">Scenario Name <span class="optional-tag">optional</span></label>
+    <input
+      id="scenarioName"
+      type="text"
+      [ngModel]="scenarioName"
+      (ngModelChange)="scenarioNameChange.emit($event)"
+      placeholder="e.g. Backend ramp-up before interviews"
+    />
+  </div>
+
+  <div class="two-col">
+    <div class="field-group">
+      <label for="targetRole">Target Role</label>
+      <div class="select-wrap">
+        <select id="targetRole" [ngModel]="role" (ngModelChange)="roleChange.emit($event)">
+          <option *ngFor="let item of roleOptions" [value]="item.value">
+            {{ item.label }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label for="experienceLevel">Experience Level</label>
+      <div class="select-wrap">
+        <select
+          id="experienceLevel"
+          [ngModel]="experienceLevel"
+          (ngModelChange)="experienceLevelChange.emit($event)"
+        >
+          <option *ngFor="let item of levelOptions" [value]="item.value">
+            {{ item.label }}
+          </option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="field-group">
+      <label for="baselineHiring">
+        Planning Baseline Score
+        <span class="hint-tag">assumption</span>
+      </label>
+      <div class="score-input-wrap">
+        <input
+          id="baselineHiring"
+          type="number"
+          min="0"
+          max="100"
+          [ngModel]="baselineHiringScore"
+          (ngModelChange)="baselineHiringScoreChange.emit($event)"
+        />
+        <span class="score-suffix">/ 100</span>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label for="baselineMatch">
+        Role Baseline Match
+        <span class="hint-tag">assumption</span>
+      </label>
+      <div class="score-input-wrap">
+        <input
+          id="baselineMatch"
+          type="number"
+          min="0"
+          max="100"
+          [ngModel]="baselineJobMatch"
+          (ngModelChange)="baselineJobMatchChange.emit($event)"
+        />
+        <span class="score-suffix">/ 100</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Baseline Consent Box -->
+  <div class="baseline-consent-card" [class.confirmed]="baselineConfirmed">
+    <label class="consent-label">
+      <input
+        type="checkbox"
+        [ngModel]="baselineConfirmed"
+        (ngModelChange)="baselineConfirmedChange.emit($event)"
+      />
+      <span class="checkbox-text">
+        <strong>Confirm planning assumptions:</strong> I acknowledge these baseline scores are
+        hypothetical starting points, not guaranteed probabilities.
+      </span>
+    </label>
+  </div>
+
+  <!-- Plan Duration Selector -->
+  <div class="field-group full">
+    <label class="duration-label">
+      <span>Plan Duration</span>
+      <span class="duration-badge">{{ durationWeeks }} Weeks Planned</span>
+    </label>
+    <div class="duration-pills">
+      <button
+        type="button"
+        *ngFor="let weeks of durationOptions"
+        [class.active]="durationWeeks === weeks"
+        (click)="durationWeeksChange.emit(weeks)"
+      >
+        {{ weeks }}w
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- Section 4: Planned Skills -->
+<section class="panel-section skills-section">
+  <div class="section-head compact">
+    <div>
+      <span class="section-kicker">Skills</span>
+      <h2>Planned Skills</h2>
+    </div>
+    <span class="count-badge" *ngIf="skills.length">{{ skills.length }} selected</span>
+  </div>
+
+  <div class="planner-note">
+    <div class="planner-note-text">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="16" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+      </svg>
+      <p>
+        Add skills you realistically plan to master. High-demand, role-aligned skills produce the
+        strongest match lift.
+      </p>
+    </div>
+    <div class="planner-examples">
+      <span>Quick add:</span>
+      <button type="button" class="mini-example" (click)="addSuggestedSkillRequested.emit('React')">
+        + React
+      </button>
+      <button
+        type="button"
+        class="mini-example"
+        (click)="addSuggestedSkillRequested.emit('Docker')"
+      >
+        + Docker
+      </button>
+      <button
+        type="button"
+        class="mini-example"
+        (click)="addSuggestedSkillRequested.emit('System Design')"
+      >
+        + System Design
+      </button>
+      <button
+        type="button"
+        class="mini-example"
+        (click)="addSuggestedSkillRequested.emit('TypeScript')"
+      >
+        + TypeScript
+      </button>
+    </div>
+  </div>
+
+  <div class="skill-entry">
+    <div class="skill-input-wrap">
+      <input
+        type="text"
+        placeholder="Type a skill, tool, or library (e.g. GraphQL, AWS, Rust)..."
+        [ngModel]="skillInput"
+        (ngModelChange)="skillInputChange.emit($event)"
+        (keyup.enter)="addSkillRequested.emit()"
+      />
+    </div>
+    <button
+      class="add-btn"
+      type="button"
+      (click)="addSkillRequested.emit()"
+      [disabled]="!skillInput.trim()"
+    >
+      <span class="btn-icon">+</span>
+      <span>Add Skill</span>
+    </button>
+  </div>
+
+  <div class="skill-tags" *ngIf="skills.length; else skillHint">
+    <span class="skill-tag" *ngFor="let skill of skills; trackBy: trackBySkill">
+      <span class="skill-tag-name">{{ skill }}</span>
+      <button type="button" (click)="removeSkillRequested.emit(skill)" aria-label="Remove skill">
+        &times;
+      </button>
+    </span>
+  </div>
+
+  <ng-template #skillHint>
+    <div class="skill-empty-hint">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        aria-hidden="true"
+      >
+        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+      </svg>
+      <p>
+        No skills added yet. We recommend starting with 2 to 4 skills that directly support your
+        target role.
+      </p>
+    </div>
+  </ng-template>
+</section>
+
+<!-- Section 5: Planned Projects -->
+<section class="panel-section projects-section">
+  <div class="section-head compact">
+    <div>
+      <span class="section-kicker">Projects</span>
+      <h2>Planned Projects</h2>
+    </div>
+
+    <button type="button" class="ghost-inline-btn" (click)="addProjectRequested.emit()">
+      <span class="btn-icon">+</span>
+      <span>Add Project</span>
+    </button>
+  </div>
+
+  <div class="planner-note">
+    <p>Real-world projects validate your new skills and unlock the highest synergy lift.</p>
+    <div class="planner-checklist">
+      <span>Signals:</span>
+      <span>Real-world API</span>
+      <span>Production scope</span>
+      <span>Clean repo</span>
+      <span>Unit tests</span>
+    </div>
+  </div>
+
+  <div class="project-cards">
+    <article
+      class="project-card"
+      *ngFor="let project of projects; let index = index; trackBy: trackByProjectInput"
+    >
+      <div class="project-card-header">
+        <div class="project-badge">Project {{ index + 1 }}</div>
+        <input
+          type="text"
+          class="project-name"
+          [ngModel]="project.name"
+          (ngModelChange)="updateProject(index, { name: $event })"
+          [placeholder]="'e.g. Distributed Task Queue or AI Agent Dashboard'"
+        />
+        <button
+          type="button"
+          class="remove-btn"
+          (click)="removeProjectRequested.emit(index)"
+          aria-label="Remove project"
+          *ngIf="projects.length > 1"
+          title="Remove this project"
+        >
+          &times;
+        </button>
+      </div>
+
+      <div class="project-fields">
+        <div class="field-group">
+          <label>Complexity</label>
+          <div class="select-wrap">
+            <select
+              [ngModel]="project.complexity"
+              (ngModelChange)="updateProject(index, { complexity: $event })"
+            >
+              <option value="low">Low Complexity</option>
+              <option value="medium">Medium Scope</option>
+              <option value="high">High Architectural</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>Weeks</label>
+          <div class="field-input-wrap">
+            <input
+              type="number"
+              min="1"
+              max="24"
+              [ngModel]="project.weeks"
+              (ngModelChange)="updateProject(index, { weeks: $event })"
+              placeholder="e.g. 4"
+            />
+            <span class="field-suffix">wks</span>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>Impact Score</label>
+          <div class="field-input-wrap">
+            <input
+              type="number"
+              min="0"
+              max="100"
+              [ngModel]="project.impact"
+              (ngModelChange)="updateProject(index, { impact: $event })"
+              placeholder="e.g. 80"
+            />
+            <span class="field-suffix">/100</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-Time Impact Visualizer -->
+      <div class="impact-bar-wrap">
+        <div
+          class="impact-bar"
+          [style.width.%]="project.impact"
+          [style.background]="scoreColor(project.impact)"
+        ></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- Section 7: Action Footer Bar -->
+<section class="panel-section action-section">
+  <div class="error-msg" *ngIf="errorMessage">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <div class="stale-draft-note" *ngIf="result && !isResultCurrent">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+    <span
+      >Plan inputs have changed since this evaluation was run. Re-run to update your metrics.</span
+    >
+  </div>
+
+  <div class="action-row">
+    <button
+      class="secondary-btn"
+      type="button"
+      (click)="saveScenarioRequested.emit()"
+      [disabled]="!isResultCurrent || isSavingScenario || !!validationError"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+        <polyline points="7 3 7 8 15 8"></polyline>
+      </svg>
+      <span>{{ isSavingScenario ? 'Saving…' : 'Save Scenario' }}</span>
+    </button>
+
+    <button
+      class="run-btn"
+      type="button"
+      (click)="simulateRequested.emit()"
+      [disabled]="isRunning || !!validationError"
+    >
+      <svg
+        *ngIf="!isRunning"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+      </svg>
+      <span class="spinner" *ngIf="isRunning"></span>
+      <span>{{ isRunning ? 'Evaluating Plan…' : 'Run Simulation' }}</span>
+    </button>
+  </div>
+</section>

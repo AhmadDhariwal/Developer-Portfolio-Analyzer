@@ -1,0 +1,1129 @@
+{
+  "phase": "before",
+  "at": "2026-10-24T08:33:37.178Z",
+  "catalog": 366,
+  "indexes": [
+    {
+      "v": 2,
+      "key": {
+        "_id": 1
+      },
+      "name": "_id_"
+    },
+    {
+      "v": 2,
+      "key": {
+        "canonicalId": 1
+      },
+      "name": "canonicalId_1",
+      "unique": true
+    },
+    {
+      "v": 2,
+      "key": {
+        "expiresAt": 1
+      },
+      "name": "expiresAt_1",
+      "expireAfterSeconds": 0
+    },
+    {
+      "v": 2,
+      "key": {
+        "publishedAt": -1,
+        "canonicalId": 1
+      },
+      "name": "publishedAt_-1_canonicalId_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "technologies": 1,
+        "publishedAt": -1,
+        "canonicalId": 1
+      },
+      "name": "technologies_1_publishedAt_-1_canonicalId_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "searchTerms": 1,
+        "publishedAt": -1,
+        "canonicalId": 1
+      },
+      "name": "searchTerms_1_publishedAt_-1_canonicalId_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "source": 1,
+        "publishedAt": -1,
+        "canonicalId": 1
+      },
+      "name": "source_1_publishedAt_-1_canonicalId_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "category": 1,
+        "publishedAt": -1,
+        "canonicalId": 1
+      },
+      "name": "category_1_publishedAt_-1_canonicalId_1"
+    }
+  ],
+  "before": {
+    "global": null,
+    "prewarm": null,
+    "providers": {
+      "newsapi": {
+        "contentApproved": false,
+        "restricted": true,
+        "enabled": false,
+        "limits": {
+          "daily": 0,
+          "monthly": 0,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 0,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "budget_not_configured"
+        }
+      },
+      "gnews": {
+        "contentApproved": false,
+        "restricted": true,
+        "enabled": false,
+        "limits": {
+          "daily": 0,
+          "monthly": 0,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 0,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "budget_not_configured"
+        }
+      },
+      "hackernews": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 72,
+          "monthly": 2200,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 5,
+        "monthlyUsed": 44,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "interval",
+          "nextEligibleAt": "2026-10-24T08:39:55.440Z"
+        }
+      },
+      "devto": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 72,
+          "monthly": 2200,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 5,
+        "monthlyUsed": 44,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "interval",
+          "nextEligibleAt": "2026-10-24T08:39:55.443Z"
+        }
+      },
+      "reddit": {
+        "contentApproved": false,
+        "restricted": true,
+        "enabled": false,
+        "limits": {
+          "daily": 0,
+          "monthly": 0,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 0,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "budget_not_configured"
+        }
+      },
+      "hackernewssearch": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 12,
+          "monthly": 300,
+          "concurrency": 1,
+          "interval": 60000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 8,
+        "coolingDown": false,
+        "admission": {
+          "allowed": true,
+          "reason": "allowed",
+          "nextEligibleAt": null
+        }
+      },
+      "githubreleases": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 6,
+          "monthly": 150,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 5,
+        "monthlyUsed": 11,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "interval",
+          "nextEligibleAt": "2026-10-24T08:39:57.970Z"
+        }
+      },
+      "githubadvisories": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 6,
+          "monthly": 150,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 4,
+        "monthlyUsed": 10,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "interval",
+          "nextEligibleAt": "2026-10-24T08:45:55.268Z"
+        }
+      },
+      "lobsters": {
+        "contentApproved": false,
+        "restricted": false,
+        "enabled": false,
+        "limits": {
+          "daily": 0,
+          "monthly": 0,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 0,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "budget_not_configured"
+        }
+      },
+      "devtosearch": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 12,
+          "monthly": 300,
+          "concurrency": 1,
+          "interval": 60000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 9,
+        "coolingDown": false,
+        "admission": {
+          "allowed": true,
+          "reason": "allowed",
+          "nextEligibleAt": null
+        }
+      },
+      "kubernetesblog": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 4,
+          "monthly": 100,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 4,
+        "monthlyUsed": 9,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "daily_budget",
+          "nextEligibleAt": "2026-10-25T00:00:00.000Z"
+        }
+      },
+      "cloudflarechangelog": {
+        "contentApproved": false,
+        "restricted": false,
+        "enabled": false,
+        "limits": {
+          "daily": 0,
+          "monthly": 0,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 0,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "budget_not_configured"
+        }
+      }
+    }
+  },
+  "responses": [
+    {
+      "search": "kubernets",
+      "date": "week",
+      "query": {
+        "text": "kubernets",
+        "topic": null,
+        "key": "q-27442557223f706b0bd58b135fd8aa38",
+        "groups": [["kubernets"]]
+      },
+      "http": 200,
+      "total": 0,
+      "items": [],
+      "coverage": {
+        "status": "coverage_gap",
+        "topic": "kubernets",
+        "cachedMatches": 0,
+        "minimum": 6,
+        "broaderMatches": 0,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 0,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null
+      },
+      "serverTime": "2026-10-24T08:33:39.432Z"
+    },
+    {
+      "search": "kubernets",
+      "date": "month",
+      "query": {
+        "text": "kubernets",
+        "topic": null,
+        "key": "q-27442557223f706b0bd58b135fd8aa38",
+        "groups": [["kubernets"]]
+      },
+      "http": 200,
+      "total": 0,
+      "items": [],
+      "coverage": {
+        "status": "coverage_gap",
+        "topic": "kubernets",
+        "cachedMatches": 0,
+        "minimum": 6,
+        "broaderMatches": 0,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 0,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null
+      },
+      "serverTime": "2026-10-24T08:33:41.661Z"
+    },
+    {
+      "search": "kubernetes",
+      "date": "week",
+      "query": {
+        "text": "kubernetes",
+        "topic": "kubernetes",
+        "key": "kubernetes",
+        "groups": []
+      },
+      "http": 200,
+      "total": 1,
+      "items": [
+        {
+          "title": "Kubernetes Requests and Limits: Set CPU and Memory Right",
+          "source": "Dev.to",
+          "url": "https://dev.to/meteorops/kubernetes-requests-and-limits-set-cpu-and-memory-right-cl8"
+        }
+      ],
+      "coverage": {
+        "status": "coverage_gap",
+        "topic": "kubernetes",
+        "cachedMatches": 1,
+        "minimum": 6,
+        "broaderMatches": 5,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 4,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null
+      },
+      "serverTime": "2026-10-24T08:33:42.927Z"
+    },
+    {
+      "search": "kubernetes",
+      "date": "month",
+      "query": {
+        "text": "kubernetes",
+        "topic": "kubernetes",
+        "key": "kubernetes",
+        "groups": []
+      },
+      "http": 200,
+      "total": 1,
+      "items": [
+        {
+          "title": "Kubernetes Requests and Limits: Set CPU and Memory Right",
+          "source": "Dev.to",
+          "url": "https://dev.to/meteorops/kubernetes-requests-and-limits-set-cpu-and-memory-right-cl8"
+        }
+      ],
+      "coverage": {
+        "status": "coverage_gap",
+        "topic": "kubernetes",
+        "cachedMatches": 1,
+        "minimum": 6,
+        "broaderMatches": 5,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 4,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null
+      },
+      "serverTime": "2026-10-24T08:33:44.117Z"
+    },
+    {
+      "search": "k8s",
+      "date": "week",
+      "query": {
+        "text": "kubernetes",
+        "topic": "kubernetes",
+        "key": "kubernetes",
+        "groups": []
+      },
+      "http": 200,
+      "total": 1,
+      "items": [
+        {
+          "title": "Kubernetes Requests and Limits: Set CPU and Memory Right",
+          "source": "Dev.to",
+          "url": "https://dev.to/meteorops/kubernetes-requests-and-limits-set-cpu-and-memory-right-cl8"
+        }
+      ],
+      "coverage": {
+        "status": "coverage_gap",
+        "topic": "kubernetes",
+        "cachedMatches": 1,
+        "minimum": 6,
+        "broaderMatches": 5,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 4,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null
+      },
+      "serverTime": "2026-10-24T08:33:45.104Z"
+    },
+    {
+      "search": "k8s",
+      "date": "month",
+      "query": {
+        "text": "kubernetes",
+        "topic": "kubernetes",
+        "key": "kubernetes",
+        "groups": []
+      },
+      "http": 200,
+      "total": 1,
+      "items": [
+        {
+          "title": "Kubernetes Requests and Limits: Set CPU and Memory Right",
+          "source": "Dev.to",
+          "url": "https://dev.to/meteorops/kubernetes-requests-and-limits-set-cpu-and-memory-right-cl8"
+        }
+      ],
+      "coverage": {
+        "status": "coverage_gap",
+        "topic": "kubernetes",
+        "cachedMatches": 1,
+        "minimum": 6,
+        "broaderMatches": 5,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 4,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null
+      },
+      "serverTime": "2026-10-24T08:33:45.991Z"
+    },
+    {
+      "search": "devops",
+      "date": "week",
+      "query": {
+        "text": "devops",
+        "topic": "devops",
+        "key": "devops",
+        "groups": []
+      },
+      "http": 200,
+      "total": 31,
+      "items": [
+        {
+          "title": "A 12 person company, a $19,200 AWS bill, and a CTO who was right",
+          "source": "Dev.to",
+          "url": "https://dev.to/vlad_z_16b6320e21f32bee0d/a-12-person-company-a-19200-aws-bill-and-a-cto-who-was-right-3d8a"
+        },
+        {
+          "title": "Pin your own domain to 127.0.0.1 and your SSRF guard will refuse your own files",
+          "source": "Dev.to",
+          "url": "https://dev.to/dosai/pin-your-own-domain-to-127001-and-your-ssrf-guard-will-refuse-your-own-files-1d1k"
+        },
+        {
+          "title": "Heroku alternatives in 2026: five options compared, with real dyno math",
+          "source": "Dev.to",
+          "url": "https://dev.to/abhijais1/heroku-alternatives-in-2026-five-options-compared-with-real-dyno-math-3"
+        },
+        {
+          "title": "Railway vs Render vs Northflank in 2026",
+          "source": "Dev.to",
+          "url": "https://dev.to/abhijais1/railway-vs-render-vs-northflank-in-2026-3pb6"
+        },
+        {
+          "title": "Cheapest way to host a web app with Postgres in 2026: seven platforms priced",
+          "source": "Dev.to",
+          "url": "https://dev.to/abhijais1/cheapest-way-to-host-a-web-app-with-postgres-in-2026-seven-platforms-priced-a8p"
+        },
+        {
+          "title": "Managed Postgres pricing in 2026: eight providers compared",
+          "source": "Dev.to",
+          "url": "https://dev.to/abhijais1/managed-postgres-pricing-in-2026-eight-providers-compared-3do1"
+        },
+        {
+          "title": "Building High-Throughput Micro-SaaS in 2026: The Modular Stack Architecture (FlutterFlow, Supabase & Celery)",
+          "source": "Dev.to",
+          "url": "https://dev.to/linux_masterethicalhac/building-high-throughput-micro-saas-in-2026-the-modular-stack-architecture-flutterflow-supabase-1d5g"
+        },
+        {
+          "title": "Your PHP Version Number Can't Tell You If You're Safe From PHP2Shell",
+          "source": "Dev.to",
+          "url": "https://dev.to/zadro/your-php-version-number-cant-tell-you-if-youre-safe-from-php2shell-2c6o"
+        },
+        {
+          "title": "Eight eMudhra Intermediate CA Keys Rested on Eight Bits",
+          "source": "Dev.to",
+          "url": "https://dev.to/neticslabs/eight-emudhra-intermediate-ca-keys-rested-on-eight-bits-453m"
+        },
+        {
+          "title": "A month of GitHub Actions, worked by hand: $54 on GitHub, $11 on 5 GHz bare metal",
+          "source": "Dev.to",
+          "url": "https://dev.to/sengi_runners/a-month-of-github-actions-worked-by-hand-54-on-github-11-on-5-ghz-bare-metal-3ool"
+        },
+        {
+          "title": "Synchronizing Terminal Workflows: Building & Deploying severn-trace v0.1.2",
+          "source": "Dev.to",
+          "url": "https://dev.to/davidamadie06code/synchronizing-terminal-workflows-building-deploying-severn-trace-v012-12de"
+        },
+        {
+          "title": "Network Devices Explained: From Routers to Firewalls (A Software Engineer’s Guide) | Day 2",
+          "source": "Dev.to",
+          "url": "https://dev.to/muhammad_hassanobaid_908/network-devices-explained-from-routers-to-firewalls-a-software-engineers-guide-day-2-4039"
+        }
+      ],
+      "coverage": {
+        "status": "sufficient",
+        "topic": "devops",
+        "cachedMatches": 31,
+        "minimum": 6,
+        "broaderMatches": 41,
+        "dateExcludedMatches": 6,
+        "filterExcludedMatches": 10,
+        "suggestedDate": "month"
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null,
+        "sourceHealth": [
+          {
+            "provider": "hackernewssearch",
+            "status": "success",
+            "articlesFound": 6,
+            "reason": null,
+            "nextEligibleAt": null
+          },
+          {
+            "provider": "devtosearch",
+            "status": "success",
+            "articlesFound": 27,
+            "reason": null,
+            "nextEligibleAt": null
+          }
+        ],
+        "lastAttemptAt": "2026-10-23T20:55:21.681Z"
+      },
+      "serverTime": "2026-10-24T08:33:47.346Z"
+    },
+    {
+      "search": "devops",
+      "date": "month",
+      "query": {
+        "text": "devops",
+        "topic": "devops",
+        "key": "devops",
+        "groups": []
+      },
+      "http": 200,
+      "total": 37,
+      "items": [
+        {
+          "title": "A 12 person company, a $19,200 AWS bill, and a CTO who was right",
+          "source": "Dev.to",
+          "url": "https://dev.to/vlad_z_16b6320e21f32bee0d/a-12-person-company-a-19200-aws-bill-and-a-cto-who-was-right-3d8a"
+        },
+        {
+          "title": "Pin your own domain to 127.0.0.1 and your SSRF guard will refuse your own files",
+          "source": "Dev.to",
+          "url": "https://dev.to/dosai/pin-your-own-domain-to-127001-and-your-ssrf-guard-will-refuse-your-own-files-1d1k"
+        },
+        {
+          "title": "Heroku alternatives in 2026: five options compared, with real dyno math",
+          "source": "Dev.to",
+          "url": "https://dev.to/abhijais1/heroku-alternatives-in-2026-five-options-compared-with-real-dyno-math-3"
+        },
+        {
+          "title": "Railway vs Render vs Northflank in 2026",
+          "source": "Dev.to",
+          "url": "https://dev.to/abhijais1/railway-vs-render-vs-northflank-in-2026-3pb6"
+        },
+        {
+          "title": "Cheapest way to host a web app with Postgres in 2026: seven platforms priced",
+          "source": "Dev.to",
+          "url": "https://dev.to/abhijais1/cheapest-way-to-host-a-web-app-with-postgres-in-2026-seven-platforms-priced-a8p"
+        },
+        {
+          "title": "Managed Postgres pricing in 2026: eight providers compared",
+          "source": "Dev.to",
+          "url": "https://dev.to/abhijais1/managed-postgres-pricing-in-2026-eight-providers-compared-3do1"
+        },
+        {
+          "title": "Building High-Throughput Micro-SaaS in 2026: The Modular Stack Architecture (FlutterFlow, Supabase & Celery)",
+          "source": "Dev.to",
+          "url": "https://dev.to/linux_masterethicalhac/building-high-throughput-micro-saas-in-2026-the-modular-stack-architecture-flutterflow-supabase-1d5g"
+        },
+        {
+          "title": "Your PHP Version Number Can't Tell You If You're Safe From PHP2Shell",
+          "source": "Dev.to",
+          "url": "https://dev.to/zadro/your-php-version-number-cant-tell-you-if-youre-safe-from-php2shell-2c6o"
+        },
+        {
+          "title": "Eight eMudhra Intermediate CA Keys Rested on Eight Bits",
+          "source": "Dev.to",
+          "url": "https://dev.to/neticslabs/eight-emudhra-intermediate-ca-keys-rested-on-eight-bits-453m"
+        },
+        {
+          "title": "A month of GitHub Actions, worked by hand: $54 on GitHub, $11 on 5 GHz bare metal",
+          "source": "Dev.to",
+          "url": "https://dev.to/sengi_runners/a-month-of-github-actions-worked-by-hand-54-on-github-11-on-5-ghz-bare-metal-3ool"
+        },
+        {
+          "title": "Synchronizing Terminal Workflows: Building & Deploying severn-trace v0.1.2",
+          "source": "Dev.to",
+          "url": "https://dev.to/davidamadie06code/synchronizing-terminal-workflows-building-deploying-severn-trace-v012-12de"
+        },
+        {
+          "title": "Network Devices Explained: From Routers to Firewalls (A Software Engineer’s Guide) | Day 2",
+          "source": "Dev.to",
+          "url": "https://dev.to/muhammad_hassanobaid_908/network-devices-explained-from-routers-to-firewalls-a-software-engineers-guide-day-2-4039"
+        }
+      ],
+      "coverage": {
+        "status": "sufficient",
+        "topic": "devops",
+        "cachedMatches": 37,
+        "minimum": 6,
+        "broaderMatches": 41,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 4,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null,
+        "sourceHealth": [
+          {
+            "provider": "hackernewssearch",
+            "status": "success",
+            "articlesFound": 6,
+            "reason": null,
+            "nextEligibleAt": null
+          },
+          {
+            "provider": "devtosearch",
+            "status": "success",
+            "articlesFound": 27,
+            "reason": null,
+            "nextEligibleAt": null
+          }
+        ],
+        "lastAttemptAt": "2026-10-23T20:55:21.681Z"
+      },
+      "serverTime": "2026-10-24T08:33:48.242Z"
+    },
+    {
+      "search": "EC2",
+      "date": "week",
+      "query": {
+        "text": "ec2",
+        "topic": null,
+        "key": "q-7cba824311e0d9e258de9bc30596f912",
+        "groups": [["ec2"]]
+      },
+      "http": 200,
+      "total": 0,
+      "items": [],
+      "coverage": {
+        "status": "coverage_gap",
+        "topic": "ec2",
+        "cachedMatches": 0,
+        "minimum": 6,
+        "broaderMatches": 0,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 0,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null
+      },
+      "serverTime": "2026-10-24T08:33:49.673Z"
+    },
+    {
+      "search": "EC2",
+      "date": "month",
+      "query": {
+        "text": "ec2",
+        "topic": null,
+        "key": "q-7cba824311e0d9e258de9bc30596f912",
+        "groups": [["ec2"]]
+      },
+      "http": 200,
+      "total": 0,
+      "items": [],
+      "coverage": {
+        "status": "coverage_gap",
+        "topic": "ec2",
+        "cachedMatches": 0,
+        "minimum": 6,
+        "broaderMatches": 0,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 0,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null
+      },
+      "serverTime": "2026-10-24T08:33:50.682Z"
+    },
+    {
+      "search": "generative ai",
+      "date": "week",
+      "query": {
+        "text": "generative ai",
+        "topic": null,
+        "key": "q-7dd9d5f010e8a9a74e0d40763f827351",
+        "groups": [["generative"], ["ai", "artificial intelligence"]]
+      },
+      "http": 200,
+      "total": 1,
+      "items": [
+        {
+          "title": "Building a Multimodal, Suggestion-Based AI Writing Coach with Gemini and Google Docs",
+          "source": "Dev.to",
+          "url": "https://dev.to/gde/building-a-multimodal-suggestion-based-ai-writing-coach-with-gemini-and-google-docs-ea4"
+        }
+      ],
+      "coverage": {
+        "status": "coverage_gap",
+        "topic": "generative ai",
+        "cachedMatches": 1,
+        "minimum": 6,
+        "broaderMatches": 1,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 0,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null,
+        "sourceHealth": [
+          {
+            "provider": "hackernewssearch",
+            "status": "success",
+            "articlesFound": 8,
+            "reason": null,
+            "nextEligibleAt": null
+          },
+          {
+            "provider": "devtosearch",
+            "status": "success",
+            "articlesFound": 1,
+            "reason": null,
+            "nextEligibleAt": null
+          }
+        ],
+        "lastAttemptAt": "2026-10-23T10:39:09.012Z"
+      },
+      "serverTime": "2026-10-24T08:33:52.019Z"
+    },
+    {
+      "search": "generative ai",
+      "date": "month",
+      "query": {
+        "text": "generative ai",
+        "topic": null,
+        "key": "q-7dd9d5f010e8a9a74e0d40763f827351",
+        "groups": [["generative"], ["ai", "artificial intelligence"]]
+      },
+      "http": 200,
+      "total": 1,
+      "items": [
+        {
+          "title": "Building a Multimodal, Suggestion-Based AI Writing Coach with Gemini and Google Docs",
+          "source": "Dev.to",
+          "url": "https://dev.to/gde/building-a-multimodal-suggestion-based-ai-writing-coach-with-gemini-and-google-docs-ea4"
+        }
+      ],
+      "coverage": {
+        "status": "coverage_gap",
+        "topic": "generative ai",
+        "cachedMatches": 1,
+        "minimum": 6,
+        "broaderMatches": 1,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 0,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null,
+        "sourceHealth": [
+          {
+            "provider": "hackernewssearch",
+            "status": "success",
+            "articlesFound": 8,
+            "reason": null,
+            "nextEligibleAt": null
+          },
+          {
+            "provider": "devtosearch",
+            "status": "success",
+            "articlesFound": 1,
+            "reason": null,
+            "nextEligibleAt": null
+          }
+        ],
+        "lastAttemptAt": "2026-10-23T10:39:09.012Z"
+      },
+      "serverTime": "2026-10-24T08:33:53.409Z"
+    }
+  ],
+  "after": {
+    "global": "unavailable",
+    "prewarm": "unavailable",
+    "providers": {
+      "newsapi": {
+        "contentApproved": false,
+        "restricted": true,
+        "enabled": false,
+        "limits": {
+          "daily": 0,
+          "monthly": 0,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 0,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "budget_not_configured"
+        }
+      },
+      "gnews": {
+        "contentApproved": false,
+        "restricted": true,
+        "enabled": false,
+        "limits": {
+          "daily": 0,
+          "monthly": 0,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 0,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "budget_not_configured"
+        }
+      },
+      "hackernews": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 72,
+          "monthly": 2200,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 5,
+        "monthlyUsed": 44,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "quota_store_unavailable"
+        }
+      },
+      "devto": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 72,
+          "monthly": 2200,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 5,
+        "monthlyUsed": 44,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "quota_store_unavailable"
+        }
+      },
+      "reddit": {
+        "contentApproved": false,
+        "restricted": true,
+        "enabled": false,
+        "limits": {
+          "daily": 0,
+          "monthly": 0,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 0,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "budget_not_configured"
+        }
+      },
+      "hackernewssearch": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 12,
+          "monthly": 300,
+          "concurrency": 1,
+          "interval": 60000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 8,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "quota_store_unavailable"
+        }
+      },
+      "githubreleases": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 6,
+          "monthly": 150,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 5,
+        "monthlyUsed": 11,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "interval",
+          "nextEligibleAt": "2026-10-24T08:39:56.911Z"
+        }
+      },
+      "githubadvisories": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 6,
+          "monthly": 150,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 4,
+        "monthlyUsed": 10,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "interval",
+          "nextEligibleAt": "2026-10-24T08:45:54.320Z"
+        }
+      },
+      "lobsters": {
+        "contentApproved": false,
+        "restricted": false,
+        "enabled": false,
+        "limits": {
+          "daily": 0,
+          "monthly": 0,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 0,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "budget_not_configured"
+        }
+      },
+      "devtosearch": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 12,
+          "monthly": 300,
+          "concurrency": 1,
+          "interval": 60000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 9,
+        "coolingDown": false,
+        "admission": {
+          "allowed": true,
+          "reason": "allowed",
+          "nextEligibleAt": null
+        }
+      },
+      "kubernetesblog": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 4,
+          "monthly": 100,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 4,
+        "monthlyUsed": 9,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "quota_store_unavailable"
+        }
+      },
+      "cloudflarechangelog": {
+        "contentApproved": false,
+        "restricted": false,
+        "enabled": false,
+        "limits": {
+          "daily": 0,
+          "monthly": 0,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 0,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "budget_not_configured"
+        }
+      }
+    }
+  },
+  "countersUnchanged": false
+}

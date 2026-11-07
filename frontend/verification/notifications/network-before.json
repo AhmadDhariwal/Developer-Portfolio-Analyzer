@@ -1,0 +1,537 @@
+{
+  "synthetic": true,
+  "productionDataUsed": false,
+  "checks": ["Real CDP request initiators, mutation/burst/reopen counts and two-tab SSE measured"],
+  "screenshots": [],
+  "errors": [],
+  "network": {
+    "mode": "before",
+    "sourceHead": "7d56a1f61dcb4d19b75292b25f4039e74d795c27",
+    "getCounts": {
+      "coldLoad": 4,
+      "markRead": 2,
+      "fiveEventBurst": 2,
+      "previewReopen": 0,
+      "secondTabColdLoad": 4
+    },
+    "streamConnectionsPerTab": [1, 1],
+    "records": [
+      {
+        "tab": 1,
+        "phase": "cold-load",
+        "method": "GET",
+        "path": "/api/notifications?limit=5&page=1",
+        "initiator": "script",
+        "stack": [
+          {
+            "function": "",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 5
+          },
+          {
+            "function": "_trySubscribe",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "Hr",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "subscribe",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          }
+        ]
+      },
+      {
+        "tab": 1,
+        "phase": "cold-load",
+        "method": "GET",
+        "path": "/api/notifications/stream",
+        "initiator": "script",
+        "stack": [
+          {
+            "function": "openStream",
+            "script": "/chunk-LFRWIQSO.js",
+            "line": 1
+          },
+          {
+            "function": "connectStream",
+            "script": "/chunk-LFRWIQSO.js",
+            "line": 1
+          },
+          {
+            "function": "ngOnInit",
+            "script": "/main-LMV3VI6O.js",
+            "line": 1
+          },
+          {
+            "function": "Rm",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 4
+          },
+          {
+            "function": "hb",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 4
+          }
+        ]
+      },
+      {
+        "tab": 1,
+        "phase": "cold-load",
+        "method": "GET",
+        "path": "/api/notifications?limit=10&page=1",
+        "initiator": "script",
+        "stack": [
+          {
+            "function": "",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 5
+          },
+          {
+            "function": "_trySubscribe",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "Hr",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "subscribe",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          }
+        ]
+      },
+      {
+        "tab": 1,
+        "phase": "cold-load",
+        "method": "GET",
+        "path": "/api/notifications?limit=5&page=1",
+        "initiator": "script",
+        "stack": [
+          {
+            "function": "",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 5
+          },
+          {
+            "function": "_trySubscribe",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "Hr",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "subscribe",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          }
+        ]
+      },
+      {
+        "tab": 1,
+        "phase": "cold-load",
+        "method": "GET",
+        "path": "/api/notifications?limit=10&page=1",
+        "initiator": "script",
+        "stack": [
+          {
+            "function": "",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 5
+          },
+          {
+            "function": "_trySubscribe",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "Hr",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "subscribe",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          }
+        ]
+      },
+      {
+        "tab": 1,
+        "phase": "mark-read",
+        "method": "PUT",
+        "path": "/api/notifications/6ae61a8a697faaab51845435/read",
+        "initiator": "script",
+        "stack": [
+          {
+            "function": "",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 5
+          },
+          {
+            "function": "_trySubscribe",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "Hr",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "subscribe",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          }
+        ]
+      },
+      {
+        "tab": 1,
+        "phase": "mark-read",
+        "method": "GET",
+        "path": "/api/notifications?limit=5&page=1",
+        "initiator": "script",
+        "stack": [
+          {
+            "function": "",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 5
+          },
+          {
+            "function": "_trySubscribe",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "Hr",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "subscribe",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          }
+        ]
+      },
+      {
+        "tab": 1,
+        "phase": "mark-read",
+        "method": "GET",
+        "path": "/api/notifications?limit=10&page=1",
+        "initiator": "script",
+        "stack": [
+          {
+            "function": "",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 5
+          },
+          {
+            "function": "_trySubscribe",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "Hr",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "subscribe",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          }
+        ]
+      },
+      {
+        "tab": 1,
+        "phase": "server-burst",
+        "method": "GET",
+        "path": "/api/notifications?limit=5&page=1",
+        "initiator": "script",
+        "stack": [
+          {
+            "function": "",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 5
+          },
+          {
+            "function": "_trySubscribe",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "Hr",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "subscribe",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          }
+        ]
+      },
+      {
+        "tab": 1,
+        "phase": "server-burst",
+        "method": "GET",
+        "path": "/api/notifications?limit=10&page=1",
+        "initiator": "script",
+        "stack": [
+          {
+            "function": "",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 5
+          },
+          {
+            "function": "_trySubscribe",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "Hr",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "subscribe",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          }
+        ]
+      },
+      {
+        "tab": 2,
+        "phase": "second-tab",
+        "method": "GET",
+        "path": "/api/notifications?limit=5&page=1",
+        "initiator": "script",
+        "stack": [
+          {
+            "function": "",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 5
+          },
+          {
+            "function": "_trySubscribe",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "Hr",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "subscribe",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          }
+        ]
+      },
+      {
+        "tab": 2,
+        "phase": "second-tab",
+        "method": "GET",
+        "path": "/api/notifications/stream",
+        "initiator": "script",
+        "stack": [
+          {
+            "function": "openStream",
+            "script": "/chunk-LFRWIQSO.js",
+            "line": 1
+          },
+          {
+            "function": "connectStream",
+            "script": "/chunk-LFRWIQSO.js",
+            "line": 1
+          },
+          {
+            "function": "ngOnInit",
+            "script": "/main-LMV3VI6O.js",
+            "line": 1
+          },
+          {
+            "function": "Rm",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 4
+          },
+          {
+            "function": "hb",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 4
+          }
+        ]
+      },
+      {
+        "tab": 2,
+        "phase": "second-tab",
+        "method": "GET",
+        "path": "/api/notifications?limit=10&page=1",
+        "initiator": "script",
+        "stack": [
+          {
+            "function": "",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 5
+          },
+          {
+            "function": "_trySubscribe",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "Hr",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "subscribe",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          }
+        ]
+      },
+      {
+        "tab": 2,
+        "phase": "second-tab",
+        "method": "GET",
+        "path": "/api/notifications?limit=5&page=1",
+        "initiator": "script",
+        "stack": [
+          {
+            "function": "",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 5
+          },
+          {
+            "function": "_trySubscribe",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "Hr",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "subscribe",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          }
+        ]
+      },
+      {
+        "tab": 2,
+        "phase": "second-tab",
+        "method": "GET",
+        "path": "/api/notifications?limit=10&page=1",
+        "initiator": "script",
+        "stack": [
+          {
+            "function": "",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 5
+          },
+          {
+            "function": "_trySubscribe",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "Hr",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          },
+          {
+            "function": "subscribe",
+            "script": "/chunk-57FRHDNJ.js",
+            "line": 3
+          }
+        ]
+      }
+    ],
+    "bundleIndexSha256": "fca7523634e369f6e3111410ce9828cc9e213bd5fddc64a4805b9a034e73f97a"
+  },
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 93,
+    "productionDataUsed": false
+  }
+}

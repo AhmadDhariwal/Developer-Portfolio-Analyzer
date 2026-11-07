@@ -1,0 +1,7 @@
+{
+  "status": "BLOCKED",
+  "sameWorker": "PASS",
+  "foreignOwnerRejected": true,
+  "otherWorkerStatus": 400,
+  "reason": "Without a shared cache, temporary resume references are process-local. Fleet routing/shared-cache acceptance requires the deployment topology."
+}

@@ -1,0 +1,124 @@
+{
+  "branch": "fix/learning-hub-p1",
+  "baselineHead": "f71a043c73600ef8efb2ff26929b1830e2864458",
+  "finalHead": "f71a043c73600ef8efb2ff26929b1830e2864458",
+  "integrationTarget": "not applicable",
+  "initialWorktreeAndIndex": "clean",
+  "finalIndex": "empty; untouched",
+  "focusedFinalChecks": {
+    "newDiscovery": {
+      "tests": 9,
+      "pass": 9,
+      "fail": 0,
+      "skipped": 0,
+      "log": "discovery-final.log"
+    },
+    "mongoJwtRoutes": {
+      "tests": 16,
+      "pass": 16,
+      "fail": 0,
+      "skipped": 0,
+      "log": "routes-final.log"
+    },
+    "crossWorker": {
+      "tests": 1,
+      "pass": 1,
+      "fail": 0,
+      "skipped": 0,
+      "log": "backend-verified.log; same invocation has a separately failed catalog startup"
+    },
+    "frontendUniqueTests": {
+      "tests": 22,
+      "pass": 22,
+      "fail": 0,
+      "skipped": 0,
+      "log": "frontend-verified.log"
+    },
+    "finalComponentDeadlineFollowup": {
+      "tests": 11,
+      "pass": 11,
+      "fail": 0,
+      "skipped": 0,
+      "log": "component-final.log",
+      "overlaps": "11 of 22; do not add"
+    }
+  },
+  "retainedFailedAttempts": [
+    {
+      "log": "affected-backend.log",
+      "tests": 25,
+      "pass": 23,
+      "fail": 2,
+      "skipped": 0,
+      "reason": "Existing admission deadline exceeded during concurrent build; parent and child reported failed"
+    },
+    {
+      "log": "backend-final.log",
+      "tests": 25,
+      "pass": 24,
+      "fail": 1,
+      "skipped": 0,
+      "reason": "Governance createIndex exceeded unchanged 2-second timeout"
+    },
+    {
+      "log": "backend-verified.log",
+      "tests": 11,
+      "pass": 10,
+      "fail": 1,
+      "skipped": 0,
+      "reason": "Catalog createIndex exceeded unchanged 5-second timeout before route tests; route-only rerun passed"
+    },
+    {
+      "log": "focused-backend.log",
+      "reason": "Sandbox disposable Mongo startup unavailable"
+    },
+    {
+      "log": "focused-frontend.log",
+      "reason": "Sandbox Angular temporary-file rename denied; zero tests executed"
+    }
+  ],
+  "build": {
+    "status": "PASS",
+    "log": "build.log",
+    "warning": "Existing landing-page SCSS 56.67 kB exceeds 48 kB warning budget"
+  },
+  "typeScript": {
+    "status": "PASS",
+    "exitCode": 0,
+    "log": "typescript.log"
+  },
+  "formatSyntaxGit": {
+    "status": "PASS",
+    "evidence": "final-checks.json",
+    "sourceFiles": 11,
+    "backendSyntaxFiles": 5
+  },
+  "realExternalCalls": 0,
+  "syntheticDiscoveryAdapterInvocations": {
+    "successful": 1,
+    "failed": 1,
+    "subsequentWarmCalls": 0
+  },
+  "warmApi": {
+    "samples": 24,
+    "p50Ms": 50.86069999999745,
+    "p95Ms": 433.79099999999744
+  },
+  "sharedReadLoad": {
+    "samples": 3000,
+    "concurrency": 100,
+    "p50Ms": 12.684299999993527,
+    "p95Ms": 43.79219999999623
+  },
+  "catalogMemory": {
+    "entries": 1,
+    "bytes": 475805,
+    "pending": 0
+  },
+  "catalogSeedCountUnchanged": 61,
+  "fullBackendOrFrontendSuitesRun": false,
+  "productionAcceptance": "BLOCKED: retained staging/security/load/real-provider and infrastructure stability gates",
+  "productionDataCredentialsCommitsPushesDeploymentsChanged": false,
+  "sourceFilesMovedOrDeleted": [],
+  "cleanupEvidence": "cleanup.json"
+}

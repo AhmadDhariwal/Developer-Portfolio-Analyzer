@@ -28,10 +28,10 @@ graph TB
     subgraph External["External APIs"]
         GH[GitHub API]
         GEM[Gemini API]
-        GROQ[Groq API]
         OAI[OpenAI API]
+        GROQ[Groq API]
         ANT[Anthropic API]
-        OR[OpenRouter API]
+        XAI[Grok - xAI API]
         JOB[JSearch / Jooble / Adzuna]
         SG[SendGrid]
         TW[Twilio SMS]
@@ -50,11 +50,12 @@ graph TB
     SVC --> JOB
     SVC --> SG
     SVC --> TW
-    AIPM --> GROQ
     AIPM --> OAI
+    AIPM --> GROQ
     AIPM --> GEM
     AIPM --> ANT
-    AIPM --> OR
+    AIPM --> XAI
+    AIPM --> MONGO
     AI --> REDIS
     MID --> DISK
     WKR --> MONGO
@@ -66,6 +67,7 @@ graph TB
 ## Tier Breakdown
 
 ### Presentation Tier (Frontend)
+
 - **Technology**: Angular 21, TypeScript 5.9, SCSS, RxJS
 - **Location**: `frontend/src/`
 - **Entry**: `frontend/src/main.ts` → `app/app.ts`
@@ -73,6 +75,7 @@ graph TB
 - **Key Modules**: Standalone components, lazy-loaded Admin/Recruiter/SuperAdmin modules
 
 ### Application Tier (Backend)
+
 - **Technology**: Node.js, Express 5, CommonJS modules
 - **Location**: `backend/`
 - **Entry**: `backend/index.js`
@@ -80,14 +83,17 @@ graph TB
 - **Architecture Pattern**: Layered (Routes → Controllers → Services → Models)
 
 ### Data Tier
+
 - **Primary DB**: MongoDB (via Mongoose 9 ODM)
 - **Cache**: Redis 4 (via `redis` npm package)
 - **File Storage**: Local disk at `backend/uploads/`
 
 ### AI Tier
-- **Providers**: Groq, OpenAI, Google Gemini, Anthropic, and OpenRouter are configured separately.
+
+- **Providers**: The fixed production fallback order is Gemini → OpenAI → Groq → Anthropic (Claude) → Grok (xAI), explicitly approved by the user. Missing credentials are skipped; OpenRouter is excluded.
 - **Provider Manager**: `backend/src/services/aiProviderManager.js` owns registration, provider priority, provider health, failover, retry policy, cooldown, and provider/model validation.
-- **Model Routing**: Provider-specific model env vars (`GROQ_MODEL`, `OPENAI_MODEL`, `GEMINI_MODEL`, `ANTHROPIC_MODEL`, `OPENROUTER_MODEL`) are validated before use.
+- **Model Routing**: `backend/src/config/aiProviders.js` centralizes provider descriptors, model defaults and limits. Existing `GEMINI_MODEL`/`OPENAI_MODEL` selections are retained; Groq, xAI and Anthropic have documented model defaults and require account credentials. An admin preference does not reorder the production chain.
+- **Shared Admission**: MongoDB request/provider leases, request quotas and circuit state apply across workers. One total deadline bounds all attempts, and feature-specific provider/attempt restrictions remain authoritative. Refusals and invalid requests are terminal. See [AI pipeline](AI_PIPELINE.md) and the [provider finalization report](../backend/verification/ai-providers/AI-PROVIDERS-FINAL.md) for exact variables, test results and operational gates.
 - **Public Facade**: `backend/src/services/aiservice.js` preserves the shared `runAIAnalysis(prompt, fallback, retries)` contract and owns Redis-backed prompt cache, deterministic summary cache helpers, JSON parsing, fallbacks, and metrics.
 - **Prompt Builder**: `backend/src/services/promptBuilderService.js` contains reusable compaction helpers so features can summarize evidence before AI calls and keep prompts below the 5000-token target.
 
@@ -196,3 +202,7 @@ Every domain follows: **Route → Controller → Service → Model** with `aiser
 8. **Lazy-Loaded Frontend Modules**: Admin, Recruiter, and Super Admin modules are lazy-loaded to reduce initial bundle size.
 
 9. **Background Workers Start on Boot**: All cron/scheduled jobs are initialized in `index.js` after server.listen().
+
+## Integrations production boundaries
+
+Integrations use the existing Express/Mongo/Redis module boundaries, authenticated token envelopes, expiring connection leases and fenced Mongo transactions. Redis is required for outbound provider admission; Mongo transaction support is required for mutations. See [Integrations](features/integrations.md).

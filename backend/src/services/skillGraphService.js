@@ -5,18 +5,18 @@ const clamp = (value, min, max) => {
 };
 
 const SKILL_PREREQUISITES = {
-  'React': ['TypeScript', 'Git'],
+  React: ['TypeScript', 'Git'],
   'Next.js': ['React', 'TypeScript'],
   'Node.js': ['JavaScript', 'REST APIs'],
-  'GraphQL': ['Node.js', 'REST APIs'],
-  'Kubernetes': ['Docker'],
-  'Terraform': ['AWS'],
+  GraphQL: ['Node.js', 'REST APIs'],
+  Kubernetes: ['Docker'],
+  Terraform: ['AWS'],
   'CI/CD': ['Git'],
-  'Kafka': ['Node.js'],
-  'Prometheus': ['Kubernetes'],
-  'Redis': ['PostgreSQL'],
+  Kafka: ['Node.js'],
+  Prometheus: ['Kubernetes'],
+  Redis: ['PostgreSQL'],
   'System Design': ['REST APIs', 'Databases'],
-  'Testing': ['Git'],
+  Testing: ['Git'],
   'Cloud Basics': ['Linux'],
   'Performance Optimization': ['System Design'],
   'Scalability Patterns': ['System Design', 'Caching Strategies']
@@ -28,7 +28,11 @@ const toSkillName = (skill) => {
   return String(skill.name || skill.skill || '').trim();
 };
 
-const toNodeId = (name) => String(name || '').trim().toLowerCase().replaceAll(/[^a-z0-9]+/g, '-');
+const toNodeId = (name) =>
+  String(name || '')
+    .trim()
+    .toLowerCase()
+    .replaceAll(/[^a-z0-9]+/g, '-');
 
 const difficultyFromSkill = ({ kind, demandScore, proficiency, priority }) => {
   if (kind === 'current') return proficiency >= 75 ? 'Applied' : 'Needs Proof';
@@ -39,11 +43,13 @@ const difficultyFromSkill = ({ kind, demandScore, proficiency, priority }) => {
 
 const buildPrereqsByTarget = (edges = []) => {
   const prereqsByTarget = new Map();
-  edges.filter((edge) => edge.type === 'prerequisite').forEach((edge) => {
-    const arr = prereqsByTarget.get(edge.to) || [];
-    arr.push(edge.from);
-    prereqsByTarget.set(edge.to, arr);
-  });
+  edges
+    .filter((edge) => edge.type === 'prerequisite')
+    .forEach((edge) => {
+      const arr = prereqsByTarget.get(edge.to) || [];
+      arr.push(edge.from);
+      prereqsByTarget.set(edge.to, arr);
+    });
   return prereqsByTarget;
 };
 
@@ -116,7 +122,16 @@ const buildWeekOutcomes = (week, focusSkills = []) => {
   });
 };
 
-const buildSkillGraph = ({ currentSkills = [], missingSkills = [] }) => {
+const buildSkillGraph = ({ currentSkills = [], missingSkills = [], evidenceAware = false }) => {
+  const prerequisites = evidenceAware
+    ? {
+        ...SKILL_PREREQUISITES,
+        React: ['JavaScript', 'Git'],
+        'Node.js': ['JavaScript'],
+        Redis: [],
+        Prometheus: []
+      }
+    : SKILL_PREREQUISITES;
   const current = Array.isArray(currentSkills) ? currentSkills : [];
   const missing = Array.isArray(missingSkills) ? missingSkills : [];
 
@@ -125,7 +140,9 @@ const buildSkillGraph = ({ currentSkills = [], missingSkills = [] }) => {
   const addNode = (skill, kind) => {
     const name = toSkillName(skill);
     if (!name) return;
-    const id = toNodeId(name);
+    const id = evidenceAware
+      ? `skill-${Buffer.from(name.toLowerCase()).toString('hex')}`
+      : toNodeId(name);
     if (nodesById.has(id)) return;
 
     const demandFromSkill = typeof skill === 'object' ? skill.jobDemand : 0;
@@ -141,14 +158,32 @@ const buildSkillGraph = ({ currentSkills = [], missingSkills = [] }) => {
       category: category || 'General',
       demandScore,
       jobDemand: demandScore,
-      proficiency: normalizedProficiency,
+      proficiency: evidenceAware ? null : normalizedProficiency,
+      ...(evidenceAware
+        ? {
+            proficiencyKind: 'uncalibrated',
+            confidenceKind: 'legacyHeuristic',
+            demandKind: 'static-heuristic'
+          }
+        : {}),
       kind,
       priority,
       confidenceScore: typeof skill === 'object' ? clamp(skill.confidenceScore || 0, 0, 100) : 0,
       source: typeof skill === 'object' ? String(skill.source || '').trim() : '',
-      evidence: typeof skill === 'object' && Array.isArray(skill.evidence) ? skill.evidence.slice(0, 4) : [],
+      evidence:
+        typeof skill === 'object' && Array.isArray(skill.evidence)
+          ? skill.evidence.slice(0, 4)
+          : [],
       prerequisites: [],
-      difficulty: difficultyFromSkill({ kind, demandScore, proficiency: normalizedProficiency, priority }),
+      difficulty:
+        evidenceAware && kind === 'current'
+          ? 'Applied evidence'
+          : difficultyFromSkill({
+              kind,
+              demandScore,
+              proficiency: normalizedProficiency,
+              priority
+            }),
       learningOrder: 0,
       relatedSkills: []
     });
@@ -161,9 +196,10 @@ const buildSkillGraph = ({ currentSkills = [], missingSkills = [] }) => {
     if (!name || visiting.has(name)) return;
     const nextVisiting = new Set(visiting);
     nextVisiting.add(name);
-    (SKILL_PREREQUISITES[name] || []).forEach((prerequisite) => {
-      addMissingWithPrerequisites({ name: prerequisite }, nextVisiting);
-    });
+    if (!evidenceAware)
+      (prerequisites[name] || []).forEach((prerequisite) => {
+        addMissingWithPrerequisites({ name: prerequisite }, nextVisiting);
+      });
     addNode(skill, 'missing');
   };
 
@@ -183,7 +219,7 @@ const buildSkillGraph = ({ currentSkills = [], missingSkills = [] }) => {
   };
 
   nodes.forEach((node) => {
-    const prereqs = SKILL_PREREQUISITES[node.name] || [];
+    const prereqs = prerequisites[node.name] || [];
     prereqs.forEach((prereqName) => {
       const prereqId = nodeNameToId.get(prereqName.toLowerCase());
       if (prereqId) {
@@ -197,19 +233,39 @@ const buildSkillGraph = ({ currentSkills = [], missingSkills = [] }) => {
     });
   });
 
-  const rankedNodes = nodes
-    .slice()
-    .sort((a, b) => {
-      if (a.kind !== b.kind) return a.kind === 'current' ? -1 : 1;
-      return (b.demandScore - a.demandScore) || (b.confidenceScore - a.confidenceScore) || a.name.localeCompare(b.name);
-    });
+  const rankedNodes = nodes.slice().sort((a, b) => {
+    if (a.kind !== b.kind) return a.kind === 'current' ? -1 : 1;
+    return (
+      b.demandScore - a.demandScore ||
+      b.confidenceScore - a.confidenceScore ||
+      a.name.localeCompare(b.name)
+    );
+  });
   let missingOrder = 0;
   rankedNodes.forEach((node) => {
     if (node.kind === 'missing') missingOrder += 1;
     node.learningOrder = node.kind === 'missing' ? missingOrder : 0;
   });
 
-  return { nodes: rankedNodes, edges };
+  return {
+    nodes: rankedNodes,
+    edges,
+    ...(evidenceAware
+      ? {
+          ruleVersion: 'skill-gap-roadmap-v2',
+          effortKind: 'heuristic',
+          unassessedPrerequisites: [
+            ...new Set(
+              nodes.flatMap((node) =>
+                (prerequisites[node.name] || []).filter(
+                  (name) => !nodeNameToId.has(name.toLowerCase())
+                )
+              )
+            )
+          ]
+        }
+      : {})
+  };
 };
 
 const generateWeeklyLearningRoadmap = (graph, weeks = 8) => {
@@ -218,8 +274,9 @@ const generateWeeklyLearningRoadmap = (graph, weeks = 8) => {
 
   const missingNodes = nodes
     .filter((node) => node.kind === 'missing')
-    .sort((a, b) => (b.demandScore - a.demandScore) || (a.proficiency - b.proficiency));
+    .sort((a, b) => b.demandScore - a.demandScore || a.proficiency - b.proficiency);
 
+  if (graph?.ruleVersion === 'skill-gap-roadmap-v2' && !missingNodes.length) return [];
   const prereqsByTarget = buildPrereqsByTarget(edges);
 
   const completed = new Set(nodes.filter((node) => node.kind === 'current').map((node) => node.id));

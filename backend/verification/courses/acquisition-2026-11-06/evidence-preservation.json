@@ -1,0 +1,7 @@
+{
+  "historicalPath": "backend/verification/courses/defects-2026-11-05/mongo-network.json",
+  "latestEvidence": "backend/verification/courses/acquisition-2026-11-06/mongo-network.json",
+  "baselineGitBlob": "b58d60f9fe3570b17895cf2206419d8bab246eaf",
+  "restoredGitBlob": "b58d60f9fe3570b17895cf2206419d8bab246eaf",
+  "baselineRestored": true
+}

@@ -1,0 +1,80 @@
+{
+  "gate": "Gate 2: Live AI Verification",
+  "timestamp": "2026-11-02T10:06:56.528Z",
+  "providerStatus": {
+    "enabledProviders": [
+      "gemini"
+    ],
+    "disabledProviders": [
+      {
+        "provider": "groq",
+        "reason": "missing_key"
+      },
+      {
+        "provider": "openai",
+        "reason": "key_mismatch"
+      },
+      {
+        "provider": "anthropic",
+        "reason": "missing_key"
+      },
+      {
+        "provider": "openrouter",
+        "reason": "missing_key"
+      }
+    ],
+    "activeProvider": "gemini",
+    "geminiConfigured": true,
+    "modelsAvailable": [
+      "gemini-2.5-flash",
+      "gemini-2.0-flash",
+      "gemini-2.0-flash-lite"
+    ]
+  },
+  "checks": {
+    "liveEnrichment": {
+      "ok": true,
+      "returnedObject": true,
+      "focusAreas": [
+        "contact_details",
+        "impact_metrics",
+        "action_verbs"
+      ],
+      "schemaValid": true,
+      "noExtraKeys": true
+    },
+    "upstreamCancellation": {
+      "abortedGracefully": true,
+      "latencyMs": 0,
+      "httpCancellationDelineated": true,
+      "billingDistinction": "HTTP AbortSignal triggers local transport cancellation before upstream request is dispatched, preventing downstream provider execution and token billing."
+    },
+    "defensiveFencing": {
+      "pollutionDetected": true,
+      "fabricatedScoreDiscarded": true,
+      "unauthorizedCodesBlocked": true,
+      "piiSanitized": true
+    },
+    "deterministicFallback": {
+      "overallScoreCalculated": true,
+      "overallScoreValue": 72,
+      "eightPillarsPresent": true,
+      "aiUsedReported": true,
+      "deterministicPillars": {
+        "ats": 80,
+        "keywords": 73,
+        "format": 64,
+        "content": 72,
+        "projects": 68,
+        "experience": 72,
+        "skills": 71,
+        "technicalDepth": 78
+      }
+    }
+  },
+  "performance": {
+    "liveCallLatencyMs": 1081,
+    "cancellationLatencyMs": 0
+  },
+  "passed": true
+}

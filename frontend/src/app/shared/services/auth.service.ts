@@ -35,14 +35,16 @@ export type OtpType = 'email' | 'phone';
 export type OtpPurpose = 'signup' | 'forgot-password';
 
 const normalizeRole = (role: unknown): string => {
-  const value = String(role || '').trim().toLowerCase();
+  const value = String(role || '')
+    .trim()
+    .toLowerCase();
   if (value === 'user' || value === 'guest') return 'developer';
   if (value === 'super-admin' || value === 'superadmin') return 'super_admin';
   return value;
 };
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService implements OnDestroy {
   private readonly baseUrl = environment.apiBaseUrl;
@@ -52,20 +54,34 @@ export class AuthService implements OnDestroy {
   private readonly hadTokenOnStartup = !!localStorage.getItem('token');
   private readonly isLoggedInSubject = new BehaviorSubject<boolean>(this.checkToken());
   isLoggedIn$ = this.isLoggedInSubject.asObservable();
-  private readonly currentUserSubject = new BehaviorSubject<SessionUser | null>(this.readStoredUser());
+  private readonly currentUserSubject = new BehaviorSubject<SessionUser | null>(
+    this.readStoredUser(),
+  );
   currentUser$ = this.currentUserSubject.asObservable();
   private readonly avatarVersionSubject = new BehaviorSubject<number>(Date.now());
   avatarVersion$ = this.avatarVersionSubject.asObservable();
+  private readonly avatarPreviewSubject = new BehaviorSubject<string | null>(null);
+  avatarPreview$ = this.avatarPreviewSubject.asObservable();
   private autoLogoutTimer: ReturnType<typeof setTimeout> | null = null;
   private isLoggingOut = false;
   // Kept for cleanup in ngOnDestroy so we avoid memory leaks
   private readonly boundStorageHandler: (e: StorageEvent) => void;
   private readonly boundVisibilityHandler: () => void;
 
-  constructor(private readonly http: HttpClient, private readonly router: Router, private readonly tenantContext: TenantContextService, private readonly cacheInvalidation: FrontendCacheInvalidationService) {
+  constructor(
+    private readonly http: HttpClient,
+    private readonly router: Router,
+    private readonly tenantContext: TenantContextService,
+    private readonly cacheInvalidation: FrontendCacheInvalidationService,
+  ) {
     // Cross-tab logout sync: when another tab clears the 'token' key from localStorage,
     // this tab gets a 'storage' event and immediately logs out without a page reload.
     this.boundStorageHandler = (e: StorageEvent) => {
+      if (e.key === 'token' && e.newValue && e.newValue !== e.oldValue) {
+        this.cacheInvalidation.clearAllUserCaches();
+        window.location.reload();
+        return;
+      }
       if (e.key === 'token' && !e.newValue && this.isLoggedInSubject.value) {
         // Another tab logged out — mirror it here silently (no redirect loop needed if
         // the current tab is already navigated by the other tab's action).
@@ -103,7 +119,7 @@ export class AuthService implements OnDestroy {
         this.tenantContext.setOrganization({
           id: isValidObjectId ? orgId : '',
           name: String(user['organizationName'] || ''),
-          myRole: 'admin'
+          myRole: 'admin',
         });
       } else if (user?.role === 'recruiter') {
         const orgId = String(user['organizationId'] || '');
@@ -112,7 +128,7 @@ export class AuthService implements OnDestroy {
           this.tenantContext.setOrganization({
             id: orgId,
             name: String(user['organizationName'] || ''),
-            myRole: 'recruiter'
+            myRole: 'recruiter',
           });
         }
       } else if (normalizeRole(user?.role) === 'super_admin') {
@@ -121,7 +137,8 @@ export class AuthService implements OnDestroy {
     } else if (this.hadTokenOnStartup) {
       // If a token existed in storage but was expired or invalid, checkToken() cleared storage.
       // Ensure user is redirected to login if on protected route
-      const currentPath = typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : '';
+      const currentPath =
+        typeof window !== 'undefined' ? window.location.pathname + window.location.search : '';
       if (currentPath && !currentPath.startsWith('/auth/')) {
         this.logout(true, currentPath);
       }
@@ -186,7 +203,11 @@ export class AuthService implements OnDestroy {
       const normalized = parts[1].replaceAll('-', '+').replaceAll('_', '/');
       const padded = normalized + '='.repeat((4 - (normalized.length % 4)) % 4);
       const payloadRaw = atob(padded);
-      const payload = JSON.parse(payloadRaw) as { exp?: number; iss?: string; aud?: string | string[] };
+      const payload = JSON.parse(payloadRaw) as {
+        exp?: number;
+        iss?: string;
+        aud?: string | string[];
+      };
 
       const expectedIssuer = 'devinsight-api';
       const expectedAudience = 'devinsight-web';
@@ -233,7 +254,7 @@ export class AuthService implements OnDestroy {
       if (!parsed || typeof parsed !== 'object') return null;
       return {
         ...(parsed as SessionUser),
-        avatar: this.normalizeAvatarUrl(String((parsed as SessionUser).avatar || ''))
+        avatar: this.normalizeAvatarUrl(String((parsed as SessionUser).avatar || '')),
       };
     } catch {
       return null;
@@ -244,7 +265,7 @@ export class AuthService implements OnDestroy {
     if (user) {
       const normalized = {
         ...user,
-        avatar: this.normalizeAvatarUrl(String(user.avatar || ''))
+        avatar: this.normalizeAvatarUrl(String(user.avatar || '')),
       };
       localStorage.setItem('user', JSON.stringify(normalized));
       this.currentUserSubject.next(normalized);
@@ -262,9 +283,10 @@ export class AuthService implements OnDestroy {
 
     if (/^data:/i.test(raw) || raw.startsWith('blob:')) return raw;
 
-    const browserOrigin = typeof window !== 'undefined' && window.location?.origin
-      ? window.location.origin
-      : this.apiOrigin;
+    const browserOrigin =
+      typeof window !== 'undefined' && window.location?.origin
+        ? window.location.origin
+        : this.apiOrigin;
 
     if (/^https?:\/\//i.test(raw)) {
       try {
@@ -327,10 +349,11 @@ export class AuthService implements OnDestroy {
     localStorage.setItem('token', response.token);
     this.persistCurrentUser({ ...response, avatar: response.avatar || '' } as SessionUser);
     const careerProfile = {
+      ownerId: response._id,
       careerStack: response.activeCareerStack || response.careerStack || 'Full Stack',
       experienceLevel: response.activeExperienceLevel || response.experienceLevel || 'Student',
       careerGoal: response.careerGoal || '',
-      isConfigured: true
+      isConfigured: true,
     };
     localStorage.setItem(CAREER_PROFILE_STORAGE_KEY, JSON.stringify(careerProfile));
 
@@ -352,13 +375,13 @@ export class AuthService implements OnDestroy {
       this.tenantContext.setOrganization({
         id: isValidObjectId ? orgId : '',
         name: response.organizationName || '',
-        myRole: 'admin'
+        myRole: 'admin',
       });
     } else if (response.role === 'recruiter' && isValidObjectId) {
       this.tenantContext.setOrganization({
         id: orgId,
         name: response.organizationName || '',
-        myRole: 'recruiter'
+        myRole: 'recruiter',
       });
     } else {
       // Developer / member — no org context needed on the frontend
@@ -373,7 +396,7 @@ export class AuthService implements OnDestroy {
     return this.http.post(`${this.baseUrl}/auth/register`, userData).pipe(
       tap((response: any) => {
         if (response.token) this.storeSession(response);
-      })
+      }),
     );
   }
 
@@ -381,7 +404,7 @@ export class AuthService implements OnDestroy {
     return this.http.post(`${this.baseUrl}/auth/login`, credentials).pipe(
       tap((response: any) => {
         if (response.token) this.storeSession(response);
-      })
+      }),
     );
   }
 
@@ -393,7 +416,10 @@ export class AuthService implements OnDestroy {
     type: OtpType;
     purpose: OtpPurpose;
   }): Observable<{ message: string; userId: string; expiresAt?: string }> {
-    return this.http.post<{ message: string; userId: string; expiresAt?: string }>(`${this.baseUrl}/auth/send-otp`, payload);
+    return this.http.post<{ message: string; userId: string; expiresAt?: string }>(
+      `${this.baseUrl}/auth/send-otp`,
+      payload,
+    );
   }
 
   verifyOtp(payload: {
@@ -406,7 +432,7 @@ export class AuthService implements OnDestroy {
     return this.http.post(`${this.baseUrl}/auth/verify-otp`, payload).pipe(
       tap((response: any) => {
         if (response?.token) this.storeSession(response);
-      })
+      }),
     );
   }
 
@@ -416,11 +442,27 @@ export class AuthService implements OnDestroy {
     countryCode?: string;
     type: OtpType;
   }): Observable<{ message: string; userId: string; expiresAt?: string }> {
-    return this.http.post<{ message: string; userId: string; expiresAt?: string }>(`${this.baseUrl}/auth/forgot-password`, payload);
+    return this.http.post<{ message: string; userId: string; expiresAt?: string }>(
+      `${this.baseUrl}/auth/forgot-password`,
+      payload,
+    );
   }
 
-  resetPassword(payload: { resetToken: string; newPassword: string }): Observable<{ message: string }> {
+  resetPassword(payload: {
+    resetToken: string;
+    newPassword: string;
+  }): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(`${this.baseUrl}/auth/reset-password`, payload);
+  }
+
+  rotateSessionToken(token: string): void {
+    const current = this.getCurrentUser();
+    if (!current) return;
+    localStorage.setItem('token', token);
+    this.persistCurrentUser({ ...current, token });
+    const expiry = this.getJwtExpMs(token);
+    if (expiry) localStorage.setItem('loginExpiry', String(expiry));
+    this.scheduleAutoLogout();
   }
 
   completeExternalLogin(authPayload: any): void {
@@ -434,6 +476,7 @@ export class AuthService implements OnDestroy {
 
   logout(redirect: boolean = true, customReturnUrl?: string): void {
     if (this.isLoggingOut) return;
+    this.clearAvatarPreview();
     this.isLoggingOut = true;
 
     try {
@@ -448,11 +491,12 @@ export class AuthService implements OnDestroy {
       this.isLoggedInSubject.next(false);
 
       if (redirect) {
-        const rawUrl = customReturnUrl || (typeof this.router !== 'undefined' ? this.router.url : '');
+        const rawUrl =
+          customReturnUrl || (typeof this.router !== 'undefined' ? this.router.url : '');
         const isAuthPage = rawUrl.startsWith('/auth/');
         if (!isAuthPage && rawUrl) {
           this.router.navigate(['/auth/login'], {
-            queryParams: { returnUrl: rawUrl, expired: 'true' }
+            queryParams: { returnUrl: rawUrl, expired: 'true' },
           });
         } else if (!this.router.url?.includes('/auth/login')) {
           this.router.navigate(['/auth/login']);
@@ -479,7 +523,7 @@ export class AuthService implements OnDestroy {
 
     const updated = {
       ...current,
-      ...partial
+      ...partial,
     } as SessionUser;
 
     // Bump avatar version if avatar changed
@@ -488,6 +532,14 @@ export class AuthService implements OnDestroy {
     }
 
     this.persistCurrentUser(updated);
+  }
+
+  setAvatarPreview(avatar: string | null): void {
+    this.avatarPreviewSubject.next(avatar);
+  }
+
+  clearAvatarPreview(): void {
+    this.avatarPreviewSubject.next(null);
   }
 
   getAvatarVersion(): number {
@@ -540,4 +592,3 @@ export class AuthService implements OnDestroy {
     );
   }
 }
-

@@ -1,0 +1,154 @@
+<div class="section-head">
+  <div class="section-head__icon section-head__icon--purple">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      aria-hidden="true"
+    >
+      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+      <polyline points="17 6 23 6 23 12" />
+    </svg>
+  </div>
+  <div class="section-head__text">
+    <h2>Career Profile</h2>
+    <p>Tailor AI skill gap analyses, project roadmaps, and career sprints to your target role</p>
+  </div>
+</div>
+
+<div class="career-success" *ngIf="careerSuccess" role="status">
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    aria-hidden="true"
+  >
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+  <span>{{ careerSuccess }}</span>
+</div>
+
+<div class="form-grid">
+  <!-- Target Career Stack Selector with Quick Chips -->
+  <div class="form-field form-field--span-2">
+    <label for="profile-career-stack"
+      >Target Career Stack <span class="required-star">*</span></label
+    >
+    <div class="stack-chips-row">
+      <button
+        *ngFor="let s of careerStacks"
+        type="button"
+        class="stack-chip"
+        [class.active]="profile.careerStack === s"
+        [class.stack-chip--active]="profile.careerStack === s"
+        (click)="profile.careerStack = s"
+      >
+        <span class="chip-indicator" *ngIf="profile.careerStack === s"></span>
+        <span>{{ s }}</span>
+      </button>
+    </div>
+    <!-- Native select bound to id for programmatic tests and accessibility -->
+    <select
+      id="profile-career-stack"
+      [(ngModel)]="profile.careerStack"
+      title="Career stack"
+      class="styled-select"
+    >
+      <option *ngFor="let s of careerStacks" [value]="s">{{ s }}</option>
+    </select>
+  </div>
+  <div class="form-field">
+    <label for="profile-experience-level"
+      >Experience Level <span class="required-star">*</span></label
+    >
+    <select
+      id="profile-experience-level"
+      [(ngModel)]="profile.experienceLevel"
+      title="Experience level"
+      class="styled-select"
+    >
+      <option *ngFor="let l of experienceLevels" [value]="l">{{ l }}</option>
+    </select>
+  </div>
+
+  <div class="form-field">
+    <label for="profile-career-goal">Primary Career Goal</label>
+    <select
+      id="profile-career-goal"
+      [(ngModel)]="profile.careerGoal"
+      title="Career goal"
+      class="styled-select"
+    >
+      <option value="">-- Select a career goal --</option>
+      <option value="Get first job">Get first job</option>
+      <option value="Improve portfolio">Improve portfolio</option>
+      <option value="Prepare for interviews">Prepare for interviews</option>
+      <option value="Switch tech stack">Switch tech stack</option>
+    </select>
+  </div>
+
+  <div class="form-field">
+    <label for="profile-target-timeline">Target Timeline</label>
+    <select
+      id="profile-target-timeline"
+      [(ngModel)]="profile.targetTimeline"
+      title="Target timeline"
+      class="styled-select"
+    >
+      <option value="">-- Select timeline window --</option>
+      <option *ngFor="let timeline of targetTimelines" [value]="timeline">
+        {{ timeline }}
+      </option>
+    </select>
+  </div>
+
+  <div class="form-field">
+    <label for="profile-learning-preference">Learning Preference</label>
+    <select
+      id="profile-learning-preference"
+      [(ngModel)]="profile.learningPreference"
+      title="Learning preference"
+      class="styled-select"
+    >
+      <option value="">-- Select upskilling preference --</option>
+      <option *ngFor="let preference of learningPreferences" [value]="preference">
+        {{ preference }}
+      </option>
+    </select>
+  </div>
+</div>
+
+<div class="career-actions">
+  <button
+    class="btn-save-career"
+    type="button"
+    (click)="saveCareerProfile()"
+    [disabled]="isSavingCareer"
+  >
+    <svg
+      *ngIf="!isSavingCareer"
+      xmlns="http://www.w3.org/2000/svg"
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      aria-hidden="true"
+    >
+      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+      <polyline points="17 21 17 13 7 13 7 21" />
+      <polyline points="7 3 7 8 15 8" />
+    </svg>
+    <span *ngIf="isSavingCareer" class="spinner-sm" aria-hidden="true"></span>
+    <span>{{ isSavingCareer ? 'Saving…' : 'Save Career Profile' }}</span>
+  </button>
+</div>

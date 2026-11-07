@@ -1,0 +1,59 @@
+{
+  "checkedAt": "2026-11-04T09:05:44.948Z",
+  "configured": true,
+  "realNetwork": true,
+  "status": "available",
+  "reason": "",
+  "milliseconds": 2898,
+  "courses": [
+    {
+      "id": "yt_hlGoQC332VM",
+      "title": "SQL - Complete Course in 3 Hours | SQL One Shot using MySQL",
+      "url": "https://www.youtube.com/watch?v=hlGoQC332VM",
+      "rating": null,
+      "engagementScore": 4.5,
+      "provenance": {
+        "source": "youtube-api",
+        "ratingSource": "unavailable",
+        "popularitySource": "derived-view-count",
+        "engagementSource": "derived-views-likes",
+        "metadataVerifiedAt": "2026-11-04T09:05:44.832Z",
+        "availability": "observed",
+        "durationSource": "youtube-api"
+      }
+    },
+    {
+      "id": "yt_xKuHUoaVN7E",
+      "title": "SQL Full Course 2026–2027 | Beginner to Advanced | Complete SQL Tutorial with Projects #sql",
+      "url": "https://www.youtube.com/watch?v=xKuHUoaVN7E",
+      "rating": null,
+      "engagementScore": 4.7,
+      "provenance": {
+        "source": "youtube-api",
+        "ratingSource": "unavailable",
+        "popularitySource": "derived-view-count",
+        "engagementSource": "derived-views-likes",
+        "metadataVerifiedAt": "2026-11-04T09:05:44.861Z",
+        "availability": "observed",
+        "durationSource": "youtube-api"
+      }
+    },
+    {
+      "id": "yt_HXV3zeQKqGY",
+      "title": "SQL Tutorial - Full Database Course for Beginners",
+      "url": "https://www.youtube.com/watch?v=HXV3zeQKqGY",
+      "rating": null,
+      "engagementScore": 4.6,
+      "provenance": {
+        "source": "youtube-api",
+        "ratingSource": "unavailable",
+        "popularitySource": "derived-view-count",
+        "engagementSource": "derived-views-likes",
+        "metadataVerifiedAt": "2026-11-04T09:05:44.865Z",
+        "availability": "observed",
+        "durationSource": "youtube-api"
+      }
+    }
+  ],
+  "limitation": "Live YouTube read verified for the configured credential; course enrollment and provider uptime are not certified."
+}

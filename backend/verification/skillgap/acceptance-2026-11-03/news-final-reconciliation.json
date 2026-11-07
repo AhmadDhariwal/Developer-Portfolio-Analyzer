@@ -1,0 +1,96 @@
+{
+  "status": "PASS",
+  "localFile": "backend/.env",
+  "tracked": false,
+  "added": [
+    {
+      "key": "NEWS_CATALOG_RETENTION_DAYS",
+      "value": "35"
+    },
+    {
+      "key": "NEWS_CATALOG_RANKING_LIMIT",
+      "value": "2000"
+    },
+    {
+      "key": "NEWS_PREWARM_STRATEGY",
+      "value": "demand-coverage"
+    },
+    {
+      "key": "NEWS_PREWARM_MIN_DEMAND",
+      "value": "3"
+    },
+    {
+      "key": "NEWS_PREWARM_TARGET_ARTICLES",
+      "value": "6"
+    },
+    {
+      "key": "NEWS_PREWARM_FRESHNESS_MS",
+      "value": "21600000"
+    },
+    {
+      "key": "NEWS_PREWARM_EVALUATION_MS",
+      "value": "3600000"
+    },
+    {
+      "key": "NEWS_PREWARM_MAX_CANDIDATES",
+      "value": "2"
+    },
+    {
+      "key": "NEWS_PREWARM_RESERVED_USER_JOBS",
+      "value": "6"
+    },
+    {
+      "key": "NEWS_HACKERNEWS_RETENTION_HOURS",
+      "value": "840"
+    },
+    {
+      "key": "NEWS_DEVTO_RETENTION_HOURS",
+      "value": "840"
+    },
+    {
+      "key": "NEWS_HACKERNEWSSEARCH_RETENTION_HOURS",
+      "value": "840"
+    },
+    {
+      "key": "NEWS_GITHUBRELEASES_RETENTION_HOURS",
+      "value": "840"
+    },
+    {
+      "key": "NEWS_GITHUBADVISORIES_RETENTION_HOURS",
+      "value": "840"
+    },
+    {
+      "key": "NEWS_LOBSTERS_RETENTION_HOURS",
+      "value": "840"
+    },
+    {
+      "key": "NEWS_DEVTOSEARCH_RETENTION_HOURS",
+      "value": "840"
+    },
+    {
+      "key": "NEWS_KUBERNETESBLOG_RETENTION_HOURS",
+      "value": "840"
+    },
+    {
+      "key": "NEWS_CLOUDFLARECHANGELOG_RETENTION_HOURS",
+      "value": "840"
+    },
+    {
+      "key": "NEWS_NEWSAPI_RETENTION_HOURS",
+      "value": "24"
+    },
+    {
+      "key": "NEWS_GNEWS_RETENTION_HOURS",
+      "value": "24"
+    },
+    {
+      "key": "NEWS_REDDIT_RETENTION_HOURS",
+      "value": "24"
+    }
+  ],
+  "existingValuesPreserved": 179,
+  "credentialsInvented": false,
+  "existingOperatorValuesChanged": 0,
+  "environmentRestarted": false,
+  "exampleModified": false
+}

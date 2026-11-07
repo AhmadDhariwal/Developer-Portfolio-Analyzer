@@ -1,0 +1,79 @@
+{
+  "verifiedOn": "2026-10-29",
+  "timezone": "Asia/Karachi",
+  "branch": "task/integrations",
+  "target": null,
+  "tests": {
+    "command": "npm test -- --watch=false --include=src/app/pages/integrations-marketplace/**/*.spec.ts --include=src/app/shared/services/integrations.service.spec.ts",
+    "cwd": "frontend",
+    "files": 4,
+    "passed": 30,
+    "failed": 0,
+    "skipped": 0,
+    "angularBuildSeconds": 28.576,
+    "vitestSeconds": 8.67
+  },
+  "typecheck": {
+    "command": "node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.app.json",
+    "passed": true
+  },
+  "productionBuild": {
+    "command": "npm run build",
+    "cwd": "frontend",
+    "runs": 1,
+    "passed": true,
+    "seconds": 62.521,
+    "initialRaw": "3.46 MB",
+    "initialEstimatedTransfer": "534.51 kB",
+    "main": "main-6ITK2FKO.js",
+    "warning": "Existing landing-page.component.scss: 56.67 kB exceeds 48 kB warning budget; no Marketplace warning."
+  },
+  "visual": {
+    "pairs": 18,
+    "changedPixels": 0,
+    "computedParity": true,
+    "widths": [1440, 900, 390],
+    "themes": ["light", "dark"],
+    "states": ["catalog", "terminal", "empty"],
+    "horizontalOverflow": false
+  },
+  "browser": {
+    "fixtureScenarios": 8,
+    "requestCountsAndPayloadsMatch": true,
+    "mutationOrderMatch": true,
+    "rawArrivalOrderMatch": false,
+    "liveProviderRequests": 0
+  },
+  "formatting": {
+    "writeAndCheck": true,
+    "config": "frontend/.prettierrc",
+    "explicitPaths": true
+  },
+  "cleanup": {
+    "moved": [],
+    "deleted": [],
+    "temporaryScriptsCreated": 0,
+    "taskServersStopped": true,
+    "fixtureBrowsersClosed": true,
+    "retainedEvidence": "36 PNGs and JSON receipts"
+  },
+  "concurrentWork": {
+    "oauthRecoveryPreserved": true,
+    "externalStagingPreserved": true,
+    "oldParentRestorationReconciledWithUserAuthorization": true,
+    "restoredExactValidatedBytes": true,
+    "gitIndexMutationsByThisAgent": 0
+  },
+  "diagnostics": [
+    "Initial loopback requests denied/timed out until local server and browser ran in the same approved network context.",
+    "Initial Sass host extraction produced invalid parent selectors in two responsive rules; corrected before acceptance.",
+    "Initial Vitest execution failed sandbox temporary-cache renames before running tests; focused tests reran successfully outside sandbox.",
+    "One added test initially checked ngModel disabled state before its microtask; added whenStable and reran all focused tests successfully.",
+    "Visual browser capture during a watcher update saw a Vite overlay; settled-source rerun passed all visual comparisons.",
+    "Raw arrival-order assertion exposed an independent GET/callback race. Retained raw records and compare request multiset plus ordered mutations; no provider calls repeated."
+  ],
+  "backendChanged": false,
+  "productionConfigurationChanged": false,
+  "deployed": false,
+  "committedByThisAgent": false
+}

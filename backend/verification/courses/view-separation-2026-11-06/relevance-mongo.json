@@ -1,0 +1,1352 @@
+{
+  "requests": [
+    {
+      "query": {
+        "view": "discover",
+        "topic": "Quantum Computing",
+        "limit": "20"
+      },
+      "status": 200,
+      "admissionAttempt": 0,
+      "total": 0,
+      "discovery": {
+        "status": "pending",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793972284435",
+        "insufficient": true,
+        "reason": "missing-courses",
+        "pollAfterMs": 5000,
+        "retryAfterSeconds": null
+      },
+      "ids": [],
+      "titles": []
+    },
+    {
+      "query": {
+        "view": "discover",
+        "topic": "Cloud Computing",
+        "limit": "20"
+      },
+      "status": 200,
+      "admissionAttempt": 0,
+      "total": 57,
+      "discovery": {
+        "status": "ready",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793972284435",
+        "insufficient": false,
+        "reason": null,
+        "pollAfterMs": null,
+        "retryAfterSeconds": null
+      },
+      "ids": [
+        "yt_00000000001",
+        "yt_00000000002",
+        "yt_00000000003",
+        "yt_00000000004",
+        "yt_00000000005",
+        "yt_00000000006",
+        "yt_00000000007",
+        "yt_00000000008",
+        "yt_00000000009",
+        "yt_00000000010",
+        "yt_00000000011",
+        "yt_00000000012",
+        "yt_00000000013",
+        "yt_00000000014",
+        "yt_00000000015",
+        "yt_00000000016",
+        "yt_00000000017",
+        "yt_00000000018",
+        "yt_00000000019",
+        "yt_00000000020"
+      ],
+      "titles": [
+        "AWS Cloud Computing foundations 0",
+        "AWS Cloud Computing foundations 1",
+        "AWS Cloud Computing foundations 2",
+        "AWS Cloud Computing foundations 3",
+        "AWS Cloud Computing foundations 4",
+        "AWS Cloud Computing foundations 5",
+        "AWS Cloud Computing foundations 6",
+        "AWS Cloud Computing foundations 7",
+        "AWS Cloud Computing foundations 8",
+        "AWS Cloud Computing foundations 9",
+        "AWS Cloud Computing foundations 10",
+        "AWS Cloud Computing foundations 11",
+        "AWS Cloud Computing foundations 12",
+        "AWS Cloud Computing foundations 13",
+        "AWS Cloud Computing foundations 14",
+        "AWS Cloud Computing foundations 15",
+        "AWS Cloud Computing foundations 16",
+        "AWS Cloud Computing foundations 17",
+        "AWS Cloud Computing foundations 18",
+        "AWS Cloud Computing foundations 19"
+      ]
+    },
+    {
+      "query": {
+        "view": "discover",
+        "topic": "Quantum Computing",
+        "limit": "20"
+      },
+      "status": 200,
+      "admissionAttempt": 0,
+      "total": 0,
+      "discovery": {
+        "status": "pending",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793972284435",
+        "insufficient": true,
+        "reason": "missing-courses",
+        "pollAfterMs": 5000,
+        "retryAfterSeconds": null
+      },
+      "ids": [],
+      "titles": []
+    },
+    {
+      "query": {
+        "view": "discover",
+        "topic": "Quantum Computing",
+        "limit": "20"
+      },
+      "status": 200,
+      "admissionAttempt": 0,
+      "total": 0,
+      "discovery": {
+        "status": "pending",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793972284435",
+        "insufficient": true,
+        "reason": "missing-courses",
+        "pollAfterMs": 5000,
+        "retryAfterSeconds": null
+      },
+      "ids": [],
+      "titles": []
+    },
+    {
+      "query": {
+        "view": "discover",
+        "topic": "Quantum Computing",
+        "limit": "20"
+      },
+      "status": 200,
+      "admissionAttempt": 0,
+      "total": 1,
+      "discovery": {
+        "status": "cooldown",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793972288852",
+        "insufficient": true,
+        "reason": "missing-courses",
+        "pollAfterMs": null,
+        "retryAfterSeconds": 21600
+      },
+      "ids": [
+        "yt_00000000100"
+      ],
+      "titles": [
+        "Quantum Computing foundations"
+      ]
+    },
+    {
+      "query": {
+        "view": "discover",
+        "topic": "Quantum Computing",
+        "limit": "20"
+      },
+      "status": 200,
+      "admissionAttempt": 0,
+      "total": 1,
+      "discovery": {
+        "status": "cooldown",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793972288852",
+        "insufficient": true,
+        "reason": "missing-courses",
+        "pollAfterMs": null,
+        "retryAfterSeconds": 21600
+      },
+      "ids": [
+        "yt_00000000100"
+      ],
+      "titles": [
+        "Quantum Computing foundations"
+      ]
+    },
+    {
+      "query": {
+        "view": "discover",
+        "topic": "Quantum Computing",
+        "limit": "20"
+      },
+      "status": 200,
+      "admissionAttempt": 0,
+      "total": 3,
+      "discovery": {
+        "status": "ready",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793972289507",
+        "insufficient": false,
+        "reason": null,
+        "pollAfterMs": null,
+        "retryAfterSeconds": null
+      },
+      "ids": [
+        "yt_00000000100",
+        "yt_00000000102",
+        "yt_00000000101"
+      ],
+      "titles": [
+        "Quantum Computing foundations",
+        "Qubits and quantum gates",
+        "Qiskit circuits laboratory"
+      ]
+    },
+    {
+      "query": {
+        "view": "discover",
+        "topic": "Quantum Computing",
+        "limit": "1",
+        "platform": "YouTube",
+        "duration": "0-2",
+        "page": "2"
+      },
+      "status": 200,
+      "admissionAttempt": 0,
+      "total": 3,
+      "discovery": {
+        "status": "ready",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793972289507",
+        "insufficient": false,
+        "reason": null,
+        "pollAfterMs": null,
+        "retryAfterSeconds": null
+      },
+      "ids": [
+        "yt_00000000102"
+      ],
+      "titles": [
+        "Qubits and quantum gates"
+      ]
+    },
+    {
+      "query": {
+        "view": "discover",
+        "topic": "Quantum Computing",
+        "limit": "20",
+        "rating": "4.5"
+      },
+      "status": 200,
+      "admissionAttempt": 0,
+      "total": 0,
+      "discovery": {
+        "status": "unavailable",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793972289507",
+        "insufficient": true,
+        "reason": "missing-verified-metadata",
+        "pollAfterMs": null,
+        "retryAfterSeconds": null
+      },
+      "ids": [],
+      "titles": []
+    },
+    {
+      "query": {
+        "view": "discover",
+        "topic": "Quantum Computing",
+        "limit": "20",
+        "level": "Advanced"
+      },
+      "status": 200,
+      "admissionAttempt": 0,
+      "total": 0,
+      "discovery": {
+        "status": "unavailable",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793972289507",
+        "insufficient": true,
+        "reason": "missing-verified-metadata",
+        "pollAfterMs": null,
+        "retryAfterSeconds": null
+      },
+      "ids": [],
+      "titles": []
+    },
+    {
+      "query": {
+        "view": "discover",
+        "topic": "Quantum Computing",
+        "limit": "20",
+        "platform": "Udemy"
+      },
+      "status": 200,
+      "admissionAttempt": 0,
+      "total": 0,
+      "discovery": {
+        "status": "unavailable",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793972289507",
+        "insufficient": true,
+        "reason": "missing-courses",
+        "pollAfterMs": null,
+        "retryAfterSeconds": null
+      },
+      "ids": [],
+      "titles": []
+    },
+    {
+      "query": {
+        "view": "for-you",
+        "topic": "Quantum Computing",
+        "limit": "20"
+      },
+      "status": 200,
+      "admissionAttempt": 0,
+      "total": 0,
+      "ids": [],
+      "titles": []
+    },
+    {
+      "query": {
+        "view": "discover",
+        "topic": "Java",
+        "limit": "20",
+        "platform": "YouTube"
+      },
+      "status": 200,
+      "admissionAttempt": 0,
+      "total": 1,
+      "discovery": {
+        "status": "pending",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793972290359",
+        "insufficient": true,
+        "reason": "missing-courses",
+        "pollAfterMs": 5000,
+        "retryAfterSeconds": null
+      },
+      "ids": [
+        "yt_00000000201"
+      ],
+      "titles": [
+        "Java concurrency"
+      ]
+    },
+    {
+      "query": {
+        "view": "discover",
+        "topic": "JavaScript",
+        "limit": "20",
+        "platform": "YouTube"
+      },
+      "status": 200,
+      "admissionAttempt": 0,
+      "total": 1,
+      "discovery": {
+        "status": "pending",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793972290359",
+        "insufficient": true,
+        "reason": "missing-courses",
+        "pollAfterMs": 5000,
+        "retryAfterSeconds": null
+      },
+      "ids": [
+        "yt_00000000202"
+      ],
+      "titles": [
+        "JavaScript concurrency"
+      ]
+    },
+    {
+      "query": {
+        "view": "discover",
+        "topic": "Nebula Widgets",
+        "limit": "20",
+        "platform": "YouTube"
+      },
+      "status": 200,
+      "admissionAttempt": 0,
+      "total": 1,
+      "discovery": {
+        "status": "pending",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793972290359",
+        "insufficient": true,
+        "reason": "missing-courses",
+        "pollAfterMs": 5000,
+        "retryAfterSeconds": null
+      },
+      "ids": [
+        "yt_00000000203"
+      ],
+      "titles": [
+        "Nebula Widgets laboratory"
+      ]
+    },
+    {
+      "query": {
+        "view": "discover",
+        "topic": "Unseen Widgets",
+        "limit": "20",
+        "platform": "YouTube"
+      },
+      "status": 200,
+      "admissionAttempt": 0,
+      "total": 0,
+      "discovery": {
+        "status": "pending",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793972290359",
+        "insufficient": true,
+        "reason": "missing-courses",
+        "pollAfterMs": 5000,
+        "retryAfterSeconds": null
+      },
+      "ids": [],
+      "titles": []
+    },
+    {
+      "query": {
+        "view": "discover",
+        "topic": "Angular",
+        "limit": "20"
+      },
+      "status": 200,
+      "admissionAttempt": 0,
+      "total": 3,
+      "discovery": {
+        "status": "pending",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793972290359",
+        "insufficient": false,
+        "reason": "stale-coverage",
+        "pollAfterMs": 5000,
+        "retryAfterSeconds": null
+      },
+      "ids": [
+        "fb_c13",
+        "fb_u4",
+        "fb_c14"
+      ],
+      "titles": [
+        "Getting Started with Angular",
+        "Angular - The Complete Guide",
+        "Introduction to Angular"
+      ]
+    },
+    {
+      "query": {
+        "view": "discover",
+        "topic": "Generative AI",
+        "limit": "20"
+      },
+      "status": 200,
+      "admissionAttempt": 0,
+      "total": 4,
+      "discovery": {
+        "status": "ready",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793972290359",
+        "insufficient": false,
+        "reason": null,
+        "pollAfterMs": null,
+        "retryAfterSeconds": null
+      },
+      "ids": [
+        "fb_c10",
+        "fb_e10",
+        "fb_c11",
+        "fb_u12"
+      ],
+      "titles": [
+        "Generative AI with Large Language Models",
+        "Generative AI Engineering",
+        "Retrieval Augmented Generation (RAG)",
+        "AI Engineer Core Track: LLM Engineering, RAG, QLoRA, Agents"
+      ]
+    },
+    {
+      "query": {
+        "view": "discover",
+        "topic": "RAG",
+        "limit": "20"
+      },
+      "status": 200,
+      "admissionAttempt": 0,
+      "total": 2,
+      "discovery": {
+        "status": "pending",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793972290359",
+        "insufficient": true,
+        "reason": "missing-courses",
+        "pollAfterMs": 5000,
+        "retryAfterSeconds": null
+      },
+      "ids": [
+        "fb_c11",
+        "fb_u12"
+      ],
+      "titles": [
+        "Retrieval Augmented Generation (RAG)",
+        "AI Engineer Core Track: LLM Engineering, RAG, QLoRA, Agents"
+      ]
+    },
+    {
+      "query": {
+        "view": "discover",
+        "topic": "Docker",
+        "limit": "20"
+      },
+      "status": 200,
+      "admissionAttempt": 0,
+      "total": 4,
+      "discovery": {
+        "status": "pending",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793972290359",
+        "insufficient": false,
+        "reason": "stale-coverage",
+        "pollAfterMs": 5000,
+        "retryAfterSeconds": null
+      },
+      "ids": [
+        "fb_c12",
+        "fb_u3",
+        "fb_u8",
+        "fb_c2"
+      ],
+      "titles": [
+        "Introduction to Containers w/ Docker, Kubernetes & OpenShift",
+        "Docker & Kubernetes: The Practical Guide",
+        "Microservices with Node.js and React",
+        "IBM Full-Stack JavaScript Developer Professional Certificate"
+      ]
+    },
+    {
+      "query": {
+        "view": "discover",
+        "topic": "genai",
+        "limit": "20"
+      },
+      "status": 200,
+      "admissionAttempt": 0,
+      "total": 4,
+      "discovery": {
+        "status": "ready",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793972290359",
+        "insufficient": false,
+        "reason": null,
+        "pollAfterMs": null,
+        "retryAfterSeconds": null
+      },
+      "ids": [
+        "fb_c10",
+        "fb_e10",
+        "fb_c11",
+        "fb_u12"
+      ],
+      "titles": [
+        "Generative AI with Large Language Models",
+        "Generative AI Engineering",
+        "Retrieval Augmented Generation (RAG)",
+        "AI Engineer Core Track: LLM Engineering, RAG, QLoRA, Agents"
+      ]
+    },
+    {
+      "query": {
+        "view": "discover",
+        "topic": "Generative AI",
+        "limit": "20"
+      },
+      "status": 200,
+      "admissionAttempt": 0,
+      "total": 4,
+      "discovery": {
+        "status": "ready",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793972290359",
+        "insufficient": false,
+        "reason": null,
+        "pollAfterMs": null,
+        "retryAfterSeconds": null
+      },
+      "ids": [
+        "fb_c10",
+        "fb_e10",
+        "fb_c11",
+        "fb_u12"
+      ],
+      "titles": [
+        "Generative AI with Large Language Models",
+        "Generative AI Engineering",
+        "Retrieval Augmented Generation (RAG)",
+        "AI Engineer Core Track: LLM Engineering, RAG, QLoRA, Agents"
+      ]
+    }
+  ],
+  "providerPipelines": 1,
+  "inlineCalls": 0,
+  "directQuantum": {
+    "count": 0,
+    "titles": [],
+    "discovery": {
+      "status": "pending",
+      "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1793972284435",
+      "insufficient": true,
+      "reason": "missing-courses",
+      "pollAfterMs": 5000,
+      "retryAfterSeconds": null
+    }
+  },
+  "quantumCandidateRows": 118,
+  "quantumBeforeAcquisition": {
+    "total": 0,
+    "titles": []
+  },
+  "explain": {
+    "explainVersion": "1",
+    "stages": [
+      {
+        "$cursor": {
+          "queryPlanner": {
+            "namespace": "integration_live_acceptance.shared_course_catalog",
+            "parsedQuery": {
+              "$and": [
+                {
+                  "$or": [
+                    {
+                      "$and": [
+                        {
+                          "version": {
+                            "$eq": "shared-courses-v1"
+                          }
+                        },
+                        {
+                          "staleUntil": {
+                            "$gt": "2026-11-06T13:38:12.164Z"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "_id": {
+                        "$eq": "curated"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "$text": {
+                    "$search": "quantum computing qiskit qubit qubits",
+                    "$language": "none",
+                    "$caseSensitive": false,
+                    "$diacriticSensitive": false
+                  }
+                }
+              ]
+            },
+            "indexFilterSet": false,
+            "queryHash": "CDE38C87",
+            "planCacheShapeHash": "CDE38C87",
+            "planCacheKey": "8B8C8117",
+            "optimizationTimeMillis": 0,
+            "maxIndexedOrSolutionsReached": false,
+            "maxIndexedAndSolutionsReached": false,
+            "maxScansToExplodeReached": false,
+            "prunedSimilarIndexes": false,
+            "winningPlan": {
+              "isCached": false,
+              "stage": "PROJECTION_SIMPLE",
+              "transformBy": {
+                "_id": 1,
+                "audits": 1,
+                "courses": 1,
+                "freshUntil": 1,
+                "staleUntil": 1
+              },
+              "inputStage": {
+                "stage": "FETCH",
+                "filter": {
+                  "$or": [
+                    {
+                      "$and": [
+                        {
+                          "staleUntil": {
+                            "$gt": "2026-11-06T13:38:12.164Z"
+                          }
+                        },
+                        {
+                          "version": {
+                            "$eq": "shared-courses-v1"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "_id": {
+                        "$eq": "curated"
+                      }
+                    }
+                  ]
+                },
+                "inputStage": {
+                  "stage": "TEXT_MATCH",
+                  "indexPrefix": {},
+                  "indexName": "catalog_full_text",
+                  "parsedTextQuery": {
+                    "terms": [
+                      "computing",
+                      "qiskit",
+                      "quantum",
+                      "qubit",
+                      "qubits"
+                    ],
+                    "negatedTerms": [],
+                    "phrases": [],
+                    "negatedPhrases": []
+                  },
+                  "textIndexVersion": 3,
+                  "inputStage": {
+                    "stage": "FETCH",
+                    "inputStage": {
+                      "stage": "OR",
+                      "inputStages": [
+                        {
+                          "stage": "IXSCAN",
+                          "keyPattern": {
+                            "_fts": "text",
+                            "_ftsx": 1
+                          },
+                          "indexName": "catalog_full_text",
+                          "isMultiKey": true,
+                          "isUnique": false,
+                          "isSparse": false,
+                          "isPartial": false,
+                          "indexVersion": 2,
+                          "direction": "backward",
+                          "indexBounds": {}
+                        },
+                        {
+                          "stage": "IXSCAN",
+                          "keyPattern": {
+                            "_fts": "text",
+                            "_ftsx": 1
+                          },
+                          "indexName": "catalog_full_text",
+                          "isMultiKey": true,
+                          "isUnique": false,
+                          "isSparse": false,
+                          "isPartial": false,
+                          "indexVersion": 2,
+                          "direction": "backward",
+                          "indexBounds": {}
+                        },
+                        {
+                          "stage": "IXSCAN",
+                          "keyPattern": {
+                            "_fts": "text",
+                            "_ftsx": 1
+                          },
+                          "indexName": "catalog_full_text",
+                          "isMultiKey": true,
+                          "isUnique": false,
+                          "isSparse": false,
+                          "isPartial": false,
+                          "indexVersion": 2,
+                          "direction": "backward",
+                          "indexBounds": {}
+                        },
+                        {
+                          "stage": "IXSCAN",
+                          "keyPattern": {
+                            "_fts": "text",
+                            "_ftsx": 1
+                          },
+                          "indexName": "catalog_full_text",
+                          "isMultiKey": true,
+                          "isUnique": false,
+                          "isSparse": false,
+                          "isPartial": false,
+                          "indexVersion": 2,
+                          "direction": "backward",
+                          "indexBounds": {}
+                        },
+                        {
+                          "stage": "IXSCAN",
+                          "keyPattern": {
+                            "_fts": "text",
+                            "_ftsx": 1
+                          },
+                          "indexName": "catalog_full_text",
+                          "isMultiKey": true,
+                          "isUnique": false,
+                          "isSparse": false,
+                          "isPartial": false,
+                          "indexVersion": 2,
+                          "direction": "backward",
+                          "indexBounds": {}
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "rejectedPlans": []
+          },
+          "executionStats": {
+            "executionSuccess": true,
+            "nReturned": 6,
+            "executionTimeMillis": 5,
+            "totalKeysExamined": 8,
+            "totalDocsExamined": 12,
+            "executionStages": {
+              "isCached": false,
+              "stage": "PROJECTION_SIMPLE",
+              "nReturned": 6,
+              "executionTimeMillisEstimate": 0,
+              "works": 13,
+              "advanced": 6,
+              "needTime": 6,
+              "needYield": 0,
+              "saveState": 2,
+              "restoreState": 1,
+              "isEOF": 1,
+              "transformBy": {
+                "_id": 1,
+                "audits": 1,
+                "courses": 1,
+                "freshUntil": 1,
+                "staleUntil": 1
+              },
+              "inputStage": {
+                "stage": "FETCH",
+                "filter": {
+                  "$or": [
+                    {
+                      "$and": [
+                        {
+                          "staleUntil": {
+                            "$gt": "2026-11-06T13:38:12.164Z"
+                          }
+                        },
+                        {
+                          "version": {
+                            "$eq": "shared-courses-v1"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "_id": {
+                        "$eq": "curated"
+                      }
+                    }
+                  ]
+                },
+                "nReturned": 6,
+                "executionTimeMillisEstimate": 0,
+                "works": 13,
+                "advanced": 6,
+                "needTime": 6,
+                "needYield": 0,
+                "saveState": 2,
+                "restoreState": 1,
+                "isEOF": 1,
+                "docsExamined": 6,
+                "alreadyHasObj": 6,
+                "inputStage": {
+                  "stage": "TEXT_MATCH",
+                  "nReturned": 6,
+                  "executionTimeMillisEstimate": 0,
+                  "works": 13,
+                  "advanced": 6,
+                  "needTime": 6,
+                  "needYield": 0,
+                  "saveState": 2,
+                  "restoreState": 1,
+                  "isEOF": 1,
+                  "indexPrefix": {},
+                  "indexName": "catalog_full_text",
+                  "parsedTextQuery": {
+                    "terms": [
+                      "computing",
+                      "qiskit",
+                      "quantum",
+                      "qubit",
+                      "qubits"
+                    ],
+                    "negatedTerms": [],
+                    "phrases": [],
+                    "negatedPhrases": []
+                  },
+                  "textIndexVersion": 3,
+                  "docsRejected": 0,
+                  "inputStage": {
+                    "stage": "FETCH",
+                    "nReturned": 6,
+                    "executionTimeMillisEstimate": 0,
+                    "works": 13,
+                    "advanced": 6,
+                    "needTime": 6,
+                    "needYield": 0,
+                    "saveState": 2,
+                    "restoreState": 1,
+                    "isEOF": 1,
+                    "docsExamined": 6,
+                    "alreadyHasObj": 0,
+                    "inputStage": {
+                      "stage": "OR",
+                      "nReturned": 6,
+                      "executionTimeMillisEstimate": 0,
+                      "works": 13,
+                      "advanced": 6,
+                      "needTime": 6,
+                      "needYield": 0,
+                      "saveState": 2,
+                      "restoreState": 1,
+                      "isEOF": 1,
+                      "dupsTested": 8,
+                      "dupsDropped": 2,
+                      "inputStages": [
+                        {
+                          "stage": "IXSCAN",
+                          "nReturned": 4,
+                          "executionTimeMillisEstimate": 0,
+                          "works": 5,
+                          "advanced": 4,
+                          "needTime": 0,
+                          "needYield": 0,
+                          "saveState": 2,
+                          "restoreState": 1,
+                          "isEOF": 1,
+                          "keyPattern": {
+                            "_fts": "text",
+                            "_ftsx": 1
+                          },
+                          "indexName": "catalog_full_text",
+                          "isMultiKey": true,
+                          "isUnique": false,
+                          "isSparse": false,
+                          "isPartial": false,
+                          "indexVersion": 2,
+                          "direction": "backward",
+                          "indexBounds": {},
+                          "keysExamined": 4,
+                          "seeks": 1,
+                          "dupsTested": 4,
+                          "dupsDropped": 0
+                        },
+                        {
+                          "stage": "IXSCAN",
+                          "nReturned": 1,
+                          "executionTimeMillisEstimate": 0,
+                          "works": 2,
+                          "advanced": 1,
+                          "needTime": 0,
+                          "needYield": 0,
+                          "saveState": 2,
+                          "restoreState": 1,
+                          "isEOF": 1,
+                          "keyPattern": {
+                            "_fts": "text",
+                            "_ftsx": 1
+                          },
+                          "indexName": "catalog_full_text",
+                          "isMultiKey": true,
+                          "isUnique": false,
+                          "isSparse": false,
+                          "isPartial": false,
+                          "indexVersion": 2,
+                          "direction": "backward",
+                          "indexBounds": {},
+                          "keysExamined": 1,
+                          "seeks": 1,
+                          "dupsTested": 1,
+                          "dupsDropped": 0
+                        },
+                        {
+                          "stage": "IXSCAN",
+                          "nReturned": 2,
+                          "executionTimeMillisEstimate": 0,
+                          "works": 3,
+                          "advanced": 2,
+                          "needTime": 0,
+                          "needYield": 0,
+                          "saveState": 2,
+                          "restoreState": 1,
+                          "isEOF": 1,
+                          "keyPattern": {
+                            "_fts": "text",
+                            "_ftsx": 1
+                          },
+                          "indexName": "catalog_full_text",
+                          "isMultiKey": true,
+                          "isUnique": false,
+                          "isSparse": false,
+                          "isPartial": false,
+                          "indexVersion": 2,
+                          "direction": "backward",
+                          "indexBounds": {},
+                          "keysExamined": 2,
+                          "seeks": 1,
+                          "dupsTested": 2,
+                          "dupsDropped": 0
+                        },
+                        {
+                          "stage": "IXSCAN",
+                          "nReturned": 0,
+                          "executionTimeMillisEstimate": 0,
+                          "works": 1,
+                          "advanced": 0,
+                          "needTime": 0,
+                          "needYield": 0,
+                          "saveState": 2,
+                          "restoreState": 1,
+                          "isEOF": 1,
+                          "keyPattern": {
+                            "_fts": "text",
+                            "_ftsx": 1
+                          },
+                          "indexName": "catalog_full_text",
+                          "isMultiKey": true,
+                          "isUnique": false,
+                          "isSparse": false,
+                          "isPartial": false,
+                          "indexVersion": 2,
+                          "direction": "backward",
+                          "indexBounds": {},
+                          "keysExamined": 0,
+                          "seeks": 1,
+                          "dupsTested": 0,
+                          "dupsDropped": 0
+                        },
+                        {
+                          "stage": "IXSCAN",
+                          "nReturned": 1,
+                          "executionTimeMillisEstimate": 0,
+                          "works": 2,
+                          "advanced": 1,
+                          "needTime": 0,
+                          "needYield": 0,
+                          "saveState": 2,
+                          "restoreState": 1,
+                          "isEOF": 1,
+                          "keyPattern": {
+                            "_fts": "text",
+                            "_ftsx": 1
+                          },
+                          "indexName": "catalog_full_text",
+                          "isMultiKey": true,
+                          "isUnique": false,
+                          "isSparse": false,
+                          "isPartial": false,
+                          "indexVersion": 2,
+                          "direction": "backward",
+                          "indexBounds": {},
+                          "keysExamined": 1,
+                          "seeks": 1,
+                          "dupsTested": 1,
+                          "dupsDropped": 0
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "nReturned": 6,
+        "executionTimeMillisEstimate": 1
+      },
+      {
+        "$lookup": {
+          "from": "shared_course_catalog",
+          "as": "catalogAudit",
+          "let": {},
+          "pipeline": [
+            {
+              "$match": {
+                "_id": "curated"
+              }
+            },
+            {
+              "$project": {
+                "audits": 1
+              }
+            }
+          ]
+        },
+        "totalDocsExamined": 1,
+        "totalKeysExamined": 1,
+        "collectionScans": 0,
+        "indexesUsed": [
+          "_id_"
+        ],
+        "nReturned": 6,
+        "executionTimeMillisEstimate": 2
+      },
+      {
+        "$project": {
+          "_id": true,
+          "courses": true,
+          "catalogFreshUntil": "$freshUntil",
+          "catalogStaleUntil": "$staleUntil",
+          "archived": {
+            "$map": {
+              "input": {
+                "$filter": {
+                  "input": {
+                    "$objectToArray": [
+                      {
+                        "$mergeObjects": [
+                          {
+                            "$ifNull": [
+                              "$audits",
+                              {
+                                "$const": {}
+                              }
+                            ]
+                          },
+                          {
+                            "$ifNull": [
+                              {
+                                "$arrayElemAt": [
+                                  "$catalogAudit.audits",
+                                  {
+                                    "$const": 0
+                                  }
+                                ]
+                              },
+                              {
+                                "$const": {}
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "as": "audit",
+                  "cond": {
+                    "$eq": [
+                      "$$audit.v.archived",
+                      {
+                        "$const": true
+                      }
+                    ]
+                  }
+                }
+              },
+              "as": "audit",
+              "in": "$$audit.k"
+            }
+          }
+        },
+        "nReturned": 6,
+        "executionTimeMillisEstimate": 2
+      },
+      {
+        "$unwind": {
+          "path": "$courses"
+        },
+        "nReturned": 122,
+        "executionTimeMillisEstimate": 2
+      },
+      {
+        "$match": {
+          "$expr": {
+            "$not": [
+              {
+                "$in": [
+                  "$courses.id",
+                  "$archived"
+                ]
+              }
+            ]
+          }
+        },
+        "nReturned": 122,
+        "executionTimeMillisEstimate": 2
+      },
+      {
+        "$replaceRoot": {
+          "newRoot": {
+            "$mergeObjects": [
+              "$courses",
+              {
+                "catalogSourceFreshUntil": {
+                  "$ifNull": [
+                    "$courses.catalogMetadataFreshUntil",
+                    "$catalogFreshUntil"
+                  ]
+                },
+                "catalogSourceStaleUntil": "$catalogStaleUntil"
+              }
+            ]
+          }
+        },
+        "nReturned": 122,
+        "executionTimeMillisEstimate": 2
+      },
+      {
+        "$limit": 6041,
+        "nReturned": 122,
+        "executionTimeMillisEstimate": 2
+      }
+    ],
+    "queryShapeHash": "599F80D9C4B78B7EC3E0F9DF8448CB796154EC7BB97B95812A0E769B5B2AAFD9",
+    "serverInfo": {
+      "host": "ICOMM-AHMAD-HASS",
+      "port": 63300,
+      "version": "8.2.6",
+      "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
+    },
+    "serverParameters": {
+      "internalQueryFacetBufferSizeBytes": 104857600,
+      "internalQueryFacetMaxOutputDocSizeBytes": 104857600,
+      "internalLookupStageIntermediateDocumentMaxSizeBytes": 104857600,
+      "internalDocumentSourceGroupMaxMemoryBytes": 104857600,
+      "internalQueryMaxBlockingSortMemoryUsageBytes": 104857600,
+      "internalQueryProhibitBlockingMergeOnMongoS": 0,
+      "internalQueryMaxAddToSetBytes": 104857600,
+      "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": 104857600,
+      "internalQueryFrameworkControl": "trySbeRestricted",
+      "internalQueryPlannerIgnoreIndexWithCollationForRegex": 1
+    },
+    "command": {
+      "aggregate": "shared_course_catalog",
+      "pipeline": [
+        {
+          "$match": {
+            "$or": [
+              {
+                "_id": "curated"
+              },
+              {
+                "version": "shared-courses-v1",
+                "staleUntil": {
+                  "$gt": "2026-11-06T13:38:12.164Z"
+                }
+              }
+            ],
+            "$text": {
+              "$search": "quantum computing qiskit qubit qubits"
+            }
+          }
+        },
+        {
+          "$lookup": {
+            "from": "shared_course_catalog",
+            "pipeline": [
+              {
+                "$match": {
+                  "_id": "curated"
+                }
+              },
+              {
+                "$project": {
+                  "audits": 1
+                }
+              }
+            ],
+            "as": "catalogAudit"
+          }
+        },
+        {
+          "$project": {
+            "courses": 1,
+            "catalogFreshUntil": "$freshUntil",
+            "catalogStaleUntil": "$staleUntil",
+            "archived": {
+              "$map": {
+                "input": {
+                  "$filter": {
+                    "input": {
+                      "$objectToArray": {
+                        "$mergeObjects": [
+                          {
+                            "$ifNull": [
+                              "$audits",
+                              {}
+                            ]
+                          },
+                          {
+                            "$ifNull": [
+                              {
+                                "$arrayElemAt": [
+                                  "$catalogAudit.audits",
+                                  0
+                                ]
+                              },
+                              {}
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    "as": "audit",
+                    "cond": {
+                      "$eq": [
+                        "$$audit.v.archived",
+                        true
+                      ]
+                    }
+                  }
+                },
+                "as": "audit",
+                "in": "$$audit.k"
+              }
+            }
+          }
+        },
+        {
+          "$unwind": "$courses"
+        },
+        {
+          "$match": {
+            "$expr": {
+              "$not": [
+                {
+                  "$in": [
+                    "$courses.id",
+                    "$archived"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "$replaceRoot": {
+            "newRoot": {
+              "$mergeObjects": [
+                "$courses",
+                {
+                  "catalogSourceFreshUntil": {
+                    "$ifNull": [
+                      "$courses.catalogMetadataFreshUntil",
+                      "$catalogFreshUntil"
+                    ]
+                  },
+                  "catalogSourceStaleUntil": "$catalogStaleUntil"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "$limit": 6041
+        }
+      ],
+      "cursor": {},
+      "$db": "integration_live_acceptance"
+    },
+    "ok": 1,
+    "$clusterTime": {
+      "clusterTime": {
+        "$timestamp": "7705052324070162445"
+      },
+      "signature": {
+        "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "keyId": 0
+      }
+    },
+    "operationTime": {
+      "$timestamp": "7705052324070162445"
+    }
+  },
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 245,
+    "productionDataUsed": false
+  }
+}
