@@ -1,12 +1,12 @@
 // Single provider registry. Credentials are read at use time and never exported
 // by status/inventory endpoints. Existing environment model choices win over
-// built-in defaults; unconfigured new providers require an explicit model.
-const PRODUCTION_ORDER = Object.freeze(['gemini', 'openai', 'xai', 'anthropic']);
+// built-in defaults; missing credentials always disable a provider.
+const PRODUCTION_ORDER = Object.freeze(['gemini', 'openai', 'groq', 'anthropic', 'xai']);
 const PROVIDERS = Object.freeze({
   gemini: {
     label: 'Gemini',
     type: 'gemini',
-    defaults: ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.0-flash-lite'],
+    defaults: ['gemini-2.5-flash'],
     timeout: 6200,
     cooldown: 180000
   },
@@ -14,7 +14,23 @@ const PROVIDERS = Object.freeze({
     label: 'OpenAI',
     type: 'openai-compatible',
     endpoint: 'https://api.openai.com/v1/chat/completions',
-    defaults: ['gpt-4.1-mini', 'gpt-4o-mini'],
+    defaults: ['gpt-6-luna'],
+    timeout: 8000,
+    cooldown: 1800000
+  },
+  groq: {
+    label: 'Groq',
+    type: 'openai-compatible',
+    endpoint: 'https://api.groq.com/openai/v1/chat/completions',
+    defaults: ['openai/gpt-oss-120b'],
+    timeout: 6000,
+    cooldown: 180000
+  },
+  anthropic: {
+    label: 'Anthropic (Claude)',
+    type: 'anthropic',
+    endpoint: 'https://api.anthropic.com/v1/messages',
+    defaults: ['claude-haiku-5-5'],
     timeout: 8000,
     cooldown: 1800000
   },
@@ -22,24 +38,8 @@ const PROVIDERS = Object.freeze({
     label: 'Grok (xAI)',
     type: 'openai-compatible',
     endpoint: 'https://api.x.ai/v1/chat/completions',
-    defaults: [],
+    defaults: ['grok-4.7'],
     timeout: 8000,
-    cooldown: 180000
-  },
-  anthropic: {
-    label: 'Anthropic',
-    type: 'anthropic',
-    endpoint: 'https://api.anthropic.com/v1/messages',
-    defaults: [],
-    timeout: 8000,
-    cooldown: 1800000
-  },
-  groq: {
-    label: 'Groq (development only)',
-    type: 'openai-compatible',
-    endpoint: 'https://api.groq.com/openai/v1/chat/completions',
-    defaults: ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'],
-    timeout: 6000,
     cooldown: 180000
   }
 });
@@ -61,11 +61,9 @@ const descriptor = (provider) => {
     timeoutMs: integer(`${prefix}_TIMEOUT_MS`, config.timeout)
   };
 };
-const developmentEnabled = () => process.env.NODE_ENV === 'development' && process.env.AI_ENABLE_GROQ_DEV === 'true';
-const priority = () => (developmentEnabled() ? [...PRODUCTION_ORDER, 'groq'] : [...PRODUCTION_ORDER]);
+const priority = () => [...PRODUCTION_ORDER];
 const ENV_DEFAULTS = {
   AI_PROVIDER_PRIORITY: PRODUCTION_ORDER.join(','),
-  AI_ENABLE_GROQ_DEV: 'false',
   AI_REQUEST_TIMEOUT_MS: '30000',
   AI_GLOBAL_MAX_CONCURRENCY: '8',
   AI_GLOBAL_REQUESTS_PER_MINUTE: '120',
@@ -80,7 +78,7 @@ for (const [provider, entry] of Object.entries(PROVIDERS)) {
   const prefix = provider.toUpperCase();
   Object.assign(ENV_DEFAULTS, {
     [`${prefix}_API_KEY`]: '',
-    [`${prefix}_MODEL`]: '',
+    [`${prefix}_MODEL`]: entry.defaults[0],
     [`${prefix}_MODELS`]: '',
     [`${prefix}_TIMEOUT_MS`]: String(entry.timeout),
     [`${prefix}_COOLDOWN_MS`]: String(entry.cooldown),
@@ -96,7 +94,6 @@ module.exports = {
   descriptor,
   integer,
   priority,
-  developmentEnabled,
   ENV_DEFAULTS,
   setting
 };

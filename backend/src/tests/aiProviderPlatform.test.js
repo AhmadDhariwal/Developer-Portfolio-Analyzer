@@ -17,9 +17,13 @@ const isolate = (t, providers = config.PRODUCTION_ORDER) => {
         hasKey: true,
         apiKey: 'synthetic-not-a-credential',
         models: [
-          { gemini: 'gemini-fixture', openai: 'gpt-fixture', xai: 'grok-fixture', anthropic: 'claude-fixture' }[
-            provider
-          ]
+          {
+            gemini: 'gemini-fixture',
+            openai: 'gpt-fixture',
+            groq: 'openai/gpt-oss-fixture',
+            xai: 'grok-fixture',
+            anthropic: 'claude-fixture'
+          }[provider]
         ]
       }
     ])
@@ -37,7 +41,7 @@ const isolate = (t, providers = config.PRODUCTION_ORDER) => {
   t.mock.method(admission, 'record', async () => {});
   return controls;
 };
-test('production priority is fixed; Groq opt-in is development only and OpenRouter is removed', (t) => {
+test('the approved five-provider order is fixed in every environment', (t) => {
   const before = { ...process.env };
   t.after(() => {
     process.env = before;
@@ -45,11 +49,13 @@ test('production priority is fixed; Groq opt-in is development only and OpenRout
   process.env.AI_PROVIDER_PRIORITY = 'openrouter,groq,openai';
   process.env.NODE_ENV = 'production';
   process.env.AI_ENABLE_GROQ_DEV = 'true';
-  assert.deepEqual(manager.providerPriority(), ['gemini', 'openai', 'xai', 'anthropic']);
+  assert.deepEqual(manager.providerPriority(), ['gemini', 'openai', 'groq', 'anthropic', 'xai']);
   assert.equal(manager.normalizeProvider('openrouter'), '');
+  assert.equal(manager.normalizeProvider('groq'), 'groq');
+  assert.deepEqual(Object.keys(config.PROVIDERS), config.PRODUCTION_ORDER);
   assert.equal(manager.normalizeProvider('Grok'), 'xai');
   process.env.NODE_ENV = 'development';
-  assert.deepEqual(manager.providerPriority(), ['gemini', 'openai', 'xai', 'anthropic', 'groq']);
+  assert.deepEqual(manager.providerPriority(), config.PRODUCTION_ORDER);
   process.env.AI_ENABLE_GROQ_DEV = 'false';
   assert.deepEqual(manager.providerPriority(), config.PRODUCTION_ORDER);
 });
@@ -74,18 +80,32 @@ test('missing keys skip, configured model lists do not silently substitute defau
   assert.ok(updated.next.includes('XAI_API_KEY=\r\n'));
   assert.equal(updateText(updated.next).next, updated.next);
 });
-test('transient failures visit Gemini, OpenAI, xAI then Anthropic exactly once', async (t) => {
+test('environment consolidation removes obsolete providers, rejects conflicts and preserves unrelated entries', () => {
+  const input =
+    'GROQ_API_KEY=gsk_synthetic_preserved\nOPENROUTER_API_KEY=obsolete\nAI_ENABLE_GROQ_DEV=true\nOPENAI_MODEL=gpt-fixture\nOPENAI_MODEL=gpt-fixture\nUNRELATED=first\nUNRELATED=last\n';
+  const { next } = updateText(input);
+  assert.ok(!/^(?:OPENROUTER_|AI_ENABLE_GROQ_DEV)/m.test(next));
+  assert.ok(next.includes('GROQ_API_KEY=gsk_synthetic_preserved\n'));
+  assert.equal(next.match(/^OPENAI_MODEL=/gm).length, 1);
+  assert.ok(next.includes('UNRELATED=first\nUNRELATED=last\n'));
+  assert.equal(updateText(next).next, next);
+  assert.throws(
+    () => updateText('OPENAI_MODEL=gpt-one\nOPENAI_MODEL=gpt-two\n'),
+    /Conflicting duplicate AI variable: OPENAI_MODEL/
+  );
+});
+
+test('transient failures visit Gemini, OpenAI, Groq, Claude then xAI exactly once', async (t) => {
   isolate(t);
   const calls = [];
   t.mock.method(manager, 'runProviderRequest', async ({ provider }) => {
     calls.push(provider);
-    if (provider !== 'anthropic')
-      throw Object.assign(new Error('synthetic unavailable'), { response: { status: 503 } });
+    if (provider !== 'xai') throw Object.assign(new Error('synthetic unavailable'), { response: { status: 503 } });
     return { ok: true };
   });
   const result = await manager.execute('Synthetic fixture', { timeoutMs: 1000 });
   assert.equal(result.ok, true);
-  assert.equal(result.provider, 'anthropic');
+  assert.equal(result.provider, 'xai');
   assert.deepEqual(calls, config.PRODUCTION_ORDER);
 });
 test('invalid requests and safety refusals are terminal across every adapter', async (t) => {
@@ -106,6 +126,7 @@ test('invalid requests and safety refusals are terminal across every adapter', a
     });
   for (const [provider, data] of [
     ['openai', { choices: [{ message: { refusal: 'refused' }, finish_reason: 'stop' }] }],
+    ['groq', { choices: [{ message: { refusal: 'refused' }, finish_reason: 'stop' }] }],
     ['xai', { choices: [{ message: { content: '' }, finish_reason: 'content_filter' }] }],
     ['anthropic', { stop_reason: 'refusal', content: [] }]
   ])
@@ -227,7 +248,7 @@ test('adapters normalize JSON and preserve provider token caps', async (t) => {
         provider,
         prompt: 'fixture',
         apiKey: 'synthetic',
-        modelName: provider === 'openai' ? 'gpt-6-fixture' : 'fixture',
+        modelName: provider === 'openai' ? 'gpt-6-fixture' : provider === 'groq' ? 'openai/gpt-oss-120b' : 'fixture',
         parseJson: JSON.parse,
         timeoutMs: 500,
         maxOutputTokens: 600
@@ -239,6 +260,10 @@ test('adapters normalize JSON and preserve provider token caps', async (t) => {
   assert.equal(requests[0].body.max_tokens, undefined);
   assert.equal(requests[1].url, 'https://api.x.ai/v1/chat/completions');
   assert.equal(requests[2].body.max_tokens, 600);
+  assert.equal(requests[3].url, 'https://api.groq.com/openai/v1/chat/completions');
+  assert.equal(requests[3].body.max_completion_tokens, 600);
+  assert.equal(requests[3].body.temperature, undefined);
+  assert.equal(requests[3].body.reasoning_effort, 'low');
 });
 test('Gemini safety metadata stops before text extraction', async (t) => {
   t.mock.method(

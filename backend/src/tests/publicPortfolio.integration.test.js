@@ -16,6 +16,13 @@ test(
   'isolated Mongo + namespaced configured Upstash: critical portfolio flows',
   { timeout: 120000 },
   async (t) => {
+    // This suite owns filesystem image fixtures; live B2 has separate acceptance.
+    const storageDriver = process.env.STORAGE_DRIVER;
+    process.env.STORAGE_DRIVER = 'filesystem';
+    t.after(() => {
+      if (storageDriver === undefined) delete process.env.STORAGE_DRIVER;
+      else process.env.STORAGE_DRIVER = storageDriver;
+    });
     const uri = process.env.MONGODB_URI || process.env.MONGO_URI;
     assert.ok(uri, 'Configured MongoDB required');
     const dbName = `portfolio_test_${randomUUID().replaceAll('-', '')}`;
@@ -309,8 +316,18 @@ test(
       assert.equal(admitted, 1);
       assert.equal(denied.statusCode, 429);
       assert.ok(Number(denied.headers['Retry-After']) > 0);
-      const rateKey = [...ownedKeys].find((key) => key.includes(':rate:integration:'));
-      assert.ok((await nativeRedis.pTTL(rateKey)) > 0);
+      // Fixed-window admission moved to Mongo; Redis is only the response cache.
+      const State = require('../models/integrationGovernanceState');
+      const identity = require('node:crypto').createHash('sha256').update(req.ip).digest('hex');
+      const prefix = `public-portfolio:v3:rate:integration:${identity}:`;
+      const window = await State.findOne({ _id: { $regex: `^${prefix}` } }).lean();
+      assert.equal(window.count, 2);
+      assert.ok(window.expiresAt.getTime() > Date.now());
+      assert.ok(window.expiresAt.getTime() <= Date.now() + 60000);
+      const indexes = await State.collection.listIndexes().toArray();
+      assert.ok(
+        indexes.some((index) => index.key.expiresAt === 1 && index.expireAfterSeconds === 0),
+      );
     });
     await t.test(
       'Redis distributed single-flight prevents duplicate builds across isolated caches',
@@ -383,22 +400,30 @@ test(
     await t.test(
       'image endpoint enforces auth, MIME, size, structure and generated storage names',
       async () => {
-        const png = Buffer.from(
-          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aC1sAAAAASUVORK5CYII=',
-          'base64',
-        );
+        // Decode-valid bytes, matching the current strict image validation contract.
+        const png = await require('sharp')({
+          create: { width: 1, height: 1, channels: 4, background: '#ffffff' },
+        })
+          .png()
+          .toBuffer();
         const form = new FormData();
         form.append('image', new Blob([png], { type: 'image/png' }), '../../escape.png');
         const result = await request(a, '/me/project-image', owner, { method: 'POST', body: form });
-        assert.equal(result.status, 201);
         const body = await result.json();
+        assert.equal(result.status, 201, JSON.stringify(body));
         assert.match(
           body.imageUrl,
-          new RegExp(`^/uploads/portfolio-images/${owner._id}-[a-f0-9-]+\\.png$`),
+          new RegExp(`^/uploads/portfolio-images/${owner._id}-[a-f0-9-]+\\.webp$`),
         );
         const filename = path.resolve(__dirname, '../../', body.imageUrl.slice(1));
         ownedFiles.push(filename);
-        assert.deepEqual(await fs.readFile(filename), png);
+        const stored = await fs.readFile(filename);
+        const metadata = await require('sharp')(stored).metadata();
+        assert.equal(metadata.format, 'webp');
+        assert.equal(metadata.width, 1);
+        assert.equal(metadata.height, 1);
+        assert.equal(body.mimeType, 'image/webp');
+        assert.equal(body.size, stored.length);
         const asset = await fetch(a.base.split('/api/')[0] + body.imageUrl);
         assert.equal(asset.status, 200);
         assert.equal(asset.headers.get('x-content-type-options'), 'nosniff');
@@ -461,7 +486,7 @@ test(
       },
     );
     await t.test(
-      'account privacy revocation unpublishes portfolios on warmed workers',
+      'recruiter visibility and explicit portfolio publication remain independent on warmed workers',
       async () => {
         const controller = load('controllers/profilecontroller.js', {
           '../services/notificationService': { createNotification: async () => {} },
@@ -478,6 +503,10 @@ test(
         );
         assert.equal(result.statusCode, 200);
         assert.equal(result.body.isPublic, false);
+        assert.equal((await User.findById(owner._id).lean()).isPublic, false);
+        assert.equal((await request(a, '/renamed-owner')).status, 200);
+        assert.equal((await request(b, '/renamed-owner')).status, 200);
+        await a.service.updatePublicProfile(owner._id, { isPublic: false });
         assert.equal((await request(a, '/renamed-owner')).status, 404);
         assert.equal((await request(b, '/renamed-owner')).status, 404);
         assert.equal((await request(b, '/renamed-owner/resume')).status, 404);

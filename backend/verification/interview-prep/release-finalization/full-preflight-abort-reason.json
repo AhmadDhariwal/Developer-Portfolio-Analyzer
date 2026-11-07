@@ -1,0 +1,5 @@
+{
+  "reason": "Harness supplied a replicaSet query string to Career Sprint legacy fixture, whose existing safety guard requires a query-free isolated URI. Stopped early; this is not a completed full regression. Raw partial TAP retained.",
+  "runnerExitCode": 1,
+  "completeRegression": false
+}

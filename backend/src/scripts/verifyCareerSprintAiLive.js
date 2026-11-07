@@ -47,13 +47,8 @@ async function main() {
     title: `Implement Docker exercise ${index + 1}`,
     category: 'practice'
   }));
-  for (const [provider, key] of [
-    ['groq', 'GROQ_API_KEY'],
-    ['gemini', 'GEMINI_API_KEY'],
-    ['openai', 'OPENAI_API_KEY'],
-    ['anthropic', 'ANTHROPIC_API_KEY'],
-    ['openrouter', 'OPENROUTER_API_KEY']
-  ]) {
+  for (const provider of require('../config/aiProviders').PRODUCTION_ORDER) {
+    const key = require('../config/aiProviders').descriptor(provider).envKey;
     if (!process.env[key]) {
       report.providers.push({ provider, status: 'NOT_CONFIGURED' });
       continue;
@@ -120,8 +115,7 @@ async function main() {
     });
   }
   report.status =
-    report.providers.some((p) => p.status === 'PASS') &&
-    report.plans.every((p) => p.planMeta.generationMode === 'llm')
+    report.providers.some((p) => p.status === 'PASS') && report.plans.every((p) => p.planMeta.generationMode === 'llm')
       ? 'VERIFIED'
       : 'BLOCKED';
 }

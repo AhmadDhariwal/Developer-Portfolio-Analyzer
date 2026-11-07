@@ -1,0 +1,3028 @@
+{
+  "scope": "Static literal runtime references plus declared keys and computed shared AI registry. Dynamic storage/News keys are also covered by their configuration suites; presence does not prove validity or live access.",
+  "files": [
+    {
+      "file": "backend/.env",
+      "duplicateNames": [
+        "SUPPORT_INBOX_EMAIL",
+        "COURSES_SPRINT_RATE_LIMIT_MAX"
+      ]
+    },
+    {
+      "file": "backend/.env.example",
+      "duplicateNames": [
+        "COURSES_MEMORY_TTL_MS",
+        "COURSES_REDIS_LOOKUP_BUDGET_MS",
+        "COURSES_REDIS_TTL_SECONDS",
+        "COURSES_RATE_LIMIT_WINDOW_MS",
+        "COURSES_READ_RATE_LIMIT_MAX",
+        "COURSES_REFRESH_RATE_LIMIT_MAX",
+        "COURSES_MUTATION_RATE_LIMIT_MAX",
+        "COURSES_SPRINT_RATE_LIMIT_MAX"
+      ]
+    }
+  ],
+  "keys": [
+    {
+      "name": "ADZUNA_APP_ID",
+      "runtimeFiles": [
+        "src/services/jobService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "ADZUNA_APP_KEY",
+      "runtimeFiles": [
+        "src/services/jobService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "ADZUNA_COUNTRY",
+      "runtimeFiles": [
+        "src/services/jobService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "AI_AUTH_COOLDOWN_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "AI_CIRCUIT_FAILURE_THRESHOLD",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "AI_DETERMINISTIC_CACHE_TTL_SECONDS",
+      "runtimeFiles": [
+        "src/services/aiservice.js"
+      ],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "AI_GLOBAL_MAX_CONCURRENCY",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "AI_GLOBAL_REQUESTS_PER_DAY",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "AI_GLOBAL_REQUESTS_PER_MINUTE",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "AI_PROMPT_ARRAY_LIMIT",
+      "runtimeFiles": [
+        "src/services/promptBuilderService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "AI_PROMPT_TEXT_LIMIT",
+      "runtimeFiles": [
+        "src/services/promptBuilderService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "AI_PROVIDER_PRIORITY",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "AI_REQUEST_TIMEOUT_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "AI_RESPONSE_CACHE_TTL_SECONDS",
+      "runtimeFiles": [
+        "src/services/aiservice.js"
+      ],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "ANTHROPIC_API_KEY",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "ANTHROPIC_COOLDOWN_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "ANTHROPIC_MAX_CONCURRENCY",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "ANTHROPIC_MODEL",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "ANTHROPIC_MODELS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": false
+    },
+    {
+      "name": "ANTHROPIC_REQUESTS_PER_DAY",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "ANTHROPIC_REQUESTS_PER_MINUTE",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "ANTHROPIC_TIMEOUT_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "ANTHROPIC_VERSION",
+      "runtimeFiles": [
+        "src/services/aiProviderManager.js"
+      ],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "API_BASE_URL",
+      "runtimeFiles": [
+        "src/services/publicProfileService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "APP_ACCENT_COLOR",
+      "runtimeFiles": [
+        "src/services/invitationEmailService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "APP_LOGO_URL",
+      "runtimeFiles": [
+        "src/services/invitationEmailService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "APP_NAME",
+      "runtimeFiles": [
+        "src/services/invitationEmailService.js",
+        "src/services/weeklyReportService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "APP_PRIMARY_COLOR",
+      "runtimeFiles": [
+        "src/services/invitationEmailService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "AUTH_COOKIE_NAME",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "AUTH_COOKIE_SAMESITE",
+      "runtimeFiles": [
+        "src/services/oauthAuthService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "AUTH_COOKIE_SECURE",
+      "runtimeFiles": [
+        "src/services/oauthAuthService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "B2_IMAGES_APPLICATION_KEY",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "B2_IMAGES_BUCKET",
+      "runtimeFiles": [
+        "src/controllers/profilecontroller.js",
+        "src/middleware/storedImageMiddleware.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "B2_IMAGES_ENDPOINT",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "B2_IMAGES_KEY_ID",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "B2_IMAGES_REGION",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "B2_RESUMES_APPLICATION_KEY",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "B2_RESUMES_BUCKET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "B2_RESUMES_ENDPOINT",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "B2_RESUMES_KEY_ID",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "B2_RESUMES_REGION",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "BACKEND_URL",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": false
+    },
+    {
+      "name": "BRUTE_FORCE_LOCKOUT_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "BRUTE_FORCE_MAX_ATTEMPTS",
+      "runtimeFiles": [
+        "src/middleware/securityMiddleware.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "CAREER_SPRINT_AI_TIMEOUT_MS",
+      "runtimeFiles": [
+        "src/services/aiTaskService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "CAREER_SPRINT_PLANNING_CACHE_MAX_SIZE",
+      "runtimeFiles": [
+        "src/services/aiTaskService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "CAREER_SPRINT_PLAN_REDIS_BUDGET_MS",
+      "runtimeFiles": [
+        "src/services/aiTaskService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "CAREER_SPRINT_PLAN_REDIS_TTL_SECONDS",
+      "runtimeFiles": [
+        "src/services/aiTaskService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "CAREER_SPRINT_PLAN_RESULT_CACHE_TTL_MS",
+      "runtimeFiles": [
+        "src/services/aiTaskService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "CAREER_SPRINT_STAGE_TIMINGS",
+      "runtimeFiles": [
+        "src/services/aiTaskService.js",
+        "src/services/careerSprintService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "CORS_ORIGIN",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "COURSES_BACKGROUND_INGESTION",
+      "runtimeFiles": [
+        "src/services/courseCatalogMaintenanceService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "COURSES_GAP_DISCOVERY_ENABLED",
+      "runtimeFiles": [
+        "src/services/courseCatalogMaintenanceService.js",
+        "src/services/courseDiscoveryStatusService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "COURSES_IP_RATE_LIMIT_MAX",
+      "runtimeFiles": [
+        "src/middleware/courseAdmission.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "COURSES_MAINTENANCE_ENABLED",
+      "runtimeFiles": [
+        "src/services/courseCatalogMaintenanceService.js",
+        "src/services/courseDiscoveryStatusService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "COURSES_MEMORY_TTL_MS",
+      "runtimeFiles": [
+        "src/services/courseRecommendationService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "COURSES_MUTATION_RATE_LIMIT_MAX",
+      "runtimeFiles": [
+        "src/middleware/courseAdmission.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "COURSES_OFFICIAL_CATALOG_ENABLED",
+      "runtimeFiles": [
+        "src/services/courseCatalogAcquisitionService.js",
+        "src/services/courseDiscoveryStatusService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "COURSES_POOL_STORE_TIMEOUT_MS",
+      "runtimeFiles": [
+        "src/services/courseGovernanceService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "COURSES_RATE_LIMIT_WINDOW_MS",
+      "runtimeFiles": [
+        "src/services/courseGovernanceService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "COURSES_READ_RATE_LIMIT_MAX",
+      "runtimeFiles": [
+        "src/middleware/courseAdmission.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "COURSES_REDIS_LOOKUP_BUDGET_MS",
+      "runtimeFiles": [
+        "src/services/courseRecommendationService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "COURSES_REDIS_TTL_SECONDS",
+      "runtimeFiles": [
+        "src/services/courseRecommendationService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "COURSES_REFRESH_RATE_LIMIT_MAX",
+      "runtimeFiles": [
+        "src/middleware/courseAdmission.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "COURSES_SPRINT_RATE_LIMIT_MAX",
+      "runtimeFiles": [
+        "src/middleware/courseAdmission.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "COURSES_STAGE_TIMINGS",
+      "runtimeFiles": [
+        "src/services/courseRecommendationService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "COURSES_YOUTUBE_PIPELINES_PER_25H",
+      "runtimeFiles": [
+        "src/services/sharedCourseCatalogService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "EMAIL_PASS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "EMAIL_PROVIDER",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "EMAIL_RETRY_INTERVAL_MS",
+      "runtimeFiles": [
+        "src/services/emailRetryQueueService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "EMAIL_USER",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "FRONTEND_BASE_URL",
+      "runtimeFiles": [
+        "src/controllers/admin/recruiterController.js",
+        "src/controllers/integrationscontroller.js",
+        "src/controllers/tenantcontroller.js",
+        "src/services/invitationEmailService.js",
+        "src/services/weeklyReportService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "FRONTEND_URL",
+      "runtimeFiles": [
+        "src/controllers/authcontroller.js",
+        "src/controllers/integrationscontroller.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "GEMINI_API_KEY",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "GEMINI_COOLDOWN_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "GEMINI_MAX_CONCURRENCY",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "GEMINI_MODEL",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "GEMINI_MODELS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": false
+    },
+    {
+      "name": "GEMINI_REQUESTS_PER_DAY",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "GEMINI_REQUESTS_PER_MINUTE",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "GEMINI_TIMEOUT_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "GITHUB_AUTH_CALLBACK_URL",
+      "runtimeFiles": [
+        "src/config/githubOauth.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "GITHUB_AUTH_CLIENT_ID",
+      "runtimeFiles": [
+        "src/config/githubOauth.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "GITHUB_AUTH_CLIENT_SECRET",
+      "runtimeFiles": [
+        "src/config/githubOauth.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "GITHUB_CALLBACK_URL",
+      "runtimeFiles": [
+        "src/config/githubOauth.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "GITHUB_CLIENT_ID",
+      "runtimeFiles": [
+        "src/config/githubOauth.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "GITHUB_CLIENT_SECRET",
+      "runtimeFiles": [
+        "src/config/githubOauth.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "GITHUB_INTEGRATION_CALLBACK_URL",
+      "runtimeFiles": [
+        "src/config/githubOauth.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "GITHUB_INTEGRATION_CLIENT_ID",
+      "runtimeFiles": [
+        "src/config/githubOauth.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "GITHUB_INTEGRATION_CLIENT_SECRET",
+      "runtimeFiles": [
+        "src/config/githubOauth.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "GITHUB_TIMING",
+      "runtimeFiles": [
+        "src/services/githubservice.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "GITHUB_TOKEN",
+      "runtimeFiles": [
+        "src/services/githubservice.js",
+        "src/services/providers/interviewScraperProvider.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "GNEWS_API_KEY",
+      "runtimeFiles": [
+        "src/services/newsService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "GOOGLE_CALLBACK_URL",
+      "runtimeFiles": [
+        "src/services/oauthAuthService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "GOOGLE_CLIENT_ID",
+      "runtimeFiles": [
+        "src/services/oauthAuthService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "GOOGLE_CLIENT_SECRET",
+      "runtimeFiles": [
+        "src/services/oauthAuthService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "GROQ_API_KEY",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": false
+    },
+    {
+      "name": "GROQ_COOLDOWN_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "GROQ_MAX_CONCURRENCY",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "GROQ_MODEL",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "GROQ_MODELS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": false
+    },
+    {
+      "name": "GROQ_REQUESTS_PER_DAY",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "GROQ_REQUESTS_PER_MINUTE",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "GROQ_TIMEOUT_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "HACKERRANK_WORK_API_TOKEN",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": false
+    },
+    {
+      "name": "HASHNODE_PAT",
+      "runtimeFiles": [
+        "src/services/integrations/hashnodePublication.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "HASHNODE_PUBLICATION_HOST",
+      "runtimeFiles": [
+        "src/services/integrations/hashnodePublication.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "INTEGRATION_ACTIONS_PER_MIN",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "INTEGRATION_DEFAULT_SYNC_INTERVAL_MIN",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "INTEGRATION_GLOBAL_CONCURRENCY",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "INTEGRATION_OPERATION_TIMEOUT_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "INTEGRATION_PROVIDER_CONCURRENCY",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "INTEGRATION_PROVIDER_REQUESTS_PER_MIN",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "INTEGRATION_REQUEST_TIMEOUT_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "INTEGRATION_SYNC_BATCH_SIZE",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "INTEGRATION_SYNC_INTERVAL_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "INTEGRATION_SYNC_LOG_RETENTION_DAYS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "INTEGRATION_TOKEN_ACTIVE_KEY",
+      "runtimeFiles": [
+        "src/services/integrationTokenService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "INTEGRATION_TOKEN_KEYS",
+      "runtimeFiles": [
+        "src/services/integrationTokenService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "INTEGRATION_USER_PROVIDER_REQUESTS_PER_MIN",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "INTEGRATION_WEBHOOK_SECRET",
+      "runtimeFiles": [
+        "src/controllers/integrationscontroller.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "INTERVIEW_AI_GEMINI_MODEL",
+      "runtimeFiles": [
+        "src/services/providers/interviewAIProvider.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "INTERVIEW_AI_TIMEOUT_MS",
+      "runtimeFiles": [
+        "src/services/providers/interviewAIProvider.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "INTERVIEW_QUESTION_INGEST_CRON",
+      "runtimeFiles": [
+        "src/services/interviewQuestionIngestionService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "INTERVIEW_QUESTION_INGEST_TOPICS",
+      "runtimeFiles": [
+        "src/services/interviewQuestionIngestionService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "INTERVIEW_QUESTION_MAINTENANCE_CRON",
+      "runtimeFiles": [
+        "src/services/interviewQuestionMaintenanceService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "INTERVIEW_QUESTION_MIN_PER_TOPIC",
+      "runtimeFiles": [
+        "src/services/interviewQuestionMaintenanceService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "JOBS_TEST_REDIS_DISPOSABLE",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "JOBS_TEST_REDIS_URL",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": false
+    },
+    {
+      "name": "JOB_CACHE_RETENTION_DAYS",
+      "runtimeFiles": [
+        "src/models/jobCache.js",
+        "src/services/jobService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "JOB_CACHE_TTL_HOURS",
+      "runtimeFiles": [
+        "src/models/jobCache.js",
+        "src/services/jobService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "JOB_COURSE_POOL_CACHE_TTL_MS",
+      "runtimeFiles": [
+        "src/controllers/jobController.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "JOB_REMOTIVE_ENABLED",
+      "runtimeFiles": [
+        "src/services/jobService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "JOB_SOURCE_HEALTH_WRITE_INTERVAL_MS",
+      "runtimeFiles": [
+        "src/services/jobService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "JOB_SOURCE_SYNC_INTERVAL_MS",
+      "runtimeFiles": [
+        "src/services/jobSourceSyncService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "JOB_SOURCE_TIMEOUT_MS",
+      "runtimeFiles": [
+        "src/services/jobService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "JOB_SOURCE_WARNING_DEDUPE_MS",
+      "runtimeFiles": [
+        "src/services/jobService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "JOOBLE_API_KEY",
+      "runtimeFiles": [
+        "src/controllers/jobController.js",
+        "src/services/jobService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "JSEARCH_RETRIES",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "JSEARCH_TIMEOUT_MS",
+      "runtimeFiles": [
+        "src/services/jobService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "JWT_AUDIENCE",
+      "runtimeFiles": [
+        "src/middleware/authmiddleware.js",
+        "src/middleware/securityMiddleware.js",
+        "src/services/notificationStreamService.js",
+        "src/services/oauthAuthService.js",
+        "src/utils/authSessionToken.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "JWT_EXPIRES_IN",
+      "runtimeFiles": [
+        "src/utils/authSessionToken.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "JWT_ISSUER",
+      "runtimeFiles": [
+        "src/controllers/notificationcontroller.js",
+        "src/middleware/authmiddleware.js",
+        "src/middleware/securityMiddleware.js",
+        "src/middleware/storedImageMiddleware.js",
+        "src/services/notificationStreamService.js",
+        "src/services/oauthAuthService.js",
+        "src/utils/authSessionToken.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "JWT_SECRET",
+      "runtimeFiles": [
+        "src/controllers/authcontroller.js",
+        "src/controllers/notificationcontroller.js",
+        "src/middleware/auditLogMiddleware.js",
+        "src/middleware/authmiddleware.js",
+        "src/middleware/securityMiddleware.js",
+        "src/middleware/storedImageMiddleware.js",
+        "src/services/newsAdaptiveService.js",
+        "src/services/notificationStreamService.js",
+        "src/services/oauthAuthService.js",
+        "src/services/platformSettingsService.js",
+        "src/services/publicProfileService.js",
+        "src/utils/authSessionToken.js",
+        "src/utils/passwordResetChallenge.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "KAGGLE_API_TOKEN",
+      "runtimeFiles": [
+        "src/services/integrations/kaggleResources.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "LINKEDIN_CLIENT_ID",
+      "runtimeFiles": [
+        "src/services/integrations/linkedinAdapter.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "LINKEDIN_CLIENT_SECRET",
+      "runtimeFiles": [
+        "src/services/integrations/linkedinAdapter.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "LINKEDIN_OAUTH_REDIRECT_URI",
+      "runtimeFiles": [
+        "src/controllers/integrationscontroller.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "LOG_LEVEL",
+      "runtimeFiles": [
+        "src/utils/logger.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "METRICS_ALERT_ERROR_RATE",
+      "runtimeFiles": [
+        "src/services/metricsService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "METRICS_ALERT_LATENCY_MS",
+      "runtimeFiles": [
+        "src/services/metricsService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "MONGODB_URI",
+      "runtimeFiles": [
+        "src/config/db.js",
+        "src/services/storageCleanupWorkerService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "MONGO_URI",
+      "runtimeFiles": [
+        "src/services/storageCleanupWorkerService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "NEWS_API_KEY",
+      "runtimeFiles": [
+        "src/services/newsService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_CATALOG_RANKING_LIMIT",
+      "runtimeFiles": [
+        "src/services/newsCatalogService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_CATALOG_RETENTION_DAYS",
+      "runtimeFiles": [
+        "src/services/newsCatalogService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_CLOUDFLARECHANGELOG_CONTENT_APPROVED",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_CLOUDFLARECHANGELOG_DAILY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_CLOUDFLARECHANGELOG_MIN_INTERVAL_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_CLOUDFLARECHANGELOG_MONTHLY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_CLOUDFLARECHANGELOG_RETENTION_HOURS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_DEVTOSEARCH_CONTENT_APPROVED",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_DEVTOSEARCH_DAILY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_DEVTOSEARCH_MIN_INTERVAL_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_DEVTOSEARCH_MONTHLY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_DEVTOSEARCH_RETENTION_HOURS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_DEVTO_CONTENT_APPROVED",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_DEVTO_DAILY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_DEVTO_MIN_INTERVAL_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_DEVTO_MONTHLY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_DEVTO_RETENTION_HOURS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_DEVTO_SHARED_DAILY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_DEVTO_SHARED_MIN_INTERVAL_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_DEVTO_SHARED_MONTHLY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_DISCOVERY_DAILY_JOBS",
+      "runtimeFiles": [
+        "src/services/newsDiscoveryService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_DISCOVERY_ENABLED",
+      "runtimeFiles": [
+        "src/services/newsDiscoveryProviders.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_DISCOVERY_PREWARM_DAILY_JOBS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_DISCOVERY_PREWARM_ENABLED",
+      "runtimeFiles": [
+        "src/services/newsDiscoveryService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_DISCOVERY_PREWARM_TOPICS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_DISCOVERY_RESULTS_PER_PROVIDER",
+      "runtimeFiles": [
+        "src/services/newsDiscoveryProviders.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_DISCOVERY_USER_DAILY_JOBS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_DISCOVERY_USER_MINUTE_JOBS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_GITHUBADVISORIES_CONTENT_APPROVED",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_GITHUBADVISORIES_DAILY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_GITHUBADVISORIES_MIN_INTERVAL_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_GITHUBADVISORIES_MONTHLY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_GITHUBADVISORIES_RETENTION_HOURS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_GITHUBRELEASES_CONTENT_APPROVED",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_GITHUBRELEASES_DAILY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_GITHUBRELEASES_MIN_INTERVAL_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_GITHUBRELEASES_MONTHLY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_GITHUBRELEASES_RETENTION_HOURS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_GITHUB_SHARED_DAILY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_GITHUB_SHARED_MIN_INTERVAL_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_GITHUB_SHARED_MONTHLY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_GNEWS_CONTENT_APPROVED",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_GNEWS_DAILY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_GNEWS_MIN_INTERVAL_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_GNEWS_MONTHLY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_GNEWS_RETENTION_HOURS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_HACKERNEWSSEARCH_CONTENT_APPROVED",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_HACKERNEWSSEARCH_DAILY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_HACKERNEWSSEARCH_MIN_INTERVAL_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_HACKERNEWSSEARCH_MONTHLY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_HACKERNEWSSEARCH_RETENTION_HOURS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_HACKERNEWS_CONTENT_APPROVED",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_HACKERNEWS_DAILY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_HACKERNEWS_MIN_INTERVAL_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_HACKERNEWS_MONTHLY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_HACKERNEWS_RETENTION_HOURS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_HACKERNEWS_SHARED_DAILY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_HACKERNEWS_SHARED_MIN_INTERVAL_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_HACKERNEWS_SHARED_MONTHLY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_INGESTION_ENABLED",
+      "runtimeFiles": [
+        "src/services/newsDiscoveryService.js",
+        "src/services/newsService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_KUBERNETESBLOG_CONTENT_APPROVED",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_KUBERNETESBLOG_DAILY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_KUBERNETESBLOG_MIN_INTERVAL_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_KUBERNETESBLOG_MONTHLY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_KUBERNETESBLOG_RETENTION_HOURS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_LOBSTERS_CONTENT_APPROVED",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_LOBSTERS_DAILY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_LOBSTERS_MIN_INTERVAL_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_LOBSTERS_MONTHLY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_LOBSTERS_RETENTION_HOURS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_NEWSAPI_CONTENT_APPROVED",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_NEWSAPI_DAILY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_NEWSAPI_MIN_INTERVAL_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_NEWSAPI_MONTHLY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_NEWSAPI_RETENTION_HOURS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_PREWARM_EVALUATION_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_PREWARM_FRESHNESS_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_PREWARM_MAX_CANDIDATES",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_PREWARM_MIN_DEMAND",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_PREWARM_RESERVED_USER_JOBS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_PREWARM_STRATEGY",
+      "runtimeFiles": [
+        "src/services/newsAdaptiveService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_PREWARM_TARGET_ARTICLES",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_QUERY_FRESH_TTL_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_QUERY_MEMORY_ENTRIES",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_QUERY_NEGATIVE_TTL_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_QUERY_STALE_TTL_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_REDDIT_ACCESS_TOKEN",
+      "runtimeFiles": [
+        "src/services/newsService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": false
+    },
+    {
+      "name": "NEWS_REDDIT_CONTENT_APPROVED",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_REDDIT_DAILY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_REDDIT_MIN_INTERVAL_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_REDDIT_MONTHLY_BUDGET",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_REDDIT_RETENTION_HOURS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_REDDIT_USER_AGENT",
+      "runtimeFiles": [
+        "src/services/newsService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": false
+    },
+    {
+      "name": "NEWS_REFRESH_MIN_INTERVAL_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_TEST_BROWSER",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_TEST_LIVE_PROVIDERS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_TEST_MONGODB_URI",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": false
+    },
+    {
+      "name": "NEWS_TEST_REDIS_DISPOSABLE",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "NEWS_TEST_REDIS_NAMESPACE",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": false
+    },
+    {
+      "name": "NEWS_TEST_REDIS_URL",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": false
+    },
+    {
+      "name": "NODE_ENV",
+      "runtimeFiles": [
+        "src/config/githubOauth.js",
+        "src/controllers/integrationscontroller.js",
+        "src/controllers/profilecontroller.js",
+        "src/controllers/resumecontoller.js",
+        "src/controllers/skillgapcontroller.js",
+        "src/middleware/scenarioSimulatorMiddleware.js",
+        "src/middleware/securityMiddleware.js",
+        "src/middleware/storedImageMiddleware.js",
+        "src/models/scenarioSimulation.js",
+        "src/services/aiTaskService.js",
+        "src/services/careerSprintService.js",
+        "src/services/courseRecommendationService.js",
+        "src/services/courseService.js",
+        "src/services/githubservice.js",
+        "src/services/interviewPrepService.js",
+        "src/services/interviewQuestionSeedCatalog.js",
+        "src/services/oauthAuthService.js",
+        "src/services/publicImageStorageService.js",
+        "src/services/recommendationService.js",
+        "src/services/resumeservice.js",
+        "src/services/scenarioSimulatorService.js",
+        "src/services/weeklyReportService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "OPENAI_API_KEY",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "OPENAI_COOLDOWN_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "OPENAI_MAX_CONCURRENCY",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "OPENAI_MODEL",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "OPENAI_MODELS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": false
+    },
+    {
+      "name": "OPENAI_REQUESTS_PER_DAY",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "OPENAI_REQUESTS_PER_MINUTE",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "OPENAI_TIMEOUT_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "OTEL_EXPORTER_OTLP_ENDPOINT",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": false
+    },
+    {
+      "name": "OTEL_SERVICE_NAME",
+      "runtimeFiles": [
+        "src/services/tracingService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "PORT",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "PROFILE_TIMING",
+      "runtimeFiles": [
+        "src/controllers/profilecontroller.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "PUBLIC_API_ORIGIN",
+      "runtimeFiles": [
+        "src/controllers/profilecontroller.js",
+        "src/services/publicProfileService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "PUBLIC_IMAGE_STORAGE_ROOT",
+      "runtimeFiles": [
+        "src/services/publicImageStorageService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "PUBLIC_PORTFOLIO_ANALYTICS_SECRET",
+      "runtimeFiles": [
+        "src/services/publicProfileService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "RAPIDAPI_KEY",
+      "runtimeFiles": [
+        "src/controllers/jobController.js",
+        "src/services/jobService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "RATE_LIMIT_AUTH_MAX",
+      "runtimeFiles": [
+        "src/middleware/securityMiddleware.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "RATE_LIMIT_GLOBAL_MAX",
+      "runtimeFiles": [
+        "src/middleware/securityMiddleware.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "RATE_LIMIT_GLOBAL_MAX_DEV",
+      "runtimeFiles": [
+        "src/middleware/securityMiddleware.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "RECOMMENDATIONS_MEMORY_TTL_MS",
+      "runtimeFiles": [
+        "src/services/recommendationService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "RECOMMENDATIONS_REDIS_LOOKUP_BUDGET_MS",
+      "runtimeFiles": [
+        "src/services/recommendationService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "RECOMMENDATIONS_REDIS_TTL_SECONDS",
+      "runtimeFiles": [
+        "src/services/recommendationService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "RECOMMENDATIONS_STAGE_TIMINGS",
+      "runtimeFiles": [
+        "src/services/recommendationService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "REDIS_URL",
+      "runtimeFiles": [
+        "src/services/redisCacheService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "RESUME_TIMING",
+      "runtimeFiles": [
+        "src/controllers/resumecontoller.js",
+        "src/services/resumeservice.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "SCENARIO_LIMIT_MODE",
+      "runtimeFiles": [
+        "src/middleware/scenarioSimulatorMiddleware.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "SECURITY_STRICT_ENV",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "SENDGRID_API_KEY",
+      "runtimeFiles": [
+        "src/services/invitationEmailService.js",
+        "src/services/weeklyReportService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "SENDGRID_FROM_EMAIL",
+      "runtimeFiles": [
+        "src/services/invitationEmailService.js",
+        "src/services/weeklyReportService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "SETTINGS_ENCRYPTION_KEY",
+      "runtimeFiles": [
+        "src/services/platformSettingsService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": false
+    },
+    {
+      "name": "SKILL_GAP_AI_THRESHOLD",
+      "runtimeFiles": [
+        "src/controllers/skillgapcontroller.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "SKILL_GAP_MEMORY_TTL_MS",
+      "runtimeFiles": [
+        "src/controllers/skillgapcontroller.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "SKILL_GAP_REDIS_LOOKUP_BUDGET_MS",
+      "runtimeFiles": [
+        "src/controllers/skillgapcontroller.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "SKILL_GAP_STAGE_TIMINGS",
+      "runtimeFiles": [
+        "src/controllers/skillgapcontroller.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "SMTP_CONNECTION_TIMEOUT_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "SMTP_DNS_FAMILY",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "SMTP_FROM_EMAIL",
+      "runtimeFiles": [
+        "src/services/invitationEmailService.js",
+        "src/services/weeklyReportService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "SMTP_HOST",
+      "runtimeFiles": [
+        "src/services/invitationEmailService.js",
+        "src/services/weeklyReportService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "SMTP_PASS",
+      "runtimeFiles": [
+        "src/services/invitationEmailService.js",
+        "src/services/weeklyReportService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "SMTP_PORT",
+      "runtimeFiles": [
+        "src/services/invitationEmailService.js",
+        "src/services/weeklyReportService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "SMTP_SECURE",
+      "runtimeFiles": [
+        "src/services/invitationEmailService.js",
+        "src/services/weeklyReportService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "SMTP_SOCKET_TIMEOUT_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "SMTP_USER",
+      "runtimeFiles": [
+        "src/services/invitationEmailService.js",
+        "src/services/weeklyReportService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "STORAGE_DRIVER",
+      "runtimeFiles": [
+        "src/middleware/storedImageMiddleware.js",
+        "src/middleware/uploadmiddleware.js",
+        "src/services/publicImageStorageService.js",
+        "src/services/resumeStorageService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "SUPPORT_INBOX_EMAIL",
+      "runtimeFiles": [
+        "src/services/support.service.js",
+        "src/services/supportNotificationDeliveryService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "TWILIO_PHONE_NUMBER",
+      "runtimeFiles": [
+        "src/services/smsService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "TWILIO_SID",
+      "runtimeFiles": [
+        "src/services/smsService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "TWILIO_TOKEN",
+      "runtimeFiles": [
+        "src/services/smsService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "UPSTASH_REDIS_HOST",
+      "runtimeFiles": [
+        "src/services/redisCacheService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "UPSTASH_REDIS_PORT",
+      "runtimeFiles": [
+        "src/services/redisCacheService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "UPSTASH_REDIS_TOKEN",
+      "runtimeFiles": [
+        "src/services/redisCacheService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "WEEKLY_REPORT_BATCH_LIMIT",
+      "runtimeFiles": [
+        "src/services/weeklyReportService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "WEEKLY_REPORT_CONCURRENCY",
+      "runtimeFiles": [
+        "src/services/weeklyReportService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": false,
+      "exampleDeclared": false,
+      "localConfigured": false
+    },
+    {
+      "name": "WEEKLY_REPORT_CRON",
+      "runtimeFiles": [
+        "src/services/weeklyReportService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "WEEKLY_REPORT_DRY_RUN",
+      "runtimeFiles": [
+        "src/services/weeklyReportService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "WEEKLY_REPORT_SCHEDULER_DRY_RUN",
+      "runtimeFiles": [
+        "src/services/weeklyReportService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "WEEKLY_REPORT_SCHEDULER_ENABLED",
+      "runtimeFiles": [
+        "src/services/weeklyReportService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "WEEKLY_REPORT_TIMEZONE",
+      "runtimeFiles": [
+        "src/services/weeklyReportService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "XAI_API_KEY",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": false
+    },
+    {
+      "name": "XAI_COOLDOWN_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "XAI_MAX_CONCURRENCY",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "XAI_MODEL",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "XAI_MODELS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": false
+    },
+    {
+      "name": "XAI_REQUESTS_PER_DAY",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "XAI_REQUESTS_PER_MINUTE",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "XAI_TIMEOUT_MS",
+      "runtimeFiles": [],
+      "sharedDefaultDefined": true,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    },
+    {
+      "name": "YOUTUBE_API_KEY",
+      "runtimeFiles": [
+        "src/services/courseCatalogCoverageService.js",
+        "src/services/courseCatalogMaintenanceService.js",
+        "src/services/courseCatalogSearchService.js",
+        "src/services/courseDiscoveryStatusService.js",
+        "src/services/courseService.js"
+      ],
+      "sharedDefaultDefined": false,
+      "localDeclared": true,
+      "exampleDeclared": true,
+      "localConfigured": true
+    }
+  ],
+  "providers": [
+    {
+      "provider": "gemini",
+      "model": "gemini-2.5-flash",
+      "credentialConfigured": true,
+      "status": "LIVE_CHECK_REQUIRED"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-6-luna",
+      "credentialConfigured": true,
+      "status": "LIVE_CHECK_REQUIRED"
+    },
+    {
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "credentialConfigured": false,
+      "status": "BLOCKED_MISSING_CREDENTIAL"
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "credentialConfigured": true,
+      "status": "LIVE_CHECK_REQUIRED"
+    },
+    {
+      "provider": "xai",
+      "model": "grok-4.7",
+      "credentialConfigured": false,
+      "status": "BLOCKED_MISSING_CREDENTIAL"
+    }
+  ],
+  "sharedKeysMissing": [
+    {
+      "file": ".env",
+      "names": []
+    },
+    {
+      "file": ".env.example",
+      "names": []
+    }
+  ],
+  "keySetMismatch": {
+    "localOnly": [],
+    "exampleOnly": []
+  },
+  "sharedNumericValidation": {
+    "invalidNames": [],
+    "scope": "Positive integer shared numeric entries; application caps still applied by the registry"
+  }
+}

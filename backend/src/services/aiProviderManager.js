@@ -99,6 +99,7 @@ class AIProviderManager {
     if (value.startsWith('gemini-')) return 'gemini';
     if (value.startsWith('claude-')) return 'anthropic';
     if (value.startsWith('grok-')) return 'xai';
+    if (value.startsWith('openai/gpt-oss-')) return 'groq';
     if (value.startsWith('llama-') || value.includes('mixtral') || value.includes('gemma') || value.includes('qwen'))
       return 'groq';
     if (value.startsWith('gpt-') || value.startsWith('o1') || value.startsWith('o3') || value.startsWith('o4'))
@@ -163,23 +164,16 @@ class AIProviderManager {
         hasRawKey,
         hasKey: hasCompatibleKey,
         hasModels,
-        enabled:
-          hasCompatibleKey &&
-          hasModels &&
-          cooldownRemainingMs === 0 &&
-          (provider !== 'groq' || aiConfig.developmentEnabled()),
-        disabledReason:
-          provider === 'groq' && !aiConfig.developmentEnabled()
-            ? 'development_disabled'
-            : !hasRawKey
-              ? 'missing_key'
-              : !hasCompatibleKey
-                ? 'key_mismatch'
-                : !hasModels
-                  ? 'missing_model'
-                  : cooldownRemainingMs > 0
-                    ? 'cooldown'
-                    : '',
+        enabled: hasCompatibleKey && hasModels && cooldownRemainingMs === 0,
+        disabledReason: !hasRawKey
+          ? 'missing_key'
+          : !hasCompatibleKey
+            ? 'key_mismatch'
+            : !hasModels
+              ? 'missing_model'
+              : cooldownRemainingMs > 0
+                ? 'cooldown'
+                : '',
         models,
         preferred: settings.provider === provider,
         cooldownRemainingMs,
@@ -192,7 +186,7 @@ class AIProviderManager {
 
   providerPriority() {
     // Neither a legacy environment ordering nor admin preference may silently
-    // promote a development provider or bypass the approved production order.
+    // bypass the approved production order.
     return aiConfig.priority();
   }
 
@@ -394,7 +388,7 @@ class AIProviderManager {
   }
 
   isReasoningModel(modelName) {
-    return /^(o[134]|gpt-[56])|reasoning/i.test(modelName);
+    return /^(o[134]|gpt-[56]|openai\/gpt-oss-)|reasoning/i.test(modelName);
   }
 
   async runOpenAICompatible({
@@ -420,10 +414,11 @@ class AIProviderManager {
     if (!this.isReasoningModel(modelName)) {
       body.temperature = provider === 'xai' ? 0.7 : 0.2;
     }
-    if (provider === 'openai') {
+    if (provider === 'openai' || provider === 'groq') {
       body.max_completion_tokens = body.max_tokens;
       delete body.max_tokens;
     }
+    if (provider === 'groq' && modelName.startsWith('openai/gpt-oss-')) body.reasoning_effort = 'low';
 
     const headers = {
       Authorization: `Bearer ${apiKey}`,
@@ -683,7 +678,7 @@ class AIProviderManager {
           const budget = {
             remaining: Number.isInteger(requestPolicy?.maxAttempts)
               ? Math.max(1, Math.min(5, requestPolicy.maxAttempts))
-              : 4,
+              : aiConfig.PRODUCTION_ORDER.length,
             maxOutputTokens: Number.isInteger(requestPolicy?.maxOutputTokens)
               ? Math.max(128, Math.min(8000, requestPolicy.maxOutputTokens))
               : undefined,

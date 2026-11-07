@@ -68,7 +68,12 @@ const run = async () => {
       clearTimeout(timeout);
     }
   }
-  const output = path.resolve(__dirname, '../../verification/ai-providers/live-status.json');
+  const outputIndex = process.argv.indexOf('--output');
+  const output =
+    outputIndex < 0
+      ? path.resolve(__dirname, '../../verification/ai-providers/live-status.json')
+      : path.resolve(process.argv[outputIndex + 1]);
+  if (outputIndex >= 0 && fs.existsSync(output)) throw new Error('Refusing to overwrite retained live evidence');
   fs.mkdirSync(path.dirname(output), { recursive: true });
   fs.writeFileSync(output, JSON.stringify(report, null, 2) + '\n');
   console.log(JSON.stringify(report, null, 2));

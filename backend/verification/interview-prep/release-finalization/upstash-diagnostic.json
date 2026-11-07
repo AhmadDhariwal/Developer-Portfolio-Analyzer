@@ -1,0 +1,8 @@
+{
+  "scope": "Alternative Upstash TLS read-only diagnostic, application environment and data unchanged",
+  "events": [],
+  "connection": "PASS",
+  "ping": "PASS",
+  "pingMs": 264.11,
+  "elapsedMs": 1103
+}

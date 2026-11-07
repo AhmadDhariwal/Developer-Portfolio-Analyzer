@@ -1,8 +1,7 @@
 # Shared AI pipeline
 
-The production fallback order is **Gemini → OpenAI → Grok (xAI) → Anthropic**.
-Only configured, compatible providers participate. Groq is optional, disabled by default,
-and appended only when both `NODE_ENV=development` and `AI_ENABLE_GROQ_DEV=true`.
+The user-approved production fallback order is **Gemini → OpenAI → Groq → Anthropic (Claude) → Grok (xAI)**.
+Only configured, compatible providers participate. Missing credentials are skipped automatically.
 OpenRouter is no longer registered. Legacy priority settings and admin preference cannot
 reorder the production chain.
 
@@ -15,31 +14,33 @@ MongoDB `AIProviderAdmission` model for cross-worker slots, quotas and circuit s
 `services/aiservice.js` preserves the public `runAIAnalysis(prompt, fallback, retries, options)`
 contract, cache layers, deterministic fallbacks and metrics.
 
-| Provider | Credential | Model | Transport |
-| --- | --- | --- | --- |
-| Gemini | `GEMINI_API_KEY` | `GEMINI_MODEL` / `GEMINI_MODELS` | Existing Google SDK |
-| OpenAI | `OPENAI_API_KEY` | `OPENAI_MODEL` / `OPENAI_MODELS` | Chat Completions |
-| Grok (xAI) | `XAI_API_KEY` | `XAI_MODEL` / `XAI_MODELS` | xAI Chat Completions |
-| Anthropic | `ANTHROPIC_API_KEY` | `ANTHROPIC_MODEL` / `ANTHROPIC_MODELS` | Messages API |
-| Groq, development only | `GROQ_API_KEY` | `GROQ_MODEL` / `GROQ_MODELS` | Groq compatible endpoint |
+| Provider   | Credential          | Model                                  | Transport             |
+| ---------- | ------------------- | -------------------------------------- | --------------------- |
+| Gemini     | `GEMINI_API_KEY`    | `GEMINI_MODEL` / `GEMINI_MODELS`       | Existing Google SDK   |
+| OpenAI     | `OPENAI_API_KEY`    | `OPENAI_MODEL` / `OPENAI_MODELS`       | Chat Completions      |
+| Groq       | `GROQ_API_KEY`      | `GROQ_MODEL` / `GROQ_MODELS`           | Groq Chat Completions |
+| Anthropic  | `ANTHROPIC_API_KEY` | `ANTHROPIC_MODEL` / `ANTHROPIC_MODELS` | Messages API          |
+| Grok (xAI) | `XAI_API_KEY`       | `XAI_MODEL` / `XAI_MODELS`             | xAI Chat Completions  |
 
-Existing environment credentials/models are never rewritten by the setup utility.
+Existing nonempty environment credentials/model selections are preserved by the setup utility.
 Explicit environment models take precedence over admin/default models for that provider.
 Encrypted admin credentials and models remain supported where no explicit environment
 model is supplied. Unpersisted default admin settings cannot silently replace an environment
 model. Each provider attempt uses its selected primary compatible model; configured lists
 are retained but do not create an unbounded model waterfall.
 
-xAI and Anthropic have no invented default model: choose an accessible model and supply
-the matching credential. The complete variable/default/presence inventory and observed live
-status are in [the finalization report](../backend/verification/ai-providers/AI-PROVIDERS-FINAL.md).
+The verified model defaults are `gemini-2.5-flash`, `gpt-6-luna`, `openai/gpt-oss-120b`,
+`claude-haiku-5-5` and `grok-4.7`. Existing explicit selections take precedence. Groq, xAI and Anthropic
+still require credentials and independent live acceptance. Current environment inventory,
+official documentation and release gates are in the
+[regression report](../backend/verification/interview-prep/BACKEND-REGRESSION-RECONCILIATION.md).
 
 ## Budgets, admission and recovery
 
 - `AI_REQUEST_TIMEOUT_MS` is one total budget, default 30,000 ms; a caller's shorter
   `timeoutMs` wins. Cache lookup time is deducted before routing. Every provider attempt,
   retry, admission operation and release remains inside the remaining request budget.
-- Provider caps default to Gemini 6,200 ms, OpenAI/xAI/Anthropic 8,000 ms and Groq 6,000 ms,
+- Provider caps default to Gemini 6,200 ms, Groq 6,000 ms and OpenAI/xAI/Anthropic 8,000 ms,
   further reduced by the total remaining time. Interview Prep's 6,200 ms provider and
   6,500 ms outer safety budgets are not multiplied by the chain length.
 - Default shared global limits: 8 concurrent uncached operations, 120 per minute,
@@ -49,7 +50,7 @@ status are in [the finalization report](../backend/verification/ai-providers/AI-
 - Counters and token-owned expiring leases are MongoDB-authoritative. Redis failure cannot
   bypass them. Mongo admission failure stops paid work; cached/deterministic paths remain.
   Quotas reserve conservatively and do not refund partial failures.
-- The total attempt cap defaults to four. With multiple providers, transient failures
+- The total attempt cap defaults to five, one per registered provider. With multiple providers, transient failures
   advance through the chain without same-provider retries. With one eligible provider,
   at most one jittered retry is allowed for transient infrastructure errors, within the
   same deadline and attempt cap. A module's stricter `maxAttempts` or
@@ -91,8 +92,10 @@ Cancellation is checked before cache hits and before successful cache writes. In
 ## Verification and setup
 
 `node backend/src/scripts/configureSharedAiEnvironment.js` previews missing variable names.
-Add `--apply` to append only missing settings to the local backend environment/example and
-normalize the declared fixed priority. No credential values or fingerprints are printed.
+Add `--apply` to consolidate shared settings in one local backend environment/example block,
+remove obsolete provider variables and normalize the declared fixed priority. Existing
+nonempty credentials/models and unrelated settings are preserved; conflicting duplicates
+are rejected. No credential values or fingerprints are printed.
 
 `node backend/src/scripts/verifySharedAiProviders.js --live` makes one bounded synthetic
 request per configured production adapter, with no fallback, private data or raw response
@@ -104,18 +107,18 @@ and remaining gates are retained in the finalization report.
 
 Prompts are kept in `backend/src/prompts/` as template functions.
 
-| Prompt File | Used By | Purpose |
-|---|---|---|
-| `githubPrompt.js` | `githubservice.js` | GitHub profile AI insights |
-| `resumePrompt.js` | `resumeservice.js` | Resume scoring and feedback |
-| `skillGapPrompt.js` | `skillgapcontroller.js` | Skill gap analysis |
-| `recommendationPrompt.js` | `recommendationscontroller.js` | Career recommendations |
-| `portfolioScorePrompt.js` | `analysisservice.js` | Portfolio scoring |
-| `careerSprintPrompt.js` | `careerSprintService.js` | Sprint plan generation |
-| `jobPrompt.js` | `jobService.js` | Job matching |
-| `interviewPrepPrompt.js` | `interviewPrepService.js` | Interview Q&A generation |
-| `resumeGuidePrompt.js` | `resumeGuideService.js` | Resume improvement guide |
-| `weeklyReportPrompt.js` | `weeklyReportService.js` | Weekly report content |
+| Prompt File               | Used By                        | Purpose                     |
+| ------------------------- | ------------------------------ | --------------------------- |
+| `githubPrompt.js`         | `githubservice.js`             | GitHub profile AI insights  |
+| `resumePrompt.js`         | `resumeservice.js`             | Resume scoring and feedback |
+| `skillGapPrompt.js`       | `skillgapcontroller.js`        | Skill gap analysis          |
+| `recommendationPrompt.js` | `recommendationscontroller.js` | Career recommendations      |
+| `portfolioScorePrompt.js` | `analysisservice.js`           | Portfolio scoring           |
+| `careerSprintPrompt.js`   | `careerSprintService.js`       | Sprint plan generation      |
+| `jobPrompt.js`            | `jobService.js`                | Job matching                |
+| `interviewPrepPrompt.js`  | `interviewPrepService.js`      | Interview Q&A generation    |
+| `resumeGuidePrompt.js`    | `resumeGuideService.js`        | Resume improvement guide    |
+| `weeklyReportPrompt.js`   | `weeklyReportService.js`       | Weekly report content       |
 
 AI prompt templates use `backend/src/services/promptBuilderService.js` for compact JSON, bounded text, and summarized evidence. Skill Gap, GitHub Analyzer, Resume Analysis, Recommendations, Career Sprint, Interview Prep, Portfolio Score, Weekly Reports, Resume Guide, Jobs, and Courses share the same compaction helpers.
 
@@ -124,6 +127,7 @@ Resume Analysis keeps every factual field deterministic. Its optional AI call ca
 Skill Gap builds a compact context before calling `getSkillGapPrompt()`. It summarizes GitHub repositories, resume evidence, portfolio, sprint, weekly report, integration, and job-demand signals instead of sending raw source objects. Resume Analysis sends a bounded resume evidence summary instead of unbounded raw resume text. Prompt size is estimated before every AI request, with a target below 5000 input tokens.
 
 Reusable prompt compaction helpers live in `backend/src/services/promptBuilderService.js`. Feature code should:
+
 - Check feature-level caches first.
 - Skip AI when deterministic confidence is sufficient.
 - Build compact prompt context only when AI is required.
@@ -134,6 +138,7 @@ Skill Gap uses `SKILL_GAP_AI_THRESHOLD` to decide whether deterministic confiden
 ## JSON Extraction And Repair
 
 `aiservice.extractJson()`:
+
 1. Strips markdown code fences.
 2. Attempts direct `JSON.parse()`.
 3. Extracts the outermost JSON object or array.
@@ -155,6 +160,7 @@ If AI is disabled, no provider is configured, providers fail, or JSON parsing fa
 AI logs are structured JSON strings prefixed with `[AIService]`.
 
 Important events:
+
 - `providers_ready`
 - `provider_missing_key`
 - `provider_model_mismatch`
@@ -174,6 +180,7 @@ Important events:
 - `fallback_all_providers_failed`
 
 Provider-manager logs are structured JSON strings prefixed with `[AIProviderManager]` and include:
+
 - `provider_selected`
 - `provider_switched`
 - `provider_disabled`
