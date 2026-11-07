@@ -4,6 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('node:path');
 const { performance } = require('node:perf_hooks');
+const { learningSkills } = require('../services/coursePersonalizationService');
 
 const root = path.resolve(__dirname, '..');
 const resolve = (relative) => require.resolve(path.join(root, relative));
@@ -53,6 +54,13 @@ const createHarness = ({ mongoDelayMs = 25, youtubeDelayMs = 80, redisDelayMs = 
     whyRecommended: 'Targets SQL',
   }));
 
+  // This harness measures the response/pool caches with synthetic persistence
+  // and providers. Supply the catalog identity required by the current API;
+  // real catalog/Mongo behavior is covered by the integration suites.
+  mock('services/courseCatalogSearchService.js', {
+    load: async () => ({ revision: 'catalog-fixture', discovery: {} }),
+  });
+
   mock('services/courseService.js', {
     publicCourse: (course) => course,
     providerConfigurationFingerprint: () => 'provider-fixture',
@@ -91,13 +99,14 @@ const createHarness = ({ mongoDelayMs = 25, youtubeDelayMs = 80, redisDelayMs = 
 
   mock('services/coursePersonalizationService.js', {
     SKILL_GAP_ANALYSIS_VERSION: 'skill-evidence-coverage-v1',
+    learningSkills,
     resolveSkillSignals: async () => {
       counters.mongoReads += 1;
       await delay(mongoDelayMs);
       return {
         skillGaps: ['SQL'],
         knownSkills: ['Node.js'],
-        targets: [],
+        targets: [{ name: 'SQL', status: 'NOT_EVIDENCED' }],
         fingerprint: 'current-source-revision',
         personalization: { status: 'evidence-informed', limitation: '' },
       };

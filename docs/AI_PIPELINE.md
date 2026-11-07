@@ -1,125 +1,104 @@
-# AI Pipeline
+# Shared AI pipeline
 
-## Architecture
+The production fallback order is **Gemini → OpenAI → Grok (xAI) → Anthropic**.
+Only configured, compatible providers participate. Groq is optional, disabled by default,
+and appended only when both `NODE_ENV=development` and `AI_ENABLE_GROQ_DEV=true`.
+OpenRouter is no longer registered. Legacy priority settings and admin preference cannot
+reorder the production chain.
 
-```mermaid
-sequenceDiagram
-    participant Feature as Feature Service
-    participant AISvc as AIService Singleton
-    participant Manager as AI Provider Manager
-    participant Cache as Redis Prompt Cache
-    participant Groq as Groq API
-    participant OpenAI as OpenAI API
-    participant Gemini as Gemini SDK
-    participant Anthropic as Anthropic API
-    participant OpenRouter as OpenRouter API
-    participant Fallback as Static Fallback
+## Configuration and routing
 
-    Feature->>AISvc: runAIAnalysis(prompt, fallback)
-    AISvc->>Cache: SHA256(prompt)
-    Cache-->>AISvc: Hit? Return cached JSON even if providers are unavailable
-    AISvc->>AISvc: Estimate prompt size + record metrics
-    AISvc->>Manager: execute(prompt)
-    Manager->>Manager: Select healthy provider by priority
-    Manager->>Groq: Try provider-native Groq config
-    alt Groq transient/permanent failure
-        Manager->>OpenAI: Switch provider when configured
-    end
-    alt OpenAI unavailable
-        Manager->>Gemini: Switch provider when configured
-    end
-    alt Gemini unavailable
-        Manager->>Anthropic: Switch provider when configured
-    end
-    alt Anthropic unavailable
-        Manager->>OpenRouter: Switch provider when configured
-    end
-    alt All providers fail
-        AISvc-->>Feature: Return static fallback
-    else Provider succeeds
-        AISvc->>Cache: Store parsed JSON
-        AISvc-->>Feature: Parsed JSON result
-    end
-```
+`backend/src/config/aiProviders.js` is the single provider/limit registry.
+`services/aiProviderManager.js` selects adapters and enforces deadlines, refusal handling,
+attempt budgets and health. `services/aiProviderAdmissionService.js` uses the dedicated
+MongoDB `AIProviderAdmission` model for cross-worker slots, quotas and circuit state.
+`services/aiservice.js` preserves the public `runAIAnalysis(prompt, fallback, retries, options)`
+contract, cache layers, deterministic fallbacks and metrics.
 
-## Provider Configuration
+| Provider | Credential | Model | Transport |
+| --- | --- | --- | --- |
+| Gemini | `GEMINI_API_KEY` | `GEMINI_MODEL` / `GEMINI_MODELS` | Existing Google SDK |
+| OpenAI | `OPENAI_API_KEY` | `OPENAI_MODEL` / `OPENAI_MODELS` | Chat Completions |
+| Grok (xAI) | `XAI_API_KEY` | `XAI_MODEL` / `XAI_MODELS` | xAI Chat Completions |
+| Anthropic | `ANTHROPIC_API_KEY` | `ANTHROPIC_MODEL` / `ANTHROPIC_MODELS` | Messages API |
+| Groq, development only | `GROQ_API_KEY` | `GROQ_MODEL` / `GROQ_MODELS` | Groq compatible endpoint |
 
-Provider names and model names are separate. Do not put Groq models in `OPENAI_MODEL`.
+Existing environment credentials/models are never rewritten by the setup utility.
+Explicit environment models take precedence over admin/default models for that provider.
+Encrypted admin credentials and models remain supported where no explicit environment
+model is supplied. Unpersisted default admin settings cannot silently replace an environment
+model. Each provider attempt uses its selected primary compatible model; configured lists
+are retained but do not create an unbounded model waterfall.
 
-| Provider | API key env | Model env | SDK/client |
-|---|---|---|---|
-| Groq | `GROQ_API_KEY` | `GROQ_MODEL` or `GROQ_MODELS` | OpenAI-compatible HTTPS endpoint at `https://api.groq.com/openai/v1/chat/completions` |
-| Gemini | `GEMINI_API_KEY` | `GEMINI_MODEL` or `GEMINI_MODELS` | `@google/generative-ai` |
-| OpenAI | `OPENAI_API_KEY` | `OPENAI_MODEL` or `OPENAI_MODELS` | OpenAI chat completions endpoint |
-| Anthropic | `ANTHROPIC_API_KEY` | `ANTHROPIC_MODEL` or `ANTHROPIC_MODELS` | Anthropic Messages API |
-| OpenRouter | `OPENROUTER_API_KEY` | `OPENROUTER_MODEL` or `OPENROUTER_MODELS` | OpenAI-compatible HTTPS endpoint |
+xAI and Anthropic have no invented default model: choose an accessible model and supply
+the matching credential. The complete variable/default/presence inventory and observed live
+status are in [the finalization report](../backend/verification/ai-providers/AI-PROVIDERS-FINAL.md).
 
-Default model candidates:
-- Groq: `llama-3.3-70b-versatile`, `llama-3.1-8b-instant`
-- OpenAI: `gpt-4.1-mini`, `gpt-4o-mini`
-- Gemini: `gemini-2.5-flash`, `gemini-2.0-flash`, `gemini-2.0-flash-lite`
-- Anthropic: `claude-3-7-sonnet-latest`
-- OpenRouter: no default model; configure `OPENROUTER_MODEL`.
+## Budgets, admission and recovery
 
-Provider priority is configured with `AI_PROVIDER_PRIORITY`, for example:
+- `AI_REQUEST_TIMEOUT_MS` is one total budget, default 30,000 ms; a caller's shorter
+  `timeoutMs` wins. Cache lookup time is deducted before routing. Every provider attempt,
+  retry, admission operation and release remains inside the remaining request budget.
+- Provider caps default to Gemini 6,200 ms, OpenAI/xAI/Anthropic 8,000 ms and Groq 6,000 ms,
+  further reduced by the total remaining time. Interview Prep's 6,200 ms provider and
+  6,500 ms outer safety budgets are not multiplied by the chain length.
+- Default shared global limits: 8 concurrent uncached operations, 120 per minute,
+  5,000 per UTC epoch day. Per-provider defaults: 4 concurrent attempts, 60/minute,
+  3,000/day. These conservative software request caps are configurable; they are not
+  provider token quotas, subscription allowances or a guaranteed spend ceiling.
+- Counters and token-owned expiring leases are MongoDB-authoritative. Redis failure cannot
+  bypass them. Mongo admission failure stops paid work; cached/deterministic paths remain.
+  Quotas reserve conservatively and do not refund partial failures.
+- The total attempt cap defaults to four. With multiple providers, transient failures
+  advance through the chain without same-provider retries. With one eligible provider,
+  at most one jittered retry is allowed for transient infrastructure errors, within the
+  same deadline and attempt cap. A module's stricter `maxAttempts` or
+  `allowedProviders` remains authoritative.
+- Authentication/model-configuration failures open a credential/model-scoped shared circuit
+  without retrying that configuration. Replacing credentials/model changes its identity.
+  429 honours the larger of configured cooldown and bounded Retry-After. Three consecutive
+  failures open a transient circuit; successful recovery resets its counter.
+- Lease expiry permits crash recovery; token-conditional release cannot release a successor.
+  The TTL index is housekeeping, not the correctness clock. Clocks must be synchronized.
+  External billing cannot be made exactly-once after a process crash without provider support.
 
-```env
-AI_PROVIDER_PRIORITY=groq,openai,gemini,anthropic,openrouter
-```
+## Responses and terminal failures
 
-Admin Platform Settings can still select `provider`, `model`, and encrypted API key at runtime. Settings are validated against the selected provider. Incompatible models are ignored and logged.
+Adapters inspect provider refusal/finish metadata before extracting JSON. OpenAI/xAI refusal
+or content filtering, Gemini safety/prompt blocks and Anthropic refusal are terminal.
+Invalid input/content restrictions (including ambiguous 403) never trigger a different
+provider. A recognized authentication/permission configuration error may skip that broken
+configuration; it is not a safety override. Truncated/malformed output may advance to the
+next eligible provider, but never enters the successful shared cache.
 
-## Provider Routing
+The manager returns `{ok, provider, model, parsed, latencyMs}` on success or
+`{ok:false, reason}` on failure. AIService maps this to the existing JSON value, or
+`{ok, value, provider, model, latencyMs, reason}` when `returnMeta` is requested.
+Module-specific schemas, factual checks and persistence approval remain the caller's
+responsibility; parsing JSON alone is not factual verification. Prompts and module privacy
+rules have not been changed.
 
-`services/aiProviderManager.js` owns provider registration, routing, health, retries, model validation, and failover. Business features call `services/aiservice.js`, and `aiservice.js` only handles the stable public contract, prompt cache, JSON parsing, fallback behavior, and metrics.
+## Cache compatibility
 
-The provider manager:
-- Selects the SDK/client by provider, not by model string.
-- Rejects provider/model mismatches such as Gemini model names on OpenAI, Groq model names on OpenAI, or OpenAI model names on Gemini.
-- Logs startup configuration issues immediately.
-- Initializes only providers with valid API keys and model configuration.
-- Tracks runtime health: requests, success rate, failures, average latency, last success, last failure, and cooldown.
-- Logs provider selected, provider switched, provider disabled, retry reason, AI latency, and provider health.
+The Redis/process-memory hierarchy, TTLs and deterministic summary helpers remain.
+Default callers retain the prompt hash identity. Restrictive allowed-provider policies and
+preferred models add their routing identity, preventing a cache result from bypassing that
+restriction. New cached responses carry an internal versioned provenance envelope; callers
+still receive their original JSON shape. Existing plain cached JSON remains readable.
+Cancellation is checked before cache hits and before successful cache writes. Interview Prep's
+`cacheResponse:false` opt-out and separate validated single-flight transport remain.
 
-Startup status uses human-readable lines plus structured logs:
+## Verification and setup
 
-```text
-[AIProviderManager] ✓ Groq Ready
-[AIProviderManager] ✗ Anthropic Disabled (missing_key)
-```
+`node backend/src/scripts/configureSharedAiEnvironment.js` previews missing variable names.
+Add `--apply` to append only missing settings to the local backend environment/example and
+normalize the declared fixed priority. No credential values or fingerprints are printed.
 
-## Retry Policy
-
-Permanent errors are not retried:
-- `400`
-- `401`
-- `403`
-- `404`
-- `413`
-
-Transient errors may be retried:
-- timeout
-- `429`
-- `500`
-- `502`
-- `503`
-- `504`
-
-`429` starts a provider cooldown and fails over to the next configured provider. Unknown permanent-looking provider/model errors fail over instead of burning retry time.
-
-## Shared AI Cache
-
-```javascript
-ai:response:<sha256(prompt)> -> parsed JSON result
-ai:deterministic:<sha256(feature identity)> -> deterministic summary
-```
-
-- Primary scope: Redis when `REDIS_URL` is configured and connected.
-- Fallback scope: process memory when Redis is disabled or unavailable.
-- Expiration: `AI_RESPONSE_CACHE_TTL_SECONDS` for AI responses, `AI_DETERMINISTIC_CACHE_TTL_SECONDS` for deterministic summaries.
-- Purpose: avoid identical AI calls and reuse deterministic computations across feature requests.
-- Invalidation: `AIService.invalidateCacheKey()` and `AIService.invalidateCachePrefix()`.
-- Logging: `prompt_cache_hit`, `prompt_cache_miss`, `redis_cache_hit`, `redis_cache_miss`, `redis_cache_set`.
+`node backend/src/scripts/verifySharedAiProviders.js --live` makes one bounded synthetic
+request per configured production adapter, with no fallback, private data or raw response
+logging. It deliberately tests adapters independently; it does not certify distributed
+admission or production load. Live status, focused tests, Mongo worker tests, cost/rate notes
+and remaining gates are retained in the finalization report.
 
 ## Prompt System
 

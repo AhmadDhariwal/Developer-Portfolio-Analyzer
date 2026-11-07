@@ -1,0 +1,145 @@
+{
+  "scope": "Shared AI provider task only; concurrent and prior work excluded",
+  "branch": "fix/interview-prep",
+  "prTarget": "not applicable",
+  "sourceFilesMoved": [],
+  "sourceFilesDeleted": [],
+  "temporaryFileDeletions": "backend/verification/ai-providers/cleanup.json",
+  "files": [
+    {
+      "path": "backend/.env",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\.env",
+      "status": "modified (ignored local configuration)"
+    },
+    {
+      "path": "backend/.env.example",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\.env.example",
+      "status": "modified"
+    },
+    {
+      "path": "backend/src/config/aiProviders.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\config\\aiProviders.js",
+      "status": "added"
+    },
+    {
+      "path": "backend/src/models/aiProviderAdmission.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\models\\aiProviderAdmission.js",
+      "status": "added"
+    },
+    {
+      "path": "backend/src/services/aiProviderManager.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\services\\aiProviderManager.js",
+      "status": "modified"
+    },
+    {
+      "path": "backend/src/services/aiservice.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\services\\aiservice.js",
+      "status": "modified"
+    },
+    {
+      "path": "backend/src/services/platformSettingsService.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\services\\platformSettingsService.js",
+      "status": "modified"
+    },
+    {
+      "path": "backend/src/services/aiProviderAdmissionService.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\services\\aiProviderAdmissionService.js",
+      "status": "added"
+    },
+    {
+      "path": "backend/src/utils/aiRequestBudget.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\utils\\aiRequestBudget.js",
+      "status": "added"
+    },
+    {
+      "path": "backend/src/scripts/configureSharedAiEnvironment.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\scripts\\configureSharedAiEnvironment.js",
+      "status": "added"
+    },
+    {
+      "path": "backend/src/scripts/verifySharedAiProviders.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\scripts\\verifySharedAiProviders.js",
+      "status": "added"
+    },
+    {
+      "path": "backend/src/tests/aiProviderPlatform.test.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\aiProviderPlatform.test.js",
+      "status": "added"
+    },
+    {
+      "path": "backend/src/tests/aiProviderAdmission.integration.test.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\aiProviderAdmission.integration.test.js",
+      "status": "added"
+    },
+    {
+      "path": "backend/src/tests/fixtures/aiProviderAdmissionWorker.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\fixtures\\aiProviderAdmissionWorker.js",
+      "status": "added"
+    },
+    {
+      "path": "backend/src/tests/skillGapAiPolicy.test.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\skillGapAiPolicy.test.js",
+      "status": "modified"
+    },
+    {
+      "path": "docs/AI_PIPELINE.md",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\docs\\AI_PIPELINE.md",
+      "status": "modified"
+    },
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\docs\\ARCHITECTURE.md",
+      "status": "modified"
+    },
+    {
+      "path": "backend/verification/ai-providers/AI-PROVIDERS-FINAL.md",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\ai-providers\\AI-PROVIDERS-FINAL.md",
+      "status": "added retained evidence"
+    },
+    {
+      "path": "backend/verification/ai-providers/admission.tap",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\ai-providers\\admission.tap",
+      "status": "added retained evidence"
+    },
+    {
+      "path": "backend/verification/ai-providers/cleanup.json",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\ai-providers\\cleanup.json",
+      "status": "added retained evidence"
+    },
+    {
+      "path": "backend/verification/ai-providers/environment-inventory.json",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\ai-providers\\environment-inventory.json",
+      "status": "added retained evidence"
+    },
+    {
+      "path": "backend/verification/ai-providers/focused.tap",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\ai-providers\\focused.tap",
+      "status": "added retained evidence"
+    },
+    {
+      "path": "backend/verification/ai-providers/gemini-signal.tap",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\ai-providers\\gemini-signal.tap",
+      "status": "added retained evidence"
+    },
+    {
+      "path": "backend/verification/ai-providers/live-status.json",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\ai-providers\\live-status.json",
+      "status": "added retained evidence"
+    },
+    {
+      "path": "backend/verification/ai-providers/module-contracts.tap",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\ai-providers\\module-contracts.tap",
+      "status": "added retained evidence"
+    },
+    {
+      "path": "backend/verification/ai-providers/final-checks.json",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\ai-providers\\final-checks.json",
+      "status": "added retained evidence"
+    },
+    {
+      "path": "backend/verification/ai-providers/file-inventory.json",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\ai-providers\\file-inventory.json",
+      "status": "added retained evidence"
+    }
+  ]
+}

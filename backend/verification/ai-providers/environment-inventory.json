@@ -1,0 +1,450 @@
+{
+  "credentialValuesOmitted": true,
+  "productionOrder": [
+    "gemini",
+    "openai",
+    "xai",
+    "anthropic"
+  ],
+  "variables": [
+    {
+      "name": "AI_PROVIDER_PRIORITY",
+      "default": "gemini,openai,xai,anthropic",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true,
+      "localSelection": "gemini,openai,xai,anthropic"
+    },
+    {
+      "name": "AI_ENABLE_GROQ_DEV",
+      "default": "false",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "AI_REQUEST_TIMEOUT_MS",
+      "default": "30000",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "AI_GLOBAL_MAX_CONCURRENCY",
+      "default": "8",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "AI_GLOBAL_REQUESTS_PER_MINUTE",
+      "default": "120",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "AI_GLOBAL_REQUESTS_PER_DAY",
+      "default": "5000",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "AI_CIRCUIT_FAILURE_THRESHOLD",
+      "default": "3",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "AI_AUTH_COOLDOWN_MS",
+      "default": "900000",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "ANTHROPIC_VERSION",
+      "default": "2023-06-01",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "AI_RESPONSE_CACHE_TTL_SECONDS",
+      "default": "86400",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "AI_DETERMINISTIC_CACHE_TTL_SECONDS",
+      "default": "600",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "GEMINI_API_KEY",
+      "default": "",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "GEMINI_MODEL",
+      "default": "",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true,
+      "localSelection": "gemini-2.5-flash"
+    },
+    {
+      "name": "GEMINI_MODELS",
+      "default": "",
+      "localPresent": true,
+      "localConfigured": false,
+      "examplePresent": true,
+      "localSelection": ""
+    },
+    {
+      "name": "GEMINI_TIMEOUT_MS",
+      "default": "6200",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "GEMINI_COOLDOWN_MS",
+      "default": "180000",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "GEMINI_MAX_CONCURRENCY",
+      "default": "4",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "GEMINI_REQUESTS_PER_MINUTE",
+      "default": "60",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "GEMINI_REQUESTS_PER_DAY",
+      "default": "3000",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "OPENAI_API_KEY",
+      "default": "",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "OPENAI_MODEL",
+      "default": "",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true,
+      "localSelection": "gpt-6-luna"
+    },
+    {
+      "name": "OPENAI_MODELS",
+      "default": "",
+      "localPresent": true,
+      "localConfigured": false,
+      "examplePresent": true,
+      "localSelection": ""
+    },
+    {
+      "name": "OPENAI_TIMEOUT_MS",
+      "default": "8000",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "OPENAI_COOLDOWN_MS",
+      "default": "1800000",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "OPENAI_MAX_CONCURRENCY",
+      "default": "4",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "OPENAI_REQUESTS_PER_MINUTE",
+      "default": "60",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "OPENAI_REQUESTS_PER_DAY",
+      "default": "3000",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "XAI_API_KEY",
+      "default": "",
+      "localPresent": true,
+      "localConfigured": false,
+      "examplePresent": true
+    },
+    {
+      "name": "XAI_MODEL",
+      "default": "",
+      "localPresent": true,
+      "localConfigured": false,
+      "examplePresent": true,
+      "localSelection": ""
+    },
+    {
+      "name": "XAI_MODELS",
+      "default": "",
+      "localPresent": true,
+      "localConfigured": false,
+      "examplePresent": true,
+      "localSelection": ""
+    },
+    {
+      "name": "XAI_TIMEOUT_MS",
+      "default": "8000",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "XAI_COOLDOWN_MS",
+      "default": "180000",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "XAI_MAX_CONCURRENCY",
+      "default": "4",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "XAI_REQUESTS_PER_MINUTE",
+      "default": "60",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "XAI_REQUESTS_PER_DAY",
+      "default": "3000",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "ANTHROPIC_API_KEY",
+      "default": "",
+      "localPresent": true,
+      "localConfigured": false,
+      "examplePresent": true
+    },
+    {
+      "name": "ANTHROPIC_MODEL",
+      "default": "",
+      "localPresent": true,
+      "localConfigured": false,
+      "examplePresent": true,
+      "localSelection": ""
+    },
+    {
+      "name": "ANTHROPIC_MODELS",
+      "default": "",
+      "localPresent": true,
+      "localConfigured": false,
+      "examplePresent": true,
+      "localSelection": ""
+    },
+    {
+      "name": "ANTHROPIC_TIMEOUT_MS",
+      "default": "8000",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "ANTHROPIC_COOLDOWN_MS",
+      "default": "1800000",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "ANTHROPIC_MAX_CONCURRENCY",
+      "default": "4",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "ANTHROPIC_REQUESTS_PER_MINUTE",
+      "default": "60",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "ANTHROPIC_REQUESTS_PER_DAY",
+      "default": "3000",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "GROQ_API_KEY",
+      "default": "",
+      "localPresent": true,
+      "localConfigured": false,
+      "examplePresent": true
+    },
+    {
+      "name": "GROQ_MODEL",
+      "default": "",
+      "localPresent": true,
+      "localConfigured": false,
+      "examplePresent": true,
+      "localSelection": ""
+    },
+    {
+      "name": "GROQ_MODELS",
+      "default": "",
+      "localPresent": true,
+      "localConfigured": false,
+      "examplePresent": true,
+      "localSelection": ""
+    },
+    {
+      "name": "GROQ_TIMEOUT_MS",
+      "default": "6000",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "GROQ_COOLDOWN_MS",
+      "default": "180000",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "GROQ_MAX_CONCURRENCY",
+      "default": "4",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "GROQ_REQUESTS_PER_MINUTE",
+      "default": "60",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    },
+    {
+      "name": "GROQ_REQUESTS_PER_DAY",
+      "default": "3000",
+      "localPresent": true,
+      "localConfigured": true,
+      "examplePresent": true
+    }
+  ],
+  "moduleOverrides": [
+    "CAREER_SPRINT_AI_TIMEOUT_MS",
+    "INTERVIEW_AI_GEMINI_MODEL",
+    "INTERVIEW_AI_TIMEOUT_MS",
+    "SENDGRID_FROM_EMAIL",
+    "SKILL_GAP_AI_THRESHOLD",
+    "SMTP_FROM_EMAIL"
+  ],
+  "sharedCallers": [
+    "backend/src/controllers/analysiscontroller.js",
+    "backend/src/controllers/skillgapcontroller.js",
+    "backend/src/services/aiTaskService.js",
+    "backend/src/services/githubservice.js",
+    "backend/src/services/providers/interviewAIProvider.js",
+    "backend/src/services/recommendationGenerationService.js",
+    "backend/src/services/resumeservice.js",
+    "backend/src/services/workflowExecutorService.js",
+    "backend/src/services/weeklyReportService.js"
+  ],
+  "preexistingUnrelatedDuplicateNames": {
+    "local": [
+      "SUPPORT_INBOX_EMAIL",
+      "COURSES_SPRINT_RATE_LIMIT_MAX"
+    ],
+    "example": [
+      "COURSES_MEMORY_TTL_MS",
+      "COURSES_REDIS_LOOKUP_BUDGET_MS",
+      "COURSES_REDIS_TTL_SECONDS",
+      "COURSES_RATE_LIMIT_WINDOW_MS",
+      "COURSES_READ_RATE_LIMIT_MAX",
+      "COURSES_REFRESH_RATE_LIMIT_MAX",
+      "COURSES_MUTATION_RATE_LIMIT_MAX",
+      "COURSES_SPRINT_RATE_LIMIT_MAX"
+    ]
+  },
+  "preservedModels": {
+    "gemini": "gemini-2.5-flash",
+    "openai": "gpt-6-luna"
+  },
+  "requiredCredentials": [
+    "XAI_API_KEY",
+    "ANTHROPIC_API_KEY"
+  ],
+  "optionalDevelopmentCredential": "GROQ_API_KEY",
+  "missingResumeFixtures": [
+    "backend/src/tests/fixtures/resume/standard.pdf",
+    "backend/src/tests/fixtures/resume/empty.pdf"
+  ],
+  "existingPrerequisites": [
+    {
+      "name": "NODE_ENV",
+      "configured": true,
+      "valueOmitted": true
+    },
+    {
+      "name": "MONGODB_URI",
+      "configured": true,
+      "valueOmitted": true
+    },
+    {
+      "name": "SETTINGS_ENCRYPTION_KEY",
+      "configured": false,
+      "valueOmitted": true
+    },
+    {
+      "name": "JWT_SECRET",
+      "configured": true,
+      "valueOmitted": true
+    }
+  ],
+  "priorityVariablePolicy": "Declarative approved production order; arbitrary reordering is ignored"
+}
