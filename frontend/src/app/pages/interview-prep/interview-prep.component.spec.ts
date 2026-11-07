@@ -160,6 +160,32 @@ describe('Interview Prep workspace', () => {
     expect(component.askError).toContain('timed out');
     expect(component.customResult.question).toBe('Question 1');
   });
+  it('labels question generation consistently while preserving the internal tab and generation API', () => {
+    const pending = new Subject<InterviewQuestionListResponse>();
+    api.generateQuestions.mockReturnValue(pending);
+    const tabs = Array.from(
+      fixture.nativeElement.querySelectorAll('.nav-tab'),
+    ) as HTMLButtonElement[];
+    const generateTab = tabs.find((tab) => tab.textContent?.includes('Generate Questions'))!;
+    expect(generateTab).toBeTruthy();
+    expect(tabs.some((tab) => tab.textContent?.includes('Sessions & history'))).toBe(true);
+    generateTab.click();
+    fixture.detectChanges();
+    expect(component.tab).toBe('practice');
+    expect(fixture.nativeElement.querySelector('.section-intro').textContent).toContain(
+      'shared question bank',
+    );
+    const form = fixture.nativeElement.querySelector('.studio-form') as HTMLFormElement;
+    const submit = form.querySelector('button[type=submit]') as HTMLButtonElement;
+    expect(submit.textContent?.trim()).toBe('Generate Questions');
+    expect(fixture.nativeElement.textContent).not.toMatch(/practice studio/i);
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    fixture.detectChanges();
+    expect(api.generateQuestions).toHaveBeenCalledTimes(1);
+    expect(submit.textContent).toContain('Generating questions');
+    expect(submit.disabled).toBe(true);
+  });
+
   it('keeps fallback and partial practice honest and preserves sets on retry failure', () => {
     api.generateQuestions.mockReturnValue(of({ ...result(), aiGeneratedCount: 0, partial: true }));
     component.generatePractice();

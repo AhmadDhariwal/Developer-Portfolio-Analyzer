@@ -22,6 +22,33 @@ const input = () => ({
 });
 const resolve = (value) => engine.resolve(value, { calculatedAt: at });
 
+test("Full Stack / 0-1 years: sampled GitHub and the selected resume preserve unknown required skills", () => {
+  const value = { ...input(), experienceLevel: "0-1 years" };
+  const result = resolve(value);
+  const target = dictionary.resolveRequirements("Full Stack", "0-1 years");
+  assert.equal(target.available, true);
+  assert.equal(result.requiredSkills.length, target.skills.length);
+  assert.equal(result.requiredSkills.length, 20);
+  assert.equal(result.partialSkills.length, 2);
+  assert.equal(result.claimedOnlySkills.length, 1);
+  assert.equal(result.unknownSkills.length, 17);
+  assert.equal(result.notEvidencedSkills.length, 0);
+  assert.equal(result.coverage, null);
+  assert.equal(result.coverageUnavailableReason, "required_evidence_unknown");
+  assert.equal(result.evidenceCompleteness.complete, false);
+  assert.equal(
+    result.sourceReferences.find((source) => source.type === "github").completeness,
+    "PARTIAL"
+  );
+  assert.equal(
+    result.sourceReferences.find((source) => source.type === "resume").id,
+    "selected-fixture"
+  );
+  assert.equal(result.requiredSkills.find((skill) => skill.name === "SQL").status, "CLAIMED_ONLY");
+  assert.equal(result.requiredSkills.find((skill) => skill.name === "Docker").status, "UNKNOWN");
+  assert.deepEqual(JSON.parse(JSON.stringify(result)), result);
+});
+
 test("Full Stack / 2-3 years: sampled evidence preserves known denominator and mixed unknowns through JSON", () => {
   const value = input();
   const result = resolve(value);
