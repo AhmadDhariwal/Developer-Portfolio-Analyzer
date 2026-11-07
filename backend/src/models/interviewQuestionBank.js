@@ -231,7 +231,11 @@ const interviewQuestionBankSchema = new mongoose.Schema(
   }
 );
 
-interviewQuestionBankSchema.index({ question: 'text', answer: 'text', tags: 'text', topicKey: 'text' });
+// All catalog text searches are scoped to an exact normalized technology.
+interviewQuestionBankSchema.index(
+  { topicKey: 1, question: 'text', answer: 'text', tags: 'text' },
+  { name: 'topic_question_text' }
+);
 interviewQuestionBankSchema.index({ skill: 1, question: 1 }, { unique: true });
 interviewQuestionBankSchema.index({ topicKey: 1, normalizedQuestion: 1 }, { unique: true, sparse: true });
 interviewQuestionBankSchema.index(

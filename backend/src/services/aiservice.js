@@ -310,7 +310,8 @@ class AIService {
     );
 
     const cacheKey = this.hash(prompt);
-    const cachedValue = await this.getSharedCache(cacheKey);
+    const cachedValue =
+      requestPolicy?.cacheResponse === false ? null : await this.getSharedCache(cacheKey);
     if (cachedValue !== null) {
       this.metrics.cacheHits += 1;
       this.metrics.totalLatencyMs += Date.now() - startedAt;
@@ -352,7 +353,8 @@ class AIService {
       this.metrics.aiCalls += 1;
       this.metrics.aiLatencyMs.push(result.latencyMs || 0);
       if (this.metrics.aiLatencyMs.length > 1024) this.metrics.aiLatencyMs.shift();
-      await this.setSharedCache(cacheKey, result.parsed);
+      if (requestPolicy?.cacheResponse !== false)
+        await this.setSharedCache(cacheKey, result.parsed);
       this.metrics.totalLatencyMs += Date.now() - startedAt;
       this.log('ai_request_complete', {
         provider: result.provider,

@@ -20,8 +20,9 @@ test('Interview Prep isolated Mongo critical paths', { skip: !process.env.INTERV
     serverSelectionTimeoutMS: 5000
   });
   t.after(async () => {
-    assert.equal(mongoose.connection.name, database, 'Only the task-owned database may be removed');
-    await mongoose.connection.dropDatabase();
+    assert.equal(mongoose.connection.name, database, 'Tests must remain inside the isolated database');
+    // The task-owned ephemeral server owns these files; never drop a database
+    // from a test connection supplied by the environment.
     await mongoose.disconnect();
     cache.clearMemoryCache();
   });
@@ -254,9 +255,9 @@ test('Interview Prep isolated Mongo critical paths', { skip: !process.env.INTERV
       const server = app.listen(0, '127.0.0.1');
       await new Promise((resolve) => server.once('listening', resolve));
       subtest.after(() => new Promise((resolve) => server.close(resolve)));
-      const request = async (path, body, authenticated = true) => {
+      const request = async (path, body, authenticated = true, method) => {
         const response = await fetch(`http://127.0.0.1:${server.address().port}/api/interview-prep${path}`, {
-          method: body ? 'POST' : 'GET',
+          method: method || (body ? 'POST' : 'GET'),
           headers: {
             'Content-Type': 'application/json',
             ...(authenticated ? { Authorization: `Bearer ${token}` } : {})
@@ -288,6 +289,33 @@ test('Interview Prep isolated Mongo critical paths', { skip: !process.env.INTERV
       assert.equal(persisted.careerStack, 'Frontend');
       assert.equal(persisted.experienceLevel, 'Student');
       assert.deepEqual(persisted.skillGaps, []);
+      const sessionPath = `/sessions/${session.body.sessionId}`;
+      assert.equal((await request(sessionPath)).status, 200);
+      assert.equal(
+        (
+          await request(
+            `${sessionPath}/progress`,
+            { expectedVersion: 0, questionIndex: 0, selfCheck: 'review' },
+            true,
+            'PATCH'
+          )
+        ).status,
+        200
+      );
+      assert.equal(
+        (
+          await request(
+            `${sessionPath}/progress`,
+            { expectedVersion: 0, questionIndex: 1, selfCheck: 'comfortable' },
+            true,
+            'PATCH'
+          )
+        ).status,
+        409
+      );
+      assert.equal((await request(`${sessionPath}/complete`, { expectedVersion: 1 })).status, 409);
+      assert.equal((await request('/sessions/not-an-id')).status, 400);
+      assert.equal((await request('/questions?topic=javascript&category=unknown')).status, 400);
       assert.match(session.body.personalization.limitation, /evidence|ability|scores/i);
       assert.equal((await request('/history?limit=99999')).status, 200);
     }

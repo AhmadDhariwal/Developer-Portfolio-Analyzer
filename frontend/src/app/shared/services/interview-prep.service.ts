@@ -102,6 +102,8 @@ export class InterviewPrepService implements OnDestroy {
   }
   searchQuestions(params: {
     q: string;
+    category?: string;
+    source?: string;
     skill?: string;
     difficulty?: string;
     tags?: string[];
@@ -134,9 +136,31 @@ export class InterviewPrepService implements OnDestroy {
   }): Observable<InterviewQuestion> {
     return this.once('ask', payload, () => this.api.askInterviewPrepQuestion(payload));
   }
-  startSession(skill: string): Observable<InterviewQuestionListResponse> {
-    const payload = { skill, skillGaps: [] };
+  startSession(
+    skill: string,
+    idempotencyKey: string = crypto.randomUUID(),
+  ): Observable<InterviewQuestionListResponse> {
+    const payload = { skill, skillGaps: [], idempotencyKey };
     return this.once('session', payload, () => this.api.generateInterviewPrep(payload));
+  }
+  getSession(id: string): Observable<InterviewSession> {
+    return this.once('session-read', { id }, () => this.api.getInterviewSession(id));
+  }
+  saveProgress(
+    id: string,
+    expectedVersion: number,
+    questionIndex: number,
+    selfCheck: 'review' | 'comfortable',
+  ): Observable<InterviewSession> {
+    const payload = { expectedVersion, questionIndex, selfCheck };
+    return this.once('progress', { id, ...payload }, () =>
+      this.api.updateInterviewSession(id, payload),
+    );
+  }
+  completeSession(id: string, expectedVersion: number): Observable<InterviewSession> {
+    return this.once('complete', { id, expectedVersion }, () =>
+      this.api.updateInterviewSession(id, { expectedVersion }, true),
+    );
   }
   getSessions(limit = 10): Observable<InterviewSession[]> {
     return this.once<{ sessions?: InterviewSession[] }>('history', { limit }, () =>

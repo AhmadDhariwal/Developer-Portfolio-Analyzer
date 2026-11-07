@@ -7,6 +7,8 @@ const interviewQuestionSchema = new mongoose.Schema(
     difficulty: { type: String, default: 'Medium' },
     tags: [{ type: String }],
     normalizedQuestionHash: { type: String, default: '' },
+    questionId: String,
+    contentVersion: String,
     answerSections: { type: mongoose.Schema.Types.Mixed, default: {} },
     sourceType: { type: String, default: '' },
     confidenceScore: Number,
@@ -33,12 +35,25 @@ const interviewPrepSessionSchema = new mongoose.Schema(
     personalization: { type: mongoose.Schema.Types.Mixed, default: {} },
     careerStack: { type: String, default: '' },
     experienceLevel: { type: String, default: '' },
-    questions: [interviewQuestionSchema]
+    requestKey: { type: String },
+    requestFingerprint: String,
+    status: { type: String, enum: ['practice', 'completed'], default: 'practice' },
+    progress: { type: Map, of: String, default: {} },
+    progressVersion: { type: Number, default: 0 },
+    completedAt: Date,
+    questions: { type: [interviewQuestionSchema], immutable: true }
   },
   { timestamps: true }
 );
 
 interviewPrepSessionSchema.index({ userId: 1, createdAt: -1 });
+interviewPrepSessionSchema.index(
+  { userId: 1, requestKey: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { requestKey: { $type: 'string' } }
+  }
+);
 interviewPrepSessionSchema.index({
   userId: 1,
   kind: 1,

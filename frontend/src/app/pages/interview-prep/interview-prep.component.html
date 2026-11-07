@@ -715,13 +715,8 @@
     <!-- Practice Notices & Errors -->
     <div *ngIf="practiceError" class="notice error" role="alert">
       <span>{{ practiceError }}</span>
-      <button
-        type="button"
-        class="text-button"
-        (click)="generatePractice()"
-        [disabled]="generating"
-      >
-        Retry practice
+      <button type="button" class="text-button" (click)="retryPractice()" [disabled]="generating">
+        Retry practice / reload progress
       </button>
     </div>
     <div *ngIf="practiceNotice && !practiceError" class="notice" role="status">
@@ -774,6 +769,7 @@
             [class.active]="currentCheck === 'review'"
             [attr.aria-pressed]="currentCheck === 'review'"
             (click)="selfCheck('review')"
+            [disabled]="savingProgress || activePracticeSession?.status === 'completed'"
           >
             Review later
           </button>
@@ -783,14 +779,35 @@
             [class.active]="currentCheck === 'comfortable'"
             [attr.aria-pressed]="currentCheck === 'comfortable'"
             (click)="selfCheck('comfortable')"
+            [disabled]="savingProgress || activePracticeSession?.status === 'completed'"
           >
             Comfortable
           </button>
         </div>
         <span class="muted small self-check-note">
-          Your self-check for this visit, not a proficiency score.
+          {{
+            activePracticeSession
+              ? 'Self-checks are saved with this session.'
+              : 'Self-checks apply to this visit.'
+          }}
+          Self-checks do not award proficiency.
         </span>
       </div>
+      <button
+        *ngIf="activePracticeSession"
+        type="button"
+        class="button primary"
+        [disabled]="!canCompleteSession"
+        (click)="completeSession()"
+      >
+        {{
+          activePracticeSession.status === 'completed'
+            ? 'Session completed'
+            : savingProgress
+              ? 'Saving…'
+              : 'Complete session'
+        }}
+      </button>
     </section>
 
     <!-- Custom Answer Section -->

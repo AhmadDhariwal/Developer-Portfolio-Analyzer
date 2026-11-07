@@ -38,6 +38,9 @@ describe('Interview Prep workspace', () => {
     generateQuestions: vi.fn(),
     startSession: vi.fn(),
     getSessions: vi.fn(),
+    getSession: vi.fn(),
+    saveProgress: vi.fn(),
+    completeSession: vi.fn(),
   };
   let component: InterviewPrepComponent;
   let fixture: ReturnType<typeof TestBed.createComponent<InterviewPrepComponent>>;
@@ -178,9 +181,56 @@ describe('Interview Prep workspace', () => {
       }),
     );
     component.generatePractice(true);
-    expect(api.startSession).toHaveBeenCalledWith('react');
+    expect(api.startSession).toHaveBeenCalledWith('react', expect.any(String));
     expect(component.practiceNotice).toContain('Missing evidence');
     expect(component.historyLoaded).toBe(false);
+  });
+  it('persists self-checks and completes an owned session without awarding proficiency', () => {
+    const session = {
+      _id: 'saved',
+      questions: [question(1)],
+      progress: {},
+      progressVersion: 0,
+      status: 'practice' as const,
+    };
+    api.getSession.mockReturnValue(of(session));
+    component.resumeSession(session);
+    api.saveProgress.mockReturnValue(
+      of({ ...session, progress: { '0': 'review' }, progressVersion: 1 }),
+    );
+    component.selfCheck('review');
+    expect(api.saveProgress).toHaveBeenCalledWith('saved', 0, 0, 'review');
+    expect(component.currentCheck).toBe('review');
+    expect(component.canCompleteSession).toBe(true);
+    api.completeSession.mockReturnValue(
+      of({ ...session, progress: { '0': 'review' }, progressVersion: 2, status: 'completed' }),
+    );
+    component.completeSession();
+    expect(api.completeSession).toHaveBeenCalledWith('saved', 1);
+    expect(component.activePracticeSession?.status).toBe('completed');
+    expect(component.canCompleteSession).toBe(false);
+    component.selfCheck('comfortable');
+    expect(api.saveProgress).toHaveBeenCalledTimes(1);
+  });
+  it('retains the same creation key after failure and preserves progress on conflict', () => {
+    api.startSession.mockReturnValue(
+      throwError(() => ({ error: { message: 'temporarily busy' } })),
+    );
+    component.generatePractice(true);
+    component.retryPractice();
+    expect(api.startSession.mock.calls[0][1]).toBe(api.startSession.mock.calls[1][1]);
+    const session = { _id: 'saved', questions: [question(1)], progress: {}, progressVersion: 0 };
+    api.getSession.mockReturnValue(of(session));
+    component.resumeSession(session);
+    api.saveProgress.mockReturnValue(
+      throwError(() => ({ error: { message: 'Session changed. Reload.' } })),
+    );
+    component.selfCheck('comfortable');
+    expect(component.currentCheck).toBe('');
+    expect(component.practiceError).toContain('Reload');
+    expect(component.savingProgress).toBe(false);
+    component.retryPractice();
+    expect(api.getSession).toHaveBeenCalledTimes(2);
   });
   it('keeps history errors distinct from empty history', () => {
     api.getSessions.mockReturnValue(throwError(() => new Error('offline')));

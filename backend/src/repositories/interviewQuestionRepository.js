@@ -1,5 +1,6 @@
 const crypto = require('node:crypto');
 const InterviewQuestionBank = require('../models/interviewQuestionBank');
+const { invalidateInterviewPrepCache } = require('../services/redisCacheService');
 const {
   normalizeComparableText,
   normalizeQuestionText,
@@ -110,6 +111,7 @@ const buildQuestionFilter = ({
   topicType = '',
   difficulty = '',
   tags = '',
+  source = '',
   query = '',
   excludeGenericSeeds = false
 } = {}) => {
@@ -139,6 +141,9 @@ const buildQuestionFilter = ({
   if (normalizedTopicType) {
     filter.topicType = normalizedTopicType;
   }
+  if (source === 'ai') filter.sourceType = { $in: ['ai', 'ai_generated', 'user_asked'] };
+  else if (source === 'seed') filter.sourceType = { $in: ['verified_seed', 'prebuilt'] };
+  else if (source && source !== 'database') filter.sourceType = source;
 
   const normalizedDifficulty = String(difficulty || '')
     .trim()
@@ -261,7 +266,14 @@ const upsertQuestions = async (records = []) => {
       reviewStatus: String(record.reviewStatus || qualityStatus || 'approved')
         .trim()
         .toLowerCase(),
-      version: String(record.version || record.sourceMeta?.seedVersion || '').trim(),
+      version: String(
+        record.version ||
+          record.sourceMeta?.seedVersion ||
+          crypto
+            .createHash('sha256')
+            .update(JSON.stringify([record.question, record.answer, answerSections]))
+            .digest('hex')
+      ).trim(),
       answerFormat: hasStructuredAnswer ? 'structured' : 'plain',
       isEnriched: Boolean(record.isEnriched || hasStructuredAnswer),
       qualityState: String(record.qualityState || 'approved')
@@ -356,13 +368,28 @@ const upsertQuestions = async (records = []) => {
     );
     result = error.result;
   }
+  if (result.upsertedCount || result.modifiedCount) {
+    await Promise.all(
+      [...new Set(records.map((record) => record.topicKey || record.skill))]
+        .filter(Boolean)
+        .map((topicKey) => invalidateInterviewPrepCache(topicKey))
+    );
+  }
   return {
     insertedCount: Number(result.upsertedCount || 0),
     upsertedIds: Object.values(result.upsertedIds || {})
   };
 };
 
-const findTopQuestions = async ({ topicKey = '', limit = 30, difficulty = '', tags = '' } = {}) => {
+const findTopQuestions = async ({
+  topicKey = '',
+  limit = 30,
+  difficulty = '',
+  tags = '',
+  category = '',
+  source = ''
+} = {}) => {
+  if (source && !['seed', 'database', 'verified_seed', 'prebuilt'].includes(source)) return [];
   const filter = buildQuestionFilter({
     topicKey,
     difficulty,
@@ -370,6 +397,7 @@ const findTopQuestions = async ({ topicKey = '', limit = 30, difficulty = '', ta
     excludeGenericSeeds: true
   });
   filter.isTopQuestion = true;
+  if (category) filter.category = sanitizeCategory(category);
   filter.sourceType = 'verified_seed';
   filter.qualityScore = { $gte: 90 };
   filter.$and = [...(filter.$and || []), ...approvedQualityCriteria(MIN_TOP_CONFIDENCE, MIN_TOP_RELEVANCE)];
@@ -517,7 +545,14 @@ const findNeedsEnrichment = async ({ limit = 50 } = {}) =>
 
 const updateQuestionById = async (id, update = {}) => {
   if (!id) return null;
-  return InterviewQuestionBank.findByIdAndUpdate(id, update, { new: true, runValidators: true }).lean();
+  // Enrichment may never overwrite a curated seed, even after a stale read.
+  const updated = await InterviewQuestionBank.findOneAndUpdate(
+    { _id: id, sourceType: { $nin: ['verified_seed', 'prebuilt'] }, source: { $nin: ['verified_seed', 'prebuilt'] } },
+    update,
+    { new: true, runValidators: true }
+  ).lean();
+  if (updated) await invalidateInterviewPrepCache(updated.topicKey);
+  return updated;
 };
 
 const findExactReusableQuestion = async ({
