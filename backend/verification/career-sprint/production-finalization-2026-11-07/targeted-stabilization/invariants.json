@@ -1,0 +1,79 @@
+{
+  "comparison": "Git blob LF normalization only; no working files rewritten",
+  "productionFiles": [
+    {
+      "path": "backend/src/services/careerSprintService.js",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/services/sprintOverviewCacheService.js",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/services/sprintAiAdmissionService.js",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/services/aiTaskService.js",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/controllers/careerSprintController.js",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/services/coursePersonalizationService.js",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/services/courseRecommendationService.js",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/services/skillGapCacheContract.js",
+      "unchanged": true
+    },
+    {
+      "path": "backend/src/services/weeklyReportService.js",
+      "unchanged": true
+    },
+    {
+      "path": "backend/.env.example",
+      "unchanged": true
+    }
+  ],
+  "existingVariables": [
+    {
+      "name": "CAREER_SPRINT_PLANNING_CACHE_MAX_SIZE",
+      "referenced": true,
+      "documented": true
+    },
+    {
+      "name": "CAREER_SPRINT_PLAN_RESULT_CACHE_TTL_MS",
+      "referenced": true,
+      "documented": true
+    },
+    {
+      "name": "CAREER_SPRINT_PLAN_REDIS_BUDGET_MS",
+      "referenced": true,
+      "documented": true
+    },
+    {
+      "name": "CAREER_SPRINT_PLAN_REDIS_TTL_SECONDS",
+      "referenced": true,
+      "documented": true
+    },
+    {
+      "name": "CAREER_SPRINT_AI_TIMEOUT_MS",
+      "referenced": true,
+      "documented": true
+    },
+    {
+      "name": "CAREER_SPRINT_STAGE_TIMINGS",
+      "referenced": true,
+      "documented": true
+    }
+  ],
+  "sharedAiLimitsUnchanged": true,
+  "indexUnchanged": true
+}

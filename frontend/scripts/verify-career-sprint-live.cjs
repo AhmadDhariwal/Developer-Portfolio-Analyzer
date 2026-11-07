@@ -276,10 +276,16 @@ const main = async () => {
     await check('real API dashboard and Weekly Reports freshness after mutation', async () => {
       const sprint = (await call('/career-sprints/current')).body;
       const task = sprint.tasks.find((t) => !t.isCompleted);
+      const overdue = await call(`/career-sprints/${sprint._id}/tasks/${task._id}`, 'PUT', {
+        startDate: null,
+        endDate: new Date(Date.now() - 86400000).toISOString().slice(0, 10),
+      });
+      assert.equal(overdue.status, 200);
       const before = await call('/dashboard/summary');
       assert.equal(before.status, 200);
       const weeklyBefore = await call('/weekly-reports/generate', 'POST', { forceRefresh: true });
       assert.equal(weeklyBefore.status, 200);
+      assert.equal(weeklyBefore.body.meta.sprint.tasksOverdue, overdue.body.analytics.overdueTasks);
       assert.equal(
         (
           await call(`/career-sprints/${sprint._id}/tasks/${task._id}`, 'PUT', {
@@ -307,7 +313,11 @@ const main = async () => {
         weeklyAfter.body.meta.sprint.tasksCompleted,
         weeklyBefore.body.meta.sprint.tasksCompleted + 1,
       );
-      return { refreshed: true };
+      assert.equal(
+        weeklyAfter.body.meta.sprint.tasksOverdue,
+        weeklyBefore.body.meta.sprint.tasksOverdue - 1,
+      );
+      return { refreshed: true, authoritativeOverdueCount: true };
     });
     await page.reload();
     await app.getByRole('button', { name: '+ Add task', exact: true }).first().waitFor();

@@ -27,6 +27,14 @@ mock('../models/recommendation', { find: () => query([]) });
 mock('../models/careerSprint', { find: () => query([{ tasks: existingTitles.map((title) => ({ title })) }]) });
 mock('../services/developerSignalService', { getDeveloperSignals: async () => ({}) });
 let calls = 0;
+let admitted = true;
+let releases = 0;
+mock('../services/sprintAiAdmissionService', {
+  acquire: async () => (admitted ? { token: 'fixture' } : null),
+  release: async () => {
+    releases++;
+  }
+});
 let provider = async () => ({ ok: false });
 mock('../services/aiservice', {
   getSharedCache: async () => null,
@@ -63,6 +71,8 @@ test('explicit AI preview uses validated text and deterministic points, dates an
   provider = async (prompt, _fallback, retries, options) => {
     assert.equal(retries, 0);
     assert.equal(options.returnMeta, true);
+    assert.deepEqual(options.requestPolicy, { maxAttempts: 1 });
+    assert.ok(options.signal instanceof AbortSignal);
     return { ok: true, value: { taskIds: JSON.parse(prompt).targets.map((target) => target.id) } };
   };
   const result = await planner.generateAiTasksWithLLM(input('success'));
@@ -105,12 +115,17 @@ test('rapid explicit refresh requests share one provider call', async () => {
 });
 
 test('hung provider returns deterministic preview within the configured timeout', async () => {
-  provider = () => new Promise(() => {});
+  let signal;
+  provider = (_prompt, _fallback, _retries, options) => {
+    signal = options.signal;
+    return new Promise(() => {});
+  };
   const keepAlive = setInterval(() => {}, 100);
   try {
     const started = Date.now();
     const result = await planner.generateAiTasksWithLLM(input('timeout'));
     assert.equal(result.planMeta.generationMode, 'deterministic');
+    assert.equal(signal.aborted, true, 'The deadline must cancel provider work, not only stop awaiting it.');
     assert.ok(Date.now() - started < 3000);
   } finally {
     clearInterval(keepAlive);
@@ -123,4 +138,26 @@ test('existing imported or completed work is omitted from new previews', async (
   const result = await planner.generateAiTasksWithLLM(input('existing'));
   assert.equal(result.tasks.length, 0);
   existingTitles = [];
+});
+
+test('denied shared admission returns deterministic tasks without calling the provider', async () => {
+  const before = calls;
+  admitted = false;
+  try {
+    const result = await planner.generateAiTasksWithLLM(input('admission-denied'));
+    assert.equal(result.planMeta.generationMode, 'deterministic');
+    assert.ok(result.tasks.length > 0);
+    assert.equal(calls, before);
+  } finally {
+    admitted = true;
+  }
+});
+
+test('provider rejection releases its shared lease', async () => {
+  const before = releases;
+  provider = async () => {
+    throw new Error('Provider unavailable');
+  };
+  await planner.generateAiTasksWithLLM(input('release-failure'));
+  assert.equal(releases, before + 1);
 });

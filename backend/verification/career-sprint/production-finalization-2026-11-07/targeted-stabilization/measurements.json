@@ -1,0 +1,81 @@
+{
+  "method": "Observational test wrappers only; unchanged 20-sample end-to-end p95 <50ms assertion includes all instrumentation overhead. Mongo spans include the existing 25ms mocked I/O plus fixture construction; cacheSync measures hash/LRU/clone before Promise return. CPU readings are quantized on this Windows host and are not interpreted as zero CPU use.",
+  "cycles": [
+    {
+      "phase": "diagnostic",
+      "gateStatsMs": {
+        "p50": 31.75,
+        "p95": 32.22
+      },
+      "p95Ms": {
+        "wallMs": 32.18240000000014,
+        "cpuMs": 0,
+        "mongoCriticalMs": 31.471599999999853,
+        "mongoSchedulingOverrunMs": 6.471599999999853,
+        "cacheSyncMs": 0.6440999999999804,
+        "cacheCpuMs": 0
+      },
+      "worstSample": {
+        "wallMs": 32.509399999999914,
+        "cpuMs": 0,
+        "mongoCriticalMs": 30.639900000000125,
+        "mongoSchedulingOverrunMs": 5.639900000000125,
+        "mongoStartSkewMs": 0.049500000000080036,
+        "cacheSyncMs": 1.5419000000001688,
+        "cacheCpuMs": 0,
+        "beforeCacheMs": 0.06619999999975335,
+        "afterCacheMs": 0.1430000000000291,
+        "mongo": [
+          {
+            "kind": "current",
+            "elapsedMs": 30.58730000000014
+          },
+          {
+            "kind": "current",
+            "elapsedMs": 30.590400000000045
+          }
+        ]
+      },
+      "samples": 20,
+      "requestedMongoDelayMs": 25
+    },
+    {
+      "phase": "confirmation",
+      "gateStatsMs": {
+        "p50": 31.84,
+        "p95": 40.17
+      },
+      "p95Ms": {
+        "wallMs": 40.01559999999972,
+        "cpuMs": 0,
+        "mongoCriticalMs": 39.450500000000375,
+        "mongoSchedulingOverrunMs": 14.450500000000375,
+        "cacheSyncMs": 0.5090000000000146,
+        "cacheCpuMs": 0
+      },
+      "worstSample": {
+        "wallMs": 86.02230000000009,
+        "cpuMs": 0,
+        "mongoCriticalMs": 70.1280999999999,
+        "mongoSchedulingOverrunMs": 45.128099999999904,
+        "mongoStartSkewMs": 0.060500000000047294,
+        "cacheSyncMs": 0.41340000000036525,
+        "cacheCpuMs": 0,
+        "beforeCacheMs": 15.193199999999706,
+        "afterCacheMs": 0.061599999999998545,
+        "mongo": [
+          {
+            "kind": "previous",
+            "elapsedMs": 70.05189999999993
+          },
+          {
+            "kind": "current",
+            "elapsedMs": 70.06759999999986
+          }
+        ]
+      },
+      "samples": 20,
+      "requestedMongoDelayMs": 25
+    }
+  ]
+}

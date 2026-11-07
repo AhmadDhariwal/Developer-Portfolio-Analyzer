@@ -97,7 +97,7 @@ describe('Career Sprint dashboard', () => {
     component.loadData(true);
     expect(component.stale).toBe(false);
   });
-  it('guards duplicate mutations, keeps task state until server success, and explains conflicts', () => {
+  it('optimistically completes once, preserves authoritative XP, rolls back failures and explains conflicts', () => {
     const fixture = mount(),
       component = fixture.componentInstance,
       pending = new Subject<CareerSprint>();
@@ -105,9 +105,26 @@ describe('Career Sprint dashboard', () => {
     component.toggleTask(component.sprint!.tasks[0]);
     component.toggleTask(component.sprint!.tasks[0]);
     expect(api.toggleTask).toHaveBeenCalledTimes(1);
-    expect(component.sprint!.tasks[0].isCompleted).toBe(false);
+    expect(component.sprint!.tasks[0].isCompleted).toBe(true);
+    expect(component.sprint!.xpPoints).toBe(137);
     pending.error({ status: 409, error: { message: 'Sprint changed.' } });
     expect(component.actionMessage).toMatch(/Sprint changed.*preserved.*Refresh/);
+    expect(component.sprint!.tasks[0].isCompleted).toBe(false);
+  });
+  it('rolls back a failed optimistic reopen and accepts authoritative completion results', () => {
+    api.getCurrent.mockReturnValue(
+      of(sprintFixture({ tasks: [{ ...sprintFixture().tasks[0], isCompleted: true }] })),
+    );
+    const component = mount().componentInstance;
+    const pending = new Subject<CareerSprint>();
+    api.toggleTask.mockReturnValue(pending);
+    component.toggleTask(component.sprint!.tasks[0]);
+    expect(component.sprint!.tasks[0].isCompleted).toBe(false);
+    pending.error({ status: 0 });
+    expect(component.sprint!.tasks[0].isCompleted).toBe(true);
+    api.toggleTask.mockReturnValue(of(sprintFixture({ xpPoints: 122 })));
+    component.toggleTask(component.sprint!.tasks[0]);
+    expect(component.sprint!.xpPoints).toBe(122);
     expect(component.sprint!.tasks[0].isCompleted).toBe(false);
   });
   it('keeps completed task edits/deletes locked and supports reopen using the completion endpoint', () => {

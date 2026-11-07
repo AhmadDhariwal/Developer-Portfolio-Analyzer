@@ -1,0 +1,8 @@
+{
+  "timerRequestedMs": 25,
+  "samples": 40,
+  "p50": 31.596199999999953,
+  "p95": 32.2346,
+  "max": 33.41669999999999,
+  "note": "Host timer scheduling diagnostic only, not an application benchmark"
+}

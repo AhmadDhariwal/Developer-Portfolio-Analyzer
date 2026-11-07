@@ -92,6 +92,16 @@ describe('Career Sprint HTTP contracts and handoff invalidation', () => {
     expect(invalidation.clearCareerSprintCaches).toHaveBeenCalledOnce();
     expect(invalidation.clearDashboardCaches).toHaveBeenCalledOnce();
     expect(invalidation.clearRecommendationsCaches).toHaveBeenCalledOnce();
+    expect(invalidation.clearNewsCaches).toHaveBeenCalledOnce();
+  });
+  it('draft deletion refreshes Sprint consumers without clearing unchanged News personalization', () => {
+    service.deleteDraft('sprint-one', 'draft-one').subscribe();
+    http
+      .expectOne(`${environment.apiBaseUrl}/career-sprints/sprint-one/ai-plans/draft-one`)
+      .flush(sprintFixture());
+    expect(invalidation.clearCareerSprintCaches).toHaveBeenCalledOnce();
+    expect(invalidation.clearDashboardCaches).toHaveBeenCalledOnce();
+    expect(invalidation.clearNewsCaches).not.toHaveBeenCalled();
   });
   it('uses supported edit/delete/draft/preference endpoints without a completion field in edits', () => {
     const payload = {

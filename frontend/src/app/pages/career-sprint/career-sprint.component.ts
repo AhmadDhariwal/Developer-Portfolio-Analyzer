@@ -414,12 +414,26 @@ export class CareerSprintComponent implements OnInit, OnDestroy {
   }
   toggleTask(task: SprintTask): void {
     if (!this.sprint || !task._id || this.mutationsDisabled) return;
+    const previous = this.sprint;
+    const isCompleted = !task.isCompleted;
+    const optimistic = {
+      ...previous,
+      tasks: previous.tasks.map((item) =>
+        item._id === task._id ? { ...item, isCompleted } : item,
+      ),
+    };
+    // Only the pending checkbox changes locally; scores and timestamps stay server-owned.
+    this.sprint = optimistic;
     this.mutate(
       `toggle:${task._id}`,
-      this.api.toggleTask(this.sprint._id, task._id, !task.isCompleted),
+      this.api.toggleTask(previous._id, task._id, isCompleted),
       task.isCompleted
         ? 'Task reopened. XP and progress reflect the server response.'
         : 'Task completed. XP and progress updated.',
+      undefined,
+      () => {
+        if (this.sprint === optimistic) this.sprint = previous;
+      },
     );
   }
   deleteTask(task: SprintTask): void {
@@ -466,6 +480,7 @@ export class CareerSprintComponent implements OnInit, OnDestroy {
     request: Observable<CareerSprint>,
     message: string,
     done?: () => void,
+    failed?: () => void,
   ): void {
     this.busy = kind;
     this.actionMessage = '';
@@ -480,6 +495,7 @@ export class CareerSprintComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       },
       error: (error) => {
+        failed?.();
         this.busy = '';
         this.actionMessage = sprintError(error, 'This change could not be saved. Please retry.');
         this.actionFailed = true;

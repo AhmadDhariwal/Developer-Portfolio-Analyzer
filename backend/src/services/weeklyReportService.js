@@ -428,15 +428,20 @@ const buildActivitySnapshot = (repositories, weekStartDate) => {
   };
 };
 
-const buildSprintSnapshot = (sprint) => {
+const buildSprintSnapshot = (sprint, now = new Date()) => {
   const tasks = Array.isArray(sprint?.tasks) ? sprint.tasks : [];
   const tasksCompleted = tasks.filter((task) => Boolean(task?.isCompleted)).length;
   const tasksTotal = tasks.length;
+  const tasksOverdue = tasks.filter((task) => {
+    const deadline = task?.endDate || task?.deadline || task?.dueDate;
+    return !task?.isCompleted && deadline && new Date(deadline) < now;
+  }).length;
   const completionRate = tasksTotal ? Math.round((tasksCompleted / tasksTotal) * 100) : 0;
 
   return {
     tasksCompleted,
     tasksTotal,
+    tasksOverdue,
     completionRate: clampPercent(completionRate),
     weeklyGoal: toNumber(sprint?.weeklyGoal),
     streak: toNumber(sprint?.streak),
@@ -1792,7 +1797,7 @@ const startWeeklyReportScheduler = () => {
   return weeklyReportSchedulerTask;
 };
 module.exports = {
-  __test: { loadDefaultResumeAnalysis, buildLearningSnapshot },
+  __test: { loadDefaultResumeAnalysis, buildLearningSnapshot, buildSprintSnapshot },
   generateWeeklyReport,
   wasWeeklyReportSmartSkipped,
   sendWeeklyReportEmail,

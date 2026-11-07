@@ -20,10 +20,10 @@ const { invalidateDashboardSummaryCache } = require('./dashboardcontroller');
 const { invalidateContextCache } = require('../services/scenarioSimulatorService');
 const { invalidateNewsSignalCache } = require('../services/newsService');
 
-const invalidateSprintDependents = (userId) => {
+const invalidateSprintDependents = (userId, { news = true } = {}) => {
   invalidateDashboardSummaryCache(userId);
   invalidateContextCache(userId);
-  invalidateNewsSignalCache(userId);
+  if (news) invalidateNewsSignalCache(userId);
 };
 
 const INTERNAL_ERROR_PATTERN =
@@ -54,11 +54,7 @@ const requireUser = (req, res) => {
 const sanitizePlannerInput = (body = {}) => ({
   stack: sanitizeBoundedText(body.stack || '', LIMITS.goalField, 'Stack'),
   technology: sanitizeBoundedText(body.technology || '', LIMITS.goalField, 'Technology'),
-  experienceLevel: sanitizeBoundedText(
-    body.experienceLevel || '',
-    LIMITS.goalField,
-    'Experience level'
-  ),
+  experienceLevel: sanitizeBoundedText(body.experienceLevel || '', LIMITS.goalField, 'Experience level'),
   sprintStartDate: body.sprintStartDate || undefined,
   sprintEndDate: body.sprintEndDate || undefined,
   forceRefresh: Boolean(body.forceRefresh)
@@ -73,9 +69,7 @@ const getCurrentCareerSprint = async (req, res) => {
     res.json(sprint);
   } catch (error) {
     console.error('Career sprint fetch error:', error.message);
-    res
-      .status(error.statusCode || 500)
-      .json(normalizeError(error, 'Failed to load career sprint.'));
+    res.status(error.statusCode || 500).json(normalizeError(error, 'Failed to load career sprint.'));
   }
 };
 
@@ -111,9 +105,7 @@ const createCareerSprint = async (req, res) => {
     res.status(201).json(sprint);
   } catch (error) {
     console.error('Career sprint create error:', error.message);
-    res
-      .status(error.statusCode || 500)
-      .json(normalizeError(error, 'Failed to create career sprint.'));
+    res.status(error.statusCode || 500).json(normalizeError(error, 'Failed to create career sprint.'));
   }
 };
 
@@ -151,20 +143,13 @@ const updateCareerSprintTask = async (req, res) => {
     if (Object.keys(req.body).some((key) => key !== 'isCompleted')) {
       return res.status(400).json({ message: 'Submit completion and task edits separately.' });
     }
-    const sprint = await toggleTaskCompletion(
-      userId,
-      req.params.id,
-      req.params.taskId,
-      isCompleted
-    );
+    const sprint = await toggleTaskCompletion(userId, req.params.id, req.params.taskId, isCompleted);
     if (!sprint) return res.status(404).json({ message: 'Sprint or task not found.' });
     invalidateSprintDependents(userId);
     res.json(sprint);
   } catch (error) {
     console.error('Career sprint update task error:', error.message);
-    res
-      .status(error.statusCode || 500)
-      .json(normalizeError(error, 'Failed to update sprint task.'));
+    res.status(error.statusCode || 500).json(normalizeError(error, 'Failed to update sprint task.'));
   }
 };
 
@@ -177,9 +162,7 @@ const getCareerSprintHistory = async (req, res) => {
     res.json({ history });
   } catch (error) {
     console.error('Career sprint history error:', error.message);
-    res
-      .status(error.statusCode || 500)
-      .json(normalizeError(error, 'Failed to load sprint history.'));
+    res.status(error.statusCode || 500).json(normalizeError(error, 'Failed to load sprint history.'));
   }
 };
 
@@ -190,7 +173,7 @@ const restoreCareerStreakController = async (req, res) => {
     assertObjectId(req.params.id, 'Sprint');
     const sprint = await restoreStreak(userId, req.params.id);
     if (!sprint) return res.status(400).json({ message: 'Cannot restore streak at this time.' });
-    invalidateSprintDependents(userId);
+    invalidateSprintDependents(userId, { news: false });
     res.json(sprint);
   } catch (error) {
     console.error('Career sprint restore streak error:', error.message);
@@ -226,9 +209,7 @@ const generateTrueAiTasks = async (req, res) => {
     res.json(result);
   } catch (error) {
     console.error('LLM sprint generation error:', error.message);
-    res
-      .status(error.statusCode || 500)
-      .json(normalizeError(error, 'Failed to generate AI sprint plan.'));
+    res.status(error.statusCode || 500).json(normalizeError(error, 'Failed to generate AI sprint plan.'));
   }
 };
 
@@ -244,9 +225,7 @@ const updateSprintDatesController = async (req, res) => {
     res.json(sprint);
   } catch (error) {
     console.error('Sprint dates update error:', error.message);
-    res
-      .status(error.statusCode || 500)
-      .json(normalizeError(error, 'Failed to update sprint dates.'));
+    res.status(error.statusCode || 500).json(normalizeError(error, 'Failed to update sprint dates.'));
   }
 };
 
@@ -257,13 +236,11 @@ const saveAiPlanController = async (req, res) => {
     assertObjectId(req.params.id, 'Sprint');
     const sprint = await saveAiPlanToSprint(userId, req.params.id, req.body || {});
     if (!sprint) return res.status(404).json({ message: 'Sprint not found.' });
-    invalidateSprintDependents(userId);
+    invalidateSprintDependents(userId, { news: false });
     res.json(sprint);
   } catch (error) {
     console.error('Save AI sprint plan error:', error.message);
-    res
-      .status(error.statusCode || 500)
-      .json(normalizeError(error, 'Failed to save AI sprint plan.'));
+    res.status(error.statusCode || 500).json(normalizeError(error, 'Failed to save AI sprint plan.'));
   }
 };
 
@@ -276,23 +253,21 @@ const importScenarioPlanController = async (req, res) => {
     if (scenarioId) assertObjectId(scenarioId, 'Scenario');
     const sprint = await importScenarioPlanToSprint(userId, req.params.id, scenarioId);
     if (!sprint) return res.status(404).json({ message: 'Sprint not found.' });
-    invalidateSprintDependents(userId);
+    invalidateSprintDependents(userId, { news: false });
     res.json(sprint);
   } catch (error) {
     console.error('Import scenario sprint plan error:', error.message);
-    res
-      .status(error.statusCode || 500)
-      .json(normalizeError(error, 'Failed to import Scenario Simulator plan.'));
+    res.status(error.statusCode || 500).json(normalizeError(error, 'Failed to import Scenario Simulator plan.'));
   }
 };
 
-const mutateSprintResource = (operation, fallback) => async (req, res) => {
+const mutateSprintResource = (operation, fallback, invalidation) => async (req, res) => {
   try {
     const userId = requireUser(req, res);
     if (!userId) return;
     const sprint = await operation(userId, req);
     if (!sprint) return res.status(404).json({ message: 'Sprint resource not found.' });
-    invalidateSprintDependents(userId);
+    invalidateSprintDependents(userId, invalidation);
     res.json(sprint);
   } catch (error) {
     res.status(error.statusCode || 500).json(normalizeError(error, fallback));
@@ -305,7 +280,8 @@ const deleteCareerSprintTask = mutateSprintResource(
 );
 const deleteAiPlanController = mutateSprintResource(
   (userId, req) => mutateDraft(userId, req.params.id, req.params.planId),
-  'Failed to delete draft.'
+  'Failed to delete draft.',
+  { news: false }
 );
 const addDraftTasksController = mutateSprintResource(
   (userId, req) =>

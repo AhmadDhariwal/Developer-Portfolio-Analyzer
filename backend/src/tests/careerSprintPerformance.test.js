@@ -93,6 +93,10 @@ const createQuery = (loader) => {
 };
 
 const createHarness = () => {
+  mock('services/sprintAiAdmissionService.js', {
+    acquire: async () => ({ token: 'performance-fixture' }),
+    release: async () => {}
+  });
   const counters = {
     mongoReads: 0,
     mongoWrites: 0,
@@ -256,18 +260,98 @@ const measure = async (runs, fn) => {
   };
 };
 
-test('database-validated memory serialization stays under 50ms p95 and skips optional signals', async () => {
+test('database-validated memory serialization stays under 50ms p95 and skips optional signals', async (t) => {
   const harness = createHarness();
+  // Observe the real gate without removing its Mongo latency or changing its timer.
+  const model = require('../models/careerSprint');
+  const overview = require('../services/sprintOverviewCacheService');
+  const findOne = model.findOne;
+  const load = overview.load;
+  const cpuUsage = () => (process.threadCpuUsage ? process.threadCpuUsage() : process.cpuUsage());
+  const cpuElapsed = (before, after) => (after.user + after.system - before.user - before.system) / 1000;
+  const observations = [];
+  let current;
+  t.after(() => {
+    model.findOne = findOne;
+    overview.load = load;
+  });
+  model.findOne = (query) => {
+    const request = findOne(query);
+    const then = request.then;
+    request.then = (resolve, reject) => {
+      const span = {
+        kind: query._id && Object.hasOwn(query._id, '$ne') ? 'previous' : 'current',
+        start: performance.now()
+      };
+      current?.mongo.push(span);
+      return then((value) => {
+        span.end = performance.now();
+        resolve(value);
+      }, reject);
+    };
+    return request;
+  };
+  overview.load = (...args) => {
+    const sample = current;
+    const start = performance.now();
+    const cpu = cpuUsage();
+    const result = load(...args);
+    if (sample) {
+      sample.cacheStart = start;
+      sample.cacheSyncMs = performance.now() - start;
+      sample.cacheCpuMs = cpuElapsed(cpu, cpuUsage());
+    }
+    return result;
+  };
   await harness.sprintService.getCurrentSprint('u-mem', { forceRefresh: true });
   harness.counters.mongoReads = 0;
   harness.counters.signalCalls = 0;
   const stats = await measure(20, async () => {
+    current = { start: performance.now(), mongo: [] };
+    const cpu = cpuUsage();
     const result = await harness.sprintService.getCurrentSprint('u-mem');
     assert.ok(result.analytics);
     assert.ok(result.cacheMetadata?.stageTimingsMs);
+    const end = performance.now();
+    const spans = current.mongo;
+    assert.deepEqual(spans.map((span) => span.kind).sort(), ['current', 'previous']);
+    const mongoStart = Math.min(...spans.map((span) => span.start));
+    const mongoEnd = Math.max(...spans.map((span) => span.end));
+    observations.push({
+      wallMs: end - current.start,
+      cpuMs: cpuElapsed(cpu, cpuUsage()),
+      mongoCriticalMs: mongoEnd - mongoStart,
+      mongoSchedulingOverrunMs: Math.max(0, mongoEnd - mongoStart - MONGO_DELAY_MS),
+      mongoStartSkewMs: Math.max(...spans.map((span) => span.start)) - mongoStart,
+      cacheSyncMs: current.cacheSyncMs,
+      cacheCpuMs: current.cacheCpuMs,
+      beforeCacheMs: current.cacheStart - mongoEnd,
+      afterCacheMs: end - current.cacheStart - current.cacheSyncMs,
+      mongo: spans.map((span) => ({ kind: span.kind, elapsedMs: span.end - span.start }))
+    });
+    current = null;
   });
+  t.diagnostic(
+    JSON.stringify({
+      gate: 'end-to-end memory path, including fresh Mongo snapshots',
+      requestedMongoDelayMs: MONGO_DELAY_MS,
+      samples: observations,
+      p95: Object.fromEntries(
+        ['wallMs', 'cpuMs', 'mongoCriticalMs', 'mongoSchedulingOverrunMs', 'cacheSyncMs', 'cacheCpuMs'].map((key) => [
+          key,
+          percentile(
+            observations.map((sample) => sample[key]),
+            95
+          )
+        ])
+      ),
+      stats,
+      counters: harness.sprintService.getCareerSprintRuntimeCounters()
+    })
+  );
   assert.equal(harness.counters.mongoReads, 40); // Fresh current + previous snapshots for every read.
   assert.equal(harness.counters.signalCalls, 0);
+  assert.equal(harness.sprintService.getCareerSprintRuntimeCounters().memoryHits, 20);
   assert.ok(stats.p95 < 50, `memory p95 ${stats.p95}`);
 });
 

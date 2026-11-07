@@ -80,6 +80,8 @@ const weeklyReportSchema = new mongoose.Schema(
       sprint: {
         tasksCompleted: { type: Number, default: 0 },
         tasksTotal: { type: Number, default: 0 },
+        // Optional: historical reports did not record this metric.
+        tasksOverdue: { type: Number, min: 0 },
         completionRate: { type: Number, default: 0 },
         weeklyGoal: { type: Number, default: 0 },
         streak: { type: Number, default: 0 }
@@ -196,10 +198,7 @@ weeklyReportSchema.index({ userId: 1, createdAt: -1 });
 weeklyReportSchema.index({ userId: 1, 'meta.signalHash': 1 });
 weeklyReportSchema.index({ userId: 1, weekStartDate: -1 });
 
-weeklyReportSchema.index(
-  { 'emailDelivery.status': 1, 'emailDelivery.nextAttemptAt': 1 },
-  { name: 'weekly_email_due' }
-);
+weeklyReportSchema.index({ 'emailDelivery.status': 1, 'emailDelivery.nextAttemptAt': 1 }, { name: 'weekly_email_due' });
 
 weeklyReportSchema.index(
   { 'emailDelivery.pendingContentHash': 1, 'emailDelivery.status': 1 },
