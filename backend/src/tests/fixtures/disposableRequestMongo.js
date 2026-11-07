@@ -13,6 +13,7 @@ async function startMongo({
   replicaSet = "integration-live",
   temporaryRoot = os.tmpdir(),
   readinessAttempts = 50,
+  port: requestedPort = 0,
 } = {}) {
   assert.match(replicaSet, /^[a-zA-Z0-9_-]{1,64}$/);
   const binary =
@@ -27,7 +28,15 @@ async function startMongo({
   );
   const root = fs.realpathSync(directory);
   const listener = net.createServer();
-  await new Promise((resolve) => listener.listen(0, "127.0.0.1", resolve));
+  assert.ok(
+    Number.isInteger(requestedPort) &&
+      requestedPort >= 0 &&
+      requestedPort <= 65535,
+  );
+  await new Promise((resolve, reject) => {
+    listener.once("error", reject);
+    listener.listen(requestedPort, "127.0.0.1", resolve);
+  });
   const port = listener.address().port;
   await new Promise((resolve) => listener.close(resolve));
   const child = spawn(
@@ -53,11 +62,29 @@ async function startMongo({
   });
   let direct;
   async function stop() {
+    // Windows Mongo may take longer than five seconds to flush four replicas.
+    // Request a bounded graceful shutdown before terminating only our child.
+    if (direct && child.exitCode === null && child.signalCode === null) {
+      await direct
+        .db("admin")
+        .command({ shutdown: 1, force: true }, { timeoutMS: 3000 })
+        .catch(() => {});
+    }
     await direct?.close();
     if (child.pid && child.exitCode === null && child.signalCode === null) {
       const stopped = new Promise((resolve) => child.once("exit", resolve));
       child.kill();
-      await Promise.race([stopped, delay(5000)]);
+      let timer;
+      try {
+        await Promise.race([
+          stopped,
+          new Promise((resolve) => {
+            timer = setTimeout(resolve, 15000);
+          }),
+        ]);
+      } finally {
+        clearTimeout(timer);
+      }
     }
     assert.ok(
       child.exitCode !== null || child.signalCode !== null || launchError,
@@ -124,6 +151,8 @@ async function startMongo({
     assert.ok(primary, "Replica primary election deadline");
     return {
       uri: `mongodb://127.0.0.1:${port}/integration_live_acceptance?replicaSet=${replicaSet}`,
+      pid: child.pid,
+      directory: root,
       stop,
     };
   } catch (error) {

@@ -1,0 +1,2078 @@
+{
+  "counts": {
+    "tests": 912,
+    "suites": 0,
+    "pass": 855,
+    "fail": 37,
+    "cancelled": 0,
+    "skipped": 20,
+    "todo": 0,
+    "duration_ms": 402755.2113
+  },
+  "records": [
+    {
+      "id": "TAP-1",
+      "line": 51,
+      "indent": 0,
+      "name": "disposable Mongo + fixture S3: existing upload APIs, privacy, replacement, cleanup, restart and legacy reads",
+      "parents": [],
+      "status": "BLOCKED",
+      "kind": "skip",
+      "location": null,
+      "file": "backend/src/tests/b2Storage.test.js",
+      "error": null,
+      "stack": null,
+      "failureType": null,
+      "skipReason": null,
+      "rawResult": "ok 9 - disposable Mongo + fixture S3: existing upload APIs, privacy, replacement, cleanup, restart and legacy reads # SKIP",
+      "rawDiagnostics": "  ---\n  duration_ms: 0.7327\n  type: 'test'\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "B2_ACCEPTANCE_MONGO",
+        "STORAGE_DRIVER",
+        "PUBLIC_IMAGE_STORAGE_ROOT",
+        "JWT_SECRET"
+      ],
+      "reconciledStatus": "BLOCKED",
+      "classification": "Prerequisite opt-in not supplied; not acceptance",
+      "isolatedEvidence": [],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "BLOCKED"
+      }
+    },
+    {
+      "id": "TAP-2",
+      "line": 199,
+      "indent": 0,
+      "name": "isolated Mongo: legacy exceptions preserve history, enforce read-only access and reserve both overlaps",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\careerSprintLegacy.integration.test.js:14:1",
+      "file": "backend/src/tests/careerSprintLegacy.integration.test.js",
+      "error": "An explicitly isolated loopback database is required.",
+      "stack": "TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\careerSprintLegacy.integration.test.js:16:10)\nTest.runInAsyncScope (node:async_hooks:227:14)\nTest.run (node:internal/test_runner/test:1382:25)\nTest.start (node:internal/test_runner/test:1242:17)\nstartSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "not ok 30 - isolated Mongo: legacy exceptions preserve history, enforce read-only access and reserve both overlaps",
+      "rawDiagnostics": "  ---\n  duration_ms: 9.4583\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\careerSprintLegacy.integration.test.js:14:1'\n  failureType: 'testCodeFailure'\n  error: 'An explicitly isolated loopback database is required.'\n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected:\n  actual: ''\n  operator: 'match'\n  stack: |-\n    TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\careerSprintLegacy.integration.test.js:16:10)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1382:25)\n    Test.start (node:internal/test_runner/test:1242:17)\n    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "CAREER_SPRINT_ISOLATED_MONGO_URI"
+      ],
+      "reconciledStatus": "PASS",
+      "classification": "Environment: missing required isolated Mongo URI; both refs pass with explicit disposable database",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-careerSprintLegacy.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/candidate-careerSprintLegacy.integration.test.tap"
+        },
+        {
+          "label": "release1-careerSprintLegacy.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/release1-careerSprintLegacy.integration.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-3",
+      "line": 236,
+      "indent": 0,
+      "name": "Career Sprint real Mongo/JWT: replay, concurrency, reversal, drafts and ownership persist",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\careerSprintMongo.integration.test.js:24:1",
+      "file": "backend/src/tests/careerSprintMongo.integration.test.js",
+      "error": "The expression evaluated to a falsy value:\n\n  assert.ok(completions.every((result) => result.status === 200))\n",
+      "stack": "TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\careerSprintMongo.integration.test.js:123:10)\nprocess.processTicksAndRejections (node:internal/process/task_queues:104:5)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "not ok 33 - Career Sprint real Mongo/JWT: replay, concurrency, reversal, drafts and ownership persist",
+      "rawDiagnostics": "  ---\n  duration_ms: 4478.6761\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\careerSprintMongo.integration.test.js:24:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    The expression evaluated to a falsy value:\n    \n      assert.ok(completions.every((result) => result.status === 200))\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: true\n  actual: false\n  operator: '=='\n  stack: |-\n    TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\careerSprintMongo.integration.test.js:123:10)\n    process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    async Test.run (node:internal/test_runner/test:1389:7)\n    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "MONGODB_URI",
+        "MONGO_URI",
+        "JWT_SECRET",
+        "JWT_ISSUER",
+        "JWT_AUDIENCE"
+      ],
+      "reconciledStatus": "PASS",
+      "classification": "Environment topology: standalone rejects transactions (raw lines 230–234); both refs pass on replica set",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-careerSprintMongo.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/candidate-careerSprintMongo.integration.test.tap"
+        },
+        {
+          "label": "release1-careerSprintMongo.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/release1-careerSprintMongo.integration.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-4",
+      "line": 259,
+      "indent": 0,
+      "name": "database-validated memory serialization stays under 50ms p95 and skips optional signals",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\careerSprintPerformance.test.js:263:1",
+      "file": "backend/src/tests/careerSprintPerformance.test.js",
+      "error": "memory p95 62.92",
+      "stack": "TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\careerSprintPerformance.test.js:355:10)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "not ok 34 - database-validated memory serialization stays under 50ms p95 and skips optional signals",
+      "rawDiagnostics": "  ---\n  duration_ms: 10847.4549\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\careerSprintPerformance.test.js:263:1'\n  failureType: 'testCodeFailure'\n  error: 'memory p95 62.92'\n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: true\n  actual: false\n  operator: '=='\n  stack: |-\n    TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\careerSprintPerformance.test.js:355:10)\n    async Test.run (node:internal/test_runner/test:1389:7)\n    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [],
+      "reconciledStatus": "PASS",
+      "classification": "Timing/topology/load sensitive: sequential focused or final controlled run passes; exact full-load cause not proven; no speculative fix",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-careerSprintPerformance.test",
+          "exitCode": 0,
+          "tap": "isolated/candidate-careerSprintPerformance.test.tap"
+        },
+        {
+          "label": "release1-careerSprintPerformance.test",
+          "exitCode": 0,
+          "tap": "isolated/release1-careerSprintPerformance.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-5",
+      "line": 308,
+      "indent": 0,
+      "name": "after metrics improve or hold targets versus measured before snapshot",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\careerSprintPerformance.test.js:451:1",
+      "file": "backend/src/tests/careerSprintPerformance.test.js",
+      "error": "The expression evaluated to a falsy value:\n\n  assert.ok(memory.p95 <= Math.max(BEFORE.memory.p95, 50))\n",
+      "stack": "TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\careerSprintPerformance.test.js:455:10)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync Test.processPendingSubtests (node:internal/test_runner/test:960:7)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "not ok 40 - after metrics improve or hold targets versus measured before snapshot",
+      "rawDiagnostics": "  ---\n  duration_ms: 749.1242\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\careerSprintPerformance.test.js:451:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    The expression evaluated to a falsy value:\n    \n      assert.ok(memory.p95 <= Math.max(BEFORE.memory.p95, 50))\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: true\n  actual: false\n  operator: '=='\n  stack: |-\n    TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\careerSprintPerformance.test.js:455:10)\n    async Test.run (node:internal/test_runner/test:1389:7)\n    async Test.processPendingSubtests (node:internal/test_runner/test:960:7)\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [],
+      "reconciledStatus": "PASS",
+      "classification": "Timing/topology/load sensitive: sequential focused or final controlled run passes; exact full-load cause not proven; no speculative fix",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-careerSprintPerformance.test",
+          "exitCode": 0,
+          "tap": "isolated/candidate-careerSprintPerformance.test.tap"
+        },
+        {
+          "label": "release1-careerSprintPerformance.test",
+          "exitCode": 0,
+          "tap": "isolated/release1-careerSprintPerformance.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-6",
+      "line": 455,
+      "indent": 0,
+      "name": "two real processes: fresh Mongo revisions, stale Redis writes, restart, fallback and concurrent windows",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\careerSprintWorkers.integration.test.js:60:1",
+      "file": "backend/src/tests/careerSprintWorkers.integration.test.js",
+      "error": "Worker initialization timed out.",
+      "stack": "Timeout._onTimeout (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\careerSprintWorkers.integration.test.js:26:14)\nlistOnTimeout (node:internal/timers:635:17)\nprocess.processTimers (node:internal/timers:571:7)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "not ok 60 - two real processes: fresh Mongo revisions, stale Redis writes, restart, fallback and concurrent windows",
+      "rawDiagnostics": "  ---\n  duration_ms: 12764.8475\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\careerSprintWorkers.integration.test.js:60:1'\n  failureType: 'testCodeFailure'\n  error: 'Worker initialization timed out.'\n  code: 'ERR_TEST_FAILURE'\n  stack: |-\n    Timeout._onTimeout (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\careerSprintWorkers.integration.test.js:26:14)\n    listOnTimeout (node:internal/timers:635:17)\n    process.processTimers (node:internal/timers:571:7)\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "MONGODB_URI",
+        "MONGO_URI"
+      ],
+      "reconciledStatus": "PASS",
+      "classification": "Timing/topology/load sensitive: sequential focused or final controlled run passes; exact full-load cause not proven; no speculative fix",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-careerSprintWorkers.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/candidate-careerSprintWorkers.integration.test.tap"
+        },
+        {
+          "label": "release1-careerSprintWorkers.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/release1-careerSprintWorkers.integration.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-7",
+      "line": 949,
+      "indent": 0,
+      "name": "Discover/For You: owned current v9 evidence gates a 1781-course Mongo catalog",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\courseViewSeparation.integration.test.js:11:1",
+      "file": "backend/src/tests/courseViewSeparation.integration.test.js",
+      "error": "Disposable Mongo process must stop before cleanup",
+      "stack": "Object.stop (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\fixtures\\disposableRequestMongo.js:62:12)\nasync TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\courseViewSeparation.integration.test.js:56:26)\nasync TestHook.run (node:internal/test_runner/test:1389:7)\nasync Test.runHook (node:internal/test_runner/test:1269:9)\nasync after (node:internal/test_runner/test:1322:9)\nasync Test.run (node:internal/test_runner/test:1408:7)\nasync startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)",
+      "failureType": "hookFailed",
+      "skipReason": null,
+      "rawResult": "not ok 102 - Discover/For You: owned current v9 evidence gates a 1781-course Mongo catalog",
+      "rawDiagnostics": "  ---\n  duration_ms: 34804.1537\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\courseViewSeparation.integration.test.js:11:1'\n  failureType: 'hookFailed'\n  error: 'Disposable Mongo process must stop before cleanup'\n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: true\n  operator: '=='\n  stack: |-\n    Object.stop (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\fixtures\\disposableRequestMongo.js:62:12)\n    async TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\courseViewSeparation.integration.test.js:56:26)\n    async TestHook.run (node:internal/test_runner/test:1389:7)\n    async Test.runHook (node:internal/test_runner/test:1269:9)\n    async after (node:internal/test_runner/test:1322:9)\n    async Test.run (node:internal/test_runner/test:1408:7)\n    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "JWT_SECRET",
+        "YOUTUBE_API_KEY",
+        "COURSES_POOL_STORE_TIMEOUT_MS",
+        "COURSES_READ_RATE_LIMIT_MAX"
+      ],
+      "reconciledStatus": "PASS",
+      "classification": "Timing/topology/load sensitive: sequential focused or final controlled run passes; exact full-load cause not proven; no speculative fix",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-courseViewSeparation.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/candidate-courseViewSeparation.integration.test.tap"
+        },
+        {
+          "label": "release1-courseViewSeparation.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/release1-courseViewSeparation.integration.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-8",
+      "line": 1361,
+      "indent": 0,
+      "name": "Learning Hub memory path bypasses Redis, Mongo pool reads, and providers",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\coursesPerformance.test.js:250:1",
+      "file": "backend/src/tests/coursesPerformance.test.js",
+      "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- true\n",
+      "stack": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\coursesPerformance.test.js:258:12\nasync measureSeries (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\coursesPerformance.test.js:241:26)\nasync TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\coursesPerformance.test.js:256:18)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "not ok 137 - Learning Hub memory path bypasses Redis, Mongo pool reads, and providers",
+      "rawDiagnostics": "  ---\n  duration_ms: 12092.3059\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\coursesPerformance.test.js:250:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    + actual - expected\n    \n    + undefined\n    - true\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: true\n  operator: 'strictEqual'\n  stack: |-\n    C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\coursesPerformance.test.js:258:12\n    async measureSeries (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\coursesPerformance.test.js:241:26)\n    async TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\coursesPerformance.test.js:256:18)\n    async Test.run (node:internal/test_runner/test:1389:7)\n    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [],
+      "reconciledStatus": "FAIL",
+      "classification": "Stale fixture corrected; remaining timing variability: post-cleanup memory p95 74.2 ms exceeds unchanged 50 ms limit. Final full run passed this case; no retry until green.",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-coursesPerformance.test",
+          "exitCode": 1,
+          "tap": "isolated/candidate-coursesPerformance.test.tap"
+        },
+        {
+          "label": "release1-coursesPerformance.test",
+          "exitCode": 1,
+          "tap": "isolated/release1-coursesPerformance.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      },
+      "postCleanupEvidence": "post-cleanup-verified.tap:15"
+    },
+    {
+      "id": "TAP-9",
+      "line": 1388,
+      "indent": 0,
+      "name": "Learning Hub Redis path skips provider and Mongo pool reads",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\coursesPerformance.test.js:269:1",
+      "file": "backend/src/tests/coursesPerformance.test.js",
+      "error": "Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- true\n",
+      "stack": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\coursesPerformance.test.js:278:12\nasync measureSeries (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\coursesPerformance.test.js:241:26)\nasync TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\coursesPerformance.test.js:276:17)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync Test.processPendingSubtests (node:internal/test_runner/test:960:7)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "not ok 138 - Learning Hub Redis path skips provider and Mongo pool reads",
+      "rawDiagnostics": "  ---\n  duration_ms: 148.226\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\coursesPerformance.test.js:269:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    + actual - expected\n    \n    + undefined\n    - true\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: true\n  operator: 'strictEqual'\n  stack: |-\n    C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\coursesPerformance.test.js:278:12\n    async measureSeries (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\coursesPerformance.test.js:241:26)\n    async TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\coursesPerformance.test.js:276:17)\n    async Test.run (node:internal/test_runner/test:1389:7)\n    async Test.processPendingSubtests (node:internal/test_runner/test:960:7)\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [],
+      "reconciledStatus": "PASS",
+      "classification": "Pre-existing stale synthetic fixture: missing learningSkills export/targets and catalog identity; 5 failures on both refs before, 6/6 after",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-coursesPerformance.test",
+          "exitCode": 1,
+          "tap": "isolated/candidate-coursesPerformance.test.tap"
+        },
+        {
+          "label": "release1-coursesPerformance.test",
+          "exitCode": 1,
+          "tap": "isolated/release1-coursesPerformance.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-10",
+      "line": 1414,
+      "indent": 0,
+      "name": "Learning Hub cold path stays under non-AI budget and records stage timings",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\coursesPerformance.test.js:287:1",
+      "file": "backend/src/tests/coursesPerformance.test.js",
+      "error": "Expected values to be strictly equal:\n\n500 !== 200\n",
+      "stack": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\coursesPerformance.test.js:302:12\nasync measureSeries (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\coursesPerformance.test.js:241:26)\nasync TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\coursesPerformance.test.js:294:16)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync Test.processPendingSubtests (node:internal/test_runner/test:960:7)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "not ok 139 - Learning Hub cold path stays under non-AI budget and records stage timings",
+      "rawDiagnostics": "  ---\n  duration_ms: 149.9191\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\coursesPerformance.test.js:287:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    \n    500 !== 200\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 200\n  actual: 500\n  operator: 'strictEqual'\n  stack: |-\n    C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\coursesPerformance.test.js:302:12\n    async measureSeries (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\coursesPerformance.test.js:241:26)\n    async TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\coursesPerformance.test.js:294:16)\n    async Test.run (node:internal/test_runner/test:1389:7)\n    async Test.processPendingSubtests (node:internal/test_runner/test:960:7)\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [],
+      "reconciledStatus": "PASS",
+      "classification": "Pre-existing stale synthetic fixture: missing learningSkills export/targets and catalog identity; 5 failures on both refs before, 6/6 after",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-coursesPerformance.test",
+          "exitCode": 1,
+          "tap": "isolated/candidate-coursesPerformance.test.tap"
+        },
+        {
+          "label": "release1-coursesPerformance.test",
+          "exitCode": 1,
+          "tap": "isolated/release1-coursesPerformance.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-11",
+      "line": 1443,
+      "indent": 0,
+      "name": "five identical Learning Hub callers share one provider pipeline and one persistence sequence",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\coursesPerformance.test.js:342:1",
+      "file": "backend/src/tests/coursesPerformance.test.js",
+      "error": "Expected values to be strictly equal:\n\n0 !== 1\n",
+      "stack": "TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\coursesPerformance.test.js:354:10)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync Test.processPendingSubtests (node:internal/test_runner/test:960:7)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "not ok 140 - five identical Learning Hub callers share one provider pipeline and one persistence sequence",
+      "rawDiagnostics": "  ---\n  duration_ms: 123.4783\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\coursesPerformance.test.js:342:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    \n    0 !== 1\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 1\n  actual: 0\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\coursesPerformance.test.js:354:10)\n    async Test.run (node:internal/test_runner/test:1389:7)\n    async Test.processPendingSubtests (node:internal/test_runner/test:960:7)\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [],
+      "reconciledStatus": "PASS",
+      "classification": "Pre-existing stale synthetic fixture: missing learningSkills export/targets and catalog identity; 5 failures on both refs before, 6/6 after",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-coursesPerformance.test",
+          "exitCode": 1,
+          "tap": "isolated/candidate-coursesPerformance.test.tap"
+        },
+        {
+          "label": "release1-coursesPerformance.test",
+          "exitCode": 1,
+          "tap": "isolated/release1-coursesPerformance.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-12",
+      "line": 1467,
+      "indent": 0,
+      "name": "different users remain independent under concurrency",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\coursesPerformance.test.js:361:1",
+      "file": "backend/src/tests/coursesPerformance.test.js",
+      "error": "Expected values to be strictly equal:\n\n0 !== 2\n",
+      "stack": "TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\coursesPerformance.test.js:372:10)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync Test.processPendingSubtests (node:internal/test_runner/test:960:7)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "not ok 141 - different users remain independent under concurrency",
+      "rawDiagnostics": "  ---\n  duration_ms: 244.264\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\coursesPerformance.test.js:361:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    Expected values to be strictly equal:\n    \n    0 !== 2\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: 2\n  actual: 0\n  operator: 'strictEqual'\n  stack: |-\n    TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\coursesPerformance.test.js:372:10)\n    async Test.run (node:internal/test_runner/test:1389:7)\n    async Test.processPendingSubtests (node:internal/test_runner/test:960:7)\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [],
+      "reconciledStatus": "PASS",
+      "classification": "Pre-existing stale synthetic fixture: missing learningSkills export/targets and catalog identity; 5 failures on both refs before, 6/6 after",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-coursesPerformance.test",
+          "exitCode": 1,
+          "tap": "isolated/candidate-coursesPerformance.test.tap"
+        },
+        {
+          "label": "release1-coursesPerformance.test",
+          "exitCode": 1,
+          "tap": "isolated/release1-coursesPerformance.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-13",
+      "line": 2143,
+      "indent": 4,
+      "name": "bounded two-worker simulation: 1000 users, 500 same public username",
+      "parents": [
+        "public observations: isolation, fencing, quotas and bounded 1000-user simulation"
+      ],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\integrationPublicSnapshot.test.js:349:13",
+      "file": "backend/src/tests/integrationPublicSnapshot.test.js",
+      "error": "Worker readiness deadline",
+      "stack": "Timeout._onTimeout (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\integrationPublicSnapshot.test.js:105:47)\nlistOnTimeout (node:internal/timers:635:17)\nprocess.processTimers (node:internal/timers:571:7)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "    not ok 6 - bounded two-worker simulation: 1000 users, 500 same public username",
+      "rawDiagnostics": "      ---\n      duration_ms: 70105.5419\n      type: 'test'\n      location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\integrationPublicSnapshot.test.js:349:13'\n      failureType: 'testCodeFailure'\n      error: 'Worker readiness deadline'\n      code: 'ERR_TEST_FAILURE'\n      stack: |-\n        Timeout._onTimeout (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\integrationPublicSnapshot.test.js:105:47)\n        listOnTimeout (node:internal/timers:635:17)\n        process.processTimers (node:internal/timers:571:7)\n      ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [],
+      "reconciledStatus": "PASS",
+      "classification": "Timing/topology/load sensitive: sequential focused or final controlled run passes; exact full-load cause not proven; no speculative fix",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-integrationPublicSnapshot.test",
+          "exitCode": 0,
+          "tap": "isolated/candidate-integrationPublicSnapshot.test.tap"
+        },
+        {
+          "label": "release1-integrationPublicSnapshot.test",
+          "exitCode": 0,
+          "tap": "isolated/release1-integrationPublicSnapshot.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-14",
+      "line": 2157,
+      "indent": 0,
+      "name": "public observations: isolation, fencing, quotas and bounded 1000-user simulation",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "parent-summary",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\integrationPublicSnapshot.test.js:10:1",
+      "file": "backend/src/tests/integrationPublicSnapshot.test.js",
+      "error": "1 subtest failed",
+      "stack": null,
+      "failureType": "subtestsFailed",
+      "skipReason": null,
+      "rawResult": "not ok 220 - public observations: isolation, fencing, quotas and bounded 1000-user simulation",
+      "rawDiagnostics": "  ---\n  duration_ms: 91379.9354\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\integrationPublicSnapshot.test.js:10:1'\n  failureType: 'subtestsFailed'\n  error: '1 subtest failed'\n  code: 'ERR_TEST_FAILURE'\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [],
+      "reconciledStatus": "PASS",
+      "classification": "Aggregate parent; inspect named child records rather than inventing another root cause",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-integrationPublicSnapshot.test",
+          "exitCode": 0,
+          "tap": "isolated/candidate-integrationPublicSnapshot.test.tap"
+        },
+        {
+          "label": "release1-integrationPublicSnapshot.test",
+          "exitCode": 0,
+          "tap": "isolated/release1-integrationPublicSnapshot.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-15",
+      "line": 2673,
+      "indent": 4,
+      "name": "All Questions paginates past 500 records with stable nonoverlapping pages",
+      "parents": [
+        "Interview Prep isolated Mongo critical paths"
+      ],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\interviewPrepFinalization.integration.test.js:62:11",
+      "file": "backend/src/tests/interviewPrepFinalization.integration.test.js",
+      "error": "error while multiplanner was selecting best plan :: caused by :: operation exceeded time limit",
+      "stack": "Connection.sendCommand (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\node_modules\\mongodb\\lib\\cmap\\connection.js:320:27)\nprocess.processTicksAndRejections (node:internal/process/task_queues:104:5)\nasync Connection.command (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\node_modules\\mongodb\\lib\\cmap\\connection.js:344:26)\nasync Server.command (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\node_modules\\mongodb\\lib\\sdam\\server.js:208:29)\nasync tryOperation (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\node_modules\\mongodb\\lib\\operations\\execute_operation.js:215:32)\nasync executeOperation (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\node_modules\\mongodb\\lib\\operations\\execute_operation.js:80:16)\nasync FindCursor._initialize (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\node_modules\\mongodb\\lib\\cursor\\find_cursor.js:62:26)\nasync FindCursor.cursorInit (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\node_modules\\mongodb\\lib\\cursor\\abstract_cursor.js:620:27)\nasync FindCursor.fetchBatch (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\node_modules\\mongodb\\lib\\cursor\\abstract_cursor.js:654:13)\nasync FindCursor.next (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\node_modules\\mongodb\\lib\\cursor\\abstract_cursor.js:326:17)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "    not ok 2 - All Questions paginates past 500 records with stable nonoverlapping pages",
+      "rawDiagnostics": "      ---\n      duration_ms: 6702.3001\n      type: 'test'\n      location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\interviewPrepFinalization.integration.test.js:62:11'\n      failureType: 'testCodeFailure'\n      error: 'error while multiplanner was selecting best plan :: caused by :: operation exceeded time limit'\n      code: 50\n      name: 'MongoServerError'\n      stack: |-\n        Connection.sendCommand (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\node_modules\\mongodb\\lib\\cmap\\connection.js:320:27)\n        process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n        async Connection.command (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\node_modules\\mongodb\\lib\\cmap\\connection.js:344:26)\n        async Server.command (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\node_modules\\mongodb\\lib\\sdam\\server.js:208:29)\n        async tryOperation (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\node_modules\\mongodb\\lib\\operations\\execute_operation.js:215:32)\n        async executeOperation (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\node_modules\\mongodb\\lib\\operations\\execute_operation.js:80:16)\n        async FindCursor._initialize (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\node_modules\\mongodb\\lib\\cursor\\find_cursor.js:62:26)\n        async FindCursor.cursorInit (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\node_modules\\mongodb\\lib\\cursor\\abstract_cursor.js:620:27)\n        async FindCursor.fetchBatch (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\node_modules\\mongodb\\lib\\cursor\\abstract_cursor.js:654:13)\n        async FindCursor.next (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\node_modules\\mongodb\\lib\\cursor\\abstract_cursor.js:326:17)\n      ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "INTERVIEW_TEST_MONGO_URI",
+        "JWT_SECRET"
+      ],
+      "reconciledStatus": "PASS",
+      "classification": "Timing/topology/load sensitive: sequential focused or final controlled run passes; exact full-load cause not proven; no speculative fix",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-interviewPrepFinalization.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/candidate-interviewPrepFinalization.integration.test.tap"
+        },
+        {
+          "label": "release1-interviewPrepFinalization.integration.test",
+          "exitCode": 1,
+          "tap": "isolated/release1-interviewPrepFinalization.integration.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-16",
+      "line": 2754,
+      "indent": 0,
+      "name": "Interview Prep isolated Mongo critical paths",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "parent-summary",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\interviewPrepFinalization.integration.test.js:15:1",
+      "file": "backend/src/tests/interviewPrepFinalization.integration.test.js",
+      "error": "1 subtest failed",
+      "stack": null,
+      "failureType": "subtestsFailed",
+      "skipReason": null,
+      "rawResult": "not ok 268 - Interview Prep isolated Mongo critical paths",
+      "rawDiagnostics": "  ---\n  duration_ms: 25514.2107\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\interviewPrepFinalization.integration.test.js:15:1'\n  failureType: 'subtestsFailed'\n  error: '1 subtest failed'\n  code: 'ERR_TEST_FAILURE'\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "INTERVIEW_TEST_MONGO_URI",
+        "JWT_SECRET"
+      ],
+      "reconciledStatus": "PASS",
+      "classification": "Aggregate parent; inspect named child records rather than inventing another root cause",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-interviewPrepFinalization.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/candidate-interviewPrepFinalization.integration.test.tap"
+        },
+        {
+          "label": "release1-interviewPrepFinalization.integration.test",
+          "exitCode": 1,
+          "tap": "isolated/release1-interviewPrepFinalization.integration.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-17",
+      "line": 3357,
+      "indent": 0,
+      "name": "local Redis executes actual Lua for shared admission, cooldown, concurrency and ownership",
+      "parents": [],
+      "status": "BLOCKED",
+      "kind": "skip",
+      "location": null,
+      "file": "backend/src/tests/jobsHubLocal.integration.test.js",
+      "error": null,
+      "stack": null,
+      "failureType": null,
+      "skipReason": "Set JOBS_TEST_REDIS_URL to an isolated local Redis service",
+      "rawResult": "ok 337 - local Redis executes actual Lua for shared admission, cooldown, concurrency and ownership # SKIP Set JOBS_TEST_REDIS_URL to an isolated local Redis service",
+      "rawDiagnostics": "  ---\n  duration_ms: 4.52\n  type: 'test'\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "JOBS_TEST_REDIS_URL",
+        "JOBS_TEST_MONGODB_URI"
+      ],
+      "reconciledStatus": "BLOCKED",
+      "classification": "Prerequisite opt-in not supplied; not acceptance",
+      "isolatedEvidence": [],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "BLOCKED"
+      }
+    },
+    {
+      "id": "TAP-18",
+      "line": 3363,
+      "indent": 0,
+      "name": "local Mongo verifies real upserts, owner isolation, persistence, expiry and cache indexes",
+      "parents": [],
+      "status": "BLOCKED",
+      "kind": "skip",
+      "location": null,
+      "file": "backend/src/tests/jobsHubLocal.integration.test.js",
+      "error": null,
+      "stack": null,
+      "failureType": null,
+      "skipReason": "Set JOBS_TEST_MONGODB_URI to an isolated local MongoDB service",
+      "rawResult": "ok 338 - local Mongo verifies real upserts, owner isolation, persistence, expiry and cache indexes # SKIP Set JOBS_TEST_MONGODB_URI to an isolated local MongoDB service",
+      "rawDiagnostics": "  ---\n  duration_ms: 0.62\n  type: 'test'\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "JOBS_TEST_REDIS_URL",
+        "JOBS_TEST_MONGODB_URI"
+      ],
+      "reconciledStatus": "BLOCKED",
+      "classification": "Prerequisite opt-in not supplied; not acceptance",
+      "isolatedEvidence": [],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "BLOCKED"
+      }
+    },
+    {
+      "id": "TAP-19",
+      "line": 3369,
+      "indent": 0,
+      "name": "isolated Upstash Redis TLS validates Jobs Hub integration",
+      "parents": [],
+      "status": "BLOCKED",
+      "kind": "skip",
+      "location": null,
+      "file": "backend/src/tests/jobsHubUpstash.integration.test.js",
+      "error": null,
+      "stack": null,
+      "failureType": null,
+      "skipReason": "Dedicated disposable Upstash test database required",
+      "rawResult": "ok 339 - isolated Upstash Redis TLS validates Jobs Hub integration # SKIP Dedicated disposable Upstash test database required",
+      "rawDiagnostics": "  ---\n  duration_ms: 3.3194\n  type: 'test'\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "JOBS_TEST_REDIS_URL"
+      ],
+      "reconciledStatus": "BLOCKED",
+      "classification": "Prerequisite opt-in not supplied; not acceptance",
+      "isolatedEvidence": [],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "BLOCKED"
+      }
+    },
+    {
+      "id": "TAP-20",
+      "line": 3429,
+      "indent": 0,
+      "name": "isolated adaptive demand selects a topic, reserves governed prewarm work and persists through the worker",
+      "parents": [],
+      "status": "BLOCKED",
+      "kind": "skip",
+      "location": null,
+      "file": "backend/src/tests/newsAdaptiveRuntime.integration.test.js",
+      "error": null,
+      "stack": null,
+      "failureType": null,
+      "skipReason": null,
+      "rawResult": "ok 349 - isolated adaptive demand selects a topic, reserves governed prewarm work and persists through the worker # SKIP",
+      "rawDiagnostics": "  ---\n  duration_ms: 4.3516\n  type: 'test'\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "NEWS_TEST_REDIS_URL",
+        "NEWS_TEST_MONGODB_URI",
+        "NEWS_PREWARM_RESERVED_USER_JOBS"
+      ],
+      "reconciledStatus": "BLOCKED",
+      "classification": "Prerequisite opt-in not supplied; not acceptance",
+      "isolatedEvidence": [],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "BLOCKED"
+      }
+    },
+    {
+      "id": "TAP-21",
+      "line": 3447,
+      "indent": 0,
+      "name": "isolated catalog: scheduled ingestion, discovery, indexed history, shared tags, refresh and worker caches",
+      "parents": [],
+      "status": "BLOCKED",
+      "kind": "skip",
+      "location": null,
+      "file": "backend/src/tests/newsCatalog.integration.test.js",
+      "error": null,
+      "stack": null,
+      "failureType": null,
+      "skipReason": null,
+      "rawResult": "ok 352 - isolated catalog: scheduled ingestion, discovery, indexed history, shared tags, refresh and worker caches # SKIP",
+      "rawDiagnostics": "  ---\n  duration_ms: 3.3081\n  type: 'test'\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "NEWS_TEST_MONGODB_URI",
+        "NEWS_TEST_REDIS_URL"
+      ],
+      "reconciledStatus": "BLOCKED",
+      "classification": "Prerequisite opt-in not supplied; not acceptance",
+      "isolatedEvidence": [],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "BLOCKED"
+      }
+    },
+    {
+      "id": "TAP-22",
+      "line": 3477,
+      "indent": 0,
+      "name": "news configuration has one ordered, documented block and every runtime setting has a catalog entry",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\newsConfiguration.test.js:10:1",
+      "file": "backend/src/tests/newsConfiguration.test.js",
+      "error": "NEWS_CATALOG_RETENTION_DAYS outside block",
+      "stack": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\newsConfiguration.test.js:26:14\nArray.forEach (<anonymous>)\nTestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\newsConfiguration.test.js:22:11)\nTest.runInAsyncScope (node:async_hooks:227:14)\nTest.run (node:internal/test_runner/test:1382:25)\nTest.start (node:internal/test_runner/test:1242:17)\nstartSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "not ok 357 - news configuration has one ordered, documented block and every runtime setting has a catalog entry",
+      "rawDiagnostics": "  ---\n  duration_ms: 81.1558\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\newsConfiguration.test.js:10:1'\n  failureType: 'testCodeFailure'\n  error: 'NEWS_CATALOG_RETENTION_DAYS outside block'\n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: true\n  actual: false\n  operator: '=='\n  stack: |-\n    C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\newsConfiguration.test.js:26:14\n    Array.forEach (<anonymous>)\n    TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\newsConfiguration.test.js:22:11)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1382:25)\n    Test.start (node:internal/test_runner/test:1242:17)\n    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [],
+      "reconciledStatus": "FAIL",
+      "classification": "Pre-existing local environment organization defect; key outside News block on both refs; environment preserved",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-newsConfiguration.test",
+          "exitCode": 1,
+          "tap": "isolated/candidate-newsConfiguration.test.tap"
+        },
+        {
+          "label": "release1-newsConfiguration.test",
+          "exitCode": 1,
+          "tap": "isolated/release1-newsConfiguration.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "FAIL"
+      }
+    },
+    {
+      "id": "TAP-23",
+      "line": 3541,
+      "indent": 0,
+      "name": "isolated Mongo read/unread contract persists history atomically",
+      "parents": [],
+      "status": "BLOCKED",
+      "kind": "skip",
+      "location": null,
+      "file": "backend/src/tests/newsContractMongo.integration.test.js",
+      "error": null,
+      "stack": null,
+      "failureType": null,
+      "skipReason": null,
+      "rawResult": "ok 365 - isolated Mongo read/unread contract persists history atomically # SKIP",
+      "rawDiagnostics": "  ---\n  duration_ms: 28.1183\n  type: 'test'\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "NEWS_TEST_MONGODB_URI"
+      ],
+      "reconciledStatus": "BLOCKED",
+      "classification": "Prerequisite opt-in not supplied; not acceptance",
+      "isolatedEvidence": [],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "BLOCKED"
+      }
+    },
+    {
+      "id": "TAP-24",
+      "line": 3547,
+      "indent": 0,
+      "name": "isolated Mongo discovery persistence, source expiry and cold-worker fallback preserve the general pool",
+      "parents": [],
+      "status": "BLOCKED",
+      "kind": "skip",
+      "location": null,
+      "file": "backend/src/tests/newsDiscovery.integration.test.js",
+      "error": null,
+      "stack": null,
+      "failureType": null,
+      "skipReason": null,
+      "rawResult": "ok 366 - isolated Mongo discovery persistence, source expiry and cold-worker fallback preserve the general pool # SKIP",
+      "rawDiagnostics": "  ---\n  duration_ms: 8.0984\n  type: 'test'\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "NEWS_TEST_MONGODB_URI",
+        "NEWS_TEST_REDIS_URL"
+      ],
+      "reconciledStatus": "BLOCKED",
+      "classification": "Prerequisite opt-in not supplied; not acceptance",
+      "isolatedEvidence": [],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "BLOCKED"
+      }
+    },
+    {
+      "id": "TAP-25",
+      "line": 3553,
+      "indent": 0,
+      "name": "isolated Redis/Upstash discovery queue is atomic, bounded, recoverable and fenced across workers",
+      "parents": [],
+      "status": "BLOCKED",
+      "kind": "skip",
+      "location": null,
+      "file": "backend/src/tests/newsDiscovery.integration.test.js",
+      "error": null,
+      "stack": null,
+      "failureType": null,
+      "skipReason": null,
+      "rawResult": "ok 367 - isolated Redis/Upstash discovery queue is atomic, bounded, recoverable and fenced across workers # SKIP",
+      "rawDiagnostics": "  ---\n  duration_ms: 1.1489\n  type: 'test'\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "NEWS_TEST_MONGODB_URI",
+        "NEWS_TEST_REDIS_URL"
+      ],
+      "reconciledStatus": "BLOCKED",
+      "classification": "Prerequisite opt-in not supplied; not acceptance",
+      "isolatedEvidence": [],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "BLOCKED"
+      }
+    },
+    {
+      "id": "TAP-26",
+      "line": 3613,
+      "indent": 0,
+      "name": "atomic discovery accounting, reserved capacity, deduplication and expired quota revalidation",
+      "parents": [],
+      "status": "BLOCKED",
+      "kind": "skip",
+      "location": null,
+      "file": "backend/src/tests/newsFlow.integration.test.js",
+      "error": null,
+      "stack": null,
+      "failureType": null,
+      "skipReason": null,
+      "rawResult": "ok 377 - atomic discovery accounting, reserved capacity, deduplication and expired quota revalidation # SKIP",
+      "rawDiagnostics": "  ---\n  duration_ms: 3.709\n  type: 'test'\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "NEWS_TEST_REDIS_URL"
+      ],
+      "reconciledStatus": "BLOCKED",
+      "classification": "Prerequisite opt-in not supplied; not acceptance",
+      "isolatedEvidence": [],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "BLOCKED"
+      }
+    },
+    {
+      "id": "TAP-27",
+      "line": 3643,
+      "indent": 0,
+      "name": "isolated free-text HTTP search, Redis worker and Mongo publication round trip",
+      "parents": [],
+      "status": "BLOCKED",
+      "kind": "skip",
+      "location": null,
+      "file": "backend/src/tests/newsFreeText.integration.test.js",
+      "error": null,
+      "stack": null,
+      "failureType": null,
+      "skipReason": null,
+      "rawResult": "ok 382 - isolated free-text HTTP search, Redis worker and Mongo publication round trip # SKIP",
+      "rawDiagnostics": "  ---\n  duration_ms: 4.0007\n  type: 'test'\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "NEWS_TEST_REDIS_URL",
+        "NEWS_TEST_MONGODB_URI",
+        "NEWS_DISCOVERY_ENABLED",
+        "NEWS_INGESTION_ENABLED",
+        "NEWS_HACKERNEWSSEARCH_CONTENT_APPROVED",
+        "NEWS_HACKERNEWSSEARCH_DAILY_BUDGET",
+        "NEWS_HACKERNEWSSEARCH_MONTHLY_BUDGET",
+        "NEWS_TEST_BROWSER",
+        "JWT_SECRET",
+        "NEWS_DISCOVERY_USER_DAILY_JOBS"
+      ],
+      "reconciledStatus": "BLOCKED",
+      "classification": "Prerequisite opt-in not supplied; not acceptance",
+      "isolatedEvidence": [],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "BLOCKED"
+      }
+    },
+    {
+      "id": "TAP-28",
+      "line": 3679,
+      "indent": 0,
+      "name": "disposable Upstash: atomic quotas, cooldown, circuits, leases, shared cache and outage fallback",
+      "parents": [],
+      "status": "BLOCKED",
+      "kind": "skip",
+      "location": null,
+      "file": "backend/src/tests/newsHub.integration.test.js",
+      "error": null,
+      "stack": null,
+      "failureType": null,
+      "skipReason": null,
+      "rawResult": "ok 388 - disposable Upstash: atomic quotas, cooldown, circuits, leases, shared cache and outage fallback # SKIP",
+      "rawDiagnostics": "  ---\n  duration_ms: 5.3089\n  type: 'test'\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "NEWS_TEST_REDIS_URL",
+        "NEWS_TEST_MONGODB_URI",
+        "JWT_SECRET",
+        "JWT_ISSUER",
+        "JWT_AUDIENCE"
+      ],
+      "reconciledStatus": "BLOCKED",
+      "classification": "Prerequisite opt-in not supplied; not acceptance",
+      "isolatedEvidence": [],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "BLOCKED"
+      }
+    },
+    {
+      "id": "TAP-29",
+      "line": 3685,
+      "indent": 0,
+      "name": "isolated local Mongo: actual cache persistence, indexes, JWT ownership and idempotent saved actions",
+      "parents": [],
+      "status": "BLOCKED",
+      "kind": "skip",
+      "location": null,
+      "file": "backend/src/tests/newsHub.integration.test.js",
+      "error": null,
+      "stack": null,
+      "failureType": null,
+      "skipReason": null,
+      "rawResult": "ok 389 - isolated local Mongo: actual cache persistence, indexes, JWT ownership and idempotent saved actions # SKIP",
+      "rawDiagnostics": "  ---\n  duration_ms: 0.5134\n  type: 'test'\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "NEWS_TEST_REDIS_URL",
+        "NEWS_TEST_MONGODB_URI",
+        "JWT_SECRET",
+        "JWT_ISSUER",
+        "JWT_AUDIENCE"
+      ],
+      "reconciledStatus": "BLOCKED",
+      "classification": "Prerequisite opt-in not supplied; not acceptance",
+      "isolatedEvidence": [],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "BLOCKED"
+      }
+    },
+    {
+      "id": "TAP-30",
+      "line": 3740,
+      "indent": 0,
+      "name": "approved live metadata search through an isolated governed worker and Mongo cache",
+      "parents": [],
+      "status": "BLOCKED",
+      "kind": "skip",
+      "location": null,
+      "file": "backend/src/tests/newsLiveSearch.integration.test.js",
+      "error": null,
+      "stack": null,
+      "failureType": null,
+      "skipReason": null,
+      "rawResult": "ok 398 - approved live metadata search through an isolated governed worker and Mongo cache # SKIP",
+      "rawDiagnostics": "  ---\n  duration_ms: 8.4238\n  type: 'test'\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "NEWS_TEST_LIVE_PROVIDERS",
+        "NEWS_TEST_REDIS_URL",
+        "NEWS_TEST_MONGODB_URI",
+        "NEWS_DISCOVERY_ENABLED",
+        "NEWS_DISCOVERY_RESULTS_PER_PROVIDER"
+      ],
+      "reconciledStatus": "BLOCKED",
+      "classification": "Prerequisite opt-in not supplied; not acceptance",
+      "isolatedEvidence": [],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "BLOCKED"
+      }
+    },
+    {
+      "id": "TAP-31",
+      "line": 3752,
+      "indent": 0,
+      "name": "isolated scheduled provider pipeline: all sources persist with attribution, retention, shared pacing and cache invalidation",
+      "parents": [],
+      "status": "BLOCKED",
+      "kind": "skip",
+      "location": null,
+      "file": "backend/src/tests/newsProviders.integration.test.js",
+      "error": null,
+      "stack": null,
+      "failureType": null,
+      "skipReason": null,
+      "rawResult": "ok 400 - isolated scheduled provider pipeline: all sources persist with attribution, retention, shared pacing and cache invalidation # SKIP",
+      "rawDiagnostics": "  ---\n  duration_ms: 6.8105\n  type: 'test'\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "NEWS_TEST_REDIS_URL",
+        "NEWS_TEST_MONGODB_URI"
+      ],
+      "reconciledStatus": "BLOCKED",
+      "classification": "Prerequisite opt-in not supplied; not acceptance",
+      "isolatedEvidence": [],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "BLOCKED"
+      }
+    },
+    {
+      "id": "TAP-32",
+      "line": 3799,
+      "indent": 0,
+      "name": "isolated refresh: exact EC2 interval, shared headroom, manual dedup, Mongo publication and cross-worker version visibility",
+      "parents": [],
+      "status": "BLOCKED",
+      "kind": "skip",
+      "location": null,
+      "file": "backend/src/tests/newsRefresh.integration.test.js",
+      "error": null,
+      "stack": null,
+      "failureType": null,
+      "skipReason": null,
+      "rawResult": "ok 407 - isolated refresh: exact EC2 interval, shared headroom, manual dedup, Mongo publication and cross-worker version visibility # SKIP",
+      "rawDiagnostics": "  ---\n  duration_ms: 4.3765\n  type: 'test'\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "NEWS_TEST_REDIS_URL",
+        "NEWS_TEST_MONGODB_URI",
+        "NEWS_HACKERNEWS_SHARED_DAILY_BUDGET"
+      ],
+      "reconciledStatus": "BLOCKED",
+      "classification": "Prerequisite opt-in not supplied; not acceptance",
+      "isolatedEvidence": [],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "BLOCKED"
+      }
+    },
+    {
+      "id": "TAP-33",
+      "line": 3805,
+      "indent": 0,
+      "name": "isolated upstream cooldown propagates precise reason and expiry without a retry",
+      "parents": [],
+      "status": "BLOCKED",
+      "kind": "skip",
+      "location": null,
+      "file": "backend/src/tests/newsRefresh.integration.test.js",
+      "error": null,
+      "stack": null,
+      "failureType": null,
+      "skipReason": null,
+      "rawResult": "ok 408 - isolated upstream cooldown propagates precise reason and expiry without a retry # SKIP",
+      "rawDiagnostics": "  ---\n  duration_ms: 6.8823\n  type: 'test'\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "NEWS_TEST_REDIS_URL",
+        "NEWS_TEST_MONGODB_URI",
+        "NEWS_HACKERNEWS_SHARED_DAILY_BUDGET"
+      ],
+      "reconciledStatus": "BLOCKED",
+      "classification": "Prerequisite opt-in not supplied; not acceptance",
+      "isolatedEvidence": [],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "BLOCKED"
+      }
+    },
+    {
+      "id": "TAP-34",
+      "line": 3811,
+      "indent": 0,
+      "name": "isolated Mongo: indexed DevOps aliases, multi-tags, dates and totals update across warm worker caches",
+      "parents": [],
+      "status": "BLOCKED",
+      "kind": "skip",
+      "location": null,
+      "file": "backend/src/tests/newsSearchCorrections.integration.test.js",
+      "error": null,
+      "stack": null,
+      "failureType": null,
+      "skipReason": null,
+      "rawResult": "ok 409 - isolated Mongo: indexed DevOps aliases, multi-tags, dates and totals update across warm worker caches # SKIP",
+      "rawDiagnostics": "  ---\n  duration_ms: 4.5651\n  type: 'test'\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "NEWS_TEST_MONGODB_URI"
+      ],
+      "reconciledStatus": "BLOCKED",
+      "classification": "Prerequisite opt-in not supplied; not acceptance",
+      "isolatedEvidence": [],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "BLOCKED"
+      }
+    },
+    {
+      "id": "TAP-35",
+      "line": 3992,
+      "indent": 0,
+      "name": "notifications: disposable replica set, atomic production and two real workers",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\notificationsProduction.test.js:11:1",
+      "file": "backend/src/tests/notificationsProduction.test.js",
+      "error": "Disposable Mongo process must stop before cleanup",
+      "stack": "Object.stop (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\fixtures\\disposableRequestMongo.js:62:12)\nasync TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\notificationsProduction.test.js:44:26)\nasync TestHook.run (node:internal/test_runner/test:1389:7)\nasync Test.runHook (node:internal/test_runner/test:1269:9)\nasync after (node:internal/test_runner/test:1322:9)\nasync Test.run (node:internal/test_runner/test:1408:7)\nasync startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)",
+      "failureType": "hookFailed",
+      "skipReason": null,
+      "rawResult": "not ok 423 - notifications: disposable replica set, atomic production and two real workers",
+      "rawDiagnostics": "  ---\n  duration_ms: 82071.1496\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\notificationsProduction.test.js:11:1'\n  failureType: 'hookFailed'\n  error: 'Disposable Mongo process must stop before cleanup'\n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: true\n  operator: '=='\n  stack: |-\n    Object.stop (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\fixtures\\disposableRequestMongo.js:62:12)\n    async TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\notificationsProduction.test.js:44:26)\n    async TestHook.run (node:internal/test_runner/test:1389:7)\n    async Test.runHook (node:internal/test_runner/test:1269:9)\n    async after (node:internal/test_runner/test:1322:9)\n    async Test.run (node:internal/test_runner/test:1408:7)\n    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "NOTIFICATION_VERIFICATION_DIRECTORY",
+        "JWT_SECRET",
+        "SUPPORT_INBOX_EMAIL"
+      ],
+      "reconciledStatus": "PASS",
+      "classification": "Timing/topology/load sensitive: sequential focused or final controlled run passes; exact full-load cause not proven; no speculative fix",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-notificationsProduction.test",
+          "exitCode": 0,
+          "tap": "isolated/candidate-notificationsProduction.test.tap"
+        },
+        {
+          "label": "release1-notificationsProduction.test",
+          "exitCode": 0,
+          "tap": "isolated/release1-notificationsProduction.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-36",
+      "line": 4225,
+      "indent": 0,
+      "name": "disposable replica set: CRUD, ownership, concurrency, upload, deletion rollback and cleanup",
+      "parents": [],
+      "status": "BLOCKED",
+      "kind": "skip",
+      "location": null,
+      "file": "backend/src/tests/profileSettingsProduction.test.js",
+      "error": null,
+      "stack": null,
+      "failureType": null,
+      "skipReason": null,
+      "rawResult": "ok 449 - disposable replica set: CRUD, ownership, concurrency, upload, deletion rollback and cleanup # SKIP",
+      "rawDiagnostics": "  ---\n  duration_ms: 0.8181\n  type: 'test'\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "PROFILE_ACCEPTANCE_MONGO",
+        "PUBLIC_IMAGE_STORAGE_ROOT",
+        "JWT_SECRET"
+      ],
+      "reconciledStatus": "BLOCKED",
+      "classification": "Prerequisite opt-in not supplied; not acceptance",
+      "isolatedEvidence": [],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "BLOCKED"
+      }
+    },
+    {
+      "id": "TAP-37",
+      "line": 4231,
+      "indent": 0,
+      "name": "isolated Mongo + namespaced configured Upstash: critical portfolio flows",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\publicPortfolio.integration.test.js:15:1",
+      "file": "backend/src/tests/publicPortfolio.integration.test.js",
+      "error": "Configured Upstash Redis required",
+      "stack": "TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\publicPortfolio.integration.test.js:56:12)\nprocess.processTicksAndRejections (node:internal/process/task_queues:104:5)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "not ok 450 - isolated Mongo + namespaced configured Upstash: critical portfolio flows",
+      "rawDiagnostics": "  ---\n  duration_ms: 8030.6264\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\publicPortfolio.integration.test.js:15:1'\n  failureType: 'testCodeFailure'\n  error: 'Configured Upstash Redis required'\n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: true\n  actual: ~\n  operator: '=='\n  stack: |-\n    TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\publicPortfolio.integration.test.js:56:12)\n    process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    async Test.run (node:internal/test_runner/test:1389:7)\n    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "MONGODB_URI",
+        "MONGO_URI",
+        "JWT_SECRET",
+        "JWT_ISSUER",
+        "JWT_AUDIENCE"
+      ],
+      "reconciledStatus": "BLOCKED",
+      "classification": "Environment: dedicated live Upstash unavailable; assertion remains failed",
+      "isolatedEvidence": [],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "FAIL"
+      }
+    },
+    {
+      "id": "TAP-38",
+      "line": 4557,
+      "indent": 4,
+      "name": "matching current sources, null/zero and persistent history",
+      "parents": [
+        "Recommendations Mongo: canonical context, invalidation, history, ownership, AI failure and atomic Sprint handoff"
+      ],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\recommendationsMongo.integration.test.js:250:11",
+      "file": "backend/src/tests/recommendationsMongo.integration.test.js",
+      "error": "Expected values to be strictly equal:\n\n500 !== 200\n",
+      "stack": "TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\recommendationsMongo.integration.test.js:252:12)\nprocess.processTicksAndRejections (node:internal/process/task_queues:104:5)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\recommendationsMongo.integration.test.js:250:3)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "    not ok 1 - matching current sources, null/zero and persistent history",
+      "rawDiagnostics": "      ---\n      duration_ms: 482.937\n      type: 'test'\n      location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\recommendationsMongo.integration.test.js:250:11'\n      failureType: 'testCodeFailure'\n      error: |-\n        Expected values to be strictly equal:\n        \n        500 !== 200\n        \n      code: 'ERR_ASSERTION'\n      name: 'AssertionError'\n      expected: 200\n      actual: 500\n      operator: 'strictEqual'\n      stack: |-\n        TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\recommendationsMongo.integration.test.js:252:12)\n        process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n        async Test.run (node:internal/test_runner/test:1389:7)\n        async TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\recommendationsMongo.integration.test.js:250:3)\n        async Test.run (node:internal/test_runner/test:1389:7)\n        async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n      ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "MONGODB_URI",
+        "MONGO_URI",
+        "JWT_SECRET",
+        "JWT_ISSUER",
+        "JWT_AUDIENCE"
+      ],
+      "reconciledStatus": "PASS",
+      "classification": "Timing/topology/load sensitive: sequential focused or final controlled run passes; exact full-load cause not proven; no speculative fix",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-recommendationsMongo.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/candidate-recommendationsMongo.integration.test.tap"
+        },
+        {
+          "label": "release1-recommendationsMongo.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/release1-recommendationsMongo.integration.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-39",
+      "line": 4588,
+      "indent": 4,
+      "name": "active resume switch and unanalyzed selection never borrow another analysis",
+      "parents": [
+        "Recommendations Mongo: canonical context, invalidation, history, ownership, AI failure and atomic Sprint handoff"
+      ],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\recommendationsMongo.integration.test.js:281:11",
+      "file": "backend/src/tests/recommendationsMongo.integration.test.js",
+      "error": "Cannot read properties of undefined (reading 'analysisId')",
+      "stack": "TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\recommendationsMongo.integration.test.js:304:45)\nprocess.processTicksAndRejections (node:internal/process/task_queues:104:5)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\recommendationsMongo.integration.test.js:281:3)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "    not ok 3 - active resume switch and unanalyzed selection never borrow another analysis",
+      "rawDiagnostics": "      ---\n      duration_ms: 213.7667\n      type: 'test'\n      location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\recommendationsMongo.integration.test.js:281:11'\n      failureType: 'testCodeFailure'\n      error: \"Cannot read properties of undefined (reading 'analysisId')\"\n      code: 'ERR_TEST_FAILURE'\n      name: 'TypeError'\n      stack: |-\n        TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\recommendationsMongo.integration.test.js:304:45)\n        process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n        async Test.run (node:internal/test_runner/test:1389:7)\n        async TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\recommendationsMongo.integration.test.js:281:3)\n        async Test.run (node:internal/test_runner/test:1389:7)\n        async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n      ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "MONGODB_URI",
+        "MONGO_URI",
+        "JWT_SECRET",
+        "JWT_ISSUER",
+        "JWT_AUDIENCE"
+      ],
+      "reconciledStatus": "PASS",
+      "classification": "Timing/topology/load sensitive: sequential focused or final controlled run passes; exact full-load cause not proven; no speculative fix",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-recommendationsMongo.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/candidate-recommendationsMongo.integration.test.tap"
+        },
+        {
+          "label": "release1-recommendationsMongo.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/release1-recommendationsMongo.integration.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-40",
+      "line": 4606,
+      "indent": 4,
+      "name": "resume-only persistence, historical rows and saved preview ownership",
+      "parents": [
+        "Recommendations Mongo: canonical context, invalidation, history, ownership, AI failure and atomic Sprint handoff"
+      ],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\recommendationsMongo.integration.test.js:315:11",
+      "file": "backend/src/tests/recommendationsMongo.integration.test.js",
+      "error": "Expected values to be strictly equal:\n\n500 !== 200\n",
+      "stack": "TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\recommendationsMongo.integration.test.js:318:12)\nprocess.processTicksAndRejections (node:internal/process/task_queues:104:5)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\recommendationsMongo.integration.test.js:315:3)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "    not ok 4 - resume-only persistence, historical rows and saved preview ownership",
+      "rawDiagnostics": "      ---\n      duration_ms: 163.3966\n      type: 'test'\n      location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\recommendationsMongo.integration.test.js:315:11'\n      failureType: 'testCodeFailure'\n      error: |-\n        Expected values to be strictly equal:\n        \n        500 !== 200\n        \n      code: 'ERR_ASSERTION'\n      name: 'AssertionError'\n      expected: 200\n      actual: 500\n      operator: 'strictEqual'\n      stack: |-\n        TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\recommendationsMongo.integration.test.js:318:12)\n        process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n        async Test.run (node:internal/test_runner/test:1389:7)\n        async TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\recommendationsMongo.integration.test.js:315:3)\n        async Test.run (node:internal/test_runner/test:1389:7)\n        async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n      ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "MONGODB_URI",
+        "MONGO_URI",
+        "JWT_SECRET",
+        "JWT_ISSUER",
+        "JWT_AUDIENCE"
+      ],
+      "reconciledStatus": "PASS",
+      "classification": "Timing/topology/load sensitive: sequential focused or final controlled run passes; exact full-load cause not proven; no speculative fix",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-recommendationsMongo.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/candidate-recommendationsMongo.integration.test.tap"
+        },
+        {
+          "label": "release1-recommendationsMongo.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/release1-recommendationsMongo.integration.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-41",
+      "line": 4631,
+      "indent": 4,
+      "name": "reanalysis, current completion and career context invalidate caches",
+      "parents": [
+        "Recommendations Mongo: canonical context, invalidation, history, ownership, AI failure and atomic Sprint handoff"
+      ],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\recommendationsMongo.integration.test.js:371:11",
+      "file": "backend/src/tests/recommendationsMongo.integration.test.js",
+      "error": "Cannot read properties of undefined (reading 'signalHash')",
+      "stack": "TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\recommendationsMongo.integration.test.js:382:46)\nprocess.processTicksAndRejections (node:internal/process/task_queues:104:5)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\recommendationsMongo.integration.test.js:371:3)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "    not ok 5 - reanalysis, current completion and career context invalidate caches",
+      "rawDiagnostics": "      ---\n      duration_ms: 321.0514\n      type: 'test'\n      location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\recommendationsMongo.integration.test.js:371:11'\n      failureType: 'testCodeFailure'\n      error: \"Cannot read properties of undefined (reading 'signalHash')\"\n      code: 'ERR_TEST_FAILURE'\n      name: 'TypeError'\n      stack: |-\n        TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\recommendationsMongo.integration.test.js:382:46)\n        process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n        async Test.run (node:internal/test_runner/test:1389:7)\n        async TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\recommendationsMongo.integration.test.js:371:3)\n        async Test.run (node:internal/test_runner/test:1389:7)\n        async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n      ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "MONGODB_URI",
+        "MONGO_URI",
+        "JWT_SECRET",
+        "JWT_ISSUER",
+        "JWT_AUDIENCE"
+      ],
+      "reconciledStatus": "PASS",
+      "classification": "Timing/topology/load sensitive: sequential focused or final controlled run passes; exact full-load cause not proven; no speculative fix",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-recommendationsMongo.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/candidate-recommendationsMongo.integration.test.tap"
+        },
+        {
+          "label": "release1-recommendationsMongo.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/release1-recommendationsMongo.integration.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-42",
+      "line": 4649,
+      "indent": 4,
+      "name": "concurrent generation, failed/adversarial AI and authenticated ownership",
+      "parents": [
+        "Recommendations Mongo: canonical context, invalidation, history, ownership, AI failure and atomic Sprint handoff"
+      ],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\recommendationsMongo.integration.test.js:401:11",
+      "file": "backend/src/tests/recommendationsMongo.integration.test.js",
+      "error": "The expression evaluated to a falsy value:\n\n  assert.ok(outputs.every((out) => out.status === 200 && !out.body.aiUsed))\n",
+      "stack": "TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\recommendationsMongo.integration.test.js:419:16)\nprocess.processTicksAndRejections (node:internal/process/task_queues:104:5)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\recommendationsMongo.integration.test.js:401:3)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "    not ok 6 - concurrent generation, failed/adversarial AI and authenticated ownership",
+      "rawDiagnostics": "      ---\n      duration_ms: 238.6393\n      type: 'test'\n      location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\recommendationsMongo.integration.test.js:401:11'\n      failureType: 'testCodeFailure'\n      error: |-\n        The expression evaluated to a falsy value:\n        \n          assert.ok(outputs.every((out) => out.status === 200 && !out.body.aiUsed))\n        \n      code: 'ERR_ASSERTION'\n      name: 'AssertionError'\n      expected: true\n      actual: false\n      operator: '=='\n      stack: |-\n        TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\recommendationsMongo.integration.test.js:419:16)\n        process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n        async Test.run (node:internal/test_runner/test:1389:7)\n        async TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\recommendationsMongo.integration.test.js:401:3)\n        async Test.run (node:internal/test_runner/test:1389:7)\n        async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n      ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "MONGODB_URI",
+        "MONGO_URI",
+        "JWT_SECRET",
+        "JWT_ISSUER",
+        "JWT_AUDIENCE"
+      ],
+      "reconciledStatus": "PASS",
+      "classification": "Timing/topology/load sensitive: sequential focused or final controlled run passes; exact full-load cause not proven; no speculative fix",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-recommendationsMongo.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/candidate-recommendationsMongo.integration.test.tap"
+        },
+        {
+          "label": "release1-recommendationsMongo.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/release1-recommendationsMongo.integration.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-43",
+      "line": 4674,
+      "indent": 4,
+      "name": "owned, current Sprint handoff is atomic and idempotent",
+      "parents": [
+        "Recommendations Mongo: canonical context, invalidation, history, ownership, AI failure and atomic Sprint handoff"
+      ],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\recommendationsMongo.integration.test.js:525:11",
+      "file": "backend/src/tests/recommendationsMongo.integration.test.js",
+      "error": "Cannot read properties of undefined (reading '0')",
+      "stack": "TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\recommendationsMongo.integration.test.js:527:46)\nprocess.processTicksAndRejections (node:internal/process/task_queues:104:5)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\recommendationsMongo.integration.test.js:525:3)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "    not ok 7 - owned, current Sprint handoff is atomic and idempotent",
+      "rawDiagnostics": "      ---\n      duration_ms: 199.3108\n      type: 'test'\n      location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\recommendationsMongo.integration.test.js:525:11'\n      failureType: 'testCodeFailure'\n      error: \"Cannot read properties of undefined (reading '0')\"\n      code: 'ERR_TEST_FAILURE'\n      name: 'TypeError'\n      stack: |-\n        TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\recommendationsMongo.integration.test.js:527:46)\n        process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n        async Test.run (node:internal/test_runner/test:1389:7)\n        async TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\recommendationsMongo.integration.test.js:525:3)\n        async Test.run (node:internal/test_runner/test:1389:7)\n        async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n      ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "MONGODB_URI",
+        "MONGO_URI",
+        "JWT_SECRET",
+        "JWT_ISSUER",
+        "JWT_AUDIENCE"
+      ],
+      "reconciledStatus": "PASS",
+      "classification": "Timing/topology/load sensitive: sequential focused or final controlled run passes; exact full-load cause not proven; no speculative fix",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-recommendationsMongo.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/candidate-recommendationsMongo.integration.test.tap"
+        },
+        {
+          "label": "release1-recommendationsMongo.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/release1-recommendationsMongo.integration.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-44",
+      "line": 4692,
+      "indent": 4,
+      "name": "HTTP routes enforce JWT ownership and preview isolation",
+      "parents": [
+        "Recommendations Mongo: canonical context, invalidation, history, ownership, AI failure and atomic Sprint handoff"
+      ],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\recommendationsMongo.integration.test.js:573:11",
+      "file": "backend/src/tests/recommendationsMongo.integration.test.js",
+      "error": "Expected values to be strictly equal:\n\n503 !== 200\n",
+      "stack": "TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\recommendationsMongo.integration.test.js:606:14)\nprocess.processTicksAndRejections (node:internal/process/task_queues:104:5)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\recommendationsMongo.integration.test.js:573:3)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "    not ok 8 - HTTP routes enforce JWT ownership and preview isolation",
+      "rawDiagnostics": "      ---\n      duration_ms: 3634.8744\n      type: 'test'\n      location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\recommendationsMongo.integration.test.js:573:11'\n      failureType: 'testCodeFailure'\n      error: |-\n        Expected values to be strictly equal:\n        \n        503 !== 200\n        \n      code: 'ERR_ASSERTION'\n      name: 'AssertionError'\n      expected: 200\n      actual: 503\n      operator: 'strictEqual'\n      stack: |-\n        TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\recommendationsMongo.integration.test.js:606:14)\n        process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n        async Test.run (node:internal/test_runner/test:1389:7)\n        async TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\recommendationsMongo.integration.test.js:573:3)\n        async Test.run (node:internal/test_runner/test:1389:7)\n        async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n      ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "MONGODB_URI",
+        "MONGO_URI",
+        "JWT_SECRET",
+        "JWT_ISSUER",
+        "JWT_AUDIENCE"
+      ],
+      "reconciledStatus": "PASS",
+      "classification": "Timing/topology/load sensitive: sequential focused or final controlled run passes; exact full-load cause not proven; no speculative fix",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-recommendationsMongo.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/candidate-recommendationsMongo.integration.test.tap"
+        },
+        {
+          "label": "release1-recommendationsMongo.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/release1-recommendationsMongo.integration.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-45",
+      "line": 4717,
+      "indent": 0,
+      "name": "Recommendations Mongo: canonical context, invalidation, history, ownership, AI failure and atomic Sprint handoff",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "parent-summary",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\recommendationsMongo.integration.test.js:25:1",
+      "file": "backend/src/tests/recommendationsMongo.integration.test.js",
+      "error": "7 subtests failed",
+      "stack": null,
+      "failureType": "subtestsFailed",
+      "skipReason": null,
+      "rawResult": "not ok 500 - Recommendations Mongo: canonical context, invalidation, history, ownership, AI failure and atomic Sprint handoff",
+      "rawDiagnostics": "  ---\n  duration_ms: 7858.1721\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\recommendationsMongo.integration.test.js:25:1'\n  failureType: 'subtestsFailed'\n  error: '7 subtests failed'\n  code: 'ERR_TEST_FAILURE'\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "MONGODB_URI",
+        "MONGO_URI",
+        "JWT_SECRET",
+        "JWT_ISSUER",
+        "JWT_AUDIENCE"
+      ],
+      "reconciledStatus": "PASS",
+      "classification": "Aggregate parent; inspect named child records rather than inventing another root cause",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-recommendationsMongo.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/candidate-recommendationsMongo.integration.test.tap"
+        },
+        {
+          "label": "release1-recommendationsMongo.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/release1-recommendationsMongo.integration.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-46",
+      "line": 5038,
+      "indent": 0,
+      "name": "independent PDF field golds: standard, changed layout and columns",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\resumeProduction.test.js:21:1",
+      "file": "backend/src/tests/resumeProduction.test.js",
+      "error": "ENOENT: no such file or directory, open 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\fixtures\\\\resume\\\\standard.pdf'",
+      "stack": "Object.openSync (node:fs:622:18)\nObject.readFileSync (node:fs:488:35)\nbytes (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\resumeProduction.test.js:11:28)\nTestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\resumeProduction.test.js:26:51)\nTest.runInAsyncScope (node:async_hooks:227:14)\nTest.run (node:internal/test_runner/test:1382:25)\nTest.start (node:internal/test_runner/test:1242:17)\nstartSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)\nprocess.processTicksAndRejections (node:internal/process/task_queues:104:5)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "not ok 535 - independent PDF field golds: standard, changed layout and columns",
+      "rawDiagnostics": "  ---\n  duration_ms: 5.7262\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\resumeProduction.test.js:21:1'\n  failureType: 'testCodeFailure'\n  error: \"ENOENT: no such file or directory, open 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\fixtures\\\\resume\\\\standard.pdf'\"\n  code: 'ENOENT'\n  stack: |-\n    Object.openSync (node:fs:622:18)\n    Object.readFileSync (node:fs:488:35)\n    bytes (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\resumeProduction.test.js:11:28)\n    TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\resumeProduction.test.js:26:51)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1382:25)\n    Test.start (node:internal/test_runner/test:1242:17)\n    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)\n    process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [],
+      "reconciledStatus": "PASS",
+      "classification": "Missing real PDF fixtures on both refs; existing generator restores them; 9/9 on both refs after",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-resumeProduction.test",
+          "exitCode": 1,
+          "tap": "isolated/candidate-resumeProduction.test.tap"
+        },
+        {
+          "label": "release1-resumeProduction.test",
+          "exitCode": 1,
+          "tap": "isolated/release1-resumeProduction.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-47",
+      "line": 5058,
+      "indent": 0,
+      "name": "resource limits and scanned, encrypted, empty and corrupt PDF classification",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\resumeProduction.test.js:82:1",
+      "file": "backend/src/tests/resumeProduction.test.js",
+      "error": "ENOENT: no such file or directory, open 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\fixtures\\\\resume\\\\empty.pdf'",
+      "stack": "Object.openSync (node:fs:622:18)\nObject.readFileSync (node:fs:488:35)\nbytes (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\resumeProduction.test.js:11:28)\nTestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\resumeProduction.test.js:85:34)\nTest.runInAsyncScope (node:async_hooks:227:14)\nTest.run (node:internal/test_runner/test:1382:25)\nTest.processPendingSubtests (node:internal/test_runner/test:960:18)\nTest.postRun (node:internal/test_runner/test:1522:19)\nTest.run (node:internal/test_runner/test:1447:12)\nprocess.processTicksAndRejections (node:internal/process/task_queues:104:5)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "not ok 536 - resource limits and scanned, encrypted, empty and corrupt PDF classification",
+      "rawDiagnostics": "  ---\n  duration_ms: 1.831\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\resumeProduction.test.js:82:1'\n  failureType: 'testCodeFailure'\n  error: \"ENOENT: no such file or directory, open 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\fixtures\\\\resume\\\\empty.pdf'\"\n  code: 'ENOENT'\n  stack: |-\n    Object.openSync (node:fs:622:18)\n    Object.readFileSync (node:fs:488:35)\n    bytes (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\resumeProduction.test.js:11:28)\n    TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\resumeProduction.test.js:85:34)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1382:25)\n    Test.processPendingSubtests (node:internal/test_runner/test:960:18)\n    Test.postRun (node:internal/test_runner/test:1522:19)\n    Test.run (node:internal/test_runner/test:1447:12)\n    process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [],
+      "reconciledStatus": "PASS",
+      "classification": "Missing real PDF fixtures on both refs; existing generator restores them; 9/9 on both refs after",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-resumeProduction.test",
+          "exitCode": 1,
+          "tap": "isolated/candidate-resumeProduction.test.tap"
+        },
+        {
+          "label": "release1-resumeProduction.test",
+          "exitCode": 1,
+          "tap": "isolated/release1-resumeProduction.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-48",
+      "line": 5079,
+      "indent": 0,
+      "name": "negative claims, common verbs, repeated aliases, all twelve domains and monthly overlaps",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\resumeProduction.test.js:108:1",
+      "file": "backend/src/tests/resumeProduction.test.js",
+      "error": "ENOENT: no such file or directory, open 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\fixtures\\\\resume\\\\standard.pdf'",
+      "stack": "Object.openSync (node:fs:622:18)\nObject.readFileSync (node:fs:488:35)\nbytes (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\resumeProduction.test.js:11:28)\nTestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\resumeProduction.test.js:110:24)\nTest.runInAsyncScope (node:async_hooks:227:14)\nTest.run (node:internal/test_runner/test:1382:25)\nTest.processPendingSubtests (node:internal/test_runner/test:960:18)\nTest.postRun (node:internal/test_runner/test:1522:19)\nTest.run (node:internal/test_runner/test:1447:12)\nprocess.processTicksAndRejections (node:internal/process/task_queues:104:5)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "not ok 537 - negative claims, common verbs, repeated aliases, all twelve domains and monthly overlaps",
+      "rawDiagnostics": "  ---\n  duration_ms: 2.0001\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\resumeProduction.test.js:108:1'\n  failureType: 'testCodeFailure'\n  error: \"ENOENT: no such file or directory, open 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\fixtures\\\\resume\\\\standard.pdf'\"\n  code: 'ENOENT'\n  stack: |-\n    Object.openSync (node:fs:622:18)\n    Object.readFileSync (node:fs:488:35)\n    bytes (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\resumeProduction.test.js:11:28)\n    TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\resumeProduction.test.js:110:24)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1382:25)\n    Test.processPendingSubtests (node:internal/test_runner/test:960:18)\n    Test.postRun (node:internal/test_runner/test:1522:19)\n    Test.run (node:internal/test_runner/test:1447:12)\n    process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [],
+      "reconciledStatus": "PASS",
+      "classification": "Missing real PDF fixtures on both refs; existing generator restores them; 9/9 on both refs after",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-resumeProduction.test",
+          "exitCode": 1,
+          "tap": "isolated/candidate-resumeProduction.test.tap"
+        },
+        {
+          "label": "release1-resumeProduction.test",
+          "exitCode": 1,
+          "tap": "isolated/release1-resumeProduction.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-49",
+      "line": 5100,
+      "indent": 0,
+      "name": "AI timeout aborts the provider signal and sends no resume PII; success does not abort",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\resumeProduction.test.js:136:1",
+      "file": "backend/src/tests/resumeProduction.test.js",
+      "error": "ENOENT: no such file or directory, open 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\fixtures\\\\resume\\\\standard.pdf'",
+      "stack": "Object.openSync (node:fs:622:18)\nObject.readFileSync (node:fs:488:35)\nbytes (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\resumeProduction.test.js:11:28)\nTestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\resumeProduction.test.js:149:49)\nTest.runInAsyncScope (node:async_hooks:227:14)\nTest.run (node:internal/test_runner/test:1382:25)\nTest.processPendingSubtests (node:internal/test_runner/test:960:18)\nTest.postRun (node:internal/test_runner/test:1522:19)\nTest.run (node:internal/test_runner/test:1447:12)\nprocess.processTicksAndRejections (node:internal/process/task_queues:104:5)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "not ok 538 - AI timeout aborts the provider signal and sends no resume PII; success does not abort",
+      "rawDiagnostics": "  ---\n  duration_ms: 6.1642\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\resumeProduction.test.js:136:1'\n  failureType: 'testCodeFailure'\n  error: \"ENOENT: no such file or directory, open 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\fixtures\\\\resume\\\\standard.pdf'\"\n  code: 'ENOENT'\n  stack: |-\n    Object.openSync (node:fs:622:18)\n    Object.readFileSync (node:fs:488:35)\n    bytes (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\resumeProduction.test.js:11:28)\n    TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\resumeProduction.test.js:149:49)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1382:25)\n    Test.processPendingSubtests (node:internal/test_runner/test:960:18)\n    Test.postRun (node:internal/test_runner/test:1522:19)\n    Test.run (node:internal/test_runner/test:1447:12)\n    process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [],
+      "reconciledStatus": "PASS",
+      "classification": "Missing real PDF fixtures on both refs; existing generator restores them; 9/9 on both refs after",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-resumeProduction.test",
+          "exitCode": 1,
+          "tap": "isolated/candidate-resumeProduction.test.tap"
+        },
+        {
+          "label": "release1-resumeProduction.test",
+          "exitCode": 1,
+          "tap": "isolated/release1-resumeProduction.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-50",
+      "line": 5121,
+      "indent": 0,
+      "name": "Redis timeout and rejection are optional; Mongo remains authoritative",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\resumeProduction.test.js:164:1",
+      "file": "backend/src/tests/resumeProduction.test.js",
+      "error": "ENOENT: no such file or directory, open 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\fixtures\\\\resume\\\\standard.pdf'",
+      "stack": "Object.openSync (node:fs:622:18)\nObject.readFileSync (node:fs:488:35)\nbytes (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\resumeProduction.test.js:11:28)\nTestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\resumeProduction.test.js:173:48)\nTest.runInAsyncScope (node:async_hooks:227:14)\nTest.run (node:internal/test_runner/test:1382:25)\nTest.processPendingSubtests (node:internal/test_runner/test:960:18)\nTest.postRun (node:internal/test_runner/test:1522:19)\nTest.run (node:internal/test_runner/test:1447:12)\nprocess.processTicksAndRejections (node:internal/process/task_queues:104:5)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "not ok 539 - Redis timeout and rejection are optional; Mongo remains authoritative",
+      "rawDiagnostics": "  ---\n  duration_ms: 3.0346\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\resumeProduction.test.js:164:1'\n  failureType: 'testCodeFailure'\n  error: \"ENOENT: no such file or directory, open 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\fixtures\\\\resume\\\\standard.pdf'\"\n  code: 'ENOENT'\n  stack: |-\n    Object.openSync (node:fs:622:18)\n    Object.readFileSync (node:fs:488:35)\n    bytes (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\resumeProduction.test.js:11:28)\n    TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\resumeProduction.test.js:173:48)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1382:25)\n    Test.processPendingSubtests (node:internal/test_runner/test:960:18)\n    Test.postRun (node:internal/test_runner/test:1522:19)\n    Test.run (node:internal/test_runner/test:1447:12)\n    process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [],
+      "reconciledStatus": "PASS",
+      "classification": "Missing real PDF fixtures on both refs; existing generator restores them; 9/9 on both refs after",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-resumeProduction.test",
+          "exitCode": 1,
+          "tap": "isolated/candidate-resumeProduction.test.tap"
+        },
+        {
+          "label": "release1-resumeProduction.test",
+          "exitCode": 1,
+          "tap": "isolated/release1-resumeProduction.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-51",
+      "line": 5161,
+      "indent": 0,
+      "name": "two workers: one logical analysis, owner isolation, Redis outage, quotas, lease recovery and exact index",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\resumeProductionMongo.test.js:45:1",
+      "file": "backend/src/tests/resumeProductionMongo.test.js",
+      "error": "ENOENT: no such file or directory, stat 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\fixtures\\\\resume\\\\standard.pdf'",
+      "stack": "Object.statSync (node:fs:1795:25)\nTestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\resumeProductionMongo.test.js:101:20)\nprocess.processTicksAndRejections (node:internal/process/task_queues:104:5)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "not ok 543 - two workers: one logical analysis, owner isolation, Redis outage, quotas, lease recovery and exact index",
+      "rawDiagnostics": "  ---\n  duration_ms: 6627.883\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\resumeProductionMongo.test.js:45:1'\n  failureType: 'testCodeFailure'\n  error: \"ENOENT: no such file or directory, stat 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\fixtures\\\\resume\\\\standard.pdf'\"\n  code: 'ENOENT'\n  stack: |-\n    Object.statSync (node:fs:1795:25)\n    TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\resumeProductionMongo.test.js:101:20)\n    process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    async Test.run (node:internal/test_runner/test:1389:7)\n    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [],
+      "reconciledStatus": "PASS",
+      "classification": "Missing real PDF fixtures on both refs; existing generator restores them; 9/9 on both refs after",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-resumeProductionMongo.test",
+          "exitCode": 1,
+          "tap": "isolated/candidate-resumeProductionMongo.test.tap"
+        },
+        {
+          "label": "release1-resumeProductionMongo.test",
+          "exitCode": 1,
+          "tap": "isolated/release1-resumeProductionMongo.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-52",
+      "line": 5321,
+      "indent": 0,
+      "name": "P1 disposable Mongo: unique immutable snapshots, replay, ownership and cursor history",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\scenarioSimulatorMongo.integration.test.js:21:1",
+      "file": "backend/src/tests/scenarioSimulatorMongo.integration.test.js",
+      "error": "connect ECONNREFUSED 127.0.0.1:54556",
+      "stack": "_handleConnectionErrors (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\connection.js:1169:11)\nNativeConnection.openUri (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\connection.js:1100:11)\nasync TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\scenarioSimulatorMongo.integration.test.js:27:3)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "not ok 566 - P1 disposable Mongo: unique immutable snapshots, replay, ownership and cursor history",
+      "rawDiagnostics": "  ---\n  duration_ms: 3310.4396\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\scenarioSimulatorMongo.integration.test.js:21:1'\n  failureType: 'testCodeFailure'\n  error: 'connect ECONNREFUSED 127.0.0.1:54556'\n  code: 'ERR_TEST_FAILURE'\n  name: 'MongooseServerSelectionError'\n  stack: |-\n    _handleConnectionErrors (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\connection.js:1169:11)\n    NativeConnection.openUri (D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\mongoose\\lib\\connection.js:1100:11)\n    async TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\scenarioSimulatorMongo.integration.test.js:27:3)\n    async Test.run (node:internal/test_runner/test:1389:7)\n    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [],
+      "reconciledStatus": "PASS",
+      "classification": "Timing/topology/load sensitive: sequential focused or final controlled run passes; exact full-load cause not proven; no speculative fix",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-scenarioSimulatorMongo.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/candidate-scenarioSimulatorMongo.integration.test.tap"
+        },
+        {
+          "label": "release1-scenarioSimulatorMongo.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/release1-scenarioSimulatorMongo.integration.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-53",
+      "line": 5428,
+      "indent": 0,
+      "name": "P3 two real workers: atomic saves, export receipts, fresh history and restart",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\scenarioSimulatorWorkers.integration.test.js:46:1",
+      "file": "backend/src/tests/scenarioSimulatorWorkers.integration.test.js",
+      "error": "Worker request timed out.",
+      "stack": "Timeout._onTimeout (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\scenarioSimulatorWorkers.integration.test.js:28:16)\nlistOnTimeout (node:internal/timers:635:17)\nprocess.processTimers (node:internal/timers:571:7)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "not ok 582 - P3 two real workers: atomic saves, export receipts, fresh history and restart",
+      "rawDiagnostics": "  ---\n  duration_ms: 38233.3492\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\scenarioSimulatorWorkers.integration.test.js:46:1'\n  failureType: 'testCodeFailure'\n  error: 'Worker request timed out.'\n  code: 'ERR_TEST_FAILURE'\n  stack: |-\n    Timeout._onTimeout (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\scenarioSimulatorWorkers.integration.test.js:28:16)\n    listOnTimeout (node:internal/timers:635:17)\n    process.processTimers (node:internal/timers:571:7)\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [],
+      "reconciledStatus": "PASS",
+      "classification": "Timing/topology/load sensitive: sequential focused or final controlled run passes; exact full-load cause not proven; no speculative fix",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-scenarioSimulatorWorkers.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/candidate-scenarioSimulatorWorkers.integration.test.tap"
+        },
+        {
+          "label": "release1-scenarioSimulatorWorkers.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/release1-scenarioSimulatorWorkers.integration.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-54",
+      "line": 5693,
+      "indent": 0,
+      "name": "visual comparison refuses missing screenshots instead of passing zero comparisons",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\skillGapAcceptance.test.js:78:1",
+      "file": "backend/src/tests/skillGapAcceptance.test.js",
+      "error": "The expression evaluated to a falsy value:\n\n  assert.ok(result.stderr.includes('Thirty retained baseline screenshots are required'))\n",
+      "stack": "TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\skillGapAcceptance.test.js:97:12)\nTest.runInAsyncScope (node:async_hooks:227:14)\nTest.run (node:internal/test_runner/test:1382:25)\nTest.processPendingSubtests (node:internal/test_runner/test:960:18)\nTest.postRun (node:internal/test_runner/test:1522:19)\nTest.run (node:internal/test_runner/test:1447:12)\nprocess.processTicksAndRejections (node:internal/process/task_queues:104:5)\nasync startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "not ok 606 - visual comparison refuses missing screenshots instead of passing zero comparisons",
+      "rawDiagnostics": "  ---\n  duration_ms: 2147.4714\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\skillGapAcceptance.test.js:78:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    The expression evaluated to a falsy value:\n    \n      assert.ok(result.stderr.includes('Thirty retained baseline screenshots are required'))\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: true\n  actual: false\n  operator: '=='\n  stack: |-\n    TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\skillGapAcceptance.test.js:97:12)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1382:25)\n    Test.processPendingSubtests (node:internal/test_runner/test:960:18)\n    Test.postRun (node:internal/test_runner/test:1522:19)\n    Test.run (node:internal/test_runner/test:1447:12)\n    process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [],
+      "reconciledStatus": "PASS",
+      "classification": "Environment: default Python lacks Pillow; bundled Python supplies prerequisite; both refs pass",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-skillGapAcceptance.test",
+          "exitCode": 0,
+          "tap": "isolated/candidate-skillGapAcceptance.test.tap"
+        },
+        {
+          "label": "release1-skillGapAcceptance.test",
+          "exitCode": 0,
+          "tap": "isolated/release1-skillGapAcceptance.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-55",
+      "line": 6812,
+      "indent": 0,
+      "name": "skill-gap memory/redis/cold/concurrency performance",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\skillgapPerformance.test.js:290:1",
+      "file": "backend/src/tests/skillgapPerformance.test.js",
+      "error": "memory p95 63.83929999999964",
+      "stack": "TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\skillgapPerformance.test.js:427:10)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "not ok 694 - skill-gap memory/redis/cold/concurrency performance",
+      "rawDiagnostics": "  ---\n  duration_ms: 13573.1592\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\skillgapPerformance.test.js:290:1'\n  failureType: 'testCodeFailure'\n  error: 'memory p95 63.83929999999964'\n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: true\n  actual: false\n  operator: '=='\n  stack: |-\n    TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\skillgapPerformance.test.js:427:10)\n    async Test.run (node:internal/test_runner/test:1389:7)\n    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "NODE_ENV",
+        "SKILL_GAP_STAGE_TIMINGS"
+      ],
+      "reconciledStatus": "PASS",
+      "classification": "Timing/topology/load sensitive: sequential focused or final controlled run passes; exact full-load cause not proven; no speculative fix",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-skillgapPerformance.test",
+          "exitCode": 0,
+          "tap": "isolated/candidate-skillgapPerformance.test.tap"
+        },
+        {
+          "label": "release1-skillgapPerformance.test",
+          "exitCode": 1,
+          "tap": "isolated/release1-skillgapPerformance.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-56",
+      "line": 6838,
+      "indent": 0,
+      "name": "shared Sprint AI admission enforces approved quotas and concurrency with safe expiry/fallback",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\sprintAiAdmission.integration.test.js:12:1",
+      "file": "backend/src/tests/sprintAiAdmission.integration.test.js",
+      "error": "The input did not match the regular expression /^mongodb:\\/\\/127\\.0\\.0\\.1:\\d+\\/career_sprint_legacy_test_[a-z0-9_]+$/. Input:\n\n''\n",
+      "stack": "TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\sprintAiAdmission.integration.test.js:14:10)\nTest.runInAsyncScope (node:async_hooks:227:14)\nTest.run (node:internal/test_runner/test:1382:25)\nTest.start (node:internal/test_runner/test:1242:17)\nstartSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "not ok 696 - shared Sprint AI admission enforces approved quotas and concurrency with safe expiry/fallback",
+      "rawDiagnostics": "  ---\n  duration_ms: 8.1796\n  type: 'test'\n  location: 'C:\\\\Users\\\\Ahmad\\\\AppData\\\\Local\\\\Temp\\\\backend-regression-audit-UIC0e2\\\\source\\\\backend\\\\src\\\\tests\\\\sprintAiAdmission.integration.test.js:12:1'\n  failureType: 'testCodeFailure'\n  error: |-\n    The input did not match the regular expression /^mongodb:\\/\\/127\\.0\\.0\\.1:\\d+\\/career_sprint_legacy_test_[a-z0-9_]+$/. Input:\n    \n    ''\n    \n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected:\n  actual: ''\n  operator: 'match'\n  stack: |-\n    TestContext.<anonymous> (C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source\\backend\\src\\tests\\sprintAiAdmission.integration.test.js:14:10)\n    Test.runInAsyncScope (node:async_hooks:227:14)\n    Test.run (node:internal/test_runner/test:1382:25)\n    Test.start (node:internal/test_runner/test:1242:17)\n    startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "CAREER_SPRINT_ISOLATED_MONGO_URI"
+      ],
+      "reconciledStatus": "PASS",
+      "classification": "Environment: missing required isolated Mongo URI; both refs pass with explicit disposable database",
+      "isolatedEvidence": [
+        {
+          "label": "candidate-sprintAiAdmission.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/candidate-sprintAiAdmission.integration.test.tap"
+        },
+        {
+          "label": "release1-sprintAiAdmission.integration.test",
+          "exitCode": 0,
+          "tap": "isolated/release1-sprintAiAdmission.integration.test.tap"
+        }
+      ],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "PASS"
+      }
+    },
+    {
+      "id": "TAP-57",
+      "line": 6928,
+      "indent": 0,
+      "name": "disposable Mongo provisioning is additive/idempotent; retry batch respects backoff and preserves records",
+      "parents": [],
+      "status": "BLOCKED",
+      "kind": "skip",
+      "location": null,
+      "file": "backend/src/tests/storageSecurityFinal.test.js",
+      "error": null,
+      "stack": null,
+      "failureType": null,
+      "skipReason": null,
+      "rawResult": "ok 708 - disposable Mongo provisioning is additive/idempotent; retry batch respects backoff and preserves records # SKIP",
+      "rawDiagnostics": "  ---\n  duration_ms: 1.5233\n  type: 'test'\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": [
+        "JWT_SECRET",
+        "STORAGE_DRIVER",
+        "STORAGE_SECURITY_MONGO",
+        "PATH",
+        "TEMP"
+      ],
+      "reconciledStatus": "BLOCKED",
+      "classification": "Prerequisite opt-in not supplied; not acceptance",
+      "isolatedEvidence": [],
+      "finalEvidence": {
+        "tap": "isolated/production-regression-final.tap",
+        "status": "BLOCKED"
+      }
+    }
+  ]
+}

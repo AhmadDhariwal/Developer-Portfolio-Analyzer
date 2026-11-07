@@ -4,6 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('node:path');
 const { performance } = require('node:perf_hooks');
+const { learningSkills } = require('../services/coursePersonalizationService');
 
 const root = path.resolve(__dirname, '..');
 const resolve = (relative) => require.resolve(path.join(root, relative));
@@ -53,6 +54,13 @@ const createHarness = ({ mongoDelayMs = 25, youtubeDelayMs = 80, redisDelayMs = 
     whyRecommended: 'Targets SQL',
   }));
 
+  // This harness measures the response/pool caches with synthetic persistence
+  // and providers. Supply the catalog identity required by the current API;
+  // real catalog/Mongo behavior is covered by the integration suites.
+  mock('services/courseCatalogSearchService.js', {
+    load: async () => ({ revision: 'catalog-fixture', discovery: {} }),
+  });
+
   mock('services/courseService.js', {
     publicCourse: (course) => course,
     providerConfigurationFingerprint: () => 'provider-fixture',
@@ -91,13 +99,14 @@ const createHarness = ({ mongoDelayMs = 25, youtubeDelayMs = 80, redisDelayMs = 
 
   mock('services/coursePersonalizationService.js', {
     SKILL_GAP_ANALYSIS_VERSION: 'skill-evidence-coverage-v1',
+    learningSkills,
     resolveSkillSignals: async () => {
       counters.mongoReads += 1;
       await delay(mongoDelayMs);
       return {
         skillGaps: ['SQL'],
         knownSkills: ['Node.js'],
-        targets: [],
+        targets: [{ name: 'SQL', status: 'NOT_EVIDENCED' }],
         fingerprint: 'current-source-revision',
         personalization: { status: 'evidence-informed', limitation: '' },
       };
@@ -242,22 +251,45 @@ const measureSeries = async (runs, fn) => {
     times.push(typeof maybeElapsed === 'number' ? maybeElapsed : performance.now() - started);
   }
   return {
+    sampleCount: times.length,
     p50: Number(percentile(times, 50).toFixed(2)),
     p95: Number(percentile(times, 95).toFixed(2)),
+    p99: Number(percentile(times, 99).toFixed(2)),
+    max: Number(Math.max(...times).toFixed(2)),
+    samplesMs: times.map((value) => Number(value.toFixed(2))),
   };
 };
 
-test('Learning Hub memory path bypasses Redis, Mongo pool reads, and providers', async () => {
+test('Learning Hub memory path bypasses Redis, Mongo pool reads, and providers', async (t) => {
   const harness = createHarness();
   await invoke(harness.controller);
   await flushAsync();
 
   const before = { ...harness.counters };
-  const memory = await measureSeries(16, async () => {
+  const stages = [];
+  // With 16 samples nearest-rank p95 is the maximum (ceil(.95 * 16)).
+  // Use 100 fresh-evidence requests to resolve the percentile's upper five ranks;
+  // retain the 50 ms assertion and report every observation, p99 and maximum.
+  const memory = await measureSeries(100, async () => {
     const result = await invoke(harness.controller);
     assert.equal(result.body.fromCache, true);
     assert.equal(result.body.cacheMetadata?.cacheLayer, 'memory');
+    stages.push(result.body.cacheMetadata.stageTimingsMs);
   });
+  t.diagnostic(
+    JSON.stringify({
+      memory,
+      evidenceP95: percentile(
+        stages.map((stage) => stage.Mongo),
+        95,
+      ),
+      cacheP95: percentile(
+        stages.map((stage) => stage.cache),
+        95,
+      ),
+      counters: harness.counters,
+    }),
+  );
 
   assert.equal(harness.counters.providerCalls, before.providerCalls);
   assert.equal(harness.counters.redisGets, before.redisGets);
@@ -266,7 +298,7 @@ test('Learning Hub memory path bypasses Redis, Mongo pool reads, and providers',
   assert.ok(memory.p95 < BEFORE.memory.p95);
 });
 
-test('Learning Hub Redis path skips provider and Mongo pool reads', async () => {
+test('Learning Hub Redis path skips provider and Mongo pool reads', async (t) => {
   const harness = createHarness({ redisDelayMs: 15 });
   await invoke(harness.controller);
   await flushAsync();
@@ -278,19 +310,27 @@ test('Learning Hub Redis path skips provider and Mongo pool reads', async () => 
     assert.equal(result.body.fromCache, true);
     assert.ok(['redis', 'memory'].includes(result.body.cacheMetadata?.cacheLayer));
   });
+  t.diagnostic(
+    JSON.stringify({
+      redisSeries: redis,
+      scope: 'First Redis hit then memory promotion; synthetic I/O',
+      counters: harness.counters,
+    }),
+  );
 
   assert.equal(harness.counters.providerCalls, before.providerCalls);
   assert.ok(harness.counters.redisGets > before.redisGets || harness.counters.memoryHits >= 0);
   assert.ok(redis.p95 < 250, `redis p95 ${redis.p95} should be < 250`);
 });
 
-test('Learning Hub cold path stays under non-AI budget and records stage timings', async () => {
+test('Learning Hub cold path stays under non-AI budget and records stage timings', async (t) => {
   const harness = createHarness({ youtubeDelayMs: 90, mongoDelayMs: 20 });
   const drainPersistence = async () => {
     await flushAsync();
     await delay(60);
   };
 
+  const requests = [];
   const cold = await measureSeries(8, async () => {
     await drainPersistence();
     harness.mongo.clear();
@@ -299,6 +339,7 @@ test('Learning Hub cold path stays under non-AI budget and records stage timings
     const started = performance.now();
     const result = await invoke(harness.controller);
     const elapsed = performance.now() - started;
+    requests.push(elapsed);
     assert.equal(result.status, 200);
     assert.equal(result.body.fromCache, false);
     assert.equal(result.body.cacheMetadata?.cacheLayer, 'miss');
@@ -334,6 +375,14 @@ test('Learning Hub cold path stays under non-AI budget and records stage timings
     await drainPersistence();
     return elapsed;
   });
+  t.diagnostic(
+    JSON.stringify({
+      coldSeries: cold,
+      requestP95: percentile(requests, 95),
+      scope: 'Synthetic providers and persistence; returned request time excludes fixture drains',
+      counters: harness.counters,
+    }),
+  );
 
   assert.ok(cold.p95 < 500, `cold p95 ${cold.p95} should be < 500`);
   assert.ok(cold.p95 <= BEFORE.cold.p95 + 80);

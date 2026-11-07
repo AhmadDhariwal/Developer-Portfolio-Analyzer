@@ -565,7 +565,9 @@ const fetchCourses = async (req, res) => {
               limitation: 'Browse the shared course catalog.',
             },
           }
-        : await resolveSkillSignals(userId, careerStack, experienceLevel, stageTimer, req.user);
+        : await stageTimer.measure('Mongo', () =>
+            resolveSkillSignals(userId, careerStack, experienceLevel, stageTimer, req.user),
+          );
     const eligibleSkills = learningSkills(skillSignals, careerStack);
     const requestedSkills =
       filters.view === 'discover'

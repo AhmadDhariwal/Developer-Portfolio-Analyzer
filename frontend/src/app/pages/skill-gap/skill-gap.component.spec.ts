@@ -147,7 +147,7 @@ describe('Skill Gap evidence presentation', () => {
       component.result = result(coverage);
       fixture.detectChanges();
       expect(fixture.nativeElement.querySelector('[data-testid=coverage]').textContent.trim()).toBe(
-        coverage === null ? 'Unavailable' : `${coverage}%`,
+        coverage === null ? 'Insufficient evidence' : `${coverage}%`,
       );
       expect(fixture.nativeElement.querySelector('[role=progressbar]') !== null).toBe(
         coverage !== null,
@@ -181,9 +181,12 @@ describe('Skill Gap evidence presentation', () => {
       'Coverage cannot be calculated because evidence for one or more required skills is unknown.',
     );
     expect(fixture.nativeElement.querySelector('[data-testid=coverage]').textContent.trim()).toBe(
-      'Unavailable',
+      'Insufficient evidence',
     );
     expect(fixture.nativeElement.querySelector('[role=progressbar]')).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('[data-testid=insufficient-evidence-panel]'),
+    ).not.toBeNull();
     expect(text()).not.toContain('required evidence unknown');
     expect(text()).toContain('Legacy readiness: 91%');
   });

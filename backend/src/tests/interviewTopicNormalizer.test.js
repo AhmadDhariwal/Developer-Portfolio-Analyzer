@@ -1,7 +1,22 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { normalizeTopicInput, resolveTopic, listImportantTopics, detectTopicsInText } = require('../services/interviewTopicNormalizer');
-const { verifiedSeedCatalog, TOP_QUESTION_COUNT, MIN_VERIFIED_SEED_COUNT } = require('../services/interviewQuestionSeedCatalog');
+
+test('AngularJS remains isolated from modern Angular', () => {
+  const { resolveTopic } = require('../services/interviewTopicNormalizer');
+  assert.equal(resolveTopic('AngularJS').topicKey, 'angularjs');
+  assert.equal(resolveTopic('Angular').topicKey, 'angular');
+});
+const {
+  normalizeTopicInput,
+  resolveTopic,
+  listImportantTopics,
+  detectTopicsInText
+} = require('../services/interviewTopicNormalizer');
+const {
+  verifiedSeedCatalog,
+  TOP_QUESTION_COUNT,
+  MIN_VERIFIED_SEED_COUNT
+} = require('../services/interviewQuestionSeedCatalog');
 
 test('normalizeTopicInput resolves known aliases to canonical topic keys', () => {
   const node = normalizeTopicInput({ framework: 'Node JS' });

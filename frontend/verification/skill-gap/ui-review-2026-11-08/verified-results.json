@@ -1,0 +1,45 @@
+{
+  "results": [
+    {
+      "label": "angular-verified",
+      "command": [
+        "node",
+        "node_modules/@angular/cli/bin/ng.js",
+        "test",
+        "--watch=false",
+        "--include=src/app/pages/skill-gap/**/*.spec.ts",
+        "--include=src/app/pages/interview-prep/**/*.spec.ts"
+      ],
+      "cwd": "D:\\Developer-Portfolio-Analyzer\\frontend",
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 45224
+    },
+    {
+      "label": "typescript-final",
+      "command": [
+        "node",
+        "frontend/node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "frontend/tsconfig.app.json"
+      ],
+      "cwd": "D:\\Developer-Portfolio-Analyzer",
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 9858
+    },
+    {
+      "label": "production-build",
+      "command": [
+        "node",
+        "node_modules/@angular/cli/bin/ng.js",
+        "build"
+      ],
+      "cwd": "D:\\Developer-Portfolio-Analyzer\\frontend",
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 60501
+    }
+  ]
+}

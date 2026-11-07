@@ -6,15 +6,13 @@
     or prove practical proficiency.
   </p>
 </div>
-<div class="coverage-value">
+<div class="coverage-value" [class.coverage-value--insufficient]="summary.unavailable">
   <strong data-testid="coverage">{{
-    analysis.coverage === null || analysis.coverage === undefined
-      ? 'Unavailable'
-      : analysis.coverage + '%'
+    summary.unavailable ? 'Insufficient evidence' : analysis.coverage + '%'
   }}</strong
   ><span>Skill coverage</span>
 </div>
-@if (analysis.coverage !== null && analysis.coverage !== undefined) {
+@if (!summary.unavailable) {
   <div
     class="coverage-track"
     role="progressbar"
@@ -26,7 +24,87 @@
     <span [style.width.%]="analysis.coverage"></span>
   </div>
 }
-@if (analysis.coverageUnavailableReason) {
+@if (summary.unavailable) {
+  <div class="insufficient-evidence-panel wide" data-testid="insufficient-evidence-panel">
+    <div class="insufficient-evidence-header">
+      <div class="insufficient-evidence-counts">
+        @if (summary.totalRequiredCount > 0) {
+          <span class="count-chip count-chip--assessed">
+            <strong class="count-chip__number">{{ summary.assessedRequiredCount }}</strong> of
+            {{ summary.totalRequiredCount }} required skills assessed
+          </span>
+          <span class="count-chip count-chip--unknown">
+            <strong class="count-chip__number">{{ summary.unknownRequiredCount }}</strong> unknown
+          </span>
+        } @else {
+          <span>Required-skill counts are unavailable in this snapshot.</span>
+        }
+      </div>
+      @if (analysis.coverageUnavailableReason) {
+        <p class="insufficient-evidence-reason">
+          {{ warningLabel(analysis.coverageUnavailableReason) }}
+        </p>
+      }
+    </div>
+
+    <div class="insufficient-evidence-body">
+      <p class="insufficient-evidence-explanation">
+        Coverage cannot be calculated reliably from this snapshot. <em>Insufficient evidence</em>
+        is not a low score or a measure of your ability. Assessed skills have a classification; they
+        are not necessarily verified skills.
+      </p>
+
+      <div class="evidence-action-guidance">
+        <span class="guidance-title">How to obtain more evidence:</span>
+        <ul class="guidance-list">
+          @if (summary.github === 'missing') {
+            <li>
+              <strong>Check GitHub:</strong> Connect or confirm your GitHub account and refresh its
+              analysis. No usable GitHub evidence is recorded in this snapshot.
+            </li>
+          }
+          @if (summary.github === 'stale') {
+            <li>
+              <strong>Refresh GitHub:</strong> Your GitHub evidence snapshot is marked stale.
+              Refresh your profile analysis to update repository signals.
+            </li>
+          }
+          @if (summary.resume === 'missing') {
+            <li>
+              <strong>Select and analyze your resume:</strong> Choose your resume in Resume Analyzer
+              and analyze it. No usable selected-resume analysis is recorded here.
+            </li>
+          }
+          @if (summary.resume === 'stale') {
+            <li>
+              <strong>Re-analyze Resume:</strong> Your resume evidence snapshot is marked stale.
+              Re-run analysis of the selected resume to update its evidence.
+            </li>
+          }
+          @if (summary.github === 'unknown' || summary.resume === 'unknown') {
+            <li>
+              <strong>Check source status:</strong> Some source availability is not recorded. Check
+              your GitHub account and selected resume, then refresh Skill Gap for a current
+              snapshot.
+            </li>
+          }
+          @if (summary.github === 'partial') {
+            <li>
+              <strong>Sampled GitHub evidence:</strong> GitHub analysis samples repository metadata
+              rather than inspecting every repository or its implementation. Refreshing alone may
+              leave some required skills unknown.
+            </li>
+          }
+          <li>
+            <strong>Add relevant evidence:</strong> Keep repository languages and topics accurate
+            and describe relevant technology experience in your selected resume. Additional evidence
+            may help classify skills; it does not guarantee coverage or proficiency.
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+} @else if (analysis.coverageUnavailableReason) {
   <p class="wide">{{ warningLabel(analysis.coverageUnavailableReason) }}</p>
 }
 <div class="limitation wide">

@@ -1,0 +1,3101 @@
+{
+  "status": "PASS",
+  "processesStopped": true,
+  "recursiveDirectoryDeletion": false,
+  "deletedFiles": [
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\_mdb_catalog.wt",
+      "bytes": 81920,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "A84DEE061691FFD6F2B532CA05033EE015B145456297572D9CF99FF04E06407E"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-026a1ada-5b41-4654-a057-5a76488a4fd7.wt",
+      "bytes": 45056,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "C004789D77B9CFC146E151E3D304E867BF5CBA92CD2551B7646AD8726F0A296E"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-0632d43e-8cd5-494a-ad30-5505938023f9.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-08eb9052-b742-40bb-a08e-a87fab8507c3.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-09314495-7bf3-4da7-a30d-9b7eb5ad3466.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-0dfcc87a-d9fe-4917-b02c-7d5d98f79758.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-0e022697-23b9-4cc9-a36b-1e3b85479850.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-0fc19fbb-c7fb-4254-be7f-8a13b41fb888.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-1055096b-2f98-4639-a57c-9c7653e4361d.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-1a527266-7afc-4e3a-85dc-01a37636d7a7.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-1f08540f-6198-479c-b81b-f4c8f7b2f718.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-2076a6ed-0e51-4457-a267-bf880468d186.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-27f35a9c-e4d1-433d-a549-bddc72a4f3be.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-29df1a48-d172-4e29-beaa-f051e457df47.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-2bb8bc6d-7971-4e2a-b68e-a49b8ccffc2b.wt",
+      "bytes": 3727360,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "294A6EF558216CCAB401A288AA5720DA64F097DF8AA76E3A3E1EC7EC51989D36"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-30ba7384-36b9-427d-b2e9-9aa5ff71280d.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-37724a3c-e8c4-46f8-bc1c-4c1176bfd914.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "AC92AE27E7C918219B415B8DCCD9A405B84E6E1B3A4F3CA84D9702548CBF0D0F"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-3fd453f2-2a42-4046-82bb-1011c333e17f.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-45ac1711-bbd7-4eba-b4b3-c41aa1916095.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-461c6e98-038b-4064-9cb2-7f29d82188db.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-4855268f-428a-48b6-88a3-c524c57eb6a5.wt",
+      "bytes": 8192,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "8BA6829C824CCDA4BBAD21CACFBA045F085321C05764CAA09AF622764F63ABEA"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-49db57ca-4325-48a5-90fc-2e145fdb6dcc.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-4bc19880-4499-4067-a777-e9af98b75dea.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "703FA0C95D3E87C254D9FF536447D23A8BD938055CD67D9CA17BDAA06116792B"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-4ee8ae01-e109-4802-b987-120f37d1f56f.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-5923592c-d9ca-4589-8607-7fe1e61515b8.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "2C2FDB2EA2BEE46B431EE945CC420263406356A3B24BFD4402C7EBA4F0BDCE99"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-5b6e364a-fa7c-48ba-8c19-5be69261e4f1.wt",
+      "bytes": 12288,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "031ABB9DD7DDF0FCCA0990F73EC8775FE1BC2C9F0E2A7E438DEDC14046CB5AF3"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-5e566c5a-00b9-445b-8927-3856887669e7.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "46D777CBCEC1A47F43B6E63BCEFE60E43DE42BB9AD735020F2EC3F183CC8ED13"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-5f313c9e-c00e-4acc-8b83-620532020423.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-625008bc-ce1a-4e14-9bff-fb63e03250d6.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-6588a596-dec2-43a7-9841-e3c9ec216a65.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-65c76f42-5452-4aff-8012-ea008239cf7d.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-6715ea81-c6a0-4cdd-a8cf-f8b1a13de53d.wt",
+      "bytes": 3727360,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "67077ED22B68BBF32CCC70B89F4F296E2F2BB65B8D730A2E996C3CBE4ADF6422"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-69d7f4d6-66ce-41d8-89bb-4b27d947f75c.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-714d5ad9-7afb-4df7-a8c3-6f84050efd58.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-73484871-72ed-4f31-9077-3eba1cf597d4.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-7396a416-9214-4a28-abfa-6afea767240a.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-74b2b571-c126-4cf1-b238-0d9a5379e7bb.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-74c8f11a-c52c-47a7-a87e-01f4890425ab.wt",
+      "bytes": 8192,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "854C189C8D7CBDB6D1F112788BC30FC0001E463DD3E9E62CB2D56A0A3FD48C80"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-75bef6a4-0a9d-487f-bfac-f3a0a30ac387.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-75ee0664-442d-4bff-b43e-b12d44db3b81.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-7991c8e2-9718-4b98-ab25-f8df4fc6ba26.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "178BABD641F5562BCC318FE3AD13CC76405043BD36E66F2764244150961A5ECB"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-79a30c4b-b05b-4002-8717-ccaa51c03040.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-85c48636-07ef-4a01-a221-12efab8c2448.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-86293723-bbd2-4e4a-b412-6ffcf186378d.wt",
+      "bytes": 77824,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1D3CF14CD61BCB1B23868D31A583D1BFC455F0D90166489331D9E36969EE3B83"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-8664e70c-e6c9-4076-8f8a-59e494453ee3.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-8911b9e3-6808-41eb-bfd6-a180ee3a663e.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-8af785ac-106e-4bbb-90e8-8dd6fd6ee6b5.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-8b4a4a68-5ec6-46eb-a1af-ad5d80af4d13.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-8e3a89ba-2f8b-4f44-942e-da78ba0e831e.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-8f60fab9-d554-4fba-b871-b5d00afd3023.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "DEC2A19AF79CA367B1F87F5413D12172CB435F9720FC249391912F5933BBF0E4"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-8ff87f28-3b28-4c19-82e7-10dd3ffce6e4.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-9509a186-d291-45e3-8afa-53a3b0a34f50.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-967128f5-bc06-47ea-833d-6d0b45688b19.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-97198754-6f5e-4faa-8864-f8f34f344e13.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-9724ef9d-7bac-45ea-9bb8-373345b4171f.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-986faff7-87b7-4fbe-b0e6-f64fdb2a48e8.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "7BAE54B711B6E59B3F774B7CA429A9AE3FFE4A7C0782391A2210CD5B8EBB07E2"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-9b40da29-9afa-47a4-8a19-800f5b86bfff.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-a27ee29f-3f10-47fc-98d3-6a3bb252b3ad.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-a9dfb009-a691-40ba-8059-981338a30558.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "02D32C6ACE59368AC65729C4E1EAC09D32F1CBDC1A4568AF86150DE95FFD0F19"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-ab83f63a-617e-415c-89f2-12f3116a5cfe.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-aee16899-4993-4350-acc0-6680b86275f9.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-aefa4caf-29e7-42f8-8c47-6d51c62831c4.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-b04b4165-d3bc-4f29-ae06-3bc8b2fddd1f.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-b42ee3af-0487-4871-96cc-7a6c402725ca.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-b5ab92ed-790d-438a-97c8-c6aea4fcf910.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-b9149409-e2a0-4510-b254-8260e2bfee54.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-b9dddbe9-5f13-401d-bd1a-1f9a96371969.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-bd2edf46-e7d9-41c6-b2d0-0f20b0e61584.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-be7219b5-a13c-44b9-9ae7-224f7cf50ee1.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-c140aece-da57-477e-b8b4-e26c699fc2bf.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-c371fa1d-3e5b-4384-9919-8435b122434e.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-c3cefdd4-8ad0-4d44-af53-d218fce306f7.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1AF251F5F95841B48CD08E55E84235269ED76CC731877CA1C379260E797CCA7F"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-c3d6a98a-e67a-41e7-8920-aa5e2abb9579.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "D42394415B98428930DCB2B02ED9A0F30E5877E09C5D80A11E50E8F4D42D4CF7"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-c50a7c51-666e-4581-b6ee-32b50825a840.wt",
+      "bytes": 3727360,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1A7AA91F8E1F630A729E03D311BECF7282F47C82F96999C839D12E51C1FE3523"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-c5e165c6-aab6-496d-8efc-3dba00d6f544.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-c704f8a1-5dfd-4f72-84eb-730afa9604b0.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-cb627d47-d2e5-451b-9a20-8009ae1fea95.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-ce5efce6-293d-418b-b67c-0548f39a73b6.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-d51a6974-1736-4b1f-850e-82df170dcf96.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-d669f842-cbbc-41ba-8472-fc2e69d8cab1.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-d917ba5f-7708-443e-9bbd-323fb4978b08.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-db31e17d-2935-4cf8-9c78-48034dc4ae3a.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-e02c5aee-f469-41bb-a891-40602f7cf65a.wt",
+      "bytes": 45056,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "982576AB89EC9E7F8CB3C7007DAA36D6E59DA2392BEA2E58CA6ED8FE7015A38A"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-e155ac5b-9da1-4223-b93d-4911800ef27d.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-e30aa678-6a09-49a6-ac90-fba1d7e79089.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-e47f6fc9-5a15-45b0-85e0-762d2a0f6c60.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-e68ad50a-8962-42d0-a0cc-ac4957946a9b.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-e7fdfbcd-7848-422a-9056-d03ae88fd99b.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "2CFC6A0CB7D18E20D6EA4F65A1870CCD6C87559442D218D4BDEE7632501F1888"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-e9b8539a-63f4-438c-bc3c-21f8901b47aa.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-eb71ccec-7161-4d3c-a016-84b2708cb6c5.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-ebf0988c-5176-42d7-84f6-33a1b60539e5.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-efb42e90-c9fb-49b2-bc95-f4af1547a2c3.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-f2d0ee47-df4a-4a79-8e29-34c7b452e265.wt",
+      "bytes": 32768,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "DDC115F245892B3558D29C69A6F44B167C5D94036DAB2FBEC6F5721FECF40B8B"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-f5199a70-77a4-4504-ba62-ff178d5b1176.wt",
+      "bytes": 77824,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "D3464DECCE15FCD71E2C9BF6B399A7A252144792E57C4BDD402CCBB2CDA66EEA"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\collection-fa51a585-734d-4274-89a1-d7a4c760d811.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-001bddf9-b4a7-4ae6-b87f-676b44ace280.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "7F798FF2C869516213D2891B65505D71D1F58ABB331C41618F12560E08B58EC8"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-01bafe43-cb56-4209-8f10-68db6d6d7969.wt",
+      "bytes": 8192,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "7384B94D0E0CA5481762CD2465AACF17C531A6CA081507EF37D177F4351AED4B"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-0301140d-4c4a-4e9e-a2bd-b101a9d2ce35.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "DBE9F6B39541FAE19FFA5D075EE94A255B37CE92DA8FE4A311D5F7784E6C2A19"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-03231a7a-4538-4002-a612-b87e6eaec40b.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "B12027B6591F93C7BE596CC9B0F44EE4BA3CAC3061BE9013D98F239324C48D40"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-03597124-dfa4-48f9-a10b-523111599005.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-04097559-29a5-43a6-8c7c-f45d6c742757.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-05f18e64-02e8-4075-a66d-74a986a9441e.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "421FC2F993B735A4D80D2FBC27AC2060A580C7DD66CD38FBAD82E5A48B1589C7"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-067936b0-1cda-4bea-bf42-ec714998db17.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "4A0018248E5DD70E96D65DC7CC7FD99B4A055F2C8252E47AD1D292AAC5F60F73"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-06d1a94a-2280-4723-b135-6dfc9ab00962.wt",
+      "bytes": 212992,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1657C595C7F522CACBCED4B52408962315926D482F0804EA7AD47481AB452791"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-06f2bb25-d810-4256-8640-34e9fd4decf8.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "D9D5C1884FE892D39AB951DEB3BD1EAA7035D11AC9712D1AAB28697362641AC5"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-07aeff28-0c67-4f96-aca7-95bb35b81296.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "9C6A9B5E5F50198B60AC6B97F053CFB1459C1BCE4EBEB5F2FFA03D10AD487653"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-08083a4c-476d-418b-b072-3664890510b9.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "9931E4C7249F0D746DFCB8F42E199C7D79DDA2F9898F2B877FF606AA63C607D3"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-081d0eb3-c9b0-4222-a770-c6af6fd677be.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-08580d0e-8998-4f16-96d6-21eb0ecca305.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-090c2e8f-bd00-4922-8a67-edbe10d2c0d6.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-094d2b31-367a-4878-a308-f6a726fd0c9b.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-09a96035-e5f7-4831-be40-f525d3766679.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-0a5033d6-2545-4b48-a1c7-d171fe6d0ba6.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-0c5622a9-d728-4ac7-b7c0-173207ad519a.wt",
+      "bytes": 65536,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "77AF639D340B8FFFEAF485187817F0624DC6DF4D835D50FF437EC59F616683AB"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-0e536526-036c-4498-9be6-5e5e4b70f239.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-0e611081-dcd4-4136-bf69-7bea47b47e1f.wt",
+      "bytes": 32768,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "AD85E1E697090A608E7EDF78392F208918D87E7FFDAD1AB2710FE8429BF9E3B0"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-0ed18525-e8ac-4238-b8f0-e6cf3f5607de.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "620C0B1B9B39F0159FBDAE3781FAABE243F2F59BDD8F5CC38C8AFEA8A9C1A3FE"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-0f122989-8eda-4ad8-b855-cbd55c559836.wt",
+      "bytes": 53248,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "35EC69F830929C096C2BE843A8257D0CF19EE627B59A93F1E01D13ACA5FE754D"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-0f6052c0-7b77-4d43-9ee0-eed9cdabff7d.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-0ff9c639-496b-45b1-b196-a4e46250028d.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "32007B2837EA12DC42AA8E61B012026A87B6DFCB6FEAAC527B89D09C89DC97C6"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-104384b0-7792-4ec1-8ff4-d94a9cfa26bb.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "FFD50C960CBA310582E162D02C6AD27EDC5F90198D56F34784E28222742A8557"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-10ab346d-6954-4136-a7c9-e7e9e213c7cf.wt",
+      "bytes": 3014656,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "10BF825D83C3F325D414B0EC70DFFFE6DA97CBC64BFDD7016A1C633F58052068"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-1113f7d3-667c-4b80-af54-fd8331d61e59.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-12514423-136a-4433-96bc-59efb1075e90.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-12afc3c0-f9d5-493b-9231-337d575402c8.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-13c826e0-151b-46e5-9fdb-a50670d722aa.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-1508572c-40e0-4c56-9acf-6e1d4192a8f9.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-1528f52d-0f34-4fbe-b565-c08e70913b9c.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "5B870925C469A014597989F5C3843C24311D64D9261EE5B4C549AC0519A1E2BB"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-1562a7c5-bde8-4ca9-8c8e-ecdabd4382f5.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "5058B28C7A95C68214BBC6AEC7E82A8CAD27A2B7DE71DE2EA373E5614BCB71F7"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-1582d5d8-3f5d-492e-b342-ae99bbb9f959.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-162765d7-b8ab-440c-ac47-87f26c7fb2c7.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-16c06823-2ccc-46f7-9774-cb63e6527e18.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-19284009-eb19-4bfe-85d2-4ccb165ce884.wt",
+      "bytes": 172032,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "D1D94D0529B3078115606BED4371B858C918D567B4655D7B084DAD88F2B46369"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-199c58cb-8a17-4dbe-a10c-c43f8ede55bc.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-19cb80ef-9fee-4c6d-977d-6ac596ab5468.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "F98B26B70890B31200E9291730C9D847C6310A41CD17FF00174744CEDAA410A4"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-1a35f8ea-6df4-4cff-8f53-17dc1ccd2391.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-1ad0210d-ea3d-4a96-83ee-40fd84a9910c.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "9BDBAF7C4FABF14B5DE2B9406A45ECC5CE9C09F3D350F1E94015C1505B2E89D4"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-1ad37d3f-936d-45af-9200-0803ef352bc1.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "A0A58DE60ECD4FF570AA261BF6751787487C99DB01D2839BC24A380FFFCFE6AD"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-1bf54225-ead0-4739-a026-d13ec8ed138a.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-1cf8b95d-d0ff-4989-a467-38eaaad9ce93.wt",
+      "bytes": 57344,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "9C40796C57AFBAC639EB65235E72AE940F7C4B997BB57BB5FB4A77A1BCF27A43"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-1febb966-5541-4069-b692-9fb4b6b16bb6.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "EB1939798CEEF2607BE849BE97E4F60003EAE1D08B00A29140CA3499351030F0"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-204d177e-ce10-4838-b051-d3fe30f662e1.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-2289b8f4-be46-4595-85bf-5d6a37b9064b.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1E502203D9AD61369464B1D30CB7FDA1A8E65CFA33008F2EB9D2BC9158DEC7E3"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-228ba20b-93be-4001-894c-711992a2ae4d.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-2391d916-9249-468e-9588-1381f041c876.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1A390E817E44E1432934DC8944252C52389BFC6BE5BB997B54890CF1E9B3C85F"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-23a38a1c-ddbf-485f-82f0-ef6a4e80b032.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-244582ee-f6b9-4cbd-8faa-3f5e3c8fd106.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-251abe1d-f50d-4ebc-8508-dcb3c6d42df4.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-2579e3f8-8478-42f4-9def-aca6066e9c58.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-259c4e7b-cf53-487c-a69f-9a1913681bfc.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "3C3660EC8848C11E4217A0AD522A4DCFA3C17F950FF558B4FD4AC34F37E98775"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-25e1ed91-ab66-4e4b-bb2c-4b55a402c550.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-265c07b8-2f73-41ed-91e8-f14d0cf46390.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "2F52FD36D3C638768B74382F2E13F95A21A3C3EC67F0117EB2038AA2D831CDA1"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-26c8dc93-1727-430c-820b-b13c40357671.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-27638147-bab1-451c-92fe-26cbd40eb105.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-27ce4b2d-124a-441c-855f-c39c6b7c7336.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "65EE30E530DFC52E498E0A5CB18FB9393801EF2905E06CC51685B4317CF8B143"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-286b60ab-d7a2-400a-8f1f-d6e72cb73aab.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-2a3ac362-fe62-41ef-b3b7-06a66b2a840a.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-2a7e65c2-38c7-4135-8048-7d7bc1e6c74f.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-2a9e71c0-dac8-4975-a590-8d202a0dc29e.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "A449F68E4BE072F80384B48B81D2828B76BB4EF09DED9C0B44B1C06448BB289B"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-2cd70b87-dc92-4d0e-9960-7f5e0b135c56.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "DBA9A7822DC978369A509E6077FD56532DFFD584308B98FD33BB9B485FCA10C5"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-2cdae721-7494-49b2-953f-a6f4e02ab83f.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "6C343ABCE6BD232F58BAE8A628919541FDBBA67E820B57679BB846BD61937B11"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-2d28569a-b219-4efe-85ee-1d670ce9f0f4.wt",
+      "bytes": 36864,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "333CADCC1A3D458EFE2CC1365EE01E45EB5879307E54036BF2D3CA312A3B23C9"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-2d366782-2ea2-4792-8667-54e9f61d3a64.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-2d9be716-20d0-4eac-85af-8a86bd8fb559.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "45F6505282A8F2DFDF9995511E8669E125B166467290CBB8CACC7FFC04BBCA92"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-2f7dafef-595b-4ff7-b3ca-3bf9aa91e195.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "BECF2E982B7E08D701EF73FD149D98F0129ED8CD76C6BC02138974805685E543"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-308dff6d-cf19-444a-b3fd-6b65f6ec9b57.wt",
+      "bytes": 45056,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1CB44F75FF0F121CEA25CA098AE8D6B598BA5E9E8134CAE0243288DAE1B59A1F"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-30a28a9d-9a57-4f7e-b728-3a5b2fe76395.wt",
+      "bytes": 8192,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "14A9114050E9CB5563B679090D7E2F6463BD9530196F71C9254EA8DC4E9D7F3B"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-30a2bbe2-45a8-4f76-bbd9-c3edc34444cf.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-30ff93b4-cf90-42ad-912d-930b678bbf84.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "89BD9690C3E105E7E61CB810FC9843B48E3B5F149D8E306543D8DA14CC6C0B20"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-3151ea2e-a976-4af3-92f7-fdec2cd948a3.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "46C4882D949D1E871D4AA3EC40D66EEACDEE8394D6E771BA823EBCA54DCA83C5"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-328988e4-b8f8-4616-8063-13898d3d147b.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "860A36DF1D41E459D9CC1B55221549263DB48F818F21DE53DF15E0A2E1D8EE1F"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-3290af3d-9d95-4702-83a5-46ae6cd3390e.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-32dbc938-90c7-448e-a95d-5e8f2a2fe51c.wt",
+      "bytes": 49152,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1AF501AA780EF5638A7D5D378DDB921FFB3F1EC68541A033065065E03F3C4B6E"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-34df7a79-31d2-4f52-9885-0586dd3414d6.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-3575a0ef-794d-43f5-a5e8-dac770acee72.wt",
+      "bytes": 36864,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "BBBA47B6F4AF130D1D307EF73B32154B4294BCE5E74797FA5D2139CC23861EED"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-36710e19-5392-4631-9d6d-146a512c2eed.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-36e787af-0abd-4e1a-900b-8b83237bf34f.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-3766b69d-777a-4718-b4f8-df4430c433dd.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "13FB152C7A4D0762514E431035825C211E115070180887C5FD313AB89D7AC258"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-37a587f5-b4ce-4d71-9b56-98bff501d040.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "5F99774D1EE772F50E0C0125704B61B2194179BE124DCD21F895E51AF059DF77"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-386279a8-41c0-4d1e-97db-98d91159bc3c.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "95BCF3B2613277FF63329F6940D1753784DE757C58C1E23C2C5148081BC0EDD3"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-39a561a8-ec4d-4c3b-a443-b835c86d26c4.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-39c6003e-6b46-4814-957f-e86953d4574a.wt",
+      "bytes": 139264,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "C8D4AD5CE64C5FC59211D8BC01A8388379115254EB056C7F3587D740E5185125"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-39eb29bb-2da0-430d-b257-bbf373a8b5ed.wt",
+      "bytes": 1232896,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "0969001936739ABAC9567A59A3D0A319CD79A543C337045B3336A9E08142D10A"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-3a0baea5-1509-4569-a67e-9e5420416cbc.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-3a88152b-e4e4-4802-903b-6db5ca7eafc1.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-3ab07e6e-dd60-45cb-83c4-f588324aa334.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "A8DDD5079DE8611B17B606B338B30BBFA6AB52D1313F96AEF16F51AFA84D4688"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-3b16a7bf-f188-4770-b488-0e9b0649031b.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-3bb2ce90-51b3-4a4b-9d27-fa970719b6b1.wt",
+      "bytes": 49152,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "2E42F1DE522724BB409D06F6A7158A24B96EF021B6FC822809C6DB36AE1E2424"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-3bc5d1c9-7d6a-4e78-9947-1b7ca1210645.wt",
+      "bytes": 212992,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "9F8B602E0641279692E9A375FF2DF52B48FE603335F676DC5E6CA10DB0BB2368"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-3bfcbd19-0b8e-4472-ad53-8b98cf0a1d02.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-3c4af800-62d9-4da6-af62-1a9c13d6b013.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-3d1f2914-1956-4422-88ed-dd52b6c5f1c8.wt",
+      "bytes": 57344,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "809ADF0C30E7E48D066C4BF049DAC82674D3F37F03F409A4D685250604511072"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-3d4ce622-c3ca-4795-9f6e-0b905e32df05.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-3db2920e-9610-4bca-91dc-8554ce0bcf99.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "D6E4FDD0DE7F3218433916F7F778AE0338C42F75754B30E11DD55CE4847A504D"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-3dda0cdc-54a1-4603-807b-f4f0b32ad8a3.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "D4A680B50A4BE18F4073C1B85514275A77F93F41A5A905E0C3F75D18E25DF39F"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-3e023ec9-8e8b-49e9-8372-dc28fbb4d511.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-3e842644-85fb-4bc0-acfc-bcfe9ca11f2e.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-3eb93837-cb04-486e-83f9-c523a8388506.wt",
+      "bytes": 229376,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "C6A450F8C419BFA3C63B8AD7077C591213D54B7812431CF28D28E10B3FC21AA5"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-3ebb8dfc-ce59-463b-a5fa-14c1780a1a26.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-40b5b2f7-4c01-4955-ba89-bace4ffcc149.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-4126dedc-cb3e-41a0-91a5-3ec9b3689b47.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "BD2F15723412748B0A252DA27C368EF8FA7DA618305E5A6690FFDE445B4D9330"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-415ca644-c635-44d7-a107-01d82529ed37.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "9B4C4BC461C38DE2BD96F658BFADFFAAF5341F84D1067E01258031C1B7707E44"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-45a08318-0927-4a09-b904-c693bd851233.wt",
+      "bytes": 139264,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "BAB1698F7231E89177DC40913108743BCED54400D74725AAF40607D1713FFBA7"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-45a0fb71-cfba-4656-89f8-4b9e2056844a.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "0F0EBE73B0541BF6B6C665DD1A7DC16948FA92141D2D9B6B9E142283B0B2CD95"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-45e726b8-8b96-4d5c-946f-6445890ff403.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-47f98500-f1e1-4848-845b-677b869dd400.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-48708736-1375-4d37-93a3-b5969047f7c3.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-48bab1f7-f137-45de-b07c-41b6c498ca07.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-4905c01d-f6b0-4c01-8c11-5cb9da28fbad.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-494cda00-bcee-44be-9566-b96caec434d9.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-49672f69-cde6-4f0f-a3c5-8d032d4c6ff6.wt",
+      "bytes": 233472,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "64BC9BCB09F60733FD434454B2C3EBB4C8A98C7ED0470760180FA849CBB4053C"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-498b143e-b9ca-4830-a033-dd80c8d2cf27.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-49c1d387-08c7-4f4b-8758-66cf0fbb39cb.wt",
+      "bytes": 32768,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "6BD83A8064ED66B03ED431EC0CB66951BA7577734F93C1B061246466D94D7168"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-4c2e9ddf-9612-4874-92a5-7e0a24df4afb.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "6AD36210D288924CFAB5B0C6FCD112FEA7EE919DBEC144E2E754334FA527D0D0"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-4c3bc1db-d656-4f07-8a49-da75eb1e4550.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "757199FA0601B67BAE1B24EA6AC92C203847D37119482C9C0A8BD5D4FECA964D"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-4d8ded26-fdfd-4f86-949f-3984e1c49b96.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "CD88785A7CFC1788C6A37D0E1690FD954A67DF13263B83F6787E36A008FEE038"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-4ecebc16-39a1-48b9-ab63-8cd8e52dd513.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "FF5C82A199F31083BF7A69D088E43370908E570562968A8696C46F10F612CB9D"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-4ee84f31-8bae-44f1-ba8b-a9f8533698a5.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-4eea7d2c-d61d-486a-a2a5-304ab38a144a.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-4efcb025-31b4-4d80-872e-fa981a3afc75.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-4fb29111-9f19-4b3b-9119-5095a805fdec.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-50e1488f-519d-41d7-8a3d-3f083f64e38e.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-51dd0dba-b53e-4c32-bc59-37ad61d92ea5.wt",
+      "bytes": 626688,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "4333A90E1E30D1B81CCC5A87C123EB548788348E7D23507027486968D078DBEC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-51f4a0c6-e78f-4a4f-a6ff-4a3d4be5856a.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "FDD3DDF4BCD3FFA4DDDA6430BD4122BCD23675A481B1B400CAE4B6E3A533FC95"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-52dad4eb-3274-459c-975c-0e159cb4f668.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "2B029A67217F1A5D16C9A3DB336D7FD6042E05A6292DE18A41A974E7FE31BD7D"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-530eeeaf-fbe4-4b7e-a800-2be9d46ed33c.wt",
+      "bytes": 172032,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "325481FD69F191D843DA1277B5CAEE257B1A8159F4AA0FD7A2B7F9C52EDCE2BA"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-555d4b07-cdfd-4936-9498-a3f308413716.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "5937B47E99A9422F72777466A1CA713383FA29BEB1DFC2C75DC14282D8376D4F"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-55b1787c-96f1-4db0-9b4f-f506ab50cef0.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-56827724-8c4d-4891-83ed-f277a076f4e2.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "393FE824E556089D5D3D8BEC462DC698EBC965DCE02368E4343D1226FEDC1174"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-570f6c2e-4985-4b30-8d35-82de307b49eb.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-5738793c-8cc3-429a-a8c4-00d24f66b55c.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-57b3379b-b11c-45f4-bd01-824eb3e1f19c.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "D860A37018EB25492405EBE14F0DFFAA3E3308093E94E242DB697C12D621410D"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-5818cc25-586b-4fc3-a9e2-d9e5f3aef846.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-58989c86-a781-40ad-a307-e7d286557b06.wt",
+      "bytes": 212992,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "02D7A2F96C17C984368B6C41BCB85C1D001839BF3493722CAD9C926E7C4D6394"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-5936be5e-7853-4e4f-8168-653bc61a2bbf.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-59bc36f8-7a5e-41f8-9fb4-36641ae96a9d.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "4D4759309BB5D9059C2D3AAAA283407681ECB11DE324D62C62A52DF7A3AABE73"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-5a02141f-17fd-43a4-ba86-cb029296552c.wt",
+      "bytes": 36864,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "BE356F317A15571DC95B63F0888C1D371B4A2E33DB8C1A7F902ED6B5643A330C"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-5a0f9632-b031-483d-ab02-5fb9e6dac94d.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "3F7ED2CE5AE65726460F54D39B2F01669A6FBA6DF4B62708497176C61F5C0BCA"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-5a58fc72-5d50-409a-8871-1604af294f73.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-5a792e27-dbb4-4a4f-9ea3-588e90a2ae0f.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "923A70B43D44BD87534C0CA22CC82003B5ADC05C5DB5D6D00617374F82919D79"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-5a88c44f-9b46-42d8-ad9d-cac927344f81.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "4E5B665049078C0F9838D9EF7F08F79F64F0478269CA3E95687968D79D872422"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-5aa141d3-c6bb-43c1-b354-14787dbd9fe9.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "CBEA6DC6DAA98B965F030F950AA4D7125CD77DDB89B9DDBF2FC2238E26E27A9C"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-5b229b22-fb8a-43e4-85f6-6cc11eaff1e8.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-5b40fea5-dec8-4584-a31d-ceb6bd0b7970.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-5bcf3f6b-5172-453c-9f9a-38a78295f4e3.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-5cc4682b-003c-4c66-81f4-898bcefad332.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-5cf8b5c5-d4d5-426c-8d28-4734cbb8601f.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "83B0E5913245A842EF84B9F8CBF41E9523FBA26F51E5DD34B7BDCFA5C2942B0B"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-5cfebbc2-003a-4521-bcb8-055012fb939a.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-5dc53f37-c5c5-4a88-a03c-34b08ab6da7d.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-5ece1519-06c9-45dc-afc2-5a6e055e256d.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "F494DCB2A8540625F0AC4637A88FA577560243857CBE342B983A6DB024D0C177"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-601ec76d-f38b-422c-8cb2-94e3de113ff2.wt",
+      "bytes": 36864,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "7B2D293EFA6757D3924674580AF9736622D2C23EB38C4BF12B889915B2505824"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-60d29454-562a-443d-812f-fb5b90e01636.wt",
+      "bytes": 45056,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "DD1F1FCE6AC94E77DAF1050B37A77FAC5CFE76EF721525E54D92637F4D082BA3"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-6148cf9a-c6c2-413f-b19c-67efe8f3f2fe.wt",
+      "bytes": 3018752,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "23E02A3DFA0B296DA9593A91E30E486DD7AACF2CB1E98036AF80303287E10FA7"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-6170fb7c-e51d-461b-8ada-b76975a3f139.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-61d68072-9408-43c8-9b15-b9feddb5d673.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-632e368a-e361-4c64-ae9e-669b841bf147.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "B1B1BE9F697B82A736D01BF927E8248AEFEAF0B56EE8601562DE1DA0DAF1706C"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-63f15439-c7b6-4901-833a-b70d3f373669.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-64006414-b4a4-4450-9271-5b3a4332cb8f.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-64f6a1ef-89e2-4c50-be8e-036ca4fd12d7.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "CDCAA22D88BA1EDACA6043CD9C2B841FBDC8DC8AA77C70F7D2C9A01AC4625A43"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-6528a9d3-6eff-4d3f-a060-ba6b3962318b.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "DD8C94C9FD8B5EFA4E3F0688B5D064C6FB2B9AB5A480576CA02A04A8B1011995"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-670e6913-669b-4e6b-ae8b-a17ea70960c6.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-678bc875-7e01-474f-aed0-e2c0baeb30eb.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-68e44011-9df1-4196-8692-f78599a28b31.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-6956187a-d04b-4e06-9b31-9dffcae9cc17.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-6970a361-d488-4fcc-a1d8-ab30e91c34a6.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-69976d03-b4b5-48f0-992c-ab64a21088b0.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-6aa204b6-72a5-454e-b6fb-00be1ab195b1.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-6d1d2b06-4fea-40ba-9535-d2950a50f7fc.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-6d802fc3-a688-4df3-b992-3e0ac102fae0.wt",
+      "bytes": 36864,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "59DEDAA1C60110C36C9D955E3CE95B4D70C0CA4FA65AD307E5E05B560D057FF5"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-6d9bab11-a6d7-414e-b9e5-1012070273c1.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-6d9cd5ca-0024-4ab9-bc25-90613cec0134.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "941EA73E34E0C3E8D4E6E4F026C3ED36B4EBD7CA067236141557C4EE158464BC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-6dfb0211-b6fb-4671-8e2d-8664b7218bbc.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "C0777A445BA8E0D23D04DAB8C32B26776773F9E9B2EEBC78BDE1DB3B53FEDB25"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-6e0f7798-0ba5-443b-873e-3436ca2103ef.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-6e5b22e6-65d3-41c8-9498-c056a3913c29.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-6e8b3040-37d1-46ca-b40d-4af22622ab92.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "87931296FD76AD7028CB72B45B541362D04A1E992EE1400399F39BCDC3AA5D91"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-6ed7fef4-4b10-47d8-bf7b-b2eaaa254cce.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-7097fe5d-4aa1-44cc-968e-98a78e554bf1.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-7120810a-bdeb-4d26-8943-f2252fc7c233.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-7188d072-af8f-4e33-8611-094f8d8f6e72.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-71d98cb9-c2fa-4e2b-9ced-899ef3f0c53b.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-7248125b-e80b-40fd-9066-e8750bb0fcaa.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "61FE067502726FEA1E9CA29801FD77CBDFC3B851D64D026B7DC5C1F58EEF143C"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-73a845f8-8c34-4b42-b4b8-e9cb7aeeb5cc.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-73e01722-0f29-428e-8b6f-8a50b7f4db16.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-7444f5de-dd37-4b87-a517-fc4ec6d233c3.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-74edb4df-8145-4f59-8f97-770c2e3b76a6.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-756aa437-8213-42a9-8d0b-0fa26829b14b.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-758bc287-d94b-4da4-81b0-74d6228281c6.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-759c7df0-e480-45f5-b944-16a1d1fbac53.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "49B2C5F0A7F8CA51113BF74804E290336E15D72CBEF1C8C46D03FF6A68B244DD"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-75c743bd-82cb-4df2-92fa-708479920a33.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-761d4069-561b-4596-a0d4-0cf2e3db485d.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "B56279E93B95ACBF7FBC8013A269CCD102618386B94FC6108D1C8F69A3D0556A"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-76711653-0d22-4b1d-b2a5-8d7158865d5d.wt",
+      "bytes": 172032,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "5659DCD808CE8C5F1CEC24CBAA2566DC4B332B04C2EF13E9865332DD4E168DF2"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-770c4c70-e92d-41ab-8112-d85c243c3909.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "A2C7C66F2D8F1DFE412CBA7A9808CE6F111010B3F8F9CB7AD0733B5D2FE1465B"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-775bba5e-bf45-42ab-9c89-a9d2b5471e7e.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "17843E5141B337C799974A832DCBD7AEEFD16575E7FE52C94CEE8E2EBF2D1D56"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-78ed5190-bed3-4e20-a07f-d52e8f279b99.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "EE431A94400F0212822C27B174D826B4A1CE4287A6FE77D2EEED3301F7D24314"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-78fb8320-a19b-4b0c-97e2-e65ab3cc3d02.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-7945ccdd-fd8f-4a01-87aa-567c36ab26db.wt",
+      "bytes": 32768,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "D2F097712E37B75264848602CD7C31E094593A5E28430EAE166FB10513737D16"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-79521061-2e7f-45d9-9453-9eb90806a847.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-7cf9fc96-5179-4afb-b2f9-83bf45547e63.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "14475CA80DE811FCE44FC55C218B5A590B29D5A062A8FC4E8570F4482B486AA8"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-7d2827b1-eaa4-421a-9aa8-e844a773317a.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "082E289AC33FEF7B06B93C299AAA7ACF6E65556B48D6096C8624CC9D754F7337"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-7d47e3c8-80c3-4673-a42d-38093b27f788.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-7da6a3ec-8d2b-4158-b55a-600a136b260a.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "24165DD22628387B2C63B886530DD9C036CFAC1F307992232C327E28F177CF9E"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-7e273d6e-4e42-4808-adf5-f38ccb7f91ff.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "5D71875FF8C955504B1195EE2BC338F7432B03C27EE259ECCB4209EDF52ABB72"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-7e5ccd1f-2e72-44f7-b07b-7b493644d168.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-7f999df4-138c-4d8b-a4f0-22b35c0cb8ab.wt",
+      "bytes": 229376,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "4608F3610B11FE9A363E41B70B404BD2D34DA48715CE61A43D0CEF29733DC7B8"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-80113f1c-0be2-4429-9879-f40155c8b4fc.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "ED24DA89AF15426C03CCF4D0E042950CA57ABD593AC31650517397DCC6FB68E8"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-80c02275-6ee7-493f-9b29-96034b8973c2.wt",
+      "bytes": 65536,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "BE5653BF85BCE020DE7EEAACCD2E90090CFCE267EC0C0E3315CCE46B71130F4F"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-81c01804-cdc5-4c45-9e49-aafe2175e37f.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "8DDAA43FCF143597A245F951EB92549EA1BC0D29C718372915A0BB006FF5149E"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-82afae4b-85fc-4366-b9a1-a0f8b307100d.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-84fdf709-b997-4748-ab01-ab6b6206738e.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "CC4EBC66B102DB086D65830CBF780CC042A2AA0688256148C2D8A29B1B212A5F"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-85033163-fab8-4e03-aaf4-1d42d37cad66.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "997DD749ABAB4F63CBACDDC67E01197B5B43C331859CDADCF04811BAA97521B0"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-85a42ee0-23d7-47b0-b2ee-24121f305a01.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "B72EABA4ACBFF945C892109CCEA2ADAE355F691B19A2C3AA5CFE561DB30B0684"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-860f2469-c761-4022-b1b7-bc1d250e51ec.wt",
+      "bytes": 86016,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "4AF7128098A640DBE623C2F562195D5205399EA47AF4E0D636B0391D73B63607"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-86fe2e2e-bff5-4da5-a8fa-7f984f6f1341.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "66B46A2459C955C44AE05548FCADD9D2D079FAE81C477340A5520A5D616454CC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-87c378dd-e29f-4daa-9d89-9485688a58ab.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-88def568-1def-4443-9cd0-ca1f2a8dea08.wt",
+      "bytes": 12288,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "ED3A5C87DEF991F8CFCC5618847C3718D471E061CD1DED1CC18382991CF6C443"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-89132447-73ac-4f59-836d-9181c604d0d7.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "C33D3D48CCF573E456835B6FA5C54FE976F76522FD2D6D7150BD08C7AF2EDF28"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-8968ffd5-e5df-46a4-9933-192173cebcc5.wt",
+      "bytes": 2846720,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "E794370624F771B213120FE82D1DF4EA126C833BD0C9A1620E253FE35028506B"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-8aa8ae68-a71c-4c95-bda0-fc179808f2b0.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "D8F1AFC6D59235FFC6836E1A84750649127A6C30F894E43749F7F7EFFC18B06B"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-8b19b2a4-9bf8-4bdd-95eb-2b4f3ebc76e7.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "54F26660A0BE8D4D1FE5BA06C948999883D24C5D0DC6A5FAD31D614E547BA320"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-8b3f38bd-60ff-4a29-8d0d-00ff7cd917c0.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-8b5929b7-50ed-4364-9439-8de3a9ecc0e3.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "980384EA42CB42C69EBE26E0149F539A5F3227912B041F22BFDDC63E0ABAAB07"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-8d233ca1-780a-448c-a2cc-68729ceb2ae3.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "39455EC03A2CC29C9A1C315506737A205EBD9C9CAE5E7F6C6F8CBF000C3C7B73"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-8d281056-8993-4c74-9dee-608b3fdb7a94.wt",
+      "bytes": 172032,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "879907264ED4812FE029687266F46B8BAF8C96D46D94CECFC18CD8970B9AFEEC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-8d40805f-88bb-4a31-ba7d-d544f2a7b34b.wt",
+      "bytes": 36864,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "BAE2BB70B3E3C7A1D0403B5CE41FA4BD5AAB6C7EE3CAA09ABD534728586ED86F"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-8daf571d-c721-49a8-9b0b-cc0610cabc74.wt",
+      "bytes": 626688,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "DDC4CDD07AE2F0E2478641506A3AEB65133ECB7A2EF9B2605C51E4CEC0FB4367"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-8eb2b530-2311-42cb-a5be-2a3402cbdd18.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "4D77E02B2A4E4819BAF6813F47D59B361B51461E49082E2BDDCC7949B15C584E"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-8fea4665-5318-43a7-93ed-68c5c3d6eab4.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-908c1a0a-3e31-4996-b84f-87809d8d4bba.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "98F3DEAF6E4D86EAE191EEDEBE5656B1A986D068A44585079AAA48D708528C4E"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-912ba039-b900-45e1-92fd-04194d6caee0.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-918dfd34-55af-4088-b319-b8e686d60645.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "A59ECBB8623B8E8F061BE83DD34122DCA3B739EA3CEE1CE21857C3FF23438D3A"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-92ec7752-44a1-4e02-8276-cde01a3d5666.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "D98EAEDEC6C1B0E8887B9DE289DF031C6EDD2EC1D0767D349A9C3EA6785F134C"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-93636296-f169-46dd-a301-abe8aeafc6be.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-94cca43e-45c3-483b-8e60-ccaae42ecb91.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "03D273E871F660D9D745B2E4D3FC8CB6978A676700C87056B00C6CD5D7351C1C"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-955082bb-1f15-4acb-b7b5-4b556b3ac9ff.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "E4E8277AB507272469693266277FCC038B8CBAC53A5661BC6A26F5E303F7889C"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-9679f8ff-4c64-4e6c-abed-5330d41a852d.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "04D2B705620AF7217C433F7B49B5011BDFD0A198C4634469249710BF491A63B1"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-96d4743c-60a6-435f-b706-860a166029de.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "85A8B5FEEB8CD560DACB8DB8B0E7317E1641A0578B4AC09D7A02EFE8CEBA271F"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-972a3e65-3ff7-4f7b-8538-8f2d37fa809e.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "30146C533C59781BE6CC7FE4F3FE4952D9E6869935BE3A92AAB91503371F9F15"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-993630ae-b60c-4a44-93b1-3e09da182613.wt",
+      "bytes": 139264,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "789BD666D3D69D381EB9EA013514D153745F701BE3FCA9A74356916705180DB2"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-9a5375d0-a1a2-41f5-87cd-4d972b7ea325.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-9ace5350-55e6-4a00-8aac-b578cd56b4f8.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "C9AA56E1967FB772B55E355397B07C75887EA8C35903ECCFA56DF0225DC4F6BA"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-9b3ad00f-0ddc-4777-b867-a5e217d39809.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "0314F5642055C8F7204B513C11CDA93B5A51F9A9F0BE10158DC8C1A0AE21F0A1"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-9c1d9774-a619-40e0-8a5e-dd568e100fbe.wt",
+      "bytes": 36864,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "52969E4D2F24DAD7388F86B164178DB9C2AC9FE4734401CDBF6B28D3149DF4DF"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-9ca37a4d-4e2c-4020-8585-593a7e02f6c9.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "9DE7127DA7497B4493DAA98946D5BB5FDD5DEA075CFA9260E41B0450FFE9B000"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-9d686a19-fb56-43d8-a1ba-2f4401ad8790.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "64701B1164C5FF1E353A7D357A7ECBB04DCE12AA427EE04AF09410FC4DB5E81D"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-9d7227a6-a332-4c3d-b724-036cd62498e7.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-9e5d0b1d-6cb7-41ea-ae42-81a9490f1d6d.wt",
+      "bytes": 233472,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1898842D26503279A946DBFEC4F40C604AD69784AD10C438C15BA02C7042DC7C"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-a027b14b-6eb3-41ca-ba6c-2081da60b8fb.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "44AF21E220D6C36D7334AE3D06E2AC93CF329AC442F9F73B7EA352B2AF93ADAC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-a09bb5d9-475a-4d51-827f-f64d16c64a5c.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "2434F8145B22D702F130EB98898FB6E6F77551627B887A1CDA685C0B18AF564B"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-a0fa3ce5-0ca4-457b-b19f-f819d6c5f390.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-a2977011-6505-4b48-837a-30d1ea5409d8.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-a35721ca-6c55-4110-98e0-898a251df43c.wt",
+      "bytes": 36864,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "252D65C30D71960B016AAE6C912EF3484BB1A0AB1D2EE1CBC4D9B6BCB93580BC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-a4b899b4-c9ff-4b97-9db3-a024058743a7.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-a61887f0-57c8-4f0f-a297-da992be0443e.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "AFD4E814240AF599A8962433D69494C8423E615AA9E89999086B53952C5C7264"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-a7f6fb54-c57a-4bff-a9bc-c03444fe4f23.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-a8aa7bcd-0885-48cb-b46e-4de6133d5379.wt",
+      "bytes": 32768,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "DBAEEB28F347AC0C5DC168371C57821517A222F05627659A11A52EA03BCFB2E8"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-a962930a-1341-434d-9fa8-3cabb7620f20.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "83CE523A516E112B7537D4660C9EB19DE9262A69DB9D71A69383034F0AAB9B45"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-a966c18f-130d-478b-963b-4d27c5dacbf0.wt",
+      "bytes": 229376,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "2873D3E036126F8810C3AC646EC7C979D5EBBF95CA34BC5EC6E83C17197D0211"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-a9c2c39e-26e9-4f50-b6d8-3424aeedfd9b.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-aa6d00de-b7f0-4a48-a42f-968cd0974789.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-aaf2ca9c-98c2-409a-bd9f-c7776b9a8dd0.wt",
+      "bytes": 57344,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "9DAD186DB6BA0D8370F1A983BB5CEB0F04F5FFED17E4F568F132312F4B1C91DB"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-aafd3b4a-5691-4356-9743-06824508ad86.wt",
+      "bytes": 36864,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "C55AD06FC5B80071FFC622DCE52767C9F10BAEE0A8DE2116670F018E77BCD7E4"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-ab1905a7-7d00-47e6-bb8b-c5e720addb9f.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-ab3ea42a-1f69-4a78-8554-0c727b655eb7.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "11B5E4EB4C6CAD3E5B2A305F53B2AFE29943268A4CC076BE4DBD95911EB558EA"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-abc33845-173a-498a-92e8-2b908845e55f.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "285491B8811DE52E00B99B708127DAF15977EA7FC3B9C0D4D45E377E64B9FBD3"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-ac914f8c-24f6-4b62-b2cc-e194228474ef.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "A8190595BF00A2A01C591E7B785F37996A5F0D4C5C23070896F3023A4D96A9E0"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-acba183d-9574-48dd-94cc-c941625ebf6a.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "9C1D6D5FDFDEB2148DE4444576FD14C5448E5FCFC4B4C981CBA369B2783FFCFD"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-ae9c3024-f23d-499b-be7a-9bfe96d1ae44.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "E956F86451B2313CE89F403B2AA2A1C4CA839F2CB0B373C6AB140BF6965870F7"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-aea09267-2ad7-4975-b201-0a73aba792de.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-affac73d-6b04-496a-a09e-73cbec0a0afe.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "D20C39DAAFB716DF761B0DB8C0893F975587DB415C4523D9FCCE5C8E343070DE"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-b154dbfb-9f0e-4582-a62c-b89b240094be.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "934A2EF18BAD5B2BC464051F9570293D572E737E499D3009C5BD42A8AB7FA471"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-b17d5af9-58e3-450e-ba46-710032967345.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "D4BAC9BD1DDC9BDB4E9B6E9A770423813C0EB9409F6DB9D2CDA726C6123F7B70"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-b187147e-8884-4c55-b547-d768ed86b3ae.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-b3fac11e-208e-40e6-b86f-a4257f457212.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "963BA6E426AC14FBBF7E75D7D62A93A75F9C9603417ECAC7BBA006D0F2B1848F"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-b4213284-660f-4db8-8ba0-53e14e8e3110.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "D99660A65F33FABA5370D25BC6E8E6405EC4EC4539A65C9F30B85828A2E369C0"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-b44a6930-1479-4636-bef0-35e8b86bb788.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-b4ccb59b-1996-4d30-b2de-a4332cdbc63f.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "00696C9360DA000355208E3F694CD3B94E2701FE24281199F293C9A7A15EF9E9"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-b5033d66-5e64-4023-ae1e-60146c62e620.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "289A32AC54156BD68C5C7509F92B0D7536902E3536D1B03223D67BCB1859C898"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-b5052b49-96fe-4f93-89ca-bce57d92ad50.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-b5bdcf51-82d3-4629-9bd6-ee5378ff33fe.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "CC7093FA3019F20EA3335376A9D0F0D405870F0B6C9DA77F07E7CA17CF642CB2"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-b5f6a3a2-e7b7-4899-be27-feaf5ce15aa6.wt",
+      "bytes": 172032,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "67E77ADF637069CA5EC55DFC78BD50BA3325B666838E21F21592F1D135314614"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-b64a2075-f919-40ff-8e96-d27f3540fc60.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-b84f52e3-4418-427b-b92d-07ca5aecc43e.wt",
+      "bytes": 32768,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "597EA300991D4340917FE63D99862613DBB540B554C328F370FED85003EF89D9"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-b8755316-82ce-4c4c-a684-8426be711b93.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-b8ad3fc0-d1a0-47a6-8861-47e83a79c2bb.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "0C3C3212563844EC3E309FB194655C1EE94E2741D5F5B63835AB6CD4922C931D"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-b91726d5-9c87-4ab8-b816-4e5fe6ec7f49.wt",
+      "bytes": 86016,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "3B99F0C3451777C3B054C5F9B8DDB0EA870DAADC7468532551C4AE751AE85F0E"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-b9944044-9a82-460d-9272-14d0a9baafba.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-b9ffd67a-ffa7-441b-bc98-48674b8198ad.wt",
+      "bytes": 12288,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "531CB99C4A7EF9015FB68652C30189FAF816E84A42E88E63DE30A6FB5EDEDCCE"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-ba03bd76-ec00-4547-b1e2-60b8c1d367e5.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "2126B7520A7732637BD02C422CBB40550DD55AD75FA2FCCD0EFEAEB05A312514"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-ba335928-fa0a-4058-8088-65b97d6cb274.wt",
+      "bytes": 65536,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "DD9BB5594026219D6BD3016F7FA434F3A86A5BA59B6F570C2855363A29D5A086"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-bb86919d-d678-4958-b128-1802b41c0b78.wt",
+      "bytes": 8192,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "45929EB1ADA2EF9A34AE8F57FB29D375C1DAE075A4711C85B7FBD4DCB00FB5B6"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-bc10146c-0447-4008-82d1-da2b63809113.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-be8d290c-1adc-4a06-9680-6fc97c0cf6df.wt",
+      "bytes": 32768,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "EA058F63B3A17D220BE2F56E38F3B6FB4404319066A87C6E0E6A758806365057"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-bf510732-2bb3-4c60-a647-f14809ff4db2.wt",
+      "bytes": 86016,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "A33613DE23A5D8981452354DCFCC5FBD26FD9ED188465B092B6825C6A2752E9E"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-c028338d-36a8-47e3-a5a4-c92018e8e577.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "993620A2425DCD00B035650E93CA99C8F3B51C43B9994A506A16F4E02BA8F76E"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-c0a81b92-194a-4cc7-9561-1c358d0b5177.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-c0be10b7-eb14-453b-8bee-8e4aa34baf20.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "B69FEB07994F03DEC741BFD765893E785EDD66DEBCD74A0AC97EF538AEB136FE"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-c0e3a97e-1937-466c-a9c4-6d45f2288ebf.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-c15f5f0d-81e3-46b6-8363-448e60a591f5.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-c1d552b0-3089-4962-9ab7-45ff469feab7.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-c282567b-0fa8-407b-a4eb-f1a47a220812.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-c4243df9-ad31-4909-8846-4dda28093712.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "DFECECDCAB359759193A7CF68149E1C8FFC0AE799B2122E01A69B65627892D29"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-c5ee2c57-6b1c-4785-a47d-a2991452e629.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-c7a17d24-079d-4f0b-86c4-51240ab090fc.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "8C673305A8587FF7082B425F98D87F4F317D63EBA79CD7B5BCFDED06E3D8A136"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-c7a633b5-387a-406e-9e04-add390598a08.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-c9259dc5-22ea-463d-bcf9-29073b42f544.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-ca440bb7-9cab-43cd-8e9d-3101f9e47387.wt",
+      "bytes": 32768,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "FEC96F08B496F0D69C55A9BC6009E512F606662F46191DF664262560315EDB2E"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-cad76268-4beb-4efb-a1d0-67ea2dbd4abd.wt",
+      "bytes": 49152,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "DB8CAC1B5E825A685C4AE47B5321549C688EE5C8BD64D6850565B61E4C4EF84E"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-cb5e0c15-59d8-4869-a783-30041670b984.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-cd496ea5-aed9-4676-a8e0-f763182c227d.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-ce01a32a-6b1c-4262-9c98-1f4db253349f.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "08DD0C9F12E5BD58AFE7A30CAB264C2F1A06506B941BB9A1C9A61CC942BAB840"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-ce4d9666-eb86-4c29-88df-42ff0cc0e4bc.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-cf70ee3a-2d74-420c-a5aa-10e69b36c12d.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "47074064653230FA1E0D2E323EBAC87C6E4410BC1AD7A13629E541D6355DAD0C"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-d06f6d99-49c3-4681-8626-50d9466f2f76.wt",
+      "bytes": 32768,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "988ABE74943B36ED11A8C6C06691C214E1DFC9DCFC5C828B4F002C69A1914D1C"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-d242646c-dff8-4ad7-b091-b54f33dc46f9.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-d32d4abe-dfaa-44ed-bab1-62c9f0656940.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "4D1AD8D8040FFCB58183FCEFEF38FC34CB571D4DB3DEA4525913C98CE20427C1"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-d3669a64-e0d3-4947-8cbc-1803bd74d512.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-d38d8910-dee2-4fd6-8ee1-b5b5aeed7ae3.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "DA85129C57E40C5FC5CA4DE193715D064A09E6FC4ADC6AA3D0865EC9BF8E8DCF"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-d47d981e-3bd4-4df6-89b5-a6727c1e865a.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "BB59F7D47B64F078667A0680AD37886C1B249787DDD469CAF8E2E11105C931D3"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-d5272a4e-966b-4e71-92b5-566bdcab3f37.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-d5746a6b-9ab4-47f8-bc02-860a98d5839d.wt",
+      "bytes": 32768,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "427C0C62F97D1BB420BA8665E8F205945FD033477256A7994758FD534102D07E"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-d581208e-371e-4842-8297-16bb5a7ad1fd.wt",
+      "bytes": 172032,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "C43BB5F3C70F94949654FA5F5CFE0F8D04DDC5B1EFF2EF572ACEA3C46E9C5FDE"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-d6442594-3a42-41ee-8e74-bdd23d5d4699.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-d6f28870-b73d-4598-850e-ff4ca56090d1.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-d7343e82-7955-4222-8856-2624ba22ebd3.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-d78e9cdd-0b81-4d3a-85c7-e552888661f2.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "A402B60856E726EB45367C114C7C0A446153669578518C7E010BE92592DA43C8"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-d7a390fc-66c4-4acf-ba4c-a2976949db41.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "01724BE9799327B005532DD6293EA45CD7DF562D9C0666F12BF846D8BBD1C64B"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-d854ab2a-02af-49aa-a1c2-3c82337dad82.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-d9537e99-022a-4503-b876-326a7432df1f.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "AFD08A1F6B62D10D54A7EC4ABB2878CCF2F881810A0FFFA109FD7F84460311C2"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-dac5c1ff-4e4a-4425-af7b-7586f599dff9.wt",
+      "bytes": 626688,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "AF7BD1F21DC26E8C7FBFBE8993A6470ACA2E0169A6E656FA8150CAE7B63E381A"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-dbfdd307-a561-45dd-bc75-a8f60f1eaf01.wt",
+      "bytes": 36864,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "3E833145089F95929B11EE906ADC11C76F422D0B62AAE3C0F689650AE676C1C1"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-dc428bb1-e6e9-4e12-8e8f-8667e6f6dcc1.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-dd839cb4-040d-4e39-b50c-2600cbd2d365.wt",
+      "bytes": 40960,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "7D248757FEF2518DC92F5FE2EDE78FA348FC54D1ED5F2ABA414EF3233BA16A4A"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-de6dd7ec-71fb-4a3c-94f6-c66ac684ac34.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "3D5468EB8E6886ADA2F111EFD646FF86CB6135822263FBD73D71318D5D5F2222"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-de7afd0c-d6b0-46ad-8ebf-b3f0e2841dd5.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "43B43708C77D89F80C9D002993D8E651595F50A67F379C55778F050619AAEEBD"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-df11a43f-0764-4f63-bfe9-2fe6dcb95328.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-dfb19e5b-5377-415a-bfcb-5961c0e59386.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1010A8273320FDB78B5A6CCEFF8763EB577A1B0D1C1EA8895B65ECAD5BC7A8CB"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-dfd548bb-d7a0-4cdc-9ba1-0b60efddcbb6.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-e0a90946-0aa6-48da-9663-8dbdd32721db.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-e0c5af27-c1f7-418a-a1c0-ce8c615e85c9.wt",
+      "bytes": 53248,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "DDAA8B020F944C5A95CF5FC06DCBD27457959E8D5BCAA3D9FABB5034F5DF65E0"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-e276d53b-eb81-4e44-b6ad-42889290589c.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1E6A09D5E45DD06C750F9278E00EE08BA825E46DF4D32ECD5BE9A654597B0358"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-e2bdfe8c-d735-452b-a73f-2afbcdaae76f.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-e3a21fcd-7c3d-4479-bab7-e6c25b27d4a5.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-e447df59-28cc-47d1-aeae-d0f6ed996022.wt",
+      "bytes": 40960,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "9AB44D5C44302B8DBF77BA167B088434F0D04F1EB6512DB5AED604E797FA4BC1"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-e5368eb6-c2b8-4bd3-b7a5-6c14243583b0.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-e53cf97f-d948-4c0b-a8c2-55d7fda14a7c.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "6A3E588FE405A5D1F6E9AD4E482AF84606E138C1C468DB121ADB8E30656F5AFD"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-e5a20385-5a18-4c4a-9b11-53bb29b49c3a.wt",
+      "bytes": 45056,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "01CE8CB49718FF818FCC45BC7C6F9162DECAB9135DCEBB5107D44E095524D998"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-e780412b-5b7d-4e52-a4dd-9eaf5e1f175b.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-e7a02820-0d5e-491c-a2d8-7f34a1135ed7.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "DB75B6C668B76B00BD1AF8CF06FB1AC5CB5A69D12C3426AC3A41CEE09EFA71F7"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-e7b503a7-52be-4c59-a55e-cf81b85105ec.wt",
+      "bytes": 8192,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "028497460B404A3E47BCCAE0C0DC56CF8A941BC7953E0AA21833334FC991B6CB"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-e7eeee75-e9c5-46c0-bd57-c8cb98c682ba.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "F59365EF2F7CD4FF1B491353E168B44A8E612BA953632933D8687E1637184E48"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-e82b1522-940c-45bd-b099-9ae886e7c10f.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "5F9ED583483523F7A1E317218FF93A124DB1BF62E4D4067099B87C68CD68A542"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-ea6493c9-183a-4830-a370-4fbd6cd3f0fc.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-ea8a4f73-9d8b-4a66-97ae-24d4c376af7c.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "369BB1DFE7A43B15549F7167158482EE97E4732F1684D826B5A4E2121552BEC1"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-eabce983-4ed4-4b7e-8c74-0b3d8c00ea2c.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "CA179BA2409933E11911D19D4D58FA103DBF5EF00E7B4D7C6297C28EE3AB3026"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-eb136866-d425-4b63-8f56-d30adcc2f82b.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "985B704B0A48ACCDEE2277B2A73FE134CDF8CDEDCA957EBE795EA4B38F719D71"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-eb87bd58-b8f1-4f78-8f4a-e42e2e81fe1c.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-ebc04301-1677-47f0-9cbb-47e96dc4f6e3.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "B27E31240E277FCB33633F45378F62FC379B622FC6EB609F213FFD02B39FE399"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-ecaa4dd7-84d8-4a4f-9fed-c6e74fc19b86.wt",
+      "bytes": 32768,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "684A1B82B3D1D1B46F16468FFE9175B7A88C368C396DF728B47F6E4FED869094"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-ed172acb-671a-406b-a878-3edbc5d77b24.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-ef0a74aa-1c9b-46d3-a532-e83294e54317.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "04D5F7C51785AE0D0287968A9E6A1EB443BD3CB04C51C993A1C999E2818512DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-ef19b4a9-c58d-462e-854e-16c9b093d634.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-efebca68-dd25-4a97-8792-40bbca27803b.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-f12a930d-1b96-414a-93a6-bd93395ead4e.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "CE39792CBC421B3199FA22851B640E8F720E977652227227C74C1939DF1FC0E2"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-f1f250ec-38b6-41b3-9541-0f5b2ed648e7.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-f3c87dc7-efde-4e09-999f-785203134eae.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "B921F26F68582AD28045CBE85C81C77E9AF53E46D9E7BB3F04A1216E97F0E1FB"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-f3d5b12f-3731-4378-b028-451aeff92516.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-f4abf822-d788-48e5-88d6-33c72e300ff3.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "968F437D3B498F59348053932087296E634051B93B60C5AB4363C40C306186E4"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-f6786c93-4dfb-4482-ac27-bdee8744ed6e.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "0F1A0E66BA7C9CD44FB95770FE71F96BDE515C5A19D795320187C38F0CB51DF3"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-f67e5361-2cd2-49db-9a4a-a42479e1a35e.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "BF791CCE8A25F15FF9DF234114073AC8333B048E6FD8814633347A4F7AB6B588"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-f6a5ca5a-55ae-4221-be63-847d54534a27.wt",
+      "bytes": 36864,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "E2382192A872E03D9EFB2916EDBC06F3346F1171E79999992CC8C5A985479695"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-f70a0f78-1847-4b91-a16b-4c8f47dba439.wt",
+      "bytes": 40960,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1A6CA1346FFF5EBD0713DD7749573B773DD5DB30242730B54C2C965499FEBB72"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-f76416fc-f618-48ec-a0f4-7698d74e78da.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-f7a1237b-793a-43bd-93ff-b5ce09dafed7.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "AA699E09D3BD22224CF4DA9EE58B5769234938BB61DE916A55C3250B6032A8A5"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-f8dd0ad4-ef11-4e13-888a-b85884a3842d.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-f983e734-9a9a-45f0-98b9-b9a36538c68b.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "D255FB6EF6C3C3508D198B6B96FB3523F1DCAEE5CF0A925AA0C1449DC7C9E557"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-f98ea11d-91cd-4432-8375-e114a611ffeb.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-fab24ed0-0ed5-49e7-925c-0ec6c67db79b.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-fad43d25-2992-4e73-a666-a23921dd6c13.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-fb3e5b17-0873-4586-b0e8-f2c332f71560.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-fb506169-2aab-40e0-988a-c6c45fc0a56e.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-fc883987-5d00-412a-9d19-96da67768c2e.wt",
+      "bytes": 24576,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "03B3FB83EE0C43AA2EEC65F7EFCC84C06429A7AEC0C7C33B9DAC480A6FFCAC0D"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-fc90bb76-23a7-4130-b142-8ad0f97a2e0e.wt",
+      "bytes": 36864,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "564C4A555E1C804DC88B22B810AEDFF88B3C68760CB59FADE1DBAF11BAFC3276"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-fcbbffe3-6a77-45e7-a7b6-1e85f8516af4.wt",
+      "bytes": 233472,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "3BC6202C67D5A2837C3EAB78812EE72A3DE92DECD3472AA37B8455B55061187C"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-fcfba0ab-dda3-4506-8f27-69c159a74dc1.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-fd56d4e3-8771-4ab1-97e6-dd030080ae9c.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "C3FD5A7D633DF2321DB25DB8D20947DDE930E8A6BA449DEF1F716596D1B817B3"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-fdbbb42a-6951-4d76-87db-3a47cc63b25d.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "FA6DBA395E9CA01F4CD65890A3ACF08269F074961764F186D989B154109427DB"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-feaa2d22-74c8-4023-9328-b490b110efa9.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-ff2673c7-45ec-4884-bdf0-876e83831cc4.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "6EF915B3C57AD626A43F09F1896524C8BBB93F90B1C5707C7AA9136484E44888"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\index-ff640d70-846c-48fb-ab23-e3897c7d9e20.wt",
+      "bytes": 28672,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "32FA074F8CA64FC015EB52CB7DC4B4402F6004BA94BF2DE3115E74927B083249"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\mongod.lock",
+      "bytes": 6,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "EF21D3C4B4CC3FD5D78C878137BC80F665DD6D7FECE724EC9AE6946552D5B990"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\mongod.log",
+      "bytes": 392526,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "F545610F30FD6852FA01BC79B3B091B5AF6C493AA9D5D9A15CFAE71F0B58AE50"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\mongod.log.2026-11-07T11-52-07",
+      "bytes": 202617,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "9FAA83B67D99CF6A6F8ED7BF457CA0650AEF16269371A0DEEB73220D876CEBB6"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\mongod.log.2026-11-07T11-54-38",
+      "bytes": 441543,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "C3DDAF0C2C59B6CC1B562B37853B15A598AF79E11CAE93833F2D1CF4745AF262"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\mongod.log.2026-11-07T12-04-33",
+      "bytes": 529271,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "15DEB29C4E408800DC18ACE250F6D04857F123452994204629E80398E4D90C27"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\sizeStorer.wt",
+      "bytes": 32768,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "785827C31807D52E3F0EE1A61107350DB501D3FEE9E79D7DA61C3C6D60401A4E"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\storage.bson",
+      "bytes": 114,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "D62CBBD3FFEFAA778808964BE8AE83E07CDA318156EB947063DD3AC9FCECA5D6"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\WiredTiger",
+      "bytes": 50,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "E82054B26EE99403462D17C32FBE64887F13EC3D30291827494EC705E067353F"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\WiredTiger.lock",
+      "bytes": 21,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "76D2322A2BF791FBA11BCD6DF04EEA79CF94C250C57B6C98A5BC2AB492C3CA59"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\WiredTiger.turtle",
+      "bytes": 1472,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "4B3EBF693949DD7DFDC28A2AE56FC0C4C8D112B56CB724F62A0698C82E7A9524"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\WiredTiger.wt",
+      "bytes": 1351680,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "0FDF9039F58E0A5FA438F06516E7F58321F786C53755E828632B87A21B463215"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\WiredTigerHS.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\diagnostic.data\\metrics.2026-11-07T11-44-30Z-00000",
+      "bytes": 48775,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "F7BAD48863A4493F515B6FDDE55B3691DDB497A58AEC759264CDA6C96040014B"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\diagnostic.data\\metrics.2026-11-07T11-52-16Z-00000",
+      "bytes": 99237,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "557221C734AF7F3A899C9B7659D073E838118AECA96EE4AF1304DCCBBC2F2930"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\diagnostic.data\\metrics.2026-11-07T11-54-44Z-00000",
+      "bytes": 210392,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "6DB82D6253CD4E352558533D0CE1175A04166A0A21F7A75ABF436722E9C471CA"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\diagnostic.data\\metrics.2026-11-07T12-04-36Z-00000",
+      "bytes": 49299,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "620EDD05E57C1C73696F405D669A08ABB6E05BEF0FDE662377394701D2E84073"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\diagnostic.data\\metrics.interim",
+      "bytes": 33426,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "A2CD8EC5713623E3F2D0B3478240BF187951F82B78ED6E480EF51DE3638A972E"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\journal\\WiredTigerLog.0000000003",
+      "bytes": 10295808,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "C95FCCC9AA997BE147FC38547185171BCF8790865B0B45E1A555A358D4FFA69F"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\journal\\WiredTigerLog.0000000004",
+      "bytes": 104857600,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "3DF44BC4B600D647471F77246CBE2F99110B3B239B0A069768578F7CEF067350"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\journal\\WiredTigerPreplog.0000000001",
+      "bytes": 104857600,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "48747572EB4A79FDC2FF6FE7ADD9CE4A4382A3935BC26D5F24B5AE358E13755F"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\_tmp\\spilldb\\WiredTiger",
+      "bytes": 50,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "E82054B26EE99403462D17C32FBE64887F13EC3D30291827494EC705E067353F"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\_tmp\\spilldb\\WiredTiger.lock",
+      "bytes": 21,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "76D2322A2BF791FBA11BCD6DF04EEA79CF94C250C57B6C98A5BC2AB492C3CA59"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\_tmp\\spilldb\\WiredTiger.turtle",
+      "bytes": 1474,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "FF7CEE6F48B47E0E9A2A974AC156C824EF7545BC1722062778141BFA62F5C784"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\_tmp\\spilldb\\WiredTiger.wt",
+      "bytes": 20480,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "C593A169A67980B0D5C5115E2802C71269E039F1E2CAF84BC7EF98FAA37D485C"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107\\_tmp\\spilldb\\WiredTigerHS.wt",
+      "bytes": 4096,
+      "ownership": "Created by this task-owned isolated MongoDB launch",
+      "sha256": "1860B12165FB7ED336DDAB9D306EF38E18FCBD36BF695904C497B825F83581DC"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\unit-focused.txt",
+      "ownership": "Current task interim focused run, superseded by production-focused.tap",
+      "bytes": 10510,
+      "sha256": "C9883030CCD902E143C2BAF107419CA194291F13B8C86D3A285A94BB3BFF9D17"
+    }
+  ],
+  "retainedEmptyDirectories": [
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-interview-final-local-20261107",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Packages\\sandbox.{6fccbc47-72a6-43e1-a971-755042e9b271}\\AC\\Temp\\codex-interview-final-20261107"
+  ]
+}

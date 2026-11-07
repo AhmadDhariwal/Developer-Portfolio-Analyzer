@@ -83,6 +83,12 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
   practiceNotice = '';
   practiceError = '';
   generating = false;
+  activePracticeSession: InterviewSession | null = null;
+  savingProgress = false;
+  private progressSub?: Subscription;
+  private savedRequestKey = '';
+  private retrySavedPractice = false;
+  private progressFailed = false;
   selfChecks = new Map<string, 'review' | 'comfortable'>();
   recentQuestions: InterviewQuestion[] = [];
   sessions: InterviewSession[] = [];
@@ -183,6 +189,10 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
   private cancelRequests(): void {
+    this.progressSub?.unsubscribe();
+    this.savingProgress = false;
+    this.activePracticeSession = null;
+    this.savedRequestKey = '';
     this.catalogVersion++;
     this.askVersion++;
     this.practiceVersion++;
@@ -282,6 +292,8 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     if (!this.destroyed) this.cdr.detectChanges();
     const params: InterviewCatalogParams = {
       skill: this.selectedSkill,
+      category: this.category || undefined,
+      source: this.source || undefined,
       difficulty: this.difficulty || undefined,
       tags: [
         ...new Set(
@@ -448,6 +460,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
       });
   }
   cancelPractice(): void {
+    this.savedRequestKey = '';
     this.practiceVersion++;
     this.practiceSub?.unsubscribe();
     this.generating = false;
@@ -455,13 +468,16 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
   }
   generatePractice(saved = false): void {
     if (this.generating) return;
+    this.retrySavedPractice = saved;
+    this.progressFailed = false;
     const version = ++this.practiceVersion;
     this.generating = true;
     this.practiceError = '';
     if (!this.destroyed) this.cdr.detectChanges();
     const skill = this.selectedSkill;
+    if (saved && !this.savedRequestKey) this.savedRequestKey = crypto.randomUUID();
     const request = saved
-      ? this.prep.startSession(skill)
+      ? this.prep.startSession(skill, this.savedRequestKey)
       : this.prep.generateQuestions({
           skill,
           query: this.practiceFocus.trim(),
@@ -489,6 +505,21 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
             return;
           }
           this.practiceQuestions = response.questions;
+          this.progressSub?.unsubscribe();
+          this.savingProgress = false;
+          this.activePracticeSession = response.sessionId
+            ? {
+                _id: response.sessionId,
+                questions: response.questions,
+                topicKey: skill,
+                progress: {},
+                progressVersion: 0,
+                status: 'practice',
+              }
+            : null;
+          this.selfChecks.clear();
+          if (response.session) this.applySession(response.session);
+          this.savedRequestKey = '';
           this.practiceSkill = skill;
           this.practiceIndex = 0;
           this.practiceNotice = saved
@@ -525,7 +556,73 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     );
   }
   selfCheck(value: 'review' | 'comfortable'): void {
-    if (this.currentPractice) this.selfChecks.set(this.questionKey(this.currentPractice), value);
+    if (!this.currentPractice || this.savingProgress) return;
+    const session = this.activePracticeSession;
+    if (!session) {
+      this.selfChecks.set(this.questionKey(this.currentPractice), value);
+      return;
+    }
+    if (session.status === 'completed') return;
+    this.saveSessionChange(
+      this.prep.saveProgress(session._id, session.progressVersion || 0, this.practiceIndex, value),
+    );
+  }
+  get canCompleteSession(): boolean {
+    const session = this.activePracticeSession;
+    return (
+      !!session &&
+      session.status !== 'completed' &&
+      !this.savingProgress &&
+      session.questions.every((_, index) => !!session.progress?.[String(index)])
+    );
+  }
+  completeSession(): void {
+    const session = this.activePracticeSession;
+    if (session && this.canCompleteSession)
+      this.saveSessionChange(this.prep.completeSession(session._id, session.progressVersion || 0));
+  }
+  retryPractice(): void {
+    if (this.progressFailed && this.activePracticeSession)
+      this.resumeSession(this.activePracticeSession);
+    else this.generatePractice(this.retrySavedPractice);
+  }
+  private saveSessionChange(request: import('rxjs').Observable<InterviewSession>): void {
+    const id = this.activePracticeSession?._id;
+    this.savingProgress = true;
+    this.practiceError = '';
+    this.progressSub = request
+      .pipe(
+        finalize(() => {
+          this.savingProgress = false;
+          if (!this.destroyed) this.cdr.detectChanges();
+        }),
+      )
+      .subscribe({
+        next: (session) => {
+          if (this.activePracticeSession?._id !== id) return;
+          this.applySession(session);
+          this.historyLoaded = false;
+          this.practiceNotice =
+            session.status === 'completed'
+              ? 'Session completed. Your self-checks are saved.'
+              : 'Progress saved.';
+        },
+        error: (error) => {
+          this.progressFailed = true;
+          this.practiceError = this.errorText(
+            error,
+            'Could not save progress. Reload the session and retry.',
+          );
+        },
+      });
+  }
+  private applySession(session: InterviewSession): void {
+    this.activePracticeSession = session;
+    this.selfChecks.clear();
+    session.questions.forEach((question, index) => {
+      const value = session.progress?.[String(index)];
+      if (value) this.selfChecks.set(this.questionKey(question), value);
+    });
   }
   get currentCheck(): string {
     return this.currentPractice
@@ -607,12 +704,28 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
   }
   resumeSession(session: InterviewSession): void {
     this.cancelPractice();
+    this.progressFailed = false;
+    this.progressSub?.unsubscribe();
+    this.savingProgress = false;
+    this.applySession(session);
     this.practiceQuestions = session.questions;
     this.practiceIndex = 0;
     this.practiceSkill = session.topicKey || session.questions[0]?.topicKey || '';
     this.practiceNotice =
       'Reviewing a saved session. Evidence and verification reflect the recorded content.';
     this.tab = 'practice';
+    this.progressSub = this.prep.getSession(session._id).subscribe({
+      next: (fresh) => {
+        if (this.activePracticeSession?._id === fresh._id) {
+          this.applySession(fresh);
+          if (!this.destroyed) this.cdr.detectChanges();
+        }
+      },
+      error: (error) => {
+        this.practiceError = this.errorText(error, 'Could not reload this session.');
+        if (!this.destroyed) this.cdr.detectChanges();
+      },
+    });
   }
   questionKey(question: InterviewQuestion): string {
     return `${question.topicKey || ''}:${question._id || question.question}`;

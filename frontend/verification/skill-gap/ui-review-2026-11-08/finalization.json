@@ -1,0 +1,207 @@
+{
+  "checks": [
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--write",
+        "--config",
+        "frontend/.prettierrc",
+        "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.ts",
+        "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.html",
+        "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.spec.ts",
+        "frontend/src/app/pages/skill-gap/skill-gap-presentation.ts",
+        "frontend/src/app/pages/interview-prep/interview-prep.component.html",
+        "frontend/src/app/pages/interview-prep/interview-prep.component.spec.ts"
+      ],
+      "exitCode": 0,
+      "stdout": "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.ts 118ms (unchanged)\nfrontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.html 120ms (unchanged)\nfrontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.spec.ts 70ms (unchanged)\nfrontend/src/app/pages/skill-gap/skill-gap-presentation.ts 11ms (unchanged)\nfrontend/src/app/pages/interview-prep/interview-prep.component.html 230ms (unchanged)\nfrontend/src/app/pages/interview-prep/interview-prep.component.spec.ts 55ms (unchanged)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--check",
+        "--config",
+        "frontend/.prettierrc",
+        "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.ts",
+        "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.html",
+        "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.spec.ts",
+        "frontend/src/app/pages/skill-gap/skill-gap-presentation.ts",
+        "frontend/src/app/pages/interview-prep/interview-prep.component.html",
+        "frontend/src/app/pages/interview-prep/interview-prep.component.spec.ts"
+      ],
+      "exitCode": 0,
+      "stdout": "Checking formatting...\nAll matched files use Prettier code style!\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--write",
+        "--single-quote=false",
+        "--trailing-comma",
+        "none",
+        "--print-width",
+        "100",
+        "backend/src/tests/skillGapFullStackCoverage.test.js"
+      ],
+      "exitCode": 0,
+      "stdout": "backend/src/tests/skillGapFullStackCoverage.test.js 82ms (unchanged)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--check",
+        "--single-quote=false",
+        "--trailing-comma",
+        "none",
+        "--print-width",
+        "100",
+        "backend/src/tests/skillGapFullStackCoverage.test.js"
+      ],
+      "exitCode": 0,
+      "stdout": "Checking formatting...\nAll matched files use Prettier code style!\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/tests/skillGapFullStackCoverage.test.js"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--write",
+        "--config",
+        "frontend/.prettierrc",
+        "frontend/verification/skill-gap/ui-review-2026-11-08/REVIEW.md"
+      ],
+      "exitCode": 0,
+      "stdout": "frontend/verification/skill-gap/ui-review-2026-11-08/REVIEW.md 165ms\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--check",
+        "--config",
+        "frontend/.prettierrc",
+        "frontend/verification/skill-gap/ui-review-2026-11-08/REVIEW.md"
+      ],
+      "exitCode": 0,
+      "stdout": "Checking formatting...\nAll matched files use Prettier code style!\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "--",
+        "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.ts",
+        "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.html",
+        "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.spec.ts",
+        "frontend/src/app/pages/skill-gap/skill-gap-presentation.ts",
+        "frontend/src/app/pages/interview-prep/interview-prep.component.html",
+        "frontend/src/app/pages/interview-prep/interview-prep.component.spec.ts",
+        "backend/src/tests/skillGapFullStackCoverage.test.js"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "warning: in the working copy of 'backend/src/tests/skillGapFullStackCoverage.test.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/pages/interview-prep/interview-prep.component.html', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/pages/interview-prep/interview-prep.component.spec.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.html', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/pages/skill-gap/skill-gap-presentation.ts', LF will be replaced by CRLF the next time Git touches it\n"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--cached",
+        "--check",
+        "--",
+        "frontend/src/app/pages/interview-prep/interview-prep.component.html",
+        "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.html",
+        "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.ts",
+        "frontend/src/app/pages/skill-gap/skill-gap.component.scss",
+        "frontend/src/app/pages/skill-gap/skill-gap.component.spec.ts"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "ls-files",
+        "-s",
+        "--",
+        "frontend/src/app/pages/interview-prep/interview-prep.component.html",
+        "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.html",
+        "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.ts",
+        "frontend/src/app/pages/skill-gap/skill-gap.component.scss",
+        "frontend/src/app/pages/skill-gap/skill-gap.component.spec.ts"
+      ],
+      "exitCode": 0,
+      "stdout": "100644 c1a8c301faa63b2ecae49a595c193e959453cf3f 0\tfrontend/src/app/pages/interview-prep/interview-prep.component.html\n100644 33cd604301eeff024bc99ff338aeb0c8bfd3b2c6 0\tfrontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.html\n100644 1473ff7e4eb3289e810217bef3531a177aa9be22 0\tfrontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.ts\n100644 38b00987bbb145a24c697fd2923026768e154569 0\tfrontend/src/app/pages/skill-gap/skill-gap.component.scss\n100644 5e45ba71580280abeb55fdb5d9937d29d8c86784 0\tfrontend/src/app/pages/skill-gap/skill-gap.component.spec.ts\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "branch",
+        "--show-current"
+      ],
+      "exitCode": 0,
+      "stdout": "fix/interview-prep\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "exitCode": 0,
+      "stdout": "493c6697dad28f01c622c0261a2ce70c03b1a395\n",
+      "stderr": ""
+    }
+  ],
+  "initialStagedBlobs": {
+    "frontend/src/app/pages/interview-prep/interview-prep.component.html": "c1a8c301faa63b2ecae49a595c193e959453cf3f",
+    "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.html": "33cd604301eeff024bc99ff338aeb0c8bfd3b2c6",
+    "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.ts": "1473ff7e4eb3289e810217bef3531a177aa9be22",
+    "frontend/src/app/pages/skill-gap/skill-gap.component.scss": "38b00987bbb145a24c697fd2923026768e154569",
+    "frontend/src/app/pages/skill-gap/skill-gap.component.spec.ts": "5e45ba71580280abeb55fdb5d9937d29d8c86784"
+  },
+  "sourceFiles": [
+    "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.ts",
+    "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.html",
+    "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.spec.ts",
+    "frontend/src/app/pages/skill-gap/skill-gap-presentation.ts",
+    "frontend/src/app/pages/interview-prep/interview-prep.component.html",
+    "frontend/src/app/pages/interview-prep/interview-prep.component.spec.ts",
+    "backend/src/tests/skillGapFullStackCoverage.test.js"
+  ],
+  "currentStagedBlobs": {
+    "frontend/src/app/pages/interview-prep/interview-prep.component.html": "c1a8c301faa63b2ecae49a595c193e959453cf3f",
+    "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.html": "33cd604301eeff024bc99ff338aeb0c8bfd3b2c6",
+    "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.ts": "1473ff7e4eb3289e810217bef3531a177aa9be22",
+    "frontend/src/app/pages/skill-gap/skill-gap.component.scss": "38b00987bbb145a24c697fd2923026768e154569",
+    "frontend/src/app/pages/skill-gap/skill-gap.component.spec.ts": "5e45ba71580280abeb55fdb5d9937d29d8c86784"
+  },
+  "stagedContentsPreserved": true,
+  "branch": "fix/interview-prep",
+  "head": "493c6697dad28f01c622c0261a2ce70c03b1a395",
+  "cleanup": "No obsolete task-owned repository files found. Essential failures/logs and requested build output retained; no source files moved/deleted.",
+  "status": "PASS"
+}

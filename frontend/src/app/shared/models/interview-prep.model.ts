@@ -13,6 +13,8 @@ export interface InterviewAnswerSections {
 }
 
 export interface InterviewQuestion {
+  questionId?: string;
+  contentVersion?: string;
   _id?: string | null;
   sessionId?: string;
   skill?: string;
@@ -44,6 +46,7 @@ export interface InterviewQuestion {
 }
 
 export interface InterviewQuestionListResponse {
+  session?: InterviewSession;
   questions: InterviewQuestion[];
   total: number;
   totalAvailable?: number;
@@ -61,6 +64,10 @@ export interface InterviewQuestionListResponse {
 }
 
 export interface InterviewSession {
+  status?: 'practice' | 'completed';
+  progress?: Record<string, 'review' | 'comfortable'>;
+  progressVersion?: number;
+  completedAt?: string;
   _id: string;
   kind?: 'practice' | 'custom';
   topicKey?: string;

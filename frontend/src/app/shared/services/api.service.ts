@@ -943,6 +943,8 @@ export class ApiService {
 
   /* ── Interview Prep ── */
   generateInterviewPrep(payload: {
+    skill?: string;
+    idempotencyKey?: string;
     skillGaps: string[];
     careerStack?: string;
     experienceLevel?: string;
@@ -974,6 +976,8 @@ export class ApiService {
 
   searchInterviewPrepQuestions(params: {
     q: string;
+    category?: string;
+    source?: string;
     page?: number;
     limit?: number;
     skill?: string;
@@ -983,6 +987,8 @@ export class ApiService {
   }): Observable<any> {
     const query = new URLSearchParams();
     query.set('q', params.q);
+    if (params.category) query.set('category', params.category);
+    if (params.source) query.set('source', params.source);
     query.set('page', String(params.page ?? 1));
     query.set('limit', String(params.limit ?? 20));
     if (params.skill) query.set('skill', params.skill);
@@ -1019,6 +1025,19 @@ export class ApiService {
     return this.http.get(
       `${this.baseUrl}/interview-prep/history?limit=${encodeURIComponent(String(limit))}`,
     );
+  }
+
+  updateInterviewSession(
+    id: string,
+    payload: { expectedVersion: number; questionIndex?: number; selfCheck?: string },
+    complete = false,
+  ): Observable<any> {
+    const url = `${this.baseUrl}/interview-prep/sessions/${encodeURIComponent(id)}/${complete ? 'complete' : 'progress'}`;
+    return complete ? this.http.post(url, payload) : this.http.patch(url, payload);
+  }
+
+  getInterviewSession(id: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/interview-prep/sessions/${encodeURIComponent(id)}`);
   }
 
   /* ── Career Sprint ── */

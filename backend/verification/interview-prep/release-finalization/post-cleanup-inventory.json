@@ -1,0 +1,33 @@
+{
+  "counts": {
+    "tests": 57,
+    "suites": 0,
+    "pass": 56,
+    "fail": 1,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "duration_ms": 26722.2188
+  },
+  "records": [
+    {
+      "id": "TAP-1",
+      "line": 239,
+      "indent": 0,
+      "name": "Learning Hub memory path bypasses Redis, Mongo pool reads, and providers",
+      "parents": [],
+      "status": "FAIL",
+      "kind": "failure",
+      "location": "D:\\\\Developer-Portfolio-Analyzer\\\\backend\\\\src\\\\tests\\\\coursesPerformance.test.js:259:1",
+      "file": "backend/src/tests/coursesPerformance.test.js",
+      "error": "memory p95 67.23 should be < 50",
+      "stack": "TestContext.<anonymous> (D:\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\coursesPerformance.test.js:290:10)\nasync Test.run (node:internal/test_runner/test:1389:7)\nasync startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)",
+      "failureType": "testCodeFailure",
+      "skipReason": null,
+      "rawResult": "not ok 25 - Learning Hub memory path bypasses Redis, Mongo pool reads, and providers",
+      "rawDiagnostics": "  ---\n  duration_ms: 722.0764\n  type: 'test'\n  location: 'D:\\\\Developer-Portfolio-Analyzer\\\\backend\\\\src\\\\tests\\\\coursesPerformance.test.js:259:1'\n  failureType: 'testCodeFailure'\n  error: 'memory p95 67.23 should be < 50'\n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: true\n  actual: false\n  operator: '=='\n  stack: |-\n    TestContext.<anonymous> (D:\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\coursesPerformance.test.js:290:10)\n    async Test.run (node:internal/test_runner/test:1389:7)\n    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n  ...",
+      "attribution": "UNCLASSIFIED — individual reproduction and base comparison required",
+      "prerequisiteVariablesToVerify": []
+    }
+  ]
+}

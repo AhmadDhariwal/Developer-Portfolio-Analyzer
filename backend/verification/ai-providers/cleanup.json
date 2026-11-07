@@ -1,0 +1,179 @@
+{
+  "status": "PASS",
+  "processStopped": true,
+  "recursiveDirectoryDeletion": false,
+  "deletedFiles": [
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\_mdb_catalog.wt",
+      "bytes": 20480,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\collection-0fc94bf1-4e4d-40d4-998c-fbe46ffff713.wt",
+      "bytes": 20480,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\collection-45e42fbb-cf87-4d9b-b362-5de3d0689e87.wt",
+      "bytes": 20480,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\collection-7349cdb9-a7ef-4526-a3d2-8016d8270fbc.wt",
+      "bytes": 4096,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\collection-7da19eb7-80c7-4dc0-8650-5be19782c8e6.wt",
+      "bytes": 4096,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\collection-92eaca1e-de26-4707-80c6-89cd8e912ed5.wt",
+      "bytes": 20480,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\index-0a1a8751-bdc5-42cd-b355-fd143591f6a9.wt",
+      "bytes": 20480,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\index-34cdf183-c4d1-4f50-b448-379fe51f0ed7.wt",
+      "bytes": 4096,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\index-730a7b00-f30c-4b1e-8cca-78a42250d8fc.wt",
+      "bytes": 20480,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\index-b46068a4-6582-49e4-8f4f-6a3d24fc3109.wt",
+      "bytes": 20480,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\index-b7ba9fe3-1ec8-408e-b7b3-a2f65481d2b1.wt",
+      "bytes": 20480,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\index-c4b03134-32ea-4d1b-9701-984f972a3f72.wt",
+      "bytes": 4096,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\index-c67df429-8a50-4c36-8c47-8324112daabd.wt",
+      "bytes": 4096,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\index-d0ba09bb-3dcc-4d4c-9e3e-eeef567f740f.wt",
+      "bytes": 4096,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\mongod.lock",
+      "bytes": 6,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\mongod.log",
+      "bytes": 81266,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\mongod.log.2026-11-07T13-22-45",
+      "bytes": 73297,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\sizeStorer.wt",
+      "bytes": 4096,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\storage.bson",
+      "bytes": 114,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\WiredTiger",
+      "bytes": 50,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\WiredTiger.lock",
+      "bytes": 21,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\WiredTiger.turtle",
+      "bytes": 1463,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\WiredTiger.wt",
+      "bytes": 40960,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\WiredTigerHS.wt",
+      "bytes": 4096,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\diagnostic.data\\metrics.2026-11-07T13-20-07Z-00000",
+      "bytes": 49413,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\diagnostic.data\\metrics.2026-11-07T13-22-48Z-00000",
+      "bytes": 72419,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\journal\\WiredTigerLog.0000000001",
+      "bytes": 31232,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\journal\\WiredTigerLog.0000000002",
+      "bytes": 104857600,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\journal\\WiredTigerPreplog.0000000001",
+      "bytes": 104857600,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\_tmp\\spilldb\\WiredTiger",
+      "bytes": 50,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\_tmp\\spilldb\\WiredTiger.lock",
+      "bytes": 21,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\_tmp\\spilldb\\WiredTiger.turtle",
+      "bytes": 1474,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\_tmp\\spilldb\\WiredTiger.wt",
+      "bytes": 20480,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    },
+    {
+      "path": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107\\_tmp\\spilldb\\WiredTigerHS.wt",
+      "bytes": 4096,
+      "ownership": "Task-owned isolated shared-AI MongoDB fixture"
+    }
+  ],
+  "retainedEmptyRoot": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\codex-shared-ai-20261107",
+  "otherTemporaryFiles": []
+}

@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const interviewPrepService = require('../services/interviewPrepService');
 const aiProvider = require('../services/providers/interviewAIProvider');
 const aiService = require('../services/aiservice');
+const coordination = require('../services/interviewCoordinationService');
 const repository = require('../repositories/interviewQuestionRepository');
 const Session = require('../models/interviewPrepSession');
 const { clearMemoryCache, getCacheJsonWithMeta, setCacheJson } = require('../services/redisCacheService');
@@ -201,7 +202,8 @@ test('controlled AI faults are rejected without persistence, cache contamination
     });
   }
 });
-test('provider accepts a complete structured AI answer and reports typed failures', async () => {
+test('provider accepts a complete structured AI answer and reports typed failures', async (t) => {
+  t.mock.method(coordination, 'runAI', async (_prompt, operation) => operation(new AbortController().signal));
   const complete = {
     shortAnswer: 'An index accelerates data lookup, while a transaction groups operations into one atomic unit.',
     keyPoints: [
@@ -286,7 +288,8 @@ test('verified fallback selection reports useful content or an honest missing re
   assert.equal(missing.answer, 'No verified answer available.');
 });
 
-test('practice provider rejects failed and malformed structured output', async () => {
+test('practice provider rejects failed and malformed structured output', async (t) => {
+  t.mock.method(coordination, 'runAI', async (_prompt, operation) => operation(new AbortController().signal));
   aiService.runAIAnalysis = async () => ({ ok: false, value: { questions: [{ question: 'Fabricated fallback' }] } });
   await assert.rejects(
     () => aiProvider.generateStructuredQuestionSet({ skill: 'javascript', count: 5 }),
@@ -296,7 +299,7 @@ test('practice provider rejects failed and malformed structured output', async (
     ok: true,
     value: [{ question: 'What is JavaScript?', answer: 'Placeholder answer' }]
   });
-  assert.deepEqual(await aiProvider.generateStructuredQuestionSet({ skill: 'javascript', count: 5 }), []);
+  await assert.rejects(aiProvider.generateStructuredQuestionSet({ skill: 'javascript', count: 5 }), /invalid/);
 });
 
 test('scraper preserves the healthy source and retains only safe provenance URLs', async (t) => {

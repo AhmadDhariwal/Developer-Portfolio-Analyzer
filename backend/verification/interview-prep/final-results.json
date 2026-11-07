@@ -1,0 +1,27 @@
+{
+  "baseline": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\release1",
+  "candidate": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source",
+  "prerequisites": "Disposable Mongo replica set; Redis unavailable; bundled Python; credentials cleared",
+  "results": [
+    {
+      "label": "production-regression-final",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "--test-concurrency=2",
+        "backend/src/tests/**/*.test.js"
+      ],
+      "exitCode": 1,
+      "signal": null,
+      "milliseconds": 432068
+    },
+    {
+      "label": "disposable-mongo-cleanup",
+      "mongoStopped": true,
+      "temporaryFilesRemoved": 426,
+      "productionDataUsed": false
+    }
+  ]
+}

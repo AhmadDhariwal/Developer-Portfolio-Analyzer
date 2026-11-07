@@ -1,4 +1,5 @@
 const developerContext = require('../services/developerContextService');
+const interviewSessions = require('../services/interviewSessionService');
 const { resolveSkillSignals } = require('../services/coursePersonalizationService');
 const {
   DEFAULT_PAGE_LIMIT,
@@ -12,6 +13,20 @@ const {
 } = require('../services/interviewPrepService');
 
 const MAX_QUERY_LENGTH = 500;
+const cancellationSignal = (req, res) => {
+  const controller = new AbortController();
+  if (req.aborted || res.destroyed) controller.abort();
+  const cancel = () => {
+    if (!res.writableEnded) controller.abort();
+  };
+  req.once('aborted', cancel);
+  res.once('close', cancel);
+  res.once('finish', () => {
+    req.removeListener('aborted', cancel);
+    res.removeListener('close', cancel);
+  });
+  return controller.signal;
+};
 const VALID_DIFFICULTIES = new Set(['easy', 'medium', 'hard', 'senior', '']);
 const VALID_SOURCES = new Set(['seed', 'database', 'ai', 'scraped', 'ai_generated', 'verified_seed', 'prebuilt', '']);
 
@@ -62,13 +77,21 @@ const generateInterviewPrepSession = async (req, res) => {
       careerStack,
       experienceLevel,
       skillGaps: evidence.skillGaps,
-      personalization: evidence.personalization
+      personalization: {
+        ...evidence.personalization,
+        limitation:
+          `${evidence.personalization?.limitation || ''} Interview practice and completion do not establish verified ability or change readiness scores.`.trim()
+      },
+      signal: cancellationSignal(req, res),
+      idempotencyKey: req.get('Idempotency-Key') || req.body.idempotencyKey || ''
     });
 
     res.json(generated);
   } catch (error) {
     console.error('Interview prep generate error:', error.message);
-    res.status(500).json({ message: 'Failed to generate interview prep.' });
+    res
+      .status(error.statusCode || 500)
+      .json({ message: error.statusCode ? error.message : 'Failed to generate interview prep.' });
   }
 };
 
@@ -138,6 +161,7 @@ const searchInterviewPrepQuestions = async (req, res) => {
     const {
       q = '',
       skill = '',
+      source = '',
       difficulty = '',
       category = '',
       tags = '',
@@ -163,6 +187,7 @@ const searchInterviewPrepQuestions = async (req, res) => {
 
     const payload = await searchQuestionBank({
       q: trimmedQuery,
+      source,
       skill,
       difficulty: safeDifficulty,
       category,
@@ -241,6 +266,7 @@ const askInterviewPrepQuestion = async (req, res) => {
 
     const payload = await answerCustomInterviewQuestion({
       userId: req.user._id,
+      signal: cancellationSignal(req, res),
       question: cleanQuestion,
       skill,
       ...topicInput
@@ -268,6 +294,33 @@ const getInterviewPrepHistory = async (req, res) => {
 };
 
 module.exports = {
+  getInterviewSession: async (req, res) => {
+    try {
+      res.json(await interviewSessions.getOwned(req.user._id, req.params.id));
+    } catch (error) {
+      res
+        .status(error.statusCode || 500)
+        .json({ message: error.statusCode ? error.message : 'Could not load session.' });
+    }
+  },
+  updateInterviewSession: async (req, res) => {
+    try {
+      res.json(
+        await interviewSessions.updateProgress({
+          userId: req.user._id,
+          id: req.params.id,
+          expectedVersion: req.body.expectedVersion,
+          questionIndex: req.body.questionIndex,
+          selfCheck: req.body.selfCheck,
+          complete: req.path.endsWith('/complete')
+        })
+      );
+    } catch (error) {
+      res
+        .status(error.statusCode || 500)
+        .json({ message: error.statusCode ? error.message : 'Could not save session progress.' });
+    }
+  },
   getInterviewPrepQuestions,
   searchInterviewPrepQuestions,
   generateInterviewPrepQuestions,

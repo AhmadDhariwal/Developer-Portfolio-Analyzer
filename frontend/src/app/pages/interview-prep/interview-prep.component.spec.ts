@@ -38,6 +38,9 @@ describe('Interview Prep workspace', () => {
     generateQuestions: vi.fn(),
     startSession: vi.fn(),
     getSessions: vi.fn(),
+    getSession: vi.fn(),
+    saveProgress: vi.fn(),
+    completeSession: vi.fn(),
   };
   let component: InterviewPrepComponent;
   let fixture: ReturnType<typeof TestBed.createComponent<InterviewPrepComponent>>;
@@ -157,6 +160,32 @@ describe('Interview Prep workspace', () => {
     expect(component.askError).toContain('timed out');
     expect(component.customResult.question).toBe('Question 1');
   });
+  it('labels question generation consistently while preserving the internal tab and generation API', () => {
+    const pending = new Subject<InterviewQuestionListResponse>();
+    api.generateQuestions.mockReturnValue(pending);
+    const tabs = Array.from(
+      fixture.nativeElement.querySelectorAll('.nav-tab'),
+    ) as HTMLButtonElement[];
+    const generateTab = tabs.find((tab) => tab.textContent?.includes('Generate Questions'))!;
+    expect(generateTab).toBeTruthy();
+    expect(tabs.some((tab) => tab.textContent?.includes('Sessions & history'))).toBe(true);
+    generateTab.click();
+    fixture.detectChanges();
+    expect(component.tab).toBe('practice');
+    expect(fixture.nativeElement.querySelector('.section-intro').textContent).toContain(
+      'shared question bank',
+    );
+    const form = fixture.nativeElement.querySelector('.studio-form') as HTMLFormElement;
+    const submit = form.querySelector('button[type=submit]') as HTMLButtonElement;
+    expect(submit.textContent?.trim()).toBe('Generate Questions');
+    expect(fixture.nativeElement.textContent).not.toMatch(/practice studio/i);
+    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    fixture.detectChanges();
+    expect(api.generateQuestions).toHaveBeenCalledTimes(1);
+    expect(submit.textContent).toContain('Generating questions');
+    expect(submit.disabled).toBe(true);
+  });
+
   it('keeps fallback and partial practice honest and preserves sets on retry failure', () => {
     api.generateQuestions.mockReturnValue(of({ ...result(), aiGeneratedCount: 0, partial: true }));
     component.generatePractice();
@@ -178,9 +207,56 @@ describe('Interview Prep workspace', () => {
       }),
     );
     component.generatePractice(true);
-    expect(api.startSession).toHaveBeenCalledWith('react');
+    expect(api.startSession).toHaveBeenCalledWith('react', expect.any(String));
     expect(component.practiceNotice).toContain('Missing evidence');
     expect(component.historyLoaded).toBe(false);
+  });
+  it('persists self-checks and completes an owned session without awarding proficiency', () => {
+    const session = {
+      _id: 'saved',
+      questions: [question(1)],
+      progress: {},
+      progressVersion: 0,
+      status: 'practice' as const,
+    };
+    api.getSession.mockReturnValue(of(session));
+    component.resumeSession(session);
+    api.saveProgress.mockReturnValue(
+      of({ ...session, progress: { '0': 'review' }, progressVersion: 1 }),
+    );
+    component.selfCheck('review');
+    expect(api.saveProgress).toHaveBeenCalledWith('saved', 0, 0, 'review');
+    expect(component.currentCheck).toBe('review');
+    expect(component.canCompleteSession).toBe(true);
+    api.completeSession.mockReturnValue(
+      of({ ...session, progress: { '0': 'review' }, progressVersion: 2, status: 'completed' }),
+    );
+    component.completeSession();
+    expect(api.completeSession).toHaveBeenCalledWith('saved', 1);
+    expect(component.activePracticeSession?.status).toBe('completed');
+    expect(component.canCompleteSession).toBe(false);
+    component.selfCheck('comfortable');
+    expect(api.saveProgress).toHaveBeenCalledTimes(1);
+  });
+  it('retains the same creation key after failure and preserves progress on conflict', () => {
+    api.startSession.mockReturnValue(
+      throwError(() => ({ error: { message: 'temporarily busy' } })),
+    );
+    component.generatePractice(true);
+    component.retryPractice();
+    expect(api.startSession.mock.calls[0][1]).toBe(api.startSession.mock.calls[1][1]);
+    const session = { _id: 'saved', questions: [question(1)], progress: {}, progressVersion: 0 };
+    api.getSession.mockReturnValue(of(session));
+    component.resumeSession(session);
+    api.saveProgress.mockReturnValue(
+      throwError(() => ({ error: { message: 'Session changed. Reload.' } })),
+    );
+    component.selfCheck('comfortable');
+    expect(component.currentCheck).toBe('');
+    expect(component.practiceError).toContain('Reload');
+    expect(component.savingProgress).toBe(false);
+    component.retryPractice();
+    expect(api.getSession).toHaveBeenCalledTimes(2);
   });
   it('keeps history errors distinct from empty history', () => {
     api.getSessions.mockReturnValue(throwError(() => new Error('offline')));

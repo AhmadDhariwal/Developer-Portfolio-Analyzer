@@ -1,5 +1,7 @@
 const crypto = require('node:crypto');
 const aiProviderManager = require('./aiProviderManager');
+const aiConfig = require('../config/aiProviders');
+const { withAiBudget } = require('../utils/aiRequestBudget');
 const {
   getCacheJson,
   setCacheJson,
@@ -287,13 +289,48 @@ class AIService {
     return aiProviderManager.getStatus();
   }
 
-  async runAIAnalysis(
+  async runAIAnalysis(prompt, fallback, retries = 2, options = {}) {
+    const totalMs = Math.min(
+      aiConfig.setting('AI_REQUEST_TIMEOUT_MS'),
+      Number.isFinite(options.timeoutMs) && options.timeoutMs > 0 ? options.timeoutMs : Infinity
+    );
+    try {
+      return await withAiBudget(
+        (signal) =>
+          this._runAIAnalysis(prompt, fallback, retries, {
+            ...options,
+            signal,
+            timeoutMs: totalMs
+          }),
+        totalMs,
+        options.signal
+      );
+    } catch (error) {
+      this.metrics.fallbacks++;
+      return options.returnMeta
+        ? {
+            ok: false,
+            value: fallback,
+            reason: options.signal?.aborted ? 'cancelled' : error.aiReason || 'provider_error'
+          }
+        : fallback;
+    }
+  }
+
+  async _runAIAnalysis(
     prompt,
     fallback,
     retries = 2,
     { timeoutMs, returnMeta = false, preferredModel = '', signal, requestPolicy } = {}
   ) {
     const startedAt = Date.now();
+    const totalMs = Math.min(
+      aiConfig.setting('AI_REQUEST_TIMEOUT_MS'),
+      Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : Infinity
+    );
+    const deadline = startedAt + totalMs;
+    if (signal?.aborted)
+      return returnMeta ? { ok: false, value: fallback, reason: 'cancelled' } : fallback;
     this.metrics.requests += 1;
 
     const promptStats = this.estimatePrompt(prompt);
@@ -309,8 +346,17 @@ class AIService {
       promptStats.estimatedTokens > 5000 ? 'warn' : 'log'
     );
 
-    const cacheKey = this.hash(prompt);
-    const cachedValue = await this.getSharedCache(cacheKey);
+    const cacheKey = this.hash(
+      requestPolicy?.allowedProviders || preferredModel
+        ? JSON.stringify({
+            prompt,
+            providers: requestPolicy?.allowedProviders || null,
+            preferredModel
+          })
+        : prompt
+    );
+    const cachedValue =
+      requestPolicy?.cacheResponse === false ? null : await this.getSharedCache(cacheKey);
     if (cachedValue !== null) {
       this.metrics.cacheHits += 1;
       this.metrics.totalLatencyMs += Date.now() - startedAt;
@@ -318,7 +364,18 @@ class AIService {
         cacheKey: cacheKey.slice(0, 12),
         durationMs: Date.now() - startedAt
       });
-      return returnMeta ? { ok: true, value: cachedValue, reason: 'cache_hit' } : cachedValue;
+      if (signal?.aborted)
+        return returnMeta ? { ok: false, value: fallback, reason: 'cancelled' } : fallback;
+      const envelope = cachedValue?.__aiCacheV === 1 ? cachedValue : { value: cachedValue };
+      return returnMeta
+        ? {
+            ok: true,
+            value: envelope.value,
+            provider: envelope.provider,
+            model: envelope.model,
+            reason: 'cache_hit'
+          }
+        : envelope.value;
     }
 
     this.metrics.cacheMisses += 1;
@@ -339,9 +396,11 @@ class AIService {
       return returnMeta ? { ok: false, value: fallback, reason: 'no_provider' } : fallback;
     }
 
+    if (Date.now() >= deadline)
+      return returnMeta ? { ok: false, value: fallback, reason: 'timeout' } : fallback;
     const result = await aiProviderManager.execute(prompt, {
       retries,
-      timeoutMs,
+      timeoutMs: deadline - Date.now(),
       preferredModel,
       signal,
       requestPolicy,
@@ -352,7 +411,13 @@ class AIService {
       this.metrics.aiCalls += 1;
       this.metrics.aiLatencyMs.push(result.latencyMs || 0);
       if (this.metrics.aiLatencyMs.length > 1024) this.metrics.aiLatencyMs.shift();
-      await this.setSharedCache(cacheKey, result.parsed);
+      if (requestPolicy?.cacheResponse !== false)
+        await this.setSharedCache(cacheKey, {
+          __aiCacheV: 1,
+          value: result.parsed,
+          provider: result.provider,
+          model: result.model
+        });
       this.metrics.totalLatencyMs += Date.now() - startedAt;
       this.log('ai_request_complete', {
         provider: result.provider,

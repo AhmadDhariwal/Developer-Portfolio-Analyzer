@@ -132,7 +132,7 @@
           points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
         />
       </svg>
-      <span>Practice studio</span>
+      <span>Generate Questions</span>
     </button>
 
     <button
@@ -517,8 +517,8 @@
         <div class="empty-icon-wrap" aria-hidden="true">⌕</div>
         <h3>No questions match this focus</h3>
         <p>
-          Try a broader search or reset your filters. You can also ask a specific question in the
-          practice studio.
+          Try a broader search or reset your filters. You can also generate custom questions in the
+          Question Generator.
         </p>
         <div class="empty-actions">
           <button class="button secondary" type="button" (click)="resetFilters()">
@@ -569,15 +569,16 @@
   </div>
 
   <!-- ══════════════════════════════════════════════
-       TAB 2: PRACTICE STUDIO (Seamless & Unboxed)
+       TAB 2: QUESTION GENERATOR (Seamless & Unboxed)
        ══════════════════════════════════════════════ -->
   <section *ngIf="tab === 'practice'" class="studio-section" aria-labelledby="studio-heading">
     <div class="section-intro">
       <div class="intro-left">
-        <span class="eyebrow dev-eyebrow">FOCUSED, THOUGHTFUL PRACTICE</span>
-        <h2 id="studio-heading">Turn knowledge into an answer.</h2>
+        <span class="eyebrow dev-eyebrow">QUESTION GENERATOR</span>
+        <h2 id="studio-heading">Generate targeted interview questions.</h2>
         <p class="muted">
-          Build a practice drill or work through one question. Your saved answers stay private.
+          Generate question sets for your technology focus or explore specific concepts. Generated
+          questions may be reused in the shared question bank. Saved sessions remain private.
         </p>
       </div>
 
@@ -595,12 +596,12 @@
       <!-- Card 1: AI Practice Set -->
       <section class="surface studio-panel" aria-labelledby="practice-heading">
         <div class="panel-header-badge">
-          <span class="panel-kicker">01 / PRACTICE SET</span>
+          <span class="panel-kicker">01 / QUESTION GENERATOR</span>
         </div>
-        <h3 id="practice-heading" class="studio-panel-title">Train your reasoning</h3>
+        <h3 id="practice-heading" class="studio-panel-title">Generate focused question sets</h3>
         <p class="muted small">
-          Choose a focus for AI practice, or start a saved session from your library and current
-          career context.
+          Choose a focus to generate custom questions, or create a question set from your library
+          and current career context.
         </p>
 
         <form (ngSubmit)="generatePractice()" class="studio-form">
@@ -652,7 +653,7 @@
 
           <button class="button primary submit-drill-btn" type="submit" [disabled]="generating">
             <span *ngIf="generating" class="spinner" aria-hidden="true"></span>
-            <span>{{ generating ? 'Preparing practice…' : 'Generate practice set' }}</span>
+            <span>{{ generating ? 'Generating questions…' : 'Generate Questions' }}</span>
           </button>
         </form>
 
@@ -715,13 +716,8 @@
     <!-- Practice Notices & Errors -->
     <div *ngIf="practiceError" class="notice error" role="alert">
       <span>{{ practiceError }}</span>
-      <button
-        type="button"
-        class="text-button"
-        (click)="generatePractice()"
-        [disabled]="generating"
-      >
-        Retry practice
+      <button type="button" class="text-button" (click)="retryPractice()" [disabled]="generating">
+        Retry practice / reload progress
       </button>
     </div>
     <div *ngIf="practiceNotice && !practiceError" class="notice" role="status">
@@ -774,6 +770,7 @@
             [class.active]="currentCheck === 'review'"
             [attr.aria-pressed]="currentCheck === 'review'"
             (click)="selfCheck('review')"
+            [disabled]="savingProgress || activePracticeSession?.status === 'completed'"
           >
             Review later
           </button>
@@ -783,14 +780,35 @@
             [class.active]="currentCheck === 'comfortable'"
             [attr.aria-pressed]="currentCheck === 'comfortable'"
             (click)="selfCheck('comfortable')"
+            [disabled]="savingProgress || activePracticeSession?.status === 'completed'"
           >
             Comfortable
           </button>
         </div>
         <span class="muted small self-check-note">
-          Your self-check for this visit, not a proficiency score.
+          {{
+            activePracticeSession
+              ? 'Self-checks are saved with this session.'
+              : 'Self-checks apply to this visit.'
+          }}
+          Self-checks do not award proficiency.
         </span>
       </div>
+      <button
+        *ngIf="activePracticeSession"
+        type="button"
+        class="button primary"
+        [disabled]="!canCompleteSession"
+        (click)="completeSession()"
+      >
+        {{
+          activePracticeSession.status === 'completed'
+            ? 'Session completed'
+            : savingProgress
+              ? 'Saving…'
+              : 'Complete session'
+        }}
+      </button>
     </section>
 
     <!-- Custom Answer Section -->
@@ -1023,7 +1041,7 @@
         Start a saved personalized session or ask a new AI question to build your private history.
       </p>
       <button class="button primary" type="button" (click)="changeTab('practice')">
-        Open practice studio
+        Open Question Generator
       </button>
     </div>
   </section>

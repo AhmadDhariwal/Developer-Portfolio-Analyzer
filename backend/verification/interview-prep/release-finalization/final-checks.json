@@ -1,0 +1,275 @@
+{
+  "results": [
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--write",
+        "--single-quote",
+        "--trailing-comma",
+        "none",
+        "--print-width",
+        "120",
+        "backend/src/scripts/verifyBackendRelease.cjs"
+      ],
+      "exitCode": 0,
+      "stdout": "backend/src/scripts/verifyBackendRelease.cjs 414ms (unchanged)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--check",
+        "--single-quote",
+        "--trailing-comma",
+        "none",
+        "--print-width",
+        "120",
+        "backend/src/scripts/verifyBackendRelease.cjs"
+      ],
+      "exitCode": 0,
+      "stdout": "Checking formatting...\nAll matched files use Prettier code style!\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--write",
+        "--single-quote",
+        "--trailing-comma",
+        "all",
+        "--print-width",
+        "100",
+        "backend/src/tests/coursesPerformance.test.js"
+      ],
+      "exitCode": 0,
+      "stdout": "backend/src/tests/coursesPerformance.test.js 418ms (unchanged)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--check",
+        "--single-quote",
+        "--trailing-comma",
+        "all",
+        "--print-width",
+        "100",
+        "backend/src/tests/coursesPerformance.test.js"
+      ],
+      "exitCode": 0,
+      "stdout": "Checking formatting...\nAll matched files use Prettier code style!\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/scripts/verifyBackendRelease.cjs"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/tests/coursesPerformance.test.js"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--write",
+        "--ignore-path",
+        "NUL",
+        "--prose-wrap",
+        "preserve",
+        "--print-width",
+        "120",
+        "docs/AI_PIPELINE.md",
+        "docs/ARCHITECTURE.md",
+        "backend/verification/interview-prep/BACKEND-REGRESSION-RECONCILIATION.md"
+      ],
+      "exitCode": 0,
+      "stdout": "docs/AI_PIPELINE.md 497ms (unchanged)\ndocs/ARCHITECTURE.md 70ms (unchanged)\nbackend/verification/interview-prep/BACKEND-REGRESSION-RECONCILIATION.md 631ms\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--check",
+        "--ignore-path",
+        "NUL",
+        "--prose-wrap",
+        "preserve",
+        "--print-width",
+        "120",
+        "docs/AI_PIPELINE.md",
+        "docs/ARCHITECTURE.md",
+        "backend/verification/interview-prep/BACKEND-REGRESSION-RECONCILIATION.md"
+      ],
+      "exitCode": 0,
+      "stdout": "Checking formatting...\nAll matched files use Prettier code style!\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "warning: in the working copy of 'backend/src/config/aiProviders.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/controllers/admin/adminController.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/controllers/admin/jobController.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/controllers/auditLogController.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/controllers/interviewPrepController.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/controllers/recruiter-hub/candidateController.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/controllers/recruiter-hub/comparisonController.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/controllers/recruiter-hub/matchController.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/controllers/recruiter-hub/recruiterActivityController.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/controllers/recruiter-hub/recruiterAnalyticsController.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/controllers/recruiter-hub/recruiterDashboardController.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/controllers/recruiter-hub/recruiterJobController.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/controllers/recruiter-hub/recruiterProfileController.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/controllers/recruiter-hub/shortlistController.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/scripts/benchmarkAIInfrastructure.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/scripts/benchmarkSkillGapColdRequest.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/scripts/captureBackendRegression.cjs', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/scripts/configureSharedAiEnvironment.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/scripts/migrateInterviewQuestionBankStructuredAnswers.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/scripts/reconcileBackendTap.cjs', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/scripts/seedInterviewQuestionBank.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/scripts/verifyBackendRegression.cjs', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/scripts/verifyCareerSprintAiLive.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/scripts/verifySharedAiProviders.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/services/aiProviderManager.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/services/aiservice.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/services/courseRecommendationService.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/services/emailAuditService.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/services/interviewPrepService.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/tests/aiProviderPlatform.test.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/tests/coursesPerformance.test.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/tests/fixtures/disposableRequestMongo.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/tests/interviewPrepFinalization.integration.test.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/tests/interviewPrepPerformance.test.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/tests/publicPortfolio.integration.test.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/utils/logger.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/verification/interview-prep/BACKEND-REGRESSION-RECONCILIATION.md', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'docs/AI_PIPELINE.md', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'docs/ARCHITECTURE.md', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/scripts/interview-prep-preview.cjs', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/scripts/verify-interview-production.cjs', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/admin/pages/admin-teams/admin-teams.component.ts', LF will be replaced by CRLF the next time Git touches it\n"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--cached",
+        "--check"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "branch",
+        "--show-current"
+      ],
+      "exitCode": 0,
+      "stdout": "fix/interview-prep\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "status",
+        "--short"
+      ],
+      "exitCode": 0,
+      "stdout": " M backend/.env.example\n M backend/src/config/aiProviders.js\n M backend/src/scripts/configureSharedAiEnvironment.js\n M backend/src/scripts/verifyCareerSprintAiLive.js\n M backend/src/scripts/verifySharedAiProviders.js\n M backend/src/services/aiProviderManager.js\n M backend/src/services/courseRecommendationService.js\n M backend/src/tests/aiProviderPlatform.test.js\n M backend/src/tests/coursesPerformance.test.js\n M backend/src/tests/fixtures/disposableRequestMongo.js\n M backend/src/tests/publicPortfolio.integration.test.js\n M backend/verification/interview-prep/BACKEND-REGRESSION-RECONCILIATION.md\n M docs/AI_PIPELINE.md\n M docs/ARCHITECTURE.md\n?? backend/src/scripts/auditReleaseEnvironment.cjs\n?? backend/src/scripts/verifyBackendRelease.cjs\n?? backend/src/scripts/verifyReleaseIndexes.cjs\n?? backend/src/tests/fixtures/resume/columns.pdf\n?? backend/src/tests/fixtures/resume/corrupt.pdf\n?? backend/src/tests/fixtures/resume/empty.pdf\n?? backend/src/tests/fixtures/resume/encrypted.pdf\n?? backend/src/tests/fixtures/resume/layout-shift.pdf\n?? backend/src/tests/fixtures/resume/page-limit.pdf\n?? backend/src/tests/fixtures/resume/scanned.pdf\n?? backend/src/tests/fixtures/resume/standard.pdf\n?? backend/verification/interview-prep/release-finalization/\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--write",
+        "--single-quote",
+        "--trailing-comma",
+        "none",
+        "--print-width",
+        "120",
+        "backend/src/scripts/verifyReleaseIndexes.cjs"
+      ],
+      "exitCode": 0,
+      "stdout": "backend/src/scripts/verifyReleaseIndexes.cjs 694ms (unchanged)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--check",
+        "--single-quote",
+        "--trailing-comma",
+        "none",
+        "--print-width",
+        "120",
+        "backend/src/scripts/verifyReleaseIndexes.cjs"
+      ],
+      "exitCode": 0,
+      "stdout": "Checking formatting...\nAll matched files use Prettier code style!\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/scripts/verifyReleaseIndexes.cjs"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--write",
+        "--ignore-path",
+        "NUL",
+        "--prose-wrap",
+        "preserve",
+        "--print-width",
+        "120",
+        "docs/AI_PIPELINE.md",
+        "backend/verification/interview-prep/BACKEND-REGRESSION-RECONCILIATION.md"
+      ],
+      "exitCode": 0,
+      "stdout": "docs/AI_PIPELINE.md 2317ms (unchanged)\nbackend/verification/interview-prep/BACKEND-REGRESSION-RECONCILIATION.md 2000ms\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--check",
+        "--ignore-path",
+        "NUL",
+        "--prose-wrap",
+        "preserve",
+        "--print-width",
+        "120",
+        "docs/AI_PIPELINE.md",
+        "backend/verification/interview-prep/BACKEND-REGRESSION-RECONCILIATION.md"
+      ],
+      "exitCode": 0,
+      "stdout": "Checking formatting...\nAll matched files use Prettier code style!\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "warning: in the working copy of 'backend/src/config/aiProviders.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/controllers/admin/adminController.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/controllers/admin/jobController.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/controllers/auditLogController.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/controllers/interviewPrepController.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/controllers/recruiter-hub/candidateController.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/controllers/recruiter-hub/comparisonController.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/controllers/recruiter-hub/matchController.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/controllers/recruiter-hub/recruiterActivityController.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/controllers/recruiter-hub/recruiterAnalyticsController.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/controllers/recruiter-hub/recruiterDashboardController.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/controllers/recruiter-hub/recruiterJobController.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/controllers/recruiter-hub/recruiterProfileController.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/controllers/recruiter-hub/shortlistController.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/scripts/benchmarkAIInfrastructure.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/scripts/benchmarkSkillGapColdRequest.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/scripts/captureBackendRegression.cjs', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/scripts/configureSharedAiEnvironment.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/scripts/migrateInterviewQuestionBankStructuredAnswers.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/scripts/reconcileBackendTap.cjs', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/scripts/seedInterviewQuestionBank.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/scripts/verifyBackendRegression.cjs', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/scripts/verifyCareerSprintAiLive.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/scripts/verifySharedAiProviders.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/services/aiProviderManager.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/services/aiservice.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/services/courseRecommendationService.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/services/emailAuditService.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/services/interviewPrepService.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/tests/aiProviderPlatform.test.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/tests/coursesPerformance.test.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/tests/fixtures/disposableRequestMongo.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/tests/interviewPrepFinalization.integration.test.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/tests/interviewPrepPerformance.test.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/tests/publicPortfolio.integration.test.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/utils/logger.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/verification/interview-prep/BACKEND-REGRESSION-RECONCILIATION.md', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'docs/AI_PIPELINE.md', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'docs/ARCHITECTURE.md', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/scripts/interview-prep-preview.cjs', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/scripts/verify-interview-production.cjs', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/admin/pages/admin-teams/admin-teams.component.ts', LF will be replaced by CRLF the next time Git touches it\n"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--cached",
+        "--check"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "postCleanupTAP": {
+    "file": "post-cleanup-verified.tap",
+    "tests": 57,
+    "passed": 57,
+    "failed": 0,
+    "skipped": 0,
+    "testChildExitCode": null,
+    "exitCaptureLimitation": "Shell command ended with Get-Content; no separate child exit captured. The retained complete TAP footer reports all tests passing."
+  }
+}

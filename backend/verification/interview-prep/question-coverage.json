@@ -1,0 +1,872 @@
+{
+  "scope": "Verified local seed catalog, not production Mongo coverage or live AI quality",
+  "seedVersion": "v6-ranked-verified-bank",
+  "total": 1953,
+  "top": 1110,
+  "topics": [
+    {
+      "topic": "javascript",
+      "total": 31,
+      "top": 30,
+      "difficulty": {
+        "medium": 16,
+        "hard": 10,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 10,
+        "practical-implementation": 10,
+        "debugging": 2,
+        "security": 1,
+        "testing": 1,
+        "real-world-scenarios": 1,
+        "architecture": 3,
+        "system-design": 3
+      },
+      "source": {
+        "verified_seed": 31
+      }
+    },
+    {
+      "topic": "typescript",
+      "total": 31,
+      "top": 30,
+      "difficulty": {
+        "medium": 15,
+        "hard": 11,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 10,
+        "practical-implementation": 10,
+        "debugging": 1,
+        "performance": 1,
+        "security": 1,
+        "testing": 1,
+        "real-world-scenarios": 1,
+        "architecture": 3,
+        "system-design": 3
+      },
+      "source": {
+        "verified_seed": 31
+      }
+    },
+    {
+      "topic": "python",
+      "total": 93,
+      "top": 30,
+      "difficulty": {
+        "medium": 62,
+        "hard": 26,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 31,
+        "practical-implementation": 31,
+        "debugging": 1,
+        "performance": 2,
+        "security": 1,
+        "testing": 1,
+        "architecture": 3,
+        "system-design": 2,
+        "real-world-scenarios": 21
+      },
+      "source": {
+        "verified_seed": 93
+      }
+    },
+    {
+      "topic": "java",
+      "total": 93,
+      "top": 30,
+      "difficulty": {
+        "medium": 62,
+        "hard": 26,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 31,
+        "practical-implementation": 31,
+        "debugging": 2,
+        "performance": 1,
+        "security": 1,
+        "testing": 1,
+        "architecture": 3,
+        "system-design": 2,
+        "real-world-scenarios": 21
+      },
+      "source": {
+        "verified_seed": 93
+      }
+    },
+    {
+      "topic": "cpp",
+      "total": 93,
+      "top": 30,
+      "difficulty": {
+        "medium": 62,
+        "hard": 26,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 31,
+        "practical-implementation": 31,
+        "debugging": 1,
+        "performance": 2,
+        "testing": 1,
+        "real-world-scenarios": 22,
+        "architecture": 3,
+        "system-design": 2
+      },
+      "source": {
+        "verified_seed": 93
+      }
+    },
+    {
+      "topic": "csharp",
+      "total": 31,
+      "top": 30,
+      "difficulty": {
+        "medium": 20,
+        "hard": 6,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 10,
+        "practical-implementation": 10,
+        "debugging": 1,
+        "performance": 3,
+        "real-world-scenarios": 1,
+        "architecture": 3,
+        "system-design": 3
+      },
+      "source": {
+        "verified_seed": 31
+      }
+    },
+    {
+      "topic": "dotnet",
+      "total": 31,
+      "top": 30,
+      "difficulty": {
+        "medium": 20,
+        "hard": 6,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 10,
+        "practical-implementation": 10,
+        "debugging": 1,
+        "performance": 2,
+        "testing": 1,
+        "real-world-scenarios": 1,
+        "architecture": 3,
+        "system-design": 3
+      },
+      "source": {
+        "verified_seed": 31
+      }
+    },
+    {
+      "topic": "angular",
+      "total": 31,
+      "top": 30,
+      "difficulty": {
+        "medium": 17,
+        "hard": 9,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 10,
+        "practical-implementation": 10,
+        "performance": 2,
+        "security": 1,
+        "testing": 1,
+        "real-world-scenarios": 1,
+        "architecture": 3,
+        "system-design": 3
+      },
+      "source": {
+        "verified_seed": 31
+      }
+    },
+    {
+      "topic": "react",
+      "total": 31,
+      "top": 30,
+      "difficulty": {
+        "medium": 15,
+        "hard": 11,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 10,
+        "practical-implementation": 10,
+        "debugging": 1,
+        "performance": 2,
+        "testing": 1,
+        "real-world-scenarios": 1,
+        "architecture": 3,
+        "system-design": 3
+      },
+      "source": {
+        "verified_seed": 31
+      }
+    },
+    {
+      "topic": "react-native",
+      "total": 31,
+      "top": 30,
+      "difficulty": {
+        "medium": 20,
+        "hard": 6,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 10,
+        "practical-implementation": 10,
+        "debugging": 1,
+        "performance": 1,
+        "security": 1,
+        "testing": 1,
+        "real-world-scenarios": 1,
+        "architecture": 3,
+        "system-design": 3
+      },
+      "source": {
+        "verified_seed": 31
+      }
+    },
+    {
+      "topic": "nodejs",
+      "total": 31,
+      "top": 30,
+      "difficulty": {
+        "medium": 14,
+        "hard": 12,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 10,
+        "practical-implementation": 10,
+        "debugging": 1,
+        "performance": 1,
+        "security": 1,
+        "testing": 1,
+        "real-world-scenarios": 1,
+        "architecture": 3,
+        "system-design": 3
+      },
+      "source": {
+        "verified_seed": 31
+      }
+    },
+    {
+      "topic": "expressjs",
+      "total": 31,
+      "top": 30,
+      "difficulty": {
+        "medium": 16,
+        "hard": 10,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 10,
+        "practical-implementation": 10,
+        "debugging": 1,
+        "security": 4,
+        "architecture": 3,
+        "system-design": 3
+      },
+      "source": {
+        "verified_seed": 31
+      }
+    },
+    {
+      "topic": "nextjs",
+      "total": 93,
+      "top": 30,
+      "difficulty": {
+        "medium": 62,
+        "hard": 26,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 31,
+        "practical-implementation": 31,
+        "debugging": 1,
+        "performance": 1,
+        "security": 1,
+        "testing": 1,
+        "real-world-scenarios": 22,
+        "architecture": 3,
+        "system-design": 2
+      },
+      "source": {
+        "verified_seed": 93
+      }
+    },
+    {
+      "topic": "mongodb",
+      "total": 31,
+      "top": 30,
+      "difficulty": {
+        "medium": 12,
+        "hard": 14,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 10,
+        "practical-implementation": 10,
+        "debugging": 1,
+        "performance": 1,
+        "security": 1,
+        "testing": 1,
+        "real-world-scenarios": 1,
+        "architecture": 3,
+        "system-design": 3
+      },
+      "source": {
+        "verified_seed": 31
+      }
+    },
+    {
+      "topic": "mysql",
+      "total": 31,
+      "top": 30,
+      "difficulty": {
+        "medium": 14,
+        "hard": 12,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 10,
+        "practical-implementation": 10,
+        "debugging": 1,
+        "performance": 3,
+        "testing": 1,
+        "architecture": 3,
+        "system-design": 3
+      },
+      "source": {
+        "verified_seed": 31
+      }
+    },
+    {
+      "topic": "postgresql",
+      "total": 31,
+      "top": 30,
+      "difficulty": {
+        "medium": 13,
+        "hard": 13,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 10,
+        "practical-implementation": 10,
+        "debugging": 1,
+        "performance": 1,
+        "security": 1,
+        "testing": 1,
+        "real-world-scenarios": 1,
+        "architecture": 3,
+        "system-design": 3
+      },
+      "source": {
+        "verified_seed": 31
+      }
+    },
+    {
+      "topic": "sql",
+      "total": 31,
+      "top": 30,
+      "difficulty": {
+        "medium": 20,
+        "hard": 6,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 10,
+        "practical-implementation": 10,
+        "performance": 2,
+        "security": 1,
+        "testing": 1,
+        "real-world-scenarios": 1,
+        "architecture": 3,
+        "system-design": 3
+      },
+      "source": {
+        "verified_seed": 31
+      }
+    },
+    {
+      "topic": "redis",
+      "total": 93,
+      "top": 30,
+      "difficulty": {
+        "medium": 62,
+        "hard": 26,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 31,
+        "practical-implementation": 31,
+        "debugging": 1,
+        "performance": 2,
+        "testing": 1,
+        "real-world-scenarios": 22,
+        "architecture": 3,
+        "system-design": 2
+      },
+      "source": {
+        "verified_seed": 93
+      }
+    },
+    {
+      "topic": "docker",
+      "total": 31,
+      "top": 30,
+      "difficulty": {
+        "medium": 20,
+        "hard": 6,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 10,
+        "practical-implementation": 10,
+        "performance": 2,
+        "security": 1,
+        "testing": 1,
+        "real-world-scenarios": 1,
+        "architecture": 3,
+        "system-design": 3
+      },
+      "source": {
+        "verified_seed": 31
+      }
+    },
+    {
+      "topic": "kubernetes",
+      "total": 31,
+      "top": 30,
+      "difficulty": {
+        "medium": 20,
+        "hard": 6,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 10,
+        "practical-implementation": 10,
+        "debugging": 1,
+        "performance": 1,
+        "security": 1,
+        "testing": 1,
+        "real-world-scenarios": 1,
+        "architecture": 3,
+        "system-design": 3
+      },
+      "source": {
+        "verified_seed": 31
+      }
+    },
+    {
+      "topic": "rest-apis",
+      "total": 31,
+      "top": 30,
+      "difficulty": {
+        "medium": 13,
+        "hard": 13,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 10,
+        "practical-implementation": 10,
+        "debugging": 1,
+        "performance": 1,
+        "security": 2,
+        "real-world-scenarios": 1,
+        "architecture": 3,
+        "system-design": 3
+      },
+      "source": {
+        "verified_seed": 31
+      }
+    },
+    {
+      "topic": "graphql",
+      "total": 31,
+      "top": 30,
+      "difficulty": {
+        "medium": 13,
+        "hard": 13,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 10,
+        "practical-implementation": 10,
+        "performance": 2,
+        "security": 1,
+        "testing": 1,
+        "real-world-scenarios": 1,
+        "architecture": 3,
+        "system-design": 3
+      },
+      "source": {
+        "verified_seed": 31
+      }
+    },
+    {
+      "topic": "html",
+      "total": 31,
+      "top": 30,
+      "difficulty": {
+        "medium": 17,
+        "hard": 9,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 10,
+        "practical-implementation": 10,
+        "debugging": 1,
+        "performance": 1,
+        "security": 1,
+        "testing": 1,
+        "real-world-scenarios": 1,
+        "architecture": 3,
+        "system-design": 3
+      },
+      "source": {
+        "verified_seed": 31
+      }
+    },
+    {
+      "topic": "css",
+      "total": 31,
+      "top": 30,
+      "difficulty": {
+        "medium": 17,
+        "hard": 9,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 10,
+        "practical-implementation": 10,
+        "debugging": 1,
+        "performance": 1,
+        "security": 1,
+        "testing": 1,
+        "real-world-scenarios": 1,
+        "architecture": 3,
+        "system-design": 3
+      },
+      "source": {
+        "verified_seed": 31
+      }
+    },
+    {
+      "topic": "git-github",
+      "total": 31,
+      "top": 30,
+      "difficulty": {
+        "medium": 17,
+        "hard": 9,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 10,
+        "practical-implementation": 10,
+        "debugging": 1,
+        "performance": 1,
+        "security": 1,
+        "testing": 1,
+        "real-world-scenarios": 1,
+        "architecture": 3,
+        "system-design": 3
+      },
+      "source": {
+        "verified_seed": 31
+      }
+    },
+    {
+      "topic": "oop",
+      "total": 31,
+      "top": 30,
+      "difficulty": {
+        "medium": 17,
+        "hard": 9,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 11,
+        "practical-implementation": 10,
+        "debugging": 1,
+        "performance": 1,
+        "security": 1,
+        "testing": 1,
+        "real-world-scenarios": 1,
+        "architecture": 3,
+        "system-design": 2
+      },
+      "source": {
+        "verified_seed": 31
+      }
+    },
+    {
+      "topic": "dsa",
+      "total": 31,
+      "top": 30,
+      "difficulty": {
+        "medium": 17,
+        "hard": 9,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 10,
+        "practical-implementation": 10,
+        "debugging": 1,
+        "performance": 1,
+        "security": 1,
+        "testing": 1,
+        "real-world-scenarios": 1,
+        "architecture": 3,
+        "system-design": 3
+      },
+      "source": {
+        "verified_seed": 31
+      }
+    },
+    {
+      "topic": "aws",
+      "total": 93,
+      "top": 30,
+      "difficulty": {
+        "medium": 62,
+        "hard": 26,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 31,
+        "practical-implementation": 31,
+        "security": 2,
+        "performance": 1,
+        "testing": 1,
+        "real-world-scenarios": 22,
+        "architecture": 3,
+        "system-design": 2
+      },
+      "source": {
+        "verified_seed": 93
+      }
+    },
+    {
+      "topic": "generative-ai",
+      "total": 93,
+      "top": 30,
+      "difficulty": {
+        "medium": 62,
+        "hard": 26,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 31,
+        "practical-implementation": 31,
+        "testing": 2,
+        "performance": 1,
+        "security": 1,
+        "real-world-scenarios": 22,
+        "architecture": 3,
+        "system-design": 2
+      },
+      "source": {
+        "verified_seed": 93
+      }
+    },
+    {
+      "topic": "ai-agents",
+      "total": 93,
+      "top": 30,
+      "difficulty": {
+        "medium": 62,
+        "hard": 26,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 31,
+        "practical-implementation": 31,
+        "debugging": 1,
+        "performance": 2,
+        "testing": 1,
+        "real-world-scenarios": 22,
+        "architecture": 3,
+        "system-design": 2
+      },
+      "source": {
+        "verified_seed": 93
+      }
+    },
+    {
+      "topic": "llm",
+      "total": 93,
+      "top": 30,
+      "difficulty": {
+        "medium": 62,
+        "hard": 26,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 31,
+        "practical-implementation": 31,
+        "debugging": 1,
+        "performance": 1,
+        "security": 1,
+        "testing": 1,
+        "real-world-scenarios": 22,
+        "architecture": 3,
+        "system-design": 2
+      },
+      "source": {
+        "verified_seed": 93
+      }
+    },
+    {
+      "topic": "rag",
+      "total": 93,
+      "top": 30,
+      "difficulty": {
+        "medium": 62,
+        "hard": 26,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 31,
+        "practical-implementation": 31,
+        "debugging": 1,
+        "performance": 1,
+        "security": 1,
+        "testing": 2,
+        "architecture": 3,
+        "system-design": 2,
+        "real-world-scenarios": 21
+      },
+      "source": {
+        "verified_seed": 93
+      }
+    },
+    {
+      "topic": "langchain",
+      "total": 93,
+      "top": 30,
+      "difficulty": {
+        "medium": 62,
+        "hard": 26,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 31,
+        "practical-implementation": 31,
+        "debugging": 1,
+        "performance": 1,
+        "security": 1,
+        "testing": 1,
+        "real-world-scenarios": 22,
+        "architecture": 3,
+        "system-design": 2
+      },
+      "source": {
+        "verified_seed": 93
+      }
+    },
+    {
+      "topic": "system-design",
+      "total": 31,
+      "top": 30,
+      "difficulty": {
+        "hard": 26,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 10,
+        "practical-implementation": 10,
+        "debugging": 1,
+        "performance": 2,
+        "testing": 1,
+        "real-world-scenarios": 1,
+        "architecture": 3,
+        "system-design": 3
+      },
+      "source": {
+        "verified_seed": 31
+      }
+    },
+    {
+      "topic": "mern",
+      "total": 31,
+      "top": 30,
+      "difficulty": {
+        "medium": 14,
+        "hard": 12,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 10,
+        "practical-implementation": 10,
+        "debugging": 1,
+        "performance": 2,
+        "security": 1,
+        "real-world-scenarios": 1,
+        "architecture": 3,
+        "system-design": 3
+      },
+      "source": {
+        "verified_seed": 31
+      }
+    },
+    {
+      "topic": "mean",
+      "total": 93,
+      "top": 30,
+      "difficulty": {
+        "medium": 62,
+        "hard": 26,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 31,
+        "practical-implementation": 31,
+        "debugging": 1,
+        "performance": 1,
+        "security": 2,
+        "testing": 1,
+        "architecture": 3,
+        "system-design": 2,
+        "real-world-scenarios": 21
+      },
+      "source": {
+        "verified_seed": 93
+      }
+    },
+    {
+      "topic": "full-stack-web-development",
+      "total": 93,
+      "top": 30,
+      "difficulty": {
+        "medium": 62,
+        "hard": 26,
+        "senior": 5
+      },
+      "category": {
+        "core-concepts": 31,
+        "practical-implementation": 31,
+        "debugging": 1,
+        "security": 2,
+        "testing": 1,
+        "real-world-scenarios": 22,
+        "architecture": 3,
+        "system-design": 2
+      },
+      "source": {
+        "verified_seed": 93
+      }
+    }
+  ]
+}

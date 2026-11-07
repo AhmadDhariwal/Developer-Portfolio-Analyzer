@@ -27,7 +27,7 @@ export function warningLabel(warning: string): string {
   const [code, detail] = warning.split(':');
   const messages: Record<string, string> = {
     partial_source_limitations:
-      'Some evidence sources are unavailable. Coverage uses the available analyzed evidence.',
+      'Some evidence sources are incomplete or unavailable. Coverage is calculated only when all required skills can be assessed.',
     career_requirements_unavailable:
       'Career requirements are unavailable. Configure your career target.',
     required_evidence_unknown:

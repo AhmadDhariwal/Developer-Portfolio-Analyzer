@@ -116,6 +116,25 @@ const server = http.createServer(async (req, res) => {
         });
       }
       if (url.pathname.endsWith('/interview-prep/history')) return json(res, { sessions });
+      const sessionRoute = url.pathname.match(
+        /^\/api\/interview-prep\/sessions\/([^/]+)(?:\/(progress|complete))?$/,
+      );
+      if (sessionRoute) {
+        const session = sessions.find((item) => item._id === sessionRoute[1]);
+        if (!session) return json(res, { message: 'Session not found.' }, 404);
+        if (req.method === 'GET') return json(res, session);
+        session.progress ||= {};
+        session.progressVersion ||= 0;
+        if (body.expectedVersion !== session.progressVersion)
+          return json(res, { message: 'Session changed. Reload.' }, 409);
+        if (sessionRoute[2] === 'complete') {
+          if (!session.questions.every((_, index) => session.progress[index]))
+            return json(res, { message: 'Review every question.' }, 409);
+          session.status = 'completed';
+        } else session.progress[body.questionIndex] = body.selfCheck;
+        session.progressVersion++;
+        return json(res, session);
+      }
       if (url.pathname.endsWith('/interview-prep/ask-question')) {
         if (body.question.toLowerCase().includes('unavailable'))
           return json(

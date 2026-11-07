@@ -2,7 +2,12 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const manager = require('../services/aiProviderManager');
+const admission = require('../services/aiProviderAdmissionService');
 test('Skill Gap opt-in policy bounds Gemini attempts and tokens without changing default callers', async (t) => {
+  t.mock.method(admission, 'enter', async () => ({}));
+  t.mock.method(admission, 'release', async () => {});
+  t.mock.method(admission, 'circuit', async () => true);
+  t.mock.method(admission, 'record', async () => {});
   const methods = [
     'getProviderState',
     'providerPriority',

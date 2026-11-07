@@ -1,7 +1,7 @@
-const aiService = require('./aiservice');
 const logger = require('../utils/logger');
 const InterviewPrepSession = require('../models/interviewPrepSession');
-const { getInterviewPrepPrompt } = require('../prompts/interviewPrepPrompt');
+const interviewSessions = require('./interviewSessionService');
+const { hash: hashRequest } = require('./interviewCoordinationService');
 const {
   getCacheJson,
   getCacheJsonWithMeta,
@@ -37,6 +37,9 @@ const scraperProvider = require('./providers/interviewScraperProvider');
 const { createInterviewEnrichmentOrchestrator } = require('./interviewEnrichmentOrchestrator');
 
 const DEFAULT_PAGE_LIMIT = 20;
+const assertActiveRequest = (signal) => {
+  if (signal?.aborted) throw Object.assign(new Error('Request cancelled.'), { statusCode: 499 });
+};
 const MIN_GENERATE_RESULTS = 5;
 const MIN_TOPIC_QUESTION_POOL = 30;
 const MIN_APPROVED_CONFIDENCE = 0.72;
@@ -232,6 +235,7 @@ const makeSearchCacheKey = ({
   limit,
   difficulty = '',
   category = '',
+  source = '',
   tags = '',
   lookupOnly = false
 }) => {
@@ -239,7 +243,7 @@ const makeSearchCacheKey = ({
     String(query || '')
       .trim()
       .toLowerCase()
-  )}:topic=${topicKey}:difficulty=${cachePart(difficulty)}:category=${cachePart(category)}:tags=${cachePart(tags)}:page=${page}:limit=${limit}`;
+  )}:topic=${topicKey}:difficulty=${cachePart(difficulty)}:category=${cachePart(category)}:source=${cachePart(source)}:tags=${cachePart(tags)}:page=${page}:limit=${limit}`;
 };
 
 const makeCustomQuestionCacheKey = ({ question, topicKey, userId }) =>
@@ -391,6 +395,7 @@ const isStructuredQuestion = (item = {}) =>
 
 const enrichQuestionIfNeeded = async (item = {}) => {
   if (!item?._id || isStructuredQuestion(item)) return item;
+  if (['verified_seed', 'prebuilt'].includes(item.sourceType || item.source)) return item;
 
   const seedRecord = findSeedRecordByQuestion(item.topicKey, item.question);
   if (seedRecord) {
@@ -435,6 +440,7 @@ const enrichQuestionIfNeeded = async (item = {}) => {
   const enrichedAnswer = await withAiDeadline(() =>
     aiProvider.enrichAnswerToStructured({
       question: item.question,
+      topicKey: item.topicKey,
       currentAnswer: item.answer
     })
   );
@@ -453,7 +459,13 @@ const enrichQuestionIfNeeded = async (item = {}) => {
     category: sanitizeCategory(item.category || 'core-concepts'),
     source: 'ai_generated',
     sourceType: 'ai_generated',
-    sourceMeta: { ...(item.sourceMeta || {}), verificationStatus: 'unverified', mode: 'structured-enrichment' }
+    sourceMeta: {
+      ...(item.sourceMeta || {}),
+      originalSourceType: item.sourceType || item.source,
+      verificationStatus: 'unverified',
+      mode: 'structured-enrichment'
+    },
+    version: questionRepository.toQuestionHash(JSON.stringify([item.question, answer, enrichedAnswer]))
   });
 
   return (
@@ -487,6 +499,11 @@ const makeQuestionPayload = ({
   return {
     questions: questions.map((item) => ({
       ...item,
+      questionId:
+        item.seedId || `${item.topicKey || topicInput?.topicKey}:${questionRepository.toQuestionHash(item.question)}`,
+      contentVersion:
+        item.version ||
+        questionRepository.toQuestionHash(JSON.stringify([item.question, item.answer, item.answerSections || {}])),
       verificationStatus:
         ['verified_seed', 'prebuilt'].includes(item.sourceType || item.source) ||
         item.sourceMeta?.verificationStatus === 'verified'
@@ -871,7 +888,9 @@ const getQuestionBank = async ({
         topicKey: topicInput.topicKey,
         limit: Math.min(30, Number(limit || 30)),
         difficulty,
-        tags: normalizedTags
+        tags: normalizedTags,
+        category,
+        source
       })
       .catch(() => {
         unavailable = true;
@@ -884,6 +903,8 @@ const getQuestionBank = async ({
         ? buildSeedRecordsForTopic(importantTopic).filter(
             (record) =>
               record.isTopQuestion &&
+              (!category || record.category === category) &&
+              (!source || ['seed', 'database', 'verified_seed', 'prebuilt'].includes(source)) &&
               (!difficulty || record.difficulty === difficulty) &&
               (!normalizedTags || normalizedTags.split(',').some((tag) => record.tags?.includes(tag)))
           )
@@ -923,6 +944,7 @@ const searchQuestionBank = async ({
   framework = '',
   difficulty = '',
   category = '',
+  source = '',
   tags = '',
   page = 1,
   limit = DEFAULT_PAGE_LIMIT,
@@ -939,6 +961,7 @@ const searchQuestionBank = async ({
       framework,
       difficulty,
       category,
+      source,
       tags,
       page,
       limit,
@@ -962,6 +985,7 @@ const searchQuestionBank = async ({
         limit: normalizedLimit,
         difficulty: expectedDifficulty,
         category: normalizedCategory,
+        source,
         tags: normalizedTags,
         lookupOnly: !allowEnrichment
       }),
@@ -990,6 +1014,7 @@ const searchQuestionBank = async ({
         difficulty: expectedDifficulty,
         tags: normalizedTags,
         query,
+        source,
         excludeGenericSeeds: true
       });
       if (normalizedCategory) filter.category = normalizedCategory;
@@ -1013,6 +1038,7 @@ const searchQuestionBank = async ({
           (item) =>
             (!expectedDifficulty || item.difficulty === expectedDifficulty) &&
             (!normalizedCategory || item.category === normalizedCategory) &&
+            (!source || ['seed', 'database', 'verified_seed', 'prebuilt'].includes(source)) &&
             (!normalizedTags || normalizedTags.split(',').some((tag) => item.tags?.includes(tag))) &&
             identity.searchableTokens.some((token) => `${item.question} ${item.answer}`.toLowerCase().includes(token))
         );
@@ -1687,6 +1713,7 @@ const generateFreshInterviewQuestions = async ({
 
 const answerCustomInterviewQuestion = async ({
   userId,
+  signal,
   question,
   skill = '',
   topic = '',
@@ -1724,6 +1751,7 @@ const answerCustomInterviewQuestion = async ({
     )
   );
   return runSingleFlight(cacheKey, async () => {
+    assertActiveRequest(signal);
     const cacheResult = await getCacheJsonWithMeta(cacheKey);
     trace.applyCache(cacheResult);
     if (cacheResult.value) {
@@ -1931,20 +1959,25 @@ const answerCustomInterviewQuestion = async ({
       return trace.finish(buildAiFailurePayload({ topicInput, question: normalizedQuestion }));
     }
 
+    assertActiveRequest(signal);
     const session = await trace.time('persistenceMs', 'persistence', () =>
-      InterviewPrepSession.create({
+      interviewSessions.create({
         userId,
         careerStack: '',
         experienceLevel: '',
         kind: 'custom',
+        requestKey: `custom:${topicInput.topicKey}:${identity.normalizedQuestionHash}`,
         topicKey: topicInput.topicKey,
-        questions: [
-          {
-            ...approvedRecord,
-            normalizedQuestionHash: identity.normalizedQuestionHash,
-            verificationStatus: 'unverified'
-          }
-        ]
+        questions: interviewSessions.snapshotQuestions(
+          [
+            {
+              ...approvedRecord,
+              normalizedQuestionHash: identity.normalizedQuestionHash,
+              verificationStatus: 'unverified'
+            }
+          ],
+          topicInput.topicKey
+        )
       })
     );
     const payload = {
@@ -1976,38 +2009,20 @@ const answerCustomInterviewQuestion = async ({
 };
 
 const generateInterviewPrep = async ({ userId, careerStack, experienceLevel, skillGaps = [] }) => {
-  const prompt = getInterviewPrepPrompt({ careerStack, experienceLevel, skillGaps });
-  const fallback = {
-    questions: [
-      {
-        question: 'Describe a time you debugged a complex issue in your codebase.',
-        answer:
-          'Highlight the context, root cause analysis, the final fix, and what you changed to prevent recurrence.',
-        difficulty: 'medium',
-        tags: ['behavioral']
-      },
-      {
-        question: 'How would you design a scalable API for a high-traffic application?',
-        answer:
-          'Cover API design, caching strategy, database indexing, rate limiting, and observability choices with tradeoffs.',
-        difficulty: 'hard',
-        tags: ['system-design']
-      }
-    ]
-  };
-
-  const result = await aiService.runAIAnalysis(prompt, fallback);
-  const questions = normalizeQuestions(result.questions);
-
-  const session = await InterviewPrepSession.create({
+  // Preserve the legacy service entry point while using the same governed,
+  // validated snapshot path as the HTTP endpoint.
+  const stack = String(careerStack || '').toLowerCase();
+  const skill =
+    sanitizeSkill(skillGaps[0]) ||
+    (stack.includes('frontend') ? 'react' : stack.includes('backend') ? 'nodejs' : 'mern');
+  const generated = await generateInterviewPrepSessionFromBank({
     userId,
+    skill,
     careerStack,
     experienceLevel,
-    skillGaps,
-    questions
+    skillGaps
   });
-
-  return session;
+  return InterviewPrepSession.findOne({ _id: generated.sessionId, userId });
 };
 
 const generateInterviewPrepSessionFromBank = async ({
@@ -2017,31 +2032,43 @@ const generateInterviewPrepSessionFromBank = async ({
   careerStack = '',
   experienceLevel = '',
   skillGaps = [],
-  personalization = {}
+  personalization = {},
+  signal,
+  idempotencyKey = ''
 }) => {
+  const requestKey = idempotencyKey ? `practice:${idempotencyKey}` : undefined;
+  const requestFingerprint = hashRequest(JSON.stringify([skill, query, careerStack, experienceLevel, skillGaps]));
+  const prior = await interviewSessions.findRequest(userId, requestKey, requestFingerprint);
+  if (prior)
+    return {
+      questions: prior.questions,
+      total: prior.questions.length,
+      page: 1,
+      limit: DEFAULT_PAGE_LIMIT,
+      totalPages: 1,
+      personalization: prior.personalization,
+      session: prior,
+      sessionId: prior._id
+    };
   const generated = await generateHybridInterviewQuestions({ skill, query, page: 1, limit: DEFAULT_PAGE_LIMIT });
 
-  const session = await InterviewPrepSession.create({
+  assertActiveRequest(signal);
+  const session = await interviewSessions.create({
     userId,
+    requestKey,
+    requestFingerprint,
     careerStack,
     experienceLevel,
     skillGaps,
     topicKey: skill,
     personalization,
-    questions: generated.questions.map((item) => ({
-      question: item.question,
-      answer: item.answer,
-      difficulty: item.difficulty,
-      tags: item.tags,
-      answerSections: item.answerSections,
-      sourceType: item.sourceType,
-      verificationStatus:
-        item.verificationStatus || (['verified_seed', 'prebuilt'].includes(item.sourceType) ? 'verified' : 'unverified')
-    }))
+    questions: interviewSessions.snapshotQuestions(generated.questions, skill)
   });
 
   return {
     ...generated,
+    questions: session.questions,
+    session,
     personalization,
     sessionId: session._id
   };
