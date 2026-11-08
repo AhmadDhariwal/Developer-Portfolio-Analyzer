@@ -11,9 +11,9 @@ const {
   jobsRateLimit,
   jobsRefreshLimit,
   actionRateLimit,
-  validateJobsRequest
+  validateJobsRequest,
+  limiter
 } = require('../middleware/jobsRateLimit');
-const { limiter } = require('../middleware/jobsRateLimit');
 
 const router = express.Router();
 
@@ -23,7 +23,11 @@ router.use(protect, validateJobsRequest, jobsRateLimit);
 router.get('/', jobsRefreshLimit, fetchJobs);
 router.get('/source-health', getSourceHealthStatus);
 router.get('/cache-health', getCacheHealthStatus);
-router.post('/hidden-access/unlock', limiter('hidden-password', 5, 900000, true), actions.unlockHidden);
+router.post(
+  '/hidden-access/unlock',
+  limiter('hidden-password', 10, 60000, true),
+  actions.unlockHidden
+);
 router.post('/hidden-access/lock', actions.lockHidden);
 router.get('/actions', actions.list);
 router.put('/:id/actions', validateJobsRequest, actionRateLimit, actions.update);

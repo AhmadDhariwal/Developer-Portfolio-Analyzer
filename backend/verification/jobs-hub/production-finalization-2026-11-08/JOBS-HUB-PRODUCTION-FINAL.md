@@ -163,3 +163,7 @@ Scoped Prettier write/check uses the installed frontend executable, frontend con
 - Initial task cleanup removed 2,773 disposable files and retained six diagnostic logs. The small final npm/browser temporary files were separately checked and cleaned with diagnostics retained; see `cleanup-results.json` and `post-verification-cleanup.json`. All native fixtures stopped; their owned database/file cleanup and exact namespace deletion evidence remain in each run.
 - The initial runner TCP-relay cleanup failure was observed in original command output; a separate raw parent-stderr file was not captured. `runner-observations.json` records that limitation rather than reconstructing a stack. An intermediate unmatched aggregation-expression brace was caught by formatting and corrected before Mongo execution; its original console diagnostic was not retained as a separate log.
 - `finalization-results.json` records final scoped formatter checks, syntax checks, branch/status and both Git whitespace checks. The three pre-existing staged Portfolio files remain separate. No production acceptance is inferred from these local results.
+
+## Addendum: Hidden Jobs password confirmation
+
+The user selected existing account-password confirmation. The implementation, exact changed files, real versus fixture verification, historical failures and remaining external gates are recorded in [HIDDEN-JOBS-PASSWORD-FINAL.md](../hidden-password-2026-11-08/HIDDEN-JOBS-PASSWORD-FINAL.md). This additive access control does not supersede the staging and licensing gates above.

@@ -89,6 +89,8 @@ async function session(browser, origin, theme, mobile = false, mode = 'normal') 
     writes: [],
     saved: new Map(),
     blocked: [],
+    hiddenUnlocked: false,
+    hiddenReads: 0,
   };
   const page = await context.newPage();
   const errors = [];
@@ -98,6 +100,18 @@ async function session(browser, origin, theme, mobile = false, mode = 'normal') 
       url = new URL(request.url()),
       pathname = url.pathname;
     if (pathname.includes('/api/')) {
+      const hiddenAccess =
+        controls.hiddenUnlocked && request.headers()['x-jobs-hidden-token'] === 'h'.repeat(43);
+      if (pathname === '/api/jobs/hidden-access/unlock') {
+        if (request.postDataJSON()?.password !== 'Fixture!Password123')
+          return route.fulfill({ status: 403, json: { code: 'JOBS_HIDDEN_PASSWORD_INCORRECT' } });
+        controls.hiddenUnlocked = true;
+        return route.fulfill({ json: { token: 'h'.repeat(43), expiresAt: Date.now() + 300000 } });
+      }
+      if (pathname === '/api/jobs/hidden-access/lock') {
+        controls.hiddenUnlocked = false;
+        return route.fulfill({ json: { locked: true } });
+      }
       if (pathname === '/api/jobs') {
         controls.requests.push(Object.fromEntries(url.searchParams));
         if (controls.mode === 'loading') await delay(900);
@@ -145,7 +159,12 @@ async function session(browser, origin, theme, mobile = false, mode = 'normal') 
       }
       if (pathname === '/api/jobs/actions') {
         const state = url.searchParams.get('state');
-        const all = [...controls.saved.values()].filter((action) => !state || action[state]);
+        if (state === 'hidden') controls.hiddenReads++;
+        if (state === 'hidden' && !hiddenAccess)
+          return route.fulfill({ status: 403, json: { code: 'JOBS_HIDDEN_LOCKED' } });
+        const all = [...controls.saved.values()].filter(
+          (action) => (!state || action[state]) && (hiddenAccess || !action.hidden),
+        );
         const page = Number(url.searchParams.get('page') || 1),
           limit = Number(url.searchParams.get('limit') || 10);
         return route.fulfill({
@@ -160,6 +179,8 @@ async function session(browser, origin, theme, mobile = false, mode = 'normal') 
         const id = decodeURIComponent(pathname.split('/').at(-2)),
           patch = request.postDataJSON();
         controls.writes.push({ id, patch });
+        if (!hiddenAccess && (controls.saved.get(id)?.hidden || patch.hidden === false))
+          return route.fulfill({ status: 403, json: { code: 'JOBS_HIDDEN_LOCKED' } });
         await delay(150);
         if (controls.mutation === '503') return route.fulfill({ status: 503, json: {} });
         if (controls.mutation === '429')
@@ -294,14 +315,40 @@ async function main() {
             .locator('app-job-card')
             .getByRole('button', { name: 'Hide', exact: true })
             .click();
-          await page.locator('.unavailable-card').waitFor();
+          await page.getByRole('heading', { name: 'No tracked applications yet' }).waitFor();
           await page.getByRole('button', { name: 'Hidden', exact: true }).click();
+          await page.getByRole('heading', { name: 'Confirm your account password' }).waitFor();
+          assert.equal(await page.locator('.unavailable-card').count(), 0);
+          assert.equal(controls.hiddenReads, 0);
+          assert.equal(
+            await page
+              .locator('.hidden-access-panel')
+              .evaluate((element) => getComputedStyle(element).backgroundColor),
+            theme === 'dark' ? 'rgb(21, 29, 42)' : 'rgb(255, 255, 255)',
+          );
+          await screenshot(page, `hidden-locked-${label}.png`);
+          await page.getByLabel('Account password', { exact: true }).fill('WrongPassword');
+          await page.getByRole('button', { name: 'Unlock hidden jobs', exact: true }).click();
+          await page.getByRole('alert').filter({ hasText: 'password is incorrect' }).waitFor();
+          await page.getByLabel('Account password', { exact: true }).fill('Fixture!Password123');
+          await page.getByRole('button', { name: 'Unlock hidden jobs', exact: true }).click();
+          await page.locator('.unavailable-card').waitFor();
+          assert.equal(
+            await page.evaluate(() => JSON.stringify(localStorage).includes('Fixture!Password123')),
+            false,
+          );
+          assert.equal(
+            await page.evaluate(() => JSON.stringify(localStorage).includes('h'.repeat(43))),
+            false,
+          );
           await page
             .locator('.unavailable-card')
             .getByRole('button', { name: 'Unhide', exact: true })
             .click();
           await page.getByRole('heading', { name: 'No hidden listings' }).waitFor();
           assert.equal(controls.saved.get('fixture-job-1').hidden, false);
+          await page.getByRole('button', { name: 'Lock hidden jobs', exact: true }).click();
+          await page.getByRole('heading', { name: 'Confirm your account password' }).waitFor();
           await page.getByRole('button', { name: 'Discover', exact: true }).click();
           await page.getByRole('heading', { name: 'Opportunities for You' }).waitFor();
           await ready(page);

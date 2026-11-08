@@ -363,26 +363,58 @@
             }}
           </p>
         </div>
+        @if (view === 'hidden' && hiddenAccess.unlocked) {
+          <button type="button" class="btn-subtle" (click)="hiddenAccess.lock()">
+            Lock hidden jobs
+          </button>
+        }
       </div>
 
       @if (view === 'hidden' && !hiddenAccess.unlocked) {
-        <form class="hidden-access-panel" (ngSubmit)="confirmHiddenPassword()" aria-labelledby="hidden-access-heading">
+        <form
+          class="hidden-access-panel"
+          (ngSubmit)="confirmHiddenPassword()"
+          aria-labelledby="hidden-access-heading"
+        >
+          <div class="lock-icon-badge" aria-hidden="true">
+            <span class="lock-emoji">🔒</span>
+          </div>
           <h3 id="hidden-access-heading">Confirm your account password</h3>
-          <p id="hidden-access-help">Hidden jobs stay locked until you confirm your sign-in password. Access lasts up to five minutes and locks when you leave this view.</p>
-          <label for="hidden-account-password">Account password</label>
-          <input id="hidden-account-password" name="hiddenAccountPassword" type="password"
-            autocomplete="current-password" maxlength="1024" required
-            aria-describedby="hidden-access-help" [(ngModel)]="hiddenPassword"
-            [disabled]="hiddenPasswordBusy || offline || now < hiddenRetryAt" />
-          @if (hiddenPasswordError) { <p role="alert">{{ hiddenPasswordError }}</p> }
-          <button type="submit" [disabled]="hiddenPasswordBusy || !hiddenPassword || offline || now < hiddenRetryAt">
+          <p id="hidden-access-help">
+            Hidden jobs stay locked until you confirm your sign-in password. Access lasts up to five
+            minutes and locks when you leave this view.
+          </p>
+          <div class="password-field-group">
+            <label for="hidden-account-password">Account password</label>
+            <input
+              id="hidden-account-password"
+              name="hiddenAccountPassword"
+              type="password"
+              autocomplete="current-password"
+              maxlength="1024"
+              required
+              aria-describedby="hidden-access-help"
+              [(ngModel)]="hiddenPassword"
+              [disabled]="hiddenPasswordBusy || offline || now < hiddenRetryAt"
+              placeholder="Enter your account password"
+            />
+          </div>
+          @if (hiddenPasswordError) {
+            <p class="hidden-password-error" role="alert">{{ hiddenPasswordError }}</p>
+          }
+          <button
+            type="submit"
+            class="btn-unlock-hidden"
+            [disabled]="hiddenPasswordBusy || !hiddenPassword || offline || now < hiddenRetryAt"
+          >
             {{ hiddenPasswordBusy ? 'Confirming…' : 'Unlock hidden jobs' }}
           </button>
-          @if (now < hiddenRetryAt) { <p role="status">Try again after the confirmation cooldown ends.</p> }
+          @if (now < hiddenRetryAt) {
+            <p class="cooldown-note" role="status">
+              Try again after the confirmation cooldown ends.
+            </p>
+          }
         </form>
-      }
-      @if (view === 'hidden' && hiddenAccess.unlocked) {
-        <button type="button" class="btn-subtle" (click)="hiddenAccess.lock()">Lock hidden jobs</button>
       }
       @if (isLoading) {
         <p role="status" class="feed-note">Syncing your account records…</p>
@@ -450,7 +482,9 @@
         }
       </div>
 
-      @if (!isLoading && !rows.length && !errorMessage && (view !== 'hidden' || hiddenAccess.unlocked)) {
+      @if (
+        !isLoading && !rows.length && !errorMessage && (view !== 'hidden' || hiddenAccess.unlocked)
+      ) {
         <div class="empty-state">
           <div class="empty-icon" aria-hidden="true">✦</div>
           <h3>
@@ -478,25 +512,25 @@
       }
 
       @if (view !== 'hidden' || hiddenAccess.unlocked) {
-      <nav class="pagination" aria-label="Activity pagination">
-        <button
-          type="button"
-          class="btn-page"
-          [disabled]="page <= 1 || isLoading || coolingDown || offline"
-          (click)="load(page - 1)"
-        >
-          ← Previous
-        </button>
-        <span class="page-indicator">Page {{ page }}</span>
-        <button
-          type="button"
-          class="btn-page"
-          [disabled]="!hasMore || isLoading || coolingDown || offline"
-          (click)="load(page + 1)"
-        >
-          Next →
-        </button>
-      </nav>
+        <nav class="pagination" aria-label="Activity pagination">
+          <button
+            type="button"
+            class="btn-page"
+            [disabled]="page <= 1 || isLoading || coolingDown || offline"
+            (click)="load(page - 1)"
+          >
+            ← Previous
+          </button>
+          <span class="page-indicator">Page {{ page }}</span>
+          <button
+            type="button"
+            class="btn-page"
+            [disabled]="!hasMore || isLoading || coolingDown || offline"
+            (click)="load(page + 1)"
+          >
+            Next →
+          </button>
+        </nav>
       }
     </section>
   }

@@ -5,7 +5,12 @@ const net = require('node:net');
 const { spawn, spawnSync, execFileSync } = require('node:child_process');
 const { startMongo } = require('../tests/fixtures/disposableRequestMongo');
 const root = path.resolve(__dirname, '../../..');
-const base = path.join(root, 'backend/verification/jobs-hub/production-finalization-2026-11-08');
+const base = path.join(
+  root,
+  process.argv.includes('--hidden-password')
+    ? 'backend/verification/jobs-hub/hidden-password-2026-11-08'
+    : 'backend/verification/jobs-hub/production-finalization-2026-11-08'
+);
 const stamp = new Date().toISOString().replace(/[:.]/g, '-');
 const output = path.join(base, `run-${stamp}`);
 fs.mkdirSync(output, { recursive: true });
@@ -102,6 +107,7 @@ async function main() {
     '--test',
     '--test-reporter=tap',
     'backend/src/tests/jobsHubHardening.test.js',
+    'backend/src/tests/jobsHiddenAccess.test.js',
     'backend/src/tests/jobsHubRanking.test.js',
     'backend/src/tests/developerContextService.test.js',
     'backend/src/tests/skillGapConsumerContracts.test.js',
@@ -144,7 +150,7 @@ async function main() {
         launchError = error;
       });
       let ready = false;
-      for (let attempt = 0; attempt < 20 && !ready; attempt++) {
+      for (let attempt = 0; attempt < 100 && !ready; attempt++) {
         if (launchError) throw launchError;
         ready = await connected(redisPort);
         if (!ready) await new Promise((resolve) => setTimeout(resolve, 100));
@@ -212,28 +218,38 @@ async function main() {
   const includes = [
     'src/app/shared/services/job.service.spec.ts',
     'src/app/shared/services/job-actions.service.spec.ts',
+    'src/app/shared/services/jobs-hidden-access.service.spec.ts',
     'src/app/shared/utils/job-presentation.spec.ts',
     'src/app/pages/jobs/jobs.component.spec.ts',
     'src/app/pages/job-details/job-details.component.spec.ts',
     'src/app/shared/services/jobs-legacy-preservation.spec.ts'
   ];
-  await Promise.allSettled([
-    run(
-      'angular-focused',
-      [npm, 'test', '--', '--watch=false', ...includes.map((file) => `--include=${file}`)],
-      {},
-      frontend
-    ),
-    run('typescript', [
-      'frontend/node_modules/typescript/bin/tsc',
-      '--noEmit',
-      '-p',
-      'frontend/tsconfig.app.json'
-    ]),
-    run('production-build', [npm, 'run', 'build'], {}, frontend)
-  ]).then((settled) => {
-    for (const entry of settled) if (entry.status === 'rejected') throw entry.reason;
-  });
+  const frontendChecks = [
+    () =>
+      run(
+        'angular-focused',
+        [
+          npm,
+          'test',
+          '--',
+          '--watch=false',
+          ...includes.map((file) => `--include=${file}`),
+          '--runner-config=scripts/jobs-vitest.config.mjs'
+        ],
+        {},
+        frontend
+      ),
+    () =>
+      run('typescript', [
+        'frontend/node_modules/typescript/bin/tsc',
+        '--noEmit',
+        '-p',
+        'frontend/tsconfig.app.json'
+      ]),
+    () => run('production-build', [npm, 'run', 'build'], {}, frontend)
+  ];
+  // Avoid worker-startup contention on loaded developer workstations.
+  for (const check of frontendChecks) await check();
   if (results.find((entry) => entry.label === 'production-build')?.exitCode === 0) {
     await run('browser', ['frontend/scripts/verify-jobs-ui.cjs'], {
       JOBS_UI_OUTPUT_DIR: path.join(root, 'frontend/verification/jobs-hub', `production-${stamp}`)

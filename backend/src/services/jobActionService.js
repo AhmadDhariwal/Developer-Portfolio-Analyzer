@@ -26,8 +26,7 @@ async function update(userId, id, patch, { allowHidden = false } = {}) {
   const _id = createHash('sha256').update(`${userId}:${id}`).digest('hex');
   const filter = { _id, userId, jobId: id };
   const existing = await UserJobAction.findOne(filter).maxTimeMS(1500).lean();
-  if (!allowHidden && (existing?.hidden || patch.hidden === false))
-    throw require('./jobsHiddenAccessService').locked();
+  if (!allowHidden && existing?.hidden) throw require('./jobsHiddenAccessService').locked();
   if (!allowHidden) filter.hidden = { $ne: true };
   // Resolve aliases to the canonical public ID; never persist another user's input
   // as a job snapshot or trust a body-supplied owner.

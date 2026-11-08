@@ -161,17 +161,19 @@ export class JobsComponent implements OnInit, OnDestroy {
         }),
     );
     this.subscriptions.add(this.actions.changes$.subscribe(() => this.cdr.markForCheck()));
-    this.subscriptions.add(this.hiddenAccess.changes$.subscribe((unlocked) => {
-      if (!unlocked && (this.view === 'hidden' || this.rows.some((row) => row.action.hidden))) {
-        this.token++;
-        this.request.unsubscribe();
-        this.rows = [];
-        this.isLoading = false;
-        this.hiddenPassword = '';
-        this.hiddenPasswordBusy = false;
-      }
-      this.cdr.markForCheck();
-    }));
+    this.subscriptions.add(
+      this.hiddenAccess.changes$.subscribe((unlocked) => {
+        if (!unlocked && (this.view === 'hidden' || this.rows.some((row) => row.action.hidden))) {
+          this.token++;
+          this.request.unsubscribe();
+          this.rows = [];
+          this.isLoading = false;
+          this.hiddenPassword = '';
+          this.hiddenPasswordBusy = false;
+        }
+        this.cdr.markForCheck();
+      }),
+    );
     this.timer = setInterval(() => {
       this.now = Date.now();
       this.cdr.markForCheck();
@@ -320,8 +322,12 @@ export class JobsComponent implements OnInit, OnDestroy {
     }
   }
   private failed(error: Parameters<typeof jobRequestError>[0]): void {
-    if (['JOBS_HIDDEN_LOCKED', 'JOBS_HIDDEN_UNAVAILABLE', 'JOBS_HIDDEN_SESSION_EXPIRED'].includes(
-      (error as { error?: { code?: string } }).error?.code || '')) this.hiddenAccess.lock();
+    if (
+      ['JOBS_HIDDEN_LOCKED', 'JOBS_HIDDEN_UNAVAILABLE', 'JOBS_HIDDEN_SESSION_EXPIRED'].includes(
+        (error as { error?: { code?: string } }).error?.code || '',
+      )
+    )
+      this.hiddenAccess.lock();
     const failure = jobRequestError(error);
     this.errorMessage = failure.message;
     this.retryAt = failure.retryAt;
@@ -337,22 +343,33 @@ export class JobsComponent implements OnInit, OnDestroy {
     this.hiddenPasswordError = '';
     const password = this.hiddenPassword;
     this.hiddenPassword = '';
-    this.subscriptions.add(this.hiddenAccess.unlock(password).pipe(finalize(() => {
-      this.hiddenPasswordBusy = false;
-      this.cdr.markForCheck();
-    })).subscribe({
-      next: () => { if (this.view === 'hidden') this.load(1); },
-      error: (error) => {
-        const code = error.error?.code;
-        this.hiddenPasswordError = code === 'JOBS_HIDDEN_PASSWORD_INCORRECT'
-          ? 'The account password is incorrect.'
-          : code === 'JOBS_HIDDEN_PASSWORD_UNAVAILABLE'
-            ? 'This account has no password. Add an account password in Settings before accessing hidden jobs.'
-            : error.status === 429 ? 'Too many confirmation attempts. Wait before trying again.'
-              : 'Password confirmation is unavailable. Please try again.';
-        this.hiddenRetryAt = jobRequestError(error).retryAt;
-      },
-    }));
+    this.subscriptions.add(
+      this.hiddenAccess
+        .unlock(password)
+        .pipe(
+          finalize(() => {
+            this.hiddenPasswordBusy = false;
+            this.cdr.markForCheck();
+          }),
+        )
+        .subscribe({
+          next: () => {
+            if (this.view === 'hidden') this.load(1);
+          },
+          error: (error) => {
+            const code = error.error?.code;
+            this.hiddenPasswordError =
+              code === 'JOBS_HIDDEN_PASSWORD_INCORRECT'
+                ? 'The account password is incorrect.'
+                : code === 'JOBS_HIDDEN_PASSWORD_UNAVAILABLE'
+                  ? 'This account has no password. Use the account password setup or recovery flow before accessing hidden jobs.'
+                  : error.status === 429
+                    ? 'Too many confirmation attempts. Wait before trying again.'
+                    : 'Password confirmation is unavailable. Please try again.';
+            this.hiddenRetryAt = jobRequestError(error).retryAt;
+          },
+        }),
+    );
   }
   @HostListener('document:visibilitychange') onVisibilityChange(): void {
     if (document.hidden) this.hiddenAccess.lock();

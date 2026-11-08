@@ -80,13 +80,18 @@ export class JobActionsService {
     if (state) params = params.set('state', state);
     const owner = this.owner;
     if (!owner) return throwError(() => new Error('Authentication required.'));
-    return this.http.get<JobActionsResponse>(`${this.url}/actions`, { params, headers: this.hiddenAccess.headers() }).pipe(
-      takeUntil(this.cancelled),
-      tap((response) => {
-        if (owner === this.owner)
-          for (const action of response.actions) this.store(action.jobId, action);
-      }),
-    );
+    return this.http
+      .get<JobActionsResponse>(`${this.url}/actions`, {
+        params,
+        headers: this.hiddenAccess.headers(),
+      })
+      .pipe(
+        takeUntil(this.cancelled),
+        tap((response) => {
+          if (owner === this.owner)
+            for (const action of response.actions) this.store(action.jobId, action);
+        }),
+      );
   }
 
   update(
@@ -100,8 +105,11 @@ export class JobActionsService {
       this.busy.add(id);
       this.changed();
       return this.http
-        .put<{ action: JobActionRecord }>(`${this.url}/${encodeURIComponent(id)}/actions`, patch,
-          { headers: this.hiddenAccess.headers() })
+        .put<{
+          action: JobActionRecord;
+        }>(`${this.url}/${encodeURIComponent(id)}/actions`, patch, {
+          headers: this.hiddenAccess.headers(),
+        })
         .pipe(
           takeUntil(this.cancelled),
           map((response) => response.action),

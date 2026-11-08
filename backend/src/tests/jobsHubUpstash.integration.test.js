@@ -141,6 +141,8 @@ test(
           load('../middleware/jobsRateLimit.js', { '../services/redisCacheService': worker.cache });
         const left = middleware(one);
         const right = middleware(two);
+        left.hiddenPasswordLimit = left.limiter('hidden-password-proof', 10, 60000, true);
+        right.hiddenPasswordLimit = right.limiter('hidden-password-proof', 10, 60000, true);
         const request = {
           user: { _id: 'synthetic-upstash-owner' },
           query: { forceRefresh: 'true' }
@@ -170,7 +172,8 @@ test(
         for (const [field, maximum] of [
           ['jobsRateLimit', 120],
           ['jobsRefreshLimit', 2],
-          ['actionRateLimit', 30]
+          ['actionRateLimit', 30],
+          ['hiddenPasswordLimit', 10]
         ]) {
           const results = await Promise.all(
             Array.from({ length: maximum + 1 }, (_, index) =>

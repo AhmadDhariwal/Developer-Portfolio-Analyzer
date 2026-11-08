@@ -65,8 +65,8 @@ test(
         isActive: true,
         careerStack: 'Backend',
         experienceLevel: '0-1 years',
-        sessionRevision: 0
-        , password: passwordHash
+        sessionRevision: 0,
+        password: passwordHash
       }))
     );
     await require('../services/jobService').syncJobsToCache([
@@ -99,11 +99,15 @@ test(
     };
     const token = (id) => {
       const key = String(id);
-      if (!tokens.has(key)) tokens.set(key, jwt.sign({ id: key, sessionRevision: 0 }, process.env.JWT_SECRET, {
-        issuer: process.env.JWT_ISSUER,
-        audience: process.env.JWT_AUDIENCE,
-        expiresIn: '1h'
-      }));
+      if (!tokens.has(key))
+        tokens.set(
+          key,
+          jwt.sign({ id: key, sessionRevision: 0 }, process.env.JWT_SECRET, {
+            issuer: process.env.JWT_ISSUER,
+            audience: process.env.JWT_AUDIENCE,
+            expiresIn: '1h'
+          })
+        );
       return tokens.get(key);
     };
     const request = (path, id = owner, options = {}, server = 0) =>
@@ -143,16 +147,23 @@ test(
     assert.equal((await mutate(owner, { hidden: false })).status, 403);
     assert.equal((await mutate(owner, { saved: false })).status, 403);
     assert.equal((await request('/http-job/hide', owner, { method: 'DELETE' })).status, 403);
-    const unlock = async (id, value) => {
-      const result = await request('/hidden-access/unlock', id,
-        { method: 'POST', body: JSON.stringify({ password: value }) });
+    const unlock = async (id, value, server = 0) => {
+      const result = await request(
+        '/hidden-access/unlock',
+        id,
+        {
+          method: 'POST',
+          body: JSON.stringify({ password: value })
+        },
+        server
+      );
       if (result.status === 200) grants.set(String(id), (await result.json()).token);
       return result;
     };
     assert.equal((await unlock(owner, 'WrongPassword')).status, 403);
     assert.equal((await unlock(owner, password)).status, 200);
-    assert.ok(await worker.redis.pTTL(grantKeys.at(-1)) > 0);
-    assert.ok(await worker.redis.pTTL(grantKeys.at(-1)) <= 300000);
+    assert.ok((await worker.redis.pTTL(grantKeys.at(-1))) > 0);
+    assert.ok((await worker.redis.pTTL(grantKeys.at(-1))) <= 300000);
     assert.equal((await (await request('/actions?state=hidden', owner)).json()).actions.length, 1);
     assert.equal((await mutate(owner, { hidden: false })).status, 200);
     assert.equal((await (await request('/actions?state=applied', owner)).json()).actions.length, 1);
@@ -168,7 +179,10 @@ test(
     assert.equal((await mutate(owner, { applied: false }, 1)).status, 200);
     assert.equal((await mutate(owner, { hidden: true })).status, 200);
     const nextPassword = 'Changed!Password123';
-    await User.updateOne({ _id: owner }, { $set: { password: await bcrypt.hash(nextPassword, 10) } });
+    await User.updateOne(
+      { _id: owner },
+      { $set: { password: await bcrypt.hash(nextPassword, 10) } }
+    );
     assert.equal((await request('/actions?state=hidden', owner)).status, 403);
     assert.equal((await unlock(owner, nextPassword)).status, 200);
     assert.equal((await request('/hidden-access/lock', owner, { method: 'POST' })).status, 200);
@@ -180,12 +194,31 @@ test(
     await new Promise((resolve) => setTimeout(resolve, 50));
     assert.equal(await worker.redis.get(expiresKey), null);
     assert.equal((await unlock(owner, nextPassword)).status, 200);
-    assert.equal((await request('/actions?state=hidden', other, { headers: {
-      'X-Jobs-Hidden-Token': grants.get(String(owner)) } })).status, 403);
-    const anotherSession = jwt.sign({ id: String(owner), sessionRevision: 0, jti: 'other-session' },
-      process.env.JWT_SECRET, { issuer: process.env.JWT_ISSUER, audience: process.env.JWT_AUDIENCE, expiresIn: '1h' });
-    assert.equal((await request('/actions?state=hidden', owner, { headers: { Authorization: `Bearer ${anotherSession}` } })).status, 403);
-    for (let index = 0; index < 5; index++) assert.equal((await unlock(other, 'WrongPassword')).status, 403);
+    assert.equal(
+      (
+        await request('/actions?state=hidden', other, {
+          headers: {
+            'X-Jobs-Hidden-Token': grants.get(String(owner))
+          }
+        })
+      ).status,
+      403
+    );
+    const anotherSession = jwt.sign(
+      { id: String(owner), sessionRevision: 0, jti: 'other-session' },
+      process.env.JWT_SECRET,
+      { issuer: process.env.JWT_ISSUER, audience: process.env.JWT_AUDIENCE, expiresIn: '1h' }
+    );
+    assert.equal(
+      (
+        await request('/actions?state=hidden', owner, {
+          headers: { Authorization: `Bearer ${anotherSession}` }
+        })
+      ).status,
+      403
+    );
+    for (let index = 0; index < 5; index++)
+      assert.equal((await unlock(other, 'WrongPassword', index % 2)).status, 403);
     const blocked = await unlock(other, password);
     assert.equal(blocked.status, 429);
     assert.ok(Number(blocked.headers.get('retry-after')) > 0);
