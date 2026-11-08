@@ -35,6 +35,7 @@ export class JobFiltersComponent implements OnInit, OnChanges {
   @Input() isApplying = false;
   @Output() filtersChange = new EventEmitter<JobFilters>();
   @Output() filtersReset = new EventEmitter<void>();
+  @Output() apply = new EventEmitter<void>();
 
   filters: JobFilters = { ...DEFAULT_JOB_FILTERS };
   appliedFilters: JobFilters = { ...DEFAULT_JOB_FILTERS };

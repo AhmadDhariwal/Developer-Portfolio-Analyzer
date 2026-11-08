@@ -18,6 +18,7 @@ import { JobService } from './job.service';
 import { environment } from '../../../environments/environment';
 import { Job, JobActionsResponse, JobActionRecord, JobUiState } from '../models/job.model';
 import { jobRequestError } from '../utils/job-presentation';
+import { JobsHiddenAccessService } from './jobs-hidden-access.service';
 
 @Injectable({ providedIn: 'root' })
 export class JobActionsService {
@@ -35,6 +36,7 @@ export class JobActionsService {
     private readonly http: HttpClient,
     private readonly auth: AuthService,
     private readonly jobs: JobService,
+    private readonly hiddenAccess: JobsHiddenAccessService,
   ) {
     this.auth.currentUser$.pipe(takeUntilDestroyed()).subscribe(() => {
       const user = this.auth.getCurrentUser();
@@ -78,7 +80,7 @@ export class JobActionsService {
     if (state) params = params.set('state', state);
     const owner = this.owner;
     if (!owner) return throwError(() => new Error('Authentication required.'));
-    return this.http.get<JobActionsResponse>(`${this.url}/actions`, { params }).pipe(
+    return this.http.get<JobActionsResponse>(`${this.url}/actions`, { params, headers: this.hiddenAccess.headers() }).pipe(
       takeUntil(this.cancelled),
       tap((response) => {
         if (owner === this.owner)
@@ -98,7 +100,8 @@ export class JobActionsService {
       this.busy.add(id);
       this.changed();
       return this.http
-        .put<{ action: JobActionRecord }>(`${this.url}/${encodeURIComponent(id)}/actions`, patch)
+        .put<{ action: JobActionRecord }>(`${this.url}/${encodeURIComponent(id)}/actions`, patch,
+          { headers: this.hiddenAccess.headers() })
         .pipe(
           takeUntil(this.cancelled),
           map((response) => response.action),

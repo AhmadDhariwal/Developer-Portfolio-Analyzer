@@ -617,6 +617,7 @@ test('Express router contracts preserve GET endpoints and protect every action a
       jobsRateLimit: pass,
       jobsRefreshLimit: pass,
       actionRateLimit: pass,
+      limiter: () => pass,
       validateJobsRequest: pass
     },
     '../controllers/jobController': {
@@ -627,6 +628,8 @@ test('Express router contracts preserve GET endpoints and protect every action a
     },
     '../controllers/jobActionController': {
       list: (_req, res) => res.json({ actions: [] }),
+      unlockHidden: (_req, res) => res.json({}),
+      lockHidden: (_req, res) => res.json({ locked: true }),
       update: (_req, res) => res.json({ action: {} }),
       toggle: (field, value) => (_req, res) => res.json({ action: { [field]: value } })
     }

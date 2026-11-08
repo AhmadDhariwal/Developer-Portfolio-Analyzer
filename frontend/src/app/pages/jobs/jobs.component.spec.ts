@@ -9,6 +9,7 @@ import { JobActionsService } from '../../shared/services/job-actions.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
 import { JobsResponse } from '../../shared/models/job.model';
+import { JobsHiddenAccessService } from '../../shared/services/jobs-hidden-access.service';
 
 describe('Jobs Hub request lifecycle', () => {
   let response: Subject<JobsResponse>;
@@ -39,6 +40,7 @@ describe('Jobs Hub request lifecycle', () => {
           },
         },
         { provide: JobService, useValue: api },
+        { provide: JobsHiddenAccessService, useValue: { unlocked: false, changes$: of(false), lock: vi.fn(), unlock: vi.fn() } },
         {
           provide: JobActionsService,
           useValue: {

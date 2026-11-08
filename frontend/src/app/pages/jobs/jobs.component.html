@@ -164,21 +164,11 @@
       <app-job-filters
         [initialFilters]="pendingFilters"
         [activeFilters]="activeFilters"
-        [isApplying]="isLoading"
+        [isApplying]="isLoading || coolingDown || offline"
         (filtersChange)="stage($event)"
         (filtersReset)="resetFilters()"
+        (apply)="applyFilters()"
       />
-
-      <div class="upper-filter-actions">
-        <button
-          type="button"
-          class="btn-apply-filters"
-          [disabled]="isLoading || coolingDown || offline"
-          (click)="applyFilters()"
-        >
-          Apply filters
-        </button>
-      </div>
     </section>
 
     <!-- Workspace: Full Width Results Grid -->
@@ -375,6 +365,25 @@
         </div>
       </div>
 
+      @if (view === 'hidden' && !hiddenAccess.unlocked) {
+        <form class="hidden-access-panel" (ngSubmit)="confirmHiddenPassword()" aria-labelledby="hidden-access-heading">
+          <h3 id="hidden-access-heading">Confirm your account password</h3>
+          <p id="hidden-access-help">Hidden jobs stay locked until you confirm your sign-in password. Access lasts up to five minutes and locks when you leave this view.</p>
+          <label for="hidden-account-password">Account password</label>
+          <input id="hidden-account-password" name="hiddenAccountPassword" type="password"
+            autocomplete="current-password" maxlength="1024" required
+            aria-describedby="hidden-access-help" [(ngModel)]="hiddenPassword"
+            [disabled]="hiddenPasswordBusy || offline || now < hiddenRetryAt" />
+          @if (hiddenPasswordError) { <p role="alert">{{ hiddenPasswordError }}</p> }
+          <button type="submit" [disabled]="hiddenPasswordBusy || !hiddenPassword || offline || now < hiddenRetryAt">
+            {{ hiddenPasswordBusy ? 'Confirming…' : 'Unlock hidden jobs' }}
+          </button>
+          @if (now < hiddenRetryAt) { <p role="status">Try again after the confirmation cooldown ends.</p> }
+        </form>
+      }
+      @if (view === 'hidden' && hiddenAccess.unlocked) {
+        <button type="button" class="btn-subtle" (click)="hiddenAccess.lock()">Lock hidden jobs</button>
+      }
       @if (isLoading) {
         <p role="status" class="feed-note">Syncing your account records…</p>
       }
@@ -441,7 +450,7 @@
         }
       </div>
 
-      @if (!isLoading && !rows.length && !errorMessage) {
+      @if (!isLoading && !rows.length && !errorMessage && (view !== 'hidden' || hiddenAccess.unlocked)) {
         <div class="empty-state">
           <div class="empty-icon" aria-hidden="true">✦</div>
           <h3>
@@ -468,6 +477,7 @@
         </div>
       }
 
+      @if (view !== 'hidden' || hiddenAccess.unlocked) {
       <nav class="pagination" aria-label="Activity pagination">
         <button
           type="button"
@@ -487,6 +497,7 @@
           Next →
         </button>
       </nav>
+      }
     </section>
   }
 </div>
