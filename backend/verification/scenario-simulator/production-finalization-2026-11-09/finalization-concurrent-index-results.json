@@ -1,0 +1,286 @@
+[
+  {
+    "label": "backend-format-write",
+    "command": [
+      "node",
+      "frontend/node_modules/prettier/bin/prettier.cjs",
+      "--write",
+      "backend/src/scripts/migrateScenarioSimulationUniqueIndex.js",
+      "backend/src/scripts/verifyScenarioProduction.cjs",
+      "backend/src/scripts/verifyScenarioP3.js",
+      "backend/src/tests/fixtures/scenarioMongo.js",
+      "backend/src/tests/scenarioMigration.integration.test.js",
+      "backend/src/tests/scenarioProductionContracts.test.js",
+      "backend/src/tests/scenarioSprintExport.test.js",
+      "--single-quote",
+      "--trailing-comma",
+      "all",
+      "--print-width",
+      "100"
+    ],
+    "exitCode": 0,
+    "milliseconds": 949
+  },
+  {
+    "label": "backend-format-check",
+    "command": [
+      "node",
+      "frontend/node_modules/prettier/bin/prettier.cjs",
+      "--check",
+      "backend/src/scripts/migrateScenarioSimulationUniqueIndex.js",
+      "backend/src/scripts/verifyScenarioProduction.cjs",
+      "backend/src/scripts/verifyScenarioP3.js",
+      "backend/src/tests/fixtures/scenarioMongo.js",
+      "backend/src/tests/scenarioMigration.integration.test.js",
+      "backend/src/tests/scenarioProductionContracts.test.js",
+      "backend/src/tests/scenarioSprintExport.test.js",
+      "--single-quote",
+      "--trailing-comma",
+      "all",
+      "--print-width",
+      "100"
+    ],
+    "exitCode": 0,
+    "milliseconds": 962
+  },
+  {
+    "label": "frontend-format-write",
+    "command": [
+      "node",
+      "frontend/node_modules/prettier/bin/prettier.cjs",
+      "--write",
+      "frontend/src/app/pages/scenario-simulator/scenario-simulator.component.ts",
+      "frontend/src/app/pages/scenario-simulator/scenario-simulator.component.spec.ts",
+      "frontend/src/app/pages/scenario-simulator/components/scenario-context/scenario-context.component.html",
+      "frontend/scripts/scenario-vitest.config.mjs",
+      "frontend/scripts/verify-scenario-decomposition-ui.cjs",
+      "--config",
+      "frontend/.prettierrc"
+    ],
+    "exitCode": 0,
+    "milliseconds": 1115
+  },
+  {
+    "label": "frontend-format-check",
+    "command": [
+      "node",
+      "frontend/node_modules/prettier/bin/prettier.cjs",
+      "--check",
+      "frontend/src/app/pages/scenario-simulator/scenario-simulator.component.ts",
+      "frontend/src/app/pages/scenario-simulator/scenario-simulator.component.spec.ts",
+      "frontend/src/app/pages/scenario-simulator/components/scenario-context/scenario-context.component.html",
+      "frontend/scripts/scenario-vitest.config.mjs",
+      "frontend/scripts/verify-scenario-decomposition-ui.cjs",
+      "--config",
+      "frontend/.prettierrc"
+    ],
+    "exitCode": 0,
+    "milliseconds": 1565
+  },
+  {
+    "label": "report-format-write",
+    "command": [
+      "node",
+      "frontend/node_modules/prettier/bin/prettier.cjs",
+      "--write",
+      "backend/verification/scenario-simulator/SCENARIO-SIMULATOR-PRODUCTION-FINAL.md"
+    ],
+    "exitCode": 0,
+    "milliseconds": 507
+  },
+  {
+    "label": "report-format-check",
+    "command": [
+      "node",
+      "frontend/node_modules/prettier/bin/prettier.cjs",
+      "--check",
+      "backend/verification/scenario-simulator/SCENARIO-SIMULATOR-PRODUCTION-FINAL.md"
+    ],
+    "exitCode": 0,
+    "milliseconds": 478
+  },
+  {
+    "label": "syntax: backend/src/scripts/migrateScenarioSimulationUniqueIndex.js",
+    "command": [
+      "node",
+      "--check",
+      "backend/src/scripts/migrateScenarioSimulationUniqueIndex.js"
+    ],
+    "exitCode": 0,
+    "milliseconds": 136
+  },
+  {
+    "label": "syntax: backend/src/scripts/verifyScenarioProduction.cjs",
+    "command": [
+      "node",
+      "--check",
+      "backend/src/scripts/verifyScenarioProduction.cjs"
+    ],
+    "exitCode": 0,
+    "milliseconds": 170
+  },
+  {
+    "label": "syntax: backend/src/scripts/verifyScenarioP3.js",
+    "command": [
+      "node",
+      "--check",
+      "backend/src/scripts/verifyScenarioP3.js"
+    ],
+    "exitCode": 0,
+    "milliseconds": 172
+  },
+  {
+    "label": "syntax: backend/src/tests/fixtures/scenarioMongo.js",
+    "command": [
+      "node",
+      "--check",
+      "backend/src/tests/fixtures/scenarioMongo.js"
+    ],
+    "exitCode": 0,
+    "milliseconds": 125
+  },
+  {
+    "label": "syntax: backend/src/tests/scenarioMigration.integration.test.js",
+    "command": [
+      "node",
+      "--check",
+      "backend/src/tests/scenarioMigration.integration.test.js"
+    ],
+    "exitCode": 0,
+    "milliseconds": 136
+  },
+  {
+    "label": "syntax: backend/src/tests/scenarioProductionContracts.test.js",
+    "command": [
+      "node",
+      "--check",
+      "backend/src/tests/scenarioProductionContracts.test.js"
+    ],
+    "exitCode": 0,
+    "milliseconds": 121
+  },
+  {
+    "label": "syntax: backend/src/tests/scenarioSprintExport.test.js",
+    "command": [
+      "node",
+      "--check",
+      "backend/src/tests/scenarioSprintExport.test.js"
+    ],
+    "exitCode": 0,
+    "milliseconds": 146
+  },
+  {
+    "label": "syntax: frontend/scripts/verify-scenario-decomposition-ui.cjs",
+    "command": [
+      "node",
+      "--check",
+      "frontend/scripts/verify-scenario-decomposition-ui.cjs"
+    ],
+    "exitCode": 0,
+    "milliseconds": 136
+  },
+  {
+    "label": "syntax: frontend/scripts/scenario-vitest.config.mjs",
+    "command": [
+      "node",
+      "--check",
+      "frontend/scripts/scenario-vitest.config.mjs"
+    ],
+    "exitCode": 0,
+    "milliseconds": 138
+  },
+  {
+    "label": "post-cleanup-typescript",
+    "command": [
+      "node",
+      "frontend/node_modules/typescript/bin/tsc",
+      "--noEmit",
+      "-p",
+      "frontend/tsconfig.app.json"
+    ],
+    "exitCode": 0,
+    "milliseconds": 7522
+  },
+  {
+    "label": "frozen-scoring-model-api-contracts",
+    "command": [
+      "git",
+      "diff",
+      "--quiet",
+      "HEAD",
+      "--",
+      "backend/src/services/scoring/scenarioPlanningScore.js",
+      "backend/src/services/scoring/scenarioPlanningLegacy.js",
+      "backend/src/services/scoring/scenarioPlanningRules.js",
+      "backend/src/services/scenarioContextService.js",
+      "backend/src/services/scenarioSimulatorService.js",
+      "backend/src/services/scenarioSprintAdapter.js",
+      "backend/src/services/scenarioSprintExportService.js",
+      "backend/src/services/redisCacheService.js",
+      "backend/src/models/scenarioSimulation.js",
+      "backend/src/models/careerSprint.js",
+      "backend/src/routes/scenarioSimulator.routes.js",
+      "backend/src/controllers/scenarioSimulatorController.js",
+      "backend/src/middleware/scenarioSimulatorMiddleware.js",
+      "frontend/src/app/shared/services/scenario-simulator.service.ts",
+      "frontend/src/app/shared/services/api.service.ts",
+      "frontend/src/app/shared/models/scenario-simulator.model.ts"
+    ],
+    "exitCode": 0,
+    "milliseconds": 99
+  },
+  {
+    "label": "final-report-format-write",
+    "command": [
+      "node",
+      "frontend/node_modules/prettier/bin/prettier.cjs",
+      "--write",
+      "backend/verification/scenario-simulator/SCENARIO-SIMULATOR-PRODUCTION-FINAL.md"
+    ],
+    "exitCode": 0,
+    "milliseconds": 7746
+  },
+  {
+    "label": "final-report-format-check",
+    "command": [
+      "node",
+      "frontend/node_modules/prettier/bin/prettier.cjs",
+      "--check",
+      "backend/verification/scenario-simulator/SCENARIO-SIMULATOR-PRODUCTION-FINAL.md"
+    ],
+    "exitCode": 0,
+    "milliseconds": 6391
+  },
+  {
+    "label": "working-whitespace-corrected",
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exitCode": 0,
+    "milliseconds": 502
+  },
+  {
+    "label": "index-whitespace",
+    "command": [
+      "git",
+      "diff",
+      "--cached",
+      "--check"
+    ],
+    "exitCode": 0,
+    "milliseconds": 169
+  },
+  {
+    "label": "preserved-clean-index",
+    "command": [
+      "git",
+      "diff",
+      "--cached",
+      "--quiet"
+    ],
+    "exitCode": 1,
+    "milliseconds": 168
+  }
+]

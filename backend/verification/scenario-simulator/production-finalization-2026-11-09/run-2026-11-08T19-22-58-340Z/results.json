@@ -1,0 +1,54 @@
+[
+  {
+    "label": "angular-focused",
+    "command": [
+      "node",
+      "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
+      "test",
+      "--",
+      "--watch=false",
+      "--include=src/app/pages/scenario-simulator/**/*.spec.ts",
+      "--include=src/app/shared/services/scenario-simulator.service.spec.ts",
+      "--runner-config=scripts/scenario-vitest.config.mjs"
+    ],
+    "cwd": "D:\\Developer-Portfolio-Analyzer\\frontend",
+    "exitCode": 0,
+    "milliseconds": 58943
+  },
+  {
+    "label": "typescript",
+    "command": [
+      "node",
+      "frontend/node_modules/typescript/bin/tsc",
+      "--noEmit",
+      "-p",
+      "frontend/tsconfig.app.json"
+    ],
+    "cwd": "D:\\Developer-Portfolio-Analyzer",
+    "exitCode": 0,
+    "milliseconds": 8717
+  },
+  {
+    "label": "production-build",
+    "command": [
+      "node",
+      "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
+      "run",
+      "build"
+    ],
+    "cwd": "D:\\Developer-Portfolio-Analyzer\\frontend",
+    "exitCode": 0,
+    "milliseconds": 66046
+  },
+  {
+    "label": "browser",
+    "command": [
+      "node",
+      "frontend/scripts/verify-scenario-decomposition-ui.cjs",
+      "production-final-20261109"
+    ],
+    "cwd": "D:\\Developer-Portfolio-Analyzer",
+    "exitCode": 4294967295,
+    "milliseconds": 59135
+  }
+]

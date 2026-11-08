@@ -1,5 +1,5 @@
 import { ChangeDetectorRef } from '@angular/core';
-import { of, Subject } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { ScenarioSimulatorComponent } from './scenario-simulator.component';
 import { ScenarioSimulatorService } from '../../shared/services/scenario-simulator.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
@@ -12,6 +12,71 @@ import {
 import { SCENARIO_TEMPLATES } from '../../shared/models/scenario-template.model';
 
 describe('Scenario immutable evaluated state', () => {
+  it('releases bootstrap loading flags when invalidation completes without a response', () => {
+    const context = new Subject<any>();
+    const component = new ScenarioSimulatorComponent(
+      {
+        getScenarioSimulatorContext: () => context,
+        getScenarioSimulationHistory: () => new Subject(),
+      } as unknown as ScenarioSimulatorService,
+      {} as CareerProfileService,
+      { markForCheck: vi.fn() } as unknown as ChangeDetectorRef,
+    );
+    component.loadBootstrapData();
+    expect(component.isLoadingContext).toBe(true);
+    context.complete();
+    expect(component.isLoadingContext).toBe(false);
+    expect(component.isLoadingHistory).toBe(false);
+    component.ngOnDestroy();
+  });
+  it('retains history and its retry cursor while showing pagination failures', () => {
+    const component = new ScenarioSimulatorComponent(
+      {
+        getScenarioSimulationHistory: () => throwError(() => new Error('offline')),
+      } as unknown as ScenarioSimulatorService,
+      {} as CareerProfileService,
+      { markForCheck: vi.fn() } as unknown as ChangeDetectorRef,
+    );
+    component.scenarioHistory = [{ _id: 'saved' } as SavedScenario];
+    component.isLoadingHistory = false;
+    component.nextHistoryCursor = 'next';
+    component.loadMoreHistory();
+    expect(component.historyError).toContain('could not be loaded');
+    expect(component.isLoadingHistory).toBe(false);
+    expect(component.nextHistoryCursor).toBe('next');
+    expect(component.scenarioHistory[0]._id).toBe('saved');
+    component.ngOnDestroy();
+  });
+  it('discards history pages superseded by workspace refresh and releases cancelled pagination', () => {
+    const page = new Subject<any>();
+    const component = new ScenarioSimulatorComponent(
+      {
+        getScenarioSimulatorContext: () => of(null),
+        getScenarioSimulationHistory: (
+          _limit: number,
+          _refresh: boolean,
+          _signature: string,
+          cursor?: string,
+        ) => (cursor ? page : of({ history: [], nextCursor: null })),
+      } as unknown as ScenarioSimulatorService,
+      {} as CareerProfileService,
+      { markForCheck: vi.fn() } as unknown as ChangeDetectorRef,
+    );
+    component.nextHistoryCursor = 'next';
+    component.isLoadingHistory = false;
+    component.loadMoreHistory();
+    expect(page.observed).toBe(true);
+    component.loadBootstrapData(true);
+    page.next({ history: [{ _id: 'obsolete' }], nextCursor: 'old' });
+    page.complete();
+    expect(component.scenarioHistory).toEqual([]);
+    expect(component.nextHistoryCursor).toBeNull();
+    expect(component.isLoadingHistory).toBe(false);
+    component.nextHistoryCursor = 'next';
+    component.loadMoreHistory();
+    expect(component.isLoadingHistory).toBe(false);
+    component.ngOnDestroy();
+  });
   it('does not suggest profile evidence for a different scenario target', () => {
     const component = new ScenarioSimulatorComponent(
       {} as ScenarioSimulatorService,

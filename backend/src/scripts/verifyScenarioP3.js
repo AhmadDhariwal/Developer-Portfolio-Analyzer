@@ -50,7 +50,9 @@ const evidence = path.join(
 );
 if (evidenceName && fs.existsSync(evidence))
   throw Error('Refusing to overwrite retained evidence.');
-const redisBinary = '/tmp/devinsight-scenario-redis-p3-20261025/redis-7.2.11/src/redis-server';
+const redisBinary =
+  process.env.SCENARIO_TEST_REDIS_SERVER ||
+  '/tmp/devinsight-scenario-redis-p3-20261025/redis-7.2.11/src/redis-server';
 const report = {
   runId,
   mode: focused
@@ -1009,7 +1011,11 @@ async function main() {
   );
   const counters = Object.fromEntries(operations.map((value) => [value, 0]));
   let sequence = 0;
+  let restartDuringLoad;
   async function samples(label) {
+    // The short protocol can finish offering traffic before the replacement is
+    // ready. Never sample the retired worker's already-closed IPC channel.
+    if (restartDuringLoad) await restartDuringLoad;
     const values = await Promise.all(
       workers.map((item) => item.request('sample', { gc: label !== 'periodic' })),
     );
@@ -1171,7 +1177,7 @@ async function main() {
   for (const item of workers) item.mongoProxy.state.delayMs = 0;
   const restarting = workers[0];
   restarting.draining = true;
-  const restartDuringLoad = (async () => {
+  restartDuringLoad = (async () => {
     await sleep(1000);
     await restarting.request('stop');
     workers[0] = await worker(restarting.mongoProxy, restarting.redisProxy);

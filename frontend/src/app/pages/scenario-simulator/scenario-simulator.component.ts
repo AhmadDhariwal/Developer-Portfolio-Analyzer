@@ -13,7 +13,16 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { catchError, forkJoin, of, Subject, Subscription, switchMap, takeUntil } from 'rxjs';
+import {
+  catchError,
+  finalize,
+  forkJoin,
+  of,
+  Subject,
+  Subscription,
+  switchMap,
+  takeUntil,
+} from 'rxjs';
 import { distinctUntilChanged } from 'rxjs/operators';
 import { ScenarioSimulatorService } from '../../shared/services/scenario-simulator.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
@@ -338,7 +347,15 @@ export class ScenarioSimulatorComponent
           }),
         ),
     })
-      .pipe(takeUntil(this.destroyed$))
+      .pipe(
+        takeUntil(this.destroyed$),
+        finalize(() => {
+          if (generation !== this.contextGeneration) return;
+          this.isLoadingContext = false;
+          this.isLoadingHistory = false;
+          this.cdr.markForCheck();
+        }),
+      )
       .subscribe({
         next: ({ context, history }) => {
           if (generation !== this.contextGeneration) return;
@@ -380,20 +397,28 @@ export class ScenarioSimulatorComponent
   }
   loadMoreHistory(): void {
     if (!this.nextHistoryCursor || this.isLoadingHistory) return;
+    const generation = this.contextGeneration;
+    this.historyError = '';
     this.isLoadingHistory = true;
     this.apiService
       .getScenarioSimulationHistory(8, true, this.lastProfileSignature, this.nextHistoryCursor)
-      .pipe(takeUntil(this.destroyed$))
+      .pipe(
+        takeUntil(this.destroyed$),
+        finalize(() => {
+          if (generation !== this.contextGeneration) return;
+          this.isLoadingHistory = false;
+          this.cdr.markForCheck();
+        }),
+      )
       .subscribe({
         next: (response) => {
+          if (generation !== this.contextGeneration) return;
           this.scenarioHistory = [...this.scenarioHistory, ...response.history];
           this.nextHistoryCursor = response.nextCursor || null;
-          this.isLoadingHistory = false;
-          this.cdr.markForCheck();
         },
         error: () => {
-          this.isLoadingHistory = false;
-          this.cdr.markForCheck();
+          if (generation !== this.contextGeneration) return;
+          this.historyError = 'More scenarios could not be loaded. Retry to continue your history.';
         },
       });
   }

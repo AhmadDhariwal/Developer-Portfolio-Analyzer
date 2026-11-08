@@ -506,26 +506,228 @@
     </div>
 
     <div
-      class="empty-state"
+      class="empty-state personalized-empty-state"
       role="status"
       *ngIf="!isLoading && !errorMessage && personalizedSetupRequired"
     >
-      <h3>
+      <div class="personalized-badge">
+        <svg
+          class="badge-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path
+            d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+          />
+        </svg>
+        <span>Targeted Recommendations</span>
+      </div>
+
+      <div class="state-icon personalized-icon" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.75"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 16v-4" />
+          <path d="M12 8h.01" />
+        </svg>
+      </div>
+
+      <h3 class="personalized-title">
         {{
           personalization?.learningState === 'no-recommended-skills'
-            ? 'No current learning targets'
+            ? 'No Current Learning Targets'
             : personalization?.learningState === 'skill-not-recommended'
-              ? 'Choose a recommended skill'
-              : 'Personalized analysis required'
+              ? 'Choose a Recommended Skill'
+              : 'Personalized Analysis Required'
         }}
       </h3>
-      <p>{{ personalization?.limitation }}</p>
-      <a routerLink="/app/resume-analyzer">Analyze selected resume</a>
-      <a routerLink="/app/skill-gap">Run Skill Gap</a>
-      <a routerLink="/app/profile">Career profile</a>
-      <button *ngIf="activeFilters.topic" type="button" (click)="clearFilter('topic')">
-        All Recommended Skills
-      </button>
+
+      <p class="personalized-description">{{ personalization?.limitation }}</p>
+
+      <!-- Visual 3-step setup pipeline guidance when analysis is required -->
+      <div
+        class="setup-pipeline"
+        *ngIf="
+          personalization?.learningState !== 'skill-not-recommended' &&
+          personalization?.learningState !== 'no-recommended-skills'
+        "
+        aria-label="Setup steps required for personalized recommendations"
+      >
+        <div class="pipeline-step">
+          <span class="step-num">1</span>
+          <div class="step-content">
+            <span class="step-name">Resume Analysis</span>
+            <span class="step-hint">Verified technical baseline</span>
+          </div>
+        </div>
+        <div class="pipeline-connector" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M13 5l7 7-7 7" />
+          </svg>
+        </div>
+        <div class="pipeline-step">
+          <span class="step-num">2</span>
+          <div class="step-content">
+            <span class="step-name">Career Profile</span>
+            <span class="step-hint">Target stack & experience</span>
+          </div>
+        </div>
+        <div class="pipeline-connector" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M13 5l7 7-7 7" />
+          </svg>
+        </div>
+        <div class="pipeline-step step-highlight">
+          <span class="step-num">3</span>
+          <div class="step-content">
+            <span class="step-name">Skill Gap Evidence</span>
+            <span class="step-hint">Powers course matching</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="empty-state-actions">
+        <!-- When skill-not-recommended -->
+        <ng-container *ngIf="personalization?.learningState === 'skill-not-recommended'">
+          <button
+            *ngIf="activeFilters.topic"
+            type="button"
+            class="action-btn action-primary"
+            (click)="clearFilter('topic')"
+          >
+            <svg
+              class="action-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="23 4 23 10 17 10" />
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+            </svg>
+            <span>Show All Recommended Skills</span>
+          </button>
+          <button type="button" class="action-btn action-secondary" (click)="setView('discover')">
+            <svg
+              class="action-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+            </svg>
+            <span>Browse Discover Catalog</span>
+          </button>
+        </ng-container>
+
+        <!-- When no-recommended-skills -->
+        <ng-container *ngIf="personalization?.learningState === 'no-recommended-skills'">
+          <button type="button" class="action-btn action-primary" (click)="setView('discover')">
+            <svg
+              class="action-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+            </svg>
+            <span>Explore Discover Catalog</span>
+          </button>
+          <a routerLink="/app/skill-gap" class="action-btn action-secondary">
+            <svg
+              class="action-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M18 20V10M12 20V4M6 20v-6" />
+            </svg>
+            <span>View Skill Gap</span>
+          </a>
+          <a routerLink="/app/profile" class="action-btn action-secondary">
+            <svg
+              class="action-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            <span>Update Career Profile</span>
+          </a>
+        </ng-container>
+
+        <!-- When analysis-required / general setup -->
+        <ng-container
+          *ngIf="
+            personalization?.learningState !== 'skill-not-recommended' &&
+            personalization?.learningState !== 'no-recommended-skills'
+          "
+        >
+          <a routerLink="/app/skill-gap" class="action-btn action-primary">
+            <svg
+              class="action-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M18 20V10M12 20V4M6 20v-6" />
+            </svg>
+            <span>Run Skill Gap</span>
+          </a>
+          <a routerLink="/app/resume-analyzer" class="action-btn action-secondary">
+            <svg
+              class="action-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+            </svg>
+            <span>Analyze Selected Resume</span>
+          </a>
+          <a routerLink="/app/profile" class="action-btn action-secondary">
+            <svg
+              class="action-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            <span>Career Profile</span>
+          </a>
+          <button type="button" class="action-btn action-ghost" (click)="setView('discover')">
+            <span>Browse Discover Catalog</span>
+          </button>
+        </ng-container>
+      </div>
     </div>
 
     <!-- Empty state when no courses match -->

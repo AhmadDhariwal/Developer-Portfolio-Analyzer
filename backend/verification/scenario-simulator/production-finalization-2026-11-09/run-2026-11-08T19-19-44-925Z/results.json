@@ -1,0 +1,18 @@
+[
+  {
+    "label": "angular-focused",
+    "command": [
+      "node",
+      "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
+      "test",
+      "--",
+      "--watch=false",
+      "--include=src/app/pages/scenario-simulator/**/*.spec.ts",
+      "--include=src/app/shared/services/scenario-simulator.service.spec.ts",
+      "--runner-config=scripts/scenario-vitest.config.mjs"
+    ],
+    "cwd": "D:\\Developer-Portfolio-Analyzer\\frontend",
+    "exitCode": 1,
+    "milliseconds": 92861
+  }
+]
