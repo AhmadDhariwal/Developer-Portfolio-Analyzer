@@ -2587,3 +2587,13 @@ h4 {
     width: 100%;
   }
 }
+@media (prefers-reduced-motion: reduce) {
+  .portfolio-page,
+  .portfolio-page *,
+  .portfolio-page *::before,
+  .portfolio-page *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

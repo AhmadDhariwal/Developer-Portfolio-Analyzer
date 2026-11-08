@@ -68,6 +68,7 @@ export class PublicPortfolioComponent implements OnInit, OnDestroy {
   private canonical: HTMLLinkElement | null = null;
   private contactGeneration = 0;
   private lastActivation = 0;
+  private shareFeedbackTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -226,16 +227,22 @@ export class PublicPortfolioComponent implements OnInit, OnDestroy {
     if (profile.headline) phrases.push(profile.headline);
     if (profile.user.jobTitle && !phrases.includes(profile.user.jobTitle))
       phrases.push(profile.user.jobTitle);
-    if (profile.skills?.length) {
-      phrases.push(`${profile.skills[0].name} Specialist`);
-    }
-    phrases.push('Full-Stack Engineer', 'Creative Technologist', 'Systems Architect');
     this.typewriterPhrases = Array.from(new Set(phrases.filter(Boolean)));
     this.typewriterPhraseIdx = 0;
     this.typewriterCharIdx = 0;
     this.isDeleting = false;
     this.typewriterText = '';
+    if (this.reducedMotion()) {
+      this.typewriterText = this.typewriterPhrases[0] || '';
+      return;
+    }
     this.tickTypewriter();
+  }
+
+  private reducedMotion(): boolean {
+    return (
+      this.document.defaultView?.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true
+    );
   }
 
   private tickTypewriter(): void {
@@ -346,7 +353,7 @@ export class PublicPortfolioComponent implements OnInit, OnDestroy {
 
   scrollToTop(): void {
     if (typeof window !== 'undefined') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: this.reducedMotion() ? 'auto' : 'smooth' });
     }
   }
 
@@ -357,7 +364,10 @@ export class PublicPortfolioComponent implements OnInit, OnDestroy {
     if (typeof document !== 'undefined') {
       const element = document.getElementById(sectionId);
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        element.scrollIntoView({
+          behavior: this.reducedMotion() ? 'auto' : 'smooth',
+          block: 'start',
+        });
       } else {
         this.scrollToTop();
       }
@@ -369,40 +379,15 @@ export class PublicPortfolioComponent implements OnInit, OnDestroy {
   }
 
   get isOwner(): boolean {
-    if (!this.auth.isLoggedIn()) return false;
-    const currentUser = this.auth.getCurrentUser();
-    if (!currentUser || !this.profile) return false;
-    const profileUser = this.profile.user as {
-      _id?: string;
-      email?: string;
-      githubUsername?: string;
-    };
-    const currentId = currentUser._id || currentUser['id'];
-    if (currentId && profileUser._id) {
-      return String(currentId) === String(profileUser._id);
-    }
-    if (currentUser.email && profileUser.email) {
-      return currentUser.email.toLowerCase() === profileUser.email.toLowerCase();
-    }
-    if (currentUser.githubUsername && profileUser.githubUsername) {
-      return currentUser.githubUsername.toLowerCase() === profileUser.githubUsername.toLowerCase();
-    }
-    return false;
+    // A successful preview response has already passed the backend owner check.
+    // Display serialization intentionally removes IDs/email; usernames are not identity proof.
+    return this.preview && !!this.profile && this.auth.isLoggedIn();
   }
 
   linkCopied = false;
 
-  copyShareLink(): void {
-    if (typeof navigator !== 'undefined' && navigator.clipboard && this.publicUrl) {
-      navigator.clipboard.writeText(this.publicUrl).then(() => {
-        this.linkCopied = true;
-        this.cdr.markForCheck();
-        setTimeout(() => {
-          this.linkCopied = false;
-          this.cdr.markForCheck();
-        }, 2800);
-      });
-    }
+  copyShareLink(): Promise<void> {
+    return this.copyPublicLink(true);
   }
 
   getConstellationNodeStyle(index: number, total: number): { [key: string]: string } {
@@ -522,13 +507,39 @@ export class PublicPortfolioComponent implements OnInit, OnDestroy {
 
   async copyLink(): Promise<void> {
     if (this.preview || !this.publicUrl) return;
+    return this.copyPublicLink(false);
+  }
+
+  private async copyPublicLink(showPreviewFeedback: boolean): Promise<void> {
+    this.clearCopyFeedback();
+    if (!this.profile?.isPublic) {
+      this.copyFeedback = 'Publish your portfolio before sharing its public link.';
+      return;
+    }
+    const generation = this.contactGeneration;
+    const url = this.publicUrl;
     try {
-      await navigator.clipboard.writeText(this.publicUrl);
+      await navigator.clipboard.writeText(url);
+      if (generation !== this.contactGeneration) return;
       this.copyFeedback = 'Portfolio link copied.';
+      this.linkCopied = showPreviewFeedback;
+      if (showPreviewFeedback)
+        this.shareFeedbackTimer = setTimeout(() => {
+          this.clearCopyFeedback();
+          this.cdr.markForCheck();
+        }, 2800);
     } catch {
+      if (generation !== this.contactGeneration) return;
       this.copyFeedback = 'Copy is unavailable. You can copy the address from your browser.';
     }
     this.cdr.markForCheck();
+  }
+
+  private clearCopyFeedback(): void {
+    if (this.shareFeedbackTimer) clearTimeout(this.shareFeedbackTimer);
+    this.shareFeedbackTimer = null;
+    this.linkCopied = false;
+    this.copyFeedback = '';
   }
 
   private clearView(): void {
@@ -536,15 +547,17 @@ export class PublicPortfolioComponent implements OnInit, OnDestroy {
     this.profile = null;
     this.isLoading = true;
     this.errorMessage = '';
+    this.errorStatus = 0;
     this.avatarFailed = false;
     this.contactGeneration++;
     this.contactMessage = '';
+    this.website = '';
     this.contactError = '';
     this.contactSent = false;
     this.contactBusy = false;
     this.downloadBusy = false;
     this.downloadError = '';
-    this.copyFeedback = '';
+    this.clearCopyFeedback();
     this.clearMetadata();
     this.title.setTitle('Developer portfolio | DevInsight AI');
     this.meta.updateTag({ name: 'robots', content: 'noindex, nofollow' });
@@ -598,6 +611,7 @@ export class PublicPortfolioComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.stopTypewriter();
     this.contactGeneration++;
+    this.clearCopyFeedback();
     this.clearMetadata();
     this.title.setTitle(this.oldTitle);
     this.refresh.complete();

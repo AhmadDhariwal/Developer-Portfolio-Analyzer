@@ -1,0 +1,36 @@
+[
+  {
+    "label": "portfolio-integration",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--test",
+      "--test-reporter=tap",
+      "backend/src/tests/publicPortfolio.integration.test.js"
+    ],
+    "exitCode": 1,
+    "milliseconds": 8257
+  },
+  {
+    "label": "backend-final",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--test",
+      "--test-reporter=tap",
+      "backend/src/tests/publicPortfolioHardening.test.js",
+      "backend/src/tests/skillGapConsumerContracts.test.js",
+      "backend/src/tests/developerContextService.test.js"
+    ],
+    "exitCode": 0,
+    "milliseconds": 8144
+  },
+  {
+    "label": "production-build",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "node_modules/@angular/cli/bin/ng.js",
+      "build"
+    ],
+    "exitCode": 0,
+    "milliseconds": 121758
+  }
+]

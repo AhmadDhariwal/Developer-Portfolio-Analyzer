@@ -1,0 +1,50 @@
+{
+  "results": [
+    {
+      "label": "backend-focused",
+      "command": [
+        "node",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/publicPortfolioHardening.test.js",
+        "backend/src/tests/skillGapConsumerContracts.test.js",
+        "backend/src/tests/developerContextService.test.js"
+      ],
+      "cwd": "D:\\Developer-Portfolio-Analyzer",
+      "exitCode": 1,
+      "signal": null,
+      "milliseconds": 16867
+    },
+    {
+      "label": "typescript",
+      "command": [
+        "node",
+        "frontend/node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "frontend/tsconfig.app.json"
+      ],
+      "cwd": "D:\\Developer-Portfolio-Analyzer",
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 27038
+    },
+    {
+      "label": "angular-focused",
+      "command": [
+        "node",
+        "node_modules/@angular/cli/bin/ng.js",
+        "test",
+        "--watch=false",
+        "--include=src/app/pages/public-portfolio/**/*.spec.ts",
+        "--include=src/app/pages/portfolio-settings/**/*.spec.ts",
+        "--include=src/app/shared/services/public-profile*.spec.ts",
+        "--include=src/app/shared/utils/public-profile.utils.spec.ts"
+      ],
+      "cwd": "D:\\Developer-Portfolio-Analyzer\\frontend",
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 155610
+    }
+  ]
+}

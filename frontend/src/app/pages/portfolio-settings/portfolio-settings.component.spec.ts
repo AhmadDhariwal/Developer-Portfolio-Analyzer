@@ -175,4 +175,31 @@ describe('Portfolio settings owner state', () => {
     expect(fixture.componentInstance.message).toContain('reserved');
     expect(service['updateMyPublicProfile']).not.toHaveBeenCalled();
   });
+
+  it('does not restore stale sharing state when the account changes during clipboard work', async () => {
+    let resolve!: () => void;
+    const descriptor = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText: () =>
+          new Promise<void>((done) => {
+            resolve = done;
+          }),
+      },
+    });
+    try {
+      const fixture = setup();
+      fixture.componentInstance.copyShareUrl();
+      user.next({ _id: 'other-owner' });
+      resolve();
+      await Promise.resolve();
+      expect(fixture.componentInstance.copyFeedback).toBe('');
+      expect(fixture.componentInstance.published).toBe(false);
+      expect(fixture.componentInstance.shareUrl).toBe('');
+    } finally {
+      if (descriptor) Object.defineProperty(navigator, 'clipboard', descriptor);
+      else Reflect.deleteProperty(navigator, 'clipboard');
+    }
+  });
 });
