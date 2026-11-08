@@ -1,0 +1,27 @@
+{
+  "verifiedOwnedRoots": [
+    "post-cleanup-2026-11-08T12-51-31-399Z/temporary",
+    "run-2026-11-08T12-51-48-021Z/temporary",
+    "run-2026-11-08T12-51-48-021Z/npm-cache",
+    "run-2026-11-08T12-56-36-973Z/temporary",
+    "run-2026-11-08T12-56-36-973Z/npm-cache"
+  ],
+  "removedFiles": [
+    "run-2026-11-08T12-51-48-021Z\\temporary\\cv_debug.log",
+    "run-2026-11-08T12-51-48-021Z\\npm-cache\\_logs\\2026-11-08T12_51_48_469Z-debug-0.log",
+    "run-2026-11-08T12-51-48-021Z\\npm-cache\\_logs\\2026-11-08T12_51_48_470Z-debug-0.log",
+    "run-2026-11-08T12-56-36-973Z\\temporary\\cv_debug.log",
+    "run-2026-11-08T12-56-36-973Z\\npm-cache\\_logs\\2026-11-08T12_56_37_433Z-debug-0.log",
+    "run-2026-11-08T12-56-36-973Z\\npm-cache\\_logs\\2026-11-08T12_56_37_467Z-debug-0.log"
+  ],
+  "preservedDiagnosticFiles": [
+    "run-2026-11-08T12-51-48-021Z\\retained-diagnostics\\cv_debug.log",
+    "run-2026-11-08T12-51-48-021Z\\retained-diagnostics\\_logs__2026-11-08T12_51_48_469Z-debug-0.log",
+    "run-2026-11-08T12-51-48-021Z\\retained-diagnostics\\_logs__2026-11-08T12_51_48_470Z-debug-0.log",
+    "run-2026-11-08T12-56-36-973Z\\retained-diagnostics\\cv_debug.log",
+    "run-2026-11-08T12-56-36-973Z\\retained-diagnostics\\_logs__2026-11-08T12_56_37_433Z-debug-0.log",
+    "run-2026-11-08T12-56-36-973Z\\retained-diagnostics\\_logs__2026-11-08T12_56_37_467Z-debug-0.log"
+  ],
+  "recursiveDeleteUsed": false,
+  "removedEmptyTaskDirectory": "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\jobs-hub\\production-2026-11-08T12-27-21-016Z"
+}

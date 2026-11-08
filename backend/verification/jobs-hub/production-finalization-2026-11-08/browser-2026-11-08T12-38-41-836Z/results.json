@@ -1,0 +1,9 @@
+{
+  "command": [
+    "node",
+    "frontend/scripts/verify-jobs-ui.cjs"
+  ],
+  "exitCode": 0,
+  "milliseconds": 34133,
+  "artifacts": "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\jobs-hub\\production-browser-2026-11-08T12-38-41-836Z"
+}

@@ -22,6 +22,7 @@ const DEFAULT_MAX_TESTIMONIALS = 12;
 const DEFAULT_MAX_TECH = 10;
 const DEFAULT_MAX_WORK_EXPERIENCES = 8;
 const DEFAULT_MAX_COMPLETED_COURSES = 50;
+const RESERVED_SLUGS = new Set(['me']);
 const DEFAULT_WORK_EXPERIENCE_ICONS = [
   'mdi-rocket-launch',
   'mdi-lightbulb-on',
@@ -402,6 +403,8 @@ const validatePublicProfileUpdatePayload = (payload) => {
   ) {
     throw createValidationError('Invalid slug.');
   }
+  if (payload.slug !== undefined && RESERVED_SLUGS.has(slugify(payload.slug)))
+    throw createValidationError('This slug is reserved. Choose another public address.');
   for (const [name, section] of Object.entries(payload.sections || {})) {
     if (!isPlainObject(section)) throw createValidationError('Invalid section.');
     if (name === 'visibility' && Object.values(section).some((value) => typeof value !== 'boolean'))
@@ -577,7 +580,8 @@ const normalizeTestimonials = (testimonials = []) => {
 };
 
 const ensureUniqueSlug = async (base, { excludeProfileId = null } = {}) => {
-  const normalized = slugify(base) || `dev-${Date.now()}`;
+  const baseSlug = slugify(base) || `dev-${Date.now()}`;
+  const normalized = RESERVED_SLUGS.has(baseSlug) ? `dev-${baseSlug}` : baseSlug;
   let slug = normalized;
   let suffix = 1;
 
@@ -1048,6 +1052,7 @@ const updatePublicProfile = async (userId, payload = {}, req = null) => {
   applySocialLinksUpdate({ profile, payload, user });
 
   const nextAssets = assets.references(profile.toObject ? profile.toObject() : profile);
+  const sessionRevision = req?.user ? Number(req.user.sessionRevision || 0) : undefined;
   const notification = {
     type: 'profile_update',
     title: 'Public Portfolio Updated',
@@ -1059,12 +1064,13 @@ const updatePublicProfile = async (userId, payload = {}, req = null) => {
     meta: { slug: profile.slug || '', isPublic: Boolean(profile.isPublic) }
   };
   if (previousAssets.size || nextAssets.size)
-    await assets.commitPortfolio(profile, previousAssets, notification);
+    await assets.commitPortfolio(profile, previousAssets, notification, sessionRevision);
   else
     await notificationPersistence.commit(
       userId,
       (session) => profile.save({ session }),
-      notification
+      notification,
+      sessionRevision
     );
   const savedProfile = await PublicProfile.findById(profile._id);
   return buildPublicProfilePayload(savedProfile || profile, user, req);

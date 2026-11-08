@@ -524,7 +524,9 @@ function mapCachedJobRecord(record = {}, index = 0) {
   );
 }
 
-async function syncJobsToCache(jobs = []) {
+async function syncJobsToCache(jobs = [], observedAt = Date.now()) {
+  const observation = new Date(observedAt);
+  if (!Number.isFinite(observation.getTime())) throw new Error('Invalid job observation time.');
   const documents = jobs
     .slice(0, 1200)
     .map((job) => toJobCacheDocument(job))
@@ -550,8 +552,33 @@ async function syncJobsToCache(jobs = []) {
       deduped.map((document) => ({
         updateOne: {
           filter: { jobId: document.jobId },
-          update: { $set: document },
-          upsert: true
+          // A worker resuming after its Redis lease expires must not overwrite
+          // a newer observation. Guard the existing lastSynced field atomically.
+          update: [
+            {
+              $replaceWith: {
+                $cond: [
+                  { $gt: ['$lastSynced', { $literal: observation }] },
+                  '$$ROOT',
+                  {
+                    $mergeObjects: [
+                      '$$ROOT',
+                      {
+                        $literal: {
+                          ...document,
+                          lastSynced: observation,
+                          updatedAt: observation
+                        }
+                      },
+                      { createdAt: { $ifNull: ['$createdAt', { $literal: observation }] } }
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          upsert: true,
+          timestamps: false
         }
       })),
       { ordered: false, maxTimeMS: 3000 }
@@ -1104,7 +1131,10 @@ function cleanJobTitle(raw) {
     /\s*[-–—/|]\s*(?:\(?\s*(?:all\s+genders|gender\s+neutral|gn|diverse|divers|[mfdwx*](?:\s*[/,\.\-]\s*[mfdwx*]){1,4})\s*\)?)\s*$/gi,
     ''
   );
-  cleaned = cleaned.replace(/\s{2,}/g, ' ').replace(/\s*[-–—:,]\s*$/, '').trim();
+  cleaned = cleaned
+    .replace(/\s{2,}/g, ' ')
+    .replace(/\s*[-–—:,]\s*$/, '')
+    .trim();
   return cleaned || String(raw).trim();
 }
 
@@ -2258,15 +2288,16 @@ async function fetchLiveJobSources(query, filters = {}) {
 }
 async function refreshJobCache(options = {}) {
   return governance.withLease('refresh', 60, async () => {
+    const observedAt = Date.now();
     const redis = require('./redisCacheService').getRedisCacheClient();
     if (!redis || (await redis.set('jobs:v2:refresh-gate', '1', { NX: true, EX: 60 })) !== 'OK')
       return { skipped: true, reason: 'refresh_interval' };
     const filters = normaliseJobFilters(options);
     const query = buildSourceQuery({ careerStack: options.careerStack }, filters);
     const liveResult = await fetchLiveJobSources(query, filters);
-    const cacheWrite = await syncJobsToCache(liveResult.jobs);
+    const cacheWrite = await syncJobsToCache(liveResult.jobs, observedAt);
     await updateSourceHealthStats(liveResult.sourceResults);
-    if (cacheWrite.synced) await poolCache.publish(await loadCachedJobs({}, true));
+    if (cacheWrite.synced) await poolCache.publish(await loadCachedJobs({}, true), observedAt);
     return { query, filters, liveResult, cacheWrite };
   });
 }

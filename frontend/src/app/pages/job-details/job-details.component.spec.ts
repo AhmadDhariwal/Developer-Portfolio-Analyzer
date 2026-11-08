@@ -59,7 +59,7 @@ describe('job details navigation and application semantics', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('Source description');
     expect(fixture.nativeElement.textContent).toContain('retained listing');
-    const link = fixture.nativeElement.querySelector('a[target="_blank"]') as HTMLAnchorElement;
+    const link = fixture.nativeElement.querySelector('a.btn-apply-primary') as HTMLAnchorElement;
     expect(link.href).toBe('https://example.com/apply');
     expect(link.rel).toContain('noopener');
     link.addEventListener('click', (event) => event.preventDefault());

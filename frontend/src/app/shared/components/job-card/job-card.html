@@ -20,9 +20,15 @@
       </div>
       <div class="company-info">
         <h4 class="company-name">{{ decode(job.company) }}</h4>
-        <span class="company-source">{{
-          decode(job.source || job.platform || 'Direct listing')
-        }}</span>
+        <a
+          class="company-source"
+          [class.adzuna-source]="sourceUrl(job) === 'https://www.adzuna.com/'"
+          [attr.href]="sourceUrl(job) || null"
+          target="_blank"
+          rel="noopener noreferrer"
+          referrerpolicy="no-referrer"
+          >{{ decode(job.source || job.platform || 'Direct listing') }}</a
+        >
       </div>
     </div>
 

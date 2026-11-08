@@ -1,0 +1,14 @@
+[
+  {
+    "label": "storage-contracts",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--test",
+      "--test-reporter=tap",
+      "backend/src/tests/b2Storage.test.js",
+      "backend/src/tests/storageSecurityFinal.test.js"
+    ],
+    "exitCode": 0,
+    "milliseconds": 4131
+  }
+]

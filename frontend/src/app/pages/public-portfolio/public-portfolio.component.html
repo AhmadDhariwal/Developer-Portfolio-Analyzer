@@ -30,6 +30,7 @@
           <span class="avatar-toggle-label">Avatar:</span>
           <strong>{{ avatarMode === '3d' ? '3D Character' : 'Profile Photo' }}</strong>
         </button>
+        <span class="muted copy-toast" role="status" *ngIf="copyFeedback">{{ copyFeedback }}</span>
         <button
           type="button"
           class="share-link-btn"
@@ -193,7 +194,11 @@
             </h2>
 
             <!-- Animated Dynamic Typewriter Line -->
-            <div class="typewriter-line" aria-label="Role headline">
+            <div
+              class="typewriter-line"
+              *ngIf="profile.headline || profile.user.jobTitle"
+              aria-label="Role headline"
+            >
               <span class="typewriter-prefix">I'm a </span>
               <span class="typewriter-word">{{ typewriterText }}</span>
               <span class="typewriter-cursor" aria-hidden="true">|</span>
@@ -700,7 +705,9 @@
             <div class="courses-3d-grid">
               <article class="course-card-3d" *ngFor="let course of profile.completedCourses">
                 <div class="course-card-top">
-                  <span class="course-provider-pill">{{ course.provider || 'Accredited' }}</span>
+                  <span class="course-provider-pill">{{
+                    course.provider || 'Provider not listed'
+                  }}</span>
                   <span class="course-date" *ngIf="course.completionDate">
                     {{ course.completionDate | date: 'MMM yyyy' : 'UTC' }}
                   </span>
@@ -965,15 +972,13 @@
                 </div>
                 <div class="brand-info">
                   <h3 class="brand-name">{{ profile.user.name }}</h3>
-                  <span class="brand-role">{{
-                    profile.user.jobTitle || 'Full-Stack Developer'
-                  }}</span>
+                  <span class="brand-role">{{ profile.user.jobTitle || 'Portfolio owner' }}</span>
                 </div>
               </div>
               <p class="footer-bio-summary">
                 {{
                   profile.headline ||
-                    'Engineering high-impact web architectures, scalable backend systems, and modern interactive experiences.'
+                    'Projects, skills, and experience shared by the portfolio owner.'
                 }}
               </p>
               <div class="footer-powered-chip">

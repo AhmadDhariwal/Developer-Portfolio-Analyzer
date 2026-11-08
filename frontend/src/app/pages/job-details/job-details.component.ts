@@ -31,6 +31,7 @@ import {
   decodeHtmlEntities,
   hasJobSalary,
   cleanJobTitle,
+  jobSourceUrl,
 } from '../../shared/utils/job-presentation';
 
 export interface DescriptionBlock {
@@ -62,6 +63,7 @@ export class JobDetailsComponent implements OnInit, OnDestroy {
   readonly date = jobDate;
   readonly salary = jobSalary;
   readonly safeUrl = safeJobUrl;
+  readonly sourceUrl = jobSourceUrl;
   readonly decode = decodeHtmlEntities;
   readonly cleanTitle = cleanJobTitle;
   readonly hasSalary = hasJobSalary;

@@ -617,6 +617,7 @@ test('Express router contracts preserve GET endpoints and protect every action a
       jobsRateLimit: pass,
       jobsRefreshLimit: pass,
       actionRateLimit: pass,
+      limiter: () => pass,
       validateJobsRequest: pass
     },
     '../controllers/jobController': {
@@ -627,6 +628,8 @@ test('Express router contracts preserve GET endpoints and protect every action a
     },
     '../controllers/jobActionController': {
       list: (_req, res) => res.json({ actions: [] }),
+      unlockHidden: (_req, res) => res.json({}),
+      lockHidden: (_req, res) => res.json({ locked: true }),
       update: (_req, res) => res.json({ action: {} }),
       toggle: (field, value) => (_req, res) => res.json({ action: { [field]: value } })
     }
@@ -840,6 +843,21 @@ test('a slow Mongo fill cannot replace a newer ingestion in process memory', asy
   now += 100;
   await cache.publish([raw({ id: 'new' })]);
   release([raw({ id: 'old' })]);
-  await slow;
+  assert.equal((await slow)[0].id, 'new');
   assert.equal((await cache.load(() => assert.fail()))[0].id, 'new');
+});
+
+test('a worker losing Redis publication returns and remembers the newer shared pool', async () => {
+  const now = Date.now();
+  const winner = { version: 2, jobs: [raw({ id: 'winner' })], observedAt: now, until: now + 10000 };
+  const cache = load('../services/jobPoolCacheService.js', {
+    './redisCacheService': {
+      getRedisCacheClient: () => ({ eval: async () => 0, get: async () => JSON.stringify(winner) })
+    }
+  });
+  assert.equal((await cache.publish([raw({ id: 'stale' })], now - 1000))[0].id, 'winner');
+  assert.equal(
+    (await cache.load(() => assert.fail('winning pool is already cached')))[0].id,
+    'winner'
+  );
 });

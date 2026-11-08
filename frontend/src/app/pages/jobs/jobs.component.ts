@@ -39,6 +39,7 @@ import {
 import { JobCardComponent } from '../../shared/components/job-card/job-card';
 import { JobFiltersComponent } from '../../shared/components/job-filters/job-filters';
 import { jobDate, jobRequestError } from '../../shared/utils/job-presentation';
+import { JobsHiddenAccessService } from '../../shared/services/jobs-hidden-access.service';
 type View = 'discover' | 'saved' | 'applied' | 'hidden';
 interface LibraryRow {
   action: JobActionRecord;
@@ -74,6 +75,10 @@ export class JobsComponent implements OnInit, OnDestroy {
   errorMessage = '';
   notice = '';
   importing = false;
+  hiddenPassword = '';
+  hiddenPasswordBusy = false;
+  hiddenPasswordError = '';
+  hiddenRetryAt = 0;
   retryAt = 0;
   now = Date.now();
   offline = !navigator.onLine;
@@ -92,6 +97,7 @@ export class JobsComponent implements OnInit, OnDestroy {
     readonly profile: CareerProfileService,
     private readonly route: ActivatedRoute,
     private readonly cdr: ChangeDetectorRef,
+    readonly hiddenAccess: JobsHiddenAccessService,
   ) {}
   get displayedJobs(): Job[] {
     const visible = this.jobs.filter((job) => !this.actions.state(job.id).hidden);
@@ -140,6 +146,10 @@ export class JobsComponent implements OnInit, OnDestroy {
           this.rows = [];
           this.response = null;
           this.notice = '';
+          this.hiddenPassword = '';
+          this.hiddenPasswordBusy = false;
+          this.hiddenPasswordError = '';
+          this.hiddenRetryAt = 0;
           if (!this.coolingDown) this.errorMessage = '';
           this.jobsApi.clearCache();
           if (this.auth.getCurrentUser()) this.load(1);
@@ -151,6 +161,19 @@ export class JobsComponent implements OnInit, OnDestroy {
         }),
     );
     this.subscriptions.add(this.actions.changes$.subscribe(() => this.cdr.markForCheck()));
+    this.subscriptions.add(
+      this.hiddenAccess.changes$.subscribe((unlocked) => {
+        if (!unlocked && (this.view === 'hidden' || this.rows.some((row) => row.action.hidden))) {
+          this.token++;
+          this.request.unsubscribe();
+          this.rows = [];
+          this.isLoading = false;
+          this.hiddenPassword = '';
+          this.hiddenPasswordBusy = false;
+        }
+        this.cdr.markForCheck();
+      }),
+    );
     this.timer = setInterval(() => {
       this.now = Date.now();
       this.cdr.markForCheck();
@@ -159,6 +182,8 @@ export class JobsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.request.unsubscribe();
     this.subscriptions.unsubscribe();
+    this.hiddenPassword = '';
+    this.hiddenAccess.lock();
     if (this.timer) clearInterval(this.timer);
   }
   @HostListener('window:focus') onFocus(): void {
@@ -175,6 +200,10 @@ export class JobsComponent implements OnInit, OnDestroy {
   setView(view: View): void {
     if (this.view === view) return;
     this.view = view;
+    this.hiddenPassword = '';
+    this.hiddenPasswordError = '';
+    this.hiddenPasswordBusy = false;
+    this.hiddenAccess.lock();
     this.jobs = [];
     this.rows = [];
     this.errorMessage = '';
@@ -204,6 +233,14 @@ export class JobsComponent implements OnInit, OnDestroy {
     this.load(this.page);
   }
   load(page: number): void {
+    if (this.view === 'hidden' && !this.hiddenAccess.unlocked) {
+      this.token++;
+      this.request.unsubscribe();
+      this.rows = [];
+      this.isLoading = false;
+      this.cdr.markForCheck();
+      return;
+    }
     if (this.coolingDown || this.offline) return;
     this.request.unsubscribe();
     this.request = new Subscription();
@@ -285,10 +322,57 @@ export class JobsComponent implements OnInit, OnDestroy {
     }
   }
   private failed(error: Parameters<typeof jobRequestError>[0]): void {
+    if (
+      ['JOBS_HIDDEN_LOCKED', 'JOBS_HIDDEN_UNAVAILABLE', 'JOBS_HIDDEN_SESSION_EXPIRED'].includes(
+        (error as { error?: { code?: string } }).error?.code || '',
+      )
+    )
+      this.hiddenAccess.lock();
     const failure = jobRequestError(error);
     this.errorMessage = failure.message;
     this.retryAt = failure.retryAt;
     this.cdr.markForCheck();
+  }
+  confirmHiddenPassword(): void {
+    if (this.hiddenPasswordBusy || this.offline || Date.now() < this.hiddenRetryAt) return;
+    if (!this.hiddenPassword.length || this.hiddenPassword.length > 1024) {
+      this.hiddenPasswordError = 'Enter your account password.';
+      return;
+    }
+    this.hiddenPasswordBusy = true;
+    this.hiddenPasswordError = '';
+    const password = this.hiddenPassword;
+    this.hiddenPassword = '';
+    this.subscriptions.add(
+      this.hiddenAccess
+        .unlock(password)
+        .pipe(
+          finalize(() => {
+            this.hiddenPasswordBusy = false;
+            this.cdr.markForCheck();
+          }),
+        )
+        .subscribe({
+          next: () => {
+            if (this.view === 'hidden') this.load(1);
+          },
+          error: (error) => {
+            const code = error.error?.code;
+            this.hiddenPasswordError =
+              code === 'JOBS_HIDDEN_PASSWORD_INCORRECT'
+                ? 'The account password is incorrect.'
+                : code === 'JOBS_HIDDEN_PASSWORD_UNAVAILABLE'
+                  ? 'This account has no password. Use the account password setup or recovery flow before accessing hidden jobs.'
+                  : error.status === 429
+                    ? 'Too many confirmation attempts. Wait before trying again.'
+                    : 'Password confirmation is unavailable. Please try again.';
+            this.hiddenRetryAt = jobRequestError(error).retryAt;
+          },
+        }),
+    );
+  }
+  @HostListener('document:visibilitychange') onVisibilityChange(): void {
+    if (document.hidden) this.hiddenAccess.lock();
   }
   mutate(id: string, field: JobActionField): void {
     if (this.actionBlocked) return;

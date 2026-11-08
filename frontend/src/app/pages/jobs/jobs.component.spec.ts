@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, ActivatedRoute, convertToParamMap } from '@angular/router';
 import { HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, of, Subject } from 'rxjs';
+import { BehaviorSubject, of, Subject, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { JobsComponent } from './jobs.component';
 import { JobService } from '../../shared/services/job.service';
@@ -9,6 +9,7 @@ import { JobActionsService } from '../../shared/services/job-actions.service';
 import { AuthService } from '../../shared/services/auth.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
 import { JobsResponse } from '../../shared/models/job.model';
+import { JobsHiddenAccessService } from '../../shared/services/jobs-hidden-access.service';
 
 describe('Jobs Hub request lifecycle', () => {
   let response: Subject<JobsResponse>;
@@ -40,6 +41,10 @@ describe('Jobs Hub request lifecycle', () => {
         },
         { provide: JobService, useValue: api },
         {
+          provide: JobsHiddenAccessService,
+          useValue: { unlocked: false, changes$: of(false), lock: vi.fn(), unlock: vi.fn() },
+        },
+        {
           provide: JobActionsService,
           useValue: {
             changes$: of(0),
@@ -48,10 +53,61 @@ describe('Jobs Hub request lifecycle', () => {
             state: () => ({ saved: false, applied: false, hidden: false }),
             isBusy: () => false,
             retryAt: 0,
+            list: vi.fn(() => of({ actions: [], page: 1, hasMore: false })),
           },
         },
       ],
     });
+  });
+  it('never loads hidden records before account-password confirmation', () => {
+    (TestBed.inject(ActivatedRoute).snapshot as any).queryParamMap = convertToParamMap({
+      view: 'hidden',
+    });
+    const fixture = TestBed.createComponent(JobsComponent);
+    fixture.detectChanges();
+    fixture.componentInstance.setView('hidden');
+    fixture.detectChanges();
+    expect(TestBed.inject(JobActionsService).list).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.querySelector('#hidden-account-password').type).toBe('password');
+    expect(fixture.nativeElement.textContent).toContain('Confirm your account password');
+    expect(fixture.nativeElement.textContent).not.toContain('No hidden listings');
+  });
+  it('clears the password immediately and loads only after successful confirmation', () => {
+    (TestBed.inject(ActivatedRoute).snapshot as any).queryParamMap = convertToParamMap({
+      view: 'hidden',
+    });
+    const access = TestBed.inject(JobsHiddenAccessService) as any;
+    access.unlock.mockImplementation(() => {
+      access.unlocked = true;
+      return of({ token: 'x'.repeat(43), expiresAt: Date.now() + 300000 });
+    });
+    const fixture = TestBed.createComponent(JobsComponent);
+    fixture.detectChanges();
+    fixture.componentInstance.setView('hidden');
+    fixture.componentInstance.hiddenPassword = 'Account!Password';
+    fixture.componentInstance.confirmHiddenPassword();
+    expect(fixture.componentInstance.hiddenPassword).toBe('');
+    expect(TestBed.inject(JobActionsService).list).toHaveBeenCalledWith('hidden', 1, 10);
+  });
+  it('keeps hidden records locked after wrong-password confirmation', () => {
+    (TestBed.inject(ActivatedRoute).snapshot as any).queryParamMap = convertToParamMap({
+      view: 'hidden',
+    });
+    const access = TestBed.inject(JobsHiddenAccessService) as any;
+    access.unlock.mockReturnValue(
+      throwError(
+        () =>
+          new HttpErrorResponse({ status: 403, error: { code: 'JOBS_HIDDEN_PASSWORD_INCORRECT' } }),
+      ),
+    );
+    const fixture = TestBed.createComponent(JobsComponent);
+    fixture.detectChanges();
+    fixture.componentInstance.setView('hidden');
+    fixture.componentInstance.hiddenPassword = 'IncorrectPassword';
+    fixture.componentInstance.confirmHiddenPassword();
+    expect(fixture.componentInstance.hiddenPassword).toBe('');
+    expect(fixture.componentInstance.hiddenPasswordError).toContain('incorrect');
+    expect(TestBed.inject(JobActionsService).list).not.toHaveBeenCalled();
   });
   it('retains usable results on 503 and blocks retry during Retry-After', () => {
     const fixture = TestBed.createComponent(JobsComponent);

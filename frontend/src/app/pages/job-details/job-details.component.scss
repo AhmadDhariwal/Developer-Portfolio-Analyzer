@@ -884,3 +884,15 @@
     grid-template-columns: 1fr;
   }
 }
+.source-tag {
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
+  &.adzuna-source {
+    display: inline-flex;
+    align-items: center;
+    min-width: 116px;
+    min-height: 23px;
+  }
+}

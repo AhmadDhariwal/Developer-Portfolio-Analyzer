@@ -1,0 +1,34 @@
+[
+  {
+    "label": "portfolio-integration",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--test",
+      "--test-reporter=tap",
+      "backend/src/tests/publicPortfolio.integration.test.js"
+    ],
+    "exitCode": 1,
+    "milliseconds": 48189
+  },
+  {
+    "label": "query-audit",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "backend/src/scripts/auditPublicPortfolioQueries.cjs",
+      "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\public-portfolio\\production-finalization-2026-11-08\\index-approval-2026-11-08T10-30-37-570Z\\final-query-measurements.json"
+    ],
+    "exitCode": 0,
+    "milliseconds": 51966
+  },
+  {
+    "label": "index-hardening",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--test",
+      "--test-reporter=tap",
+      "backend/src/tests/publicPortfolioHardening.test.js"
+    ],
+    "exitCode": 0,
+    "milliseconds": 48020
+  }
+]

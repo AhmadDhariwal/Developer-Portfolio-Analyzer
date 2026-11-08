@@ -1,0 +1,8 @@
+{
+  "run": "run-2026-11-08T12-14-46-438Z",
+  "observedParentError": "Disposable Redis did not stop",
+  "rawParentStderrFileCaptured": false,
+  "independentRedisProbe": "connection refused after shutdown",
+  "applicationTestsFailed": false,
+  "fixtureCheckCorrected": true
+}

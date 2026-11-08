@@ -1,6 +1,22 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Job } from '../models/job.model';
 
+const SOURCE_LINKS: Record<string, string> = {
+  remotive: 'https://remotive.com/',
+  arbeitnow: 'https://www.arbeitnow.com/',
+  remoteok: 'https://remoteok.com/',
+  adzuna: 'https://www.adzuna.com/',
+  jooble: 'https://jooble.org/',
+  jsearch: 'https://www.openwebninja.com/api/jsearch',
+};
+
+export function jobSourceUrl(job: Pick<Job, 'source' | 'platform'>): string {
+  const source = String(job.source || job.platform || '')
+    .toLowerCase()
+    .replace(/\s+/g, '');
+  return Object.hasOwn(SOURCE_LINKS, source) ? SOURCE_LINKS[source] : '';
+}
+
 export function safeJobUrl(value: unknown): string {
   try {
     const url = new URL(String(value || ''));

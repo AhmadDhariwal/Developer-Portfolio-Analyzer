@@ -58,6 +58,66 @@ test('public serializer excludes contacts, analytics, hidden collections and pri
   assert.equal(owner.analytics.totalViews, 15);
   assert.equal(owner.completedCourses.length, 1);
 });
+
+test('portfolio saves forward the authenticated session revision to the existing transaction fence', async () => {
+  const current = { ...profile, toObject: () => profile };
+  const api = service({
+    '../models/publicProfile': { findOne: () => query(current), findById: () => query(current) },
+    './notificationPersistenceService': {
+      commit: async (_owner, _mutation, _notification, revision) => {
+        assert.equal(revision, 7);
+        throw Object.assign(Error('Session revoked'), { status: 401 });
+      }
+    },
+    './storedAssetService': { references: () => new Set() }
+  });
+  await assert.rejects(
+    api.updatePublicProfile('owner', { summary: 'New copy' }, { user: { sessionRevision: 7 } }),
+    { status: 401 }
+  );
+});
+
+test('managed portfolio commits reject a revoked session before saving or activating assets', async () => {
+  let saves = 0;
+  const assets = load('services/storedAssetService.js', {
+    './integrationPersistenceService': {
+      transaction: async (work) => work('session'),
+      ownerFence: async () => {}
+    },
+    './notificationPersistenceService': {
+      fence: async (owner, session, revision) => {
+        assert.equal(owner, 'owner');
+        assert.equal(session, 'session');
+        assert.equal(revision, 7);
+        throw Object.assign(Error('Session revoked'), { status: 401 });
+      }
+    }
+  });
+  await assert.rejects(
+    assets.commitPortfolio(
+      { userId: 'owner', toObject: () => ({}), save: async () => saves++ },
+      new Set(),
+      null,
+      7
+    ),
+    { status: 401 }
+  );
+  assert.equal(saves, 0);
+});
+
+test('portfolio controller preserves a session rejection status without exposing internal errors', async () => {
+  const controller = load('controllers/publicProfileController.js', {
+    '../services/publicProfileService': {
+      updatePublicProfile: async () => {
+        throw Object.assign(Error('Internal account detail'), { status: 401 });
+      }
+    }
+  });
+  const res = response();
+  await controller.updateMyPublicProfile({ user: { _id: 'owner' }, body: {} }, res);
+  assert.equal(res.statusCode, 401);
+  assert.equal(res.body.message, 'Failed to update public profile.');
+});
 test('visibility is checked before caches; unauthorized previews never invoke public cache', async () => {
   let reads = 0;
   const api = service({
@@ -127,6 +187,8 @@ test('validation rejects markup, credentials, malformed visibility, excessive ar
     { sections: { visibility: { projects: 'false' } } },
     { projects: Array(51).fill({}) },
     { projects: [{ url: 'javascript:alert(1)' }] },
+    { slug: 'me' },
+    { slug: ' ME ' },
     { socialLinks: { website: 'https://user:password@example.com' } }
   ])
     assert.throws(() => api.validatePublicProfileUpdatePayload(body), { statusCode: 400 });
@@ -134,6 +196,25 @@ test('validation rejects markup, credentials, malformed visibility, excessive ar
     projects: [{ imageUrl: '/uploads/portfolio-images/owner-image.png' }],
     sections: { visibility: { projects: false } }
   });
+});
+
+test('automatic slug allocation does not use the reserved owner route', async () => {
+  const api = service({
+    '../models/user': { findById: () => query({ ...user, name: 'Me' }) },
+    '../models/publicProfile': {
+      findOne: async () => null,
+      exists: async (filter) => {
+        assert.equal(filter.slug, 'dev-me');
+        return false;
+      },
+      findOneAndUpdate: async (_filter, update) => update.$setOnInsert
+    },
+    './integrationPersistenceService': {
+      transaction: async (work) => work('session'),
+      ownerFence: async () => {}
+    }
+  });
+  assert.equal((await api.getOrCreatePublicProfile('owner')).slug, 'dev-me');
 });
 test('cache revisions change for edits/account changes but not analytics updates', () => {
   assert.notEqual(revisionFor(profile, user), revisionFor({ ...profile, slug: 'new-slug' }, user));
@@ -220,6 +301,24 @@ test('analytics excludes bots, owner/preview and invalid traffic before writes',
   ])
     await api.recordProfileView({ profile, req });
   assert.equal(writes, 0);
+});
+
+test('a committed analytics receipt skips redundant owner/profile write transactions', async () => {
+  let reads = 0;
+  const analytics = load('services/publicPortfolioAnalyticsPersistence.js', {
+    '../models/publicPortfolioVisit': {
+      exists: async (filter) => {
+        reads++;
+        assert.deepEqual(filter, { profileId: 'profile', viewerHash: 'visitor-day' });
+        return { _id: 'receipt' };
+      }
+    },
+    './integrationPersistenceService': {
+      transaction: async () => assert.fail('duplicate receipt must not start a transaction')
+    }
+  });
+  await analytics.record(profile, { profileId: 'profile', viewerHash: 'visitor-day' });
+  assert.equal(reads, 1);
 });
 test('resume rejects paths outside uploads and non-PDFs', () => {
   const api = service();

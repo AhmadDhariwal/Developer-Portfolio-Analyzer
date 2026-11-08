@@ -182,11 +182,15 @@ async function commitAvatar(owner, next, notification = null) {
   );
   return previous;
 }
-async function commitPortfolio(profile, previous, notification = null) {
+async function commitPortfolio(profile, previous, notification = null, sessionRevision) {
   const next = references(profile.toObject());
   await persistence.transaction(
     async (session) => {
-      await persistence.ownerFence(profile.userId, session);
+      await require('./notificationPersistenceService').fence(
+        profile.userId,
+        session,
+        sessionRevision
+      );
       await activate(next, profile.userId, session);
       await profile.save({ session });
       for (const reference of previous)

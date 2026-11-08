@@ -1,0 +1,234 @@
+[
+  {
+    "label": "backend-format",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "frontend/node_modules/prettier/bin/prettier.cjs",
+      "--check",
+      "--single-quote",
+      "--trailing-comma",
+      "none",
+      "--print-width",
+      "100",
+      "backend/src/controllers/jobController.js",
+      "backend/src/services/jobPoolCacheService.js",
+      "backend/src/services/jobService.js",
+      "backend/src/utils/jobRanker.js",
+      "backend/src/tests/jobsHubHardening.test.js",
+      "backend/src/tests/jobsHubLocal.integration.test.js",
+      "backend/src/tests/jobsHubUpstash.integration.test.js",
+      "backend/src/tests/jobsHubRanking.test.js",
+      "backend/src/tests/jobsHubHttp.integration.test.js",
+      "backend/src/scripts/verifyJobsHubProduction.cjs"
+    ],
+    "exitCode": 0,
+    "milliseconds": 869
+  },
+  {
+    "label": "frontend-format",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "frontend/node_modules/prettier/bin/prettier.cjs",
+      "--check",
+      "--config",
+      "frontend/.prettierrc",
+      "frontend/scripts/verify-jobs-ui.cjs",
+      "frontend/src/app/shared/utils/job-presentation.ts",
+      "frontend/src/app/shared/utils/job-presentation.spec.ts",
+      "frontend/src/app/shared/components/job-card/job-card.ts",
+      "frontend/src/app/shared/components/job-card/job-card.html",
+      "frontend/src/app/shared/components/job-card/job-card.scss",
+      "frontend/src/app/pages/job-details/job-details.component.ts",
+      "frontend/src/app/pages/job-details/job-details.component.html",
+      "frontend/src/app/pages/job-details/job-details.component.scss",
+      "frontend/src/app/pages/job-details/job-details.component.spec.ts",
+      "frontend/src/app/pages/jobs/jobs.component.html"
+    ],
+    "exitCode": 0,
+    "milliseconds": 1806
+  },
+  {
+    "label": "report-format",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "frontend/node_modules/prettier/bin/prettier.cjs",
+      "--check",
+      "backend/verification/jobs-hub/finalization.md",
+      "backend/verification/jobs-hub/production-finalization-2026-11-08/JOBS-HUB-PRODUCTION-FINAL.md"
+    ],
+    "exitCode": 0,
+    "milliseconds": 566
+  },
+  {
+    "label": "syntax-0",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--check",
+      "backend/src/controllers/jobController.js"
+    ],
+    "exitCode": 0,
+    "milliseconds": 120
+  },
+  {
+    "label": "syntax-1",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--check",
+      "backend/src/services/jobPoolCacheService.js"
+    ],
+    "exitCode": 0,
+    "milliseconds": 124
+  },
+  {
+    "label": "syntax-2",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--check",
+      "backend/src/services/jobService.js"
+    ],
+    "exitCode": 0,
+    "milliseconds": 123
+  },
+  {
+    "label": "syntax-3",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--check",
+      "backend/src/utils/jobRanker.js"
+    ],
+    "exitCode": 0,
+    "milliseconds": 125
+  },
+  {
+    "label": "syntax-4",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--check",
+      "backend/src/tests/jobsHubHardening.test.js"
+    ],
+    "exitCode": 0,
+    "milliseconds": 124
+  },
+  {
+    "label": "syntax-5",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--check",
+      "backend/src/tests/jobsHubLocal.integration.test.js"
+    ],
+    "exitCode": 0,
+    "milliseconds": 116
+  },
+  {
+    "label": "syntax-6",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--check",
+      "backend/src/tests/jobsHubUpstash.integration.test.js"
+    ],
+    "exitCode": 0,
+    "milliseconds": 113
+  },
+  {
+    "label": "syntax-7",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--check",
+      "backend/src/tests/jobsHubRanking.test.js"
+    ],
+    "exitCode": 0,
+    "milliseconds": 106
+  },
+  {
+    "label": "syntax-8",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--check",
+      "backend/src/tests/jobsHubHttp.integration.test.js"
+    ],
+    "exitCode": 0,
+    "milliseconds": 103
+  },
+  {
+    "label": "syntax-9",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--check",
+      "backend/src/scripts/verifyJobsHubProduction.cjs"
+    ],
+    "exitCode": 0,
+    "milliseconds": 104
+  },
+  {
+    "label": "syntax-10",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--check",
+      "frontend/scripts/verify-jobs-ui.cjs"
+    ],
+    "exitCode": 0,
+    "milliseconds": 107
+  },
+  {
+    "label": "git-whitespace",
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exitCode": 0,
+    "milliseconds": 232
+  },
+  {
+    "label": "git-staged-whitespace",
+    "command": [
+      "git",
+      "diff",
+      "--cached",
+      "--check"
+    ],
+    "exitCode": 0,
+    "milliseconds": 123
+  },
+  {
+    "label": "branch",
+    "command": [
+      "git",
+      "branch",
+      "--show-current"
+    ],
+    "exitCode": 0,
+    "milliseconds": 100
+  },
+  {
+    "label": "head",
+    "command": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "exitCode": 0,
+    "milliseconds": 94
+  },
+  {
+    "label": "git-status",
+    "command": [
+      "git",
+      "status",
+      "--short"
+    ],
+    "exitCode": 0,
+    "milliseconds": 255
+  },
+  {
+    "label": "staged-files",
+    "command": [
+      "git",
+      "diff",
+      "--cached",
+      "--name-only"
+    ],
+    "exitCode": 0,
+    "milliseconds": 103
+  }
+]

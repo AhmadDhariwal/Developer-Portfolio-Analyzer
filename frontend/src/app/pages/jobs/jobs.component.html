@@ -155,72 +155,26 @@
       </button>
     </form>
 
-    <!-- Workspace: Filters Sidebar + Results Grid -->
+    <!-- Top Managed Filters Section -->
+    <section
+      id="jobs-filter-panel"
+      class="filter-sidebar jobs-upper-filter-bar"
+      [class.open]="filtersOpen"
+    >
+      <app-job-filters
+        [initialFilters]="pendingFilters"
+        [activeFilters]="activeFilters"
+        [isApplying]="isLoading || coolingDown || offline"
+        (filtersChange)="stage($event)"
+        (filtersReset)="resetFilters()"
+        (apply)="applyFilters()"
+      />
+    </section>
+
+    <!-- Workspace: Full Width Results Grid -->
     <div class="workspace-layout">
-      <aside id="jobs-filter-panel" class="filter-sidebar" [class.open]="filtersOpen">
-        <app-job-filters
-          [initialFilters]="pendingFilters"
-          [activeFilters]="activeFilters"
-          [isApplying]="isLoading"
-          (filtersChange)="stage($event)"
-          (filtersReset)="resetFilters()"
-        />
-
-        <button
-          type="button"
-          class="btn-apply-filters"
-          [disabled]="isLoading || coolingDown || offline"
-          (click)="applyFilters()"
-        >
-          Apply filters
-        </button>
-
-        <div class="learning-hint-card">
-          <div class="hint-header">
-            <span class="hint-icon" aria-hidden="true">💡</span>
-            <strong>Skill Readiness</strong>
-          </div>
-          <p>Bridge missing requirements and level up with targeted courses.</p>
-          <a class="hint-link" routerLink="/app/courses">Open Learning Hub →</a>
-        </div>
-
-        <div class="sidebar-tips-card">
-          <div class="card-header-row">
-            <span class="card-icon" aria-hidden="true">✦</span>
-            <strong>Search & Matching Tips</strong>
-          </div>
-          <ul class="tips-list">
-            <li>
-              Roles are prioritized using skills confirmed across your GitHub profile and resume.
-            </li>
-            <li>Filter by location or "Remote" to find roles matching your timezone.</li>
-          </ul>
-        </div>
-
-        <div class="sidebar-tools-card">
-          <div class="card-header-row">
-            <span class="card-icon" aria-hidden="true">⚡</span>
-            <strong>Career Toolkit</strong>
-          </div>
-          <nav class="tools-nav">
-            <a routerLink="/app/skill-gap" class="tool-item">
-              <span>Skill Gap Analysis</span>
-              <span class="tool-arrow" aria-hidden="true">→</span>
-            </a>
-            <a routerLink="/app/career-sprint" class="tool-item">
-              <span>Career Sprint</span>
-              <span class="tool-arrow" aria-hidden="true">→</span>
-            </a>
-            <a routerLink="/app/interview-prep" class="tool-item">
-              <span>Interview Prep</span>
-              <span class="tool-arrow" aria-hidden="true">→</span>
-            </a>
-          </nav>
-        </div>
-      </aside>
-
       <section
-        class="results-container"
+        class="results-container full-width"
         aria-labelledby="results-heading"
         [attr.aria-busy]="isLoading"
       >
@@ -230,12 +184,12 @@
             <p class="results-count">{{ total }} matching listings found</p>
           </div>
           <div class="sort-control">
-            <label for="jobs-sort-select" class="sort-label">Sort by</label>
+            <label for="jobs-sort-select" class="sort-label">Sort this page</label>
             <select
               id="jobs-sort-select"
               class="sort-select"
               [(ngModel)]="sort"
-              aria-label="Sort opportunities"
+              aria-label="Sort this page"
             >
               <option value="match">Best match</option>
               <option value="newest">Newest posted</option>
@@ -339,6 +293,52 @@
             Next →
           </button>
         </nav>
+
+        <!-- Career & Skill Acceleration Strip -->
+        <div class="career-accelerator-strip">
+          <div class="learning-hint-card">
+            <div class="hint-header">
+              <span class="hint-icon" aria-hidden="true">💡</span>
+              <strong>Skill Readiness</strong>
+            </div>
+            <p>Bridge missing requirements and level up with targeted courses.</p>
+            <a class="hint-link" routerLink="/app/courses">Open Learning Hub →</a>
+          </div>
+
+          <div class="sidebar-tips-card">
+            <div class="card-header-row">
+              <span class="card-icon" aria-hidden="true">✦</span>
+              <strong>Search & Matching Tips</strong>
+            </div>
+            <ul class="tips-list">
+              <li>
+                Roles are prioritized using skills confirmed across your GitHub profile and resume.
+              </li>
+              <li>Filter by location or "Remote" to find roles matching your timezone.</li>
+            </ul>
+          </div>
+
+          <div class="sidebar-tools-card">
+            <div class="card-header-row">
+              <span class="card-icon" aria-hidden="true">⚡</span>
+              <strong>Career Toolkit</strong>
+            </div>
+            <nav class="tools-nav">
+              <a routerLink="/app/skill-gap" class="tool-item">
+                <span>Skill Gap Analysis</span>
+                <span class="tool-arrow" aria-hidden="true">→</span>
+              </a>
+              <a routerLink="/app/career-sprint" class="tool-item">
+                <span>Career Sprint</span>
+                <span class="tool-arrow" aria-hidden="true">→</span>
+              </a>
+              <a routerLink="/app/interview-prep" class="tool-item">
+                <span>Interview Prep</span>
+                <span class="tool-arrow" aria-hidden="true">→</span>
+              </a>
+            </nav>
+          </div>
+        </div>
       </section>
     </div>
   } @else {
@@ -363,8 +363,59 @@
             }}
           </p>
         </div>
+        @if (view === 'hidden' && hiddenAccess.unlocked) {
+          <button type="button" class="btn-subtle" (click)="hiddenAccess.lock()">
+            Lock hidden jobs
+          </button>
+        }
       </div>
 
+      @if (view === 'hidden' && !hiddenAccess.unlocked) {
+        <form
+          class="hidden-access-panel"
+          (ngSubmit)="confirmHiddenPassword()"
+          aria-labelledby="hidden-access-heading"
+        >
+          <div class="lock-icon-badge" aria-hidden="true">
+            <span class="lock-emoji">🔒</span>
+          </div>
+          <h3 id="hidden-access-heading">Confirm your account password</h3>
+          <p id="hidden-access-help">
+            Hidden jobs stay locked until you confirm your sign-in password. Access lasts up to five
+            minutes and locks when you leave this view.
+          </p>
+          <div class="password-field-group">
+            <label for="hidden-account-password">Account password</label>
+            <input
+              id="hidden-account-password"
+              name="hiddenAccountPassword"
+              type="password"
+              autocomplete="current-password"
+              maxlength="1024"
+              required
+              aria-describedby="hidden-access-help"
+              [(ngModel)]="hiddenPassword"
+              [disabled]="hiddenPasswordBusy || offline || now < hiddenRetryAt"
+              placeholder="Enter your account password"
+            />
+          </div>
+          @if (hiddenPasswordError) {
+            <p class="hidden-password-error" role="alert">{{ hiddenPasswordError }}</p>
+          }
+          <button
+            type="submit"
+            class="btn-unlock-hidden"
+            [disabled]="hiddenPasswordBusy || !hiddenPassword || offline || now < hiddenRetryAt"
+          >
+            {{ hiddenPasswordBusy ? 'Confirming…' : 'Unlock hidden jobs' }}
+          </button>
+          @if (now < hiddenRetryAt) {
+            <p class="cooldown-note" role="status">
+              Try again after the confirmation cooldown ends.
+            </p>
+          }
+        </form>
+      }
       @if (isLoading) {
         <p role="status" class="feed-note">Syncing your account records…</p>
       }
@@ -431,7 +482,9 @@
         }
       </div>
 
-      @if (!isLoading && !rows.length && !errorMessage) {
+      @if (
+        !isLoading && !rows.length && !errorMessage && (view !== 'hidden' || hiddenAccess.unlocked)
+      ) {
         <div class="empty-state">
           <div class="empty-icon" aria-hidden="true">✦</div>
           <h3>
@@ -458,25 +511,27 @@
         </div>
       }
 
-      <nav class="pagination" aria-label="Activity pagination">
-        <button
-          type="button"
-          class="btn-page"
-          [disabled]="page <= 1 || isLoading || coolingDown || offline"
-          (click)="load(page - 1)"
-        >
-          ← Previous
-        </button>
-        <span class="page-indicator">Page {{ page }}</span>
-        <button
-          type="button"
-          class="btn-page"
-          [disabled]="!hasMore || isLoading || coolingDown || offline"
-          (click)="load(page + 1)"
-        >
-          Next →
-        </button>
-      </nav>
+      @if (view !== 'hidden' || hiddenAccess.unlocked) {
+        <nav class="pagination" aria-label="Activity pagination">
+          <button
+            type="button"
+            class="btn-page"
+            [disabled]="page <= 1 || isLoading || coolingDown || offline"
+            (click)="load(page - 1)"
+          >
+            ← Previous
+          </button>
+          <span class="page-indicator">Page {{ page }}</span>
+          <button
+            type="button"
+            class="btn-page"
+            [disabled]="!hasMore || isLoading || coolingDown || offline"
+            (click)="load(page + 1)"
+          >
+            Next →
+          </button>
+        </nav>
+      }
     </section>
   }
 </div>

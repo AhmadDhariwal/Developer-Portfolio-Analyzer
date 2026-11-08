@@ -141,6 +141,8 @@ test(
           load('../middleware/jobsRateLimit.js', { '../services/redisCacheService': worker.cache });
         const left = middleware(one);
         const right = middleware(two);
+        left.hiddenPasswordLimit = left.limiter('hidden-password-proof', 10, 60000, true);
+        right.hiddenPasswordLimit = right.limiter('hidden-password-proof', 10, 60000, true);
         const request = {
           user: { _id: 'synthetic-upstash-owner' },
           query: { forceRefresh: 'true' }
@@ -170,7 +172,8 @@ test(
         for (const [field, maximum] of [
           ['jobsRateLimit', 120],
           ['jobsRefreshLimit', 2],
-          ['actionRateLimit', 30]
+          ['actionRateLimit', 30],
+          ['hiddenPasswordLimit', 10]
         ]) {
           const results = await Promise.all(
             Array.from({ length: maximum + 1 }, (_, index) =>
@@ -194,7 +197,14 @@ test(
         const observedAt = Date.now();
         await producer.publish([{ id: 'fresh-public-job' }], observedAt);
         const staleProducer = pool(two);
-        await staleProducer.publish([{ id: 'old-public-job' }], observedAt - 1000);
+        assert.equal(
+          (await staleProducer.publish([{ id: 'old-public-job' }], observedAt - 1000))[0].id,
+          'fresh-public-job'
+        );
+        assert.equal(
+          (await staleProducer.load(() => assert.fail('winner must be remembered')))[0].id,
+          'fresh-public-job'
+        );
         const reader = pool(two);
         assert.equal(
           (await reader.load(() => assert.fail('Redis should supply public pool')))[0].id,

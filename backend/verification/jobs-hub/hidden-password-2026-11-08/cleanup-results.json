@@ -1,0 +1,66 @@
+{
+  "scope": "Only exact task-created temporary/npm-cache roots in the seven listed task runs",
+  "records": [
+    {
+      "operation": "retained-log",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-34-50-576Z\\temporary\\cv_debug.log",
+      "destination": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-34-50-576Z\\retained-diagnostics\\temporary-cv_debug.log",
+      "bytes": 123
+    },
+    {
+      "operation": "deleted-task-temporary-file",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-34-50-576Z\\temporary\\msedgeedge_BITS_39256_1356046110\\BIT14FC.tmp",
+      "bytes": 20795
+    },
+    {
+      "operation": "retained-log",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-34-50-576Z\\npm-cache\\_logs\\2026-11-08T16_34_51_797Z-debug-0.log",
+      "destination": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-34-50-576Z\\retained-diagnostics\\npm-cache-2026-11-08T16_34_51_797Z-debug-0.log",
+      "bytes": 1986
+    },
+    {
+      "operation": "retained-log",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-34-50-576Z\\npm-cache\\_logs\\2026-11-08T16_34_52_721Z-debug-0.log",
+      "destination": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-34-50-576Z\\retained-diagnostics\\npm-cache-2026-11-08T16_34_52_721Z-debug-0.log",
+      "bytes": 1090
+    },
+    {
+      "operation": "retained-log",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-58-16-932Z\\temporary\\cv_debug.log",
+      "destination": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-58-16-932Z\\retained-diagnostics\\temporary-cv_debug.log",
+      "bytes": 123
+    },
+    {
+      "operation": "retained-log",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-58-16-932Z\\npm-cache\\_logs\\2026-11-08T16_58_18_580Z-debug-0.log",
+      "destination": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-58-16-932Z\\retained-diagnostics\\npm-cache-2026-11-08T16_58_18_580Z-debug-0.log",
+      "bytes": 2082
+    },
+    {
+      "operation": "retained-log",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-58-16-932Z\\npm-cache\\_logs\\2026-11-08T17_05_49_461Z-debug-0.log",
+      "destination": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-58-16-932Z\\retained-diagnostics\\npm-cache-2026-11-08T17_05_49_461Z-debug-0.log",
+      "bytes": 1090
+    },
+    {
+      "operation": "retained-log",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T17-14-10-960Z\\temporary\\cv_debug.log",
+      "destination": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T17-14-10-960Z\\retained-diagnostics\\temporary-cv_debug.log",
+      "bytes": 123
+    },
+    {
+      "operation": "retained-log",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T17-14-10-960Z\\npm-cache\\_logs\\2026-11-08T17_14_12_042Z-debug-0.log",
+      "destination": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T17-14-10-960Z\\retained-diagnostics\\npm-cache-2026-11-08T17_14_12_042Z-debug-0.log",
+      "bytes": 2075
+    },
+    {
+      "operation": "retained-log",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T17-14-10-960Z\\npm-cache\\_logs\\2026-11-08T17_17_31_379Z-debug-0.log",
+      "destination": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T17-14-10-960Z\\retained-diagnostics\\npm-cache-2026-11-08T17_17_31_379Z-debug-0.log",
+      "bytes": 1090
+    }
+  ],
+  "deletedFiles": 1,
+  "retainedLogs": 9
+}

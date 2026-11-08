@@ -1,0 +1,23 @@
+[
+  {
+    "label": "portfolio-integration",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--test",
+      "--test-reporter=tap",
+      "backend/src/tests/publicPortfolio.integration.test.js"
+    ],
+    "exitCode": 0,
+    "milliseconds": 32562
+  },
+  {
+    "label": "query-audit",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "backend/src/scripts/auditPublicPortfolioQueries.cjs",
+      "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\public-portfolio\\production-finalization-2026-11-08\\query-measurements.json"
+    ],
+    "exitCode": 0,
+    "milliseconds": 8144
+  }
+]

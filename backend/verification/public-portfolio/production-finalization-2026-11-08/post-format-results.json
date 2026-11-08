@@ -1,0 +1,58 @@
+[
+  {
+    "label": "final-backend",
+    "command": [
+      "node",
+      "--test",
+      "--test-reporter=tap",
+      "backend/src/tests/publicPortfolioHardening.test.js",
+      "backend/src/tests/skillGapConsumerContracts.test.js",
+      "backend/src/tests/developerContextService.test.js"
+    ],
+    "cwd": "D:\\Developer-Portfolio-Analyzer",
+    "exitCode": 0,
+    "milliseconds": 8329
+  },
+  {
+    "label": "final-typescript",
+    "command": [
+      "node",
+      "frontend/node_modules/typescript/bin/tsc",
+      "--noEmit",
+      "-p",
+      "frontend/tsconfig.app.json"
+    ],
+    "cwd": "D:\\Developer-Portfolio-Analyzer",
+    "exitCode": 0,
+    "milliseconds": 15804
+  },
+  {
+    "label": "final-build",
+    "command": [
+      "node",
+      "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
+      "run",
+      "build"
+    ],
+    "cwd": "D:\\Developer-Portfolio-Analyzer\\frontend",
+    "exitCode": 0,
+    "milliseconds": 149389
+  },
+  {
+    "label": "final-angular",
+    "command": [
+      "node",
+      "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
+      "test",
+      "--",
+      "--watch=false",
+      "--include=src/app/pages/public-portfolio/**/*.spec.ts",
+      "--include=src/app/pages/portfolio-settings/**/*.spec.ts",
+      "--include=src/app/shared/services/public-profile*.spec.ts",
+      "--include=src/app/shared/utils/public-profile.utils.spec.ts"
+    ],
+    "cwd": "D:\\Developer-Portfolio-Analyzer\\frontend",
+    "exitCode": 0,
+    "milliseconds": 185396
+  }
+]

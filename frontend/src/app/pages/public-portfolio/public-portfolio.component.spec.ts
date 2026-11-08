@@ -133,4 +133,110 @@ describe('Public portfolio lifecycle', () => {
     user.next({ _id: 'recruiter', role: 'recruiter', isVerified: false, emailVerified: false });
     expect(fixture.componentInstance.canContact).toBe(false);
   });
+
+  it('shows an authorized owner preview without matching public IDs, email or GitHub usernames', () => {
+    user.next({ _id: 'owner', role: 'developer' });
+    query.next(convertToParamMap({ preview: '1' }));
+    const fixture = TestBed.createComponent(PublicPortfolioComponent);
+    fixture.detectChanges();
+    const profile = portfolioFixture({ isPublic: false });
+    profile.user.githubUsername = '';
+    response.next(profile);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.preview-mode-bar')).not.toBeNull();
+    expect(fixture.componentInstance.isOwner).toBe(true);
+    expect(fixture.componentInstance.profile?.user.email).toBeUndefined();
+  });
+
+  it('handles clipboard rejection and prevents copying an unpublished preview', async () => {
+    const writeText = vi.fn().mockRejectedValue(Error('permission denied'));
+    const descriptor = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
+    try {
+      const fixture = TestBed.createComponent(PublicPortfolioComponent);
+      fixture.detectChanges();
+      response.next(portfolioFixture());
+      await fixture.componentInstance.copyShareLink();
+      expect(fixture.componentInstance.copyFeedback).toContain('Copy is unavailable');
+      expect(fixture.componentInstance.linkCopied).toBe(false);
+      response.next(portfolioFixture({ isPublic: false }));
+      // A private response is rejected outside preview, so use the authorized preview flow.
+      query.next(convertToParamMap({ preview: '1' }));
+      response.next(portfolioFixture({ isPublic: false }));
+      await fixture.componentInstance.copyShareLink();
+      expect(writeText).toHaveBeenCalledTimes(1);
+      expect(fixture.componentInstance.copyFeedback).toContain('Publish your portfolio');
+    } finally {
+      if (descriptor) Object.defineProperty(navigator, 'clipboard', descriptor);
+      else Reflect.deleteProperty(navigator, 'clipboard');
+    }
+  });
+
+  it('ignores clipboard completions after navigation and destruction', async () => {
+    let resolve!: () => void;
+    const descriptor = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText: () =>
+          new Promise<void>((done) => {
+            resolve = done;
+          }),
+      },
+    });
+    try {
+      const fixture = TestBed.createComponent(PublicPortfolioComponent);
+      fixture.detectChanges();
+      response.next(portfolioFixture());
+      const pending = fixture.componentInstance.copyShareLink();
+      params.next(convertToParamMap({ slug: 'another' }));
+      resolve();
+      await pending;
+      expect(fixture.componentInstance.linkCopied).toBe(false);
+      expect(fixture.componentInstance.copyFeedback).toBe('');
+      response.next(portfolioFixture({ slug: 'another' }));
+      const destroyed = fixture.componentInstance.copyLink();
+      fixture.destroy();
+      resolve();
+      await destroyed;
+      expect(fixture.componentInstance.copyFeedback).toBe('');
+    } finally {
+      if (descriptor) Object.defineProperty(navigator, 'clipboard', descriptor);
+      else Reflect.deleteProperty(navigator, 'clipboard');
+    }
+  });
+
+  it('uses authored role text without invented specialist roles and respects reduced motion', () => {
+    const original = window.matchMedia;
+    window.matchMedia = vi.fn(() => ({ matches: true }) as MediaQueryList);
+    try {
+      const fixture = TestBed.createComponent(PublicPortfolioComponent);
+      fixture.detectChanges();
+      response.next(portfolioFixture({ headline: 'Authored headline' }));
+      expect(fixture.componentInstance.typewriterText).toBe('Authored headline');
+      const empty = portfolioFixture({ headline: '' });
+      empty.user.jobTitle = '';
+      response.next(empty);
+      fixture.detectChanges();
+      expect(fixture.componentInstance.typewriterText).toBe('');
+      expect(fixture.nativeElement.querySelector('.typewriter-line')).toBeNull();
+      expect(fixture.nativeElement.textContent).not.toContain('Full-Stack Developer');
+    } finally {
+      if (original) window.matchMedia = original;
+      else Reflect.deleteProperty(window, 'matchMedia');
+    }
+  });
+
+  it('does not claim accreditation when an owner-listed course has no provider', () => {
+    const fixture = TestBed.createComponent(PublicPortfolioComponent);
+    fixture.detectChanges();
+    response.next(
+      portfolioFixture({ completedCourses: [{ title: 'Owner-listed learning', isVisible: true }] }),
+    );
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.course-provider-pill').textContent).toContain(
+      'Provider not listed',
+    );
+    expect(fixture.nativeElement.textContent).not.toContain('Accredited');
+  });
 });

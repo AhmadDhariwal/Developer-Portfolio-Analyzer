@@ -1,0 +1,56 @@
+[
+  {
+    "label": "typescript",
+    "command": [
+      "node",
+      "frontend/node_modules/typescript/bin/tsc",
+      "--noEmit",
+      "-p",
+      "frontend/tsconfig.app.json"
+    ],
+    "cwd": "D:\\Developer-Portfolio-Analyzer",
+    "exitCode": 0,
+    "milliseconds": 10910
+  },
+  {
+    "label": "angular-focused",
+    "command": [
+      "node",
+      "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
+      "test",
+      "--",
+      "--watch=false",
+      "--include=src/app/shared/services/job.service.spec.ts",
+      "--include=src/app/shared/services/job-actions.service.spec.ts",
+      "--include=src/app/shared/utils/job-presentation.spec.ts",
+      "--include=src/app/pages/jobs/jobs.component.spec.ts",
+      "--include=src/app/pages/job-details/job-details.component.spec.ts",
+      "--include=src/app/shared/services/jobs-legacy-preservation.spec.ts"
+    ],
+    "cwd": "D:\\Developer-Portfolio-Analyzer\\frontend",
+    "exitCode": 1,
+    "milliseconds": 140048
+  },
+  {
+    "label": "production-build",
+    "command": [
+      "node",
+      "C:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js",
+      "run",
+      "build"
+    ],
+    "cwd": "D:\\Developer-Portfolio-Analyzer\\frontend",
+    "exitCode": 0,
+    "milliseconds": 142217
+  },
+  {
+    "label": "browser",
+    "command": [
+      "node",
+      "frontend/scripts/verify-jobs-ui.cjs"
+    ],
+    "cwd": "D:\\Developer-Portfolio-Analyzer",
+    "exitCode": 1,
+    "milliseconds": 2275
+  }
+]

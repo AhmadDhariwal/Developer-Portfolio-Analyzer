@@ -44,6 +44,7 @@ export class PortfolioSettingsComponent implements OnInit, OnDestroy {
   published = false;
   savedSlug = '';
   needsReload = false;
+  activityCollapsed = false;
   private sessionReloadRequired = false;
   messageIsError = false;
   private generation = 0;
@@ -76,6 +77,7 @@ export class PortfolioSettingsComponent implements OnInit, OnDestroy {
       this.published = false;
       this.savedSnapshot = '';
       this.savedSlug = '';
+      this.copyFeedback = '';
       this.isSaving = false;
       this.isLoading = false;
       this.sessionReloadRequired = true;
@@ -95,6 +97,10 @@ export class PortfolioSettingsComponent implements OnInit, OnDestroy {
         this.clearUploads();
         this.profile = null;
         this.analytics = null;
+        this.published = false;
+        this.savedSlug = '';
+        this.savedSnapshot = '';
+        this.copyFeedback = '';
         this.isSaving = false;
         if (account) this.loadProfile();
         else {
@@ -125,6 +131,9 @@ export class PortfolioSettingsComponent implements OnInit, OnDestroy {
     const generation = ++this.generation;
     this.clearUploads();
     this.savedSnapshot = '';
+    this.published = false;
+    this.savedSlug = '';
+    this.copyFeedback = '';
     this.profile = null;
     this.analytics = null;
     this.errorMessage = '';
@@ -295,13 +304,17 @@ export class PortfolioSettingsComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const generation = this.generation;
+    const slug = this.savedSlug;
     navigator.clipboard
       .writeText(url)
       .then(() => {
+        if (generation !== this.generation || slug !== this.savedSlug) return;
         this.copyFeedback = 'Share link copied';
         this.cdr.detectChanges();
       })
       .catch(() => {
+        if (generation !== this.generation || slug !== this.savedSlug) return;
         this.copyFeedback = 'Unable to copy link';
         this.cdr.detectChanges();
       });

@@ -1,3 +1,9 @@
+# Current Jobs Hub acceptance — 8 November 2026
+
+See [the production finalization audit](production-finalization-2026-11-08/JOBS-HUB-PRODUCTION-FINAL.md) for current code changes, retained local evidence and BLOCKED staging/provider gates. The records below are historical and do not establish present production acceptance.
+
+---
+
 # Jobs Hub backend finalization
 
 STATUS: VERIFIED

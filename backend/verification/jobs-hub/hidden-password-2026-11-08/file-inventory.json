@@ -1,0 +1,180 @@
+{
+  "branch": "fix/finalize-public-portfolio",
+  "head": "914f812390ba94b324fc78920686d618cc097d94",
+  "target": "Not applicable",
+  "stagedFingerprint": "8db2d26ea4564c06d93b8ff26c707208bc9b75a7",
+  "taskSourceAndReports": [
+    {
+      "path": "backend/src/controllers/jobActionController.js",
+      "sha256": "4A7822B830D148BFF0F472A3B198E46E5BFDD61A4AE7563B36044F71102791EF"
+    },
+    {
+      "path": "backend/src/routes/jobRoutes.js",
+      "sha256": "C12723B4526C43DBD40D97C78539E1C0DD28CD3FA8B1C2377D2D853C20B0E93F"
+    },
+    {
+      "path": "backend/src/services/jobActionService.js",
+      "sha256": "FC2E6F220361534AF0764F817A1EE0DBEABD0AA73662F34B967660150225F58E"
+    },
+    {
+      "path": "backend/src/services/jobsHiddenAccessService.js",
+      "sha256": "BBB1F7515A345926C79A098D7F90C501540B9FE3F83DFD2E9D8A8A5FC0CA216C"
+    },
+    {
+      "path": "backend/src/tests/jobsHiddenAccess.test.js",
+      "sha256": "BC9F0F4D637930045C1F0363EBDC70FCBDB24E697371993D82A5933D1C0157C1"
+    },
+    {
+      "path": "backend/src/tests/jobsHubHardening.test.js",
+      "sha256": "1CA0535D4B53A393FEF8214B86F94AB15CDD54E621AA586C86E3A8A79802672E"
+    },
+    {
+      "path": "backend/src/tests/jobsHubHttp.integration.test.js",
+      "sha256": "055D93E20C6AD1D4C5A08BB3F34049A41E2E96CB1C3E0A6494B36F7DD9C9707A"
+    },
+    {
+      "path": "backend/src/tests/jobsHubUpstash.integration.test.js",
+      "sha256": "897A1400B3BF0E79EEF10E820A0C429A4DDF23684E3599D1BCC7EB5B8AAB28C1"
+    },
+    {
+      "path": "backend/src/scripts/verifyJobsHubProduction.cjs",
+      "sha256": "8B526226BADD551FC02D182F26EE886F192026DA51173A4716C9281EC8078900"
+    },
+    {
+      "path": "frontend/src/app/pages/jobs/jobs.component.ts",
+      "sha256": "E9822FAF0C4B06D3A1249843AB9564B1694422F7E26F8A7B1AF8A0A3D034E631"
+    },
+    {
+      "path": "frontend/src/app/pages/jobs/jobs.component.html",
+      "sha256": "3A01AEC5A5A897968A7535A1D78BDA22543F419B62792DC2D5E4691ABCA471AF"
+    },
+    {
+      "path": "frontend/src/app/pages/jobs/jobs.component.scss",
+      "sha256": "5297EA9E7FF1CC37F58BCB1539488BB31828289CA4B1E23A97C7322607A9F95C"
+    },
+    {
+      "path": "frontend/src/app/pages/jobs/jobs.component.spec.ts",
+      "sha256": "425C473CD95EA2E34FAEA7C858B7DE3DA70CEE0671BDC50106AD7191A2462542"
+    },
+    {
+      "path": "frontend/src/app/shared/services/job-actions.service.ts",
+      "sha256": "DA6E5578D1B696A462965ACA37444BFF8FE4B263301CD6D08B3986FA7C2BD5A9"
+    },
+    {
+      "path": "frontend/src/app/shared/services/jobs-hidden-access.service.ts",
+      "sha256": "104F67E66E00BDF0BC6ECD0611C66786E645DFB2C1F634EA9BE21EE3F7541223"
+    },
+    {
+      "path": "frontend/src/app/shared/services/jobs-hidden-access.service.spec.ts",
+      "sha256": "F196879367D03A14FC0DC23766ED8AE642EBDCBB3CB09CEE0951D54EAD3D1AAE"
+    },
+    {
+      "path": "frontend/scripts/verify-jobs-ui.cjs",
+      "sha256": "27253C5881ECA97823D4DE7DBE1FCB3A2F0728A8A44756A30D4CBD71EE82A6BF"
+    },
+    {
+      "path": "frontend/scripts/jobs-vitest.config.mjs",
+      "sha256": "6C8D808BEEF9754687365B236E3DCFC85380588C4F72DF12FB8D615029B90F53"
+    },
+    {
+      "path": "backend/verification/jobs-hub/hidden-password-2026-11-08/HIDDEN-JOBS-PASSWORD-FINAL.md",
+      "sha256": "87E99D17BCB6283710A8F20CB6790DBE36BD16DC17E0276450058DA676467F39"
+    },
+    {
+      "path": "backend/verification/jobs-hub/production-finalization-2026-11-08/JOBS-HUB-PRODUCTION-FINAL.md",
+      "sha256": "6EA0C6BED615A9A487C935148E1119CB82F9D5D90BA8DBF84AF2FC3A17FC12EB"
+    }
+  ],
+  "status": [
+    "MM backend/src/controllers/jobActionController.js",
+    "MM backend/src/routes/jobRoutes.js",
+    " M backend/src/scripts/verifyJobsHubProduction.cjs",
+    "MM backend/src/services/jobActionService.js",
+    "AM backend/src/services/jobsHiddenAccessService.js",
+    "AM backend/src/tests/jobsHiddenAccess.test.js",
+    "M  backend/src/tests/jobsHubHardening.test.js",
+    "MM backend/src/tests/jobsHubHttp.integration.test.js",
+    " M backend/src/tests/jobsHubUpstash.integration.test.js",
+    " M backend/verification/jobs-hub/production-finalization-2026-11-08/JOBS-HUB-PRODUCTION-FINAL.md",
+    " M frontend/scripts/verify-jobs-ui.cjs",
+    "MM frontend/src/app/pages/jobs/jobs.component.html",
+    "MM frontend/src/app/pages/jobs/jobs.component.scss",
+    "MM frontend/src/app/pages/jobs/jobs.component.spec.ts",
+    "MM frontend/src/app/pages/jobs/jobs.component.ts",
+    "M  frontend/src/app/shared/components/job-filters/job-filters.html",
+    "M  frontend/src/app/shared/components/job-filters/job-filters.scss",
+    "M  frontend/src/app/shared/components/job-filters/job-filters.ts",
+    "MM frontend/src/app/shared/services/job-actions.service.ts",
+    "AM frontend/src/app/shared/services/jobs-hidden-access.service.ts",
+    "?? backend/verification/jobs-hub/hidden-password-2026-11-08/",
+    "?? frontend/scripts/jobs-vitest.config.mjs",
+    "?? frontend/src/app/shared/services/jobs-hidden-access.service.spec.ts",
+    "?? frontend/verification/jobs-hub/production-2026-11-08T16-34-50-576Z/",
+    "?? frontend/verification/jobs-hub/production-2026-11-08T16-58-16-932Z/",
+    "?? frontend/verification/jobs-hub/production-hidden-password-final-2026-11-08/"
+  ],
+  "evidenceFiles": [
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\backend-focused.tap",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\browser-final-results.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\browser-final.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\cleanup-results.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\finalization-results.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\finalization.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\HIDDEN-JOBS-PASSWORD-FINAL.md",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-34-31-816Z\\mongo-cleanup.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-34-31-816Z\\real-integrations.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-34-31-816Z\\redis-cleanup.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-34-31-816Z\\redis.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-34-31-816Z\\results.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-34-50-576Z\\angular-focused.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-34-50-576Z\\browser.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-34-50-576Z\\production-build.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-34-50-576Z\\results.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-34-50-576Z\\typescript.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-34-50-576Z\\retained-diagnostics\\npm-cache-2026-11-08T16_34_51_797Z-debug-0.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-34-50-576Z\\retained-diagnostics\\npm-cache-2026-11-08T16_34_52_721Z-debug-0.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-34-50-576Z\\retained-diagnostics\\temporary-cv_debug.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-58-16-932Z\\angular-focused.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-58-16-932Z\\browser.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-58-16-932Z\\production-build.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-58-16-932Z\\results.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-58-16-932Z\\typescript.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-58-16-932Z\\retained-diagnostics\\npm-cache-2026-11-08T16_58_18_580Z-debug-0.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-58-16-932Z\\retained-diagnostics\\npm-cache-2026-11-08T17_05_49_461Z-debug-0.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T16-58-16-932Z\\retained-diagnostics\\temporary-cv_debug.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T17-02-41-756Z\\backend-focused.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T17-02-41-756Z\\mongo-cleanup.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T17-02-41-756Z\\real-integrations.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T17-02-41-756Z\\redis-cleanup.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T17-02-41-756Z\\redis.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T17-02-41-756Z\\results.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T17-06-14-779Z\\redis-cleanup.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T17-06-14-779Z\\redis.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T17-14-10-960Z\\angular-focused.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T17-14-10-960Z\\browser.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T17-14-10-960Z\\production-build.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T17-14-10-960Z\\results.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T17-14-10-960Z\\typescript.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T17-14-10-960Z\\retained-diagnostics\\npm-cache-2026-11-08T17_14_12_042Z-debug-0.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T17-14-10-960Z\\retained-diagnostics\\npm-cache-2026-11-08T17_17_31_379Z-debug-0.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T17-14-10-960Z\\retained-diagnostics\\temporary-cv_debug.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T17-14-25-491Z\\mongo-cleanup.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T17-14-25-491Z\\real-integrations.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T17-14-25-491Z\\redis-cleanup.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T17-14-25-491Z\\redis.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\hidden-password-2026-11-08\\run-2026-11-08T17-14-25-491Z\\results.json"
+  ],
+  "browserEvidenceFiles": [
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\jobs-hub\\production-hidden-password-final-2026-11-08\\browser-results.json",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\jobs-hub\\production-hidden-password-final-2026-11-08\\desktop-dark-tracker.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\jobs-hub\\production-hidden-password-final-2026-11-08\\desktop-dark.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\jobs-hub\\production-hidden-password-final-2026-11-08\\desktop-light-details.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\jobs-hub\\production-hidden-password-final-2026-11-08\\desktop-light.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\jobs-hub\\production-hidden-password-final-2026-11-08\\hidden-locked-desktop-dark.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\jobs-hub\\production-hidden-password-final-2026-11-08\\hidden-locked-desktop-light.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\jobs-hub\\production-hidden-password-final-2026-11-08\\hidden-locked-mobile-dark.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\jobs-hub\\production-hidden-password-final-2026-11-08\\hidden-locked-mobile-light.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\jobs-hub\\production-hidden-password-final-2026-11-08\\mobile-dark.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\jobs-hub\\production-hidden-password-final-2026-11-08\\mobile-light.png"
+  ]
+}

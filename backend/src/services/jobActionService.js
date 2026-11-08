@@ -13,7 +13,7 @@ function jobKey(id) {
     throw failure(400, 'Invalid job id.');
   return id;
 }
-async function update(userId, id, patch) {
+async function update(userId, id, patch, { allowHidden = false } = {}) {
   owner(userId);
   jobKey(id);
   if (
@@ -26,26 +26,32 @@ async function update(userId, id, patch) {
   const _id = createHash('sha256').update(`${userId}:${id}`).digest('hex');
   const filter = { _id, userId, jobId: id };
   const existing = await UserJobAction.findOne(filter).maxTimeMS(1500).lean();
+  if (!allowHidden && existing?.hidden) throw require('./jobsHiddenAccessService').locked();
+  if (!allowHidden) filter.hidden = { $ne: true };
   // Resolve aliases to the canonical public ID; never persist another user's input
   // as a job snapshot or trust a body-supplied owner.
   if (!existing) {
     const job = await jobs.findCachedJobById(id);
     if (!job) throw failure(404, 'Job no longer available.');
-    if (job.id !== id) return update(userId, job.id, patch);
+    if (job.id !== id) return update(userId, job.id, patch, { allowHidden });
   }
   try {
-    return await UserJobAction.findOneAndUpdate(
+    const result = await UserJobAction.findOneAndUpdate(
       filter,
       { $set: patch, $setOnInsert: { _id, userId, jobId: id } },
       { upsert: true, returnDocument: 'after', runValidators: true, maxTimeMS: 1500 }
     ).lean();
+    if (!result) throw require('./jobsHiddenAccessService').locked();
+    return result;
   } catch (error) {
     if (error.code !== 11000) throw error;
-    return UserJobAction.findOneAndUpdate(
+    const result = await UserJobAction.findOneAndUpdate(
       filter,
       { $set: patch },
       { returnDocument: 'after', runValidators: true, maxTimeMS: 1500 }
     ).lean();
+    if (!result) throw require('./jobsHiddenAccessService').locked();
+    return result;
   }
 }
 async function forJobs(userId, ids) {
@@ -56,12 +62,16 @@ async function forJobs(userId, ids) {
     .maxTimeMS(1500)
     .lean();
 }
-async function list(userId, query = {}) {
+async function list(userId, query = {}, { allowHidden = false } = {}) {
   owner(userId);
   const filter = { userId };
   if (query.state !== undefined) {
     if (!FIELDS.includes(query.state)) throw failure(400, 'Invalid action state.');
     filter[query.state] = true;
+  }
+  if (!allowHidden) {
+    if (query.state === 'hidden') throw require('./jobsHiddenAccessService').locked();
+    filter.hidden = { $ne: true };
   }
   const limit = Math.min(50, Math.max(1, Number.parseInt(query.limit, 10) || 20));
   const page = Math.min(1000, Math.max(1, Number.parseInt(query.page, 10) || 1));

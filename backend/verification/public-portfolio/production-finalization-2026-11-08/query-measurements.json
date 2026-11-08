@@ -1,0 +1,204 @@
+{
+  "fixtureOnly": true,
+  "queries": {
+    "published-slug": {
+      "returned": 1,
+      "documentsExamined": 1,
+      "keysExamined": 1,
+      "executionMilliseconds": 27,
+      "winningPlan": {
+        "isCached": false,
+        "stage": "FETCH",
+        "filter": {
+          "isPublic": {
+            "$eq": true
+          }
+        },
+        "inputStage": {
+          "stage": "IXSCAN",
+          "keyPattern": {
+            "slug": 1
+          },
+          "indexName": "slug_1",
+          "isMultiKey": false,
+          "multiKeyPaths": {
+            "slug": []
+          },
+          "isUnique": true,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "slug": [
+              "[\"query-fixture\", \"query-fixture\"]"
+            ]
+          }
+        }
+      }
+    },
+    "owner-profile": {
+      "returned": 1,
+      "documentsExamined": 1,
+      "keysExamined": 1,
+      "executionMilliseconds": 1,
+      "winningPlan": {
+        "isCached": false,
+        "stage": "FETCH",
+        "inputStage": {
+          "stage": "IXSCAN",
+          "keyPattern": {
+            "userId": 1
+          },
+          "indexName": "userId_1",
+          "isMultiKey": false,
+          "multiKeyPaths": {
+            "userId": []
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "userId": [
+              "[ObjectId('6af04bd12364c937a338e2c4'), ObjectId('6af04bd12364c937a338e2c4')]"
+            ]
+          }
+        }
+      }
+    },
+    "visitor-receipt": {
+      "returned": 1,
+      "documentsExamined": 1,
+      "keysExamined": 1,
+      "executionMilliseconds": 1,
+      "winningPlan": {
+        "isCached": false,
+        "stage": "FETCH",
+        "inputStage": {
+          "stage": "IXSCAN",
+          "keyPattern": {
+            "profileId": 1,
+            "viewerHash": 1
+          },
+          "indexName": "profileId_1_viewerHash_1",
+          "isMultiKey": false,
+          "multiKeyPaths": {
+            "profileId": [],
+            "viewerHash": []
+          },
+          "isUnique": true,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "profileId": [
+              "[ObjectId('6af04bd12364c937a338e2c3'), ObjectId('6af04bd12364c937a338e2c3')]"
+            ],
+            "viewerHash": [
+              "[\"fixture-1001\", \"fixture-1001\"]"
+            ]
+          }
+        }
+      }
+    },
+    "current-seven-days": {
+      "returned": 10,
+      "documentsExamined": 10,
+      "keysExamined": 10,
+      "executionMilliseconds": 1,
+      "winningPlan": {
+        "isCached": false,
+        "stage": "FETCH",
+        "filter": {
+          "recordType": {
+            "$not": {
+              "$eq": "unique_guard"
+            }
+          }
+        },
+        "inputStage": {
+          "stage": "IXSCAN",
+          "keyPattern": {
+            "profileId": 1,
+            "viewedAt": 1
+          },
+          "indexName": "profileId_1_viewedAt_1",
+          "isMultiKey": false,
+          "multiKeyPaths": {
+            "profileId": [],
+            "viewedAt": []
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "profileId": [
+              "[ObjectId('6af04bd12364c937a338e2c3'), ObjectId('6af04bd12364c937a338e2c3')]"
+            ],
+            "viewedAt": [
+              "[new Date(1793614545197), new Date(9223372036854775807)]"
+            ]
+          }
+        }
+      }
+    },
+    "legacy-seven-days": {
+      "returned": 10,
+      "documentsExamined": 1010,
+      "keysExamined": 1010,
+      "executionMilliseconds": 28,
+      "winningPlan": {
+        "isCached": false,
+        "stage": "FETCH",
+        "filter": {
+          "$and": [
+            {
+              "recordType": {
+                "$not": {
+                  "$eq": "unique_guard"
+                }
+              }
+            },
+            {
+              "viewedAt": {
+                "$gte": "2026-11-02T10:15:45.197Z"
+              }
+            }
+          ]
+        },
+        "inputStage": {
+          "stage": "IXSCAN",
+          "keyPattern": {
+            "profileId": 1
+          },
+          "indexName": "profileId_1",
+          "isMultiKey": false,
+          "multiKeyPaths": {
+            "profileId": []
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "profileId": [
+              "[ObjectId('6af04bd12364c937a338e2c3'), ObjectId('6af04bd12364c937a338e2c3')]"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "cache": {
+    "coldMilliseconds": 62.32250000000022,
+    "warmP50Milliseconds": 0.07359999999971478,
+    "warmP95Milliseconds": 0.2736000000004424,
+    "loaderCallsFor52Reads": 1
+  }
+}

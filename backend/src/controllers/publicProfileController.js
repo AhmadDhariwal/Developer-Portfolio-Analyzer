@@ -53,7 +53,10 @@ const updateMyPublicProfile = async (req, res) => {
   } catch (error) {
     console.error('Public profile update error:', error.message);
     res
-      .status(error.statusCode || 500)
+      .status(
+        error.statusCode ||
+          ([400, 401, 403, 404, 409, 413, 503].includes(error.status) ? error.status : 500)
+      )
       .json({ message: error.statusCode ? error.message : 'Failed to update public profile.' });
   }
 };
