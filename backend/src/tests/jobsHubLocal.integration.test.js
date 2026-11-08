@@ -159,6 +159,14 @@ test(
       applyUrl: 'https://example.com/job'
     };
     assert.equal((await jobs.syncJobsToCache([job])).synced, 1);
+    const observedAt = Date.now() + 1;
+    await jobs.syncJobsToCache([{ ...job, title: 'New observation' }], observedAt);
+    const newer = await JobCache.findOne({ jobId: job.id }).lean();
+    await jobs.syncJobsToCache([{ ...job, title: 'Obsolete worker' }], observedAt - 1);
+    const preserved = await JobCache.findOne({ jobId: job.id }).lean();
+    assert.equal(preserved.title, 'New observation');
+    assert.equal(preserved.updatedAt.getTime(), newer.updatedAt.getTime());
+    assert.equal(preserved.createdAt.getTime(), newer.createdAt.getTime());
     assert.equal((await jobs.loadCachedJobs({}, false)).length, 1);
     const owner = new mongoose.Types.ObjectId();
     const foreign = new mongoose.Types.ObjectId();
@@ -201,6 +209,95 @@ test(
       actions.update(new mongoose.Types.ObjectId(), job.id, { saved: true }),
       (error) => error.status === 404
     );
+    const now = new Date();
+    await JobCache.collection.insertMany(
+      Array.from({ length: 2000 }, (_, index) => ({
+        jobId: `query-${index}`,
+        externalJobId: `external-${index}`,
+        source: 'Arbeitnow',
+        platform: 'Arbeitnow',
+        title: 'Engineer',
+        company: 'Fixture',
+        skills: ['Node.js'],
+        applyUrl: `https://example.com/jobs/${index}`,
+        expiresAt: new Date(now.getTime() + 86400000),
+        freshUntil: new Date(now.getTime() + 3600000),
+        lastSynced: now,
+        updatedAt: now
+      }))
+    );
+    const plans = {};
+    for (const [name, query] of [
+      [
+        'pool',
+        JobCache.find({
+          expiresAt: { $gt: now },
+          hidden: { $ne: true },
+          $and: [{ $or: [{ validThrough: null }, { validThrough: { $gt: now } }] }]
+        })
+          .sort({ lastSynced: -1, updatedAt: -1, _id: 1 })
+          .limit(1000)
+      ],
+      [
+        'detail',
+        JobCache.find({
+          expiresAt: { $gt: now },
+          $or: [{ jobId: 'query-1' }, { externalJobId: 'query-1' }]
+        })
+      ],
+      [
+        'owner-history',
+        UserJobAction.find({ userId: owner }).sort({ updatedAt: -1, _id: -1 }).limit(11)
+      ]
+    ]) {
+      const explanation = await query.explain('executionStats');
+      plans[name] = {
+        ...explanation.executionStats,
+        winningPlan: explanation.queryPlanner.winningPlan
+      };
+    }
+    assert.equal(plans.pool.nReturned, 1000);
+    assert.equal(plans.detail.nReturned, 1);
+    assert.equal(plans['owner-history'].nReturned, 1);
+    if (process.env.JOBS_TEST_REDIS_URL) {
+      const setup = await require('./fixtures/jobsHubRedisFixture').fixture(t);
+      const worker = await setup.worker();
+      const cache = load('../services/jobPoolCacheService.js', {
+        './redisCacheService': worker.cache
+      });
+      let loads = 0;
+      const loader = () => {
+        loads++;
+        return jobs.loadCachedJobs({}, true);
+      };
+      const started = performance.now();
+      await cache.load(loader);
+      const cold = performance.now() - started;
+      const warm = [];
+      for (let index = 0; index < 20; index++) {
+        const at = performance.now();
+        await cache.load(loader);
+        warm.push(performance.now() - at);
+      }
+      await load('../services/jobPoolCacheService.js', {
+        './redisCacheService': worker.cache
+      }).load(loader);
+      assert.equal(loads, 1);
+      warm.sort((a, b) => a - b);
+      t.diagnostic(
+        JSON.stringify({
+          cacheMeasurement: {
+            jobs: 1000,
+            coldMs: cold,
+            warmP50Ms: warm[9],
+            warmP95Ms: warm[18],
+            reads: 22,
+            mongoLoads: loads
+          }
+        })
+      );
+    }
+    t.diagnostic(JSON.stringify({ queryPlans: plans, staleWorkerOverwritePrevented: true }));
     t.diagnostic(
       JSON.stringify({
         cacheIndexes: cacheIndexes.map((index) => index.name),

@@ -1,0 +1,15 @@
+[
+  {
+    "label": "real-integrations",
+    "command": [
+      "node",
+      "--test",
+      "--test-concurrency=1",
+      "--test-reporter=tap",
+      "backend/src/tests/jobsHubHttp.integration.test.js"
+    ],
+    "cwd": "D:\\Developer-Portfolio-Analyzer",
+    "exitCode": 0,
+    "milliseconds": 12913
+  }
+]

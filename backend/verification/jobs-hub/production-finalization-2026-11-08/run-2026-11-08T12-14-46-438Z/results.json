@@ -1,0 +1,32 @@
+[
+  {
+    "label": "backend-focused",
+    "command": [
+      "node",
+      "--test",
+      "--test-reporter=tap",
+      "backend/src/tests/jobsHubHardening.test.js",
+      "backend/src/tests/jobsHubRanking.test.js",
+      "backend/src/tests/developerContextService.test.js",
+      "backend/src/tests/skillGapConsumerContracts.test.js",
+      "backend/src/tests/coursesHardening.test.js"
+    ],
+    "cwd": "D:\\Developer-Portfolio-Analyzer",
+    "exitCode": 0,
+    "milliseconds": 5076
+  },
+  {
+    "label": "real-integrations",
+    "command": [
+      "node",
+      "--test",
+      "--test-concurrency=1",
+      "--test-reporter=tap",
+      "backend/src/tests/jobsHubLocal.integration.test.js",
+      "backend/src/tests/jobsHubUpstash.integration.test.js"
+    ],
+    "cwd": "D:\\Developer-Portfolio-Analyzer",
+    "exitCode": 0,
+    "milliseconds": 24362
+  }
+]

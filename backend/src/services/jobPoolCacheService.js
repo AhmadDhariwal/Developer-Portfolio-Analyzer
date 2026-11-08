@@ -26,16 +26,25 @@ async function publish(jobs, observedAt = Date.now()) {
     until: Date.now() + MAX_AGE_MS
   };
   const redis = cache.getRedisCacheClient();
-  if (redis)
-    await redis
-      .eval(PUBLISH, {
+  let selected = value;
+  if (redis) {
+    try {
+      const accepted = await redis.eval(PUBLISH, {
         keys: [KEY],
         arguments: [JSON.stringify(value), String(observedAt), String(MAX_AGE_MS)]
-      })
-      .catch(() => {});
-  if (!memory || memory.value.observedAt <= observedAt)
-    memory = { value, until: Math.min(value.until, Date.now() + 15000) };
-  return value.jobs;
+      });
+      if (Number(accepted) === 0) {
+        const raw = await redis.get(KEY);
+        const winner = raw ? JSON.parse(raw) : null;
+        if (valid(winner) && winner.observedAt > observedAt) selected = winner;
+      }
+    } catch {
+      /* Keep the existing bounded local/Mongo fallback during Redis outages. */
+    }
+  }
+  if (!memory || memory.value.observedAt <= selected.observedAt)
+    memory = { value: selected, until: Math.min(selected.until, Date.now() + 15000) };
+  return memory.value.jobs;
 }
 
 async function load(loader) {

@@ -9,6 +9,7 @@ import {
   decodeHtmlEntities,
   hasJobSalary,
   cleanJobTitle,
+  jobSourceUrl,
 } from '../../utils/job-presentation';
 
 @Component({
@@ -34,6 +35,7 @@ export class JobCardComponent {
   readonly decode = decodeHtmlEntities;
   readonly cleanTitle = cleanJobTitle;
   readonly hasSalary = hasJobSalary;
+  readonly sourceUrl = jobSourceUrl;
 
   get logoUrl(): string {
     return safeJobUrl(this.job.companyLogo);

@@ -1,43 +1,50 @@
 <section class="filters-panel" aria-labelledby="job-filter-heading">
   <div class="filter-heading">
-    <h2 id="job-filter-heading">Refine your search</h2>
+    <div class="heading-meta">
+      <h2 id="job-filter-heading">Refine your search</h2>
+      @if (hasActiveFilters || hasDraftFilters) {
+        <span class="active-count-badge">{{ activeCount }} active</span>
+      }
+    </div>
     <button type="button" (click)="resetFilters()">Reset</button>
   </div>
-  <div class="filter-group">
-    <label for="job-source">Source</label
-    ><select id="job-source" [(ngModel)]="filters.platform" (ngModelChange)="onFilterChange()">
-      @for (option of platformOptions; track option.value) {
-        <option [value]="option.value">{{ option.label }}</option>
-      }
-    </select>
-  </div>
-  <div class="filter-group">
-    <label for="job-location">Location</label
-    ><select id="job-location" [(ngModel)]="filters.location" (ngModelChange)="onFilterChange()">
-      @for (option of locationOptions; track option.value) {
-        <option [value]="option.value">{{ option.label }}</option>
-      }
-    </select>
-  </div>
-  <div class="filter-group">
-    <label for="job-experience">Experience</label
-    ><select
-      id="job-experience"
-      [(ngModel)]="filters.experienceLevel"
-      (ngModelChange)="onFilterChange()"
-    >
-      @for (option of experienceOptions; track option.value) {
-        <option [value]="option.value">{{ option.label }}</option>
-      }
-    </select>
-  </div>
-  <div class="filter-group">
-    <label for="job-type">Employment</label
-    ><select id="job-type" [(ngModel)]="filters.jobType" (ngModelChange)="onFilterChange()">
-      @for (option of jobTypeOptions; track option.value) {
-        <option [value]="option.value">{{ option.label }}</option>
-      }
-    </select>
+  <div class="filter-controls-row">
+    <div class="filter-group">
+      <label for="job-source">Source</label>
+      <select id="job-source" [(ngModel)]="filters.platform" (ngModelChange)="onFilterChange()">
+        @for (option of platformOptions; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="job-location">Location</label>
+      <select id="job-location" [(ngModel)]="filters.location" (ngModelChange)="onFilterChange()">
+        @for (option of locationOptions; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="job-experience">Experience</label>
+      <select
+        id="job-experience"
+        [(ngModel)]="filters.experienceLevel"
+        (ngModelChange)="onFilterChange()"
+      >
+        @for (option of experienceOptions; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="job-type">Employment</label>
+      <select id="job-type" [(ngModel)]="filters.jobType" (ngModelChange)="onFilterChange()">
+        @for (option of jobTypeOptions; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+    </div>
   </div>
   <div class="filter-group skill-filter-group">
     <div class="skill-group-header">

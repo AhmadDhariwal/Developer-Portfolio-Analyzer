@@ -434,25 +434,38 @@ h1 {
   }
 }
 
-// ── Workspace Layout (Sidebar + Results) ─────────────
+// ── Workspace Layout (Full-width results) ─────────────
 .workspace-layout {
-  display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
-  gap: 24px;
-  align-items: start;
+  display: block;
+  width: 100%;
 }
 
 .filter-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding-bottom: 24px;
+  gap: 14px;
+  margin-bottom: 24px;
+  width: 100%;
+
+  .upper-filter-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+  }
 
   .btn-apply-filters {
     @include jobs.primary;
-    width: 100%;
-    height: 38px;
-    font-size: 13px;
+    min-width: 160px;
+    height: 40px;
+    padding: 0 24px;
+    font-size: 13.5px;
+    font-weight: 650;
+    box-shadow: 0 2px 8px -2px rgba(79, 70, 229, 0.4);
+
+    &:hover:not(:disabled) {
+      box-shadow: 0 4px 12px -2px rgba(79, 70, 229, 0.5);
+    }
   }
 }
 
@@ -597,6 +610,30 @@ h1 {
         }
       }
     }
+  }
+}
+
+// ── Career Accelerator Strip (Bottom of Opportunities) ──
+.career-accelerator-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: 36px;
+  margin-bottom: 20px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-color, #e2e8f0);
+
+  :host-context([data-theme='dark']) &,
+  :host-context(.dark) & {
+    border-top-color: var(--border-color, #1e293b);
+  }
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -927,7 +964,7 @@ h1 {
 // ── Responsive Layout ────────────────────────────────
 @media (max-width: 840px) {
   .workspace-layout {
-    grid-template-columns: 1fr;
+    display: block;
   }
 
   .filter-sidebar {
@@ -935,6 +972,10 @@ h1 {
 
     &.open {
       display: flex;
+    }
+
+    .btn-apply-filters {
+      width: 100%;
     }
   }
 }

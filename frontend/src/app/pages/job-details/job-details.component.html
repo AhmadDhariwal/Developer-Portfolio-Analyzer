@@ -38,9 +38,15 @@
   @if (job; as item) {
     <header class="detail-header">
       <div class="header-content">
-        <span class="source-tag">{{
-          decode(item.source || item.platform || 'DIRECT LISTING')
-        }}</span>
+        <a
+          class="source-tag"
+          [class.adzuna-source]="sourceUrl(item) === 'https://www.adzuna.com/'"
+          [attr.href]="sourceUrl(item) || null"
+          target="_blank"
+          rel="noopener noreferrer"
+          referrerpolicy="no-referrer"
+          >{{ decode(item.source || item.platform || 'DIRECT LISTING') }}</a
+        >
         <h1 class="job-title">{{ cleanTitle(item.title) }}</h1>
         <div class="company-row">
           <strong class="company-name">{{ decode(item.company) }}</strong>

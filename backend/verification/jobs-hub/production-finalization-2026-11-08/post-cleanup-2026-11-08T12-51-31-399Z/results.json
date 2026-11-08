@@ -1,0 +1,14 @@
+{
+  "command": [
+    "node",
+    "--test",
+    "--test-reporter=tap",
+    "backend/src/tests/jobsHubHardening.test.js",
+    "backend/src/tests/jobsHubRanking.test.js",
+    "backend/src/tests/developerContextService.test.js",
+    "backend/src/tests/skillGapConsumerContracts.test.js",
+    "backend/src/tests/coursesHardening.test.js"
+  ],
+  "exitCode": 0,
+  "milliseconds": 7411
+}

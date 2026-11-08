@@ -1,8 +1,19 @@
 import { HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { Job } from '../models/job.model';
-import { jobDate, jobSalary, safeJobUrl, jobRequestError } from './job-presentation';
+import { jobDate, jobSalary, safeJobUrl, jobRequestError, jobSourceUrl } from './job-presentation';
 
 describe('job presentation accuracy and safety', () => {
+  it('links provider attribution only to known official sources', () => {
+    for (const source of ['Remotive', 'Arbeitnow', 'RemoteOK', 'Adzuna', 'Jooble', 'JSearch']) {
+      const url = jobSourceUrl({ source, platform: 'Other' });
+      expect(safeJobUrl(url)).toBe(url);
+      expect(url).not.toBe('');
+    }
+    expect(jobSourceUrl({ source: 'Adzuna', platform: 'Other' })).toBe('https://www.adzuna.com/');
+    expect(jobSourceUrl({ source: 'javascript:alert(1)', platform: 'Other' })).toBe('');
+    for (const source of ['__proto__', 'constructor', 'toString'])
+      expect(jobSourceUrl({ source, platform: 'Other' })).toBe('');
+  });
   it('rejects unsafe external links', () => {
     for (const value of [
       'javascript:alert(1)',

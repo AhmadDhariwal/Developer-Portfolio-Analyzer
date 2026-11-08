@@ -401,7 +401,7 @@ const buildRecommendedBasedOn = ({
   const summary = [
     `Jobs are ranked for your ${careerStack} profile at ${experienceLevel} level.`,
     skillGaps.length
-      ? `Priority gaps used: ${skillGaps.slice(0, 4).join(', ')}.`
+      ? `Learning priorities from current evidence: ${skillGaps.slice(0, 4).join(', ')}.`
       : 'No explicit skill gaps were available, so broader stack matching was used.',
     activeFilterParts.length
       ? `Active filters: ${activeFilterParts.join(', ')}.`

@@ -194,7 +194,14 @@ test(
         const observedAt = Date.now();
         await producer.publish([{ id: 'fresh-public-job' }], observedAt);
         const staleProducer = pool(two);
-        await staleProducer.publish([{ id: 'old-public-job' }], observedAt - 1000);
+        assert.equal(
+          (await staleProducer.publish([{ id: 'old-public-job' }], observedAt - 1000))[0].id,
+          'fresh-public-job'
+        );
+        assert.equal(
+          (await staleProducer.load(() => assert.fail('winner must be remembered')))[0].id,
+          'fresh-public-job'
+        );
         const reader = pool(two);
         assert.equal(
           (await reader.load(() => assert.fail('Redis should supply public pool')))[0].id,
