@@ -143,6 +143,155 @@
     </div>
     <small>Visibility changes apply when saved.</small>
   </div>
+
+  <!-- Portfolio Activity Summary (Upper Top) -->
+  <section
+    class="settings-card analytics-card portfolio-activity-topbar"
+    aria-label="Portfolio activity summary"
+  >
+    <div class="activity-topbar-header">
+      <div class="activity-title-group">
+        <span class="eyebrow"
+          ><span class="eyebrow-bead" aria-hidden="true"></span>Only visible to you</span
+        >
+        <h3>Portfolio activity</h3>
+        <span class="activity-subtitle">Telemetry & discovery performance</span>
+      </div>
+      <button
+        type="button"
+        class="activity-toggle-btn"
+        (click)="activityCollapsed = !activityCollapsed"
+        [attr.aria-expanded]="!activityCollapsed"
+        title="Toggle activity details"
+      >
+        <span>{{ activityCollapsed ? 'Show details' : 'Hide details' }}</span>
+        <svg
+          [class.rotated]="activityCollapsed"
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <polyline points="18 15 12 9 6 15"></polyline>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    <div class="activity-feedback-state" *ngIf="analyticsLoading" role="status">
+      <svg
+        class="spin-icon"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <line x1="12" y1="2" x2="12" y2="6"></line>
+        <line x1="12" y1="18" x2="12" y2="22"></line>
+        <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
+        <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
+        <line x1="2" y1="12" x2="6" y2="12"></line>
+        <line x1="18" y1="12" x2="22" y2="12"></line>
+        <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
+        <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+      </svg>
+      <span>Loading portfolio analytics…</span>
+    </div>
+
+    <!-- Error State -->
+    <div class="activity-feedback-state error" *ngIf="analyticsError" role="alert">
+      <p>{{ analyticsError }}</p>
+      <button class="ghost-add-btn" (click)="loadAnalytics()">Retry analytics</button>
+    </div>
+
+    <!-- Active Analytics Content -->
+    <ng-container *ngIf="analytics && !analyticsLoading">
+      <div class="activity-body" [hidden]="activityCollapsed">
+        <div class="stats-cluster">
+          <div class="analytics-hero">
+            <div class="hero-stat">
+              <span class="label">Accepted views</span>
+              <strong class="value">{{ analytics.totalViews }}</strong>
+            </div>
+            <div class="hero-stat">
+              <span class="label">Unique views</span>
+              <strong class="value">{{ analytics.uniqueViews }}</strong>
+            </div>
+            <div class="hero-stat">
+              <span class="label">Last recorded view</span>
+              <strong class="value text-date">
+                {{
+                  analytics.lastViewedAt
+                    ? (analytics.lastViewedAt | date: 'mediumDate' : 'UTC')
+                    : 'No recorded activity'
+                }}
+              </strong>
+            </div>
+          </div>
+          <p class="input-hint activity-meta-note">
+            New views are deduplicated per visitor, portfolio and UTC day. Historical counts are
+            retained. Recording is best effort.
+          </p>
+          <p class="empty-placeholder" *ngIf="analytics.totalViews === 0">
+            No recorded views yet. Share your portfolio when you're ready.
+          </p>
+        </div>
+
+        <div class="chart-cluster">
+          <div class="discovery-trend" *ngIf="analytics.last7Days?.length">
+            <h4>Last 7 days <span class="input-hint">UTC</span></h4>
+            <div class="trend-steps">
+              <div class="trend-step" *ngFor="let day of analytics.last7Days">
+                <span class="day-count">{{ day.count }}</span>
+                <div class="bar-track">
+                  <div class="step-bar" [style.height.%]="(day.count / analyticsMax) * 100"></div>
+                </div>
+                <span class="step-label">{{ day.date + 'T00:00:00Z' | date: 'EEE' : 'UTC' }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="trend-empty" *ngIf="!analytics.last7Days?.length && analytics.totalViews > 0">
+            <span class="input-hint">No trend data available for the past 7 days.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="activity-collapsed-summary" *ngIf="activityCollapsed">
+        <div class="summary-chips">
+          <span class="summary-pill">
+            <span class="eyebrow-bead" aria-hidden="true"></span>
+            Accepted views: <strong>{{ analytics.totalViews }}</strong>
+          </span>
+          <span class="dot-separator" aria-hidden="true"></span>
+          <span class="summary-pill">
+            Unique views: <strong>{{ analytics.uniqueViews }}</strong>
+          </span>
+          <span class="dot-separator" aria-hidden="true"></span>
+          <span class="summary-pill">
+            Last activity:
+            <strong>{{
+              analytics.lastViewedAt
+                ? (analytics.lastViewedAt | date: 'mediumDate' : 'UTC')
+                : 'No recorded activity'
+            }}</strong>
+          </span>
+        </div>
+        <button type="button" class="text-link-btn" (click)="activityCollapsed = false">
+          Show 7-day chart
+        </button>
+      </div>
+    </ng-container>
+  </section>
   <nav class="settings-tabs" aria-label="Portfolio settings sections">
     <button
       *ngFor="let tab of tabs"
@@ -915,9 +1064,9 @@
           <button class="ghost-add-btn" (click)="addUpcomingProject()">+ Add Upcoming</button>
         </div>
         <div class="card-content">
-          <div class="projects-stack">
+          <div class="projects-stack cards-grid">
             <div
-              class="project-entry"
+              class="project-entry upcoming-entry"
               *ngFor="
                 let upcoming of profile.upcomingProjects;
                 let upcomingIndex = index;
@@ -1130,9 +1279,9 @@
           <button class="ghost-add-btn" (click)="addTestimonial()">+ Add Testimonial</button>
         </div>
         <div class="card-content">
-          <div class="projects-stack">
+          <div class="projects-stack cards-grid">
             <div
-              class="project-entry"
+              class="project-entry testimonial-entry"
               *ngFor="
                 let testimonial of profile.testimonials;
                 let testimonialIndex = index;
@@ -1257,9 +1406,9 @@
           <button class="ghost-add-btn" (click)="addWorkExperience()">+ Add Experience</button>
         </div>
         <div class="card-content">
-          <div class="projects-stack">
+          <div class="projects-stack cards-grid">
             <div
-              class="project-entry"
+              class="project-entry experience-entry"
               *ngFor="
                 let experience of profile.workExperiences;
                 let experienceIndex = index;
@@ -1394,7 +1543,7 @@
           <button class="ghost-add-btn" (click)="addCourse()">+ Add Course</button>
         </div>
         <div class="card-content">
-          <div class="projects-stack">
+          <div class="projects-stack cards-grid">
             <div
               class="project-entry course-entry"
               *ngFor="
@@ -1686,66 +1835,27 @@
           </div>
         </div>
       </section>
-    </fieldset>
 
-    <!-- Right Column: Stats & Meta -->
-    <aside class="meta-column">
-      <section class="settings-card analytics-card">
+      <!-- Section: Pre-Publishing Checklist -->
+      <section class="settings-card publishing-checklist-card" [hidden]="activeTab !== 'sharing'">
         <div class="card-header">
-          <span class="eyebrow">Only visible to you</span>
-          <h3>Portfolio activity</h3>
+          <span class="card-header-icon" aria-hidden="true">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </span>
+          <h3>Before you publish</h3>
         </div>
-        <div class="card-content">
-          <p *ngIf="analyticsLoading" role="status">Loading portfolio analytics…</p>
-          <div *ngIf="analyticsError" role="alert">
-            <p>{{ analyticsError }}</p>
-            <button class="ghost-add-btn" (click)="loadAnalytics()">Retry analytics</button>
-          </div>
-          <ng-container *ngIf="analytics && !analyticsLoading"
-            ><div class="analytics-hero">
-              <div class="hero-stat">
-                <span class="label">Accepted views</span
-                ><strong class="value">{{ analytics.totalViews }}</strong>
-              </div>
-              <div class="hero-stat">
-                <span class="label">Unique views</span
-                ><strong class="value">{{ analytics.uniqueViews }}</strong>
-              </div>
-            </div>
-            <p class="input-hint">
-              New views are deduplicated per visitor, portfolio and UTC day. Historical counts are
-              retained. Recording is best effort.
-            </p>
-            <p class="empty-placeholder" *ngIf="analytics.totalViews === 0">
-              No recorded views yet. Share your portfolio when you're ready.
-            </p>
-            <div class="discovery-trend" *ngIf="analytics.last7Days?.length">
-              <h4>Last 7 days <span class="input-hint">UTC</span></h4>
-              <div class="trend-steps">
-                <div class="trend-step" *ngFor="let day of analytics.last7Days">
-                  <span class="day-count">{{ day.count }}</span>
-                  <div class="bar-track">
-                    <div class="step-bar" [style.height.%]="(day.count / analyticsMax) * 100"></div>
-                  </div>
-                  <span class="step-label">{{
-                    day.date + 'T00:00:00Z' | date: 'EEE' : 'UTC'
-                  }}</span>
-                </div>
-              </div>
-            </div>
-            <p class="input-hint">
-              Last recorded view:
-              {{
-                analytics.lastViewedAt
-                  ? (analytics.lastViewedAt | date: 'mediumDate' : 'UTC')
-                  : 'No recorded activity'
-              }}
-            </p></ng-container
-          >
-        </div>
-      </section>
-      <section class="settings-card">
-        <div class="card-header"><h3>Before you publish</h3></div>
         <div class="card-content checklist">
           <p><span>01</span> Tell your story in your own words.</p>
           <p><span>02</span> Add project outcomes and professional links.</p>
@@ -1755,7 +1865,7 @@
           </p>
         </div>
       </section>
-    </aside>
+    </fieldset>
   </div>
 </main>
 

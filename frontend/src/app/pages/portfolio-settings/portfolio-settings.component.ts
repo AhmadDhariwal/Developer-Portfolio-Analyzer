@@ -44,6 +44,7 @@ export class PortfolioSettingsComponent implements OnInit, OnDestroy {
   published = false;
   savedSlug = '';
   needsReload = false;
+  activityCollapsed = false;
   private sessionReloadRequired = false;
   messageIsError = false;
   private generation = 0;
