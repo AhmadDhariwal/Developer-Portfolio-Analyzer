@@ -124,6 +124,7 @@ const freePort = async () => {
 };
 const proxies = [];
 const workers = [];
+const workerChildren = [];
 let mongo;
 let redis;
 let redisProcess;
@@ -161,6 +162,13 @@ async function startMongo() {
     ],
     { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] },
   );
+  const runtime = {
+    child,
+    directory,
+    uri: `mongodb://127.0.0.1:${port}/scenario_acceptance`,
+    port,
+  };
+  mongo = runtime;
   let log = '';
   child.stdout.on('data', (data) => {
     log = (log + data).slice(-12000);
@@ -168,17 +176,18 @@ async function startMongo() {
   child.stderr.on('data', (data) => {
     log = (log + data).slice(-12000);
   });
-  const uri = `mongodb://127.0.0.1:${port}/scenario_acceptance`;
-  for (let attempt = 0; attempt < 100; attempt++) {
+  const uri = runtime.uri;
+  const readyDeadline = Date.now() + 30000;
+  while (Date.now() < readyDeadline) {
     if (child.exitCode !== null) throw Error('Disposable Mongo failed: ' + log);
     try {
       await mongoose.connect(uri, { serverSelectionTimeoutMS: 300 });
-      return { child, directory, uri, port };
+      return runtime;
     } catch {
       await sleep(100);
     }
   }
-  throw Error('Disposable Mongo startup timed out.');
+  throw Error('Disposable Mongo startup timed out: ' + log);
 }
 
 async function startRedis() {
@@ -369,6 +378,7 @@ async function worker(mongoProxy, redisProxy) {
     },
     stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
   });
+  workerChildren.push(child);
   let diagnostics = '';
   child.stdout.on('data', (data) => {
     diagnostics = (diagnostics + data).slice(-3000);
@@ -380,9 +390,22 @@ async function worker(mongoProxy, redisProxy) {
   const pending = new Map();
   const ready = new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(Error('Worker startup timeout: ' + diagnostics)), 45000);
-    child.once('error', reject);
+    let readyReceived = false;
+    child.once('error', (error) => {
+      clearTimeout(timer);
+      reject(Error(`Worker spawn failed: ${error.message}`));
+    });
+    child.once('exit', (code, signal) => {
+      if (!readyReceived) {
+        clearTimeout(timer);
+        reject(
+          Error(`Worker exited before ready (code=${code}, signal=${signal}): ${diagnostics}`),
+        );
+      }
+    });
     child.on('message', (message) => {
       if ('ready' in message) {
+        readyReceived = true;
         clearTimeout(timer);
         message.ready ? resolve(message) : reject(Error(message.error));
       } else {
@@ -409,7 +432,19 @@ async function worker(mongoProxy, redisProxy) {
       });
       child.send({ id, action, ...extra });
     });
-  const info = await ready;
+  let info;
+  try {
+    info = await ready;
+  } catch (error) {
+    if (child.pid && child.exitCode === null && child.signalCode === null) child.kill('SIGTERM');
+    if (child.pid && child.exitCode === null && child.signalCode === null)
+      await Promise.race([once(child, 'exit'), sleep(2000)]);
+    if (child.pid && child.exitCode === null && child.signalCode === null) {
+      child.kill('SIGKILL');
+      await Promise.race([once(child, 'exit'), sleep(2000)]);
+    }
+    throw Error(`${error.message}${diagnostics ? ` Worker output: ${diagnostics}` : ''}`);
+  }
   return {
     child,
     request,
@@ -1322,6 +1357,15 @@ main()
         item.child.kill();
       }
     }
+    for (const child of workerChildren) {
+      if (child.exitCode !== null || child.signalCode !== null) continue;
+      child.kill('SIGTERM');
+      await Promise.race([once(child, 'exit'), sleep(2000)]);
+      if (child.exitCode === null && child.signalCode === null) {
+        child.kill('SIGKILL');
+        await Promise.race([once(child, 'exit'), sleep(2000)]);
+      }
+    }
     for (const item of proxies) await item.close();
     if (redis?.isReady) {
       try {
@@ -1349,20 +1393,21 @@ main()
         !path.basename(owned).startsWith('devinsight-p3-')
       )
         throw Error('Unexpected temporary directory ownership.');
-      for (const folder of [
-        owned,
-        ...['journal', 'diagnostic.data']
-          .map((name) => path.join(owned, name))
-          .filter((folder) => fs.existsSync(folder)),
-      ]) {
+      const folders = [owned];
+      for (let index = 0; index < folders.length; index++) {
+        const folder = folders[index];
         for (const entry of fs.readdirSync(folder, { withFileTypes: true })) {
-          if (!entry.isFile()) continue;
-          const candidate = fs.realpathSync(path.join(folder, entry.name));
+          const candidatePath = path.join(folder, entry.name);
+          const candidate = fs.realpathSync(candidatePath);
           if (!candidate.startsWith(owned + path.sep)) throw Error('Unsafe temporary file path.');
-          fs.unlinkSync(candidate);
-          removedTemporaryFiles.push(candidate);
+          if (entry.isFile()) {
+            fs.unlinkSync(candidate);
+            removedTemporaryFiles.push(candidate);
+          } else if (entry.isDirectory()) folders.push(candidate);
+          else throw Error('Unexpected disposable Mongo filesystem entry.');
         }
       }
+      for (const folder of folders.reverse()) fs.rmdirSync(folder);
     }
     report.removedTemporaryFiles = removedTemporaryFiles;
     if (redisProcess?.exitCode === null)
@@ -1370,7 +1415,9 @@ main()
     report.finishedAt = new Date().toISOString();
     report.runtimeDirectory = mongo?.directory;
     report.cleanup = {
-      workersStopped: workers.every((item) => !item.child.connected),
+      workersStopped: workerChildren.every(
+        (child) => child.exitCode !== null || child.signalCode !== null,
+      ),
       mongoStopped: mongo?.child.exitCode !== null || mongo?.child.signalCode !== null,
       redisShutdownRequested: true,
       redisProcessExitCode: redisProcess?.exitCode,

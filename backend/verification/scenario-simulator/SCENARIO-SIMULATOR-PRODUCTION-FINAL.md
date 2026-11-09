@@ -240,3 +240,113 @@ Follow-up report/evidence files:
 - `backend/verification/scenario-simulator/production-finalization-2026-11-09/run-2026-11-08T20-14-13-701Z/workers-diagnostic.log`
 - `backend/verification/scenario-simulator/production-finalization-2026-11-09/run-2026-11-08T20-14-13-701Z/performance-confirmation.log`
 - `backend/verification/scenario-simulator/production-finalization-2026-11-09/run-2026-11-08T20-14-13-701Z/performance-cleanup.json`
+
+## 9 November follow-up — request-correlated load diagnosis
+
+**Release decision remains FAIL / NOT READY.** This follow-up was performed on the authorized existing branch `fix/scenario-final`, HEAD `93d8fc5921ea2c2bdcc88ec224ac08221b1fbfe8` at the final check. PR target: not applicable. It made no commits, pushes, merges, deployments, production-data changes or production index changes. No frontend source changed.
+
+### Root cause evidence
+
+The request-correlated 15-second diagnostic offered 1,500 requests at 100 RPS. It recorded 136 fail-closed shared-quota 503s. All 136 quota EVAL calls eventually completed after their HTTP requests had crossed the existing 150 ms deadline; Redis reported zero failed/rejected EVALs. In that traced run, Redis client-side EVAL p50/p95/p99 was 44/228/386 ms while Redis server command statistics measured about 0.115 ms average EVAL execution and no slow EVAL. Event-loop p99 was approximately 234 ms per worker. Mongo command p95/p99 was 204/286 ms; checkout wait p95/p99 was 163/226 ms, with checkout queues peaking at 50/47. Context requests performed the existing eight-source composition (four concurrent source reads); no cross-request context joiners were observed in that trace. Trace instrumentation adds overhead, so these are diagnostic measurements, not acceptance latency.
+
+The isolated untraced confirmation used the existing 10-second warmup and then offered exactly **6,000 requests at 100 RPS over 60 seconds**. Warmup passed 200/200 with no 5xx. The burst completed all 6,000 requests: 4,532 HTTP 200, 458 HTTP 201 and 1,010 HTTP 503 (4,990/6,000 success; 16.83% fail-closed/unavailable). The 503 breakdown was 811 shared-quota-unavailable and 199 context-capacity-reached. These were not explicit quota denials. Worker EVAL wrapper latency p95/p99 was 296/469 ms and 315/464 ms, with zero underlying EVAL errors. Event-loop p99/max was 381/904 ms and 360/522 ms. Mongo checkout-wait p95 was 1,119/136 ms; observed checkout queues peaked at 220/40, with no checkout failures. Context active leaders peaked at 32/19 against the existing per-worker cap of 32. Sampled worker RSS peaked at 336/239 MB and average worker CPU was 70.7%/74.6% of one core.
+
+These correlated measurements identify application-visible Mongo checkout/command backlog and event-loop scheduling delay during burst as the conditions under which Redis responses miss the fixed deadline; a second overload path is the deliberately bounded context leader capacity. They do **not** prove whether the dominant source is the local Windows/WSL2/host storage topology, Mongo scheduling/connection establishment, or production-representative source-query cost. No pool/index/fanout/deadline adjustment is justified by this local evidence. Shared quotas remain fail-closed, the 150 ms deadline remains unchanged, and bounded context admission remains intact.
+
+### Evidence-backed change and scope
+
+- `backend/src/services/scenarioSprintExportService.js` now coalesces identical same-owner/same-Sprint/same-scenario/mode exports within one worker (bounded at 256 in-flight keys). Followers receive the existing replay-shaped response. Mongo optimistic concurrency and durable receipts remain the cross-worker authority; there is no persistent cache, new schema or API change. This addresses a demonstrated duplicate-export burst and preserves no-duplicate semantics. It was **not** the cause of the 100-RPS quota/context overload and does not make that acceptance pass.
+- `backend/src/scripts/scenarioQuotaTrace.js` and `backend/src/scripts/scenarioAcceptanceWorker.js` add opt-in, bounded request correlation for Redis EVAL, Mongo command/checkout, event-loop and context fanout diagnostics. Redis keys and request payloads are not recorded.
+- `backend/src/scripts/verifyScenarioP3.js` makes disposable Mongo startup report captured diagnostics, tracks worker children from spawn through cleanup and verifies their exit. The Mongo readiness wait changed from 10 to 30 seconds for the test fixture only; no application timeout changed. Cleanup remains non-recursive.
+- `backend/src/tests/scenarioSimulatorWorkers.integration.test.js` retains a bounded stderr tail to make worker timeouts diagnosable; test behavior is unchanged.
+
+Finalization removed 25 files and four empty directories (210,002,081 bytes) from the exact task-owned disposable Mongo path `production-finalization-2026-11-09/run-correlated-diagnostic-2026-11-09/mongo-temp/devinsight-p3-aqi1Xo`. No mongod process was using it, no reparse points were present, and files/directories were removed individually without recursive deletion. The verification record is `production-finalization-2026-11-09/run-correlated-diagnostic-2026-11-09/temporary-cleanup.json`.
+
+### Performance result against unchanged targets
+
+Percentiles include successful responses, matching the existing verifier. The acceptance gate requires zero unexpected 5xx and the existing p95 budgets.
+
+| Endpoint | Burst p95 / p99 | Existing p95 target | Result |
+| --- | ---: | ---: | --- |
+| Context | 3,321 / 3,832 ms | ≤500 ms (p99 ≤1,000 ms) | FAIL |
+| Evaluate | 1,544 / 2,027 ms | ≤200 ms | FAIL |
+| History | 2,537 / 3,445 ms | ≤150 ms | FAIL |
+| Save | 2,772 / 3,322 ms | ≤500 ms | FAIL |
+| Sprint export | 4,756 / 5,210 ms | ≤500 ms | FAIL |
+| Availability | 4,990 / 6,000 success; 1,010 503 | zero unexpected 5xx | FAIL |
+
+Exact burst evidence: `scenario-performance-6000-100rps-confirmation-2026-11-09.json`; raw terminal output: `production-finalization-2026-11-09/run-correlated-diagnostic-2026-11-09/performance-6000-100rps-confirmation-final.log`. It ran against disposable MongoDB 8.2.2 on Windows and Redis 7.0.15 under WSL2, Node 24.19.0, on the local Intel i5-8365U host. This is a local focused burst, **not** staging, production, soak or end-to-end release acceptance. The earlier interrupted 6k evidence file contains only a failed warmup and no burst; it is retained and not counted. Earlier 15-second canaries and the traced diagnostic are likewise not substitutes for this completed burst.
+
+Exact invocation from repository root (the three temporary-directory variables and Redis binary path were set only for this child process):
+
+```powershell
+node backend/src/scripts/verifyScenarioP3.js --focused --burst-only --lock-gate --skip-memory --transport=direct --label=final-6000-100rps --evidence-name=scenario-performance-6000-100rps-confirmation-2026-11-09.json
+```
+
+### Focused checks and final gate matrix
+
+| Check | Result | Evidence/qualification |
+| --- | --- | --- |
+| Reliability, Scenario service and Redis probe unit tests | PASS 21/21, zero skipped | `node --test backend/src/tests/scenarioSimulatorReliability.test.js backend/src/tests/scenarioSimulatorService.test.js backend/src/tests/redisConnectionProbe.test.js`; 25.05 s. |
+| Sprint export + worker combined run | PARTIAL | `node --test --test-concurrency=1 scenarioSprintExport.test.js scenarioSimulatorWorkers.integration.test.js` from `backend/src/tests`; the Sprint export test passed, then worker IPC request 51 exceeded the unchanged 15-second guard. |
+| Two-worker integration, isolated | PASS 1/1, zero skipped | `node --test --test-concurrency=1 backend/src/tests/scenarioSimulatorWorkers.integration.test.js`; test duration 55.96 s. |
+| Sprint export concurrent replay | PASS 1/1 within combined run | Same-worker duplicate export was coalesced; cross-worker receipt behavior passed in the isolated worker suite. |
+| Follow-up standalone Sprint export test invocation | BLOCKED before assertions | MongoDB 8.2.2 exited during startup in Codex-managed TEMP with a tcmalloc `VerifyMallocMemory` crash. The equivalent test passed earlier in the elevated D:-temporary combined run; this blocked invocation failed before assertions. |
+| Exact 6,000 / 100-RPS / 60-second burst | FAIL | 6,000 completed; 1,010 503s and every endpoint p95 exceeded the existing budget. |
+| TypeScript | PASS, exit 0 | `node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.app.json`; no diagnostics. |
+| Production build | PASS | `npm run build`; Angular bundle generation 154.369 s. Existing Jobs and landing SCSS budget warnings remain; neither file changed. Log: `production-finalization-2026-11-09/run-correlated-diagnostic-2026-11-09/production-build-final.log`. |
+| Angular tests and browser journeys | PASS on unchanged frontend revision; not rerun | Existing commands: `npm test -- --watch=false --include="src/app/pages/scenario-simulator/**/*.spec.ts" --include="src/app/shared/services/scenario-simulator.service.spec.ts" --runner-config=scripts/scenario-vitest.config.mjs` (20/20) and `node frontend/scripts/verify-scenario-decomposition-ui.cjs production-final-verified-20261109` (32 Edge viewport/state captures). Evidence: `run-2026-11-08T19-22-58-340Z/angular-focused.log`, `browser-verified-results.json`. No frontend source/API contract changed in this follow-up. |
+| Formatter, JavaScript syntax and Git checks | PASS after finalization | Prettier write/check used `node frontend/node_modules/prettier/bin/prettier.cjs --single-quote --trailing-comma all --print-width 100 --write|--check` with the five changed backend JavaScript paths listed below; `node --check` was run on those same paths; `git diff --check` and `git diff --cached --check` both passed. |
+| Staging/production performance, Redis RTT and Mongo capacity | BLOCKED | No staging or production infrastructure was accessed. Representative source data/query plans, multi-worker load-balancer behavior, production observability/alerts and sustained soak remain unverified. |
+| Full backend regression suite | NOT RUN | Kept this follow-up scoped to the affected export, reliability/service/Redis contracts, worker integration and the requested isolated burst; no unrelated full-suite rerun. |
+
+**Final decision:** mandatory performance/release acceptance is not demonstrated. The local burst is a measured FAIL; deployment-equivalent staging diagnosis and a passing repeat after an evidence-backed remedy are still required. Do not release as production-ready.
+
+### This follow-up's exact file inventory
+
+Runtime code change:
+
+- `backend/src/services/scenarioSprintExportService.js`
+
+Test-only correlation, harness and diagnostics:
+
+- `backend/src/scripts/scenarioAcceptanceWorker.js`
+- `backend/src/scripts/scenarioQuotaTrace.js`
+- `backend/src/scripts/verifyScenarioP3.js`
+- `backend/src/tests/scenarioSimulatorWorkers.integration.test.js`
+
+Report and retained new evidence:
+
+- `backend/verification/scenario-simulator/SCENARIO-SIMULATOR-PRODUCTION-FINAL.md`
+- `backend/verification/scenario-simulator/scenario-correlated-diagnostic-2026-11-09.json`
+- `backend/verification/scenario-simulator/scenario-correlated-diagnostic-retry-2026-11-09.json`
+- `backend/verification/scenario-simulator/scenario-correlated-diagnostic-final-2026-11-09.json`
+- `backend/verification/scenario-simulator/scenario-correlated-diagnostic-run-2026-11-09.json`
+- `backend/verification/scenario-simulator/scenario-correlated-diagnostic-elevated-2026-11-09.json`
+- `backend/verification/scenario-simulator/scenario-correlated-diagnostic-local-2026-11-09.json`
+- `backend/verification/scenario-simulator/scenario-performance-final-confirmation-2026-11-09.json`
+- `backend/verification/scenario-simulator/scenario-performance-final-confirmation-retry-2026-11-09.json`
+- `backend/verification/scenario-simulator/scenario-performance-6000-100rps-2026-11-09.json`
+- `backend/verification/scenario-simulator/scenario-performance-6000-100rps-confirmation-2026-11-09.json`
+- `backend/verification/scenario-simulator/production-finalization-2026-11-09/run-correlated-diagnostic-2026-11-09/performance-6000-100rps-confirmation-final.log`
+- `backend/verification/scenario-simulator/production-finalization-2026-11-09/run-correlated-diagnostic-2026-11-09/production-build-final.log`
+- `backend/verification/scenario-simulator/production-finalization-2026-11-09/run-correlated-diagnostic-2026-11-09/temporary-cleanup.json`
+
+Additional retained task logs and setup diagnostics:
+
+- `backend/verification/scenario-simulator/production-finalization-2026-11-09/run-correlated-diagnostic-2026-11-09/acceptance-startup-process-cleanup.json`
+- `backend/verification/scenario-simulator/production-finalization-2026-11-09/run-correlated-diagnostic-2026-11-09/backend-focused-regressions.log`
+- `backend/verification/scenario-simulator/production-finalization-2026-11-09/run-correlated-diagnostic-2026-11-09/mongo-startup-probe.json`
+- `backend/verification/scenario-simulator/production-finalization-2026-11-09/run-correlated-diagnostic-2026-11-09/performance-6000-100rps-final.log`
+- `backend/verification/scenario-simulator/production-finalization-2026-11-09/run-correlated-diagnostic-2026-11-09/performance-final-confirmation.log`
+- `backend/verification/scenario-simulator/production-finalization-2026-11-09/run-correlated-diagnostic-2026-11-09/performance-final-confirmation-retry.log`
+- `backend/verification/scenario-simulator/production-finalization-2026-11-09/run-correlated-diagnostic-2026-11-09/request-correlated-diagnostic.log`
+- `backend/verification/scenario-simulator/production-finalization-2026-11-09/run-correlated-diagnostic-2026-11-09/request-correlated-diagnostic-retry.log`
+- `backend/verification/scenario-simulator/production-finalization-2026-11-09/run-correlated-diagnostic-2026-11-09/request-correlated-diagnostic-final.log`
+- `backend/verification/scenario-simulator/production-finalization-2026-11-09/run-correlated-diagnostic-2026-11-09/request-correlated-diagnostic-elevated.log`
+- `backend/verification/scenario-simulator/production-finalization-2026-11-09/run-correlated-diagnostic-2026-11-09/request-correlated-diagnostic-local.log`
+- `backend/verification/scenario-simulator/production-finalization-2026-11-09/run-correlated-diagnostic-2026-11-09/request-correlated-diagnostic-run.log`
+- `backend/verification/scenario-simulator/production-finalization-2026-11-09/run-correlated-diagnostic-2026-11-09/sprint-export-and-worker-regression.log`
+- `backend/verification/scenario-simulator/production-finalization-2026-11-09/run-correlated-diagnostic-2026-11-09/two-worker-isolated-regression.log`
+
+Other historical/untracked user verification evidence and screenshots were preserved. No files were staged or committed by this follow-up.

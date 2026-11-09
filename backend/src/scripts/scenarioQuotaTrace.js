@@ -105,19 +105,19 @@ module.exports = ({ raw, socket, cache, queue }) => {
     const store = scope.getStore();
     if (!store) return evalCommand.apply(this, args);
     const record = {
-      traceId: store.id,
-      receivedAt: store.receivedAt,
+      traceId: store.request.traceId,
       quotaAt: stamp(),
-      key: args[1].keys[0],
       queueAtStart: queue(),
     };
     store.current = record;
-    store.records.push(record);
-    requests.add(record);
+    store.request.redis.push(record);
     try {
       const result = await evalCommand.apply(this, args);
       record.counter = Number(result);
       return result;
+    } catch (error) {
+      record.errorCode = error.code || error.name || 'REDIS_ERROR';
+      throw error;
     } finally {
       record.settledAt = stamp();
     }
@@ -145,19 +145,89 @@ module.exports = ({ raw, socket, cache, queue }) => {
       },
     });
   };
+  const mongoRequests = new Map();
+  const observeMongo = (client) => {
+    client.on('connectionCheckOutStarted', () => {
+      const request = scope.getStore()?.request;
+      if (request) request.checkoutStartedAt = stamp();
+    });
+    client.on('connectionCheckedOut', (event) => {
+      const request = scope.getStore()?.request;
+      if (request) {
+        request.mongo.push({
+          kind: 'checkout',
+          durationMs: event.durationMS,
+          at: stamp(),
+        });
+        delete request.checkoutStartedAt;
+      }
+    });
+    client.on('connectionCheckOutFailed', (event) => {
+      const request = scope.getStore()?.request;
+      if (request) {
+        request.mongo.push({
+          kind: 'checkout-failed',
+          reason: event.reason,
+          durationMs: event.durationMS,
+          at: stamp(),
+        });
+        delete request.checkoutStartedAt;
+      }
+    });
+    client.on('commandStarted', (event) => {
+      const request = scope.getStore()?.request;
+      if (!request) return;
+      const record = {
+        kind: 'command',
+        name: event.commandName,
+        database: event.databaseName,
+        collection: event.command?.find || event.command?.aggregate || event.command?.count,
+        startedAt: stamp(),
+      };
+      request.mongo.push(record);
+      mongoRequests.set(event.requestId, { request, record });
+    });
+    const finishCommand = (event, failed) => {
+      const pending = mongoRequests.get(event.requestId);
+      if (!pending) return;
+      mongoRequests.delete(event.requestId);
+      pending.record.finishedAt = stamp();
+      pending.record.durationMs = event.duration;
+      if (failed) pending.record.failed = true;
+    };
+    client.on('commandSucceeded', (event) => finishCommand(event, false));
+    client.on('commandFailed', (event) => finishCommand(event, true));
+    return () => mongoRequests.clear();
+  };
   return {
+    observeMongo,
+    record(kind, fields = {}) {
+      const request = scope.getStore()?.request;
+      if (!request) return false;
+      request.spans.push({ kind, at: stamp(), ...fields });
+      return true;
+    },
     middleware(req, res, next) {
+      const startedAt = stamp();
+      const request = {
+        traceId: req.get('X-Scenario-Trace') || 'unlabelled',
+        method: req.method,
+        endpoint: req.path,
+        startedAt,
+        redis: [],
+        mongo: [],
+        spans: [],
+      };
+      requests.add(request);
       const store = {
-        id: req.get('X-Scenario-Trace') || 'unlabelled',
-        receivedAt: stamp(),
-        records: [],
+        request,
+        current: null,
       };
       res.once('finish', () => {
         const now = stamp();
-        for (const record of store.records) {
-          record.status = res.statusCode;
-          record.finishedAt = now;
-        }
+        request.status = res.statusCode;
+        request.finishedAt = now;
+        request.durationMs = now - startedAt;
       });
       scope.run(store, next);
     },
@@ -182,6 +252,7 @@ module.exports = ({ raw, socket, cache, queue }) => {
     close() {
       clearInterval(heartbeat);
       observer.disconnect();
+      mongoRequests.clear();
     },
   };
 };

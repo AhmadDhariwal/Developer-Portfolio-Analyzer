@@ -1,0 +1,8 @@
+{
+  "port": 63982,
+  "tcp": false,
+  "exitCode": null,
+  "startupComplete": true,
+  "listenEntry": "Listening on\",\"attr\":{\"address\":\"127.0.0.1:63982\"}}\r",
+  "cleaned": true
+}

@@ -16,7 +16,10 @@ const worker = (uri) =>
       windowsHide: true,
       stdio: ['ignore', 'ignore', 'pipe', 'ipc'],
     });
-    process.stderr.on('data', () => {});
+    let diagnostics = '';
+    process.stderr.on('data', (data) => {
+      diagnostics = (diagnostics + data).slice(-4000);
+    });
     process.once('error', reject);
     let next = 0;
     const pending = new Map();
@@ -25,7 +28,11 @@ const worker = (uri) =>
         const id = ++next;
         const timer = setTimeout(() => {
           pending.delete(id);
-          fail(Error(`Worker ${process.pid} ${action} request ${id} timed out.`));
+          fail(
+            Error(
+              `Worker ${process.pid} ${action} request ${id} timed out.${diagnostics ? ` ${diagnostics}` : ''}`,
+            ),
+          );
         }, 15000);
         pending.set(id, (result) => {
           clearTimeout(timer);

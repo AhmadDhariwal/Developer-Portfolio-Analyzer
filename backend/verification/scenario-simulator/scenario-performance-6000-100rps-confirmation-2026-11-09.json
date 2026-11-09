@@ -1,0 +1,886 @@
+{
+  "runId": "c6d9d86a-28b7-4c8b-9d78-03aeca6c27b0",
+  "mode": "FOCUSED_NOT_FULL_ACCEPTANCE",
+  "startedAt": "2026-11-09T05:44:17.818Z",
+  "status": "FOCUSED_FAIL",
+  "productionDataModified": false,
+  "traceQuota": false,
+  "sources": {
+    "src/scripts/verifyScenarioP3.js": "e2cff2d9e447f4112085c7f4606049e8f36cc2d52749ebb69e70f335e0dc1ec4",
+    "src/scripts/scenarioAcceptanceWorker.js": "06edef4f3aecda85e3547cb1d2b6944e30906569ea6e6a6e2c029e19438dfd6e",
+    "src/scripts/scenarioFocusedVerification.js": "fa9e20795ae84aa53a82d743c053b5a7ef9a1694b4768d2f4f35b3c3417bed2a",
+    "src/scripts/scenarioQuotaTrace.js": "90683c448a8695d91cd2eb9315d0ea5f2c0fe1802508eeac9100bac1c12bb40a",
+    "src/scripts/scenarioRedisTrace.js": "66b941a7b8213e07eec5d99cedb41bedf6aaa627a185be17e5234343fb158786",
+    "src/services/redisCacheService.js": "8d5c0e1cb6d6f800d8b526a81178206747ebdd37b9ca1d9858fddebe4f470e0e",
+    "src/services/scenarioContextService.js": "19413c05a1b8d612c9a21779c65a279ed63ed769db1626e8a0d1d937ccb7d5a4",
+    "src/services/scenarioSimulatorService.js": "a99011fb2034e739a94f056124afdc070136d8a93a03e5d41d74c3542305ae81",
+    "src/services/scenarioSprintExportService.js": "b4698392a7676097af5834978a3db492d6bcf362fe0bc5a8629bded4b87aa30d",
+    "src/services/scoring/scenarioPlanningScore.js": "2214de883ab3423d0bafc1ed75536fe436063dfbf3785e6c24663cd08f1b134a",
+    "src/middleware/scenarioSimulatorMiddleware.js": "ae778851802aba24caec0d9bd8c3b86a3081f0a545b1ecb6dedddb2010b9fcc0",
+    "src/middleware/authMiddleware.js": "1edb50f04654c900ef02d90ecc7e618562f4f28c1fdb6a715c001c82aa83ce2b"
+  },
+  "checks": [
+    {
+      "label": "Actual full unique user/hash index installed locally",
+      "passed": true
+    },
+    {
+      "label": "Actual compound history cursor index installed locally",
+      "passed": true
+    },
+    {
+      "label": "focused-warmup: every offered request succeeds",
+      "passed": true,
+      "details": {
+        "200": 184,
+        "201": 16
+      }
+    },
+    {
+      "label": "focused-burst: every offered request succeeds",
+      "passed": false,
+      "details": {
+        "200": 4532,
+        "201": 458,
+        "503": 1010
+      }
+    },
+    {
+      "label": "focused-burst: original latency thresholds",
+      "passed": false,
+      "details": {
+        "context": {
+          "count": 1778,
+          "p95Ms": 3321,
+          "p99Ms": 3832,
+          "maxMs": 4177.563699999999,
+          "meanMs": 1783.9785597862744
+        },
+        "evaluate": {
+          "count": 1813,
+          "p95Ms": 1544,
+          "p99Ms": 2027,
+          "maxMs": 2621.2096999999776,
+          "meanMs": 819.4084791505785
+        },
+        "history": {
+          "count": 832,
+          "p95Ms": 2537,
+          "p99Ms": 3445,
+          "maxMs": 3810.8680000000168,
+          "meanMs": 1166.8816937499998
+        },
+        "save": {
+          "count": 458,
+          "p95Ms": 2772,
+          "p99Ms": 3322,
+          "maxMs": 3916.132899999997,
+          "meanMs": 1308.0309775109156
+        },
+        "export": {
+          "count": 109,
+          "p95Ms": 4756,
+          "p99Ms": 5210,
+          "maxMs": 5610.740299999976,
+          "meanMs": 2266.289007339451
+        }
+      }
+    }
+  ],
+  "phases": [
+    {
+      "label": "focused-warmup",
+      "seconds": 10,
+      "rps": 20,
+      "scheduled": 200,
+      "completed": 200,
+      "statuses": {
+        "200": 184,
+        "201": 16
+      },
+      "errors": {},
+      "peakPending": 5,
+      "elapsedMs": 10025.928400000004,
+      "latency": {
+        "context": {
+          "count": 80,
+          "p95Ms": 169,
+          "p99Ms": 268,
+          "maxMs": 267.6575999999768,
+          "meanMs": 69.92197624999862
+        },
+        "evaluate": {
+          "count": 70,
+          "p95Ms": 33,
+          "p99Ms": 44,
+          "maxMs": 43.05780000000959,
+          "meanMs": 27.30443285714469
+        },
+        "history": {
+          "count": 30,
+          "p95Ms": 68,
+          "p99Ms": 86,
+          "maxMs": 85.34679999999935,
+          "meanMs": 40.65298000000087
+        },
+        "save": {
+          "count": 16,
+          "p95Ms": 230,
+          "p99Ms": 230,
+          "maxMs": 229.75580000001355,
+          "meanMs": 89.456725
+        },
+        "export": {
+          "count": 4,
+          "p95Ms": 175,
+          "p99Ms": 175,
+          "maxMs": 174.7766999999876,
+          "meanMs": 93.47134999999253
+        }
+      },
+      "diagnostics": [
+        {
+          "pid": 40188,
+          "quota": {
+            "count": 100,
+            "failures": 0,
+            "p95Ms": 3,
+            "p99Ms": 4
+          },
+          "loop": {
+            "p99Ms": 47.808511,
+            "maxMs": 88.997887
+          },
+          "pool": {
+            "connections": 9,
+            "peakConnections": 9,
+            "checkedOut": 0,
+            "peakCheckedOut": 9,
+            "waiting": 0,
+            "peakWaiting": 7,
+            "checkOutFailures": 0,
+            "commands": 446,
+            "commandsInFlight": 0,
+            "peakCommands": 9,
+            "waitP95Ms": 42
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 2,
+            "joiners": 0,
+            "pending": 2
+          },
+          "cpu": {
+            "user": 6875000,
+            "system": 3796000
+          },
+          "memory": {
+            "rss": 116834304,
+            "heapTotal": 57499648,
+            "heapUsed": 41994488,
+            "external": 23403214,
+            "arrayBuffers": 19348159
+          },
+          "queue": {
+            "toSend": 0,
+            "waitingForReply": 0,
+            "total": 0
+          }
+        },
+        {
+          "pid": 38592,
+          "quota": {
+            "count": 100,
+            "failures": 0,
+            "p95Ms": 5,
+            "p99Ms": 11
+          },
+          "loop": {
+            "p99Ms": 79.167487,
+            "maxMs": 156.893183
+          },
+          "pool": {
+            "connections": 8,
+            "peakConnections": 8,
+            "checkedOut": 0,
+            "peakCheckedOut": 8,
+            "waiting": 0,
+            "peakWaiting": 6,
+            "checkOutFailures": 0,
+            "commands": 447,
+            "commandsInFlight": 0,
+            "peakCommands": 8,
+            "waitP95Ms": 19
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 2,
+            "joiners": 0,
+            "pending": 2
+          },
+          "cpu": {
+            "user": 7046000,
+            "system": 3687000
+          },
+          "memory": {
+            "rss": 105005056,
+            "heapTotal": 43343872,
+            "heapUsed": 38216448,
+            "external": 22870823,
+            "arrayBuffers": 18815768
+          },
+          "queue": {
+            "toSend": 0,
+            "waitingForReply": 0,
+            "total": 0
+          }
+        }
+      ],
+      "cpuPercentOneCore": [
+        26.032501887805214,
+        28.825260711018032
+      ]
+    },
+    {
+      "label": "focused-burst",
+      "seconds": 60,
+      "rps": 100,
+      "scheduled": 6000,
+      "completed": 6000,
+      "statuses": {
+        "200": 4532,
+        "201": 458,
+        "503": 1010
+      },
+      "errors": {
+        "Shared Scenario quota service is unavailable.": 811,
+        "Scenario context capacity reached. Retry shortly.": 199
+      },
+      "peakPending": 128,
+      "generatorBackpressure": true,
+      "elapsedMs": 61068.110600000015,
+      "latency": {
+        "context": {
+          "count": 1778,
+          "p95Ms": 3321,
+          "p99Ms": 3832,
+          "maxMs": 4177.563699999999,
+          "meanMs": 1783.9785597862744
+        },
+        "evaluate": {
+          "count": 1813,
+          "p95Ms": 1544,
+          "p99Ms": 2027,
+          "maxMs": 2621.2096999999776,
+          "meanMs": 819.4084791505785
+        },
+        "history": {
+          "count": 832,
+          "p95Ms": 2537,
+          "p99Ms": 3445,
+          "maxMs": 3810.8680000000168,
+          "meanMs": 1166.8816937499998
+        },
+        "save": {
+          "count": 458,
+          "p95Ms": 2772,
+          "p99Ms": 3322,
+          "maxMs": 3916.132899999997,
+          "meanMs": 1308.0309775109156
+        },
+        "export": {
+          "count": 109,
+          "p95Ms": 4756,
+          "p99Ms": 5210,
+          "maxMs": 5610.740299999976,
+          "meanMs": 2266.289007339451
+        }
+      },
+      "diagnostics": [
+        {
+          "pid": 40188,
+          "quota": {
+            "count": 3000,
+            "failures": 0,
+            "p95Ms": 296,
+            "p99Ms": 469
+          },
+          "loop": {
+            "p99Ms": 380.895231,
+            "maxMs": 903.872511
+          },
+          "pool": {
+            "connections": 19,
+            "peakConnections": 19,
+            "checkedOut": 0,
+            "peakCheckedOut": 18,
+            "waiting": 0,
+            "peakWaiting": 220,
+            "checkOutFailures": 0,
+            "commands": 5767,
+            "commandsInFlight": 0,
+            "peakCommands": 18,
+            "waitP95Ms": 1119
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 32,
+            "joiners": 8,
+            "pending": 32
+          },
+          "cpu": {
+            "user": 45343000,
+            "system": 8656000
+          },
+          "memory": {
+            "rss": 336101376,
+            "heapTotal": 263680000,
+            "heapUsed": 178164408,
+            "external": 44957883,
+            "arrayBuffers": 40907766
+          },
+          "queue": {
+            "toSend": 0,
+            "waitingForReply": 0,
+            "total": 0
+          }
+        },
+        {
+          "pid": 38592,
+          "quota": {
+            "count": 3000,
+            "failures": 0,
+            "p95Ms": 315,
+            "p99Ms": 464
+          },
+          "loop": {
+            "p99Ms": 360.447999,
+            "maxMs": 521.928703
+          },
+          "pool": {
+            "connections": 64,
+            "peakConnections": 64,
+            "checkedOut": 0,
+            "peakCheckedOut": 63,
+            "waiting": 0,
+            "peakWaiting": 40,
+            "checkOutFailures": 0,
+            "commands": 10298,
+            "commandsInFlight": 0,
+            "peakCommands": 63,
+            "waitP95Ms": 136
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 19,
+            "joiners": 0,
+            "pending": 19
+          },
+          "cpu": {
+            "user": 48078000,
+            "system": 8421000
+          },
+          "memory": {
+            "rss": 238534656,
+            "heapTotal": 182542336,
+            "heapUsed": 47176328,
+            "external": 26413900,
+            "arrayBuffers": 22365737
+          },
+          "queue": {
+            "toSend": 0,
+            "waitingForReply": 0,
+            "total": 0
+          }
+        }
+      ],
+      "cpuPercentOneCore": [
+        70.7455979487926,
+        74.60849787614026
+      ]
+    }
+  ],
+  "samples": [
+    {
+      "label": "focused-warmup",
+      "at": "2026-11-09T05:46:36.063Z",
+      "workers": [
+        {
+          "memoryBeforeGc": {
+            "rss": 116834304,
+            "heapTotal": 57499648,
+            "heapUsed": 42001280,
+            "external": 23403251,
+            "arrayBuffers": 19348196
+          },
+          "pid": 40188,
+          "memory": {
+            "rss": 115982336,
+            "heapTotal": 57499648,
+            "heapUsed": 36677272,
+            "external": 23403251,
+            "arrayBuffers": 18742861
+          },
+          "cpu": {
+            "user": 6984000,
+            "system": 3812000
+          },
+          "eventLoopP99Ms": 47.808511,
+          "pool": {
+            "connections": 10,
+            "peakConnections": 9,
+            "checkedOut": 0,
+            "peakCheckedOut": 9,
+            "waiting": 0,
+            "peakWaiting": 7,
+            "checkOutFailures": 0,
+            "commands": 446,
+            "commandsInFlight": 0,
+            "peakCommands": 9,
+            "waitP95Ms": 42
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 2,
+            "joiners": 0,
+            "pending": 2
+          },
+          "redisReady": true,
+          "observer": {
+            "checkoutBytes": 80004,
+            "quotaBytes": 8004,
+            "cpuProfilerActive": false
+          }
+        },
+        {
+          "memoryBeforeGc": {
+            "rss": 105005056,
+            "heapTotal": 43343872,
+            "heapUsed": 38225832,
+            "external": 22870860,
+            "arrayBuffers": 18815805
+          },
+          "pid": 38592,
+          "memory": {
+            "rss": 105091072,
+            "heapTotal": 43606016,
+            "heapUsed": 36192496,
+            "external": 22870860,
+            "arrayBuffers": 18742845
+          },
+          "cpu": {
+            "user": 7187000,
+            "system": 3687000
+          },
+          "eventLoopP99Ms": 79.167487,
+          "pool": {
+            "connections": 9,
+            "peakConnections": 8,
+            "checkedOut": 0,
+            "peakCheckedOut": 8,
+            "waiting": 0,
+            "peakWaiting": 6,
+            "checkOutFailures": 0,
+            "commands": 447,
+            "commandsInFlight": 0,
+            "peakCommands": 8,
+            "waitP95Ms": 19
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 2,
+            "joiners": 0,
+            "pending": 2
+          },
+          "redisReady": true,
+          "observer": {
+            "checkoutBytes": 80004,
+            "quotaBytes": 8004,
+            "cpuProfilerActive": false
+          }
+        }
+      ]
+    },
+    {
+      "label": "focused-burst",
+      "at": "2026-11-09T05:47:37.330Z",
+      "workers": [
+        {
+          "memoryBeforeGc": {
+            "rss": 336101376,
+            "heapTotal": 263680000,
+            "heapUsed": 178176832,
+            "external": 44957920,
+            "arrayBuffers": 40907803
+          },
+          "pid": 40188,
+          "memory": {
+            "rss": 315232256,
+            "heapTotal": 225144832,
+            "heapUsed": 38825368,
+            "external": 44956515,
+            "arrayBuffers": 19726045
+          },
+          "cpu": {
+            "user": 45515000,
+            "system": 8656000
+          },
+          "eventLoopP99Ms": 380.895231,
+          "pool": {
+            "connections": 20,
+            "peakConnections": 19,
+            "checkedOut": 0,
+            "peakCheckedOut": 18,
+            "waiting": 0,
+            "peakWaiting": 220,
+            "checkOutFailures": 0,
+            "commands": 5767,
+            "commandsInFlight": 0,
+            "peakCommands": 18,
+            "waitP95Ms": 1119
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 32,
+            "joiners": 8,
+            "pending": 32
+          },
+          "redisReady": true,
+          "observer": {
+            "checkoutBytes": 80004,
+            "quotaBytes": 8004,
+            "cpuProfilerActive": false
+          }
+        },
+        {
+          "memoryBeforeGc": {
+            "rss": 238534656,
+            "heapTotal": 182542336,
+            "heapUsed": 47191264,
+            "external": 26413937,
+            "arrayBuffers": 22365774
+          },
+          "pid": 38592,
+          "memory": {
+            "rss": 236986368,
+            "heapTotal": 180445184,
+            "heapUsed": 37397392,
+            "external": 26413937,
+            "arrayBuffers": 20971949
+          },
+          "cpu": {
+            "user": 48296000,
+            "system": 8421000
+          },
+          "eventLoopP99Ms": 360.447999,
+          "pool": {
+            "connections": 65,
+            "peakConnections": 64,
+            "checkedOut": 0,
+            "peakCheckedOut": 63,
+            "waiting": 0,
+            "peakWaiting": 40,
+            "checkOutFailures": 0,
+            "commands": 10298,
+            "commandsInFlight": 0,
+            "peakCommands": 63,
+            "waitP95Ms": 136
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 19,
+            "joiners": 0,
+            "pending": 19
+          },
+          "redisReady": true,
+          "observer": {
+            "checkoutBytes": 80004,
+            "quotaBytes": 8004,
+            "cpuProfilerActive": false
+          }
+        }
+      ]
+    }
+  ],
+  "failures": [
+    "focused-burst: every offered request succeeds",
+    "focused-burst: original latency thresholds"
+  ],
+  "limitations": [],
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32",
+    "os": "10.0.26300",
+    "logicalCpus": 8,
+    "cpu": "Intel(R) Core(TM) i5-8365U CPU @ 1.60GHz",
+    "totalMemory": 16976740352,
+    "mongoose": "9.2.4",
+    "mongodb": "7.1.0",
+    "redisClient": "4.7.1",
+    "redisInfo": [
+      "redis_version:7.0.15",
+      "redis_mode:standalone",
+      "os:Linux 6.18.54.1-microsoft-standard-WSL2 x86_64",
+      "arch_bits:64"
+    ],
+    "redisConfig": "bind 127.0.0.1\nport <ephemeral>\nprotected-mode yes\nsave \"\"\nappendonly no\nmaxmemory 64mb\nmaxmemory-policy noeviction\n",
+    "mongoBuild": {
+      "version": "8.2.2",
+      "allocator": "tcmalloc-gperf"
+    },
+    "workers": [
+      41116,
+      16152
+    ],
+    "mongoClientOptions": {
+      "serverSelectionTimeoutMS": 30000,
+      "socketTimeoutMS": 45000,
+      "maxPoolSize": 100,
+      "waitQueueTimeoutMS": 0,
+      "directConnection": true,
+      "autoIndex": false
+    }
+  },
+  "indexes": [
+    {
+      "v": 2,
+      "key": {
+        "_id": 1
+      },
+      "name": "_id_"
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1
+      },
+      "name": "userId_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "scenarioHash": 1
+      },
+      "name": "scenarioHash_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1,
+        "createdAt": -1,
+        "_id": -1
+      },
+      "name": "scenario_history_cursor"
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1,
+        "scenarioHash": 1
+      },
+      "name": "userId_1_scenarioHash_1",
+      "unique": true
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1,
+        "role": 1,
+        "experienceLevel": 1
+      },
+      "name": "userId_1_role_1_experienceLevel_1"
+    }
+  ],
+  "focused": {
+    "label": "final-6000-100rps",
+    "transport": "direct",
+    "cpuProfiling": false,
+    "burstOnly": true,
+    "lockGate": true,
+    "skipMemory": true,
+    "longDurationAcceptance": false,
+    "profiles": [],
+    "cold": [
+      {
+        "instance": 0,
+        "operation": "context",
+        "status": 200,
+        "elapsedMs": 611.9807000000146
+      },
+      {
+        "instance": 0,
+        "operation": "export",
+        "status": 200,
+        "elapsedMs": 2416.5407000000123
+      },
+      {
+        "instance": 0,
+        "operation": "evaluate",
+        "status": 200,
+        "elapsedMs": 48.04449999998906
+      },
+      {
+        "instance": 1,
+        "operation": "context",
+        "status": 200,
+        "elapsedMs": 494.5743000000075
+      },
+      {
+        "instance": 1,
+        "operation": "export",
+        "status": 200,
+        "elapsedMs": 1432.0295999999798
+      },
+      {
+        "instance": 1,
+        "operation": "evaluate",
+        "status": 200,
+        "elapsedMs": 165.27529999997932
+      }
+    ]
+  },
+  "removedTemporaryFiles": [
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\collection-0cf5dbff-6e2b-4331-8790-51ad5d715718.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\collection-2fafcb8b-6fb9-48ba-9c4a-3ba25b29c238.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\collection-336db852-987f-478e-9918-bd7e8cab3740.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\collection-41e7018f-2006-4922-9539-389ceb68c0b6.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\collection-4a7d305f-2d1c-4c5d-bab6-9f4ca1e0465b.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\collection-5ce5b899-630f-40b7-9978-5b4c40fa2798.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\collection-6906521b-9135-4a29-9bbd-bc1e4f8b0a76.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\collection-6eb22b87-2470-4c2d-b07c-f20e790c991f.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\collection-7224e85e-9d61-43e8-be33-8c94c64ee034.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\collection-821ffa4d-87c9-45f1-88c1-32e6847f78e9.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\collection-838c2079-cb24-48eb-a4e2-9835563c6e9f.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\collection-8d3ce46b-0ad2-4ce5-8aac-c94b089e66a0.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\collection-90c56d56-7a25-4f43-897c-5ad98cac5dc5.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\collection-92327eea-41e1-49ce-ad53-dd2351f8bdf3.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\collection-95ac6d97-b2c5-4ca2-b66e-15c588a3641c.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\collection-a9dc62dd-9602-4054-b56f-001e5736194a.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\collection-bbe614a0-a393-4ebd-98be-ef6a60c51aba.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\collection-c01c4e19-8d70-4328-9a6c-a3ab6ab946fa.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\collection-c0e184b1-ed04-44ed-8b4d-8ac6c29cd6c5.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\collection-d7e71217-1c1d-4e68-882f-2bf4edacd8e9.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\collection-dbff6602-9a12-42aa-9b73-7df43cab3eac.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\collection-dc63e674-cf6e-495c-9d02-0a461d45cd75.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\collection-e2bcd4df-63bf-4a35-9724-edc4ffb804ea.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\collection-ec3c9360-7a94-4dc3-9bc2-5945ff5ec40d.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\collection-efd7d2b9-1bf6-4137-985d-12432a4d7eca.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\collection-f56ed16a-aaaf-4cda-95ef-0845489536a7.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\collection-f7ff1fc6-da41-4fef-b263-d9a63c10dfd6.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-067a0276-705c-4626-aa00-fb4887f6101a.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-07e79e34-750b-4664-8265-300a441098cd.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-09fa9f17-dd28-43fd-bbef-82323afab94b.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-0d95cf49-da88-4065-b5d8-d240f8d3ba3d.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-0ef19351-4d80-4b8e-b789-c0c5d91d1bfb.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-0f09a340-aad2-4d7f-9603-12f2cdbec290.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-105d742f-4f06-481e-87c1-bff88fee2f2f.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-1450cd1b-ced5-497e-8125-c594a80dbcac.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-199de4b3-d3f3-4936-ac88-4e84c54c960e.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-1b6c9e9a-4b4f-4d1c-9409-0c5feb44dd2c.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-23470757-ae8b-46b3-a4d4-7b164f610fa2.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-29ae52b4-b817-44b9-afaa-a4156083b13d.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-393e0808-14e8-409a-9bbd-228e3a7dc76a.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-415383b0-417d-48c6-8f4f-652ee3c5cc3d.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-4c354bce-f1e3-49b1-9344-b5f0325cc0f5.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-50149c19-3efa-4276-8378-73b5408c2312.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-56901059-6914-4b7b-9087-dc2fcbcd2098.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-575b57bc-83ea-468b-b4a2-bcb302618e09.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-5771c4f0-d577-47f5-b3ab-a5f6428e20e3.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-59331a08-b90d-47a1-a238-17f7d55c6a31.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-5d214b0e-4bf6-4a06-bfe8-72e23d7556f0.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-5d4fa04f-bac1-471a-b4a6-915fe0d6bfc3.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-5feca11d-3ad7-461f-81dc-d05edf4ef86d.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-608c9dcd-15a8-420c-94de-696fbff34c8e.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-60a163bc-08de-42d5-9674-143a70fc794f.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-6c0151a7-60ad-4941-bf33-3266152c7f1a.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-6df4c1b1-e985-4bd3-a1be-554bf442b540.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-7648b67b-851a-4b65-878c-da4e53bb3920.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-76f76cb9-512f-456f-b1b0-8b0459a6e93e.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-7a5db08b-dfa0-4bb6-b139-a7a471419fdc.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-7dcb067b-1a4d-4bdc-85cd-0b8c6487f238.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-7ee76a5a-76ea-4155-b23a-cb1df679ebdb.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-8330e047-34af-4166-90cb-3c336ed78eb0.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-8424cc6b-4125-4617-8c70-47c02377b9e1.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-85602369-4b64-4cb3-a137-c7626fffb58d.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-895b1552-7ecf-477c-9ca2-0a2ba80812a9.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-8cce7b94-3357-49a0-9e2e-192700c5c441.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-8ed0cf76-a84b-48aa-b6da-9f87336dab4d.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-8f04a8b0-3fe1-493d-adab-e53ff96f9151.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-95f28885-5b83-4ad6-8210-6125d4e86e64.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-9ca78b1a-243d-4242-83e7-421067e2cb35.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-a0f0fd19-9f36-4c05-9f05-8bcf49e3edb8.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-aa0a59b3-ff1a-4af3-aac2-cd4440c16ea5.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-ad73e064-0f07-451f-9c25-2012c69dfa62.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-af0316a1-05fd-40b8-9d5c-036bb2c19ee2.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-b1c60d33-01b0-412f-948c-11579a35734e.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-b4062b71-efd1-494f-b5c1-e0fbc56b40cd.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-c5ae5ce2-81a0-4191-abc6-440d6722772e.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-c5ef64c8-ee20-4e51-95ba-5b50d7497b9b.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-cfa4ef21-f28f-4555-ace4-417259ce50ea.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-d5402a99-bb42-4957-99b2-ba615767984d.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-d5be65f7-8dd3-46db-996b-131f5d984e1c.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-d5f7e1ce-10d0-4837-8799-c69836f622b8.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-da2bed98-9ec6-4bd9-ae0f-97abe623ee3e.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-eea20a5a-a102-4b5c-88bf-20c3e00ad393.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\index-fd0e2c12-ee19-4dc5-81e9-d63e59429b2b.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\mongod.lock",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\sizeStorer.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\storage.bson",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\WiredTiger",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\WiredTiger.lock",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\WiredTiger.turtle",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\WiredTiger.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\WiredTigerHS.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\_mdb_catalog.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\diagnostic.data\\metrics.2026-11-09T05-44-23Z-00000",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\diagnostic.data\\metrics.interim",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\journal\\WiredTigerLog.0000000001",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\journal\\WiredTigerPreplog.0000000001",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\_tmp\\spilldb\\WiredTiger",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\_tmp\\spilldb\\WiredTiger.lock",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\_tmp\\spilldb\\WiredTiger.turtle",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\_tmp\\spilldb\\WiredTiger.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3\\_tmp\\spilldb\\WiredTigerHS.wt"
+  ],
+  "finishedAt": "2026-11-09T05:47:41.498Z",
+  "runtimeDirectory": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-correlated-diagnostic-2026-11-09\\final-acceptance-temp\\devinsight-p3-U8MTq3",
+  "cleanup": {
+    "workersStopped": true,
+    "mongoStopped": true,
+    "redisShutdownRequested": true,
+    "redisProcessExitCode": 0,
+    "recursiveDeletion": false
+  }
+}

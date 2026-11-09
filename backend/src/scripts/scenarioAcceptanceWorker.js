@@ -202,6 +202,41 @@ async function main() {
       cache,
       queue: redisQueue,
     });
+  if (quotaTrace) {
+    quotaTrace.observeMongo(client);
+    const getContext = contextService.getScenarioContext;
+    contextService.getScenarioContext = async (...args) => {
+      const started = performance.now();
+      const before = contextService.acceptanceState();
+      try {
+        const result = await getContext(...args);
+        const after = contextService.acceptanceState();
+        quotaTrace.record('context-fanout', {
+          durationMs: performance.now() - started,
+          cacheHit: result.cache?.hit === true,
+          sourceStatuses: Object.fromEntries(
+            (result.sources || []).map(({ key, status }) => [key, status]),
+          ),
+          activeBefore: before.active,
+          joinersBefore: before.joiners,
+          pendingBefore: before.pending,
+          activeAfter: after.active,
+          joinersAfter: after.joiners,
+          pendingAfter: after.pending,
+        });
+        return result;
+      } catch (error) {
+        quotaTrace.record('context-fanout-error', {
+          durationMs: performance.now() - started,
+          errorCode: error.code || error.statusCode || error.name || 'CONTEXT_ERROR',
+          activeBefore: before.active,
+          joinersBefore: before.joiners,
+          pendingBefore: before.pending,
+        });
+        throw error;
+      }
+    };
+  }
   const app = express();
   if (quotaTrace) app.use(quotaTrace.middleware);
   app.use(express.json({ limit: '100kb' }));
@@ -255,6 +290,12 @@ process.on('message', async (message) => {
         pid: process.pid,
         quota: quotaLatency(),
         loop: { p99Ms: delay.percentile(99) / 1e6, maxMs: delay.max / 1e6 },
+        pool: {
+          ...pool,
+          waitP95Ms: waitP95(),
+        },
+        context: contextService.acceptanceState(),
+        contextPeak: { ...contextPeak },
         cpu: process.cpuUsage(),
         memory: process.memoryUsage(),
         queue: redisQueue(),
