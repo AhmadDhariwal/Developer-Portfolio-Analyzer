@@ -25,11 +25,13 @@ const worker = (uri) =>
         const id = ++next;
         const timer = setTimeout(() => {
           pending.delete(id);
-          fail(Error('Worker request timed out.'));
+          fail(Error(`Worker ${process.pid} ${action} request ${id} timed out.`));
         }, 15000);
         pending.set(id, (result) => {
           clearTimeout(timer);
-          result.error ? fail(Object.assign(Error(result.error.message), result.error)) : done(result.value);
+          result.error
+            ? fail(Object.assign(Error(result.error.message), result.error))
+            : done(result.value);
         });
         process.send({ id, action, ...body });
       });
@@ -87,7 +89,11 @@ test('P3 two real workers: atomic saves, export receipts, fresh history and rest
   const scenario = await Scenario.findById(saved[0].id).lean();
   const exports = await Promise.all(
     Array.from({ length: 50 }, (_, index) =>
-      workers[index % 2].request('export', { owner: String(owner), sprintId: String(sprint._id), scenario }),
+      workers[index % 2].request('export', {
+        owner: String(owner),
+        sprintId: String(sprint._id),
+        scenario,
+      }),
     ),
   );
   assert.equal(exports.filter((item) => !item.replayed).length, 1);
@@ -97,8 +103,13 @@ test('P3 two real workers: atomic saves, export receipts, fresh history and rest
   await workers[0].request('stop');
   workers[0] = await worker(mongo.uri);
   assert(
-    (await workers[0].request('export', { owner: String(owner), sprintId: String(sprint._id), scenario }))
-      .replayed,
+    (
+      await workers[0].request('export', {
+        owner: String(owner),
+        sprintId: String(sprint._id),
+        scenario,
+      })
+    ).replayed,
   );
   assert.equal((await workers[0].request('history', { owner: String(owner) })).history.length, 1);
 });

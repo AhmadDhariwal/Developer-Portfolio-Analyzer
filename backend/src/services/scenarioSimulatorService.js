@@ -26,7 +26,8 @@ const requireIndexes = async () => {
             Object.keys(index.key).length === 2,
         );
         const history = indexes.some(
-          (index) => JSON.stringify(index.key) === JSON.stringify({ userId: 1, createdAt: -1, _id: -1 }),
+          (index) =>
+            JSON.stringify(index.key) === JSON.stringify({ userId: 1, createdAt: -1, _id: -1 }),
         );
         if (!unique || !history) throw new Error('Required Scenario indexes are unavailable.');
       })
@@ -45,8 +46,8 @@ const validate = (payload) => {
   return normalized.value;
 };
 const evaluateForUser = async (userId, payload) => {
+  if (payload?.ruleVersion === engine.RULE_VERSION) return engine.calculate(payload);
   validate(payload);
-  if (payload.ruleVersion === engine.RULE_VERSION) return engine.calculate(payload);
   const context = await getScenarioContext(userId);
   const result = engine.calculate(payload, {
     sources: context.sources,
@@ -60,7 +61,10 @@ const evaluateForUser = async (userId, payload) => {
         ? Object.values(value).every(finite)
         : true;
   if (!finite(result))
-    throw fail(400, 'Legacy inputs do not define a finite planning result. Use scenario-planning-v2.');
+    throw fail(
+      400,
+      'Legacy inputs do not define a finite planning result. Use scenario-planning-v2.',
+    );
   return result;
 };
 const saveScenarioForUser = async (userId, payload = {}) => {
@@ -99,7 +103,8 @@ const saveScenarioForUser = async (userId, payload = {}) => {
     createdAt: now,
     updatedAt: now,
   };
-  if (Buffer.byteLength(JSON.stringify(document)) > 65536) throw fail(413, 'Scenario snapshot is too large.');
+  if (Buffer.byteLength(JSON.stringify(document)) > 65536)
+    throw fail(413, 'Scenario snapshot is too large.');
   let scenario;
   try {
     scenario = await ScenarioSimulation.findOneAndUpdate(
@@ -116,9 +121,10 @@ const saveScenarioForUser = async (userId, payload = {}) => {
     );
   } catch (error) {
     if (error.code !== 11000) throw error;
-    scenario = await ScenarioSimulation.findOne({ userId, scenarioHash: result.scenarioHash }).maxTimeMS(
-      2000,
-    );
+    scenario = await ScenarioSimulation.findOne({
+      userId,
+      scenarioHash: result.scenarioHash,
+    }).maxTimeMS(2000);
     if (!scenario) throw error;
   }
   telemetry.event('save', 'success', payload.ruleVersion || engine.LEGACY_VERSION);
@@ -180,7 +186,10 @@ const createSprintFromScenario = async (userId, payload = {}) => {
     if (!mongoose.isObjectIdOrHexString(id)) throw fail(404, 'Scenario not found.');
     scenario = await ScenarioSimulation.findOne({ _id: id, userId }).lean();
     if (!scenario) throw fail(404, 'Scenario not found.');
-    if (payload.ruleVersion && digest(validate(payload)) !== digest(scenario.evaluation?.normalizedInput))
+    if (
+      payload.ruleVersion &&
+      digest(validate(payload)) !== digest(scenario.evaluation?.normalizedInput)
+    )
       throw fail(409, 'Scenario source does not match the submitted plan.');
   } else {
     const input = validate(payload);

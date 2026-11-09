@@ -85,9 +85,11 @@ test('read-only probes skip revision writes; ordinary startup still initializes 
     await cache.initRedisCache({ silent: true, probeOnly: true });
     assert.equal(await cache.pingRedisCache(), 'PONG');
     assert.equal(writes, 0);
+    const defaultProxy = cache.getRedisCacheClient();
+    assert.equal(cache.getRedisCacheClient({ commandTimeoutMs: 150 }), defaultProxy);
     pingDelay = 220;
     assert.equal(await cache.getRedisCacheClient({ commandTimeoutMs: 1000 }).ping(), 'PONG');
-    await assert.rejects(cache.getRedisCacheClient().ping(), /timed out/);
+    await assert.rejects(defaultProxy.ping(), (error) => error.code === 'REDIS_COMMAND_TIMEOUT');
     pingDelay = 0;
     await cache.closeRedisCache();
     await cache.initRedisCache({ silent: true });
@@ -144,7 +146,7 @@ test('connection checker resolves backend .env independently of the working dire
       return {
         config: (options) => {
           configuration = options;
-        }
+        },
       };
     if (name === '../services/redisCacheService')
       return {
@@ -155,7 +157,7 @@ test('connection checker resolves backend .env independently of the working dire
         pingRedisCache: async () => 'PONG',
         closeRedisCache: async () => {
           closed = true;
-        }
+        },
       };
     return original(name);
   };
