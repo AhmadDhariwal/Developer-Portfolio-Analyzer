@@ -464,11 +464,11 @@ const summarizeWeeklyReportSignal = async (userId) => {
   const reports = await WeeklyReport.find({ userId }).sort({ weekEndDate: -1 }).limit(4).lean();
   const latest = reports[0];
 
-  if (!latest) {
+  if (!latest || latest.meta?.evidence?.scoreAvailable === false) {
     return {
       present: false,
       weeklyProgressScore: 0,
-      status: 'No weekly report',
+      status: latest ? 'Weekly report needs evidence' : 'No weekly report',
       completedRecommendations: null,
       missedRecommendations: null,
       skillsImprovedThisWeek: [],
@@ -494,7 +494,7 @@ const summarizeWeeklyReportSignal = async (userId) => {
   );
   const weeklyProgressScore = clamp(latest.score);
   const trendDelta = clamp(
-    latest?.meta?.comparisons?.scoreDelta ?? latest.score - Number(previous?.score || 0),
+    latest.meta?.comparison?.available === false ? 0 : latest?.meta?.comparisons?.scoreDelta ?? latest.score - Number(previous?.score || 0),
     -100,
     100
   );

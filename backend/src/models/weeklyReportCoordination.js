@@ -5,6 +5,8 @@ const schema = new mongoose.Schema(
   {
     _id: String,
     token: String,
+    count: Number,
+    lastAttemptAt: Date,
     cursor: String,
     completed: Boolean,
     expiresAt: { type: Date, required: true },

@@ -1,10 +1,11 @@
+import { ActivatedRoute } from '@angular/router';
 import { Subject, finalize, takeUntil } from 'rxjs';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   OnInit,
-  OnDestroy,
+  OnDestroy, Optional, Inject,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -41,10 +42,15 @@ export class WeeklyReportsComponent implements OnInit, OnDestroy {
   loadSource: 'frontend-cache' | 'api' | 'generated' = 'api';
   loadedAt: Date | null = null;
   isHistoryOpen = false;
+  isExporting = false;
+  isResending = false;
+  actionMessage = '';
+  private deepLinkLoaded = false;
 
   constructor(
     private readonly reportService: WeeklyReportService,
     private readonly cdr: ChangeDetectorRef,
+    @Optional() @Inject(ActivatedRoute) private readonly route: ActivatedRoute | null = null,
   ) {}
 
   ngOnInit(): void {
@@ -65,7 +71,7 @@ export class WeeklyReportsComponent implements OnInit, OnDestroy {
 
     return [
       {
-        label: 'Learning',
+        label: 'Learning Hub',
         status: sources.learning || { status: 'Unavailable', lastAnalyzedAt: null },
       },
       { label: 'GitHub', status: sources.github },
@@ -82,17 +88,17 @@ export class WeeklyReportsComponent implements OnInit, OnDestroy {
   get scoreBreakdown(): Array<{
     key: string;
     label: string;
-    score: number;
+    score: number | null;
     weight: number;
-    contribution: number;
+    contribution: number | null;
   }> {
     const breakdown = this.latestReport?.meta.scoreBreakdown || {};
     return Object.entries(breakdown).map(([key, item]) => ({
       key,
       label: item.label,
-      score: item.score,
+      score: this.latestReport?.meta.evidence?.inputs[key]?.available === false ? null : item.score,
       weight: item.weight,
-      contribution: Math.round((Number(item.score || 0) * Number(item.weight || 0)) / 100),
+      contribution: this.latestReport?.meta.evidence?.inputs[key]?.available === false ? null : Math.round((Number(item.score || 0) * Number(item.weight || 0)) / 100),
     }));
   }
 
@@ -127,6 +133,12 @@ export class WeeklyReportsComponent implements OnInit, OnDestroy {
       .subscribe({
         next: ({ latest, history, fromFrontendCache, cachedAt }) => {
           this.latestReport = latest;
+          const id = this.route?.snapshot.queryParamMap.get('report');
+          const version = this.route?.snapshot.queryParamMap.get('version') || undefined;
+          if (id && !this.deepLinkLoaded) {
+            this.deepLinkLoaded = true;
+            this.reportService.getReport(id, version).pipe(takeUntil(this.destroyed)).subscribe({ next: (saved) => { this.latestReport = saved; this.cdr.markForCheck(); }, error: (error) => { this.errorMessage = error?.error?.message || 'Saved report version could not be loaded.'; this.cdr.markForCheck(); } });
+          }
           this.history = history;
           this.loadSource = fromFrontendCache ? 'frontend-cache' : 'api';
           this.loadedAt = cachedAt ? new Date(cachedAt) : new Date();
@@ -143,14 +155,14 @@ export class WeeklyReportsComponent implements OnInit, OnDestroy {
       });
   }
 
-  generateReport(): void {
+  generateReport(refresh = false): void {
     if (this.isGenerating) return;
     this.isGenerating = true;
     this.errorMessage = '';
     this.cdr.markForCheck();
 
-    this.reportService
-      .generateReport(true)
+    const request = refresh && this.latestReport ? this.reportService.refreshReport(this.latestReport) : this.reportService.generateReport(false);
+    request
       .pipe(
         takeUntil(this.destroyed),
         finalize(() => {
@@ -174,6 +186,23 @@ export class WeeklyReportsComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         },
       });
+  }
+
+  get isArchivedVersion(): boolean { const selected = this.latestReport; const current = this.history.find((item) => item._id === selected?._id); return !!current && current.meta.reportHash !== selected?.meta.reportHash; }
+  get isCurrentWeek(): boolean { const report = this.latestReport; const now = Date.now(); return !!report && new Date(report.weekStartDate).getTime() <= now && now <= new Date(report.weekEndDate).getTime(); }
+  get comparisonAvailable(): boolean { return this.latestReport?.meta.comparison?.available === true; }
+  overallLabel(report: WeeklyReport): string { return report.meta.evidence?.scoreAvailable === false ? 'Not assessed' : String(report.score); }
+  metricLabel(key: string, legacyValue: number): string { const input = this.latestReport?.meta.evidence?.inputs[key]; return input && !input.available ? 'Not assessed' : `${input?.value ?? legacyValue}%`; }
+  reportDate(value: string, report = this.latestReport): string { if (!Number.isFinite(new Date(value).getTime())) return 'Not recorded'; return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', timeZone: report?.meta.provenance?.timezone || 'UTC' }).format(new Date(value)); }
+  downloadPdf(): void {
+    const saved = this.latestReport; if (!saved || this.isExporting) return;
+    this.isExporting = true; this.actionMessage = '';
+    this.reportService.downloadPdf(saved).pipe(takeUntil(this.destroyed), finalize(() => { this.isExporting = false; this.cdr.markForCheck(); })).subscribe({ next: (blob) => { const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `weekly-report-${saved._id}-v${saved.meta.version || 1}.pdf`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); this.actionMessage = 'PDF downloaded from the saved snapshot.'; this.cdr.markForCheck(); }, error: () => { this.errorMessage = 'The saved PDF could not be downloaded. Please retry.'; this.cdr.markForCheck(); } });
+  }
+  resendEmail(): void {
+    const saved = this.latestReport; if (!saved || this.isResending) return;
+    this.isResending = true; this.actionMessage = '';
+    this.reportService.resendEmail(saved).pipe(takeUntil(this.destroyed), finalize(() => { this.isResending = false; this.cdr.markForCheck(); })).subscribe({ next: () => { this.actionMessage = 'Email send accepted. Inbox delivery is not guaranteed.'; this.cdr.markForCheck(); }, error: (error) => { this.errorMessage = error?.error?.message || 'Email could not be resent. Please retry later.'; this.cdr.markForCheck(); } });
   }
 
   getReadinessScore(report: WeeklyReport | null): number {
@@ -204,6 +233,7 @@ export class WeeklyReportsComponent implements OnInit, OnDestroy {
 
   formatDelta(value: number, suffix = 'pts'): string {
     const numeric = Number(value || 0);
+    if (!this.comparisonAvailable) return 'No comparable week';
     if (!Number.isFinite(numeric) || numeric === 0) return `0 ${suffix}`;
     return `${numeric > 0 ? '+' : ''}${Math.round(numeric)} ${suffix}`;
   }
@@ -225,11 +255,12 @@ export class WeeklyReportsComponent implements OnInit, OnDestroy {
     if (!status?.lastAnalyzedAt) return '';
     const parsed = new Date(status.lastAnalyzedAt);
     if (Number.isNaN(parsed.getTime())) return '';
-    const ageMs = Date.now() - parsed.getTime();
+    const reference = this.latestReport?.meta.provenance?.assessedAt || this.latestReport?.updatedAt || this.latestReport?.weekEndDate;
+    const ageMs = (reference ? new Date(reference).getTime() : Date.now()) - parsed.getTime();
     const days = Math.max(0, Math.floor(ageMs / (24 * 60 * 60 * 1000)));
-    if (days === 0) return 'Updated today';
-    if (days === 1) return 'Updated yesterday';
-    return `Updated ${days} days ago`;
+    if (days === 0) return 'Evidence current at assessment';
+    if (days === 1) return '1 day old at assessment';
+    return `${days} days old at assessment`;
   }
 
   formatDate(value: string | null | undefined): string {

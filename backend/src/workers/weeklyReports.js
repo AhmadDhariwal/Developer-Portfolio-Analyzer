@@ -16,6 +16,7 @@ async function start() {
     throw Error('Enable WEEKLY_REPORT_SCHEDULER_ENABLED explicitly for the dedicated worker.');
   await mongoose.connect(process.env.MONGODB_URI);
   await require('../models/weeklyReportCoordination').init();
+  await require('../models/weeklyReportRevision').init();
   await runWeeklyReportBatch(); // Restart catchup uses the same report identity and smart-skip rules.
   startWeeklyReportScheduler();
   const timer = setInterval(() => {

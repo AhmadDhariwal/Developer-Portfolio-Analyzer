@@ -131,4 +131,18 @@ describe('WeeklyReportService cache behavior', () => {
     expect(received).not.toHaveBeenCalled();
     expect(invalidation.clearDeveloperSignalCaches).not.toHaveBeenCalled();
   });
+
+  it('loads an archived snapshot without replacing the stable latest cache', async () => {
+    await firstValueFrom(service.getLatest());
+    api.getWeeklyReport = vi.fn().mockReturnValue(of({ ...rawReport('archive'), meta: { version: 1, reportHash: 'a'.repeat(64) } }));
+    expect((await firstValueFrom(service.getReport('archive', 'a'.repeat(64))))._id).toBe('archive');
+    expect((await firstValueFrom(service.getLatest()))?._id).toBe('report-1');
+    expect(api.generateWeeklyReport).not.toHaveBeenCalled();
+  });
+
+  it('preserves authoritative missing-evidence metadata on normalized reports', async () => {
+    api.getWeeklyReportLatest.mockReturnValue(of({ ...rawReport(), score: 0, meta: { evidence: { scoreAvailable: false, measuredScore: null, inputs: { github: { available: true, value: 0 }, sprint: { available: false, value: null } } } } }));
+    const report = await firstValueFrom(service.getLatest());
+    expect(report?.meta.evidence?.measuredScore).toBeNull(); expect(report?.meta.evidence?.inputs['github'].value).toBe(0); expect(report?.meta.evidence?.inputs['sprint'].value).toBeNull();
+  });
 });

@@ -4,12 +4,20 @@ const User = require('../models/user');
 const metrics = require('./notificationMetrics');
 let running = false;
 
-async function deliver(report, user, send, { resend = false } = {}) {
+async function deliver(report, user, send, { resend = false, expectedHash } = {}) {
   if (!report?._id) return { sent: false, reason: 'Missing report.' };
   const current = await Report.findById(report._id).lean();
   if (!current) return { sent: false, reason: 'Report unavailable.' };
+  if (expectedHash !== undefined && current.meta?.reportHash !== expectedHash) return { sent: false, reason: 'The saved report changed. Reload before resending.' };
   const state = current.emailDelivery || {};
-  const hash = current.meta?.reportHash || 'legacy';
+  const currentHash = current.meta?.reportHash || 'legacy';
+  let selected = current;
+  if (!resend && state.contentHash && state.contentHash !== currentHash && ['pending', 'retrying'].includes(state.status)) {
+    const revision = await require('../models/weeklyReportRevision').findOne({ reportId: current._id, userId: current.userId, contentHash: state.contentHash }).lean();
+    if (!revision) return { sent: false, reason: 'The queued snapshot is unavailable; delivery requires reconciliation.' };
+    selected = revision.snapshot;
+  }
+  const hash = selected.meta?.reportHash || 'legacy';
   if (state.status === 'processing') {
     if (state.leaseUntil <= new Date())
       await Report.updateOne(
@@ -24,9 +32,10 @@ async function deliver(report, user, send, { resend = false } = {}) {
   }
   if (state.status === 'uncertain')
     return { sent: false, reason: 'Verify provider delivery before resending.' };
+  const resendIntent = resend || Boolean(state.resendIntent && state.status === 'retrying');
   if (
-    !resend &&
-    (current.emailStatus === 'sent' || (state.status === 'sent' && state.contentHash === hash))
+    !resendIntent &&
+    ((current.emailStatus === 'sent' && currentHash === hash) || (state.status === 'sent' && state.contentHash === hash))
   )
     return { sent: false, reason: 'Report email already sent.' };
   if (state.contentHash === hash && (state.attempts >= 5 || state.nextAttemptAt > new Date()))
@@ -38,6 +47,7 @@ async function deliver(report, user, send, { resend = false } = {}) {
     await Report.updateOne({ _id: current._id }, { $set: { 'emailDelivery.status': 'skipped' } });
     return { sent: false, reason: 'Recipient or preference unavailable.' };
   }
+  if (resend) await require('./weeklyReportAdmissionService').reserveResend(String(current.userId));
   const leaseId = randomUUID();
   const claimed = await Report.findOneAndUpdate(
     {
@@ -50,6 +60,8 @@ async function deliver(report, user, send, { resend = false } = {}) {
       $set: {
         emailDelivery: {
           status: 'processing',
+          resendIntent,
+          history: [...(state.history || []), { leaseId, contentHash: hash, requestedAt: new Date(), resend: resendIntent, status: 'processing' }].slice(-20),
           leaseId,
           contentHash: hash,
           leaseUntil: new Date(Date.now() + 120000),
@@ -69,14 +81,14 @@ async function deliver(report, user, send, { resend = false } = {}) {
   let timeout;
   try {
     const result = await Promise.race([
-      send(claimed, recipient, { resend }),
+      send(selected === current ? claimed : { ...selected, emailDelivery: claimed.emailDelivery }, recipient, { resend: resendIntent }),
       new Promise((_, reject) => {
         timeout = setTimeout(() => reject(Error('Delivery outcome unknown.')), 30000);
       })
     ]);
     await Report.updateOne(filter, {
-      $set: { 'emailDelivery.status': result.sent ? 'sent' : 'skipped' }
-    });
+      $set: { 'emailDelivery.status': result.sent ? 'sent' : 'skipped', 'emailDelivery.history.$[attempt].status': result.sent ? 'sent' : 'skipped', 'emailDelivery.history.$[attempt].finishedAt': new Date() }
+    }, { arrayFilters: [{ 'attempt.leaseId': leaseId }] });
     metrics.outcomes.inc({ operation: 'weekly-email', outcome: result.sent ? 'sent' : 'skipped' });
     return result;
   } catch (error) {
@@ -93,11 +105,13 @@ async function deliver(report, user, send, { resend = false } = {}) {
     await Report.updateOne(filter, {
       $set: {
         'emailDelivery.status': status,
+        'emailDelivery.history.$[attempt].status': status,
+        'emailDelivery.history.$[attempt].finishedAt': new Date(),
         'emailDelivery.nextAttemptAt': new Date(
           Date.now() + Math.min(3600000, 30000 * 2 ** claimed.emailDelivery.attempts)
         )
       }
-    });
+    }, { arrayFilters: [{ 'attempt.leaseId': leaseId }] });
     metrics.outcomes.inc({ operation: 'weekly-email', outcome: status });
     throw error;
   } finally {
@@ -134,6 +148,7 @@ async function processDue() {
           $set: {
             emailDelivery: {
               status: 'pending',
+              history: report.emailDelivery.history || [],
               contentHash: pending,
               attempts: 0,
               nextAttemptAt: new Date()
