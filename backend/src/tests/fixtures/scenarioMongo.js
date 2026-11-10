@@ -50,12 +50,17 @@ const start = async () => {
     const owned = fs.realpathSync(directory);
     if (path.dirname(owned) !== root || !path.basename(owned).startsWith('devinsight-scenario-'))
       throw Error('Unsafe fixture cleanup path.');
-    fs.rmSync(owned, {
-      recursive: true,
-      force: true,
-      maxRetries: 5,
-      retryDelay: 100,
-    });
+    const clean = (folder) => {
+      for (const entry of fs.readdirSync(folder, { withFileTypes: true })) {
+        const target = path.resolve(folder, entry.name);
+        if (!target.startsWith(owned + path.sep) || entry.isSymbolicLink())
+          throw Error('Unsafe fixture cleanup item.');
+        if (entry.isDirectory()) clean(target);
+        else fs.unlinkSync(target);
+      }
+      fs.rmdirSync(folder);
+    };
+    clean(owned);
   };
   try {
     const until = Date.now() + 15000;

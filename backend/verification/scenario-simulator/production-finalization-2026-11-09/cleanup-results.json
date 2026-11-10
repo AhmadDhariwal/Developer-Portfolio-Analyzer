@@ -1,0 +1,152 @@
+{
+  "verifiedRoots": [
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-11-45-751Z\\temporary",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-11-45-751Z\\npm-cache",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-13-37-937Z\\temporary",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-13-37-937Z\\npm-cache",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-14-23-285Z\\temporary",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-14-23-285Z\\npm-cache",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-18-07-632Z\\temporary",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-18-07-632Z\\npm-cache",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-44-925Z\\temporary",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-44-925Z\\npm-cache",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\npm-cache",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-22-58-340Z\\temporary",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-22-58-340Z\\npm-cache",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-26-12-233Z\\temporary",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-26-12-233Z\\npm-cache",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\browser-temporary",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\sprint-limit-temporary"
+  ],
+  "activeOwnedMongoProcesses": 0,
+  "records": [
+    {
+      "operation": "deleted-owned-temporary-file",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-14-23-285Z\\temporary\\devinsight-p3-yIo75V\\_tmp\\spilldb\\WiredTiger",
+      "bytes": 50
+    },
+    {
+      "operation": "deleted-owned-temporary-file",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-14-23-285Z\\temporary\\devinsight-p3-yIo75V\\_tmp\\spilldb\\WiredTiger.lock",
+      "bytes": 21
+    },
+    {
+      "operation": "deleted-owned-temporary-file",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-14-23-285Z\\temporary\\devinsight-p3-yIo75V\\_tmp\\spilldb\\WiredTiger.turtle",
+      "bytes": 1474
+    },
+    {
+      "operation": "deleted-owned-temporary-file",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-14-23-285Z\\temporary\\devinsight-p3-yIo75V\\_tmp\\spilldb\\WiredTiger.wt",
+      "bytes": 20480
+    },
+    {
+      "operation": "deleted-owned-temporary-file",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-14-23-285Z\\temporary\\devinsight-p3-yIo75V\\_tmp\\spilldb\\WiredTigerHS.wt",
+      "bytes": 4096
+    },
+    {
+      "operation": "deleted-owned-temporary-file",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-18-07-632Z\\temporary\\devinsight-p3-Wm5kqH\\_tmp\\spilldb\\WiredTiger",
+      "bytes": 50
+    },
+    {
+      "operation": "deleted-owned-temporary-file",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-18-07-632Z\\temporary\\devinsight-p3-Wm5kqH\\_tmp\\spilldb\\WiredTiger.lock",
+      "bytes": 21
+    },
+    {
+      "operation": "deleted-owned-temporary-file",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-18-07-632Z\\temporary\\devinsight-p3-Wm5kqH\\_tmp\\spilldb\\WiredTiger.turtle",
+      "bytes": 1474
+    },
+    {
+      "operation": "deleted-owned-temporary-file",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-18-07-632Z\\temporary\\devinsight-p3-Wm5kqH\\_tmp\\spilldb\\WiredTiger.wt",
+      "bytes": 20480
+    },
+    {
+      "operation": "deleted-owned-temporary-file",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-18-07-632Z\\temporary\\devinsight-p3-Wm5kqH\\_tmp\\spilldb\\WiredTigerHS.wt",
+      "bytes": 4096
+    },
+    {
+      "operation": "retained-log",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-44-925Z\\npm-cache\\_logs\\2026-11-08T19_19_45_260Z-debug-0.log",
+      "destination": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-44-925Z\\retained-diagnostics\\npm-cache-2026-11-08T19_19_45_260Z-debug-0.log",
+      "bytes": 1514
+    },
+    {
+      "operation": "deleted-owned-temporary-file",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\_tmp\\spilldb\\WiredTiger",
+      "bytes": 50
+    },
+    {
+      "operation": "deleted-owned-temporary-file",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\_tmp\\spilldb\\WiredTiger.lock",
+      "bytes": 21
+    },
+    {
+      "operation": "deleted-owned-temporary-file",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\_tmp\\spilldb\\WiredTiger.turtle",
+      "bytes": 1474
+    },
+    {
+      "operation": "deleted-owned-temporary-file",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\_tmp\\spilldb\\WiredTiger.wt",
+      "bytes": 20480
+    },
+    {
+      "operation": "deleted-owned-temporary-file",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\_tmp\\spilldb\\WiredTigerHS.wt",
+      "bytes": 4096
+    },
+    {
+      "operation": "retained-log",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-22-58-340Z\\npm-cache\\_logs\\2026-11-08T19_22_58_711Z-debug-0.log",
+      "destination": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-22-58-340Z\\retained-diagnostics\\npm-cache-2026-11-08T19_22_58_711Z-debug-0.log",
+      "bytes": 1507
+    },
+    {
+      "operation": "retained-log",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-22-58-340Z\\npm-cache\\_logs\\2026-11-08T19_24_06_325Z-debug-0.log",
+      "destination": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-22-58-340Z\\retained-diagnostics\\npm-cache-2026-11-08T19_24_06_325Z-debug-0.log",
+      "bytes": 1126
+    },
+    {
+      "operation": "deleted-owned-temporary-file",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-26-12-233Z\\temporary\\devinsight-p3-DR2W93\\_tmp\\spilldb\\WiredTiger",
+      "bytes": 50
+    },
+    {
+      "operation": "deleted-owned-temporary-file",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-26-12-233Z\\temporary\\devinsight-p3-DR2W93\\_tmp\\spilldb\\WiredTiger.lock",
+      "bytes": 21
+    },
+    {
+      "operation": "deleted-owned-temporary-file",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-26-12-233Z\\temporary\\devinsight-p3-DR2W93\\_tmp\\spilldb\\WiredTiger.turtle",
+      "bytes": 1474
+    },
+    {
+      "operation": "deleted-owned-temporary-file",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-26-12-233Z\\temporary\\devinsight-p3-DR2W93\\_tmp\\spilldb\\WiredTiger.wt",
+      "bytes": 20480
+    },
+    {
+      "operation": "deleted-owned-temporary-file",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-26-12-233Z\\temporary\\devinsight-p3-DR2W93\\_tmp\\spilldb\\WiredTigerHS.wt",
+      "bytes": 4096
+    },
+    {
+      "operation": "retained-log",
+      "source": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\browser-temporary\\cv_debug.log",
+      "destination": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\retained-diagnostics\\browser-temporary-cv_debug.log",
+      "bytes": 246
+    }
+  ],
+  "deletedFiles": 20,
+  "retainedLogs": 4,
+  "recursiveDeletion": false
+}

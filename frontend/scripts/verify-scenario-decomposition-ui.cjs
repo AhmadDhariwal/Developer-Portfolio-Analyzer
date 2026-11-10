@@ -4,7 +4,11 @@ const fs = require('node:fs'),
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const root = path.resolve(__dirname, '../..');
 const engine = require(root + '/backend/src/services/scoring/scenarioPlanningScore');
-const output = root + '/frontend/verification/scenario-simulator/decomposition';
+const verificationRoot = path.join(root, 'frontend/verification/scenario-simulator');
+const output = path.resolve(
+  process.env.SCENARIO_UI_OUTPUT_DIR || path.join(verificationRoot, 'decomposition'),
+);
+assert.ok(output.startsWith(verificationRoot + path.sep));
 fs.mkdirSync(output, { recursive: true });
 const phase = process.argv[2] || 'production';
 const context = {
@@ -119,6 +123,7 @@ async function snapshot(page, label, results) {
     };
   });
   results.push({ label, ...data });
+  assert.equal(data.overflow, false, `${label}: horizontal overflow`);
   await page.screenshot({ path: path.join(output, phase + '-' + label + '.png'), fullPage: true });
 }
 const http = require('node:http');
@@ -145,19 +150,24 @@ const server = http.createServer((req, res) => {
 });
 (async () => {
   await new Promise((resolve) => server.listen(4327, '127.0.0.1', resolve));
-  const browser = await chromium.launch({
-    headless: true,
-    ...(process.env.SCENARIO_CHROMIUM_PATH
-      ? { executablePath: process.env.SCENARIO_CHROMIUM_PATH }
-      : {}),
-  });
+  let browser;
   const results = [];
   try {
+    browser = await chromium.launch({
+      headless: true,
+      ...(process.env.SCENARIO_CHROMIUM_PATH
+        ? { executablePath: process.env.SCENARIO_CHROMIUM_PATH }
+        : {}),
+    });
     for (const width of [1440, 375])
-      for (const theme of ['light', 'dark']) {
+      for (const theme of [
+        'light',
+        'dark',
+        ...(phase.startsWith('production-final') ? ['system'] : []),
+      ]) {
         const ctx = await browser.newContext({
           viewport: { width, height: 1000 },
-          colorScheme: theme,
+          colorScheme: theme === 'system' ? 'dark' : theme,
         });
         await ctx.addInitScript(
           ({ theme }) => {
@@ -198,14 +208,43 @@ const server = http.createServer((req, res) => {
           { theme },
         );
         const page = await ctx.newPage();
+        let contextMode = 'normal';
+        let releaseContext;
+        let contextWait;
         const errors = [];
         page.on('pageerror', (e) => errors.push(e.message));
-        await page.route('**/api/**', (route) => {
+        await page.route('**/api/**', async (route) => {
           const url = route.request().url();
           let json = {};
-          if (url.includes('/simulator/context')) json = { context };
-          else if (url.includes('/simulator/history'))
-            json = { history: [saved], nextCursor: null };
+          if (url.includes('/simulator/context')) {
+            if (contextMode === 'loading') await contextWait;
+            if (contextMode === 'error')
+              return route.fulfill({ status: 503, json: { message: 'Fixture source outage' } });
+            json = {
+              context:
+                contextMode === 'partial'
+                  ? {
+                      ...context,
+                      degraded: true,
+                      sources: [
+                        {
+                          key: 'resume',
+                          label: 'Resume Analyzer',
+                          status: 'timeout',
+                          connected: false,
+                        },
+                        {
+                          key: 'github',
+                          label: 'GitHub Analyzer',
+                          status: 'available',
+                          connected: true,
+                        },
+                      ],
+                    }
+                  : context,
+            };
+          } else if (url.includes('/simulator/history'))
+            json = { history: contextMode === 'normal' ? [saved] : [], nextCursor: null };
           else if (url.includes('/simulator/what-if'))
             json = { result: engine.calculate(route.request().postDataJSON()) };
           else if (url.includes('/profile'))
@@ -221,6 +260,13 @@ const server = http.createServer((req, res) => {
         await page.route('https://fonts.googleapis.com/**', (route) => route.abort());
         await page.goto('http://127.0.0.1:4327/app/scenario-simulator');
         await page.locator('#targetRole').waitFor();
+        if (theme === 'system') {
+          await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark');
+          await page.emulateMedia({ colorScheme: 'light' });
+          await page.waitForFunction(() => document.documentElement.dataset.theme === 'light');
+          await page.emulateMedia({ colorScheme: 'dark' });
+          await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark');
+        }
         await page.waitForFunction(
           (expected) => Boolean(document.querySelector('app-scenario-inputs')) === expected,
           phase !== 'before',
@@ -243,6 +289,30 @@ const server = http.createServer((req, res) => {
         await page.locator('.action-btn-compare').first().click();
         await page.locator('.comparison-card').waitFor();
         await snapshot(page, width + '-' + theme + '-comparison', results);
+        if (phase.startsWith('production-final') && width === 1440 && theme === 'light') {
+          contextMode = 'loading';
+          contextWait = new Promise((resolve) => {
+            releaseContext = resolve;
+          });
+          await page.reload();
+          await page.getByText('Refreshing…', { exact: true }).waitFor();
+          contextMode = 'error';
+          releaseContext();
+          await page
+            .getByText(
+              'Live scenario signals are unavailable right now. You can still simulate manually.',
+              { exact: true },
+            )
+            .waitFor();
+          await page.locator('.history-empty').waitFor();
+          await snapshot(page, 'loading-recovered-error-empty', results);
+          contextMode = 'partial';
+          await page.getByRole('button', { name: 'Refresh simulator data', exact: true }).click();
+          await page
+            .getByText(/Some background signal sources are currently unavailable/)
+            .waitFor();
+          await snapshot(page, 'partial-healthy-sources-retained', results);
+        }
         assert.deepEqual(errors, []);
         await ctx.close();
       }
@@ -259,7 +329,7 @@ const server = http.createServer((req, res) => {
       console.log('Computed layout/style differences:', differences.length);
     }
   } finally {
-    await browser.close();
+    await browser?.close();
     await new Promise((resolve) => server.close(resolve));
   }
 })().catch((error) => {

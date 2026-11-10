@@ -1,0 +1,6 @@
+{
+  "command": "node frontend/scripts/verify-scenario-decomposition-ui.cjs production-final-verified-20261109",
+  "browser": "Installed Microsoft Edge",
+  "exitCode": 0,
+  "milliseconds": 48931
+}

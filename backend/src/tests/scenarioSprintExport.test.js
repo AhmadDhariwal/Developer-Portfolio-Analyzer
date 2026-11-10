@@ -48,7 +48,9 @@ test('P2 owned atomic receipts survive concurrent replay, edit, delete and draft
   assert(
     saved.tasks.every(
       (task) =>
-        !task.isCompleted && task.startDate >= saved.sprintStartDate && task.endDate <= saved.sprintEndDate,
+        !task.isCompleted &&
+        task.startDate >= saved.sprintStartDate &&
+        task.endDate <= saved.sprintEndDate,
     ),
   );
   saved.tasks[0].title = 'Edited';
@@ -69,7 +71,11 @@ test('P2 owned atomic receipts survive concurrent replay, edit, delete and draft
   const context = await require('../services/sprintDraftContextService').currentContext(owner);
   await mutateDraft(owner, sprint._id, saved.aiPlans[0]._id, [0, 1, 2], context.fingerprint);
   saved = await Sprint.findById(sprint._id);
-  assert.equal(saved.tasks.length, 2, 'source item identity prevents replay even after edit/delete');
+  assert.equal(
+    saved.tasks.length,
+    2,
+    'source item identity prevents replay even after edit/delete',
+  );
   saved.tasks.push({ title: 'Legacy imported work', sourceScenarioHash: 'old-hash', points: 3 });
   await saved.save();
   await assert.rejects(
@@ -87,11 +93,62 @@ test('P2 owned atomic receipts survive concurrent replay, edit, delete and draft
     lastActiveDate: new Date('2026-01-01'),
   });
   const before = current.toObject();
-  const id = await require('../services/scenarioSprintExportService').resolveCurrentSprintId(referenceOwner);
+  const id = await require('../services/scenarioSprintExportService').resolveCurrentSprintId(
+    referenceOwner,
+  );
   assert.equal(String(id), String(current._id));
   assert.deepEqual(
     (await Sprint.findById(id)).toObject(),
     before,
     'Target lookup does not mutate inactivity, streak or display state.',
   );
+  const limited = await Sprint.create({
+    userId: owner,
+    ...currentWindow,
+    weekStartDate: currentWindow.sprintStartDate,
+    weekEndDate: currentWindow.sprintEndDate,
+  });
+  const assertUnchangedRejection = async (mode, statusCode) => {
+    const snapshot = await Sprint.findById(limited._id).lean();
+    await assert.rejects(exportScenario(owner, limited._id, scenario, mode), { statusCode });
+    assert.deepEqual(await Sprint.findById(limited._id).lean(), snapshot);
+  };
+  await Sprint.collection.updateOne(
+    { _id: limited._id },
+    {
+      $set: {
+        tasks: Array.from({ length: 500 }, (_, index) => ({
+          _id: new mongoose.Types.ObjectId(),
+          title: `Existing ${index}`,
+          points: 3,
+          isCompleted: false,
+        })),
+      },
+    },
+  );
+  await assertUnchangedRejection('active-tasks', 413);
+  await Sprint.collection.updateOne(
+    { _id: limited._id },
+    {
+      $set: {
+        aiPlans: Array.from({ length: 8 }, () => ({
+          _id: new mongoose.Types.ObjectId(),
+          tasks: [],
+        })),
+      },
+    },
+  );
+  await assertUnchangedRejection('draft', 409);
+  await Sprint.collection.updateOne(
+    { _id: limited._id },
+    {
+      $set: {
+        scenarioReceipts: Array.from({ length: 128 }, (_, index) => ({
+          key: `existing-${index}`,
+          itemKeys: [],
+        })),
+      },
+    },
+  );
+  await assertUnchangedRejection('active-tasks', 409);
 });

@@ -4,10 +4,16 @@ const { digest } = require('../utils/scenarioIdentity');
 const { buildProposal, VERSION } = require('./scenarioSprintAdapter');
 const legacyPolicy = require('./sprintLegacyPolicy');
 const fail = (statusCode, message) => Object.assign(new Error(message), { statusCode });
+const inFlightExports = new Map();
+const MAX_IN_FLIGHT_EXPORTS = 256;
 // Mutation target lookup must not execute overview analytics or inactivity writes.
 const resolveCurrentSprintId = async (userId) => {
   const now = new Date();
-  let sprint = await Sprint.findOne({ userId, sprintStartDate: { $lte: now }, sprintEndDate: { $gte: now } })
+  let sprint = await Sprint.findOne({
+    userId,
+    sprintStartDate: { $lte: now },
+    sprintEndDate: { $gte: now },
+  })
     .select('_id')
     .sort({ updatedAt: -1, _id: -1 })
     .maxTimeMS(2000)
@@ -27,15 +33,10 @@ const resolveCurrentSprintId = async (userId) => {
   if (!sprint) sprint = await require('./careerSprintService').createSprint({ userId });
   return sprint._id;
 };
-const exportScenario = async (userId, sprintId, scenario, mode = 'draft') => {
+const performExport = async (userId, sprintId, scenario, mode, { scenarioHash, key }) => {
   const owner = require('./careerSprintService');
   owner.assertObjectId(sprintId, 'Sprint');
   if (!['draft', 'active-tasks'].includes(mode)) throw fail(400, 'Unsupported export mode.');
-  const scenarioHash =
-    scenario.scenarioHash ||
-    scenario.result?.scenarioHash ||
-    digest({ skills: scenario.skills, projects: scenario.projects, durationWeeks: scenario.durationWeeks });
-  const key = digest({ scenarioHash, mode, version: VERSION });
   for (let attempt = 0; attempt < 5; attempt++) {
     const sprint = await Sprint.findOne({ _id: sprintId, userId }).maxTimeMS(2000);
     if (!sprint) throw fail(404, 'Sprint not found.');
@@ -57,9 +58,12 @@ const exportScenario = async (userId, sprintId, scenario, mode = 'draft') => {
       };
     if ((sprint.scenarioReceipts?.length || 0) >= 128)
       throw fail(409, 'Sprint export receipt limit reached. Choose another Sprint.');
-    const historicalItems = mode === 'draft' ? sprint.aiPlans.flatMap((plan) => plan.tasks) : sprint.tasks;
+    const historicalItems =
+      mode === 'draft' ? sprint.aiPlans.flatMap((plan) => plan.tasks) : sprint.tasks;
     if (
-      historicalItems.some((task) => task.sourceScenarioHash === scenarioHash && !task.sourceScenarioItemKey)
+      historicalItems.some(
+        (task) => task.sourceScenarioHash === scenarioHash && !task.sourceScenarioItemKey,
+      )
     )
       throw fail(
         409,
@@ -130,6 +134,43 @@ const exportScenario = async (userId, sprintId, scenario, mode = 'draft') => {
       if (error.name !== 'VersionError') throw error;
       if (attempt === 4) throw fail(409, 'Sprint changed. Retry the export.');
     }
+  }
+};
+
+const exportScenario = async (userId, sprintId, scenario, mode = 'draft') => {
+  const scenarioHash =
+    scenario.scenarioHash ||
+    scenario.result?.scenarioHash ||
+    digest({
+      skills: scenario.skills,
+      projects: scenario.projects,
+      durationWeeks: scenario.durationWeeks,
+    });
+  const key = digest({ scenarioHash, mode, version: VERSION });
+  const requestKey = JSON.stringify([String(userId), String(sprintId), key]);
+  const existing = inFlightExports.get(requestKey);
+  if (existing) {
+    const result = await existing;
+    return {
+      ...result,
+      replayed: true,
+      tasksAdded: 0,
+      tasksCreated: 0,
+      tasksMerged: 0,
+      tasksSkipped: result.receipt?.itemKeys?.length || 0,
+    };
+  }
+
+  const identity = { scenarioHash, key };
+  if (inFlightExports.size >= MAX_IN_FLIGHT_EXPORTS)
+    return performExport(userId, sprintId, scenario, mode, identity);
+
+  const operation = performExport(userId, sprintId, scenario, mode, identity);
+  inFlightExports.set(requestKey, operation);
+  try {
+    return await operation;
+  } finally {
+    if (inFlightExports.get(requestKey) === operation) inFlightExports.delete(requestKey);
   }
 };
 module.exports = { exportScenario, resolveCurrentSprintId };

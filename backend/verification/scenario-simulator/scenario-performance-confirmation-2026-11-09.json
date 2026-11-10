@@ -1,0 +1,794 @@
+{
+  "runId": "3ae884db-5975-4463-b790-ea614eb91e02",
+  "mode": "FOCUSED_NOT_FULL_ACCEPTANCE",
+  "startedAt": "2026-11-08T20:35:03.365Z",
+  "status": "FOCUSED_FAIL",
+  "productionDataModified": false,
+  "traceQuota": false,
+  "sources": {
+    "src/scripts/verifyScenarioP3.js": "391542db5a44c7e169f67e6153bd5a1f9b1c2000410ab6765ac91d0be043cca7",
+    "src/scripts/scenarioAcceptanceWorker.js": "ac5674cc45a716e42f327a3dc133ce9b3559cef7bc9a7afdefb794fd0b31e5c1",
+    "src/scripts/scenarioFocusedVerification.js": "fa9e20795ae84aa53a82d743c053b5a7ef9a1694b4768d2f4f35b3c3417bed2a",
+    "src/scripts/scenarioQuotaTrace.js": "3e97e069c5ecdb29e2c660e5a4973cb2eb615cfb33910c67ad8ac31a395476dd",
+    "src/scripts/scenarioRedisTrace.js": "66b941a7b8213e07eec5d99cedb41bedf6aaa627a185be17e5234343fb158786",
+    "src/services/redisCacheService.js": "8d5c0e1cb6d6f800d8b526a81178206747ebdd37b9ca1d9858fddebe4f470e0e",
+    "src/services/scenarioContextService.js": "19413c05a1b8d612c9a21779c65a279ed63ed769db1626e8a0d1d937ccb7d5a4",
+    "src/services/scenarioSimulatorService.js": "a99011fb2034e739a94f056124afdc070136d8a93a03e5d41d74c3542305ae81",
+    "src/services/scenarioSprintExportService.js": "96529021d8aa53168f65265b450a1f9cf95d54b6bce6f05caf1d69bdc4aa2c9f",
+    "src/services/scoring/scenarioPlanningScore.js": "2214de883ab3423d0bafc1ed75536fe436063dfbf3785e6c24663cd08f1b134a",
+    "src/middleware/scenarioSimulatorMiddleware.js": "ae778851802aba24caec0d9bd8c3b86a3081f0a545b1ecb6dedddb2010b9fcc0",
+    "src/middleware/authMiddleware.js": "1edb50f04654c900ef02d90ecc7e618562f4f28c1fdb6a715c001c82aa83ce2b"
+  },
+  "checks": [
+    {
+      "label": "Actual full unique user/hash index installed locally",
+      "passed": true
+    },
+    {
+      "label": "Actual compound history cursor index installed locally",
+      "passed": true
+    },
+    {
+      "label": "focused-warmup: every offered request succeeds",
+      "passed": false,
+      "details": {
+        "200": 168,
+        "201": 16,
+        "503": 16
+      }
+    },
+    {
+      "label": "focused-burst: every offered request succeeds",
+      "passed": false,
+      "details": {
+        "200": 4103,
+        "201": 375,
+        "503": 1522
+      }
+    },
+    {
+      "label": "focused-burst: original latency thresholds",
+      "passed": false,
+      "details": {
+        "context": {
+          "count": 1693,
+          "p95Ms": 3771,
+          "p99Ms": 5846,
+          "maxMs": 6700.950200000021,
+          "meanMs": 1718.045746958063
+        },
+        "evaluate": {
+          "count": 1617,
+          "p95Ms": 1884,
+          "p99Ms": 3081,
+          "maxMs": 5114.268000000011,
+          "meanMs": 882.3084239950537
+        },
+        "history": {
+          "count": 701,
+          "p95Ms": 2943,
+          "p99Ms": 6049,
+          "maxMs": 6911.530100000004,
+          "meanMs": 1377.9416118402269
+        },
+        "save": {
+          "count": 375,
+          "p95Ms": 3252,
+          "p99Ms": 6372,
+          "maxMs": 6557.470600000001,
+          "meanMs": 1368.6184157333334
+        },
+        "export": {
+          "count": 92,
+          "p95Ms": 6233,
+          "p99Ms": 8756,
+          "maxMs": 8755.636700000003,
+          "meanMs": 2248.0733576086946
+        }
+      }
+    }
+  ],
+  "phases": [
+    {
+      "label": "focused-warmup",
+      "seconds": 10,
+      "rps": 20,
+      "scheduled": 200,
+      "completed": 200,
+      "statuses": {
+        "200": 168,
+        "201": 16,
+        "503": 16
+      },
+      "errors": {
+        "Shared Scenario quota service is unavailable.": 16
+      },
+      "peakPending": 28,
+      "elapsedMs": 10310.347300000009,
+      "latency": {
+        "context": {
+          "count": 67,
+          "p95Ms": 1592,
+          "p99Ms": 1980,
+          "maxMs": 1979.5334000000003,
+          "meanMs": 884.1196313432843
+        },
+        "evaluate": {
+          "count": 67,
+          "p95Ms": 637,
+          "p99Ms": 676,
+          "maxMs": 675.5053000000044,
+          "meanMs": 248.85424328358292
+        },
+        "history": {
+          "count": 30,
+          "p95Ms": 632,
+          "p99Ms": 671,
+          "maxMs": 670.9522000000143,
+          "meanMs": 253.18910999999838
+        },
+        "save": {
+          "count": 16,
+          "p95Ms": 513,
+          "p99Ms": 513,
+          "maxMs": 512.7368000000133,
+          "meanMs": 386.4201062500024
+        },
+        "export": {
+          "count": 4,
+          "p95Ms": 943,
+          "p99Ms": 943,
+          "maxMs": 942.758600000001,
+          "meanMs": 634.120050000005
+        }
+      },
+      "diagnostics": [
+        {
+          "pid": 36700,
+          "quota": {
+            "count": 100,
+            "failures": 0,
+            "p95Ms": 311,
+            "p99Ms": 431
+          },
+          "loop": {
+            "p99Ms": 290.455551,
+            "maxMs": 553.123839
+          },
+          "cpu": {
+            "user": 5734000,
+            "system": 2921000
+          },
+          "memory": {
+            "rss": 120127488,
+            "heapTotal": 59072512,
+            "heapUsed": 40943608,
+            "external": 23520150,
+            "arrayBuffers": 19465095
+          },
+          "queue": {
+            "toSend": 0,
+            "waitingForReply": 0,
+            "total": 0
+          }
+        },
+        {
+          "pid": 17732,
+          "quota": {
+            "count": 100,
+            "failures": 0,
+            "p95Ms": 257,
+            "p99Ms": 399
+          },
+          "loop": {
+            "p99Ms": 415.760383,
+            "maxMs": 435.159039
+          },
+          "cpu": {
+            "user": 5718000,
+            "system": 2656000
+          },
+          "memory": {
+            "rss": 163323904,
+            "heapTotal": 110190592,
+            "heapUsed": 51364888,
+            "external": 23819219,
+            "arrayBuffers": 19764164
+          },
+          "queue": {
+            "toSend": 0,
+            "waitingForReply": 0,
+            "total": 0
+          }
+        }
+      ],
+      "cpuPercentOneCore": [
+        21.512369423287986,
+        22.879927623776535
+      ]
+    },
+    {
+      "label": "focused-burst",
+      "seconds": 60,
+      "rps": 100,
+      "scheduled": 6000,
+      "completed": 6000,
+      "statuses": {
+        "200": 4103,
+        "201": 375,
+        "503": 1522
+      },
+      "errors": {
+        "Shared Scenario quota service is unavailable.": 1404,
+        "Scenario context capacity reached. Retry shortly.": 118
+      },
+      "peakPending": 128,
+      "generatorBackpressure": true,
+      "elapsedMs": 62638.74859999999,
+      "latency": {
+        "context": {
+          "count": 1693,
+          "p95Ms": 3771,
+          "p99Ms": 5846,
+          "maxMs": 6700.950200000021,
+          "meanMs": 1718.045746958063
+        },
+        "evaluate": {
+          "count": 1617,
+          "p95Ms": 1884,
+          "p99Ms": 3081,
+          "maxMs": 5114.268000000011,
+          "meanMs": 882.3084239950537
+        },
+        "history": {
+          "count": 701,
+          "p95Ms": 2943,
+          "p99Ms": 6049,
+          "maxMs": 6911.530100000004,
+          "meanMs": 1377.9416118402269
+        },
+        "save": {
+          "count": 375,
+          "p95Ms": 3252,
+          "p99Ms": 6372,
+          "maxMs": 6557.470600000001,
+          "meanMs": 1368.6184157333334
+        },
+        "export": {
+          "count": 92,
+          "p95Ms": 6233,
+          "p99Ms": 8756,
+          "maxMs": 8755.636700000003,
+          "meanMs": 2248.0733576086946
+        }
+      },
+      "diagnostics": [
+        {
+          "pid": 36700,
+          "quota": {
+            "count": 3000,
+            "failures": 0,
+            "p95Ms": 674,
+            "p99Ms": 1025
+          },
+          "loop": {
+            "p99Ms": 616.038399,
+            "maxMs": 1979.711487
+          },
+          "cpu": {
+            "user": 34968000,
+            "system": 5671000
+          },
+          "memory": {
+            "rss": 296079360,
+            "heapTotal": 221863936,
+            "heapUsed": 51878728,
+            "external": 29027100,
+            "arrayBuffers": 24978388
+          },
+          "queue": {
+            "toSend": 0,
+            "waitingForReply": 0,
+            "total": 0
+          }
+        },
+        {
+          "pid": 17732,
+          "quota": {
+            "count": 3000,
+            "failures": 0,
+            "p95Ms": 492,
+            "p99Ms": 785
+          },
+          "loop": {
+            "p99Ms": 545.259519,
+            "maxMs": 3911.188479
+          },
+          "cpu": {
+            "user": 35109000,
+            "system": 6218000
+          },
+          "memory": {
+            "rss": 336166912,
+            "heapTotal": 259088384,
+            "heapUsed": 160558056,
+            "external": 45540203,
+            "arrayBuffers": 41485148
+          },
+          "queue": {
+            "toSend": 0,
+            "waitingForReply": 0,
+            "total": 0
+          }
+        }
+      ],
+      "cpuPercentOneCore": [
+        50.8614886345287,
+        52.33342097769815
+      ]
+    }
+  ],
+  "samples": [
+    {
+      "label": "focused-warmup",
+      "at": "2026-11-08T20:37:02.460Z",
+      "workers": [
+        {
+          "memoryBeforeGc": {
+            "rss": 120127488,
+            "heapTotal": 59072512,
+            "heapUsed": 40949144,
+            "external": 23520187,
+            "arrayBuffers": 19465132
+          },
+          "pid": 36700,
+          "memory": {
+            "rss": 120610816,
+            "heapTotal": 58548224,
+            "heapUsed": 36863520,
+            "external": 23520187,
+            "arrayBuffers": 19136189
+          },
+          "cpu": {
+            "user": 5859000,
+            "system": 2921000
+          },
+          "eventLoopP99Ms": 290.455551,
+          "pool": {
+            "connections": 17,
+            "peakConnections": 16,
+            "checkedOut": 0,
+            "peakCheckedOut": 16,
+            "waiting": 0,
+            "peakWaiting": 6,
+            "checkOutFailures": 0,
+            "commands": 397,
+            "commandsInFlight": 0,
+            "peakCommands": 16,
+            "waitP95Ms": 277
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 7,
+            "joiners": 0,
+            "pending": 7
+          },
+          "redisReady": true,
+          "observer": {
+            "checkoutBytes": 80004,
+            "quotaBytes": 8004,
+            "cpuProfilerActive": false
+          }
+        },
+        {
+          "memoryBeforeGc": {
+            "rss": 163323904,
+            "heapTotal": 110190592,
+            "heapUsed": 51370424,
+            "external": 23819256,
+            "arrayBuffers": 19764201
+          },
+          "pid": 17732,
+          "memory": {
+            "rss": 162373632,
+            "heapTotal": 110190592,
+            "heapUsed": 36753424,
+            "external": 23819256,
+            "arrayBuffers": 19201773
+          },
+          "cpu": {
+            "user": 5812000,
+            "system": 2671000
+          },
+          "eventLoopP99Ms": 415.760383,
+          "pool": {
+            "connections": 21,
+            "peakConnections": 20,
+            "checkedOut": 0,
+            "peakCheckedOut": 19,
+            "waiting": 0,
+            "peakWaiting": 14,
+            "checkOutFailures": 0,
+            "commands": 405,
+            "commandsInFlight": 0,
+            "peakCommands": 19,
+            "waitP95Ms": 283
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 8,
+            "joiners": 0,
+            "pending": 8
+          },
+          "redisReady": true,
+          "observer": {
+            "checkoutBytes": 80004,
+            "quotaBytes": 8004,
+            "cpuProfilerActive": false
+          }
+        }
+      ]
+    },
+    {
+      "label": "focused-burst",
+      "at": "2026-11-08T20:38:05.264Z",
+      "workers": [
+        {
+          "memoryBeforeGc": {
+            "rss": 296079360,
+            "heapTotal": 221863936,
+            "heapUsed": 51892640,
+            "external": 29027137,
+            "arrayBuffers": 24978425
+          },
+          "pid": 36700,
+          "memory": {
+            "rss": 292929536,
+            "heapTotal": 186474496,
+            "heapUsed": 38642336,
+            "external": 29027137,
+            "arrayBuffers": 22217469
+          },
+          "cpu": {
+            "user": 35046000,
+            "system": 5671000
+          },
+          "eventLoopP99Ms": 616.038399,
+          "pool": {
+            "connections": 86,
+            "peakConnections": 85,
+            "checkedOut": 0,
+            "peakCheckedOut": 84,
+            "waiting": 0,
+            "peakWaiting": 38,
+            "checkOutFailures": 0,
+            "commands": 10114,
+            "commandsInFlight": 0,
+            "peakCommands": 84,
+            "waitP95Ms": 126
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 20,
+            "joiners": 0,
+            "pending": 20
+          },
+          "redisReady": true,
+          "observer": {
+            "checkoutBytes": 80004,
+            "quotaBytes": 8004,
+            "cpuProfilerActive": false
+          }
+        },
+        {
+          "memoryBeforeGc": {
+            "rss": 336166912,
+            "heapTotal": 259088384,
+            "heapUsed": 160566240,
+            "external": 45540240,
+            "arrayBuffers": 41485185
+          },
+          "pid": 17732,
+          "memory": {
+            "rss": 320045056,
+            "heapTotal": 227106816,
+            "heapUsed": 40176976,
+            "external": 45535302,
+            "arrayBuffers": 25035085
+          },
+          "cpu": {
+            "user": 35281000,
+            "system": 6218000
+          },
+          "eventLoopP99Ms": 545.259519,
+          "pool": {
+            "connections": 59,
+            "peakConnections": 58,
+            "checkedOut": 0,
+            "peakCheckedOut": 57,
+            "waiting": 0,
+            "peakWaiting": 196,
+            "checkOutFailures": 0,
+            "commands": 8141,
+            "commandsInFlight": 0,
+            "peakCommands": 57,
+            "waitP95Ms": 1056
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 32,
+            "joiners": 6,
+            "pending": 32
+          },
+          "redisReady": true,
+          "observer": {
+            "checkoutBytes": 80004,
+            "quotaBytes": 8004,
+            "cpuProfilerActive": false
+          }
+        }
+      ]
+    }
+  ],
+  "failures": [
+    "focused-warmup: every offered request succeeds",
+    "focused-burst: every offered request succeeds",
+    "focused-burst: original latency thresholds"
+  ],
+  "limitations": [],
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32",
+    "os": "10.0.26300",
+    "logicalCpus": 8,
+    "cpu": "Intel(R) Core(TM) i5-8365U CPU @ 1.60GHz",
+    "totalMemory": 16976740352,
+    "mongoose": "9.2.4",
+    "mongodb": "7.1.0",
+    "redisClient": "4.7.1",
+    "redisInfo": [
+      "redis_version:7.0.15",
+      "redis_mode:standalone",
+      "os:Linux 6.18.54.1-microsoft-standard-WSL2 x86_64",
+      "arch_bits:64"
+    ],
+    "redisConfig": "bind 127.0.0.1\nport <ephemeral>\nprotected-mode yes\nsave \"\"\nappendonly no\nmaxmemory 64mb\nmaxmemory-policy noeviction\n",
+    "mongoBuild": {
+      "version": "8.2.2",
+      "allocator": "tcmalloc-gperf"
+    },
+    "workers": [
+      6956,
+      46112
+    ],
+    "mongoClientOptions": {
+      "serverSelectionTimeoutMS": 30000,
+      "socketTimeoutMS": 45000,
+      "maxPoolSize": 100,
+      "waitQueueTimeoutMS": 0,
+      "directConnection": true,
+      "autoIndex": false
+    }
+  },
+  "indexes": [
+    {
+      "v": 2,
+      "key": {
+        "_id": 1
+      },
+      "name": "_id_"
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1
+      },
+      "name": "userId_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "scenarioHash": 1
+      },
+      "name": "scenarioHash_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1,
+        "createdAt": -1,
+        "_id": -1
+      },
+      "name": "scenario_history_cursor"
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1,
+        "scenarioHash": 1
+      },
+      "name": "userId_1_scenarioHash_1",
+      "unique": true
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1,
+        "role": 1,
+        "experienceLevel": 1
+      },
+      "name": "userId_1_role_1_experienceLevel_1"
+    }
+  ],
+  "focused": {
+    "label": "scenario-perf-fix",
+    "transport": "direct",
+    "cpuProfiling": false,
+    "burstOnly": true,
+    "lockGate": true,
+    "skipMemory": false,
+    "longDurationAcceptance": false,
+    "profiles": [],
+    "cold": [
+      {
+        "instance": 0,
+        "operation": "context",
+        "status": 200,
+        "elapsedMs": 1008.44200000001
+      },
+      {
+        "instance": 0,
+        "operation": "export",
+        "status": 200,
+        "elapsedMs": 1438.290599999993
+      },
+      {
+        "instance": 0,
+        "operation": "evaluate",
+        "status": 200,
+        "elapsedMs": 101.78299999999581
+      },
+      {
+        "instance": 1,
+        "operation": "context",
+        "status": 200,
+        "elapsedMs": 308.8156000000017
+      },
+      {
+        "instance": 1,
+        "operation": "export",
+        "status": 200,
+        "elapsedMs": 1956.2529000000068
+      },
+      {
+        "instance": 1,
+        "operation": "evaluate",
+        "status": 200,
+        "elapsedMs": 181.80400000000373
+      }
+    ]
+  },
+  "removedTemporaryFiles": [
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\collection-005c6cb9-5a5e-424d-841d-88a274724409.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\collection-14a41b6f-c36d-4ea7-a786-9fce8233c640.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\collection-19fd6eed-f4f8-49f3-a4ea-b340795231cf.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\collection-1a1d2a5a-b998-42cc-be94-00676e811190.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\collection-1d5f2bee-8611-4277-af95-030e5bb70b2b.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\collection-23c0b0f8-aea2-4cf2-bbf6-7fd3e1acb587.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\collection-2a7656fd-1729-44eb-a56f-34efda3868a7.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\collection-35149eeb-ba92-4ba4-9c27-d28d0b634d9f.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\collection-3de6e923-0fa0-4213-b7f7-7b79be30a398.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\collection-5890384f-865c-40db-b7e6-8b61fd4c3917.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\collection-60bde9cf-133e-4c7b-83ca-a734e04b114c.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\collection-74a2b25d-07a0-4c9f-a79d-16f5203256b6.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\collection-7692231e-9ae1-45e2-99de-9da48be2015b.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\collection-8cc83f14-2039-4600-81d9-e07147489665.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\collection-8d63127d-718d-446f-9177-7104a0eba418.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\collection-8e69cfd0-57bf-4074-a8a9-2113d6e8a639.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\collection-a18f556e-fd39-450a-994e-39061c9f0604.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\collection-a41170e0-e9c1-417c-a376-0a2110aa5b16.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\collection-a74dd9d2-ad98-4112-a0b9-3ab685797dfc.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\collection-ace99a36-8e8f-4bd5-a6ce-b1761cb576fc.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\collection-ae865cb3-1deb-442b-a169-ab85ae8305c3.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\collection-af8ce904-b357-4345-bc1f-839baad4d798.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\collection-bcec9707-8520-45c9-85ab-9e977e9132db.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\collection-c5fe7959-3662-43bb-bd7e-436909459139.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\collection-ce26eb18-9ee9-4227-b658-8a437f125a12.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\collection-e6f4d393-91c5-46e1-8a28-ee1fc72bfd28.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\collection-f59d34be-1e4d-46d3-934c-a3988a94583d.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-00493e81-4cde-4dca-a643-f45b61de03e4.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-006ef572-ec71-4dbe-8ea8-2e11265bb635.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-01016854-748c-4a36-947d-8a9fac3e294b.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-04594ee2-cb8b-4b4a-8fb0-30298475da43.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-166a905e-071d-4131-a53b-845a7004ecb9.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-1dbcc72d-9fba-4b47-b297-68fff2af375a.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-2d847ca2-961e-4088-909a-98f6ad8a1882.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-31c1bb6f-bdb2-4355-9944-ed36b0e54b24.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-37e849ab-dc01-438a-9e3d-33e6a44407fe.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-3911b4a2-f12c-4f3e-a808-aab727de144d.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-39f30bef-961e-48da-8139-1503a2456b47.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-4e723cd1-1497-44d9-b96f-71ee9a017238.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-54e393c4-c759-4a58-926e-1080aece3cc7.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-55fa6194-c99b-44f9-9e98-dbeedf3129b3.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-5b02e712-9ec2-4cfe-942b-160d431d65b8.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-5ffadef4-00c3-48f3-a5aa-94cd975a85ef.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-60d92d63-2c94-4f4e-98cf-54469973f845.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-61a815a0-3c70-45f8-844c-e86d7178fbc6.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-64fd7954-b89e-4b7d-97e7-aaf570193e2b.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-6a38d2d7-593d-4a0a-b2ec-e6df27fe4f27.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-713df93d-0278-4c41-9d5b-3489e3743bd4.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-7db68d8e-796a-45c8-9968-2073cf2d23a2.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-80ab6f2f-6704-4033-a485-198efeec3ead.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-82d08d18-04d3-4293-9580-4d789d935971.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-85991721-5e59-49de-b9a8-8bf0b78273df.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-90876d9a-afe3-45b6-a901-cab075913f21.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-93822e67-a374-48a0-ae4f-d53948343edf.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-95f0105f-dc1f-4bb3-8ecf-3e57ed2b1b2b.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-9a62e28d-b4de-4795-a66b-3efd7f4aad73.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-a05fd1b6-83b5-473f-a013-8d3900e242be.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-a775fc38-606e-4941-a886-b6b2fa2a8d11.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-ac501579-d9b0-4fa2-b572-0d0a2358b2af.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-ad9d0c03-8b62-463c-8869-ab83682ef1fa.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-ae79ad83-f924-4e92-8a0c-3897207b0a85.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-b30dc17f-4eac-4181-8550-6ba812ae9bee.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-bcd388e5-c44c-47c4-9eb9-493b3bb6caf8.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-bf97b1b1-54fe-4634-a9f4-ac0d6b08056d.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-cc525ec0-a34f-4c13-9af0-55368da49c8d.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-cfc49114-6a59-4767-8085-3652995e26c7.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-d772c1c3-4a84-4db1-aeac-acccce85d47e.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-d8d51511-246c-44b2-992d-10e553937ebb.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-dabc7e3c-8eaf-410e-8922-08c5d5c3080f.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-dbf91e56-e9c3-4f1c-b335-fd63832d9516.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-dcd11e66-5f95-49b0-af62-560ed40d7da0.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-dd36c51c-4055-4150-96c7-5bf4aa7d5ba0.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-dd657334-586d-44fd-ae13-1407eb7e6356.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-decc98a8-cc41-45b4-8695-167e27643bf2.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-df3be738-dee5-48f7-927e-5fb5e7db24bc.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-e19ce328-6192-458e-a706-af96289412bf.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-f1d15b55-cdcd-41c8-a9ea-0ee65c9d2c3c.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-f21c479d-dba3-42cb-8b65-3de75ccabe03.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-f555cecb-9505-4834-8e49-8fcc29bdf237.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-f60af525-dbdd-4c7e-b829-ebb0efad9725.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-f7fbe5f1-a6d5-49bc-ac56-da4d3618725e.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-f8566980-47b8-4af0-bb58-c643365615fb.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\index-fc1d0d53-4b0c-4976-ab68-c57f07bd1203.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\mongod.lock",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\sizeStorer.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\storage.bson",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\WiredTiger",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\WiredTiger.lock",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\WiredTiger.turtle",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\WiredTiger.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\WiredTigerHS.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\_mdb_catalog.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\journal\\WiredTigerLog.0000000001",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\journal\\WiredTigerPreplog.0000000001",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\diagnostic.data\\metrics.2026-11-08T20-35-08Z-00000",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\diagnostic.data\\metrics.interim"
+  ],
+  "finishedAt": "2026-11-08T20:38:10.632Z",
+  "runtimeDirectory": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0",
+  "cleanup": {
+    "workersStopped": true,
+    "mongoStopped": true,
+    "redisShutdownRequested": true,
+    "redisProcessExitCode": 0,
+    "recursiveDeletion": false
+  }
+}

@@ -1,0 +1,267 @@
+{
+  "branch": "release1",
+  "head": "5c23163f7631848361c7986a24acc52cbf394b80",
+  "target": "Not applicable",
+  "changedSourcesAndReport": [
+    {
+      "path": "backend/.env.example",
+      "sha256": "88D532F6CE33EA4870DAF8A6BC278C45D678CC99E8EAD975BFABCC15D4F6347A"
+    },
+    {
+      "path": "backend/src/scripts/migrateScenarioSimulationUniqueIndex.js",
+      "sha256": "4D3D3EB40F81FF5BA3A191052FE5F312D2685200C047EB411F819C69F1BFBCC6"
+    },
+    {
+      "path": "backend/src/scripts/verifyScenarioProduction.cjs",
+      "sha256": "E4EB97E997398DCF6F51EF444EFC79B6E25854EF8679DDE83EFFA320A371D534"
+    },
+    {
+      "path": "backend/src/scripts/verifyScenarioP3.js",
+      "sha256": "391542DB5A44C7E169F67E6153BD5A1F9B1C2000410AB6765AC91D0BE043CCA7"
+    },
+    {
+      "path": "backend/src/tests/fixtures/scenarioMongo.js",
+      "sha256": "67B1FB7A686F54FC58574BE5C9356DCBCC8EB4980D3F24CEF53A08A8FFD6C44E"
+    },
+    {
+      "path": "backend/src/tests/scenarioSprintExport.test.js",
+      "sha256": "AC7D503C6843AE9FCA23F784397C0A1E2E68A3B751ABB8F8C7FBE7ACF50159AF"
+    },
+    {
+      "path": "backend/src/tests/scenarioMigration.integration.test.js",
+      "sha256": "01BB79D8708A3C3599F3E12A45C6F7F1A8353DE2440C70AF98E346EA5D548B63"
+    },
+    {
+      "path": "backend/src/tests/scenarioProductionContracts.test.js",
+      "sha256": "1872A7385C41B94029A3AB3AB4EA510A144F1CD6C3DACD2FB86B348FAB9B2418"
+    },
+    {
+      "path": "frontend/src/app/pages/scenario-simulator/scenario-simulator.component.ts",
+      "sha256": "B35EE987E411436DD5C29D10DC84F9002B1B8F93BA9A7A0547CD1FB14A491139"
+    },
+    {
+      "path": "frontend/src/app/pages/scenario-simulator/scenario-simulator.component.spec.ts",
+      "sha256": "DF0D00264D9C42D0C53CBE28EABD36210DB60D0FCC011765C20324B008361B9A"
+    },
+    {
+      "path": "frontend/src/app/pages/scenario-simulator/components/scenario-context/scenario-context.component.html",
+      "sha256": "6C8E3261DE96940DF2EC1A51E7D78DACFD42606AA66FE721C73B42E5A055434E"
+    },
+    {
+      "path": "frontend/scripts/scenario-vitest.config.mjs",
+      "sha256": "F18E8B06A5F6F0C6CAD18CDD9ECA325A42ABEF39E972441ADCB4EE995B4BDE79"
+    },
+    {
+      "path": "frontend/scripts/verify-scenario-decomposition-ui.cjs",
+      "sha256": "0B0A92244254BDD68790902BA103CEBE943B798E593120A64FCED38A57C81D5D"
+    },
+    {
+      "path": "backend/verification/scenario-simulator/SCENARIO-SIMULATOR-PRODUCTION-FINAL.md",
+      "sha256": "AAB7C938A252BC1BBA4BAD27068DF29B49FFAD3814E94419064706780F2CE677"
+    }
+  ],
+  "frozenPaths": [
+    {
+      "path": "backend/src/services/scoring/scenarioPlanningScore.js",
+      "sha256": "2214DE883AB3423D0BAFC1ED75536FE436063DFBF3785E6C24663CD08F1B134A"
+    },
+    {
+      "path": "backend/src/services/scoring/scenarioPlanningLegacy.js",
+      "sha256": "85379CC7ACF91E1DE0EE37405BF15EC80DDB1E042A665637BE0D6FD4AEEE5EAC"
+    },
+    {
+      "path": "backend/src/services/scoring/scenarioPlanningRules.js",
+      "sha256": "0EEE5396C33A04F579AA24E562B7275D2DC7F72F418D6B979421F64683CDB591"
+    },
+    {
+      "path": "backend/src/services/scenarioContextService.js",
+      "sha256": "19413C05A1B8D612C9A21779C65A279ED63ED769DB1626E8A0D1D937CCB7D5A4"
+    },
+    {
+      "path": "backend/src/services/scenarioSimulatorService.js",
+      "sha256": "6F1F9BE4BCD7FB9C6875AC6B950A6B31DBF9C36E3B57EF37060346D458EA647A"
+    },
+    {
+      "path": "backend/src/services/scenarioSprintAdapter.js",
+      "sha256": "B667B0307D525B22033EDB4A027A9B1A46657A0B2031354AE9723E471749C8EE"
+    },
+    {
+      "path": "backend/src/services/scenarioSprintExportService.js",
+      "sha256": "96529021D8AA53168F65265B450A1F9CF95D54B6BCE6F05CAF1D69BDC4AA2C9F"
+    },
+    {
+      "path": "backend/src/services/redisCacheService.js",
+      "sha256": "0377ACA09FE53880BAE8B86586DCEBE7D404955C92D1F08A6D19B5FBE28A2509"
+    },
+    {
+      "path": "backend/src/models/scenarioSimulation.js",
+      "sha256": "6F33AF082E7A8C23446F28DF42AA888BD9D810BC7E0525E701ACE7FA1EBD5C9C"
+    },
+    {
+      "path": "backend/src/models/careerSprint.js",
+      "sha256": "8A333033B1F162A4AF2035DA801F8381CDF51B261F4B277EB945CE7F7A604F22"
+    },
+    {
+      "path": "backend/src/routes/scenarioSimulator.routes.js",
+      "sha256": "92307B51653A1CB9D114D528746CE9900AE17652BC8D041816DBB2E0BC48A8F8"
+    },
+    {
+      "path": "backend/src/controllers/scenarioSimulatorController.js",
+      "sha256": "AC30392DBFCB43B143B23DCC5BC8FA67832D301C68B6942666C0DD5D5AB527BC"
+    },
+    {
+      "path": "backend/src/middleware/scenarioSimulatorMiddleware.js",
+      "sha256": "21FA9CB11EEF98ED863458D3E0DEF1ED318F8155163410A54BB17920D95F0B2B"
+    },
+    {
+      "path": "frontend/src/app/shared/services/scenario-simulator.service.ts",
+      "sha256": "6E62ABD69637854B54D3F017C8503B590FB206DF6D77A2C5C7D2EDF1C588BB4D"
+    },
+    {
+      "path": "frontend/src/app/shared/services/api.service.ts",
+      "sha256": "1D52F273BFB65F234CC1617D9800D93C74145D56A48CBBE3419ABF6E499E63CA"
+    },
+    {
+      "path": "frontend/src/app/shared/models/scenario-simulator.model.ts",
+      "sha256": "18406717246D47486F898A3EF530BAEA68DC855D67DB0CDDFF3984BD67C799E1"
+    }
+  ],
+  "stagedFingerprint": "ae0192fb4df55ac0f524e6474ced612aa5ba59c1",
+  "stagedPaths": [
+    "backend/verification/scenario-simulator/production-final-2026-11-09-smoke-recovery.json",
+    "backend/verification/scenario-simulator/production-final-2026-11-09-smoke.json",
+    "backend/verification/scenario-simulator/production-finalization-2026-11-09/browser-final-results.json"
+  ],
+  "status": [
+    " M backend/.env.example",
+    " M backend/src/scripts/migrateScenarioSimulationUniqueIndex.js",
+    " M backend/src/scripts/verifyScenarioP3.js",
+    " M backend/src/tests/fixtures/scenarioMongo.js",
+    " M backend/src/tests/scenarioSprintExport.test.js",
+    "A  backend/verification/scenario-simulator/production-final-2026-11-09-smoke-recovery.json",
+    "A  backend/verification/scenario-simulator/production-final-2026-11-09-smoke.json",
+    "A  backend/verification/scenario-simulator/production-finalization-2026-11-09/browser-final-results.json",
+    " M frontend/scripts/verify-scenario-decomposition-ui.cjs",
+    " M frontend/src/app/pages/scenario-simulator/components/scenario-context/scenario-context.component.html",
+    " M frontend/src/app/pages/scenario-simulator/scenario-simulator.component.spec.ts",
+    " M frontend/src/app/pages/scenario-simulator/scenario-simulator.component.ts",
+    "?? backend/src/scripts/verifyScenarioProduction.cjs",
+    "?? backend/src/tests/scenarioMigration.integration.test.js",
+    "?? backend/src/tests/scenarioProductionContracts.test.js",
+    "?? backend/verification/scenario-simulator/SCENARIO-SIMULATOR-PRODUCTION-FINAL.md",
+    "?? backend/verification/scenario-simulator/production-final-2026-11-09-focused.json",
+    "?? backend/verification/scenario-simulator/production-final-2026-11-09-profile.json",
+    "?? backend/verification/scenario-simulator/production-finalization-2026-11-09/browser-final.log",
+    "?? backend/verification/scenario-simulator/production-finalization-2026-11-09/browser-verified-results.json",
+    "?? backend/verification/scenario-simulator/production-finalization-2026-11-09/browser-verified.log",
+    "?? backend/verification/scenario-simulator/production-finalization-2026-11-09/cleanup-results.json",
+    "?? backend/verification/scenario-simulator/production-finalization-2026-11-09/environment-audit-final.json",
+    "?? backend/verification/scenario-simulator/production-finalization-2026-11-09/environment-audit.json",
+    "?? backend/verification/scenario-simulator/production-finalization-2026-11-09/finalization-concurrent-index-results.json",
+    "?? backend/verification/scenario-simulator/production-finalization-2026-11-09/finalization-initial-results.json",
+    "?? backend/verification/scenario-simulator/production-finalization-2026-11-09/finalization-initial.log",
+    "?? backend/verification/scenario-simulator/production-finalization-2026-11-09/finalization-results.json",
+    "?? backend/verification/scenario-simulator/production-finalization-2026-11-09/finalization.log",
+    "?? backend/verification/scenario-simulator/production-finalization-2026-11-09/retained-diagnostics/",
+    "?? backend/verification/scenario-simulator/production-finalization-2026-11-09/run-2026-11-08T19-11-45-751Z/",
+    "?? backend/verification/scenario-simulator/production-finalization-2026-11-09/run-2026-11-08T19-13-37-937Z/",
+    "?? backend/verification/scenario-simulator/production-finalization-2026-11-09/run-2026-11-08T19-14-23-285Z/",
+    "?? backend/verification/scenario-simulator/production-finalization-2026-11-09/run-2026-11-08T19-18-07-632Z/",
+    "?? backend/verification/scenario-simulator/production-finalization-2026-11-09/run-2026-11-08T19-19-44-925Z/",
+    "?? backend/verification/scenario-simulator/production-finalization-2026-11-09/run-2026-11-08T19-19-59-589Z/",
+    "?? backend/verification/scenario-simulator/production-finalization-2026-11-09/run-2026-11-08T19-22-58-340Z/",
+    "?? backend/verification/scenario-simulator/production-finalization-2026-11-09/run-2026-11-08T19-26-12-233Z/",
+    "?? backend/verification/scenario-simulator/production-finalization-2026-11-09/sprint-limits-results.json",
+    "?? backend/verification/scenario-simulator/production-finalization-2026-11-09/sprint-limits.log",
+    "?? frontend/scripts/scenario-vitest.config.mjs",
+    "?? frontend/verification/scenario-simulator/production-finalization-2026-11-09/"
+  ],
+  "evidenceFiles": [
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\browser-final-results.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\browser-final.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\browser-verified-results.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\browser-verified.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\cleanup-results.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\environment-audit-final.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\environment-audit.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\finalization-concurrent-index-results.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\finalization-initial-results.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\finalization-initial.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\finalization-results.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\finalization.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\sprint-limits-results.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\sprint-limits.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\retained-diagnostics\\browser-temporary-cv_debug.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-11-45-751Z\\backend-focused.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-11-45-751Z\\mongo-and-workers.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-11-45-751Z\\results.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-13-37-937Z\\mongo-and-workers.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-13-37-937Z\\results.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-14-23-285Z\\results.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-14-23-285Z\\two-worker-burst.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-18-07-632Z\\results.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-18-07-632Z\\two-worker-burst.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-44-925Z\\angular-focused.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-44-925Z\\results.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-44-925Z\\retained-diagnostics\\npm-cache-2026-11-08T19_19_45_260Z-debug-0.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\http-redis-fault-contracts.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\results.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-22-58-340Z\\angular-focused.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-22-58-340Z\\browser.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-22-58-340Z\\production-build.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-22-58-340Z\\results.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-22-58-340Z\\typescript.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-22-58-340Z\\retained-diagnostics\\npm-cache-2026-11-08T19_22_58_711Z-debug-0.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-22-58-340Z\\retained-diagnostics\\npm-cache-2026-11-08T19_24_06_325Z-debug-0.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-26-12-233Z\\http-redis-fault-contracts.log",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-26-12-233Z\\results.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\file-inventory.json"
+  ],
+  "browserEvidenceFiles": [
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-recovery-20261109-1440-light-breakdown.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-recovery-20261109-1440-light-comparison.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-recovery-20261109-1440-light-draft.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-recovery-20261109-1440-light-result.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-recovery-20261109-1440-light-roadmap.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-recovery-20261109-loading-recovered-error-empty.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-1440-dark-breakdown.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-1440-dark-comparison.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-1440-dark-draft.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-1440-dark-result.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-1440-dark-roadmap.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-1440-light-breakdown.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-1440-light-comparison.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-1440-light-draft.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-1440-light-result.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-1440-light-roadmap.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-1440-system-breakdown.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-1440-system-comparison.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-1440-system-draft.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-1440-system-result.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-1440-system-roadmap.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-375-dark-breakdown.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-375-dark-comparison.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-375-dark-draft.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-375-dark-result.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-375-dark-roadmap.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-375-light-breakdown.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-375-light-comparison.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-375-light-draft.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-375-light-result.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-375-light-roadmap.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-375-system-breakdown.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-375-system-comparison.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-375-system-draft.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-375-system-result.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-375-system-roadmap.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-loading-recovered-error-empty.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109-partial-healthy-sources-retained.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\production-final-verified-20261109.json"
+  ],
+  "rootEvidenceFiles": [
+    "backend/verification/scenario-simulator/production-final-2026-11-09-focused.json",
+    "backend/verification/scenario-simulator/production-final-2026-11-09-profile.json",
+    "backend/verification/scenario-simulator/production-final-2026-11-09-smoke.json",
+    "backend/verification/scenario-simulator/production-final-2026-11-09-smoke-recovery.json"
+  ]
+}

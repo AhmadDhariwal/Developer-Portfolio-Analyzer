@@ -1,0 +1,12 @@
+[
+  {
+    "process": "node.exe",
+    "command": "verifyScenarioP3.js",
+    "stopped": true
+  },
+  {
+    "process": "node.exe",
+    "command": "scenarioAcceptanceWorker.js",
+    "stopped": true
+  }
+]

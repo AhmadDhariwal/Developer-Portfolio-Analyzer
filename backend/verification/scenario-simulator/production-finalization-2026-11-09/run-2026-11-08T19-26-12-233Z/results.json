@@ -1,0 +1,14 @@
+[
+  {
+    "label": "http-redis-fault-contracts",
+    "command": [
+      "node",
+      "backend/src/scripts/verifyScenarioP3.js",
+      "--smoke",
+      "--evidence-name=production-final-2026-11-09-smoke-recovery.json"
+    ],
+    "cwd": "D:\\Developer-Portfolio-Analyzer",
+    "exitCode": 1,
+    "milliseconds": 93243
+  }
+]

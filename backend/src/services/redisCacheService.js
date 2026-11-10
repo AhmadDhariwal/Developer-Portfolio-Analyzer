@@ -51,7 +51,7 @@ const getRedisUrl = () => {
   if (!host) return '';
   const requestedPort = Number.parseInt(
     process.env.UPSTASH_REDIS_PORT || String(UPSTASH_DEFAULT_PORT),
-    10
+    10,
   );
   const port =
     Number.isInteger(requestedPort) && requestedPort > 0 && requestedPort <= 65535
@@ -66,9 +66,13 @@ const runWithCommandTimeout = async (operation, commandTimeoutMs = REDIS_COMMAND
     return await Promise.race([
       Promise.resolve().then(operation),
       new Promise((_, reject) => {
-        timeout = setTimeout(() => reject(new Error('Redis command timed out.')), commandTimeoutMs);
+        timeout = setTimeout(() => {
+          const error = new Error('Redis command timed out.');
+          error.code = 'REDIS_COMMAND_TIMEOUT';
+          reject(error);
+        }, commandTimeoutMs);
         timeout.unref?.();
-      })
+      }),
     ]);
   } finally {
     if (timeout) clearTimeout(timeout);
@@ -91,12 +95,12 @@ const createCommandProxy = (redisClient, commandTimeoutMs = REDIS_COMMAND_TIMEOU
             return: () =>
               typeof iterator.return === 'function'
                 ? iterator.return()
-                : Promise.resolve({ done: true })
+                : Promise.resolve({ done: true }),
           };
         };
       }
       return (...args) => runWithCommandTimeout(() => value.apply(target, args), commandTimeoutMs);
-    }
+    },
   });
 
 const scheduleReconnect = () => {
@@ -142,8 +146,8 @@ const initRedisCache = async ({ silent = false, probeOnly = false } = {}) => {
         reconnectStrategy: (retries) => {
           if (closing || retries >= 2) return false;
           return Math.min(500, 150 * (retries + 1));
-        }
-      }
+        },
+      },
     });
   } catch (error) {
     if (!silent)
@@ -207,7 +211,7 @@ const getCacheJsonWithMeta = async (key) => {
     const [raw, remainingMs] = isInterviewKey(key)
       ? await redis.eval(
           "local value = redis.call('GET', KEYS[1]); if not value then return {false, -2} end; return {value, redis.call('PTTL', KEYS[1])}",
-          { keys: [key], arguments: [] }
+          { keys: [key], arguments: [] },
         )
       : [await redis.get(key), CACHE_TTL_SECONDS * 1000];
     const redisMs = nowMs() - redisStartedAt;
@@ -218,7 +222,7 @@ const getCacheJsonWithMeta = async (key) => {
     // replacement value's longer TTL during a concurrent write.
     const ttlMs = Math.min(
       Number(remainingMs),
-      (isInterviewKey(key) ? INTERVIEW_MEMORY_TTL_SECONDS : CACHE_TTL_SECONDS) * 1000
+      (isInterviewKey(key) ? INTERVIEW_MEMORY_TTL_SECONDS : CACHE_TTL_SECONDS) * 1000,
     );
     if (ttlMs > 0)
       setMemoryCacheJson(key, value, Math.max(0, readStartedAt + ttlMs - Date.now()) / 1000);
@@ -236,11 +240,14 @@ const isRedisCacheEnabled = () => Boolean(redisEnabled && client?.isReady);
 // longer deadline for cross-region Upstash RTT without changing locked modules.
 const getRedisCacheClient = ({ commandTimeoutMs } = {}) => {
   if (!isRedisCacheEnabled()) return null;
-  return Number.isInteger(commandTimeoutMs) &&
-    commandTimeoutMs >= REDIS_COMMAND_TIMEOUT_MS &&
-    commandTimeoutMs <= 1500
-    ? createCommandProxy(client, commandTimeoutMs)
-    : clientProxy;
+  if (
+    !Number.isInteger(commandTimeoutMs) ||
+    commandTimeoutMs === REDIS_COMMAND_TIMEOUT_MS ||
+    commandTimeoutMs < REDIS_COMMAND_TIMEOUT_MS ||
+    commandTimeoutMs > 1500
+  )
+    return clientProxy;
+  return createCommandProxy(client, commandTimeoutMs);
 };
 
 const pingRedisCache = async () => {
@@ -339,7 +346,7 @@ const releaseCacheLock = async (key, token) => {
 const resolveInterviewCacheKey = async (key, topicKey) => {
   const names = [
     'interview:revision:global',
-    `interview:revision:topic=${encodeURIComponent(topicKey)}`
+    `interview:revision:topic=${encodeURIComponent(topicKey)}`,
   ];
   const redis = getRedisCacheClient();
   if (redis) {
@@ -414,5 +421,5 @@ module.exports = {
   acquireCacheLock,
   releaseCacheLock,
   invalidateInterviewPrepCache,
-  resolveInterviewCacheKey
+  resolveInterviewCacheKey,
 };

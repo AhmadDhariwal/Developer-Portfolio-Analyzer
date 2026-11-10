@@ -87,3 +87,34 @@ test('production shared quota outage fails closed rather than multiplying local 
   assert.equal(res.code, 503);
   assert.equal(res.headers['Retry-After'], '2');
 });
+
+test('shared quota timeout remains fail-closed and records its bounded cause', async (t) => {
+  const nodeEnv = process.env.NODE_ENV;
+  const mode = process.env.SCENARIO_LIMIT_MODE;
+  t.after(() => {
+    if (nodeEnv === undefined) delete process.env.NODE_ENV;
+    else process.env.NODE_ENV = nodeEnv;
+    if (mode === undefined) delete process.env.SCENARIO_LIMIT_MODE;
+    else process.env.SCENARIO_LIMIT_MODE = mode;
+  });
+  process.env.NODE_ENV = 'production';
+  delete process.env.SCENARIO_LIMIT_MODE;
+  t.mock.method(cache, 'getRedisCacheClient', () => ({
+    eval: async () => {
+      const error = new Error('Redis command timed out.');
+      error.code = 'REDIS_COMMAND_TIMEOUT';
+      throw error;
+    },
+  }));
+  const telemetry = require('../services/scenarioTelemetryService');
+  const events = [];
+  t.mock.method(telemetry, 'event', (...args) => events.push(args));
+  const res = response();
+  await limits.evaluate({ user: { _id: 'fixture' } }, res, () => assert.fail('must fail closed'));
+  assert.equal(res.code, 503);
+  assert.equal(res.body.message, 'Shared Scenario quota service is unavailable.');
+  assert.deepEqual(events, [
+    ['quota', 'shared-unavailable'],
+    ['quota', 'shared-timeout'],
+  ]);
+});

@@ -1,0 +1,48 @@
+{
+  "runId": "fcc461e6-4352-4b46-af72-8d78110346e1",
+  "mode": "FOCUSED_NOT_FULL_ACCEPTANCE",
+  "startedAt": "2026-11-09T04:44:01.098Z",
+  "status": "FAIL",
+  "productionDataModified": false,
+  "traceQuota": true,
+  "sources": {
+    "src/scripts/verifyScenarioP3.js": "391542db5a44c7e169f67e6153bd5a1f9b1c2000410ab6765ac91d0be043cca7",
+    "src/scripts/scenarioAcceptanceWorker.js": "06edef4f3aecda85e3547cb1d2b6944e30906569ea6e6a6e2c029e19438dfd6e",
+    "src/scripts/scenarioFocusedVerification.js": "fa9e20795ae84aa53a82d743c053b5a7ef9a1694b4768d2f4f35b3c3417bed2a",
+    "src/scripts/scenarioQuotaTrace.js": "90683c448a8695d91cd2eb9315d0ea5f2c0fe1802508eeac9100bac1c12bb40a",
+    "src/scripts/scenarioRedisTrace.js": "66b941a7b8213e07eec5d99cedb41bedf6aaa627a185be17e5234343fb158786",
+    "src/services/redisCacheService.js": "8d5c0e1cb6d6f800d8b526a81178206747ebdd37b9ca1d9858fddebe4f470e0e",
+    "src/services/scenarioContextService.js": "19413c05a1b8d612c9a21779c65a279ed63ed769db1626e8a0d1d937ccb7d5a4",
+    "src/services/scenarioSimulatorService.js": "a99011fb2034e739a94f056124afdc070136d8a93a03e5d41d74c3542305ae81",
+    "src/services/scenarioSprintExportService.js": "96529021d8aa53168f65265b450a1f9cf95d54b6bce6f05caf1d69bdc4aa2c9f",
+    "src/services/scoring/scenarioPlanningScore.js": "2214de883ab3423d0bafc1ed75536fe436063dfbf3785e6c24663cd08f1b134a",
+    "src/middleware/scenarioSimulatorMiddleware.js": "ae778851802aba24caec0d9bd8c3b86a3081f0a545b1ecb6dedddb2010b9fcc0",
+    "src/middleware/authMiddleware.js": "1edb50f04654c900ef02d90ecc7e618562f4f28c1fdb6a715c001c82aa83ce2b"
+  },
+  "checks": [],
+  "phases": [],
+  "samples": [],
+  "failures": [
+    "Error: Disposable Mongo startup timed out.\n    at startMongo (D:\\Developer-Portfolio-Analyzer\\backend\\src\\scripts\\verifyScenarioP3.js:181:9)\n    at async main (D:\\Developer-Portfolio-Analyzer\\backend\\src\\scripts\\verifyScenarioP3.js:461:11)"
+  ],
+  "limitations": [],
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32",
+    "os": "10.0.26300",
+    "logicalCpus": 8,
+    "cpu": "Intel(R) Core(TM) i5-8365U CPU @ 1.60GHz",
+    "totalMemory": 16976740352,
+    "mongoose": "9.2.4",
+    "mongodb": "7.1.0",
+    "redisClient": "4.7.1"
+  },
+  "removedTemporaryFiles": [],
+  "finishedAt": "2026-11-09T04:44:43.348Z",
+  "cleanup": {
+    "workersStopped": true,
+    "mongoStopped": true,
+    "redisShutdownRequested": true,
+    "recursiveDeletion": false
+  }
+}

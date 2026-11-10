@@ -26,17 +26,26 @@ const limiter = (operation, maximum) => {
             arguments: ['60000'],
           }),
         );
-        if (!Number.isInteger(count) || count < 1) throw new Error('Shared quota counter unavailable.');
+        if (!Number.isInteger(count) || count < 1)
+          throw new Error('Shared quota counter unavailable.');
         if (count > maximum) {
           res.set('Retry-After', '60');
           return res.status(429).json({ message: 'Scenario request quota exceeded.' });
         }
         return next();
-      } catch {
-        require('../services/scenarioTelemetryService').event('quota', 'shared-unavailable');
+      } catch (error) {
+        const telemetry = require('../services/scenarioTelemetryService');
+        telemetry.event('quota', 'shared-unavailable');
+        telemetry.event(
+          'quota',
+          error?.code === 'REDIS_COMMAND_TIMEOUT' ? 'shared-timeout' : 'shared-command-error',
+        );
       }
     }
-    if (process.env.NODE_ENV === 'production' && process.env.SCENARIO_LIMIT_MODE !== 'single-instance') {
+    if (
+      process.env.NODE_ENV === 'production' &&
+      process.env.SCENARIO_LIMIT_MODE !== 'single-instance'
+    ) {
       res.set('Retry-After', '2');
       return res.status(503).json({ message: 'Shared Scenario quota service is unavailable.' });
     }

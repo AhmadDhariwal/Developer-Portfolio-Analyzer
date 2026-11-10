@@ -1,0 +1,18 @@
+[
+  {
+    "label": "two-worker-burst",
+    "command": [
+      "node",
+      "backend/src/scripts/verifyScenarioP3.js",
+      "--focused",
+      "--transport=direct",
+      "--profile",
+      "--burst-only",
+      "--label=production-final-profile",
+      "--evidence-name=production-final-2026-11-09-profile.json"
+    ],
+    "cwd": "D:\\Developer-Portfolio-Analyzer",
+    "exitCode": 0,
+    "milliseconds": 50563
+  }
+]
