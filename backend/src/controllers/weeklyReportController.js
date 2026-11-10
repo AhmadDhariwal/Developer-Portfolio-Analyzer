@@ -4,14 +4,14 @@ const {
   generateWeeklyReport,
   wasWeeklyReportSmartSkipped,
   sendWeeklyReportEmail,
-  updateWeeklyReportEmailStatus
+  updateWeeklyReportEmailStatus,
 } = require('../services/weeklyReportService');
 
 const parseForceRefresh = (value) =>
   ['true', '1', 'yes'].includes(
     String(value || '')
       .trim()
-      .toLowerCase()
+      .toLowerCase(),
   );
 
 // POST /api/weekly-reports/generate
@@ -32,7 +32,7 @@ const generateReport = async (req, res) => {
           status: 'skipped',
           error: user?.email
             ? 'Weekly report email notifications are disabled.'
-            : 'No user email is configured.'
+            : 'No user email is configured.',
         });
       }
     } catch (emailError) {
@@ -44,7 +44,10 @@ const generateReport = async (req, res) => {
     res.json(resolved);
   } catch (error) {
     console.error('Weekly report generate error:', error.message);
-    res.status(500).json({ message: 'Failed to generate weekly report.' });
+    if (error.status === 503) res.set('Retry-After', '5');
+    res
+      .status(error.status === 503 ? 503 : 500)
+      .json({ message: 'Failed to generate weekly report.' });
   }
 };
 
@@ -81,5 +84,5 @@ const getReportHistory = async (req, res) => {
 module.exports = {
   generateReport,
   getLatestReport,
-  getReportHistory
+  getReportHistory,
 };

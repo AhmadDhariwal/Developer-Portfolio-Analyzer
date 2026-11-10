@@ -6,64 +6,64 @@ const weeklyReportSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-      index: true
+      index: true,
     },
     weekStartDate: {
       type: Date,
-      required: true
+      required: true,
     },
     weekEndDate: {
       type: Date,
-      required: true
+      required: true,
     },
     score: {
       type: Number,
-      required: true
+      required: true,
     },
     progressSummary: {
       type: String,
-      required: true
+      required: true,
     },
     insights: [{ type: String }],
     recommendations: [{ type: String }],
     topAchievements: [{ type: String }],
     biggestRiskArea: {
       type: String,
-      default: ''
+      default: '',
     },
     predictedHiringReadiness: {
       score: { type: Number, default: 0 },
-      reason: { type: String, default: '' }
+      reason: { type: String, default: '' },
     },
     emailStatus: {
       type: String,
       enum: ['sent', 'skipped', 'failed'],
-      default: 'skipped'
+      default: 'skipped',
     },
     emailDelivery: {
       status: {
         type: String,
         enum: ['pending', 'processing', 'retrying', 'sent', 'failed', 'uncertain', 'skipped'],
-        default: 'pending'
+        default: 'pending',
       },
       contentHash: String,
       pendingContentHash: String,
       leaseId: String,
       leaseUntil: Date,
       attempts: { type: Number, default: 0 },
-      nextAttemptAt: { type: Date, default: Date.now }
+      nextAttemptAt: { type: Date, default: Date.now },
     },
     emailedAt: {
       type: Date,
-      default: null
+      default: null,
     },
     emailError: {
       type: String,
-      default: ''
+      default: '',
     },
     reportText: {
       type: String,
-      required: true
+      required: true,
     },
     meta: {
       githubScore: { type: Number, default: 0 },
@@ -75,7 +75,7 @@ const weeklyReportSchema = new mongoose.Schema(
         commits: { type: Number, default: 0 },
         weeklyCommitSignal: { type: Number, default: 0 },
         stars: { type: Number, default: 0 },
-        forks: { type: Number, default: 0 }
+        forks: { type: Number, default: 0 },
       },
       sprint: {
         tasksCompleted: { type: Number, default: 0 },
@@ -84,11 +84,11 @@ const weeklyReportSchema = new mongoose.Schema(
         tasksOverdue: { type: Number, min: 0 },
         completionRate: { type: Number, default: 0 },
         weeklyGoal: { type: Number, default: 0 },
-        streak: { type: Number, default: 0 }
+        streak: { type: Number, default: 0 },
       },
       interview: {
         sessions: { type: Number, default: 0 },
-        questionsGenerated: { type: Number, default: 0 }
+        questionsGenerated: { type: Number, default: 0 },
       },
       comparisons: {
         scoreDelta: { type: Number, default: 0 },
@@ -102,9 +102,16 @@ const weeklyReportSchema = new mongoose.Schema(
         activityCommitsDelta: { type: Number, default: 0 },
         activeReposDelta: { type: Number, default: 0 },
         missingSkillsDelta: { type: Number, default: 0 },
-        coverageDelta: { type: Number, default: 0 }
+        coverageDelta: { type: Number, default: 0 },
       },
+      sourceFreshness: { type: mongoose.Schema.Types.Mixed, default: null },
       dataSourcesUsed: {
+        learning: {
+          available: Boolean,
+          lastAnalyzedAt: Date,
+          status: String,
+          freshness: String,
+        },
         github: {
           connected: { type: Boolean, default: false },
           lastAnalyzedAt: { type: Date, default: null },
@@ -112,8 +119,8 @@ const weeklyReportSchema = new mongoose.Schema(
           freshness: {
             type: String,
             enum: ['fresh', 'stale', 'unavailable'],
-            default: 'unavailable'
-          }
+            default: 'unavailable',
+          },
         },
         resume: {
           analyzed: { type: Boolean, default: false },
@@ -122,8 +129,8 @@ const weeklyReportSchema = new mongoose.Schema(
           freshness: {
             type: String,
             enum: ['fresh', 'stale', 'unavailable'],
-            default: 'unavailable'
-          }
+            default: 'unavailable',
+          },
         },
         skillGap: {
           analyzed: { type: Boolean, default: false },
@@ -132,47 +139,72 @@ const weeklyReportSchema = new mongoose.Schema(
           freshness: {
             type: String,
             enum: ['fresh', 'stale', 'unavailable'],
-            default: 'unavailable'
-          }
+            default: 'unavailable',
+          },
         },
         recommendations: {
+          freshness: {
+            type: String,
+            enum: ['fresh', 'stale', 'unavailable'],
+            default: 'unavailable',
+          },
           available: { type: Boolean, default: false },
           lastAnalyzedAt: { type: Date, default: null },
-          status: { type: String, default: 'Unavailable' }
+          status: { type: String, default: 'Unavailable' },
         },
         careerSprint: {
+          freshness: {
+            type: String,
+            enum: ['fresh', 'stale', 'unavailable'],
+            default: 'unavailable',
+          },
           connected: { type: Boolean, default: false },
           lastAnalyzedAt: { type: Date, default: null },
-          status: { type: String, default: 'Unavailable' }
+          status: { type: String, default: 'Unavailable' },
         },
         interviewPrep: {
+          freshness: {
+            type: String,
+            enum: ['fresh', 'stale', 'unavailable'],
+            default: 'unavailable',
+          },
           analyzed: { type: Boolean, default: false },
           lastAnalyzedAt: { type: Date, default: null },
-          status: { type: String, default: 'Unavailable' }
+          status: { type: String, default: 'Unavailable' },
         },
         portfolio: {
+          freshness: {
+            type: String,
+            enum: ['fresh', 'stale', 'unavailable'],
+            default: 'unavailable',
+          },
           connected: { type: Boolean, default: false },
           lastAnalyzedAt: { type: Date, default: null },
-          status: { type: String, default: 'Unavailable' }
+          status: { type: String, default: 'Unavailable' },
         },
         integrations: {
+          freshness: {
+            type: String,
+            enum: ['fresh', 'stale', 'unavailable'],
+            default: 'unavailable',
+          },
           connected: { type: Boolean, default: false },
           lastAnalyzedAt: { type: Date, default: null },
-          status: { type: String, default: 'Unavailable' }
-        }
+          status: { type: String, default: 'Unavailable' },
+        },
       },
       signalHash: {
         type: String,
-        default: ''
+        default: '',
       },
       reportHash: {
         type: String,
-        default: ''
+        default: '',
       },
       narrativeSource: {
         type: String,
         enum: ['ai-enhanced', 'deterministic', 'cached'],
-        default: 'deterministic'
+        default: 'deterministic',
       },
       usesAI: { type: Boolean, default: false },
       deterministicScore: { type: Boolean, default: true },
@@ -181,15 +213,15 @@ const weeklyReportSchema = new mongoose.Schema(
       dataSourceFreshness: { type: mongoose.Schema.Types.Mixed, default: {} },
       scoreBreakdown: {
         type: mongoose.Schema.Types.Mixed,
-        default: {}
+        default: {},
       },
       snapshot: {
         type: mongoose.Schema.Types.Mixed,
-        default: {}
-      }
-    }
+        default: {},
+      },
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 weeklyReportSchema.index({ userId: 1, weekStartDate: 1, weekEndDate: 1 }, { unique: true });
@@ -198,14 +230,17 @@ weeklyReportSchema.index({ userId: 1, createdAt: -1 });
 weeklyReportSchema.index({ userId: 1, 'meta.signalHash': 1 });
 weeklyReportSchema.index({ userId: 1, weekStartDate: -1 });
 
-weeklyReportSchema.index({ 'emailDelivery.status': 1, 'emailDelivery.nextAttemptAt': 1 }, { name: 'weekly_email_due' });
+weeklyReportSchema.index(
+  { 'emailDelivery.status': 1, 'emailDelivery.nextAttemptAt': 1 },
+  { name: 'weekly_email_due' },
+);
 
 weeklyReportSchema.index(
   { 'emailDelivery.pendingContentHash': 1, 'emailDelivery.status': 1 },
   {
     name: 'weekly_email_coalesced',
-    partialFilterExpression: { 'emailDelivery.pendingContentHash': { $type: 'string' } }
-  }
+    partialFilterExpression: { 'emailDelivery.pendingContentHash': { $type: 'string' } },
+  },
 );
 
 module.exports = mongoose.model('WeeklyReport', weeklyReportSchema);

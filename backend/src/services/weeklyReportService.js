@@ -317,31 +317,7 @@ const buildEmailText = ({
   ].join('\n');
 };
 
-const startOfWeek = (date = new Date()) => {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  d.setDate(diff);
-  d.setHours(0, 0, 0, 0);
-  return d;
-};
-
-const endOfWeek = (startDate) => {
-  const d = new Date(startDate);
-  d.setDate(d.getDate() + 6);
-  d.setHours(23, 59, 59, 999);
-  return d;
-};
-
-const previousWeekRange = (weekStartDate) => {
-  const previousStart = new Date(weekStartDate);
-  previousStart.setDate(previousStart.getDate() - 7);
-  previousStart.setHours(0, 0, 0, 0);
-  return {
-    start: previousStart,
-    end: endOfWeek(previousStart),
-  };
-};
+const { startOfWeek, endOfWeek, previousWeekRange } = require('./weeklyReportCalendar');
 
 const computeResumeScore = (resumeAnalysis) => {
   if (!resumeAnalysis) return 0;
@@ -900,7 +876,7 @@ const buildTopAchievements = ({ userData, previousData, comparisons }) => {
   if (unique.length >= 3) return unique.slice(0, 3);
 
   const fallback = [
-    `Overall score reached ${userData.score.overall}% (${signed(comparisons.scoreDelta)} vs previous period).`,
+    `Overall score is ${userData.score.overall}% based on the saved source evidence.`,
     `GitHub and resume signals now stand at ${userData.github.score}% and ${userData.resume.score}% respectively.`,
     `Sprint completion is ${userData.sprint.completionRate}% with ${userData.sprint.tasksCompleted} completed tasks.`,
   ];
@@ -1087,7 +1063,7 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
     .lean();
   if (!user) return null;
 
-  const weekStartDate = startOfWeek();
+  const weekStartDate = options.weekStartDate || startOfWeek();
   const weekEndDate = endOfWeek(weekStartDate);
   const previousWeek = previousWeekRange(weekStartDate);
 
@@ -1144,6 +1120,7 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
       .select('tasks weeklyGoal streak updatedAt createdAt')
       .lean(),
     InterviewPrepSession.find({ userId, createdAt: { $gte: weekStartDate, $lte: weekEndDate } })
+      .sort({ updatedAt: -1 })
       .select('questions updatedAt createdAt')
       .lean(),
     InterviewPrepSession.find({
@@ -1299,6 +1276,17 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
 
   const comparisons = buildComparisons({ current: userData, previous: previousData });
 
+  if (!previousReport) {
+    for (const key of [
+      'scoreDelta',
+      'readinessDelta',
+      'githubDelta',
+      'resumeDelta',
+      'coverageDelta',
+      'missingSkillsDelta',
+    ])
+      comparisons[key] = 0;
+  }
   const topAchievements = buildTopAchievements({ userData, previousData, comparisons });
   const biggestRiskArea = determineBiggestRiskArea({ userData, comparisons });
   const predictedHiringReadiness = predictHiringReadinessNextWeek({ userData, comparisons });
@@ -1376,7 +1364,9 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
   });
 
   const fallback = {
-    progressSummary: `Your overall score moved from ${clampPercent(previousData.score.overall)}% to ${userData.score.overall}% (${signed(comparisons.scoreDelta)}). GitHub is ${userData.github.score}% (${signed(comparisons.githubDelta)}), resume is ${userData.resume.score}% (${signed(comparisons.resumeDelta)}), and sprint completion is ${userData.sprint.completionRate}% with ${userData.sprint.tasksCompleted}/${userData.sprint.tasksTotal} tasks done.`,
+    progressSummary: previousReport
+      ? `Your overall score moved from ${clampPercent(previousData.score.overall)}% to ${userData.score.overall}% (${signed(comparisons.scoreDelta)}). GitHub is ${userData.github.score}% (${signed(comparisons.githubDelta)}), resume is ${userData.resume.score}% (${signed(comparisons.resumeDelta)}), and sprint completion is ${userData.sprint.completionRate}% with ${userData.sprint.tasksCompleted}/${userData.sprint.tasksTotal} tasks done.`
+      : `This report establishes a saved baseline of ${userData.score.overall}%. GitHub is ${userData.github.score}% and resume is ${userData.resume.score}%. Future saved weeks will provide score comparisons.`,
     insights: [
       `GitHub momentum is ${userData.github.score}% with ${userData.activity.activeRepositories} active repositories and a commit signal of ${userData.activity.weeklyCommitSignal}.`,
       `Resume quality is ${userData.resume.score}% with ATS ${userData.resume.atsScore}% and content quality ${userData.resume.contentQuality}%.`,
@@ -1398,19 +1388,14 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
   let narrativeSource = 'deterministic';
   let fallbackUsed = false;
   try {
-    aiResult = await aiService.runAIAnalysis(prompt, fallback);
+    aiResult = await aiService.runAIAnalysis(
+      prompt +
+        '\nGrounded narrative: copy the progressSummary exactly and only reorder the supplied list entries. Never add or paraphrase facts.\n' +
+        JSON.stringify(fallback),
+      fallback,
+    );
     const validAINarrative =
-      aiResult !== fallback &&
-      aiResult &&
-      typeof aiResult === 'object' &&
-      !Array.isArray(aiResult) &&
-      typeof aiResult.progressSummary === 'string' &&
-      Array.isArray(aiResult.insights) &&
-      aiResult.insights.length === 4 &&
-      Array.isArray(aiResult.recommendations) &&
-      aiResult.recommendations.length === 4 &&
-      Array.isArray(aiResult.topAchievements) &&
-      aiResult.topAchievements.length === 3;
+      aiResult !== fallback && require('./weeklyReportNarrative').isGrounded(aiResult, fallback);
     if (!validAINarrative) aiResult = fallback;
     narrativeSource = validAINarrative ? 'ai-enhanced' : 'deterministic';
     fallbackUsed = !validAINarrative;
@@ -1496,6 +1481,7 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
   const savedReport = await notificationPersistence.commit(
     userId,
     async (session) => {
+      await options.fence?.(session);
       const current = await WeeklyReport.findOne({ userId, weekStartDate, weekEndDate })
         .session(session)
         .lean();
@@ -1558,11 +1544,14 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
 };
 
 const generateWeeklyReport = (userId, options = {}) => {
-  const weekKey = `${String(userId)}:${startOfWeek().toISOString()}:${Boolean(options.forceRefresh)}`;
+  const weekStartDate = startOfWeek();
+  const weekKey = `${String(userId)}:${weekStartDate.toISOString()}`;
   if (generationInflight.has(weekKey)) return generationInflight.get(weekKey);
-  const pending = generateWeeklyReportCore(userId, options).finally(() =>
-    generationInflight.delete(weekKey),
-  );
+  const pending = require('./weeklyReportCoordinationService')
+    .withLease(`generation:${weekKey}`, (fence) =>
+      generateWeeklyReportCore(userId, { ...options, fence, weekStartDate }),
+    )
+    .finally(() => generationInflight.delete(weekKey));
   generationInflight.set(weekKey, pending);
   return pending;
 };
@@ -1678,13 +1667,14 @@ const positiveEnvInt = (value, fallback, max) => {
   return Number.isFinite(parsed) && parsed > 0 ? Math.min(parsed, max) : fallback;
 };
 
-const runWeeklyReportBatch = async ({
+const runWeeklyReportBatchCore = async ({
   dryRun = isEnabledFlag(process.env.WEEKLY_REPORT_DRY_RUN) ||
     isEnabledFlag(process.env.WEEKLY_REPORT_SCHEDULER_DRY_RUN),
   usersOverride = null,
   generate = generateWeeklyReport,
   sendEmail = sendWeeklyReportEmail,
   updateEmailStatus = updateWeeklyReportEmailStatus,
+  fence = async () => {},
 } = {}) => {
   const batchLimit = positiveEnvInt(process.env.WEEKLY_REPORT_BATCH_LIMIT, 100, 1000);
   const concurrency = positiveEnvInt(process.env.WEEKLY_REPORT_CONCURRENCY, 3, 10);
@@ -1712,6 +1702,7 @@ const runWeeklyReportBatch = async ({
     dryRun,
   });
   for (let index = 0; index < users.length; index += concurrency) {
+    await fence();
     const batch = users.slice(index, index + concurrency);
     await Promise.all(
       batch.map(async (user) => {
@@ -1747,6 +1738,63 @@ const runWeeklyReportBatch = async ({
 
   console.log('[WeeklyReportScheduler] batch completed', stats);
   return stats;
+};
+
+const runWeeklyReportBatch = (options = {}) => {
+  if (options.usersOverride) return runWeeklyReportBatchCore(options);
+  return require('./weeklyReportCoordinationService').withLease('scheduler', async (fence) => {
+    const State = require('../models/weeklyReportCoordination');
+    const week = startOfWeek();
+    const checkpointId = `scheduler-week:${week.toISOString()}`;
+    const dryRun =
+      options.dryRun ??
+      (isEnabledFlag(process.env.WEEKLY_REPORT_DRY_RUN) ||
+        isEnabledFlag(process.env.WEEKLY_REPORT_SCHEDULER_DRY_RUN));
+    const checkpoint = dryRun ? null : await State.findById(checkpointId).lean();
+    const total = { usersScanned: 0, generated: 0, skipped: 0, emailed: 0, failed: 0 };
+    if (checkpoint?.completed) return { ...total, dryRun };
+    const limit = positiveEnvInt(process.env.WEEKLY_REPORT_BATCH_LIMIT, 100, 1000);
+    let cursor = checkpoint?.cursor;
+    const saveProgress = async (completed) => {
+      if (dryRun) return;
+      await notificationPersistence.transaction(async (session) => {
+        await fence(session);
+        await State.updateOne(
+          { _id: checkpointId },
+          {
+            $set: {
+              cursor,
+              completed,
+              expiresAt: new Date(endOfWeek(week).getTime() + 7 * 86400000),
+            },
+          },
+          { upsert: true, session },
+        );
+      });
+    };
+    for (;;) {
+      await fence();
+      const users = await User.find({
+        isActive: { $ne: false },
+        'notifications.weeklyScoreReport': { $ne: false },
+        ...(cursor ? { _id: { $gt: cursor } } : {}),
+      })
+        .sort({ _id: 1 })
+        .limit(limit)
+        .select('name email notifications')
+        .lean();
+      if (!users.length) {
+        await saveProgress(true);
+        break;
+      }
+      const page = await runWeeklyReportBatchCore({ ...options, usersOverride: users, fence });
+      for (const key of Object.keys(total)) total[key] += page[key];
+      if (page.failed) break; // Retry this page on the worker's next sweep.
+      cursor = users[users.length - 1]._id;
+      await saveProgress(false);
+    }
+    return { ...total, dryRun };
+  });
 };
 
 const isEnabledFlag = (value) =>

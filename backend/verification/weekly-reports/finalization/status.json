@@ -1,0 +1,143 @@
+{
+  "date": "2026-11-10",
+  "sourceBranch": "release1",
+  "sourceHead": "7e1bb6101c7e5f17b065dbd3540e6db96828dde8",
+  "branch": "fix/weekly-reports-finalization",
+  "prTarget": "not applicable",
+  "productionReady": false,
+  "decision": "BLOCKED pending staging delivery, workload and deployment acceptance",
+  "verification": {
+    "finalBackend": {
+      "status": "PASS",
+      "passed": 27,
+      "failed": 0,
+      "skipped": 0,
+      "durationSeconds": 23.941,
+      "command": "WEEKLY_REPORT_TEST_MONGO=1 node --test --test-concurrency=1 weeklyReportSprint weeklyReportScheduler weeklyReportsHardening developerContextService skillGapConsumerContracts weeklyReportsReliability.integration (under backend/src/tests)"
+    },
+    "focusedFrontend": {
+      "status": "PASS",
+      "files": 2,
+      "passed": 9,
+      "failed": 0
+    },
+    "fullFrontend": {
+      "status": "PASS",
+      "runs": 1,
+      "files": 95,
+      "passed": 598,
+      "failed": 0,
+      "durationSeconds": 84.78
+    },
+    "typescript": "PASS",
+    "build": {
+      "status": "PASS",
+      "durationSeconds": 71.993,
+      "warnings": [
+        "Existing Jobs SCSS 52.97/48 kB",
+        "Existing landing-page SCSS 56.67/48 kB"
+      ]
+    },
+    "browser": {
+      "status": "PASS",
+      "widths": [1440, 375],
+      "themes": ["light", "dark", "system"],
+      "additionalJourney": "loading,error,retry,empty",
+      "keyboardHistorySelection": true,
+      "populatedCaptures": 6,
+      "stateCaptures": 2,
+      "pageErrors": 0,
+      "overflow": 0,
+      "evidence": "frontend/verification/weekly-reports/finalization/results.json"
+    },
+    "syntax": "PASS",
+    "formatting": "PASS",
+    "gitDiffCheck": "PASS",
+    "gitCachedDiffCheck": "PASS"
+  },
+  "localMongoTimings": {
+    "passed": true,
+    "generationMs": 1162.2815,
+    "forcedReplayMs": 275.7600000000002,
+    "environment": "disposable local Windows MongoDB replica set",
+    "realProvidersUsed": false,
+    "assertions": [
+      "independent-client lease exclusion",
+      "real child-process crash takeover",
+      "expired-token fencing",
+      "same-week deterministic replay",
+      "AI deterministic fallback",
+      "ninth-source persistence",
+      "owner-scoped latest",
+      "scheduler keyset pagination",
+      "notification preference suppression",
+      "one concurrent email send",
+      "uncertain outcome blocks resend"
+    ]
+  },
+  "blockedGates": [
+    "Live AI admission/fallback and live SendGrid/SMTP reconciliation with staging credentials and approved recipient",
+    "Deployment-equivalent sustained performance with realistic nine-source volume",
+    "Staging index rollout and scheduler deployment/restart acceptance",
+    "Authenticated end-to-end integration against staging services"
+  ],
+  "infrastructure": {
+    "platform": "Windows",
+    "wsl": "not installed",
+    "redisAvailable": false,
+    "dockerAvailable": false,
+    "podmanAvailable": false,
+    "disposableMongoReplicaSet": "PASS",
+    "realProvidersUsed": false
+  },
+  "filesChanged": [
+    "backend/index.js",
+    "backend/src/controllers/weeklyReportController.js",
+    "backend/src/models/weeklyReport.js",
+    "backend/src/models/weeklyReportCoordination.js",
+    "backend/src/routes/weeklyReport.routes.js",
+    "backend/src/services/weeklyReportCalendar.js",
+    "backend/src/services/weeklyReportCoordinationService.js",
+    "backend/src/services/weeklyReportNarrative.js",
+    "backend/src/services/weeklyReportService.js",
+    "backend/src/tests/fixtures/weeklyReportLeaseWorker.js",
+    "backend/src/tests/weeklyReportsHardening.test.js",
+    "backend/src/tests/weeklyReportsReliability.integration.test.js",
+    "backend/src/workers/weeklyReports.js",
+    "backend/verification/weekly-reports/finalization/mongo-results.json",
+    "backend/verification/weekly-reports/finalization/REPORT.md",
+    "backend/verification/weekly-reports/finalization/status.json",
+    "frontend/scripts/verify-weekly-reports-ui.cjs",
+    "frontend/src/app/pages/weekly-reports/weekly-reports.component.html",
+    "frontend/src/app/pages/weekly-reports/weekly-reports.component.scss",
+    "frontend/src/app/pages/weekly-reports/weekly-reports.component.spec.ts",
+    "frontend/src/app/pages/weekly-reports/weekly-reports.component.ts",
+    "frontend/src/app/shared/services/weekly-report.service.spec.ts",
+    "frontend/src/app/shared/services/weekly-report.service.ts",
+    "frontend/verification/weekly-reports/finalization/1440-dark.png",
+    "frontend/verification/weekly-reports/finalization/1440-light.png",
+    "frontend/verification/weekly-reports/finalization/1440-system.png",
+    "frontend/verification/weekly-reports/finalization/375-dark.png",
+    "frontend/verification/weekly-reports/finalization/375-light.png",
+    "frontend/verification/weekly-reports/finalization/375-system.png",
+    "frontend/verification/weekly-reports/finalization/empty.png",
+    "frontend/verification/weekly-reports/finalization/error.png",
+    "frontend/verification/weekly-reports/finalization/results.json"
+  ],
+  "filesMoved": [],
+  "filesDeleted": [],
+  "cleanup": {
+    "verifiedTaskTempFilesRemoved": 0,
+    "verifiedTaskTempDirectoriesRemovedIndividually": 2,
+    "recursiveDeletionUsed": false,
+    "tempRoot": "frontend/.angular-weekly-temp",
+    "removed": true
+  },
+  "commits": false,
+  "pushes": false,
+  "merges": false,
+  "deployments": false,
+  "productionDataChanges": false,
+  "secretChanges": false,
+  "dependencyChanges": false
+}

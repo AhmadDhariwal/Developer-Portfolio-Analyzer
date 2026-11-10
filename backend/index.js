@@ -255,7 +255,7 @@ const startServer = async () => {
     startNewsIngestionScheduler();
     require('./src/services/courseCatalogMaintenanceService').start();
     initTracing();
-    startWeeklyReportScheduler();
+    if (process.env.WEEKLY_REPORT_PROCESS_ROLE !== 'api') startWeeklyReportScheduler();
     startInterviewQuestionIngestionScheduler();
     startInterviewQuestionMaintenanceScheduler();
     getSettings().catch((err) => logger.warn('settings warmup failed', { error: err?.message }));

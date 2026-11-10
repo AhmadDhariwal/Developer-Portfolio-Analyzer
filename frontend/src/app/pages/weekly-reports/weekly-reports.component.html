@@ -1,35 +1,52 @@
-<section class="weekly-reports-page">
+<section class="weekly-reports-page" [attr.aria-busy]="isLoading || isGenerating">
   <header class="page-header">
     <div class="header-copy">
-      <span class="eyebrow">AI Weekly Reports</span>
-      <h1>Weekly Performance</h1>
-      <p>Deterministic developer metrics enhanced with AI summaries across GitHub, resume, sprint, interview prep, and portfolio signals.</p>
+      <span class="eyebrow">Your career, in perspective</span>
+
+      <h1>Weekly progress</h1>
+
+      <p>
+        Deterministic developer metrics enhanced with AI summaries across GitHub, resume, sprint,
+        interview prep, and portfolio signals.
+      </p>
     </div>
 
     <div class="header-actions">
       <div class="cache-indicator" *ngIf="loadedAt">
         <strong>{{ loadSourceLabel }}</strong>
+
         <span>{{ formatDate(loadedAt.toISOString()) }}</span>
       </div>
-      <button class="generate-btn" type="button" (click)="generateReport()" [disabled]="isGenerating">
+
+      <button
+        class="generate-btn"
+        type="button"
+        (click)="generateReport()"
+        [disabled]="isGenerating"
+      >
         {{ isGenerating ? 'Refreshing report...' : 'Generate Weekly Report' }}
       </button>
     </div>
   </header>
 
-  <section class="state-card error-state" *ngIf="!isLoading && errorMessage">
+  <section role="alert" class="state-card error-state" *ngIf="!isLoading && errorMessage">
     <div>
       <h3>Unable to load weekly reports</h3>
+
       <p>{{ errorMessage }}</p>
     </div>
+
     <button type="button" (click)="loadReports()">Retry</button>
   </section>
 
   <div class="skeleton-grid" *ngIf="isLoading">
     <article class="skeleton-card hero" *ngFor="let item of skeletonItems">
       <span class="skeleton-line short"></span>
+
       <span class="skeleton-line large"></span>
+
       <span class="skeleton-line"></span>
+
       <span class="skeleton-line medium"></span>
     </article>
   </div>
@@ -37,15 +54,32 @@
   <ng-container *ngIf="!isLoading && latestReport as report">
     <section class="stale-warning" *ngIf="report.meta.sourceFreshness?.detection">
       <strong>Source data needs attention</strong>
+
       <p>{{ report.meta.sourceFreshness?.message }}</p>
-      <small *ngIf="report.meta.sourceFreshness?.recommendation">{{ report.meta.sourceFreshness?.recommendation }}</small>
+
+      <small *ngIf="report.meta.sourceFreshness?.recommendation">{{
+        report.meta.sourceFreshness?.recommendation
+      }}</small>
     </section>
+
     <section class="hero-grid">
       <article class="hero-card">
         <div class="hero-score">
-          <div class="score">{{ report.score }}<span>%</span></div>
+          <div
+            class="score"
+            role="meter"
+            aria-label="Career momentum"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            [attr.aria-valuenow]="report.score"
+            [style.--score]="report.score + '%'"
+          >
+            {{ report.score }}<span>%</span>
+          </div>
+
           <div class="score-copy">
-            <h2>Weekly Growth Score</h2>
+            <h2>Career momentum</h2>
+
             <p>{{ report.progressSummary }}</p>
           </div>
         </div>
@@ -53,57 +87,120 @@
         <div class="hero-meta">
           <span>
             <strong>Period</strong>
-            {{ report.weekStartDate | date:'MMM d' }} - {{ report.weekEndDate | date:'MMM d' }}
+
+            {{ report.weekStartDate | date: 'MMM d' }} - {{ report.weekEndDate | date: 'MMM d' }}
           </span>
+
           <span *ngIf="report.emailStatus">
             <strong>Email</strong>
+
             <mark [class]="statusBadgeClass(report.emailStatus)">{{ report.emailStatus }}</mark>
           </span>
+
           <span>
             <strong>Updated</strong>
+
             {{ formatDate(report.updatedAt || report.weekEndDate) }}
           </span>
+
           <span>
             <strong>Narrative</strong>
-            <mark class="narrative-badge" [class.narrative-badge--ai]="report.meta.narrativeSource === 'ai-enhanced'" [class.narrative-badge--cached]="report.meta.narrativeSource === 'cached'">{{ narrativeSourceLabel }}</mark>
+
+            <mark
+              class="narrative-badge"
+              [class.narrative-badge--ai]="report.meta.narrativeSource === 'ai-enhanced'"
+              [class.narrative-badge--cached]="report.meta.narrativeSource === 'cached'"
+              >{{ narrativeSourceLabel }}</mark
+            >
           </span>
+
           <span *ngIf="report.meta.signalHash">
             <strong>Signal</strong>
+
             {{ report.meta.signalHash.slice(0, 10) }}
           </span>
         </div>
       </article>
 
       <article class="readiness-card">
-        <div class="card-label">Readiness Forecast</div>
+        <div class="card-label">Readiness indicator</div>
+
         <div class="readiness-score" [ngClass]="getReadinessClass(getReadinessScore(report))">
           <span class="value">{{ getReadinessScore(report) }}%</span>
+
           <span class="label">{{ getReadinessTone(getReadinessScore(report)) }}</span>
         </div>
+
         <p>{{ report.predictedHiringReadiness.reason }}</p>
+        <small>A deterministic planning indicator, not a probability of getting hired.</small>
       </article>
     </section>
 
+    <section
+      class="momentum-trend"
+      *ngIf="history.length > 1"
+      aria-label="Saved weekly score trend"
+    >
+      <div>
+        <span class="eyebrow">The bigger picture</span>
+        <h2>Your momentum over time</h2>
+        <p>Saved weekly scores. Missing weeks are not estimated.</p>
+      </div>
+      <div class="trend-bars">
+        <button
+          type="button"
+          *ngFor="let item of trendReports; trackBy: trackByReportId"
+          (click)="selectReport(item)"
+          [attr.aria-label]="
+            (item.weekStartDate | date: 'mediumDate') + ': ' + item.score + ' out of 100'
+          "
+          [attr.aria-pressed]="item._id === report._id"
+        >
+          <strong>{{ item.score }}</strong
+          ><span class="trend-track"><span [style.height.%]="item.score"></span></span
+          ><small>{{ item.weekStartDate | date: 'MMM d' }}</small>
+        </button>
+      </div>
+    </section>
     <section class="kpi-grid">
       <article class="kpi-card">
         <span class="kpi-label">GitHub Score</span>
+
         <strong>{{ report.meta.githubScore }}%</strong>
-        <small [class]="deltaClass(report.meta.comparisons.githubDelta)">{{ formatDelta(report.meta.comparisons.githubDelta) }}</small>
+
+        <small [class]="deltaClass(report.meta.comparisons.githubDelta)">{{
+          formatDelta(report.meta.comparisons.githubDelta)
+        }}</small>
       </article>
+
       <article class="kpi-card">
         <span class="kpi-label">Resume Score</span>
+
         <strong>{{ report.meta.resumeScore }}%</strong>
-        <small [class]="deltaClass(report.meta.comparisons.resumeDelta)">{{ formatDelta(report.meta.comparisons.resumeDelta) }}</small>
+
+        <small [class]="deltaClass(report.meta.comparisons.resumeDelta)">{{
+          formatDelta(report.meta.comparisons.resumeDelta)
+        }}</small>
       </article>
+
       <article class="kpi-card">
         <span class="kpi-label">Sprint Completion</span>
+
         <strong>{{ report.meta.sprint.completionRate }}%</strong>
-        <small [class]="deltaClass(report.meta.comparisons.sprintCompletionDelta)">{{ formatDelta(report.meta.comparisons.sprintCompletionDelta) }}</small>
+
+        <small [class]="deltaClass(report.meta.comparisons.sprintCompletionDelta)">{{
+          formatDelta(report.meta.comparisons.sprintCompletionDelta)
+        }}</small>
       </article>
+
       <article class="kpi-card">
         <span class="kpi-label">Interview Progress</span>
+
         <strong>{{ report.meta.interview.questionsGenerated }}</strong>
-        <small [class]="deltaClass(report.meta.comparisons.interviewQuestionsDelta)">{{ formatDelta(report.meta.comparisons.interviewQuestionsDelta, 'qs') }}</small>
+
+        <small [class]="deltaClass(report.meta.comparisons.interviewQuestionsDelta)">{{
+          formatDelta(report.meta.comparisons.interviewQuestionsDelta, 'qs')
+        }}</small>
       </article>
     </section>
 
@@ -111,8 +208,10 @@
       <div class="panel-head">
         <div>
           <h3>Score Breakdown</h3>
+
           <span class="panel-subtitle">Deterministic weighted inputs used before AI polish</span>
         </div>
+
         <small>{{ report.score }}% total</small>
       </div>
 
@@ -120,11 +219,14 @@
         <article class="breakdown-row" *ngFor="let item of scoreBreakdown">
           <div>
             <strong>{{ item.label }}</strong>
+
             <span>{{ item.weight }}% weight</span>
           </div>
+
           <div class="breakdown-meter">
             <span [style.width.%]="item.score"></span>
           </div>
+
           <small>{{ item.score }}% - {{ item.contribution }} pts</small>
         </article>
       </div>
@@ -134,48 +236,86 @@
       <article class="panel-card">
         <div class="panel-head">
           <h3>Progress Comparison</h3>
+
           <span class="panel-subtitle">Current vs previous report</span>
         </div>
 
         <div class="comparison-list">
           <div class="comparison-row">
             <span>Overall Score</span>
+
             <strong>{{ report.score }}%</strong>
-            <small [class]="deltaClass(report.meta.comparisons.scoreDelta)">{{ formatDelta(report.meta.comparisons.scoreDelta) }}</small>
+
+            <small [class]="deltaClass(report.meta.comparisons.scoreDelta)">{{
+              formatDelta(report.meta.comparisons.scoreDelta)
+            }}</small>
           </div>
+
           <div class="comparison-row">
             <span>Readiness</span>
+
             <strong>{{ getReadinessScore(report) }}%</strong>
-            <small [class]="deltaClass(report.meta.comparisons.readinessDelta)">{{ formatDelta(report.meta.comparisons.readinessDelta) }}</small>
+
+            <small [class]="deltaClass(report.meta.comparisons.readinessDelta)">{{
+              formatDelta(report.meta.comparisons.readinessDelta)
+            }}</small>
           </div>
+
           <div class="comparison-row">
             <span>Weekly Commit Signal</span>
+
             <strong>{{ report.meta.activity.weeklyCommitSignal }}</strong>
-            <small [class]="deltaClass(report.meta.comparisons.activityCommitsDelta)">{{ formatDelta(report.meta.comparisons.activityCommitsDelta, 'pts') }}</small>
+
+            <small [class]="deltaClass(report.meta.comparisons.activityCommitsDelta)">{{
+              formatDelta(report.meta.comparisons.activityCommitsDelta, 'pts')
+            }}</small>
           </div>
+
           <div class="comparison-row">
             <span>Active Repositories</span>
+
             <strong>{{ report.meta.activity.activeRepositories }}</strong>
-            <small [class]="deltaClass(report.meta.comparisons.activeReposDelta)">{{ formatDelta(report.meta.comparisons.activeReposDelta, 'repos') }}</small>
+
+            <small [class]="deltaClass(report.meta.comparisons.activeReposDelta)">{{
+              formatDelta(report.meta.comparisons.activeReposDelta, 'repos')
+            }}</small>
           </div>
         </div>
       </article>
 
       <article class="panel-card history-panel" *ngIf="history.length">
-        <button class="history-toggle" type="button" (click)="toggleHistory()" [attr.aria-expanded]="isHistoryOpen">
+        <button
+          class="history-toggle"
+          type="button"
+          (click)="toggleHistory()"
+          [attr.aria-expanded]="isHistoryOpen"
+        >
           <span>
             <strong>Momentum History</strong>
+
             <small>Last {{ history.length }} reports</small>
           </span>
+
           <span class="history-toggle__icon">{{ isHistoryOpen ? '-' : '+' }}</span>
         </button>
 
         <div class="history-list" [class.history-list--open]="isHistoryOpen">
-          <button class="history-row" type="button" *ngFor="let item of history; trackBy: trackByReportId" (click)="selectReport(item)" [class.latest]="item._id === report._id">
+          <button
+            class="history-row"
+            type="button"
+            *ngFor="let item of history; trackBy: trackByReportId"
+            (click)="selectReport(item)"
+            [class.latest]="item._id === report._id"
+          >
             <div class="history-copy">
-              <span>{{ item.weekStartDate | date:'MMM d' }} – {{ item.weekEndDate | date:'MMM d' }}</span>
+              <span
+                >{{ item.weekStartDate | date: 'MMM d' }} â€“
+                {{ item.weekEndDate | date: 'MMM d' }}</span
+              >
+
               <strong>{{ item.score }}%</strong>
             </div>
+
             <div class="history-track">
               <span class="history-fill" [style.width.%]="item.score"></span>
             </div>
@@ -188,8 +328,10 @@
       <article class="panel-card" *ngIf="hasText(report.topAchievements)">
         <div class="panel-head">
           <h3>Achievements</h3>
+
           <span class="panel-subtitle">Wins worth repeating</span>
         </div>
+
         <ol class="rich-list ordered">
           <li *ngFor="let achievement of report.topAchievements">{{ achievement }}</li>
         </ol>
@@ -198,9 +340,12 @@
       <article class="panel-card" *ngIf="getRiskArea(report) || report.meta.skillFocus.length">
         <div class="panel-head">
           <h3>Risks and Focus</h3>
+
           <span class="panel-subtitle">Primary blocker this week</span>
         </div>
+
         <p class="risk-copy" *ngIf="getRiskArea(report)">{{ getRiskArea(report) }}</p>
+
         <div class="focus-chips" *ngIf="report.meta.skillFocus.length">
           <span *ngFor="let skill of report.meta.skillFocus">{{ skill }}</span>
         </div>
@@ -211,8 +356,10 @@
       <article class="panel-card" *ngIf="hasText(report.insights)">
         <div class="panel-head">
           <h3>Insights</h3>
+
           <span class="panel-subtitle">Deterministic metrics, AI summarized</span>
         </div>
+
         <ul class="rich-list">
           <li *ngFor="let insight of report.insights">{{ insight }}</li>
         </ul>
@@ -221,8 +368,10 @@
       <article class="panel-card" *ngIf="hasText(report.recommendations)">
         <div class="panel-head">
           <h3>Recommendations</h3>
+
           <span class="panel-subtitle">Next-week actions</span>
         </div>
+
         <ul class="rich-list accent">
           <li *ngFor="let recommendation of report.recommendations">{{ recommendation }}</li>
         </ul>
@@ -233,20 +382,33 @@
       <div class="panel-head">
         <div>
           <h3>Data Sources Used</h3>
+
           <span class="panel-subtitle">Connection state and latest analysis signal</span>
         </div>
-        <small *ngIf="report.emailStatus === 'failed' && report.emailError">{{ report.emailError }}</small>
+
+        <small *ngIf="report.emailStatus === 'failed' && report.emailError">{{
+          report.emailError
+        }}</small>
       </div>
 
       <div class="sources-grid">
-        <article *ngFor="let source of dataSources; trackBy: trackByLabel" [class]="sourceTone(source.status)">
+        <article
+          *ngFor="let source of dataSources; trackBy: trackByLabel"
+          [class]="sourceTone(source.status)"
+        >
           <div class="source-top">
             <strong>{{ source.label }}</strong>
+
             <span>{{ source.status.status }}</span>
           </div>
+
           <small *ngIf="source.status.freshness">{{ source.status.freshness | titlecase }}</small>
+
           <small *ngIf="sourceFreshness(source.status)">{{ sourceFreshness(source.status) }}</small>
-          <small *ngIf="source.status.lastAnalyzedAt">{{ formatDate(source.status.lastAnalyzedAt) }}</small>
+
+          <small *ngIf="source.status.lastAnalyzedAt">{{
+            formatDate(source.status.lastAnalyzedAt)
+          }}</small>
         </article>
       </div>
     </section>
@@ -254,8 +416,14 @@
 
   <section class="empty-state" *ngIf="!isLoading && !errorMessage && !latestReport">
     <div class="empty-icon">Report</div>
+
     <h3>No Reports Generated</h3>
-    <p>Start your first weekly analysis to see your developer momentum, readiness changes, and cross-module insights.</p>
+
+    <p>
+      Start your first weekly analysis to see your developer momentum, readiness changes, and
+      cross-module insights.
+    </p>
+
     <button class="generate-btn" type="button" (click)="generateReport()" [disabled]="isGenerating">
       {{ isGenerating ? 'Generating...' : 'Generate First Report' }}
     </button>

@@ -27,7 +27,7 @@ describe('WeeklyReportService cache behavior', () => {
     weekStartDate: '2026-06-22T00:00:00.000Z',
     weekEndDate: '2026-06-28T23:59:59.999Z',
     score: 75,
-    meta: {}
+    meta: {},
   });
 
   let api: any;
@@ -40,7 +40,7 @@ describe('WeeklyReportService cache behavior', () => {
     api = {
       getWeeklyReportLatest: vi.fn().mockReturnValue(of(rawReport())),
       getWeeklyReportHistory: vi.fn().mockReturnValue(of({ reports: [] })),
-      generateWeeklyReport: vi.fn().mockReturnValue(of(rawReport('generated')))
+      generateWeeklyReport: vi.fn().mockReturnValue(of(rawReport('generated'))),
     };
     cache = new CacheStub();
     const auth = {
@@ -48,12 +48,14 @@ describe('WeeklyReportService cache behavior', () => {
         _id: 'user-1',
         activeGithubUsername: 'developer',
         activeCareerStack: 'Full Stack',
-        activeExperienceLevel: 'Mid'
-      })
+        activeExperienceLevel: 'Mid',
+      }),
     };
     invalidation = {
-      register: (_owner: string, callback: () => void) => { invalidate = callback; },
-      clearDeveloperSignalCaches: vi.fn()
+      register: (_owner: string, callback: () => void) => {
+        invalidate = callback;
+      },
+      clearDeveloperSignalCaches: vi.fn(),
     };
     service = new WeeklyReportService(api, auth as any, cache as any, invalidation as any);
   });
@@ -88,10 +90,12 @@ describe('WeeklyReportService cache behavior', () => {
   it('keeps one concurrent latest transport alive across navigation teardown', () => {
     const response = new Subject<any>();
     let transportSubscriptions = 0;
-    api.getWeeklyReportLatest.mockReturnValue(defer(() => {
-      transportSubscriptions += 1;
-      return response;
-    }));
+    api.getWeeklyReportLatest.mockReturnValue(
+      defer(() => {
+        transportSubscriptions += 1;
+        return response;
+      }),
+    );
 
     const request = service.getLatest();
     const first = request.subscribe();
@@ -101,5 +105,30 @@ describe('WeeklyReportService cache behavior', () => {
     expect(transportSubscriptions).toBe(1);
     response.next(rawReport());
     response.complete();
+  });
+
+  it('cancels invalidated reads and never caches their late account response', async () => {
+    const old = new Subject<any>();
+    api.getWeeklyReportLatest.mockReturnValueOnce(old);
+    const received = vi.fn();
+    service.getLatest().subscribe(received);
+    invalidate();
+    expect(old.observed).toBe(false);
+    old.next(rawReport('old-account'));
+    old.complete();
+    expect(received).not.toHaveBeenCalled();
+    expect((await firstValueFrom(service.getLatest()))?._id).toBe('report-1');
+  });
+
+  it('drops generation completed after invalidation', () => {
+    const pending = new Subject<any>();
+    api.generateWeeklyReport.mockReturnValue(pending);
+    const received = vi.fn();
+    service.generateReport().subscribe(received);
+    invalidate();
+    pending.next(rawReport('obsolete'));
+    pending.complete();
+    expect(received).not.toHaveBeenCalled();
+    expect(invalidation.clearDeveloperSignalCaches).not.toHaveBeenCalled();
   });
 });

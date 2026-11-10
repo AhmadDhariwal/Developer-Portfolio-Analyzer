@@ -1,6 +1,17 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Subject, finalize, takeUntil } from 'rxjs';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  OnDestroy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { WeeklyReport, WeeklyReportDataSourceStatus, WeeklyReportService } from '../../shared/services/weekly-report.service';
+import {
+  WeeklyReport,
+  WeeklyReportDataSourceStatus,
+  WeeklyReportService,
+} from '../../shared/services/weekly-report.service';
 
 @Component({
   selector: 'app-weekly-reports',
@@ -8,9 +19,20 @@ import { WeeklyReport, WeeklyReportDataSourceStatus, WeeklyReportService } from 
   imports: [CommonModule],
   templateUrl: './weekly-reports.component.html',
   styleUrl: './weekly-reports.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class WeeklyReportsComponent implements OnInit {
+export class WeeklyReportsComponent implements OnInit, OnDestroy {
+  private readonly destroyed = new Subject<void>();
+
+  ngOnDestroy(): void {
+    this.destroyed.next();
+    this.destroyed.complete();
+  }
+
+  get trendReports(): WeeklyReport[] {
+    return [...this.history].reverse();
+  }
+
   latestReport: WeeklyReport | null = null;
   history: WeeklyReport[] = [];
   isLoading = false;
@@ -22,7 +44,7 @@ export class WeeklyReportsComponent implements OnInit {
 
   constructor(
     private readonly reportService: WeeklyReportService,
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -42,6 +64,10 @@ export class WeeklyReportsComponent implements OnInit {
     if (!sources) return [];
 
     return [
+      {
+        label: 'Learning',
+        status: sources.learning || { status: 'Unavailable', lastAnalyzedAt: null },
+      },
       { label: 'GitHub', status: sources.github },
       { label: 'Resume', status: sources.resume },
       { label: 'Skill Gap', status: sources.skillGap },
@@ -49,18 +75,24 @@ export class WeeklyReportsComponent implements OnInit {
       { label: 'Career Sprint', status: sources.careerSprint },
       { label: 'Interview Prep', status: sources.interviewPrep },
       { label: 'Portfolio', status: sources.portfolio },
-      { label: 'Integrations', status: sources.integrations }
-    ].filter(({ status }) => this.isSourceAvailable(status));
+      { label: 'Integrations', status: sources.integrations },
+    ];
   }
 
-  get scoreBreakdown(): Array<{ key: string; label: string; score: number; weight: number; contribution: number }> {
+  get scoreBreakdown(): Array<{
+    key: string;
+    label: string;
+    score: number;
+    weight: number;
+    contribution: number;
+  }> {
     const breakdown = this.latestReport?.meta.scoreBreakdown || {};
     return Object.entries(breakdown).map(([key, item]) => ({
       key,
       label: item.label,
       score: item.score,
       weight: item.weight,
-      contribution: Math.round((Number(item.score || 0) * Number(item.weight || 0)) / 100)
+      contribution: Math.round((Number(item.score || 0) * Number(item.weight || 0)) / 100),
     }));
   }
 
@@ -83,23 +115,32 @@ export class WeeklyReportsComponent implements OnInit {
     this.errorMessage = '';
     this.cdr.markForCheck();
 
-    this.reportService.getDashboard(6).subscribe({
-      next: ({ latest, history, fromFrontendCache, cachedAt }) => {
-        this.latestReport = latest;
-        this.history = history;
-        this.loadSource = fromFrontendCache ? 'frontend-cache' : 'api';
-        this.loadedAt = cachedAt ? new Date(cachedAt) : new Date();
-        this.isLoading = false;
-        this.cdr.markForCheck();
-      },
-      error: (error) => {
-        this.errorMessage = error?.error?.message || 'Unable to load weekly reports right now.';
-        this.latestReport = null;
-        this.history = [];
-        this.isLoading = false;
-        this.cdr.markForCheck();
-      }
-    });
+    this.reportService
+      .getDashboard(6)
+      .pipe(
+        takeUntil(this.destroyed),
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        }),
+      )
+      .subscribe({
+        next: ({ latest, history, fromFrontendCache, cachedAt }) => {
+          this.latestReport = latest;
+          this.history = history;
+          this.loadSource = fromFrontendCache ? 'frontend-cache' : 'api';
+          this.loadedAt = cachedAt ? new Date(cachedAt) : new Date();
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          this.errorMessage = error?.error?.message || 'Unable to load weekly reports right now.';
+          this.latestReport = null;
+          this.history = [];
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   generateReport(): void {
@@ -108,21 +149,31 @@ export class WeeklyReportsComponent implements OnInit {
     this.errorMessage = '';
     this.cdr.markForCheck();
 
-    this.reportService.generateReport(true).subscribe({
-      next: (report) => {
-        this.latestReport = report;
-        this.history = this.mergeHistory(report);
-        this.loadSource = 'generated';
-        this.loadedAt = new Date();
-        this.isGenerating = false;
-        this.cdr.markForCheck();
-      },
-      error: (error) => {
-        this.errorMessage = error?.error?.message || 'Unable to generate the weekly report right now.';
-        this.isGenerating = false;
-        this.cdr.markForCheck();
-      }
-    });
+    this.reportService
+      .generateReport(true)
+      .pipe(
+        takeUntil(this.destroyed),
+        finalize(() => {
+          this.isGenerating = false;
+          this.cdr.markForCheck();
+        }),
+      )
+      .subscribe({
+        next: (report) => {
+          this.latestReport = report;
+          this.history = this.mergeHistory(report);
+          this.loadSource = 'generated';
+          this.loadedAt = new Date();
+          this.isGenerating = false;
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          this.errorMessage =
+            error?.error?.message || 'Unable to generate the weekly report right now.';
+          this.isGenerating = false;
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   getReadinessScore(report: WeeklyReport | null): number {
@@ -158,6 +209,7 @@ export class WeeklyReportsComponent implements OnInit {
   }
 
   sourceTone(status: WeeklyReportDataSourceStatus): string {
+    if (!this.isSourceAvailable(status)) return 'source-card source-card--unavailable';
     if (status?.freshness === 'stale') return 'source-card source-card--warning';
     if (status?.status.toLowerCase().includes('failed')) return 'source-card source-card--warning';
     return 'source-card source-card--live';
@@ -186,7 +238,7 @@ export class WeeklyReportsComponent implements OnInit {
     if (Number.isNaN(parsed.getTime())) return '';
     return new Intl.DateTimeFormat('en', {
       dateStyle: 'medium',
-      timeStyle: 'short'
+      timeStyle: 'short',
     }).format(parsed);
   }
 
@@ -206,7 +258,12 @@ export class WeeklyReportsComponent implements OnInit {
 
   private isSourceAvailable(status: WeeklyReportDataSourceStatus | null | undefined): boolean {
     if (!status || !status.status || status.status.toLowerCase() === 'unavailable') return false;
-    return status.connected === true || status.analyzed === true || status.available === true || Boolean(status.lastAnalyzedAt);
+    return (
+      status.connected === true ||
+      status.analyzed === true ||
+      status.available === true ||
+      Boolean(status.lastAnalyzedAt)
+    );
   }
   trackByReportId(_: number, report: WeeklyReport): string {
     return report._id;
@@ -219,7 +276,10 @@ export class WeeklyReportsComponent implements OnInit {
   private mergeHistory(report: WeeklyReport): WeeklyReport[] {
     const merged = [report, ...this.history.filter((entry) => entry._id !== report._id)];
     return merged
-      .sort((left, right) => new Date(right.weekEndDate).getTime() - new Date(left.weekEndDate).getTime())
+      .sort(
+        (left, right) =>
+          new Date(right.weekEndDate).getTime() - new Date(left.weekEndDate).getTime(),
+      )
       .slice(0, 6);
   }
 }
