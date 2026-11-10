@@ -1,5 +1,7 @@
 # Scenario Simulator — production finalization
 
+**Current disposition (10 November 2026, Asia/Karachi): FAIL / NOT READY FOR PRODUCTION.** The authorized branch is `fix/scenario-final` at `9b188487d6a13d0d3508b9fac2ec06abe16c292b`; the working tree and index were clean at preflight. The retained 6,000-request acceptance is a measured FAIL. Backend, MongoDB, focused frontend, TypeScript and production-build checks pass in this finalization. A fresh Redis-backed load/profile and the authenticated browser journey are BLOCKED by missing local test infrastructure. This current status supersedes the historical branch/date summaries below.
+
 **Release decision: FAIL / NOT READY FOR PRODUCTION.** Functional fixes and local contract verification are complete; sustained availability/latency remains a measured failure. The requested fully accepted local release candidate has not been achieved. No timeout, offered load, assertion, score or threshold was relaxed to claim acceptance.
 
 Date: 9 November 2026, Asia/Karachi. Authorized/current branch: `release1`, explicitly requested by the user. Starting HEAD: `5c23163f7631848361c7986a24acc52cbf394b80`. Initial working tree and index were clean. PR target: not applicable. The agent did not stage, commit, push, merge, deploy, connect to production, change production indexes or make paid provider calls. Historical reports and failed evidence remain retained.
@@ -350,3 +352,103 @@ Additional retained task logs and setup diagnostics:
 - `backend/verification/scenario-simulator/production-finalization-2026-11-09/run-correlated-diagnostic-2026-11-09/two-worker-isolated-regression.log`
 
 Other historical/untracked user verification evidence and screenshots were preserved. No files were staged or committed by this follow-up.
+
+## 10 November finalization on the authorized branch
+
+This addendum records verification of `fix/scenario-final` at `9b188487d6a13d0d3508b9fac2ec06abe16c292b`. The source branch is the current authorized branch; PR target is not applicable. Preflight found a clean index but a pre-existing report modification and untracked gate-summary JSON from ongoing finalization; both were preserved and updated. No staged source changes were present. No commits, pushes, merges, deployments, production-data changes or production index changes were made. The exact current run summary is retained in `finalization-status-2026-11-10.json`.
+
+### 100-RPS diagnosis and measured result
+
+The latest retained request-correlated diagnostic offered 1,500 requests at 100 RPS for 15 seconds. It recorded 136 fail-closed quota 503s. Redis EVALs eventually completed with zero underlying EVAL errors, but client-side EVAL p50/p95/p99 was 44/228/386 ms while Redis server EVAL averaged about 0.115 ms with no slow EVAL. Per-worker event-loop p99 was about 234 ms. Mongo command p95/p99 was 204/286 ms; checkout wait p95/p99 was 163/226 ms, with checkout queues peaking at 50 and 47. Context kept its existing four-source concurrent fanout; that trace recorded no cross-request context joiners. The fixed 150 ms quota command deadline therefore expired while Redis replies were delayed by application scheduling and Mongo checkout/command backlog. The independent context-capacity limit also appears in the full burst as a second overload path. These observations identify queueing and event-loop delay as the immediate failure conditions; they do not isolate the underlying host, Mongo scheduling, or representative source-query cost. They do not justify increasing the Mongo pool, raising fanout, or relaxing the quota deadline.
+
+The latest completed isolated 6,000-request run offered 100 RPS for 60 seconds and completed all 6,000 offers. It returned 4,532 HTTP 200, 458 HTTP 201 and 1,010 HTTP 503 responses: 811 shared-quota-unavailable and 199 context-capacity-reached. The unchanged latency and availability gates failed:
+
+| Endpoint | Burst p95 / p99 | Existing p95 target | Result |
+| --- | ---: | ---: | --- |
+| Context | 3,321 / 3,832 ms | ≤500 ms; p99 ≤1,000 ms | FAIL |
+| Evaluate | 1,544 / 2,027 ms | ≤200 ms | FAIL |
+| History | 2,537 / 3,445 ms | ≤150 ms | FAIL |
+| Save | 2,772 / 3,322 ms | ≤500 ms | FAIL |
+| Sprint export | 4,756 / 5,210 ms | ≤500 ms | FAIL |
+| Availability | 4,990 / 6,000 successful; 1,010 HTTP 503 | zero unexpected 5xx | FAIL |
+
+At that burst, worker EVAL p95/p99 was 296/469 ms and 315/464 ms with zero EVAL errors. Event-loop p99/max was 381/904 ms and 360/522 ms. Mongo checkout wait p95 was 1,119/136 ms; queues peaked at 220/40 with no checkout failures. Context leaders peaked at 32/19 against the 32-per-worker admission bound. The detailed evidence and original command remain in `scenario-performance-6000-100rps-confirmation-2026-11-09.json` and the raw log linked in the preceding 9 November addendum.
+
+The branch already contains bounded same-worker coalescing for identical Sprint exports. That reduces duplicate export work and preserves Mongo receipts as the cross-worker authority; it does not remedy the observed quota, event-loop and Mongo queueing across the full request mix. This finalization made no speculative runtime tuning because the measured data did not identify a safe pool, fanout or database change. The current machine cannot produce a fresh real-Redis profile or acceptance: `wsl.exe` reports that WSL is not installed, no Redis server/container runtime is available, and the acceptance harness requires a real Redis server. The 6,000-request result is therefore a retained FAIL, not a current-branch PASS or a claimed before/after improvement.
+
+### Verification results on 10 November
+
+| Gate | Result | Exact result |
+| --- | --- | --- |
+| Backend Scenario and consumer contracts | PASS | `node --test --test-reporter=tap` over the eight focused files: 33/33 tests, zero skipped. |
+| MongoDB persistence and two-worker recovery | PASS | `node --test --test-concurrency=1 --test-reporter=tap` over Mongo, workers, Sprint export and migration suites: 4/4 tests, zero skipped. Includes immutable snapshot replay, two-worker recovery, Sprint receipt replay and cursor history. |
+| Shared quota failure behavior | PASS, unit contracts | Focused reliability tests verify atomic quota behavior and fail-closed Redis outage/timeout responses. Real shared-Redis quota, reconnect and two-worker quota gates are DEFERRED in this environment. |
+| Cross-module ownership and scoring contracts | PASS | Included in the 33 focused backend tests; deterministic v2 and legacy golden checks passed. |
+| Angular Scenario Simulator tests | PASS | Dedicated Vitest configuration: 7 files, 20/20 tests. `TEMP` and `TMP` pointed at a new task-owned writable temp folder after the managed AppData temp path denied Vite cache renames. |
+| Full Angular test suite | PASS | One run: `npm test -- --watch=false --runner-config=scripts/scenario-vitest.config.mjs`; 94 spec files, 594/594 tests, zero failures/skips, 102.42 s. `TEMP`/`TMP` used the task writable temp path and `NODE_DISABLE_COMPILE_CACHE=1`. All specs ran serially; tests/assertions were not removed or weakened. |
+| TypeScript | PASS | `node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.app.json`, exit 0 and no diagnostics. |
+| Production build | PASS | `npm run build`, exit 0 in 65.332 s. Existing SCSS budget warnings remain for landing-page (56.67 kB vs 48 kB) and jobs (52.97 kB vs 48 kB); neither source file changed. |
+| Production-bundle browser journey | PASS (fixture-backed) | Existing verifier ran against installed Chrome with the bundled Playwright module and local synthetic APIs; 32 captures across 1440/375 px and light/dark/system themes, including loading, recovered 503, empty history and degraded context. Zero page errors and zero horizontal overflows. Evidence: `frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110.json` and its 32 PNG captures. |
+| Fresh request-correlated profile and 6,000-request acceptance | DEFERRED (infra unavailable) | No run was started. WSL is not installed and no real Redis/server container is available; the harness starts Redis through WSL. The latest retained 6,000-request result remains a measured FAIL as detailed above. |
+| Formatting and Git integrity | PASS | No application source was changed in this finalization. The new JSON report was formatted and checked with the repository Prettier executable. Final `git diff --check` and staged diff check pass. No files were moved or deleted. |
+
+### Final gate decision and task file inventory
+
+**Production-ready: NO.** The latest 100-RPS availability and endpoint-latency gates are a measured FAIL. Fixture-backed production-bundle browser verification now passes. Fresh shared-Redis quota, Linux performance acceptance and deployment-integrated verification remain DEFERRED because the required Linux/Redis/MongoDB environment is unavailable here. A passing release decision requires a fresh correlated run and one full 6,000-request/100-RPS/60-second acceptance against real Redis and MongoDB, with every existing threshold met.
+
+Files changed by this finalization:
+
+- `backend/verification/scenario-simulator/SCENARIO-SIMULATOR-PRODUCTION-FINAL.md`
+- `backend/verification/scenario-simulator/finalization-status-2026-11-10.json` (retained gate summary)
+
+No files were moved or deleted, and no application source was changed in this finalization.
+
+## 10 November infrastructure availability follow-up
+
+The deployment-equivalent Linux prerequisite was rechecked before any performance run. This execution host is Windows (`win32`, Node v24.19.0). `wsl.exe --status` exited 50 with: “The Windows Subsystem for Linux is not installed. You can install by running `wsl.exe --install`.” The Scenario acceptance harness writes an ephemeral Redis config and launches `/usr/bin/redis-server` through `wsl.exe -d Ubuntu`; that path cannot run here. No `redis-server`, Docker or Podman executable or process was available. A local MongoDB 8.2.6 Windows binary exists at `C:\Program Files\MongoDB\Server\8.2\bin\mongod.exe`, but that does not supply a deployment-equivalent Linux stack or the missing real Redis server.
+
+The saved Codex Cloud environment list contains one runnable configuration named `Developer-Portfolio-Analyzer`, but it mounts repository ref `main`, not the authorized `fix/scenario-final` branch, and exposes no service inventory confirming real Redis and MongoDB. It is therefore not demonstrated to be a suitable acceptance target. No cloud task was launched and no application data was accessed.
+
+**Performance infrastructure status: BLOCKED before profiling/acceptance; performance acceptance is deferred.** The retained request-correlated diagnostic and 6,000-request FAIL remain the latest evidence. This environment check produced no new latency, pool, quota RTT, context-capacity or endpoint measurements, and no before/after comparison. No application code or tuning was changed. To continue, provide a deployment-equivalent Linux target checked out to `fix/scenario-final` with real Redis and MongoDB, or a confirmed saved environment that exposes those services for this branch. The release decision remains NOT PRODUCTION-READY pending deferred acceptance.
+
+## 10 November Redis-independent finalization completion
+
+This follow-up supersedes the earlier same-day full-suite and browser BLOCKED rows above. The accepted source branch remains `fix/scenario-final` at `9b188487d6a13d0d3508b9fac2ec06abe16c292b`. No application source or tests changed, so there is no application before/after performance delta and no demonstrated functional defect was found.
+
+### PASSED gates
+
+| Gate | Result and evidence |
+| --- | --- |
+| Full Angular suite and Vite temp-file workaround | PASS: 94 spec files, 594/594 tests, zero failures/skips, 102.42 s. Ran once with the existing `frontend/scripts/scenario-vitest.config.mjs` (`maxWorkers: 1`, `fileParallelism: false`), writable `TEMP`/`TMP`, and `NODE_DISABLE_COMPILE_CACHE=1`. The prior `EPERM` was the managed AppData Vite cache rename; the run avoided that protected temp/cache path without changing tests or application behavior. |
+| Scenario Simulator frontend behavior | PASS: all 20 Scenario Simulator/service specs are included in the 594-test run. Coverage includes loading completion, loading/error and retry state, history preservation and cursor behavior, cancellation on account invalidation/component teardown/template dismissal, stale-result rejection, and save/export gating after draft edits. |
+| Production-bundle browser behavior | PASS: `node frontend/scripts/verify-scenario-decomposition-ui.cjs production-final-20261110` using the Codex-bundled Playwright runtime, installed Chrome, and local synthetic API fixtures. Captured 32 viewport/theme/state cases; zero horizontal overflow and no page errors. Cases include draft/evaluation/comparison/roadmap/breakdown, a delayed context request followed by 503 recovery, empty history, and partial/degraded context. The first Edge launch and sandboxed Chrome loopback attempt failed at the browser runtime boundary; the successful Chrome run used a writable temp profile and permitted local-only fixture-server access. |
+| Ownership, deterministic scoring and cross-module contracts | PASS: retained same-branch backend focused run 33/33 with zero skipped, including ownership/security, v2 deterministic scoring and legacy parity, context/reliability, production contracts and Skill Gap consumers. No source changed after that run. |
+| MongoDB, immutable snapshots, workers and Sprint exports | PASS: retained same-branch integration run 4/4 with zero skipped for Mongo persistence/migration, two-worker recovery, immutable snapshot replay, cursor history and Sprint export receipt replay. No source changed after that run. |
+| Redis failure behavior | PASS at unit-contract level: existing focused reliability tests retain shared quota and fail-closed timeout/outage assertions. Real shared Redis and reconnect behavior was not exercised. |
+| TypeScript and production build | PASS on the same source revision in the earlier 10 November check. TypeScript emitted no diagnostics; production build exited 0 in 65.332 s. Existing landing-page and jobs SCSS budget warnings are unrelated and unchanged. |
+| Formatting and Git integrity | PASS: finalization JSON formatted and checked with the repository Prettier executable; report retained its established Markdown style; `git diff --check` and staged diff check pass. No app source or test files were modified. |
+
+### FAILED gates
+
+| Gate | Latest measured result |
+| --- | --- |
+| 6,000-request performance acceptance | FAIL (retained 2026-11-09 run): 6,000 offers at 100 RPS/60 s; 4,990 successful responses and 1,010 HTTP 503s (811 quota unavailable, 199 context capacity). Context/evaluate/history/save/export p95 were 3,321/1,544/2,537/2,772/4,756 ms against existing 500/200/150/500/500 ms targets. Availability requires zero unexpected 5xx. No newer run was possible here. |
+
+### DEFERRED gates and exact blocker
+
+| Gate | Status and required next action |
+| --- | --- |
+| Fresh request-correlated profile and Redis-backed load/recovery | DEFERRED. This host is Windows; `wsl.exe --status` exited 50 (“The Windows Subsystem for Linux is not installed”), no Redis, Docker or Podman runtime is available, and the isolated harness starts real Redis with `wsl.exe -d Ubuntu`/`/usr/bin/redis-server`. The available MongoDB 8.2.6 binary is Windows-only and does not make the environment deployment-equivalent. |
+| Deployment-integrated authenticated browser and cross-worker shared quota | DEFERRED. The completed browser run uses the existing synthetic fixtures. The sole saved Cloud configuration is `main` and does not confirm Redis/Mongo services, so it cannot safely establish the requested branch acceptance. |
+| Production readiness | DEFERRED / NO. Keep the latest measured performance gate as FAIL; production readiness requires a deployment-equivalent Linux environment with real Redis and MongoDB, a fresh correlated profile and one isolated 6,000-request/100-RPS/60-second run meeting every unchanged threshold. |
+
+No tuning, scoring/API/schema/security change, dependency change, production-data access, commit, push, merge or deployment was made. No Redis-dependent load test was started.
+
+### Exact task files and evidence
+
+- `backend/verification/scenario-simulator/SCENARIO-SIMULATOR-PRODUCTION-FINAL.md`
+- `backend/verification/scenario-simulator/finalization-status-2026-11-10.json`
+- `frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110.json`
+- 32 corresponding `frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-*.png` screenshots; exact names are enumerated in the status JSON.
+
+Both task-owned temp directories (Angular-run temp and browser-profile temp) were verified empty and removed. Existing staged, tracked and untracked user work was preserved; no files were moved or deleted from the repository.
