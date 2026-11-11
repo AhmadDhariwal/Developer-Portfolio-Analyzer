@@ -35,11 +35,25 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <!-- Material Symbols Outlined (used by Stitch generated designs) -->
+    <!-- Material Symbols Outlined (preloaded with display=block to prevent raw ligature text flash) -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block"
       rel="stylesheet"
     />
+    <script>
+      (function () {
+        try {
+          if ('fonts' in document && document.fonts.load) {
+            document.fonts.load('24px "Material Symbols Outlined"').catch(function () {});
+          }
+        } catch (e) {}
+      })();
+    </script>
     <!-- Material Design Icons -->
     <link
       rel="stylesheet"

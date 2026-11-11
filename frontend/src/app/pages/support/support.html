@@ -13,8 +13,13 @@
     <div class="mode-controls" role="group" aria-label="Support status">
       <span class="ticket-status-pill">
         <span class="status-dot"></span>
-        {{ supportTickets.length }} Active
-        {{ supportTickets.length === 1 ? 'Request' : 'Requests' }}
+        <ng-container *ngIf="isLoadingTickets; else ticketCountTpl">
+          Loading requests...
+        </ng-container>
+        <ng-template #ticketCountTpl>
+          {{ supportTickets.length }} Active
+          {{ supportTickets.length === 1 ? 'Request' : 'Requests' }}
+        </ng-template>
       </span>
     </div>
   </div>

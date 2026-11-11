@@ -31,7 +31,7 @@ import { SupportFaqComponent } from './components/support-faq/support-faq.compon
 })
 export class SupportComponent implements OnInit {
   supportTickets: SupportTicket[] = [];
-  isLoadingTickets = false;
+  isLoadingTickets = true;
 
   draft: SupportTicketDraft = {
     category: 'general_feedback',

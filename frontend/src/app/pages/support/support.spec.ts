@@ -45,6 +45,12 @@ describe('SupportComponent', () => {
     expect(supportServiceMock.getMyTickets).toHaveBeenCalledWith(1, 5);
   });
 
+  it('initializes with isLoadingTickets true and sets to false after tickets load', () => {
+    const fresh = TestBed.createComponent(SupportComponent).componentInstance;
+    expect(fresh.isLoadingTickets).toBe(true);
+    expect(component.isLoadingTickets).toBe(false);
+  });
+
   it('sends only replyToEmail plus the fixed field list (no contactEmail/email)', () => {
     component.submitSupportTicket(draft);
     const payload = supportServiceMock.createTicket.mock.calls[0][0];
