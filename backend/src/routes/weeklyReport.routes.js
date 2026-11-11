@@ -5,7 +5,10 @@ const {
   generateReport,
   getLatestReport,
   getReportHistory,
-  getReport, downloadPdf, refreshReport, resendEmail,
+  getReport,
+  downloadPdf,
+  refreshReport,
+  resendEmail,
 } = require('../controllers/weeklyReportController');
 const { admission } = require('../services/weeklyReportAdmissionService');
 

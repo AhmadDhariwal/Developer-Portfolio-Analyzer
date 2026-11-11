@@ -41,7 +41,11 @@ export interface WeeklyReport {
   predictedHiringReadiness: { score: number; reason: string };
   reportText: string;
   emailStatus?: 'sent' | 'skipped' | 'failed';
-  emailDelivery?: { status: string; contentHash?: string; history?: Array<{ status: string; requestedAt: string; finishedAt?: string }> };
+  emailDelivery?: {
+    status: string;
+    contentHash?: string;
+    history?: Array<{ status: string; requestedAt: string; finishedAt?: string }>;
+  };
   emailedAt: string | null;
   emailError: string;
   createdAt?: string | null;
@@ -51,7 +55,15 @@ export interface WeeklyReport {
   cacheExpiresAt?: number | null;
   meta: {
     version?: number;
-    evidence?: { scoreAvailable: boolean; measuredScore: number | null; coverageWeight: number; inputs: Record<string, { available: boolean; value: number | null; weight: number; reason: string }> };
+    evidence?: {
+      scoreAvailable: boolean;
+      measuredScore: number | null;
+      coverageWeight: number;
+      inputs: Record<
+        string,
+        { available: boolean; value: number | null; weight: number; reason: string }
+      >;
+    };
     comparison?: { available: boolean; baselineWeekStartDate?: string; reason: string };
     provenance?: { assessedAt?: string; timezone?: string; activityBasis?: string };
     githubScore: number;
@@ -167,11 +179,28 @@ export class WeeklyReportService {
     this.frontendCache.clearModule('weeklyReports:history');
   }
 
-  getReport(id: string, version?: string): Observable<WeeklyReport> { return this.api.getWeeklyReport(id, version).pipe(map((raw) => this.normalizeReport(raw)), takeUntil(this.invalidated)); }
-  downloadPdf(report: WeeklyReport): Observable<Blob> { return this.api.downloadWeeklyReport(report._id, report.meta.reportHash || undefined).pipe(takeUntil(this.invalidated)); }
-  resendEmail(report: WeeklyReport): Observable<any> { return this.api.resendWeeklyReport(report._id, report.meta.reportHash).pipe(takeUntil(this.invalidated)); }
-  refreshReport(report: WeeklyReport): Observable<WeeklyReport> { return this.mutateReport(this.api.refreshWeeklyReport(report._id, report.meta.reportHash)); }
-  generateReport(forceRefresh = false): Observable<WeeklyReport> { return this.mutateReport(this.api.generateWeeklyReport(forceRefresh)); }
+  getReport(id: string, version?: string): Observable<WeeklyReport> {
+    return this.api.getWeeklyReport(id, version).pipe(
+      map((raw) => this.normalizeReport(raw)),
+      takeUntil(this.invalidated),
+    );
+  }
+  downloadPdf(report: WeeklyReport): Observable<Blob> {
+    return this.api
+      .downloadWeeklyReport(report._id, report.meta.reportHash || undefined)
+      .pipe(takeUntil(this.invalidated));
+  }
+  resendEmail(report: WeeklyReport): Observable<any> {
+    return this.api
+      .resendWeeklyReport(report._id, report.meta.reportHash)
+      .pipe(takeUntil(this.invalidated));
+  }
+  refreshReport(report: WeeklyReport): Observable<WeeklyReport> {
+    return this.mutateReport(this.api.refreshWeeklyReport(report._id, report.meta.reportHash));
+  }
+  generateReport(forceRefresh = false): Observable<WeeklyReport> {
+    return this.mutateReport(this.api.generateWeeklyReport(forceRefresh));
+  }
   private mutateReport(request: Observable<any>): Observable<WeeklyReport> {
     const epoch = this.epoch;
     const owner = JSON.stringify(this.latestCacheKey());
@@ -293,7 +322,10 @@ export class WeeklyReportService {
       createdAt: raw?.createdAt || null,
       updatedAt: raw?.updatedAt || null,
       meta: {
-        version: raw?.meta?.version, evidence: raw?.meta?.evidence, comparison: raw?.meta?.comparison, provenance: raw?.meta?.provenance,
+        version: raw?.meta?.version,
+        evidence: raw?.meta?.evidence,
+        comparison: raw?.meta?.comparison,
+        provenance: raw?.meta?.provenance,
         githubScore: this.clamp(raw?.meta?.githubScore),
         resumeScore: this.clamp(raw?.meta?.resumeScore),
         skillFocus: this.normalizeStrings(raw?.meta?.skillFocus, 8),
@@ -301,7 +333,10 @@ export class WeeklyReportService {
           repositoriesTracked: this.number(raw?.meta?.activity?.repositoriesTracked),
           activeRepositories: this.number(raw?.meta?.activity?.activeRepositories),
           commits: this.number(raw?.meta?.activity?.commits),
-          weeklyCommitSignal: raw?.meta?.activity?.weeklyCommitSignal == null ? null : this.number(raw.meta.activity.weeklyCommitSignal),
+          weeklyCommitSignal:
+            raw?.meta?.activity?.weeklyCommitSignal == null
+              ? null
+              : this.number(raw.meta.activity.weeklyCommitSignal),
           stars: this.number(raw?.meta?.activity?.stars),
           forks: this.number(raw?.meta?.activity?.forks),
         },

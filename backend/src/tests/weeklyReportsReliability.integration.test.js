@@ -146,9 +146,12 @@ test(
     assert.equal(generated.meta.reportHash, repeated.meta.reportHash);
     assert.equal(generated.meta.deterministicScore, true);
     assert.equal(generated.meta.comparisons.scoreDelta, 0);
-    assert.match(generated.progressSummary, /establishes a saved baseline/);
+    assert.match(generated.progressSummary, /Overall score is not assessed/);
+    assert.equal(generated.meta.evidence.scoreAvailable, false);
+    assert.equal(generated.meta.evidence.measuredScore, null);
     assert.equal(generated.meta.fallbackUsed, true);
-    assert.equal(generated.meta.dataSourcesUsed.learning.status, 'Unavailable');
+    assert.equal(generated.meta.dataSourcesUsed.learning.available, false);
+    assert.equal(generated.meta.dataSourcesUsed.learning.status, 'No tracked learning');
     assert.equal(String(generated.userId), String(generationUserId));
     await User.updateOne({ _id: userId }, { $set: { 'notifications.weeklyScoreReport': false } });
     assert.equal(

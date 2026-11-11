@@ -1,4 +1,7 @@
-<section class="weekly-reports-page" [attr.aria-busy]="isLoading || isGenerating || isExporting || isResending">
+<section
+  class="weekly-reports-page"
+  [attr.aria-busy]="isLoading || isGenerating || isExporting || isResending"
+>
   <header class="page-header">
     <div class="header-copy">
       <span class="eyebrow">Your career, in perspective</span>
@@ -27,9 +30,29 @@
         {{ isGenerating ? 'Working…' : 'Generate current week' }}
       </button>
       <div class="snapshot-actions" *ngIf="latestReport as saved">
-        <button type="button" (click)="generateReport(true)" [disabled]="isGenerating || !isCurrentWeek || isArchivedVersion" title="Refresh the current week only when saved source signals changed">Refresh current week</button>
-        <button type="button" (click)="downloadPdf()" [disabled]="isExporting">{{ isExporting ? 'Preparing PDF…' : 'Download PDF' }}</button>
-        <button type="button" (click)="resendEmail()" [disabled]="isResending || isArchivedVersion || saved.emailDelivery?.status === 'uncertain' || saved.emailDelivery?.status === 'processing'">{{ isResending ? 'Sending…' : 'Resend email' }}</button>
+        <button
+          type="button"
+          (click)="generateReport(true)"
+          [disabled]="isGenerating || !isCurrentWeek || isArchivedVersion"
+          title="Refresh the current week only when saved source signals changed"
+        >
+          Refresh current week
+        </button>
+        <button type="button" (click)="downloadPdf()" [disabled]="isExporting">
+          {{ isExporting ? 'Preparing PDF…' : 'Download PDF' }}
+        </button>
+        <button
+          type="button"
+          (click)="resendEmail()"
+          [disabled]="
+            isResending ||
+            isArchivedVersion ||
+            saved.emailDelivery?.status === 'uncertain' ||
+            saved.emailDelivery?.status === 'processing'
+          "
+        >
+          {{ isResending ? 'Sending…' : 'Resend email' }}
+        </button>
         <small>Resend: 5-minute cooldown · 3 per week. Delivery preferences apply.</small>
       </div>
     </div>
@@ -61,10 +84,20 @@
   <ng-container *ngIf="!isLoading && latestReport as report">
     <div class="snapshot-notice">
       <strong>Saved snapshot · version {{ report.meta.version || 1 }}</strong>
-      <span>Source changes are applied only by an explicit current-week refresh. Historical weeks stay saved.</span>
-      <span *ngIf="report.meta.evidence?.scoreAvailable === false">Overall score not assessed · {{ report.meta.evidence?.coverageWeight }}% of weighted evidence available. Missing evidence is not zero.</span>
-      <span *ngIf="!report.meta.evidence">Legacy snapshot: original values retained; input completeness was not recorded.</span>
-      <span *ngIf="report.emailDelivery?.status === 'uncertain'">Email outcome is uncertain. Provider reconciliation is required before another send.</span>
+      <span
+        >Source changes are applied only by an explicit current-week refresh. Historical weeks stay
+        saved.</span
+      >
+      <span *ngIf="report.meta.evidence?.scoreAvailable === false"
+        >Overall score not assessed · {{ report.meta.evidence?.coverageWeight }}% of weighted
+        evidence available. Missing evidence is not zero.</span
+      >
+      <span *ngIf="!report.meta.evidence"
+        >Legacy snapshot: original values retained; input completeness was not recorded.</span
+      >
+      <span *ngIf="report.emailDelivery?.status === 'uncertain'"
+        >Email outcome is uncertain. Provider reconciliation is required before another send.</span
+      >
     </div>
     <section class="stale-warning" *ngIf="report.meta.sourceFreshness?.detection">
       <strong>Source data needs attention</strong>
@@ -85,12 +118,17 @@
             aria-label="Career momentum"
             aria-valuemin="0"
             aria-valuemax="100"
-            [attr.aria-valuenow]="report.meta.evidence?.scoreAvailable === false ? null : report.score"
+            [attr.aria-valuenow]="
+              report.meta.evidence?.scoreAvailable === false ? null : report.score
+            "
             [attr.aria-valuetext]="overallLabel(report)"
             [class.score--missing]="report.meta.evidence?.scoreAvailable === false"
-            [style.--score]="(report.meta.evidence?.scoreAvailable === false ? 0 : report.score) + '%'"
+            [style.--score]="
+              (report.meta.evidence?.scoreAvailable === false ? 0 : report.score) + '%'
+            "
           >
-            {{ overallLabel(report) }}<span *ngIf="report.meta.evidence?.scoreAvailable !== false">/100</span>
+            {{ overallLabel(report)
+            }}<span *ngIf="report.meta.evidence?.scoreAvailable !== false">/100</span>
           </div>
 
           <div class="score-copy">
@@ -142,9 +180,17 @@
         <div class="card-label">Readiness indicator</div>
 
         <div class="readiness-score" [ngClass]="getReadinessClass(getReadinessScore(report))">
-          <span class="value">{{ report.meta.evidence?.scoreAvailable === false ? 'Not assessed' : getReadinessScore(report) + '%' }}</span>
+          <span class="value">{{
+            report.meta.evidence?.scoreAvailable === false
+              ? 'Not assessed'
+              : getReadinessScore(report) + '%'
+          }}</span>
 
-          <span class="label">{{ report.meta.evidence?.scoreAvailable === false ? 'Evidence needed' : getReadinessTone(getReadinessScore(report)) }}</span>
+          <span class="label">{{
+            report.meta.evidence?.scoreAvailable === false
+              ? 'Evidence needed'
+              : getReadinessTone(getReadinessScore(report))
+          }}</span>
         </div>
 
         <p>{{ report.predictedHiringReadiness.reason }}</p>
@@ -168,12 +214,18 @@
           *ngFor="let item of trendReports; trackBy: trackByReportId"
           (click)="selectReport(item)"
           [attr.aria-label]="
-            (reportDate(item.weekStartDate, item)) + ': ' + overallLabel(item) + (item.meta.evidence?.scoreAvailable === false ? '' : ' out of 100')
+            reportDate(item.weekStartDate, item) +
+            ': ' +
+            overallLabel(item) +
+            (item.meta.evidence?.scoreAvailable === false ? '' : ' out of 100')
           "
           [attr.aria-pressed]="item._id === report._id"
         >
           <strong>{{ overallLabel(item) }}</strong
-          ><span class="trend-track"><span [style.height.%]="item.meta.evidence?.scoreAvailable === false ? 0 : item.score"></span></span
+          ><span class="trend-track"
+            ><span
+              [style.height.%]="item.meta.evidence?.scoreAvailable === false ? 0 : item.score"
+            ></span></span
           ><small>{{ reportDate(item.weekStartDate, item) }}</small>
         </button>
       </div>
@@ -202,7 +254,7 @@
       <article class="kpi-card">
         <span class="kpi-label">Sprint Completion</span>
 
-        <strong>{{ report.meta.sprint.tasksTotal ? metricLabel('sprint', report.meta.sprint.completionRate) : 'No tasks to assess' }}</strong>
+        <strong>{{ sprintMetricLabel(report) }}</strong>
 
         <small [class]="deltaClass(report.meta.comparisons.sprintCompletionDelta)">{{
           formatDelta(report.meta.comparisons.sprintCompletionDelta)
@@ -212,7 +264,7 @@
       <article class="kpi-card">
         <span class="kpi-label">Interview Progress</span>
 
-        <strong>{{ report.meta.interview.questionsGenerated }}</strong>
+        <strong>{{ interviewActivityLabel(report) }}</strong>
 
         <small [class]="deltaClass(report.meta.comparisons.interviewQuestionsDelta)">{{
           formatDelta(report.meta.comparisons.interviewQuestionsDelta, 'qs')
@@ -243,7 +295,11 @@
             <span [style.width.%]="item.score ?? 0"></span>
           </div>
 
-          <small>{{ item.score === null ? 'Missing evidence — not a zero score' : item.score + '% · ' + item.contribution + ' weighted points' }}</small>
+          <small>{{
+            item.score === null
+              ? item.reason + ' — not a zero score'
+              : item.score + '% · ' + item.contribution + ' weighted points'
+          }}</small>
         </article>
       </div>
     </section>
@@ -256,7 +312,9 @@
           <span class="panel-subtitle">Adjacent reporting weeks only</span>
         </div>
 
-        <p class="comparison-note">{{ report.meta.comparison?.reason || 'No verified adjacent-week comparison recorded.' }}</p>
+        <p class="comparison-note">
+          {{ report.meta.comparison?.reason || 'No verified adjacent-week comparison recorded.' }}
+        </p>
         <div class="comparison-list" *ngIf="comparisonAvailable">
           <div class="comparison-row">
             <span>Overall Score</span>
@@ -271,7 +329,11 @@
           <div class="comparison-row">
             <span>Readiness</span>
 
-            <strong>{{ report.meta.evidence?.scoreAvailable === false ? 'Not assessed' : getReadinessScore(report) + '%' }}</strong>
+            <strong>{{
+              report.meta.evidence?.scoreAvailable === false
+                ? 'Not assessed'
+                : getReadinessScore(report) + '%'
+            }}</strong>
 
             <small [class]="deltaClass(report.meta.comparisons.readinessDelta)">{{
               formatDelta(report.meta.comparisons.readinessDelta)
@@ -281,7 +343,11 @@
           <div class="comparison-row">
             <span>Weekly commits</span>
 
-            <strong>{{ report.meta.activity.weeklyCommitSignal == null || !report.meta.provenance ? 'Not measured' : report.meta.activity.weeklyCommitSignal }}</strong>
+            <strong>{{
+              report.meta.activity.weeklyCommitSignal == null || !report.meta.provenance
+                ? 'Not measured'
+                : report.meta.activity.weeklyCommitSignal
+            }}</strong>
 
             <small [class]="deltaClass(report.meta.comparisons.activityCommitsDelta)">{{
               'Repository totals are lifetime counters'
@@ -330,11 +396,17 @@
                 {{ reportDate(item.weekEndDate, item) }}</span
               >
 
-              <strong>{{ overallLabel(item) }}%</strong>
+              <strong
+                >{{ overallLabel(item)
+                }}{{ item.meta.evidence?.scoreAvailable === false ? '' : '%' }}</strong
+              >
             </div>
 
             <div class="history-track">
-              <span class="history-fill" [style.width.%]="item.meta.evidence?.scoreAvailable === false ? 0 : item.score"></span>
+              <span
+                class="history-fill"
+                [style.width.%]="item.meta.evidence?.scoreAvailable === false ? 0 : item.score"
+              ></span>
             </div>
           </button>
         </div>
@@ -400,7 +472,9 @@
         <div>
           <h3>Data Sources Used</h3>
 
-          <span class="panel-subtitle">Saved evidence, source gaps and freshness at assessment</span>
+          <span class="panel-subtitle"
+            >Saved evidence, source gaps and freshness at assessment</span
+          >
         </div>
 
         <small *ngIf="report.emailStatus === 'failed' && report.emailError">{{

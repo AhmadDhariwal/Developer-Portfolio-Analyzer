@@ -233,7 +233,10 @@ const buildInterviewSnapshot = (sessions = [], start, end) => {
     sessions: safeSessions.length,
     questionsGenerated: sumNumbers(
       safeSessions.map((session) =>
-        Array.isArray(session?.questions) && (!start || (new Date(session.createdAt) >= start && new Date(session.createdAt) <= end)) ? session.questions.length : 0,
+        Array.isArray(session?.questions) &&
+        (!start || (new Date(session.createdAt) >= start && new Date(session.createdAt) <= end))
+          ? session.questions.length
+          : 0,
       ),
     ),
   };
@@ -431,7 +434,9 @@ const buildDataSourcesUsed = ({
         latestInterviewSession?.updatedAt || latestInterviewSession?.createdAt || null,
       status: currentInterviewSessions.length
         ? `${currentInterviewSessions.length} sessions`
-        : latestInterviewSession ? 'No activity this week' : 'No saved sessions',
+        : latestInterviewSession
+          ? 'No activity this week'
+          : 'No saved sessions',
     },
     learning: {
       available: learningRecords.length > 0,
@@ -461,7 +466,13 @@ const buildDataSourcesUsed = ({
   // Attach freshness to each source
   Object.keys(sources).forEach((key) => {
     sources[key].freshness = toSourceFreshness(sources[key].lastAnalyzedAt);
-    if (!sources[key].connected && !sources[key].analyzed && !sources[key].available) sources[key].status = key === 'learning' ? 'No tracked learning' : key === 'interviewPrep' ? 'No saved sessions' : 'No saved evidence';
+    if (!sources[key].connected && !sources[key].analyzed && !sources[key].available)
+      sources[key].status =
+        key === 'learning'
+          ? 'No tracked learning'
+          : key === 'interviewPrep'
+            ? 'No saved sessions'
+            : 'No saved evidence';
   });
 
   return sources;
@@ -872,9 +883,18 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
   const weekEndDate = endOfWeek(weekStartDate);
   const previousWeek = previousWeekRange(weekStartDate);
   const saved = await WeeklyReport.findOne({ userId, weekStartDate, weekEndDate }).lean();
-  if (options.targetId && String(saved?._id) !== options.targetId) throw Object.assign(Error('The current report changed. Reload before refreshing.'), { status: 409 });
-  if (options.expectedHash && saved?.meta?.reportHash !== options.expectedHash) throw Object.assign(Error('The saved report changed. Reload before refreshing.'), { status: 409 });
-  if (saved && !forceRefresh) { smartSkippedReports.add(saved); return saved; }
+  if (options.targetId && String(saved?._id) !== options.targetId)
+    throw Object.assign(Error('The current report changed. Reload before refreshing.'), {
+      status: 409,
+    });
+  if (options.expectedHash && saved?.meta?.reportHash !== options.expectedHash)
+    throw Object.assign(Error('The saved report changed. Reload before refreshing.'), {
+      status: 409,
+    });
+  if (saved && !forceRefresh) {
+    smartSkippedReports.add(saved);
+    return saved;
+  }
 
   const [analysis, resumeAnalysis, skillGraph, repositories] = await Promise.all([
     Analysis.findOne({ userId })
@@ -889,7 +909,8 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
       .select('weeklyRoadmap nodes updatedAt createdAt')
       .lean(),
     Repository.find({ ownerId: userId })
-      .sort({ repoName: 1, _id: 1 }).select('repoName language stars forks commits lastUpdated')
+      .sort({ repoName: 1, _id: 1 })
+      .select('repoName language stars forks commits lastUpdated')
       .lean(),
   ]);
 
@@ -911,7 +932,9 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
     WeeklyReport.find({ userId, weekEndDate: { $lt: weekStartDate } })
       .sort({ weekEndDate: -1 })
       .limit(4)
-      .select('score topAchievements biggestRiskArea recommendations weekStartDate weekEndDate updatedAt meta')
+      .select(
+        'score topAchievements biggestRiskArea recommendations weekStartDate weekEndDate updatedAt meta',
+      )
       .lean(),
     CareerSprint.findOne({
       userId,
@@ -929,11 +952,29 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
       .sort({ updatedAt: -1 })
       .select('tasks weeklyGoal streak updatedAt createdAt')
       .lean(),
-    InterviewPrepSession.find({ userId, $or: [{ createdAt: { $gte: weekStartDate, $lte: weekEndDate } }, { updatedAt: { $gte: weekStartDate, $lte: weekEndDate } }] })
-      .sort({ updatedAt: -1, _id: -1 }).select('questions progress status completedAt updatedAt createdAt').lean(),
-    InterviewPrepSession.find({ userId, $or: [{ createdAt: { $gte: previousWeek.start, $lte: previousWeek.end } }, { updatedAt: { $gte: previousWeek.start, $lte: previousWeek.end } }] })
-      .select('questions progress status completedAt updatedAt createdAt').lean(),
-    InterviewPrepSession.findOne({ userId }).sort({ updatedAt: -1, _id: -1 }).select('_id createdAt updatedAt').lean(),
+    InterviewPrepSession.find({
+      userId,
+      $or: [
+        { createdAt: { $gte: weekStartDate, $lte: weekEndDate } },
+        { updatedAt: { $gte: weekStartDate, $lte: weekEndDate } },
+      ],
+    })
+      .sort({ updatedAt: -1, _id: -1 })
+      .select('questions progress status completedAt updatedAt createdAt')
+      .lean(),
+    InterviewPrepSession.find({
+      userId,
+      $or: [
+        { createdAt: { $gte: previousWeek.start, $lte: previousWeek.end } },
+        { updatedAt: { $gte: previousWeek.start, $lte: previousWeek.end } },
+      ],
+    })
+      .select('questions progress status completedAt updatedAt createdAt')
+      .lean(),
+    InterviewPrepSession.findOne({ userId })
+      .sort({ updatedAt: -1, _id: -1 })
+      .select('_id createdAt updatedAt')
+      .lean(),
     Recommendation.find({ userId })
       .sort({ createdAt: -1 })
       .limit(8)
@@ -951,8 +992,13 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
     }),
   ]);
 
-  const previousReport = recentReports.find((report) => require('./weeklyReportEvidence').adjacent(report, previousWeek)) || null;
-  const previousWeeklyReports = recentReports.filter((report) => new Date(report.weekEndDate) < weekStartDate);
+  const previousReport =
+    recentReports.find((report) =>
+      require('./weeklyReportEvidence').adjacent(report, previousWeek),
+    ) || null;
+  const previousWeeklyReports = recentReports.filter(
+    (report) => new Date(report.weekEndDate) < weekStartDate,
+  );
   const previousWeeklySignal = buildWeeklySignalFromReports(previousWeeklyReports);
   const reportDeveloperSignals = {
     ...developerSignals,
@@ -971,8 +1017,16 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
   const activitySnapshot = buildActivitySnapshot(repositories, weekStartDate, weekEndDate);
   const sprintSnapshot = buildSprintSnapshot(currentSprint);
   const previousSprintSnapshot = buildSprintSnapshot(previousSprint);
-  const interviewSnapshot = buildInterviewSnapshot(currentInterviewSessions, weekStartDate, weekEndDate);
-  const previousInterviewSnapshot = buildInterviewSnapshot(previousInterviewSessions, previousWeek.start, previousWeek.end);
+  const interviewSnapshot = buildInterviewSnapshot(
+    currentInterviewSessions,
+    weekStartDate,
+    weekEndDate,
+  );
+  const previousInterviewSnapshot = buildInterviewSnapshot(
+    previousInterviewSessions,
+    previousWeek.start,
+    previousWeek.end,
+  );
   const recommendationSnapshot = buildRecommendationSnapshot(recommendations, weeklySignal);
   const portfolioSnapshot = buildPortfolioSnapshot(publicProfile, portfolioSignal);
   const integrationSnapshot = buildIntegrationSnapshot(integrationConnections, integrationSignal);
@@ -989,7 +1043,11 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
     skillCoverage: skillSignals.coverageScore,
   });
 
-  const readiness = clampPercent(require('./weeklyReportEvidence').finite(analysis?.readinessScore) ? analysis.readinessScore : score);
+  const readiness = clampPercent(
+    require('./weeklyReportEvidence').finite(analysis?.readinessScore)
+      ? analysis.readinessScore
+      : score,
+  );
 
   const contributionCount = sumNumbers(
     (analysis?.contributionActivity || []).map((entry) => entry.count),
@@ -1072,10 +1130,33 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
     previousData.score.readiness = toNumber(previousData.score.overall);
   }
 
-  const evidence = require('./weeklyReportEvidence').assess({ analysis, resume: resumeAnalysis, graph: skillGraph, sprint: currentSprint, interviewPresent: Boolean(latestInterviewSession), scores: { github: githubScore, resume: resumeScore, sprint: sprintSnapshot.completionRate, interview: interviewSignal, skillCoverage: skillSignals.coverageScore } });
+  const evidence = require('./weeklyReportEvidence').assess({
+    analysis,
+    resume: resumeAnalysis,
+    graph: skillGraph,
+    sprint: currentSprint,
+    interviewPresent: Boolean(latestInterviewSession),
+    scores: {
+      github: githubScore,
+      resume: resumeScore,
+      sprint: sprintSnapshot.completionRate,
+      interview: interviewSignal,
+      skillCoverage: skillSignals.coverageScore,
+    },
+  });
   evidence.measuredScore = evidence.scoreAvailable ? score : null;
-  const comparison = { available: Boolean(previousReport && previousReport.meta?.evidence?.scoreAvailable && evidence.scoreAvailable), baselineReportId: previousReport ? String(previousReport._id) : null, baselineWeekStartDate: previousReport?.weekStartDate || null, reason: !previousReport ? 'No saved report for the immediately preceding week.' : 'Comparison requires complete evidence in both adjacent weeks.' };
-  if (comparison.available) comparison.reason = 'Compared with the immediately preceding saved week.';
+  const comparison = {
+    available: Boolean(
+      previousReport && previousReport.meta?.evidence?.scoreAvailable && evidence.scoreAvailable,
+    ),
+    baselineReportId: previousReport ? String(previousReport._id) : null,
+    baselineWeekStartDate: previousReport?.weekStartDate || null,
+    reason: !previousReport
+      ? 'No saved report for the immediately preceding week.'
+      : 'Comparison requires complete evidence in both adjacent weeks.',
+  };
+  if (comparison.available)
+    comparison.reason = 'Compared with the immediately preceding saved week.';
   const comparisons = buildComparisons({ current: userData, previous: previousData });
 
   if (!comparison.available) {
@@ -1086,7 +1167,12 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
       'resumeDelta',
       'coverageDelta',
       'missingSkillsDelta',
-      'sprintCompletionDelta', 'tasksCompletedDelta', 'interviewSessionsDelta', 'interviewQuestionsDelta', 'activityCommitsDelta', 'activeReposDelta',
+      'sprintCompletionDelta',
+      'tasksCompletedDelta',
+      'interviewSessionsDelta',
+      'interviewQuestionsDelta',
+      'activityCommitsDelta',
+      'activeReposDelta',
     ])
       comparisons[key] = 0;
   }
@@ -1151,7 +1237,9 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
     current: userData,
     previous: previousData,
     deltas: comparisons,
-    dataSourcesUsed: Object.fromEntries(Object.entries(dataSourcesUsed).map(([key, { freshness, ...source }]) => [key, source])),
+    dataSourcesUsed: Object.fromEntries(
+      Object.entries(dataSourcesUsed).map(([key, { freshness, ...source }]) => [key, source]),
+    ),
   });
 
   if (existingReport?.meta?.signalHash === signalHash) {
@@ -1188,16 +1276,26 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
   };
 
   if (!evidence.scoreAvailable) {
-    const missing = Object.entries(evidence.inputs).filter(([, input]) => !input.available).map(([key]) => key);
+    const missing = Object.entries(evidence.inputs)
+      .filter(([, input]) => !input.available)
+      .map(([key]) => key);
     fallback.progressSummary = `Overall score is not assessed because ${missing.join(', ')} evidence is missing. Missing evidence is not a measured zero.`;
-    fallback.insights = Object.entries(evidence.inputs).slice(0, 4).map(([key, input]) => `${key}: ${input.available ? input.value + '/100 from saved evidence' : input.reason}.`);
+    fallback.insights = Object.entries(evidence.inputs)
+      .slice(0, 4)
+      .map(
+        ([key, input]) =>
+          `${key}: ${input.available ? input.value + '/100 from saved evidence' : input.reason}.`,
+      );
     fallback.topAchievements = [
       `Learning Hub: ${learningSnapshot.totalTracked} tracked courses; completion is self-reported.`,
       `Interview Prep: ${interviewSnapshot.sessions} sessions active in this reporting week.`,
       `Sprint: ${sprintSnapshot.tasksTotal ? sprintSnapshot.tasksCompleted + ' of ' + sprintSnapshot.tasksTotal + ' tasks complete' : 'no tasks to assess'}.`,
     ];
     fallback.biggestRiskArea = 'Complete missing evidence before interpreting an overall score.';
-    fallback.predictedHiringReadiness = { score: 0, reason: 'Not assessed: incomplete source evidence. This is not a hiring probability.' };
+    fallback.predictedHiringReadiness = {
+      score: 0,
+      reason: 'Not assessed: incomplete source evidence. This is not a hiring probability.',
+    };
   }
 
   let aiResult = fallback;
@@ -1269,8 +1367,19 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
     emailError: '',
     reportText,
     meta: {
-      evidence, comparison,
-      provenance: { assessedAt: new Date(), brand: APP_NAME, timezone: process.env.WEEKLY_REPORT_TIMEZONE || require('@js-temporal/polyfill').Temporal.Now.timeZoneId(), activityBasis: 'Repository commits are lifetime counters; weekly commit count is not available.', interviewBasis: 'Sessions created or practiced during the week; generated questions counted only for sessions created in the week.' },
+      evidence,
+      comparison,
+      provenance: {
+        assessedAt: new Date(),
+        brand: APP_NAME,
+        timezone:
+          process.env.WEEKLY_REPORT_TIMEZONE ||
+          require('@js-temporal/polyfill').Temporal.Now.timeZoneId(),
+        activityBasis:
+          'Repository commits are lifetime counters; weekly commit count is not available.',
+        interviewBasis:
+          'Sessions created or practiced during the week; generated questions counted only for sessions created in the week.',
+      },
       githubScore,
       resumeScore,
       skillFocus,
@@ -1304,7 +1413,18 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
         .session(session)
         .lean();
       const Revision = require('../models/weeklyReportRevision');
-      if (current) { const contentHash = current.meta?.reportHash || buildStableHash(current); const snapshot = { ...current, meta: { ...current.meta, reportHash: contentHash, version: current.meta?.version || 1 } }; await Revision.updateOne({ reportId: current._id, contentHash }, { $setOnInsert: { userId, snapshot } }, { upsert: true, session }); }
+      if (current) {
+        const contentHash = current.meta?.reportHash || buildStableHash(current);
+        const snapshot = {
+          ...current,
+          meta: { ...current.meta, reportHash: contentHash, version: current.meta?.version || 1 },
+        };
+        await Revision.updateOne(
+          { reportId: current._id, contentHash },
+          { $setOnInsert: { userId, snapshot } },
+          { upsert: true, session },
+        );
+      }
       payload.meta.version = Number(current?.meta?.version || (current ? 1 : 0)) + 1;
       const unresolved = ['processing', 'uncertain'].includes(current?.emailDelivery?.status);
       const deliveredSame =
@@ -1328,14 +1448,23 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
                 attempts: 0,
                 nextAttemptAt: new Date(),
               };
-      if (options.emailIntent === false && current) delivery = { ...current.emailDelivery, pendingContentHash: undefined };
+      if (options.emailIntent === false && current)
+        delivery = { ...current.emailDelivery, pendingContentHash: undefined };
       const report = await WeeklyReport.findOneAndUpdate(
         { userId, weekStartDate, weekEndDate },
         {
           $set: {
             ...payload,
-            emailStatus: options.emailIntent === false && current ? current.emailStatus : deliveredSame ? 'sent' : payload.emailStatus,
-            emailedAt: (deliveredSame || options.emailIntent === false) && current ? current.emailedAt : null,
+            emailStatus:
+              options.emailIntent === false && current
+                ? current.emailStatus
+                : deliveredSame
+                  ? 'sent'
+                  : payload.emailStatus,
+            emailedAt:
+              (deliveredSame || options.emailIntent === false) && current
+                ? current.emailedAt
+                : null,
             emailDelivery: delivery,
             emailError: unresolved
               ? 'Previous email delivery needs reconciliation. The latest report remains available online.'
@@ -1344,7 +1473,11 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
         },
         { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true, session },
       );
-      await Revision.updateOne({ reportId: report._id, contentHash: reportHash }, { $setOnInsert: { userId, snapshot: report.toObject() } }, { upsert: true, session });
+      await Revision.updateOne(
+        { reportId: report._id, contentHash: reportHash },
+        { $setOnInsert: { userId, snapshot: report.toObject() } },
+        { upsert: true, session },
+      );
       return report;
     },
     (report) => ({
@@ -1407,12 +1540,20 @@ const sendWeeklyReportEmailCore = async (report, user, { resend = false } = {}) 
   }
 
   let base;
-  try { base = new URL(FRONTEND_BASE_URL); if (!['https:', 'http:'].includes(base.protocol)) throw Error('Invalid report origin'); }
-  catch { return { sent: false, reason: 'Saved report link is not configured.' }; }
+  try {
+    base = new URL(FRONTEND_BASE_URL);
+    if (!['https:', 'http:'].includes(base.protocol)) throw Error('Invalid report origin');
+  } catch {
+    return { sent: false, reason: 'Saved report link is not configured.' };
+  }
   const reportLink = `${FRONTEND_BASE_URL}/app/weekly-reports?report=${encodeURIComponent(String(report._id))}&version=${encodeURIComponent(report.meta?.reportHash || '')}`;
   const presentation = require('./weeklyReportPresentation');
   const body = presentation.email(report, user.name, reportLink);
-  const message = { to: user.email, subject: `Your weekly progress · ${presentation.view(report).period}`, ...body };
+  const message = {
+    to: user.email,
+    subject: `Your weekly progress · ${presentation.view(report).period}`,
+    ...body,
+  };
 
   let lastError = null;
   for (const provider of providers) {
@@ -1447,7 +1588,10 @@ const sendWeeklyReportEmailCore = async (report, user, { resend = false } = {}) 
 };
 const sendWeeklyReportEmail = (report, user, options = {}) => {
   const reportId = String(report?._id || 'missing');
-  if (emailInflight.has(reportId)) return options.resend ? Promise.resolve({ sent: false, reason: 'Another delivery is already processing.' }) : emailInflight.get(reportId);
+  if (emailInflight.has(reportId))
+    return options.resend
+      ? Promise.resolve({ sent: false, reason: 'Another delivery is already processing.' })
+      : emailInflight.get(reportId);
   const pending = require('./weeklyReportDeliveryService')
     .deliver(report, user, sendWeeklyReportEmailCore, options)
     .finally(() => emailInflight.delete(reportId));
@@ -1637,7 +1781,14 @@ const startWeeklyReportScheduler = () => {
   return weeklyReportSchedulerTask;
 };
 module.exports = {
-  __test: { loadDefaultResumeAnalysis, buildLearningSnapshot, buildSprintSnapshot, computeOverallScore, buildDataSourcesUsed, buildInterviewSnapshot },
+  __test: {
+    loadDefaultResumeAnalysis,
+    buildLearningSnapshot,
+    buildSprintSnapshot,
+    computeOverallScore,
+    buildDataSourcesUsed,
+    buildInterviewSnapshot,
+  },
   generateWeeklyReport,
   wasWeeklyReportSmartSkipped,
   sendWeeklyReportEmail,
