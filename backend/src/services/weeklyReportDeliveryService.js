@@ -58,7 +58,14 @@ async function deliver(report, user, send, { resend = false, expectedHash } = {}
     .lean();
   if (!recipient?.email || recipient.notifications?.weeklyScoreReport === false) {
     await Report.updateOne({ _id: current._id }, { $set: { 'emailDelivery.status': 'skipped' } });
-    return { sent: false, reason: 'Recipient or preference unavailable.' };
+    return {
+      sent: false,
+      reason: !recipient
+        ? 'The report recipient is unavailable or inactive.'
+        : !recipient.email
+          ? 'No email address is configured for this account.'
+          : 'Weekly report emails are disabled. Enable Weekly Score Report in notification settings before resending.',
+    };
   }
   if (resend) await require('./weeklyReportAdmissionService').reserveResend(String(current.userId));
   const leaseId = randomUUID();

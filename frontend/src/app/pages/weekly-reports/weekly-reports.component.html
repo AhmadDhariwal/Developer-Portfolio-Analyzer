@@ -41,6 +41,7 @@
   </section>
 
   <p role="status" aria-live="polite" *ngIf="actionMessage">{{ actionMessage }}</p>
+  <p role="alert" *ngIf="actionError">{{ actionError }}</p>
   <div class="skeleton-grid" *ngIf="isLoading">
     <article class="skeleton-card hero" *ngFor="let item of skeletonItems">
       <span class="skeleton-line short"></span>

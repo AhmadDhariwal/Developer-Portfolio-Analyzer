@@ -97,154 +97,155 @@
   </div>
 
   <!-- ════════════════════════════════════════════════════════════
-       C. Two-Column Workspace Layout (Full Responsive Grid)
+       C. Top Profile Module (Developer Identity & Account Telemetry)
   ════════════════════════════════════════════════════════════ -->
-  <div class="prof-layout" *ngIf="!isLoading">
-    <!-- ──────────────────────────────────────────────────────────
-         LEFT SIDEBAR (Identity & Account Telemetry)
-    ────────────────────────────────────────────────────────── -->
-    <aside class="prof-sidebar">
-      <!-- 1. Identity & Avatar Panel -->
-      <div
-        class="prof-card avatar-card"
-        appProfileAvatarUploader
-        [profile]="profile"
-        [isSaving]="isSaving"
-        [isUploadingAvatar]="isUploadingAvatar"
-        [uploadProgress]="avatarUploadProgress"
-        [isAvatarChangePending]="isAvatarChangePending"
-        [avatarSrc]="getAvatarSrc()"
-        [initials]="getInitials()"
-        (onAvatarFileSelectedIntent)="onAvatarFileSelected($event)"
-        (onAvatarErrorIntent)="onAvatarError($event)"
-        (discardAvatarChangeIntent)="discardAvatarChange()"
-        (openAvatarPreviewIntent)="openAvatarPreview()"
-      ></div>
+  <section
+    class="prof-top-module"
+    *ngIf="!isLoading"
+    aria-label="Developer profile and account telemetry overview"
+  >
+    <!-- 1. Identity & Avatar Panel -->
+    <div
+      class="prof-card avatar-card"
+      appProfileAvatarUploader
+      [profile]="profile"
+      [isSaving]="isSaving"
+      [isUploadingAvatar]="isUploadingAvatar"
+      [uploadProgress]="avatarUploadProgress"
+      [isAvatarChangePending]="isAvatarChangePending"
+      [avatarSrc]="getAvatarSrc()"
+      [initials]="getInitials()"
+      (onAvatarFileSelectedIntent)="onAvatarFileSelected($event)"
+      (onAvatarErrorIntent)="onAvatarError($event)"
+      (discardAvatarChangeIntent)="discardAvatarChange()"
+      (openAvatarPreviewIntent)="openAvatarPreview()"
+    ></div>
 
-      <!-- 2. Account Telemetry Panel -->
-      <div
-        class="prof-card stats-card"
-        appProfileAccountTelemetry
-        [profile]="profile"
-        [scoreClass]="getScoreClass(profile.stats.developerScore)"
-      ></div>
-    </aside>
+    <!-- 2. Account Telemetry Panel -->
+    <div
+      class="prof-card stats-card"
+      appProfileAccountTelemetry
+      [profile]="profile"
+      [scoreClass]="getScoreClass(profile.stats.developerScore)"
+    ></div>
+  </section>
 
-    <!-- ──────────────────────────────────────────────────────────
-         RIGHT COLUMN (Configuration Sections)
-    ────────────────────────────────────────────────────────── -->
-    <main class="prof-main">
-      <!-- Section 1: Personal Information ─────────────────────── -->
-      <section
-        class="prof-card section-card"
-        appProfilePersonalInformation
-        [profile]="profile"
-      ></section>
+  <!-- ════════════════════════════════════════════════════════════
+       D. Full-Width Settings Workspace (Responsive Full-Screen Flow)
+  ════════════════════════════════════════════════════════════ -->
+  <main class="prof-settings-workspace" *ngIf="!isLoading">
+    <!-- Section 1: Developer Profiles & Connected Accounts -->
+    <section
+      class="prof-card section-card"
+      appProfileConnectedAccounts
+      [profile]="profile"
+    ></section>
 
-      <!-- Section 2: Connected Accounts ───────────────────────── -->
-      <section
-        class="prof-card section-card"
-        appProfileConnectedAccounts
-        [profile]="profile"
-      ></section>
+    <!-- Section 2: Career Profile & Target Vector -->
+    <section
+      class="prof-card section-card"
+      appProfileCareerPreferences
+      [profile]="profile"
+      [careerStacks]="careerStacks"
+      [experienceLevels]="experienceLevels"
+      [targetTimelines]="targetTimelines"
+      [learningPreferences]="learningPreferences"
+      [isSavingCareer]="isSavingCareer"
+      [careerSuccess]="careerSuccess"
+      (saveCareerProfileIntent)="saveCareerProfile()"
+    ></section>
 
-      <!-- Section 3: Career Profile & Target Vector ───────────── -->
-      <section
-        class="prof-card section-card"
-        appProfileCareerPreferences
-        [profile]="profile"
-        [careerStacks]="careerStacks"
-        [experienceLevels]="experienceLevels"
-        [targetTimelines]="targetTimelines"
-        [learningPreferences]="learningPreferences"
-        [isSavingCareer]="isSavingCareer"
-        [careerSuccess]="careerSuccess"
-        (saveCareerProfileIntent)="saveCareerProfile()"
-      ></section>
+    <!-- Section 3: Personal Information -->
+    <section
+      class="prof-card section-card"
+      appProfilePersonalInformation
+      [profile]="profile"
+    ></section>
 
-      <!-- Section 4: Notification Preferences ─────────────────── -->
-      <section
-        class="prof-card section-card"
-        appProfileNotificationSettings
-        [profile]="profile"
-        (toggleNotificationIntent)="toggleNotification($event)"
-      ></section>
-
-      <!-- Section 5: Appearance & Theme ───────────────────────── -->
+    <!-- Section 4 & 5: Preferences Dual-Grid (Appearance & Notifications) -->
+    <div class="prof-settings-grid">
+      <!-- Section 4: Appearance & Theme -->
       <section
         class="prof-card section-card"
         appProfileAppearanceSettings
         [themeService]="themeService"
       ></section>
 
-      <!-- Section 6: Talent Pool Visibility ───────────────────── -->
+      <!-- Section 5: Notification Preferences -->
       <section
         class="prof-card section-card"
-        *ngIf="!isAdmin"
-        appProfileVisibilitySettings
+        appProfileNotificationSettings
         [profile]="profile"
-        [isTogglingVisibility]="isTogglingVisibility"
-        [visibilityMessage]="visibilityMessage"
-        (toggleVisibilityIntent)="toggleVisibility()"
+        (toggleNotificationIntent)="toggleNotification($event)"
       ></section>
+    </div>
 
-      <!-- Section 7: Security Settings ─────────────────────────── -->
-      <section
-        class="prof-card section-card security-card"
-        appProfileSecuritySettings
-        [isChangingPwd]="isChangingPwd"
-        [passwordForm]="passwordForm"
-        [pwdError]="pwdError"
-        [pwdSuccess]="pwdSuccess"
-        [isSavingPassword]="isSavingPassword"
-        (toggleChangePasswordIntent)="toggleChangePassword()"
-        (submitPasswordChangeIntent)="submitPasswordChange()"
-        (openDeleteConfirmIntent)="openDeleteConfirm()"
-      ></section>
+    <!-- Section 6: Talent Pool Visibility -->
+    <section
+      class="prof-card section-card"
+      *ngIf="!isAdmin"
+      appProfileVisibilitySettings
+      [profile]="profile"
+      [isTogglingVisibility]="isTogglingVisibility"
+      [visibilityMessage]="visibilityMessage"
+      (toggleVisibilityIntent)="toggleVisibility()"
+    ></section>
 
-      <!-- ════════════════════════════════════════════════════════════
-           D. Save Changes Action Bar (Aligned in Form Flow)
-      ════════════════════════════════════════════════════════════ -->
-      <footer class="prof-card save-bar">
-        <div class="save-bar__content">
-          <div class="save-bar__info" [attr.aria-busy]="isSaving">
-            <span class="save-bar__dot"></span>
-            <div class="save-bar__texts">
-              <span class="save-bar__title">Save Profile Changes</span>
-              <span class="save-bar__text"
-                >Apply updates to your personal info, connected accounts, and telemetry
-                signals</span
-              >
-            </div>
-          </div>
-          <button
-            class="btn-save-main"
-            type="button"
-            (click)="saveChanges()"
-            [disabled]="isSaving || isUploadingAvatar"
-          >
-            <svg
-              *ngIf="!isSaving"
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              aria-hidden="true"
+    <!-- Section 7: Security Settings -->
+    <section
+      class="prof-card section-card security-card"
+      appProfileSecuritySettings
+      [isChangingPwd]="isChangingPwd"
+      [passwordForm]="passwordForm"
+      [pwdError]="pwdError"
+      [pwdSuccess]="pwdSuccess"
+      [isSavingPassword]="isSavingPassword"
+      (toggleChangePasswordIntent)="toggleChangePassword()"
+      (submitPasswordChangeIntent)="submitPasswordChange()"
+      (openDeleteConfirmIntent)="openDeleteConfirm()"
+    ></section>
+
+    <!-- ════════════════════════════════════════════════════════════
+         E. Save Changes Action Bar (Full-Width Form Footer)
+    ════════════════════════════════════════════════════════════ -->
+    <footer class="prof-card save-bar">
+      <div class="save-bar__content">
+        <div class="save-bar__info" [attr.aria-busy]="isSaving">
+          <span class="save-bar__dot"></span>
+          <div class="save-bar__texts">
+            <span class="save-bar__title">Save Profile Changes</span>
+            <span class="save-bar__text"
+              >Apply updates to your personal info, connected accounts, and telemetry signals</span
             >
-              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-              <polyline points="17 21 17 13 7 13 7 21" />
-              <polyline points="7 3 7 8 15 8" />
-            </svg>
-            <span *ngIf="isSaving" class="spinner-sm" aria-hidden="true"></span>
-            <span>{{ isSaving ? 'Saving…' : 'Save Changes' }}</span>
-          </button>
+          </div>
         </div>
-      </footer>
-    </main>
-  </div>
+        <button
+          class="btn-save-main"
+          type="button"
+          (click)="saveChanges()"
+          [disabled]="isSaving || isUploadingAvatar"
+        >
+          <svg
+            *ngIf="!isSaving"
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+            <polyline points="17 21 17 13 7 13 7 21" />
+            <polyline points="7 3 7 8 15 8" />
+          </svg>
+          <span *ngIf="isSaving" class="spinner-sm" aria-hidden="true"></span>
+          <span>{{ isSaving ? 'Saving…' : 'Save Changes' }}</span>
+        </button>
+      </div>
+    </footer>
+  </main>
 
   <!-- ════════════════════════════════════════════════════════════
        E. Native Dialog Modal (Account Deletion)

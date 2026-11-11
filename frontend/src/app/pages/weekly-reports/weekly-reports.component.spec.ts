@@ -4,6 +4,22 @@ import { WeeklyReportsComponent } from './weekly-reports.component';
 import { WeeklyReportService } from '../../shared/services/weekly-report.service';
 
 describe('Weekly report workspace lifecycle', () => {
+  it('preserves the saved report when notification preferences block resend', () => {
+    const response = new Subject<any>();
+    const component = new WeeklyReportsComponent(
+      { resendEmail: vi.fn(() => response) } as unknown as WeeklyReportService,
+      { markForCheck: vi.fn() } as unknown as ChangeDetectorRef,
+    );
+    const saved = { _id: 'saved', meta: { reportHash: 'a'.repeat(64) } } as any;
+    component.latestReport = saved;
+    component.resendEmail();
+    response.error({ error: { message: 'Weekly report emails are disabled.' } });
+    expect(component.latestReport).toBe(saved);
+    expect(component.errorMessage).toBe('');
+    expect(component.actionError).toContain('Weekly report emails are disabled');
+    expect(component.isResending).toBe(false);
+    component.ngOnDestroy();
+  });
   it('distinguishes missing scores from saved zero and suppresses unverifiable deltas', () => {
     const component = new WeeklyReportsComponent(
       {} as WeeklyReportService,

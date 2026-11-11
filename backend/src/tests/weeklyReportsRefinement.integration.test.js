@@ -289,6 +289,18 @@ test(
       409,
     );
     const beforeSendAI = aiCalls;
+    await User.updateOne(
+      { _id: owner._id },
+      { $set: { 'notifications.weeklyScoreReport': false } },
+    );
+    const messagesBeforeDisabledResend = messages.length;
+    const disabledResend = await call('POST', `/${first._id}/resend-email`, owner, {
+      contentHash: refreshed.meta.reportHash,
+    });
+    assert.equal(disabledResend.status, 409);
+    assert.match((await disabledResend.json()).message, /Weekly report emails are disabled/);
+    assert.equal(messages.length, messagesBeforeDisabledResend);
+    await User.updateOne({ _id: owner._id }, { $set: { 'notifications.weeklyScoreReport': true } });
     const successful = await call('POST', `/${first._id}/resend-email`, owner, {
       contentHash: refreshed.meta.reportHash,
     });

@@ -33,11 +33,13 @@
   }
 }
 
-/* ── Sidebar: Telemetry Stats Card ─────────────────────────────── */
+/* ── Top Module: Telemetry Stats Card ─────────────────────────── */
 .stats-card {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: 16px;
+  min-height: 100%;
 
   .stats-head {
     display: flex;

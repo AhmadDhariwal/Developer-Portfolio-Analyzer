@@ -68,6 +68,7 @@ export class WeeklyReportsComponent implements OnInit, OnDestroy {
   isExporting = false;
   isResending = false;
   actionMessage = '';
+  actionError = '';
   private deepLinkLoaded = false;
 
   constructor(
@@ -243,6 +244,7 @@ export class WeeklyReportsComponent implements OnInit, OnDestroy {
     if (!saved || this.isExporting) return;
     this.isExporting = true;
     this.actionMessage = '';
+    this.actionError = '';
     this.reportService
       .downloadPdf(saved)
       .pipe(
@@ -264,7 +266,7 @@ export class WeeklyReportsComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         },
         error: () => {
-          this.errorMessage = 'The saved PDF could not be downloaded. Please retry.';
+          this.actionError = 'The saved PDF could not be downloaded. Please retry.';
           this.cdr.markForCheck();
         },
       });
@@ -275,6 +277,7 @@ export class WeeklyReportsComponent implements OnInit, OnDestroy {
     if (!saved || this.isResending) return;
     this.isResending = true;
     this.actionMessage = '';
+    this.actionError = '';
     this.reportService
       .resendEmail(saved)
       .pipe(
@@ -290,7 +293,7 @@ export class WeeklyReportsComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         },
         error: (error) => {
-          this.errorMessage =
+          this.actionError =
             error?.error?.message || 'Email could not be resent. Please retry later.';
           this.cdr.markForCheck();
         },

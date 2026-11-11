@@ -1,45 +1,31 @@
 {
-  "date": "2026-11-11",
+  "date": "2026-11-12",
   "sourceBranch": "release1",
-  "sourceHead": "7e1bb6101c7e5f17b065dbd3540e6db96828dde8",
+  "sourceHead": "0db76b044a506387fd714060c8ad666dbc09f3a3",
   "branch": "fix/weekly-reports-finalization",
   "prTarget": "not applicable",
   "productionReady": false,
-  "decision": "BLOCKED; current local tests, TypeScript and build pass, but reproducible Playwright and authorized external release gates remain open",
+  "decision": "LOCAL RELEASE CANDIDATE ACCEPTED for the API-repair working-tree overlay based on 0db76b044a506387fd714060c8ad666dbc09f3a3; production readiness remains BLOCKED.",
   "verification": {
-    "finalBackend": {
+    "productionBuild": {
       "status": "PASS",
-      "passed": 27,
-      "failed": 0,
-      "skipped": 0,
-      "durationSeconds": 23.941,
-      "command": "WEEKLY_REPORT_TEST_MONGO=1 node --test --test-concurrency=1 weeklyReportSprint weeklyReportScheduler weeklyReportsHardening developerContextService skillGapConsumerContracts weeklyReportsReliability.integration (under backend/src/tests)"
-    },
-    "focusedFrontend": {
-      "status": "PASS",
-      "files": 2,
-      "passed": 9,
-      "failed": 0
-    },
-    "fullFrontend": {
-      "status": "PASS",
-      "runs": 1,
-      "files": 95,
-      "passed": 598,
-      "failed": 0,
-      "durationSeconds": 84.78
-    },
-    "typescript": "PASS",
-    "build": {
-      "status": "PASS",
-      "durationSeconds": 71.993,
+      "durationSeconds": 103.347,
+      "testedHead": "0db76b044a506387fd714060c8ad666dbc09f3a3",
       "warnings": [
-        "Existing Jobs SCSS 52.97/48 kB",
-        "Existing landing-page SCSS 56.67/48 kB"
-      ]
+        "Jobs SCSS 52.97/48 kB",
+        "landing-page SCSS 56.67/48 kB"
+      ],
+      "rawLog": "frontend/verification/weekly-reports/finalization-2026-11-12/build.raw.txt"
+    },
+    "typescript": {
+      "status": "PASS",
+      "command": "node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.app.json",
+      "testedHead": "0db76b044a506387fd714060c8ad666dbc09f3a3"
     },
     "browser": {
       "status": "PASS",
+      "actualBrowserRuns": 1,
+      "testedHead": "0db76b044a506387fd714060c8ad666dbc09f3a3",
       "widths": [
         1440,
         375
@@ -49,18 +35,121 @@
         "dark",
         "system"
       ],
-      "additionalJourney": "loading,error,retry,empty",
-      "keyboardHistorySelection": true,
-      "populatedCaptures": 6,
-      "stateCaptures": 2,
+      "sourceCards": 9,
       "pageErrors": 0,
       "overflow": 0,
-      "evidence": "frontend/verification/weekly-reports/finalization/results.json"
+      "keyboardHistorySelection": true,
+      "operations": [
+        "generate",
+        "refresh",
+        "resend-email"
+      ],
+      "refreshVersion": 2,
+      "pdfEmailSameHash": true,
+      "resendNoExtraGeneration": true,
+      "archivedSnapshotImmutable": true,
+      "loadingErrorRetryEmpty": true,
+      "emailWidths": [
+        640,
+        375
+      ],
+      "emailSanitized": true,
+      "results": "frontend/verification/weekly-reports/finalization-2026-11-12/results.json",
+      "rawLog": "frontend/verification/weekly-reports/finalization-2026-11-12/browser-run.raw.txt",
+      "screenshots": [
+        "frontend/verification/weekly-reports/finalization-2026-11-12/1440-dark.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/1440-light.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/1440-system.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/375-dark.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/375-light.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/375-system.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/archived-version-1.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/email-preview-375.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/email-preview-640.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/empty.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/error.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/loading.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/missing-stale-evidence.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/pdf-current-page-1.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/pdf-current-page-2.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/pdf-final-snapshot-page-1.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/pdf-final-snapshot-page-2.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/refreshed-version-2.png"
+      ],
+      "evidenceBoundary": "Commit SHA is recorded; browser run used the pre-run worktree. A later staged actions template edit is excluded."
     },
-    "syntax": "PASS",
-    "formatting": "PASS",
-    "gitDiffCheck": "PASS",
-    "gitCachedDiffCheck": "PASS"
+    "focusedPdfEmail": {
+      "status": "PASS",
+      "passed": 9,
+      "failed": 0,
+      "testedHead": "0db76b044a506387fd714060c8ad666dbc09f3a3",
+      "command": "node --test src/tests/weeklyReportsRefinement.test.js (from backend)",
+      "rawLog": "backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test-final.raw.txt",
+      "isolatedRuntime": {
+        "playwright": "1.65.0",
+        "pdfkit": "0.20.2",
+        "applicationManifestsChanged": false
+      }
+    },
+    "pdfVisualReview": {
+      "status": "PASS_AFTER_LAYOUT_CORRECTION",
+      "pages": 2,
+      "pageSize": "A4",
+      "reviewedImages": [
+        "frontend/verification/weekly-reports/finalization-2026-11-12/pdf-final-snapshot-page-1.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/pdf-final-snapshot-page-2.png"
+      ],
+      "defectFound": "Fixed-height reporting activity card overlapped the next section when text wrapped.",
+      "correction": "Card height now follows measured saved text; post-fix image inspection shows no overlap."
+    },
+    "emailVisualReview": {
+      "status": "PASS",
+      "widths": [
+        640,
+        375
+      ],
+      "overflow": 0,
+      "sanitized": true,
+      "screenshots": [
+        "frontend/verification/weekly-reports/finalization-2026-11-12/email-preview-640.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/email-preview-375.png"
+      ]
+    },
+    "mongoReliability": {
+      "status": "PASS_REUSED",
+      "evidence": "backend/verification/weekly-reports/finalization/mongo-results.json",
+      "assertions": 11,
+      "evidenceBoundary": "Retained local replica-set result has no tested SHA; generation/scheduler/worker code is unchanged since the reviewed revision."
+    },
+    "crossModuleContracts": {
+      "status": "PASS_REUSED",
+      "passed": 27,
+      "failed": 0,
+      "evidence": "backend/verification/weekly-reports/finalization/status.json",
+      "evidenceBoundary": "Earlier focused run retained; operational service paths are unchanged by the presentation/UI-only delta."
+    },
+    "fullAngularSuite": {
+      "status": "DEFERRED",
+      "priorResult": "598/598 at an earlier revision; not counted as current."
+    },
+    "comprehensiveWcag": {
+      "status": "DEFERRED"
+    },
+    "syntax": {
+      "status": "PASS",
+      "files": [
+        "backend/src/services/weeklyReportPdfService.js",
+        "backend/src/services/weeklyReportPresentation.js",
+        "frontend/scripts/verify-weekly-reports-ui.cjs"
+      ]
+    },
+    "formatting": {
+      "status": "PASS",
+      "frontendFileCount": 7,
+      "backendFileCount": 2,
+      "writeThenCheck": true,
+      "backendOptions": "--single-quote --trailing-comma all --print-width 100"
+    }
   },
   "localMongoTimings": {
     "passed": true,
@@ -83,12 +172,11 @@
     ]
   },
   "blockedGates": [
-    "Live AI admission/fallback and live SendGrid/SMTP reconciliation with staging credentials and approved recipient",
-    "Deployment-equivalent sustained performance with realistic nine-source volume",
-    "Staging index rollout and scheduler deployment/restart acceptance",
-    "Authenticated end-to-end integration against staging services",
-    "Learning Hub and Interview Prep verification against authorized staging account records",
-    "Exact production dependency advisory identification because npm registry access returned ENOTFOUND"
+    "Unresolved production dependency advisories and backend deployment-lock reconciliation",
+    "Authorized real account-data verification",
+    "Live AI/provider admission and live email reconciliation",
+    "Staging Mongo index rollout, worker recovery/restart, and multi-replica acceptance",
+    "Deployment-equivalent sustained performance and SLO acceptance"
   ],
   "infrastructure": {
     "platform": "Windows",
@@ -401,11 +489,10 @@
     }
   },
   "cleanup": {
-    "verifiedTaskTempFilesRemoved": 0,
-    "verifiedTaskTempDirectoriesRemovedIndividually": 2,
-    "recursiveDeletionUsed": false,
-    "tempRoot": "frontend/.angular-weekly-temp",
-    "removed": true
+    "filesDeleted": 0,
+    "directoriesDeleted": 0,
+    "recursiveDelete": false,
+    "moved": 0
   },
   "commits": false,
   "pushes": false,
@@ -415,8 +502,1854 @@
   "secretChanges": false,
   "dependencyChanges": true,
   "approvedDependencyChange": "pdfkit 0.20.2 for direct PDF downloads; approved by the user.",
-  "branchHead": "fd65bc72c3ae061e7c742b25e729aa04f53ca6be",
+  "branchHead": "0db76b044a506387fd714060c8ad666dbc09f3a3",
   "currentAudit": {
+    "date": "2026-11-12",
+    "reportedHead": "fd65bc72c3ae061e7c742b25e729aa04f53ca6be",
+    "actualHead": "0db76b044a506387fd714060c8ad666dbc09f3a3",
+    "branch": "fix/weekly-reports-finalization",
+    "target": "not applicable",
+    "userConfirmedActualHead": true,
+    "preflight": {
+      "worktreeClean": true,
+      "indexClean": true,
+      "staged": [],
+      "workingTree": []
+    },
+    "commitsAfterReportedHead": [
+      {
+        "sha": "26dcde8c68cdca60b632ff9a9d61a2b2e5fabc15",
+        "parent": "fd65bc72c3ae061e7c742b25e729aa04f53ca6be"
+      },
+      {
+        "sha": "7decc38fe706bdb0184b6203fe382765dbbf2297",
+        "parent": "26dcde8c68cdca60b632ff9a9d61a2b2e5fabc15"
+      },
+      {
+        "sha": "0db76b044a506387fd714060c8ad666dbc09f3a3",
+        "parent": "7decc38fe706bdb0184b6203fe382765dbbf2297",
+        "subject": "Fix the weekly reports module",
+        "auditCreatedOrPushed": false
+      }
+    ],
+    "localDecision": "ACCEPTED_FOR_LOCAL_REVIEW_AT_EXACT_TESTED_HEAD_ONLY",
+    "productionReady": false,
+    "taskDependencyChanges": false,
+    "taskCommits": 0,
+    "taskPushes": 0,
+    "taskMerges": 0,
+    "taskDeployments": 0,
+    "productionDataChanges": 0,
+    "secretChanges": 0,
+    "verification": {
+      "productionBuild": {
+        "status": "PASS",
+        "durationSeconds": 72.481,
+        "testedHead": "0db76b044a506387fd714060c8ad666dbc09f3a3",
+        "warnings": [
+          "Jobs SCSS 52.97/48 kB",
+          "landing-page SCSS 56.67/48 kB"
+        ],
+        "rawLog": "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/build.raw.txt",
+        "exitCode": 0
+      },
+      "typescript": {
+        "status": "PASS",
+        "testedHead": "0db76b044a506387fd714060c8ad666dbc09f3a3",
+        "exitCode": 0,
+        "command": "node node_modules/typescript/bin/tsc --noEmit -p tsconfig.app.json (from frontend)",
+        "exitFile": "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/typescript.exit.txt"
+      },
+      "browser": {
+        "status": "PASS",
+        "actualBrowserRuns": 1,
+        "testedHead": "0db76b044a506387fd714060c8ad666dbc09f3a3",
+        "widths": [
+          1440,
+          375
+        ],
+        "themes": [
+          "light",
+          "dark",
+          "system"
+        ],
+        "sourceCards": 9,
+        "pageErrors": 0,
+        "overflow": 0,
+        "keyboardHistorySelection": true,
+        "operations": [
+          "generate",
+          "refresh",
+          "resend-email"
+        ],
+        "operationResults": {
+          "operations": [
+            "generate",
+            "refresh",
+            "resend-email"
+          ],
+          "refreshVersion": 2,
+          "pdfHash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "emailHash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "samePersistedVersion": true,
+          "browserDownload": true,
+          "parsedPdfPages": 2,
+          "resendInvokedNoExtraGeneration": true
+        },
+        "archivedSnapshot": {
+          "deepLinkLoaded": true,
+          "refreshDisabled": true,
+          "resendDisabled": true,
+          "pdfAvailable": true,
+          "pdfHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "version": 1
+        },
+        "evidenceStates": {
+          "missingScoreNotZero": true,
+          "comparisonUnavailableWithoutCompleteEvidence": true,
+          "unavailableSprintAndInterview": true,
+          "staleSourcesWarned": true,
+          "measuredGitHubZeroPreserved": true
+        },
+        "loadingErrorEmpty": {
+          "loadingSkeleton": true,
+          "errorRetry": true,
+          "emptyState": true,
+          "pageErrors": 0,
+          "overflow": 0
+        },
+        "emailPreview": {
+          "version": 2,
+          "hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "savedReportLink": true,
+          "desktopWidth": 640,
+          "mobileWidth": 375,
+          "overflow": 0,
+          "sanitized": true
+        },
+        "failures": [],
+        "exitCode": 0,
+        "results": "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/results.json",
+        "rawLog": "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/browser-run.raw.txt",
+        "screenshots": [
+          "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/1440-light.png",
+          "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/1440-dark.png",
+          "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/1440-system.png",
+          "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/375-light.png",
+          "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/375-dark.png",
+          "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/375-system.png",
+          "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/archived-version-1.png",
+          "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/refreshed-version-2.png",
+          "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/loading.png",
+          "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/error.png",
+          "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/empty.png",
+          "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/missing-stale-evidence.png",
+          "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/email-preview-640.png",
+          "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/email-preview-375.png",
+          "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/pdf-current-0db76b0-1.png",
+          "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/pdf-current-0db76b0-2.png"
+        ],
+        "evidenceBoundary": "One successful production-bundle run against the formatted worktree at exact tested HEAD; synthetic data/providers only."
+      },
+      "focusedPdfEmail": {
+        "status": "PASS",
+        "passed": 9,
+        "failed": 0,
+        "baseHead": "7decc38fe706bdb0184b6203fe382765dbbf2297",
+        "testedSourceScope": [
+          "backend/src/services/weeklyReportPdfService.js",
+          "backend/src/services/weeklyReportPresentation.js"
+        ],
+        "evidenceBoundary": "Ran after the PDF layout correction on the pre-0db worktree; those backend source files were included in 0db and were unchanged afterward. This is focused contract evidence, not live email or full service acceptance.",
+        "command": "node --test src/tests/weeklyReportsRefinement.test.js (from backend)",
+        "rawLog": "backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test-final.raw.txt",
+        "isolatedRuntime": {
+          "playwright": "1.65.0",
+          "pdfkit": "0.20.2",
+          "applicationManifestsChanged": false
+        }
+      },
+      "pdfVisualReview": {
+        "status": "PASS",
+        "testedHead": "0db76b044a506387fd714060c8ad666dbc09f3a3",
+        "pages": 2,
+        "pageSize": "A4",
+        "overlapObserved": false,
+        "reviewedImages": [
+          "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/pdf-current-0db76b0-1.png",
+          "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/pdf-current-0db76b0-2.png"
+        ],
+        "pdf": "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/download-version-2.pdf"
+      },
+      "emailVisualReview": {
+        "status": "PASS",
+        "testedHead": "0db76b044a506387fd714060c8ad666dbc09f3a3",
+        "widths": [
+          640,
+          375
+        ],
+        "overflow": 0,
+        "sanitized": true,
+        "screenshots": [
+          "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/email-preview-640.png",
+          "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/email-preview-375.png"
+        ]
+      },
+      "mongoReliability": {
+        "status": "PASS_REUSED",
+        "evidence": "backend/verification/weekly-reports/finalization/mongo-results.json",
+        "assertions": 11,
+        "evidenceBoundary": "Retained local replica-set result has no tested SHA; reviewed generation/scheduler/worker paths are unchanged by the presentation/UI commit. Does not prove staging worker/index recovery."
+      },
+      "crossModuleContracts": {
+        "status": "PASS_REUSED",
+        "passed": 27,
+        "failed": 0,
+        "evidence": "backend/verification/weekly-reports/finalization/status.json",
+        "evidenceBoundary": "Earlier focused run retained; operational service paths are unchanged by the presentation/UI commit."
+      },
+      "fullAngularSuite": {
+        "status": "DEFERRED",
+        "priorResult": "598/598 at an earlier revision; not counted as current."
+      },
+      "comprehensiveWcag": {
+        "status": "DEFERRED"
+      },
+      "syntax": {
+        "status": "PASS",
+        "files": [
+          "backend/src/services/weeklyReportPdfService.js",
+          "backend/src/services/weeklyReportPresentation.js",
+          "frontend/scripts/verify-weekly-reports-ui.cjs"
+        ]
+      },
+      "formatting": {
+        "status": "PASS",
+        "frontendFileCount": 15,
+        "backendFileCount": 2,
+        "writeThenCheck": true,
+        "backendOptions": "--single-quote --trailing-comma all --print-width 100",
+        "currentCheckExitCode": 0,
+        "evidenceBoundary": "Two action-component Prettier writes normalize to the same HEAD blobs; Git still reports them modified and denied index stat refresh. No source change was staged.",
+        "files": [
+          "frontend/scripts/verify-weekly-reports-ui.cjs",
+          "frontend/src/app/pages/weekly-reports/weekly-reports.component.scss",
+          "frontend/src/app/pages/weekly-reports/components/weekly-report-comparison/weekly-report-comparison.component.html",
+          "frontend/src/app/pages/weekly-reports/components/weekly-report-comparison/weekly-report-comparison.component.scss",
+          "frontend/src/app/pages/weekly-reports/components/weekly-report-history/weekly-report-history.component.scss",
+          "frontend/src/app/pages/weekly-reports/components/weekly-report-narrative/weekly-report-narrative.component.scss",
+          "frontend/src/app/pages/weekly-reports/components/weekly-report-overview/weekly-report-overview.component.scss",
+          "frontend/src/app/pages/weekly-reports/components/weekly-report-actions/weekly-report-actions.component.html",
+          "frontend/src/app/pages/weekly-reports/components/weekly-report-actions/weekly-report-actions.component.scss",
+          "frontend/src/app/pages/weekly-reports/components/weekly-report-kpi-grid/weekly-report-kpi-grid.component.html",
+          "frontend/src/app/pages/weekly-reports/components/weekly-report-kpi-grid/weekly-report-kpi-grid.component.scss",
+          "frontend/src/app/pages/weekly-reports/components/weekly-report-kpi-grid/weekly-report-kpi-grid.component.ts",
+          "frontend/src/app/pages/weekly-reports/components/weekly-report-momentum-trend/weekly-report-momentum-trend.component.scss",
+          "frontend/src/app/pages/weekly-reports/components/weekly-report-score-breakdown/weekly-report-score-breakdown.component.html",
+          "frontend/src/app/pages/weekly-reports/components/weekly-report-score-breakdown/weekly-report-score-breakdown.component.scss"
+        ]
+      },
+      "npmAdvisoryTriage": {
+        "status": "TRIAGE_PASS_REMEDIATION_OPEN",
+        "evidence": "See npmAdvisoryTriage package inventories and retained raw audit/outdated/dry-run files.",
+        "changesApplied": false,
+        "deploymentReadiness": "BLOCKED"
+      },
+      "gitWhitespace": {
+        "status": "PASS",
+        "worktreeDiffCheckExitCode": 0,
+        "cachedDiffCheckExitCode": 0,
+        "stagedPathCount": 0,
+        "warnings": "Git printed only LF-to-CRLF working-copy notices; both whitespace checks exited 0."
+      }
+    },
+    "npmAdvisoryTriage": {
+      "status": "TRIAGE_PASS_REMEDIATION_OPEN",
+      "registryAccess": "PASS through authorized npm operation",
+      "frontend": {
+        "auditScope": "production dependencies in frontend/package-lock.json",
+        "totals": {
+          "info": 0,
+          "low": 0,
+          "moderate": 2,
+          "high": 4,
+          "critical": 0,
+          "total": 6
+        },
+        "rawAudit": "frontend/verification/weekly-reports/finalization-2026-11-12/npm-audit-frontend.raw.txt",
+        "outdated": "frontend/verification/weekly-reports/finalization-2026-11-12/npm-outdated-frontend.raw.txt",
+        "exactAffectedPackages": [
+          {
+            "name": "@angular/common",
+            "installedVersion": "21.2.1",
+            "severity": "high",
+            "direct": true,
+            "vulnerableRange": "21.0.0-next.0 - 21.2.19",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": "21.2.26",
+            "latestRegistryVersion": "22.2.5",
+            "installedNode": "node_modules/@angular/common",
+            "advisoryCount": 6
+          },
+          {
+            "name": "@angular/compiler",
+            "installedVersion": "21.2.1",
+            "severity": "high",
+            "direct": true,
+            "vulnerableRange": "21.0.0-next.0 - 21.2.19",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": "21.2.26",
+            "latestRegistryVersion": "22.2.5",
+            "installedNode": "node_modules/@angular/compiler",
+            "advisoryCount": 5
+          },
+          {
+            "name": "@angular/core",
+            "installedVersion": "21.2.1",
+            "severity": "high",
+            "direct": true,
+            "vulnerableRange": "21.0.0-next.0 - 21.2.19",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": "21.2.26",
+            "latestRegistryVersion": "22.2.5",
+            "installedNode": "node_modules/@angular/core",
+            "advisoryCount": 6
+          },
+          {
+            "name": "@angular/forms",
+            "installedVersion": "21.2.1",
+            "severity": "moderate",
+            "direct": true,
+            "vulnerableRange": "4.4.0-RC.0 - 4.4.0 || 21.0.0-next.0 - 21.2.19",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": "21.2.26",
+            "latestRegistryVersion": "22.2.5",
+            "installedNode": "node_modules/@angular/forms",
+            "advisoryCount": 0
+          },
+          {
+            "name": "@angular/platform-browser",
+            "installedVersion": "21.2.1",
+            "severity": "moderate",
+            "direct": true,
+            "vulnerableRange": "21.0.0-next.0 - 21.2.19",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": "21.2.26",
+            "latestRegistryVersion": "22.2.5",
+            "installedNode": "node_modules/@angular/platform-browser",
+            "advisoryCount": 0
+          },
+          {
+            "name": "@angular/router",
+            "installedVersion": "21.2.1",
+            "severity": "high",
+            "direct": true,
+            "vulnerableRange": "10.0.0-next.0 - 10.0.0-rc.1 || 21.0.0-next.0 - 21.2.24",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": "21.2.26",
+            "latestRegistryVersion": "22.2.5",
+            "installedNode": "node_modules/@angular/router",
+            "advisoryCount": 3
+          }
+        ],
+        "safeTargetedUpdate": "@angular/common, @angular/compiler, @angular/core, @angular/forms, @angular/platform-browser, @angular/router to 21.2.26 within existing ^21.2.0 constraints; not applied"
+      },
+      "backend": {
+        "auditScope": "production packages from installed backend tree",
+        "installedTreeSource": "backend/node_modules/.package-lock.json",
+        "repositoryPackageLockPresent": true,
+        "totals": {
+          "info": 0,
+          "low": 4,
+          "moderate": 36,
+          "high": 14,
+          "critical": 3,
+          "total": 57
+        },
+        "rawAudit": "backend/verification/weekly-reports/finalization-2026-11-12/npm-audit-backend.raw.txt",
+        "outdated": "backend/verification/weekly-reports/finalization-2026-11-12/npm-outdated-backend.raw.txt",
+        "exactAffectedPackages": [
+          {
+            "name": "@grpc/grpc-js",
+            "installedVersion": "1.14.3",
+            "severity": "high",
+            "direct": false,
+            "vulnerableRange": "1.14.0 - 1.14.4",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@grpc/grpc-js",
+            "advisoryCount": 4
+          },
+          {
+            "name": "@opentelemetry/auto-instrumentations-node",
+            "installedVersion": "0.71.0",
+            "severity": "high",
+            "direct": true,
+            "vulnerableRange": "<=0.78.0",
+            "npmFixAvailable": {
+              "name": "@opentelemetry/auto-instrumentations-node",
+              "version": "0.83.0",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": "0.71.0",
+            "latestRegistryVersion": "0.83.0",
+            "installedNode": "node_modules/@opentelemetry/auto-instrumentations-node",
+            "advisoryCount": 1
+          },
+          {
+            "name": "@opentelemetry/configuration",
+            "installedVersion": "0.213.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<=0.218.0",
+            "npmFixAvailable": {
+              "name": "@opentelemetry/sdk-node",
+              "version": "0.301.1",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/configuration",
+            "advisoryCount": 0
+          },
+          {
+            "name": "@opentelemetry/core",
+            "installedVersion": "2.6.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<2.8.0",
+            "npmFixAvailable": {
+              "name": "@opentelemetry/sdk-node",
+              "version": "0.301.1",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/core",
+            "advisoryCount": 1
+          },
+          {
+            "name": "@opentelemetry/exporter-logs-otlp-grpc",
+            "installedVersion": "0.213.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<=0.218.0",
+            "npmFixAvailable": {
+              "name": "@opentelemetry/sdk-node",
+              "version": "0.301.1",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/exporter-logs-otlp-grpc",
+            "advisoryCount": 0
+          },
+          {
+            "name": "@opentelemetry/exporter-logs-otlp-http",
+            "installedVersion": "0.213.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<=0.218.0",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/exporter-logs-otlp-http",
+            "advisoryCount": 0
+          },
+          {
+            "name": "@opentelemetry/exporter-logs-otlp-proto",
+            "installedVersion": "0.213.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<=0.218.0",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/exporter-logs-otlp-proto",
+            "advisoryCount": 0
+          },
+          {
+            "name": "@opentelemetry/exporter-metrics-otlp-grpc",
+            "installedVersion": "0.213.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<=0.218.0",
+            "npmFixAvailable": {
+              "name": "@opentelemetry/sdk-node",
+              "version": "0.301.1",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/exporter-metrics-otlp-grpc",
+            "advisoryCount": 0
+          },
+          {
+            "name": "@opentelemetry/exporter-metrics-otlp-http",
+            "installedVersion": "0.213.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<=0.218.0",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/exporter-metrics-otlp-http",
+            "advisoryCount": 0
+          },
+          {
+            "name": "@opentelemetry/exporter-metrics-otlp-proto",
+            "installedVersion": "0.213.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<=0.218.0",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/exporter-metrics-otlp-proto",
+            "advisoryCount": 0
+          },
+          {
+            "name": "@opentelemetry/exporter-prometheus",
+            "installedVersion": "0.213.0",
+            "severity": "high",
+            "direct": false,
+            "vulnerableRange": "<=0.218.0",
+            "npmFixAvailable": {
+              "name": "@opentelemetry/sdk-node",
+              "version": "0.301.1",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/exporter-prometheus",
+            "advisoryCount": 1
+          },
+          {
+            "name": "@opentelemetry/exporter-trace-otlp-grpc",
+            "installedVersion": "0.213.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<=0.218.0",
+            "npmFixAvailable": {
+              "name": "@opentelemetry/sdk-node",
+              "version": "0.301.1",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/exporter-trace-otlp-grpc",
+            "advisoryCount": 0
+          },
+          {
+            "name": "@opentelemetry/exporter-trace-otlp-http",
+            "installedVersion": "0.213.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<=0.218.0",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/exporter-trace-otlp-http",
+            "advisoryCount": 0
+          },
+          {
+            "name": "@opentelemetry/exporter-trace-otlp-proto",
+            "installedVersion": "0.213.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<=0.218.0",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/exporter-trace-otlp-proto",
+            "advisoryCount": 0
+          },
+          {
+            "name": "@opentelemetry/exporter-zipkin",
+            "installedVersion": "2.6.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<=2.7.1",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/exporter-zipkin",
+            "advisoryCount": 0
+          },
+          {
+            "name": "@opentelemetry/instrumentation-cassandra-driver",
+            "installedVersion": "0.58.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<0.66.0",
+            "npmFixAvailable": {
+              "name": "@opentelemetry/auto-instrumentations-node",
+              "version": "0.83.0",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/instrumentation-cassandra-driver",
+            "advisoryCount": 1
+          },
+          {
+            "name": "@opentelemetry/instrumentation-http",
+            "installedVersion": "0.213.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<=0.16.0 || 0.19.1-alpha.7 - 0.218.0",
+            "npmFixAvailable": {
+              "name": "@opentelemetry/auto-instrumentations-node",
+              "version": "0.83.0",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/instrumentation-http",
+            "advisoryCount": 0
+          },
+          {
+            "name": "@opentelemetry/instrumentation-knex",
+            "installedVersion": "0.57.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<0.65.0",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/instrumentation-knex",
+            "advisoryCount": 1
+          },
+          {
+            "name": "@opentelemetry/instrumentation-mongoose",
+            "installedVersion": "0.59.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<0.67.0",
+            "npmFixAvailable": {
+              "name": "@opentelemetry/auto-instrumentations-node",
+              "version": "0.83.0",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/instrumentation-mongoose",
+            "advisoryCount": 1
+          },
+          {
+            "name": "@opentelemetry/instrumentation-mysql",
+            "installedVersion": "0.59.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<0.67.0",
+            "npmFixAvailable": {
+              "name": "@opentelemetry/auto-instrumentations-node",
+              "version": "0.83.0",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/instrumentation-mysql",
+            "advisoryCount": 1
+          },
+          {
+            "name": "@opentelemetry/instrumentation-mysql2",
+            "installedVersion": "0.59.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<0.67.0",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/instrumentation-mysql2",
+            "advisoryCount": 1
+          },
+          {
+            "name": "@opentelemetry/instrumentation-oracledb",
+            "installedVersion": "0.38.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<0.46.0",
+            "npmFixAvailable": {
+              "name": "@opentelemetry/auto-instrumentations-node",
+              "version": "0.83.0",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/instrumentation-oracledb",
+            "advisoryCount": 1
+          },
+          {
+            "name": "@opentelemetry/instrumentation-pg",
+            "installedVersion": "0.65.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<0.73.0",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/instrumentation-pg",
+            "advisoryCount": 1
+          },
+          {
+            "name": "@opentelemetry/instrumentation-tedious",
+            "installedVersion": "0.32.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<0.40.0",
+            "npmFixAvailable": {
+              "name": "@opentelemetry/auto-instrumentations-node",
+              "version": "0.83.0",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/instrumentation-tedious",
+            "advisoryCount": 1
+          },
+          {
+            "name": "@opentelemetry/otlp-exporter-base",
+            "installedVersion": "0.213.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<=0.218.0",
+            "npmFixAvailable": {
+              "name": "@opentelemetry/sdk-node",
+              "version": "0.301.1",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/otlp-exporter-base",
+            "advisoryCount": 0
+          },
+          {
+            "name": "@opentelemetry/otlp-grpc-exporter-base",
+            "installedVersion": "0.213.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<=0.218.0",
+            "npmFixAvailable": {
+              "name": "@opentelemetry/sdk-node",
+              "version": "0.301.1",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/otlp-grpc-exporter-base",
+            "advisoryCount": 0
+          },
+          {
+            "name": "@opentelemetry/otlp-transformer",
+            "installedVersion": "0.213.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<=0.218.0",
+            "npmFixAvailable": {
+              "name": "@opentelemetry/sdk-node",
+              "version": "0.301.1",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/otlp-transformer",
+            "advisoryCount": 0
+          },
+          {
+            "name": "@opentelemetry/propagator-b3",
+            "installedVersion": "2.6.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "0.19.1-alpha.11 - 2.7.1",
+            "npmFixAvailable": {
+              "name": "@opentelemetry/sdk-node",
+              "version": "0.301.1",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/propagator-b3",
+            "advisoryCount": 0
+          },
+          {
+            "name": "@opentelemetry/propagator-jaeger",
+            "installedVersion": "2.6.0",
+            "severity": "high",
+            "direct": false,
+            "vulnerableRange": "<=2.8.0",
+            "npmFixAvailable": {
+              "name": "@opentelemetry/sdk-node",
+              "version": "0.301.1",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/propagator-jaeger",
+            "advisoryCount": 1
+          },
+          {
+            "name": "@opentelemetry/resources",
+            "installedVersion": "2.6.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "0.8.0 - 2.7.1",
+            "npmFixAvailable": {
+              "name": "@opentelemetry/sdk-node",
+              "version": "0.301.1",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/resources",
+            "advisoryCount": 0
+          },
+          {
+            "name": "@opentelemetry/sdk-logs",
+            "installedVersion": "0.213.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<=0.218.0",
+            "npmFixAvailable": {
+              "name": "@opentelemetry/sdk-node",
+              "version": "0.301.1",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/sdk-logs",
+            "advisoryCount": 0
+          },
+          {
+            "name": "@opentelemetry/sdk-metrics",
+            "installedVersion": "2.6.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<=2.7.1",
+            "npmFixAvailable": {
+              "name": "@opentelemetry/sdk-node",
+              "version": "0.301.1",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/sdk-metrics",
+            "advisoryCount": 0
+          },
+          {
+            "name": "@opentelemetry/sdk-node",
+            "installedVersion": "0.213.0",
+            "severity": "high",
+            "direct": true,
+            "vulnerableRange": "<=0.219.0",
+            "npmFixAvailable": {
+              "name": "@opentelemetry/sdk-node",
+              "version": "0.301.1",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": "0.213.0",
+            "latestRegistryVersion": "0.301.1",
+            "installedNode": "node_modules/@opentelemetry/sdk-node",
+            "advisoryCount": 1
+          },
+          {
+            "name": "@opentelemetry/sdk-trace-base",
+            "installedVersion": "2.6.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<=2.7.1",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/sdk-trace-base",
+            "advisoryCount": 0
+          },
+          {
+            "name": "@opentelemetry/sdk-trace-node",
+            "installedVersion": "2.6.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<=2.7.1",
+            "npmFixAvailable": {
+              "name": "@opentelemetry/sdk-node",
+              "version": "0.301.1",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@opentelemetry/sdk-trace-node",
+            "advisoryCount": 0
+          },
+          {
+            "name": "@protobufjs/utf8",
+            "installedVersion": "1.1.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<=1.1.0",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@protobufjs/utf8",
+            "advisoryCount": 1
+          },
+          {
+            "name": "@sendgrid/client",
+            "installedVersion": "8.1.6",
+            "severity": "low",
+            "direct": false,
+            "vulnerableRange": ">=6.5.3",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@sendgrid/client",
+            "advisoryCount": 0
+          },
+          {
+            "name": "@sendgrid/helpers",
+            "installedVersion": "8.0.0",
+            "severity": "low",
+            "direct": false,
+            "vulnerableRange": ">=6.5.3",
+            "npmFixAvailable": {
+              "name": "@sendgrid/mail",
+              "version": "6.5.2",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@sendgrid/helpers",
+            "advisoryCount": 0
+          },
+          {
+            "name": "@sendgrid/mail",
+            "installedVersion": "8.1.6",
+            "severity": "low",
+            "direct": true,
+            "vulnerableRange": ">=6.5.3",
+            "npmFixAvailable": {
+              "name": "@sendgrid/mail",
+              "version": "6.5.2",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/@sendgrid/mail",
+            "advisoryCount": 0
+          },
+          {
+            "name": "axios",
+            "installedVersion": "1.13.6",
+            "severity": "high",
+            "direct": true,
+            "vulnerableRange": "1.0.0 - 1.19.0",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": "1.21.1",
+            "latestRegistryVersion": "1.21.1",
+            "installedNode": "node_modules/axios",
+            "advisoryCount": 34
+          },
+          {
+            "name": "body-parser",
+            "installedVersion": "2.2.2",
+            "severity": "high",
+            "direct": false,
+            "vulnerableRange": "2.0.0 - 2.3.0",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/body-parser",
+            "advisoryCount": 2
+          },
+          {
+            "name": "deepmerge",
+            "installedVersion": "4.3.1",
+            "severity": "low",
+            "direct": false,
+            "vulnerableRange": ">=4.2.0",
+            "npmFixAvailable": {
+              "name": "@sendgrid/mail",
+              "version": "6.5.2",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/deepmerge",
+            "advisoryCount": 1
+          },
+          {
+            "name": "express-rate-limit",
+            "installedVersion": "8.3.1",
+            "severity": "moderate",
+            "direct": true,
+            "vulnerableRange": "8.0.1 - 8.5.0",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": "8.7.4",
+            "latestRegistryVersion": "8.7.4",
+            "installedNode": "node_modules/express-rate-limit",
+            "advisoryCount": 0
+          },
+          {
+            "name": "follow-redirects",
+            "installedVersion": "1.15.11",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<=1.15.11",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/follow-redirects",
+            "advisoryCount": 1
+          },
+          {
+            "name": "form-data",
+            "installedVersion": "4.0.5",
+            "severity": "high",
+            "direct": false,
+            "vulnerableRange": "4.0.0 - 4.0.5",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/form-data",
+            "advisoryCount": 1
+          },
+          {
+            "name": "ip-address",
+            "installedVersion": "10.1.0",
+            "severity": "high",
+            "direct": false,
+            "vulnerableRange": "<=10.7.3",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/ip-address",
+            "advisoryCount": 6
+          },
+          {
+            "name": "lodash",
+            "installedVersion": "4.17.23",
+            "severity": "high",
+            "direct": false,
+            "vulnerableRange": "4.0.0 - 4.17.23",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/lodash",
+            "advisoryCount": 2
+          },
+          {
+            "name": "mongoose",
+            "installedVersion": "9.2.4",
+            "severity": "critical",
+            "direct": true,
+            "vulnerableRange": "9.0.0 - 9.11.3",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": "9.12.1",
+            "latestRegistryVersion": "9.12.1",
+            "installedNode": "node_modules/mongoose",
+            "advisoryCount": 6
+          },
+          {
+            "name": "multer",
+            "installedVersion": "2.1.1",
+            "severity": "high",
+            "direct": true,
+            "vulnerableRange": "<=2.4.0",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": "2.5.0",
+            "latestRegistryVersion": "2.5.0",
+            "installedNode": "node_modules/multer",
+            "advisoryCount": 6
+          },
+          {
+            "name": "node-cron",
+            "installedVersion": "3.0.3",
+            "severity": "moderate",
+            "direct": true,
+            "vulnerableRange": "3.0.2 - 3.0.3",
+            "npmFixAvailable": {
+              "name": "node-cron",
+              "version": "4.6.0",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": "3.0.3",
+            "latestRegistryVersion": "4.6.0",
+            "installedNode": "node_modules/node-cron",
+            "advisoryCount": 0
+          },
+          {
+            "name": "nodemailer",
+            "installedVersion": "8.0.3",
+            "severity": "high",
+            "direct": true,
+            "vulnerableRange": "<=10.1.3",
+            "npmFixAvailable": {
+              "name": "nodemailer",
+              "version": "10.5.0",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": "8.0.11",
+            "latestRegistryVersion": "10.5.0",
+            "installedNode": "node_modules/nodemailer",
+            "advisoryCount": 20
+          },
+          {
+            "name": "path-to-regexp",
+            "installedVersion": "8.3.0",
+            "severity": "high",
+            "direct": false,
+            "vulnerableRange": "8.0.0 - 8.3.0",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/path-to-regexp",
+            "advisoryCount": 2
+          },
+          {
+            "name": "protobufjs",
+            "installedVersion": "7.5.4",
+            "severity": "critical",
+            "direct": false,
+            "vulnerableRange": "<=7.6.4",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/protobufjs",
+            "advisoryCount": 12
+          },
+          {
+            "name": "proxy-addr",
+            "installedVersion": "2.0.7",
+            "severity": "critical",
+            "direct": false,
+            "vulnerableRange": "1.1.0 - 2.0.7",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/proxy-addr",
+            "advisoryCount": 1
+          },
+          {
+            "name": "qs",
+            "installedVersion": "6.15.0",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "2.2.5 - 6.16.0",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/qs",
+            "advisoryCount": 4
+          },
+          {
+            "name": "uuid",
+            "installedVersion": "8.3.2",
+            "severity": "moderate",
+            "direct": false,
+            "vulnerableRange": "<11.1.1",
+            "npmFixAvailable": {
+              "name": "node-cron",
+              "version": "4.6.0",
+              "isSemVerMajor": true
+            },
+            "compatibleWantedVersion": null,
+            "latestRegistryVersion": null,
+            "installedNode": "node_modules/uuid",
+            "advisoryCount": 1
+          },
+          {
+            "name": "zod",
+            "installedVersion": "4.3.6",
+            "severity": "high",
+            "direct": true,
+            "vulnerableRange": "<4.6.6",
+            "npmFixAvailable": true,
+            "compatibleWantedVersion": "4.6.7",
+            "latestRegistryVersion": "4.6.7",
+            "installedNode": "node_modules/zod",
+            "advisoryCount": 1
+          }
+        ],
+        "safeInRangeDirectCandidates": [
+          {
+            "package": "axios",
+            "current": "1.13.6",
+            "wanted": "1.21.1",
+            "semverMajor": false
+          },
+          {
+            "package": "express-rate-limit",
+            "current": "8.3.1",
+            "wanted": "8.7.4",
+            "semverMajor": false
+          },
+          {
+            "package": "mongoose",
+            "current": "9.2.4",
+            "wanted": "9.12.1",
+            "semverMajor": false
+          },
+          {
+            "package": "multer",
+            "current": "2.1.1",
+            "wanted": "2.5.0",
+            "semverMajor": false
+          },
+          {
+            "package": "zod",
+            "current": "4.3.6",
+            "wanted": "4.6.7",
+            "semverMajor": false
+          }
+        ],
+        "majorReviewCandidates": [
+          {
+            "package": "@opentelemetry/auto-instrumentations-node",
+            "current": "0.71.0",
+            "suggested": "0.83.0",
+            "semverMajor": true
+          },
+          {
+            "package": "@opentelemetry/sdk-node",
+            "current": "0.213.0",
+            "suggested": "0.301.1",
+            "semverMajor": true
+          },
+          {
+            "package": "@sendgrid/mail",
+            "current": "8.1.6",
+            "suggested": "6.5.2",
+            "semverMajor": true
+          },
+          {
+            "package": "node-cron",
+            "current": "3.0.3",
+            "suggested": "4.6.0",
+            "semverMajor": true
+          },
+          {
+            "package": "nodemailer",
+            "current": "8.0.3",
+            "suggested": "10.5.0",
+            "semverMajor": true
+          }
+        ],
+        "noDependencyChangesApplied": true
+      },
+      "fixDryRuns": {
+        "frontend": "frontend/verification/weekly-reports/finalization-2026-11-12/npm-audit-fix-frontend-dry-run.raw.txt",
+        "backend": "backend/verification/weekly-reports/finalization-2026-11-12/npm-audit-fix-backend-dry-run.raw.txt",
+        "applied": false
+      }
+    },
+    "currentWorktreeBoundary": {
+      "postRunSourceEdit": "frontend/src/app/pages/weekly-reports/components/weekly-report-actions/weekly-report-actions.component.html",
+      "postRunSourceEditLastWriteLocal": "2026-11-12T00:34:21.0898766+05:00",
+      "browserResultsLastWriteLocal": "2026-11-12T00:31:32.0607339+05:00",
+      "releaseCandidateExcludesConcurrentStagedOverlay": true
+    },
+    "fileInventory": {
+      "taskOwnedTrackedChanges": [
+        "backend/src/services/weeklyReportPdfService.js",
+        "backend/src/services/weeklyReportPresentation.js",
+        "backend/verification/weekly-reports/finalization/REPORT.md",
+        "backend/verification/weekly-reports/finalization/status.json",
+        "frontend/scripts/verify-weekly-reports-ui.cjs",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-comparison/weekly-report-comparison.component.html",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-comparison/weekly-report-comparison.component.scss",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-history/weekly-report-history.component.scss",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-narrative/weekly-report-narrative.component.scss",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-overview/weekly-report-overview.component.scss",
+        "frontend/src/app/pages/weekly-reports/weekly-reports.component.scss"
+      ],
+      "concurrentStagedFiles": [
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-actions/weekly-report-actions.component.html",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-actions/weekly-report-actions.component.scss",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-kpi-grid/weekly-report-kpi-grid.component.html",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-kpi-grid/weekly-report-kpi-grid.component.scss",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-kpi-grid/weekly-report-kpi-grid.component.ts",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-momentum-trend/weekly-report-momentum-trend.component.scss",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-score-breakdown/weekly-report-score-breakdown.component.html",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-score-breakdown/weekly-report-score-breakdown.component.scss"
+      ],
+      "taskOwnedGeneratedArtifacts": [
+        "backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test-final.exit.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test-final.raw.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test-restored.exit.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test-restored.raw.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test.exit.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test.raw.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/npm-audit-backend.exit.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/npm-audit-backend.raw.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/npm-audit-fix-backend-dry-run.exit.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/npm-audit-fix-backend-dry-run.raw.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/npm-outdated-backend.exit.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/npm-outdated-backend.raw.txt",
+        "backend/verification/weekly-reports/finalization/npm-audit-backend.raw.txt",
+        "backend/verification/weekly-reports/finalization/npm-audit-frontend.raw.txt",
+        "backend/verification/weekly-reports/refinement-2026-11-11/pagination.pdf",
+        "backend/verification/weekly-reports/refinement-2026-11-11/snapshot.pdf",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/1440-dark.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/1440-light.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/1440-system.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/375-dark.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/375-light.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/375-system.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/archived-version-1.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/browser-run.exit.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/browser-run.raw.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/build.exit.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/build.raw.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/download-archived-version-1.pdf",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/download-version-2.pdf",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/email-preview-375.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/email-preview-640.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/email-preview.html",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/empty.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/error.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/loading.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/missing-stale-evidence.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/npm-audit-fix-frontend-dry-run.exit.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/npm-audit-fix-frontend-dry-run.raw.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/npm-audit-frontend.exit.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/npm-audit-frontend.raw.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/npm-outdated-frontend.exit.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/npm-outdated-frontend.raw.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/pdf-current-page-1.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/pdf-current-page-2.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/pdf-final-snapshot-page-1.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/pdf-final-snapshot-page-2.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/refreshed-version-2.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/results.json"
+      ],
+      "stagedAtClose": [],
+      "worktreeAtClose": [
+        {
+          "index": "??",
+          "path": "backend/verification/weekly-reports/finalization-2026-11-12/"
+        },
+        {
+          "index": "??",
+          "path": "backend/verification/weekly-reports/finalization/npm-audit-backend.raw.txt"
+        },
+        {
+          "index": "??",
+          "path": "backend/verification/weekly-reports/finalization/npm-audit-frontend.raw.txt"
+        },
+        {
+          "index": "??",
+          "path": "backend/verification/weekly-reports/refinement-2026-11-11/pagination.pdf"
+        },
+        {
+          "index": "??",
+          "path": "backend/verification/weekly-reports/refinement-2026-11-11/snapshot.pdf"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/1440-dark.png"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/1440-light.png"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/1440-system.png"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/375-dark.png"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/375-light.png"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/375-system.png"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/archived-version-1.png"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/browser-run.exit.txt"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/browser-run.raw.txt"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/build.exit.txt"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/build.raw.txt"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/download-archived-version-1.pdf"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/download-version-2.pdf"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/email-preview-375.png"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/email-preview-640.png"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/empty.png"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/error.png"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/loading.png"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/missing-stale-evidence.png"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/npm-audit-fix-frontend-dry-run.exit.txt"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/npm-audit-fix-frontend-dry-run.raw.txt"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/npm-audit-frontend.exit.txt"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/npm-audit-frontend.raw.txt"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/npm-outdated-frontend.exit.txt"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/npm-outdated-frontend.raw.txt"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/pdf-current-page-1.png"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/pdf-current-page-2.png"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/pdf-final-snapshot-page-1.png"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/pdf-final-snapshot-page-2.png"
+        },
+        {
+          "index": "??",
+          "path": "frontend/verification/weekly-reports/finalization-2026-11-12/refreshed-version-2.png"
+        }
+      ],
+      "moved": [],
+      "deleted": [],
+      "evidenceFiles": [
+        "backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test-final.exit.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test-final.raw.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test-restored.exit.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test-restored.raw.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test.exit.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test.raw.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/npm-audit-backend.exit.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/npm-audit-backend.raw.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/npm-audit-fix-backend-dry-run.exit.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/npm-audit-fix-backend-dry-run.raw.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/npm-outdated-backend.exit.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/npm-outdated-backend.raw.txt",
+        "backend/verification/weekly-reports/finalization/npm-audit-backend.raw.txt",
+        "backend/verification/weekly-reports/finalization/npm-audit-frontend.raw.txt",
+        "backend/verification/weekly-reports/refinement-2026-11-11/pagination.pdf",
+        "backend/verification/weekly-reports/refinement-2026-11-11/snapshot.pdf",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/1440-dark.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/1440-light.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/1440-system.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/375-dark.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/375-light.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/375-system.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/archived-version-1.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/browser-run.exit.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/browser-run.raw.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/build.exit.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/build.raw.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/download-archived-version-1.pdf",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/download-version-2.pdf",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/email-preview-375.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/email-preview-640.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/email-preview.html",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/empty.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/error.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/loading.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/missing-stale-evidence.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/npm-audit-fix-frontend-dry-run.exit.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/npm-audit-fix-frontend-dry-run.raw.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/npm-audit-frontend.exit.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/npm-audit-frontend.raw.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/npm-outdated-frontend.exit.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/npm-outdated-frontend.raw.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/pdf-current-page-1.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/pdf-current-page-2.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/pdf-final-snapshot-page-1.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/pdf-final-snapshot-page-2.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/refreshed-version-2.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/results.json"
+      ]
+    },
+    "cleanup": {
+      "filesDeleted": 0,
+      "directoriesDeleted": 0,
+      "recursiveDelete": false,
+      "moved": 0
+    },
+    "initialActualHead": "7decc38fe706bdb0184b6203fe382765dbbf2297",
+    "finalBranchHead": "0db76b044a506387fd714060c8ad666dbc09f3a3",
+    "originHead": "0db76b044a506387fd714060c8ad666dbc09f3a3",
+    "userConfirmedInitialActualHead": true,
+    "worktreeInventory": {
+      "statusAtClose": [
+        " M backend/verification/weekly-reports/finalization/REPORT.md",
+        " M backend/verification/weekly-reports/finalization/status.json",
+        " M frontend/src/app/pages/profile/components/profile-account-telemetry/profile-account-telemetry.component.scss",
+        " M frontend/src/app/pages/profile/components/profile-avatar-uploader/profile-avatar-uploader.component.scss",
+        " M frontend/src/app/pages/profile/profile.component.html",
+        " M frontend/src/app/pages/profile/profile.component.scss",
+        " M frontend/src/app/pages/weekly-reports/components/weekly-report-actions/weekly-report-actions.component.html",
+        " M frontend/src/app/pages/weekly-reports/components/weekly-report-actions/weekly-report-actions.component.scss",
+        "?? backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test-final.exit.txt",
+        "?? backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test-final.raw.txt",
+        "?? backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test-restored.exit.txt",
+        "?? backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test-restored.raw.txt",
+        "?? backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test.exit.txt",
+        "?? backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test.raw.txt",
+        "?? backend/verification/weekly-reports/finalization-2026-11-12/npm-audit-backend.exit.txt",
+        "?? backend/verification/weekly-reports/finalization-2026-11-12/npm-audit-backend.raw.txt",
+        "?? backend/verification/weekly-reports/finalization-2026-11-12/npm-audit-fix-backend-dry-run.exit.txt",
+        "?? backend/verification/weekly-reports/finalization-2026-11-12/npm-audit-fix-backend-dry-run.raw.txt",
+        "?? backend/verification/weekly-reports/finalization-2026-11-12/npm-outdated-backend.exit.txt",
+        "?? backend/verification/weekly-reports/finalization-2026-11-12/npm-outdated-backend.raw.txt",
+        "?? backend/verification/weekly-reports/finalization/npm-audit-backend.raw.txt",
+        "?? backend/verification/weekly-reports/finalization/npm-audit-frontend.raw.txt",
+        "?? backend/verification/weekly-reports/refinement-2026-11-11/pagination.pdf",
+        "?? backend/verification/weekly-reports/refinement-2026-11-11/snapshot.pdf",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/1440-dark.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/1440-light.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/1440-system.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/375-dark.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/375-light.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/375-system.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/archived-version-1.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/browser-run.exit.txt",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/browser-run.raw.txt",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/build.exit.txt",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/build.raw.txt",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/download-archived-version-1.pdf",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/download-version-2.pdf",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/email-preview-375.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/email-preview-640.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/email-preview.html",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/empty.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/error.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/loading.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/missing-stale-evidence.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/pdf-current-0db76b0-1.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/pdf-current-0db76b0-2.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/refreshed-version-2.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/results.json",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/typescript.exit.txt",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/1440-dark.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/1440-light.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/1440-system.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/375-dark.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/375-light.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/375-system.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/archived-version-1.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/browser-run.exit.txt",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/browser-run.raw.txt",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/build.exit.txt",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/build.raw.txt",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/download-archived-version-1.pdf",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/download-version-2.pdf",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/email-preview-375.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/email-preview-640.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/empty.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/error.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/loading.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/missing-stale-evidence.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/npm-audit-fix-frontend-dry-run.exit.txt",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/npm-audit-fix-frontend-dry-run.raw.txt",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/npm-audit-frontend.exit.txt",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/npm-audit-frontend.raw.txt",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/npm-outdated-frontend.exit.txt",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/npm-outdated-frontend.raw.txt",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/pdf-current-page-1.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/pdf-current-page-2.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/pdf-final-snapshot-page-1.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/pdf-final-snapshot-page-2.png",
+        "?? frontend/verification/weekly-reports/finalization-2026-11-12/refreshed-version-2.png"
+      ],
+      "stagedPaths": [],
+      "auditTrackedUpdates": [
+        "backend/verification/weekly-reports/finalization/REPORT.md",
+        "backend/verification/weekly-reports/finalization/status.json"
+      ],
+      "unrelatedPreservedTrackedChanges": [
+        "frontend/src/app/pages/profile/components/profile-account-telemetry/profile-account-telemetry.component.scss",
+        "frontend/src/app/pages/profile/components/profile-avatar-uploader/profile-avatar-uploader.component.scss",
+        "frontend/src/app/pages/profile/profile.component.html",
+        "frontend/src/app/pages/profile/profile.component.scss"
+      ],
+      "formatterTouchedButCanonicalBlobEqualsHead": [
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-actions/weekly-report-actions.component.html",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-actions/weekly-report-actions.component.scss",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-kpi-grid/weekly-report-kpi-grid.component.html",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-kpi-grid/weekly-report-kpi-grid.component.scss",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-kpi-grid/weekly-report-kpi-grid.component.ts",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-momentum-trend/weekly-report-momentum-trend.component.scss",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-score-breakdown/weekly-report-score-breakdown.component.html",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-score-breakdown/weekly-report-score-breakdown.component.scss"
+      ],
+      "observedCommitFiles": [
+        "backend/src/services/weeklyReportPdfService.js",
+        "backend/src/services/weeklyReportPresentation.js",
+        "backend/verification/weekly-reports/finalization/REPORT.md",
+        "frontend/scripts/verify-weekly-reports-ui.cjs",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-actions/weekly-report-actions.component.html",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-actions/weekly-report-actions.component.scss",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-comparison/weekly-report-comparison.component.html",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-kpi-grid/weekly-report-kpi-grid.component.html",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-kpi-grid/weekly-report-kpi-grid.component.scss",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-kpi-grid/weekly-report-kpi-grid.component.ts",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-momentum-trend/weekly-report-momentum-trend.component.scss",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-score-breakdown/weekly-report-score-breakdown.component.html",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-score-breakdown/weekly-report-score-breakdown.component.scss",
+        "frontend/src/app/pages/weekly-reports/weekly-reports.component.scss",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/email-preview.html",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/results.json"
+      ],
+      "evidenceFiles": [
+        "backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test-final.exit.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test-final.raw.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test-restored.exit.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test-restored.raw.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test.exit.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test.raw.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/npm-audit-backend.exit.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/npm-audit-backend.raw.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/npm-audit-fix-backend-dry-run.exit.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/npm-audit-fix-backend-dry-run.raw.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/npm-outdated-backend.exit.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/npm-outdated-backend.raw.txt",
+        "backend/verification/weekly-reports/finalization/npm-audit-backend.raw.txt",
+        "backend/verification/weekly-reports/finalization/npm-audit-frontend.raw.txt",
+        "backend/verification/weekly-reports/refinement-2026-11-11/pagination.pdf",
+        "backend/verification/weekly-reports/refinement-2026-11-11/snapshot.pdf",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/1440-dark.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/1440-light.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/1440-system.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/375-dark.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/375-light.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/375-system.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/archived-version-1.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/browser-run.exit.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/browser-run.raw.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/build.exit.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/build.raw.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/download-archived-version-1.pdf",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/download-version-2.pdf",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/email-preview-375.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/email-preview-640.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/email-preview.html",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/empty.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/error.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/loading.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/missing-stale-evidence.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/pdf-current-0db76b0-1.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/pdf-current-0db76b0-2.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/refreshed-version-2.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/results.json",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/typescript.exit.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/1440-dark.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/1440-light.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/1440-system.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/375-dark.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/375-light.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/375-system.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/archived-version-1.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/browser-run.exit.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/browser-run.raw.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/build.exit.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/build.raw.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/download-archived-version-1.pdf",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/download-version-2.pdf",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/email-preview-375.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/email-preview-640.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/email-preview.html",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/empty.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/error.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/loading.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/missing-stale-evidence.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/npm-audit-fix-frontend-dry-run.exit.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/npm-audit-fix-frontend-dry-run.raw.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/npm-audit-frontend.exit.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/npm-audit-frontend.raw.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/npm-outdated-frontend.exit.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/npm-outdated-frontend.raw.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/pdf-current-page-1.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/pdf-current-page-2.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/pdf-final-snapshot-page-1.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/pdf-final-snapshot-page-2.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/refreshed-version-2.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/results.json"
+      ],
+      "filesMoved": [],
+      "taskTemporaryFilesDeleted": [
+        {
+          "path": "frontend/0",
+          "reason": "The malformed task exit-file write created a file containing only the intended exit-file path; after verifying that exact content, the file was removed and correctly named exit-code evidence was written."
+        }
+      ],
+      "noSourceDependencyOrManifestChangesByAudit": true,
+      "sourceHashChecks": [
+        {
+          "file": "frontend/src/app/pages/weekly-reports/components/weekly-report-actions/weekly-report-actions.component.html",
+          "headBlob": "942434960de46fed90bdd8d3adc5c9aa011deb94",
+          "worktreeBlob": "942434960de46fed90bdd8d3adc5c9aa011deb94"
+        },
+        {
+          "file": "frontend/src/app/pages/weekly-reports/components/weekly-report-actions/weekly-report-actions.component.scss",
+          "headBlob": "385ad9d125bf9a2f8566651db5696155b1c999c8",
+          "worktreeBlob": "385ad9d125bf9a2f8566651db5696155b1c999c8"
+        }
+      ],
+      "untrackedPaths": [
+        "backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test-final.exit.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test-final.raw.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test-restored.exit.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test-restored.raw.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test.exit.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test.raw.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/npm-audit-backend.exit.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/npm-audit-backend.raw.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/npm-audit-fix-backend-dry-run.exit.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/npm-audit-fix-backend-dry-run.raw.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/npm-outdated-backend.exit.txt",
+        "backend/verification/weekly-reports/finalization-2026-11-12/npm-outdated-backend.raw.txt",
+        "backend/verification/weekly-reports/finalization/npm-audit-backend.raw.txt",
+        "backend/verification/weekly-reports/finalization/npm-audit-frontend.raw.txt",
+        "backend/verification/weekly-reports/refinement-2026-11-11/pagination.pdf",
+        "backend/verification/weekly-reports/refinement-2026-11-11/snapshot.pdf",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/1440-dark.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/1440-light.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/1440-system.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/375-dark.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/375-light.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/375-system.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/archived-version-1.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/browser-run.exit.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/browser-run.raw.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/build.exit.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/build.raw.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/download-archived-version-1.pdf",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/download-version-2.pdf",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/email-preview-375.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/email-preview-640.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/email-preview.html",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/empty.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/error.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/loading.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/missing-stale-evidence.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/pdf-current-0db76b0-1.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/pdf-current-0db76b0-2.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/refreshed-version-2.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/results.json",
+        "frontend/verification/weekly-reports/finalization-2026-11-12-head-0db76b0/typescript.exit.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/1440-dark.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/1440-light.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/1440-system.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/375-dark.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/375-light.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/375-system.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/archived-version-1.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/browser-run.exit.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/browser-run.raw.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/build.exit.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/build.raw.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/download-archived-version-1.pdf",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/download-version-2.pdf",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/email-preview-375.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/email-preview-640.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/empty.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/error.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/loading.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/missing-stale-evidence.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/npm-audit-fix-frontend-dry-run.exit.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/npm-audit-fix-frontend-dry-run.raw.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/npm-audit-frontend.exit.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/npm-audit-frontend.raw.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/npm-outdated-frontend.exit.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/npm-outdated-frontend.raw.txt",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/pdf-current-page-1.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/pdf-current-page-2.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/pdf-final-snapshot-page-1.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/pdf-final-snapshot-page-2.png",
+        "frontend/verification/weekly-reports/finalization-2026-11-12/refreshed-version-2.png"
+      ],
+      "filesDeleted": [
+        "frontend/0"
+      ],
+      "noApplicationDependencyManifestOrLockfileChanges": true,
+      "unrelatedChangesExcludedFromVerifiedOverlay": true
+    },
+    "branchAdvanceBoundary": "Branch and origin tracking ref advanced to 0db during this audit. Audit did not create, commit, or push that commit; it was built and tested after the advance.",
+    "taskSourceChangesInCurrentHead": [
+      {
+        "file": "backend/src/services/weeklyReportPdfService.js",
+        "kind": "behavior correction",
+        "detail": "Reporting Activity card height follows measured saved text to prevent wrapped text overlap."
+      },
+      {
+        "file": "backend/src/services/weeklyReportPresentation.js",
+        "kind": "formatting",
+        "detail": "Formatted with existing backend Prettier options; dynamic HTML escaping remains."
+      },
+      {
+        "file": "frontend/scripts/verify-weekly-reports-ui.cjs",
+        "kind": "verification support",
+        "detail": "Records tested HEAD, allows isolated evidence output folder, and asserts comparison-unavailable state when complete evidence is absent."
+      },
+      {
+        "file": "frontend/src/app/pages/weekly-reports/components/weekly-report-comparison/weekly-report-comparison.component.html",
+        "kind": "copy correction",
+        "detail": "Clarifies that delta comparisons require complete evidence in both saved reports."
+      }
+    ],
+    "dependencyOrLockfileChanges": false,
+    "apiSchemaScoringEvidenceOwnershipRevisionOrDeliveryLogicChanges": false
+  },
+  "historicalCurrentAudit2026_11_11": {
     "date": "2026-11-11",
     "branch": "fix/weekly-reports-finalization",
     "preflightHead": "cbd6b5f749c65e359597c0703008d1457a9c3d5e",
@@ -628,5 +2561,1117 @@
       "taskOwnedFilesDeleted": 0,
       "directoriesDeleted": 0
     }
+  },
+  "historicalVerification2026_11_11": {
+    "finalBackend": {
+      "status": "PASS",
+      "passed": 27,
+      "failed": 0,
+      "skipped": 0,
+      "durationSeconds": 23.941,
+      "command": "WEEKLY_REPORT_TEST_MONGO=1 node --test --test-concurrency=1 weeklyReportSprint weeklyReportScheduler weeklyReportsHardening developerContextService skillGapConsumerContracts weeklyReportsReliability.integration (under backend/src/tests)"
+    },
+    "focusedFrontend": {
+      "status": "PASS",
+      "files": 2,
+      "passed": 9,
+      "failed": 0
+    },
+    "fullFrontend": {
+      "status": "PASS",
+      "runs": 1,
+      "files": 95,
+      "passed": 598,
+      "failed": 0,
+      "durationSeconds": 84.78
+    },
+    "typescript": "PASS",
+    "build": {
+      "status": "PASS",
+      "durationSeconds": 71.993,
+      "warnings": [
+        "Existing Jobs SCSS 52.97/48 kB",
+        "Existing landing-page SCSS 56.67/48 kB"
+      ]
+    },
+    "browser": {
+      "status": "PASS",
+      "widths": [
+        1440,
+        375
+      ],
+      "themes": [
+        "light",
+        "dark",
+        "system"
+      ],
+      "additionalJourney": "loading,error,retry,empty",
+      "keyboardHistorySelection": true,
+      "populatedCaptures": 6,
+      "stateCaptures": 2,
+      "pageErrors": 0,
+      "overflow": 0,
+      "evidence": "frontend/verification/weekly-reports/finalization/results.json"
+    },
+    "syntax": "PASS",
+    "formatting": "PASS",
+    "gitDiffCheck": "PASS",
+    "gitCachedDiffCheck": "PASS"
+  },
+  "historicalBlockedGates2026_11_11": [
+    "Live AI admission/fallback and live SendGrid/SMTP reconciliation with staging credentials and approved recipient",
+    "Deployment-equivalent sustained performance with realistic nine-source volume",
+    "Staging index rollout and scheduler deployment/restart acceptance",
+    "Authenticated end-to-end integration against staging services",
+    "Learning Hub and Interview Prep verification against authorized staging account records",
+    "Exact production dependency advisory identification because npm registry access returned ENOTFOUND"
+  ],
+  "historicalCleanup2026_11_11": {
+    "verifiedTaskTempFilesRemoved": 0,
+    "verifiedTaskTempDirectoriesRemovedIndividually": 2,
+    "recursiveDeletionUsed": false,
+    "tempRoot": "frontend/.angular-weekly-temp",
+    "removed": true
+  },
+  "npmAdvisoryTriage": {
+    "status": "TRIAGE_PASS_REMEDIATION_OPEN",
+    "registryAccess": "PASS through authorized npm operation",
+    "frontend": {
+      "auditScope": "production dependencies in frontend/package-lock.json",
+      "totals": {
+        "info": 0,
+        "low": 0,
+        "moderate": 2,
+        "high": 4,
+        "critical": 0,
+        "total": 6
+      },
+      "rawAudit": "frontend/verification/weekly-reports/finalization-2026-11-12/npm-audit-frontend.raw.txt",
+      "outdated": "frontend/verification/weekly-reports/finalization-2026-11-12/npm-outdated-frontend.raw.txt",
+      "exactAffectedPackages": [
+        {
+          "name": "@angular/common",
+          "installedVersion": "21.2.1",
+          "severity": "high",
+          "direct": true,
+          "vulnerableRange": "21.0.0-next.0 - 21.2.19",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": "21.2.26",
+          "latestRegistryVersion": "22.2.5",
+          "installedNode": "node_modules/@angular/common",
+          "advisoryCount": 6
+        },
+        {
+          "name": "@angular/compiler",
+          "installedVersion": "21.2.1",
+          "severity": "high",
+          "direct": true,
+          "vulnerableRange": "21.0.0-next.0 - 21.2.19",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": "21.2.26",
+          "latestRegistryVersion": "22.2.5",
+          "installedNode": "node_modules/@angular/compiler",
+          "advisoryCount": 5
+        },
+        {
+          "name": "@angular/core",
+          "installedVersion": "21.2.1",
+          "severity": "high",
+          "direct": true,
+          "vulnerableRange": "21.0.0-next.0 - 21.2.19",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": "21.2.26",
+          "latestRegistryVersion": "22.2.5",
+          "installedNode": "node_modules/@angular/core",
+          "advisoryCount": 6
+        },
+        {
+          "name": "@angular/forms",
+          "installedVersion": "21.2.1",
+          "severity": "moderate",
+          "direct": true,
+          "vulnerableRange": "4.4.0-RC.0 - 4.4.0 || 21.0.0-next.0 - 21.2.19",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": "21.2.26",
+          "latestRegistryVersion": "22.2.5",
+          "installedNode": "node_modules/@angular/forms",
+          "advisoryCount": 0
+        },
+        {
+          "name": "@angular/platform-browser",
+          "installedVersion": "21.2.1",
+          "severity": "moderate",
+          "direct": true,
+          "vulnerableRange": "21.0.0-next.0 - 21.2.19",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": "21.2.26",
+          "latestRegistryVersion": "22.2.5",
+          "installedNode": "node_modules/@angular/platform-browser",
+          "advisoryCount": 0
+        },
+        {
+          "name": "@angular/router",
+          "installedVersion": "21.2.1",
+          "severity": "high",
+          "direct": true,
+          "vulnerableRange": "10.0.0-next.0 - 10.0.0-rc.1 || 21.0.0-next.0 - 21.2.24",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": "21.2.26",
+          "latestRegistryVersion": "22.2.5",
+          "installedNode": "node_modules/@angular/router",
+          "advisoryCount": 3
+        }
+      ],
+      "safeTargetedUpdate": "@angular/common, @angular/compiler, @angular/core, @angular/forms, @angular/platform-browser, @angular/router to 21.2.26 within existing ^21.2.0 constraints; not applied"
+    },
+    "backend": {
+      "auditScope": "production packages from installed backend tree",
+      "installedTreeSource": "backend/node_modules/.package-lock.json",
+      "repositoryPackageLockPresent": true,
+      "totals": {
+        "info": 0,
+        "low": 4,
+        "moderate": 36,
+        "high": 14,
+        "critical": 3,
+        "total": 57
+      },
+      "rawAudit": "backend/verification/weekly-reports/finalization-2026-11-12/npm-audit-backend.raw.txt",
+      "outdated": "backend/verification/weekly-reports/finalization-2026-11-12/npm-outdated-backend.raw.txt",
+      "exactAffectedPackages": [
+        {
+          "name": "@grpc/grpc-js",
+          "installedVersion": "1.14.3",
+          "severity": "high",
+          "direct": false,
+          "vulnerableRange": "1.14.0 - 1.14.4",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@grpc/grpc-js",
+          "advisoryCount": 4
+        },
+        {
+          "name": "@opentelemetry/auto-instrumentations-node",
+          "installedVersion": "0.71.0",
+          "severity": "high",
+          "direct": true,
+          "vulnerableRange": "<=0.78.0",
+          "npmFixAvailable": {
+            "name": "@opentelemetry/auto-instrumentations-node",
+            "version": "0.83.0",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": "0.71.0",
+          "latestRegistryVersion": "0.83.0",
+          "installedNode": "node_modules/@opentelemetry/auto-instrumentations-node",
+          "advisoryCount": 1
+        },
+        {
+          "name": "@opentelemetry/configuration",
+          "installedVersion": "0.213.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<=0.218.0",
+          "npmFixAvailable": {
+            "name": "@opentelemetry/sdk-node",
+            "version": "0.301.1",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/configuration",
+          "advisoryCount": 0
+        },
+        {
+          "name": "@opentelemetry/core",
+          "installedVersion": "2.6.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<2.8.0",
+          "npmFixAvailable": {
+            "name": "@opentelemetry/sdk-node",
+            "version": "0.301.1",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/core",
+          "advisoryCount": 1
+        },
+        {
+          "name": "@opentelemetry/exporter-logs-otlp-grpc",
+          "installedVersion": "0.213.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<=0.218.0",
+          "npmFixAvailable": {
+            "name": "@opentelemetry/sdk-node",
+            "version": "0.301.1",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/exporter-logs-otlp-grpc",
+          "advisoryCount": 0
+        },
+        {
+          "name": "@opentelemetry/exporter-logs-otlp-http",
+          "installedVersion": "0.213.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<=0.218.0",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/exporter-logs-otlp-http",
+          "advisoryCount": 0
+        },
+        {
+          "name": "@opentelemetry/exporter-logs-otlp-proto",
+          "installedVersion": "0.213.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<=0.218.0",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/exporter-logs-otlp-proto",
+          "advisoryCount": 0
+        },
+        {
+          "name": "@opentelemetry/exporter-metrics-otlp-grpc",
+          "installedVersion": "0.213.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<=0.218.0",
+          "npmFixAvailable": {
+            "name": "@opentelemetry/sdk-node",
+            "version": "0.301.1",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/exporter-metrics-otlp-grpc",
+          "advisoryCount": 0
+        },
+        {
+          "name": "@opentelemetry/exporter-metrics-otlp-http",
+          "installedVersion": "0.213.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<=0.218.0",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/exporter-metrics-otlp-http",
+          "advisoryCount": 0
+        },
+        {
+          "name": "@opentelemetry/exporter-metrics-otlp-proto",
+          "installedVersion": "0.213.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<=0.218.0",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/exporter-metrics-otlp-proto",
+          "advisoryCount": 0
+        },
+        {
+          "name": "@opentelemetry/exporter-prometheus",
+          "installedVersion": "0.213.0",
+          "severity": "high",
+          "direct": false,
+          "vulnerableRange": "<=0.218.0",
+          "npmFixAvailable": {
+            "name": "@opentelemetry/sdk-node",
+            "version": "0.301.1",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/exporter-prometheus",
+          "advisoryCount": 1
+        },
+        {
+          "name": "@opentelemetry/exporter-trace-otlp-grpc",
+          "installedVersion": "0.213.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<=0.218.0",
+          "npmFixAvailable": {
+            "name": "@opentelemetry/sdk-node",
+            "version": "0.301.1",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/exporter-trace-otlp-grpc",
+          "advisoryCount": 0
+        },
+        {
+          "name": "@opentelemetry/exporter-trace-otlp-http",
+          "installedVersion": "0.213.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<=0.218.0",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/exporter-trace-otlp-http",
+          "advisoryCount": 0
+        },
+        {
+          "name": "@opentelemetry/exporter-trace-otlp-proto",
+          "installedVersion": "0.213.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<=0.218.0",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/exporter-trace-otlp-proto",
+          "advisoryCount": 0
+        },
+        {
+          "name": "@opentelemetry/exporter-zipkin",
+          "installedVersion": "2.6.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<=2.7.1",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/exporter-zipkin",
+          "advisoryCount": 0
+        },
+        {
+          "name": "@opentelemetry/instrumentation-cassandra-driver",
+          "installedVersion": "0.58.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<0.66.0",
+          "npmFixAvailable": {
+            "name": "@opentelemetry/auto-instrumentations-node",
+            "version": "0.83.0",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/instrumentation-cassandra-driver",
+          "advisoryCount": 1
+        },
+        {
+          "name": "@opentelemetry/instrumentation-http",
+          "installedVersion": "0.213.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<=0.16.0 || 0.19.1-alpha.7 - 0.218.0",
+          "npmFixAvailable": {
+            "name": "@opentelemetry/auto-instrumentations-node",
+            "version": "0.83.0",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/instrumentation-http",
+          "advisoryCount": 0
+        },
+        {
+          "name": "@opentelemetry/instrumentation-knex",
+          "installedVersion": "0.57.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<0.65.0",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/instrumentation-knex",
+          "advisoryCount": 1
+        },
+        {
+          "name": "@opentelemetry/instrumentation-mongoose",
+          "installedVersion": "0.59.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<0.67.0",
+          "npmFixAvailable": {
+            "name": "@opentelemetry/auto-instrumentations-node",
+            "version": "0.83.0",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/instrumentation-mongoose",
+          "advisoryCount": 1
+        },
+        {
+          "name": "@opentelemetry/instrumentation-mysql",
+          "installedVersion": "0.59.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<0.67.0",
+          "npmFixAvailable": {
+            "name": "@opentelemetry/auto-instrumentations-node",
+            "version": "0.83.0",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/instrumentation-mysql",
+          "advisoryCount": 1
+        },
+        {
+          "name": "@opentelemetry/instrumentation-mysql2",
+          "installedVersion": "0.59.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<0.67.0",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/instrumentation-mysql2",
+          "advisoryCount": 1
+        },
+        {
+          "name": "@opentelemetry/instrumentation-oracledb",
+          "installedVersion": "0.38.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<0.46.0",
+          "npmFixAvailable": {
+            "name": "@opentelemetry/auto-instrumentations-node",
+            "version": "0.83.0",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/instrumentation-oracledb",
+          "advisoryCount": 1
+        },
+        {
+          "name": "@opentelemetry/instrumentation-pg",
+          "installedVersion": "0.65.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<0.73.0",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/instrumentation-pg",
+          "advisoryCount": 1
+        },
+        {
+          "name": "@opentelemetry/instrumentation-tedious",
+          "installedVersion": "0.32.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<0.40.0",
+          "npmFixAvailable": {
+            "name": "@opentelemetry/auto-instrumentations-node",
+            "version": "0.83.0",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/instrumentation-tedious",
+          "advisoryCount": 1
+        },
+        {
+          "name": "@opentelemetry/otlp-exporter-base",
+          "installedVersion": "0.213.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<=0.218.0",
+          "npmFixAvailable": {
+            "name": "@opentelemetry/sdk-node",
+            "version": "0.301.1",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/otlp-exporter-base",
+          "advisoryCount": 0
+        },
+        {
+          "name": "@opentelemetry/otlp-grpc-exporter-base",
+          "installedVersion": "0.213.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<=0.218.0",
+          "npmFixAvailable": {
+            "name": "@opentelemetry/sdk-node",
+            "version": "0.301.1",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/otlp-grpc-exporter-base",
+          "advisoryCount": 0
+        },
+        {
+          "name": "@opentelemetry/otlp-transformer",
+          "installedVersion": "0.213.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<=0.218.0",
+          "npmFixAvailable": {
+            "name": "@opentelemetry/sdk-node",
+            "version": "0.301.1",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/otlp-transformer",
+          "advisoryCount": 0
+        },
+        {
+          "name": "@opentelemetry/propagator-b3",
+          "installedVersion": "2.6.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "0.19.1-alpha.11 - 2.7.1",
+          "npmFixAvailable": {
+            "name": "@opentelemetry/sdk-node",
+            "version": "0.301.1",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/propagator-b3",
+          "advisoryCount": 0
+        },
+        {
+          "name": "@opentelemetry/propagator-jaeger",
+          "installedVersion": "2.6.0",
+          "severity": "high",
+          "direct": false,
+          "vulnerableRange": "<=2.8.0",
+          "npmFixAvailable": {
+            "name": "@opentelemetry/sdk-node",
+            "version": "0.301.1",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/propagator-jaeger",
+          "advisoryCount": 1
+        },
+        {
+          "name": "@opentelemetry/resources",
+          "installedVersion": "2.6.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "0.8.0 - 2.7.1",
+          "npmFixAvailable": {
+            "name": "@opentelemetry/sdk-node",
+            "version": "0.301.1",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/resources",
+          "advisoryCount": 0
+        },
+        {
+          "name": "@opentelemetry/sdk-logs",
+          "installedVersion": "0.213.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<=0.218.0",
+          "npmFixAvailable": {
+            "name": "@opentelemetry/sdk-node",
+            "version": "0.301.1",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/sdk-logs",
+          "advisoryCount": 0
+        },
+        {
+          "name": "@opentelemetry/sdk-metrics",
+          "installedVersion": "2.6.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<=2.7.1",
+          "npmFixAvailable": {
+            "name": "@opentelemetry/sdk-node",
+            "version": "0.301.1",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/sdk-metrics",
+          "advisoryCount": 0
+        },
+        {
+          "name": "@opentelemetry/sdk-node",
+          "installedVersion": "0.213.0",
+          "severity": "high",
+          "direct": true,
+          "vulnerableRange": "<=0.219.0",
+          "npmFixAvailable": {
+            "name": "@opentelemetry/sdk-node",
+            "version": "0.301.1",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": "0.213.0",
+          "latestRegistryVersion": "0.301.1",
+          "installedNode": "node_modules/@opentelemetry/sdk-node",
+          "advisoryCount": 1
+        },
+        {
+          "name": "@opentelemetry/sdk-trace-base",
+          "installedVersion": "2.6.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<=2.7.1",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/sdk-trace-base",
+          "advisoryCount": 0
+        },
+        {
+          "name": "@opentelemetry/sdk-trace-node",
+          "installedVersion": "2.6.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<=2.7.1",
+          "npmFixAvailable": {
+            "name": "@opentelemetry/sdk-node",
+            "version": "0.301.1",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@opentelemetry/sdk-trace-node",
+          "advisoryCount": 0
+        },
+        {
+          "name": "@protobufjs/utf8",
+          "installedVersion": "1.1.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<=1.1.0",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@protobufjs/utf8",
+          "advisoryCount": 1
+        },
+        {
+          "name": "@sendgrid/client",
+          "installedVersion": "8.1.6",
+          "severity": "low",
+          "direct": false,
+          "vulnerableRange": ">=6.5.3",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@sendgrid/client",
+          "advisoryCount": 0
+        },
+        {
+          "name": "@sendgrid/helpers",
+          "installedVersion": "8.0.0",
+          "severity": "low",
+          "direct": false,
+          "vulnerableRange": ">=6.5.3",
+          "npmFixAvailable": {
+            "name": "@sendgrid/mail",
+            "version": "6.5.2",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@sendgrid/helpers",
+          "advisoryCount": 0
+        },
+        {
+          "name": "@sendgrid/mail",
+          "installedVersion": "8.1.6",
+          "severity": "low",
+          "direct": true,
+          "vulnerableRange": ">=6.5.3",
+          "npmFixAvailable": {
+            "name": "@sendgrid/mail",
+            "version": "6.5.2",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/@sendgrid/mail",
+          "advisoryCount": 0
+        },
+        {
+          "name": "axios",
+          "installedVersion": "1.13.6",
+          "severity": "high",
+          "direct": true,
+          "vulnerableRange": "1.0.0 - 1.19.0",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": "1.21.1",
+          "latestRegistryVersion": "1.21.1",
+          "installedNode": "node_modules/axios",
+          "advisoryCount": 34
+        },
+        {
+          "name": "body-parser",
+          "installedVersion": "2.2.2",
+          "severity": "high",
+          "direct": false,
+          "vulnerableRange": "2.0.0 - 2.3.0",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/body-parser",
+          "advisoryCount": 2
+        },
+        {
+          "name": "deepmerge",
+          "installedVersion": "4.3.1",
+          "severity": "low",
+          "direct": false,
+          "vulnerableRange": ">=4.2.0",
+          "npmFixAvailable": {
+            "name": "@sendgrid/mail",
+            "version": "6.5.2",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/deepmerge",
+          "advisoryCount": 1
+        },
+        {
+          "name": "express-rate-limit",
+          "installedVersion": "8.3.1",
+          "severity": "moderate",
+          "direct": true,
+          "vulnerableRange": "8.0.1 - 8.5.0",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": "8.7.4",
+          "latestRegistryVersion": "8.7.4",
+          "installedNode": "node_modules/express-rate-limit",
+          "advisoryCount": 0
+        },
+        {
+          "name": "follow-redirects",
+          "installedVersion": "1.15.11",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<=1.15.11",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/follow-redirects",
+          "advisoryCount": 1
+        },
+        {
+          "name": "form-data",
+          "installedVersion": "4.0.5",
+          "severity": "high",
+          "direct": false,
+          "vulnerableRange": "4.0.0 - 4.0.5",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/form-data",
+          "advisoryCount": 1
+        },
+        {
+          "name": "ip-address",
+          "installedVersion": "10.1.0",
+          "severity": "high",
+          "direct": false,
+          "vulnerableRange": "<=10.7.3",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/ip-address",
+          "advisoryCount": 6
+        },
+        {
+          "name": "lodash",
+          "installedVersion": "4.17.23",
+          "severity": "high",
+          "direct": false,
+          "vulnerableRange": "4.0.0 - 4.17.23",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/lodash",
+          "advisoryCount": 2
+        },
+        {
+          "name": "mongoose",
+          "installedVersion": "9.2.4",
+          "severity": "critical",
+          "direct": true,
+          "vulnerableRange": "9.0.0 - 9.11.3",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": "9.12.1",
+          "latestRegistryVersion": "9.12.1",
+          "installedNode": "node_modules/mongoose",
+          "advisoryCount": 6
+        },
+        {
+          "name": "multer",
+          "installedVersion": "2.1.1",
+          "severity": "high",
+          "direct": true,
+          "vulnerableRange": "<=2.4.0",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": "2.5.0",
+          "latestRegistryVersion": "2.5.0",
+          "installedNode": "node_modules/multer",
+          "advisoryCount": 6
+        },
+        {
+          "name": "node-cron",
+          "installedVersion": "3.0.3",
+          "severity": "moderate",
+          "direct": true,
+          "vulnerableRange": "3.0.2 - 3.0.3",
+          "npmFixAvailable": {
+            "name": "node-cron",
+            "version": "4.6.0",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": "3.0.3",
+          "latestRegistryVersion": "4.6.0",
+          "installedNode": "node_modules/node-cron",
+          "advisoryCount": 0
+        },
+        {
+          "name": "nodemailer",
+          "installedVersion": "8.0.3",
+          "severity": "high",
+          "direct": true,
+          "vulnerableRange": "<=10.1.3",
+          "npmFixAvailable": {
+            "name": "nodemailer",
+            "version": "10.5.0",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": "8.0.11",
+          "latestRegistryVersion": "10.5.0",
+          "installedNode": "node_modules/nodemailer",
+          "advisoryCount": 20
+        },
+        {
+          "name": "path-to-regexp",
+          "installedVersion": "8.3.0",
+          "severity": "high",
+          "direct": false,
+          "vulnerableRange": "8.0.0 - 8.3.0",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/path-to-regexp",
+          "advisoryCount": 2
+        },
+        {
+          "name": "protobufjs",
+          "installedVersion": "7.5.4",
+          "severity": "critical",
+          "direct": false,
+          "vulnerableRange": "<=7.6.4",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/protobufjs",
+          "advisoryCount": 12
+        },
+        {
+          "name": "proxy-addr",
+          "installedVersion": "2.0.7",
+          "severity": "critical",
+          "direct": false,
+          "vulnerableRange": "1.1.0 - 2.0.7",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/proxy-addr",
+          "advisoryCount": 1
+        },
+        {
+          "name": "qs",
+          "installedVersion": "6.15.0",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "2.2.5 - 6.16.0",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/qs",
+          "advisoryCount": 4
+        },
+        {
+          "name": "uuid",
+          "installedVersion": "8.3.2",
+          "severity": "moderate",
+          "direct": false,
+          "vulnerableRange": "<11.1.1",
+          "npmFixAvailable": {
+            "name": "node-cron",
+            "version": "4.6.0",
+            "isSemVerMajor": true
+          },
+          "compatibleWantedVersion": null,
+          "latestRegistryVersion": null,
+          "installedNode": "node_modules/uuid",
+          "advisoryCount": 1
+        },
+        {
+          "name": "zod",
+          "installedVersion": "4.3.6",
+          "severity": "high",
+          "direct": true,
+          "vulnerableRange": "<4.6.6",
+          "npmFixAvailable": true,
+          "compatibleWantedVersion": "4.6.7",
+          "latestRegistryVersion": "4.6.7",
+          "installedNode": "node_modules/zod",
+          "advisoryCount": 1
+        }
+      ],
+      "safeInRangeDirectCandidates": [
+        {
+          "package": "axios",
+          "current": "1.13.6",
+          "wanted": "1.21.1",
+          "semverMajor": false
+        },
+        {
+          "package": "express-rate-limit",
+          "current": "8.3.1",
+          "wanted": "8.7.4",
+          "semverMajor": false
+        },
+        {
+          "package": "mongoose",
+          "current": "9.2.4",
+          "wanted": "9.12.1",
+          "semverMajor": false
+        },
+        {
+          "package": "multer",
+          "current": "2.1.1",
+          "wanted": "2.5.0",
+          "semverMajor": false
+        },
+        {
+          "package": "zod",
+          "current": "4.3.6",
+          "wanted": "4.6.7",
+          "semverMajor": false
+        }
+      ],
+      "majorReviewCandidates": [
+        {
+          "package": "@opentelemetry/auto-instrumentations-node",
+          "current": "0.71.0",
+          "suggested": "0.83.0",
+          "semverMajor": true
+        },
+        {
+          "package": "@opentelemetry/sdk-node",
+          "current": "0.213.0",
+          "suggested": "0.301.1",
+          "semverMajor": true
+        },
+        {
+          "package": "@sendgrid/mail",
+          "current": "8.1.6",
+          "suggested": "6.5.2",
+          "semverMajor": true
+        },
+        {
+          "package": "node-cron",
+          "current": "3.0.3",
+          "suggested": "4.6.0",
+          "semverMajor": true
+        },
+        {
+          "package": "nodemailer",
+          "current": "8.0.3",
+          "suggested": "10.5.0",
+          "semverMajor": true
+        }
+      ],
+      "noDependencyChangesApplied": true
+    },
+    "fixDryRuns": {
+      "frontend": "frontend/verification/weekly-reports/finalization-2026-11-12/npm-audit-fix-frontend-dry-run.raw.txt",
+      "backend": "backend/verification/weekly-reports/finalization-2026-11-12/npm-audit-fix-backend-dry-run.raw.txt",
+      "applied": false
+    }
+  },
+  "apiRepair": {
+    "date": "2026-11-12",
+    "baseHead": "0db76b044a506387fd714060c8ad666dbc09f3a3",
+    "worktreeOverlay": true,
+    "decision": "LOCAL RELEASE CANDIDATE ACCEPTED for the API-repair working-tree overlay based on 0db76b044a506387fd714060c8ad666dbc09f3a3; production readiness remains BLOCKED.",
+    "pdfCause": "Declared pdfkit runtime absent from backend/node_modules; restored pdfkit 0.20.2 and verified import without NODE_PATH.",
+    "emailBoundary": "Screenshot 409 originates from recipient/preference guard. Disabled preference must remain blocked; response now identifies missing/inactive recipient, missing email, or disabled weekly report preference.",
+    "sourceFiles": [
+      "backend/src/services/weeklyReportDeliveryService.js",
+      "backend/src/tests/weeklyReportsRefinement.integration.test.js",
+      "frontend/src/app/pages/weekly-reports/weekly-reports.component.ts",
+      "frontend/src/app/pages/weekly-reports/weekly-reports.component.html",
+      "frontend/src/app/pages/weekly-reports/weekly-reports.component.spec.ts"
+    ],
+    "tests": {
+      "backend": {
+        "pass": 10,
+        "fail": 0,
+        "log": "backend/verification/weekly-reports/api-repair-2026-11-12/backend-after-vendor-restore.raw.txt",
+        "scope": "Disposable Mongo authenticated HTTP PDF downloads, enabled resend, disabled preference 409, owner isolation, revisions, quotas and uncertain-send safeguards; synthetic email only",
+        "afterVendorRestore": true
+      },
+      "frontend": {
+        "pass": 6,
+        "fail": 0,
+        "log": "frontend/verification/weekly-reports/api-repair-2026-11-12-frontend-test.raw.txt"
+      },
+      "typescript": "PASS after vendor cleanup",
+      "build": {
+        "status": "PASS",
+        "seconds": 87.335,
+        "log": "frontend/verification/weekly-reports/api-repair-2026-11-12-build.raw.txt",
+        "warnings": "Existing Jobs and landing-page stylesheet budgets"
+      },
+      "formatting": "PASS: prior explicit write/check and final checks for five changed source files",
+      "syntax": "PASS",
+      "scopedWhitespace": "PASS",
+      "stagedWhitespace": "PASS; existing index preserved",
+      "worktreeWhitespace": "PASS after vendor restoration and report updates"
+    },
+    "runtimeRestore": {
+      "command": "npm install --no-save --package-lock=false --ignore-scripts pdfkit@0.20.2",
+      "manifestOrLockfileChanges": false,
+      "added": 104,
+      "removed": 14,
+      "changed": 98,
+      "trackedVendorPaths": 3045,
+      "inventory": "backend/verification/weekly-reports/api-repair-2026-11-12/vendor-changed-paths.txt",
+      "cleanup": "PASS: user authorized exact inventory restoration; all 3,045 listed tracked paths restored from unchanged index; no remaining tracked vendor diff; PDFKit 0.20.2 imports without NODE_PATH.",
+      "priorBackendAuditBoundary": "Tracked vendor content restored to pre-install index; missing runtime packages remain locally installed. Prior advisory inventory remains historical and is not a deployment audit.",
+      "userApproved": true,
+      "remainingTrackedVendorChanges": 0,
+      "restorationInventory": "backend/verification/weekly-reports/api-repair-2026-11-12/vendor-changed-paths.txt"
+    },
+    "liveEmail": "BLOCKED; no live recipient/provider invoked",
+    "commits": 0,
+    "pushes": 0,
+    "moves": [],
+    "deletions": [],
+    "finalization": "PASS: necessary PDF runtime retained, incidental tracked vendor rewrites restored, existing staged/user work preserved, no source files moved/deleted.",
+    "browserBoundary": "Earlier production-bundle browser screenshots predate this action-error UI repair. Current repair verified by six focused Angular tests, TypeScript and production build; API behavior verified with authenticated HTTP and disposable Mongo."
   }
 }
