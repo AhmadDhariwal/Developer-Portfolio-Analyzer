@@ -17,9 +17,11 @@
 }
 
 .kpi-card {
-  display: grid;
-  gap: 0.4rem;
-  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 136px;
+  padding: 20px 22px;
   border: 1px solid var(--border-color, #64748b40);
   border-radius: 16px;
   background: var(--surface-card);
@@ -38,33 +40,68 @@
     box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.06);
   }
 
-  strong {
-    font-size: clamp(20px, 2.2vw, 26px);
-    font-weight: 800;
-    line-height: 1.35;
-    letter-spacing: -0.02em;
-    font-variant-numeric: tabular-nums;
-    color: var(--text-primary);
-  }
-
   @media (max-width: 640px) {
-    padding: 20px;
+    padding: 18px 20px;
+    min-height: 126px;
   }
 }
 
 .kpi-label {
+  display: block;
   color: var(--text-muted);
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+  line-height: 1.2;
+}
+
+.kpi-value-wrap {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  height: 40px;
+  margin: 6px 0;
+
+  strong {
+    display: inline-block;
+    max-width: 100%;
+    font-size: clamp(22px, 2.2vw, 26px);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &.is-text {
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+      color: var(--text-secondary);
+      background: transparent;
+      padding: 0;
+      border: none;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+  }
 }
 
 .delta {
+  display: block;
   color: var(--text-muted);
   font-size: 0.82rem;
-  font-weight: 700;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .delta--up {

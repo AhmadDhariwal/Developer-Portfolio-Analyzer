@@ -1,17 +1,22 @@
 :host {
-  display: contents;
+  display: block;
+  width: 100%;
 }
 
 .header-actions {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.actions-left {
+  display: flex;
+  align-items: center;
   gap: 0.75rem;
   flex-wrap: wrap;
-  justify-content: flex-end;
-
-  @media (max-width: 760px) {
-    justify-content: flex-start;
-  }
 }
 
 .cache-indicator {
@@ -68,10 +73,18 @@
 
 .snapshot-actions {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
-  max-width: 480px;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  margin-left: auto;
+
+  .action-buttons-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
 
   button {
     min-height: 40px;
@@ -85,6 +98,7 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.16s ease;
+    white-space: nowrap;
 
     &:hover:not(:disabled) {
       border-color: rgba(99, 102, 241, 0.35);
@@ -100,18 +114,31 @@
   }
 
   small {
-    width: 100%;
     color: var(--text-muted);
     font-size: 11px;
-    line-height: 1.5;
+    line-height: 1.4;
     font-weight: 500;
+    text-align: right;
+    white-space: nowrap;
   }
 
-  @media (max-width: 760px) {
-    justify-content: flex-start;
+  @media (max-width: 820px) {
+    align-items: flex-start;
+    margin-left: 0;
+    width: 100%;
 
-    button {
-      flex: 1 1 auto;
+    .action-buttons-right {
+      justify-content: flex-start;
+      width: 100%;
+
+      button {
+        flex: 1 1 auto;
+      }
+    }
+
+    small {
+      text-align: left;
+      white-space: normal;
     }
   }
 }

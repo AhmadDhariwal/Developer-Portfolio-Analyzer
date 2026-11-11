@@ -11,8 +11,8 @@
 
   <div class="breakdown-grid">
     <article class="breakdown-row" *ngFor="let item of items">
-      <div>
-        <strong>{{ item.label }}</strong>
+      <div class="breakdown-row-head">
+        <strong [title]="item.label">{{ item.label }}</strong>
 
         <span>{{ item.weight }}% weight</span>
       </div>
@@ -21,11 +21,20 @@
         <span [style.width.%]="item.score ?? 0"></span>
       </div>
 
-      <small>{{
-        item.score === null
-          ? item.reason + ' — not a zero score'
-          : item.score + '% · ' + item.contribution + ' weighted points'
-      }}</small>
+      <small
+        class="breakdown-row-foot"
+        [title]="
+          item.score === null
+            ? item.reason + ' — not a zero score'
+            : item.score + '% · ' + item.contribution + ' weighted points'
+        "
+      >
+        {{
+          item.score === null
+            ? item.reason + ' — not a zero score'
+            : item.score + '% · ' + item.contribution + ' weighted points'
+        }}
+      </small>
     </article>
   </div>
 </section>

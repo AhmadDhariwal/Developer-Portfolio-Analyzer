@@ -1,0 +1,111 @@
+{
+  "testedHead": "7decc38fe706bdb0184b6203fe382765dbbf2297",
+  "themes": [
+    {
+      "name": "1440-light",
+      "width": 1440,
+      "theme": "light",
+      "overflow": false,
+      "pageErrors": 0,
+      "sources": 9,
+      "keyboardHistorySelection": true,
+      "reportHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "name": "1440-dark",
+      "width": 1440,
+      "theme": "dark",
+      "overflow": false,
+      "pageErrors": 0,
+      "sources": 9,
+      "keyboardHistorySelection": true,
+      "reportHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "name": "1440-system",
+      "width": 1440,
+      "theme": "system",
+      "overflow": false,
+      "pageErrors": 0,
+      "sources": 9,
+      "keyboardHistorySelection": true,
+      "reportHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "name": "375-light",
+      "width": 375,
+      "theme": "light",
+      "overflow": false,
+      "pageErrors": 0,
+      "sources": 9,
+      "keyboardHistorySelection": true,
+      "reportHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "name": "375-dark",
+      "width": 375,
+      "theme": "dark",
+      "overflow": false,
+      "pageErrors": 0,
+      "sources": 9,
+      "keyboardHistorySelection": true,
+      "reportHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "name": "375-system",
+      "width": 375,
+      "theme": "system",
+      "overflow": false,
+      "pageErrors": 0,
+      "sources": 9,
+      "keyboardHistorySelection": true,
+      "reportHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  ],
+  "operationJourney": {
+    "operations": [
+      "generate",
+      "refresh",
+      "resend-email"
+    ],
+    "refreshVersion": 2,
+    "pdfHash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "emailHash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "samePersistedVersion": true,
+    "browserDownload": true,
+    "parsedPdfPages": 2,
+    "resendInvokedNoExtraGeneration": true
+  },
+  "archivedSnapshot": {
+    "deepLinkLoaded": true,
+    "refreshDisabled": true,
+    "resendDisabled": true,
+    "pdfAvailable": true,
+    "pdfHash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "version": 1
+  },
+  "evidenceStates": {
+    "missingScoreNotZero": true,
+    "comparisonUnavailableWithoutCompleteEvidence": true,
+    "unavailableSprintAndInterview": true,
+    "staleSourcesWarned": true,
+    "measuredGitHubZeroPreserved": true
+  },
+  "loadingErrorEmpty": {
+    "loadingSkeleton": true,
+    "errorRetry": true,
+    "emptyState": true,
+    "pageErrors": 0,
+    "overflow": 0
+  },
+  "emailPreview": {
+    "version": 2,
+    "hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "savedReportLink": true,
+    "desktopWidth": 640,
+    "mobileWidth": 375,
+    "overflow": 0,
+    "sanitized": true
+  },
+  "failures": []
+}

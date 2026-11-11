@@ -72,9 +72,10 @@ function email(report, name, reportLink) {
     .map((item) => {
       const isNum = item.value !== null && Number.isFinite(item.value);
       const pct = isNum ? Math.min(100, Math.max(0, item.value)) : 0;
-      const bar = isNum && pct > 0
-        ? `<div style="background:#4f46e5;height:5px;width:${pct}%;border-radius:9999px;"></div>`
-        : '';
+      const bar =
+        isNum && pct > 0
+          ? `<div style="background:#4f46e5;height:5px;width:${pct}%;border-radius:9999px;"></div>`
+          : '';
       const displayVal = item.value === null ? escape(item.reason) : `${escape(item.value)}/100`;
       return `<tr>
         <td style="padding:10px 8px;border-bottom:1px solid #f1f5f9;vertical-align:middle;">
@@ -91,33 +92,33 @@ function email(report, name, reportLink) {
   const listSection = (title, values) => {
     const items = values.length
       ? values
-        .map(
-          (value) =>
-          `<li style="background:#f8fafc;border:1px solid #e2e8f0;border-left:3px solid #4f46e5;border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:8px;font-size:13px;color:#334155;line-height:1.6;">${escape(value)}</li>`,
-        )
-        .join('')
+          .map(
+            (value) =>
+              `<li style="background:#f8fafc;border:1px solid #e2e8f0;border-left:3px solid #4f46e5;border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:8px;font-size:13px;color:#334155;line-height:1.6;">${escape(value)}</li>`,
+          )
+          .join('')
       : '<li style="background:#f8fafc;border:1px solid #e2e8f0;border-left:3px solid #cbd5e1;border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:8px;font-size:13px;color:#64748b;font-style:italic;">No saved items for this week.</li>';
-  return `<h2 style="font-size:16px;font-weight:800;color:#0f172a;margin:28px 0 12px 0;letter-spacing:-0.02em;">${escape(title)}</h2><ul style="list-style:none;padding:0;margin:0 0 16px 0;">${items}</ul>`;
-};
+    return `<h2 style="font-size:16px;font-weight:800;color:#0f172a;margin:28px 0 12px 0;letter-spacing:-0.02em;">${escape(title)}</h2><ul style="list-style:none;padding:0;margin:0 0 16px 0;">${items}</ul>`;
+  };
 
-const sourceRows = v.sources
-  .map(
-    (source) =>
-    `<li style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:12px;color:#475569;line-height:1.5;"><strong style="color:#0f172a;">${escape(source.label)}</strong>: ${escape(source.status)} · ${escape(source.freshness)} · ${escape(source.timestamp)}</li>`,
-  )
-  .join('');
+  const sourceRows = v.sources
+    .map(
+      (source) =>
+        `<li style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:12px;color:#475569;line-height:1.5;"><strong style="color:#0f172a;">${escape(source.label)}</strong>: ${escape(source.status)} · ${escape(source.freshness)} · ${escape(source.timestamp)}</li>`,
+    )
+    .join('');
 
-// Clean score presentation: avoids 36px wrapping of "(legacy snapshot)"
-const isLegacy = v.scoreLabel.includes('(legacy snapshot)');
-const scoreDisplayHtml =
-  v.score === null
-    ? `<span style="font-size:26px;font-weight:800;color:#4338ca;">Not assessed</span>`
-    : `<span style="font-size:36px;font-weight:800;color:#4338ca;letter-spacing:-0.03em;">${escape(v.score)}</span><span style="font-size:18px;font-weight:600;color:#64748b;">/100</span>` +
-    (isLegacy
-      ? ` <span style="display:inline-block;margin-left:6px;font-size:11px;font-weight:600;background:#f1f5f9;color:#64748b;padding:2px 7px;border-radius:4px;vertical-align:middle;text-transform:uppercase;letter-spacing:0.04em;">legacy snapshot</span>`
-      : '');
+  // Clean score presentation: avoids 36px wrapping of "(legacy snapshot)"
+  const isLegacy = v.scoreLabel.includes('(legacy snapshot)');
+  const scoreDisplayHtml =
+    v.score === null
+      ? `<span style="font-size:26px;font-weight:800;color:#4338ca;">Not assessed</span>`
+      : `<span style="font-size:36px;font-weight:800;color:#4338ca;letter-spacing:-0.03em;">${escape(v.score)}</span><span style="font-size:18px;font-weight:600;color:#64748b;">/100</span>` +
+        (isLegacy
+          ? ` <span style="display:inline-block;margin-left:6px;font-size:11px;font-weight:600;background:#f1f5f9;color:#64748b;padding:2px 7px;border-radius:4px;vertical-align:middle;text-transform:uppercase;letter-spacing:0.04em;">legacy snapshot</span>`
+          : '');
 
-const html = `<!doctype html>
+  const html = `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -209,30 +210,30 @@ const html = `<!doctype html>
     </table>
   </body>
 </html>`;
-const text = [
-  v.brand,
-  v.period,
-  `Version ${v.version} / ${v.hash}`,
-  `Score: ${v.scoreLabel}`,
-  v.summary,
-  v.comparison,
-  ...v.breakdown.map(
-    (item) =>
-      `${item.label}: ${item.value === null ? item.reason : item.value + '/100'} (${item.weight}%)`,
-  ),
-  'Evidence highlights',
-  ...v.achievements,
-  'Insights',
-  ...v.insights,
-  'Next actions',
-  ...v.recommendations,
-  `Risks: ${v.risk}`,
-  ...v.sources.map(
-    (source) => `${source.label}: ${source.status}; ${source.freshness}; ${source.timestamp}`,
-  ),
-  `Saved report: ${reportLink}`,
-  'Readiness is not a hiring probability.',
-].join('\n\n');
-return { html, text };
+  const text = [
+    v.brand,
+    v.period,
+    `Version ${v.version} / ${v.hash}`,
+    `Score: ${v.scoreLabel}`,
+    v.summary,
+    v.comparison,
+    ...v.breakdown.map(
+      (item) =>
+        `${item.label}: ${item.value === null ? item.reason : item.value + '/100'} (${item.weight}%)`,
+    ),
+    'Evidence highlights',
+    ...v.achievements,
+    'Insights',
+    ...v.insights,
+    'Next actions',
+    ...v.recommendations,
+    `Risks: ${v.risk}`,
+    ...v.sources.map(
+      (source) => `${source.label}: ${source.status}; ${source.freshness}; ${source.timestamp}`,
+    ),
+    `Saved report: ${reportLink}`,
+    'Readiness is not a hiring probability.',
+  ].join('\n\n');
+  return { html, text };
 }
 module.exports = { view, email, escape, date };

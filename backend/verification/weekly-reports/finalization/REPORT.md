@@ -1,3 +1,57 @@
+# Weekly Reports local release-candidate close — 12 November 2026
+
+**Decision: LOCALLY ACCEPTED for HEAD 7decc38fe706bdb0184b6203fe382765dbbf2297; NOT PRODUCTION-READY.** The local release-candidate gates listed below pass for the tested revision and audit-owned corrections. Production readiness remains BLOCKED by confirmed production dependency advisories and the staging, account-data, live-provider, and performance gates. This is a local acceptance only; no production claim is made.
+
+## Revision, scope, and worktree boundary
+
+- The requested branch is fix/weekly-reports-finalization. Preflight HEAD was 7decc38fe706bdb0184b6203fe382765dbbf2297, and the preflight index/worktree were clean. The user confirmed this actual HEAD after the request cited fd65bc72c3ae061e7c742b25e729aa04f53ca6be. fd65 is the parent of 26dcde8c68cdca60b632ff9a9d61a2b2e5fabc15, followed by 7decc38fe706bdb0184b6203fe382765dbbf2297.
+- PR target: not applicable. No commit, push, merge, deployment, production-data write, secret change, or application dependency change was made by this audit.
+- The two commits after fd65 include PDF/email presentation changes, the Weekly Reports browser-verifier update, comparison copy, and component styling. The audit reviewed these diffs. The only behavior correction made was the PDF reporting-activity card sizing; the comparison empty state now says “Comparison unavailable” and explains the complete-evidence requirement. Other source edits are formatter normalization or verifier evidence-path/metadata/assertion changes.
+- During this audit, additional staged Weekly Reports edits appeared after the clean preflight. They were not authored or staged by this audit and remain preserved. The actions component template was last written at 00:34 Asia/Karachi, after the 00:27 production build and 00:31 browser run. It is outside the browser PASS and outside this accepted commit-level candidate. The index is left as found at close; no staging, unstaging, reset, or cleanup command was used.
+- Browser results record the tested commit SHA, but do not hash the full worktree overlay. The run tested HEAD 7decc38f with the pre-run source state; it does not certify later staged edits. Exact task artifacts and the observed close-time index/worktree state are listed in status.json.
+
+## Current local verification
+
+| Gate | Result | Evidence and boundary |
+| --- | --- | --- |
+| Production frontend build | PASS | Built the pre-run Weekly Reports source state in 103.347 seconds. Existing unrelated Jobs SCSS (52.97/48 kB) and landing-page SCSS (56.67/48 kB) budget warnings remain. Raw output: frontend/verification/weekly-reports/finalization-2026-11-12/build.raw.txt. |
+| TypeScript | PASS | tsc --noEmit -p frontend/tsconfig.app.json completed with exit 0 on the pre-run source tree. |
+| Production-bundle browser verifier | PASS | One actual browser session, testedHead 7decc38fe706bdb0184b6203fe382765dbbf2297. Six combinations: widths 1440 and 375 at light, dark, and system themes; nine source cards; keyboard history selection; zero page errors and zero horizontal overflow. Results and raw log: frontend/verification/weekly-reports/finalization-2026-11-12/results.json and browser-run.raw.txt. |
+| Browser operations | PASS | Generate, refresh to version 2, then resend-email; PDF and email retained the same saved version/hash; PDF download parsed as two pages; resend did not trigger another generation. Archived version 1 loaded by hash with refresh/resend disabled and its PDF available. Missing-score, missing/stale sources, measured zero, loading, retry/error, and empty states passed. Synthetic email preview at 640 and 375 pixels had no overflow and passed the sanitization assertion. |
+| Focused PDF/email tests | PASS — 9/9 | Final run after the PDF card fix: backend/verification/weekly-reports/finalization-2026-11-12/backend-pdf-email-test-final.raw.txt. The first attempt was blocked because local backend/node_modules lacked pdfkit; playwright 1.65.0 and the declared pdfkit 0.20.2 were restored in a task-only temporary test prefix. No application manifest or lockfile changed. |
+| PDF presentation | PASS after correction | Visual review of the pre-fix browser download exposed wrapped activity text exceeding a fixed-height card. The card now sizes from the saved text. The post-fix focused suite passed and the two-page A4 snapshot was rendered and inspected: frontend/verification/weekly-reports/finalization-2026-11-12/pdf-final-snapshot-page-1.png and pdf-final-snapshot-page-2.png. The card no longer overlaps the next section. |
+| Email presentation and security | PASS | The 640 and 375 pixel previews were visually inspected. Dynamic HTML text and the report URL are escaped; the email sender accepts only an HTTP(S) FRONTEND_BASE_URL before building the saved-report link. Version/hash and saved snapshot content are preserved. Delivery claims, uncertain-outcome handling, owner/preference checks, and resend safeguards are unchanged. No live email was sent. |
+| Syntax and formatting | PASS | node --check passed for the PDF service, presentation service, and verifier. Prettier write/check passed for the nine audit-touched source files using the repository frontend config and backend options --single-quote --trailing-comma all --print-width 100. |
+| Mongo, worker reliability, and cross-module contracts | PASS — reused | Reused the retained focused results because changes since fd65 do not touch generation, persistence, ownership, scheduler, worker, or consumer-contract paths. backend/verification/weekly-reports/finalization/mongo-results.json records the local replica-set assertions; status.json retains the 27/27 focused backend/cross-module run. The retained result does not bind a Git SHA, so it is not represented as a fresh run at 7decc38f. |
+| Full Angular suite and comprehensive WCAG review | DEFERRED | Not repeated. The retained 598/598 result predates this revision. Current browser checks cover the verifier journeys only, not a full WCAG audit. |
+
+The initial non-elevated Playwright import attempt failed before browser launch because the sandbox and elevated temporary-directory paths differed. The successful run overwrote that first attempt's raw file, so only its failure summary is retained here; it is not counted as a browser run. The corrected isolated environment produced one successful browser session.
+
+## Production dependency advisory triage
+
+Registry access was available through the authorized npm operation. Frontend production audit found 6 advisories: 4 high and 2 moderate, affecting @angular/common, @angular/compiler, @angular/core, @angular/forms, @angular/platform-browser, and @angular/router at 21.2.1. npm outdated reports 21.2.26 as the in-range wanted version for all six under the existing ^21.2.0 constraints. Updating that targeted Angular set to 21.2.26 is the compatible patch candidate; it was not applied.
+
+The backend production audit used the exact installed dependency snapshot in backend/node_modules/.package-lock.json because the repository has no backend root package-lock.json. It found 57 advisories: 4 low, 36 moderate, 14 high, and 3 critical. The exact affected package/version/severity/fix inventory is recorded in status.json; raw audit output is backend/verification/weekly-reports/finalization-2026-11-12/npm-audit-backend.raw.txt. The critical packages include mongoose 9.2.4, protobufjs 7.5.4, and proxy-addr 2.0.7.
+
+Registry-compatible direct backend candidates reported by npm outdated are axios 1.21.1, express-rate-limit 8.7.4, mongoose 9.12.1, multer 2.5.0, and zod 4.6.7. npm reports major-version changes for @opentelemetry/auto-instrumentations-node 0.83.0, @opentelemetry/sdk-node 0.301.1, node-cron 4.6.0, and nodemailer 10.5.0. For @sendgrid/mail, npm proposes a major downgrade to 6.5.2; that is not treated as a safe automatic fix. These candidates need targeted compatibility review and verification before dependency changes. No dependency upgrades, downgrades, or blanket fixes were applied.
+
+## Release gates and final decision
+
+| Gate | Result |
+| --- | --- |
+| Local release candidate at exact HEAD 7decc38fe706bdb0184b6203fe382765dbbf2297 | ACCEPTED for local review, with the audit-owned PDF sizing and comparison-copy corrections recorded above |
+| Full post-run worktree including later staged Weekly Reports edits | BLOCKED from acceptance; at least the actions component template changed after build/browser evidence and is preserved for its owner |
+| Dependency security clearance for production | BLOCKED; exact advisories are triaged, but production packages remain affected and no dependency change was authorized |
+| Authorized real account-data verification | BLOCKED |
+| Live AI and email/provider reconciliation | BLOCKED |
+| Staging Mongo index rollout, worker recovery, multi-replica behavior | BLOCKED |
+| Deployment-equivalent performance acceptance | BLOCKED |
+| Production readiness | BLOCKED |
+
+No files were moved or deleted. The final local candidate decision does not waive the blocked production gates or certify the later staged worktree overlay. The exact changed, staged, retained, and generated file inventory is in status.json.
+
+---
+
 # Weekly Reports finalization — 10 November 2026
 
 Decision: **NOT PRODUCTION-READY.** Local functional and reliability gates pass. Live delivery, production-volume performance and deployment acceptance remain BLOCKED pending staging infrastructure. No deployment or production data was used.

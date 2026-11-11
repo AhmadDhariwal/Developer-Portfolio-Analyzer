@@ -53,21 +53,19 @@
 
 .page-header {
   display: flex;
-  justify-content: space-between;
-  gap: 1.5rem;
-  align-items: flex-start;
+  flex-direction: column;
+  gap: 1.25rem;
+  align-items: stretch;
   padding: 24px;
   color: var(--text-primary);
-  flex-wrap: wrap;
 
-  @media (max-width: 760px) {
-    flex-direction: column;
-    align-items: stretch;
+  app-weekly-report-actions {
+    display: block;
+    width: 100%;
   }
 }
 
 .header-copy {
-  flex: 1 1 320px;
   min-width: 0;
 
   h1 {
@@ -195,10 +193,12 @@
   display: block;
   height: 0.9rem;
   border-radius: 999px;
-  background: linear-gradient(90deg,
-      rgba(30, 41, 59, 0.9),
-      rgba(51, 65, 85, 0.92),
-      rgba(30, 41, 59, 0.9));
+  background: linear-gradient(
+    90deg,
+    rgba(30, 41, 59, 0.9),
+    rgba(51, 65, 85, 0.92),
+    rgba(30, 41, 59, 0.9)
+  );
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite linear;
 }
@@ -385,7 +385,6 @@ button:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
-
   *,
   *::before,
   *::after {

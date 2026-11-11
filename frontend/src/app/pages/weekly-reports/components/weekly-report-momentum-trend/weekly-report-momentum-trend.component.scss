@@ -87,17 +87,27 @@
     }
 
     strong {
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 14px;
       font-weight: 700;
       font-variant-numeric: tabular-nums;
+      line-height: 1;
     }
   }
 
   small {
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-variant-numeric: tabular-nums;
     font-size: 0.78rem;
     font-weight: 600;
     color: var(--text-muted);
+    line-height: 1;
   }
 }
 

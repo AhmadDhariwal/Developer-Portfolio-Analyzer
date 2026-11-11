@@ -40,4 +40,10 @@ export class WeeklyReportKpiGridComponent {
   formatDelta(value: number, suffix = 'pts'): string {
     return formatDelta(value, this.comparisonAvailable, suffix);
   }
+
+  isTextValue(value: string | number | null | undefined): boolean {
+    if (value == null) return false;
+    const str = String(value).trim();
+    return !/^[-+]?\d+[%]?(?:\s*(?:pts|qs|repos))?$/.test(str);
+  }
 }

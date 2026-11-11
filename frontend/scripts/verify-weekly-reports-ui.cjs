@@ -2,6 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const http = require('node:http');
 const assert = require('node:assert/strict');
+const { execFileSync } = require('node:child_process');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const parsePdf = require(path.resolve(__dirname, '../../backend/node_modules/pdf-parse'));
 
@@ -28,7 +29,11 @@ const weeklyCalendar = require(
   path.resolve(__dirname, '../../backend/src/services/weeklyReportCalendar'),
 );
 const root = path.resolve(__dirname, '..');
-const output = path.join(root, 'verification/weekly-reports/refinement-2026-11-11');
+const output = path.resolve(
+  root,
+  process.env.WEEKLY_REPORTS_VERIFICATION_OUTPUT ||
+    'verification/weekly-reports/refinement-2026-11-11',
+);
 const staticRoot = path.join(root, 'dist/frontend/browser');
 const reportId = '000000000000000000000001';
 const priorReportId = '000000000000000000000002';
@@ -333,7 +338,7 @@ const server = http.createServer((req, res) => {
   res.setHeader(
     'Content-Type',
     { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css' }[path.extname(file)] ||
-    'application/octet-stream',
+      'application/octet-stream',
   );
   fs.createReadStream(file).pipe(res);
 });
@@ -482,6 +487,10 @@ async function openPage(browser, width, theme, state = createState()) {
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
   let browser;
   const results = {
+    testedHead: execFileSync('git', ['rev-parse', 'HEAD'], {
+      cwd: path.resolve(root, '..'),
+      encoding: 'utf8',
+    }).trim(),
     themes: [],
     operationJourney: {},
     archivedSnapshot: {},
@@ -625,6 +634,7 @@ async function openPage(browser, width, theme, state = createState()) {
     await missing.page.getByText('Overall score not assessed').waitFor();
     assert.equal(await missing.page.getByRole('meter').getAttribute('aria-valuenow'), null);
     assert.equal(await missing.page.locator('.stale-warning').isVisible(), true);
+    assert.equal(await missing.page.getByText('Comparison unavailable').isVisible(), true);
     assert.ok((await missing.page.locator('.source-card--warning').count()) >= 1);
     assert.match(await missing.page.locator('.kpi-grid').innerText(), /Unavailable/);
     assert.match(
@@ -638,6 +648,7 @@ async function openPage(browser, width, theme, state = createState()) {
     });
     results.evidenceStates = {
       missingScoreNotZero: true,
+      comparisonUnavailableWithoutCompleteEvidence: true,
       unavailableSprintAndInterview: true,
       staleSourcesWarned: true,
       measuredGitHubZeroPreserved:
