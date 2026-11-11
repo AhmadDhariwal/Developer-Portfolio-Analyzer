@@ -5,7 +5,7 @@
 .detail-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  gap: 1.25rem;
 
   @media (max-width: 920px) {
     grid-template-columns: 1fr;
@@ -30,10 +30,12 @@
 .panel-head {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: baseline;
   flex-wrap: wrap;
   gap: 0.8rem;
-  margin-bottom: 0.95rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-color, rgba(100, 116, 139, 0.14));
 
   h3 {
     margin: 0;
@@ -43,48 +45,92 @@
     line-height: 1.35;
     color: var(--text-primary);
   }
-
-  small {
-    color: var(--text-muted);
-  }
 }
 
 .panel-subtitle {
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 500;
-  display: block;
-  margin-top: 2px;
 }
 
 .rich-list {
+  list-style: none;
   margin: 0;
-  padding-left: 1.25rem;
+  padding: 0;
   display: grid;
-  gap: 0.75rem;
+  gap: 12px;
   min-width: 0;
 
   li {
+    position: relative;
+    padding: 13px 16px 13px 36px;
+    border-radius: 10px;
+    background: var(--surface-secondary);
+    border: 1px solid var(--border-color, rgba(100, 116, 139, 0.14));
     color: var(--text-primary);
-    font-size: 14px;
-    line-height: 1.6;
+    font-size: 13.5px;
+    line-height: 1.65;
     overflow-wrap: anywhere;
+    transition:
+      border-color 0.16s ease,
+      background 0.16s ease;
+
+    &:hover {
+      border-color: rgba(99, 102, 241, 0.28);
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 16px;
+      top: 21px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--weekly-accent, #4f46e5);
+    }
   }
 
-  &.accent li::marker {
-    color: var(--weekly-accent);
-    font-weight: 700;
+  &.accent li::before {
+    background: var(--weekly-accent, #4f46e5);
+    box-shadow: 0 0 6px rgba(79, 70, 229, 0.4);
   }
 }
 
 .ordered {
-  padding-left: 1.35rem;
+  counter-reset: achievement-step;
+
+  li {
+    counter-increment: achievement-step;
+    padding-left: 42px;
+
+    &::before {
+      content: counter(achievement-step);
+      position: absolute;
+      left: 13px;
+      top: 13px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(99, 102, 241, 0.12);
+      color: var(--weekly-accent, #4f46e5);
+      font-size: 11px;
+      font-weight: 700;
+      display: grid;
+      place-content: center;
+    }
+  }
 }
 
 .risk-copy {
   margin: 0;
-  color: var(--weekly-warning);
-  font-size: 14px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-left: 4px solid var(--weekly-warning, #f59e0b);
+  color: var(--text-primary);
+  font-size: 13.5px;
   line-height: 1.65;
   font-weight: 500;
 }

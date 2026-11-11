@@ -27,7 +27,8 @@
 .weekly-reports-page {
   display: grid;
   gap: 24px;
-  padding: 32px;
+  padding: 0;
+  padding-bottom: 32px;
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: 14px;
@@ -35,7 +36,6 @@
   min-width: 0;
   overflow-x: clip;
   font-variant-numeric: tabular-nums;
-  padding-bottom: 32px;
 }
 
 // ── Card surfaces: Standardized with Skill-Gap ───────────────────
@@ -195,12 +195,10 @@
   display: block;
   height: 0.9rem;
   border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    rgba(30, 41, 59, 0.9),
-    rgba(51, 65, 85, 0.92),
-    rgba(30, 41, 59, 0.9)
-  );
+  background: linear-gradient(90deg,
+      rgba(30, 41, 59, 0.9),
+      rgba(51, 65, 85, 0.92),
+      rgba(30, 41, 59, 0.9));
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite linear;
 }
@@ -387,6 +385,7 @@ button:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {

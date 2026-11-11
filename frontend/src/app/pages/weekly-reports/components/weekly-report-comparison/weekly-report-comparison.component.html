@@ -8,6 +8,7 @@
   <p class="comparison-note">
     {{ report.meta.comparison?.reason || 'No verified adjacent-week comparison recorded.' }}
   </p>
+
   <div class="comparison-list" *ngIf="comparisonAvailable">
     <div class="comparison-row">
       <span>Overall Score</span>
@@ -54,5 +55,16 @@
         formatDelta(report.meta.comparisons.activeReposDelta, 'repos')
       }}</small>
     </div>
+  </div>
+
+  <div class="comparison-empty" *ngIf="!comparisonAvailable">
+    <div class="empty-badge">
+      <span class="empty-dot"></span>
+      <span>Baseline Established</span>
+    </div>
+    <p class="empty-hint">
+      Delta comparisons (overall score, hiring readiness, commit signals, and repo changes)
+      calculate automatically when you generate consecutive weekly reports.
+    </p>
   </div>
 </article>

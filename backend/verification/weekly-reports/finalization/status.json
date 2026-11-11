@@ -5,7 +5,7 @@
   "branch": "fix/weekly-reports-finalization",
   "prTarget": "not applicable",
   "productionReady": false,
-  "decision": "BLOCKED; local refinement gates pass, but production readiness is withheld pending staging services, dependency advisory identification, account verification and representative performance acceptance",
+  "decision": "BLOCKED; current local tests, TypeScript and build pass, but reproducible Playwright and authorized external release gates remain open",
   "verification": {
     "finalBackend": {
       "status": "PASS",
@@ -40,8 +40,15 @@
     },
     "browser": {
       "status": "PASS",
-      "widths": [1440, 375],
-      "themes": ["light", "dark", "system"],
+      "widths": [
+        1440,
+        375
+      ],
+      "themes": [
+        "light",
+        "dark",
+        "system"
+      ],
       "additionalJourney": "loading,error,retry,empty",
       "keyboardHistorySelection": true,
       "populatedCaptures": 6,
@@ -184,8 +191,15 @@
       "status": "PASS",
       "environment": "Installed Chrome, existing Playwright verifier, local production bundle and synthetic APIs",
       "durationSeconds": 41.574,
-      "viewports": [1440, 375],
-      "themes": ["light", "dark", "system"],
+      "viewports": [
+        1440,
+        375
+      ],
+      "themes": [
+        "light",
+        "dark",
+        "system"
+      ],
       "pageErrors": 0,
       "overflow": 0,
       "journeys": [
@@ -400,5 +414,219 @@
   "productionDataChanges": false,
   "secretChanges": false,
   "dependencyChanges": true,
-  "approvedDependencyChange": "pdfkit 0.20.2 for direct PDF downloads; approved by the user."
+  "approvedDependencyChange": "pdfkit 0.20.2 for direct PDF downloads; approved by the user.",
+  "branchHead": "fd65bc72c3ae061e7c742b25e729aa04f53ca6be",
+  "currentAudit": {
+    "date": "2026-11-11",
+    "branch": "fix/weekly-reports-finalization",
+    "preflightHead": "cbd6b5f749c65e359597c0703008d1457a9c3d5e",
+    "currentHead": "fd65bc72c3ae061e7c742b25e729aa04f53ca6be",
+    "concurrentBranchAdvance": {
+      "observed": true,
+      "commit": "fd65bc72c3ae061e7c742b25e729aa04f53ca6be",
+      "parent": "cbd6b5f749c65e359597c0703008d1457a9c3d5e",
+      "createdByThisAudit": false,
+      "filesChanged": [
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-actions/weekly-report-actions.component.scss",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-comparison/weekly-report-comparison.component.scss",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-data-sources/weekly-report-data-sources.component.scss",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-history/weekly-report-history.component.scss",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-kpi-grid/weekly-report-kpi-grid.component.scss",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-momentum-trend/weekly-report-momentum-trend.component.scss",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-narrative/weekly-report-narrative.component.scss",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-overview/weekly-report-overview.component.scss",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-score-breakdown/weekly-report-score-breakdown.component.scss",
+        "frontend/src/app/pages/weekly-reports/weekly-reports.component.scss"
+      ],
+      "scope": "The concurrent commit changes only ten Weekly Reports SCSS files."
+    },
+    "verification": {
+      "focusedAngular": {
+        "status": "PASS",
+        "passed": 31,
+        "failed": 0,
+        "files": 11,
+        "testedHead": "cbd6b5f749c65e359597c0703008d1457a9c3d5e",
+        "rerun": false,
+        "evidenceLimit": "Retained result from the interrupted audit session; no raw log is present in the repository. Current fd65bc72 delta is CSS-only."
+      },
+      "typescript": {
+        "status": "PASS",
+        "testedHead": "cbd6b5f749c65e359597c0703008d1457a9c3d5e",
+        "rerun": false,
+        "evidenceLimit": "No TypeScript or template source changed in the current ten-file SCSS commit."
+      },
+      "productionBuild": {
+        "status": "PASS",
+        "durationSeconds": 57.103,
+        "targetCommit": "fd65bc72c3ae061e7c742b25e729aa04f53ca6be",
+        "sourceRelation": "Built the staged stylesheet contents immediately before they were committed; commit delta contains only those exact ten SCSS files.",
+        "warnings": [
+          "Existing Jobs SCSS budget: 52.97 kB / 48 kB",
+          "Existing landing-page SCSS budget: 56.67 kB / 48 kB"
+        ]
+      },
+      "backendPdfEmail": {
+        "status": "PASS",
+        "passed": 9,
+        "failed": 0,
+        "command": "node --test src/tests/weeklyReportsRefinement.test.js (from backend)",
+        "rerunAfterFormatting": true,
+        "covers": [
+          "email HTML escaping and saved report content",
+          "missing versus measured-zero evidence",
+          "saved identity and snapshot presentation",
+          "Unicode and multipage PDF parsing"
+        ]
+      },
+      "nodeSyntax": {
+        "status": "PASS",
+        "files": [
+          "backend/src/services/weeklyReportPdfService.js",
+          "backend/src/services/weeklyReportPresentation.js"
+        ]
+      },
+      "formatting": {
+        "status": "PASS",
+        "frontendFiles": 10,
+        "backendFiles": 2,
+        "backendOptions": "--single-quote --trailing-comma all --print-width 100",
+        "writeThenCheck": true
+      },
+      "playwright": {
+        "status": "BLOCKED",
+        "reason": "The existing verifier imports playwright or PLAYWRIGHT_MODULE. playwright, playwright-core, @playwright/test, puppeteer and puppeteer-core do not resolve in repository or frontend. PLAYWRIGHT_MODULE is unset. Chrome and Edge executables exist, but no Playwright runtime is available; no dependency was installed.",
+        "historicalEvidence": {
+          "path": "frontend/verification/weekly-reports/refinement-2026-11-11/results.json",
+          "status": "NOT_COUNTED_AS_CURRENT_PASS",
+          "reason": "Retained result/screenshots have no tested Git SHA or raw runner log; current Playwright rerun could not be reproduced."
+        }
+      },
+      "fullAngularSuite": {
+        "status": "DEFERRED",
+        "reason": "The earlier 598/598 result predates this refinement and is not represented as current coverage."
+      },
+      "wcagAudit": {
+        "status": "DEFERRED",
+        "reason": "No full WCAG audit; current automated browser acceptance could not be run."
+      },
+      "manualVisualReview": {
+        "status": "LIMITED_PASS",
+        "evidence": [
+          "frontend/verification/weekly-reports/refinement-2026-11-11/1440-light.png",
+          "frontend/verification/weekly-reports/refinement-2026-11-11/375-dark.png"
+        ],
+        "limitation": "Retained screenshots were visually inspected; this is not a reproducible current browser run."
+      }
+    },
+    "releaseGates": {
+      "localScoringOwnershipAndCrossModuleContracts": "PASS on retained focused backend/Mongo/consumer evidence; no related contract files changed in fd65bc72",
+      "focusedAngularTypesAndBuild": "PASS with revision boundaries in verification",
+      "currentProductionBundlePlaywright": "BLOCKED; no local Playwright runtime and existing result cannot be bound to a tested commit",
+      "currentFullAngularSuite": "DEFERRED; prior 598/598 predates refinement",
+      "comprehensiveWcag": "DEFERRED",
+      "npmAdvisoryIdentification": "BLOCKED; registry access previously failed with ENOTFOUND",
+      "authorizedAccountData": "BLOCKED; no authorized staging records",
+      "liveAIAndEmail": "BLOCKED; no staging credentials/recipient/provider reconciliation",
+      "stagingMongoIndexesWorkersAndRecovery": "BLOCKED; local replica set evidence only",
+      "deploymentEquivalentRedisLinuxPerformance": "BLOCKED; unavailable infrastructure",
+      "productionReady": "BLOCKED"
+    },
+    "fileInventory": {
+      "currentHeadCommitFiles": [
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-actions/weekly-report-actions.component.scss",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-comparison/weekly-report-comparison.component.scss",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-data-sources/weekly-report-data-sources.component.scss",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-history/weekly-report-history.component.scss",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-kpi-grid/weekly-report-kpi-grid.component.scss",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-momentum-trend/weekly-report-momentum-trend.component.scss",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-narrative/weekly-report-narrative.component.scss",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-overview/weekly-report-overview.component.scss",
+        "frontend/src/app/pages/weekly-reports/components/weekly-report-score-breakdown/weekly-report-score-breakdown.component.scss",
+        "frontend/src/app/pages/weekly-reports/weekly-reports.component.scss"
+      ],
+      "indexSnapshotBeforeFinalStatusJsonWrite": [
+        "backend/src/services/weeklyReportPdfService.js",
+        "backend/src/services/weeklyReportPresentation.js",
+        "backend/verification/weekly-reports/finalization/REPORT.md",
+        "backend/verification/weekly-reports/finalization/status.json",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/email-preview.html"
+      ],
+      "worktreeTrackedChangesBeforeFinalStatusJsonWrite": [
+        "backend/verification/weekly-reports/finalization/REPORT.md"
+      ],
+      "retainedUntrackedArtifacts": [
+        "backend/verification/weekly-reports/refinement-2026-11-11/pagination.pdf",
+        "backend/verification/weekly-reports/refinement-2026-11-11/snapshot.pdf",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/1440-dark.png",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/1440-light.png",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/1440-system.png",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/375-dark.png",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/375-light.png",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/375-system.png",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/archived-version-1.png",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/download-archived-version-1.pdf",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/download-version-2.pdf",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/email-preview-375.png",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/email-preview-640.png",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/empty.png",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/error.png",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/loading.png",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/missing-stale-evidence.png",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/refreshed-version-2.png"
+      ],
+      "formattingOnlyChangesByThisAudit": [
+        "backend/src/services/weeklyReportPdfService.js",
+        "backend/src/services/weeklyReportPresentation.js"
+      ],
+      "documentationUpdated": [
+        "backend/verification/weekly-reports/finalization/REPORT.md",
+        "backend/verification/weekly-reports/finalization/status.json"
+      ],
+      "moved": [],
+      "deleted": [],
+      "note": "Index/worktree status was sampled immediately before this status JSON write. No git add, reset, or cleanup command was issued by this audit; final git status is authoritative for any concurrent update.",
+      "finalGitStatusBeforeStatusSelfUpdate": {
+        "staged": [
+          "backend/src/services/weeklyReportPdfService.js",
+          "backend/src/services/weeklyReportPresentation.js",
+          "backend/verification/weekly-reports/finalization/REPORT.md",
+          "backend/verification/weekly-reports/finalization/status.json",
+          "frontend/verification/weekly-reports/refinement-2026-11-11/email-preview.html"
+        ],
+        "unstaged": [
+          "backend/verification/weekly-reports/finalization/REPORT.md",
+          "backend/verification/weekly-reports/finalization/status.json"
+        ],
+        "untracked": [
+          "backend/verification/weekly-reports/refinement-2026-11-11/pagination.pdf",
+          "backend/verification/weekly-reports/refinement-2026-11-11/snapshot.pdf",
+          "frontend/verification/weekly-reports/refinement-2026-11-11/1440-dark.png",
+          "frontend/verification/weekly-reports/refinement-2026-11-11/1440-light.png",
+          "frontend/verification/weekly-reports/refinement-2026-11-11/1440-system.png",
+          "frontend/verification/weekly-reports/refinement-2026-11-11/375-dark.png",
+          "frontend/verification/weekly-reports/refinement-2026-11-11/375-light.png",
+          "frontend/verification/weekly-reports/refinement-2026-11-11/375-system.png",
+          "frontend/verification/weekly-reports/refinement-2026-11-11/archived-version-1.png",
+          "frontend/verification/weekly-reports/refinement-2026-11-11/download-archived-version-1.pdf",
+          "frontend/verification/weekly-reports/refinement-2026-11-11/download-version-2.pdf",
+          "frontend/verification/weekly-reports/refinement-2026-11-11/email-preview-375.png",
+          "frontend/verification/weekly-reports/refinement-2026-11-11/email-preview-640.png",
+          "frontend/verification/weekly-reports/refinement-2026-11-11/empty.png",
+          "frontend/verification/weekly-reports/refinement-2026-11-11/error.png",
+          "frontend/verification/weekly-reports/refinement-2026-11-11/loading.png",
+          "frontend/verification/weekly-reports/refinement-2026-11-11/missing-stale-evidence.png",
+          "frontend/verification/weekly-reports/refinement-2026-11-11/refreshed-version-2.png"
+        ],
+        "note": "The final status JSON write itself may add an unstaged edit; index contents are preserved and no staging operation was issued by this audit."
+      }
+    },
+    "cleanup": {
+      "scratchRoot": "frontend/.angular-weekly-temp",
+      "scratchRootExists": false,
+      "activeNodeProcessesAtFinalCheck": 0,
+      "taskOwnedFilesDeleted": 0,
+      "directoriesDeleted": 0
+    }
+  }
 }
