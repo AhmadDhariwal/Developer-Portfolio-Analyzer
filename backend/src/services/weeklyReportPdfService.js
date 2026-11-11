@@ -55,6 +55,8 @@ async function render(report) {
   doc.moveDown(0.4);
   paragraph(v.summary);
   paragraph(v.comparison);
+  heading('Readiness indicator');
+  paragraph(`${v.readiness} · ${v.readinessReason}`);
   heading('Score breakdown');
   paragraph(
     'Fixed weights: GitHub 30%, resume 25%, Sprint 20%, interview 15%, skill coverage 10%. Missing evidence is never a measured zero.',

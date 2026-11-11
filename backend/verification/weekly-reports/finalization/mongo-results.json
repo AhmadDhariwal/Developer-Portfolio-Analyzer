@@ -1,7 +1,7 @@
 {
   "passed": true,
-  "generationMs": 1796.2680999999993,
-  "forcedReplayMs": 320.09029999999984,
+  "generationMs": 1505.9379000000008,
+  "forcedReplayMs": 276.1164000000008,
   "environment": "disposable local Windows MongoDB replica set",
   "realProvidersUsed": false,
   "assertions": [

@@ -1276,9 +1276,18 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
   };
 
   if (!evidence.scoreAvailable) {
-    const missing = Object.entries(evidence.inputs)
-      .filter(([, input]) => !input.available)
-      .map(([key]) => key);
+    const missingInputs = Object.entries(evidence.inputs).filter(([, input]) => !input.available);
+    const missing = missingInputs.map(([key]) => key);
+    const evidenceActions = {
+      github: 'Refresh saved GitHub analysis before interpreting weekly repository activity.',
+      resume: 'Save or refresh resume analysis before measuring resume quality.',
+      sprint: (input) =>
+        input.reason === 'No tasks to assess'
+          ? 'Add Career Sprint tasks before measuring weekly completion.'
+          : 'Save a current Career Sprint before measuring weekly completion.',
+      interview: 'Record Interview Prep activity for this reporting week before measuring it.',
+      skillCoverage: 'Save a Skill Gap assessment before measuring skill coverage.',
+    };
     fallback.progressSummary = `Overall score is not assessed because ${missing.join(', ')} evidence is missing. Missing evidence is not a measured zero.`;
     fallback.insights = Object.entries(evidence.inputs)
       .slice(0, 4)
@@ -1292,6 +1301,10 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
       `Sprint: ${sprintSnapshot.tasksTotal ? sprintSnapshot.tasksCompleted + ' of ' + sprintSnapshot.tasksTotal + ' tasks complete' : 'no tasks to assess'}.`,
     ];
     fallback.biggestRiskArea = 'Complete missing evidence before interpreting an overall score.';
+    fallback.recommendations = missingInputs.map(([key, input]) => {
+      const action = evidenceActions[key];
+      return typeof action === 'function' ? action(input) : action;
+    });
     fallback.predictedHiringReadiness = {
       score: 0,
       reason: 'Not assessed: incomplete source evidence. This is not a hiring probability.',

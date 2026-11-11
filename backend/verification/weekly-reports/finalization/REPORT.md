@@ -73,3 +73,44 @@ Final local FAIL gates: none. No final unresolved local test failure is treated 
 6. Verify authenticated end-to-end notification preferences, dashboard refresh and all downstream consumers against staging services, including report regeneration from another replica.
 
 No commits, pushes, merges, deployments, production-data writes, secret changes or dependency changes were made. Source files were not moved/deleted. The exact task inventory and final evidence paths are retained in status.json. Production readiness remains **BLOCKED** until the staging gates pass.
+
+## Refinement acceptance — 11 November 2026
+
+Reviewed the current `fix/weekly-reports-finalization` branch at `50cda0f9257c6cfb7ba3f726600edc503bd1139e` against the `eab3cf5d` refinement baseline. The pre-existing index, worktree changes, and verification artifacts were preserved. No commit was created.
+
+### Demonstrated accuracy defect and correction
+
+The rendered saved report showed missing Resume, Career Sprint, and Skill Gap evidence, but its deterministic fallback still recommended reaching a numeric Sprint completion target. The advice was unsupported by the snapshot and contradicted the evidence warning. `backend/src/services/weeklyReportService.js` now selects deterministic actions from the score inputs actually missing: missing or empty Sprint evidence prompts recording Sprint evidence, while other missing inputs receive source-specific evidence actions. It does not emit score or completion targets when the score is not assessable. `backend/src/tests/weeklyReportsRefinement.integration.test.js` now verifies that the saved dashboard response, authenticated PDF, and resend email contain the same saved hash and evidence-based advice, and that none reintroduces the unsupported `70%` target. Resend remains a delivery of the saved snapshot and does not call AI or regenerate scores.
+
+Scoring weights, scoring arithmetic, source selection, schemas, APIs, ownership checks, report identity, revisions, quotas, leases, delivery-state rules, and historical snapshots were not changed by this correction.
+
+### Local verification
+
+| Gate | Result | Evidence |
+| --- | --- | --- |
+| Selected backend and consumer regressions | PASS | The serial eight-file run covered Weekly Reports, scheduler, Sprint, Mongo reliability, developer context, and Skill Gap consumers. It reported 37 tests: 36 passed and one failed because the new assertion expected an empty Sprint where the fixture had no Sprint record. After correcting the assertion to match that fixture, the affected Mongo/HTTP integration passed 1/1. All 37 selected cases therefore passed across the initial run and focused rerun; no test was skipped or weakened. |
+| Mongo-backed operations and ownership | PASS | Disposable local Mongo replica-set and authenticated HTTP integration passed. It verified owner isolation, current and archived snapshots, immutable refresh, preference checks, resend cooldown/week cap, uncertain delivery blocking, and same-hash latest/detail/PDF/email output. Synthetic only; no real provider was contacted. See `refinement-2026-11-11/operations-results.json`. |
+| Scheduler, crash recovery, fencing, and email reliability | PASS | The selected local replica-set reliability case passed 1/1 with independent clients, child-process takeover, expired-token fencing, pagination/checkpoint retry, send exclusion, and uncertain-send protection. See `finalization/mongo-results.json`. Staging worker deployment/restart remains unverified. |
+| Focused Angular tests | PASS | 14/14 tests across the Weekly Reports component and service suites. No full-suite rerun was needed for this focused refinement. The prior recorded full Angular run (598/598) predates this refinement. |
+| TypeScript and production build | PASS | `tsc --noEmit -p frontend/tsconfig.app.json` passed. Production build passed in 60.625 s; the existing Jobs and landing-page stylesheet budget warnings remain. |
+| Browser workflow and accessibility smoke | PASS | Installed Chrome with the repository’s existing Playwright ran the production frontend bundle against synthetic APIs. Six desktop/mobile and Light/Dark/System captures had zero page errors and overflow. Keyboard history selection, accessible meter values and role-based loading/error/empty/operation flows passed. Generate, Refresh, PDF, Resend, archived-version restrictions, missing/stale evidence, retry, and email preview were exercised. This is a browser smoke test, not a full WCAG audit. See `frontend/verification/weekly-reports/refinement-2026-11-11/results.json`. |
+| PDF generation, authenticated download, and visual pagination | PASS | `pdf-parse` read unit, current, and archived downloads; `pdfinfo` reported 2 pages for the snapshot, 7 for the long pagination fixture, and 3 each for current and archived authenticated reports. First, middle, and final pages were rendered and inspected; the updated actions, readable score bars, source freshness, version/hash provenance, and page numbering are visible. The intermittent XRef parse issue was not reproduced. Current render evidence is `refinement-2026-11-11/pdf-renders/post-narrative-fix-current-1.png` through `post-narrative-fix-current-3.png`. |
+| Formatting, syntax, JSON, and Git whitespace | PASS | Prettier write/check used explicit changed source paths. `node --check` passed for the changed JavaScript files. Browser and operations JSON parsed. `git diff --check` and `git diff --cached --check` passed; Git printed only its existing LF-to-CRLF conversion warnings. The index/worktree remain modified and are intentionally preserved. |
+| Local timing observations | PASS, non-acceptance | Synthetic Mongo integration recorded generation 1,938.309 ms and unchanged refresh 269.896 ms; reliability fixture recorded generation 1,505.938 ms and replay 276.116 ms. These sparse local timings are not percentile measurements or deployment performance evidence. |
+
+**Deferred local breadth checks:** The full Angular suite was not repeated; the prior 598/598 result predates this refinement, while the affected 14-test component/service set passed. Browser verification covered keyboard history selection and the accessible score meter, but a complete WCAG audit was not performed.
+
+### Dependency and external release gates
+
+| Gate | Result | Blocker or next action |
+| --- | --- | --- |
+| Dependency advisory identification | BLOCKED | The earlier install reported 57 npm advisories (4 low, 37 moderate, 14 high, 2 critical). `npm audit --omit=dev --json` could not reach `registry.npmjs.org` (`ENOTFOUND`), so exact affected production packages/advisories could not be confirmed. Retry the audit from a registry-enabled environment, inspect the production dependency paths, then apply only compatible package-specific fixes. No blanket upgrades were applied. |
+| Learning Hub and Interview Prep account verification | BLOCKED | No authorized staging connection or real account records were available. Local fixtures verify owner-scoped selection and missing/stale/zero semantics only. |
+| Live AI and SendGrid/SMTP | BLOCKED | No authorized staging credentials, approved recipient, or provider reconciliation access. Tests used a stub AI and synthetic delivery results. |
+| Staging Mongo rollout and worker recovery | BLOCKED | Local replica-set lease/fencing tests pass, but production index rollout, API/worker roles, multi-replica deployment, and supervised restart behavior require authorized staging. |
+| Representative performance and production SLOs | BLOCKED | This Windows environment has no deployment-equivalent Redis/Linux/staging stack or authorized account workload. The local timing observations do not establish p95, availability, or capacity. Do not treat them as performance acceptance. |
+| Production readiness | BLOCKED | The external service, deployment, account-data, dependency-audit, and representative performance gates above remain open. The module is not declared production-ready. |
+
+### Final refinement change inventory
+
+The only application behavior fix from this visual review is `backend/src/services/weeklyReportService.js`; the corresponding integration assertions are in `backend/src/tests/weeklyReportsRefinement.integration.test.js`. The implementation files in the refinement branch delta, generated evidence paths, and exact gate results are enumerated in `status.json`. New PDF render captures were written under `backend/verification/weekly-reports/refinement-2026-11-11/pdf-renders/`; prior screenshots and previous-day PDFs were retained. No files were moved or deleted. No production configuration/data, secrets, or dependencies were changed in this final correction.

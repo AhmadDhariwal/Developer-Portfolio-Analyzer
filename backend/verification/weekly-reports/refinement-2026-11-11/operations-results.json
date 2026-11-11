@@ -1,0 +1,25 @@
+{
+  "passed": true,
+  "generationMs": 1938.3090999999986,
+  "unchangedRefreshMs": 269.89620000000104,
+  "aiCalls": 2,
+  "versions": 2,
+  "sentReservations": 3,
+  "syntheticMessages": 4,
+  "realProviderContacted": false,
+  "assertions": [
+    "owner-scoped learning and historical interview evidence",
+    "missing vs measured zero",
+    "lifetime vs weekly activity",
+    "no distant-week delta",
+    "unchanged refresh skips AI",
+    "immutable revisions and stale refresh rejection",
+    "source failure preserves saved version",
+    "latest dashboard, detail, authenticated PDF, and resend email share the saved hash",
+    "authenticated archived PDF uses its immutable snapshot",
+    "resend never invokes AI",
+    "cooldown and weekly cap",
+    "notification preference suppression",
+    "uncertain outcome blocks retry"
+  ]
+}

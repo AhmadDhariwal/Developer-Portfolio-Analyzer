@@ -155,6 +155,15 @@ test(
     assert.equal(first.meta.activity.activeRepositories, 0);
     assert.equal(first.meta.comparison.available, false);
     assert.equal(first.meta.comparisons.scoreDelta, 0);
+    assert.ok(
+      first.recommendations.some((recommendation) =>
+        recommendation.includes('Career Sprint before measuring weekly completion'),
+      ),
+    );
+    assert.ok(
+      first.recommendations.every((recommendation) => !recommendation.includes('70%')),
+      'missing Sprint evidence must not produce a numeric completion target',
+    );
     assert.equal(aiCalls, 1);
     const originalHash = first.meta.reportHash;
     const saved = await weekly.generateWeeklyReport(owner._id);
@@ -241,15 +250,35 @@ test(
     assert.equal((await call('POST', `/${first._id}/resend-email`, other)).status, 404);
     const oldReport = await Report.findOne({ userId: owner._id, weekStartDate: old });
     assert.equal((await call('POST', `/${oldReport._id}/refresh`, owner, {})).status, 409);
+    const latestResponse = await call('GET', '/latest');
+    const latestSnapshot = await latestResponse.json();
+    assert.equal(latestSnapshot.meta.reportHash, refreshed.meta.reportHash);
+    const detailResponse = await call('GET', `/${first._id}?version=${refreshed.meta.reportHash}`);
+    const detailSnapshot = await detailResponse.json();
+    assert.equal(detailSnapshot.meta.reportHash, refreshed.meta.reportHash);
+    assert.equal(detailSnapshot.meta.version, 2);
+    const currentPdfResponse = await call(
+      'GET',
+      `/${first._id}/pdf?version=${refreshed.meta.reportHash}`,
+    );
+    assert.equal(currentPdfResponse.status, 200);
+    assert.match(currentPdfResponse.headers.get('cache-control'), /no-store/);
+    const currentPdf = Buffer.from(await currentPdfResponse.arrayBuffer());
+    const currentPdfText = await require('pdf-parse')(currentPdf);
+    assert.ok(currentPdfText.text.includes(refreshed.meta.reportHash));
+    assert.ok(currentPdfText.text.includes('Version 2'));
+    assert.ok(currentPdfText.text.includes('Career Sprint before measuring weekly completion'));
+    assert.ok(!currentPdfText.text.includes('70%'));
+    const diagnostic = path.join(
+      __dirname,
+      '../../verification/weekly-reports/refinement-2026-11-11',
+    );
+    fs.mkdirSync(diagnostic, { recursive: true });
+    fs.writeFileSync(path.join(diagnostic, 'authenticated-current-download.pdf'), currentPdf);
     const response = await call('GET', `/${first._id}/pdf?version=${originalHash}`);
     assert.equal(response.status, 200);
     assert.match(response.headers.get('cache-control'), /no-store/);
     const buffer = Buffer.from(await response.arrayBuffer());
-    const diagnostic = path.join(
-      __dirname,
-      '../../verification/weekly-reports/refinement-2026-11-10',
-    );
-    fs.mkdirSync(diagnostic, { recursive: true });
     fs.writeFileSync(path.join(diagnostic, 'authenticated-download.pdf'), buffer);
     const parsed = await require('pdf-parse')(buffer);
     assert.ok(parsed.text.includes(originalHash));
@@ -267,7 +296,9 @@ test(
     assert.equal(aiCalls, beforeSendAI);
     assert.equal(messages.length, 1);
     assert.ok(messages[0].text.includes(refreshed.meta.reportHash));
-    assert.ok(messages[0].html.includes('version='));
+    assert.ok(messages[0].text.includes('Career Sprint before measuring weekly completion'));
+    assert.ok(!messages[0].text.includes('70%'));
+    assert.ok(messages[0].html.includes(`version=${refreshed.meta.reportHash}`));
     assert.equal(
       (
         await call('POST', `/${first._id}/resend-email`, owner, {
@@ -331,7 +362,7 @@ test(
       false,
     );
     assert.equal(messages.length, callsBefore);
-    const output = path.join(__dirname, '../../verification/weekly-reports/refinement-2026-11-10');
+    const output = path.join(__dirname, '../../verification/weekly-reports/refinement-2026-11-11');
     fs.mkdirSync(output, { recursive: true });
     fs.writeFileSync(
       path.join(output, 'operations-results.json'),
@@ -353,7 +384,8 @@ test(
             'unchanged refresh skips AI',
             'immutable revisions and stale refresh rejection',
             'source failure preserves saved version',
-            'authenticated private PDF and archived snapshot',
+            'latest dashboard, detail, authenticated PDF, and resend email share the saved hash',
+            'authenticated archived PDF uses its immutable snapshot',
             'resend never invokes AI',
             'cooldown and weekly cap',
             'notification preference suppression',

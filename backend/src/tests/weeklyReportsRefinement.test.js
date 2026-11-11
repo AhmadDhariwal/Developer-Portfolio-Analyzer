@@ -152,6 +152,7 @@ test('email renders the saved version, evidence gaps and sanitized content witho
   assert.ok(body.html.includes('Not assessed'));
   assert.ok(body.html.includes('No tasks to assess'));
   assert.ok(body.html.includes('Learning Hub'));
+  assert.ok(body.html.includes('Readiness indicator'));
   assert.ok(body.text.includes(saved.meta.reportHash));
 });
 test('PDFs retain snapshot identity, Unicode typography and readable multipage content', async () => {
@@ -165,7 +166,7 @@ test('PDFs retain snapshot identity, Unicode typography and readable multipage c
   assert.ok(parsed.text.includes('Résumé'));
   assert.ok(parsed.text.includes(saved.meta.reportHash));
   assert.equal(JSON.stringify(saved), before);
-  const directory = path.join(__dirname, '../../verification/weekly-reports/refinement-2026-11-10');
+  const directory = path.join(__dirname, '../../verification/weekly-reports/refinement-2026-11-11');
   fs.mkdirSync(directory, { recursive: true });
   fs.writeFileSync(path.join(directory, 'snapshot.pdf'), buffer);
   saved.insights = Array.from(
@@ -183,6 +184,7 @@ test('PDFs retain snapshot identity, Unicode typography and readable multipage c
   assert.ok(pages.text.includes('Evidence 24:'));
   assert.ok(pages.text.includes('Source freshness at assessment'));
   assert.ok(pages.text.includes('Interview Prep'));
+  assert.ok(pages.text.includes('Readiness indicator'));
   fs.writeFileSync(path.join(directory, 'pagination.pdf'), long);
 });
 test('new evidence and revision metadata survive report persistence', () => {

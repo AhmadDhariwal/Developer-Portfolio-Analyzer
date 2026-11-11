@@ -1,11 +1,11 @@
 {
-  "date": "2026-11-10",
+  "date": "2026-11-11",
   "sourceBranch": "release1",
   "sourceHead": "7e1bb6101c7e5f17b065dbd3540e6db96828dde8",
   "branch": "fix/weekly-reports-finalization",
   "prTarget": "not applicable",
   "productionReady": false,
-  "decision": "BLOCKED pending staging delivery, workload and deployment acceptance",
+  "decision": "BLOCKED; local refinement gates pass, but production readiness is withheld pending staging services, dependency advisory identification, account verification and representative performance acceptance",
   "verification": {
     "finalBackend": {
       "status": "PASS",
@@ -79,7 +79,9 @@
     "Live AI admission/fallback and live SendGrid/SMTP reconciliation with staging credentials and approved recipient",
     "Deployment-equivalent sustained performance with realistic nine-source volume",
     "Staging index rollout and scheduler deployment/restart acceptance",
-    "Authenticated end-to-end integration against staging services"
+    "Authenticated end-to-end integration against staging services",
+    "Learning Hub and Interview Prep verification against authorized staging account records",
+    "Exact production dependency advisory identification because npm registry access returned ENOTFOUND"
   ],
   "infrastructure": {
     "platform": "Windows",
@@ -126,6 +128,264 @@
   ],
   "filesMoved": [],
   "filesDeleted": [],
+  "latestRefinement": {
+    "baselineCommit": "eab3cf5d",
+    "branchHead": "50cda0f9257c6cfb7ba3f726600edc503bd1139e",
+    "productionReady": false,
+    "finding": "When score inputs were missing, the deterministic fallback still recommended a numeric Sprint completion target that contradicted the saved evidence.",
+    "correction": "Fallback recommendations now derive from missing score inputs and ask for evidence before measuring the source. Scoring, schemas, APIs, ownership, quotas, revision identity and delivery state are unchanged.",
+    "additionalApplicationFiles": [
+      "backend/src/services/weeklyReportService.js",
+      "backend/src/tests/weeklyReportsRefinement.integration.test.js"
+    ],
+    "backendRegressions": {
+      "status": "PASS",
+      "uniqueCases": 37,
+      "passedAcrossRuns": 37,
+      "failedFinal": 0,
+      "skipped": 0,
+      "selectedFiles": [
+        "weeklyReportsRefinement.test.js",
+        "weeklyReportsRefinement.integration.test.js",
+        "weeklyReportsReliability.integration.test.js",
+        "weeklyReportSprint.test.js",
+        "weeklyReportScheduler.test.js",
+        "weeklyReportsHardening.test.js",
+        "developerContextService.test.js",
+        "skillGapConsumerContracts.test.js"
+      ],
+      "initialRun": "37 tests: 36 passed, one assertion failed because it expected an existing empty Sprint while the fixture had no Sprint record.",
+      "focusedRerun": "The corrected affected Mongo/HTTP integration passed 1/1.",
+      "command": "WEEKLY_REPORT_TEST_MONGO=1 node --test --test-concurrency=1 [the eight selected files above], from backend"
+    },
+    "frontend": {
+      "focusedTests": {
+        "status": "PASS",
+        "files": 2,
+        "passed": 14,
+        "failed": 0,
+        "command": "npm test -- --watch=false --runner-config scripts/scenario-vitest.config.mjs --include src/app/pages/weekly-reports/weekly-reports.component.spec.ts --include src/app/shared/services/weekly-report.service.spec.ts"
+      },
+      "typescript": {
+        "status": "PASS",
+        "command": "node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.app.json"
+      },
+      "productionBuild": {
+        "status": "PASS",
+        "durationSeconds": 60.625,
+        "warnings": [
+          "Existing Jobs SCSS budget: 52.97 kB / 48 kB",
+          "Existing landing-page SCSS budget: 56.67 kB / 48 kB"
+        ]
+      },
+      "fullSuite": "NOT RERUN; prior recorded 598/598 run predates this refinement, and the focused affected suites passed."
+    },
+    "browser": {
+      "status": "PASS",
+      "environment": "Installed Chrome, existing Playwright verifier, local production bundle and synthetic APIs",
+      "durationSeconds": 41.574,
+      "viewports": [1440, 375],
+      "themes": ["light", "dark", "system"],
+      "pageErrors": 0,
+      "overflow": 0,
+      "journeys": [
+        "Generate, Refresh, PDF download and Resend Email",
+        "Archived snapshot and disabled mutation controls",
+        "Missing, stale and measured-zero evidence states",
+        "Loading, empty, error and retry",
+        "Keyboard history selection and accessible score meter",
+        "Responsive email previews"
+      ],
+      "evidence": "frontend/verification/weekly-reports/refinement-2026-11-11/results.json",
+      "limitation": "Synthetic browser services; this is an accessibility smoke check, not a full WCAG audit or staging verification."
+    },
+    "pdf": {
+      "status": "PASS",
+      "snapshotPages": 2,
+      "longPaginationFixturePages": 7,
+      "authenticatedCurrentPages": 3,
+      "authenticatedArchivedPages": 3,
+      "authenticatedCurrentBytes": 11762,
+      "authenticatedArchivedBytes": 11773,
+      "checks": [
+        "pdf-parse succeeds for unit, authenticated-current and archived downloads",
+        "PDF title, A4 dimensions, page count and file metadata verified with pdfinfo",
+        "First, middle and final pages rendered and visually inspected",
+        "Current PDF shows evidence-specific actions, score bars, source freshness and snapshot hash",
+        "Authenticated current and archived PDFs preserve their saved version/hash",
+        "The earlier intermittent XRef parse failure was not reproduced"
+      ],
+      "finalRenderPrefix": "backend/verification/weekly-reports/refinement-2026-11-11/pdf-renders/post-narrative-fix-current-"
+    },
+    "operationSnapshotConsistency": {
+      "status": "PASS",
+      "latestDetailPdfAndEmailShareSavedHash": true,
+      "archivedPdfUsesImmutableSnapshot": true,
+      "resendInvokesNoAIOrScoreRegeneration": true,
+      "emailPdfRecommendationsMatchSavedSnapshot": true,
+      "unsupportedNumericSprintTargetAbsent": true,
+      "cooldownAndWeeklyCap": "PASS",
+      "uncertainDeliveryBlocksRetry": "PASS",
+      "evidence": "backend/verification/weekly-reports/refinement-2026-11-11/operations-results.json"
+    },
+    "localTimingObservations": {
+      "status": "PASS, NOT PERFORMANCE ACCEPTANCE",
+      "operationGenerationMs": 1938.3091,
+      "unchangedRefreshMs": 269.8962,
+      "reliabilityGenerationMs": 1505.9379,
+      "reliabilityReplayMs": 276.1164,
+      "environment": "Synthetic data and disposable local Windows MongoDB replica set; not percentile or representative-load measurements."
+    },
+    "finalizationChecks": {
+      "prettierWriteAndCheck": "PASS for explicit changed source paths",
+      "nodeCheck": "PASS for changed JavaScript files",
+      "verificationJsonParse": "PASS",
+      "gitDiffCheck": "PASS",
+      "gitCachedDiffCheck": "PASS",
+      "workingTreeClean": false,
+      "indexAndWorktreePreserved": true,
+      "commitPushMergeDeploy": false
+    },
+    "dependencyAudit": {
+      "status": "BLOCKED",
+      "reportedAdvisories": 57,
+      "severityCounts": {
+        "low": 4,
+        "moderate": 37,
+        "high": 14,
+        "critical": 2
+      },
+      "reason": "npm audit --omit=dev --json could not reach registry.npmjs.org (ENOTFOUND), so exact affected production packages/advisories could not be verified.",
+      "action": "Run a detailed production dependency audit from a registry-enabled environment and remediate only verified compatible paths. No blanket dependency upgrades were made."
+    },
+    "releaseGates": {
+      "localDataAccuracyAndDeterministicScoring": "PASS",
+      "ownerIsolationAndCrossModuleContracts": "PASS",
+      "backendFocusedRegressions": "PASS",
+      "focusedFrontendTypesAndBuild": "PASS",
+      "browserAndPdfLocalVerification": "PASS",
+      "formattingSyntaxAndGitWhitespace": "PASS; index/worktree intentionally remain modified",
+      "fullAngularSuiteOnCurrentRefinement": "DEFERRED; avoid redundant full-suite run; the prior 598/598 run predates this refinement",
+      "comprehensiveWcagAudit": "DEFERRED; browser keyboard/ARIA smoke passed, no full WCAG audit performed",
+      "realLearningAndInterviewAccountVerification": "BLOCKED; no authorized staging connection or records",
+      "liveAIAndSendGridSMTP": "BLOCKED; no staging credentials, approved recipient or provider reconciliation access",
+      "MongoIndexRolloutAndMultiReplicaWorkerRecovery": "BLOCKED; local disposable replica-set tests only",
+      "RedisBackedRepresentativePerformanceAndSLOs": "BLOCKED; no deployment-equivalent Redis/Linux/staging workload",
+      "npmProductionDependencyAdvisoryIdentification": "BLOCKED; npm registry unavailable",
+      "productionReady": "BLOCKED"
+    },
+    "changeInventory": {
+      "currentWorktreeTrackedPaths": [
+        "backend/src/controllers/weeklyReportController.js",
+        "backend/src/models/weeklyReportRevision.js",
+        "backend/src/routes/weeklyReport.routes.js",
+        "backend/src/services/developerSignalService.js",
+        "backend/src/services/weeklyReportAdmissionService.js",
+        "backend/src/services/weeklyReportDeliveryService.js",
+        "backend/src/services/weeklyReportEvidence.js",
+        "backend/src/services/weeklyReportPdfService.js",
+        "backend/src/services/weeklyReportPresentation.js",
+        "backend/src/services/weeklyReportService.js",
+        "backend/src/services/weeklyReportSnapshotService.js",
+        "backend/src/tests/weeklyReportsRefinement.integration.test.js",
+        "backend/src/tests/weeklyReportsRefinement.test.js",
+        "backend/src/tests/weeklyReportsReliability.integration.test.js",
+        "backend/verification/weekly-reports/finalization/REPORT.md",
+        "backend/verification/weekly-reports/finalization/status.json",
+        "backend/verification/weekly-reports/finalization/mongo-results.json",
+        "backend/verification/weekly-reports/refinement-2026-11-10/operations-results.json",
+        "frontend/scripts/verify-weekly-reports-ui.cjs",
+        "frontend/src/app/pages/weekly-reports/weekly-reports.component.html",
+        "frontend/src/app/pages/weekly-reports/weekly-reports.component.scss",
+        "frontend/src/app/pages/weekly-reports/weekly-reports.component.spec.ts",
+        "frontend/src/app/pages/weekly-reports/weekly-reports.component.ts",
+        "frontend/src/app/shared/services/api.service.ts",
+        "frontend/src/app/shared/services/weekly-report.service.spec.ts",
+        "frontend/src/app/shared/services/weekly-report.service.ts",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/email-preview.html",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/results.json"
+      ],
+      "branchDeltaFromEab3cf5d": [
+        "backend/node_modules/.package-lock.json",
+        "backend/package-lock.json",
+        "backend/package.json",
+        "backend/src/assets/fonts/Manrope.ttf",
+        "backend/src/controllers/weeklyReportController.js",
+        "backend/src/models/weeklyReport.js",
+        "backend/src/models/weeklyReportCoordination.js",
+        "backend/src/models/weeklyReportRevision.js",
+        "backend/src/routes/weeklyReport.routes.js",
+        "backend/src/services/developerSignalService.js",
+        "backend/src/services/weeklyReportAdmissionService.js",
+        "backend/src/services/weeklyReportDeliveryService.js",
+        "backend/src/services/weeklyReportEvidence.js",
+        "backend/src/services/weeklyReportPdfService.js",
+        "backend/src/services/weeklyReportPresentation.js",
+        "backend/src/services/weeklyReportService.js",
+        "backend/src/services/weeklyReportSnapshotService.js",
+        "backend/src/tests/weeklyReportsRefinement.integration.test.js",
+        "backend/src/tests/weeklyReportsRefinement.test.js",
+        "backend/src/workers/weeklyReports.js",
+        "backend/verification/weekly-reports/refinement-2026-11-10/operations-results.json",
+        "frontend/src/app/pages/weekly-reports/weekly-reports.component.html",
+        "frontend/src/app/pages/weekly-reports/weekly-reports.component.scss",
+        "frontend/src/app/pages/weekly-reports/weekly-reports.component.spec.ts",
+        "frontend/src/app/pages/weekly-reports/weekly-reports.component.ts",
+        "frontend/src/app/shared/services/api.service.ts",
+        "frontend/src/app/shared/services/weekly-report.service.spec.ts",
+        "frontend/src/app/shared/services/weekly-report.service.ts"
+      ],
+      "additionalFilesInCurrentWorktree": [
+        "backend/src/assets/fonts/OFL.txt",
+        "backend/verification/weekly-reports/finalization/REPORT.md",
+        "backend/verification/weekly-reports/finalization/status.json",
+        "backend/verification/weekly-reports/finalization/mongo-results.json",
+        "backend/verification/weekly-reports/refinement-2026-11-10/authenticated-download.pdf",
+        "backend/verification/weekly-reports/refinement-2026-11-10/operations-results.json",
+        "backend/verification/weekly-reports/refinement-2026-11-10/pagination.pdf",
+        "backend/verification/weekly-reports/refinement-2026-11-10/snapshot.pdf",
+        "backend/verification/weekly-reports/refinement-2026-11-11/authenticated-current-download.pdf",
+        "backend/verification/weekly-reports/refinement-2026-11-11/authenticated-download.pdf",
+        "backend/verification/weekly-reports/refinement-2026-11-11/operations-results.json",
+        "backend/verification/weekly-reports/refinement-2026-11-11/pagination.pdf",
+        "backend/verification/weekly-reports/refinement-2026-11-11/snapshot.pdf",
+        "backend/verification/weekly-reports/refinement-2026-11-11/pdf-renders/authenticated-final.png",
+        "backend/verification/weekly-reports/refinement-2026-11-11/pdf-renders/authenticated-first.png",
+        "backend/verification/weekly-reports/refinement-2026-11-11/pdf-renders/browser-archived-version-1-final.png",
+        "backend/verification/weekly-reports/refinement-2026-11-11/pdf-renders/browser-version-2-final.png",
+        "backend/verification/weekly-reports/refinement-2026-11-11/pdf-renders/browser-version-2-first.png",
+        "backend/verification/weekly-reports/refinement-2026-11-11/pdf-renders/final-auth-archived-last.png",
+        "backend/verification/weekly-reports/refinement-2026-11-11/pdf-renders/final-auth-current-first.png",
+        "backend/verification/weekly-reports/refinement-2026-11-11/pdf-renders/final-auth-current-middle.png",
+        "backend/verification/weekly-reports/refinement-2026-11-11/pdf-renders/final-auth-current-last.png",
+        "backend/verification/weekly-reports/refinement-2026-11-11/pdf-renders/final-pagination-first.png",
+        "backend/verification/weekly-reports/refinement-2026-11-11/pdf-renders/final-pagination-last.png",
+        "backend/verification/weekly-reports/refinement-2026-11-11/pdf-renders/pagination-final.png",
+        "backend/verification/weekly-reports/refinement-2026-11-11/pdf-renders/pagination-first.png",
+        "backend/verification/weekly-reports/refinement-2026-11-11/pdf-renders/post-narrative-fix-current-1.png",
+        "backend/verification/weekly-reports/refinement-2026-11-11/pdf-renders/post-narrative-fix-current-2.png",
+        "backend/verification/weekly-reports/refinement-2026-11-11/pdf-renders/post-narrative-fix-current-3.png",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/1440-dark.png",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/1440-light.png",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/1440-system.png",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/375-dark.png",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/375-light.png",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/375-system.png",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/archived-version-1.png",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/download-archived-version-1.pdf",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/download-version-2.pdf",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/email-preview-375.png",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/email-preview-640.png",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/email-preview.html",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/empty.png",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/error.png",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/loading.png",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/missing-stale-evidence.png",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/refreshed-version-2.png",
+        "frontend/verification/weekly-reports/refinement-2026-11-11/results.json"
+      ]
+    }
+  },
   "cleanup": {
     "verifiedTaskTempFilesRemoved": 0,
     "verifiedTaskTempDirectoriesRemovedIndividually": 2,
@@ -139,5 +399,6 @@
   "deployments": false,
   "productionDataChanges": false,
   "secretChanges": false,
-  "dependencyChanges": false
+  "dependencyChanges": true,
+  "approvedDependencyChange": "pdfkit 0.20.2 for direct PDF downloads; approved by the user."
 }
