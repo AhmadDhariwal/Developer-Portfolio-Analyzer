@@ -1,0 +1,41 @@
+<section class="kpi-grid">
+  <article class="kpi-card">
+    <span class="kpi-label">GitHub Score</span>
+
+    <strong>{{ metricLabel('github', report.meta.githubScore) }}</strong>
+
+    <small [class]="deltaClass(report.meta.comparisons.githubDelta)">{{
+      formatDelta(report.meta.comparisons.githubDelta)
+    }}</small>
+  </article>
+
+  <article class="kpi-card">
+    <span class="kpi-label">Resume Score</span>
+
+    <strong>{{ metricLabel('resume', report.meta.resumeScore) }}</strong>
+
+    <small [class]="deltaClass(report.meta.comparisons.resumeDelta)">{{
+      formatDelta(report.meta.comparisons.resumeDelta)
+    }}</small>
+  </article>
+
+  <article class="kpi-card">
+    <span class="kpi-label">Sprint Completion</span>
+
+    <strong>{{ sprintMetricLabel(report) }}</strong>
+
+    <small [class]="deltaClass(report.meta.comparisons.sprintCompletionDelta)">{{
+      formatDelta(report.meta.comparisons.sprintCompletionDelta)
+    }}</small>
+  </article>
+
+  <article class="kpi-card">
+    <span class="kpi-label">Interview Progress</span>
+
+    <strong>{{ interviewActivityLabel(report) }}</strong>
+
+    <small [class]="deltaClass(report.meta.comparisons.interviewQuestionsDelta)">{{
+      formatDelta(report.meta.comparisons.interviewQuestionsDelta, 'qs')
+    }}</small>
+  </article>
+</section>

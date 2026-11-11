@@ -1,0 +1,45 @@
+<article class="panel-card history-panel" *ngIf="history.length">
+  <button
+    class="history-toggle"
+    type="button"
+    (click)="toggle.emit()"
+    [attr.aria-expanded]="isOpen"
+  >
+    <span>
+      <strong>Momentum History</strong>
+
+      <small>Last {{ history.length }} reports</small>
+    </span>
+
+    <span class="history-toggle__icon">{{ isOpen ? '-' : '+' }}</span>
+  </button>
+
+  <div class="history-list" [class.history-list--open]="isOpen">
+    <button
+      class="history-row"
+      type="button"
+      *ngFor="let item of history; trackBy: trackByReportId"
+      (click)="selectReport.emit(item)"
+      [class.latest]="item._id === selectedReportId"
+    >
+      <div class="history-copy">
+        <span
+          >{{ reportDate(item.weekStartDate, item) }} –
+          {{ reportDate(item.weekEndDate, item) }}</span
+        >
+
+        <strong
+          >{{ overallLabel(item)
+          }}{{ item.meta.evidence?.scoreAvailable === false ? '' : '%' }}</strong
+        >
+      </div>
+
+      <div class="history-track">
+        <span
+          class="history-fill"
+          [style.width.%]="item.meta.evidence?.scoreAvailable === false ? 0 : item.score"
+        ></span>
+      </div>
+    </button>
+  </div>
+</article>

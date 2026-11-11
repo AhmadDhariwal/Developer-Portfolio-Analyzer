@@ -1,0 +1,242 @@
+:host {
+  display: contents;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(18rem, 0.8fr);
+  gap: 1rem;
+  align-items: stretch;
+
+  @media (max-width: 1040px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hero-card,
+.readiness-card {
+  padding: 24px;
+  border: 1px solid var(--border-color, #64748b40);
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  color: var(--text-primary);
+}
+
+.hero-card {
+  background: linear-gradient(120deg, var(--surface-card), var(--surface-secondary));
+}
+
+.readiness-card {
+  background: var(--surface-card);
+  display: grid;
+  gap: 0.8rem;
+
+  p {
+    margin: 0;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+
+  small {
+    color: var(--text-secondary);
+  }
+}
+
+.hero-score {
+  display: flex;
+  gap: 1.1rem;
+  align-items: center;
+  min-width: 0;
+
+  @media (max-width: 760px) {
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 720px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.score {
+  display: grid;
+  place-content: center;
+  width: 124px;
+  height: 124px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(closest-side, var(--surface-card) 82%, transparent 83%),
+    conic-gradient(#6366f1 var(--score), var(--surface-tertiary) 0);
+  color: var(--text-primary);
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 0.95;
+
+  span {
+    font-size: 14px;
+    opacity: 0.7;
+    margin-left: 0.2rem;
+  }
+}
+
+.score--missing {
+  font-size: 17px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.score-copy h2 {
+  margin: 0 0 0.45rem;
+  font-size: 1.15rem;
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
+}
+
+.score-copy p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+
+  span {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0.22rem;
+    flex: 1 1 10rem;
+    min-width: 0;
+    padding: 0.72rem 0.85rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--surface-secondary);
+    color: var(--text-secondary);
+    font-size: 0.78rem;
+    overflow-wrap: anywhere;
+
+    strong {
+      color: var(--text-primary);
+      font-size: 12px;
+      font-weight: 600;
+    }
+  }
+
+  mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    margin-top: 0.15rem;
+  }
+}
+
+.status-badge {
+  padding: 0.28rem 0.62rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.status-badge--sent {
+  color: var(--weekly-positive);
+  background: rgba(22, 163, 74, 0.16);
+}
+
+.status-badge--failed {
+  color: var(--weekly-negative);
+  background: rgba(185, 28, 28, 0.16);
+}
+
+.status-badge--skipped {
+  color: var(--weekly-warning);
+  background: rgba(180, 83, 9, 0.16);
+}
+
+.narrative-badge {
+  display: inline-flex;
+  padding: 4px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  background: var(--surface-secondary);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.narrative-badge--ai {
+  border-color: rgba(83, 221, 252, 0.35);
+  background: rgba(8, 145, 178, 0.18);
+  color: var(--weekly-accent);
+}
+
+.narrative-badge--cached {
+  color: var(--weekly-accent);
+}
+
+.card-label {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.readiness-score {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  width: fit-content;
+  padding: 0.5rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+
+  .value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--text-primary);
+  }
+
+  .label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  &.high {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: var(--weekly-positive);
+  }
+
+  &.medium {
+    background: rgba(83, 221, 252, 0.12);
+    border-color: rgba(83, 221, 252, 0.3);
+    color: var(--weekly-accent);
+  }
+
+  &.low {
+    background: rgba(251, 191, 36, 0.12);
+    border-color: rgba(251, 191, 36, 0.3);
+    color: var(--weekly-warning);
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-card,
+  .readiness-card {
+    padding: 20px;
+  }
+
+  .hero-meta span {
+    flex-basis: 100%;
+  }
+}

@@ -1,0 +1,31 @@
+<section class="breakdown-card" *ngIf="items.length">
+  <div class="panel-head">
+    <div>
+      <h3>Score Breakdown</h3>
+
+      <span class="panel-subtitle">Deterministic weighted inputs used before AI polish</span>
+    </div>
+
+    <small>{{ overallLabel }} total</small>
+  </div>
+
+  <div class="breakdown-grid">
+    <article class="breakdown-row" *ngFor="let item of items">
+      <div>
+        <strong>{{ item.label }}</strong>
+
+        <span>{{ item.weight }}% weight</span>
+      </div>
+
+      <div class="breakdown-meter">
+        <span [style.width.%]="item.score ?? 0"></span>
+      </div>
+
+      <small>{{
+        item.score === null
+          ? item.reason + ' — not a zero score'
+          : item.score + '% · ' + item.contribution + ' weighted points'
+      }}</small>
+    </article>
+  </div>
+</section>

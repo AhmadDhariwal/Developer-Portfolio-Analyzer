@@ -1,0 +1,81 @@
+<section class="hero-grid">
+  <article class="hero-card">
+    <div class="hero-score">
+      <div
+        class="score"
+        role="meter"
+        aria-label="Career momentum"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        [attr.aria-valuenow]="report.meta.evidence?.scoreAvailable === false ? null : report.score"
+        [attr.aria-valuetext]="overallLabel"
+        [class.score--missing]="report.meta.evidence?.scoreAvailable === false"
+        [style.--score]="(report.meta.evidence?.scoreAvailable === false ? 0 : report.score) + '%'"
+      >
+        {{ overallLabel }}<span *ngIf="report.meta.evidence?.scoreAvailable !== false">/100</span>
+      </div>
+
+      <div class="score-copy">
+        <h2>Career momentum</h2>
+
+        <p>{{ report.progressSummary }}</p>
+      </div>
+    </div>
+
+    <div class="hero-meta">
+      <span>
+        <strong>Period</strong>
+
+        {{ reportDate(report.weekStartDate) }} - {{ reportDate(report.weekEndDate) }}
+      </span>
+
+      <span *ngIf="report.emailStatus">
+        <strong>Email</strong>
+
+        <mark [class]="statusBadgeClass(report.emailStatus)">{{ report.emailStatus }}</mark>
+      </span>
+
+      <span>
+        <strong>Updated</strong>
+
+        {{ formatDate(report.updatedAt || report.weekEndDate) }}
+      </span>
+
+      <span>
+        <strong>Narrative</strong>
+
+        <mark
+          class="narrative-badge"
+          [class.narrative-badge--ai]="report.meta.narrativeSource === 'ai-enhanced'"
+          [class.narrative-badge--cached]="report.meta.narrativeSource === 'cached'"
+          >{{ narrativeSourceLabel }}</mark
+        >
+      </span>
+
+      <span *ngIf="report.meta.signalHash">
+        <strong>Signal</strong>
+
+        {{ report.meta.signalHash.slice(0, 10) }}
+      </span>
+    </div>
+  </article>
+
+  <article class="readiness-card">
+    <div class="card-label">Readiness indicator</div>
+
+    <div class="readiness-score" [ngClass]="getReadinessClass(readinessScore)">
+      <span class="value">{{
+        report.meta.evidence?.scoreAvailable === false ? 'Not assessed' : readinessScore + '%'
+      }}</span>
+
+      <span class="label">{{
+        report.meta.evidence?.scoreAvailable === false
+          ? 'Evidence needed'
+          : getReadinessTone(readinessScore)
+      }}</span>
+    </div>
+
+    <p>{{ report.predictedHiringReadiness.reason }}</p>
+    <small>A deterministic planning indicator, not a probability of getting hired.</small>
+  </article>
+</section>
