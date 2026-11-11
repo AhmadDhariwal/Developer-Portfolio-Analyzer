@@ -4,6 +4,18 @@ const http = require('node:http');
 const assert = require('node:assert/strict');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const parsePdf = require(path.resolve(__dirname, '../../backend/node_modules/pdf-parse'));
+
+async function readAndParsePdf(filePath) {
+  for (let i = 0; i < 5; i++) {
+    try {
+      const buffer = fs.readFileSync(filePath);
+      return await parsePdf(buffer);
+    } catch (err) {
+      if (i === 4) throw err;
+      await new Promise((r) => setTimeout(r, 200));
+    }
+  }
+}
 const pdfService = require(
   path.resolve(__dirname, '../../backend/src/services/weeklyReportPdfService'),
 );
@@ -321,7 +333,7 @@ const server = http.createServer((req, res) => {
   res.setHeader(
     'Content-Type',
     { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css' }[path.extname(file)] ||
-      'application/octet-stream',
+    'application/octet-stream',
   );
   fs.createReadStream(file).pipe(res);
 });
@@ -542,7 +554,7 @@ async function openPage(browser, width, theme, state = createState()) {
     ]);
     const currentPdfPath = path.join(output, 'download-version-2.pdf');
     await download.saveAs(currentPdfPath);
-    const currentPdf = await parsePdf(fs.readFileSync(currentPdfPath));
+    const currentPdf = await readAndParsePdf(currentPdfPath);
     assert.ok(currentPdf.text.includes(newHash));
     assert.ok(currentPdf.text.includes('Version 2'));
     await operation.page.getByRole('button', { name: 'Resend email' }).click();
@@ -590,7 +602,7 @@ async function openPage(browser, width, theme, state = createState()) {
     ]);
     const archivedPdfPath = path.join(output, 'download-archived-version-1.pdf');
     await archivedDownload.saveAs(archivedPdfPath);
-    const archivedPdf = await parsePdf(fs.readFileSync(archivedPdfPath));
+    const archivedPdf = await readAndParsePdf(archivedPdfPath);
     assert.ok(archivedPdf.text.includes(oldHash));
     assert.ok(archivedPdf.text.includes('Version 1'));
     assert.deepEqual(archivedState.pdfSnapshots, [{ reportId, version: 1, hash: oldHash }]);

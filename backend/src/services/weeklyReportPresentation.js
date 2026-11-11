@@ -65,16 +65,16 @@ function view(report) {
     risk: report.biggestRiskArea || 'Not recorded',
   };
 }
+
 function email(report, name, reportLink) {
   const v = view(report);
   const rows = v.breakdown
     .map((item) => {
       const isNum = item.value !== null && Number.isFinite(item.value);
       const pct = isNum ? Math.min(100, Math.max(0, item.value)) : 0;
-      const bar =
-        isNum && pct > 0
-          ? `<div style="background:#4f46e5;height:5px;width:${pct}%;border-radius:9999px;"></div>`
-          : '';
+      const bar = isNum && pct > 0
+        ? `<div style="background:#4f46e5;height:5px;width:${pct}%;border-radius:9999px;"></div>`
+        : '';
       const displayVal = item.value === null ? escape(item.reason) : `${escape(item.value)}/100`;
       return `<tr>
         <td style="padding:10px 8px;border-bottom:1px solid #f1f5f9;vertical-align:middle;">
@@ -91,23 +91,33 @@ function email(report, name, reportLink) {
   const listSection = (title, values) => {
     const items = values.length
       ? values
-          .map(
-            (value) =>
-              `<li style="background:#f8fafc;border-left:3px solid #4f46e5;border-radius:0 6px 6px 0;padding:10px 14px;margin-bottom:8px;font-size:13px;color:#334155;line-height:1.6;">${escape(value)}</li>`,
-          )
-          .join('')
-      : '<li style="background:#f8fafc;border-left:3px solid #cbd5e1;border-radius:0 6px 6px 0;padding:10px 14px;margin-bottom:8px;font-size:13px;color:#64748b;font-style:italic;">No saved items for this week.</li>';
-    return `<h2 style="font-size:16px;font-weight:800;color:#0f172a;margin:28px 0 12px 0;letter-spacing:-0.02em;">${escape(title)}</h2><ul style="list-style:none;padding:0;margin:0 0 16px 0;">${items}</ul>`;
-  };
+        .map(
+          (value) =>
+          `<li style="background:#f8fafc;border:1px solid #e2e8f0;border-left:3px solid #4f46e5;border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:8px;font-size:13px;color:#334155;line-height:1.6;">${escape(value)}</li>`,
+        )
+        .join('')
+      : '<li style="background:#f8fafc;border:1px solid #e2e8f0;border-left:3px solid #cbd5e1;border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:8px;font-size:13px;color:#64748b;font-style:italic;">No saved items for this week.</li>';
+  return `<h2 style="font-size:16px;font-weight:800;color:#0f172a;margin:28px 0 12px 0;letter-spacing:-0.02em;">${escape(title)}</h2><ul style="list-style:none;padding:0;margin:0 0 16px 0;">${items}</ul>`;
+};
 
-  const sourceRows = v.sources
-    .map(
-      (source) =>
-        `<li style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:9px 12px;margin-bottom:6px;font-size:12px;color:#475569;line-height:1.5;"><strong style="color:#0f172a;">${escape(source.label)}</strong>: ${escape(source.status)} · ${escape(source.freshness)} · ${escape(source.timestamp)}</li>`,
-    )
-    .join('');
+const sourceRows = v.sources
+  .map(
+    (source) =>
+    `<li style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:12px;color:#475569;line-height:1.5;"><strong style="color:#0f172a;">${escape(source.label)}</strong>: ${escape(source.status)} · ${escape(source.freshness)} · ${escape(source.timestamp)}</li>`,
+  )
+  .join('');
 
-  const html = `<!doctype html>
+// Clean score presentation: avoids 36px wrapping of "(legacy snapshot)"
+const isLegacy = v.scoreLabel.includes('(legacy snapshot)');
+const scoreDisplayHtml =
+  v.score === null
+    ? `<span style="font-size:26px;font-weight:800;color:#4338ca;">Not assessed</span>`
+    : `<span style="font-size:36px;font-weight:800;color:#4338ca;letter-spacing:-0.03em;">${escape(v.score)}</span><span style="font-size:18px;font-weight:600;color:#64748b;">/100</span>` +
+    (isLegacy
+      ? ` <span style="display:inline-block;margin-left:6px;font-size:11px;font-weight:600;background:#f1f5f9;color:#64748b;padding:2px 7px;border-radius:4px;vertical-align:middle;text-transform:uppercase;letter-spacing:0.04em;">legacy snapshot</span>`
+      : '');
+
+const html = `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -125,21 +135,21 @@ function email(report, name, reportLink) {
             <tr>
               <td style="padding:28px 24px;">
                 <div style="margin-bottom:12px;">
-                  <span style="display:inline-block;padding:4px 12px;background:#eef2ff;color:#4f46e5;border:1px solid #e0e7ff;border-radius:9999px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;">
+                  <span style="display:inline-block;padding:3px 10px;background:#eef2ff;color:#4f46e5;border:1px solid #e0e7ff;border-radius:9999px;font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;">
                     <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#4f46e5;margin-right:6px;vertical-align:middle;"></span>
-                    ${escape(v.brand)} · Weekly Executive Progress
+                    ${escape(v.brand)} · Weekly Progress
                   </span>
                 </div>
-                <h1 style="margin:0 0 8px 0;font-size:24px;font-weight:800;color:#0f172a;letter-spacing:-0.03em;line-height:1.25;">Your weekly progress</h1>
-                <p style="margin:0 0 14px 0;font-size:13px;color:#64748b;line-height:1.5;">${escape(v.period)} · ${escape(v.timezone)} · <span style="display:inline-block;background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:4px;font-weight:600;font-size:12px;">Version ${v.version}</span></p>
-                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:8px 12px;font-size:11px;color:#64748b;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;word-break:break-all;margin-bottom:20px;">Snapshot hash: <span style="color:#334155;">${escape(v.hash)}</span></div>
+                <h1 style="margin:0 0 6px 0;font-size:24px;font-weight:800;color:#0f172a;letter-spacing:-0.03em;line-height:1.25;">Your weekly progress</h1>
+                <p style="margin:0 0 18px 0;font-size:13px;color:#64748b;line-height:1.5;">${escape(v.period)} · ${escape(v.timezone)} · <span style="display:inline-block;background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:4px;font-weight:600;font-size:12px;">Version ${v.version}</span></p>
                 <p style="margin:0 0 16px 0;font-size:14px;color:#334155;line-height:1.6;">Hello ${escape(name || 'developer')},</p>
+
                 <div style="background:linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);border:1px solid #e0e7ff;border-radius:12px;padding:20px;margin-bottom:24px;">
                   <table role="presentation" width="100%" style="border-collapse:collapse;">
                     <tr>
                       <td valign="top" style="padding-bottom:12px;">
                         <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#64748b;margin-bottom:4px;">Career Momentum Score</div>
-                        <div style="font-size:36px;font-weight:800;color:#4338ca;line-height:1.1;letter-spacing:-0.03em;">${escape(v.scoreLabel)}</div>
+                        <div style="line-height:1.1;">${scoreDisplayHtml}</div>
                       </td>
                       <td valign="top" align="right" style="padding-bottom:12px;">
                         <div style="display:inline-block;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:6px 12px;text-align:right;">
@@ -155,6 +165,7 @@ function email(report, name, reportLink) {
                     <p style="margin:0;font-size:12px;color:#64748b;line-height:1.5;"><strong>Readiness indicator:</strong> ${escape(v.readiness)} · ${escape(v.readinessReason)}</p>
                   </div>
                 </div>
+
                 <h2 style="font-size:16px;font-weight:800;color:#0f172a;margin:28px 0 12px 0;letter-spacing:-0.02em;">Score breakdown</h2>
                 <table aria-label="Deterministic score breakdown" width="100%" style="border-collapse:collapse;margin-bottom:16px;">
                   <thead>
@@ -165,19 +176,31 @@ function email(report, name, reportLink) {
                   </thead>
                   <tbody>${rows}</tbody>
                 </table>
+
                 ${listSection('Evidence highlights', v.achievements)}
                 ${listSection('Insights', v.insights)}
                 ${listSection('Next actions', v.recommendations)}
+
                 <h2 style="font-size:16px;font-weight:800;color:#0f172a;margin:28px 0 12px 0;letter-spacing:-0.02em;">Risks and focus</h2>
                 <div style="background:#fffbeb;border:1px solid #fef3c7;border-left:3px solid #f59e0b;border-radius:0 8px 8px 0;padding:12px 16px;font-size:13px;color:#92400e;line-height:1.6;margin-bottom:20px;">
                   ${escape(v.risk)}
                 </div>
+
                 <h2 style="font-size:16px;font-weight:800;color:#0f172a;margin:28px 0 12px 0;letter-spacing:-0.02em;">Source freshness at assessment</h2>
                 <ul style="list-style:none;padding:0;margin:0 0 24px 0;">${sourceRows}</ul>
+
                 <div style="padding:16px 0;text-align:center;">
                   <a href="${escape(reportLink)}" style="display:inline-block;background:#4f46e5;color:#ffffff;font-size:14px;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;box-shadow:0 2px 8px rgba(79,70,229,0.3);">View this saved report &rarr;</a>
                 </div>
-                <p style="margin:20px 0 0 0;padding-top:16px;border-top:1px solid #e2e8f0;font-size:11px;line-height:1.6;color:#94a3b8;text-align:center;">Readiness is a planning indicator, not a probability of getting hired. Learning completion is self-reported. Manage weekly email preferences in account settings.</p>
+
+                <!-- Provenance & Snapshot Verification Card (Clean footer location) -->
+                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;margin-top:20px;font-size:11px;color:#64748b;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;word-break:break-all;">
+                  <div style="font-weight:700;color:#475569;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em;font-size:10px;">Snapshot Verification</div>
+                  <div>Content hash: <span style="color:#1e293b;">${escape(v.hash)}</span></div>
+                  <div style="margin-top:2px;color:#64748b;">Snapshot version: Version ${v.version} · ${escape(v.timezone)}</div>
+                </div>
+
+                <p style="margin:16px 0 0 0;padding-top:14px;border-top:1px solid #e2e8f0;font-size:11px;line-height:1.6;color:#94a3b8;text-align:center;">Readiness is a planning indicator, not a probability of getting hired. Learning completion is self-reported. Manage weekly email preferences in account settings.</p>
               </td>
             </tr>
           </table>
@@ -186,30 +209,30 @@ function email(report, name, reportLink) {
     </table>
   </body>
 </html>`;
-  const text = [
-    v.brand,
-    v.period,
-    `Version ${v.version} / ${v.hash}`,
-    `Score: ${v.scoreLabel}`,
-    v.summary,
-    v.comparison,
-    ...v.breakdown.map(
-      (item) =>
-        `${item.label}: ${item.value === null ? item.reason : item.value + '/100'} (${item.weight}%)`,
-    ),
-    'Evidence highlights',
-    ...v.achievements,
-    'Insights',
-    ...v.insights,
-    'Next actions',
-    ...v.recommendations,
-    `Risks: ${v.risk}`,
-    ...v.sources.map(
-      (source) => `${source.label}: ${source.status}; ${source.freshness}; ${source.timestamp}`,
-    ),
-    `Saved report: ${reportLink}`,
-    'Readiness is not a hiring probability.',
-  ].join('\n\n');
-  return { html, text };
+const text = [
+  v.brand,
+  v.period,
+  `Version ${v.version} / ${v.hash}`,
+  `Score: ${v.scoreLabel}`,
+  v.summary,
+  v.comparison,
+  ...v.breakdown.map(
+    (item) =>
+      `${item.label}: ${item.value === null ? item.reason : item.value + '/100'} (${item.weight}%)`,
+  ),
+  'Evidence highlights',
+  ...v.achievements,
+  'Insights',
+  ...v.insights,
+  'Next actions',
+  ...v.recommendations,
+  `Risks: ${v.risk}`,
+  ...v.sources.map(
+    (source) => `${source.label}: ${source.status}; ${source.freshness}; ${source.timestamp}`,
+  ),
+  `Saved report: ${reportLink}`,
+  'Readiness is not a hiring probability.',
+].join('\n\n');
+return { html, text };
 }
 module.exports = { view, email, escape, date };
