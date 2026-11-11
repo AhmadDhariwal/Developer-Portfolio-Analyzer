@@ -693,7 +693,9 @@ async function openPage(browser, width, theme, state = createState()) {
     emailState.current = emailState.refreshed;
     const reportLink = `https://example.invalid/app/weekly-reports?report=${reportId}&version=${newHash}`;
     const email = presentation.email(emailState.current, 'Synthetic Developer', reportLink);
-    assert.ok(email.html.includes(`Version 2`));
+    assert.ok(!email.html.includes('Version 2'));
+    assert.ok(!email.html.includes('Snapshot Verification'));
+    assert.ok(!email.html.includes('Content hash:'));
     assert.ok(email.html.includes(newHash));
     assert.ok(email.html.includes('Learning Hub'));
     assert.ok(email.html.includes('Interview Prep'));

@@ -30,7 +30,7 @@ async function render(report) {
 
   const paragraph = (text, size = 9) => {
     doc
-      .fillColor('#334155')
+      .fillColor('#1e293b')
       .fontSize(size)
       .text(String(text ?? ''), { width, lineGap: 3 });
     doc.moveDown(0.5);
@@ -54,7 +54,7 @@ async function render(report) {
       doc.roundedRect(48, bY, width, itemH, 4).fillAndStroke('#f8fafc', '#e2e8f0');
       doc.rect(48, bY, 3, itemH).fill('#4f46e5');
       doc
-        .fillColor('#334155')
+        .fillColor('#1e293b')
         .fontSize(8.5)
         .text(valStr, 58, bY + 5, { width: width - 34, lineGap: 2.5 });
       doc.y = bY + itemH + 5;
@@ -83,7 +83,7 @@ async function render(report) {
   const heroY = doc.y;
   doc.roundedRect(48, heroY, width, heroH, 8).fillAndStroke('#f8fafc', '#e2e8f0');
   doc
-    .fillColor('#64748b')
+    .fillColor('#1e293b')
     .fontSize(8)
     .text('CAREER MOMENTUM SCORE', 62, heroY + 10);
   doc
@@ -91,7 +91,7 @@ async function render(report) {
     .fontSize(24)
     .text(v.scoreLabel, 62, heroY + 22);
   doc
-    .fillColor('#334155')
+    .fillColor('#1e293b')
     .fontSize(8.5)
     .text(summaryStr, 62, heroY + 50, { width: width - 28, lineGap: 2.5 });
   doc.y = heroY + heroH + 8;
@@ -107,7 +107,7 @@ async function render(report) {
     .fontSize(8.5)
     .text('Readiness indicator:', 58, rY + 6, { continued: true });
   doc.fillColor('#4338ca').fontSize(8.5).text(`  ${v.readiness}`, { continued: true });
-  doc.fillColor('#64748b').fontSize(8).text(` · ${v.readinessReason}`);
+  doc.fillColor('#1e293b').fontSize(8).text(` · ${v.readinessReason}`);
   doc.y = rY + 30;
 
   // Score Breakdown
@@ -126,7 +126,7 @@ async function render(report) {
       .text(`${item.label} · ${item.weight}% weight`, 58, y + 5);
     const valText = item.value === null ? item.reason : `${item.value}/100`;
     doc
-      .fillColor('#334155')
+      .fillColor('#1e293b')
       .fontSize(8.5)
       .text(valText, 48, y + 5, { align: 'right', width: width - 10 });
     const barY = y + 17;
@@ -164,11 +164,11 @@ async function render(report) {
   const actY = doc.y;
   doc.roundedRect(48, actY, width, activityCardHeight, 6).fillAndStroke('#f8fafc', '#e2e8f0');
   doc
-    .fillColor('#334155')
+    .fillColor('#1e293b')
     .fontSize(8)
     .text(sprintActivity, 58, actY + activityPadding, activityTextStyle);
   doc
-    .fillColor('#334155')
+    .fillColor('#1e293b')
     .fontSize(8)
     .text(
       repositoryActivity,
@@ -209,11 +209,11 @@ async function render(report) {
       .fontSize(8.5)
       .text(source.label, 58, sY + 6);
     doc
-      .fillColor('#475569')
+      .fillColor('#1e293b')
       .fontSize(8)
       .text(`${source.status} · ${source.freshness}`, 175, sY + 6);
     doc
-      .fillColor('#64748b')
+      .fillColor('#1e293b')
       .fontSize(7.5)
       .text(`Latest evidence: ${source.timestamp}`, 48, sY + 6.5, {
         align: 'right',
@@ -230,7 +230,7 @@ async function render(report) {
   const provH = 50;
   doc.roundedRect(48, provY, width, provH, 6).fillAndStroke('#f8fafc', '#e2e8f0');
   doc
-    .fillColor('#475569')
+    .fillColor('#1e293b')
     .fontSize(7.5)
     .text('SNAPSHOT VERIFICATION & PROVENANCE', 58, provY + 6);
   doc
@@ -240,7 +240,7 @@ async function render(report) {
       width: width - 20,
     });
   doc
-    .fillColor('#64748b')
+    .fillColor('#1e293b')
     .fontSize(7)
     .text(
       'This PDF uses the saved report snapshot. It does not regenerate scores or refresh sources. Readiness is a planning indicator, not a hiring probability. Learning completion is self-reported.',
@@ -260,7 +260,7 @@ async function render(report) {
     doc.rect(48, doc.page.height - 44, width, 0.5).fill('#e2e8f0');
     doc
       .fontSize(8)
-      .fillColor('#64748b')
+      .fillColor('#1e293b')
       .text(`${v.brand} · Private weekly report`, 48, doc.page.height - 34, {
         lineBreak: false,
       });

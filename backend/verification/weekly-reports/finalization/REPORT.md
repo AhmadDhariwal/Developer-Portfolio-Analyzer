@@ -1,3 +1,11 @@
+# PDF/email presentation polish — 12 November 2026
+
+Current branch base HEAD: d112019ebdf1cc2e5e9fcb6808ead45b1937f14c. PDF text now uses regular-weight Manrope (400; previous variable default 200) and darker body/metadata colors. Emails omit the visible version and snapshot verification/content-hash card, with extra space below the score. The saved-report link retains its version identity and all delivery safeguards remain intact.
+
+Verification: focused PDF/email tests 9/9 PASS after font conversion, email previews at 640/375 px PASS with no overflow, both PDF pages visually reviewed, source syntax and explicit formatter write/check PASS. Preview files are outside the repository. At the user’s request, 79 untracked generated verification pictures/PDFs/logs and task-owned inspection files were removed individually; their exact paths are recorded in status.json. Tracked reports, scripts, assets and existing committed evidence were retained. Historical sections below may refer to generated local files intentionally removed in this cleanup. No files were moved. No commits or pushes were made. Production gates remain blocked as previously recorded.
+
+---
+
 # PDF and resend API repair — 12 November 2026
 
 **LOCAL RELEASE CANDIDATE ACCEPTED for the API-repair working-tree overlay based on HEAD 0db76b044a506387fd714060c8ad666dbc09f3a3; production readiness remains BLOCKED.** No commit was created.

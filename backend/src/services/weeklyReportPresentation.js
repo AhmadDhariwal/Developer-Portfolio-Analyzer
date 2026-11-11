@@ -142,17 +142,17 @@ function email(report, name, reportLink) {
                   </span>
                 </div>
                 <h1 style="margin:0 0 6px 0;font-size:24px;font-weight:800;color:#0f172a;letter-spacing:-0.03em;line-height:1.25;">Your weekly progress</h1>
-                <p style="margin:0 0 18px 0;font-size:13px;color:#64748b;line-height:1.5;">${escape(v.period)} · ${escape(v.timezone)} · <span style="display:inline-block;background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:4px;font-weight:600;font-size:12px;">Version ${v.version}</span></p>
+                <p style="margin:0 0 18px 0;font-size:13px;color:#64748b;line-height:1.5;">${escape(v.period)} · ${escape(v.timezone)}</p>
                 <p style="margin:0 0 16px 0;font-size:14px;color:#334155;line-height:1.6;">Hello ${escape(name || 'developer')},</p>
 
                 <div style="background:linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);border:1px solid #e0e7ff;border-radius:12px;padding:20px;margin-bottom:24px;">
                   <table role="presentation" width="100%" style="border-collapse:collapse;">
                     <tr>
-                      <td valign="top" style="padding-bottom:12px;">
+                      <td valign="top" style="padding-bottom:24px;">
                         <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#64748b;margin-bottom:4px;">Career Momentum Score</div>
                         <div style="line-height:1.1;">${scoreDisplayHtml}</div>
                       </td>
-                      <td valign="top" align="right" style="padding-bottom:12px;">
+                      <td valign="top" align="right" style="padding-bottom:24px;">
                         <div style="display:inline-block;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:6px 12px;text-align:right;">
                           <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b;letter-spacing:0.05em;">Readiness</div>
                           <div style="font-size:15px;font-weight:800;color:#0f172a;">${escape(v.readiness)}</div>
@@ -160,7 +160,7 @@ function email(report, name, reportLink) {
                       </td>
                     </tr>
                   </table>
-                  <div style="border-top:1px solid #e0e7ff;padding-top:12px;margin-top:4px;">
+                  <div style="border-top:1px solid #e0e7ff;padding-top:18px;margin-top:8px;">
                     <p style="margin:0 0 8px 0;font-size:14px;color:#334155;line-height:1.65;">${escape(v.summary)}</p>
                     <p style="margin:0 0 8px 0;font-size:13px;color:#475569;font-weight:500;line-height:1.5;">${escape(v.comparison)}</p>
                     <p style="margin:0;font-size:12px;color:#64748b;line-height:1.5;"><strong>Readiness indicator:</strong> ${escape(v.readiness)} · ${escape(v.readinessReason)}</p>
@@ -194,13 +194,6 @@ function email(report, name, reportLink) {
                   <a href="${escape(reportLink)}" style="display:inline-block;background:#4f46e5;color:#ffffff;font-size:14px;font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none;box-shadow:0 2px 8px rgba(79,70,229,0.3);">View this saved report &rarr;</a>
                 </div>
 
-                <!-- Provenance & Snapshot Verification Card (Clean footer location) -->
-                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;margin-top:20px;font-size:11px;color:#64748b;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;word-break:break-all;">
-                  <div style="font-weight:700;color:#475569;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em;font-size:10px;">Snapshot Verification</div>
-                  <div>Content hash: <span style="color:#1e293b;">${escape(v.hash)}</span></div>
-                  <div style="margin-top:2px;color:#64748b;">Snapshot version: Version ${v.version} · ${escape(v.timezone)}</div>
-                </div>
-
                 <p style="margin:16px 0 0 0;padding-top:14px;border-top:1px solid #e2e8f0;font-size:11px;line-height:1.6;color:#94a3b8;text-align:center;">Readiness is a planning indicator, not a probability of getting hired. Learning completion is self-reported. Manage weekly email preferences in account settings.</p>
               </td>
             </tr>
@@ -213,7 +206,6 @@ function email(report, name, reportLink) {
   const text = [
     v.brand,
     v.period,
-    `Version ${v.version} / ${v.hash}`,
     `Score: ${v.scoreLabel}`,
     v.summary,
     v.comparison,

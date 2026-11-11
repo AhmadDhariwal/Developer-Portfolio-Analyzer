@@ -148,12 +148,16 @@ test('email renders the saved version, evidence gaps and sanitized content witho
   assert.ok(body.html.includes('&lt;script&gt;'));
   assert.ok(!body.html.includes('<script>'));
   assert.ok(!body.html.includes('<img src=x'));
-  assert.ok(body.html.includes('Version 2'));
+  assert.ok(!body.html.includes('Version 2'));
+  assert.ok(!body.html.includes('Snapshot Verification'));
+  assert.ok(!body.html.includes('Content hash:'));
+  assert.ok(!body.text.includes('Version 2'));
+  assert.ok(body.html.includes('padding-bottom:24px'));
   assert.ok(body.html.includes('Not assessed'));
   assert.ok(body.html.includes('No tasks to assess'));
   assert.ok(body.html.includes('Learning Hub'));
   assert.ok(body.html.includes('Readiness indicator'));
-  assert.ok(body.text.includes(saved.meta.reportHash));
+  assert.ok(!body.text.includes(saved.meta.reportHash));
 });
 test('PDFs retain snapshot identity, Unicode typography and readable multipage content', async () => {
   const saved = snapshot();
