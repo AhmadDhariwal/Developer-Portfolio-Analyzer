@@ -931,6 +931,28 @@ export class ApiService {
     );
   }
 
+  getWeeklyReport(id: string, version?: string): Observable<any> {
+    return this.http.get(
+      `${this.baseUrl}/weekly-reports/${encodeURIComponent(id)}${version ? '?version=' + encodeURIComponent(version) : ''}`,
+    );
+  }
+  refreshWeeklyReport(id: string, contentHash: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/weekly-reports/${encodeURIComponent(id)}/refresh`, {
+      contentHash,
+    });
+  }
+  resendWeeklyReport(id: string, contentHash: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/weekly-reports/${encodeURIComponent(id)}/resend-email`, {
+      contentHash,
+    });
+  }
+  downloadWeeklyReport(id: string, version?: string): Observable<Blob> {
+    return this.http.get(
+      `${this.baseUrl}/weekly-reports/${encodeURIComponent(id)}/pdf${version ? '?version=' + encodeURIComponent(version) : ''}`,
+      { responseType: 'blob' },
+    );
+  }
+
   getWeeklyReportLatest(): Observable<any> {
     return this.http.get(`${this.baseUrl}/weekly-reports/latest`);
   }

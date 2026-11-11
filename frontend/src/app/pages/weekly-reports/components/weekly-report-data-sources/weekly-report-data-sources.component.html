@@ -1,0 +1,32 @@
+<section class="sources-card" *ngIf="dataSources.length">
+  <div class="panel-head">
+    <div>
+      <h3>Data Sources Used</h3>
+
+      <span class="panel-subtitle">Saved evidence, source gaps and freshness at assessment</span>
+    </div>
+
+    <small *ngIf="emailStatus === 'failed' && emailError">{{ emailError }}</small>
+  </div>
+
+  <div class="sources-grid">
+    <article
+      *ngFor="let source of dataSources; trackBy: trackByLabel"
+      [class]="sourceTone(source.status)"
+    >
+      <div class="source-top">
+        <strong>{{ source.label }}</strong>
+
+        <span>{{ source.status.status }}</span>
+      </div>
+
+      <small *ngIf="source.status.freshness">{{ source.status.freshness | titlecase }}</small>
+
+      <small *ngIf="sourceFreshness(source.status)">{{ sourceFreshness(source.status) }}</small>
+
+      <small *ngIf="source.status.lastAnalyzedAt">{{
+        formatDate(source.status.lastAnalyzedAt)
+      }}</small>
+    </article>
+  </div>
+</section>

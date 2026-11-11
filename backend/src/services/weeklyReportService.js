@@ -43,15 +43,6 @@ const toCleanStrings = (values = [], limit = 6) => {
     .slice(0, limit);
 };
 
-const escapeHtml = (value = '') => {
-  return String(value || '')
-    .replaceAll('&', '&')
-    .replaceAll('<', '<')
-    .replaceAll('>', '>')
-    .replaceAll('"', '"')
-    .replaceAll("'", '&#39;');
-};
-
 const getEmailProviders = () => {
   const providers = [];
   if (process.env.SENDGRID_API_KEY && process.env.SENDGRID_FROM_EMAIL) providers.push('sendgrid');
@@ -148,200 +139,7 @@ const updateWeeklyReportEmailStatus = async (
   );
 };
 
-const buildEmailHtml = ({
-  name,
-  score,
-  githubScore,
-  resumeScore,
-  summary,
-  recommendations,
-  topAchievements,
-  biggestRiskArea,
-  predictedHiringReadiness,
-  staleWarning = null,
-  staleRecommendation = '',
-  reportLink,
-}) => {
-  const safeRecommendations = toCleanStrings(recommendations, 5);
-  const safeAchievements = toCleanStrings(topAchievements, 3);
-  const safeSummary = escapeHtml(summary);
-  const safeRisk = escapeHtml(biggestRiskArea || 'No critical risk flagged this week.');
-  const readiness = predictedHiringReadiness || { score: 0, reason: '' };
-  const readinessScore = clampPercent(readiness.score);
-  const readinessReason = escapeHtml(
-    readiness.reason || 'Momentum remains stable if execution stays consistent next week.',
-  );
-
-  const recList = safeRecommendations
-    .map(
-      (rec) => `
-    <li style="margin-bottom:12px; display:flex; align-items:flex-start;">
-      <span style="color:#a3a6ff; margin-right:8px; font-weight:bold;">-</span>
-      <span style="color:#dee5ff;">${escapeHtml(rec)}</span>
-    </li>`,
-    )
-    .join('');
-
-  const achievementsList = safeAchievements
-    .map(
-      (achievement) => `
-    <li style="margin-bottom:10px; color:#dee5ff; line-height:1.6;">${escapeHtml(achievement)}</li>`,
-    )
-    .join('');
-
-  const staleHtml = staleWarning
-    ? `
-    <div style="background:rgba(251, 191, 36, 0.08); border-radius:16px; padding:20px; margin-bottom:24px; border:1px solid rgba(251, 191, 36, 0.2);">
-      <div style="font-size:14px; font-weight:700; color:#fbbf24; margin-bottom:8px;">⚠️  Analysis Refresh Recommended</div>
-      <p style="margin:0; font-size:14px; line-height:1.5; color:#dee5ff;">${escapeHtml(staleWarning)}${escapeHtml(staleRecommendation)}</p>
-    </div>`
-    : '';
-
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
-    <body style="margin:0; padding:0; background-color:#060e20; font-family:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-      <div style="max-width:600px; margin:0 auto; padding:40px 20px; color:#dee5ff;">
-
-        <div style="margin-bottom:32px; text-align:center;">
-          <h1 style="font-family:'Space Grotesk', sans-serif; font-size:24px; font-weight:700; color:#a3a6ff; margin:0; text-transform:uppercase; letter-spacing:1px;">Weekly Insight</h1>
-          <p style="margin:8px 0 0 0; color:#a3aac4; font-size:14px;">Your AI Career Momentum Report</p>
-        </div>
-
-        ${staleHtml}
-
-        <div style="background:linear-gradient(135deg, #091328 0%, #0f1930 100%); border-radius:24px; padding:32px; text-align:center; margin-bottom:24px; border:1px solid rgba(163, 166, 255, 0.1);">
-          <div style="font-family:'Space Grotesk', sans-serif; font-size:64px; font-weight:700; color:#a3a6ff; line-height:1; margin-bottom:8px;">${clampPercent(score)}%</div>
-          <div style="font-size:14px; font-weight:600; color:#53ddfc; text-transform:uppercase; letter-spacing:2px; margin-bottom:16px;">Weekly Growth Score</div>
-          <p style="color:#dee5ff; font-size:16px; line-height:1.6; margin:0;">Hi ${escapeHtml(name || 'there')}, your velocity is building. Here is how you performed this week.</p>
-        </div>
-
-        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom:24px;">
-          <tr>
-            <td width="50%" align="center" style="background:#091328; border-radius:16px; padding:20px;">
-              <div style="font-size:12px; color:#a3aac4; text-transform:uppercase; margin-bottom:4px;">GitHub Activity</div>
-              <div style="font-size:20px; font-weight:700; color:#53ddfc;">${clampPercent(githubScore)}%</div>
-            </td>
-            <td width="20">&nbsp;</td>
-            <td width="50%" align="center" style="background:#091328; border-radius:16px; padding:20px;">
-              <div style="font-size:12px; color:#a3aac4; text-transform:uppercase; margin-bottom:4px;">Resume Health</div>
-              <div style="font-size:20px; font-weight:700; color:#a3a6ff;">${clampPercent(resumeScore)}%</div>
-            </td>
-          </tr>
-        </table>
-
-        <div style="background:rgba(147, 150, 255, 0.05); border-radius:20px; padding:24px; margin-bottom:24px; border-left:4px solid #a3a6ff;">
-          <h3 style="margin:0 0 12px 0; font-size:16px; color:#a3a6ff;">Executive Summary</h3>
-          <p style="margin:0; font-size:15px; line-height:1.6; color:#dee5ff;">${safeSummary}</p>
-        </div>
-
-        <div style="background:#091328; border-radius:20px; padding:24px; margin-bottom:20px;">
-          <h3 style="margin:0 0 16px 0; font-size:16px; color:#53ddfc;">Top 3 Achievements</h3>
-          <ol style="margin:0; padding-left:18px;">
-            ${achievementsList || '<li style="color:#dee5ff;">Progress remained stable this week.</li>'}
-          </ol>
-        </div>
-
-        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom:20px;">
-          <tr>
-            <td width="50%" style="background:#091328; border-radius:16px; padding:18px; vertical-align:top;">
-              <div style="font-size:12px; color:#a3aac4; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Biggest Risk Area</div>
-              <div style="color:#fbbf24; line-height:1.6;">${safeRisk}</div>
-            </td>
-            <td width="16">&nbsp;</td>
-            <td width="50%" style="background:#091328; border-radius:16px; padding:18px; vertical-align:top;">
-              <div style="font-size:12px; color:#a3aac4; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Predicted Hiring Readiness (Next Week)</div>
-              <div style="font-size:24px; font-weight:700; color:#22c55e; margin-bottom:6px;">${readinessScore}%</div>
-              <div style="color:#dee5ff; line-height:1.6;">${readinessReason}</div>
-            </td>
-          </tr>
-        </table>
-
-        <div style="background:#091328; border-radius:20px; padding:24px; margin-bottom:32px;">
-          <h3 style="margin:0 0 16px 0; font-size:16px; color:#53ddfc;">Next Steps to Accelerate</h3>
-          <ul style="margin:0; padding:0; list-style:none;">${recList}</ul>
-        </div>
-
-        <div style="text-align:center;">
-          <a href="${reportLink}" style="display:inline-block; padding:16px 32px; background:linear-gradient(45deg, #4f46e5, #6366f1); color:#ffffff; text-decoration:none; border-radius:12px; font-weight:700; font-size:15px; box-shadow:0 4px 12px rgba(79, 70, 229, 0.3);">Access Full Dashboard</a>
-          <p style="margin-top:24px; font-size:12px; color:#6d758c;">This report was generated by ${escapeHtml(APP_NAME)} AI Coach.<br/>To manage your notifications, visit your account settings.</p>
-        </div>
-
-      </div>
-    </body>
-    </html>`;
-};
-
-const buildEmailText = ({
-  name,
-  summary,
-  recommendations,
-  topAchievements,
-  biggestRiskArea,
-  predictedHiringReadiness,
-  staleWarning = null,
-  staleRecommendation = '',
-  reportLink,
-}) => {
-  const safeRecommendations = toCleanStrings(recommendations, 5);
-  const safeAchievements = toCleanStrings(topAchievements, 3);
-  const readiness = predictedHiringReadiness || { score: 0, reason: '' };
-
-  const staleSection = staleWarning
-    ? ['', '⚠️  ANALYSIS REFRESH RECOMMENDED', `${staleWarning}${staleRecommendation}`]
-    : [];
-
-  return [
-    `Hi ${name || 'there'},`,
-    '',
-    'Your weekly AI coach report is ready.',
-    ...staleSection,
-    '',
-    `Summary: ${String(summary || '').trim()}`,
-    '',
-    'Top achievements:',
-    ...safeAchievements.map((achievement, index) => `${index + 1}. ${achievement}`),
-    '',
-    `Biggest risk area: ${String(biggestRiskArea || '').trim()}`,
-    `Predicted hiring readiness next week: ${clampPercent(readiness.score)}%`,
-    `Why: ${String(readiness.reason || '').trim()}`,
-    '',
-    'Recommendations:',
-    ...safeRecommendations.map((recommendation) => `- ${recommendation}`),
-    '',
-    `View report: ${reportLink}`,
-  ].join('\n');
-};
-
-const startOfWeek = (date = new Date()) => {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  d.setDate(diff);
-  d.setHours(0, 0, 0, 0);
-  return d;
-};
-
-const endOfWeek = (startDate) => {
-  const d = new Date(startDate);
-  d.setDate(d.getDate() + 6);
-  d.setHours(23, 59, 59, 999);
-  return d;
-};
-
-const previousWeekRange = (weekStartDate) => {
-  const previousStart = new Date(weekStartDate);
-  previousStart.setDate(previousStart.getDate() - 7);
-  previousStart.setHours(0, 0, 0, 0);
-  return {
-    start: previousStart,
-    end: endOfWeek(previousStart),
-  };
-};
+const { startOfWeek, endOfWeek, previousWeekRange } = require('./weeklyReportCalendar');
 
 const computeResumeScore = (resumeAnalysis) => {
   if (!resumeAnalysis) return 0;
@@ -407,26 +205,7 @@ const extractSkillSignals = (skillGraph) => {
   };
 };
 
-const buildActivitySnapshot = (repositories, weekStartDate) => {
-  const safeRepos = Array.isArray(repositories) ? repositories : [];
-  const commits = sumNumbers(safeRepos.map((repo) => repo.commits));
-  const stars = sumNumbers(safeRepos.map((repo) => repo.stars));
-  const forks = sumNumbers(safeRepos.map((repo) => repo.forks));
-  const activeRepositories = safeRepos.filter((repo) => {
-    if (!repo?.lastUpdated) return false;
-    const updatedAt = new Date(repo.lastUpdated);
-    return !Number.isNaN(updatedAt.getTime()) && updatedAt >= weekStartDate;
-  }).length;
-
-  return {
-    repositoriesTracked: safeRepos.length,
-    activeRepositories,
-    commits,
-    weeklyCommitSignal: commits > 0 ? commits : activeRepositories * 3,
-    stars,
-    forks,
-  };
-};
+const buildActivitySnapshot = require('./weeklyReportEvidence').activity;
 
 const buildSprintSnapshot = (sprint, now = new Date()) => {
   const tasks = Array.isArray(sprint?.tasks) ? sprint.tasks : [];
@@ -448,13 +227,16 @@ const buildSprintSnapshot = (sprint, now = new Date()) => {
   };
 };
 
-const buildInterviewSnapshot = (sessions = []) => {
+const buildInterviewSnapshot = (sessions = [], start, end) => {
   const safeSessions = Array.isArray(sessions) ? sessions : [];
   return {
     sessions: safeSessions.length,
     questionsGenerated: sumNumbers(
       safeSessions.map((session) =>
-        Array.isArray(session?.questions) ? session.questions.length : 0,
+        Array.isArray(session?.questions) &&
+        (!start || (new Date(session.createdAt) >= start && new Date(session.createdAt) <= end))
+          ? session.questions.length
+          : 0,
       ),
     ),
   };
@@ -538,7 +320,7 @@ const buildWeeklySignalFromReports = (reports = []) => {
   const latest = safeReports[0];
   const previous = safeReports[1];
 
-  if (!latest) {
+  if (!latest || latest.meta?.evidence?.scoreAvailable === false) {
     return {
       present: false,
       weeklyProgressScore: 0,
@@ -600,6 +382,7 @@ const buildDataSourcesUsed = ({
   recommendations,
   currentSprint,
   currentInterviewSessions,
+  latestInterviewSession,
   publicProfile,
   integrationConnections,
   courseProgress = [],
@@ -646,19 +429,21 @@ const buildDataSourcesUsed = ({
       status: currentSprint ? String(sprintSignal?.status || 'Active') : 'Unavailable',
     },
     interviewPrep: {
-      analyzed: currentInterviewSessions.length > 0,
+      analyzed: Boolean(latestInterviewSession),
       lastAnalyzedAt:
-        currentInterviewSessions[0]?.updatedAt || currentInterviewSessions[0]?.createdAt || null,
+        latestInterviewSession?.updatedAt || latestInterviewSession?.createdAt || null,
       status: currentInterviewSessions.length
         ? `${currentInterviewSessions.length} sessions`
-        : 'Unavailable',
+        : latestInterviewSession
+          ? 'No activity this week'
+          : 'No saved sessions',
     },
     learning: {
       available: learningRecords.length > 0,
       lastAnalyzedAt: learningRecords[0]?.updatedAt || learningRecords[0]?.createdAt || null,
       status: learningRecords.length
         ? `${learningRecords.length} tracked (self-reported)`
-        : 'Unavailable',
+        : 'No tracked learning',
     },
     portfolio: {
       connected: Boolean(publicProfile || portfolioSignal?.present),
@@ -681,6 +466,13 @@ const buildDataSourcesUsed = ({
   // Attach freshness to each source
   Object.keys(sources).forEach((key) => {
     sources[key].freshness = toSourceFreshness(sources[key].lastAnalyzedAt);
+    if (!sources[key].connected && !sources[key].analyzed && !sources[key].available)
+      sources[key].status =
+        key === 'learning'
+          ? 'No tracked learning'
+          : key === 'interviewPrep'
+            ? 'No saved sessions'
+            : 'No saved evidence';
   });
 
   return sources;
@@ -900,7 +692,7 @@ const buildTopAchievements = ({ userData, previousData, comparisons }) => {
   if (unique.length >= 3) return unique.slice(0, 3);
 
   const fallback = [
-    `Overall score reached ${userData.score.overall}% (${signed(comparisons.scoreDelta)} vs previous period).`,
+    `Overall score is ${userData.score.overall}% based on the saved source evidence.`,
     `GitHub and resume signals now stand at ${userData.github.score}% and ${userData.resume.score}% respectively.`,
     `Sprint completion is ${userData.sprint.completionRate}% with ${userData.sprint.tasksCompleted} completed tasks.`,
   ];
@@ -1087,9 +879,22 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
     .lean();
   if (!user) return null;
 
-  const weekStartDate = startOfWeek();
+  const weekStartDate = options.weekStartDate || startOfWeek();
   const weekEndDate = endOfWeek(weekStartDate);
   const previousWeek = previousWeekRange(weekStartDate);
+  const saved = await WeeklyReport.findOne({ userId, weekStartDate, weekEndDate }).lean();
+  if (options.targetId && String(saved?._id) !== options.targetId)
+    throw Object.assign(Error('The current report changed. Reload before refreshing.'), {
+      status: 409,
+    });
+  if (options.expectedHash && saved?.meta?.reportHash !== options.expectedHash)
+    throw Object.assign(Error('The saved report changed. Reload before refreshing.'), {
+      status: 409,
+    });
+  if (saved && !forceRefresh) {
+    smartSkippedReports.add(saved);
+    return saved;
+  }
 
   const [analysis, resumeAnalysis, skillGraph, repositories] = await Promise.all([
     Analysis.findOne({ userId })
@@ -1104,6 +909,7 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
       .select('weeklyRoadmap nodes updatedAt createdAt')
       .lean(),
     Repository.find({ ownerId: userId })
+      .sort({ repoName: 1, _id: 1 })
       .select('repoName language stars forks commits lastUpdated')
       .lean(),
   ]);
@@ -1115,17 +921,20 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
     previousSprint,
     currentInterviewSessions,
     previousInterviewSessions,
+    latestInterviewSession,
     recommendations,
     publicProfile,
     integrationConnections,
     courseProgressRecords,
     developerSignals,
   ] = await Promise.all([
-    WeeklyReport.findOne({ userId, weekStartDate, weekEndDate }).lean(),
-    WeeklyReport.find({ userId })
+    Promise.resolve(saved),
+    WeeklyReport.find({ userId, weekEndDate: { $lt: weekStartDate } })
       .sort({ weekEndDate: -1 })
       .limit(4)
-      .select('score topAchievements biggestRiskArea recommendations weekEndDate updatedAt meta')
+      .select(
+        'score topAchievements biggestRiskArea recommendations weekStartDate weekEndDate updatedAt meta',
+      )
       .lean(),
     CareerSprint.findOne({
       userId,
@@ -1143,14 +952,28 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
       .sort({ updatedAt: -1 })
       .select('tasks weeklyGoal streak updatedAt createdAt')
       .lean(),
-    InterviewPrepSession.find({ userId, createdAt: { $gte: weekStartDate, $lte: weekEndDate } })
-      .select('questions updatedAt createdAt')
+    InterviewPrepSession.find({
+      userId,
+      $or: [
+        { createdAt: { $gte: weekStartDate, $lte: weekEndDate } },
+        { updatedAt: { $gte: weekStartDate, $lte: weekEndDate } },
+      ],
+    })
+      .sort({ updatedAt: -1, _id: -1 })
+      .select('questions progress status completedAt updatedAt createdAt')
       .lean(),
     InterviewPrepSession.find({
       userId,
-      createdAt: { $gte: previousWeek.start, $lte: previousWeek.end },
+      $or: [
+        { createdAt: { $gte: previousWeek.start, $lte: previousWeek.end } },
+        { updatedAt: { $gte: previousWeek.start, $lte: previousWeek.end } },
+      ],
     })
-      .select('questions updatedAt createdAt')
+      .select('questions progress status completedAt updatedAt createdAt')
+      .lean(),
+    InterviewPrepSession.findOne({ userId })
+      .sort({ updatedAt: -1, _id: -1 })
+      .select('_id createdAt updatedAt')
       .lean(),
     Recommendation.find({ userId })
       .sort({ createdAt: -1 })
@@ -1162,9 +985,7 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
       .sort({ lastSyncedAt: -1, updatedAt: -1 })
       .select('provider status lastSyncedAt updatedAt')
       .lean(),
-    Promise.resolve(
-      UserCourseProgress.find?.({ userId })?.sort?.({ updatedAt: -1 })?.lean?.(),
-    ).catch(() => []),
+    UserCourseProgress.find({ userId }).sort({ updatedAt: -1, _id: -1 }).lean(),
     getDeveloperSignals(userId, {
       githubSource: { analysis, repositories },
       resumeAnalysis,
@@ -1172,11 +993,11 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
   ]);
 
   const previousReport =
-    recentReports.find(
-      (report) => !existingReport || String(report._id) !== String(existingReport._id),
+    recentReports.find((report) =>
+      require('./weeklyReportEvidence').adjacent(report, previousWeek),
     ) || null;
   const previousWeeklyReports = recentReports.filter(
-    (report) => !existingReport || String(report._id) !== String(existingReport._id),
+    (report) => new Date(report.weekEndDate) < weekStartDate,
   );
   const previousWeeklySignal = buildWeeklySignalFromReports(previousWeeklyReports);
   const reportDeveloperSignals = {
@@ -1193,11 +1014,19 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
   const careerSprintSignal = reportDeveloperSignals?.careerSprintSignal || {};
   const portfolioSignal = reportDeveloperSignals?.portfolioSignal || {};
   const integrationSignal = reportDeveloperSignals?.integrationSignal || {};
-  const activitySnapshot = buildActivitySnapshot(repositories, weekStartDate);
+  const activitySnapshot = buildActivitySnapshot(repositories, weekStartDate, weekEndDate);
   const sprintSnapshot = buildSprintSnapshot(currentSprint);
   const previousSprintSnapshot = buildSprintSnapshot(previousSprint);
-  const interviewSnapshot = buildInterviewSnapshot(currentInterviewSessions);
-  const previousInterviewSnapshot = buildInterviewSnapshot(previousInterviewSessions);
+  const interviewSnapshot = buildInterviewSnapshot(
+    currentInterviewSessions,
+    weekStartDate,
+    weekEndDate,
+  );
+  const previousInterviewSnapshot = buildInterviewSnapshot(
+    previousInterviewSessions,
+    previousWeek.start,
+    previousWeek.end,
+  );
   const recommendationSnapshot = buildRecommendationSnapshot(recommendations, weeklySignal);
   const portfolioSnapshot = buildPortfolioSnapshot(publicProfile, portfolioSignal);
   const integrationSnapshot = buildIntegrationSnapshot(integrationConnections, integrationSignal);
@@ -1214,7 +1043,11 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
     skillCoverage: skillSignals.coverageScore,
   });
 
-  const readiness = clampPercent(toNumber(analysis?.readinessScore) || score);
+  const readiness = clampPercent(
+    require('./weeklyReportEvidence').finite(analysis?.readinessScore)
+      ? analysis.readinessScore
+      : score,
+  );
 
   const contributionCount = sumNumbers(
     (analysis?.contributionActivity || []).map((entry) => entry.count),
@@ -1290,15 +1123,59 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
   const previousFromReport = buildSnapshotFromReport(previousReport);
   const previousData = mergeSnapshots(previousBase, previousFromReport || {});
 
-  if (!toNumber(previousData.score.overall) && previousReport) {
+  if (!require('./weeklyReportEvidence').finite(previousData.score.overall) && previousReport) {
     previousData.score.overall = toNumber(previousReport.score);
   }
-  if (!toNumber(previousData.score.readiness)) {
+  if (!require('./weeklyReportEvidence').finite(previousData.score.readiness)) {
     previousData.score.readiness = toNumber(previousData.score.overall);
   }
 
+  const evidence = require('./weeklyReportEvidence').assess({
+    analysis,
+    resume: resumeAnalysis,
+    graph: skillGraph,
+    sprint: currentSprint,
+    interviewPresent: Boolean(latestInterviewSession),
+    scores: {
+      github: githubScore,
+      resume: resumeScore,
+      sprint: sprintSnapshot.completionRate,
+      interview: interviewSignal,
+      skillCoverage: skillSignals.coverageScore,
+    },
+  });
+  evidence.measuredScore = evidence.scoreAvailable ? score : null;
+  const comparison = {
+    available: Boolean(
+      previousReport && previousReport.meta?.evidence?.scoreAvailable && evidence.scoreAvailable,
+    ),
+    baselineReportId: previousReport ? String(previousReport._id) : null,
+    baselineWeekStartDate: previousReport?.weekStartDate || null,
+    reason: !previousReport
+      ? 'No saved report for the immediately preceding week.'
+      : 'Comparison requires complete evidence in both adjacent weeks.',
+  };
+  if (comparison.available)
+    comparison.reason = 'Compared with the immediately preceding saved week.';
   const comparisons = buildComparisons({ current: userData, previous: previousData });
 
+  if (!comparison.available) {
+    for (const key of [
+      'scoreDelta',
+      'readinessDelta',
+      'githubDelta',
+      'resumeDelta',
+      'coverageDelta',
+      'missingSkillsDelta',
+      'sprintCompletionDelta',
+      'tasksCompletedDelta',
+      'interviewSessionsDelta',
+      'interviewQuestionsDelta',
+      'activityCommitsDelta',
+      'activeReposDelta',
+    ])
+      comparisons[key] = 0;
+  }
   const topAchievements = buildTopAchievements({ userData, previousData, comparisons });
   const biggestRiskArea = determineBiggestRiskArea({ userData, comparisons });
   const predictedHiringReadiness = predictHiringReadinessNextWeek({ userData, comparisons });
@@ -1309,6 +1186,7 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
     recommendations,
     currentSprint,
     currentInterviewSessions,
+    latestInterviewSession,
     publicProfile,
     integrationConnections,
     courseProgress: courseProgressRecords,
@@ -1359,11 +1237,12 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
     current: userData,
     previous: previousData,
     deltas: comparisons,
-    dataSourcesUsed,
-    signalsUsedSummary,
+    dataSourcesUsed: Object.fromEntries(
+      Object.entries(dataSourcesUsed).map(([key, { freshness, ...source }]) => [key, source]),
+    ),
   });
 
-  if (existingReport?.meta?.signalHash === signalHash && !forceRefresh) {
+  if (existingReport?.meta?.signalHash === signalHash) {
     smartSkippedReports.add(existingReport);
     return existingReport;
   }
@@ -1376,7 +1255,9 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
   });
 
   const fallback = {
-    progressSummary: `Your overall score moved from ${clampPercent(previousData.score.overall)}% to ${userData.score.overall}% (${signed(comparisons.scoreDelta)}). GitHub is ${userData.github.score}% (${signed(comparisons.githubDelta)}), resume is ${userData.resume.score}% (${signed(comparisons.resumeDelta)}), and sprint completion is ${userData.sprint.completionRate}% with ${userData.sprint.tasksCompleted}/${userData.sprint.tasksTotal} tasks done.`,
+    progressSummary: comparison.available
+      ? `Your overall score moved from ${clampPercent(previousData.score.overall)}% to ${userData.score.overall}% (${signed(comparisons.scoreDelta)}). GitHub is ${userData.github.score}% (${signed(comparisons.githubDelta)}), resume is ${userData.resume.score}% (${signed(comparisons.resumeDelta)}), and sprint completion is ${userData.sprint.completionRate}% with ${userData.sprint.tasksCompleted}/${userData.sprint.tasksTotal} tasks done.`
+      : `This report establishes a saved baseline of ${userData.score.overall}%. GitHub is ${userData.github.score}% and resume is ${userData.resume.score}%. Future saved weeks will provide score comparisons.`,
     insights: [
       `GitHub momentum is ${userData.github.score}% with ${userData.activity.activeRepositories} active repositories and a commit signal of ${userData.activity.weeklyCommitSignal}.`,
       `Resume quality is ${userData.resume.score}% with ATS ${userData.resume.atsScore}% and content quality ${userData.resume.contentQuality}%.`,
@@ -1394,23 +1275,54 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
     predictedHiringReadiness,
   };
 
+  if (!evidence.scoreAvailable) {
+    const missingInputs = Object.entries(evidence.inputs).filter(([, input]) => !input.available);
+    const missing = missingInputs.map(([key]) => key);
+    const evidenceActions = {
+      github: 'Refresh saved GitHub analysis before interpreting weekly repository activity.',
+      resume: 'Save or refresh resume analysis before measuring resume quality.',
+      sprint: (input) =>
+        input.reason === 'No tasks to assess'
+          ? 'Add Career Sprint tasks before measuring weekly completion.'
+          : 'Save a current Career Sprint before measuring weekly completion.',
+      interview: 'Record Interview Prep activity for this reporting week before measuring it.',
+      skillCoverage: 'Save a Skill Gap assessment before measuring skill coverage.',
+    };
+    fallback.progressSummary = `Overall score is not assessed because ${missing.join(', ')} evidence is missing. Missing evidence is not a measured zero.`;
+    fallback.insights = Object.entries(evidence.inputs)
+      .slice(0, 4)
+      .map(
+        ([key, input]) =>
+          `${key}: ${input.available ? input.value + '/100 from saved evidence' : input.reason}.`,
+      );
+    fallback.topAchievements = [
+      `Learning Hub: ${learningSnapshot.totalTracked} tracked courses; completion is self-reported.`,
+      `Interview Prep: ${interviewSnapshot.sessions} sessions active in this reporting week.`,
+      `Sprint: ${sprintSnapshot.tasksTotal ? sprintSnapshot.tasksCompleted + ' of ' + sprintSnapshot.tasksTotal + ' tasks complete' : 'no tasks to assess'}.`,
+    ];
+    fallback.biggestRiskArea = 'Complete missing evidence before interpreting an overall score.';
+    fallback.recommendations = missingInputs.map(([key, input]) => {
+      const action = evidenceActions[key];
+      return typeof action === 'function' ? action(input) : action;
+    });
+    fallback.predictedHiringReadiness = {
+      score: 0,
+      reason: 'Not assessed: incomplete source evidence. This is not a hiring probability.',
+    };
+  }
+
   let aiResult = fallback;
   let narrativeSource = 'deterministic';
   let fallbackUsed = false;
   try {
-    aiResult = await aiService.runAIAnalysis(prompt, fallback);
+    aiResult = await aiService.runAIAnalysis(
+      prompt +
+        '\nGrounded narrative: copy the progressSummary exactly and only reorder the supplied list entries. Never add or paraphrase facts.\n' +
+        JSON.stringify(fallback),
+      fallback,
+    );
     const validAINarrative =
-      aiResult !== fallback &&
-      aiResult &&
-      typeof aiResult === 'object' &&
-      !Array.isArray(aiResult) &&
-      typeof aiResult.progressSummary === 'string' &&
-      Array.isArray(aiResult.insights) &&
-      aiResult.insights.length === 4 &&
-      Array.isArray(aiResult.recommendations) &&
-      aiResult.recommendations.length === 4 &&
-      Array.isArray(aiResult.topAchievements) &&
-      aiResult.topAchievements.length === 3;
+      aiResult !== fallback && require('./weeklyReportNarrative').isGrounded(aiResult, fallback);
     if (!validAINarrative) aiResult = fallback;
     narrativeSource = validAINarrative ? 'ai-enhanced' : 'deterministic';
     fallbackUsed = !validAINarrative;
@@ -1427,7 +1339,7 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
     ...normalized.topAchievements.map((achievement, index) => `${index + 1}. ${achievement}`),
     '',
     `Biggest Risk Area: ${normalized.biggestRiskArea}`,
-    `Predicted Hiring Readiness Next Week: ${normalized.predictedHiringReadiness.score}%`,
+    `Readiness indicator: ${evidence.scoreAvailable ? normalized.predictedHiringReadiness.score + '/100' : 'Not assessed'}`,
     `Reason: ${normalized.predictedHiringReadiness.reason}`,
     '',
     'Insights:',
@@ -1468,6 +1380,19 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
     emailError: '',
     reportText,
     meta: {
+      evidence,
+      comparison,
+      provenance: {
+        assessedAt: new Date(),
+        brand: APP_NAME,
+        timezone:
+          process.env.WEEKLY_REPORT_TIMEZONE ||
+          require('@js-temporal/polyfill').Temporal.Now.timeZoneId(),
+        activityBasis:
+          'Repository commits are lifetime counters; weekly commit count is not available.',
+        interviewBasis:
+          'Sessions created or practiced during the week; generated questions counted only for sessions created in the week.',
+      },
       githubScore,
       resumeScore,
       skillFocus,
@@ -1496,14 +1421,29 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
   const savedReport = await notificationPersistence.commit(
     userId,
     async (session) => {
+      await options.fence?.(session);
       const current = await WeeklyReport.findOne({ userId, weekStartDate, weekEndDate })
         .session(session)
         .lean();
+      const Revision = require('../models/weeklyReportRevision');
+      if (current) {
+        const contentHash = current.meta?.reportHash || buildStableHash(current);
+        const snapshot = {
+          ...current,
+          meta: { ...current.meta, reportHash: contentHash, version: current.meta?.version || 1 },
+        };
+        await Revision.updateOne(
+          { reportId: current._id, contentHash },
+          { $setOnInsert: { userId, snapshot } },
+          { upsert: true, session },
+        );
+      }
+      payload.meta.version = Number(current?.meta?.version || (current ? 1 : 0)) + 1;
       const unresolved = ['processing', 'uncertain'].includes(current?.emailDelivery?.status);
       const deliveredSame =
         current?.meta?.reportHash === reportHash &&
         (current.emailStatus === 'sent' || current.emailDelivery?.status === 'sent');
-      const delivery = unresolved
+      let delivery = unresolved
         ? {
             ...current.emailDelivery,
             pendingContentHash:
@@ -1516,17 +1456,28 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
             ? current.emailDelivery
             : {
                 status: 'pending',
+                history: current?.emailDelivery?.history || [],
                 contentHash: reportHash,
                 attempts: 0,
                 nextAttemptAt: new Date(),
               };
+      if (options.emailIntent === false && current)
+        delivery = { ...current.emailDelivery, pendingContentHash: undefined };
       const report = await WeeklyReport.findOneAndUpdate(
         { userId, weekStartDate, weekEndDate },
         {
           $set: {
             ...payload,
-            emailStatus: deliveredSame ? 'sent' : payload.emailStatus,
-            emailedAt: deliveredSame ? current.emailedAt : null,
+            emailStatus:
+              options.emailIntent === false && current
+                ? current.emailStatus
+                : deliveredSame
+                  ? 'sent'
+                  : payload.emailStatus,
+            emailedAt:
+              (deliveredSame || options.emailIntent === false) && current
+                ? current.emailedAt
+                : null,
             emailDelivery: delivery,
             emailError: unresolved
               ? 'Previous email delivery needs reconciliation. The latest report remains available online.'
@@ -1534,6 +1485,11 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
           },
         },
         { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true, session },
+      );
+      await Revision.updateOne(
+        { reportId: report._id, contentHash: reportHash },
+        { $setOnInsert: { userId, snapshot: report.toObject() } },
+        { upsert: true, session },
       );
       return report;
     },
@@ -1558,11 +1514,14 @@ const generateWeeklyReportCore = async (userId, options = {}) => {
 };
 
 const generateWeeklyReport = (userId, options = {}) => {
-  const weekKey = `${String(userId)}:${startOfWeek().toISOString()}:${Boolean(options.forceRefresh)}`;
+  const weekStartDate = startOfWeek();
+  const weekKey = `${String(userId)}:${weekStartDate.toISOString()}`;
   if (generationInflight.has(weekKey)) return generationInflight.get(weekKey);
-  const pending = generateWeeklyReportCore(userId, options).finally(() =>
-    generationInflight.delete(weekKey),
-  );
+  const pending = require('./weeklyReportCoordinationService')
+    .withLease(`generation:${weekKey}`, (fence) =>
+      generateWeeklyReportCore(userId, { ...options, fence, weekStartDate }),
+    )
+    .finally(() => generationInflight.delete(weekKey));
   generationInflight.set(weekKey, pending);
   return pending;
 };
@@ -1593,44 +1552,20 @@ const sendWeeklyReportEmailCore = async (report, user, { resend = false } = {}) 
     return { sent: false, reason: 'No email provider configured.' };
   }
 
-  const staleWarning = report.meta?.sourceFreshness?.detection
-    ? report.meta.sourceFreshness.message
-    : null;
-  const staleRecommendation = report.meta?.sourceFreshness?.detection
-    ? `\n\n${report.meta.sourceFreshness.recommendation}`
-    : '';
-  const reportLink = `${FRONTEND_BASE_URL}/app/weekly-reports`;
-  const subject = staleWarning
-    ? `[Insight] ${report.score}% Weekly – Refresh Recommended`
-    : `[Insight] Your Weekly Performance Report: ${report.score}%`;
+  let base;
+  try {
+    base = new URL(FRONTEND_BASE_URL);
+    if (!['https:', 'http:'].includes(base.protocol)) throw Error('Invalid report origin');
+  } catch {
+    return { sent: false, reason: 'Saved report link is not configured.' };
+  }
+  const reportLink = `${FRONTEND_BASE_URL}/app/weekly-reports?report=${encodeURIComponent(String(report._id))}&version=${encodeURIComponent(report.meta?.reportHash || '')}`;
+  const presentation = require('./weeklyReportPresentation');
+  const body = presentation.email(report, user.name, reportLink);
   const message = {
     to: user.email,
-    subject,
-    html: buildEmailHtml({
-      name: user.name,
-      score: report.score,
-      githubScore: report.meta?.githubScore || 0,
-      resumeScore: report.meta?.resumeScore || 0,
-      summary: report.progressSummary,
-      recommendations: report.recommendations,
-      topAchievements: report.topAchievements,
-      biggestRiskArea: report.biggestRiskArea,
-      predictedHiringReadiness: report.predictedHiringReadiness,
-      staleWarning,
-      staleRecommendation,
-      reportLink,
-    }),
-    text: buildEmailText({
-      name: user.name,
-      summary: report.progressSummary,
-      recommendations: report.recommendations,
-      topAchievements: report.topAchievements,
-      biggestRiskArea: report.biggestRiskArea,
-      predictedHiringReadiness: report.predictedHiringReadiness,
-      staleWarning,
-      staleRecommendation,
-      reportLink,
-    }),
+    subject: `Your weekly progress · ${presentation.view(report).period}`,
+    ...body,
   };
 
   let lastError = null;
@@ -1666,7 +1601,10 @@ const sendWeeklyReportEmailCore = async (report, user, { resend = false } = {}) 
 };
 const sendWeeklyReportEmail = (report, user, options = {}) => {
   const reportId = String(report?._id || 'missing');
-  if (emailInflight.has(reportId)) return emailInflight.get(reportId);
+  if (emailInflight.has(reportId))
+    return options.resend
+      ? Promise.resolve({ sent: false, reason: 'Another delivery is already processing.' })
+      : emailInflight.get(reportId);
   const pending = require('./weeklyReportDeliveryService')
     .deliver(report, user, sendWeeklyReportEmailCore, options)
     .finally(() => emailInflight.delete(reportId));
@@ -1678,13 +1616,14 @@ const positiveEnvInt = (value, fallback, max) => {
   return Number.isFinite(parsed) && parsed > 0 ? Math.min(parsed, max) : fallback;
 };
 
-const runWeeklyReportBatch = async ({
+const runWeeklyReportBatchCore = async ({
   dryRun = isEnabledFlag(process.env.WEEKLY_REPORT_DRY_RUN) ||
     isEnabledFlag(process.env.WEEKLY_REPORT_SCHEDULER_DRY_RUN),
   usersOverride = null,
   generate = generateWeeklyReport,
   sendEmail = sendWeeklyReportEmail,
   updateEmailStatus = updateWeeklyReportEmailStatus,
+  fence = async () => {},
 } = {}) => {
   const batchLimit = positiveEnvInt(process.env.WEEKLY_REPORT_BATCH_LIMIT, 100, 1000);
   const concurrency = positiveEnvInt(process.env.WEEKLY_REPORT_CONCURRENCY, 3, 10);
@@ -1712,6 +1651,7 @@ const runWeeklyReportBatch = async ({
     dryRun,
   });
   for (let index = 0; index < users.length; index += concurrency) {
+    await fence();
     const batch = users.slice(index, index + concurrency);
     await Promise.all(
       batch.map(async (user) => {
@@ -1747,6 +1687,63 @@ const runWeeklyReportBatch = async ({
 
   console.log('[WeeklyReportScheduler] batch completed', stats);
   return stats;
+};
+
+const runWeeklyReportBatch = (options = {}) => {
+  if (options.usersOverride) return runWeeklyReportBatchCore(options);
+  return require('./weeklyReportCoordinationService').withLease('scheduler', async (fence) => {
+    const State = require('../models/weeklyReportCoordination');
+    const week = startOfWeek();
+    const checkpointId = `scheduler-week:${week.toISOString()}`;
+    const dryRun =
+      options.dryRun ??
+      (isEnabledFlag(process.env.WEEKLY_REPORT_DRY_RUN) ||
+        isEnabledFlag(process.env.WEEKLY_REPORT_SCHEDULER_DRY_RUN));
+    const checkpoint = dryRun ? null : await State.findById(checkpointId).lean();
+    const total = { usersScanned: 0, generated: 0, skipped: 0, emailed: 0, failed: 0 };
+    if (checkpoint?.completed) return { ...total, dryRun };
+    const limit = positiveEnvInt(process.env.WEEKLY_REPORT_BATCH_LIMIT, 100, 1000);
+    let cursor = checkpoint?.cursor;
+    const saveProgress = async (completed) => {
+      if (dryRun) return;
+      await notificationPersistence.transaction(async (session) => {
+        await fence(session);
+        await State.updateOne(
+          { _id: checkpointId },
+          {
+            $set: {
+              cursor,
+              completed,
+              expiresAt: new Date(endOfWeek(week).getTime() + 7 * 86400000),
+            },
+          },
+          { upsert: true, session },
+        );
+      });
+    };
+    for (;;) {
+      await fence();
+      const users = await User.find({
+        isActive: { $ne: false },
+        'notifications.weeklyScoreReport': { $ne: false },
+        ...(cursor ? { _id: { $gt: cursor } } : {}),
+      })
+        .sort({ _id: 1 })
+        .limit(limit)
+        .select('name email notifications')
+        .lean();
+      if (!users.length) {
+        await saveProgress(true);
+        break;
+      }
+      const page = await runWeeklyReportBatchCore({ ...options, usersOverride: users, fence });
+      for (const key of Object.keys(total)) total[key] += page[key];
+      if (page.failed) break; // Retry this page on the worker's next sweep.
+      cursor = users[users.length - 1]._id;
+      await saveProgress(false);
+    }
+    return { ...total, dryRun };
+  });
 };
 
 const isEnabledFlag = (value) =>
@@ -1797,7 +1794,14 @@ const startWeeklyReportScheduler = () => {
   return weeklyReportSchedulerTask;
 };
 module.exports = {
-  __test: { loadDefaultResumeAnalysis, buildLearningSnapshot, buildSprintSnapshot },
+  __test: {
+    loadDefaultResumeAnalysis,
+    buildLearningSnapshot,
+    buildSprintSnapshot,
+    computeOverallScore,
+    buildDataSourcesUsed,
+    buildInterviewSnapshot,
+  },
   generateWeeklyReport,
   wasWeeklyReportSmartSkipped,
   sendWeeklyReportEmail,

@@ -1,0 +1,53 @@
+<section class="detail-grid">
+  <article class="panel-card" *ngIf="hasText(report.topAchievements)">
+    <div class="panel-head">
+      <h3>Achievements</h3>
+
+      <span class="panel-subtitle">Saved evidence highlights</span>
+    </div>
+
+    <ol class="rich-list ordered">
+      <li *ngFor="let achievement of report.topAchievements">{{ achievement }}</li>
+    </ol>
+  </article>
+
+  <article class="panel-card" *ngIf="getRiskArea(report) || report.meta.skillFocus.length">
+    <div class="panel-head">
+      <h3>Risks and Focus</h3>
+
+      <span class="panel-subtitle">Primary blocker this week</span>
+    </div>
+
+    <p class="risk-copy" *ngIf="getRiskArea(report)">{{ getRiskArea(report) }}</p>
+
+    <div class="focus-chips" *ngIf="report.meta.skillFocus.length">
+      <span *ngFor="let skill of report.meta.skillFocus">{{ skill }}</span>
+    </div>
+  </article>
+</section>
+
+<section class="detail-grid">
+  <article class="panel-card" *ngIf="hasText(report.insights)">
+    <div class="panel-head">
+      <h3>Insights</h3>
+
+      <span class="panel-subtitle">Deterministic metrics, AI summarized</span>
+    </div>
+
+    <ul class="rich-list">
+      <li *ngFor="let insight of report.insights">{{ insight }}</li>
+    </ul>
+  </article>
+
+  <article class="panel-card" *ngIf="hasText(report.recommendations)">
+    <div class="panel-head">
+      <h3>Recommendations</h3>
+
+      <span class="panel-subtitle">Next-week actions</span>
+    </div>
+
+    <ul class="rich-list accent">
+      <li *ngFor="let recommendation of report.recommendations">{{ recommendation }}</li>
+    </ul>
+  </article>
+</section>

@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "generationMs": 1505.9379000000008,
+  "forcedReplayMs": 276.1164000000008,
+  "environment": "disposable local Windows MongoDB replica set",
+  "realProvidersUsed": false,
+  "assertions": [
+    "independent-client lease exclusion",
+    "real child-process crash takeover",
+    "expired-token fencing",
+    "same-week deterministic replay",
+    "AI deterministic fallback",
+    "ninth-source persistence",
+    "owner-scoped latest",
+    "scheduler keyset pagination",
+    "notification preference suppression",
+    "one concurrent email send",
+    "uncertain outcome blocks resend"
+  ]
+}
