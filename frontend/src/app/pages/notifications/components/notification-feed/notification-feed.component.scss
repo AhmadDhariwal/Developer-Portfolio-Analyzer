@@ -215,12 +215,36 @@ button:focus-visible {
 }
 @media (max-width: 640px) {
   .inbox-card {
-    padding-left: 14px;
-    padding-right: 14px;
+    padding: 14px 12px;
   }
   .ghost-action,
   .pager button {
     min-height: 40px;
+  }
+  .pager {
+    justify-content: center;
+    width: 100%;
+    gap: 10px;
+  }
+  .pager button {
+    flex: 1;
+    max-width: 110px;
+  }
+  .pager--top {
+    justify-content: space-between;
+  }
+}
+@media (max-width: 520px) {
+  .table-head {
+    gap: 8px;
+  }
+  .table-head__info {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .table-head .pager--top {
+    width: 100%;
+    justify-content: space-between;
   }
 }
 :host-context([data-theme='light']) .inbox-card {
