@@ -1,10 +1,23 @@
 @use '../../styles/design-tokens' as *;
 
+:host {
+  display: inline-flex;
+  vertical-align: middle;
+  max-width: 100%;
+}
+
+:host(.full-width),
+:host([fullWidth='true']) {
+  display: flex;
+  width: 100%;
+}
+
 .ui-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  width: 100%;
   border-radius: var(--radius-sm, 6px);
   font-weight: 500;
   font-family: var(--font-sans, 'Inter', -apple-system, sans-serif);
@@ -66,55 +79,55 @@
 
   /* Variants */
   &.primary {
-    background: #4F46E5;
-    color: #FFFFFF;
+    background: #4f46e5;
+    color: #ffffff;
     font-weight: 600;
-    border-color: #4F46E5;
+    border-color: #4f46e5;
     box-shadow: var(--shadow-xs);
 
     &:hover:not(:disabled) {
-      background: #4338CA;
-      border-color: #4338CA;
+      background: #4338ca;
+      border-color: #4338ca;
     }
 
     &:active:not(:disabled) {
-      background: #3730A3;
-      border-color: #3730A3;
+      background: #3730a3;
+      border-color: #3730a3;
     }
   }
 
   &.secondary {
-    background: var(--surface-card, #FFFFFF);
-    color: var(--text-primary, #0F172A);
-    border: 1px solid var(--border-color, #E2E8F0);
+    background: var(--surface-card, #ffffff);
+    color: var(--text-primary, #0f172a);
+    border: 1px solid var(--border-color, #e2e8f0);
     font-weight: 500;
     box-shadow: var(--shadow-xs);
 
     &:hover:not(:disabled) {
-      background: var(--surface-secondary, #F8FAFC);
-      border-color: var(--border-light, #CBD5E1);
-      color: var(--text-primary, #0F172A);
+      background: var(--surface-secondary, #f8fafc);
+      border-color: var(--border-light, #cbd5e1);
+      color: var(--text-primary, #0f172a);
     }
 
     &:active:not(:disabled) {
-      background: var(--surface-subtle, #F1F5F9);
+      background: var(--surface-subtle, #f1f5f9);
     }
   }
 
   &.outline {
     background: transparent;
-    color: var(--color-primary, #4F46E5);
-    border: 1px solid var(--border-light, #CBD5E1);
+    color: var(--color-primary, #4f46e5);
+    border: 1px solid var(--border-light, #cbd5e1);
     font-weight: 500;
 
     &:hover:not(:disabled) {
-      background: var(--color-primary-soft, #EEF2FF);
-      border-color: var(--color-primary, #4F46E5);
-      color: var(--color-primary-dark, #4338CA);
+      background: var(--color-primary-soft, #eef2ff);
+      border-color: var(--color-primary, #4f46e5);
+      color: var(--color-primary-dark, #4338ca);
     }
 
     &:active:not(:disabled) {
-      background: var(--color-primary-border, #E0E7FF);
+      background: var(--color-primary-border, #e0e7ff);
     }
   }
 
@@ -125,30 +138,30 @@
     font-weight: 500;
 
     &:hover:not(:disabled) {
-      background: var(--surface-subtle, #F1F5F9);
-      color: var(--text-primary, #0F172A);
+      background: var(--surface-subtle, #f1f5f9);
+      color: var(--text-primary, #0f172a);
     }
 
     &:active:not(:disabled) {
-      background: var(--surface-secondary, #E2E8F0);
+      background: var(--surface-secondary, #e2e8f0);
     }
   }
 
   &.danger {
-    background: var(--color-danger-soft, #FEF2F2);
-    color: var(--color-danger-dark, #B91C1C);
-    border: 1px solid var(--color-danger-border, #FECACA);
+    background: var(--color-danger-soft, #fef2f2);
+    color: var(--color-danger-dark, #b91c1c);
+    border: 1px solid var(--color-danger-border, #fecaca);
     font-weight: 600;
 
     &:hover:not(:disabled) {
-      background: var(--color-danger, #EF4444);
-      color: #FFFFFF;
-      border-color: var(--color-danger, #EF4444);
+      background: var(--color-danger, #ef4444);
+      color: #ffffff;
+      border-color: var(--color-danger, #ef4444);
     }
 
     &:active:not(:disabled) {
-      background: var(--color-danger-dark, #DC2626);
-      border-color: var(--color-danger-dark, #DC2626);
+      background: var(--color-danger-dark, #dc2626);
+      border-color: var(--color-danger-dark, #dc2626);
     }
   }
 
@@ -160,7 +173,7 @@
       width: 1.2em;
       height: 1.2em;
       border: 2px solid rgba(255, 255, 255, 0.3);
-      border-top-color: #FFFFFF;
+      border-top-color: #ffffff;
       border-radius: 50%;
       animation: ui-btn-spin 0.75s linear infinite;
     }

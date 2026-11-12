@@ -67,14 +67,19 @@
     margin-right: 6px;
   }
 
+  app-ui-button {
+    display: inline-flex;
+  }
+
   @media (max-width: 520px) {
     width: 100%;
     flex-direction: column;
     align-items: stretch;
-    gap: 8px;
+    gap: 10px;
 
     app-ui-button {
       width: 100%;
+      display: flex;
     }
   }
 }
@@ -719,15 +724,25 @@
 .metric-highlights-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
   gap: 16px;
+  align-items: stretch;
+
+  app-ui-metric-card {
+    display: flex;
+    height: 100%;
+    min-width: 0;
+  }
 
   @media (max-width: 1024px) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 1fr;
     gap: 12px;
   }
 
   @media (max-width: 340px) {
     grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: auto;
     gap: 10px;
   }
 }
