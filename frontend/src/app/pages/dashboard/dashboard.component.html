@@ -41,20 +41,20 @@
         <polyline points="1 20 1 14 7 14"></polyline>
         <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
       </svg>
-      Re-analyze
+      Refresh dashboard
     </button>
   </div>
 </div>
 
-<div class="alert-banner alert-info" *ngIf="tenantTeamAnalytics && tenantTeamName">
-  <span>
-    Team context active: {{ tenantTeamName }} | Members: {{ tenantTeamAnalytics.totalMembers }} |
-    Team Score: {{ tenantTeamAnalytics.teamScore || tenantTeamAnalytics.averageReadinessScore }} |
-    Activity: {{ tenantTeamAnalytics.teamActivity || 0 }} | Recruiter Engagement:
-    {{ tenantTeamAnalytics.recruiterEngagement || 0 }} | Hiring Performance:
-    {{ tenantTeamAnalytics.hiringPerformance || 0 }}
-  </span>
+<p *ngIf="isLoading" role="status" class="alert-banner alert-info">
+  Refreshing dashboard evidence…
+</p>
+<div *ngIf="loadError" role="alert" class="alert-banner alert-warning">
+  {{ loadError }} <button type="button" (click)="reanalyze()">Retry</button>
 </div>
+<p *ngIf="secondaryErrors.length" role="status" class="alert-banner alert-warning">
+  Unavailable: {{ secondaryErrors.join(', ') }}. Refresh to retry.
+</p>
 
 <div *ngIf="dashboardStale && !isLoading" class="alert-banner alert-warning">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="alert-icon">
@@ -72,8 +72,7 @@
     <line x1="12" y1="16" x2="12.01" y2="16" />
   </svg>
   <span
-    >GitHub API rate limit reached. Showing cached data. Add a <code>GITHUB_TOKEN</code> to your
-    <code>.env</code> for higher limits.</span
+    >GitHub refresh is temporarily limited. Saved evidence remains available; try again later.</span
   >
 </div>
 <div *ngIf="noGithubUsername && !isLoading" class="alert-banner alert-info">
@@ -95,14 +94,22 @@
       <span class="card-label">Developer Readiness Score</span>
     </div>
     <div class="score-body">
-      <app-score-meter [score]="developerScore" [maxScore]="100" size="lg"></app-score-meter>
+      <p *ngIf="!readinessAvailable">Readiness unavailable: verified source evidence is missing.</p>
+      <app-score-meter
+        *ngIf="!isLoading && readinessAvailable"
+        [score]="developerScore"
+        [maxScore]="100"
+        size="lg"
+      ></app-score-meter>
       <div
         class="score-trend"
         [class.trend-down]="!scoreTrendUp"
         [class.trend-neutral]="scoreChangeFromLastMonth === 0"
       >
         <svg
-          *ngIf="scoreTrendUp && scoreChangeFromLastMonth !== 0"
+          *ngIf="
+            scoreTrendUp && scoreChangeFromLastMonth !== null && scoreChangeFromLastMonth !== 0
+          "
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -132,8 +139,9 @@
         </svg>
         {{ scoreTrendLabel }}
       </div>
-      <p class="percentile-note">
-        You're in the <span>{{ percentileLabel }}</span> of developers
+      <p class="percentile-note">Based on your saved profile evidence</p>
+      <p class="percentile-note" *ngIf="readinessBasis === 'github'">
+        GitHub health fallback; no matching portfolio assessment is saved.
       </p>
     </div>
   </div>
@@ -145,14 +153,10 @@
           [class]="'stat-icon ' + card.iconType"
           [innerHTML]="statIconHtml[card.iconType] || statIconHtml['repos']"
         ></div>
-        <div class="trend-arrow">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="7" y1="17" x2="17" y2="7"></line>
-            <polyline points="7 7 17 7 17 17"></polyline>
-          </svg>
-        </div>
       </div>
-      <div class="stat-value">{{ card.value | number }}</div>
+      <div class="stat-value" [class.is-unavailable]="isLoading || card.value === null">
+        {{ isLoading ? 'Loading…' : card.value === null ? 'Unavailable' : (card.value | number) }}
+      </div>
       <div class="stat-label">{{ card.label }}</div>
       <div class="stat-growth">{{ card.growth }}</div>
     </div>
@@ -163,9 +167,9 @@
   <div class="section-title-row">
     <div>
       <h3>Readiness Center</h3>
-      <p>One profile-wide view of resume, portfolio, market, and integration readiness</p>
+      <p>Saved evidence across your active profile; unavailable evidence stays unscored</p>
     </div>
-    <span class="context-pill" *ngIf="contextVersion">{{ contextVersion }}</span>
+    <span class="context-pill" *ngIf="contextVersion">Saved evidence</span>
   </div>
   <div class="readiness-grid">
     <div
@@ -201,17 +205,43 @@
   </div>
 </div>
 
+<app-dashboard-progress
+  [data]="progress"
+  [loading]="isLoading"
+  [error]="loadError"
+  [stale]="dashboardStale"
+  [integrationHealth]="integrationConnectivity"
+  [integrationHealthState]="integrationHealthState"
+></app-dashboard-progress>
+<app-dashboard-learning-summary
+  [snapshot]="learningSnapshot"
+  [completedCourses]="progress?.completedCourses || []"
+></app-dashboard-learning-summary>
+
 <div class="row-middle">
   <div class="card activity-card">
     <div class="card-head">
       <div class="head-text">
         <h3>Contribution Activity</h3>
-        <p>Commits over the last 6 months</p>
+        <p>Saved monthly commit activity</p>
       </div>
-      <div class="activity-badge">&lt;/&gt; {{ totalActivity }} total</div>
+      <div class="activity-badge">
+        &lt;/&gt; {{ activityAvailable ? totalActivity + ' total' : 'Unavailable' }}
+      </div>
     </div>
-    <div class="chart-wrap activity-wrap">
-      <canvas #activityChart></canvas>
+    <p *ngIf="!isLoading && !activityAvailable" class="empty-state">
+      No contribution evidence with verified source identity is available.
+    </p>
+    <details class="repository-history-note" *ngIf="progress">
+      <summary>Repository history availability</summary>
+      <p>{{ progress.github.historyStatus }}</p>
+    </details>
+    <div class="chart-wrap activity-wrap" [hidden]="!activityAvailable">
+      <canvas
+        #activityChart
+        role="img"
+        [attr.aria-label]="'Saved contribution activity: ' + totalActivity + ' total commits'"
+      ></canvas>
     </div>
   </div>
 
@@ -223,7 +253,11 @@
       </div>
     </div>
     <div class="chart-wrap donut-wrap">
-      <canvas #languageChart></canvas>
+      <canvas
+        #languageChart
+        role="img"
+        aria-label="Language distribution; percentages listed below"
+      ></canvas>
     </div>
     <div class="empty-state" *ngIf="!hasLanguageData">
       <p>No language distribution available for the saved default GitHub profile yet.</p>
@@ -249,7 +283,11 @@
       </div>
     </div>
     <div class="chart-wrap radar-wrap">
-      <canvas #skillRadar></canvas>
+      <canvas
+        #skillRadar
+        role="img"
+        aria-label="Readiness dimensions; values listed in Score Breakdown below"
+      ></canvas>
     </div>
   </div>
 
@@ -328,7 +366,7 @@
             <span>{{
               coveragePercentage === null
                 ? 'Coverage unavailable'
-                : coveragePercentage + '% coverage vs industry'
+                : coveragePercentage + '% coverage against your target profile'
             }}</span>
             <span class="cov-score">{{
               coveragePercentage === null ? 'Unavailable' : coveragePercentage + '/100'
@@ -355,6 +393,9 @@
     </a>
   </div>
 
+  <p class="empty-state" *ngIf="!isLoading && recommendations.length === 0">
+    No saved recommendations for your active profile. Open Recommendations to get started.
+  </p>
   <div class="rec-grid">
     <div class="card rec-card" *ngFor="let rec of recommendations">
       <div class="rec-top">
@@ -374,7 +415,7 @@
   <div class="section-title-row">
     <div>
       <h3>Source Freshness</h3>
-      <p>Dashboard context updates without mixing fresh and stale dependent analysis</p>
+      <p>Timestamps and refresh guidance for each evidence source</p>
     </div>
   </div>
   <div class="freshness-grid">
@@ -385,9 +426,18 @@
     >
       <div class="freshness-card__top">
         <strong>{{ source.label }}</strong>
-        <span>{{ source.status === 'fresh' ? 'Fresh' : 'Refresh Recommended' }}</span>
+        <span>{{
+          source.status === 'fresh'
+            ? source.policy === 'durable-record'
+              ? 'Saved evidence'
+              : 'Fresh'
+            : source.status === 'missing'
+              ? 'No evidence'
+              : 'Refresh recommended'
+        }}</span>
       </div>
       <p>Last Updated: {{ formatIntegrationDate(source.lastUpdated) }}</p>
+      <p *ngIf="source.reason && source.status !== 'fresh'">{{ source.reason }}</p>
     </div>
   </div>
 </div>
@@ -396,7 +446,7 @@
   <div class="card insights-card">
     <div class="card-head">
       <div class="head-text">
-        <h3>AI Score Breakdown</h3>
+        <h3>Score Breakdown</h3>
         <p>Derived from portfolio analysis</p>
       </div>
     </div>
@@ -436,10 +486,9 @@
   <div class="card insights-card explain-card">
     <div class="card-head">
       <div class="head-text">
-        <h3>Transparent Scoring Model</h3>
-        <p>Weighted score, confidence, and explainability reasons</p>
+        <h3>Portfolio Scoring Weights</h3>
+        <p>Recorded effective weights when available; otherwise nominal career-stack weights.</p>
       </div>
-      <span class="confidence-pill">{{ confidenceScore }}% confidence</span>
     </div>
     <div class="insight-rows">
       <div class="insight-row" *ngFor="let row of explainabilityRows">
@@ -471,15 +520,17 @@
       >
         <div class="integration-row__top">
           <span class="provider-name">#{{ index + 1 }} {{ providerName(card.provider) }}</span>
-          <span class="provider-delta" [class.negative]="card.trendDelta < 0"
-            >{{ card.trendDelta >= 0 ? '+' : '' }}{{ card.trendDelta }} trend</span
-          >
+          <span class="provider-delta" [class.negative]="card.trendDelta < 0">{{
+            !card.trendAvailable
+              ? 'No prior sync baseline'
+              : (card.trendDelta >= 0 ? '+' : '') + card.trendDelta + ' trend'
+          }}</span>
         </div>
         <div class="integration-metrics">
           <span>Activity {{ card.activityScore }}%</span>
           <span>Profile {{ card.profileScore }}%</span>
           <span>Confidence {{ card.confidence }}%</span>
-          <span>Success {{ card.successRate }}%</span>
+          <span>Success {{ card.syncCount > 0 ? card.successRate + '%' : 'Unavailable' }}</span>
           <span>Syncs {{ card.syncCount }}</span>
           <span class="wide">Last synced {{ formatIntegrationDate(card.lastSyncedAt) }}</span>
         </div>

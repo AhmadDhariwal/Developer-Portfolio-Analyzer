@@ -1,3 +1,4 @@
+import { DashboardSummary } from '../models/dashboard.model';
 import { ScenarioInput } from '../models/scenario-simulator.model';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
@@ -203,8 +204,8 @@ export class ApiService {
   }
 
   /* ── Dashboard ── */
-  getDashboardSummary(refresh = false): Observable<any> {
-    return this.http.get(
+  getDashboardSummary(refresh = false): Observable<DashboardSummary> {
+    return this.http.get<DashboardSummary>(
       this.withQuery(`${this.baseUrl}/dashboard/summary`, {
         refresh: refresh ? 'true' : undefined,
       }),

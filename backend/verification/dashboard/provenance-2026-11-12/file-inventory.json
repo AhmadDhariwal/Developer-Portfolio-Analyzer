@@ -1,0 +1,43 @@
+{
+  "scope": "Cumulative Dashboard task changes from original clean HEAD; prior turn artifacts preserved",
+  "approvalExtensionSources": [
+    "backend/src/models/aiVersion.js",
+    "backend/src/services/aiVersionService.js",
+    "backend/src/controllers/analysiscontroller.js",
+    "backend/src/services/dashboardHistoryService.js",
+    "backend/src/tests/dashboardProvenance.test.js",
+    "backend/src/tests/dashboardPortfolioScope.test.js",
+    "backend/src/tests/dashboardConsistency.test.js",
+    "backend/src/scripts/verifyDashboardLocal.js"
+  ],
+  "modified": [
+    "backend/src/controllers/analysiscontroller.js",
+    "backend/src/models/aiVersion.js",
+    "backend/src/scripts/verifyDashboardLocal.js",
+    "backend/src/services/aiVersionService.js",
+    "backend/src/services/dashboardHistoryService.js",
+    "backend/src/tests/dashboardPortfolioScope.test.js",
+    "backend/src/tests/dashboardProvenance.test.js",
+    "backend/verification/dashboard/REPORT.md",
+    "docs/features/dashboard.md"
+  ],
+  "added": [
+    "backend/verification/dashboard/followup-2026-11-12/desktop-dark.png",
+    "backend/verification/dashboard/followup-2026-11-12/desktop-light.png",
+    "backend/verification/dashboard/followup-2026-11-12/mobile-dark.png",
+    "backend/verification/dashboard/provenance-2026-11-12/REPORT.md",
+    "backend/verification/dashboard/provenance-2026-11-12/desktop-dark.png",
+    "backend/verification/dashboard/provenance-2026-11-12/desktop-light.png",
+    "backend/verification/dashboard/provenance-2026-11-12/local-acceptance.json",
+    "backend/verification/dashboard/provenance-2026-11-12/mobile-dark.png",
+    "backend/verification/dashboard/provenance-2026-11-12/validation.json",
+    "backend/verification/dashboard/provenance-2026-11-12/file-inventory.json"
+  ],
+  "moved": [],
+  "deleted": [],
+  "temporaryCleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 183,
+    "productionDataUsed": false
+  }
+}

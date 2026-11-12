@@ -189,13 +189,13 @@ Profile changes may clear frontend caches for Dashboard, Skill Gap, Recommendati
 | Redis                              | TTL-based + explicit invalidation on write                                                              |
 | GitHub Analysis Cache              | `forceRefresh=true`, 24h TTL, new analysis version                                                      |
 | Job Cache                          | Periodic worker refresh                                                                                 |
-| Dashboard Summary                  | Invalidated after GitHub/resume save                                                                    |
+| Dashboard Summary                  | Durable reads on each request; no summary TTL cache                                                                    |
 | Profile-dependent frontend modules | Invalidated when `profileHash`/profile signature changes                                                |
 | Scenario Context                   | Invalidated after signal mutations or mounted profile signature changes                                 |
 
 ## Important: Dashboard Summary Invalidation
 
-When a user saves a new GitHub or resume analysis, `dashboardcontroller.invalidateDashboardSummaryCache(userId)` is called to clear cached dashboard data for that user.
+Upstream writers retain calls to `dashboardcontroller.invalidateDashboardSummaryCache(userId)` as a compatibility hook. The former summary map was never populated and has been removed. Dashboard now validates its summary on every page entry/refresh and reads durable evidence on every API request; freshness does not depend on a process-local invalidation event. See [Dashboard](features/dashboard.md) for client cancellation, secondary reads and remaining snapshot-consistency limits.
 
 ## Cache Health Monitoring
 
