@@ -1,6 +1,6 @@
 {
   "phase": "after",
-  "timestamp": "2026-11-12T13:11:59.983Z",
+  "timestamp": "2026-11-12T14:03:42.337Z",
   "viewportsTested": 12,
   "themesTested": 3,
   "matrixResults": [
@@ -803,7 +803,19 @@
       "expandedRowCount": 8,
       "sortPillFunctional": true,
       "disclosureExpanded": true,
-      "screenshot": "table-interactions-mobile-375.png"
+      "cardMetrics": {
+        "categoryTdWidth": 139.5,
+        "languageTdWidth": 139.5,
+        "techTdWidth": 291,
+        "categoryTagHeight": 23.046875,
+        "categoryTagText": "Production",
+        "langTextHeight": 20.140625,
+        "langText": "TypeScript",
+        "firstChipHeight": 26.59375,
+        "firstChipText": "Angular"
+      },
+      "screenshot": "table-interactions-mobile-375.png",
+      "repoCardScreenshot": "repo-card-mobile-375-light.png"
     },
     "empty_states": {
       "unconfiguredPresent": true,

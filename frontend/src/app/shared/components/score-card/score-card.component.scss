@@ -1,14 +1,23 @@
 @use '../../styles/design-tokens' as *;
 
+:host {
+  display: block;
+  min-width: 0;
+  width: 100%;
+}
+
 .score-card {
-  background: var(--surface-card, #FFFFFF);
-  border: 1px solid var(--border-color, #E2E8F0);
+  background: var(--surface-card, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
   border-radius: var(--radius-lg, 12px);
   padding: 1.25rem 1.5rem;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
   transition: all var(--transition-base, 150ms cubic-bezier(0.4, 0, 0.2, 1));
   position: relative;
   overflow: hidden;
+  box-sizing: border-box;
+  min-width: 0;
+  width: 100%;
 
   &.is-stale {
     opacity: 0.88;
@@ -20,9 +29,9 @@
       right: 12px;
       font-size: 0.6875rem;
       font-weight: 600;
-      color: var(--color-warning-text, #B45309);
-      background: var(--color-warning-bg, #FEF3C7);
-      border: 1px solid var(--color-warning-border, #FDE68A);
+      color: var(--color-warning-text, #b45309);
+      background: var(--color-warning-bg, #fef3c7);
+      border: 1px solid var(--color-warning-border, #fde68a);
       padding: 1px 7px;
       border-radius: var(--radius-full, 9999px);
       text-transform: uppercase;
@@ -31,7 +40,7 @@
   }
 
   &:hover {
-    border-color: var(--border-strong, #CBD5E1);
+    border-color: var(--border-strong, #cbd5e1);
     box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
   }
 
@@ -40,11 +49,14 @@
     align-items: flex-start;
     justify-content: space-between;
     margin-bottom: 0.75rem;
+    min-width: 0;
 
     .header-text {
       display: flex;
       flex-direction: column;
       gap: 2px;
+      min-width: 0;
+      flex: 1 1 auto;
     }
 
     .score-title {
@@ -52,11 +64,15 @@
       color: var(--text-secondary, #475569);
       font-weight: 600;
       letter-spacing: -0.01em;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
 
     .score-subtitle {
       font-size: 0.75rem;
-      color: var(--text-muted, #64748B);
+      color: var(--text-muted, #64748b);
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
   }
 
@@ -66,7 +82,7 @@
     margin-bottom: 0.875rem;
     line-height: 1;
     font-family: var(--font-heading, 'Inter', -apple-system, BlinkMacSystemFont, sans-serif);
-    color: var(--text-primary, #0F172A);
+    color: var(--text-primary, #0f172a);
     letter-spacing: -0.03em;
   }
 
@@ -74,7 +90,7 @@
     width: 80px;
     height: 36px;
     margin-bottom: 0.875rem;
-    background: linear-gradient(90deg, #F1F5F9 0%, #E2E8F0 50%, #F1F5F9 100%);
+    background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%);
     background-size: 200% 100%;
     animation: score-shimmer 1.5s infinite;
     border-radius: var(--radius-xs, 4px);
@@ -85,7 +101,7 @@
 
     .progress-bar {
       height: 6px;
-      background: var(--surface-subtle, #F1F5F9);
+      background: var(--surface-subtle, #f1f5f9);
       border-radius: 9999px;
       overflow: hidden;
       margin-bottom: 0.5rem;
@@ -94,13 +110,13 @@
         height: 100%;
         border-radius: 9999px;
         transition: width 0.5s ease-out;
-        background: var(--color-primary, #4F46E5);
+        background: var(--color-primary, #4f46e5);
       }
     }
 
     .progress-label {
       font-size: 0.75rem;
-      color: var(--text-muted, #64748B);
+      color: var(--text-muted, #64748b);
       margin: 0;
       font-weight: 500;
     }
@@ -108,40 +124,91 @@
 
   // Refined Color variants (subtle indicators, no garish full backgrounds)
   &.score-purple {
-    .score-number { color: #6366F1; }
-    .progress-fill { background: #6366F1; }
+    .score-number {
+      color: #6366f1;
+    }
+
+    .progress-fill {
+      background: #6366f1;
+    }
   }
 
   &.score-pink {
-    .score-number { color: #EC4899; }
-    .progress-fill { background: #EC4899; }
+    .score-number {
+      color: #ec4899;
+    }
+
+    .progress-fill {
+      background: #ec4899;
+    }
   }
 
   &.score-green {
-    .score-number { color: #10B981; }
-    .progress-fill { background: #10B981; }
+    .score-number {
+      color: #10b981;
+    }
+
+    .progress-fill {
+      background: #10b981;
+    }
   }
 
   &.score-amber {
-    .score-number { color: #F59E0B; }
-    .progress-fill { background: #F59E0B; }
+    .score-number {
+      color: #f59e0b;
+    }
+
+    .progress-fill {
+      background: #f59e0b;
+    }
   }
 
   &.score-blue {
-    .score-number { color: #3B82F6; }
-    .progress-fill { background: #3B82F6; }
+    .score-number {
+      color: #3b82f6;
+    }
+
+    .progress-fill {
+      background: #3b82f6;
+    }
   }
 }
 
 @keyframes score-shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 @media (max-width: 768px) {
   .score-card {
     .score-number {
       font-size: 2rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .score-card {
+    padding: 1rem 1.125rem;
+
+    .score-number {
+      font-size: 1.85rem;
+      margin-bottom: 0.625rem;
+    }
+  }
+}
+
+@media (max-width: 360px) {
+  .score-card {
+    padding: 0.875rem 0.875rem;
+
+    .score-number {
+      font-size: 1.75rem;
     }
   }
 }

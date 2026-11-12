@@ -5,20 +5,15 @@ const http = require('node:http');
 const assert = require('node:assert/strict');
 
 const playwrightPath =
-  process.env.PLAYWRIGHT_MODULE ||
-  'C:/Users/ahmad.hassan/Desktop/Agrivio/node_modules/playwright';
+  process.env.PLAYWRIGHT_MODULE || 'C:/Users/ahmad.hassan/Desktop/Agrivio/node_modules/playwright';
 const { chromium } = require(playwrightPath);
 
 const phase = process.argv[2] || 'before';
 const chromePath =
-  process.env.ACCEPTANCE_CHROME ||
-  'C:/Program Files/Google/Chrome/Application/chrome.exe';
+  process.env.ACCEPTANCE_CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 
 const dist = path.resolve(__dirname, '../dist/frontend/browser');
-const outputDir = path.resolve(
-  __dirname,
-  '../verification/resume/responsive-audit',
-);
+const outputDir = path.resolve(__dirname, '../verification/resume/responsive-audit');
 fs.mkdirSync(outputDir, { recursive: true });
 
 const resumeFixture = require('./resume-browser-fixture.cjs');
@@ -47,9 +42,10 @@ const VIEWPORTS = [
 const THEMES = ['dark', 'light', 'system'];
 
 const server = http.createServer((req, res) => {
-  const relative = decodeURIComponent(
-    new URL(req.url, 'http://localhost').pathname,
-  ).replace(/^\/+/, '');
+  const relative = decodeURIComponent(new URL(req.url, 'http://localhost').pathname).replace(
+    /^\/+/,
+    '',
+  );
   let file = path.resolve(dist, relative);
   if (
     !file.startsWith(dist + path.sep) ||
@@ -67,10 +63,7 @@ const server = http.createServer((req, res) => {
     '.svg': 'image/svg+xml',
     '.png': 'image/png',
   };
-  res.setHeader(
-    'Content-Type',
-    mime[path.extname(file)] || 'application/octet-stream',
-  );
+  res.setHeader('Content-Type', mime[path.extname(file)] || 'application/octet-stream');
   fs.createReadStream(file).pipe(res);
 });
 
@@ -111,13 +104,19 @@ function attachDefaultRoutes(page, overrides = {}) {
     if (url.pathname.includes('/profile/career')) {
       return route.fulfill({ json: profile });
     }
+    if (url.pathname.includes('/profile/me')) {
+      return route.fulfill({
+        json: overrides.profileMe || {
+          _id: 'user-fixture',
+          name: 'Jane Developer',
+          defaultResume: { fileId: 'file-111', fileName: 'main-resume.pdf' },
+        },
+      });
+    }
     if (overrides.handle && overrides.handle(url, route)) {
       return;
     }
-    if (
-      url.pathname.includes('/resume/result') ||
-      url.pathname.includes('/resume/analyze')
-    ) {
+    if (url.pathname.includes('/resume/result') || url.pathname.includes('/resume/analyze')) {
       return route.fulfill({ json: overrides.analysis || resumeFixture.analysis });
     }
     if (url.pathname.includes('/resume/files')) {
@@ -232,19 +231,27 @@ async function main() {
           // Component geometry checks
           const heroGrid = document.querySelector('.results-hero-grid');
           const heroGridStyle = heroGrid ? getComputedStyle(heroGrid) : null;
-          const heroGridCols = heroGridStyle ? heroGridStyle.gridTemplateColumns.split(' ').length : 0;
+          const heroGridCols = heroGridStyle
+            ? heroGridStyle.gridTemplateColumns.split(' ').length
+            : 0;
 
           const metricsGrid = document.querySelector('.metric-highlights-grid');
           const metricsGridStyle = metricsGrid ? getComputedStyle(metricsGrid) : null;
-          const metricsCols = metricsGridStyle ? metricsGridStyle.gridTemplateColumns.split(' ').length : 0;
+          const metricsCols = metricsGridStyle
+            ? metricsGridStyle.gridTemplateColumns.split(' ').length
+            : 0;
 
           const breakdownRow = document.querySelector('.breakdown-row');
           const breakdownRowStyle = breakdownRow ? getComputedStyle(breakdownRow) : null;
-          const breakdownCols = breakdownRowStyle ? breakdownRowStyle.gridTemplateColumns.split(' ').length : 0;
+          const breakdownCols = breakdownRowStyle
+            ? breakdownRowStyle.gridTemplateColumns.split(' ').length
+            : 0;
 
           const controlsGrid = document.querySelector('.resume-controls-grid');
           const controlsGridStyle = controlsGrid ? getComputedStyle(controlsGrid) : null;
-          const controlsCols = controlsGridStyle ? controlsGridStyle.gridTemplateColumns.split(' ').length : 0;
+          const controlsCols = controlsGridStyle
+            ? controlsGridStyle.gridTemplateColumns.split(' ').length
+            : 0;
 
           return {
             hasOverflow: isReallyOverflowing,
@@ -299,9 +306,13 @@ async function main() {
             clientWidth: measurement.clientWidth,
             offenders: measurement.offenders,
           });
-          console.log(`  [OVERFLOW] ${vp.name} (${theme}): scrollWidth ${measurement.scrollWidth} / ${measurement.clientWidth}px, offenders: ${measurement.offenders.length}`);
+          console.log(
+            `  [OVERFLOW] ${vp.name} (${theme}): scrollWidth ${measurement.scrollWidth} / ${measurement.clientWidth}px, offenders: ${measurement.offenders.length}`,
+          );
         } else {
-          console.log(`  [OK] ${vp.name} (${theme}): scrollWidth ${measurement.scrollWidth} / ${measurement.clientWidth}px, metricsCols=${measurement.metricsCols}, breakdownCols=${measurement.breakdownCols}`);
+          console.log(
+            `  [OK] ${vp.name} (${theme}): scrollWidth ${measurement.scrollWidth} / ${measurement.clientWidth}px, metricsCols=${measurement.metricsCols}, breakdownCols=${measurement.breakdownCols}`,
+          );
         }
 
         auditReport.matrixResults.push(resultEntry);
@@ -314,7 +325,10 @@ async function main() {
 
     // Scenario A: Empty Onboarding State (Zero Resumes)
     {
-      const contextEmpty = await browser.newContext({ viewport: { width: 375, height: 750 }, colorScheme: 'dark' });
+      const contextEmpty = await browser.newContext({
+        viewport: { width: 375, height: 750 },
+        colorScheme: 'dark',
+      });
       await setupContextAndPage(contextEmpty, 'dark');
       const pageEmpty = await contextEmpty.newPage();
       await attachDefaultRoutes(pageEmpty, {
@@ -355,15 +369,18 @@ async function main() {
 
     // Scenario B: Selected Unanalyzed Resume & Stale Cached Snapshot
     {
-      const contextStale = await browser.newContext({ viewport: { width: 390, height: 800 }, colorScheme: 'light' });
+      const contextStale = await browser.newContext({
+        viewport: { width: 390, height: 800 },
+        colorScheme: 'light',
+      });
       await setupContextAndPage(contextStale, 'light');
       const pageStale = await contextStale.newPage();
       await attachDefaultRoutes(pageStale, {
         analysis: {
           ...resumeFixture.analysis,
-          scoring: {
-            ...resumeFixture.analysis.scoring,
-            calculatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10).toISOString(),
+          cacheMetadata: {
+            loadedFromCache: true,
+            cachedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10).toISOString(),
           },
         },
       });
@@ -383,7 +400,10 @@ async function main() {
 
     // Scenario C: Score Unavailable / Sufficiency Error State
     {
-      const contextUnavail = await browser.newContext({ viewport: { width: 375, height: 800 }, colorScheme: 'dark' });
+      const contextUnavail = await browser.newContext({
+        viewport: { width: 375, height: 800 },
+        colorScheme: 'dark',
+      });
       await setupContextAndPage(contextUnavail, 'dark');
       const pageUnavail = await contextUnavail.newPage();
       await attachDefaultRoutes(pageUnavail, {
@@ -400,7 +420,10 @@ async function main() {
       await pageUnavail.locator('.unavailable-score-card').waitFor({ timeout: 8000 });
 
       const unavailScreenshot = 'score-unavailable-mobile-375.png';
-      await pageUnavail.screenshot({ path: path.join(statesDir, unavailScreenshot), fullPage: true });
+      await pageUnavail.screenshot({
+        path: path.join(statesDir, unavailScreenshot),
+        fullPage: true,
+      });
       auditReport.stateChecks['score_unavailable'] = {
         unavailableCardVisible: true,
         screenshot: unavailScreenshot,
@@ -411,7 +434,10 @@ async function main() {
 
     // Scenario D: Skills Toggle & Warnings Interaction
     {
-      const contextSkills = await browser.newContext({ viewport: { width: 375, height: 850 }, colorScheme: 'dark' });
+      const contextSkills = await browser.newContext({
+        viewport: { width: 375, height: 850 },
+        colorScheme: 'dark',
+      });
       await setupContextAndPage(contextSkills, 'dark');
       const pageSkills = await contextSkills.newPage();
       await attachDefaultRoutes(pageSkills);
@@ -420,7 +446,9 @@ async function main() {
       await pageSkills.locator('.skills-explorer-card').waitFor({ timeout: 8000 });
 
       // Click "View all categories" button
-      const toggleBtn = pageSkills.locator('.skills-explorer-card').getByRole('button', { name: /View all categories/i });
+      const toggleBtn = pageSkills
+        .locator('.skills-explorer-card')
+        .getByRole('button', { name: /View all categories/i });
       if (await toggleBtn.isVisible()) {
         await toggleBtn.click();
         await pageSkills.waitForTimeout(200);
@@ -437,11 +465,15 @@ async function main() {
 
     // Scenario E: Edge Case Long Text & Unbroken Strings
     {
-      const contextLong = await browser.newContext({ viewport: { width: 320, height: 750 }, colorScheme: 'light' });
+      const contextLong = await browser.newContext({
+        viewport: { width: 320, height: 750 },
+        colorScheme: 'light',
+      });
       await setupContextAndPage(contextLong, 'light');
       const pageLong = await contextLong.newPage();
       const longAnalysis = JSON.parse(JSON.stringify(resumeFixture.analysis));
-      longAnalysis.fileName = 'Senior-Full-Stack-Systems-Architect-and-Engineering-Lead-Resume-Production-Certified-v2026.pdf';
+      longAnalysis.fileName =
+        'Senior-Full-Stack-Systems-Architect-and-Engineering-Lead-Resume-Production-Certified-v2026.pdf';
       longAnalysis.extractedSkills = [
         'HyperDistributedMicroservicesArchitectureProtocolBufferingKafkaEventStreamEngine',
         'QuantumResistantAsymmetricCryptographicKeyExchangeImplementationAlgorithm',
@@ -449,8 +481,10 @@ async function main() {
       longAnalysis.scoring.warnings = [
         {
           severity: 'high',
-          message: 'ExtremeUnbrokenHeadingIdentifierWithoutSpacesCausingPotentialContainerOverflowWarningNotice',
-          evidence: 'https://internal-compliance.devinsight.corp/audits/trace/2026-compliance-deep-scan-identifier-verification',
+          message:
+            'ExtremeUnbrokenHeadingIdentifierWithoutSpacesCausingPotentialContainerOverflowWarningNotice',
+          evidence:
+            'https://internal-compliance.devinsight.corp/audits/trace/2026-compliance-deep-scan-identifier-verification',
         },
       ];
 
@@ -459,7 +493,8 @@ async function main() {
         files: [
           {
             ...resumeFixture.files[0],
-            fileName: 'Senior-Full-Stack-Systems-Architect-and-Engineering-Lead-Resume-Production-Certified-v2026.pdf',
+            fileName:
+              'Senior-Full-Stack-Systems-Architect-and-Engineering-Lead-Resume-Production-Certified-v2026.pdf',
           },
         ],
       });
@@ -485,7 +520,9 @@ async function main() {
         clientWidth: longOverflowCheck.clientWidth,
         screenshot: longScreenshot,
       };
-      console.log(`  [LONG TEXT 320px] overflow=${longOverflowCheck.hasOverflow} (${longOverflowCheck.scrollWidth}/${longOverflowCheck.clientWidth}px)`);
+      console.log(
+        `  [LONG TEXT 320px] overflow=${longOverflowCheck.hasOverflow} (${longOverflowCheck.scrollWidth}/${longOverflowCheck.clientWidth}px)`,
+      );
       await contextLong.close();
     }
 
@@ -500,7 +537,9 @@ async function main() {
       await pageTouch.locator('.analysis-results-container').waitFor({ timeout: 8000 });
 
       const touchAudit = await pageTouch.evaluate(() => {
-        const interactives = document.querySelectorAll('button, select, input, label[for="resumeUploadInput"]');
+        const interactives = document.querySelectorAll(
+          'button, select, input:not([type="file"]):not([type="hidden"]), label[for="resumeUploadInput"]',
+        );
         const touchDefects = [];
         for (const el of interactives) {
           const r = el.getBoundingClientRect();
@@ -518,50 +557,109 @@ async function main() {
       });
 
       auditReport.touchTargetDefects = touchAudit;
-      console.log(`  [TOUCH TARGETS] Evaluated interactive touch targets. Defects found: ${touchAudit.length}`);
+      console.log(
+        `  [TOUCH TARGETS] Evaluated interactive touch targets. Defects found: ${touchAudit.length}`,
+      );
       await contextTouch.close();
     }
 
     // Scenario G: Resume Prompt Modal Usability & Reflow (320px & 375px)
+    const repoRoot = path.resolve(__dirname, '../..');
+    const sass = require(path.join(repoRoot, 'frontend/node_modules/sass'));
+    const modalScssPath = path.join(
+      repoRoot,
+      'frontend/src/app/shared/components/resume-prompt-modal/resume-prompt-modal.component.scss',
+    );
+    let compiledModalCss = '';
+    try {
+      const compileRes = sass.compile(modalScssPath);
+      compiledModalCss = compileRes.css;
+    } catch (err) {
+      console.warn('Could not compile modal SCSS:', err.message);
+    }
+
     for (const testW of [320, 375]) {
-      const contextModal = await browser.newContext({ viewport: { width: testW, height: 640 }, colorScheme: 'dark' });
+      const contextModal = await browser.newContext({
+        viewport: { width: testW, height: 640 },
+        colorScheme: 'dark',
+      });
       await setupContextAndPage(contextModal, 'dark');
       const pageModal = await contextModal.newPage();
-      await attachDefaultRoutes(pageModal, {
-        files: [],
-        activeContext: {},
+      await attachDefaultRoutes(pageModal);
+
+      await pageModal.goto(`${base}/app/resume-analyzer`);
+      await pageModal.locator('.analysis-results-container').waitFor({ timeout: 8000 });
+
+      // Inject the modal DOM and styles into the active page
+      await pageModal.evaluate((css) => {
+        const style = document.createElement('style');
+        style.id = 'injected-modal-styles';
+        style.textContent = css;
+        document.head.appendChild(style);
+
+        const modalWrapper = document.createElement('app-resume-prompt-modal');
+        modalWrapper.innerHTML = `
+          <div class="modal-backdrop">
+            <div class="modal-container">
+              <button class="close-btn" title="Remind me later" aria-label="Close">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 16px; height: 16px;">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+              <div class="modal-content">
+                <div class="icon-header pulse">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 24px; height: 24px;">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                  </svg>
+                </div>
+                <h2>Complete Your Profile</h2>
+                <p>Upload your resume to get personalized recommendations and better results tailored to your profile.</p>
+                <div class="actions">
+                  <button class="btn-primary">Upload Resume</button>
+                  <div class="secondary-actions">
+                    <button class="btn-link">Remind me tomorrow</button>
+                    <button class="btn-link">Remind me later</button>
+                    <button class="btn-link never">Don't show again</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modalWrapper);
+      }, compiledModalCss);
+
+      await pageModal.waitForTimeout(300);
+
+      const modalMetrics = await pageModal.evaluate(() => {
+        const doc = document.documentElement;
+        const container = document.querySelector('.modal-container');
+        const cr = container ? container.getBoundingClientRect() : null;
+        return {
+          scrollWidth: doc.scrollWidth,
+          clientWidth: doc.clientWidth,
+          hasOverflow: doc.scrollWidth > doc.clientWidth + 1,
+          containerWidth: cr ? Math.round(cr.width) : null,
+          containerLeft: cr ? Math.round(cr.left) : null,
+          containerRight: cr ? Math.round(cr.right) : null,
+        };
       });
 
-      await pageModal.goto(`${base}/app/dashboard`);
-      await pageModal.waitForTimeout(1000);
+      const modalScreenshot = `resume-prompt-modal-${testW}px.png`;
+      await pageModal.screenshot({ path: path.join(statesDir, modalScreenshot), fullPage: true });
+      auditReport.stateChecks[`modal_${testW}`] = {
+        viewportWidth: testW,
+        modalFound: true,
+        metrics: modalMetrics,
+        screenshot: modalScreenshot,
+      };
+      console.log(
+        `  [MODAL ${testW}px] overflow=${modalMetrics.hasOverflow}, containerWidth=${modalMetrics.containerWidth}px (viewport=${testW}px)`,
+      );
 
-      const modalExists = await pageModal.locator('.modal-backdrop').count();
-      if (modalExists > 0) {
-        const modalMetrics = await pageModal.evaluate(() => {
-          const doc = document.documentElement;
-          const container = document.querySelector('.modal-container');
-          const cr = container ? container.getBoundingClientRect() : null;
-          return {
-            scrollWidth: doc.scrollWidth,
-            clientWidth: doc.clientWidth,
-            hasOverflow: doc.scrollWidth > doc.clientWidth + 1,
-            containerWidth: cr ? Math.round(cr.width) : null,
-            containerRight: cr ? Math.round(cr.right) : null,
-          };
-        });
-
-        const modalScreenshot = `resume-prompt-modal-${testW}px.png`;
-        await pageModal.screenshot({ path: path.join(statesDir, modalScreenshot), fullPage: true });
-        auditReport.stateChecks[`modal_${testW}`] = {
-          viewportWidth: testW,
-          modalFound: true,
-          metrics: modalMetrics,
-          screenshot: modalScreenshot,
-        };
-        console.log(`  [MODAL ${testW}px] overflow=${modalMetrics.hasOverflow}, containerWidth=${modalMetrics.containerWidth}px`);
-      } else {
-        console.log(`  [MODAL ${testW}px] Prompt modal not actively triggered.`);
-      }
       await contextModal.close();
     }
 
@@ -570,7 +668,6 @@ async function main() {
     fs.writeFileSync(reportPath, JSON.stringify(auditReport, null, 2));
     console.log(`\nAudit report saved to: ${reportPath}`);
     console.log(`Total overflow defects: ${auditReport.overflowDefects.length}`);
-
   } finally {
     await browser.close();
     server.close();

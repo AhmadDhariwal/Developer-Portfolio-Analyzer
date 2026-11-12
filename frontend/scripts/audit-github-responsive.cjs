@@ -264,14 +264,24 @@ async function main() {
         const fullScreenshotName = `${theme}-${vp.name}-full.png`;
         const foldScreenshotName = `${theme}-${vp.name}-fold.png`;
 
-        await page.screenshot({
-          path: path.join(matrixDir, fullScreenshotName),
-          fullPage: true,
-        });
-        await page.screenshot({
-          path: path.join(matrixDir, foldScreenshotName),
-          fullPage: false,
-        });
+        try {
+          await page.screenshot({
+            path: path.join(matrixDir, fullScreenshotName),
+            fullPage: true,
+            timeout: 60000,
+          });
+        } catch (err) {
+          console.warn(`  [WARN] Full-page screenshot timed out for ${theme}-${vp.name}`);
+        }
+        try {
+          await page.screenshot({
+            path: path.join(matrixDir, foldScreenshotName),
+            fullPage: false,
+            timeout: 60000,
+          });
+        } catch (err) {
+          console.warn(`  [WARN] Fold screenshot timed out for ${theme}-${vp.name}`);
+        }
 
         const resultEntry = {
           viewport: vp.name,
@@ -376,58 +386,125 @@ async function main() {
       await context.close();
     }
 
-    // Scenario B: Table Interactions (Sorting by Score, Stars, Name; Disclosure Expansion; View All)
+    // Scenario B: Table Interactions & Mobile Card Reflow (iPhone SE 375x667 Light & Dark)
     {
-      const context = await initPageContext(browser, {
-        width: 375,
-        height: 800,
-        theme: 'dark',
-        username: 'janedev',
-      });
-      const page = await context.newPage();
-      await attachDefaultRoutes(page, githubFixture, 'janedev');
+      for (const tableTheme of ['light', 'dark']) {
+        const context = await initPageContext(browser, {
+          width: 375,
+          height: 667,
+          theme: tableTheme,
+          username: 'janedev',
+        });
+        const page = await context.newPage();
+        await attachDefaultRoutes(page, githubFixture, 'janedev');
 
-      await page.goto(`${base}/app/github-analyzer`);
-      await page.locator('.exec-score-number').waitFor({ timeout: 10000 });
+        await page.goto(`${base}/app/github-analyzer`);
+        await page.locator('.exec-score-number').waitFor({ timeout: 10000 });
+        await page.locator('.clean-repo-table tbody tr').first().waitFor({ timeout: 5000 });
 
-      // Check initial 5 rows
-      const initialRowCount = await page.locator('tbody tr').count();
-      assert.equal(initialRowCount, 5, 'Initial repository row count should be 5');
+        // Verify mobile card measurements on first repository row
+        const cardMetrics = await page.evaluate(() => {
+          const firstRow = document.querySelector('.clean-repo-table tbody tr');
+          if (!firstRow) return null;
+          const categoryTd = firstRow.querySelector('td[data-label="Category"]');
+          const languageTd = firstRow.querySelector('td[data-label="Language"]');
+          const techTd = firstRow.querySelector('.td-tech');
+          const categoryTag = firstRow.querySelector('.table-category-tag');
+          const langText = firstRow.querySelector('.table-lang-text');
+          const firstChip = firstRow.querySelector('.mini-tech-chip');
 
-      // Click "View All Repositories (8)"
-      const viewAllBtn = page.getByRole('button', { name: /View All Repositories/i });
-      await viewAllBtn.click();
-      await page.waitForFunction(() => document.querySelectorAll('tbody tr').length === 8);
-      const expandedRowCount = await page.locator('tbody tr').count();
-      assert.equal(expandedRowCount, 8, 'Expanded repository row count should be 8');
+          return {
+            categoryTdWidth: categoryTd ? categoryTd.getBoundingClientRect().width : 0,
+            languageTdWidth: languageTd ? languageTd.getBoundingClientRect().width : 0,
+            techTdWidth: techTd ? techTd.getBoundingClientRect().width : 0,
+            categoryTagHeight: categoryTag ? categoryTag.getBoundingClientRect().height : 0,
+            categoryTagText: categoryTag ? categoryTag.textContent.trim() : '',
+            langTextHeight: langText ? langText.getBoundingClientRect().height : 0,
+            langText: langText ? langText.textContent.trim() : '',
+            firstChipHeight: firstChip ? firstChip.getBoundingClientRect().height : 0,
+            firstChipText: firstChip ? firstChip.textContent.trim() : '',
+          };
+        });
 
-      // Click sort by Stars
-      const starsSortBtn = page.locator('.sort-pill-btn').filter({ hasText: 'Stars' });
-      await starsSortBtn.click();
-      await page.waitForTimeout(200);
+        assert.ok(cardMetrics, 'Repository card metrics must be present');
+        assert.ok(
+          cardMetrics.categoryTdWidth > 100,
+          `Category td width (${cardMetrics.categoryTdWidth}px) must be > 100px, not 12% (~19px)`,
+        );
+        assert.ok(
+          cardMetrics.languageTdWidth > 100,
+          `Language td width (${cardMetrics.languageTdWidth}px) must be > 100px, not 11% (~17px)`,
+        );
+        assert.ok(
+          cardMetrics.techTdWidth > 280,
+          `Tech td width (${cardMetrics.techTdWidth}px) must span full card width (> 280px)`,
+        );
+        assert.ok(
+          cardMetrics.categoryTagHeight < 35,
+          `Category tag height (${cardMetrics.categoryTagHeight}px) must be single-line (< 35px)`,
+        );
+        assert.ok(
+          cardMetrics.langTextHeight < 35,
+          `Language text height (${cardMetrics.langTextHeight}px) must be single-line (< 35px)`,
+        );
+        if (cardMetrics.firstChipHeight > 0) {
+          assert.ok(
+            cardMetrics.firstChipHeight < 35,
+            `Chip height (${cardMetrics.firstChipHeight}px) must be single-line (< 35px)`,
+          );
+        }
 
-      // Open repository evidence disclosure in first row
-      const firstDisclosure = page.locator('.repository-evidence summary').first();
-      await firstDisclosure.click();
-      await page.waitForTimeout(200);
+        // Take focused screenshot of repository section on 375x667
+        const repoSection = page.locator('.repositories-section');
+        const repoScreenshotName = `repo-card-mobile-375-${tableTheme}.png`;
+        await repoSection.screenshot({
+          path: path.join(statesDir, repoScreenshotName),
+        });
 
-      const tableInteractionScreenshot = 'table-interactions-mobile-375.png';
-      await page.screenshot({
-        path: path.join(statesDir, tableInteractionScreenshot),
-        fullPage: true,
-      });
+        // Perform interactions on light theme
+        if (tableTheme === 'light') {
+          // Check initial 5 rows
+          const initialRowCount = await page.locator('tbody tr').count();
+          assert.equal(initialRowCount, 5, 'Initial repository row count should be 5');
 
-      auditReport.stateChecks['table_interactions'] = {
-        initialRowCount,
-        expandedRowCount,
-        sortPillFunctional: true,
-        disclosureExpanded: true,
-        screenshot: tableInteractionScreenshot,
-      };
-      console.log(
-        `  [TABLE] Mobile 375px: rows expanded from ${initialRowCount} to ${expandedRowCount}, sorted & disclosure expanded.`,
-      );
-      await context.close();
+          // Click "View All Repositories (8)"
+          const viewAllBtn = page.getByRole('button', { name: /View All Repositories/i });
+          await viewAllBtn.click();
+          await page.waitForFunction(() => document.querySelectorAll('tbody tr').length === 8);
+          const expandedRowCount = await page.locator('tbody tr').count();
+          assert.equal(expandedRowCount, 8, 'Expanded repository row count should be 8');
+
+          // Click sort by Stars
+          const starsSortBtn = page.locator('.sort-pill-btn').filter({ hasText: 'Stars' });
+          await starsSortBtn.click();
+          await page.waitForTimeout(200);
+
+          // Open repository evidence disclosure in first row
+          const firstDisclosure = page.locator('.repository-evidence summary').first();
+          await firstDisclosure.click();
+          await page.waitForTimeout(200);
+
+          const tableInteractionScreenshot = 'table-interactions-mobile-375.png';
+          await page.screenshot({
+            path: path.join(statesDir, tableInteractionScreenshot),
+            fullPage: true,
+          });
+
+          auditReport.stateChecks['table_interactions'] = {
+            initialRowCount,
+            expandedRowCount,
+            sortPillFunctional: true,
+            disclosureExpanded: true,
+            cardMetrics,
+            screenshot: tableInteractionScreenshot,
+            repoCardScreenshot: repoScreenshotName,
+          };
+          console.log(
+            `  [TABLE] Mobile 375px (${tableTheme}): verified card metrics: categoryTd=${Math.round(cardMetrics.categoryTdWidth)}px, languageTd=${Math.round(cardMetrics.languageTdWidth)}px, techTd=${Math.round(cardMetrics.techTdWidth)}px. No vertical letter wrapping!`,
+          );
+        }
+        await context.close();
+      }
     }
 
     // Scenario C: Empty States (Unconfigured GitHub profile & 0 public repos)

@@ -736,41 +736,43 @@ canvas {
     }
   }
 
-  th:nth-child(1),
-  td:nth-child(1) {
-    width: 32%;
-  }
-  th:nth-child(2),
-  td:nth-child(2) {
-    width: 12%;
-  }
-  th:nth-child(3),
-  td:nth-child(3) {
-    width: 11%;
-  }
-  th:nth-child(4),
-  td:nth-child(4) {
-    width: 16%;
-  }
-  th:nth-child(5),
-  td:nth-child(5) {
-    width: 7%;
-    text-align: right;
-  }
-  th:nth-child(6),
-  td:nth-child(6) {
-    width: 7%;
-    text-align: right;
-  }
-  th:nth-child(7),
-  td:nth-child(7) {
-    width: 9%;
-    text-align: center;
-  }
-  th:nth-child(8),
-  td:nth-child(8) {
-    width: 6%;
-    text-align: center;
+  @media (min-width: 601px) {
+    th:nth-child(1),
+    td:nth-child(1) {
+      width: 32%;
+    }
+    th:nth-child(2),
+    td:nth-child(2) {
+      width: 12%;
+    }
+    th:nth-child(3),
+    td:nth-child(3) {
+      width: 11%;
+    }
+    th:nth-child(4),
+    td:nth-child(4) {
+      width: 16%;
+    }
+    th:nth-child(5),
+    td:nth-child(5) {
+      width: 7%;
+      text-align: right;
+    }
+    th:nth-child(6),
+    td:nth-child(6) {
+      width: 7%;
+      text-align: right;
+    }
+    th:nth-child(7),
+    td:nth-child(7) {
+      width: 9%;
+      text-align: center;
+    }
+    th:nth-child(8),
+    td:nth-child(8) {
+      width: 6%;
+      text-align: center;
+    }
   }
 
   tbody tr:last-child td {
@@ -783,7 +785,9 @@ canvas {
 }
 
 .td-name {
-  width: 32%;
+  @media (min-width: 601px) {
+    width: 32%;
+  }
 }
 
 .table-repo-name-wrap {
@@ -807,8 +811,34 @@ canvas {
   line-height: 1.4;
 }
 
+.table-category-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  background: rgba(79, 70, 229, 0.08);
+  border: 1px solid rgba(79, 70, 229, 0.2);
+  color: var(--color-primary-text, #4f46e5);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.table-lang-text {
+  display: inline-block;
+  font-size: 13px;
+  color: var(--text-primary, #0f172a);
+  white-space: nowrap;
+}
+
 .td-tech .mini-tech-chip {
   margin: 0 4px 4px 0;
+  white-space: nowrap;
+}
+
+.table-score-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .table-score-num {
@@ -819,11 +849,23 @@ canvas {
 
 .table-score-progress {
   min-width: 55px;
-  margin-top: 6px;
+  flex: 1;
+  max-width: 140px;
+  margin-top: 2px;
 }
 
 .repo-ext-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  color: var(--color-primary-text, #4f46e5);
+  text-decoration: none;
   white-space: nowrap;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .repository-evidence {
@@ -1216,6 +1258,11 @@ canvas {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .table-scroll-container {
+    max-height: none;
+    overflow-x: visible;
+  }
+
   .clean-repo-table {
     min-width: 0;
     display: block;
@@ -1236,27 +1283,42 @@ canvas {
       border-bottom: 1px solid var(--border-color, #e2e8f0);
     }
 
-    td {
+    td,
+    td:nth-child(1),
+    td:nth-child(2),
+    td:nth-child(3),
+    td:nth-child(4),
+    td:nth-child(5),
+    td:nth-child(6),
+    td:nth-child(7),
+    td:nth-child(8) {
       border: 0;
       padding: 0;
       min-width: 0;
-      width: auto;
+      width: 100%;
+      text-align: left;
+      overflow-wrap: normal;
+      word-break: normal;
+    }
 
-      &::before {
-        content: attr(data-label);
-        display: block;
-        font-size: 11px;
-        color: var(--text-muted, #64748b);
-        margin-bottom: 4px;
-        font-weight: 600;
-        text-transform: uppercase;
-      }
+    td::before {
+      content: attr(data-label);
+      display: block;
+      font-size: 11px;
+      color: var(--text-muted, #64748b);
+      margin-bottom: 4px;
+      font-weight: 600;
+      text-transform: uppercase;
+      white-space: nowrap;
+      letter-spacing: 0.03em;
     }
 
     .td-name,
     .td-tech,
-    .td-score {
+    .td-score,
+    td:last-child {
       grid-column: 1 / -1;
+      width: 100%;
     }
 
     .td-name::before {
@@ -1476,6 +1538,14 @@ canvas {
 
     .table-score-num {
       color: #f8fafc;
+    }
+
+    .table-lang-text {
+      color: #f8fafc;
+    }
+
+    .repo-ext-link {
+      color: #818cf8;
     }
 
     .repository-evidence dl {

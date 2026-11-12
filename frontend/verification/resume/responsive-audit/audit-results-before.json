@@ -1,0 +1,959 @@
+{
+  "phase": "before",
+  "timestamp": "2026-11-12T13:24:16.834Z",
+  "viewportsTested": 12,
+  "themesTested": 3,
+  "matrixResults": [
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "width": 320,
+      "height": 640,
+      "theme": "dark",
+      "hasOverflow": true,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "offenders": [
+        {
+          "tag": "DIV",
+          "className": "overall-score-cell",
+          "right": 331,
+          "width": 317,
+          "clientWidth": 320
+        },
+        {
+          "tag": "APP-SCORE-CARD",
+          "className": "",
+          "right": 331,
+          "width": 317,
+          "clientWidth": 320
+        },
+        {
+          "tag": "DIV",
+          "className": "score-card score-green",
+          "right": 331,
+          "width": 317,
+          "clientWidth": 320
+        },
+        {
+          "tag": "APP-UI-CARD",
+          "className": "readability-quality-card",
+          "right": 331,
+          "width": 317,
+          "clientWidth": 320
+        }
+      ],
+      "heroGridCols": 1,
+      "metricsCols": 1,
+      "breakdownCols": 1,
+      "controlsCols": 1,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "dark-mobile-320-full.png",
+        "fold": "dark-mobile-320-fold.png"
+      }
+    },
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "width": 320,
+      "height": 640,
+      "theme": "light",
+      "hasOverflow": true,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "offenders": [
+        {
+          "tag": "DIV",
+          "className": "overall-score-cell",
+          "right": 331,
+          "width": 317,
+          "clientWidth": 320
+        },
+        {
+          "tag": "APP-SCORE-CARD",
+          "className": "",
+          "right": 331,
+          "width": 317,
+          "clientWidth": 320
+        },
+        {
+          "tag": "DIV",
+          "className": "score-card score-green",
+          "right": 331,
+          "width": 317,
+          "clientWidth": 320
+        },
+        {
+          "tag": "APP-UI-CARD",
+          "className": "readability-quality-card",
+          "right": 331,
+          "width": 317,
+          "clientWidth": 320
+        }
+      ],
+      "heroGridCols": 1,
+      "metricsCols": 1,
+      "breakdownCols": 1,
+      "controlsCols": 1,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "light-mobile-320-full.png",
+        "fold": "light-mobile-320-fold.png"
+      }
+    },
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "width": 320,
+      "height": 640,
+      "theme": "system",
+      "hasOverflow": true,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "offenders": [
+        {
+          "tag": "DIV",
+          "className": "overall-score-cell",
+          "right": 331,
+          "width": 317,
+          "clientWidth": 320
+        },
+        {
+          "tag": "APP-SCORE-CARD",
+          "className": "",
+          "right": 331,
+          "width": 317,
+          "clientWidth": 320
+        },
+        {
+          "tag": "DIV",
+          "className": "score-card score-green",
+          "right": 331,
+          "width": 317,
+          "clientWidth": 320
+        },
+        {
+          "tag": "APP-UI-CARD",
+          "className": "readability-quality-card",
+          "right": 331,
+          "width": 317,
+          "clientWidth": 320
+        }
+      ],
+      "heroGridCols": 1,
+      "metricsCols": 1,
+      "breakdownCols": 1,
+      "controlsCols": 1,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "system-mobile-320-full.png",
+        "fold": "system-mobile-320-fold.png"
+      }
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "width": 375,
+      "height": 667,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "offenders": [],
+      "heroGridCols": 1,
+      "metricsCols": 1,
+      "breakdownCols": 1,
+      "controlsCols": 1,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "dark-mobile-375-full.png",
+        "fold": "dark-mobile-375-fold.png"
+      }
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "width": 375,
+      "height": 667,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "offenders": [],
+      "heroGridCols": 1,
+      "metricsCols": 1,
+      "breakdownCols": 1,
+      "controlsCols": 1,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "light-mobile-375-full.png",
+        "fold": "light-mobile-375-fold.png"
+      }
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "width": 375,
+      "height": 667,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "offenders": [],
+      "heroGridCols": 1,
+      "metricsCols": 1,
+      "breakdownCols": 1,
+      "controlsCols": 1,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "system-mobile-375-full.png",
+        "fold": "system-mobile-375-fold.png"
+      }
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "width": 390,
+      "height": 844,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "offenders": [],
+      "heroGridCols": 1,
+      "metricsCols": 1,
+      "breakdownCols": 1,
+      "controlsCols": 1,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "dark-mobile-390-full.png",
+        "fold": "dark-mobile-390-fold.png"
+      }
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "offenders": [],
+      "heroGridCols": 1,
+      "metricsCols": 1,
+      "breakdownCols": 1,
+      "controlsCols": 1,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "light-mobile-390-full.png",
+        "fold": "light-mobile-390-fold.png"
+      }
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "width": 390,
+      "height": 844,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "offenders": [],
+      "heroGridCols": 1,
+      "metricsCols": 1,
+      "breakdownCols": 1,
+      "controlsCols": 1,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "system-mobile-390-full.png",
+        "fold": "system-mobile-390-fold.png"
+      }
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "width": 430,
+      "height": 932,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "offenders": [],
+      "heroGridCols": 1,
+      "metricsCols": 1,
+      "breakdownCols": 1,
+      "controlsCols": 1,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "dark-mobile-430-full.png",
+        "fold": "dark-mobile-430-fold.png"
+      }
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "width": 430,
+      "height": 932,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "offenders": [],
+      "heroGridCols": 1,
+      "metricsCols": 1,
+      "breakdownCols": 1,
+      "controlsCols": 1,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "light-mobile-430-full.png",
+        "fold": "light-mobile-430-fold.png"
+      }
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "width": 430,
+      "height": 932,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "offenders": [],
+      "heroGridCols": 1,
+      "metricsCols": 1,
+      "breakdownCols": 1,
+      "controlsCols": 1,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "system-mobile-430-full.png",
+        "fold": "system-mobile-430-fold.png"
+      }
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "width": 768,
+      "height": 1024,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "offenders": [],
+      "heroGridCols": 1,
+      "metricsCols": 2,
+      "breakdownCols": 2,
+      "controlsCols": 1,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "dark-tablet-768-full.png",
+        "fold": "dark-tablet-768-fold.png"
+      }
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "width": 768,
+      "height": 1024,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "offenders": [],
+      "heroGridCols": 1,
+      "metricsCols": 2,
+      "breakdownCols": 2,
+      "controlsCols": 1,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "light-tablet-768-full.png",
+        "fold": "light-tablet-768-fold.png"
+      }
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "width": 768,
+      "height": 1024,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "offenders": [],
+      "heroGridCols": 1,
+      "metricsCols": 2,
+      "breakdownCols": 2,
+      "controlsCols": 1,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "system-tablet-768-full.png",
+        "fold": "system-tablet-768-fold.png"
+      }
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "width": 820,
+      "height": 1180,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "offenders": [],
+      "heroGridCols": 1,
+      "metricsCols": 2,
+      "breakdownCols": 2,
+      "controlsCols": 1,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "dark-tablet-820-full.png",
+        "fold": "dark-tablet-820-fold.png"
+      }
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "width": 820,
+      "height": 1180,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "offenders": [],
+      "heroGridCols": 1,
+      "metricsCols": 2,
+      "breakdownCols": 2,
+      "controlsCols": 1,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "light-tablet-820-full.png",
+        "fold": "light-tablet-820-fold.png"
+      }
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "width": 820,
+      "height": 1180,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "offenders": [],
+      "heroGridCols": 1,
+      "metricsCols": 2,
+      "breakdownCols": 2,
+      "controlsCols": 1,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "system-tablet-820-full.png",
+        "fold": "system-tablet-820-fold.png"
+      }
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "width": 1024,
+      "height": 768,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "offenders": [],
+      "heroGridCols": 1,
+      "metricsCols": 2,
+      "breakdownCols": 2,
+      "controlsCols": 2,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "dark-tablet-1024-full.png",
+        "fold": "dark-tablet-1024-fold.png"
+      }
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "width": 1024,
+      "height": 768,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "offenders": [],
+      "heroGridCols": 1,
+      "metricsCols": 2,
+      "breakdownCols": 2,
+      "controlsCols": 2,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "light-tablet-1024-full.png",
+        "fold": "light-tablet-1024-fold.png"
+      }
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "width": 1024,
+      "height": 768,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "offenders": [],
+      "heroGridCols": 1,
+      "metricsCols": 2,
+      "breakdownCols": 2,
+      "controlsCols": 2,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "system-tablet-1024-full.png",
+        "fold": "system-tablet-1024-fold.png"
+      }
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "width": 1280,
+      "height": 800,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "offenders": [],
+      "heroGridCols": 2,
+      "metricsCols": 4,
+      "breakdownCols": 2,
+      "controlsCols": 2,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "dark-laptop-1280-full.png",
+        "fold": "dark-laptop-1280-fold.png"
+      }
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "width": 1280,
+      "height": 800,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "offenders": [],
+      "heroGridCols": 2,
+      "metricsCols": 4,
+      "breakdownCols": 2,
+      "controlsCols": 2,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "light-laptop-1280-full.png",
+        "fold": "light-laptop-1280-fold.png"
+      }
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "width": 1280,
+      "height": 800,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "offenders": [],
+      "heroGridCols": 2,
+      "metricsCols": 4,
+      "breakdownCols": 2,
+      "controlsCols": 2,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "system-laptop-1280-full.png",
+        "fold": "system-laptop-1280-fold.png"
+      }
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "width": 1366,
+      "height": 768,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 1366,
+      "clientWidth": 1366,
+      "offenders": [],
+      "heroGridCols": 2,
+      "metricsCols": 4,
+      "breakdownCols": 2,
+      "controlsCols": 2,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "dark-laptop-1366-full.png",
+        "fold": "dark-laptop-1366-fold.png"
+      }
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "width": 1366,
+      "height": 768,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 1366,
+      "clientWidth": 1366,
+      "offenders": [],
+      "heroGridCols": 2,
+      "metricsCols": 4,
+      "breakdownCols": 2,
+      "controlsCols": 2,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "light-laptop-1366-full.png",
+        "fold": "light-laptop-1366-fold.png"
+      }
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "width": 1366,
+      "height": 768,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 1366,
+      "clientWidth": 1366,
+      "offenders": [],
+      "heroGridCols": 2,
+      "metricsCols": 4,
+      "breakdownCols": 2,
+      "controlsCols": 2,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "system-laptop-1366-full.png",
+        "fold": "system-laptop-1366-fold.png"
+      }
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "width": 1440,
+      "height": 900,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": [],
+      "heroGridCols": 2,
+      "metricsCols": 4,
+      "breakdownCols": 2,
+      "controlsCols": 2,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "dark-desktop-1440-full.png",
+        "fold": "dark-desktop-1440-fold.png"
+      }
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "width": 1440,
+      "height": 900,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": [],
+      "heroGridCols": 2,
+      "metricsCols": 4,
+      "breakdownCols": 2,
+      "controlsCols": 2,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "light-desktop-1440-full.png",
+        "fold": "light-desktop-1440-fold.png"
+      }
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "width": 1440,
+      "height": 900,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": [],
+      "heroGridCols": 2,
+      "metricsCols": 4,
+      "breakdownCols": 2,
+      "controlsCols": 2,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "system-desktop-1440-full.png",
+        "fold": "system-desktop-1440-fold.png"
+      }
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "width": 1920,
+      "height": 1080,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "offenders": [],
+      "heroGridCols": 2,
+      "metricsCols": 4,
+      "breakdownCols": 2,
+      "controlsCols": 2,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "dark-desktop-1920-full.png",
+        "fold": "dark-desktop-1920-fold.png"
+      }
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "width": 1920,
+      "height": 1080,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "offenders": [],
+      "heroGridCols": 2,
+      "metricsCols": 4,
+      "breakdownCols": 2,
+      "controlsCols": 2,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "light-desktop-1920-full.png",
+        "fold": "light-desktop-1920-fold.png"
+      }
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "width": 1920,
+      "height": 1080,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "offenders": [],
+      "heroGridCols": 2,
+      "metricsCols": 4,
+      "breakdownCols": 2,
+      "controlsCols": 2,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "system-desktop-1920-full.png",
+        "fold": "system-desktop-1920-fold.png"
+      }
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "width": 2560,
+      "height": 1440,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 2560,
+      "clientWidth": 2560,
+      "offenders": [],
+      "heroGridCols": 2,
+      "metricsCols": 4,
+      "breakdownCols": 2,
+      "controlsCols": 2,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "dark-large-2560-full.png",
+        "fold": "dark-large-2560-fold.png"
+      }
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "width": 2560,
+      "height": 1440,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 2560,
+      "clientWidth": 2560,
+      "offenders": [],
+      "heroGridCols": 2,
+      "metricsCols": 4,
+      "breakdownCols": 2,
+      "controlsCols": 2,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "light-large-2560-full.png",
+        "fold": "light-large-2560-fold.png"
+      }
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "width": 2560,
+      "height": 1440,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 2560,
+      "clientWidth": 2560,
+      "offenders": [],
+      "heroGridCols": 2,
+      "metricsCols": 4,
+      "breakdownCols": 2,
+      "controlsCols": 2,
+      "pageErrors": [],
+      "screenshots": {
+        "full": "system-large-2560-full.png",
+        "fold": "system-large-2560-fold.png"
+      }
+    }
+  ],
+  "stateChecks": {
+    "empty_onboarding": {
+      "hasOverflow": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "screenshot": "empty-onboarding-mobile-375.png"
+    },
+    "stale_banner": {
+      "staleBannerVisible": true,
+      "screenshot": "stale-banner-mobile-390.png"
+    },
+    "score_unavailable": {
+      "unavailableCardVisible": true,
+      "screenshot": "score-unavailable-mobile-375.png"
+    },
+    "skills_expanded": {
+      "screenshot": "skills-expanded-mobile-375.png"
+    },
+    "long_text": {
+      "hasOverflow": false,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "screenshot": "long-text-edge-320px.png"
+    }
+  },
+  "overflowDefects": [
+    {
+      "viewport": "mobile-320",
+      "theme": "dark",
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "offenders": [
+        {
+          "tag": "DIV",
+          "className": "overall-score-cell",
+          "right": 331,
+          "width": 317,
+          "clientWidth": 320
+        },
+        {
+          "tag": "APP-SCORE-CARD",
+          "className": "",
+          "right": 331,
+          "width": 317,
+          "clientWidth": 320
+        },
+        {
+          "tag": "DIV",
+          "className": "score-card score-green",
+          "right": 331,
+          "width": 317,
+          "clientWidth": 320
+        },
+        {
+          "tag": "APP-UI-CARD",
+          "className": "readability-quality-card",
+          "right": 331,
+          "width": 317,
+          "clientWidth": 320
+        }
+      ]
+    },
+    {
+      "viewport": "mobile-320",
+      "theme": "light",
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "offenders": [
+        {
+          "tag": "DIV",
+          "className": "overall-score-cell",
+          "right": 331,
+          "width": 317,
+          "clientWidth": 320
+        },
+        {
+          "tag": "APP-SCORE-CARD",
+          "className": "",
+          "right": 331,
+          "width": 317,
+          "clientWidth": 320
+        },
+        {
+          "tag": "DIV",
+          "className": "score-card score-green",
+          "right": 331,
+          "width": 317,
+          "clientWidth": 320
+        },
+        {
+          "tag": "APP-UI-CARD",
+          "className": "readability-quality-card",
+          "right": 331,
+          "width": 317,
+          "clientWidth": 320
+        }
+      ]
+    },
+    {
+      "viewport": "mobile-320",
+      "theme": "system",
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "offenders": [
+        {
+          "tag": "DIV",
+          "className": "overall-score-cell",
+          "right": 331,
+          "width": 317,
+          "clientWidth": 320
+        },
+        {
+          "tag": "APP-SCORE-CARD",
+          "className": "",
+          "right": 331,
+          "width": 317,
+          "clientWidth": 320
+        },
+        {
+          "tag": "DIV",
+          "className": "score-card score-green",
+          "right": 331,
+          "width": 317,
+          "clientWidth": 320
+        },
+        {
+          "tag": "APP-UI-CARD",
+          "className": "readability-quality-card",
+          "right": 331,
+          "width": 317,
+          "clientWidth": 320
+        }
+      ]
+    }
+  ],
+  "touchTargetDefects": [
+    {
+      "tag": "INPUT",
+      "text": "",
+      "height": 1,
+      "width": 1
+    }
+  ],
+  "accessibilityDefects": []
+}

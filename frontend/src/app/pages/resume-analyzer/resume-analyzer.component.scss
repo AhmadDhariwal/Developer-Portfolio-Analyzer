@@ -42,6 +42,17 @@
   height: 15px;
   margin-right: 6px;
 }
+@media (max-width: 520px) {
+  .header-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .header-actions app-ui-button {
+    width: 100%;
+  }
+}
 
 .state-banner {
   display: flex;
@@ -53,11 +64,15 @@
   border-radius: 10px;
   border: 1px solid transparent;
   transition: all 0.2s ease;
+  box-sizing: border-box;
+  min-width: 0;
 }
 .state-banner .banner-content {
   display: flex;
   align-items: flex-start;
   gap: 12px;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 .state-banner .banner-icon {
   width: 20px;
@@ -70,11 +85,26 @@
   font-size: 13.5px;
   font-weight: 600;
   margin-bottom: 2px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .state-banner p {
   margin: 0;
   font-size: 13px;
   line-height: 1.5;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+@media (max-width: 560px) {
+  .state-banner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 12px 14px;
+  }
+  .state-banner app-ui-button {
+    align-self: flex-start;
+  }
 }
 .state-banner--error {
   background: #fef2f2;
@@ -127,13 +157,13 @@
 
 .resume-controls-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 20px;
   margin-bottom: 24px;
 }
 @media (max-width: 900px) {
   .resume-controls-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 16px;
   }
 }
@@ -151,12 +181,16 @@
   font-weight: 600;
   color: var(--text-primary, #0f172a);
   letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .card-header-row p {
   margin: 0;
   font-size: 13px;
   color: var(--text-muted, #64748b);
   line-height: 1.45;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .library-card {
@@ -168,6 +202,13 @@
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
+  min-width: 0;
+  box-sizing: border-box;
+}
+@media (max-width: 480px) {
+  .library-card {
+    padding: 16px 14px;
+  }
 }
 
 .library-controls {
@@ -190,6 +231,7 @@
 }
 .selector-group .resume-dropdown {
   width: 100%;
+  min-height: 42px;
   height: 42px;
   padding: 0 12px;
   background: var(--surface-card, #ffffff);
@@ -199,6 +241,8 @@
   font-size: 13.5px;
   outline: none;
   transition: all 0.18s ease;
+  box-sizing: border-box;
+  min-width: 0;
 }
 .selector-group .resume-dropdown:focus {
   border-color: var(--color-primary, #4f46e5);
@@ -210,6 +254,15 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
+}
+@media (max-width: 480px) {
+  .action-buttons-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .action-buttons-row app-ui-button {
+    width: 100%;
+  }
 }
 
 .library-empty {

@@ -77,6 +77,35 @@ Every combination below was verified with full-page and above-the-fold automated
 - **Discovered:** `.meta-label`, `.meta-dot`, and `.identity-user-label` had borderline contrast against `#111827`.
 - **Fix:** Set color to `#94a3b8` in dark mode, achieving 6.5:1 contrast ratio (exceeding WCAG AA 4.5:1 and meeting AAA).
 
+### Defect 10: Mobile Card Repository Table Severe Vertical Letter-by-Letter Wrapping (Reported Defect)
+- **Discovered:** On mobile screens (tested on iPhone SE 375x667 in DevTools as captured in user screenshot `media_1794490748921_ff2f73c7.png`), repository table cells exhibited severe vertical letter-by-letter wrapping:
+  - `CATEGORY` wrapped vertically as `CA / TE / GO / RY` and `Portfolio` as `Po / rtf / oli / o`.
+  - `LANGUAGE` wrapped vertically as `LA / N / G / UA / GE` and `JavaScript` as `Ja / va / S / cri / pt`.
+  - `TECH STACK` chips wrapped vertically as `Typ / eSc / ript`, `Nod / e.js`, `RES / T / API / s`.
+- **Root Cause:**
+  1. Desktop fixed column percentages (`th:nth-child(2), td:nth-child(2) { width: 12%; }`, `th:nth-child(3), td:nth-child(3) { width: 11%; }`, `th:nth-child(4), td:nth-child(4) { width: 16%; }`, etc.) were declared at the root level of `.clean-repo-table`.
+  2. Because selector `.clean-repo-table td:nth-child(n)` had specificity `(0, 2, 1)`, it overrode the mobile `.clean-repo-table td { width: auto; }` rule `(0, 1, 1)` inside `@media (max-width: 600px)`.
+  3. Consequently, in the mobile card grid (where each row `tr` was `display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));`), `td:nth-child(2)` was constrained to only 12% of its grid column (12% of ~160px = ~19px!).
+  4. Combined with `.analyzer-page { overflow-wrap: anywhere; }`, the 19px width forced words to break letter-by-letter down narrow vertical columns.
+- **Fix:**
+  1. Scoped desktop fixed column percentages (`th:nth-child(1..8), td:nth-child(1..8)`) into `@media (min-width: 601px)`.
+  2. Scoped `.td-name { width: 32%; }` into `@media (min-width: 601px)`.
+  3. Added explicit mobile card rules inside `@media (max-width: 600px)`:
+     ```scss
+     td, td:nth-child(1), td:nth-child(2), td:nth-child(3), td:nth-child(4), td:nth-child(5), td:nth-child(6), td:nth-child(7), td:nth-child(8) {
+       border: 0; padding: 0; min-width: 0; width: 100%; text-align: left; overflow-wrap: normal; word-break: normal;
+     }
+     ```
+  4. Added `white-space: nowrap;` to `.clean-repo-table td::before`, `.table-category-tag`, `.table-lang-text`, and `.mini-tech-chip`.
+  5. Enhanced `.td-name, .td-tech, .td-score, td:last-child` to span `grid-column: 1 / -1; width: 100%;`.
+  6. Removed nested mobile scroll-trapping by setting `.table-scroll-container { max-height: none; overflow-x: visible; }` at `<= 600px`.
+  7. Added `.table-score-wrap` flex layout and enhanced `.repo-ext-link`.
+  8. Automated Playwright verification confirmed:
+     - `categoryTdWidth` expanded from ~19px to **140px** (no vertical wrapping).
+     - `languageTdWidth` expanded from ~17px to **140px** (no vertical wrapping).
+     - `techTdWidth` expanded from ~25px to **291px** (full card width, horizontal chip flow).
+     - Text elements rendered on a single line with height < 30px.
+
 ---
 
 ## 4. Changed File Inventory
