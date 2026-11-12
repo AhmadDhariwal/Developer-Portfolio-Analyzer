@@ -1,0 +1,85 @@
+{
+  "status": "BLOCKED",
+  "productionReady": false,
+  "branch": "fix/dashboard",
+  "prTarget": "not applicable",
+  "gates": [
+    {
+      "skipReason": "Existing optional profile replica configuration test",
+      "passed": 108,
+      "skipped": 1,
+      "status": "PASS",
+      "tests": 109,
+      "name": "Backend Dashboard and upstream regressions",
+      "failed": 0
+    },
+    {
+      "name": "Frontend regression suite",
+      "tests": 633,
+      "files": 106,
+      "status": "PASS"
+    },
+    {
+      "name": "Angular production build",
+      "existingWarnings": [
+        "Landing stylesheet 56.67 kB exceeds 48 kB",
+        "Jobs stylesheet 52.97 kB exceeds 48 kB"
+      ],
+      "status": "PASS",
+      "initialBundle": "3.91 MB"
+    },
+    {
+      "status": "PASS",
+      "name": "TypeScript noEmit"
+    },
+    {
+      "status": "PASS",
+      "name": "Authenticated local browser, Light/Dark/System, mobile 390px, keyboard and failure states"
+    },
+    {
+      "status": "PASS",
+      "name": "Two API processes, real JWT, source write visibility, ETag and owner isolation"
+    },
+    {
+      "name": "Query plans and bounded 5000-row integration fixture",
+      "status": "PASS",
+      "evidence": "local-acceptance.json"
+    },
+    {
+      "name": "Monitoring threshold unit regression",
+      "status": "PASS",
+      "thresholdMs": 1800
+    },
+    {
+      "name": "Trusted comparable history producer",
+      "reason": "Optional server-owned AIVersion provenance schema requires explicit approval under AGENTS.md; request pending. Legacy/client archives excluded.",
+      "status": "BLOCKED"
+    },
+    {
+      "name": "Authorized staging and representative load, database topology/failover",
+      "reason": "No verified staging URL, test account or representative multi-host infrastructure; no production connections attempted",
+      "status": "BLOCKED"
+    },
+    {
+      "name": "Live Prometheus rule evaluation",
+      "reason": "Promtool and running Prometheus unavailable; YAML and unit regression only",
+      "status": "BLOCKED"
+    }
+  ],
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 183,
+    "productionDataUsed": false
+  },
+  "finalization": "See REPORT.md and file-inventory.json for formatting, syntax and whitespace verification.",
+  "finalChecks": {
+    "formatWrite": "PASS: explicit changed paths only",
+    "formatCheck": "PASS",
+    "javascriptSyntax": "PASS: 11 changed JavaScript files",
+    "typescript": "PASS: tsc --noEmit -p frontend/tsconfig.app.json",
+    "worktreeWhitespace": "PASS",
+    "indexWhitespace": "PASS",
+    "movedFiles": 0,
+    "deletedRepositoryFiles": 0
+  }
+}

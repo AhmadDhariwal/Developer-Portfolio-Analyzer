@@ -1,0 +1,51 @@
+{
+  "baselineClean": true,
+  "modified": [
+    "backend/observability/prometheus-alerts.yml",
+    "backend/src/controllers/analysiscontroller.js",
+    "backend/src/controllers/dashboardcontroller.js",
+    "backend/src/scripts/verifyDashboardLocal.js",
+    "backend/src/tests/dashboardEndpoints.test.js",
+    "backend/src/tests/skillGapConsumerContracts.test.js",
+    "backend/verification/dashboard/REPORT.md",
+    "docs/features/dashboard.md",
+    "frontend/src/app/pages/dashboard/components/dashboard-learning-summary/dashboard-learning-summary.component.html",
+    "frontend/src/app/pages/dashboard/components/dashboard-learning-summary/dashboard-learning-summary.component.ts",
+    "frontend/src/app/pages/dashboard/dashboard-request-lifecycle.spec.ts",
+    "frontend/src/app/pages/dashboard/dashboard.component.html",
+    "frontend/src/app/pages/dashboard/dashboard.component.scss",
+    "frontend/src/app/pages/dashboard/dashboard.component.ts",
+    "frontend/src/app/shared/services/api.service.ts"
+  ],
+  "added": [
+    "backend/src/services/dashboardConsistencyService.js",
+    "backend/src/services/dashboardHistoryService.js",
+    "backend/src/services/dashboardProgressService.js",
+    "backend/src/services/dashboardQueryService.js",
+    "backend/src/tests/dashboardConsistency.test.js",
+    "backend/src/tests/dashboardPortfolioScope.test.js",
+    "backend/verification/dashboard/followup-2026-11-12/PROVENANCE-DESIGN.md",
+    "backend/verification/dashboard/followup-2026-11-12/REPORT.md",
+    "backend/verification/dashboard/followup-2026-11-12/comparison.json",
+    "backend/verification/dashboard/followup-2026-11-12/desktop-dark.png",
+    "backend/verification/dashboard/followup-2026-11-12/desktop-light.png",
+    "backend/verification/dashboard/followup-2026-11-12/environment-audit.json",
+    "backend/verification/dashboard/followup-2026-11-12/file-inventory.json",
+    "backend/verification/dashboard/followup-2026-11-12/local-acceptance.json",
+    "backend/verification/dashboard/followup-2026-11-12/mobile-dark.png",
+    "backend/verification/dashboard/followup-2026-11-12/validation.json",
+    "frontend/src/app/pages/dashboard/components/dashboard-progress/dashboard-progress.component.html",
+    "frontend/src/app/pages/dashboard/components/dashboard-progress/dashboard-progress.component.scss",
+    "frontend/src/app/pages/dashboard/components/dashboard-progress/dashboard-progress.component.spec.ts",
+    "frontend/src/app/pages/dashboard/components/dashboard-progress/dashboard-progress.component.ts",
+    "frontend/src/app/shared/models/dashboard.model.ts"
+  ],
+  "moved": [],
+  "deleted": [],
+  "temporaryCleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 183,
+    "productionDataUsed": false
+  },
+  "preserved": "Historical parent evidence, final screenshots, source tests and verification artifacts"
+}

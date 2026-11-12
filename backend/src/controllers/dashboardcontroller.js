@@ -1,5 +1,14 @@
+const portfolioScoring = require('../services/scoring/portfolioScore');
+const {
+  buildCachePipeline,
+  buildIntegrationPipeline,
+} = require('../services/dashboardQueryService');
+const { readStableDashboard } = require('../services/dashboardConsistencyService');
+const { loadReadinessHistory } = require('../services/dashboardHistoryService');
+const { buildDashboardProgress } = require('../services/dashboardProgressService');
+const mongoose = require('mongoose');
 const { buildReadinessCenter } = require('../services/dashboardMetricsService');
-const { clampScore: clamp, numeric } = require('../services/scoring/math');
+const { clampScore: clamp, numeric, safeAverage } = require('../services/scoring/math');
 const developerContext = require('../services/developerContextService');
 const skillGapContract = require('../services/skillGapCacheContract');
 const crypto = require('node:crypto');
@@ -13,46 +22,12 @@ const CareerSprint = require('../models/careerSprint');
 const JobCache = require('../models/jobCache');
 const NewsCache = require('../models/news');
 const UserCourseProgress = require('../models/userCourseProgress');
-const {
-  getDeveloperSignals,
-  buildSignalHash,
-  buildResumeCacheIdentity,
-} = require('../services/developerSignalService');
-const { detectSkillGaps } = require('../utils/skilldetector');
+const { buildResumeCacheIdentity } = require('../services/developerSignalService');
 const { getIntegrationInsight } = require('../services/integrationInsightService');
 const IntegrationSyncLog = require('../models/integrationSyncLog');
 const IntegrationConnection = require('../models/integrationConnection');
 
 const DASHBOARD_FRESH_MS = 24 * 60 * 60 * 1000;
-
-const average = (values = []) => {
-  if (!Array.isArray(values) || !values.length) return 0;
-  return values.reduce((sum, value) => sum + Number(value || 0), 0) / values.length;
-};
-
-const emptyContributionActivity = () => {
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-  const now = new Date();
-  const result = [];
-  for (let i = 5; i >= 0; i -= 1) {
-    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    result.push({ month: months[date.getMonth()], count: 0 });
-  }
-  return result;
-};
 
 const safeDate = (value) => {
   if (!value) return null;
@@ -60,11 +35,11 @@ const safeDate = (value) => {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 };
 
-const toFreshness = (value) => {
+const toFreshness = (value, maxAgeMs = DASHBOARD_FRESH_MS) => {
   const date = safeDate(value);
   if (!date) return 'missing';
   const age = Date.now() - date.getTime();
-  return age >= 0 && age <= DASHBOARD_FRESH_MS ? 'fresh' : 'stale';
+  return age >= 0 && age <= maxAgeMs ? 'fresh' : 'stale';
 };
 
 const statusLabel = (status) => {
@@ -80,14 +55,21 @@ const freshnessEntry = ({
   connected = false,
   stale = false,
   reason = '',
+  maxAgeMs = DASHBOARD_FRESH_MS,
+  policy = '',
 } = {}) => {
-  const baseStatus = !safeDate(updatedAt) ? 'missing' : stale ? 'stale' : toFreshness(updatedAt);
+  const baseStatus = !safeDate(updatedAt)
+    ? 'missing'
+    : stale
+      ? 'stale'
+      : toFreshness(updatedAt, maxAgeMs);
   const status = available || connected || updatedAt ? baseStatus : 'missing';
   return {
     connected: Boolean(connected || available),
     available: Boolean(available),
     lastUpdated: updatedAt || null,
     status,
+    policy: policy || (Number.isFinite(maxAgeMs) ? 'age-and-dependencies' : 'durable-record'),
     label: statusLabel(status),
     refreshRecommended: status !== 'fresh',
     reason: reason || (status === 'fresh' ? '' : 'Analysis refresh recommended'),
@@ -153,7 +135,7 @@ const createEmptyAnalysis = (userId) => ({
   readinessScore: 0,
   githubStats: { repos: 0, stars: 0, forks: 0, followers: 0 },
   languageDistribution: {},
-  contributionActivity: emptyContributionActivity(),
+  contributionActivity: [],
   createdAt: null,
   updatedAt: null,
 });
@@ -166,7 +148,13 @@ const latestCacheByPredicate = async (userId, predicate) =>
 const loadDefaultResumeAnalysis = (userId) =>
   developerContext.resolveResumeAnalysis(userId, undefined, { User, ResumeAnalysis });
 
-const getCachedDashboardContext = async (userId, careerStack, experienceLevel, user) => {
+const getCachedDashboardContext = async (
+  userId,
+  careerStack,
+  experienceLevel,
+  user,
+  compact = false,
+) => {
   const context = user || (await developerContext.loadUser(userId, { User }));
   const scopedCache = {
     careerStack,
@@ -182,10 +170,24 @@ const getCachedDashboardContext = async (userId, careerStack, experienceLevel, u
     user: context,
     resumeIdentity: buildResumeCacheIdentity({ resumeAnalysis: currentResume }),
   });
+  scopedCache.githubUsername = skillGapScope.githubUsername;
+  const cachePredicates = [
+    { ...scopedCache, 'analysisData.portfolioScore.overallScore': { $exists: true } },
+    { ...skillGapScope, 'analysisData.missingSkills': { $exists: true } },
+    { ...scopedCache, 'analysisData.projects': { $exists: true } },
+  ];
+  let caches;
+  if (compact) {
+    const [result] = await AnalysisCache.aggregate(
+      buildCachePipeline(userId, careerStack, experienceLevel, cachePredicates),
+    ).option({ maxTimeMS: 1500, allowDiskUse: false });
+    caches = [0, 1, 2].map((index) => result?.[String(index)]?.[0] || null);
+  } else
+    caches = await Promise.all(
+      cachePredicates.map((predicate) => latestCacheByPredicate(userId, predicate)),
+    );
+  const [latestPortfolioCache, latestSkillGapCache, latestRecommendationCache] = caches;
   const [
-    latestPortfolioCache,
-    latestSkillGapCache,
-    latestRecommendationCache,
     latestResume,
     latestWeeklyReport,
     latestCareerSprint,
@@ -193,25 +195,15 @@ const getCachedDashboardContext = async (userId, careerStack, experienceLevel, u
     latestNews,
     learningProgress,
   ] = await Promise.all([
-    latestCacheByPredicate(userId, {
-      ...scopedCache,
-      'analysisData.portfolioScore.overallScore': { $exists: true },
-    }),
-    latestCacheByPredicate(userId, {
-      ...skillGapScope,
-      'analysisData.missingSkills': { $exists: true },
-    }),
-    latestCacheByPredicate(userId, {
-      ...scopedCache,
-      'analysisData.projects': { $exists: true },
-    }),
     Promise.resolve(currentResume),
     WeeklyReport.findOne({ userId })
-      .select('weekEndDate createdAt updatedAt meta')
+      .select('weekEndDate createdAt updatedAt')
       .sort({ weekEndDate: -1, updatedAt: -1, _id: -1 })
       .lean(),
     CareerSprint.findOne({ userId })
-      .select('tasks updatedAt')
+      .select(
+        'tasks._id tasks.title tasks.points tasks.priority tasks.isCompleted tasks.completedAt updatedAt __v goalStack goalExperienceLevel',
+      )
       .sort({ updatedAt: -1, _id: -1 })
       .lean(),
     JobCache.findOne({
@@ -227,10 +219,35 @@ const getCachedDashboardContext = async (userId, careerStack, experienceLevel, u
     NewsCache.findOne({ cacheKey: 'news:v3:public:pool', expiresAt: { $gt: new Date() } })
       .select('trendingTopics lastUpdated updatedAt')
       .lean(),
-    UserCourseProgress.find({ userId })
-      .select('status updatedAt createdAt')
-      .sort({ updatedAt: -1, _id: -1 })
-      .lean(),
+    compact
+      ? UserCourseProgress.aggregate([
+          {
+            $match: {
+              userId: mongoose.isValidObjectId(userId)
+                ? new mongoose.Types.ObjectId(String(userId))
+                : userId,
+            },
+          },
+          {
+            $facet: {
+              counts: [
+                {
+                  $group: { _id: '$status', count: { $sum: 1 }, updatedAt: { $max: '$updatedAt' } },
+                },
+              ],
+              recent: [
+                { $match: { status: 'completed' } },
+                { $sort: { completedAt: -1, _id: -1 } },
+                { $limit: 5 },
+                { $project: { status: 1, 'course.title': 1, completedAt: 1, updatedAt: 1 } },
+              ],
+            },
+          },
+        ]).option({ maxTimeMS: 1500, allowDiskUse: false })
+      : UserCourseProgress.find({ userId })
+          .select('status updatedAt createdAt')
+          .sort({ updatedAt: -1, _id: -1 })
+          .lean(),
   ]);
 
   return {
@@ -242,7 +259,12 @@ const getCachedDashboardContext = async (userId, careerStack, experienceLevel, u
     latestCareerSprint,
     latestJob,
     latestNews,
-    learningProgress: Array.isArray(learningProgress) ? learningProgress : [],
+    learningProgress: compact
+      ? learningProgress[0]?.recent || []
+      : Array.isArray(learningProgress)
+        ? learningProgress
+        : [],
+    learningTotals: compact ? learningProgress[0]?.counts || [] : null,
   };
 };
 
@@ -253,55 +275,33 @@ const deriveReadinessBreakdown = ({
   skillGapCache,
   integrationInsight,
 }) => {
-  const skillData = skillGapCache?.analysisData;
-  const canonicalCoverage =
-    !skillData || skillData.ruleVersion === 'skill-evidence-coverage-v1'
-      ? numeric(skillData?.coverage)
-      : undefined;
-  const cachedBreakdown =
+  const score = (value) => (numeric(value) === null ? null : clamp(value));
+  const saved =
     portfolioScore?.breakdown || portfolioScore?.analysisData?.portfolioScore?.breakdown;
-  if (cachedBreakdown) {
-    return {
-      codeQuality: clamp(cachedBreakdown.codeQuality),
-      skillCoverage:
-        canonicalCoverage !== undefined
-          ? canonicalCoverage === null
-            ? null
-            : clamp(canonicalCoverage)
-          : clamp(cachedBreakdown.skillCoverage),
-      industryReadiness: clamp(cachedBreakdown.industryReadiness),
-      projectImpact: clamp(cachedBreakdown.projectImpact),
-    };
-  }
-
-  const topSkillCount = Array.isArray(skillGapCache?.analysisData?.yourSkills)
-    ? skillGapCache.analysisData.yourSkills.length
-    : 0;
-  const missingSkillCount = Array.isArray(skillGapCache?.analysisData?.missingSkills)
-    ? skillGapCache.analysisData.missingSkills.length
-    : 0;
-  const totalSkills = topSkillCount + missingSkillCount;
-  const coverage = totalSkills > 0 ? Math.round((topSkillCount / totalSkills) * 100) : 0;
-
+  const canonical = portfolioScore?.scoring?.breakdown;
+  const dimension = (key) => (canonical?.[key] ? score(canonical[key].value) : score(saved?.[key]));
   return {
-    codeQuality: clamp(analysis?.githubScore || 0),
-    skillCoverage:
-      canonicalCoverage !== undefined
-        ? canonicalCoverage === null
-          ? null
-          : clamp(canonicalCoverage)
-        : clamp(numeric(skillData?.coverage) ?? coverage),
-    industryReadiness: clamp(
-      resume
-        ? average([
-            resume.atsScore,
-            resume.keywordDensity,
-            resume.contentQuality,
-            resume.formatScore,
-          ])
-        : (numeric(analysis?.readinessScore) ?? numeric(analysis?.githubScore) ?? 0),
-    ),
-    projectImpact: clamp(average([analysis?.githubScore, integrationInsight?.integrationScore])),
+    codeQuality: saved
+      ? dimension('codeQuality')
+      : analysis?.updatedAt
+        ? score(analysis.githubScore)
+        : null,
+    skillCoverage: canonical?.skillCoverage
+      ? score(canonical.skillCoverage.value)
+      : skillGapContract.coverage(skillGapCache?.analysisData?.coverage),
+    industryReadiness: saved
+      ? dimension('industryReadiness')
+      : resume
+        ? score(
+            safeAverage([
+              resume.atsScore,
+              resume.keywordDensity,
+              resume.contentQuality,
+              resume.formatScore,
+            ]),
+          )
+        : null,
+    projectImpact: saved ? dimension('projectImpact') : null,
   };
 };
 
@@ -441,12 +441,16 @@ const maybeSendNotModified = (req, res, payload) => {
 
 const ensureAnalysis = async (userId, githubUsername) => {
   const analysis = await Analysis.findOne({ userId })
+    .select(
+      'githubScore readinessScore githubStats githubSignals.username githubSignals.scoring languageDistribution contributionActivity updatedAt createdAt',
+    )
     .sort({ updatedAt: -1, createdAt: -1, _id: -1 })
     .lean();
   if (
     analysis &&
-    (!analysis.githubSignals?.username ||
-      analysis.githubSignals.username.toLowerCase() === String(githubUsername).toLowerCase())
+    safeDate(analysis.updatedAt) &&
+    analysis.githubSignals?.username &&
+    analysis.githubSignals.username.toLowerCase() === String(githubUsername).toLowerCase()
   ) {
     return {
       analysis,
@@ -505,40 +509,13 @@ const buildRecommendationPreview = (recommendationData = {}) => {
   }));
 };
 
-const buildDashboardSignalHash = ({
-  dependencySignalHash,
-  latestNews,
-  latestJob,
-  careerStack,
-  experienceLevel,
-}) =>
-  crypto
-    .createHash('sha256')
-    .update(
-      JSON.stringify({
-        dependencySignalHash,
-        news: {
-          updatedAt: latestNews?.lastUpdated || latestNews?.updatedAt || null,
-          topics: latestNews?.trendingTopics || [],
-        },
-        jobs: {
-          updatedAt: latestJob?.lastSynced || latestJob?.updatedAt || null,
-          jobId: latestJob?.jobId || '',
-          skills: latestJob?.skills || [],
-        },
-        careerStack,
-        experienceLevel,
-      }),
-    )
-    .digest('hex');
-
 const isCacheOlderThan = (cache, ...values) => {
   const cacheDate = safeDate(cache?.updatedAt || cache?.createdAt);
   if (!cacheDate) return false;
   return values
     .map((value) => safeDate(value))
     .filter(Boolean)
-    .some((date) => date.getTime() > cacheDate.getTime() + 1000);
+    .some((date) => date.getTime() > cacheDate.getTime());
 };
 
 const firstString = (values = [], fallback = '') => {
@@ -583,14 +560,17 @@ const buildCommandCenter = ({
     {
       key: 'prioritySkill',
       label: 'Top Priority Skill',
-      value: firstString(highDemandSkills, firstString(missingSkills, 'No priority skill yet')),
+      value: firstString(
+        highDemandSkills,
+        firstString(missingSkills, 'Open Skill Gap to identify priorities'),
+      ),
       source: 'Skill Gap',
       route: '/app/skill-gap',
     },
     {
       key: 'skillGap',
       label: 'Top Skill Gap',
-      value: firstString(missingSkills, 'No skill gap detected'),
+      value: firstString(missingSkills, 'No current Skill Gap evidence'),
       source: 'Skill Gap',
       route: '/app/skill-gap',
     },
@@ -640,18 +620,45 @@ const latestTimestamp = (...values) => {
 
 const getDashboardSummary = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('-password').lean();
-    if (!user) return res.status(404).json({ message: 'User not found' });
-
-    const githubUsername = developerContext.resolveGithubUsername(user) || '';
-    const careerStack = developerContext.resolveCareerStack(user) || 'Full Stack';
-    const experienceLevel = developerContext.resolveExperienceLevel(user) || 'Student';
-    const [analysisState, cachedContext, integrationInsight] = await Promise.all([
-      ensureAnalysis(req.user._id, githubUsername),
-      getCachedDashboardContext(req.user._id, careerStack, experienceLevel, user),
-      safeGetIntegrationInsight(req.user._id),
-    ]);
-
+    const asOf = new Date();
+    const captured = await readStableDashboard(async () => {
+      const user = await User.findById(req.user._id)
+        .select(
+          'name githubUsername activeGithubUsername careerStack activeCareerStack experienceLevel activeExperienceLevel activeResumeFileId defaultResumeFileId updatedAt __v',
+        )
+        .lean();
+      if (!user) {
+        const error = new Error('User not found');
+        error.status = 404;
+        throw error;
+      }
+      const githubUsername = developerContext.resolveGithubUsername(user) || '';
+      const careerStack = developerContext.resolveCareerStack(user) || 'Full Stack';
+      const experienceLevel = developerContext.resolveExperienceLevel(user) || 'Student';
+      const [analysisState, cachedContext, integrationInsight] = await Promise.all([
+        ensureAnalysis(req.user._id, githubUsername),
+        getCachedDashboardContext(req.user._id, careerStack, experienceLevel, user, true),
+        safeGetIntegrationInsight(req.user._id),
+      ]);
+      return {
+        user,
+        githubUsername,
+        careerStack,
+        experienceLevel,
+        analysisState,
+        cachedContext,
+        integrationInsight,
+      };
+    });
+    const {
+      user,
+      githubUsername,
+      careerStack,
+      experienceLevel,
+      analysisState,
+      cachedContext,
+      integrationInsight,
+    } = captured;
     const { analysis, rateLimited, noUsername, githubStatus, languageSource } = analysisState;
     const {
       latestPortfolioCache,
@@ -663,33 +670,48 @@ const getDashboardSummary = async (req, res) => {
       latestJob,
       latestNews,
       learningProgress,
+      learningTotals,
     } = cachedContext;
     const learningRecords = Array.isArray(learningProgress) ? learningProgress : [];
-    const learningUpdatedAt =
-      learningRecords[0]?.updatedAt || learningRecords[0]?.createdAt || null;
+    const learningUpdatedAt = latestTimestamp(
+      ...(learningTotals || []).map((row) => row.updatedAt),
+      learningRecords[0]?.updatedAt,
+      learningRecords[0]?.createdAt,
+    );
+    const learningCount = (status) =>
+      learningTotals
+        ? learningTotals
+            .filter((row) => !status || row._id === status)
+            .reduce((sum, row) => sum + row.count, 0)
+        : learningRecords.filter((row) => !status || row.status === status).length;
     const learningSnapshot = {
-      totalTracked: learningRecords.length,
-      savedCount: learningRecords.filter((item) => item?.status === 'saved').length,
-      inProgressCount: learningRecords.filter((item) => item?.status === 'in_progress').length,
-      completedCount: learningRecords.filter((item) => item?.status === 'completed').length,
+      totalTracked: learningCount(),
+      savedCount: learningCount('saved'),
+      inProgressCount: learningCount('in_progress'),
+      completedCount: learningCount('completed'),
       progressSource: 'user-entered',
       completionSource: 'self-reported',
       updatedAt: learningUpdatedAt,
     };
 
-    const developerSignals = await getDeveloperSignals(req.user._id, {
-      githubSource: { analysis: analysis?.updatedAt ? analysis : null },
-      resumeAnalysis: latestResume,
-    });
-    const dependencySignalHash = buildSignalHash(developerSignals);
-    const signalHash = buildDashboardSignalHash({
-      dependencySignalHash,
-      latestNews,
-      latestJob,
+    // Versioned Dashboard identity must never overwrite the canonical shared
+    // developer-signal hash, which has a different owner and dependency set.
+    const dependencySignalHash = ''; // Not resolved here; only its owning service may publish it.
+    const signalHash = captured.revision;
+    const contextVersion = `dashboard-v2:${signalHash.slice(0, 16)}`;
+    const identity = {
+      userId: String(req.user._id),
+      githubUsername,
       careerStack,
       experienceLevel,
-    });
-    const contextVersion = `dashboard:${signalHash.slice(0, 16)}`;
+      ...buildResumeCacheIdentity({ resumeAnalysis: latestResume }),
+    };
+    const history = await loadReadinessHistory(
+      req.user._id,
+      identity,
+      latestPortfolioCache?.analysisData?.portfolioScore?.scoring?.ruleVersion,
+      asOf,
+    );
 
     const staleFlags = {
       portfolio: Boolean(
@@ -727,41 +749,20 @@ const getDashboardSummary = async (req, res) => {
       staleFlags.portfolio || staleFlags.skillGap || staleFlags.recommendations,
     );
 
-    const baseReadiness = clamp(
+    const baseReadiness =
       numeric(latestPortfolioCache?.analysisData?.portfolioScore?.overallScore) ??
-        // Legacy Analysis.readinessScore defaults to zero even before scoring.
-        (numeric(analysis?.readinessScore) || numeric(analysis?.githubScore) || 0),
-    );
-    const integrationScore = clamp(integrationInsight.integrationScore);
+      (analysis?.updatedAt ? numeric(analysis.githubScore) : null);
+    const integrationScore = integrationInsight.providers?.length
+      ? clamp(integrationInsight.integrationScore)
+      : 0;
     const readinessScore =
-      integrationScore > 0
-        ? Math.round(baseReadiness * 0.85 + integrationScore * 0.15)
-        : baseReadiness;
+      baseReadiness === null
+        ? null
+        : integrationScore > 0
+          ? Math.round(clamp(baseReadiness) * 0.85 + integrationScore * 0.15)
+          : clamp(baseReadiness);
 
-    const oneMonthAgo = new Date(Date.now() - 25 * 24 * 60 * 60 * 1000);
-    const lastMonthReadiness = await AnalysisCache.findOne({
-      userId: req.user._id,
-      githubUsername,
-      careerStack,
-      experienceLevel,
-      'analysisData.portfolioScore.overallScore': { $exists: true },
-      updatedAt: { $lte: oneMonthAgo },
-    })
-      .sort({ updatedAt: -1, _id: -1 })
-      .lean();
-
-    const lastMonthScore = Number(
-      lastMonthReadiness?.analysisData?.portfolioScore?.overallScore || 0,
-    );
-    // Historical portfolio snapshots do not capture historical integration weighting.
-    // Compare like-for-like portfolio scores, never a blended score with an unblended one.
-    const currentPortfolioScore = numeric(
-      latestPortfolioCache?.analysisData?.portfolioScore?.overallScore,
-    );
-    const scoreChangeFromLastMonth =
-      lastMonthReadiness && currentPortfolioScore !== null
-        ? Math.round(currentPortfolioScore - lastMonthScore)
-        : null;
+    const scoreChangeFromLastMonth = null; // No monthly cache-derived comparison.
     const readinessBreakdown = deriveReadinessBreakdown({
       portfolioScore: latestPortfolioCache?.analysisData?.portfolioScore,
       analysis,
@@ -823,13 +824,17 @@ const getDashboardSummary = async (req, res) => {
         connected: !noUsername,
         available: Boolean(analysis?.updatedAt || analysis?.createdAt),
         stale: githubStatus === 'stale' || rateLimited,
-        reason: rateLimited ? 'GitHub refresh recommended after rate limit resets' : '',
+        reason: analysis?.updatedAt
+          ? ''
+          : 'No current GitHub evidence with verified username provenance.',
       }),
       resume: freshnessEntry({
+        maxAgeMs: Number.POSITIVE_INFINITY,
         updatedAt: latestResume?.analyzedAt || null,
         available: Boolean(latestResume),
       }),
       skillGap: freshnessEntry({
+        maxAgeMs: 7 * 86400000,
         updatedAt: latestSkillGapCache?.updatedAt || null,
         available: Boolean(latestSkillGapCache),
         stale: staleFlags.skillGap,
@@ -840,6 +845,7 @@ const getDashboardSummary = async (req, res) => {
         stale: staleFlags.recommendations,
       }),
       weeklyReports: freshnessEntry({
+        maxAgeMs: Number.POSITIVE_INFINITY,
         updatedAt:
           latestWeeklyReport?.updatedAt ||
           latestWeeklyReport?.createdAt ||
@@ -848,20 +854,25 @@ const getDashboardSummary = async (req, res) => {
         available: Boolean(latestWeeklyReport),
       }),
       jobs: freshnessEntry({
+        maxAgeMs: Number.POSITIVE_INFINITY,
+        policy: 'module-expiry',
         updatedAt: latestJob?.lastSynced || latestJob?.updatedAt || null,
         available: Boolean(latestJob),
       }),
       news: freshnessEntry({
+        maxAgeMs: 20 * 60000,
         updatedAt: latestNews?.lastUpdated || latestNews?.updatedAt || null,
         available: Boolean(latestNews),
       }),
       careerSprint: freshnessEntry({
+        maxAgeMs: Number.POSITIVE_INFINITY,
         updatedAt: latestCareerSprint?.updatedAt || null,
         available: Boolean(latestCareerSprint),
       }),
       learning: freshnessEntry({
+        maxAgeMs: Number.POSITIVE_INFINITY,
         updatedAt: learningUpdatedAt,
-        available: learningRecords.length > 0,
+        available: learningCount() > 0,
       }),
       integrations: freshnessEntry({
         updatedAt: integrationInsight?.updatedAt || null,
@@ -871,22 +882,22 @@ const getDashboardSummary = async (req, res) => {
       }),
     };
     sourceFreshness.weekly = sourceFreshness.weeklyReports;
+    // One canonical freshness result drives badges, metadata and completeness.
+    for (const [key, source] of Object.entries(sourceFreshness)) {
+      if (key === 'weekly') continue;
+      meta.dataFreshness[key] = source.status;
+      meta.sourcesUsed[key] = {
+        connected: source.connected,
+        available: source.available,
+        status: source.status,
+      };
+    }
 
     const scopedSkillGapData = latestSkillGapCache?.analysisData || {};
     const skillsSnapshot = {
-      topSkills: skillNamesFromCache(
-        scopedSkillGapData.yourSkills || developerSignals.skillGapSignals?.knownSkills || [],
-        24,
-      ),
-      missingSkills: skillNamesFromCache(
-        scopedSkillGapData.missingSkills || developerSignals.skillGapSignals?.missingSkills || [],
-        20,
-      ),
-      coveragePercentage: skillGapContract.coverage(
-        latestSkillGapCache
-          ? scopedSkillGapData.coverage
-          : developerSignals.skillGapSignals?.coverage,
-      ),
+      topSkills: skillNamesFromCache(scopedSkillGapData.yourSkills || [], 24),
+      missingSkills: skillNamesFromCache(scopedSkillGapData.missingSkills || [], 20),
+      coveragePercentage: skillGapContract.coverage(scopedSkillGapData.coverage),
       stale: staleFlags.skillGap,
       updatedAt: latestSkillGapCache?.updatedAt || null,
     };
@@ -912,14 +923,30 @@ const getDashboardSummary = async (req, res) => {
     });
 
     const payload = {
-      score: Number(analysis?.githubScore || 0),
+      score: analysis?.updatedAt ? numeric(analysis.githubScore) : null,
       readinessScore,
+      readinessMeasurement: {
+        value: latestPortfolioCache || analysis?.updatedAt ? readinessScore : null,
+        basis: latestPortfolioCache ? 'portfolio' : analysis?.updatedAt ? 'github' : 'missing',
+      },
       readinessBreakdown,
+      readinessModel: {
+        weights: latestPortfolioCache?.analysisData?.portfolioScore?.scoring?.breakdown
+          ? Object.fromEntries(
+              Object.entries(
+                latestPortfolioCache.analysisData.portfolioScore.scoring.breakdown,
+              ).map(([key, value]) => [key, value.weight]),
+            )
+          : portfolioScoring.getWeights(careerStack),
+        basis: latestPortfolioCache?.analysisData?.portfolioScore?.scoring?.breakdown
+          ? 'recorded'
+          : 'nominal',
+      },
       scoreChangeFromLastMonth,
-      repositories: Number(analysis?.githubStats?.repos || 0),
-      stars: Number(analysis?.githubStats?.stars || 0),
-      forks: Number(analysis?.githubStats?.forks || 0),
-      followers: Number(analysis?.githubStats?.followers || 0),
+      repositories: analysis?.updatedAt ? Number(analysis.githubStats?.repos ?? 0) : null,
+      stars: analysis?.updatedAt ? Number(analysis.githubStats?.stars ?? 0) : null,
+      forks: analysis?.updatedAt ? Number(analysis.githubStats?.forks ?? 0) : null,
+      followers: analysis?.updatedAt ? Number(analysis.githubStats?.followers ?? 0) : null,
       userName: user.name || 'Developer',
       githubHandle: githubUsername,
       lastAnalyzedAt,
@@ -939,10 +966,10 @@ const getDashboardSummary = async (req, res) => {
       },
       resume: {
         analyzed: Boolean(latestResume),
-        atsScore: Number(latestResume?.atsScore || 0),
-        keywordDensity: Number(latestResume?.keywordDensity || 0),
-        formatScore: Number(latestResume?.formatScore || 0),
-        contentQuality: Number(latestResume?.contentQuality || 0),
+        atsScore: numeric(latestResume?.atsScore),
+        keywordDensity: numeric(latestResume?.keywordDensity),
+        formatScore: numeric(latestResume?.formatScore),
+        contentQuality: numeric(latestResume?.contentQuality),
         analyzedAt: latestResume?.analyzedAt || null,
       },
       rateLimited: Boolean(rateLimited),
@@ -953,9 +980,36 @@ const getDashboardSummary = async (req, res) => {
       readinessCenter,
       commandCenter,
       sourceFreshness,
+      activitySnapshot: {
+        data: analysis?.updatedAt ? analysis.contributionActivity || [] : [],
+        available: Boolean(analysis?.updatedAt),
+      },
+      languageSnapshot: {
+        data: normalizeLanguageMap(analysis?.languageDistribution),
+        available: Boolean(analysis?.updatedAt),
+      },
+      progress: buildDashboardProgress(
+        {
+          analysis,
+          latestCareerSprint,
+          latestSkillGapCache,
+          learningProgress: learningRecords,
+          sourceFreshness,
+          history,
+        },
+        asOf,
+      ),
+      consistency: {
+        policy: 'dashboard-source-revisions-v1',
+        revision: captured.revision,
+        identity,
+        validation: 'two-equal-reads',
+        maxAttempts: 2,
+      },
       dashboardContext: {
         signalHash,
         dependencySignalHash,
+        sourceRevisionPolicy: 'dashboard-source-revisions-v1',
         contextVersion,
         lastUpdated,
         careerStack,
@@ -967,6 +1021,7 @@ const getDashboardSummary = async (req, res) => {
       signalMetadata: {
         signalHash,
         dependencySignalHash,
+        sourceRevisionPolicy: 'dashboard-source-revisions-v1',
         contextVersion,
         lastUpdated,
         staleSources: Object.entries(staleFlags)
@@ -980,6 +1035,18 @@ const getDashboardSummary = async (req, res) => {
     if (maybeSendNotModified(req, res, payload)) return;
     res.json(payload);
   } catch (error) {
+    if (error.status === 409) {
+      res.set('Retry-After', '1');
+      return res.status(409).json({ code: error.code, message: error.message });
+    }
+    if (error.status === 404) return res.status(404).json({ message: 'User not found' });
+    if (error.code === 50) {
+      res.set('Retry-After', '1');
+      return res.status(503).json({
+        code: 'DASHBOARD_QUERY_BUDGET',
+        message: 'Dashboard evidence reads exceeded the query budget. Please retry.',
+      });
+    }
     console.error('Dashboard summary error:', error);
     res.status(500).json({ message: 'Failed to load dashboard summary' });
   }
@@ -995,7 +1062,7 @@ const getDashboardContributions = async (req, res) => {
     const data =
       Array.isArray(analysis?.contributionActivity) && analysis.contributionActivity.length
         ? analysis.contributionActivity
-        : emptyContributionActivity();
+        : [];
 
     res.json({
       data,
@@ -1082,11 +1149,8 @@ const getDashboardSkills = async (req, res) => {
         : [];
       coveragePercentage = skillGapContract.coverage(latestSkillGapCache.analysisData.coverage);
     } else {
-      const detected = detectSkillGaps(derivedTopSkills);
       topSkills = derivedTopSkills;
-      missingSkills = (detected.missingSkills || [])
-        .map((skill) => skill.name || skill)
-        .filter(Boolean);
+      missingSkills = []; // Only Skill Gap owns canonical target-role gap detection.
 
       // Metadata fallback cannot establish canonical evidence coverage.
       coveragePercentage = null;
@@ -1128,7 +1192,8 @@ const getDashboardRecommendations = async (req, res) => {
     const resumeIdentity = buildResumeCacheIdentity({ resumeAnalysis: resume });
     const [latestRecommendationCache, savedRecommendations] = await Promise.all([
       latestCacheByPredicate(req.user._id, {
-        githubUsername: developerContext.resolveGithubUsername(user) || '',
+        githubUsername: skillGapContract.buildScope({ userId: req.user._id, user, resumeIdentity })
+          .githubUsername,
         careerStack,
         experienceLevel,
         ...resumeIdentity,
@@ -1174,24 +1239,18 @@ const getDashboardIntegrationAnalytics = async (req, res) => {
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
     const [logs, persistedInsight, connections] = await Promise.all([
-      IntegrationSyncLog.find({
-        userId: req.user._id,
-        createdAt: { $gte: since },
-      })
-        .select('provider activityScore profileScore confidence status createdAt')
-        .sort({ createdAt: -1, _id: -1 })
-        .lean(),
+      IntegrationSyncLog.aggregate(buildIntegrationPipeline(req.user._id, since)).option({
+        maxTimeMS: 1500,
+        allowDiskUse: false,
+      }),
       safeGetIntegrationInsight(req.user._id),
       IntegrationConnection.find({ userId: req.user._id, status: 'connected' })
         .select('provider lastSyncedAt metadata')
         .lean(),
     ]);
 
-    const logMap = new Map();
-    logs.forEach((log) => {
-      if (!logMap.has(log.provider)) logMap.set(log.provider, []);
-      logMap.get(log.provider).push(log);
-    });
+    const logMap = new Map(logs.map((row) => [row._id, row.recent]));
+    const logStats = new Map(logs.map((row) => [row._id, row]));
 
     const insightByProvider = new Map(
       (persistedInsight.providers || []).map((provider) => [
@@ -1247,11 +1306,10 @@ const getDashboardIntegrationAnalytics = async (req, res) => {
                 ),
               )
             : 0;
-        const successCount = providerLogs.filter((item) => item.status === 'success').length;
+        const syncCount = logStats.get(provider)?.count || 0;
+        const successCount = logStats.get(provider)?.successes || 0;
         const successRate =
-          providerLogs.length > 0
-            ? Number(((successCount / providerLogs.length) * 100).toFixed(1))
-            : 0;
+          syncCount > 0 ? Number(((successCount / syncCount) * 100).toFixed(1)) : 0;
 
         return {
           provider,
@@ -1260,7 +1318,9 @@ const getDashboardIntegrationAnalytics = async (req, res) => {
           confidence,
           trendDelta,
           successRate,
-          syncCount: providerLogs.length,
+          syncCount,
+          successfulSyncCount: successCount,
+          trendAvailable: Boolean(latest && previous),
           lastSyncedAt: latest?.createdAt || insight?.syncedAt || connection?.lastSyncedAt || null,
         };
       })
@@ -1272,11 +1332,23 @@ const getDashboardIntegrationAnalytics = async (req, res) => {
 
     res.json({
       days,
+      connectivity: {
+        connectedCount: connections.length,
+        providers: connections.map((connection) => connection.provider).sort(),
+        syncCount: logs.reduce((sum, row) => sum + row.count, 0),
+        failedSyncCount: logs.reduce((sum, row) => sum + row.count - row.successes, 0),
+        days,
+        lastSyncedAt: latestTimestamp(...connections.map((connection) => connection.lastSyncedAt)),
+      },
       cards,
       syncStatus: toFreshness(persistedInsight.updatedAt),
       updatedAt: persistedInsight.updatedAt || null,
     });
   } catch (error) {
+    if (error.code === 50)
+      return res
+        .status(503)
+        .json({ message: 'Integration analytics query budget exceeded; retry a shorter window.' });
     console.error('Dashboard integration analytics error:', error.message);
     res.status(500).json({ message: 'Failed to load integration analytics' });
   }

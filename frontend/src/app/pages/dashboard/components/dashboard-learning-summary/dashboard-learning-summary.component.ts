@@ -17,5 +17,6 @@ export interface DashboardLearningSnapshot {
   styleUrl: './dashboard-learning-summary.component.scss',
 })
 export class DashboardLearningSummaryComponent {
+  @Input() completedCourses: { title: string; completedAt: string | null }[] = [];
   @Input() snapshot: DashboardLearningSnapshot | null = null;
 }

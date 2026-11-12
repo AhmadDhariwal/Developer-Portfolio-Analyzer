@@ -1,4 +1,9 @@
 import {
+  DashboardProgress,
+  DashboardIntegrationConnectivity,
+} from '../../shared/models/dashboard.model';
+import { DashboardProgressComponent } from './components/dashboard-progress/dashboard-progress.component';
+import {
   AfterViewInit,
   ChangeDetectorRef,
   Component,
@@ -35,7 +40,7 @@ Chart.register(...registerables);
 
 export interface StatCard {
   label: string;
-  value: number;
+  value: number | null;
   growth: string;
   iconType: 'repos' | 'stars' | 'forks' | 'followers';
 }
@@ -60,6 +65,7 @@ export interface IntegrationAnalyticsCard {
   profileScore: number;
   confidence: number;
   trendDelta: number;
+  trendAvailable: boolean;
   successRate: number;
   syncCount: number;
   lastSyncedAt: string;
@@ -128,6 +134,7 @@ interface SourceFreshnessEntry {
   status: string;
   refreshRecommended: boolean;
   reason?: string;
+  policy?: string;
 }
 
 @Component({
@@ -140,6 +147,7 @@ interface SourceFreshnessEntry {
     ScoreMeterComponent,
     UiBadgeComponent,
     DashboardLearningSummaryComponent,
+    DashboardProgressComponent,
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
@@ -150,6 +158,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('languageChart') languageChart!: ElementRef<HTMLCanvasElement>;
 
   developerScore = 0;
+  readinessAvailable = false;
+  readinessBasis = 'missing';
+  private recordedWeights: Record<string, number> | null = null;
+  progress: DashboardProgress | null = null;
+  integrationConnectivity: DashboardIntegrationConnectivity | null = null;
+  integrationHealthState: 'loading' | 'ready' | 'error' = 'loading';
+  private hasSummaryCharts = false;
+  private snapshotCareerStack: CareerStack | null = null;
   githubScore = 0;
   lastAnalyzed = 'Loading...';
   lastAnalyzedAt: string | null = null;
@@ -171,13 +187,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly experienceLevels: ExperienceLevel[] = EXPERIENCE_LEVELS;
 
   statCards: StatCard[] = [
-    { label: 'Repositories', value: 0, growth: '', iconType: 'repos' },
-    { label: 'Total Stars', value: 0, growth: '', iconType: 'stars' },
-    { label: 'Total Forks', value: 0, growth: '', iconType: 'forks' },
-    { label: 'Followers', value: 0, growth: '', iconType: 'followers' },
+    { label: 'Repositories', value: null, growth: '', iconType: 'repos' },
+    { label: 'Total Stars', value: null, growth: '', iconType: 'stars' },
+    { label: 'Total Forks', value: null, growth: '', iconType: 'forks' },
+    { label: 'Followers', value: null, growth: '', iconType: 'followers' },
   ];
 
   totalActivity = 0;
+  activityAvailable = false;
   coveragePercentage: number | null = null;
   topSkills: string[] = [];
   missingSkills: string[] = [];
@@ -185,7 +202,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   hasLanguageData = false;
   recommendations: RecommendationItem[] = [];
   aiBreakdown: ScoreBreakdown | null = null;
-  confidenceScore = 0;
   scoreReasons: string[] = [];
   explainabilityBreakdown: {
     weights: Record<string, number>;
@@ -202,7 +218,12 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   dashboardStale = false;
   dashboardRefreshMessage = '';
   fromFrontendCache = false;
-  resumeMetrics = {
+  resumeMetrics: {
+    atsScore: number | null;
+    keywordDensity: number | null;
+    formatScore: number | null;
+    contentQuality: number | null;
+  } = {
     atsScore: 0,
     keywordDensity: 0,
     formatScore: 0,
@@ -219,7 +240,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private requestCycle = 0;
   private sourcesUsed: DashboardSourcesUsed = {};
   private languageSource = 'cached_snapshot';
-  private readonly cacheVersion = 'dashboard-v4';
+  private readonly cacheVersion = 'dashboard-v5';
   private readonly requestCancelled = new Subject<void>();
   private destroyed = false;
   private themeObserver: MutationObserver | null = null;
@@ -341,6 +362,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.isActiveCycle(cycle)) return;
 
     const context = data?.dashboardContext || data?.signalMetadata || {};
+    this.snapshotCareerStack = CAREER_STACKS.includes(context.careerStack)
+      ? context.careerStack
+      : null;
     this.signalHash = String(context.signalHash || data?.signalHash || '');
     const dependencySignalHash = String(
       context.dependencySignalHash || data?.dependencySignalHash || '',
@@ -350,7 +374,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       context.stale || context.refreshRecommended || data?.signalMetadata?.staleSources?.length,
     );
     this.dashboardRefreshMessage = this.dashboardStale ? 'Analysis refresh recommended' : '';
-    if (dependencySignalHash) {
+    if (dependencySignalHash && !context.sourceRevisionPolicy) {
       try {
         this.frontendCache.setCurrentSignalHash(
           {
@@ -372,18 +396,37 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.noGithubUsername = data.noUsername === true;
     this.githubScore = Number(data.score || 0);
     this.scoreChangeFromLastMonth = data.scoreChangeFromLastMonth ?? null;
+    this.readinessBasis = data.readinessMeasurement?.basis || 'legacy';
+    this.readinessAvailable = data.readinessMeasurement
+      ? data.readinessMeasurement.value !== null
+      : true;
     this.developerScore = Number(data.readinessScore || 0);
+    this.progress = data.progress || null;
+    this.hasSummaryCharts = Boolean(data.activitySnapshot && data.languageSnapshot);
+    if (this.hasSummaryCharts) {
+      this.activityAvailable = data.activitySnapshot.available === true;
+      this.pendingActivityData = data.activitySnapshot.data || [];
+      this.pendingLanguageData = data.languageSnapshot.data || {};
+      this.totalActivity = this.pendingActivityData!.reduce((sum, item) => sum + item.count, 0);
+      this.hasLanguageData = Object.keys(this.pendingLanguageData!).length > 0;
+      if (this.viewInitialized) {
+        this.initActivityChart(this.pendingActivityData!);
+        this.initLanguageChart(this.pendingLanguageData!);
+      }
+    }
     this.integrationScore = Number(data?.integration?.score || 0);
     this.sourcesUsed = data?.sourcesUsed || {};
     this.languageSource = String(data?.languageSource || 'cached_snapshot');
 
     this.resumeMetrics = {
-      atsScore: Number(data?.resume?.atsScore || 0),
-      keywordDensity: Number(data?.resume?.keywordDensity || 0),
-      formatScore: Number(data?.resume?.formatScore || 0),
-      contentQuality: Number(data?.resume?.contentQuality || 0),
+      atsScore: this.normalizeCoverage(data?.resume?.atsScore),
+      keywordDensity: this.normalizeCoverage(data?.resume?.keywordDensity),
+      formatScore: this.normalizeCoverage(data?.resume?.formatScore),
+      contentQuality: this.normalizeCoverage(data?.resume?.contentQuality),
     };
 
+    this.recordedWeights =
+      data.readinessModel?.basis === 'recorded' ? data.readinessModel.weights : null;
     this.aiBreakdown = this.normalizeBreakdown(data?.readinessBreakdown);
     this.readinessCenter = this.normalizeReadinessCenter(data?.readinessCenter);
     this.commandCenter = this.normalizeCommandCenter(data?.commandCenter);
@@ -394,19 +437,33 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       weights: this.getBreakdownWeights(),
       featureScores: this.aiBreakdown,
     };
-    this.confidenceScore = this.buildConfidenceScore();
     this.scoreReasons = this.buildScoreReasons();
 
     this.statCards = [
       {
         label: 'Repositories',
-        value: Number(data.repositories || 0),
+        value: this.sourcesUsed.github?.available ? Number(data.repositories ?? 0) : null,
         growth: '',
         iconType: 'repos',
       },
-      { label: 'Total Stars', value: Number(data.stars || 0), growth: '', iconType: 'stars' },
-      { label: 'Total Forks', value: Number(data.forks || 0), growth: '', iconType: 'forks' },
-      { label: 'Followers', value: Number(data.followers || 0), growth: '', iconType: 'followers' },
+      {
+        label: 'Total Stars',
+        value: this.sourcesUsed.github?.available ? Number(data.stars ?? 0) : null,
+        growth: '',
+        iconType: 'stars',
+      },
+      {
+        label: 'Total Forks',
+        value: this.sourcesUsed.github?.available ? Number(data.forks ?? 0) : null,
+        growth: '',
+        iconType: 'forks',
+      },
+      {
+        label: 'Followers',
+        value: this.sourcesUsed.github?.available ? Number(data.followers ?? 0) : null,
+        growth: '',
+        iconType: 'followers',
+      },
     ];
 
     this.learningSnapshot = data?.learningSnapshot || null;
@@ -423,7 +480,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private loadSecondaryDashboardData(forceRefresh: boolean, cycle: number): void {
     if (!this.isActiveCycle(cycle)) return;
-    this.loadActivityAndLanguage(forceRefresh, cycle);
+    if (!this.hasSummaryCharts) this.loadActivityAndLanguage(forceRefresh, cycle);
     this.loadIntegrationAnalytics(cycle, forceRefresh);
   }
 
@@ -488,6 +545,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   loadIntegrationAnalytics(cycle = this.requestCycle, forceRefresh = false): void {
+    this.integrationHealthState = 'loading';
     this.cachedDashboardRequest(
       'dashboardIntegrationAnalytics',
       () => this.apiService.getDashboardIntegrationAnalytics(7),
@@ -497,6 +555,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       next: (payload: any) => {
         if (!this.isActiveCycle(cycle)) return;
 
+        this.integrationConnectivity = payload.connectivity || null;
+        this.integrationHealthState = 'ready';
         this.integrationAnalyticsCards = Array.isArray(payload?.cards)
           ? payload.cards.map((card: any) => ({
               provider: String(card.provider || '').toLowerCase(),
@@ -504,6 +564,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
               profileScore: Number(card.profileScore || 0),
               confidence: Number(card.confidence || 0),
               trendDelta: Number(card.trendDelta || 0),
+              trendAvailable: card.trendAvailable ?? card.syncCount >= 2,
               successRate: Number(card.successRate || 0),
               syncCount: Number(card.syncCount || 0),
               lastSyncedAt: String(card.lastSyncedAt || ''),
@@ -514,6 +575,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       error: () => {
         if (!this.isActiveCycle(cycle)) return;
         this.integrationAnalyticsCards = [];
+        this.integrationHealthState = 'error';
+        this.integrationConnectivity = null;
         this.secondaryErrors.push('Integration trends');
         this.cdr.detectChanges();
       },
@@ -693,6 +756,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         label: labels[key],
         lastUpdated: item.lastUpdated || item.updatedAt || null,
         status,
+        policy: item.policy,
         refreshRecommended: Boolean(item.refreshRecommended ?? status !== 'fresh'),
         reason: String(item.reason || ''),
       };
@@ -798,7 +862,10 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   get scoreTrendLabel(): string {
-    if (this.scoreChangeFromLastMonth === null) return 'No comparable history';
+    if (this.scoreChangeFromLastMonth === null)
+      return this.progress?.history.status === 'available'
+        ? 'Comparable portfolio history below'
+        : 'No comparable history';
     if (this.scoreChangeFromLastMonth === 0) return 'Portfolio unchanged from prior snapshot';
     const sign = this.scoreChangeFromLastMonth > 0 ? '+' : '';
     return `${sign}${this.scoreChangeFromLastMonth} portfolio pts vs prior snapshot`;
@@ -827,13 +894,13 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       {
         label: 'Resume ATS',
         value: this.sourcesUsed.resume?.available
-          ? this.normalizePercent(this.resumeMetrics.atsScore)
+          ? this.normalizeCoverage(this.resumeMetrics.atsScore)
           : null,
       },
       {
         label: 'Keyword Density',
         value: this.sourcesUsed.resume?.available
-          ? this.normalizePercent(this.resumeMetrics.keywordDensity)
+          ? this.normalizeCoverage(this.resumeMetrics.keywordDensity)
           : null,
       },
       { label: 'Skill Coverage', value: this.normalizeCoverage(this.coveragePercentage) },
@@ -873,7 +940,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   get dashboardScoreLine(): string {
-    return `Readiness Score: ${Math.round(this.developerScore)} | GitHub Score: ${Math.round(this.githubScore)} | Integration Score: ${Math.round(this.integrationScore)}`;
+    if (this.isLoading) return 'Loading dashboard evidence…';
+    return `Readiness Score: ${this.readinessAvailable ? Math.round(this.developerScore) : 'Unavailable'} | GitHub Score: ${this.sourcesUsed.github?.available ? Math.round(this.githubScore) : 'Unavailable'} | Integration Score: ${this.sourcesUsed.integrations?.available ? Math.round(this.integrationScore) : 'Unavailable'}`;
   }
 
   get sourceHealthLine(): string {
@@ -1064,10 +1132,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private getBreakdownWeights(): Record<string, number> {
-    if (this.selectedCareerStack === 'Frontend') {
+    if (this.recordedWeights) return this.recordedWeights;
+    if ((this.snapshotCareerStack || this.selectedCareerStack) === 'Frontend') {
       return { codeQuality: 0.3, skillCoverage: 0.34, industryReadiness: 0.2, projectImpact: 0.16 };
     }
-    if (this.selectedCareerStack === 'Backend') {
+    if ((this.snapshotCareerStack || this.selectedCareerStack) === 'Backend') {
       return {
         codeQuality: 0.36,
         skillCoverage: 0.24,
@@ -1075,7 +1144,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         projectImpact: 0.18,
       };
     }
-    if (this.selectedCareerStack === 'AI/ML') {
+    if ((this.snapshotCareerStack || this.selectedCareerStack) === 'AI/ML') {
       return {
         codeQuality: 0.28,
         skillCoverage: 0.24,
@@ -1084,18 +1153,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       };
     }
     return { codeQuality: 0.32, skillCoverage: 0.28, industryReadiness: 0.22, projectImpact: 0.18 };
-  }
-
-  private buildConfidenceScore(): number {
-    const checks = [
-      Boolean(this.sourcesUsed.github?.available),
-      Boolean(this.sourcesUsed.resume?.available),
-      Boolean(this.sourcesUsed.skillGap?.available),
-      Boolean(this.sourcesUsed.recommendations?.available),
-      Boolean(this.sourcesUsed.integrations?.available),
-    ];
-    const ratio = checks.filter(Boolean).length / checks.length;
-    return this.normalizePercent(ratio * 100);
   }
 
   private buildScoreReasons(): string[] {

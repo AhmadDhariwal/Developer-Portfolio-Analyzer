@@ -28,6 +28,8 @@ describe('Personal dashboard request lifecycle', () => {
   };
   const payload = {
     readinessScore: 40,
+    activitySnapshot: { data: [] },
+    languageSnapshot: { data: {} },
     readinessBreakdown: {
       codeQuality: 80,
       skillCoverage: null,
@@ -43,8 +45,8 @@ describe('Personal dashboard request lifecycle', () => {
     page.loadDashboardData();
     summary.next(payload);
     expect(api.getDashboardSkills).not.toHaveBeenCalled();
-    expect(api.getDashboardContributions).toHaveBeenCalledOnce();
-    expect(api.getDashboardLanguages).toHaveBeenCalledOnce();
+    expect(api.getDashboardContributions).not.toHaveBeenCalled();
+    expect(api.getDashboardLanguages).not.toHaveBeenCalled();
     expect(api.getDashboardIntegrationAnalytics).toHaveBeenCalledOnce();
     expect(page.aiBreakdown?.projectImpact).toBe(60);
     expect(page.topSkills).toEqual(['TypeScript']);
@@ -99,6 +101,8 @@ describe('Personal dashboard request lifecycle', () => {
     summary.error(new Error('offline'));
     expect(page.loadError).toContain('could not be refreshed');
     expect(page.isLoading).toBe(false);
+    expect(page.readinessAvailable).toBe(false);
+    expect(page.statCards.every((card) => card.value === null)).toBe(true);
     page.ngOnDestroy();
   });
 

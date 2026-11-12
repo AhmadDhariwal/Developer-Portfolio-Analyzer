@@ -1,0 +1,38 @@
+{
+  "scope": "Synthetic loopback observations; fixture workloads differ; no causal speedup or production capacity claim",
+  "before": {
+    "summaryOperations": 27,
+    "pageOperations": 37,
+    "pageRequests": 4,
+    "summaryBytes": 7824,
+    "p95Ms": 352,
+    "throughputRps": null
+  },
+  "after": {
+    "summaryOperations": 22,
+    "pageOperations": 26,
+    "pageRequests": 2,
+    "summaryBytes": 10577,
+    "p95Ms": 335,
+    "throughputRps": 34,
+    "concurrency": 10,
+    "sampleCount": 30
+  },
+  "connectionPools": [
+    {
+      "checkedOut": 0,
+      "peakCheckedOut": 10,
+      "waiting": 0,
+      "peakWaiting": 26,
+      "checkoutFailures": 0
+    },
+    {
+      "checkedOut": 0,
+      "peakCheckedOut": 10,
+      "waiting": 0,
+      "peakWaiting": 26,
+      "checkoutFailures": 0
+    }
+  ],
+  "indexesAdded": 0
+}

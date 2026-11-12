@@ -6,8 +6,9 @@ Recruiter, administrator and team dashboards are separate features.
 
 ## Request lifecycle
 
-The page requests `/api/dashboard/summary`, then contributions, languages and integration
-analytics. Skill coverage and recommendation previews come from the summary, avoiding a
+The page requests `/api/dashboard/summary`, then integration analytics. Contribution and
+language charts are carried in the validated summary; their standalone endpoints remain
+compatible. Skill coverage and recommendation previews come from the summary, avoiding a
 fifth skills request that could overwrite the summary's dimensions. All six existing
 routes remain available and JWT-protected. Responses use `Cache-Control: private, no-cache`.
 The summary accepts strong, weak, list and wildcard `If-None-Match` validators.
@@ -41,10 +42,7 @@ observe external writes.
 | Weekly Reports | Latest owned report; freshness uses persistence time before reporting-period end |
 | Notifications | Dashboard GETs do not write alerts; existing historical notifications and event producers remain owned by Notifications |
 
-`developerSignalService` supplies the shared dependency identity. Dashboard reuses the
-already-read GitHub and selected resume evidence in that service. Other shared summaries
-still perform additional reads. These are eventually consistent reads across collections,
-not an atomic transaction snapshot.
+Dashboard now uses its own source-content revision instead of invoking the broad developer-signal aggregator. Two equal, scoped reads validate the snapshot; one retry pair is permitted, then continuing changes return retryable HTTP 409. This is bounded optimistic validation, not a distributed transaction. The canonical shared dependency hash is not overwritten by a Dashboard-owned revision. Cache, Learning and Integration aggregations have bounded output state and a 1.5-second Mongo execution budget. Core source budget failures and Integration budget failures return 503 instead of partial counts.
 
 ## Scoring and presentation
 
@@ -59,11 +57,9 @@ canonical target-skill coverage. Missing dimensions remain unavailable. Sprint p
 uses the owning module's weighted, duplicate-aware rule. Learning Progress shows existing
 reliable counts; it does not infer course verification or proficiency.
 
-Historical comparison uses portfolio-to-portfolio values in the same username/stack/level.
-It does not compare the current integration-blended score with an unblended historical
-score. AnalysisCache retention is seven days, so the legacy 25-day historical query usually
-has no matching record. The UI therefore says no comparable history instead of inventing a
-trend. Durable monthly history is a separate data-platform design decision.
+The expired-cache monthly comparison is removed. Durable portfolio history requires server-owned source provenance, selected-resume identity, scoring rule and distinct assessment identity/time. User-authored AI archives and legacy metadata cannot establish this proof. The typed reader/graph has explicit missing/unavailable states; the optional server-provenance schema and producer extension await approval under AGENTS.md. No retention migration or backfill is performed. Weekly Report scores are not substituted for portfolio scores.
+
+Developer Progress now adds recorded UTC Sprint velocity, evidence completeness, canonical skill classification and owned integration connectivity. Learning Progress adds up to five recorded completed course titles/dates. Recorded effective scoring weights are used when inputs were renormalized; nominal weights remain unchanged. Missing evidence remains null, and verified GitHub-only fallback is labeled. The normal portfolio producer uses the same selected-resume cache identity as Dashboard; client-provided preview inputs remain separate.
 
 Charts have text alternatives, theme-aware colors and reduced-motion support. Dashboard
 surfaces use shared theme tokens and respond to Light, Dark and System preference changes.
@@ -76,7 +72,7 @@ availability is labeled as availability rather than calibrated confidence.
 - Frontend: `frontend/src/app/pages/dashboard/`, including the feature-local Learning Progress component.
 - Contracts: `backend/src/tests/dashboardEndpoints.test.js`, `backend/src/tests/dashboardMetrics.test.js`, Dashboard frontend specs and existing Skill Gap consumer tests.
 - Local acceptance: `backend/src/scripts/verifyDashboardLocal.js`. It never loads `.env`; it creates a new disposable loopback replica set, two API processes and synthetic accounts. Set `DASHBOARD_PLAYWRIGHT_MODULE` to an existing installed Playwright package to include Chrome checks.
-- Results and release blockers: `backend/verification/dashboard/REPORT.md` and `local-acceptance.json`.
+- Results and release blockers: `backend/verification/dashboard/REPORT.md` and `backend/verification/dashboard/followup-2026-11-12/`.
 
 Do not equate fixture success with production acceptance. Approved staging identity,
 representative data/load, query plans, failover, pool pressure and production topology still

@@ -10,9 +10,9 @@ test('Dashboard preserves canonical measured zero and unavailable coverage inste
           ruleVersion: 'skill-evidence-coverage-v1',
           coverage,
           yourSkills: [{ name: 'Self-reported' }],
-          missingSkills: []
-        }
-      }
+          missingSkills: [],
+        },
+      },
     });
     assert.equal(result.skillCoverage, coverage);
   }
@@ -27,7 +27,7 @@ test('current consumer compatibility rejects a changed profile revision while le
     experienceLevel: 'Student',
     resumeHash: 'no-resume',
     resumeAnalysisId: 'no-resume',
-    profileRevision: at
+    profileRevision: at,
   };
   const cache = {
     ...context,
@@ -39,13 +39,27 @@ test('current consumer compatibility rejects a changed profile revision while le
       evidencePolicyVersion: 'skill-gap-evidence-policy-v2',
       taxonomyVersion: require('../services/skillGapRequirements').TAXONOMY_VERSION,
       requirementMatrixVersion: require('../services/skillGapRequirements').MATRIX_VERSION,
-      sourceReferences: [{ type: 'profile', timestamp: at }]
-    }
+      sourceReferences: [{ type: 'profile', timestamp: at }],
+    },
   };
   assert.ok(compatibleSkillGap(cache, context));
   assert.equal(
     compatibleSkillGap(cache, { ...context, profileRevision: '2026-01-01T00:00:00Z' }),
-    null
+    null,
   );
   assert.equal(compatibleSkillGap(cache, { ...context, userId: 'foreign' }), null);
+});
+
+test('recorded portfolio dimensions stay attached to their assessment when current Skill Gap evidence changes', () => {
+  const derive = require('../controllers/dashboardcontroller').__test.deriveReadinessBreakdown;
+  for (const recorded of [null, 0, 50]) {
+    const result = derive({
+      portfolioScore: {
+        breakdown: { skillCoverage: 88 },
+        scoring: { breakdown: { skillCoverage: { value: recorded } } },
+      },
+      skillGapCache: { analysisData: { coverage: 100 } },
+    });
+    assert.equal(result.skillCoverage, recorded);
+  }
 });

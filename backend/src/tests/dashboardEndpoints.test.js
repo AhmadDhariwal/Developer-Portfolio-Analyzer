@@ -13,6 +13,9 @@ let insightFailure = false;
 let coverage = null;
 let portfolioScore = 0;
 let hasAnalysis = false;
+let unstable = false;
+let legacy = false;
+let integrationTimeout = false;
 const user = {
   _id: 'owner',
   name: 'Test Developer',
@@ -57,6 +60,7 @@ mock('../models/analysis', {
       hasAnalysis
         ? {
             userId: filter.userId,
+            githubSignals: legacy ? {} : { username: 'dev' },
             githubScore: 80,
             readinessScore: 70,
             updatedAt: at,
@@ -67,31 +71,60 @@ mock('../models/analysis', {
         : null,
     ),
 });
+const cacheValue = (filter) =>
+  filter['analysisData.portfolioScore.overallScore']
+    ? { analysisData: { portfolioScore: { overallScore: portfolioScore } }, updatedAt: at }
+    : filter['analysisData.projects']
+      ? null
+      : { analysisData: { coverage, yourSkills: [], missingSkills: [] }, updatedAt: at };
 mock('../models/analysisCache', {
-  findOne: (filter) =>
-    query(
-      'AnalysisCache',
-      filter,
-      filter.updatedAt
-        ? { analysisData: { portfolioScore: { overallScore: 20 } }, updatedAt: at }
-        : filter['analysisData.portfolioScore.overallScore']
-          ? { analysisData: { portfolioScore: { overallScore: portfolioScore } }, updatedAt: at }
-          : filter['analysisData.projects']
-            ? null
-            : { analysisData: { coverage, yourSkills: [], missingSkills: [] }, updatedAt: at },
-    ),
+  findOne: (filter) => query('AnalysisCache', filter, cacheValue(filter)),
+  aggregate: (pipeline) => ({
+    option: async () => [
+      {
+        ...Object.fromEntries(
+          Object.entries(pipeline[1].$facet).map(([key, stages]) => {
+            if (unstable) coverage = (coverage || 0) + 1;
+            const filter = stages[0].$match;
+            query('AnalysisCache', filter, null);
+            const value = cacheValue(filter);
+            return [key, value ? [value] : []];
+          }),
+        ),
+      },
+    ],
+  }),
 });
 for (const [model, method, value] of [
   ['weeklyReport', 'findOne', null],
   ['careerSprint', 'findOne', null],
   ['jobCache', 'findOne', null],
   ['news', 'findOne', null],
-  ['userCourseProgress', 'find', []],
+
   ['recommendation', 'find', []],
-  ['integrationSyncLog', 'find', []],
+
   ['integrationConnection', 'find', []],
 ])
   mock('../models/' + model, { [method]: (filter) => query(model, filter, value) });
+mock('../models/userCourseProgress', {
+  aggregate: () => ({ option: async () => [{ counts: [], recent: [] }] }),
+  find: (filter) => query('userCourseProgress', filter, []),
+});
+const integrationLogSchema = require('../models/integrationSyncLog').schema;
+mock('../models/integrationSyncLog', {
+  schema: integrationLogSchema,
+  aggregate: (pipeline) => ({
+    option: async () => {
+      if (integrationTimeout) {
+        const error = new Error('Query timed out');
+        error.code = 50;
+        throw error;
+      }
+      query('integrationSyncLog', pipeline[0].$match, []);
+      return [];
+    },
+  }),
+});
 mock('../services/developerContextService', {
   resolveGithubUsername: (row) => row?.activeGithubUsername || row?.githubUsername,
   resolveCareerStack: (row) => row?.careerStack,
@@ -156,6 +189,9 @@ test.beforeEach((t) => {
   coverage = null;
   portfolioScore = 0;
   hasAnalysis = false;
+  unstable = false;
+  legacy = false;
+  integrationTimeout = false;
 });
 const request = (endpoint, headers = {}) =>
   fetch(`${base}/${endpoint}`, { headers: { Authorization: `Bearer ${token}`, ...headers } });
@@ -242,11 +278,7 @@ test('missing GitHub evidence stays missing and undated; a measured zero portfol
   hasAnalysis = true;
   body = await (await request('summary')).json();
   assert.equal(body.readinessScore, 8); // Existing 85/15 blend, base evidence is exactly zero.
-  assert.equal(body.scoreChangeFromLastMonth, -20); // Portfolio-to-portfolio comparison.
-  const history = calls.find((call) => call.model === 'AnalysisCache' && call.filter.updatedAt);
-  assert.equal(history.filter.githubUsername, 'dev');
-  assert.equal(history.filter.careerStack, 'Backend');
-  assert.equal(history.filter.experienceLevel, 'Student');
+  assert.equal(body.scoreChangeFromLastMonth, null); // Expiring caches are not durable history.
 });
 
 test('summary supports strong, weak, list and wildcard validators without caching private responses publicly', async () => {
@@ -325,4 +357,24 @@ test('concurrent fixture HTTP summaries remain isolated and deterministic (not a
       measurement: 'loopback HTTP, mocked database and developer signals',
     }),
   );
+});
+
+test('unstable source reads return retryable 409 without publishing a successful summary', async () => {
+  unstable = true;
+  const response = await request('summary');
+  assert.equal(response.status, 409);
+  assert.equal(response.headers.get('retry-after'), '1');
+  assert.equal((await response.json()).code, 'DASHBOARD_EVIDENCE_CHANGED');
+});
+test('legacy GitHub evidence with unknown username stays unverified rather than measured zero', async () => {
+  legacy = true;
+  hasAnalysis = true;
+  const body = await (await request('summary')).json();
+  assert.equal(body.sourceFreshness.github.available, false);
+  assert.equal(body.repositories, null);
+  assert.deepEqual(body.activitySnapshot.data, []);
+});
+test('integration aggregation budget exhaustion returns unavailable, not truncated counts', async () => {
+  integrationTimeout = true;
+  assert.equal((await request('integration-analytics')).status, 503);
 });

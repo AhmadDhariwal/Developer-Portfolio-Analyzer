@@ -8,7 +8,10 @@ const { AsyncLocalStorage } = require('node:async_hooks');
 const { performance } = require('node:perf_hooks');
 const mongoose = require('mongoose');
 
-const output = path.resolve(__dirname, '../../verification/dashboard');
+const output = path.resolve(
+  process.env.DASHBOARD_VERIFICATION_OUTPUT ||
+    path.join(__dirname, '../../verification/dashboard/followup-2026-11-12'),
+);
 const modelNames = [
   'user',
   'analysis',
@@ -26,6 +29,7 @@ const modelNames = [
   'publicProfile',
   'recommendation',
   'scenarioSimulation',
+  'aiVersion',
 ];
 
 async function worker() {
@@ -53,6 +57,17 @@ async function worker() {
     }),
   );
   app.use('/api/dashboard', require('../routes/dashboard.routes'));
+  // Explicit scoring POST acceptance uses local provider fixtures, never live AI/GitHub.
+  require('../services/githubservice').analyzeGitHubProfile = async () => ({
+    repoCount: 12,
+    scores: { codeQuality: 80, projectImpact: 10, consistency: 20, contribution: 30 },
+  });
+  require('../services/aiservice').runAIAnalysis = async () => ({
+    summary: 'Local provider fixture; numbers remain deterministic.',
+  });
+  app.use('/api/analysis', require('../routes/analysis.routes'));
+  app.use('/api/ai-versions', require('../routes/aiversions.routes'));
+
   app.get('/api/profile/me', async (_req, res) => {
     const user = await require('../models/user')
       .findById(process.env.DASHBOARD_FIXTURE_OWNER)
@@ -73,8 +88,36 @@ async function worker() {
   const dist = path.resolve(__dirname, '../../../frontend/dist/frontend/browser');
   app.use(express.static(dist));
   app.get('/{*path}', (_req, res) => res.sendFile(path.join(dist, 'index.html')));
+  const poolMetrics = {
+    checkedOut: 0,
+    peakCheckedOut: 0,
+    waiting: 0,
+    peakWaiting: 0,
+    checkoutFailures: 0,
+  };
+  const client = mongoose.connection.getClient();
+  client.on('connectionCheckOutStarted', () => {
+    poolMetrics.waiting += 1;
+    poolMetrics.peakWaiting = Math.max(poolMetrics.peakWaiting, poolMetrics.waiting);
+  });
+  client.on('connectionCheckedOut', () => {
+    poolMetrics.waiting -= 1;
+    poolMetrics.checkedOut += 1;
+    poolMetrics.peakCheckedOut = Math.max(poolMetrics.peakCheckedOut, poolMetrics.checkedOut);
+  });
+  client.on('connectionCheckedIn', () => {
+    poolMetrics.checkedOut -= 1;
+  });
+  client.on('connectionCheckOutFailed', () => {
+    poolMetrics.waiting -= 1;
+    poolMetrics.checkoutFailures += 1;
+  });
   const server = app.listen(0, '127.0.0.1', () => process.send({ port: server.address().port }));
   process.on('message', async (message) => {
+    if (message === 'metrics') {
+      process.send({ poolMetrics });
+      return;
+    }
     if (message !== 'stop') return;
     server.closeAllConnections();
     await new Promise((resolve) => server.close(resolve));
@@ -123,6 +166,8 @@ async function main() {
     });
     const other = await models.user.create({
       name: 'Other User',
+      githubUsername: 'other-dev',
+      activeGithubUsername: 'other-dev',
       email: 'dashboard-other@example.test',
       providers: ['google'],
       role: 'developer',
@@ -144,6 +189,7 @@ async function main() {
     });
     await models.analysis.create({
       userId: other._id,
+      githubSignals: { username: 'other-dev' },
       githubScore: 99,
       githubStats: { repos: 999 },
       updatedAt: now,
@@ -177,6 +223,7 @@ async function main() {
       analysisData: {
         portfolioScore: {
           overallScore: 0,
+          scoring: { ruleVersion: 'portfolio-score-v1' },
           breakdown: {
             codeQuality: 80,
             skillCoverage: 50,
@@ -194,6 +241,7 @@ async function main() {
           title: 'High-value completed task',
           points: 9,
           isCompleted: true,
+          completedAt: now,
         },
         {
           _id: new mongoose.Types.ObjectId(),
@@ -207,6 +255,8 @@ async function main() {
     await models.userCourseProgress.collection.insertOne({
       userId: owner._id,
       courseId: 'fixture-course',
+      course: { title: 'Verified local fixture course' },
+      completedAt: now,
       status: 'completed',
       updatedAt: now,
     });
@@ -228,6 +278,34 @@ async function main() {
       createdAt: now,
       updatedAt: new Date(Date.now() - 30 * 86400000),
     });
+    await models.aiVersion.collection.insertMany(
+      [10, 20, 90].map((score, index) => ({
+        userId: owner._id,
+        source: 'portfolio_score',
+        version: index + 1,
+        metadata: {
+          username: 'fixture-dev',
+          careerStack: index === 2 ? 'Frontend' : 'Backend',
+          experienceLevel: 'Student',
+          resumeAnalysisId: 'no-resume',
+        },
+        outputJson: {
+          portfolioScore: { overallScore: score, scoring: { ruleVersion: 'portfolio-score-v1' } },
+        },
+        createdAt: new Date(Date.now() - (40 - index) * 86400000),
+      })),
+    );
+    await models.integrationSyncLog.collection.insertMany(
+      Array.from({ length: 5000 }, (_, index) => ({
+        userId: owner._id,
+        provider: 'github',
+        status: index % 4 === 0 ? 'failed' : 'success',
+        activityScore: index % 101,
+        profileScore: 50,
+        confidence: 80,
+        createdAt: new Date(Date.now() - index * 1000),
+      })),
+    );
     process.env.JWT_SECRET = randomBytes(32).toString('hex');
     const token = require('../utils/authSessionToken').sign(owner, '1h');
     const otherToken = require('../utils/authSessionToken').sign(other, '1h');
@@ -263,6 +341,12 @@ async function main() {
     assert.equal(summary.scoreChangeFromLastMonth, null);
     assert.equal(summary.skillsSnapshot.coveragePercentage, 50);
     assert.equal(summary.learningSnapshot.completedCount, 1);
+    assert.equal(summary.progress.history.points.length, 0);
+    assert.equal(
+      summary.progress.sprint.velocity.reduce((sum, day) => sum + day.points, 0),
+      9,
+    );
+    assert.equal(summary.consistency.policy, 'dashboard-source-revisions-v1');
     assert.equal(summary.readinessCenter.find((item) => item.key === 'sprint').value, 90);
     assert.equal(summary.commandCenter.find((item) => item.key === 'news').value, 'TypeScript');
     assert.equal(
@@ -273,6 +357,15 @@ async function main() {
       (await read(workers[1].base, 'summary', token, { 'If-None-Match': etag })).status,
       304,
     );
+    const integrationBody = await (await read(workers[0].base, 'integration-analytics')).json();
+    assert.equal(integrationBody.cards[0].syncCount, 5000);
+    assert.equal(integrationBody.cards[0].successRate, 75);
+    report.integrationAggregation = {
+      inputRows: 5000,
+      outputCards: integrationBody.cards.length,
+      exactSyncCount: integrationBody.cards[0].syncCount,
+      successRate: integrationBody.cards[0].successRate,
+    };
     report.apiEndpoints = {};
     for (const endpoint of [
       'summary',
@@ -306,7 +399,38 @@ async function main() {
       assert.equal((await response.json()).readinessScore, 42);
     }
     report.checks.push('upstream write visible immediately in both independent API processes');
+    const scoreResponse = await fetch(workers[0].base + '/api/analysis/portfolio-score', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: '{}',
+    });
+    assert.equal(scoreResponse.status, 200);
+    const scoredPortfolio = await scoreResponse.json();
+    const producerSummary = await (await read(workers[1].base, 'summary')).json();
+    assert.equal(producerSummary.readinessScore, scoredPortfolio.overallScore);
+    assert.equal(producerSummary.consistency.identity.resumeAnalysisId, 'no-resume');
+    const forged = await fetch(workers[0].base + '/api/ai-versions', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        source: 'portfolio_score',
+        metadata: {
+          username: 'fixture-dev',
+          careerStack: 'Backend',
+          experienceLevel: 'Student',
+          resumeAnalysisId: 'no-resume',
+        },
+        outputJson: { overallScore: 100, scoring: { ruleVersion: 'portfolio-score-v1' } },
+      }),
+    });
+    assert.equal(forged.status, 201);
+    const guardedHistory = await (await read(workers[1].base, 'summary')).json();
+    assert.equal(guardedHistory.progress.history.points.length, 0);
+    report.checks.push(
+      'Explicit portfolio POST uses selected-resume identity and becomes visible to Dashboard on the other process; manually authored archive cannot fabricate history',
+    );
     const durations = [];
+    const loadStarted = performance.now();
     for (let batch = 0; batch < 3; batch++)
       await Promise.all(
         Array.from({ length: 10 }, async (_, index) => {
@@ -323,6 +447,10 @@ async function main() {
       );
     durations.sort((a, b) => a - b);
     report.performance = {
+      elapsedMs: Math.round(performance.now() - loadStarted),
+      throughputRps: Number(
+        ((durations.length * 1000) / (performance.now() - loadStarted)).toFixed(1),
+      ),
       sampleCount: durations.length,
       concurrency: 10,
       users: 2,
@@ -335,6 +463,15 @@ async function main() {
       limitation:
         'Synthetic loopback, single-member disposable replica set, not representative staging load',
     };
+    report.connectionPools = await Promise.all(
+      workers.map(
+        (child) =>
+          new Promise((resolve) => {
+            child.once('message', (message) => resolve(message.poolMetrics));
+            child.send('metrics');
+          }),
+      ),
+    );
     const newsFilter = { cacheKey: 'news:v3:public:pool', expiresAt: { $gt: new Date() } };
     for (const [name, cursor] of [
       [
@@ -354,7 +491,11 @@ async function main() {
       [
         'portfolioCurrent',
         models.analysisCache.collection
-          .find({ ...identity, 'analysisData.portfolioScore.overallScore': { $exists: true } })
+          .find({
+            ...identity,
+            githubUsername: scope.githubUsername,
+            'analysisData.portfolioScore.overallScore': { $exists: true },
+          })
           .sort({ updatedAt: -1, _id: -1 })
           .limit(1),
       ],
@@ -367,6 +508,34 @@ async function main() {
         returned: explained.executionStats.nReturned,
       };
     }
+    const {
+      buildCachePipeline,
+      buildIntegrationPipeline,
+    } = require('../services/dashboardQueryService');
+    report.plans.cacheFacet = await models.analysisCache.collection
+      .aggregate(
+        buildCachePipeline(owner._id, 'Backend', 'Student', [
+          {
+            ...identity,
+            githubUsername: scope.githubUsername,
+            'analysisData.portfolioScore.overallScore': { $exists: true },
+          },
+          { ...scope },
+          {
+            ...identity,
+            githubUsername: scope.githubUsername,
+            'analysisData.projects': { $exists: true },
+          },
+        ]),
+        { maxTimeMS: 1500, allowDiskUse: false },
+      )
+      .explain('executionStats');
+    report.plans.integrationBoundedState = await models.integrationSyncLog.collection
+      .aggregate(buildIntegrationPipeline(owner._id, new Date(Date.now() - 7 * 86400000)), {
+        maxTimeMS: 1500,
+        allowDiskUse: false,
+      })
+      .explain('executionStats');
     report.plans.declaredIndexes = {};
     for (const name of [
       'analysisCache',
@@ -429,17 +598,18 @@ async function main() {
       await page.waitForTimeout(500);
       assert.deepEqual(
         requests.slice().sort(),
-        [
-          '/api/dashboard/summary',
-          '/api/dashboard/contributions',
-          '/api/dashboard/languages',
-          '/api/dashboard/integration-analytics',
-        ].sort(),
+        ['/api/dashboard/summary', '/api/dashboard/integration-analytics'].sort(),
       );
       assert.equal(
         (await page.locator('app-dashboard').getByText('Unavailable', { exact: true }).count()) > 0,
         true,
       );
+      await page
+        .getByText('1250 failed attempts out of 5000 syncs over 7 days.', { exact: true })
+        .waitFor();
+      assert.equal(await page.locator('app-dashboard-progress svg').count(), 0);
+      await page.locator('app-dashboard-progress summary').first().focus();
+      await page.keyboard.press('Enter');
       report.browser.requestPaths = [...requests];
       assert.equal(
         (
@@ -450,6 +620,10 @@ async function main() {
         ).trim(),
         'Backend',
       );
+      await page.evaluate(() => {
+        if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+        window.scrollTo(0, 0);
+      });
       for (const theme of ['light', 'dark']) {
         // Trigger the same DOM theme signal observed by charts, without changing app settings.
         await page.evaluate(
@@ -477,6 +651,10 @@ async function main() {
         () => !document.querySelector('app-dashboard button.reanalyze-btn')?.disabled,
       );
       await page.setViewportSize({ width: 390, height: 844 });
+      await page.evaluate(() => {
+        if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+        window.scrollTo(0, 0);
+      });
       await page.screenshot({ path: path.join(output, 'mobile-dark.png'), fullPage: true });
       assert.equal(
         await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
@@ -488,6 +666,61 @@ async function main() {
         () => !document.querySelector('app-dashboard button.reanalyze-btn')?.disabled,
       );
       assert.equal(requests.filter((entry) => entry.endsWith('/summary')).length, 3);
+      await models.analysis.updateOne(
+        { userId: owner._id },
+        { $set: { 'githubSignals.username': 'different-fixture-profile' } },
+      );
+      await page.getByRole('button', { name: 'Refresh dashboard' }).click();
+      await page.waitForFunction(() =>
+        Array.from(document.querySelectorAll('app-dashboard .stat-value')).every((node) =>
+          node.textContent.includes('Unavailable'),
+        ),
+      );
+      await page.route('**/api/dashboard/summary*', (route) =>
+        route.fulfill({
+          status: 503,
+          contentType: 'application/json',
+          body: JSON.stringify({ message: 'Fixture outage' }),
+        }),
+      );
+      await page.getByRole('button', { name: 'Refresh dashboard' }).click();
+      await page
+        .getByText(
+          'Dashboard could not be refreshed. Previously displayed values may be out of date.',
+          { exact: false },
+        )
+        .first()
+        .waitFor();
+      report.checks.push(
+        'Browser rejects mismatched-profile evidence and exposes a retryable refresh failure instead of silently using stale success',
+      );
+      const emptyPage = await context.newPage();
+      emptyPage.on('pageerror', (error) => errors.push(error.message));
+      await emptyPage.route('**/api/dashboard/summary*', (route) =>
+        route.fulfill({
+          status: 503,
+          contentType: 'application/json',
+          body: JSON.stringify({ message: 'Fixture initial outage' }),
+        }),
+      );
+      await emptyPage.goto(base + '/app/dashboard');
+      await emptyPage
+        .getByText(
+          'Dashboard could not be refreshed. Previously displayed values may be out of date.',
+          { exact: false },
+        )
+        .first()
+        .waitFor();
+      assert.equal(await emptyPage.locator('app-dashboard app-score-meter').count(), 0);
+      assert.equal(
+        await emptyPage
+          .locator('app-dashboard .stat-value')
+          .filter({ hasText: 'Unavailable' })
+          .count(),
+        4,
+      );
+      await emptyPage.close();
+      report.checks.push('Initial-load outage has no fabricated zero readiness or GitHub counters');
       assert.deepEqual(errors, []);
       report.browser = {
         ...report.browser,

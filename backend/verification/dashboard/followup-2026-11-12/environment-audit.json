@@ -1,0 +1,44 @@
+{
+  "credentialValuesRecorded": false,
+  "existingDatabaseContacted": false,
+  "stagingVerified": false,
+  "testAccountVerified": false,
+  "configurationInventory": [
+    {
+      "file": "backend\\.env",
+      "name": "MONGODB_URI",
+      "configured": true,
+      "classification": "loopback"
+    },
+    {
+      "file": "backend\\.env",
+      "name": "FRONTEND_BASE_URL",
+      "configured": true,
+      "classification": "loopback"
+    },
+    {
+      "file": "backend\\.env",
+      "name": "CORS_ORIGIN",
+      "configured": true,
+      "classification": "loopback"
+    },
+    {
+      "file": "backend\\.env",
+      "name": "NODE_ENV",
+      "configured": true
+    },
+    {
+      "file": "backend\\.env",
+      "name": "NEWS_TEST_MONGODB_URI",
+      "configured": false,
+      "classification": "unverified-remote-or-empty"
+    },
+    {
+      "file": "backend\\.env",
+      "name": "CAREER_SPRINT_STAGE_TIMINGS",
+      "configured": true
+    }
+  ],
+  "deploymentReview": "Repository configuration/documentation and storage operations do not establish an approved staging URL/account or representative multi-host topology. No external account or deployment was changed.",
+  "localInfrastructure": "A newly created loopback Mongo replica set, two independent fixture API processes and Chrome; no .env is loaded by the acceptance script."
+}

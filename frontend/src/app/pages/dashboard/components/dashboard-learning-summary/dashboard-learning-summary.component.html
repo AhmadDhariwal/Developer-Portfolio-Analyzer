@@ -25,4 +25,13 @@
     </div>
   </dl>
   <p *ngIf="progress.totalTracked === 0">Save a course in Learning Hub to start tracking.</p>
+  <div *ngIf="completedCourses.length">
+    <h4>Recently recorded completions</h4>
+    <ul>
+      <li *ngFor="let course of completedCourses">
+        {{ course.title }} —
+        {{ course.completedAt ? (course.completedAt | date: 'mediumDate') : 'Date not recorded' }}
+      </li>
+    </ul>
+  </div>
 </section>

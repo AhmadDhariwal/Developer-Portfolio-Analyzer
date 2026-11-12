@@ -1202,3 +1202,20 @@ select:focus-visible {
     align-items: start;
   }
 }
+
+.stat-value.is-unavailable {
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+.repository-history-note {
+  margin: 16px 24px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+.repository-history-note summary {
+  cursor: pointer;
+}
+.repository-history-note summary:focus-visible {
+  outline: 3px solid var(--text-primary);
+  outline-offset: 3px;
+}

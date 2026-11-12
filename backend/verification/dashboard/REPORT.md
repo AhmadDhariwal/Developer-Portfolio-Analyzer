@@ -1,3 +1,5 @@
+> **Latest follow-up (2026-11-12):** see [current report](followup-2026-11-12/REPORT.md), [validation](followup-2026-11-12/validation.json), and [exact inventory](followup-2026-11-12/file-inventory.json). The report below is retained as the earlier baseline, not the latest acceptance decision. Trusted readiness-history production remains approval-blocked; staging acceptance remains blocked.
+
 # Developer Dashboard audit and acceptance — 2026-11-12
 
 ## Acceptance decision

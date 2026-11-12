@@ -94,7 +94,13 @@
       <span class="card-label">Developer Readiness Score</span>
     </div>
     <div class="score-body">
-      <app-score-meter [score]="developerScore" [maxScore]="100" size="lg"></app-score-meter>
+      <p *ngIf="!readinessAvailable">Readiness unavailable: verified source evidence is missing.</p>
+      <app-score-meter
+        *ngIf="!isLoading && readinessAvailable"
+        [score]="developerScore"
+        [maxScore]="100"
+        size="lg"
+      ></app-score-meter>
       <div
         class="score-trend"
         [class.trend-down]="!scoreTrendUp"
@@ -134,6 +140,9 @@
         {{ scoreTrendLabel }}
       </div>
       <p class="percentile-note">Based on your saved profile evidence</p>
+      <p class="percentile-note" *ngIf="readinessBasis === 'github'">
+        GitHub health fallback; no matching portfolio assessment is saved.
+      </p>
     </div>
   </div>
 
@@ -145,7 +154,9 @@
           [innerHTML]="statIconHtml[card.iconType] || statIconHtml['repos']"
         ></div>
       </div>
-      <div class="stat-value">{{ card.value | number }}</div>
+      <div class="stat-value" [class.is-unavailable]="isLoading || card.value === null">
+        {{ isLoading ? 'Loading…' : card.value === null ? 'Unavailable' : (card.value | number) }}
+      </div>
       <div class="stat-label">{{ card.label }}</div>
       <div class="stat-growth">{{ card.growth }}</div>
     </div>
@@ -194,24 +205,42 @@
   </div>
 </div>
 
-<app-dashboard-learning-summary [snapshot]="learningSnapshot"></app-dashboard-learning-summary>
+<app-dashboard-progress
+  [data]="progress"
+  [loading]="isLoading"
+  [error]="loadError"
+  [stale]="dashboardStale"
+  [integrationHealth]="integrationConnectivity"
+  [integrationHealthState]="integrationHealthState"
+></app-dashboard-progress>
+<app-dashboard-learning-summary
+  [snapshot]="learningSnapshot"
+  [completedCourses]="progress?.completedCourses || []"
+></app-dashboard-learning-summary>
 
 <div class="row-middle">
   <div class="card activity-card">
     <div class="card-head">
       <div class="head-text">
         <h3>Contribution Activity</h3>
-        <p>Commits over the last 6 months</p>
+        <p>Saved monthly commit activity</p>
       </div>
-      <div class="activity-badge">&lt;/&gt; {{ totalActivity }} total</div>
+      <div class="activity-badge">
+        &lt;/&gt; {{ activityAvailable ? totalActivity + ' total' : 'Unavailable' }}
+      </div>
     </div>
-    <div class="chart-wrap activity-wrap">
+    <p *ngIf="!isLoading && !activityAvailable" class="empty-state">
+      No contribution evidence with verified source identity is available.
+    </p>
+    <details class="repository-history-note" *ngIf="progress">
+      <summary>Repository history availability</summary>
+      <p>{{ progress.github.historyStatus }}</p>
+    </details>
+    <div class="chart-wrap activity-wrap" [hidden]="!activityAvailable">
       <canvas
         #activityChart
         role="img"
-        [attr.aria-label]="
-          'Contribution activity over six months: ' + totalActivity + ' total commits'
-        "
+        [attr.aria-label]="'Saved contribution activity: ' + totalActivity + ' total commits'"
       ></canvas>
     </div>
   </div>
@@ -399,13 +428,16 @@
         <strong>{{ source.label }}</strong>
         <span>{{
           source.status === 'fresh'
-            ? 'Fresh'
+            ? source.policy === 'durable-record'
+              ? 'Saved evidence'
+              : 'Fresh'
             : source.status === 'missing'
               ? 'No evidence'
               : 'Refresh recommended'
         }}</span>
       </div>
       <p>Last Updated: {{ formatIntegrationDate(source.lastUpdated) }}</p>
+      <p *ngIf="source.reason && source.status !== 'fresh'">{{ source.reason }}</p>
     </div>
   </div>
 </div>
@@ -455,9 +487,8 @@
     <div class="card-head">
       <div class="head-text">
         <h3>Portfolio Scoring Weights</h3>
-        <p>Career-stack weights and evidence availability</p>
+        <p>Recorded effective weights when available; otherwise nominal career-stack weights.</p>
       </div>
-      <span class="confidence-pill">{{ confidenceScore }}% sources available</span>
     </div>
     <div class="insight-rows">
       <div class="insight-row" *ngFor="let row of explainabilityRows">
@@ -490,7 +521,7 @@
         <div class="integration-row__top">
           <span class="provider-name">#{{ index + 1 }} {{ providerName(card.provider) }}</span>
           <span class="provider-delta" [class.negative]="card.trendDelta < 0">{{
-            card.syncCount < 2
+            !card.trendAvailable
               ? 'No prior sync baseline'
               : (card.trendDelta >= 0 ? '+' : '') + card.trendDelta + ' trend'
           }}</span>
