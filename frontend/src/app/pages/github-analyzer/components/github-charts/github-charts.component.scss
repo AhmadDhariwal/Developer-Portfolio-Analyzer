@@ -190,6 +190,21 @@ canvas {
     flex-direction: column;
   }
 }
+@media (max-width: 480px) {
+  .donut-canvas-wrap {
+    width: 160px;
+    height: 160px;
+    flex: 0 0 160px;
+    margin: 0 auto;
+  }
+}
+@media (max-width: 360px) {
+  .donut-canvas-wrap {
+    width: 140px;
+    height: 140px;
+    flex: 0 0 140px;
+  }
+}
 :host-context([data-theme='dark']) .chart-panel,
 :host-context(.dark) .chart-panel {
   background: #111827;

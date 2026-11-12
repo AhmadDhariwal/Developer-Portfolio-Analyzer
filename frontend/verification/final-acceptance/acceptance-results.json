@@ -1,0 +1,369 @@
+{
+  "gitSha": "e1ad24464d336b6e84f0826061b4f6c9b8d4288a",
+  "branch": "fix/github-responsive",
+  "timestamp": "2026-11-12T14:53:15.627Z",
+  "tests": {
+    "github_zoom_200_1280px": {
+      "name": "GitHub Analyzer 200% Zoom at 1280px",
+      "status": "PASS",
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "screenshot": "github-zoom-200-1280px.png"
+    },
+    "github_zoom_200_1440px": {
+      "name": "GitHub Analyzer 200% Zoom at 1440px",
+      "status": "PASS",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "screenshot": "github-zoom-200-1440px.png"
+    },
+    "github_text_scaling_200": {
+      "name": "GitHub Analyzer Text Scaling 200%",
+      "status": "PASS",
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "screenshot": "github-text-scaling-200.png"
+    },
+    "github_keyboard_focus": {
+      "name": "GitHub Analyzer Keyboard Navigation & Focus Visibility",
+      "status": "PASS",
+      "focusChecks": [
+        {
+          "tagName": "INPUT",
+          "className": "search-input-field ng-untouched ng-prist",
+          "hasVisibleFocus": true,
+          "outline": "rgb(99, 102, 241) solid 2px",
+          "boxShadow": "none"
+        },
+        {
+          "tagName": "BUTTON",
+          "className": "md primary ui-btn",
+          "hasVisibleFocus": true,
+          "outline": "rgb(255, 255, 255) none 3px",
+          "boxShadow": "rgba(0, 0, 0, 0.35) 0px 1px 2px 0px"
+        },
+        {
+          "tagName": "A",
+          "className": "identity-username-link",
+          "hasVisibleFocus": true,
+          "outline": "rgb(99, 102, 241) solid 2px",
+          "boxShadow": "none"
+        },
+        {
+          "tagName": "BUTTON",
+          "className": "ghost sm ui-btn",
+          "hasVisibleFocus": true,
+          "outline": "rgb(203, 213, 225) none 3px",
+          "boxShadow": "rgba(11, 15, 23, 0.898) 0px 0px 0px 1.79923px, rgba(99, 102, 241, 0.898) 0px 0px 0px 3.59846px"
+        },
+        {
+          "tagName": "BUTTON",
+          "className": "outline sm ui-btn",
+          "hasVisibleFocus": true,
+          "outline": "rgb(99, 102, 241) none 3px",
+          "boxShadow": "rgba(11, 15, 23, 0.596) 0px 0px 0px 1.19152px, rgba(99, 102, 241, 0.596) 0px 0px 0px 2.38305px"
+        },
+        {
+          "tagName": "BUTTON",
+          "className": "sort-pill-btn active",
+          "hasVisibleFocus": true,
+          "outline": "rgb(109, 114, 243) solid 2px",
+          "boxShadow": "none"
+        },
+        {
+          "tagName": "BUTTON",
+          "className": "sort-pill-btn",
+          "hasVisibleFocus": true,
+          "outline": "rgb(126, 131, 237) solid 2px",
+          "boxShadow": "none"
+        },
+        {
+          "tagName": "BUTTON",
+          "className": "sort-pill-btn",
+          "hasVisibleFocus": true,
+          "outline": "rgb(107, 110, 240) solid 2px",
+          "boxShadow": "none"
+        }
+      ],
+      "screenshot": "github-keyboard-focus.png"
+    },
+    "github_information_completeness": {
+      "name": "GitHub Analyzer Information Completeness (Mobile 375px)",
+      "status": "PASS",
+      "details": [
+        {
+          "selector": ".identity-bar-card",
+          "count": 1,
+          "found": true,
+          "visible": true
+        },
+        {
+          "selector": ".metrics-strip-grid",
+          "count": 1,
+          "found": true,
+          "visible": true
+        },
+        {
+          "selector": ".executive-card",
+          "count": 1,
+          "found": true,
+          "visible": true
+        },
+        {
+          "selector": ".exec-score-number",
+          "count": 1,
+          "found": true,
+          "visible": true
+        },
+        {
+          "selector": ".breakdown-panel",
+          "count": 1,
+          "found": true,
+          "visible": true
+        },
+        {
+          "selector": ".repositories-panel",
+          "count": 1,
+          "found": true,
+          "visible": true
+        },
+        {
+          "selector": ".tech-panel",
+          "count": 1,
+          "found": true,
+          "visible": true
+        },
+        {
+          "selector": ".sort-pill-btn",
+          "count": 3,
+          "found": true,
+          "visible": true
+        }
+      ]
+    },
+    "resume_zoom_200_1280px": {
+      "name": "Resume Analyzer 200% Zoom at 1280px",
+      "status": "PASS",
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "screenshot": "resume-zoom-200-1280px.png"
+    },
+    "resume_zoom_200_1440px": {
+      "name": "Resume Analyzer 200% Zoom at 1440px",
+      "status": "PASS",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "screenshot": "resume-zoom-200-1440px.png"
+    },
+    "resume_text_scaling_200": {
+      "name": "Resume Analyzer Text Scaling 200%",
+      "status": "PASS",
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "screenshot": "resume-text-scaling-200.png"
+    },
+    "resume_keyboard_focus": {
+      "name": "Resume Analyzer Keyboard Navigation & Focus Visibility",
+      "status": "PASS",
+      "focusChecks": [
+        {
+          "tagName": "SELECT",
+          "className": "resume-dropdown ng-untouched ng-pristine",
+          "hasVisibleFocus": true,
+          "outline": "rgb(248, 250, 252) none 3px",
+          "boxShadow": "rgba(99, 102, 241, 0.247) 0px 0px 0px 2.95042px"
+        },
+        {
+          "tagName": "BUTTON",
+          "className": "secondary sm ui-btn",
+          "hasVisibleFocus": true,
+          "outline": "rgb(248, 250, 252) none 3px",
+          "boxShadow": "rgba(0, 0, 0, 0.35) 0px 1px 2px 0px"
+        },
+        {
+          "tagName": "BUTTON",
+          "className": "ghost sm ui-btn",
+          "hasVisibleFocus": true,
+          "outline": "rgb(203, 213, 225) none 3px",
+          "boxShadow": "rgba(11, 15, 23, 0.596) 0px 0px 0px 1.18932px, rgba(99, 102, 241, 0.596) 0px 0px 0px 2.37865px"
+        },
+        {
+          "tagName": "INPUT",
+          "className": "file-input-hidden",
+          "hasVisibleFocus": true,
+          "outline": "rgb(16, 16, 16) auto 1px",
+          "boxShadow": "none"
+        },
+        {
+          "tagName": "BODY",
+          "className": "",
+          "hasVisibleFocus": true,
+          "outline": "rgb(248, 250, 252) none 3px",
+          "boxShadow": "none"
+        },
+        {
+          "tagName": "A",
+          "className": "skip-link",
+          "hasVisibleFocus": true,
+          "outline": "rgb(99, 102, 241) solid 2px",
+          "boxShadow": "none"
+        }
+      ],
+      "screenshot": "resume-keyboard-focus.png"
+    },
+    "resume_information_completeness": {
+      "name": "Resume Analyzer Information Completeness (Mobile 375px)",
+      "status": "PASS",
+      "details": [
+        {
+          "selector": "app-score-card",
+          "count": 1,
+          "found": true,
+          "visible": true
+        },
+        {
+          "selector": ".readability-quality-card",
+          "count": 1,
+          "found": true,
+          "visible": true
+        },
+        {
+          "selector": ".metric-highlights-grid",
+          "count": 1,
+          "found": true,
+          "visible": true
+        },
+        {
+          "selector": ".breakdown-panel",
+          "count": 1,
+          "found": true,
+          "visible": true
+        },
+        {
+          "selector": ".evidence-grid",
+          "count": 1,
+          "found": true,
+          "visible": true
+        },
+        {
+          "selector": ".skills-explorer-card",
+          "count": 1,
+          "found": true,
+          "visible": true
+        },
+        {
+          "selector": ".ai-card",
+          "count": 3,
+          "found": true,
+          "visible": true
+        }
+      ]
+    },
+    "shared_score_card_reflow": {
+      "name": "Shared Component: app-score-card Reflow Across Viewports",
+      "status": "PASS",
+      "results": [
+        {
+          "width": 320,
+          "valid": true,
+          "metrics": {
+            "width": 292,
+            "padding": "14px",
+            "scoreValue": "85",
+            "hasContent": true
+          }
+        },
+        {
+          "width": 375,
+          "valid": true,
+          "metrics": {
+            "width": 347,
+            "padding": "16px 18px",
+            "scoreValue": "85",
+            "hasContent": true
+          }
+        },
+        {
+          "width": 768,
+          "valid": true,
+          "metrics": {
+            "width": 740,
+            "padding": "20px 24px",
+            "scoreValue": "85",
+            "hasContent": true
+          }
+        },
+        {
+          "width": 1280,
+          "valid": true,
+          "metrics": {
+            "width": 360,
+            "padding": "20px 24px",
+            "scoreValue": "85",
+            "hasContent": true
+          }
+        }
+      ]
+    },
+    "shared_resume_prompt_modal": {
+      "name": "Shared Component: ResumePromptModal Reflow, Touch Targets & Keyboard Tab",
+      "status": "PASS",
+      "results": [
+        {
+          "width": 320,
+          "valid": true,
+          "metrics": {
+            "containerWidth": 287,
+            "docScrollWidth": 320,
+            "docClientWidth": 320,
+            "closeHeight": 36,
+            "primaryHeight": 44,
+            "linkHeight": 38,
+            "hasOverflow": false
+          },
+          "focusedPrimary": true,
+          "screenshot": "resume-prompt-modal-focused-320px.png"
+        },
+        {
+          "width": 375,
+          "valid": true,
+          "metrics": {
+            "containerWidth": 343,
+            "docScrollWidth": 375,
+            "docClientWidth": 375,
+            "closeHeight": 36,
+            "primaryHeight": 44,
+            "linkHeight": 38,
+            "hasOverflow": false
+          },
+          "focusedPrimary": true,
+          "screenshot": "resume-prompt-modal-focused-375px.png"
+        },
+        {
+          "width": 768,
+          "valid": true,
+          "metrics": {
+            "containerWidth": 439,
+            "docScrollWidth": 768,
+            "docClientWidth": 768,
+            "closeHeight": 36,
+            "primaryHeight": 48,
+            "linkHeight": 38,
+            "hasOverflow": false
+          },
+          "focusedPrimary": true,
+          "screenshot": "resume-prompt-modal-focused-768px.png"
+        }
+      ]
+    },
+    "scss_generation_reproducibility": {
+      "name": "SCSS Generation Scripts Reproducibility & Zero Git Diff",
+      "status": "PASS"
+    }
+  },
+  "summary": {
+    "passed": 13,
+    "failed": 0,
+    "blocked": 0
+  }
+}

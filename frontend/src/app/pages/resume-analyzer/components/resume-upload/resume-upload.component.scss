@@ -12,12 +12,16 @@
   font-weight: 600;
   color: var(--text-primary, #0f172a);
   letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .card-header-row p {
   margin: 0;
   font-size: 13px;
   color: var(--text-muted, #64748b);
   line-height: 1.45;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .uploader-card {
@@ -29,6 +33,13 @@
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
+  min-width: 0;
+  box-sizing: border-box;
+}
+@media (max-width: 480px) {
+  .uploader-card {
+    padding: 16px 14px;
+  }
 }
 
 .file-input-hidden {
@@ -54,6 +65,13 @@
   cursor: pointer;
   text-align: center;
   transition: all 0.2s ease;
+  min-width: 0;
+  box-sizing: border-box;
+}
+@media (max-width: 480px) {
+  .dropzone-label {
+    padding: 16px 12px;
+  }
 }
 .dropzone-label:hover:not(.disabled) {
   border-color: var(--color-primary, #4f46e5);

@@ -195,6 +195,17 @@ p {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+@media (max-width: 900px) {
+  .exec-pillars-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+@media (max-width: 768px) {
+  .executive-card {
+    padding: 20px 18px;
+  }
+}
 @media (max-width: 600px) {
   .executive-card {
     padding: 16px;
@@ -209,6 +220,26 @@ p {
   }
   .metrics-strip-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 480px) {
+  .executive-card {
+    padding: 16px 14px;
+  }
+}
+@media (max-width: 360px) {
+  .executive-card {
+    padding: 12px 10px;
+  }
+  .metrics-strip-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .metric-cell {
+    padding: 12px;
+  }
+  .exec-score-number {
+    font-size: 38px;
   }
 }
 :host-context([data-theme='dark']) .executive-card,

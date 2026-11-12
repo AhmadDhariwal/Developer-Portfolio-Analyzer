@@ -10,7 +10,10 @@ export type ButtonType = 'button' | 'submit' | 'reset';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './ui-button.component.html',
-  styleUrl: './ui-button.component.scss'
+  styleUrl: './ui-button.component.scss',
+  host: {
+    '[class.full-width]': 'fullWidth',
+  },
 })
 export class UiButtonComponent {
   @Input() variant: ButtonVariant = 'primary';

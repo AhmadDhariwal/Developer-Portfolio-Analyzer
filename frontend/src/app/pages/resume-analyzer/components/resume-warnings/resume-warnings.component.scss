@@ -5,17 +5,28 @@
   border-radius: 12px;
   padding: 22px 24px;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  min-width: 0;
+  box-sizing: border-box;
+}
+@media (max-width: 480px) {
+  .warnings-card {
+    padding: 16px 14px;
+  }
 }
 .warnings-card h4 {
   margin: 0 0 3px;
   font-size: 16px;
   font-weight: 600;
   color: var(--text-primary, #0f172a);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .warnings-card .evidence-subtitle {
   margin: 0 0 14px;
   font-size: 13px;
   color: var(--text-muted, #64748b);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .warnings-card .warnings-list {
   display: flex;
@@ -27,22 +38,29 @@
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
+  min-width: 0;
+  box-sizing: border-box;
 }
 .warnings-card .warning-item .warning-header {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 4px;
+  flex-wrap: wrap;
 }
 .warnings-card .warning-item .warning-header strong {
   font-size: 13px;
   color: var(--text-primary, #0f172a);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 .warnings-card .warning-item .warning-evidence {
   margin: 0;
   font-size: 12px;
   color: var(--text-secondary, #475569);
   padding-left: 2px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 :host-context([data-theme='dark']) .warnings-card,

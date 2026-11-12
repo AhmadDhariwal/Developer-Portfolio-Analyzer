@@ -11,6 +11,9 @@
   justify-content: center;
   z-index: 10000;
   animation: fadeIn 0.3s ease-out;
+  overflow-y: auto;
+  padding: 16px;
+  box-sizing: border-box;
 }
 
 .modal-container {
@@ -20,10 +23,18 @@
   border-radius: 24px;
   width: 100%;
   max-width: 440px;
+  margin: auto;
+  box-sizing: border-box;
   padding: 40px;
   position: relative;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+
+  @media (max-width: 480px) {
+    padding: 24px 18px;
+    border-radius: 18px;
+    width: 100%;
+  }
 }
 
 .close-btn {
@@ -33,14 +44,21 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: #a0a0a0;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s;
+
+  @media (max-width: 480px) {
+    top: 14px;
+    right: 14px;
+  }
 
   &:hover {
     background: rgba(255, 255, 255, 0.1);
@@ -69,6 +87,18 @@
     color: white;
     box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.5);
 
+    @media (max-width: 480px) {
+      width: 52px;
+      height: 52px;
+      margin-bottom: 16px;
+      border-radius: 16px;
+
+      svg {
+        width: 26px;
+        height: 26px;
+      }
+    }
+
     svg {
       width: 32px;
       height: 32px;
@@ -85,6 +115,13 @@
     margin-bottom: 12px;
     color: #fff;
     letter-spacing: -0.02em;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+
+    @media (max-width: 480px) {
+      font-size: 1.25rem;
+      margin-bottom: 8px;
+    }
   }
 
   p {
@@ -92,6 +129,14 @@
     line-height: 1.6;
     color: #a0a0a0;
     margin-bottom: 32px;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+
+    @media (max-width: 480px) {
+      font-size: 0.875rem;
+      margin-bottom: 24px;
+      line-height: 1.5;
+    }
   }
 }
 
@@ -113,7 +158,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 52px;
+    min-height: 48px;
+
+    @media (max-width: 480px) {
+      padding: 12px 20px;
+      font-size: 0.95rem;
+      min-height: 44px;
+    }
 
     &:hover:not(:disabled) {
       transform: translateY(-2px);
@@ -139,19 +190,30 @@
   .btn-link {
     background: none;
     border: none;
-    color: #6b7280;
-    font-size: 0.85rem;
+    color: #94a3b8;
+    font-size: 0.875rem;
     font-weight: 500;
     cursor: pointer;
-    padding: 4px;
-    transition: color 0.2s;
+    padding: 8px 12px;
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: all 0.2s;
 
     &:hover {
       color: #fff;
+      background: rgba(255, 255, 255, 0.05);
     }
 
-    &.danger:hover {
-      color: #ef4444;
+    &.danger {
+      color: #f87171;
+
+      &:hover {
+        color: #ef4444;
+        background: rgba(239, 68, 68, 0.08);
+      }
     }
   }
 }
@@ -167,22 +229,47 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.95) translateY(10px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
 @keyframes rotation {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }

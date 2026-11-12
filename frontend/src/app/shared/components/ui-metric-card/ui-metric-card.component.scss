@@ -1,11 +1,23 @@
 @use '../../styles/design-tokens' as *;
 
+:host {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  min-width: 0;
+}
+
 .ui-metric-card {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   padding: 16px 20px;
-  background: var(--surface-card, #FFFFFF);
-  border: 1px solid var(--border-color, #E2E8F0);
+  background: var(--surface-card, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
   border-radius: var(--radius-lg, 12px);
   box-shadow: var(--shadow-sm);
   transition: border-color var(--transition-fast);
@@ -13,13 +25,39 @@
   overflow: hidden;
   font-family: var(--font-sans, 'Inter', sans-serif);
 
+  @media (max-width: 480px) {
+    padding: 12px 14px;
+
+    .metric-top {
+      margin-bottom: 6px;
+
+      .metric-title {
+        font-size: 0.8125rem;
+      }
+
+      .metric-icon-slot {
+        width: 28px;
+        height: 28px;
+      }
+    }
+
+    .metric-body .metric-value-row .metric-value {
+      font-size: 1.5rem;
+    }
+
+    .metric-footer .metric-subtitle {
+      font-size: 0.75rem;
+      line-height: 1.35;
+    }
+  }
+
   &.glass {
     @include glass-surface;
   }
 
   &.subtle {
-    background: var(--surface-secondary, #F8FAFC);
-    border-color: var(--border-color, #E2E8F0);
+    background: var(--surface-secondary, #f8fafc);
+    border-color: var(--border-color, #e2e8f0);
   }
 
   &.is-stale {
@@ -32,9 +70,9 @@
       right: 10px;
       font-size: 0.6875rem;
       font-weight: 600;
-      color: var(--color-warning-dark, #D97706);
-      background: var(--color-warning-soft, #FFFBEB);
-      border: 1px solid var(--color-warning-border, #FDE68A);
+      color: var(--color-warning-dark, #d97706);
+      background: var(--color-warning-soft, #fffbeb);
+      border: 1px solid var(--color-warning-border, #fde68a);
       padding: 1px 6px;
       border-radius: var(--radius-full);
       text-transform: uppercase;
@@ -43,7 +81,7 @@
   }
 
   &:hover {
-    border-color: var(--border-light, #CBD5E1);
+    border-color: var(--border-light, #cbd5e1);
   }
 
   .metric-top {
@@ -69,20 +107,47 @@
       height: 32px;
       border-radius: 6px;
       flex-shrink: 0;
-      background: var(--surface-subtle, #F1F5F9);
-      border: 1px solid var(--border-color, #E2E8F0);
+      background: var(--surface-subtle, #f1f5f9);
+      border: 1px solid var(--border-color, #e2e8f0);
       color: var(--text-secondary, #475569);
 
-      &.icon-primary   { background: var(--color-primary-soft, #EEF2FF); border-color: #C7D2FE; color: var(--color-primary, #4F46E5); }
-      &.icon-secondary { background: #F3E8FF; border-color: #DDD6FE; color: #7C3AED; }
-      &.icon-success   { background: var(--color-success-soft, #ECFDF5); border-color: var(--color-success-border, #A7F3D0); color: var(--color-success, #10B981); }
-      &.icon-warning   { background: var(--color-warning-soft, #FFFBEB); border-color: var(--color-warning-border, #FDE68A); color: var(--color-warning, #F59E0B); }
-      &.icon-danger    { background: var(--color-danger-soft, #FEF2F2); border-color: var(--color-danger-border, #FECACA); color: var(--color-danger, #EF4444); }
-      &.icon-info      { background: var(--color-info-soft, #F0F9FF); border-color: var(--color-info-border, #BAE6FD); color: var(--color-info, #0284C7); }
+      &.icon-primary {
+        background: var(--color-primary-soft, #eef2ff);
+        border-color: #c7d2fe;
+        color: var(--color-primary, #4f46e5);
+      }
+      &.icon-secondary {
+        background: #f3e8ff;
+        border-color: #ddd6fe;
+        color: #7c3aed;
+      }
+      &.icon-success {
+        background: var(--color-success-soft, #ecfdf5);
+        border-color: var(--color-success-border, #a7f3d0);
+        color: var(--color-success, #10b981);
+      }
+      &.icon-warning {
+        background: var(--color-warning-soft, #fffbeb);
+        border-color: var(--color-warning-border, #fde68a);
+        color: var(--color-warning, #f59e0b);
+      }
+      &.icon-danger {
+        background: var(--color-danger-soft, #fef2f2);
+        border-color: var(--color-danger-border, #fecaca);
+        color: var(--color-danger, #ef4444);
+      }
+      &.icon-info {
+        background: var(--color-info-soft, #f0f9ff);
+        border-color: var(--color-info-border, #bae6fd);
+        color: var(--color-info, #0284c7);
+      }
     }
   }
 
   .metric-body {
+    flex: 1;
+    display: flex;
+    align-items: center;
     margin-bottom: 2px;
 
     .metric-value-row {
@@ -94,14 +159,14 @@
         font-size: 1.75rem; // 28px
         font-weight: 700;
         font-family: var(--font-heading, 'Inter', sans-serif);
-        color: var(--text-primary, #0F172A);
+        color: var(--text-primary, #0f172a);
         letter-spacing: -0.02em;
         line-height: 1.2;
       }
 
       .metric-unit {
         font-size: 0.84rem;
-        color: var(--text-muted, #64748B);
+        color: var(--text-muted, #64748b);
         font-weight: 500;
       }
     }
@@ -110,7 +175,7 @@
   .metric-footer {
     display: flex;
     align-items: center;
-    margin-top: 2px;
+    margin-top: auto;
 
     .metric-trend {
       display: inline-flex;
@@ -120,18 +185,18 @@
       font-weight: 600;
 
       &.trend-up {
-        color: var(--color-success, #10B981);
+        color: var(--color-success, #10b981);
       }
       &.trend-down {
-        color: var(--color-danger, #EF4444);
+        color: var(--color-danger, #ef4444);
       }
       &.trend-neutral {
-        color: var(--text-muted, #64748B);
+        color: var(--text-muted, #64748b);
       }
 
       .trend-label {
         font-weight: 400;
-        color: var(--text-muted, #64748B);
+        color: var(--text-muted, #64748b);
         margin-left: 2px;
       }
     }
@@ -139,7 +204,7 @@
     .metric-subtitle {
       margin: 0;
       font-size: 0.8125rem;
-      color: var(--text-muted, #64748B);
+      color: var(--text-muted, #64748b);
       line-height: 1.4;
     }
   }
@@ -148,7 +213,12 @@
   .metric-skeleton-value {
     width: 60%;
     height: 32px;
-    background: linear-gradient(90deg, rgba(51, 65, 85, 0.4) 0%, rgba(71, 85, 105, 0.6) 50%, rgba(51, 65, 85, 0.4) 100%);
+    background: linear-gradient(
+      90deg,
+      rgba(51, 65, 85, 0.4) 0%,
+      rgba(71, 85, 105, 0.6) 50%,
+      rgba(51, 65, 85, 0.4) 100%
+    );
     background-size: 200% 100%;
     animation: metric-shimmer 1.5s infinite;
     border-radius: var(--radius-xs, 4px);
@@ -157,7 +227,12 @@
   .metric-skeleton-sub {
     width: 40%;
     height: 16px;
-    background: linear-gradient(90deg, rgba(51, 65, 85, 0.4) 0%, rgba(71, 85, 105, 0.6) 50%, rgba(51, 65, 85, 0.4) 100%);
+    background: linear-gradient(
+      90deg,
+      rgba(51, 65, 85, 0.4) 0%,
+      rgba(71, 85, 105, 0.6) 50%,
+      rgba(51, 65, 85, 0.4) 100%
+    );
     background-size: 200% 100%;
     animation: metric-shimmer 1.5s infinite;
     border-radius: var(--radius-xs, 4px);
@@ -165,6 +240,10 @@
 }
 
 @keyframes metric-shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
