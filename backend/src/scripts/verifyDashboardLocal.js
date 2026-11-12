@@ -10,7 +10,7 @@ const mongoose = require('mongoose');
 
 const output = path.resolve(
   process.env.DASHBOARD_VERIFICATION_OUTPUT ||
-    path.join(__dirname, '../../verification/dashboard/followup-2026-11-12'),
+    path.join(__dirname, '../../verification/dashboard/provenance-2026-11-12'),
 );
 const modelNames = [
   'user',
@@ -409,11 +409,17 @@ async function main() {
     const producerSummary = await (await read(workers[1].base, 'summary')).json();
     assert.equal(producerSummary.readinessScore, scoredPortfolio.overallScore);
     assert.equal(producerSummary.consistency.identity.resumeAnalysisId, 'no-resume');
+    assert.equal(producerSummary.progress.history.points.length, 1);
+    const trusted = await models.aiVersion
+      .findOne({ userId: owner._id, provenance: { $exists: true } })
+      .lean();
+    assert.ok(trusted.provenance.sourceRevisionHash);
     const forged = await fetch(workers[0].base + '/api/ai-versions', {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         source: 'portfolio_score',
+        provenance: trusted.provenance,
         metadata: {
           username: 'fixture-dev',
           careerStack: 'Backend',
@@ -424,10 +430,37 @@ async function main() {
       }),
     });
     assert.equal(forged.status, 201);
+    const forgedBody = await forged.json();
+    assert.equal(forgedBody.version.provenance, undefined);
     const guardedHistory = await (await read(workers[1].base, 'summary')).json();
-    assert.equal(guardedHistory.progress.history.points.length, 0);
+    assert.equal(guardedHistory.progress.history.points.length, 1);
+    const repeat = await fetch(workers[0].base + '/api/analysis/portfolio-score', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: '{}',
+    });
+    assert.equal((await repeat.json()).fromCache, true);
+    assert.equal(
+      (await (await read(workers[1].base, 'summary')).json()).progress.history.points.length,
+      1,
+    );
+    await models.analysisCache.updateOne(
+      { ...identity, analysisVersion: 'portfolio-score-v1' },
+      {
+        $set: { 'analysisData.portfolioIntegrationRevision': 'fixture-force-reassessment' },
+      },
+    );
+    const secondAssessment = await fetch(workers[0].base + '/api/analysis/portfolio-score', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: '{}',
+    });
+    assert.equal(secondAssessment.status, 200);
+    const comparable = await (await read(workers[1].base, 'summary')).json();
+    assert.equal(comparable.progress.history.status, 'available');
+    assert.equal(comparable.progress.history.points.length, 2);
     report.checks.push(
-      'Explicit portfolio POST uses selected-resume identity and becomes visible to Dashboard on the other process; manually authored archive cannot fabricate history',
+      'Authoritative provenance survives two-process reads; public mass assignment is ignored; cached archives deduplicate; two fresh comparable assessments enable history',
     );
     const durations = [];
     const loadStarted = performance.now();
@@ -607,7 +640,12 @@ async function main() {
       await page
         .getByText('1250 failed attempts out of 5000 syncs over 7 days.', { exact: true })
         .waitFor();
-      assert.equal(await page.locator('app-dashboard-progress svg').count(), 0);
+      assert.equal(await page.locator('app-dashboard-progress svg').count(), 1);
+      await page.getByText('Assessment dates and scores', { exact: true }).click();
+      assert.equal(
+        await page.locator('app-dashboard-progress article').first().locator('tbody tr').count(),
+        2,
+      );
       await page.locator('app-dashboard-progress summary').first().focus();
       await page.keyboard.press('Enter');
       report.browser.requestPaths = [...requests];

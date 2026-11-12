@@ -62,8 +62,12 @@ const getPortfolioReadiness = async (req, res) => {
       ? buildResumeCacheIdentity({ resumeAnalysis: selectedResume })
       : { resumeHash: crypto.createHash('sha256').update(cleanResume).digest('hex') };
     const resumeHash = resumeIdentity.resumeHash;
-    const identity = { githubUsername: username.toLowerCase(), careerStack, experienceLevel,
-      resumeAnalysisId: resumeIdentity.resumeAnalysisId };
+    const identity = {
+      githubUsername: username.toLowerCase(),
+      careerStack,
+      experienceLevel,
+      resumeAnalysisId: resumeIdentity.resumeAnalysisId,
+    };
     const cacheKey = {
       githubUsername: username,
       careerStack,
@@ -200,13 +204,27 @@ const getPortfolioReadiness = async (req, res) => {
           : 'Weighted score generated with confidence and explainability.',
     });
 
-    const provenance = profileMode ? {
-      producer: 'portfolio-score-v1', ...identity,
-      ruleVersion: scoredResult.scoring.ruleVersion,
-      assessedAt: new Date(),
-      sourceRevisionHash: fingerprint({ githubAnalysis, selectedResume, scopedSkillGap, integrationInsight }),
-    } : undefined;
-    if (provenance) provenance.assessmentHash = fingerprint({ ...provenance, scoring: scoredResult.scoring, overallScore: scoredResult.overallScore });
+    const provenance =
+      profileMode && Number.isFinite(scoredResult.scoring?.score)
+        ? {
+            producer: 'portfolio-score-v1',
+            ...identity,
+            ruleVersion: scoredResult.scoring.ruleVersion,
+            assessedAt: new Date(scoredResult.scoring.calculatedAt),
+            sourceRevisionHash: fingerprint({
+              githubAnalysis,
+              selectedResume,
+              scopedSkillGap,
+              integrationInsight,
+            }),
+          }
+        : undefined;
+    if (provenance)
+      provenance.assessmentHash = fingerprint({
+        ...provenance,
+        scoring: scoredResult.scoring,
+        overallScore: scoredResult.overallScore,
+      });
 
     if (req.user) {
       await AnalysisCache.findOneAndUpdate(

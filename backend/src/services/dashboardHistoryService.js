@@ -97,7 +97,9 @@ async function loadReadinessHistory(userId, identity, ruleVersion, asOf) {
       },
     ]).option({ maxTimeMS: 1500, allowDiskUse: false });
     const points = comparableHistory(
-      rows.filter((row) => new Date(row.createdAt) <= asOf && new Date(row.provenance?.assessedAt) <= asOf),
+      rows.filter(
+        (row) => new Date(row.createdAt) <= asOf && new Date(row.provenance?.assessedAt) <= asOf,
+      ),
       identity,
       ruleVersion,
     );

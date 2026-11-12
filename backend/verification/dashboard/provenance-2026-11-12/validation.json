@@ -1,0 +1,38 @@
+{
+  "localStatus": "PASS",
+  "productionStatus": "BLOCKED",
+  "schemaApproval": "Explicitly granted by user for optional server-owned provenance only",
+  "branch": "fix/dashboard",
+  "target": "not applicable",
+  "backend": {
+    "skipped": 1,
+    "failed": 0,
+    "passed": 112,
+    "tests": 113
+  },
+  "postFinalAssertions": {
+    "schemaAuthorizationTests": 3,
+    "passed": 3,
+    "dashboardEndpointAndProvenanceTests": 27,
+    "finalFocusedPassed": 27
+  },
+  "localEndToEnd": "PASS",
+  "browser": "PASS",
+  "frontend": "No frontend source change in approval extension; preceding 633 passing tests, TypeScript and production build retained",
+  "finalization": {
+    "whitespace": "PASS",
+    "syntax": "PASS",
+    "formatterCheck": "PASS",
+    "formatterWrite": "PASS"
+  },
+  "externalBlockers": [
+    "No verified staging URL/account/representative topology",
+    "Representative load, multi-host failure and Mongo failover not verified",
+    "Live Prometheus evaluation unavailable"
+  ],
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 183,
+    "productionDataUsed": false
+  }
+}

@@ -1,16 +1,19 @@
 const mongoose = require('mongoose');
 
-const provenanceSchema = new mongoose.Schema({
-  producer: { type: String, required: true, enum: ['portfolio-score-v1'] },
-  githubUsername: { type: String, required: true },
-  careerStack: { type: String, required: true },
-  experienceLevel: { type: String, required: true },
-  resumeAnalysisId: { type: String, required: true },
-  ruleVersion: { type: String, required: true },
-  sourceRevisionHash: { type: String, required: true, match: /^[a-f0-9]{64}$/ },
-  assessmentHash: { type: String, required: true, match: /^[a-f0-9]{64}$/ },
-  assessedAt: { type: Date, required: true },
-}, { _id: false, strict: 'throw' });
+const provenanceSchema = new mongoose.Schema(
+  {
+    producer: { type: String, required: true, enum: ['portfolio-score-v1'] },
+    githubUsername: { type: String, required: true },
+    careerStack: { type: String, required: true },
+    experienceLevel: { type: String, required: true },
+    resumeAnalysisId: { type: String, required: true },
+    ruleVersion: { type: String, required: true },
+    sourceRevisionHash: { type: String, required: true, match: /^[a-f0-9]{64}$/ },
+    assessmentHash: { type: String, required: true, match: /^[a-f0-9]{64}$/ },
+    assessedAt: { type: Date, required: true },
+  },
+  { _id: false, strict: 'throw' },
+);
 
 const aiVersionSchema = new mongoose.Schema(
   {
@@ -18,37 +21,37 @@ const aiVersionSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-      index: true
+      index: true,
     },
     source: {
       type: String,
       required: true,
       trim: true,
-      default: 'manual'
+      default: 'manual',
     },
     version: {
       type: Number,
-      required: true
+      required: true,
     },
     outputJson: {
       type: mongoose.Schema.Types.Mixed,
-      required: true
+      required: true,
     },
     metadata: {
       type: mongoose.Schema.Types.Mixed,
-      default: {}
+      default: {},
     },
     // No default: legacy and caller-authored archives remain unverified.
     provenance: { type: provenanceSchema, immutable: true, default: undefined },
     createdAt: {
       type: Date,
       default: Date.now,
-      index: true
-    }
+      index: true,
+    },
   },
   {
-    versionKey: false
-  }
+    versionKey: false,
+  },
 );
 
 aiVersionSchema.index({ userId: 1, source: 1, version: -1 }, { unique: true });

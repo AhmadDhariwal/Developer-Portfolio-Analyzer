@@ -1,4 +1,4 @@
-> **Latest follow-up (2026-11-12):** see [current report](followup-2026-11-12/REPORT.md), [validation](followup-2026-11-12/validation.json), and [exact inventory](followup-2026-11-12/file-inventory.json). The report below is retained as the earlier baseline, not the latest acceptance decision. Trusted readiness-history production remains approval-blocked; staging acceptance remains blocked.
+> **Latest acceptance (2026-11-12):** see [approved provenance report](provenance-2026-11-12/REPORT.md), [validation](provenance-2026-11-12/validation.json), and [exact inventory](provenance-2026-11-12/file-inventory.json). Trusted history is implemented and passes local acceptance. External staging acceptance remains blocked. The earlier baseline below and the [preceding follow-up](followup-2026-11-12/REPORT.md) are retained historical evidence.
 
 # Developer Dashboard audit and acceptance — 2026-11-12
 

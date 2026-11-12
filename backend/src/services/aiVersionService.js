@@ -1,6 +1,10 @@
 const AIVersion = require('../models/aiVersion');
 
-const sanitizeSource = (source) => String(source || 'manual').trim().toLowerCase().slice(0, 60) || 'manual';
+const sanitizeSource = (source) =>
+  String(source || 'manual')
+    .trim()
+    .toLowerCase()
+    .slice(0, 60) || 'manual';
 
 const getNextVersionNumber = async (userId, source) => {
   const latest = await AIVersion.findOne({ userId, source })
@@ -21,7 +25,7 @@ const persistVersion = async ({ userId, source, outputJson, metadata = {}, prove
     outputJson,
     metadata,
     ...(provenance ? { provenance } : {}),
-    createdAt: new Date()
+    createdAt: new Date(),
   });
 };
 
@@ -36,5 +40,5 @@ const createPortfolioVersion = ({ userId, outputJson, metadata, provenance }) =>
 module.exports = {
   createVersion,
   createPortfolioVersion,
-  sanitizeSource
+  sanitizeSource,
 };

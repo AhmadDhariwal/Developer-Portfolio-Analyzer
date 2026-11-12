@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const writes = [];
 const archives = [];
 let selectedReads = 0;
+let cached = null;
 const mock = (path, value) => {
   const id = require.resolve(path);
   require.cache[id] = { id, filename: id, loaded: true, exports: value };
@@ -49,7 +50,7 @@ mock('../services/aiVersionService', {
 });
 mock('../models/analysisCache', {
   findOne: (filter) => ({
-    then: (resolve) => Promise.resolve(null).then(resolve),
+    then: (resolve) => Promise.resolve(cached).then(resolve),
     lean: async () =>
       filter.analysisVersion === 'skill-gap' ? { analysisData: { coverage: 0 } } : null,
   }),
@@ -87,7 +88,10 @@ test('profile portfolio scoring shares Dashboard selected-resume identity and ca
   assert.equal(archives.at(-1).provenance.resumeAnalysisId, resume._id);
   assert.equal(archives.at(-1).provenance.ruleVersion, result.scoring.ruleVersion);
   assert.match(archives.at(-1).provenance.sourceRevisionHash, /^[a-f0-9]{64}$/);
-  assert.deepEqual(writes.at(-1).update.$set['analysisData.portfolioProvenance'], archives.at(-1).provenance);
+  assert.deepEqual(
+    writes.at(-1).update.$set['analysisData.portfolioProvenance'],
+    archives.at(-1).provenance,
+  );
 });
 test('explicit client-supplied preview inputs cannot acquire a canonical selected-resume cache identity', async () => {
   selectedReads = 0;
@@ -97,4 +101,27 @@ test('explicit client-supplied preview inputs cannot acquire a canonical selecte
   assert.equal(writes.at(-1).key.resumeAnalysisId, undefined);
   assert.equal(archives.at(-1).trustedWriter, false);
   assert.equal(archives.at(-1).provenance, undefined);
+});
+
+test('cache hits retain the original assessment time/hash and never upgrade legacy scores', async () => {
+  await request({});
+  const assessment = archives.at(-1);
+  cached = {
+    analysisData: {
+      portfolioScore: assessment.outputJson,
+      portfolioProvenance: assessment.provenance,
+      portfolioIntegrationRevision: JSON.stringify([null, 0, []]),
+    },
+  };
+  try {
+    await request({});
+    assert.equal(archives.at(-1).metadata.fromCache, true);
+    assert.deepEqual(archives.at(-1).provenance, assessment.provenance);
+    delete cached.analysisData.portfolioProvenance;
+    await request({});
+    assert.equal(archives.at(-1).trustedWriter, false);
+    assert.equal(archives.at(-1).provenance, undefined);
+  } finally {
+    cached = null;
+  }
 });

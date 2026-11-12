@@ -1,0 +1,1947 @@
+{
+  "synthetic": true,
+  "productionDataUsed": false,
+  "checks": [
+    "real JWT, two users isolated, canonical skill scope, zero portfolio, no cross-stack trend, weighted sprint, learning progress, canonical news, cross-process 304",
+    "upstream write visible immediately in both independent API processes",
+    "Authoritative provenance survives two-process reads; public mass assignment is ignored; cached archives deduplicate; two fresh comparable assessments enable history",
+    "Browser rejects mismatched-profile evidence and exposes a retryable refresh failure instead of silently using stale success",
+    "Initial-load outage has no fabricated zero readiness or GitHub counters"
+  ],
+  "performance": {
+    "elapsedMs": 953,
+    "throughputRps": 31.5,
+    "sampleCount": 30,
+    "concurrency": 10,
+    "users": 2,
+    "apiProcesses": 2,
+    "maxPoolSizePerProcess": 10,
+    "p50Ms": 287,
+    "p95Ms": 440,
+    "maxMs": 440,
+    "summaryBytes": 10577,
+    "limitation": "Synthetic loopback, single-member disposable replica set, not representative staging load"
+  },
+  "plans": {
+    "newsCanonical": {
+      "winningPlan": {
+        "isCached": true,
+        "stage": "LIMIT",
+        "limitAmount": 1,
+        "inputStage": {
+          "stage": "PROJECTION_SIMPLE",
+          "transformBy": {
+            "trendingTopics": 1,
+            "lastUpdated": 1,
+            "updatedAt": 1
+          },
+          "inputStage": {
+            "stage": "FETCH",
+            "filter": {
+              "expiresAt": {
+                "$gt": "2026-11-12T10:26:35.470Z"
+              }
+            },
+            "inputStage": {
+              "stage": "IXSCAN",
+              "keyPattern": {
+                "cacheKey": 1
+              },
+              "indexName": "cacheKey_1",
+              "isMultiKey": false,
+              "multiKeyPaths": {
+                "cacheKey": []
+              },
+              "isUnique": true,
+              "isSparse": false,
+              "isPartial": false,
+              "indexVersion": 2,
+              "direction": "forward",
+              "indexBounds": {
+                "cacheKey": [
+                  "[\"news:v3:public:pool\", \"news:v3:public:pool\"]"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "keysExamined": 1,
+      "documentsExamined": 1,
+      "returned": 1
+    },
+    "newsLegacy": {
+      "winningPlan": {
+        "isCached": false,
+        "stage": "SORT",
+        "sortPattern": {
+          "lastUpdated": -1,
+          "updatedAt": -1
+        },
+        "memLimit": 104857600,
+        "limitAmount": 1,
+        "type": "simple",
+        "inputStage": {
+          "stage": "FETCH",
+          "inputStage": {
+            "stage": "IXSCAN",
+            "keyPattern": {
+              "expiresAt": 1
+            },
+            "indexName": "expiresAt_1",
+            "isMultiKey": false,
+            "multiKeyPaths": {
+              "expiresAt": []
+            },
+            "isUnique": false,
+            "isSparse": false,
+            "isPartial": false,
+            "indexVersion": 2,
+            "direction": "forward",
+            "indexBounds": {
+              "expiresAt": [
+                "(new Date(1794479195470), new Date(9223372036854775807)]"
+              ]
+            }
+          }
+        }
+      },
+      "keysExamined": 500,
+      "documentsExamined": 500,
+      "returned": 1
+    },
+    "portfolioCurrent": {
+      "winningPlan": {
+        "isCached": false,
+        "stage": "SORT",
+        "sortPattern": {
+          "updatedAt": -1,
+          "_id": -1
+        },
+        "memLimit": 104857600,
+        "limitAmount": 1,
+        "type": "simple",
+        "inputStage": {
+          "stage": "FETCH",
+          "filter": {
+            "analysisData.portfolioScore.overallScore": {
+              "$exists": true
+            }
+          },
+          "inputStage": {
+            "stage": "IXSCAN",
+            "filter": {
+              "githubUsername": {
+                "$regex": "^fixture-dev$",
+                "$options": "i"
+              }
+            },
+            "keyPattern": {
+              "userId": 1,
+              "githubUsername": 1,
+              "careerStack": 1,
+              "experienceLevel": 1,
+              "analysisVersion": 1,
+              "resumeHash": 1,
+              "resumeAnalysisId": 1,
+              "signalHash": 1
+            },
+            "indexName": "userId_1_githubUsername_1_careerStack_1_experienceLevel_1_analysisVersion_1_resumeHash_1_resumeAnalysisId_1_signalHash_1",
+            "isMultiKey": false,
+            "multiKeyPaths": {
+              "userId": [],
+              "githubUsername": [],
+              "careerStack": [],
+              "experienceLevel": [],
+              "analysisVersion": [],
+              "resumeHash": [],
+              "resumeAnalysisId": [],
+              "signalHash": []
+            },
+            "isUnique": false,
+            "isSparse": false,
+            "isPartial": false,
+            "indexVersion": 2,
+            "direction": "forward",
+            "indexBounds": {
+              "userId": [
+                "[ObjectId('6af594462dad91f2d9da3c9a'), ObjectId('6af594462dad91f2d9da3c9a')]"
+              ],
+              "githubUsername": [
+                "[\"\", {})",
+                "[/^fixture-dev$/i, /^fixture-dev$/i]"
+              ],
+              "careerStack": [
+                "[\"Backend\", \"Backend\"]"
+              ],
+              "experienceLevel": [
+                "[\"Student\", \"Student\"]"
+              ],
+              "analysisVersion": [
+                "[MinKey, MaxKey]"
+              ],
+              "resumeHash": [
+                "[\"no-resume\", \"no-resume\"]"
+              ],
+              "resumeAnalysisId": [
+                "[\"no-resume\", \"no-resume\"]"
+              ],
+              "signalHash": [
+                "[MinKey, MaxKey]"
+              ]
+            }
+          }
+        }
+      },
+      "keysExamined": 4,
+      "documentsExamined": 3,
+      "returned": 1
+    },
+    "cacheFacet": {
+      "explainVersion": "1",
+      "stages": [
+        {
+          "$cursor": {
+            "queryPlanner": {
+              "namespace": "integration_live_acceptance.analysiscaches",
+              "parsedQuery": {
+                "$and": [
+                  {
+                    "careerStack": {
+                      "$eq": "Backend"
+                    }
+                  },
+                  {
+                    "experienceLevel": {
+                      "$eq": "Student"
+                    }
+                  },
+                  {
+                    "userId": {
+                      "$eq": "6af594462dad91f2d9da3c9a"
+                    }
+                  }
+                ]
+              },
+              "indexFilterSet": false,
+              "queryHash": "B0F538C9",
+              "planCacheShapeHash": "B0F538C9",
+              "planCacheKey": "F6B8022A",
+              "optimizationTimeMillis": 0,
+              "maxIndexedOrSolutionsReached": false,
+              "maxIndexedAndSolutionsReached": false,
+              "maxScansToExplodeReached": false,
+              "prunedSimilarIndexes": false,
+              "winningPlan": {
+                "isCached": true,
+                "stage": "PROJECTION_DEFAULT",
+                "transformBy": {
+                  "_id": 1,
+                  "analysisData.cacheMetadata.temporary": 1,
+                  "analysisData.claimedButNotProvenSkills": 1,
+                  "analysisData.coverage": 1,
+                  "analysisData.evidencePolicyVersion": 1,
+                  "analysisData.highDemandSkills": 1,
+                  "analysisData.missingSkills": 1,
+                  "analysisData.portfolioScore": 1,
+                  "analysisData.projects": 1,
+                  "analysisData.provenSkills": 1,
+                  "analysisData.recommendationScores": 1,
+                  "analysisData.recommendationSignals": 1,
+                  "analysisData.requirementMatrixVersion": 1,
+                  "analysisData.ruleVersion": 1,
+                  "analysisData.structuredRecommendations": 1,
+                  "analysisData.taxonomyVersion": 1,
+                  "analysisData.yourSkills": 1,
+                  "analysisVersion": 1,
+                  "careerStack": 1,
+                  "createdAt": 1,
+                  "experienceLevel": 1,
+                  "githubUsername": 1,
+                  "resumeAnalysisId": 1,
+                  "resumeHash": 1,
+                  "updatedAt": 1,
+                  "userId": 1
+                },
+                "inputStage": {
+                  "stage": "FETCH",
+                  "filter": {
+                    "$and": [
+                      {
+                        "careerStack": {
+                          "$eq": "Backend"
+                        }
+                      },
+                      {
+                        "experienceLevel": {
+                          "$eq": "Student"
+                        }
+                      }
+                    ]
+                  },
+                  "inputStage": {
+                    "stage": "IXSCAN",
+                    "keyPattern": {
+                      "userId": 1,
+                      "analysisVersion": 1,
+                      "updatedAt": -1
+                    },
+                    "indexName": "userId_1_analysisVersion_1_updatedAt_-1",
+                    "isMultiKey": false,
+                    "multiKeyPaths": {
+                      "userId": [],
+                      "analysisVersion": [],
+                      "updatedAt": []
+                    },
+                    "isUnique": false,
+                    "isSparse": false,
+                    "isPartial": false,
+                    "indexVersion": 2,
+                    "direction": "forward",
+                    "indexBounds": {
+                      "userId": [
+                        "[ObjectId('6af594462dad91f2d9da3c9a'), ObjectId('6af594462dad91f2d9da3c9a')]"
+                      ],
+                      "analysisVersion": [
+                        "[MinKey, MaxKey]"
+                      ],
+                      "updatedAt": [
+                        "[MaxKey, MinKey]"
+                      ]
+                    }
+                  }
+                }
+              },
+              "rejectedPlans": [
+                {
+                  "isCached": false,
+                  "stage": "PROJECTION_DEFAULT",
+                  "transformBy": {
+                    "_id": 1,
+                    "analysisData.cacheMetadata.temporary": 1,
+                    "analysisData.claimedButNotProvenSkills": 1,
+                    "analysisData.coverage": 1,
+                    "analysisData.evidencePolicyVersion": 1,
+                    "analysisData.highDemandSkills": 1,
+                    "analysisData.missingSkills": 1,
+                    "analysisData.portfolioScore": 1,
+                    "analysisData.projects": 1,
+                    "analysisData.provenSkills": 1,
+                    "analysisData.recommendationScores": 1,
+                    "analysisData.recommendationSignals": 1,
+                    "analysisData.requirementMatrixVersion": 1,
+                    "analysisData.ruleVersion": 1,
+                    "analysisData.structuredRecommendations": 1,
+                    "analysisData.taxonomyVersion": 1,
+                    "analysisData.yourSkills": 1,
+                    "analysisVersion": 1,
+                    "careerStack": 1,
+                    "createdAt": 1,
+                    "experienceLevel": 1,
+                    "githubUsername": 1,
+                    "resumeAnalysisId": 1,
+                    "resumeHash": 1,
+                    "updatedAt": 1,
+                    "userId": 1
+                  },
+                  "inputStage": {
+                    "stage": "FETCH",
+                    "inputStage": {
+                      "stage": "IXSCAN",
+                      "keyPattern": {
+                        "userId": 1,
+                        "githubUsername": 1,
+                        "careerStack": 1,
+                        "experienceLevel": 1,
+                        "analysisVersion": 1,
+                        "resumeHash": 1,
+                        "resumeAnalysisId": 1,
+                        "signalHash": 1
+                      },
+                      "indexName": "userId_1_githubUsername_1_careerStack_1_experienceLevel_1_analysisVersion_1_resumeHash_1_resumeAnalysisId_1_signalHash_1",
+                      "isMultiKey": false,
+                      "multiKeyPaths": {
+                        "userId": [],
+                        "githubUsername": [],
+                        "careerStack": [],
+                        "experienceLevel": [],
+                        "analysisVersion": [],
+                        "resumeHash": [],
+                        "resumeAnalysisId": [],
+                        "signalHash": []
+                      },
+                      "isUnique": false,
+                      "isSparse": false,
+                      "isPartial": false,
+                      "indexVersion": 2,
+                      "direction": "forward",
+                      "indexBounds": {
+                        "userId": [
+                          "[ObjectId('6af594462dad91f2d9da3c9a'), ObjectId('6af594462dad91f2d9da3c9a')]"
+                        ],
+                        "githubUsername": [
+                          "[MinKey, MaxKey]"
+                        ],
+                        "careerStack": [
+                          "[\"Backend\", \"Backend\"]"
+                        ],
+                        "experienceLevel": [
+                          "[\"Student\", \"Student\"]"
+                        ],
+                        "analysisVersion": [
+                          "[MinKey, MaxKey]"
+                        ],
+                        "resumeHash": [
+                          "[MinKey, MaxKey]"
+                        ],
+                        "resumeAnalysisId": [
+                          "[MinKey, MaxKey]"
+                        ],
+                        "signalHash": [
+                          "[MinKey, MaxKey]"
+                        ]
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            "executionStats": {
+              "executionSuccess": true,
+              "nReturned": 3,
+              "executionTimeMillis": 2,
+              "totalKeysExamined": 4,
+              "totalDocsExamined": 4,
+              "executionStages": {
+                "isCached": true,
+                "stage": "PROJECTION_DEFAULT",
+                "nReturned": 3,
+                "executionTimeMillisEstimate": 0,
+                "works": 6,
+                "advanced": 3,
+                "needTime": 1,
+                "needYield": 0,
+                "saveState": 2,
+                "restoreState": 1,
+                "isEOF": 1,
+                "transformBy": {
+                  "_id": 1,
+                  "analysisData.cacheMetadata.temporary": 1,
+                  "analysisData.claimedButNotProvenSkills": 1,
+                  "analysisData.coverage": 1,
+                  "analysisData.evidencePolicyVersion": 1,
+                  "analysisData.highDemandSkills": 1,
+                  "analysisData.missingSkills": 1,
+                  "analysisData.portfolioScore": 1,
+                  "analysisData.projects": 1,
+                  "analysisData.provenSkills": 1,
+                  "analysisData.recommendationScores": 1,
+                  "analysisData.recommendationSignals": 1,
+                  "analysisData.requirementMatrixVersion": 1,
+                  "analysisData.ruleVersion": 1,
+                  "analysisData.structuredRecommendations": 1,
+                  "analysisData.taxonomyVersion": 1,
+                  "analysisData.yourSkills": 1,
+                  "analysisVersion": 1,
+                  "careerStack": 1,
+                  "createdAt": 1,
+                  "experienceLevel": 1,
+                  "githubUsername": 1,
+                  "resumeAnalysisId": 1,
+                  "resumeHash": 1,
+                  "updatedAt": 1,
+                  "userId": 1
+                },
+                "inputStage": {
+                  "stage": "FETCH",
+                  "filter": {
+                    "$and": [
+                      {
+                        "careerStack": {
+                          "$eq": "Backend"
+                        }
+                      },
+                      {
+                        "experienceLevel": {
+                          "$eq": "Student"
+                        }
+                      }
+                    ]
+                  },
+                  "nReturned": 3,
+                  "executionTimeMillisEstimate": 0,
+                  "works": 6,
+                  "advanced": 3,
+                  "needTime": 1,
+                  "needYield": 0,
+                  "saveState": 2,
+                  "restoreState": 1,
+                  "isEOF": 1,
+                  "docsExamined": 4,
+                  "alreadyHasObj": 0,
+                  "inputStage": {
+                    "stage": "IXSCAN",
+                    "nReturned": 4,
+                    "executionTimeMillisEstimate": 0,
+                    "works": 5,
+                    "advanced": 4,
+                    "needTime": 0,
+                    "needYield": 0,
+                    "saveState": 2,
+                    "restoreState": 1,
+                    "isEOF": 1,
+                    "keyPattern": {
+                      "userId": 1,
+                      "analysisVersion": 1,
+                      "updatedAt": -1
+                    },
+                    "indexName": "userId_1_analysisVersion_1_updatedAt_-1",
+                    "isMultiKey": false,
+                    "multiKeyPaths": {
+                      "userId": [],
+                      "analysisVersion": [],
+                      "updatedAt": []
+                    },
+                    "isUnique": false,
+                    "isSparse": false,
+                    "isPartial": false,
+                    "indexVersion": 2,
+                    "direction": "forward",
+                    "indexBounds": {
+                      "userId": [
+                        "[ObjectId('6af594462dad91f2d9da3c9a'), ObjectId('6af594462dad91f2d9da3c9a')]"
+                      ],
+                      "analysisVersion": [
+                        "[MinKey, MaxKey]"
+                      ],
+                      "updatedAt": [
+                        "[MaxKey, MinKey]"
+                      ]
+                    },
+                    "keysExamined": 4,
+                    "seeks": 1,
+                    "dupsTested": 0,
+                    "dupsDropped": 0
+                  }
+                }
+              }
+            }
+          },
+          "nReturned": 3,
+          "executionTimeMillisEstimate": 1
+        },
+        {
+          "$facet": {
+            "0": [
+              {
+                "$internalFacetTeeConsumer": {},
+                "nReturned": 3,
+                "executionTimeMillisEstimate": 1
+              },
+              {
+                "$match": {
+                  "$and": [
+                    {
+                      "userId": {
+                        "$eq": "6af594462dad91f2d9da3c9a"
+                      }
+                    },
+                    {
+                      "githubUsername": {
+                        "$regex": "^fixture-dev$",
+                        "$options": "i"
+                      }
+                    },
+                    {
+                      "careerStack": {
+                        "$eq": "Backend"
+                      }
+                    },
+                    {
+                      "experienceLevel": {
+                        "$eq": "Student"
+                      }
+                    },
+                    {
+                      "resumeHash": {
+                        "$eq": "no-resume"
+                      }
+                    },
+                    {
+                      "resumeAnalysisId": {
+                        "$eq": "no-resume"
+                      }
+                    },
+                    {
+                      "analysisData.portfolioScore.overallScore": {
+                        "$exists": true
+                      }
+                    }
+                  ]
+                },
+                "nReturned": 2,
+                "executionTimeMillisEstimate": 1
+              },
+              {
+                "$sort": {
+                  "sortKey": {
+                    "updatedAt": -1,
+                    "_id": -1
+                  },
+                  "limit": 1
+                },
+                "totalDataSizeSortedBytesEstimate": 0,
+                "usedDisk": false,
+                "spills": 0,
+                "spilledDataStorageSize": 0,
+                "nReturned": 1,
+                "executionTimeMillisEstimate": 1
+              },
+              {
+                "$project": {
+                  "_id": true,
+                  "updatedAt": true,
+                  "createdAt": true,
+                  "analysisData": {
+                    "portfolioScore": true
+                  }
+                },
+                "nReturned": 1,
+                "executionTimeMillisEstimate": 1
+              }
+            ],
+            "1": [
+              {
+                "$internalFacetTeeConsumer": {},
+                "nReturned": 3,
+                "executionTimeMillisEstimate": 0
+              },
+              {
+                "$match": {
+                  "$and": [
+                    {
+                      "userId": {
+                        "$eq": "6af594462dad91f2d9da3c9a"
+                      }
+                    },
+                    {
+                      "githubUsername": {
+                        "$regex": "^fixture-dev$",
+                        "$options": "i"
+                      }
+                    },
+                    {
+                      "careerStack": {
+                        "$eq": "Backend"
+                      }
+                    },
+                    {
+                      "experienceLevel": {
+                        "$eq": "Student"
+                      }
+                    },
+                    {
+                      "resumeHash": {
+                        "$eq": "no-resume"
+                      }
+                    },
+                    {
+                      "resumeAnalysisId": {
+                        "$eq": "no-resume"
+                      }
+                    },
+                    {
+                      "analysisVersion": {
+                        "$eq": "v9-skill-evidence-governance"
+                      }
+                    },
+                    {
+                      "analysisData.ruleVersion": {
+                        "$eq": "skill-evidence-coverage-v1"
+                      }
+                    },
+                    {
+                      "analysisData.evidencePolicyVersion": {
+                        "$eq": "skill-gap-evidence-policy-v2"
+                      }
+                    },
+                    {
+                      "analysisData.taxonomyVersion": {
+                        "$eq": "skill-gap-taxonomy-v1"
+                      }
+                    },
+                    {
+                      "analysisData.requirementMatrixVersion": {
+                        "$eq": "skill-gap-requirements-v1"
+                      }
+                    },
+                    {
+                      "analysisData.cacheMetadata.temporary": {
+                        "$not": {
+                          "$eq": true
+                        }
+                      }
+                    },
+                    {
+                      "analysisData.missingSkills": {
+                        "$exists": true
+                      }
+                    },
+                    {
+                      "createdAt": {
+                        "$gt": "2026-11-05T10:26:14.504Z"
+                      }
+                    }
+                  ]
+                },
+                "nReturned": 1,
+                "executionTimeMillisEstimate": 0
+              },
+              {
+                "$sort": {
+                  "sortKey": {
+                    "updatedAt": -1,
+                    "_id": -1
+                  },
+                  "limit": 1
+                },
+                "totalDataSizeSortedBytesEstimate": 0,
+                "usedDisk": false,
+                "spills": 0,
+                "spilledDataStorageSize": 0,
+                "nReturned": 1,
+                "executionTimeMillisEstimate": 0
+              },
+              {
+                "$project": {
+                  "_id": true,
+                  "updatedAt": true,
+                  "createdAt": true,
+                  "analysisData": {
+                    "yourSkills": true,
+                    "missingSkills": true,
+                    "highDemandSkills": true,
+                    "coverage": true,
+                    "ruleVersion": true,
+                    "provenSkills": true,
+                    "claimedButNotProvenSkills": true
+                  }
+                },
+                "nReturned": 1,
+                "executionTimeMillisEstimate": 0
+              }
+            ],
+            "2": [
+              {
+                "$internalFacetTeeConsumer": {},
+                "nReturned": 3,
+                "executionTimeMillisEstimate": 0
+              },
+              {
+                "$match": {
+                  "$and": [
+                    {
+                      "userId": {
+                        "$eq": "6af594462dad91f2d9da3c9a"
+                      }
+                    },
+                    {
+                      "githubUsername": {
+                        "$regex": "^fixture-dev$",
+                        "$options": "i"
+                      }
+                    },
+                    {
+                      "careerStack": {
+                        "$eq": "Backend"
+                      }
+                    },
+                    {
+                      "experienceLevel": {
+                        "$eq": "Student"
+                      }
+                    },
+                    {
+                      "resumeHash": {
+                        "$eq": "no-resume"
+                      }
+                    },
+                    {
+                      "resumeAnalysisId": {
+                        "$eq": "no-resume"
+                      }
+                    },
+                    {
+                      "analysisData.projects": {
+                        "$exists": true
+                      }
+                    }
+                  ]
+                },
+                "nReturned": 0,
+                "executionTimeMillisEstimate": 0
+              },
+              {
+                "$sort": {
+                  "sortKey": {
+                    "updatedAt": -1,
+                    "_id": -1
+                  },
+                  "limit": 1
+                },
+                "totalDataSizeSortedBytesEstimate": 0,
+                "usedDisk": false,
+                "spills": 0,
+                "spilledDataStorageSize": 0,
+                "nReturned": 0,
+                "executionTimeMillisEstimate": 0
+              },
+              {
+                "$project": {
+                  "_id": true,
+                  "updatedAt": true,
+                  "createdAt": true,
+                  "analysisData": {
+                    "recommendationSignals": true,
+                    "structuredRecommendations": true,
+                    "projects": true,
+                    "recommendationScores": true
+                  }
+                },
+                "nReturned": 0,
+                "executionTimeMillisEstimate": 0
+              }
+            ]
+          },
+          "nReturned": 1,
+          "executionTimeMillisEstimate": 1
+        }
+      ],
+      "queryShapeHash": "5FD7A539EF4EECA2F86AF31A05E265AF09A5251FCF7A690BCD8EA8476E2F9E5E",
+      "serverInfo": {
+        "host": "ICOMM-AHMAD-HASS",
+        "port": 52698,
+        "version": "8.2.6",
+        "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
+      },
+      "serverParameters": {
+        "internalQueryFacetBufferSizeBytes": 104857600,
+        "internalQueryFacetMaxOutputDocSizeBytes": 104857600,
+        "internalLookupStageIntermediateDocumentMaxSizeBytes": 104857600,
+        "internalDocumentSourceGroupMaxMemoryBytes": 104857600,
+        "internalQueryMaxBlockingSortMemoryUsageBytes": 104857600,
+        "internalQueryProhibitBlockingMergeOnMongoS": 0,
+        "internalQueryMaxAddToSetBytes": 104857600,
+        "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": 104857600,
+        "internalQueryFrameworkControl": "trySbeRestricted",
+        "internalQueryPlannerIgnoreIndexWithCollationForRegex": 1
+      },
+      "command": {
+        "aggregate": "analysiscaches",
+        "pipeline": [
+          {
+            "$match": {
+              "userId": "6af594462dad91f2d9da3c9a",
+              "careerStack": "Backend",
+              "experienceLevel": "Student"
+            }
+          },
+          {
+            "$facet": {
+              "0": [
+                {
+                  "$match": {
+                    "userId": "6af594462dad91f2d9da3c9a",
+                    "githubUsername": {
+                      "$regex": "^fixture-dev$",
+                      "$options": "i"
+                    },
+                    "careerStack": "Backend",
+                    "experienceLevel": "Student",
+                    "resumeHash": "no-resume",
+                    "resumeAnalysisId": "no-resume",
+                    "analysisData.portfolioScore.overallScore": {
+                      "$exists": true
+                    }
+                  }
+                },
+                {
+                  "$sort": {
+                    "updatedAt": -1,
+                    "_id": -1
+                  }
+                },
+                {
+                  "$limit": 1
+                },
+                {
+                  "$project": {
+                    "analysisData.portfolioScore": 1,
+                    "updatedAt": 1,
+                    "createdAt": 1
+                  }
+                }
+              ],
+              "1": [
+                {
+                  "$match": {
+                    "userId": "6af594462dad91f2d9da3c9a",
+                    "githubUsername": {
+                      "$regex": "^fixture-dev$",
+                      "$options": "i"
+                    },
+                    "careerStack": "Backend",
+                    "experienceLevel": "Student",
+                    "resumeHash": "no-resume",
+                    "resumeAnalysisId": "no-resume",
+                    "analysisVersion": "v9-skill-evidence-governance",
+                    "analysisData.ruleVersion": "skill-evidence-coverage-v1",
+                    "analysisData.evidencePolicyVersion": "skill-gap-evidence-policy-v2",
+                    "analysisData.taxonomyVersion": "skill-gap-taxonomy-v1",
+                    "analysisData.requirementMatrixVersion": "skill-gap-requirements-v1",
+                    "analysisData.cacheMetadata.temporary": {
+                      "$ne": true
+                    },
+                    "analysisData.missingSkills": {
+                      "$exists": true
+                    },
+                    "createdAt": {
+                      "$gt": "2026-11-05T10:26:14.504Z"
+                    }
+                  }
+                },
+                {
+                  "$sort": {
+                    "updatedAt": -1,
+                    "_id": -1
+                  }
+                },
+                {
+                  "$limit": 1
+                },
+                {
+                  "$project": {
+                    "analysisData.yourSkills": 1,
+                    "analysisData.missingSkills": 1,
+                    "analysisData.highDemandSkills": 1,
+                    "analysisData.coverage": 1,
+                    "analysisData.ruleVersion": 1,
+                    "analysisData.provenSkills": 1,
+                    "analysisData.claimedButNotProvenSkills": 1,
+                    "updatedAt": 1,
+                    "createdAt": 1
+                  }
+                }
+              ],
+              "2": [
+                {
+                  "$match": {
+                    "userId": "6af594462dad91f2d9da3c9a",
+                    "githubUsername": {
+                      "$regex": "^fixture-dev$",
+                      "$options": "i"
+                    },
+                    "careerStack": "Backend",
+                    "experienceLevel": "Student",
+                    "resumeHash": "no-resume",
+                    "resumeAnalysisId": "no-resume",
+                    "analysisData.projects": {
+                      "$exists": true
+                    }
+                  }
+                },
+                {
+                  "$sort": {
+                    "updatedAt": -1,
+                    "_id": -1
+                  }
+                },
+                {
+                  "$limit": 1
+                },
+                {
+                  "$project": {
+                    "analysisData.recommendationSignals": 1,
+                    "analysisData.structuredRecommendations": 1,
+                    "analysisData.projects": 1,
+                    "analysisData.recommendationScores": 1,
+                    "updatedAt": 1,
+                    "createdAt": 1
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "allowDiskUse": false,
+        "cursor": {},
+        "maxTimeMS": 1500,
+        "$db": "integration_live_acceptance"
+      },
+      "ok": 1,
+      "$clusterTime": {
+        "clusterTime": {
+          "$timestamp": "7707229451582439431"
+        },
+        "signature": {
+          "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+          "keyId": 0
+        }
+      },
+      "operationTime": {
+        "$timestamp": "7707229451582439431"
+      }
+    },
+    "integrationBoundedState": {
+      "explainVersion": "2",
+      "queryPlanner": {
+        "namespace": "integration_live_acceptance.integrationsynclogs",
+        "parsedQuery": {
+          "$and": [
+            {
+              "userId": {
+                "$eq": "6af594462dad91f2d9da3c9a"
+              }
+            },
+            {
+              "createdAt": {
+                "$gte": "2026-11-05T10:26:35.494Z"
+              }
+            },
+            {
+              "provider": {
+                "$in": [
+                  "certifications",
+                  "devblogs",
+                  "github",
+                  "hackerrank",
+                  "kaggle",
+                  "leetcode",
+                  "linkedin",
+                  "portfolio",
+                  "stackoverflow"
+                ]
+              }
+            }
+          ]
+        },
+        "indexFilterSet": false,
+        "queryHash": "CEA6258F",
+        "planCacheShapeHash": "CEA6258F",
+        "planCacheKey": "3533B3CE",
+        "optimizationTimeMillis": 3,
+        "optimizedPipeline": true,
+        "maxIndexedOrSolutionsReached": false,
+        "maxIndexedAndSolutionsReached": false,
+        "maxScansToExplodeReached": false,
+        "prunedSimilarIndexes": false,
+        "winningPlan": {
+          "isCached": false,
+          "queryPlan": {
+            "stage": "GROUP",
+            "planNodeId": 4,
+            "inputStage": {
+              "stage": "FETCH",
+              "planNodeId": 2,
+              "inputStage": {
+                "stage": "IXSCAN",
+                "planNodeId": 1,
+                "keyPattern": {
+                  "userId": 1,
+                  "provider": 1,
+                  "createdAt": -1
+                },
+                "indexName": "userId_1_provider_1_createdAt_-1",
+                "isMultiKey": false,
+                "multiKeyPaths": {
+                  "userId": [],
+                  "provider": [],
+                  "createdAt": []
+                },
+                "isUnique": false,
+                "isSparse": false,
+                "isPartial": false,
+                "indexVersion": 2,
+                "direction": "forward",
+                "indexBounds": {
+                  "userId": [
+                    "[ObjectId('6af594462dad91f2d9da3c9a'), ObjectId('6af594462dad91f2d9da3c9a')]"
+                  ],
+                  "provider": [
+                    "[\"certifications\", \"certifications\"]",
+                    "[\"devblogs\", \"devblogs\"]",
+                    "[\"github\", \"github\"]",
+                    "[\"hackerrank\", \"hackerrank\"]",
+                    "[\"kaggle\", \"kaggle\"]",
+                    "[\"leetcode\", \"leetcode\"]",
+                    "[\"linkedin\", \"linkedin\"]",
+                    "[\"portfolio\", \"portfolio\"]",
+                    "[\"stackoverflow\", \"stackoverflow\"]"
+                  ],
+                  "createdAt": [
+                    "[new Date(9223372036854775807), new Date(1793874395494)]"
+                  ]
+                }
+              }
+            }
+          },
+          "slotBasedPlan": {
+            "slots": "$$RESULT=s31 env: { s1 = [{\"l\" : KS(646AF594462DAD91F2D9DA3C9A3C63657274696669636174696F6E730087000000000000000001), \"h\" : KS(646AF594462DAD91F2D9DA3C9A3C63657274696669636174696F6E7300877FFFFE5E54C0FE99FE)}, {\"l\" : KS(646AF594462DAD91F2D9DA3C9A3C646576626C6F67730087000000000000000001), \"h\" : KS(646AF594462DAD91F2D9DA3C9A3C646576626C6F677300877FFFFE5E54C0FE99FE)}, {\"l\" : KS(646AF594462DAD91F2D9DA3C9A3C6769746875620087000000000000000001), \"h\" : KS(646AF594462DAD91F2D9DA3C9A3C67697468756200877FFFFE5E54C0FE99FE)}, {\"l\" : KS(646AF594462DAD91F2D9DA3C9A3C6861636B657272616E6B0087000000000000000001), \"h\" : KS(646AF594462DAD91F2D9DA3C9A3C6861636B657272616E6B00877FFFFE5E54C0FE99FE)}, {\"l\" : KS(646AF594462DAD91F2D9DA3C9A3C6B6167676C650087000000000000000001), \"h\" : KS(646AF594462DAD91F2D9DA3C9A3C6B6167676C6500877FFFFE5E54C0FE99FE)}, {\"l\" : KS(646AF594462DAD91F2D9DA3C9A3C6C656574636F64650087000000000000000001), \"h\" : KS(646AF594462DAD91F2D9DA3C9A3C6C656574636F646500877FFFFE5E54C0FE99FE)}, {\"l\" : KS(646AF594462DAD91F2D9DA3C9A3C6C696E6B6564696E0087000000000000000001), \"h\" : KS(646AF594462DAD91F2D9DA3C9A3C6C696E6B6564696E00877FFFFE5E54C0FE99FE)}, {\"l\" : KS(646AF594462DAD91F2D9DA3C9A3C706F7274666F6C696F0087000000000000000001), \"h\" : KS(646AF594462DAD91F2D9DA3C9A3C706F7274666F6C696F00877FFFFE5E54C0FE99FE)}, {...}], s10 = {\"userId\" : 1, \"provider\" : 1, \"createdAt\" : -1}, s20 = SortSpec({\"status\" : -1, \"createdAt\" : -1, \"_id\" : -1}) }",
+            "stages": "[4] project [s31 = newBsonObj(\"_id\", s24, \"count\", s28, \"successes\", s29, \"recent\", s30)] \n[4] project [s28 = (convert ( s25, int32) ?: s25), s29 = doubleDoubleSumFinalize(s26), s30 = aggTopNFinalize(s27, s20)] \n[4] group [s24] [s25 = count(), s26 = aggDoubleDoubleSum(\n    if (((s19 <=> \"success\") == 0) ?: (exists(s19) && typeMatch(s19, -65))) \n    then 1 \n    else 0 \n), s27 = aggTopN(s20, null, \n    if (((((isArray(s19) ?: false) <=> false) + ((isArray(s16) ?: false) <=> false)) + ((isArray(s13) ?: false) <=> false)) <= 1) \n    then newArray(getSortKeyDesc(s19), getSortKeyDesc(s16), getSortKeyDesc(s13)) \n    else fail(2, \"cannot sort with keys that are parallel arrays\") \n, (newObj(\"status\", s19, \"activityScore\", s14, \"profileScore\", s17, \"confidence\", s15, \"createdAt\", s16) ?: null)) init{[[], 0ll, 2ll, 0, 104857600, true]}] spillSlots[s21, s22, s23] mergingExprs[sum(s21), aggMergeDoubleDoubleSums(s22), aggTopNMerge(s23, s20)] \n[4] project [s24 = (s18 ?: null)] \n[2] nlj inner [] [s6, s9, s7, s8, s10] \n    left \n        [1] nlj inner [] [s4, s5] \n            left \n                [1] project [s4 = getField(s2, \"l\"), s5 = getField(s2, \"h\")] \n                [1] unwind s2 s3 s1 false \n                [1] limit 1ll \n                [1] coscan \n            right \n                [1] ixseek s4 s5 s8 s6 s9 s7 [] @\"dda0461e-8240-4e21-acfc-8a7dce7d61c1\" @\"userId_1_provider_1_createdAt_-1\" true \n    right \n        [2] limit 1ll \n        [2] seek s6 s11 s12 s9 s7 s8 s10 none none [s13 = _id, s14 = activityScore, s15 = confidence, s16 = createdAt, s17 = profileScore, s18 = provider, s19 = status] @\"dda0461e-8240-4e21-acfc-8a7dce7d61c1\" true false \n"
+          }
+        },
+        "rejectedPlans": [
+          {
+            "isCached": false,
+            "stage": "PROJECTION_SIMPLE",
+            "transformBy": {
+              "_id": 1,
+              "activityScore": 1,
+              "confidence": 1,
+              "createdAt": 1,
+              "profileScore": 1,
+              "provider": 1,
+              "status": 1
+            },
+            "inputStage": {
+              "stage": "FETCH",
+              "filter": {
+                "$and": [
+                  {
+                    "createdAt": {
+                      "$gte": "2026-11-05T10:26:35.494Z"
+                    }
+                  },
+                  {
+                    "userId": {
+                      "$eq": "6af594462dad91f2d9da3c9a"
+                    }
+                  }
+                ]
+              },
+              "inputStage": {
+                "stage": "IXSCAN",
+                "keyPattern": {
+                  "provider": 1
+                },
+                "indexName": "provider_1",
+                "isMultiKey": false,
+                "multiKeyPaths": {
+                  "provider": []
+                },
+                "isUnique": false,
+                "isSparse": false,
+                "isPartial": false,
+                "indexVersion": 2,
+                "direction": "forward",
+                "indexBounds": {
+                  "provider": [
+                    "[\"certifications\", \"certifications\"]",
+                    "[\"devblogs\", \"devblogs\"]",
+                    "[\"github\", \"github\"]",
+                    "[\"hackerrank\", \"hackerrank\"]",
+                    "[\"kaggle\", \"kaggle\"]",
+                    "[\"leetcode\", \"leetcode\"]",
+                    "[\"linkedin\", \"linkedin\"]",
+                    "[\"portfolio\", \"portfolio\"]",
+                    "[\"stackoverflow\", \"stackoverflow\"]"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "isCached": false,
+            "stage": "PROJECTION_SIMPLE",
+            "transformBy": {
+              "_id": 1,
+              "activityScore": 1,
+              "confidence": 1,
+              "createdAt": 1,
+              "profileScore": 1,
+              "provider": 1,
+              "status": 1
+            },
+            "inputStage": {
+              "stage": "FETCH",
+              "filter": {
+                "$and": [
+                  {
+                    "provider": {
+                      "$in": [
+                        "certifications",
+                        "devblogs",
+                        "github",
+                        "hackerrank",
+                        "kaggle",
+                        "leetcode",
+                        "linkedin",
+                        "portfolio",
+                        "stackoverflow"
+                      ]
+                    }
+                  },
+                  {
+                    "userId": {
+                      "$eq": "6af594462dad91f2d9da3c9a"
+                    }
+                  }
+                ]
+              },
+              "inputStage": {
+                "stage": "IXSCAN",
+                "keyPattern": {
+                  "createdAt": 1
+                },
+                "indexName": "createdAt_1",
+                "isMultiKey": false,
+                "multiKeyPaths": {
+                  "createdAt": []
+                },
+                "isUnique": false,
+                "isSparse": false,
+                "isPartial": false,
+                "indexVersion": 2,
+                "direction": "forward",
+                "indexBounds": {
+                  "createdAt": [
+                    "[new Date(1793874395494), new Date(9223372036854775807)]"
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "isCached": false,
+            "stage": "PROJECTION_SIMPLE",
+            "transformBy": {
+              "_id": 1,
+              "activityScore": 1,
+              "confidence": 1,
+              "createdAt": 1,
+              "profileScore": 1,
+              "provider": 1,
+              "status": 1
+            },
+            "inputStage": {
+              "stage": "FETCH",
+              "filter": {
+                "$and": [
+                  {
+                    "createdAt": {
+                      "$gte": "2026-11-05T10:26:35.494Z"
+                    }
+                  },
+                  {
+                    "provider": {
+                      "$in": [
+                        "certifications",
+                        "devblogs",
+                        "github",
+                        "hackerrank",
+                        "kaggle",
+                        "leetcode",
+                        "linkedin",
+                        "portfolio",
+                        "stackoverflow"
+                      ]
+                    }
+                  }
+                ]
+              },
+              "inputStage": {
+                "stage": "IXSCAN",
+                "keyPattern": {
+                  "userId": 1
+                },
+                "indexName": "userId_1",
+                "isMultiKey": false,
+                "multiKeyPaths": {
+                  "userId": []
+                },
+                "isUnique": false,
+                "isSparse": false,
+                "isPartial": false,
+                "indexVersion": 2,
+                "direction": "forward",
+                "indexBounds": {
+                  "userId": [
+                    "[ObjectId('6af594462dad91f2d9da3c9a'), ObjectId('6af594462dad91f2d9da3c9a')]"
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "executionStats": {
+        "executionSuccess": true,
+        "nReturned": 1,
+        "executionTimeMillis": 39,
+        "totalKeysExamined": 5000,
+        "totalDocsExamined": 5000,
+        "executionStages": {
+          "stage": "project",
+          "planNodeId": 4,
+          "nReturned": 1,
+          "executionTimeMillisEstimate": 25,
+          "opens": 1,
+          "closes": 1,
+          "saveState": 1,
+          "restoreState": 1,
+          "isEOF": 1,
+          "projections": {
+            "31": "newBsonObj(\"_id\", s24, \"count\", s28, \"successes\", s29, \"recent\", s30) "
+          },
+          "inputStage": {
+            "stage": "project",
+            "planNodeId": 4,
+            "nReturned": 1,
+            "executionTimeMillisEstimate": 25,
+            "opens": 1,
+            "closes": 1,
+            "saveState": 1,
+            "restoreState": 1,
+            "isEOF": 1,
+            "projections": {
+              "28": "(convert ( s25, int32) ?: s25) ",
+              "29": "doubleDoubleSumFinalize(s26) ",
+              "30": "aggTopNFinalize(s27, s20) "
+            },
+            "inputStage": {
+              "stage": "group",
+              "planNodeId": 4,
+              "nReturned": 1,
+              "executionTimeMillisEstimate": 25,
+              "opens": 1,
+              "closes": 1,
+              "saveState": 1,
+              "restoreState": 1,
+              "isEOF": 1,
+              "groupBySlots": [
+                24
+              ],
+              "expressions": {
+                "25": "count() ",
+                "26": "aggDoubleDoubleSum(\n    if (((s19 <=> \"success\") == 0) ?: (exists(s19) && typeMatch(s19, -65))) \n    then 1 \n    else 0 \n) ",
+                "27": "aggTopN(s20, null, \n    if (((((isArray(s19) ?: false) <=> false) + ((isArray(s16) ?: false) <=> false)) + ((isArray(s13) ?: false) <=> false)) <= 1) \n    then newArray(getSortKeyDesc(s19), getSortKeyDesc(s16), getSortKeyDesc(s13)) \n    else fail(2, \"cannot sort with keys that are parallel arrays\") \n, (newObj(\"status\", s19, \"activityScore\", s14, \"profileScore\", s17, \"confidence\", s15, \"createdAt\", s16) ?: null)) ",
+                "initExprs": {
+                  "25": null,
+                  "26": null,
+                  "27": "[[], 0ll, 2ll, 0, 104857600, true] "
+                }
+              },
+              "mergingExprs": {
+                "21": "sum(s21) ",
+                "22": "aggMergeDoubleDoubleSums(s22) ",
+                "23": "aggTopNMerge(s23, s20) "
+              },
+              "usedDisk": false,
+              "spills": 0,
+              "spilledBytes": 0,
+              "spilledRecords": 0,
+              "spilledDataStorageSize": 0,
+              "inputStage": {
+                "stage": "project",
+                "planNodeId": 4,
+                "nReturned": 5000,
+                "executionTimeMillisEstimate": 16,
+                "opens": 1,
+                "closes": 1,
+                "saveState": 1,
+                "restoreState": 1,
+                "isEOF": 1,
+                "projections": {
+                  "24": "(s18 ?: null) "
+                },
+                "inputStage": {
+                  "stage": "nlj",
+                  "planNodeId": 2,
+                  "nReturned": 5000,
+                  "executionTimeMillisEstimate": 16,
+                  "opens": 1,
+                  "closes": 1,
+                  "saveState": 1,
+                  "restoreState": 1,
+                  "isEOF": 1,
+                  "totalDocsExamined": 5000,
+                  "totalKeysExamined": 5000,
+                  "collectionScans": 0,
+                  "collectionSeeks": 5000,
+                  "indexScans": 0,
+                  "indexSeeks": 9,
+                  "indexesUsed": [
+                    "userId_1_provider_1_createdAt_-1"
+                  ],
+                  "innerOpens": 5000,
+                  "innerCloses": 1,
+                  "outerProjects": [],
+                  "outerCorrelated": [
+                    6,
+                    9,
+                    7,
+                    8,
+                    10
+                  ],
+                  "outerStage": {
+                    "stage": "nlj",
+                    "planNodeId": 1,
+                    "nReturned": 5000,
+                    "executionTimeMillisEstimate": 0,
+                    "opens": 1,
+                    "closes": 1,
+                    "saveState": 1,
+                    "restoreState": 1,
+                    "isEOF": 1,
+                    "totalDocsExamined": 0,
+                    "totalKeysExamined": 5000,
+                    "collectionScans": 0,
+                    "collectionSeeks": 0,
+                    "indexScans": 0,
+                    "indexSeeks": 9,
+                    "indexesUsed": [
+                      "userId_1_provider_1_createdAt_-1"
+                    ],
+                    "innerOpens": 9,
+                    "innerCloses": 1,
+                    "outerProjects": [],
+                    "outerCorrelated": [
+                      4,
+                      5
+                    ],
+                    "outerStage": {
+                      "stage": "project",
+                      "planNodeId": 1,
+                      "nReturned": 9,
+                      "executionTimeMillisEstimate": 0,
+                      "opens": 1,
+                      "closes": 1,
+                      "saveState": 1,
+                      "restoreState": 1,
+                      "isEOF": 1,
+                      "projections": {
+                        "4": "getField(s2, \"l\") ",
+                        "5": "getField(s2, \"h\") "
+                      },
+                      "inputStage": {
+                        "stage": "unwind",
+                        "planNodeId": 1,
+                        "nReturned": 9,
+                        "executionTimeMillisEstimate": 0,
+                        "opens": 1,
+                        "closes": 1,
+                        "saveState": 1,
+                        "restoreState": 1,
+                        "isEOF": 1,
+                        "inputSlot": 1,
+                        "outSlot": 2,
+                        "outIndexSlot": 3,
+                        "preserveNullAndEmptyArrays": 0,
+                        "inputStage": {
+                          "stage": "limit",
+                          "planNodeId": 1,
+                          "nReturned": 1,
+                          "executionTimeMillisEstimate": 0,
+                          "opens": 1,
+                          "closes": 1,
+                          "saveState": 1,
+                          "restoreState": 1,
+                          "isEOF": 1,
+                          "limit": 1,
+                          "inputStage": {
+                            "stage": "coscan",
+                            "planNodeId": 1,
+                            "nReturned": 1,
+                            "executionTimeMillisEstimate": 0,
+                            "opens": 1,
+                            "closes": 1,
+                            "saveState": 1,
+                            "restoreState": 1,
+                            "isEOF": 0
+                          }
+                        }
+                      }
+                    },
+                    "innerStage": {
+                      "stage": "ixseek",
+                      "planNodeId": 1,
+                      "nReturned": 5000,
+                      "executionTimeMillisEstimate": 0,
+                      "opens": 9,
+                      "closes": 1,
+                      "saveState": 1,
+                      "restoreState": 1,
+                      "isEOF": 1,
+                      "indexName": "userId_1_provider_1_createdAt_-1",
+                      "keysExamined": 5000,
+                      "seeks": 9,
+                      "numReads": 5009,
+                      "indexKeySlot": 8,
+                      "recordIdSlot": 6,
+                      "snapshotIdSlot": 9,
+                      "indexIdentSlot": 7,
+                      "outputSlots": [],
+                      "indexKeysToInclude": "00000000000000000000000000000000",
+                      "seekKeyLow": "s4 ",
+                      "seekKeyHigh": "s5 "
+                    }
+                  },
+                  "innerStage": {
+                    "stage": "limit",
+                    "planNodeId": 2,
+                    "nReturned": 5000,
+                    "executionTimeMillisEstimate": 16,
+                    "opens": 5000,
+                    "closes": 1,
+                    "saveState": 1,
+                    "restoreState": 1,
+                    "isEOF": 1,
+                    "limit": 1,
+                    "inputStage": {
+                      "stage": "seek",
+                      "planNodeId": 2,
+                      "nReturned": 5000,
+                      "executionTimeMillisEstimate": 16,
+                      "opens": 5000,
+                      "closes": 1,
+                      "saveState": 1,
+                      "restoreState": 1,
+                      "isEOF": 0,
+                      "numReads": 5000,
+                      "recordSlot": 11,
+                      "recordIdSlot": 12,
+                      "seekRecordIdSlot": 6,
+                      "snapshotIdSlot": 9,
+                      "indexIdentSlot": 7,
+                      "indexKeySlot": 8,
+                      "indexKeyPatternSlot": 10,
+                      "scanFieldNames": [
+                        "_id",
+                        "activityScore",
+                        "confidence",
+                        "createdAt",
+                        "profileScore",
+                        "provider",
+                        "status"
+                      ],
+                      "scanFieldSlots": [
+                        13,
+                        14,
+                        15,
+                        16,
+                        17,
+                        18,
+                        19
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "queryShapeHash": "7D3E80395A987478B2BD631D2FE981BE0DDAEA0588E3C9DF6958B0E73F43F937",
+      "command": {
+        "aggregate": "integrationsynclogs",
+        "pipeline": [
+          {
+            "$match": {
+              "userId": "6af594462dad91f2d9da3c9a",
+              "createdAt": {
+                "$gte": "2026-11-05T10:26:35.494Z"
+              },
+              "provider": {
+                "$in": [
+                  "linkedin",
+                  "github",
+                  "leetcode",
+                  "kaggle",
+                  "stackoverflow",
+                  "hackerrank",
+                  "portfolio",
+                  "certifications",
+                  "devblogs"
+                ]
+              }
+            }
+          },
+          {
+            "$group": {
+              "_id": "$provider",
+              "count": {
+                "$sum": 1
+              },
+              "successes": {
+                "$sum": {
+                  "$cond": [
+                    {
+                      "$eq": [
+                        "$status",
+                        "success"
+                      ]
+                    },
+                    1,
+                    0
+                  ]
+                }
+              },
+              "recent": {
+                "$topN": {
+                  "n": 2,
+                  "sortBy": {
+                    "status": -1,
+                    "createdAt": -1,
+                    "_id": -1
+                  },
+                  "output": {
+                    "status": "$status",
+                    "activityScore": "$activityScore",
+                    "profileScore": "$profileScore",
+                    "confidence": "$confidence",
+                    "createdAt": "$createdAt"
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "allowDiskUse": false,
+        "cursor": {},
+        "maxTimeMS": 1500,
+        "$db": "integration_live_acceptance"
+      },
+      "serverInfo": {
+        "host": "ICOMM-AHMAD-HASS",
+        "port": 52698,
+        "version": "8.2.6",
+        "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
+      },
+      "serverParameters": {
+        "internalQueryFacetBufferSizeBytes": 104857600,
+        "internalQueryFacetMaxOutputDocSizeBytes": 104857600,
+        "internalLookupStageIntermediateDocumentMaxSizeBytes": 104857600,
+        "internalDocumentSourceGroupMaxMemoryBytes": 104857600,
+        "internalQueryMaxBlockingSortMemoryUsageBytes": 104857600,
+        "internalQueryProhibitBlockingMergeOnMongoS": 0,
+        "internalQueryMaxAddToSetBytes": 104857600,
+        "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": 104857600,
+        "internalQueryFrameworkControl": "trySbeRestricted",
+        "internalQueryPlannerIgnoreIndexWithCollationForRegex": 1
+      },
+      "ok": 1,
+      "$clusterTime": {
+        "clusterTime": {
+          "$timestamp": "7707229451582439431"
+        },
+        "signature": {
+          "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+          "keyId": 0
+        }
+      },
+      "operationTime": {
+        "$timestamp": "7707229451582439431"
+      }
+    },
+    "declaredIndexes": {
+      "analysisCache": [
+        {
+          "v": 2,
+          "key": {
+            "_id": 1
+          },
+          "name": "_id_"
+        },
+        {
+          "v": 2,
+          "key": {
+            "createdAt": 1
+          },
+          "name": "createdAt_1",
+          "expireAfterSeconds": 604800
+        },
+        {
+          "v": 2,
+          "key": {
+            "userId": 1,
+            "githubUsername": 1,
+            "careerStack": 1,
+            "experienceLevel": 1,
+            "analysisVersion": 1,
+            "resumeHash": 1,
+            "resumeAnalysisId": 1,
+            "signalHash": 1
+          },
+          "name": "userId_1_githubUsername_1_careerStack_1_experienceLevel_1_analysisVersion_1_resumeHash_1_resumeAnalysisId_1_signalHash_1"
+        },
+        {
+          "v": 2,
+          "key": {
+            "userId": 1,
+            "analysisVersion": 1,
+            "updatedAt": -1
+          },
+          "name": "userId_1_analysisVersion_1_updatedAt_-1"
+        },
+        {
+          "v": 2,
+          "key": {
+            "userId": 1,
+            "updatedAt": -1
+          },
+          "name": "skill_gap_signal_lookup",
+          "partialFilterExpression": {
+            "analysisData.missingSkills.0": {
+              "$exists": true
+            }
+          }
+        },
+        {
+          "v": 2,
+          "key": {
+            "userId": 1,
+            "careerStack": 1,
+            "experienceLevel": 1,
+            "analysisVersion": 1,
+            "updatedAt": -1
+          },
+          "name": "course_skill_signal_lookup",
+          "partialFilterExpression": {
+            "analysisVersion": "v6-skill-intelligence",
+            "analysisData.missingSkills.0": {
+              "$exists": true
+            }
+          }
+        },
+        {
+          "v": 2,
+          "key": {
+            "userId": 1,
+            "analysisVersion": 1,
+            "signalHash": 1,
+            "updatedAt": -1
+          },
+          "name": "course_pool_lookup",
+          "partialFilterExpression": {
+            "analysisVersion": "courses_pool_v5"
+          }
+        }
+      ],
+      "news": [
+        {
+          "v": 2,
+          "key": {
+            "_id": 1
+          },
+          "name": "_id_"
+        },
+        {
+          "v": 2,
+          "key": {
+            "cacheKey": 1
+          },
+          "name": "cacheKey_1",
+          "unique": true
+        },
+        {
+          "v": 2,
+          "key": {
+            "expiresAt": 1
+          },
+          "name": "expiresAt_1",
+          "expireAfterSeconds": 0
+        }
+      ],
+      "analysis": [
+        {
+          "v": 2,
+          "key": {
+            "_id": 1
+          },
+          "name": "_id_"
+        },
+        {
+          "v": 2,
+          "key": {
+            "userId": 1,
+            "updatedAt": -1,
+            "createdAt": -1
+          },
+          "name": "userId_1_updatedAt_-1_createdAt_-1"
+        },
+        {
+          "v": 2,
+          "key": {
+            "userId": 1,
+            "githubAnalysisVersion": 1,
+            "updatedAt": -1
+          },
+          "name": "userId_1_githubAnalysisVersion_1_updatedAt_-1"
+        }
+      ],
+      "userCourseProgress": [
+        {
+          "v": 2,
+          "key": {
+            "_id": 1
+          },
+          "name": "_id_"
+        },
+        {
+          "v": 2,
+          "key": {
+            "userId": 1,
+            "courseId": 1
+          },
+          "name": "user_course_identity",
+          "unique": true
+        },
+        {
+          "v": 2,
+          "key": {
+            "userId": 1,
+            "status": 1,
+            "updatedAt": -1,
+            "_id": -1
+          },
+          "name": "user_course_status"
+        },
+        {
+          "v": 2,
+          "key": {
+            "userId": 1,
+            "updatedAt": -1,
+            "_id": -1
+          },
+          "name": "user_course_recent"
+        }
+      ],
+      "integrationSyncLog": [
+        {
+          "v": 2,
+          "key": {
+            "_id": 1
+          },
+          "name": "_id_"
+        },
+        {
+          "v": 2,
+          "key": {
+            "userId": 1
+          },
+          "name": "userId_1"
+        },
+        {
+          "v": 2,
+          "key": {
+            "provider": 1
+          },
+          "name": "provider_1"
+        },
+        {
+          "v": 2,
+          "key": {
+            "createdAt": 1
+          },
+          "name": "createdAt_1"
+        },
+        {
+          "v": 2,
+          "key": {
+            "userId": 1,
+            "provider": 1,
+            "createdAt": -1
+          },
+          "name": "userId_1_provider_1_createdAt_-1"
+        }
+      ]
+    }
+  },
+  "browser": {
+    "requestPaths": [
+      "/api/dashboard/summary",
+      "/api/dashboard/integration-analytics"
+    ],
+    "status": "PASS",
+    "themes": [
+      "light",
+      "dark",
+      "system"
+    ],
+    "mobileWidth": 390,
+    "consoleErrors": [],
+    "screenshots": [
+      "desktop-light.png",
+      "desktop-dark.png",
+      "mobile-dark.png"
+    ],
+    "limitation": "Synthetic authenticated local fixture, including System preference changes"
+  },
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 183,
+    "productionDataUsed": false
+  },
+  "summaryQueryCount": 22,
+  "integrationAggregation": {
+    "inputRows": 5000,
+    "outputCards": 1,
+    "exactSyncCount": 5000,
+    "successRate": 75
+  },
+  "apiEndpoints": {
+    "summary": {
+      "status": 200,
+      "elapsedMs": 55,
+      "bytes": 10577,
+      "queries": 22
+    },
+    "contributions": {
+      "status": 200,
+      "elapsedMs": 12,
+      "bytes": 189,
+      "queries": 3
+    },
+    "languages": {
+      "status": 200,
+      "elapsedMs": 19,
+      "bytes": 129,
+      "queries": 3
+    },
+    "skills": {
+      "status": 200,
+      "elapsedMs": 15,
+      "bytes": 140,
+      "queries": 6
+    },
+    "recommendations": {
+      "status": 200,
+      "elapsedMs": 20,
+      "bytes": 51,
+      "queries": 5
+    },
+    "integration-analytics": {
+      "status": 200,
+      "elapsedMs": 59,
+      "bytes": 395,
+      "queries": 4
+    }
+  },
+  "connectionPools": [
+    {
+      "checkedOut": 0,
+      "peakCheckedOut": 10,
+      "waiting": 0,
+      "peakWaiting": 26,
+      "checkoutFailures": 0
+    },
+    {
+      "checkedOut": 0,
+      "peakCheckedOut": 10,
+      "waiting": 0,
+      "peakWaiting": 26,
+      "checkoutFailures": 0
+    }
+  ],
+  "status": "PASS"
+}
