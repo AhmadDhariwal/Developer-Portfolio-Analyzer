@@ -135,6 +135,15 @@ p {
 .tech-chips-wrap {
   margin: 0;
 }
+@media (max-width: 768px) {
+  .tech-category-cell {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .tech-panel {
+    padding: 20px 18px;
+  }
+}
 @media (max-width: 600px) {
   .panel-header-row {
     flex-direction: column;
@@ -143,6 +152,16 @@ p {
   .tech-category-cell {
     grid-template-columns: 1fr;
     gap: 8px;
+  }
+}
+@media (max-width: 480px) {
+  .tech-panel {
+    padding: 16px 14px;
+  }
+}
+@media (max-width: 360px) {
+  .tech-panel {
+    padding: 12px 10px;
   }
 }
 :host-context([data-theme='dark']) .tech-panel,

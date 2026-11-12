@@ -27,19 +27,17 @@ p {
 .drawer-kv-item,
 .drawer-weight-row {
   display: flex;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: 6px 12px;
   justify-content: space-between;
-}
-
-.kv-label,
-.weight-row-left small {
-  color: var(--text-muted, #64748b);
+  align-items: baseline;
 }
 
 .kv-value {
   text-align: right;
   font-weight: 500;
   color: var(--text-primary, #0f172a);
+  word-break: break-word;
 }
 
 .font-mono {

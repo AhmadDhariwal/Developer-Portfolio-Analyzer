@@ -18,6 +18,9 @@
   display: grid;
   gap: var(--dev-section-gap, 24px);
   min-width: 0;
+  max-width: 1600px;
+  margin: 0 auto;
+  width: 100%;
   color: var(--text-primary, #0f172a);
   font-size: var(--dev-text-body, 14px);
   line-height: var(--dev-leading-body, 1.55);
@@ -76,6 +79,11 @@ a:focus-visible {
 @media (max-width: 600px) {
   .skeleton-metrics-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 360px) {
+  .skeleton-metrics-grid {
+    grid-template-columns: 1fr;
   }
 }
 :host-context([data-theme='dark']) .error-banner-overlay,

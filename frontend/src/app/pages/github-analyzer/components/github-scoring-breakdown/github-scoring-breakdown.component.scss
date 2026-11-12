@@ -146,6 +146,15 @@ p {
   color: var(--color-primary, #4f46e5);
   font-variant-numeric: tabular-nums;
 }
+@media (max-width: 768px) {
+  .breakdown-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .breakdown-panel {
+    padding: 20px 18px;
+  }
+}
 @media (max-width: 600px) {
   .panel-header-row {
     flex-direction: column;
@@ -154,6 +163,16 @@ p {
   .breakdown-row {
     grid-template-columns: 1fr;
     gap: 10px;
+  }
+}
+@media (max-width: 480px) {
+  .breakdown-panel {
+    padding: 16px 14px;
+  }
+}
+@media (max-width: 360px) {
+  .breakdown-panel {
+    padding: 12px 10px;
   }
 }
 :host-context([data-theme='dark']) .breakdown-panel,

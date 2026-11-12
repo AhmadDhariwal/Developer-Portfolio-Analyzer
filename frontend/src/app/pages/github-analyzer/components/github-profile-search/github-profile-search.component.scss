@@ -178,6 +178,16 @@ a:focus-visible {
     align-items: flex-start;
   }
 }
+@media (max-width: 480px) {
+  .identity-bar-card {
+    padding: 16px 14px;
+  }
+}
+@media (max-width: 360px) {
+  .identity-bar-card {
+    padding: 12px 10px;
+  }
+}
 :host-context([data-theme='dark']) .identity-bar-card,
 :host-context(.dark) .identity-bar-card {
   background: #111827;
@@ -203,6 +213,16 @@ a:focus-visible {
 :host-context([data-theme='dark']) .search-input-field,
 :host-context(.dark) .search-input-field {
   color: #f8fafc;
+}
+:host-context([data-theme='dark']) .identity-freshness,
+:host-context([data-theme='dark']) .identity-user-label,
+:host-context([data-theme='dark']) .meta-label,
+:host-context([data-theme='dark']) .meta-dot,
+:host-context(.dark) .identity-freshness,
+:host-context(.dark) .identity-user-label,
+:host-context(.dark) .meta-label,
+:host-context(.dark) .meta-dot {
+  color: #94a3b8;
 }
 :host-context([data-theme='dark']) .warning-callout,
 :host-context(.dark) .warning-callout {

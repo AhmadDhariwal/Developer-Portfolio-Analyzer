@@ -132,11 +132,17 @@ summary:focus-visible {
 }
 
 .sort-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
   border: 1px solid var(--border-color, #cbd5e1);
-  border-radius: 6px;
-  padding: 5px 10px;
+  border-radius: 8px;
+  padding: 8px 14px;
   background: #ffffff;
   color: var(--text-secondary, #475569);
+  font-size: 13px;
+  line-height: 1.2;
   font-weight: 500;
   transition: all 0.15s ease;
 }
@@ -145,6 +151,9 @@ summary:focus-visible {
   background: #eef2ff;
   border-color: #c7d2fe;
   font-weight: 600;
+}
+.sort-pill-btn:hover {
+  border-color: var(--color-primary, #4f46e5);
 }
 
 .table-scroll-container {
@@ -307,6 +316,11 @@ summary:focus-visible {
     min-width: 850px;
   }
 }
+@media (max-width: 768px) {
+  .repositories-panel {
+    padding: 20px 18px;
+  }
+}
 @media (max-width: 600px) {
   .panel-header-row {
     flex-direction: column;
@@ -345,11 +359,31 @@ summary:focus-visible {
     text-transform: uppercase;
   }
   .clean-repo-table .td-name,
-  .clean-repo-table .td-tech {
+  .clean-repo-table .td-tech,
+  .clean-repo-table .td-score {
     grid-column: 1/-1;
   }
   .clean-repo-table .td-name::before {
     display: none;
+  }
+}
+@media (max-width: 480px) {
+  .repositories-panel {
+    padding: 16px 14px;
+  }
+  .table-sort-strip {
+    padding: 10px 12px;
+    gap: 6px;
+  }
+}
+@media (max-width: 360px) {
+  .repositories-panel {
+    padding: 12px 10px;
+  }
+  .clean-repo-table tr {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 10px;
   }
 }
 :host-context([data-theme='dark']) .repositories-panel,
@@ -402,6 +436,11 @@ summary:focus-visible {
   background: rgba(79, 70, 229, 0.2);
   border-color: rgba(99, 102, 241, 0.4);
   color: #a5b4fc;
+}
+:host-context([data-theme='dark']) .sort-pill-btn:hover,
+:host-context(.dark) .sort-pill-btn:hover {
+  border-color: rgba(99, 102, 241, 0.6);
+  color: #ffffff;
 }
 :host-context([data-theme='dark']) .clean-repo-table th,
 :host-context(.dark) .clean-repo-table th {
