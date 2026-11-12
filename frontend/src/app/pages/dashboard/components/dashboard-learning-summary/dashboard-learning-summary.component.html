@@ -1,0 +1,28 @@
+<section *ngIf="snapshot as progress" aria-labelledby="dashboard-learning-title">
+  <div class="heading">
+    <div>
+      <h3 id="dashboard-learning-title">Learning Progress</h3>
+      <p>User-entered tracking; completions are self-reported.</p>
+    </div>
+    <a routerLink="/app/courses">Open Learning Hub</a>
+  </div>
+  <dl>
+    <div>
+      <dt>Tracked</dt>
+      <dd>{{ progress.totalTracked }}</dd>
+    </div>
+    <div>
+      <dt>Saved</dt>
+      <dd>{{ progress.savedCount }}</dd>
+    </div>
+    <div>
+      <dt>In progress</dt>
+      <dd>{{ progress.inProgressCount }}</dd>
+    </div>
+    <div>
+      <dt>Completed</dt>
+      <dd>{{ progress.completedCount }}</dd>
+    </div>
+  </dl>
+  <p *ngIf="progress.totalTracked === 0">Save a course in Learning Hub to start tracking.</p>
+</section>

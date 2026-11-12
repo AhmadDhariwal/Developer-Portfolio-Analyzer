@@ -1,0 +1,106 @@
+{
+  "branch": "fix/dashboard",
+  "source": "fix/dashboard",
+  "integrationTarget": "not applicable; no PR requested",
+  "productionReady": false,
+  "frontend": {
+    "status": "PASS",
+    "command": "VITEST_MAX_WORKERS=2 npm test -- --watch=false",
+    "testFiles": 105,
+    "testsPassed": 629,
+    "evidence": "Test Files  105 passed (105)\n      Tests  629 passed (629)\n   Start at  13:04:39\n   Duration  63.74s (transform 16.67s, setup 5.24s, import 26.03s, tests 77.36s, environment 804.81s)"
+  },
+  "backend": {
+    "status": "PASS_WITH_SKIP",
+    "tests": 104,
+    "passed": 103,
+    "skipped": 1,
+    "failed": 0,
+    "evidence": "ℹ tests 104\nℹ suites 0\nℹ pass 103\nℹ fail 0\nℹ cancelled 0\nℹ skipped 1\nℹ todo 0\nℹ duration_ms 29768.2724",
+    "skipReason": "Existing optional profile settings disposable-replica integration case; dedicated Dashboard replica-set acceptance ran separately."
+  },
+  "typescript": {
+    "status": "PASS",
+    "command": "node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.app.json"
+  },
+  "build": {
+    "status": "PASS_WITH_EXISTING_WARNINGS",
+    "command": "npm run build (frontend)",
+    "initialBundle": "3.90 MB",
+    "warnings": [
+      "Landing Page SCSS 56.67 kB exceeds 48 kB warning budget",
+      "Jobs SCSS 52.97 kB exceeds 48 kB warning budget"
+    ]
+  },
+  "syntax": {
+    "status": "PASS",
+    "files": [
+      "backend/src/controllers/dashboardcontroller.js",
+      "backend/src/routes/dashboard.routes.js",
+      "backend/src/services/dashboardMetricsService.js",
+      "backend/src/scripts/verifyDashboardLocal.js",
+      "backend/src/tests/dashboardEndpoints.test.js",
+      "backend/src/tests/dashboardMetrics.test.js",
+      "backend/src/tests/skillGapFocusedReview.test.js"
+    ]
+  },
+  "resolvedVerificationFailures": [
+    "Sandbox prevented Vitest temporary module-cache renames and loopback Mongo/HTTP checks; authorized local verification succeeded outside the sandbox.",
+    "A Dashboard explanation test was updated to match the corrected wording.",
+    "Browser fixture selected-option assertion was corrected to compare the visible Angular option label rather than its encoded ngValue."
+  ],
+  "blocked": [
+    "Approved staging URL/account not verified",
+    "Representative production dataset/query plans/write overhead and connection-pool saturation",
+    "Multi-member replica failover, multi-host API topology and distributed outage/load acceptance"
+  ],
+  "formatting": {
+    "status": "PASS",
+    "tool": "frontend/node_modules/prettier/bin/prettier.cjs",
+    "mode": "Explicit changed paths in --write, then the same paths in --check",
+    "backendOptions": "--single-quote --print-width 100",
+    "frontendConfig": "frontend/.prettierrc"
+  },
+  "whitespace": {
+    "workingTree": "PASS",
+    "index": "PASS"
+  },
+  "postCleanup": {
+    "dashboardAndConsumerBackendTests": {
+      "status": "PASS",
+      "tests": 23,
+      "skipped": 0
+    },
+    "typescript": "PASS",
+    "localMongoTwoApiProcessesAndBrowser": "PASS",
+    "finalPerformance": {
+      "sampleCount": 30,
+      "concurrency": 10,
+      "users": 2,
+      "apiProcesses": 2,
+      "maxPoolSizePerProcess": 10,
+      "p50Ms": 209,
+      "p95Ms": 352,
+      "maxMs": 354,
+      "summaryBytes": 7824,
+      "limitation": "Synthetic loopback, single-member disposable replica set, not representative staging load"
+    },
+    "nativeFixtureCleanup": {
+      "mongoStopped": true,
+      "temporaryFilesRemoved": 174,
+      "productionDataUsed": false
+    },
+    "fullFrontend": {
+      "status": "PASS",
+      "files": 105,
+      "testsPassed": 629
+    },
+    "productionBuild": {
+      "status": "PASS_WITH_EXISTING_WARNINGS",
+      "initialBundle": "3.90 MB",
+      "estimatedTransfer": "575.55 kB"
+    },
+    "syntax": "PASS"
+  },
+  "finalization": "PASS: explicit formatting write/check, tests/typecheck/build after temporary cleanup, no moved/deleted source files, both Git whitespace checks passed"
+}

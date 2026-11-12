@@ -14,13 +14,13 @@ const user = {
   activeGithubUsername: 'Current-Dev',
   activeCareerStack: 'Backend',
   activeExperienceLevel: 'Student',
-  activeResumeFileId: 'selected-file'
+  activeResumeFileId: 'selected-file',
 };
 const resume = {
   _id: 'analysis-current',
   fileId: 'selected-file',
   userId: 'owner',
-  analyzedAt: at
+  analyzedAt: at,
 };
 const chain = (value) => ({
   sort() {
@@ -29,19 +29,21 @@ const chain = (value) => ({
   select() {
     return this;
   },
-  lean: async () => value
+  lean: async () => value,
 });
 function setup(t, row) {
   t.mock.method(context, 'loadUser', async () => user);
   t.mock.method(context, 'resolveResumeAnalysis', async () => resume);
   t.mock.method(User, 'findById', () => chain(user));
-  t.mock.method(require('../models/analysis'), 'findOne', async () => ({
-    languageDistribution: { JavaScript: 100 }
-  }));
+  t.mock.method(require('../models/analysis'), 'findOne', () =>
+    chain({
+      languageDistribution: { JavaScript: 100 },
+    }),
+  );
   t.mock.method(
     require('../services/integrationInsightService'),
     'getIntegrationInsight',
-    async () => ({ mergedSkills: [], integrationScore: 0 })
+    async () => ({ mergedSkills: [], integrationScore: 0 }),
   );
   const queries = [];
   t.mock.method(Cache, 'findOne', (filter) => {
@@ -50,6 +52,7 @@ function setup(t, row) {
   });
   for (const name of ['weeklyReport', 'careerSprint', 'jobCache', 'news'])
     t.mock.method(require('../models/' + name), 'findOne', () => chain(null));
+  t.mock.method(require('../models/userCourseProgress'), 'find', () => chain([]));
   const moduleId = require.resolve('../controllers/dashboardcontroller');
   delete require.cache[moduleId];
   t.after(() => {
@@ -61,7 +64,7 @@ function checkIdentity(filter) {
   const scope = contract.buildScope({
     userId: user._id,
     user,
-    resumeIdentity: signals.buildResumeCacheIdentity({ resumeAnalysis: resume })
+    resumeIdentity: signals.buildResumeCacheIdentity({ resumeAnalysis: resume }),
   });
   for (const [key, value] of Object.entries(scope)) {
     if (key !== 'createdAt') assert.deepEqual(filter[key], value, key);
@@ -93,14 +96,14 @@ test('production adapter has a 50 percent ceiling across all 28 requirement comb
                 inspected: true,
                 meaningful: true,
                 artifact: 'src/app.js',
-                kind: 'IMPLEMENTATION'
-              }
-            ]
+                kind: 'IMPLEMENTATION',
+              },
+            ],
           },
           resumeAnalysis: { _id: 'resume', analyzedAt: at, technicalSkills: required },
-          integrationSignal: { present: true, updatedAt: at, detectedSkills: required }
+          integrationSignal: { present: true, updatedAt: at, detectedSkills: required },
         },
-        { calculatedAt: at }
+        { calculatedAt: at },
       );
       combinations++;
       assert.equal(result.coverage, 50, stack + '/' + level);
@@ -117,25 +120,25 @@ test('cache scope binds owner, current GitHub, career, resume hash/id and suppor
   checkIdentity(scope);
   assert.equal(
     scope.analysisVersion,
-    require('../controllers/skillgapcontroller').ANALYSIS_VERSION
+    require('../controllers/skillgapcontroller').ANALYSIS_VERSION,
   );
   assert.notEqual(
     signals.buildResumeCacheIdentity({
-      resumeAnalysis: { ...resume, analyzedAt: '2026-11-03' }
+      resumeAnalysis: { ...resume, analyzedAt: '2026-11-03' },
     }).resumeHash,
-    scope.resumeHash
+    scope.resumeHash,
   );
   const literal = contract.buildScope({
     userId: 'owner',
     user: { ...user, activeGithubUsername: 'a.b' },
-    resumeIdentity: identity
+    resumeIdentity: identity,
   });
   assert.ok(!new RegExp(literal.githubUsername.$regex).test('axb'));
 });
 
 test('Dashboard skills endpoint preserves null/zero and uses complete current identity; absent cache cannot fabricate canonical coverage', async (t) => {
   const row = {
-    analysisData: { coverage: null, yourSkills: [{ name: 'JavaScript' }], missingSkills: [] }
+    analysisData: { coverage: null, yourSkills: [{ name: 'JavaScript' }], missingSkills: [] },
   };
   const { dashboard, queries } = setup(t, row);
   const req = { user: { _id: 'owner' }, query: {} };
@@ -147,7 +150,7 @@ test('Dashboard skills endpoint preserves null/zero and uses complete current id
       },
       status: (status) => {
         throw Error('HTTP ' + status);
-      }
+      },
     };
     await dashboard.getDashboardSkills(req, res);
     return body;
@@ -179,24 +182,24 @@ test('canonical null/zero overrides contradictory embedded Skill Gap summaries a
     assert.equal(
       signals.buildSignalsUsedSummary({ signals: { skillGapSignals: { coverage } } }).skillGap
         .coverage,
-      coverage
+      coverage,
     );
   }
 });
 
-test('market readiness stays unavailable when coverage is unavailable; measured values preserve existing formula', (t) => {
+test('target skill coverage presents canonical evidence without an invented job-demand bonus', (t) => {
   const { dashboard } = setup(t, null);
   const derive = (coverage) =>
     dashboard.__test
       .buildReadinessCenter({
         latestJob: { skills: ['JavaScript'] },
-        latestSkillGapCache: { analysisData: { coverage } }
+        latestSkillGapCache: { analysisData: { coverage } },
       })
       .find((item) => item.key === 'market').value;
   assert.equal(derive(null), null);
-  assert.equal(derive(0), 36);
-  assert.equal(derive(50), 61);
-  assert.equal(derive(100), 86);
+  assert.equal(derive(0), 0);
+  assert.equal(derive(50), 50);
+  assert.equal(derive(100), 100);
 });
 
 test('missing current Skill Gap evidence does not revive a cached portfolio breakdown or count-based zero', (t) => {
@@ -205,7 +208,7 @@ test('missing current Skill Gap evidence does not revive a cached portfolio brea
   assert.equal(derive({}).skillCoverage, null);
   assert.equal(
     derive({ portfolioScore: { breakdown: { skillCoverage: 88 } } }).skillCoverage,
-    null
+    null,
   );
 });
 
@@ -214,9 +217,9 @@ test('locked portfolio scorer distinguishes unavailable coverage from measured z
   const input = {
     careerStack: 'Backend',
     githubAnalysis: {
-      scores: { codeQuality: 100, projectImpact: 100, consistency: 100, contribution: 100 }
+      scores: { codeQuality: 100, projectImpact: 100, consistency: 100, contribution: 100 },
     },
-    resumeAnalysis: { atsScore: 100, keywordDensity: 100, contentQuality: 100, formatScore: 100 }
+    resumeAnalysis: { atsScore: 100, keywordDensity: 100, contentQuality: 100, formatScore: 100 },
   };
   const missing = calculateTransparentScore({ ...input, skillGapAnalysis: { coverage: null } });
   const zero = calculateTransparentScore({ ...input, skillGapAnalysis: { coverage: 0 } });

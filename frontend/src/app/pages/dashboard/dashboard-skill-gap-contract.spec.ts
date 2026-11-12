@@ -7,7 +7,6 @@ describe('Dashboard Skill Gap nullable coverage contract', () => {
       {} as never,
       {} as never,
       {} as never,
-      {} as never,
       { bypassSecurityTrustHtml: (value: string) => value } as never,
     );
 
@@ -34,7 +33,7 @@ describe('Dashboard Skill Gap nullable coverage contract', () => {
     expect(page.scoreBreakdownRows.find((row) => row.label === 'Skill Coverage')?.value).toBeNull();
     expect(page.explainabilityRows.find((row) => row.label === 'Skill Coverage')?.value).toBeNull();
     expect((page as any).buildScoreReasons()).toContain(
-      'Skill coverage is unavailable; missing evidence does not establish zero coverage.',
+      'Skill Coverage is unavailable; missing evidence does not establish zero.',
     );
     expect(page.aiBreakdown.codeQuality).toBe(80);
   });
