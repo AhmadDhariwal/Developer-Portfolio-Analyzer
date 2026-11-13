@@ -45,7 +45,8 @@
   font-weight: 600;
   color: var(--text-secondary, #475569);
   text-decoration: none;
-  padding: 6px 12px;
+  padding: 8px 14px;
+  min-height: 40px;
   border-radius: var(--radius-md, 8px);
   background: var(--surface-secondary, #f8fafc);
   border: 1px solid var(--border-color, #e2e8f0);
@@ -548,8 +549,9 @@
     .btn-course-link,
     .btn-sprint-link {
       @include jobs.button;
-      font-size: 12px;
-      padding: 6px 12px;
+      font-size: 12.5px;
+      padding: 8px 14px;
+      min-height: 40px;
       white-space: nowrap;
     }
   }
@@ -661,7 +663,9 @@
   }
 
   .btn-review-evidence {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
     font-size: 12.5px;
     font-weight: 600;
     color: var(--color-primary, #4f46e5);
@@ -718,7 +722,8 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    height: 42px;
+    height: 44px;
+    min-height: 44px;
     width: 100%;
     font-size: 13.5px;
     border-radius: var(--radius-md, 8px);
@@ -740,8 +745,9 @@
     .btn-action {
       @include jobs.button;
       width: 100%;
-      height: 36px;
-      font-size: 12.5px;
+      height: 42px;
+      min-height: 42px;
+      font-size: 13px;
 
       &.text-danger {
         color: var(--text-muted, #64748b);
@@ -855,7 +861,7 @@
 }
 
 // ── Responsive Layout ────────────────────────────────
-@media (max-width: 900px) {
+@media (max-width: 960px) {
   .detail-layout {
     grid-template-columns: 1fr;
   }
@@ -869,19 +875,56 @@
 
 @media (max-width: 600px) {
   .detail-header {
-    flex-direction: column;
+    padding: 16px 0 20px;
+    margin-bottom: 20px;
   }
 
-  .header-quick-actions {
+  .header-actions {
     width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
 
     .btn-apply-primary {
       width: 100%;
+      min-height: 44px;
+      justify-content: center;
+    }
+
+    .btn-action-outline {
+      width: 100%;
+      min-height: 44px;
+      justify-content: center;
     }
   }
 
   .detail-sidebar {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .panel {
+    padding: 16px;
+    margin-bottom: 16px;
+    border-radius: var(--radius-md, 8px);
+  }
+
+  .job-title {
+    font-size: 20px;
+  }
+
+  .recommendation-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+
+    .btn-course-link,
+    .btn-sprint-link {
+      width: 100%;
+      min-height: 42px;
+      justify-content: center;
+    }
   }
 }
 .source-tag {

@@ -1,0 +1,3403 @@
+{
+  "phase": "before",
+  "timestamp": "2026-11-13T04:34:07.099Z",
+  "viewportsTested": 12,
+  "themesTested": 3,
+  "matrixResults": [
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "dimensions": "320x640",
+      "theme": "dark",
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-dark-mobile-320.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "dimensions": "320x640",
+      "theme": "light",
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-light-mobile-320.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "dimensions": "320x640",
+      "theme": "system",
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-system-mobile-320.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "dimensions": "375x667",
+      "theme": "dark",
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-dark-mobile-375.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "dimensions": "375x667",
+      "theme": "light",
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-light-mobile-375.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "dimensions": "375x667",
+      "theme": "system",
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-system-mobile-375.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "dimensions": "390x844",
+      "theme": "dark",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-dark-mobile-390.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "dimensions": "390x844",
+      "theme": "light",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-light-mobile-390.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "dimensions": "390x844",
+      "theme": "system",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-system-mobile-390.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "dimensions": "430x932",
+      "theme": "dark",
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-dark-mobile-430.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "dimensions": "430x932",
+      "theme": "light",
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-light-mobile-430.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "dimensions": "430x932",
+      "theme": "system",
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-system-mobile-430.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "dimensions": "768x1024",
+      "theme": "dark",
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-dark-tablet-768.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "dimensions": "768x1024",
+      "theme": "light",
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-light-tablet-768.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "dimensions": "768x1024",
+      "theme": "system",
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-system-tablet-768.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "dimensions": "820x1180",
+      "theme": "dark",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-dark-tablet-820.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "dimensions": "820x1180",
+      "theme": "light",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-light-tablet-820.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "dimensions": "820x1180",
+      "theme": "system",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-system-tablet-820.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "dimensions": "1024x768",
+      "theme": "dark",
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-dark-tablet-1024.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "dimensions": "1024x768",
+      "theme": "light",
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-light-tablet-1024.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "dimensions": "1024x768",
+      "theme": "system",
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-system-tablet-1024.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "dimensions": "1280x800",
+      "theme": "dark",
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-dark-laptop-1280.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "dimensions": "1280x800",
+      "theme": "light",
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-light-laptop-1280.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "dimensions": "1280x800",
+      "theme": "system",
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-system-laptop-1280.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "dimensions": "1366x768",
+      "theme": "dark",
+      "scrollWidth": 1366,
+      "clientWidth": 1366,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-dark-laptop-1366.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "dimensions": "1366x768",
+      "theme": "light",
+      "scrollWidth": 1366,
+      "clientWidth": 1366,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-light-laptop-1366.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "dimensions": "1366x768",
+      "theme": "system",
+      "scrollWidth": 1366,
+      "clientWidth": 1366,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-system-laptop-1366.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "dimensions": "1440x900",
+      "theme": "dark",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-dark-desktop-1440.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "dimensions": "1440x900",
+      "theme": "light",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-light-desktop-1440.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "dimensions": "1440x900",
+      "theme": "system",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-system-desktop-1440.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "dimensions": "1920x1080",
+      "theme": "dark",
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-dark-desktop-1920.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "dimensions": "1920x1080",
+      "theme": "light",
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-light-desktop-1920.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "dimensions": "1920x1080",
+      "theme": "system",
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-system-desktop-1920.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "dimensions": "2560x1440",
+      "theme": "dark",
+      "scrollWidth": 2560,
+      "clientWidth": 2560,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-dark-large-2560.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "dimensions": "2560x1440",
+      "theme": "light",
+      "scrollWidth": 2560,
+      "clientWidth": 2560,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-light-large-2560.png",
+      "status": "PASS",
+      "errors": []
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "dimensions": "2560x1440",
+      "theme": "system",
+      "scrollWidth": 2560,
+      "clientWidth": 2560,
+      "hasDocOverflow": false,
+      "hasCompOverflow": false,
+      "overflowPx": 0,
+      "screenshot": "public-system-large-2560.png",
+      "status": "PASS",
+      "errors": []
+    }
+  ],
+  "stateChecks": [
+    {
+      "state": "Owner Preview Strip",
+      "viewport": "mobile-375",
+      "overflowPx": 0,
+      "status": "PASS",
+      "screenshot": "owner-preview-mobile-375.png"
+    },
+    {
+      "state": "Owner Preview Strip",
+      "viewport": "tablet-768",
+      "overflowPx": 0,
+      "status": "PASS",
+      "screenshot": "owner-preview-tablet-768.png"
+    },
+    {
+      "state": "Owner Preview Strip",
+      "viewport": "desktop-1440",
+      "overflowPx": 0,
+      "status": "PASS",
+      "screenshot": "owner-preview-desktop-1440.png"
+    },
+    {
+      "state": "Recruiter Enquiry & Success",
+      "viewport": "mobile-375",
+      "overflowPx": 0,
+      "status": "PASS",
+      "screenshot": "recruiter-form-mobile-375.png"
+    },
+    {
+      "state": "Recruiter Enquiry & Success",
+      "viewport": "desktop-1440",
+      "overflowPx": 0,
+      "status": "PASS",
+      "screenshot": "recruiter-form-desktop-1440.png"
+    },
+    {
+      "state": "Non-Recruiter Restricted Notice",
+      "viewport": "mobile-375",
+      "overflowPx": 0,
+      "status": "PASS",
+      "screenshot": "contact-restricted-mobile-375.png"
+    },
+    {
+      "state": "Error 404 Page State",
+      "viewport": "mobile-375",
+      "overflowPx": 0,
+      "status": "PASS",
+      "screenshot": "error-404-mobile-375.png"
+    },
+    {
+      "state": "Error 503 Page State",
+      "viewport": "mobile-375",
+      "overflowPx": 0,
+      "status": "PASS",
+      "screenshot": "error-503-mobile-375.png"
+    }
+  ],
+  "orientationChecks": [
+    {
+      "orientation": "mobile-375-landscape",
+      "dimensions": "667x375",
+      "overflowPx": 0,
+      "status": "PASS",
+      "screenshot": "mobile-375-landscape.png"
+    },
+    {
+      "orientation": "mobile-390-landscape",
+      "dimensions": "844x390",
+      "overflowPx": 0,
+      "status": "PASS",
+      "screenshot": "mobile-390-landscape.png"
+    },
+    {
+      "orientation": "mobile-430-landscape",
+      "dimensions": "932x430",
+      "overflowPx": 0,
+      "status": "PASS",
+      "screenshot": "mobile-430-landscape.png"
+    },
+    {
+      "orientation": "tablet-1024-portrait",
+      "dimensions": "768x1024",
+      "overflowPx": 0,
+      "status": "PASS",
+      "screenshot": "tablet-1024-portrait.png"
+    }
+  ],
+  "zoomChecks": [
+    {
+      "zoom": "mobile-375-zoom125",
+      "effectiveDimensions": "300x533",
+      "scale": "125%",
+      "overflowPx": 0,
+      "status": "PASS",
+      "screenshot": "mobile-375-zoom125.png"
+    },
+    {
+      "zoom": "mobile-375-zoom150",
+      "effectiveDimensions": "250x444",
+      "scale": "150%",
+      "overflowPx": 0,
+      "status": "PASS",
+      "screenshot": "mobile-375-zoom150.png"
+    },
+    {
+      "zoom": "desktop-1440-zoom125",
+      "effectiveDimensions": "1152x720",
+      "scale": "125%",
+      "overflowPx": 0,
+      "status": "PASS",
+      "screenshot": "desktop-1440-zoom125.png"
+    },
+    {
+      "zoom": "desktop-1440-zoom150",
+      "effectiveDimensions": "960x600",
+      "scale": "150%",
+      "overflowPx": 0,
+      "status": "PASS",
+      "screenshot": "desktop-1440-zoom150.png"
+    }
+  ],
+  "studioChecks": [
+    {
+      "viewport": "mobile-320",
+      "overflowPx": 0,
+      "offenders": [],
+      "status": "PASS",
+      "screenshot": "studio-mobile-320.png"
+    },
+    {
+      "viewport": "mobile-375",
+      "overflowPx": 0,
+      "offenders": [],
+      "status": "PASS",
+      "screenshot": "studio-mobile-375.png"
+    },
+    {
+      "viewport": "tablet-768",
+      "overflowPx": 0,
+      "offenders": [],
+      "status": "PASS",
+      "screenshot": "studio-tablet-768.png"
+    },
+    {
+      "viewport": "desktop-1440",
+      "overflowPx": 0,
+      "offenders": [],
+      "status": "PASS",
+      "screenshot": "studio-desktop-1440.png"
+    }
+  ],
+  "overflowDefects": [],
+  "touchTargetDefects": [
+    {
+      "viewport": "mobile-320",
+      "theme": "dark",
+      "smallTargets": [
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Case Study\n↗",
+          "width": 178,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Docs\n↗",
+          "width": 178,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "course-cred-btn",
+          "text": "View credential\n↗",
+          "width": 186,
+          "height": 19
+        },
+        {
+          "tag": "summary",
+          "className": "",
+          "text": "Project details",
+          "width": 96,
+          "height": 26
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--primary",
+          "text": "Visit project ↗",
+          "width": 202,
+          "height": 34
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--ghost",
+          "text": "Source code ↗",
+          "width": 202,
+          "height": 34
+        },
+        {
+          "tag": "summary",
+          "className": "",
+          "text": "Project details",
+          "width": 96,
+          "height": 26
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--primary",
+          "text": "Visit project ↗",
+          "width": 202,
+          "height": 34
+        }
+      ]
+    },
+    {
+      "viewport": "mobile-320",
+      "theme": "light",
+      "smallTargets": [
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Case Study\n↗",
+          "width": 178,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Docs\n↗",
+          "width": 178,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "course-cred-btn",
+          "text": "View credential\n↗",
+          "width": 186,
+          "height": 19
+        },
+        {
+          "tag": "summary",
+          "className": "",
+          "text": "Project details",
+          "width": 96,
+          "height": 26
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--primary",
+          "text": "Visit project ↗",
+          "width": 202,
+          "height": 34
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--ghost",
+          "text": "Source code ↗",
+          "width": 202,
+          "height": 34
+        },
+        {
+          "tag": "summary",
+          "className": "",
+          "text": "Project details",
+          "width": 96,
+          "height": 26
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--primary",
+          "text": "Visit project ↗",
+          "width": 202,
+          "height": 34
+        }
+      ]
+    },
+    {
+      "viewport": "mobile-320",
+      "theme": "system",
+      "smallTargets": [
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Case Study\n↗",
+          "width": 178,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Docs\n↗",
+          "width": 178,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "course-cred-btn",
+          "text": "View credential\n↗",
+          "width": 186,
+          "height": 19
+        },
+        {
+          "tag": "summary",
+          "className": "",
+          "text": "Project details",
+          "width": 96,
+          "height": 26
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--primary",
+          "text": "Visit project ↗",
+          "width": 202,
+          "height": 34
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--ghost",
+          "text": "Source code ↗",
+          "width": 202,
+          "height": 34
+        },
+        {
+          "tag": "summary",
+          "className": "",
+          "text": "Project details",
+          "width": 96,
+          "height": 26
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--primary",
+          "text": "Visit project ↗",
+          "width": 202,
+          "height": 34
+        }
+      ]
+    },
+    {
+      "viewport": "mobile-375",
+      "theme": "dark",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Dark",
+          "width": 77,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Case Study\n↗",
+          "width": 233,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Docs\n↗",
+          "width": 233,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "course-cred-btn",
+          "text": "View credential\n↗",
+          "width": 241,
+          "height": 19
+        },
+        {
+          "tag": "summary",
+          "className": "",
+          "text": "Project details",
+          "width": 96,
+          "height": 26
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--primary",
+          "text": "Visit project ↗",
+          "width": 257,
+          "height": 34
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--ghost",
+          "text": "Source code ↗",
+          "width": 257,
+          "height": 34
+        }
+      ]
+    },
+    {
+      "viewport": "mobile-375",
+      "theme": "light",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Light",
+          "width": 80,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Case Study\n↗",
+          "width": 233,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Docs\n↗",
+          "width": 233,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "course-cred-btn",
+          "text": "View credential\n↗",
+          "width": 241,
+          "height": 19
+        },
+        {
+          "tag": "summary",
+          "className": "",
+          "text": "Project details",
+          "width": 96,
+          "height": 26
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--primary",
+          "text": "Visit project ↗",
+          "width": 257,
+          "height": 34
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--ghost",
+          "text": "Source code ↗",
+          "width": 257,
+          "height": 34
+        }
+      ]
+    },
+    {
+      "viewport": "mobile-375",
+      "theme": "system",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Dark",
+          "width": 77,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Case Study\n↗",
+          "width": 233,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Docs\n↗",
+          "width": 233,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "course-cred-btn",
+          "text": "View credential\n↗",
+          "width": 241,
+          "height": 19
+        },
+        {
+          "tag": "summary",
+          "className": "",
+          "text": "Project details",
+          "width": 96,
+          "height": 26
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--primary",
+          "text": "Visit project ↗",
+          "width": 257,
+          "height": 34
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--ghost",
+          "text": "Source code ↗",
+          "width": 257,
+          "height": 34
+        }
+      ]
+    },
+    {
+      "viewport": "mobile-390",
+      "theme": "dark",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Dark",
+          "width": 77,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Case Study\n↗",
+          "width": 248,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Docs\n↗",
+          "width": 248,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "course-cred-btn",
+          "text": "View credential\n↗",
+          "width": 256,
+          "height": 19
+        },
+        {
+          "tag": "summary",
+          "className": "",
+          "text": "Project details",
+          "width": 96,
+          "height": 26
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--primary",
+          "text": "Visit project ↗",
+          "width": 272,
+          "height": 34
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--ghost",
+          "text": "Source code ↗",
+          "width": 272,
+          "height": 34
+        }
+      ]
+    },
+    {
+      "viewport": "mobile-390",
+      "theme": "light",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Light",
+          "width": 80,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Case Study\n↗",
+          "width": 248,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Docs\n↗",
+          "width": 248,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "course-cred-btn",
+          "text": "View credential\n↗",
+          "width": 256,
+          "height": 19
+        },
+        {
+          "tag": "summary",
+          "className": "",
+          "text": "Project details",
+          "width": 96,
+          "height": 26
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--primary",
+          "text": "Visit project ↗",
+          "width": 272,
+          "height": 34
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--ghost",
+          "text": "Source code ↗",
+          "width": 272,
+          "height": 34
+        }
+      ]
+    },
+    {
+      "viewport": "mobile-390",
+      "theme": "system",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Dark",
+          "width": 77,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Case Study\n↗",
+          "width": 248,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Docs\n↗",
+          "width": 248,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "course-cred-btn",
+          "text": "View credential\n↗",
+          "width": 256,
+          "height": 19
+        },
+        {
+          "tag": "summary",
+          "className": "",
+          "text": "Project details",
+          "width": 96,
+          "height": 26
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--primary",
+          "text": "Visit project ↗",
+          "width": 272,
+          "height": 34
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--ghost",
+          "text": "Source code ↗",
+          "width": 272,
+          "height": 34
+        }
+      ]
+    },
+    {
+      "viewport": "mobile-430",
+      "theme": "dark",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Dark",
+          "width": 77,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Case Study\n↗",
+          "width": 288,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Docs\n↗",
+          "width": 288,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "course-cred-btn",
+          "text": "View credential\n↗",
+          "width": 296,
+          "height": 19
+        },
+        {
+          "tag": "summary",
+          "className": "",
+          "text": "Project details",
+          "width": 96,
+          "height": 26
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--primary",
+          "text": "Visit project ↗",
+          "width": 312,
+          "height": 34
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--ghost",
+          "text": "Source code ↗",
+          "width": 312,
+          "height": 34
+        }
+      ]
+    },
+    {
+      "viewport": "mobile-430",
+      "theme": "light",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Light",
+          "width": 80,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Case Study\n↗",
+          "width": 288,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Docs\n↗",
+          "width": 288,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "course-cred-btn",
+          "text": "View credential\n↗",
+          "width": 296,
+          "height": 19
+        },
+        {
+          "tag": "summary",
+          "className": "",
+          "text": "Project details",
+          "width": 96,
+          "height": 26
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--primary",
+          "text": "Visit project ↗",
+          "width": 312,
+          "height": 34
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--ghost",
+          "text": "Source code ↗",
+          "width": 312,
+          "height": 34
+        }
+      ]
+    },
+    {
+      "viewport": "mobile-430",
+      "theme": "system",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Dark",
+          "width": 77,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Case Study\n↗",
+          "width": 288,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Docs\n↗",
+          "width": 288,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "course-cred-btn",
+          "text": "View credential\n↗",
+          "width": 296,
+          "height": 19
+        },
+        {
+          "tag": "summary",
+          "className": "",
+          "text": "Project details",
+          "width": 96,
+          "height": 26
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--primary",
+          "text": "Visit project ↗",
+          "width": 312,
+          "height": 34
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--ghost",
+          "text": "Source code ↗",
+          "width": 312,
+          "height": 34
+        }
+      ]
+    },
+    {
+      "viewport": "tablet-768",
+      "theme": "dark",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Dark",
+          "width": 77,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Case Study\n↗",
+          "width": 626,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Docs\n↗",
+          "width": 626,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "course-cred-btn",
+          "text": "View credential\n↗",
+          "width": 634,
+          "height": 19
+        },
+        {
+          "tag": "summary",
+          "className": "",
+          "text": "Project details",
+          "width": 96,
+          "height": 26
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--primary",
+          "text": "Visit project ↗",
+          "width": 106,
+          "height": 34
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--ghost",
+          "text": "Source code ↗",
+          "width": 109,
+          "height": 34
+        }
+      ]
+    },
+    {
+      "viewport": "tablet-768",
+      "theme": "light",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Light",
+          "width": 80,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Case Study\n↗",
+          "width": 626,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Docs\n↗",
+          "width": 626,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "course-cred-btn",
+          "text": "View credential\n↗",
+          "width": 634,
+          "height": 19
+        },
+        {
+          "tag": "summary",
+          "className": "",
+          "text": "Project details",
+          "width": 96,
+          "height": 26
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--primary",
+          "text": "Visit project ↗",
+          "width": 106,
+          "height": 34
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--ghost",
+          "text": "Source code ↗",
+          "width": 109,
+          "height": 34
+        }
+      ]
+    },
+    {
+      "viewport": "tablet-768",
+      "theme": "system",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Dark",
+          "width": 77,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Case Study\n↗",
+          "width": 626,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Docs\n↗",
+          "width": 626,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "course-cred-btn",
+          "text": "View credential\n↗",
+          "width": 634,
+          "height": 19
+        },
+        {
+          "tag": "summary",
+          "className": "",
+          "text": "Project details",
+          "width": 96,
+          "height": 26
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--primary",
+          "text": "Visit project ↗",
+          "width": 106,
+          "height": 34
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--ghost",
+          "text": "Source code ↗",
+          "width": 109,
+          "height": 34
+        }
+      ]
+    },
+    {
+      "viewport": "tablet-820",
+      "theme": "dark",
+      "smallTargets": [
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Case Study\n↗",
+          "width": 644,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Docs\n↗",
+          "width": 644,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "course-cred-btn",
+          "text": "View credential\n↗",
+          "width": 652,
+          "height": 19
+        },
+        {
+          "tag": "summary",
+          "className": "",
+          "text": "Project details",
+          "width": 96,
+          "height": 26
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--primary",
+          "text": "Visit project ↗",
+          "width": 106,
+          "height": 34
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--ghost",
+          "text": "Source code ↗",
+          "width": 109,
+          "height": 34
+        },
+        {
+          "tag": "summary",
+          "className": "",
+          "text": "Project details",
+          "width": 96,
+          "height": 26
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--primary",
+          "text": "Visit project ↗",
+          "width": 106,
+          "height": 34
+        }
+      ]
+    },
+    {
+      "viewport": "tablet-820",
+      "theme": "light",
+      "smallTargets": [
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Case Study\n↗",
+          "width": 644,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Docs\n↗",
+          "width": 644,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "course-cred-btn",
+          "text": "View credential\n↗",
+          "width": 652,
+          "height": 19
+        },
+        {
+          "tag": "summary",
+          "className": "",
+          "text": "Project details",
+          "width": 96,
+          "height": 26
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--primary",
+          "text": "Visit project ↗",
+          "width": 106,
+          "height": 34
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--ghost",
+          "text": "Source code ↗",
+          "width": 109,
+          "height": 34
+        },
+        {
+          "tag": "summary",
+          "className": "",
+          "text": "Project details",
+          "width": 96,
+          "height": 26
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--primary",
+          "text": "Visit project ↗",
+          "width": 106,
+          "height": 34
+        }
+      ]
+    },
+    {
+      "viewport": "tablet-820",
+      "theme": "system",
+      "smallTargets": [
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Case Study\n↗",
+          "width": 644,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "experience-learn-btn",
+          "text": "Docs\n↗",
+          "width": 644,
+          "height": 20
+        },
+        {
+          "tag": "a",
+          "className": "course-cred-btn",
+          "text": "View credential\n↗",
+          "width": 652,
+          "height": 19
+        },
+        {
+          "tag": "summary",
+          "className": "",
+          "text": "Project details",
+          "width": 96,
+          "height": 26
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--primary",
+          "text": "Visit project ↗",
+          "width": 106,
+          "height": 34
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--ghost",
+          "text": "Source code ↗",
+          "width": 109,
+          "height": 34
+        },
+        {
+          "tag": "summary",
+          "className": "",
+          "text": "Project details",
+          "width": 96,
+          "height": 26
+        },
+        {
+          "tag": "a",
+          "className": "project-link project-link--primary",
+          "text": "Visit project ↗",
+          "width": 106,
+          "height": 34
+        }
+      ]
+    },
+    {
+      "viewport": "tablet-1024",
+      "theme": "dark",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Home",
+          "width": 65,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "About",
+          "width": 67,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Skills",
+          "width": 61,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Projects",
+          "width": 81,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Experience",
+          "width": 99,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Contact",
+          "width": 80,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Dark",
+          "width": 77,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        }
+      ]
+    },
+    {
+      "viewport": "tablet-1024",
+      "theme": "light",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Home",
+          "width": 65,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "About",
+          "width": 67,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Skills",
+          "width": 61,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Projects",
+          "width": 81,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Experience",
+          "width": 99,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Contact",
+          "width": 80,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Light",
+          "width": 80,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        }
+      ]
+    },
+    {
+      "viewport": "tablet-1024",
+      "theme": "system",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Home",
+          "width": 65,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "About",
+          "width": 67,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Skills",
+          "width": 61,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Projects",
+          "width": 81,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Experience",
+          "width": 99,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Contact",
+          "width": 80,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Dark",
+          "width": 77,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        }
+      ]
+    },
+    {
+      "viewport": "laptop-1280",
+      "theme": "dark",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Home",
+          "width": 65,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "About",
+          "width": 67,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Skills",
+          "width": 61,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Projects",
+          "width": 81,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Experience",
+          "width": 99,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Contact",
+          "width": 80,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Dark",
+          "width": 77,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        }
+      ]
+    },
+    {
+      "viewport": "laptop-1280",
+      "theme": "light",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Home",
+          "width": 65,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "About",
+          "width": 67,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Skills",
+          "width": 61,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Projects",
+          "width": 81,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Experience",
+          "width": 99,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Contact",
+          "width": 80,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Light",
+          "width": 80,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        }
+      ]
+    },
+    {
+      "viewport": "laptop-1280",
+      "theme": "system",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Home",
+          "width": 65,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "About",
+          "width": 67,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Skills",
+          "width": 61,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Projects",
+          "width": 81,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Experience",
+          "width": 99,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Contact",
+          "width": 80,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Dark",
+          "width": 77,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        }
+      ]
+    },
+    {
+      "viewport": "laptop-1366",
+      "theme": "dark",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Home",
+          "width": 65,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "About",
+          "width": 67,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Skills",
+          "width": 61,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Projects",
+          "width": 81,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Experience",
+          "width": 99,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Contact",
+          "width": 80,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Dark",
+          "width": 77,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        }
+      ]
+    },
+    {
+      "viewport": "laptop-1366",
+      "theme": "light",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Home",
+          "width": 65,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "About",
+          "width": 67,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Skills",
+          "width": 61,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Projects",
+          "width": 81,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Experience",
+          "width": 99,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Contact",
+          "width": 80,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Light",
+          "width": 80,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        }
+      ]
+    },
+    {
+      "viewport": "laptop-1366",
+      "theme": "system",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Home",
+          "width": 65,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "About",
+          "width": 67,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Skills",
+          "width": 61,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Projects",
+          "width": 81,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Experience",
+          "width": 99,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Contact",
+          "width": 80,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Dark",
+          "width": 77,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        }
+      ]
+    },
+    {
+      "viewport": "desktop-1440",
+      "theme": "dark",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Home",
+          "width": 65,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "About",
+          "width": 67,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Skills",
+          "width": 61,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Projects",
+          "width": 81,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Experience",
+          "width": 99,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Contact",
+          "width": 80,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Dark",
+          "width": 77,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        }
+      ]
+    },
+    {
+      "viewport": "desktop-1440",
+      "theme": "light",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Home",
+          "width": 65,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "About",
+          "width": 67,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Skills",
+          "width": 61,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Projects",
+          "width": 81,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Experience",
+          "width": 99,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Contact",
+          "width": 80,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Light",
+          "width": 80,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        }
+      ]
+    },
+    {
+      "viewport": "desktop-1440",
+      "theme": "system",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Home",
+          "width": 65,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "About",
+          "width": 67,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Skills",
+          "width": 61,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Projects",
+          "width": 81,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Experience",
+          "width": 99,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Contact",
+          "width": 80,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Dark",
+          "width": 77,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        }
+      ]
+    },
+    {
+      "viewport": "desktop-1920",
+      "theme": "dark",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Home",
+          "width": 65,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "About",
+          "width": 67,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Skills",
+          "width": 61,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Projects",
+          "width": 81,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Experience",
+          "width": 99,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Contact",
+          "width": 80,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Dark",
+          "width": 77,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        }
+      ]
+    },
+    {
+      "viewport": "desktop-1920",
+      "theme": "light",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Home",
+          "width": 65,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "About",
+          "width": 67,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Skills",
+          "width": 61,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Projects",
+          "width": 81,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Experience",
+          "width": 99,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Contact",
+          "width": 80,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Light",
+          "width": 80,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        }
+      ]
+    },
+    {
+      "viewport": "desktop-1920",
+      "theme": "system",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Home",
+          "width": 65,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "About",
+          "width": 67,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Skills",
+          "width": 61,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Projects",
+          "width": 81,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Experience",
+          "width": 99,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Contact",
+          "width": 80,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Dark",
+          "width": 77,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        }
+      ]
+    },
+    {
+      "viewport": "large-2560",
+      "theme": "dark",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Home",
+          "width": 65,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "About",
+          "width": 67,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Skills",
+          "width": 61,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Projects",
+          "width": 81,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Experience",
+          "width": 99,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Contact",
+          "width": 80,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Dark",
+          "width": 77,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        }
+      ]
+    },
+    {
+      "viewport": "large-2560",
+      "theme": "light",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Home",
+          "width": 65,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "About",
+          "width": 67,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Skills",
+          "width": 61,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Projects",
+          "width": 81,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Experience",
+          "width": 99,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Contact",
+          "width": 80,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Light",
+          "width": 80,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        }
+      ]
+    },
+    {
+      "viewport": "large-2560",
+      "theme": "system",
+      "smallTargets": [
+        {
+          "tag": "a",
+          "className": "brand",
+          "text": "d\n.\nDevInsight / Portfolio",
+          "width": 185,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Home",
+          "width": 65,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "About",
+          "width": 67,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Skills",
+          "width": 61,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Projects",
+          "width": 81,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Experience",
+          "width": 99,
+          "height": 32
+        },
+        {
+          "tag": "a",
+          "className": "nav-anchor",
+          "text": "Contact",
+          "width": 80,
+          "height": 32
+        },
+        {
+          "tag": "button",
+          "className": "theme-toggle-btn",
+          "text": "Dark",
+          "width": 77,
+          "height": 33
+        },
+        {
+          "tag": "select",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "text": "Light\nDark\nSystem",
+          "width": 67,
+          "height": 19
+        },
+        {
+          "tag": "a",
+          "className": "orbital-social-link",
+          "text": "GitHub\n↗",
+          "width": 54,
+          "height": 18
+        }
+      ]
+    }
+  ]
+}

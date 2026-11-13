@@ -160,20 +160,22 @@
 }
 
 .save-button {
-  width: 32px;
-  height: 32px;
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  min-height: 38px;
   display: grid;
   place-items: center;
   border: 1px solid transparent;
-  border-radius: var(--radius-sm, 6px);
+  border-radius: var(--radius-md, 8px);
   color: var(--text-muted, #94a3b8);
   background: transparent;
   cursor: pointer;
   transition: all var(--transition-fast, 0.15s ease);
 
   svg {
-    width: 17px;
-    height: 17px;
+    width: 18px;
+    height: 18px;
   }
 
   &:hover:not(:disabled) {
@@ -452,7 +454,8 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
-    height: 36px;
+    height: 40px;
+    min-height: 40px;
     border-radius: var(--radius-md, 8px);
     font-size: 13px;
     font-weight: 600;
@@ -467,11 +470,11 @@
     .btn-subtle {
       @include jobs.button;
       flex: 1;
-      height: 32px;
-      min-height: 32px;
-      padding: 4px 10px;
+      height: 38px;
+      min-height: 38px;
+      padding: 6px 10px;
       font-size: 12px;
-      font-weight: 500;
+      font-weight: 550;
       color: var(--text-muted, #64748b);
 
       &:hover:not(:disabled) {
@@ -483,11 +486,50 @@
 
 @media (max-width: 480px) {
   .job-card {
-    padding: 16px;
+    padding: 14px;
   }
 
-  .match-badge .match-label {
-    display: none;
+  .match-badge {
+    padding: 2px 6px;
+    font-size: 11px;
+
+    .match-label {
+      display: none;
+    }
+  }
+
+  .company-mark {
+    width: 36px;
+    height: 36px;
+    font-size: 15px;
+  }
+
+  .save-button {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .secondary-actions {
+    gap: 6px;
+
+    .btn-subtle {
+      min-height: 40px;
+      height: 40px;
+      font-size: 11.5px;
+      padding: 6px 8px;
+    }
+  }
+}
+
+@media (max-width: 340px) {
+  .card-actions .secondary-actions {
+    flex-direction: column;
+
+    .btn-subtle {
+      width: 100%;
+    }
   }
 }
 .company-source {
