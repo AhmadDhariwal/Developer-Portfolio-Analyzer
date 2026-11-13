@@ -1,3 +1,4 @@
+const { normalizeDashboardActivity } = require('../utils/dashboardActivity');
 const portfolioScoring = require('../services/scoring/portfolioScore');
 const {
   buildCachePipeline,
@@ -981,12 +982,12 @@ const getDashboardSummary = async (req, res) => {
       commandCenter,
       sourceFreshness,
       activitySnapshot: {
-        data: analysis?.updatedAt ? analysis.contributionActivity || [] : [],
-        available: Boolean(analysis?.updatedAt),
+        data: normalizeDashboardActivity(analysis?.contributionActivity),
+        available: normalizeDashboardActivity(analysis?.contributionActivity).length > 0,
       },
       languageSnapshot: {
         data: normalizeLanguageMap(analysis?.languageDistribution),
-        available: Boolean(analysis?.updatedAt),
+        available: Object.keys(normalizeLanguageMap(analysis?.languageDistribution)).length > 0,
       },
       progress: buildDashboardProgress(
         {
@@ -1059,10 +1060,7 @@ const getDashboardContributions = async (req, res) => {
       .lean();
     const githubUsername = developerContext.resolveGithubUsername(user) || '';
     const { analysis, rateLimited } = await ensureAnalysis(req.user._id, githubUsername);
-    const data =
-      Array.isArray(analysis?.contributionActivity) && analysis.contributionActivity.length
-        ? analysis.contributionActivity
-        : [];
+    const data = normalizeDashboardActivity(analysis?.contributionActivity);
 
     res.json({
       data,

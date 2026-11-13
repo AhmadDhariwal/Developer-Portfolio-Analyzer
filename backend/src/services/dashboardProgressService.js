@@ -1,3 +1,4 @@
+const { normalizeDashboardActivity } = require('../utils/dashboardActivity');
 const { numeric } = require('./scoring/math');
 const sprintScore = require('./scoring/sprintProgressScore');
 
@@ -58,7 +59,7 @@ function buildDashboardProgress(
       available: Boolean(analysis?.updatedAt),
       historyStatus:
         'Legacy repository snapshots do not record username or scoring-rule identity; trends are not inferred.',
-      activity: analysis?.updatedAt ? analysis.contributionActivity || [] : [],
+      activity: normalizeDashboardActivity(analysis?.contributionActivity),
     },
     completedCourses: (learningProgress || [])
       .filter((row) => row.status === 'completed')

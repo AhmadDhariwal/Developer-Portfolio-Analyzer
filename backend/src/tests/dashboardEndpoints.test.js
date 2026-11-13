@@ -13,6 +13,9 @@ let insightFailure = false;
 let coverage = null;
 let portfolioScore = 0;
 let hasAnalysis = false;
+let savedActivity = [{ month: 'Nov', count: 4 }];
+let savedLanguages = { TypeScript: 100 };
+let savedUsername = 'dev';
 let unstable = false;
 let legacy = false;
 let integrationTimeout = false;
@@ -60,13 +63,13 @@ mock('../models/analysis', {
       hasAnalysis
         ? {
             userId: filter.userId,
-            githubSignals: legacy ? {} : { username: 'dev' },
+            githubSignals: legacy ? {} : { username: savedUsername },
             githubScore: 80,
             readinessScore: 70,
             updatedAt: at,
             githubStats: { repos: 3 },
-            languageDistribution: { TypeScript: 100 },
-            contributionActivity: [{ month: 'Nov', count: 4 }],
+            languageDistribution: savedLanguages,
+            contributionActivity: savedActivity,
           }
         : null,
     ),
@@ -189,6 +192,9 @@ test.beforeEach((t) => {
   coverage = null;
   portfolioScore = 0;
   hasAnalysis = false;
+  savedActivity = [{ month: 'Nov', count: 4 }];
+  savedLanguages = { TypeScript: 100 };
+  savedUsername = 'dev';
   unstable = false;
   legacy = false;
   integrationTimeout = false;
@@ -377,4 +383,31 @@ test('legacy GitHub evidence with unknown username stays unverified rather than 
 test('integration aggregation budget exhaustion returns unavailable, not truncated counts', async () => {
   integrationTimeout = true;
   assert.equal((await request('integration-analytics')).status, 503);
+});
+
+test('chart availability follows usable data independently of timestamps and preserves measured zero', async () => {
+  hasAnalysis = true;
+  savedActivity = [];
+  savedLanguages = {};
+  let body = await (await request('summary')).json();
+  assert.equal(body.activitySnapshot.available, false);
+  assert.equal(body.languageSnapshot.available, false);
+  savedActivity = [
+    { month: 'Nov', count: 0 },
+    { month: 'Nov', count: null },
+  ];
+  savedLanguages = { TypeScript: 10 };
+  body = await (await request('summary')).json();
+  assert.equal(body.activitySnapshot.available, true);
+  assert.deepEqual(body.activitySnapshot.data, [{ month: 'Nov', count: 0 }]);
+  assert.equal(body.languageSnapshot.available, true);
+  assert.deepEqual(
+    (await (await request('contributions')).json()).data,
+    body.activitySnapshot.data,
+  );
+  savedUsername = 'other-profile';
+  body = await (await request('summary')).json();
+  assert.equal(body.activitySnapshot.available, false);
+  assert.equal(body.languageSnapshot.available, false);
+  assert.deepEqual((await (await request('languages')).json()).data, {});
 });
