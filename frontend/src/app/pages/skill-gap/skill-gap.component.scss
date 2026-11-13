@@ -20,6 +20,10 @@ app-skill-gap {
     display: grid;
     gap: 24px;
     min-width: 0;
+    max-width: 1600px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
     color: var(--text-primary);
     font-size: 14px;
     line-height: 1.5;
@@ -288,7 +292,7 @@ app-skill-gap {
       font-size: 13px;
       font-weight: 600;
       border-radius: 6px;
-      min-height: 36px;
+      min-height: 38px;
       transition: all 0.15s ease;
 
       &:hover:not(:disabled) {
@@ -389,7 +393,8 @@ app-skill-gap {
     grid-template-columns: 1fr auto;
     align-items: center;
     gap: 16px 28px;
-    background: linear-gradient(
+    background-color: var(--surface-card, #ffffff);
+    background-image: linear-gradient(
       145deg,
       var(--surface-card, #ffffff) 0%,
       rgba(79, 70, 229, 0.02) 100%
@@ -783,20 +788,22 @@ app-skill-gap {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 4px;
+    gap: 6px;
   }
 
   .btn-action {
     font-size: 12px;
     font-weight: 600;
-    min-height: 32px;
-    padding: 4px 12px;
+    min-height: 38px;
+    padding: 6px 14px;
     border-radius: 6px;
     background: rgba(79, 70, 229, 0.08);
     color: #4f46e5;
     border: 1px solid rgba(79, 70, 229, 0.2);
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
     transition: all 0.15s ease;
 
     &:hover {
@@ -893,7 +900,7 @@ app-skill-gap {
       font-size: 13px;
       font-weight: 600;
       color: #4f46e5;
-      min-height: 36px;
+      min-height: 38px;
       display: flex;
       align-items: center;
 
@@ -950,6 +957,8 @@ app-skill-gap {
     align-items: center;
     gap: 12px;
     padding: 12px 14px;
+    min-height: 44px;
+    box-sizing: border-box;
   }
 
   .skill-table-heading {
@@ -1104,9 +1113,11 @@ app-skill-gap {
   }
 
   .inline-link {
+    display: inline-flex;
+    align-items: center;
     font-size: 12px;
     font-weight: 600;
-    min-height: 32px;
+    min-height: 38px;
     color: #4f46e5;
 
     &:hover {
@@ -1752,7 +1763,8 @@ app-skill-gap {
     }
 
     .coverage-summary {
-      background: linear-gradient(145deg, #111827 0%, rgba(79, 70, 229, 0.08) 100%);
+      background-color: #111827;
+      background-image: linear-gradient(145deg, #111827 0%, rgba(79, 70, 229, 0.08) 100%);
     }
 
     .coverage-value strong {
@@ -2318,11 +2330,16 @@ app-skill-gap {
       padding-left: 28px;
     }
 
+    .horizons-stepper {
+      grid-template-columns: 1fr;
+    }
+
     .opportunity-links {
       grid-column: 1;
       grid-row: auto;
       flex-direction: row;
-      gap: 12px;
+      flex-wrap: wrap;
+      gap: 8px 12px;
     }
 
     .project-card {
@@ -2354,6 +2371,34 @@ app-skill-gap {
 
     dd {
       margin-bottom: 8px;
+    }
+  }
+
+  @media (max-width: 360px) {
+    .skill-gap-page {
+      gap: 14px;
+    }
+
+    .panel,
+    .explorer-surface {
+      padding: 14px 10px;
+      border-radius: 10px;
+    }
+
+    .context-bar {
+      padding: 10px 12px;
+    }
+
+    .filters {
+      grid-template-columns: 1fr;
+    }
+
+    .search-filter {
+      grid-column: 1;
+    }
+
+    .insufficient-evidence-panel {
+      padding: 12px 14px;
     }
   }
 }

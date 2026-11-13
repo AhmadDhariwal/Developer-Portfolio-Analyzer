@@ -79,12 +79,17 @@ h2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: start;
   gap: 16px;
+  min-width: 0;
+
+  @media (max-width: 960px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .resource-panel {
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  background: var(--surface-card, #0f172a);
+  background: var(--surface-card);
   min-width: 0;
   overflow: hidden;
   transition:
@@ -104,10 +109,15 @@ h2 {
     padding: 16px 20px;
     cursor: pointer;
     user-select: none;
+    min-height: 48px;
     transition: background 0.15s ease;
 
+    @media (max-width: 480px) {
+      padding: 14px 14px;
+    }
+
     &:hover {
-      background: rgba(255, 255, 255, 0.02);
+      background: var(--surface-subtle);
     }
 
     &::after {
@@ -122,6 +132,7 @@ h2 {
       color: var(--color-primary-text, #818cf8);
       border-radius: 6px;
       background: rgba(99, 102, 241, 0.1);
+      flex-shrink: 0;
       transition: all 0.2s ease;
     }
   }
@@ -136,8 +147,11 @@ h2 {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
   width: 100%;
   margin-right: 10px;
+  min-width: 0;
 }
 
 .panel-title-group {
@@ -168,6 +182,10 @@ h2 {
 
 .panel-body {
   padding: 0 20px 18px;
+
+  @media (max-width: 480px) {
+    padding: 0 14px 14px;
+  }
 }
 
 .resource-item {
@@ -195,13 +213,18 @@ h2 {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    min-width: 0;
   }
 
   .project-title {
     font-size: 15px;
     font-weight: 600;
     color: var(--text-primary);
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .ai-tag {
@@ -212,6 +235,7 @@ h2 {
     border: 1px solid rgba(6, 182, 212, 0.3);
     padding: 2px 8px;
     border-radius: 9999px;
+    white-space: nowrap;
   }
 }
 
@@ -320,6 +344,17 @@ h2 {
   gap: 10px;
   flex-wrap: wrap;
   margin-top: 12px;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    width: 100%;
+
+    .btn-res-link {
+      width: 100%;
+      justify-content: center;
+      min-height: 40px;
+    }
+  }
 }
 
 .btn-res-link {
@@ -508,11 +543,13 @@ p.empty-note {
   outline-offset: 3px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 960px) {
   .resource-grid {
     grid-template-columns: 1fr;
   }
+}
 
+@media (max-width: 768px) {
   .dev-section-header {
     flex-direction: column;
     align-items: stretch;
@@ -520,5 +557,6 @@ p.empty-note {
 
   .browse-courses-cta {
     justify-content: center;
+    min-height: 42px;
   }
 }

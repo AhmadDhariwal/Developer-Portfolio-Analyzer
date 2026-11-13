@@ -3,6 +3,7 @@
 :host {
   display: block;
   min-width: 0;
+  max-width: 100%;
 }
 
 .courses-page {
@@ -10,6 +11,7 @@
   font: 400 14px/1.55 var(--font-sans);
   overflow-wrap: anywhere;
   min-width: 0;
+  max-width: 100%;
 }
 
 :host ::ng-deep {
@@ -28,6 +30,19 @@
   flex-wrap: wrap;
   padding: 2px 0 12px;
   border-bottom: 1px solid var(--border-color);
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: stretch;
+
+    .header-actions {
+      width: 100%;
+      justify-content: flex-start;
+    }
+  }
 }
 
 .header-main-content {
@@ -44,7 +59,11 @@
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: #4f46e5;
+    color: var(--color-primary-text, #4f46e5);
+
+    [data-theme='dark'] & {
+      color: #818cf8;
+    }
 
     &::before {
       content: '';
@@ -102,6 +121,9 @@
   border: 1px solid var(--border-color, #e2e8f0);
   border-radius: 10px;
   margin: 10px 0 12px;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .context-meta {
@@ -109,6 +131,8 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 10px;
+  min-width: 0;
+  max-width: 100%;
 
   .eyebrow {
     margin: 0;
@@ -154,6 +178,12 @@
     background: rgba(16, 185, 129, 0.08);
     border-color: rgba(16, 185, 129, 0.2);
 
+    [data-theme='dark'] & {
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.16);
+      border-color: rgba(16, 185, 129, 0.35);
+    }
+
     &::before {
       content: '';
       width: 5px;
@@ -167,6 +197,12 @@
     color: var(--color-warning-text, #92400e);
     background: rgba(245, 158, 11, 0.08);
     border-color: rgba(245, 158, 11, 0.25);
+
+    [data-theme='dark'] & {
+      color: #fbbf24;
+      background: rgba(245, 158, 11, 0.16);
+      border-color: rgba(245, 158, 11, 0.35);
+    }
 
     &::before {
       content: '';
@@ -188,6 +224,11 @@
     font-weight: 600;
     color: var(--color-primary-text, #4f46e5);
     text-decoration: none;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 6px;
 
     &:hover {
       color: #4338ca;
@@ -206,12 +247,13 @@
   .career-profile-link {
     display: inline-flex;
     align-items: center;
-    min-height: 36px;
-    height: 36px;
+    min-height: 40px;
+    padding: 8px 12px;
     font-weight: 600;
     font-size: 13px;
     color: var(--color-primary-text, #4f46e5);
     text-decoration: none;
+    border-radius: 6px;
 
     &:hover {
       color: #4338ca;
@@ -223,9 +265,8 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    min-height: 36px;
-    height: 36px;
-    padding: 6px 14px;
+    min-height: 40px;
+    padding: 8px 14px;
     border-radius: 8px;
     background: var(--surface-card);
     border: 1px solid var(--border-color);
@@ -476,9 +517,8 @@
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      padding: 4px 10px;
-      min-height: 28px;
-      height: 28px;
+      padding: 6px 12px;
+      min-height: 38px;
       border-radius: 999px;
       background: var(--surface-card);
       border: 1px solid var(--border-color);
@@ -525,26 +565,41 @@
   flex-wrap: wrap;
   gap: 12px;
   margin: 0 0 10px;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    gap: 10px;
+  }
 }
 
 .view-tabs {
   display: inline-flex;
   align-items: center;
   flex-wrap: wrap;
+  min-width: 0;
   max-width: 100%;
   padding: 3px;
   border-radius: 9px;
   background: var(--surface-card, #ffffff);
   border: 1px solid var(--border-color, #e2e8f0);
   gap: 2px;
+  box-sizing: border-box;
+
+  @media (max-width: 640px) {
+    width: 100%;
+    display: flex;
+  }
 
   .tab-btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
-    padding: 6px 14px;
-    min-height: 34px;
-    height: 34px;
+    padding: 8px 14px;
+    min-height: 40px;
+    box-sizing: border-box;
     border-radius: 7px;
     background: transparent;
     border: 0;
@@ -553,6 +608,12 @@
     color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.15s ease;
+
+    @media (max-width: 640px) {
+      flex: 1 1 auto;
+      padding: 8px 10px;
+      font-size: 12px;
+    }
 
     .tab-icon {
       width: 15px;
@@ -600,6 +661,11 @@
   align-items: center;
   gap: 12px;
 
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: space-between;
+  }
+
   .meta-notice {
     font-size: 12px;
     color: var(--text-muted);
@@ -609,9 +675,9 @@
     display: none;
     align-items: center;
     gap: 6px;
-    min-height: 34px;
-    height: 34px;
-    padding: 6px 12px;
+    min-height: 40px;
+    padding: 8px 14px;
+    box-sizing: border-box;
     border-radius: 6px;
     background: var(--surface-card);
     border: 1px solid var(--border-color);
@@ -630,6 +696,12 @@
   }
 }
 
+.discover-section {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
 /* Quick Presets Filter Strip */
 .quick-presets-bar {
   display: flex;
@@ -637,11 +709,18 @@
   flex-wrap: wrap;
   gap: 8px;
   margin: 4px 0 8px;
-  padding: 5px 10px;
+  padding: 6px 10px;
   background: var(--surface-subtle);
   border-radius: 7px;
   border: 1px solid var(--border-color);
   min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+
+  @media (max-width: 640px) {
+    display: block;
+    overflow: hidden;
+  }
 
   .presets-label {
     font-size: 10.5px;
@@ -649,6 +728,12 @@
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--text-muted);
+    flex-shrink: 0;
+
+    @media (max-width: 640px) {
+      display: block;
+      margin-bottom: 6px;
+    }
   }
 
   .presets-scroll {
@@ -657,20 +742,33 @@
     flex-wrap: wrap;
     gap: 6px;
     min-width: 0;
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+
+    @media (max-width: 640px) {
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 4px;
+      scrollbar-width: thin;
+    }
   }
 
   .preset-chip {
     display: inline-flex;
     align-items: center;
-    padding: 4px 10px;
-    min-height: 28px;
-    height: 28px;
-    border-radius: 5px;
+    padding: 6px 12px;
+    min-height: 38px;
+    box-sizing: border-box;
+    border-radius: 6px;
     background: var(--surface-card);
     border: 1px solid var(--border-color);
     font: 500 11.5px/1.4 var(--font-sans);
     color: var(--text-secondary);
     cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
     transition: all 0.15s ease;
 
     &:hover {
@@ -714,10 +812,10 @@
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    padding: 4px 10px;
-    min-height: 28px;
-    height: 28px;
-    border-radius: 5px;
+    padding: 6px 12px;
+    min-height: 36px;
+    box-sizing: border-box;
+    border-radius: 6px;
     background: var(--surface-subtle);
     border: 1px solid var(--border-color);
     color: var(--text-primary);
@@ -739,10 +837,10 @@
   .clear-all-btn {
     display: inline-flex;
     align-items: center;
-    padding: 4px 10px;
-    min-height: 28px;
-    height: 28px;
-    border-radius: 5px;
+    padding: 6px 12px;
+    min-height: 36px;
+    box-sizing: border-box;
+    border-radius: 6px;
     background: var(--surface-card);
     border: 1px solid var(--border-color);
     font-size: 11.5px;
@@ -761,8 +859,18 @@
 /* Skeleton Loading Shimmer */
 .skeleton-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
   gap: 16px;
+  min-width: 0;
+
+  @media (max-width: 640px) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  @media (min-width: 641px) and (max-width: 900px) {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
 }
 
 .skeleton-card {
@@ -857,9 +965,18 @@
 /* Course Grid */
 .course-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
   gap: 16px;
   min-width: 0;
+
+  @media (max-width: 640px) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  @media (min-width: 641px) and (max-width: 900px) {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
 }
 
 /* Load More */
@@ -934,9 +1051,8 @@
     button {
       display: inline-flex;
       align-items: center;
-      padding: 6px 12px;
-      min-height: 34px;
-      height: 34px;
+      padding: 8px 14px;
+      min-height: 40px;
       border-radius: 6px;
       background: var(--surface-card);
       color: var(--text-primary);
@@ -949,8 +1065,8 @@
     a {
       display: inline-flex;
       align-items: center;
-      min-height: 34px;
-      padding: 0 4px;
+      min-height: 40px;
+      padding: 0 6px;
       font-size: 12px;
       font-weight: 600;
       color: var(--text-primary);
@@ -1008,9 +1124,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 6px 16px;
-    min-height: 36px;
-    height: 36px;
+    padding: 8px 16px;
+    min-height: 40px;
     border-radius: 6px;
     background: var(--surface-subtle);
     color: var(--text-primary);
@@ -1188,9 +1303,8 @@
         align-items: center;
         justify-content: center;
         gap: 6px;
-        min-height: 36px;
-        height: 36px;
-        padding: 6px 14px;
+        min-height: 40px;
+        padding: 8px 16px;
         border-radius: 8px;
         font-size: 12px;
         font-weight: 600;
@@ -1415,8 +1529,11 @@
   padding: 0;
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  width: min(480px, calc(100vw - 28px));
-  max-height: calc(100dvh - 28px);
+  width: min(480px, calc(100vw - 24px));
+  max-height: min(90dvh, 680px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   box-sizing: border-box;
 
   &::backdrop {
@@ -1425,6 +1542,7 @@
 
   .dialog-content {
     padding: 16px;
+    box-sizing: border-box;
 
     .section-header,
     .dialog-header {
@@ -1443,13 +1561,13 @@
       .close-btn {
         display: inline-flex;
         align-items: center;
-        padding: 6px 12px;
-        min-height: 34px;
-        height: 34px;
+        padding: 8px 14px;
+        min-height: 40px;
+        box-sizing: border-box;
         border-radius: 6px;
         background: var(--surface-subtle);
         border: 1px solid var(--border-color);
-        font-size: 11.5px;
+        font-size: 12px;
         font-weight: 600;
         color: var(--text-primary);
         cursor: pointer;
