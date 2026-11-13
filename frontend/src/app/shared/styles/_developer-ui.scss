@@ -39,14 +39,14 @@
   font-family: var(--dev-font);
   font-size: var(--dev-text-body);
   line-height: 1.5;
-  @media (max-width: 480px) {
-    --dev-search-width: 100%;
-  }
+
   @media (max-width: 768px) {
+    --dev-search-width: 100%;
     --dev-workspace-padding: 14px;
     --dev-section-gap: 16px;
   }
 }
+
 @mixin page-title {
   margin: 0;
   font-family: var(--font-heading);
@@ -56,6 +56,7 @@
   letter-spacing: -0.02em;
   color: var(--text-primary);
 }
+
 @mixin section-title {
   margin: 0 0 4px;
   font-family: var(--font-heading);
@@ -65,17 +66,20 @@
   letter-spacing: -0.015em;
   color: var(--text-primary);
 }
+
 @mixin metric-strip {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   padding-top: 16px;
   border-top: 1px solid var(--border-color);
   gap: 4px 16px;
+
   @media (max-width: 768px) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
   }
 }
+
 @mixin metric-item {
   min-width: 0;
   display: grid;
@@ -84,16 +88,19 @@
   grid-template-rows: subgrid;
   padding-right: 16px;
   border-right: 1px solid var(--border-color);
+
   &:last-child {
     border-right: 0;
     padding-right: 0;
   }
+
   @media (max-width: 768px) {
     &:nth-child(2) {
       border-right: 0;
     }
   }
 }
+
 @mixin inventory-surface {
   min-width: 0;
   background: var(--surface-card);
@@ -101,6 +108,7 @@
   border-radius: var(--dev-radius-surface, 8px);
   padding: 16px;
 }
+
 @mixin utilities {
   .dev-page {
     display: grid;
@@ -108,6 +116,7 @@
     width: 100%;
     min-width: 0;
   }
+
   .dev-page-header {
     display: flex;
     flex-wrap: wrap;
@@ -115,15 +124,19 @@
     justify-content: space-between;
     gap: 16px;
   }
+
   .dev-page-title {
     @include page-title;
   }
+
   .dev-section {
     min-width: 0;
   }
+
   .dev-section-title {
     @include section-title;
   }
+
   .dev-section-header {
     display: flex;
     flex-wrap: wrap;
@@ -132,6 +145,7 @@
     gap: 12px;
     margin-bottom: 12px;
   }
+
   .dev-description {
     max-width: var(--dev-reading-width);
     margin: 4px 0 0;
@@ -139,10 +153,12 @@
     line-height: 1.55;
     color: var(--text-secondary);
   }
+
   .dev-meta {
     font-size: 12px;
     color: var(--text-muted);
   }
+
   .dev-eyebrow {
     font-size: 12px;
     font-weight: 600;
@@ -150,28 +166,34 @@
     letter-spacing: 0.05em;
     color: var(--text-muted);
   }
+
   .dev-metric-strip {
     @include metric-strip;
     font-variant-numeric: tabular-nums;
   }
+
   .dev-metric-item {
     @include metric-item;
   }
+
   .dev-metric-value {
     font-size: 24px;
     font-weight: 700;
     line-height: 1.2;
   }
+
   .dev-inventory {
     @include inventory-surface;
     overflow-x: auto;
   }
+
   .dev-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 13px;
     font-variant-numeric: tabular-nums;
   }
+
   .dev-table th {
     text-align: left;
     font-size: 11px;
@@ -181,31 +203,38 @@
     background: var(--surface-secondary);
     color: var(--text-muted);
   }
+
   .dev-table th,
   .dev-table td {
     padding: 12px 16px;
     border-bottom: 1px solid var(--border-color);
   }
+
   .dev-table tbody tr:hover {
     background: var(--surface-hover);
   }
+
   .dev-divided-list {
     margin: 0;
     padding: 0;
     list-style: none;
   }
+
   .dev-divided-list > li {
     padding-block: 12px;
     border-bottom: 1px solid var(--border-color);
   }
+
   .dev-divider {
     border: 0;
     border-top: 1px solid var(--border-color);
     margin: 0;
   }
+
   .dev-disclosure {
     border-bottom: 1px solid var(--border-color);
   }
+
   .dev-disclosure > summary {
     cursor: pointer;
     padding-block: 12px;
@@ -214,6 +243,7 @@
     min-height: 44px;
     box-sizing: border-box;
   }
+
   .dev-disclosure > summary:focus-visible {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;

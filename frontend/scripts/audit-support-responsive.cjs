@@ -69,7 +69,10 @@ const server = http.createServer((req, res) => {
   fs.createReadStream(file).pipe(res);
 });
 
-async function setupContextAndPage(browser, { width, height, theme = 'dark', activeTickets = populatedTickets }) {
+async function setupContextAndPage(
+  browser,
+  { width, height, theme = 'dark', activeTickets = populatedTickets },
+) {
   const colorScheme = theme === 'system' ? 'dark' : theme;
   const context = await browser.newContext({
     viewport: { width, height },
@@ -77,27 +80,30 @@ async function setupContextAndPage(browser, { width, height, theme = 'dark', act
     reducedMotion: 'reduce',
   });
 
-  await context.addInitScript(({ themeVal }) => {
-    const payload = btoa(
-      JSON.stringify({
-        exp: Date.now() / 1000 + 36000,
-        iss: 'devinsight-api',
-        aud: 'devinsight-web',
-      }),
-    );
-    localStorage.setItem('token', `fixture.${payload}.fixture`);
-    localStorage.setItem(
-      'user',
-      JSON.stringify({
-        _id: 'user-dev-001',
-        role: 'developer',
-        name: 'Alex Rivera',
-        email: 'alex.rivera@example.com',
-        activeGithubUsername: 'arivera-dev',
-      }),
-    );
-    localStorage.setItem('devinsight_theme', themeVal);
-  }, { themeVal: theme });
+  await context.addInitScript(
+    ({ themeVal }) => {
+      const payload = btoa(
+        JSON.stringify({
+          exp: Date.now() / 1000 + 36000,
+          iss: 'devinsight-api',
+          aud: 'devinsight-web',
+        }),
+      );
+      localStorage.setItem('token', `fixture.${payload}.fixture`);
+      localStorage.setItem(
+        'user',
+        JSON.stringify({
+          _id: 'user-dev-001',
+          role: 'developer',
+          name: 'Alex Rivera',
+          email: 'alex.rivera@example.com',
+          activeGithubUsername: 'arivera-dev',
+        }),
+      );
+      localStorage.setItem('devinsight_theme', themeVal);
+    },
+    { themeVal: theme },
+  );
 
   const page = await context.newPage();
 
@@ -220,6 +226,7 @@ async function runAudit() {
   const matrixResults = [];
   const defects = [];
   const landscapeResults = [];
+  const scenarioResults = {};
 
   try {
     // ── 1. Main Matrix: 12 Viewports x 3 Themes = 36 Checks ────────
@@ -324,7 +331,6 @@ async function runAudit() {
 
     // ── 3. Dedicated Scenarios ────────────────────────────────────
     console.log('\n  Checking Dedicated Scenarios...');
-    const scenarioResults = {};
 
     // Scenario A: Empty Requests State (375px)
     {
@@ -373,7 +379,9 @@ async function runAudit() {
       const shotName = 'scenario-longtext-support-320.png';
       await page.screenshot({ path: path.join(outputDir, shotName), fullPage: true });
       const passed = !metrics.hasOverflow;
-      console.log(passed ? 'PASS' : `FAIL (overflow ${metrics.scrollWidth - metrics.clientWidth}px)`);
+      console.log(
+        passed ? 'PASS' : `FAIL (overflow ${metrics.scrollWidth - metrics.clientWidth}px)`,
+      );
       scenarioResults.longTextStress = { ...metrics, passed, screenshot: shotName };
       await context.close();
     }
@@ -398,7 +406,11 @@ async function runAudit() {
       const shotName = 'scenario-error-banner-390.png';
       await page.screenshot({ path: path.join(outputDir, shotName) });
       console.log(isErrorVisible ? 'PASS' : 'FAIL');
-      scenarioResults.errorFeedback = { passed: isErrorVisible, isErrorVisible, screenshot: shotName };
+      scenarioResults.errorFeedback = {
+        passed: isErrorVisible,
+        isErrorVisible,
+        screenshot: shotName,
+      };
       await context.close();
     }
 
@@ -427,13 +439,21 @@ async function runAudit() {
         const buttons = footer ? Array.from(footer.querySelectorAll('button')) : [];
         const buttonBoxes = buttons.map((b) => {
           const r = b.getBoundingClientRect();
-          return { text: b.textContent.trim(), width: Math.round(r.width), height: Math.round(r.height) };
+          return {
+            text: b.textContent.trim(),
+            width: Math.round(r.width),
+            height: Math.round(r.height),
+          };
         });
         const closeBtn = modal.querySelector('.close-btn');
         const closeRect = closeBtn ? closeBtn.getBoundingClientRect() : null;
         return {
           found: true,
-          modalRect: { width: Math.round(rect.width), left: Math.round(rect.left), right: Math.round(rect.right) },
+          modalRect: {
+            width: Math.round(rect.width),
+            left: Math.round(rect.left),
+            right: Math.round(rect.right),
+          },
           buttonBoxes,
           closeBtnWithinViewport: closeRect ? closeRect.right <= window.innerWidth : false,
         };
@@ -473,7 +493,11 @@ async function runAudit() {
       const shotName = 'scenario-confirm-dialog-320.png';
       await page.screenshot({ path: path.join(outputDir, shotName) });
       console.log(confirmMetrics.dialogVisible ? 'PASS' : 'FAIL');
-      scenarioResults.confirmDialog = { ...confirmMetrics, passed: confirmMetrics.dialogVisible, screenshot: shotName };
+      scenarioResults.confirmDialog = {
+        ...confirmMetrics,
+        passed: confirmMetrics.dialogVisible,
+        screenshot: shotName,
+      };
       await context.close();
     }
 
@@ -558,7 +582,9 @@ async function runAudit() {
 
       console.log(`    Touch Target Defects (< 32px height): ${touchDefects.length} detected`);
       touchDefects.forEach((d) =>
-        console.log(`      * [${d.className}] "${d.text}" height = ${d.height}px (expected >= 32px)`),
+        console.log(
+          `      * [${d.className}] "${d.text}" height = ${d.height}px (expected >= 32px)`,
+        ),
       );
 
       scenarioResults.touchTargetAudit = {
@@ -594,7 +620,10 @@ async function runAudit() {
             gridWidth: Math.round(grid.getBoundingClientRect().width),
             cardCount: cards.length,
             cardWidths: cards.map((c) => Math.round(c.getBoundingClientRect().width)),
-            columnsCount: Math.round(grid.getBoundingClientRect().width / (cards[0] ? cards[0].getBoundingClientRect().width : 1)),
+            columnsCount: Math.round(
+              grid.getBoundingClientRect().width /
+                (cards[0] ? cards[0].getBoundingClientRect().width : 1),
+            ),
           };
         });
 
@@ -642,4 +671,3 @@ runAudit().catch((err) => {
   console.error('[audit-support] Fatal error:', err);
   process.exit(1);
 });
-

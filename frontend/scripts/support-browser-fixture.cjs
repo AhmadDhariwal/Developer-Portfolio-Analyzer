@@ -104,8 +104,7 @@ const populatedTickets = [
     createdAt: new Date(Date.now() - 86400000 * 10).toISOString(),
     updatedAt: new Date(Date.now() - 86400000 * 8).toISOString(),
     sourcePage: 'http://localhost:4200/app/scenario-simulator',
-    browserInfo:
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:132.0) Gecko/20100101 Firefox/132.0',
+    browserInfo: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:132.0) Gecko/20100101 Firefox/132.0',
     replies: [],
   },
 ];
@@ -117,7 +116,8 @@ const longTextTickets = [
     _id: '672b9999longunbrokenidstringthatcouldcauseoverflowifnotprotectedbyoverflowwrapanywhere9999',
     userId: 'user-dev-longtext-001',
     name: 'Supercalifragilisticexpialidocious_Developer_With_Extremely_Long_Unbroken_Name_String',
-    email: 'superlongdeveloperemailaddresswithoutspacesthatexceedsnormalcolumnboundaries@domainexamplecompanycorp.org',
+    email:
+      'superlongdeveloperemailaddresswithoutspacesthatexceedsnormalcolumnboundaries@domainexamplecompanycorp.org',
     category: 'bug',
     priority: 'urgent',
     subject:
@@ -150,4 +150,3 @@ module.exports = {
   emptyTickets,
   longTextTickets,
 };
-
