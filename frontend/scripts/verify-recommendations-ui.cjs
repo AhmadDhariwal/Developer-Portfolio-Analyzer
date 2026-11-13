@@ -176,7 +176,7 @@ const section = (page, id) => page.locator(`section[aria-labelledby="${id}"]`);
   const browser = await chromium.launch({
     headless: true,
     executablePath:
-      'C:/Users/ahmad.hassan/AppData/Local/ms-playwright/chromium-1234/chrome-win64/chrome.exe',
+      process.env.ACCEPTANCE_CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe',
   });
   const results = {
     synthetic: true,

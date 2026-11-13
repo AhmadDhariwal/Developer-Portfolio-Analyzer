@@ -40,9 +40,9 @@ label {
     width: 100%;
     box-sizing: border-box;
     font: 400 12.5px/1.4 var(--font-sans);
-    min-height: 36px;
-    height: 36px;
-    padding: 6px 10px;
+    min-height: 40px;
+    height: 40px;
+    padding: 8px 12px;
     border: 1px solid var(--border-color);
     border-radius: 6px;
     background: var(--surface-subtle);
@@ -65,9 +65,9 @@ label {
   button {
     flex-shrink: 0;
     box-sizing: border-box;
-    padding: 6px 10px;
-    min-height: 36px;
-    height: 36px;
+    padding: 8px 14px;
+    min-height: 40px;
+    height: 40px;
     border-radius: 6px;
     background: var(--surface-subtle);
     border: 1px solid var(--border-color);
@@ -87,9 +87,9 @@ label {
 select {
   box-sizing: border-box;
   font: 500 12.5px/1.4 var(--font-sans);
-  min-height: 36px;
-  height: 36px;
-  padding: 6px 10px;
+  min-height: 40px;
+  height: 40px;
+  padding: 8px 12px;
   border: 1px solid var(--border-color);
   border-radius: 6px;
   background: var(--surface-subtle);
@@ -116,9 +116,9 @@ select {
   align-items: center;
 
   button {
-    min-height: 36px;
-    height: 36px;
-    padding: 6px 14px;
+    min-height: 40px;
+    height: 40px;
+    padding: 8px 16px;
     border-radius: 6px;
     font: 600 12px/1.4 var(--font-sans);
     cursor: pointer;
@@ -183,5 +183,15 @@ select {
   .search-field,
   .filter-actions {
     grid-column: 1;
+  }
+
+  .filter-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+
+    button {
+      width: 100%;
+    }
   }
 }

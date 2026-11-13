@@ -12,6 +12,10 @@
   overflow-wrap: anywhere;
   display: grid;
   gap: 28px;
+  max-width: 1600px;
+  margin-inline: auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 h1 {
@@ -68,6 +72,11 @@ p {
   max-width: 72ch;
   font-size: 15px;
   line-height: 1.6;
+}
+
+:host-context([data-theme='dark']) .description,
+:host-context(.dark) .description {
+  color: #94a3b8;
 }
 
 .context-line,
@@ -935,11 +944,15 @@ p {
   border: 0;
   background: none;
   color: #4f46e5;
-  padding: 4px 8px;
+  padding: 8px 12px;
+  min-height: 38px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.2s ease;
 
   &:hover {
@@ -1010,8 +1023,10 @@ p {
 }
 
 .task-check {
-  min-height: 24px;
-  width: 24px;
+  min-height: 32px;
+  min-width: 32px;
+  width: 32px;
+  height: 32px;
   padding: 0;
   flex-shrink: 0;
   margin-top: 2px;
@@ -1022,9 +1037,19 @@ p {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
+  position: relative;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+  // Expand touch target area for mobile/touch accessibility (WCAG 2.5.5 / 2.5.8)
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    min-width: 44px;
+    min-height: 44px;
+  }
 
   &:hover:not(:disabled) {
     border-color: #4f46e5;
@@ -1165,9 +1190,10 @@ p {
   gap: 8px;
 
   button {
-    padding: 6px 12px;
-    min-height: 34px;
-    font-size: 12px;
+    padding: 8px 14px;
+    min-height: 40px;
+    min-width: 52px;
+    font-size: 13px;
     border-radius: 6px;
   }
 }
@@ -1187,6 +1213,9 @@ p {
     color: var(--text-primary, #0f172a);
     user-select: none;
     outline: none;
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
 
     &:hover {
       color: #4f46e5;
@@ -1558,6 +1587,10 @@ p {
     font-weight: 700;
     font-size: 14px;
     user-select: none;
+    display: inline-flex;
+    align-items: center;
+    min-height: 38px;
+    padding-block: 4px;
 
     &:hover {
       color: #4f46e5;
@@ -1620,6 +1653,29 @@ p {
 :host-context([data-theme='dark']) .insights-grid dt,
 :host-context(.dark) .insights-grid dt {
   color: #dee5ff;
+}
+
+:host-context([data-theme='dark']) .section-heading p,
+:host-context(.dark) .section-heading p,
+:host-context([data-theme='dark']) .sprint-dates,
+:host-context(.dark) .sprint-dates,
+:host-context([data-theme='dark']) .sprint-footer,
+:host-context(.dark) .sprint-footer,
+:host-context([data-theme='dark']) .activity-day,
+:host-context(.dark) .activity-day,
+:host-context([data-theme='dark']) .activity-unavailable,
+:host-context(.dark) .activity-unavailable,
+:host-context([data-theme='dark']) .task-date,
+:host-context(.dark) .task-date,
+:host-context([data-theme='dark']) .task-content > p,
+:host-context(.dark) .task-content > p,
+:host-context([data-theme='dark']) .history-body p,
+:host-context(.dark) .history-body p,
+:host-context([data-theme='dark']) .meta,
+:host-context(.dark) .meta,
+:host-context([data-theme='dark']) .loading-state,
+:host-context(.dark) .loading-state {
+  color: #94a3b8;
 }
 
 /* ==========================================================================
@@ -1742,24 +1798,49 @@ p {
   }
 }
 
+@media (max-width: 820px) {
+  .task-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    .search-field {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .insights-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+
 @media (max-width: 600px) {
   .header-actions {
     width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   .header-actions button {
-    font-size: 12px;
-    padding-inline: 12px;
-    flex: 1;
+    font-size: 13px;
+    padding: 8px 12px;
+    min-height: 42px;
+    flex: 1 1 120px;
+
+    &.primary {
+      flex: 1 1 100%;
+      order: -1;
+    }
   }
 
   .surface {
-    padding: 18px;
+    padding: 16px;
   }
 
   .overview-content {
     flex-direction: column;
     text-align: center;
+    gap: 16px;
   }
 
   .overview-copy {
@@ -1768,6 +1849,11 @@ p {
 
   .overview-actions {
     justify-content: center;
+    width: 100%;
+
+    button {
+      flex: 1;
+    }
   }
 
   .sprint-footer {
@@ -1778,10 +1864,12 @@ p {
 
   .rhythm-panel {
     display: flex;
+    flex-direction: column;
   }
 
   .activity-chart {
     width: 100%;
+    overflow-x: auto;
   }
 
   .metric-grid {
@@ -1794,38 +1882,52 @@ p {
   }
 
   .workspace-nav {
-    gap: 16px;
-    justify-content: space-between;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    border-bottom: 1px solid var(--border-color, rgba(148, 163, 184, 0.25));
+    margin: 12px 0 24px;
+    padding-bottom: 4px;
 
     button {
       font-size: 13px;
       gap: 6px;
-      padding-inline: 0;
+      padding: 10px 4px;
+      white-space: nowrap;
     }
   }
 
   .task-filters {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    padding: 16px;
+    padding: 14px;
   }
 
   .task-row {
     flex-wrap: wrap;
-    padding: 18px 16px;
+    padding: 16px;
     gap: 12px;
   }
 
   .task-actions {
     margin-left: 36px;
+    width: calc(100% - 36px);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   .task-content {
-    flex-basis: calc(100% - 40px);
+    flex-basis: calc(100% - 44px);
   }
 
   .restore-panel {
     flex-direction: column;
     align-items: flex-start;
+    gap: 12px;
+
+    button {
+      width: 100%;
+    }
   }
 
   .history-entry summary {
@@ -1837,13 +1939,67 @@ p {
     }
   }
 
-  .insights-grid {
-    grid-template-columns: 1fr;
-    gap: 14px;
+  .settings-form,
+  .new-sprint-form,
+  .date-fields {
+    flex-direction: column;
+    align-items: stretch;
+
+    label {
+      width: 100%;
+      min-width: 0;
+      max-width: none;
+    }
+
+    button {
+      width: 100%;
+      min-height: 44px;
+    }
   }
 
   .loading-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 420px) {
+  .metric-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .metric-tile {
+    flex-direction: row;
+    align-items: center;
+    padding: 14px 16px;
+    gap: 14px;
+
+    .metric-icon {
+      margin-bottom: 0;
+    }
+  }
+
+  .task-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .task-actions {
+    margin-left: 0;
+    width: 100%;
+
+    button {
+      flex: 1 1 100%;
+      width: 100%;
+    }
+  }
+
+  .header-actions button {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .loading-grid {
+    grid-template-columns: 1fr;
   }
 }
 

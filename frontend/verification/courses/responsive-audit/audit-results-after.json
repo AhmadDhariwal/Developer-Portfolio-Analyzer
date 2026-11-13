@@ -1,0 +1,3651 @@
+{
+  "phase": "after",
+  "timestamp": "2026-11-12T19:46:11.296Z",
+  "viewportsTested": 12,
+  "themesTested": 3,
+  "matrixResults": [
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "width": 320,
+      "height": 640,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "offenders": [],
+      "metricsCols": 1,
+      "courseGridCols": 1,
+      "firstCardWidth": 292,
+      "totalSmallTargets": 40,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "dark-mobile-320-full.png",
+        "fold": "dark-mobile-320-fold.png"
+      }
+    },
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "width": 320,
+      "height": 640,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "offenders": [],
+      "metricsCols": 1,
+      "courseGridCols": 1,
+      "firstCardWidth": 292,
+      "totalSmallTargets": 40,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "light-mobile-320-full.png",
+        "fold": "light-mobile-320-fold.png"
+      }
+    },
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "width": 320,
+      "height": 640,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "offenders": [],
+      "metricsCols": 1,
+      "courseGridCols": 1,
+      "firstCardWidth": 292,
+      "totalSmallTargets": 40,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "system-mobile-320-full.png",
+        "fold": "system-mobile-320-fold.png"
+      }
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "width": 375,
+      "height": 667,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "offenders": [],
+      "metricsCols": 1,
+      "courseGridCols": 1,
+      "firstCardWidth": 347,
+      "totalSmallTargets": 40,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "dark-mobile-375-full.png",
+        "fold": "dark-mobile-375-fold.png"
+      }
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "width": 375,
+      "height": 667,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "offenders": [],
+      "metricsCols": 1,
+      "courseGridCols": 1,
+      "firstCardWidth": 347,
+      "totalSmallTargets": 40,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "light-mobile-375-full.png",
+        "fold": "light-mobile-375-fold.png"
+      }
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "width": 375,
+      "height": 667,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "offenders": [],
+      "metricsCols": 1,
+      "courseGridCols": 1,
+      "firstCardWidth": 347,
+      "totalSmallTargets": 40,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "system-mobile-375-full.png",
+        "fold": "system-mobile-375-fold.png"
+      }
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "width": 390,
+      "height": 844,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "offenders": [],
+      "metricsCols": 1,
+      "courseGridCols": 1,
+      "firstCardWidth": 362,
+      "totalSmallTargets": 40,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "dark-mobile-390-full.png",
+        "fold": "dark-mobile-390-fold.png"
+      }
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "offenders": [],
+      "metricsCols": 1,
+      "courseGridCols": 1,
+      "firstCardWidth": 362,
+      "totalSmallTargets": 40,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "light-mobile-390-full.png",
+        "fold": "light-mobile-390-fold.png"
+      }
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "width": 390,
+      "height": 844,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "offenders": [],
+      "metricsCols": 1,
+      "courseGridCols": 1,
+      "firstCardWidth": 362,
+      "totalSmallTargets": 40,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "system-mobile-390-full.png",
+        "fold": "system-mobile-390-fold.png"
+      }
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "width": 430,
+      "height": 932,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "offenders": [],
+      "metricsCols": 1,
+      "courseGridCols": 1,
+      "firstCardWidth": 402,
+      "totalSmallTargets": 41,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "dark-mobile-430-full.png",
+        "fold": "dark-mobile-430-fold.png"
+      }
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "width": 430,
+      "height": 932,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "offenders": [],
+      "metricsCols": 1,
+      "courseGridCols": 1,
+      "firstCardWidth": 402,
+      "totalSmallTargets": 41,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "light-mobile-430-full.png",
+        "fold": "light-mobile-430-fold.png"
+      }
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "width": 430,
+      "height": 932,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "offenders": [],
+      "metricsCols": 1,
+      "courseGridCols": 1,
+      "firstCardWidth": 402,
+      "totalSmallTargets": 41,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "system-mobile-430-full.png",
+        "fold": "system-mobile-430-fold.png"
+      }
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "width": 768,
+      "height": 1024,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "offenders": [],
+      "metricsCols": 2,
+      "courseGridCols": 2,
+      "firstCardWidth": 362,
+      "totalSmallTargets": 41,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "dark-tablet-768-full.png",
+        "fold": "dark-tablet-768-fold.png"
+      }
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "width": 768,
+      "height": 1024,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "offenders": [],
+      "metricsCols": 2,
+      "courseGridCols": 2,
+      "firstCardWidth": 362,
+      "totalSmallTargets": 41,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "light-tablet-768-full.png",
+        "fold": "light-tablet-768-fold.png"
+      }
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "width": 768,
+      "height": 1024,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "offenders": [],
+      "metricsCols": 2,
+      "courseGridCols": 2,
+      "firstCardWidth": 362,
+      "totalSmallTargets": 41,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "system-tablet-768-full.png",
+        "fold": "system-tablet-768-fold.png"
+      }
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "width": 820,
+      "height": 1180,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "offenders": [],
+      "metricsCols": 2,
+      "courseGridCols": 2,
+      "firstCardWidth": 248,
+      "totalSmallTargets": 41,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "dark-tablet-820-full.png",
+        "fold": "dark-tablet-820-fold.png"
+      }
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "width": 820,
+      "height": 1180,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "offenders": [],
+      "metricsCols": 2,
+      "courseGridCols": 2,
+      "firstCardWidth": 248,
+      "totalSmallTargets": 41,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "light-tablet-820-full.png",
+        "fold": "light-tablet-820-fold.png"
+      }
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "width": 820,
+      "height": 1180,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "offenders": [],
+      "metricsCols": 2,
+      "courseGridCols": 2,
+      "firstCardWidth": 248,
+      "totalSmallTargets": 41,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "system-tablet-820-full.png",
+        "fold": "system-tablet-820-fold.png"
+      }
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "width": 1024,
+      "height": 768,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "offenders": [],
+      "metricsCols": 2,
+      "courseGridCols": 2,
+      "firstCardWidth": 350,
+      "totalSmallTargets": 41,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "dark-tablet-1024-full.png",
+        "fold": "dark-tablet-1024-fold.png"
+      }
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "width": 1024,
+      "height": 768,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "offenders": [],
+      "metricsCols": 2,
+      "courseGridCols": 2,
+      "firstCardWidth": 350,
+      "totalSmallTargets": 41,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "light-tablet-1024-full.png",
+        "fold": "light-tablet-1024-fold.png"
+      }
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "width": 1024,
+      "height": 768,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "offenders": [],
+      "metricsCols": 2,
+      "courseGridCols": 2,
+      "firstCardWidth": 350,
+      "totalSmallTargets": 41,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "system-tablet-1024-full.png",
+        "fold": "system-tablet-1024-fold.png"
+      }
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "width": 1280,
+      "height": 800,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "offenders": [],
+      "metricsCols": 4,
+      "courseGridCols": 3,
+      "firstCardWidth": 313,
+      "totalSmallTargets": 41,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "dark-laptop-1280-full.png",
+        "fold": "dark-laptop-1280-fold.png"
+      }
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "width": 1280,
+      "height": 800,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "offenders": [],
+      "metricsCols": 4,
+      "courseGridCols": 3,
+      "firstCardWidth": 313,
+      "totalSmallTargets": 41,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "light-laptop-1280-full.png",
+        "fold": "light-laptop-1280-fold.png"
+      }
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "width": 1280,
+      "height": 800,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "offenders": [],
+      "metricsCols": 4,
+      "courseGridCols": 3,
+      "firstCardWidth": 313,
+      "totalSmallTargets": 41,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "system-laptop-1280-full.png",
+        "fold": "system-laptop-1280-fold.png"
+      }
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "width": 1366,
+      "height": 768,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 1366,
+      "clientWidth": 1366,
+      "offenders": [],
+      "metricsCols": 4,
+      "courseGridCols": 3,
+      "firstCardWidth": 342,
+      "totalSmallTargets": 41,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "dark-laptop-1366-full.png",
+        "fold": "dark-laptop-1366-fold.png"
+      }
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "width": 1366,
+      "height": 768,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 1366,
+      "clientWidth": 1366,
+      "offenders": [],
+      "metricsCols": 4,
+      "courseGridCols": 3,
+      "firstCardWidth": 342,
+      "totalSmallTargets": 41,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "light-laptop-1366-full.png",
+        "fold": "light-laptop-1366-fold.png"
+      }
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "width": 1366,
+      "height": 768,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 1366,
+      "clientWidth": 1366,
+      "offenders": [],
+      "metricsCols": 4,
+      "courseGridCols": 3,
+      "firstCardWidth": 342,
+      "totalSmallTargets": 41,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "system-laptop-1366-full.png",
+        "fold": "system-laptop-1366-fold.png"
+      }
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "width": 1440,
+      "height": 900,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": [],
+      "metricsCols": 4,
+      "courseGridCols": 3,
+      "firstCardWidth": 367,
+      "totalSmallTargets": 41,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "dark-desktop-1440-full.png",
+        "fold": "dark-desktop-1440-fold.png"
+      }
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "width": 1440,
+      "height": 900,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": [],
+      "metricsCols": 4,
+      "courseGridCols": 3,
+      "firstCardWidth": 367,
+      "totalSmallTargets": 41,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "light-desktop-1440-full.png",
+        "fold": "light-desktop-1440-fold.png"
+      }
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "width": 1440,
+      "height": 900,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": [],
+      "metricsCols": 4,
+      "courseGridCols": 3,
+      "firstCardWidth": 367,
+      "totalSmallTargets": 41,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "system-desktop-1440-full.png",
+        "fold": "system-desktop-1440-fold.png"
+      }
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "width": 1920,
+      "height": 1080,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "offenders": [],
+      "metricsCols": 4,
+      "courseGridCols": 5,
+      "firstCardWidth": 310,
+      "totalSmallTargets": 41,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "dark-desktop-1920-full.png",
+        "fold": "dark-desktop-1920-fold.png"
+      }
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "width": 1920,
+      "height": 1080,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "offenders": [],
+      "metricsCols": 4,
+      "courseGridCols": 5,
+      "firstCardWidth": 310,
+      "totalSmallTargets": 41,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "light-desktop-1920-full.png",
+        "fold": "light-desktop-1920-fold.png"
+      }
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "width": 1920,
+      "height": 1080,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "offenders": [],
+      "metricsCols": 4,
+      "courseGridCols": 5,
+      "firstCardWidth": 310,
+      "totalSmallTargets": 41,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "system-desktop-1920-full.png",
+        "fold": "system-desktop-1920-fold.png"
+      }
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "width": 2560,
+      "height": 1440,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 2560,
+      "clientWidth": 2560,
+      "offenders": [],
+      "metricsCols": 4,
+      "courseGridCols": 7,
+      "firstCardWidth": 308,
+      "totalSmallTargets": 41,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "dark-large-2560-full.png",
+        "fold": "dark-large-2560-fold.png"
+      }
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "width": 2560,
+      "height": 1440,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 2560,
+      "clientWidth": 2560,
+      "offenders": [],
+      "metricsCols": 4,
+      "courseGridCols": 7,
+      "firstCardWidth": 308,
+      "totalSmallTargets": 41,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "light-large-2560-full.png",
+        "fold": "light-large-2560-fold.png"
+      }
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "width": 2560,
+      "height": 1440,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 2560,
+      "clientWidth": 2560,
+      "offenders": [],
+      "metricsCols": 4,
+      "courseGridCols": 7,
+      "firstCardWidth": 308,
+      "totalSmallTargets": 41,
+      "smallTargets": [
+        {
+          "text": "All Courses",
+          "tag": "BUTTON",
+          "className": "preset-chip active",
+          "width": 89,
+          "height": 38
+        },
+        {
+          "text": "YouTube (Free)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 108,
+          "height": 38
+        },
+        {
+          "text": "Udemy",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 64,
+          "height": 38
+        },
+        {
+          "text": "Coursera",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 76,
+          "height": 38
+        },
+        {
+          "text": "Quick (< 2h)",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 92,
+          "height": 38
+        },
+        {
+          "text": "Advanced",
+          "tag": "BUTTON",
+          "className": "preset-chip",
+          "width": 79,
+          "height": 38
+        },
+        {
+          "text": "#SQL",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 60,
+          "height": 38
+        },
+        {
+          "text": "#Python",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 78,
+          "height": 38
+        },
+        {
+          "text": "#Django",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 77,
+          "height": 38
+        },
+        {
+          "text": "#APIs",
+          "tag": "BUTTON",
+          "className": "topic-chip",
+          "width": 62,
+          "height": 38
+        }
+      ],
+      "pageErrors": [],
+      "screenshots": {
+        "full": "system-large-2560-full.png",
+        "fold": "system-large-2560-fold.png"
+      }
+    }
+  ],
+  "stateChecks": {
+    "for_you_320": {
+      "viewportWidth": 320,
+      "hasOverflow": false,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "bannerVisible": true,
+      "bridgeVisible": true,
+      "pills": 1,
+      "screenshot": "for-you-view-320px.png"
+    },
+    "for_you_375": {
+      "viewportWidth": 375,
+      "hasOverflow": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "bannerVisible": true,
+      "bridgeVisible": true,
+      "pills": 1,
+      "screenshot": "for-you-view-375px.png"
+    },
+    "for_you_768": {
+      "viewportWidth": 768,
+      "hasOverflow": false,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "bannerVisible": true,
+      "bridgeVisible": true,
+      "pills": 1,
+      "screenshot": "for-you-view-768px.png"
+    },
+    "for_you_1440": {
+      "viewportWidth": 1440,
+      "hasOverflow": false,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "bannerVisible": true,
+      "bridgeVisible": true,
+      "pills": 1,
+      "screenshot": "for-you-view-1440px.png"
+    },
+    "my_learning_320": {
+      "viewportWidth": 320,
+      "hasOverflow": false,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "trackerVisible": true,
+      "tabsVisible": true,
+      "savedCards": 2,
+      "screenshot": "my-learning-view-320px.png"
+    },
+    "my_learning_375": {
+      "viewportWidth": 375,
+      "hasOverflow": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "trackerVisible": true,
+      "tabsVisible": true,
+      "savedCards": 2,
+      "screenshot": "my-learning-view-375px.png"
+    },
+    "my_learning_768": {
+      "viewportWidth": 768,
+      "hasOverflow": false,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "trackerVisible": true,
+      "tabsVisible": true,
+      "savedCards": 2,
+      "screenshot": "my-learning-view-768px.png"
+    },
+    "my_learning_1440": {
+      "viewportWidth": 1440,
+      "hasOverflow": false,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "trackerVisible": true,
+      "tabsVisible": true,
+      "savedCards": 2,
+      "screenshot": "my-learning-view-1440px.png"
+    },
+    "filter_dialog_320": {
+      "viewportWidth": 320,
+      "isOpen": true,
+      "rect": {
+        "width": 286,
+        "height": 562
+      },
+      "winH": 640,
+      "winW": 320,
+      "overflowsHeight": false,
+      "hasScrollbar": false,
+      "hasDialogScroll": false,
+      "overflowY": "auto",
+      "screenshot": "filter-dialog-320px.png",
+      "escapeKeyCloses": true
+    },
+    "filter_dialog_375": {
+      "viewportWidth": 375,
+      "isOpen": true,
+      "rect": {
+        "width": 341,
+        "height": 562
+      },
+      "winH": 640,
+      "winW": 375,
+      "overflowsHeight": false,
+      "hasScrollbar": false,
+      "hasDialogScroll": false,
+      "overflowY": "auto",
+      "screenshot": "filter-dialog-375px.png",
+      "escapeKeyCloses": true
+    },
+    "filter_dialog_430": {
+      "viewportWidth": 430,
+      "isOpen": true,
+      "rect": {
+        "width": 396,
+        "height": 547
+      },
+      "winH": 640,
+      "winW": 430,
+      "overflowsHeight": false,
+      "hasScrollbar": false,
+      "hasDialogScroll": false,
+      "overflowY": "auto",
+      "screenshot": "filter-dialog-430px.png",
+      "escapeKeyCloses": true
+    },
+    "methodology_320": {
+      "viewportWidth": 320,
+      "hasOverflow": false,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "methodologyCols": 1,
+      "screenshot": "methodology-open-320px.png"
+    },
+    "methodology_375": {
+      "viewportWidth": 375,
+      "hasOverflow": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "methodologyCols": 1,
+      "screenshot": "methodology-open-375px.png"
+    },
+    "methodology_768": {
+      "viewportWidth": 768,
+      "hasOverflow": false,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "methodologyCols": 1,
+      "screenshot": "methodology-open-768px.png"
+    },
+    "methodology_1440": {
+      "viewportWidth": 1440,
+      "hasOverflow": false,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "methodologyCols": 2,
+      "screenshot": "methodology-open-1440px.png"
+    },
+    "card_drawers_320": {
+      "viewportWidth": 320,
+      "hasOverflow": false,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "textareaW": 230,
+      "saveBtnH": 44,
+      "screenshot": "card-drawers-open-320px.png"
+    },
+    "card_drawers_375": {
+      "viewportWidth": 375,
+      "hasOverflow": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "textareaW": 285,
+      "saveBtnH": 44,
+      "screenshot": "card-drawers-open-375px.png"
+    },
+    "card_drawers_768": {
+      "viewportWidth": 768,
+      "hasOverflow": false,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "textareaW": 284,
+      "saveBtnH": 44,
+      "screenshot": "card-drawers-open-768px.png"
+    },
+    "card_drawers_1440": {
+      "viewportWidth": 1440,
+      "hasOverflow": false,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "textareaW": 289,
+      "saveBtnH": 44,
+      "screenshot": "card-drawers-open-1440px.png"
+    },
+    "skeleton_320": {
+      "viewportWidth": 320,
+      "hasOverflow": false,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "skelCards": 10,
+      "screenshot": "skeleton-loading-320px.png"
+    },
+    "skeleton_375": {
+      "viewportWidth": 375,
+      "hasOverflow": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "skelCards": 10,
+      "screenshot": "skeleton-loading-375px.png"
+    },
+    "skeleton_768": {
+      "viewportWidth": 768,
+      "hasOverflow": false,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "skelCards": 10,
+      "screenshot": "skeleton-loading-768px.png"
+    },
+    "skeleton_1440": {
+      "viewportWidth": 1440,
+      "hasOverflow": false,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "skelCards": 10,
+      "screenshot": "skeleton-loading-1440px.png"
+    }
+  },
+  "orientationChecks": {
+    "mobile-375-landscape": {
+      "name": "mobile-375-landscape",
+      "width": 667,
+      "height": 375,
+      "desc": "Mobile 375 Landscape",
+      "hasOverflow": false,
+      "scrollWidth": 667,
+      "clientWidth": 667,
+      "screenshot": "orientation-mobile-375-landscape.png"
+    },
+    "mobile-390-landscape": {
+      "name": "mobile-390-landscape",
+      "width": 844,
+      "height": 390,
+      "desc": "Mobile 390 Landscape",
+      "hasOverflow": false,
+      "scrollWidth": 844,
+      "clientWidth": 844,
+      "screenshot": "orientation-mobile-390-landscape.png"
+    },
+    "mobile-430-landscape": {
+      "name": "mobile-430-landscape",
+      "width": 932,
+      "height": 430,
+      "desc": "Mobile 430 Landscape",
+      "hasOverflow": false,
+      "scrollWidth": 932,
+      "clientWidth": 932,
+      "screenshot": "orientation-mobile-430-landscape.png"
+    },
+    "tablet-1024-portrait": {
+      "name": "tablet-1024-portrait",
+      "width": 768,
+      "height": 1024,
+      "desc": "Tablet 1024 Portrait",
+      "hasOverflow": false,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "screenshot": "orientation-tablet-1024-portrait.png"
+    }
+  },
+  "zoomChecks": {
+    "mobile-375_125": {
+      "zoomScale": 1.25,
+      "viewport": "mobile-375",
+      "hasOverflow": false,
+      "scrollWidth": 300,
+      "clientWidth": 300,
+      "screenshot": "zoom-125pct-mobile-375.png"
+    },
+    "desktop-1440_125": {
+      "zoomScale": 1.25,
+      "viewport": "desktop-1440",
+      "hasOverflow": false,
+      "scrollWidth": 1152,
+      "clientWidth": 1152,
+      "screenshot": "zoom-125pct-desktop-1440.png"
+    },
+    "mobile-375_150": {
+      "zoomScale": 1.5,
+      "viewport": "mobile-375",
+      "hasOverflow": false,
+      "scrollWidth": 250,
+      "clientWidth": 250,
+      "screenshot": "zoom-150pct-mobile-375.png"
+    },
+    "desktop-1440_150": {
+      "zoomScale": 1.5,
+      "viewport": "desktop-1440",
+      "hasOverflow": false,
+      "scrollWidth": 960,
+      "clientWidth": 960,
+      "screenshot": "zoom-150pct-desktop-1440.png"
+    }
+  },
+  "overflowDefects": [],
+  "touchTargetDefects": [
+    {
+      "text": "All Courses",
+      "tag": "BUTTON",
+      "className": "preset-chip active",
+      "width": 89,
+      "height": 38
+    },
+    {
+      "text": "YouTube (Free)",
+      "tag": "BUTTON",
+      "className": "preset-chip",
+      "width": 108,
+      "height": 38
+    },
+    {
+      "text": "#SQL",
+      "tag": "BUTTON",
+      "className": "topic-chip",
+      "width": 60,
+      "height": 38
+    }
+  ],
+  "accessibilityDefects": []
+}

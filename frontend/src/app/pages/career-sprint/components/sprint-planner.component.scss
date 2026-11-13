@@ -296,6 +296,8 @@
   align-items: flex-start;
   gap: 12px;
   cursor: pointer;
+  min-height: 40px;
+  padding-block: 4px;
 
   input {
     flex-shrink: 0;
@@ -312,6 +314,19 @@
 :host-context([data-theme='dark']) .check-label span,
 :host-context(.dark) .check-label span {
   color: #dee5ff;
+}
+
+:host-context([data-theme='dark']) .section-heading p,
+:host-context(.dark) .section-heading p,
+:host-context([data-theme='dark']) .surface > p,
+:host-context(.dark) .surface > p,
+:host-context([data-theme='dark']) .preview-tasks p,
+:host-context(.dark) .preview-tasks p,
+:host-context([data-theme='dark']) .preview-tasks small,
+:host-context(.dark) .preview-tasks small,
+:host-context([data-theme='dark']) .empty,
+:host-context(.dark) .empty {
+  color: #94a3b8;
 }
 
 .save-preview {
@@ -341,5 +356,38 @@
 
   .surface {
     padding: 18px;
+  }
+}
+
+@media (max-width: 600px) {
+  .surface {
+    padding: 16px;
+  }
+
+  .save-preview {
+    flex-direction: column;
+    align-items: stretch;
+
+    label {
+      width: 100%;
+      min-width: 0;
+    }
+
+    button {
+      width: 100%;
+      min-height: 44px;
+    }
+  }
+
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+
+    button,
+    a {
+      width: 100%;
+      justify-content: center;
+      text-align: center;
+    }
   }
 }
