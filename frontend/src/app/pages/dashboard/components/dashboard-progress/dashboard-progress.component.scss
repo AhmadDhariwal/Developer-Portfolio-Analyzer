@@ -26,6 +26,10 @@ article {
   border-radius: 16px;
   background: var(--bg-card);
   min-width: 0;
+
+  @media (max-width: 480px) {
+    padding: 16px 12px;
+  }
 }
 svg {
   width: 100%;
@@ -44,6 +48,11 @@ dl {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
+
+  @media (max-width: 360px) {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
 }
 dt {
   color: var(--text-secondary);
@@ -60,6 +69,7 @@ table {
   margin-top: 12px;
   border-collapse: collapse;
   font-size: 0.8rem;
+  overflow-wrap: break-word;
 }
 td,
 th {
@@ -70,6 +80,10 @@ th {
 summary {
   cursor: pointer;
   font-size: 0.85rem;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 0;
 }
 summary:focus-visible {
   outline: 3px solid var(--text-primary);
@@ -81,6 +95,11 @@ summary:focus-visible {
   gap: 10px;
   height: 130px;
   margin: 28px 0 40px;
+
+  @media (max-width: 480px) {
+    gap: 6px;
+    margin: 20px 0 32px;
+  }
 }
 .velocity > div {
   height: 100%;

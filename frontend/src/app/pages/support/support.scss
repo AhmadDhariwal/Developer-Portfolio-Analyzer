@@ -25,9 +25,13 @@
 
 .support-page {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 24px;
   min-width: 0;
   width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  box-sizing: border-box;
   color: var(--text-primary);
   font-size: 14px;
   line-height: 1.5;
@@ -109,6 +113,13 @@ p {
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
+  min-width: 0;
+  box-sizing: border-box;
+
+  @media (max-width: 560px) {
+    padding: 12px 14px;
+    gap: 12px;
+  }
 }
 
 .context-meta {
@@ -116,6 +127,14 @@ p {
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
+  min-width: 0;
+
+  @media (max-width: 560px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    width: 100%;
+  }
 
   .eyebrow {
     margin: 0;
@@ -134,12 +153,25 @@ p {
   background: rgba(79, 70, 229, 0.08);
   border-radius: 6px;
   border: 1px solid rgba(79, 70, 229, 0.15);
+  word-break: break-word;
+
+  @media (max-width: 400px) {
+    font-size: 13px;
+  }
 }
 
 .context-level {
   color: var(--text-secondary);
   font-size: 13px;
   font-weight: 500;
+}
+
+.mode-controls {
+  @media (max-width: 560px) {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+  }
 }
 
 .freshness-badge {
@@ -203,17 +235,20 @@ p {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 16px;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
 
   @media (max-width: 1200px) {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   @media (max-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr;
+  @media (max-width: 520px) {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -227,6 +262,8 @@ p {
   gap: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-width: 0;
+  box-sizing: border-box;
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.02),
     0 4px 12px -2px rgba(0, 0, 0, 0.03);
@@ -240,6 +277,12 @@ p {
       border-color: #4f46e5;
       color: #4f46e5;
     }
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.35);
   }
 
   &.active {
@@ -310,7 +353,7 @@ p {
   }
 
   .card-action {
-    padding: 7px 12px;
+    padding: 8px 14px;
     font-size: 12px;
     font-weight: 600;
     border-radius: 6px;
@@ -319,10 +362,15 @@ p {
     color: var(--text-primary);
     cursor: pointer;
     transition: all 0.15s ease;
-    min-height: 34px;
+    min-height: 36px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.35);
+    }
   }
 }
 
@@ -344,12 +392,15 @@ p {
 ---------------------------------------------------- */
 .main-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 24px;
   align-items: start;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
 
   @media (min-width: 1024px) {
-    grid-template-columns: 1.15fr 0.85fr;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
   }
 }
 
@@ -367,6 +418,14 @@ p {
   font-size: 13px;
   color: var(--text-secondary);
   line-height: 1.55;
+  min-width: 0;
+  box-sizing: border-box;
+
+  @media (max-width: 480px) {
+    align-items: flex-start;
+    padding: 14px 16px;
+    gap: 10px;
+  }
 
   .note-icon {
     font-size: 22px;
@@ -376,15 +435,25 @@ p {
 
   p {
     margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   a {
     color: var(--color-primary-text, #4f46e5);
     font-weight: 600;
     text-decoration: none;
+    word-break: break-all;
 
     &:hover {
       text-decoration: underline;
+    }
+
+    &:focus-visible {
+      outline: 2px solid #4f46e5;
+      outline-offset: 2px;
+      border-radius: 2px;
     }
   }
 }

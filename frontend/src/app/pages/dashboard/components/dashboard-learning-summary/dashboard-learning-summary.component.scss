@@ -8,11 +8,15 @@ section {
   border-radius: 16px;
   background: var(--bg-card);
   color: var(--text-primary);
+
+  @media (max-width: 480px) {
+    padding: 16px 12px;
+  }
 }
 .heading {
   display: flex;
   flex-wrap: wrap;
-  align-items: start;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
@@ -27,7 +31,26 @@ dt {
 }
 a {
   color: var(--text-primary);
-  text-decoration: underline;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-subtle, rgba(255, 255, 255, 0.04));
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: var(--border-color);
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--text-primary);
+    outline-offset: 3px;
+  }
 }
 dl {
   display: grid;
@@ -44,5 +67,10 @@ dd {
 @media (max-width: 540px) {
   dl {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 340px) {
+  dl {
+    grid-template-columns: 1fr;
   }
 }

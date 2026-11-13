@@ -1,0 +1,1794 @@
+{
+  "phase": "before",
+  "timestamp": "2026-11-13T08:58:21.835Z",
+  "viewportsTested": [
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "dimensions": "320x640",
+      "theme": "dark",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 2
+    },
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "dimensions": "320x640",
+      "theme": "light",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 2
+    },
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "dimensions": "320x640",
+      "theme": "system",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 2
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "dimensions": "375x667",
+      "theme": "dark",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 2
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "dimensions": "375x667",
+      "theme": "light",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 2
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "dimensions": "375x667",
+      "theme": "system",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 2
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "dimensions": "390x844",
+      "theme": "dark",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 2
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "dimensions": "390x844",
+      "theme": "light",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 2
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "dimensions": "390x844",
+      "theme": "system",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 2
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "dimensions": "430x932",
+      "theme": "dark",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 2
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "dimensions": "430x932",
+      "theme": "light",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 2
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "dimensions": "430x932",
+      "theme": "system",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 2
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "dimensions": "768x1024",
+      "theme": "dark",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 5
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "dimensions": "768x1024",
+      "theme": "light",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 5
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "dimensions": "768x1024",
+      "theme": "system",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 5
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "dimensions": "820x1180",
+      "theme": "dark",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 6
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "dimensions": "820x1180",
+      "theme": "light",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 6
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "dimensions": "820x1180",
+      "theme": "system",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 6
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "dimensions": "1024x768",
+      "theme": "dark",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 4
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "dimensions": "1024x768",
+      "theme": "light",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 4
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "dimensions": "1024x768",
+      "theme": "system",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 4
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "dimensions": "1280x800",
+      "theme": "dark",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 6
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "dimensions": "1280x800",
+      "theme": "light",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 6
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "dimensions": "1280x800",
+      "theme": "system",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 6
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "dimensions": "1366x768",
+      "theme": "dark",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 6
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "dimensions": "1366x768",
+      "theme": "light",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 6
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "dimensions": "1366x768",
+      "theme": "system",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 6
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "dimensions": "1440x900",
+      "theme": "dark",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 7
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "dimensions": "1440x900",
+      "theme": "light",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 7
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "dimensions": "1440x900",
+      "theme": "system",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 7
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "dimensions": "1920x1080",
+      "theme": "dark",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 8
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "dimensions": "1920x1080",
+      "theme": "light",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 8
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "dimensions": "1920x1080",
+      "theme": "system",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 8
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "dimensions": "2560x1440",
+      "theme": "dark",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 8
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "dimensions": "2560x1440",
+      "theme": "light",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 8
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "dimensions": "2560x1440",
+      "theme": "system",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 8
+    }
+  ],
+  "overflowViolations": [],
+  "touchTargetViolations": [
+    {
+      "viewport": "mobile-320",
+      "theme": "dark",
+      "count": 2,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        }
+      ]
+    },
+    {
+      "viewport": "mobile-320",
+      "theme": "light",
+      "count": 2,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        }
+      ]
+    },
+    {
+      "viewport": "mobile-320",
+      "theme": "system",
+      "count": 2,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        }
+      ]
+    },
+    {
+      "viewport": "mobile-375",
+      "theme": "dark",
+      "count": 2,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        }
+      ]
+    },
+    {
+      "viewport": "mobile-375",
+      "theme": "light",
+      "count": 2,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        }
+      ]
+    },
+    {
+      "viewport": "mobile-375",
+      "theme": "system",
+      "count": 2,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        }
+      ]
+    },
+    {
+      "viewport": "mobile-390",
+      "theme": "dark",
+      "count": 2,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        }
+      ]
+    },
+    {
+      "viewport": "mobile-390",
+      "theme": "light",
+      "count": 2,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        }
+      ]
+    },
+    {
+      "viewport": "mobile-390",
+      "theme": "system",
+      "count": 2,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        }
+      ]
+    },
+    {
+      "viewport": "mobile-430",
+      "theme": "dark",
+      "count": 2,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        }
+      ]
+    },
+    {
+      "viewport": "mobile-430",
+      "theme": "light",
+      "count": 2,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        }
+      ]
+    },
+    {
+      "viewport": "mobile-430",
+      "theme": "system",
+      "count": 2,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        }
+      ]
+    },
+    {
+      "viewport": "tablet-768",
+      "theme": "dark",
+      "count": 5,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Assessment dates and scores",
+          "width": 698,
+          "height": 20
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Daily completion data",
+          "width": 698,
+          "height": 20
+        },
+        {
+          "tag": "A",
+          "className": "",
+          "text": "Open Learning Hub",
+          "width": 123,
+          "height": 21
+        }
+      ]
+    },
+    {
+      "viewport": "tablet-768",
+      "theme": "light",
+      "count": 5,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Assessment dates and scores",
+          "width": 698,
+          "height": 20
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Daily completion data",
+          "width": 698,
+          "height": 20
+        },
+        {
+          "tag": "A",
+          "className": "",
+          "text": "Open Learning Hub",
+          "width": 123,
+          "height": 21
+        }
+      ]
+    },
+    {
+      "viewport": "tablet-768",
+      "theme": "system",
+      "count": 5,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Assessment dates and scores",
+          "width": 698,
+          "height": 20
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Daily completion data",
+          "width": 698,
+          "height": 20
+        },
+        {
+          "tag": "A",
+          "className": "",
+          "text": "Open Learning Hub",
+          "width": 123,
+          "height": 21
+        }
+      ]
+    },
+    {
+      "viewport": "tablet-820",
+      "theme": "dark",
+      "count": 6,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Assessment dates and scores",
+          "width": 206,
+          "height": 20
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Daily completion data",
+          "width": 206,
+          "height": 20
+        },
+        {
+          "tag": "A",
+          "className": "",
+          "text": "Open Learning Hub",
+          "width": 123,
+          "height": 21
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Repository history availabilit",
+          "width": 462,
+          "height": 19
+        }
+      ]
+    },
+    {
+      "viewport": "tablet-820",
+      "theme": "light",
+      "count": 6,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Assessment dates and scores",
+          "width": 206,
+          "height": 20
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Daily completion data",
+          "width": 206,
+          "height": 20
+        },
+        {
+          "tag": "A",
+          "className": "",
+          "text": "Open Learning Hub",
+          "width": 123,
+          "height": 21
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Repository history availabilit",
+          "width": 462,
+          "height": 19
+        }
+      ]
+    },
+    {
+      "viewport": "tablet-820",
+      "theme": "system",
+      "count": 6,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Assessment dates and scores",
+          "width": 206,
+          "height": 20
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Daily completion data",
+          "width": 206,
+          "height": 20
+        },
+        {
+          "tag": "A",
+          "className": "",
+          "text": "Open Learning Hub",
+          "width": 123,
+          "height": 21
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Repository history availabilit",
+          "width": 462,
+          "height": 19
+        }
+      ]
+    },
+    {
+      "viewport": "tablet-1024",
+      "theme": "dark",
+      "count": 4,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Assessment dates and scores",
+          "width": 308,
+          "height": 20
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Daily completion data",
+          "width": 308,
+          "height": 20
+        }
+      ]
+    },
+    {
+      "viewport": "tablet-1024",
+      "theme": "light",
+      "count": 4,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Assessment dates and scores",
+          "width": 308,
+          "height": 20
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Daily completion data",
+          "width": 308,
+          "height": 20
+        }
+      ]
+    },
+    {
+      "viewport": "tablet-1024",
+      "theme": "system",
+      "count": 4,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Assessment dates and scores",
+          "width": 308,
+          "height": 20
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Daily completion data",
+          "width": 308,
+          "height": 20
+        }
+      ]
+    },
+    {
+      "viewport": "laptop-1280",
+      "theme": "dark",
+      "count": 6,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Assessment dates and scores",
+          "width": 436,
+          "height": 20
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Daily completion data",
+          "width": 436,
+          "height": 20
+        },
+        {
+          "tag": "A",
+          "className": "",
+          "text": "Open Learning Hub",
+          "width": 123,
+          "height": 21
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Repository history availabilit",
+          "width": 521,
+          "height": 19
+        }
+      ]
+    },
+    {
+      "viewport": "laptop-1280",
+      "theme": "light",
+      "count": 6,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Assessment dates and scores",
+          "width": 436,
+          "height": 20
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Daily completion data",
+          "width": 436,
+          "height": 20
+        },
+        {
+          "tag": "A",
+          "className": "",
+          "text": "Open Learning Hub",
+          "width": 123,
+          "height": 21
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Repository history availabilit",
+          "width": 521,
+          "height": 19
+        }
+      ]
+    },
+    {
+      "viewport": "laptop-1280",
+      "theme": "system",
+      "count": 6,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Assessment dates and scores",
+          "width": 436,
+          "height": 20
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Daily completion data",
+          "width": 436,
+          "height": 20
+        },
+        {
+          "tag": "A",
+          "className": "",
+          "text": "Open Learning Hub",
+          "width": 123,
+          "height": 21
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Repository history availabilit",
+          "width": 521,
+          "height": 19
+        }
+      ]
+    },
+    {
+      "viewport": "laptop-1366",
+      "theme": "dark",
+      "count": 6,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Assessment dates and scores",
+          "width": 479,
+          "height": 20
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Daily completion data",
+          "width": 479,
+          "height": 20
+        },
+        {
+          "tag": "A",
+          "className": "",
+          "text": "Open Learning Hub",
+          "width": 123,
+          "height": 21
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Repository history availabilit",
+          "width": 573,
+          "height": 19
+        }
+      ]
+    },
+    {
+      "viewport": "laptop-1366",
+      "theme": "light",
+      "count": 6,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Assessment dates and scores",
+          "width": 479,
+          "height": 20
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Daily completion data",
+          "width": 479,
+          "height": 20
+        },
+        {
+          "tag": "A",
+          "className": "",
+          "text": "Open Learning Hub",
+          "width": 123,
+          "height": 21
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Repository history availabilit",
+          "width": 573,
+          "height": 19
+        }
+      ]
+    },
+    {
+      "viewport": "laptop-1366",
+      "theme": "system",
+      "count": 6,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Assessment dates and scores",
+          "width": 479,
+          "height": 20
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Daily completion data",
+          "width": 479,
+          "height": 20
+        },
+        {
+          "tag": "A",
+          "className": "",
+          "text": "Open Learning Hub",
+          "width": 123,
+          "height": 21
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Repository history availabilit",
+          "width": 573,
+          "height": 19
+        }
+      ]
+    },
+    {
+      "viewport": "desktop-1440",
+      "theme": "dark",
+      "count": 7,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Assessment dates and scores",
+          "width": 516,
+          "height": 20
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Daily completion data",
+          "width": 516,
+          "height": 20
+        },
+        {
+          "tag": "A",
+          "className": "",
+          "text": "Open Learning Hub",
+          "width": 123,
+          "height": 21
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Repository history availabilit",
+          "width": 617,
+          "height": 19
+        },
+        {
+          "tag": "A",
+          "className": "view-all-link",
+          "text": "View All",
+          "width": 64,
+          "height": 19
+        }
+      ]
+    },
+    {
+      "viewport": "desktop-1440",
+      "theme": "light",
+      "count": 7,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Assessment dates and scores",
+          "width": 516,
+          "height": 20
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Daily completion data",
+          "width": 516,
+          "height": 20
+        },
+        {
+          "tag": "A",
+          "className": "",
+          "text": "Open Learning Hub",
+          "width": 123,
+          "height": 21
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Repository history availabilit",
+          "width": 617,
+          "height": 19
+        },
+        {
+          "tag": "A",
+          "className": "view-all-link",
+          "text": "View All",
+          "width": 64,
+          "height": 19
+        }
+      ]
+    },
+    {
+      "viewport": "desktop-1440",
+      "theme": "system",
+      "count": 7,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Assessment dates and scores",
+          "width": 516,
+          "height": 20
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Daily completion data",
+          "width": 516,
+          "height": 20
+        },
+        {
+          "tag": "A",
+          "className": "",
+          "text": "Open Learning Hub",
+          "width": 123,
+          "height": 21
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Repository history availabilit",
+          "width": 617,
+          "height": 19
+        },
+        {
+          "tag": "A",
+          "className": "view-all-link",
+          "text": "View All",
+          "width": 64,
+          "height": 19
+        }
+      ]
+    },
+    {
+      "viewport": "desktop-1920",
+      "theme": "dark",
+      "count": 8,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Assessment dates and scores",
+          "width": 756,
+          "height": 20
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Daily completion data",
+          "width": 756,
+          "height": 20
+        },
+        {
+          "tag": "A",
+          "className": "",
+          "text": "Open Learning Hub",
+          "width": 123,
+          "height": 21
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Repository history availabilit",
+          "width": 905,
+          "height": 19
+        },
+        {
+          "tag": "A",
+          "className": "view-all-link",
+          "text": "View All",
+          "width": 64,
+          "height": 19
+        },
+        {
+          "tag": "A",
+          "className": "view-all-link",
+          "text": "View All",
+          "width": 64,
+          "height": 19
+        }
+      ]
+    },
+    {
+      "viewport": "desktop-1920",
+      "theme": "light",
+      "count": 8,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Assessment dates and scores",
+          "width": 756,
+          "height": 20
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Daily completion data",
+          "width": 756,
+          "height": 20
+        },
+        {
+          "tag": "A",
+          "className": "",
+          "text": "Open Learning Hub",
+          "width": 123,
+          "height": 21
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Repository history availabilit",
+          "width": 905,
+          "height": 19
+        },
+        {
+          "tag": "A",
+          "className": "view-all-link",
+          "text": "View All",
+          "width": 64,
+          "height": 19
+        },
+        {
+          "tag": "A",
+          "className": "view-all-link",
+          "text": "View All",
+          "width": 64,
+          "height": 19
+        }
+      ]
+    },
+    {
+      "viewport": "desktop-1920",
+      "theme": "system",
+      "count": 8,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Assessment dates and scores",
+          "width": 756,
+          "height": 20
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Daily completion data",
+          "width": 756,
+          "height": 20
+        },
+        {
+          "tag": "A",
+          "className": "",
+          "text": "Open Learning Hub",
+          "width": 123,
+          "height": 21
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Repository history availabilit",
+          "width": 905,
+          "height": 19
+        },
+        {
+          "tag": "A",
+          "className": "view-all-link",
+          "text": "View All",
+          "width": 64,
+          "height": 19
+        },
+        {
+          "tag": "A",
+          "className": "view-all-link",
+          "text": "View All",
+          "width": 64,
+          "height": 19
+        }
+      ]
+    },
+    {
+      "viewport": "large-2560",
+      "theme": "dark",
+      "count": 8,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Assessment dates and scores",
+          "width": 1076,
+          "height": 20
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Daily completion data",
+          "width": 1076,
+          "height": 20
+        },
+        {
+          "tag": "A",
+          "className": "",
+          "text": "Open Learning Hub",
+          "width": 123,
+          "height": 21
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Repository history availabilit",
+          "width": 1289,
+          "height": 19
+        },
+        {
+          "tag": "A",
+          "className": "view-all-link",
+          "text": "View All",
+          "width": 64,
+          "height": 19
+        },
+        {
+          "tag": "A",
+          "className": "view-all-link",
+          "text": "View All",
+          "width": 64,
+          "height": 19
+        }
+      ]
+    },
+    {
+      "viewport": "large-2560",
+      "theme": "light",
+      "count": 8,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Assessment dates and scores",
+          "width": 1076,
+          "height": 20
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Daily completion data",
+          "width": 1076,
+          "height": 20
+        },
+        {
+          "tag": "A",
+          "className": "",
+          "text": "Open Learning Hub",
+          "width": 123,
+          "height": 21
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Repository history availabilit",
+          "width": 1289,
+          "height": 19
+        },
+        {
+          "tag": "A",
+          "className": "view-all-link",
+          "text": "View All",
+          "width": 64,
+          "height": 19
+        },
+        {
+          "tag": "A",
+          "className": "view-all-link",
+          "text": "View All",
+          "width": 64,
+          "height": 19
+        }
+      ]
+    },
+    {
+      "viewport": "large-2560",
+      "theme": "system",
+      "count": 8,
+      "targets": [
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "FrontendBackendFull StackAI/ML",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SELECT",
+          "className": "role-dropdown ng-untouched ng-pristine ng-valid",
+          "text": "StudentIntern0-1 years1-2 year",
+          "width": 88,
+          "height": 15
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Assessment dates and scores",
+          "width": 1076,
+          "height": 20
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Daily completion data",
+          "width": 1076,
+          "height": 20
+        },
+        {
+          "tag": "A",
+          "className": "",
+          "text": "Open Learning Hub",
+          "width": 123,
+          "height": 21
+        },
+        {
+          "tag": "SUMMARY",
+          "className": "",
+          "text": "Repository history availabilit",
+          "width": 1289,
+          "height": 19
+        },
+        {
+          "tag": "A",
+          "className": "view-all-link",
+          "text": "View All",
+          "width": 64,
+          "height": 19
+        },
+        {
+          "tag": "A",
+          "className": "view-all-link",
+          "text": "View All",
+          "width": 64,
+          "height": 19
+        }
+      ]
+    }
+  ],
+  "interactiveChecks": [
+    {
+      "action": "expand-all-details",
+      "viewportWidth": 375,
+      "overflow": "PASS"
+    },
+    {
+      "action": "expand-all-details",
+      "viewportWidth": 768,
+      "overflow": "PASS"
+    },
+    {
+      "action": "expand-all-details",
+      "viewportWidth": 1440,
+      "overflow": "PASS"
+    },
+    {
+      "action": "stale-degraded-state",
+      "viewportWidth": 375,
+      "overflow": "PASS"
+    },
+    {
+      "action": "stale-degraded-state",
+      "viewportWidth": 1440,
+      "overflow": "PASS"
+    }
+  ]
+}

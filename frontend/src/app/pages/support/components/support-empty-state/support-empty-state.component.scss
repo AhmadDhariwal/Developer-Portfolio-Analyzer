@@ -1,5 +1,7 @@
 :host {
   display: block;
+  min-width: 0;
+  width: 100%;
   font-family: var(--font-sans, 'Manrope', 'Segoe UI', sans-serif);
 }
 
@@ -23,6 +25,9 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
 
   .material-symbols-outlined {
     font-size: 38px;
