@@ -1,6 +1,8 @@
 :host {
   display: block;
   width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .header-actions {
@@ -10,6 +12,8 @@
   gap: 1.25rem;
   width: 100%;
   flex-wrap: wrap;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .actions-left {
@@ -17,6 +21,14 @@
   align-items: center;
   gap: 0.75rem;
   flex-wrap: wrap;
+  min-width: 0;
+
+  @media (max-width: 540px) {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
 }
 
 .cache-indicator {
@@ -30,6 +42,7 @@
   color: var(--text-secondary);
   font-size: 0.76rem;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  box-sizing: border-box;
 
   strong {
     color: var(--text-primary);
@@ -39,6 +52,11 @@
   span {
     color: var(--text-muted);
     font-variant-numeric: tabular-nums;
+  }
+
+  @media (max-width: 540px) {
+    width: 100%;
+    min-width: 0;
   }
 }
 
@@ -54,6 +72,7 @@
   background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
   color: #fff;
   box-shadow: 0 4px 14px rgba(79, 70, 229, 0.28);
+  box-sizing: border-box;
   transition:
     transform 160ms ease,
     filter 160ms ease,
@@ -69,6 +88,14 @@
     opacity: 0.55;
     cursor: not-allowed;
   }
+
+  @media (max-width: 640px) {
+    min-height: 44px;
+  }
+
+  @media (max-width: 540px) {
+    width: 100%;
+  }
 }
 
 .snapshot-actions {
@@ -77,6 +104,8 @@
   align-items: flex-end;
   gap: 6px;
   margin-left: auto;
+  min-width: 0;
+  box-sizing: border-box;
 
   .action-buttons-right {
     display: flex;
@@ -84,6 +113,7 @@
     gap: 8px;
     flex-wrap: wrap;
     justify-content: flex-end;
+    min-width: 0;
   }
 
   button {
@@ -99,6 +129,7 @@
     cursor: pointer;
     transition: all 0.16s ease;
     white-space: nowrap;
+    box-sizing: border-box;
 
     &:hover:not(:disabled) {
       border-color: rgba(99, 102, 241, 0.35);
@@ -111,6 +142,10 @@
       opacity: 0.55;
       cursor: not-allowed;
     }
+
+    @media (max-width: 640px) {
+      min-height: 44px;
+    }
   }
 
   small {
@@ -120,6 +155,7 @@
     font-weight: 500;
     text-align: right;
     white-space: nowrap;
+    overflow-wrap: anywhere;
   }
 
   @media (max-width: 820px) {
@@ -141,11 +177,22 @@
       white-space: normal;
     }
   }
-}
 
-@media (max-width: 640px) {
-  .generate-btn {
-    min-height: 44px;
+  @media (max-width: 540px) {
+    width: 100%;
+
+    .action-buttons-right {
+      flex-direction: column;
+      align-items: stretch;
+      width: 100%;
+      gap: 8px;
+
+      button {
+        width: 100%;
+        min-height: 44px;
+        white-space: normal;
+      }
+    }
   }
 }
 

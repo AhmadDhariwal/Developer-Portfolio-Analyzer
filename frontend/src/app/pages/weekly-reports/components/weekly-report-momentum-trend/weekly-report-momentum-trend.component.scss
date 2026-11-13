@@ -11,6 +11,8 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
+  min-width: 0;
+  box-sizing: border-box;
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.03),
     0 8px 24px -4px rgba(0, 0, 0, 0.04);
@@ -32,6 +34,16 @@
 
   @media (max-width: 760px) {
     grid-template-columns: 1fr;
+  }
+
+  @media (max-width: 640px) {
+    padding: 20px;
+    gap: 16px;
+  }
+
+  @media (max-width: 360px) {
+    padding: 16px;
+    border-radius: 14px;
   }
 }
 
@@ -60,10 +72,27 @@
   display: flex;
   gap: 12px;
   min-height: 145px;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 6px;
+
+  &::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--border-color, #64748b40);
+    border-radius: 4px;
+  }
 
   button {
-    flex: 1;
-    min-width: 0;
+    flex: 1 1 0px;
+    min-width: 44px;
+    min-height: 124px;
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -91,10 +120,12 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 700;
       font-variant-numeric: tabular-nums;
       line-height: 1;
+      overflow-wrap: anywhere;
+      text-align: center;
     }
   }
 
@@ -104,10 +135,18 @@
     align-items: center;
     justify-content: center;
     font-variant-numeric: tabular-nums;
-    font-size: 0.78rem;
+    font-size: 0.76rem;
     font-weight: 600;
     color: var(--text-muted);
     line-height: 1;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 640px) {
+    button {
+      flex: 0 0 auto;
+      min-width: 48px;
+    }
   }
 }
 
@@ -121,7 +160,7 @@
   background: var(--surface-tertiary);
   overflow: hidden;
 
-  > span {
+  >span {
     width: 100%;
     background: linear-gradient(180deg, #818cf8, #4f46e5);
     border-radius: 8px;

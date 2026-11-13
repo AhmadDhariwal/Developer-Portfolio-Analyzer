@@ -1,6 +1,8 @@
 :host {
   display: block;
   width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .card-fallback-section {
@@ -14,6 +16,7 @@
   font-size: 0.78rem;
   color: var(--text-primary, #0f172a);
   box-sizing: border-box;
+  min-width: 0;
   transition:
     border-color 0.15s ease,
     background-color 0.15s ease;
@@ -126,9 +129,10 @@
     input {
       flex: 1 1 120px;
       min-width: 0;
+      min-height: 36px;
       background: transparent;
       border: none;
-      padding: 5px 6px;
+      padding: 6px 8px;
       color: var(--text-primary, #0f172a);
       font-size: 0.78rem;
       font-family: inherit;
@@ -152,7 +156,8 @@
     }
 
     button {
-      padding: 6px 11px;
+      min-height: 36px;
+      padding: 6px 12px;
       border-radius: 6px;
       font-size: 0.74rem;
       font-weight: 600;
@@ -161,10 +166,19 @@
       border: 1px solid transparent;
       transition: all 0.15s ease;
       white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
 
       &:disabled {
         opacity: 0.5;
         cursor: wait;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--color-primary, #4f46e5);
+        outline-offset: 1px;
       }
     }
 
@@ -197,5 +211,73 @@
     font-size: 0.72rem;
     color: var(--color-danger, #ef4444);
     font-weight: 500;
+  }
+
+  @media (max-width: 480px) {
+    .fallback-input-shell {
+      flex-direction: column;
+      align-items: stretch;
+      padding: 6px;
+      gap: 6px;
+
+      .input-prefix {
+        display: none;
+      }
+
+      input {
+        width: 100%;
+        min-height: 38px;
+        background: var(--surface-secondary, #f8fafc);
+        border: 1px solid var(--border-color, #cbd5e1);
+        border-radius: 6px;
+        padding: 6px 10px;
+      }
+
+      .fallback-btn-group {
+        width: 100%;
+        display: flex;
+        gap: 6px;
+
+        button {
+          flex: 1;
+          min-height: 38px;
+          justify-content: center;
+        }
+      }
+    }
+  }
+
+  @container (max-width: 340px) {
+    .fallback-input-shell {
+      flex-direction: column;
+      align-items: stretch;
+      padding: 6px;
+      gap: 6px;
+
+      .input-prefix {
+        display: none;
+      }
+
+      input {
+        width: 100%;
+        min-height: 38px;
+        background: var(--surface-secondary, #f8fafc);
+        border: 1px solid var(--border-color, #cbd5e1);
+        border-radius: 6px;
+        padding: 6px 10px;
+      }
+
+      .fallback-btn-group {
+        width: 100%;
+        display: flex;
+        gap: 6px;
+
+        button {
+          flex: 1;
+          min-height: 38px;
+          justify-content: center;
+        }
+      }
+    }
   }
 }

@@ -322,6 +322,12 @@
     color: var(--text-primary);
   }
 
+  &:focus-visible {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.35);
+  }
+
   &.active,
   &--active {
     background: rgba(79, 70, 229, 0.1);
@@ -341,6 +347,12 @@
     color: var(--text-primary);
   }
 
+  &:focus-visible {
+    outline: none;
+    border-color: #818cf8;
+    box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.35);
+  }
+
   &.active,
   &--active {
     background: rgba(163, 166, 255, 0.15);
@@ -357,6 +369,15 @@
   margin-top: 18px;
   padding-top: 14px;
   border-top: 1px solid var(--border-color, #e2e8f0);
+
+  @media (max-width: 480px) {
+    justify-content: stretch;
+
+    .btn-save-career {
+      width: 100%;
+      justify-content: center;
+    }
+  }
 
   .btn-save-career {
     display: inline-flex;
@@ -376,6 +397,11 @@
     &:hover:not(:disabled) {
       background: #4338ca;
       transform: translateY(-1px);
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.35);
     }
 
     &:disabled {

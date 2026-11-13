@@ -1,0 +1,1491 @@
+{
+  "module": "Scenario Simulator",
+  "phase": "before",
+  "timestamp": "2026-11-13T07:49:18.964Z",
+  "viewportsTested": 12,
+  "themesTested": 3,
+  "matrixResults": [
+    {
+      "name": "mobile-320",
+      "category": "Mobile",
+      "dimensions": "320x640",
+      "theme": "dark",
+      "passed": true,
+      "draftScrollWidth": 320,
+      "draftClientWidth": 320,
+      "resultScrollWidth": 320,
+      "resultClientWidth": 320,
+      "touchIssuesCount": 14
+    },
+    {
+      "name": "mobile-320",
+      "category": "Mobile",
+      "dimensions": "320x640",
+      "theme": "light",
+      "passed": true,
+      "draftScrollWidth": 320,
+      "draftClientWidth": 320,
+      "resultScrollWidth": 320,
+      "resultClientWidth": 320,
+      "touchIssuesCount": 14
+    },
+    {
+      "name": "mobile-320",
+      "category": "Mobile",
+      "dimensions": "320x640",
+      "theme": "system",
+      "passed": true,
+      "draftScrollWidth": 320,
+      "draftClientWidth": 320,
+      "resultScrollWidth": 320,
+      "resultClientWidth": 320,
+      "touchIssuesCount": 14
+    },
+    {
+      "name": "mobile-375",
+      "category": "Mobile",
+      "dimensions": "375x667",
+      "theme": "dark",
+      "passed": true,
+      "draftScrollWidth": 375,
+      "draftClientWidth": 375,
+      "resultScrollWidth": 375,
+      "resultClientWidth": 375,
+      "touchIssuesCount": 14
+    },
+    {
+      "name": "mobile-375",
+      "category": "Mobile",
+      "dimensions": "375x667",
+      "theme": "light",
+      "passed": true,
+      "draftScrollWidth": 375,
+      "draftClientWidth": 375,
+      "resultScrollWidth": 375,
+      "resultClientWidth": 375,
+      "touchIssuesCount": 14
+    },
+    {
+      "name": "mobile-375",
+      "category": "Mobile",
+      "dimensions": "375x667",
+      "theme": "system",
+      "passed": true,
+      "draftScrollWidth": 375,
+      "draftClientWidth": 375,
+      "resultScrollWidth": 375,
+      "resultClientWidth": 375,
+      "touchIssuesCount": 14
+    },
+    {
+      "name": "mobile-390",
+      "category": "Mobile",
+      "dimensions": "390x844",
+      "theme": "dark",
+      "passed": true,
+      "draftScrollWidth": 390,
+      "draftClientWidth": 390,
+      "resultScrollWidth": 390,
+      "resultClientWidth": 390,
+      "touchIssuesCount": 14
+    },
+    {
+      "name": "mobile-390",
+      "category": "Mobile",
+      "dimensions": "390x844",
+      "theme": "light",
+      "passed": true,
+      "draftScrollWidth": 390,
+      "draftClientWidth": 390,
+      "resultScrollWidth": 390,
+      "resultClientWidth": 390,
+      "touchIssuesCount": 14
+    },
+    {
+      "name": "mobile-390",
+      "category": "Mobile",
+      "dimensions": "390x844",
+      "theme": "system",
+      "passed": true,
+      "draftScrollWidth": 390,
+      "draftClientWidth": 390,
+      "resultScrollWidth": 390,
+      "resultClientWidth": 390,
+      "touchIssuesCount": 14
+    },
+    {
+      "name": "mobile-430",
+      "category": "Mobile",
+      "dimensions": "430x932",
+      "theme": "dark",
+      "passed": true,
+      "draftScrollWidth": 430,
+      "draftClientWidth": 430,
+      "resultScrollWidth": 430,
+      "resultClientWidth": 430,
+      "touchIssuesCount": 12
+    },
+    {
+      "name": "mobile-430",
+      "category": "Mobile",
+      "dimensions": "430x932",
+      "theme": "light",
+      "passed": true,
+      "draftScrollWidth": 430,
+      "draftClientWidth": 430,
+      "resultScrollWidth": 430,
+      "resultClientWidth": 430,
+      "touchIssuesCount": 12
+    },
+    {
+      "name": "mobile-430",
+      "category": "Mobile",
+      "dimensions": "430x932",
+      "theme": "system",
+      "passed": true,
+      "draftScrollWidth": 430,
+      "draftClientWidth": 430,
+      "resultScrollWidth": 430,
+      "resultClientWidth": 430,
+      "touchIssuesCount": 12
+    },
+    {
+      "name": "tablet-768",
+      "category": "Tablet",
+      "dimensions": "768x1024",
+      "theme": "dark",
+      "passed": true,
+      "draftScrollWidth": 768,
+      "draftClientWidth": 768,
+      "resultScrollWidth": 768,
+      "resultClientWidth": 768,
+      "touchIssuesCount": 12
+    },
+    {
+      "name": "tablet-768",
+      "category": "Tablet",
+      "dimensions": "768x1024",
+      "theme": "light",
+      "passed": true,
+      "draftScrollWidth": 768,
+      "draftClientWidth": 768,
+      "resultScrollWidth": 768,
+      "resultClientWidth": 768,
+      "touchIssuesCount": 12
+    },
+    {
+      "name": "tablet-768",
+      "category": "Tablet",
+      "dimensions": "768x1024",
+      "theme": "system",
+      "passed": true,
+      "draftScrollWidth": 768,
+      "draftClientWidth": 768,
+      "resultScrollWidth": 768,
+      "resultClientWidth": 768,
+      "touchIssuesCount": 12
+    },
+    {
+      "name": "tablet-820",
+      "category": "Tablet",
+      "dimensions": "820x1180",
+      "theme": "dark",
+      "passed": true,
+      "draftScrollWidth": 820,
+      "draftClientWidth": 820,
+      "resultScrollWidth": 820,
+      "resultClientWidth": 820,
+      "touchIssuesCount": 12
+    },
+    {
+      "name": "tablet-820",
+      "category": "Tablet",
+      "dimensions": "820x1180",
+      "theme": "light",
+      "passed": true,
+      "draftScrollWidth": 820,
+      "draftClientWidth": 820,
+      "resultScrollWidth": 820,
+      "resultClientWidth": 820,
+      "touchIssuesCount": 12
+    },
+    {
+      "name": "tablet-820",
+      "category": "Tablet",
+      "dimensions": "820x1180",
+      "theme": "system",
+      "passed": true,
+      "draftScrollWidth": 820,
+      "draftClientWidth": 820,
+      "resultScrollWidth": 820,
+      "resultClientWidth": 820,
+      "touchIssuesCount": 12
+    },
+    {
+      "name": "tablet-1024",
+      "category": "Tablet",
+      "dimensions": "1024x768",
+      "theme": "dark",
+      "passed": true,
+      "draftScrollWidth": 1024,
+      "draftClientWidth": 1024,
+      "resultScrollWidth": 1024,
+      "resultClientWidth": 1024,
+      "touchIssuesCount": 17
+    },
+    {
+      "name": "tablet-1024",
+      "category": "Tablet",
+      "dimensions": "1024x768",
+      "theme": "light",
+      "passed": true,
+      "draftScrollWidth": 1024,
+      "draftClientWidth": 1024,
+      "resultScrollWidth": 1024,
+      "resultClientWidth": 1024,
+      "touchIssuesCount": 17
+    },
+    {
+      "name": "tablet-1024",
+      "category": "Tablet",
+      "dimensions": "1024x768",
+      "theme": "system",
+      "passed": true,
+      "draftScrollWidth": 1024,
+      "draftClientWidth": 1024,
+      "resultScrollWidth": 1024,
+      "resultClientWidth": 1024,
+      "touchIssuesCount": 17
+    },
+    {
+      "name": "laptop-1280",
+      "category": "Laptop",
+      "dimensions": "1280x800",
+      "theme": "dark",
+      "passed": true,
+      "draftScrollWidth": 1280,
+      "draftClientWidth": 1280,
+      "resultScrollWidth": 1280,
+      "resultClientWidth": 1280,
+      "touchIssuesCount": 17
+    },
+    {
+      "name": "laptop-1280",
+      "category": "Laptop",
+      "dimensions": "1280x800",
+      "theme": "light",
+      "passed": true,
+      "draftScrollWidth": 1280,
+      "draftClientWidth": 1280,
+      "resultScrollWidth": 1280,
+      "resultClientWidth": 1280,
+      "touchIssuesCount": 17
+    },
+    {
+      "name": "laptop-1280",
+      "category": "Laptop",
+      "dimensions": "1280x800",
+      "theme": "system",
+      "passed": true,
+      "draftScrollWidth": 1280,
+      "draftClientWidth": 1280,
+      "resultScrollWidth": 1280,
+      "resultClientWidth": 1280,
+      "touchIssuesCount": 17
+    },
+    {
+      "name": "laptop-1366",
+      "category": "Laptop",
+      "dimensions": "1366x768",
+      "theme": "dark",
+      "passed": true,
+      "draftScrollWidth": 1366,
+      "draftClientWidth": 1366,
+      "resultScrollWidth": 1366,
+      "resultClientWidth": 1366,
+      "touchIssuesCount": 17
+    },
+    {
+      "name": "laptop-1366",
+      "category": "Laptop",
+      "dimensions": "1366x768",
+      "theme": "light",
+      "passed": true,
+      "draftScrollWidth": 1366,
+      "draftClientWidth": 1366,
+      "resultScrollWidth": 1366,
+      "resultClientWidth": 1366,
+      "touchIssuesCount": 17
+    },
+    {
+      "name": "laptop-1366",
+      "category": "Laptop",
+      "dimensions": "1366x768",
+      "theme": "system",
+      "passed": true,
+      "draftScrollWidth": 1366,
+      "draftClientWidth": 1366,
+      "resultScrollWidth": 1366,
+      "resultClientWidth": 1366,
+      "touchIssuesCount": 17
+    },
+    {
+      "name": "desktop-1440",
+      "category": "Desktop",
+      "dimensions": "1440x900",
+      "theme": "dark",
+      "passed": true,
+      "draftScrollWidth": 1440,
+      "draftClientWidth": 1440,
+      "resultScrollWidth": 1440,
+      "resultClientWidth": 1440,
+      "touchIssuesCount": 17
+    },
+    {
+      "name": "desktop-1440",
+      "category": "Desktop",
+      "dimensions": "1440x900",
+      "theme": "light",
+      "passed": true,
+      "draftScrollWidth": 1440,
+      "draftClientWidth": 1440,
+      "resultScrollWidth": 1440,
+      "resultClientWidth": 1440,
+      "touchIssuesCount": 17
+    },
+    {
+      "name": "desktop-1440",
+      "category": "Desktop",
+      "dimensions": "1440x900",
+      "theme": "system",
+      "passed": true,
+      "draftScrollWidth": 1440,
+      "draftClientWidth": 1440,
+      "resultScrollWidth": 1440,
+      "resultClientWidth": 1440,
+      "touchIssuesCount": 17
+    },
+    {
+      "name": "desktop-1920",
+      "category": "Desktop",
+      "dimensions": "1920x1080",
+      "theme": "dark",
+      "passed": true,
+      "draftScrollWidth": 1920,
+      "draftClientWidth": 1920,
+      "resultScrollWidth": 1920,
+      "resultClientWidth": 1920,
+      "touchIssuesCount": 17
+    },
+    {
+      "name": "desktop-1920",
+      "category": "Desktop",
+      "dimensions": "1920x1080",
+      "theme": "light",
+      "passed": true,
+      "draftScrollWidth": 1920,
+      "draftClientWidth": 1920,
+      "resultScrollWidth": 1920,
+      "resultClientWidth": 1920,
+      "touchIssuesCount": 17
+    },
+    {
+      "name": "desktop-1920",
+      "category": "Desktop",
+      "dimensions": "1920x1080",
+      "theme": "system",
+      "passed": true,
+      "draftScrollWidth": 1920,
+      "draftClientWidth": 1920,
+      "resultScrollWidth": 1920,
+      "resultClientWidth": 1920,
+      "touchIssuesCount": 17
+    },
+    {
+      "name": "large-2560",
+      "category": "Large screen",
+      "dimensions": "2560x1440",
+      "theme": "dark",
+      "passed": true,
+      "draftScrollWidth": 2560,
+      "draftClientWidth": 2560,
+      "resultScrollWidth": 2560,
+      "resultClientWidth": 2560,
+      "touchIssuesCount": 17
+    },
+    {
+      "name": "large-2560",
+      "category": "Large screen",
+      "dimensions": "2560x1440",
+      "theme": "light",
+      "passed": true,
+      "draftScrollWidth": 2560,
+      "draftClientWidth": 2560,
+      "resultScrollWidth": 2560,
+      "resultClientWidth": 2560,
+      "touchIssuesCount": 17
+    },
+    {
+      "name": "large-2560",
+      "category": "Large screen",
+      "dimensions": "2560x1440",
+      "theme": "system",
+      "passed": true,
+      "draftScrollWidth": 2560,
+      "draftClientWidth": 2560,
+      "resultScrollWidth": 2560,
+      "resultClientWidth": 2560,
+      "touchIssuesCount": 17
+    }
+  ],
+  "stateChecks": {
+    "tabs-375": {
+      "tab1Overflow": false,
+      "tab2Overflow": false,
+      "tab3Overflow": false
+    },
+    "tabs-768": {
+      "tab1Overflow": false,
+      "tab2Overflow": false,
+      "tab3Overflow": false
+    },
+    "tabs-1440": {
+      "tab1Overflow": false,
+      "tab2Overflow": false,
+      "tab3Overflow": false
+    },
+    "info-guide-375": {
+      "overflow": false
+    },
+    "degraded-error-375": {
+      "overflow": false
+    }
+  },
+  "overflowDefects": [],
+  "touchTargetDefects": [
+    {
+      "testId": "mobile-320-dark",
+      "count": 14,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "Expand",
+          "width": 62,
+          "height": 30,
+          "className": "mobile-toggle"
+        },
+        {
+          "tag": "input",
+          "text": "",
+          "width": 17,
+          "height": 17,
+          "className": "ng-valid ng-dirty ng-touched"
+        },
+        {
+          "tag": "button",
+          "text": "+ React",
+          "width": 61,
+          "height": 26,
+          "className": "mini-example"
+        }
+      ]
+    },
+    {
+      "testId": "mobile-320-light",
+      "count": 14,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "Expand",
+          "width": 62,
+          "height": 30,
+          "className": "mobile-toggle"
+        },
+        {
+          "tag": "input",
+          "text": "",
+          "width": 17,
+          "height": 17,
+          "className": "ng-valid ng-dirty ng-touched"
+        },
+        {
+          "tag": "button",
+          "text": "+ React",
+          "width": 61,
+          "height": 26,
+          "className": "mini-example"
+        }
+      ]
+    },
+    {
+      "testId": "mobile-320-system",
+      "count": 14,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "Expand",
+          "width": 62,
+          "height": 30,
+          "className": "mobile-toggle"
+        },
+        {
+          "tag": "input",
+          "text": "",
+          "width": 17,
+          "height": 17,
+          "className": "ng-valid ng-dirty ng-touched"
+        },
+        {
+          "tag": "button",
+          "text": "+ React",
+          "width": 61,
+          "height": 26,
+          "className": "mini-example"
+        }
+      ]
+    },
+    {
+      "testId": "mobile-375-dark",
+      "count": 14,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "Expand",
+          "width": 62,
+          "height": 30,
+          "className": "mobile-toggle"
+        },
+        {
+          "tag": "input",
+          "text": "",
+          "width": 17,
+          "height": 17,
+          "className": "ng-valid ng-dirty ng-touched"
+        },
+        {
+          "tag": "button",
+          "text": "+ React",
+          "width": 61,
+          "height": 26,
+          "className": "mini-example"
+        }
+      ]
+    },
+    {
+      "testId": "mobile-375-light",
+      "count": 14,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "Expand",
+          "width": 62,
+          "height": 30,
+          "className": "mobile-toggle"
+        },
+        {
+          "tag": "input",
+          "text": "",
+          "width": 17,
+          "height": 17,
+          "className": "ng-valid ng-dirty ng-touched"
+        },
+        {
+          "tag": "button",
+          "text": "+ React",
+          "width": 61,
+          "height": 26,
+          "className": "mini-example"
+        }
+      ]
+    },
+    {
+      "testId": "mobile-375-system",
+      "count": 14,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "Expand",
+          "width": 62,
+          "height": 30,
+          "className": "mobile-toggle"
+        },
+        {
+          "tag": "input",
+          "text": "",
+          "width": 17,
+          "height": 17,
+          "className": "ng-valid ng-dirty ng-touched"
+        },
+        {
+          "tag": "button",
+          "text": "+ React",
+          "width": 61,
+          "height": 26,
+          "className": "mini-example"
+        }
+      ]
+    },
+    {
+      "testId": "mobile-390-dark",
+      "count": 14,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "Expand",
+          "width": 62,
+          "height": 30,
+          "className": "mobile-toggle"
+        },
+        {
+          "tag": "input",
+          "text": "",
+          "width": 17,
+          "height": 17,
+          "className": "ng-valid ng-dirty ng-touched"
+        },
+        {
+          "tag": "button",
+          "text": "+ React",
+          "width": 61,
+          "height": 26,
+          "className": "mini-example"
+        }
+      ]
+    },
+    {
+      "testId": "mobile-390-light",
+      "count": 14,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "Expand",
+          "width": 62,
+          "height": 30,
+          "className": "mobile-toggle"
+        },
+        {
+          "tag": "input",
+          "text": "",
+          "width": 17,
+          "height": 17,
+          "className": "ng-valid ng-dirty ng-touched"
+        },
+        {
+          "tag": "button",
+          "text": "+ React",
+          "width": 61,
+          "height": 26,
+          "className": "mini-example"
+        }
+      ]
+    },
+    {
+      "testId": "mobile-390-system",
+      "count": 14,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "Expand",
+          "width": 62,
+          "height": 30,
+          "className": "mobile-toggle"
+        },
+        {
+          "tag": "input",
+          "text": "",
+          "width": 17,
+          "height": 17,
+          "className": "ng-valid ng-dirty ng-touched"
+        },
+        {
+          "tag": "button",
+          "text": "+ React",
+          "width": 61,
+          "height": 26,
+          "className": "mini-example"
+        }
+      ]
+    },
+    {
+      "testId": "mobile-430-dark",
+      "count": 12,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "Expand",
+          "width": 62,
+          "height": 30,
+          "className": "mobile-toggle"
+        },
+        {
+          "tag": "input",
+          "text": "",
+          "width": 17,
+          "height": 17,
+          "className": "ng-valid ng-dirty ng-touched"
+        },
+        {
+          "tag": "button",
+          "text": "+ React",
+          "width": 61,
+          "height": 26,
+          "className": "mini-example"
+        }
+      ]
+    },
+    {
+      "testId": "mobile-430-light",
+      "count": 12,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "Expand",
+          "width": 62,
+          "height": 30,
+          "className": "mobile-toggle"
+        },
+        {
+          "tag": "input",
+          "text": "",
+          "width": 17,
+          "height": 17,
+          "className": "ng-valid ng-dirty ng-touched"
+        },
+        {
+          "tag": "button",
+          "text": "+ React",
+          "width": 61,
+          "height": 26,
+          "className": "mini-example"
+        }
+      ]
+    },
+    {
+      "testId": "mobile-430-system",
+      "count": 12,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "Expand",
+          "width": 62,
+          "height": 30,
+          "className": "mobile-toggle"
+        },
+        {
+          "tag": "input",
+          "text": "",
+          "width": 17,
+          "height": 17,
+          "className": "ng-valid ng-dirty ng-touched"
+        },
+        {
+          "tag": "button",
+          "text": "+ React",
+          "width": 61,
+          "height": 26,
+          "className": "mini-example"
+        }
+      ]
+    },
+    {
+      "testId": "tablet-768-dark",
+      "count": 12,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "Expand",
+          "width": 62,
+          "height": 30,
+          "className": "mobile-toggle"
+        },
+        {
+          "tag": "input",
+          "text": "",
+          "width": 17,
+          "height": 17,
+          "className": "ng-valid ng-dirty ng-touched"
+        },
+        {
+          "tag": "button",
+          "text": "+ React",
+          "width": 61,
+          "height": 26,
+          "className": "mini-example"
+        }
+      ]
+    },
+    {
+      "testId": "tablet-768-light",
+      "count": 12,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "Expand",
+          "width": 62,
+          "height": 30,
+          "className": "mobile-toggle"
+        },
+        {
+          "tag": "input",
+          "text": "",
+          "width": 17,
+          "height": 17,
+          "className": "ng-valid ng-dirty ng-touched"
+        },
+        {
+          "tag": "button",
+          "text": "+ React",
+          "width": 61,
+          "height": 26,
+          "className": "mini-example"
+        }
+      ]
+    },
+    {
+      "testId": "tablet-768-system",
+      "count": 12,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "Expand",
+          "width": 62,
+          "height": 30,
+          "className": "mobile-toggle"
+        },
+        {
+          "tag": "input",
+          "text": "",
+          "width": 17,
+          "height": 17,
+          "className": "ng-valid ng-dirty ng-touched"
+        },
+        {
+          "tag": "button",
+          "text": "+ React",
+          "width": 61,
+          "height": 26,
+          "className": "mini-example"
+        }
+      ]
+    },
+    {
+      "testId": "tablet-820-dark",
+      "count": 12,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "Expand",
+          "width": 62,
+          "height": 30,
+          "className": "mobile-toggle"
+        },
+        {
+          "tag": "input",
+          "text": "",
+          "width": 17,
+          "height": 17,
+          "className": "ng-valid ng-dirty ng-touched"
+        },
+        {
+          "tag": "button",
+          "text": "+ React",
+          "width": 61,
+          "height": 26,
+          "className": "mini-example"
+        }
+      ]
+    },
+    {
+      "testId": "tablet-820-light",
+      "count": 12,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "Expand",
+          "width": 62,
+          "height": 30,
+          "className": "mobile-toggle"
+        },
+        {
+          "tag": "input",
+          "text": "",
+          "width": 17,
+          "height": 17,
+          "className": "ng-valid ng-dirty ng-touched"
+        },
+        {
+          "tag": "button",
+          "text": "+ React",
+          "width": 61,
+          "height": 26,
+          "className": "mini-example"
+        }
+      ]
+    },
+    {
+      "testId": "tablet-820-system",
+      "count": 12,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "Expand",
+          "width": 62,
+          "height": 30,
+          "className": "mobile-toggle"
+        },
+        {
+          "tag": "input",
+          "text": "",
+          "width": 17,
+          "height": 17,
+          "className": "ng-valid ng-dirty ng-touched"
+        },
+        {
+          "tag": "button",
+          "text": "+ React",
+          "width": 61,
+          "height": 26,
+          "className": "mini-example"
+        }
+      ]
+    },
+    {
+      "testId": "tablet-1024-dark",
+      "count": 17,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "+\nTypeScript",
+          "width": 96,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nGraphQL",
+          "width": 84,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nNext.js",
+          "width": 75,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        }
+      ]
+    },
+    {
+      "testId": "tablet-1024-light",
+      "count": 17,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "+\nTypeScript",
+          "width": 96,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nGraphQL",
+          "width": 84,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nNext.js",
+          "width": 75,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        }
+      ]
+    },
+    {
+      "testId": "tablet-1024-system",
+      "count": 17,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "+\nTypeScript",
+          "width": 96,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nGraphQL",
+          "width": 84,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nNext.js",
+          "width": 75,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        }
+      ]
+    },
+    {
+      "testId": "laptop-1280-dark",
+      "count": 17,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "+\nTypeScript",
+          "width": 96,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nGraphQL",
+          "width": 84,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nNext.js",
+          "width": 75,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        }
+      ]
+    },
+    {
+      "testId": "laptop-1280-light",
+      "count": 17,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "+\nTypeScript",
+          "width": 96,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nGraphQL",
+          "width": 84,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nNext.js",
+          "width": 75,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        }
+      ]
+    },
+    {
+      "testId": "laptop-1280-system",
+      "count": 17,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "+\nTypeScript",
+          "width": 96,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nGraphQL",
+          "width": 84,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nNext.js",
+          "width": 75,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        }
+      ]
+    },
+    {
+      "testId": "laptop-1366-dark",
+      "count": 17,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "+\nTypeScript",
+          "width": 96,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nGraphQL",
+          "width": 84,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nNext.js",
+          "width": 75,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        }
+      ]
+    },
+    {
+      "testId": "laptop-1366-light",
+      "count": 17,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "+\nTypeScript",
+          "width": 96,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nGraphQL",
+          "width": 84,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nNext.js",
+          "width": 75,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        }
+      ]
+    },
+    {
+      "testId": "laptop-1366-system",
+      "count": 17,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "+\nTypeScript",
+          "width": 96,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nGraphQL",
+          "width": 84,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nNext.js",
+          "width": 75,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        }
+      ]
+    },
+    {
+      "testId": "desktop-1440-dark",
+      "count": 17,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "+\nTypeScript",
+          "width": 96,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nGraphQL",
+          "width": 84,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nNext.js",
+          "width": 75,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        }
+      ]
+    },
+    {
+      "testId": "desktop-1440-light",
+      "count": 17,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "+\nTypeScript",
+          "width": 96,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nGraphQL",
+          "width": 84,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nNext.js",
+          "width": 75,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        }
+      ]
+    },
+    {
+      "testId": "desktop-1440-system",
+      "count": 17,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "+\nTypeScript",
+          "width": 96,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nGraphQL",
+          "width": 84,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nNext.js",
+          "width": 75,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        }
+      ]
+    },
+    {
+      "testId": "desktop-1920-dark",
+      "count": 17,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "+\nTypeScript",
+          "width": 96,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nGraphQL",
+          "width": 84,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nNext.js",
+          "width": 75,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        }
+      ]
+    },
+    {
+      "testId": "desktop-1920-light",
+      "count": 17,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "+\nTypeScript",
+          "width": 96,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nGraphQL",
+          "width": 84,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nNext.js",
+          "width": 75,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        }
+      ]
+    },
+    {
+      "testId": "desktop-1920-system",
+      "count": 17,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "+\nTypeScript",
+          "width": 96,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nGraphQL",
+          "width": 84,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nNext.js",
+          "width": 75,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        }
+      ]
+    },
+    {
+      "testId": "large-2560-dark",
+      "count": 17,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "+\nTypeScript",
+          "width": 96,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nGraphQL",
+          "width": 84,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nNext.js",
+          "width": 75,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        }
+      ]
+    },
+    {
+      "testId": "large-2560-light",
+      "count": 17,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "+\nTypeScript",
+          "width": 96,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nGraphQL",
+          "width": 84,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nNext.js",
+          "width": 75,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        }
+      ]
+    },
+    {
+      "testId": "large-2560-system",
+      "count": 17,
+      "issues": [
+        {
+          "tag": "button",
+          "text": "+\nTypeScript",
+          "width": 96,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nGraphQL",
+          "width": 84,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        },
+        {
+          "tag": "button",
+          "text": "+\nNext.js",
+          "width": 75,
+          "height": 28,
+          "className": "signal-chip missing-chip"
+        }
+      ]
+    }
+  ],
+  "modalChecks": {
+    "modal-320": {
+      "overflow": false,
+      "dialogWidth": 320,
+      "dialogHeight": 800,
+      "viewportWidth": 320,
+      "touchIssues": 12
+    },
+    "modal-375": {
+      "overflow": false,
+      "dialogWidth": 375,
+      "dialogHeight": 800,
+      "viewportWidth": 375,
+      "touchIssues": 12
+    },
+    "modal-768": {
+      "overflow": false,
+      "dialogWidth": 680,
+      "dialogHeight": 752,
+      "viewportWidth": 768,
+      "touchIssues": 10
+    },
+    "modal-1440": {
+      "overflow": false,
+      "dialogWidth": 680,
+      "dialogHeight": 752,
+      "viewportWidth": 1440,
+      "touchIssues": 15
+    }
+  },
+  "compareChecks": {
+    "compare-320": {
+      "overflow": false,
+      "scrollWidth": 320,
+      "clientWidth": 320
+    },
+    "compare-375": {
+      "overflow": false,
+      "scrollWidth": 375,
+      "clientWidth": 375
+    },
+    "compare-768": {
+      "overflow": false,
+      "scrollWidth": 768,
+      "clientWidth": 768
+    },
+    "compare-1440": {
+      "overflow": false,
+      "scrollWidth": 1440,
+      "clientWidth": 1440
+    }
+  }
+}
