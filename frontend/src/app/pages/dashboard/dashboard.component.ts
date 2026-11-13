@@ -816,10 +816,18 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.radarInstance?.destroy();
 
     const breakdown = this.buildRadarBreakdown();
+    const gridStroke = this.chartGridColor();
+    const labelColor = this.chartColor('--text-secondary');
+
     this.radarInstance = new Chart(this.skillRadar.nativeElement, {
       type: 'radar',
       data: {
-        labels: ['Code Quality', 'Skill Coverage', 'Industry Readiness', 'Project Impact'],
+        labels: [
+          ['Code', 'Quality'],
+          ['Skill', 'Coverage'],
+          ['Industry', 'Readiness'],
+          ['Project', 'Impact'],
+        ],
         datasets: [
           {
             label: 'Your Skills',
@@ -829,36 +837,91 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
               breakdown.industryReadiness,
               breakdown.projectImpact,
             ],
-            borderColor: '#6366F1',
-            backgroundColor: 'rgba(99, 102, 241, 0.12)',
-            borderWidth: 2,
-            pointBackgroundColor: '#6366F1',
+            borderColor: '#4F46E5',
+            backgroundColor: 'rgba(99, 102, 241, 0.16)',
+            borderWidth: 2.25,
+            pointBackgroundColor: '#4F46E5',
             pointBorderColor: this.chartColor('--bg-card'),
             pointBorderWidth: 2,
             pointRadius: 4,
             pointHoverRadius: 6,
+            pointHoverBackgroundColor: '#8B5CF6',
           },
         ],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
+        layout: {
+          padding: { top: 4, right: 8, bottom: 4, left: 8 },
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: this.buildChartTooltipOptions(),
+        },
         scales: {
           r: {
             beginAtZero: true,
             max: 100,
-            ticks: { display: false, stepSize: 20 },
-            grid: { color: this.chartColor('--border-color') },
-            angleLines: { color: this.chartColor('--border-color') },
+            ticks: { display: false, stepSize: 25 },
+            grid: { color: gridStroke },
+            angleLines: { color: gridStroke },
             pointLabels: {
-              color: this.chartColor('--text-secondary'),
-              font: { size: 11, family: 'Inter' },
+              color: labelColor,
+              font: { size: 10.5, weight: 600, family: 'Manrope, Inter, sans-serif' },
             },
           },
         },
       },
     });
+  }
+
+  readinessStatusLabel(value: number | null): string {
+    if (value === null || Number.isNaN(value)) return 'Unavailable';
+    if (value >= 80) return 'Strong';
+    if (value >= 60) return 'On Track';
+    return 'Building';
+  }
+
+  readinessToneClass(value: number | null): string {
+    if (value === null || Number.isNaN(value)) return 'pill-muted';
+    if (value >= 80) return 'pill-success';
+    if (value >= 60) return 'pill-indigo';
+    return 'pill-warning';
+  }
+
+  statStatusLabel(card: StatCard): string {
+    if (this.isLoading) return 'Syncing';
+    return card.value === null ? 'Unavailable' : 'Measured';
+  }
+
+  statSparkPath(iconType: StatCard['iconType']): string {
+    switch (iconType) {
+      case 'repos':
+        return 'M2 24 C18 24, 24 14, 38 16 C50 18, 56 8, 72 11 C84 13, 94 20, 118 6';
+      case 'stars':
+        return 'M2 26 C20 22, 32 10, 48 15 C64 20, 74 12, 92 9 C104 7, 110 14, 118 8';
+      case 'forks':
+        return 'M2 22 C16 26, 30 12, 44 18 C58 24, 72 7, 88 12 C100 16, 108 9, 118 5';
+      case 'followers':
+      default:
+        return 'M2 24 C20 18, 34 22, 50 13 C66 4, 80 17, 96 11 C106 7, 112 10, 118 7';
+    }
+  }
+
+  freshnessStatusLabel(source: SourceFreshnessEntry): string {
+    if (source.status === 'fresh') {
+      return source.policy === 'durable-record' ? 'Saved' : 'Fresh';
+    }
+    if (source.status === 'missing') return 'No evidence';
+    return 'Stale';
+  }
+
+  freshnessPillClass(status: string): string {
+    if (status === 'fresh') return 'pill-success';
+    if (status === 'missing') return 'pill-muted';
+    if (status === 'incompatible') return 'pill-danger';
+    return 'pill-warning';
   }
 
   get scoreTrendLabel(): string {
@@ -988,8 +1051,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const ctx = this.activityChart.nativeElement.getContext('2d') as CanvasRenderingContext2D;
     const gradient = ctx.createLinearGradient(0, 0, 0, 220);
-    gradient.addColorStop(0, 'rgba(99, 102, 241, 0.35)');
-    gradient.addColorStop(1, 'rgba(99, 102, 241, 0)');
+    gradient.addColorStop(0, 'rgba(79, 70, 229, 0.28)');
+    gradient.addColorStop(0.55, 'rgba(99, 102, 241, 0.10)');
+    gradient.addColorStop(1, 'rgba(139, 92, 246, 0)');
 
     this.activityInstance = new Chart(this.activityChart.nativeElement, {
       type: 'line',
@@ -998,25 +1062,31 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         datasets: [
           {
             data,
-            borderColor: '#6366F1',
+            borderColor: '#4F46E5',
             backgroundColor: gradient,
-            borderWidth: 3,
+            borderWidth: 2.5,
             fill: true,
-            tension: 0.45,
-            pointBackgroundColor: '#6366F1',
+            tension: 0.42,
+            pointBackgroundColor: '#4F46E5',
             pointBorderColor: this.chartColor('--bg-card'),
             pointBorderWidth: 2,
-            pointRadius: 5,
-            pointHoverRadius: 7,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            pointHoverBackgroundColor: '#8B5CF6',
           },
         ],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
         plugins: {
           legend: { display: false },
           tooltip: {
+            ...this.buildChartTooltipOptions(),
             callbacks: {
               label: (ctx) => ` ${ctx.parsed.y} commit${ctx.parsed.y !== 1 ? 's' : ''}`,
             },
@@ -1027,23 +1097,26 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             display: true,
             grid: { display: false },
             border: { display: false },
-            ticks: { color: this.chartColor('--text-secondary'), font: { size: 11 } },
+            ticks: {
+              color: this.chartColor('--text-secondary'),
+              font: { size: 11, family: 'Manrope, Inter, sans-serif' },
+            },
           },
           y: {
             display: true,
             min: 0,
             suggestedMax: Math.ceil(maxVal * 1.2),
-            grid: { color: this.chartColor('--border-color') },
+            grid: { color: this.chartGridColor() },
             border: { display: false },
             ticks: {
               color: this.chartColor('--text-secondary'),
-              font: { size: 10 },
+              font: { size: 10, family: 'Inter, sans-serif' },
               maxTicksLimit: 5,
               precision: 0,
             },
           },
         },
-        layout: { padding: { top: 10, bottom: 10 } },
+        layout: { padding: { top: 8, bottom: 4, left: 2, right: 6 } },
       },
     });
     this.cdr.detectChanges();
@@ -1061,7 +1134,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const other = keys.slice(4).reduce((sum, key) => sum + Number(langData[key] || 0), 0);
     const labels = [...top, ...(other > 0 ? ['Other'] : [])];
     const values = [...top.map((key) => Number(langData[key] || 0)), ...(other > 0 ? [other] : [])];
-    const colors = ['#6366F1', '#8B5CF6', '#22C55E', '#F59E0B', '#64748B'];
+    const colors = ['#4F46E5', '#8B5CF6', '#10B981', '#0EA5E9', '#64748B'];
     this.hasLanguageData = values.length > 0 && total > 0;
 
     this.languageLegend = labels.map((label, index) => ({
@@ -1078,7 +1151,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           {
             data: values,
             backgroundColor: colors,
-            borderWidth: 3,
+            borderWidth: 2,
+            borderRadius: 4,
+            spacing: 2,
             borderColor: this.chartColor('--bg-card'),
             hoverOffset: 6,
           },
@@ -1087,10 +1162,35 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        cutout: '68%',
-        plugins: { legend: { display: false } },
+        cutout: '72%',
+        plugins: {
+          legend: { display: false },
+          tooltip: this.buildChartTooltipOptions(),
+        },
       },
     });
+  }
+
+  private isDarkTheme(): boolean {
+    return document.documentElement.getAttribute('data-theme') === 'dark';
+  }
+
+  private chartGridColor(): string {
+    return this.isDarkTheme() ? 'rgba(148, 163, 184, 0.14)' : 'rgba(203, 213, 225, 0.55)';
+  }
+
+  private buildChartTooltipOptions() {
+    const dark = this.isDarkTheme();
+    return {
+      backgroundColor: dark ? '#0F172A' : '#0F172A',
+      titleColor: '#F8FAFC',
+      bodyColor: '#E2E8F0',
+      borderColor: dark ? 'rgba(148, 163, 184, 0.2)' : 'rgba(15, 23, 42, 0.12)',
+      borderWidth: 1,
+      cornerRadius: 10,
+      padding: 10,
+      displayColors: true,
+    };
   }
 
   private chartColor(token: string): string {
@@ -1099,17 +1199,29 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private refreshChartTheme(): void {
     const text = this.chartColor('--text-secondary');
-    const border = this.chartColor('--border-color');
+    const gridStroke = this.chartGridColor();
+    const cardBg = this.chartColor('--bg-card');
+    const tooltipOpts = this.buildChartTooltipOptions();
+
     for (const chart of [this.radarInstance, this.activityInstance, this.languageInstance]) {
       if (!chart) continue;
+      if (chart.options.plugins?.tooltip) {
+        Object.assign(chart.options.plugins.tooltip, tooltipOpts);
+      }
       for (const scale of Object.values(chart.options.scales || {})) {
         if (!scale) continue;
         if (scale.ticks) scale.ticks.color = text;
-        if (scale.grid) scale.grid.color = border;
+        if (scale.grid) scale.grid.color = gridStroke;
+        if ('angleLines' in scale && scale.angleLines) scale.angleLines.color = gridStroke;
         if ('pointLabels' in scale && scale.pointLabels) scale.pointLabels.color = text;
       }
-      if (chart === this.languageInstance)
-        chart.data.datasets[0].borderColor = this.chartColor('--bg-card');
+      const ds = chart.data.datasets[0] as unknown as Record<string, unknown>;
+      if (ds) {
+        if (chart === this.languageInstance) ds['borderColor'] = cardBg;
+        if (chart === this.activityInstance || chart === this.radarInstance) {
+          ds['pointBorderColor'] = cardBg;
+        }
+      }
       chart.update('none');
     }
   }

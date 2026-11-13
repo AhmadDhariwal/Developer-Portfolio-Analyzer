@@ -1,9 +1,13 @@
 <!-- ════════════════════════════════════════════
      DASHBOARD OVERVIEW HEADER
      ════════════════════════════════════════════ -->
-<div class="page-header">
+<header class="page-header">
   <div class="header-text">
-    <h2>Dashboard Overview</h2>
+    <div class="header-title-row">
+      <h2>Dashboard Overview</h2>
+      <span class="handle-badge" *ngIf="githubHandle">&#64;{{ githubHandle }}</span>
+      <span class="context-pill" *ngIf="fromFrontendCache">Cached snapshot</span>
+    </div>
     <p class="header-sub">{{ dashboardIdentityLine }}</p>
     <p class="header-sub">{{ dashboardScoreLine }}</p>
     <p class="header-sub">{{ sourceHealthLine }}</p>
@@ -12,52 +16,91 @@
   <div class="header-actions">
     <div class="role-selector">
       <label class="role-label" for="dashboard-career-stack">Career Stack</label>
-      <select
-        id="dashboard-career-stack"
-        class="role-dropdown"
-        [ngModel]="selectedCareerStack"
-        (ngModelChange)="onCareerStackChange($event)"
-        [disabled]="isLoading"
-      >
-        <option *ngFor="let stack of careerStacks" [ngValue]="stack">{{ stack }}</option>
-      </select>
+      <div class="select-wrap">
+        <select
+          id="dashboard-career-stack"
+          class="role-dropdown"
+          [ngModel]="selectedCareerStack"
+          (ngModelChange)="onCareerStackChange($event)"
+          [disabled]="isLoading"
+        >
+          <option *ngFor="let stack of careerStacks" [ngValue]="stack">{{ stack }}</option>
+        </select>
+        <svg
+          class="select-chevron"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </div>
     </div>
+
     <div class="role-selector">
       <label class="role-label" for="dashboard-experience">Experience</label>
-      <select
-        id="dashboard-experience"
-        class="role-dropdown"
-        [ngModel]="selectedExperienceLevel"
-        (ngModelChange)="onExperienceLevelChange($event)"
-        [disabled]="isLoading"
-      >
-        <option *ngFor="let level of experienceLevels" [ngValue]="level">{{ level }}</option>
-      </select>
+      <div class="select-wrap">
+        <select
+          id="dashboard-experience"
+          class="role-dropdown"
+          [ngModel]="selectedExperienceLevel"
+          (ngModelChange)="onExperienceLevelChange($event)"
+          [disabled]="isLoading"
+        >
+          <option *ngFor="let level of experienceLevels" [ngValue]="level">{{ level }}</option>
+        </select>
+        <svg
+          class="select-chevron"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </div>
     </div>
 
     <button class="reanalyze-btn" (click)="reanalyze()" [disabled]="isLoading">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
         <polyline points="23 4 23 10 17 10"></polyline>
         <polyline points="1 20 1 14 7 14"></polyline>
         <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
       </svg>
-      Refresh dashboard
+      <span>{{ isLoading ? 'Refreshing…' : 'Refresh dashboard' }}</span>
     </button>
   </div>
-</div>
+</header>
 
 <p *ngIf="isLoading" role="status" class="alert-banner alert-info">
   Refreshing dashboard evidence…
 </p>
 <div *ngIf="loadError" role="alert" class="alert-banner alert-warning">
-  {{ loadError }} <button type="button" (click)="reanalyze()">Retry</button>
+  <span>{{ loadError }}</span>
+  <button type="button" (click)="reanalyze()">Retry</button>
 </div>
 <p *ngIf="secondaryErrors.length" role="status" class="alert-banner alert-warning">
   Unavailable: {{ secondaryErrors.join(', ') }}. Refresh to retry.
 </p>
 
 <div *ngIf="dashboardStale && !isLoading" class="alert-banner alert-warning">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="alert-icon">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    class="alert-icon"
+    aria-hidden="true"
+  >
     <circle cx="12" cy="12" r="10" />
     <line x1="12" y1="8" x2="12" y2="12" />
     <line x1="12" y1="16" x2="12.01" y2="16" />
@@ -66,45 +109,93 @@
 </div>
 
 <div *ngIf="rateLimitWarning" class="alert-banner alert-warning">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="alert-icon">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    class="alert-icon"
+    aria-hidden="true"
+  >
     <circle cx="12" cy="12" r="10" />
     <line x1="12" y1="8" x2="12" y2="12" />
     <line x1="12" y1="16" x2="12.01" y2="16" />
   </svg>
-  <span
-    >GitHub refresh is temporarily limited. Saved evidence remains available; try again later.</span
-  >
-</div>
-<div *ngIf="noGithubUsername && !isLoading" class="alert-banner alert-info">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="alert-icon">
-    <circle cx="12" cy="12" r="10" />
-    <line x1="12" y1="8" x2="12" y2="12" />
-    <line x1="12" y1="16" x2="12.01" y2="16" />
-  </svg>
-  <span
-    >No GitHub username set. Go to <a routerLink="/app/profile">Profile Settings</a> and add your
-    GitHub handle to load real data.</span
-  >
+  <span>
+    GitHub refresh is temporarily limited. Saved evidence remains available; try again later.
+  </span>
 </div>
 
-<div class="row-top">
+<div *ngIf="noGithubUsername && !isLoading" class="alert-banner alert-info">
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    class="alert-icon"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="10" />
+    <line x1="12" y1="8" x2="12" y2="12" />
+    <line x1="12" y1="16" x2="12.01" y2="16" />
+  </svg>
+  <span>
+    No GitHub username set. Go to <a routerLink="/app/profile">Profile Settings</a> and add your
+    GitHub handle to load real data.
+  </span>
+</div>
+
+<!-- ════════════════════════════════════════════
+     HERO SCORE + KPI BENTO ROW
+     ════════════════════════════════════════════ -->
+<section class="row-top" aria-label="Portfolio Readiness and Key Metrics">
   <div class="card score-card">
     <div class="card-header-row">
-      <div class="status-dot"></div>
-      <span class="card-label">Developer Readiness Score</span>
+      <div class="card-title-group">
+        <span class="status-dot" [class.is-unavailable]="!readinessAvailable"></span>
+        <div>
+          <span class="card-label">Developer Readiness Score</span>
+          <p class="card-micro-sub">Composite benchmark from saved portfolio telemetry</p>
+        </div>
+      </div>
+      <span
+        class="bento-pill"
+        [ngClass]="readinessToneClass(readinessAvailable ? developerScore : null)"
+      >
+        {{ readinessAvailable ? readinessStatusLabel(developerScore) : 'Unavailable' }}
+      </span>
     </div>
-    <div class="score-body">
-      <p *ngIf="!readinessAvailable">Readiness unavailable: verified source evidence is missing.</p>
+
+    <div class="score-hero-main">
+      <p *ngIf="!readinessAvailable" class="score-unavailable">
+        Readiness unavailable: verified source evidence is missing.
+      </p>
+
       <app-score-meter
         *ngIf="!isLoading && readinessAvailable"
         [score]="developerScore"
         [maxScore]="100"
         size="lg"
       ></app-score-meter>
+
+      <div class="hero-breakdown-list" *ngIf="!isLoading && readinessAvailable">
+        <div class="hero-subrow" *ngFor="let row of scoreBreakdownRows">
+          <div class="hero-subrow__head">
+            <span>{{ row.label }}</span>
+            <strong>{{ row.value === null ? 'Unavailable' : row.value + '/100' }}</strong>
+          </div>
+          <div class="hero-subrow__track">
+            <div class="hero-subrow__fill" [style.width.%]="row.value ?? 0"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="score-footer">
       <div
         class="score-trend"
         [class.trend-down]="!scoreTrendUp"
-        [class.trend-neutral]="scoreChangeFromLastMonth === 0"
+        [class.trend-neutral]="scoreChangeFromLastMonth === 0 || scoreChangeFromLastMonth === null"
       >
         <svg
           *ngIf="
@@ -114,6 +205,7 @@
           fill="none"
           stroke="currentColor"
           stroke-width="2.5"
+          aria-hidden="true"
         >
           <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
           <polyline points="16 7 22 7 22 13"></polyline>
@@ -124,25 +216,29 @@
           fill="none"
           stroke="currentColor"
           stroke-width="2.5"
+          aria-hidden="true"
         >
           <polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline>
           <polyline points="16 17 22 17 22 11"></polyline>
         </svg>
         <svg
-          *ngIf="scoreChangeFromLastMonth === 0"
+          *ngIf="scoreChangeFromLastMonth === 0 || scoreChangeFromLastMonth === null"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
           stroke-width="2.5"
+          aria-hidden="true"
         >
           <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
-        {{ scoreTrendLabel }}
+        <span>{{ scoreTrendLabel }}</span>
       </div>
-      <p class="percentile-note">Based on your saved profile evidence</p>
-      <p class="percentile-note" *ngIf="readinessBasis === 'github'">
-        GitHub health fallback; no matching portfolio assessment is saved.
-      </p>
+      <div class="score-basis-notes">
+        <p class="percentile-note">Based on your saved profile evidence</p>
+        <p class="percentile-note is-fallback" *ngIf="readinessBasis === 'github'">
+          GitHub health fallback; no matching portfolio assessment is saved.
+        </p>
+      </div>
     </div>
   </div>
 
@@ -153,17 +249,45 @@
           [class]="'stat-icon ' + card.iconType"
           [innerHTML]="statIconHtml[card.iconType] || statIconHtml['repos']"
         ></div>
+        <span
+          class="bento-pill"
+          [ngClass]="card.value === null ? 'pill-muted' : 'pill-' + card.iconType"
+        >
+          {{ statStatusLabel(card) }}
+        </span>
       </div>
-      <div class="stat-value" [class.is-unavailable]="isLoading || card.value === null">
-        {{ isLoading ? 'Loading…' : card.value === null ? 'Unavailable' : (card.value | number) }}
+
+      <div class="stat-metric-block">
+        <div class="stat-label">{{ card.label }}</div>
+        <div class="stat-value" [class.is-unavailable]="isLoading || card.value === null">
+          {{ isLoading ? 'Loading…' : card.value === null ? 'Unavailable' : (card.value | number) }}
+        </div>
+        <div class="stat-growth">{{ card.growth }}</div>
       </div>
-      <div class="stat-label">{{ card.label }}</div>
-      <div class="stat-growth">{{ card.growth }}</div>
+
+      <svg
+        *ngIf="!isLoading && card.value !== null"
+        [class]="'stat-sparkline ' + card.iconType"
+        viewBox="0 0 120 30"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+      >
+        <path
+          [attr.d]="statSparkPath(card.iconType)"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.2"
+          stroke-linecap="round"
+        />
+      </svg>
     </div>
   </div>
-</div>
+</section>
 
-<div class="readiness-center">
+<!-- ════════════════════════════════════════════
+     READINESS CENTER
+     ════════════════════════════════════════════ -->
+<section class="readiness-center" aria-label="Readiness Center">
   <div class="section-title-row">
     <div>
       <h3>Readiness Center</h3>
@@ -178,17 +302,27 @@
       [class]="'card readiness-card tone-' + (item.tone || 'primary')"
     >
       <div class="readiness-card__top">
-        <span>{{ item.label }}</span>
-        <strong>{{ item.value === null ? 'Unavailable' : item.value + '%' }}</strong>
+        <span class="readiness-label">{{ item.label }}</span>
+        <span class="bento-pill" [ngClass]="readinessToneClass(item.value)">
+          {{ readinessStatusLabel(item.value) }}
+        </span>
+      </div>
+      <div class="readiness-metric-row">
+        <strong [class.is-unavailable]="item.value === null">
+          {{ item.value === null ? 'Unavailable' : item.value + '%' }}
+        </strong>
       </div>
       <div class="readiness-track">
         <div class="readiness-fill" [style.width.%]="item.value ?? 0"></div>
       </div>
     </div>
   </div>
-</div>
+</section>
 
-<div class="command-center">
+<!-- ════════════════════════════════════════════
+     CAREER COMMAND CENTER
+     ════════════════════════════════════════════ -->
+<section class="command-center" aria-label="Career Command Center">
   <div class="section-title-row">
     <div>
       <h3>Career Command Center</h3>
@@ -198,32 +332,36 @@
   </div>
   <div class="command-grid">
     <a class="card command-card" *ngFor="let item of commandCenter" [routerLink]="[item.route]">
-      <span class="command-source">{{ item.source }}</span>
+      <div class="command-card__head">
+        <span class="command-source">{{ item.source }}</span>
+        <svg
+          class="command-arrow"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <line x1="7" y1="17" x2="17" y2="7"></line>
+          <polyline points="7 7 17 7 17 17"></polyline>
+        </svg>
+      </div>
       <strong>{{ item.label }}</strong>
       <p>{{ item.value }}</p>
+      <span class="command-cta">Open {{ item.source }} →</span>
     </a>
   </div>
-</div>
+</section>
 
-<app-dashboard-progress
-  [data]="progress"
-  [loading]="isLoading"
-  [error]="loadError"
-  [stale]="dashboardStale"
-  [integrationHealth]="integrationConnectivity"
-  [integrationHealthState]="integrationHealthState"
-></app-dashboard-progress>
-<app-dashboard-learning-summary
-  [snapshot]="learningSnapshot"
-  [completedCourses]="progress?.completedCourses || []"
-></app-dashboard-learning-summary>
-
-<div class="row-middle">
+<!-- ════════════════════════════════════════════
+     ANALYTICS TRIO: ACTIVITY + LANGUAGES + RADAR
+     ════════════════════════════════════════════ -->
+<section class="analytics-trio-grid" aria-label="Analytics Overview">
   <div class="card activity-card">
     <div class="card-head">
       <div class="head-text">
         <h3>Contribution Activity</h3>
-        <p>Saved monthly commit activity</p>
+        <p>Saved monthly commit cadence</p>
       </div>
       <div class="activity-badge">
         &lt;/&gt; {{ activityAvailable ? totalActivity + ' total' : 'Unavailable' }}
@@ -249,8 +387,9 @@
     <div class="card-head">
       <div class="head-text">
         <h3>Language Distribution</h3>
-        <p>Across all repositories</p>
+        <p>Across analyzed repositories</p>
       </div>
+      <span class="bento-pill pill-indigo" *ngIf="hasLanguageData">Top Stack</span>
     </div>
     <div class="chart-wrap donut-wrap">
       <canvas
@@ -262,7 +401,7 @@
     <div class="empty-state" *ngIf="!hasLanguageData">
       <p>No language distribution available for the saved default GitHub profile yet.</p>
     </div>
-    <div class="lang-legend">
+    <div class="lang-legend" *ngIf="languageLegend.length > 0">
       <div class="legend-row" *ngFor="let lang of languageLegend">
         <div class="legend-left">
           <span class="legend-dot" [style.background]="lang.color"></span>
@@ -272,15 +411,14 @@
       </div>
     </div>
   </div>
-</div>
 
-<div class="row-bottom">
   <div class="card radar-card">
     <div class="card-head">
       <div class="head-text">
         <h3>Skills Radar</h3>
-        <p>Proficiency across key domains</p>
+        <p>Proficiency across 4 core dimensions</p>
       </div>
+      <span class="bento-pill pill-violet">4-Axis View</span>
     </div>
     <div class="chart-wrap radar-wrap">
       <canvas
@@ -290,16 +428,27 @@
       ></canvas>
     </div>
   </div>
+</section>
 
+<!-- ════════════════════════════════════════════
+     SKILL INTELLIGENCE + AI RECOMMENDATIONS
+     ════════════════════════════════════════════ -->
+<section class="intelligence-split-grid" aria-label="Skill Gaps and Recommendations">
   <div class="card gap-card">
     <div class="card-head">
       <div class="head-text">
         <h3>Skill Gap Overview</h3>
-        <p>Detected vs missing skills</p>
+        <p>Detected strengths vs target profile gaps</p>
       </div>
       <a class="view-all-link" [routerLink]="['/app/skill-gap']">
         View All
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
           <line x1="7" y1="17" x2="17" y2="7"></line>
           <polyline points="7 7 17 7 17 17"></polyline>
         </svg>
@@ -319,6 +468,36 @@
       </div>
 
       <div *ngIf="!isLoading && (topSkills.length > 0 || missingSkills.length > 0)">
+        <div class="coverage-box">
+          <div class="cov-head">
+            <span class="cov-title">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+              Target Role Coverage
+            </span>
+            <span class="cov-score">{{
+              coveragePercentage === null ? 'Unavailable' : coveragePercentage + '/100'
+            }}</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" [style.width.%]="coveragePercentage ?? 0"></div>
+          </div>
+          <div class="cov-footer">
+            <span>{{
+              coveragePercentage === null
+                ? 'Coverage unavailable'
+                : coveragePercentage + '% coverage against your target profile'
+            }}</span>
+          </div>
+        </div>
+
         <div class="skills-group">
           <div class="group-title">
             <span class="group-dot success"></span>
@@ -326,7 +505,13 @@
           </div>
           <div class="tags-wrap">
             <app-ui-badge *ngFor="let skill of topSkills" variant="success" size="sm">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                aria-hidden="true"
+              >
                 <polyline points="20 6 9 17 4 12"></polyline>
               </svg>
               {{ skill }}
@@ -341,7 +526,13 @@
           </div>
           <div class="tags-wrap">
             <app-ui-badge *ngFor="let skill of missingSkills" variant="danger" size="sm">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                aria-hidden="true"
+              >
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
@@ -349,69 +540,75 @@
             </app-ui-badge>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
 
-        <div class="coverage-box">
-          <div class="cov-head">
-            <span class="cov-title">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-              </svg>
-              Skill Coverage
-            </span>
-          </div>
-          <div class="progress-track">
-            <div class="progress-fill" [style.width.%]="coveragePercentage ?? 0"></div>
-          </div>
-          <div class="cov-footer">
-            <span>{{
-              coveragePercentage === null
-                ? 'Coverage unavailable'
-                : coveragePercentage + '% coverage against your target profile'
-            }}</span>
-            <span class="cov-score">{{
-              coveragePercentage === null ? 'Unavailable' : coveragePercentage + '/100'
-            }}</span>
+  <div class="card recommendations-section">
+    <div class="rec-section-head">
+      <div class="head-text">
+        <h3>AI Recommendations</h3>
+        <p>Personalized priorities to improve portfolio strength</p>
+      </div>
+      <a class="view-all-link" [routerLink]="['/app/recommendations']">
+        View All
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <line x1="7" y1="17" x2="17" y2="7"></line>
+          <polyline points="7 7 17 7 17 17"></polyline>
+        </svg>
+      </a>
+    </div>
+
+    <p class="empty-state" *ngIf="!isLoading && recommendations.length === 0">
+      No saved recommendations for your active profile. Open Recommendations to get started.
+    </p>
+    <div class="rec-grid">
+      <div class="rec-card" *ngFor="let rec of recommendations">
+        <div class="rec-row-main">
+          <div
+            class="rec-icon"
+            [innerHTML]="recIconHtml[rec.icon] || recIconHtml['technology']"
+          ></div>
+          <div class="rec-content">
+            <div class="rec-meta">
+              <span [class]="'priority-badge ' + rec.priorityType">{{ rec.priority }}</span>
+              <span [class]="'category-tag ' + rec.priorityType">{{ rec.category }}</span>
+            </div>
+            <p class="rec-title">{{ rec.title }}</p>
           </div>
         </div>
       </div>
     </div>
   </div>
-</div>
+</section>
 
-<div class="recommendations-section">
-  <div class="rec-section-head">
-    <div>
-      <h3>AI Recommendations</h3>
-      <p>Personalized actions to boost your score</p>
-    </div>
-    <a class="view-all-link" [routerLink]="['/app/recommendations']">
-      View All
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <line x1="7" y1="17" x2="17" y2="7"></line>
-        <polyline points="7 7 17 7 17 17"></polyline>
-      </svg>
-    </a>
-  </div>
+<!-- ════════════════════════════════════════════
+     PROGRESS TELEMETRY + LEARNING TRACKER
+     ════════════════════════════════════════════ -->
+<app-dashboard-progress
+  [data]="progress"
+  [loading]="isLoading"
+  [error]="loadError"
+  [stale]="dashboardStale"
+  [integrationHealth]="integrationConnectivity"
+  [integrationHealthState]="integrationHealthState"
+></app-dashboard-progress>
 
-  <p class="empty-state" *ngIf="!isLoading && recommendations.length === 0">
-    No saved recommendations for your active profile. Open Recommendations to get started.
-  </p>
-  <div class="rec-grid">
-    <div class="card rec-card" *ngFor="let rec of recommendations">
-      <div class="rec-top">
-        <div
-          class="rec-icon"
-          [innerHTML]="recIconHtml[rec.icon] || recIconHtml['technology']"
-        ></div>
-        <span [class]="'priority-badge ' + rec.priorityType">{{ rec.priority }}</span>
-      </div>
-      <p class="rec-title">{{ rec.title }}</p>
-      <span [class]="'category-tag ' + rec.priorityType">{{ rec.category }}</span>
-    </div>
-  </div>
-</div>
+<app-dashboard-learning-summary
+  [snapshot]="learningSnapshot"
+  [completedCourses]="progress?.completedCourses || []"
+></app-dashboard-learning-summary>
 
-<div class="freshness-section">
+<!-- ════════════════════════════════════════════
+     SOURCE FRESHNESS
+     ════════════════════════════════════════════ -->
+<section class="freshness-section" aria-label="Source Freshness">
   <div class="section-title-row">
     <div>
       <h3>Source Freshness</h3>
@@ -426,23 +623,22 @@
     >
       <div class="freshness-card__top">
         <strong>{{ source.label }}</strong>
-        <span>{{
-          source.status === 'fresh'
-            ? source.policy === 'durable-record'
-              ? 'Saved evidence'
-              : 'Fresh'
-            : source.status === 'missing'
-              ? 'No evidence'
-              : 'Refresh recommended'
-        }}</span>
+        <span class="bento-pill" [ngClass]="freshnessPillClass(source.status)">
+          {{ freshnessStatusLabel(source) }}
+        </span>
       </div>
-      <p>Last Updated: {{ formatIntegrationDate(source.lastUpdated) }}</p>
-      <p *ngIf="source.reason && source.status !== 'fresh'">{{ source.reason }}</p>
+      <p class="freshness-time">Last Updated: {{ formatIntegrationDate(source.lastUpdated) }}</p>
+      <p class="freshness-reason" *ngIf="source.reason && source.status !== 'fresh'">
+        {{ source.reason }}
+      </p>
     </div>
   </div>
-</div>
+</section>
 
-<div class="insights-grid">
+<!-- ════════════════════════════════════════════
+     BOTTOM INSIGHTS MATRIX
+     ════════════════════════════════════════════ -->
+<section class="insights-grid" aria-label="Detailed Score Breakdown and Integration Trends">
   <div class="card insights-card">
     <div class="card-head">
       <div class="head-text">
@@ -454,7 +650,7 @@
       <div class="insight-row" *ngFor="let row of scoreBreakdownRows">
         <div class="insight-row__head">
           <span>{{ row.label }}</span>
-          <span>{{ row.value === null ? 'Unavailable' : row.value + '%' }}</span>
+          <strong>{{ row.value === null ? 'Unavailable' : row.value + '%' }}</strong>
         </div>
         <div class="insight-bar">
           <div class="insight-bar__fill" [style.width.%]="row.value ?? 0"></div>
@@ -474,7 +670,7 @@
       <div class="insight-row" *ngFor="let row of profileSignalRows">
         <div class="insight-row__head">
           <span>{{ row.label }}</span>
-          <span>{{ row.value === null ? 'Unavailable' : row.value + '%' }}</span>
+          <strong>{{ row.value === null ? 'Unavailable' : row.value + '%' }}</strong>
         </div>
         <div class="insight-bar is-alt">
           <div class="insight-bar__fill" [style.width.%]="row.value ?? 0"></div>
@@ -494,7 +690,7 @@
       <div class="insight-row" *ngFor="let row of explainabilityRows">
         <div class="insight-row__head">
           <span>{{ row.label }} ({{ row.weight }}%)</span>
-          <span>{{ row.value === null ? 'Unavailable' : row.value + '%' }}</span>
+          <strong>{{ row.value === null ? 'Unavailable' : row.value + '%' }}</strong>
         </div>
         <div class="insight-bar">
           <div class="insight-bar__fill" [style.width.%]="row.value ?? 0"></div>
@@ -559,18 +755,18 @@
             <span class="detail-label">LinkedIn signals</span>
             <div class="detail-grid">
               <span>Name {{ insight.normalized.profile?.name || '—' }}</span>
-              <span
-                >Profile completeness
-                {{ insight.normalized.activity?.profileCompleteness || 0 }}%</span
-              >
+              <span>
+                Profile completeness
+                {{ insight.normalized.activity?.profileCompleteness || 0 }}%
+              </span>
               <span>Account trust {{ insight.normalized.activity?.accountTrust || 0 }}%</span>
-              <span
-                >Activity proxy {{ insight.normalized.activity?.accountActivityProxy || 0 }}%</span
-              >
+              <span>
+                Activity proxy {{ insight.normalized.activity?.accountActivityProxy || 0 }}%
+              </span>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-</div>
+</section>

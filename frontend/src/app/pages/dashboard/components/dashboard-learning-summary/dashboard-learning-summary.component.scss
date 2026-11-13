@@ -2,75 +2,205 @@
   display: block;
   margin-bottom: 24px;
 }
+
 section {
   padding: 20px;
   border: 1px solid var(--border-color);
   border-radius: 16px;
   background: var(--bg-card);
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(15, 23, 42, 0.04));
   color: var(--text-primary);
 
   @media (max-width: 480px) {
-    padding: 16px 12px;
+    padding: 16px 14px;
   }
 }
+
 .heading {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  margin-bottom: 16px;
+
+  h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  p {
+    margin: 3px 0 0;
+    color: var(--text-muted, var(--text-secondary));
+    font-size: 0.8rem;
+  }
 }
-h3 {
-  margin: 0;
-  font-size: 1rem;
-}
-p,
-dt {
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-}
+
 a {
-  color: var(--text-primary);
+  color: var(--color-primary, #4f46e5);
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   min-height: 36px;
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-subtle, rgba(255, 255, 255, 0.04));
+  padding: 6px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(79, 70, 229, 0.22);
+  background: var(--color-primary-soft, rgba(79, 70, 229, 0.08));
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 700;
   transition: all 0.2s ease;
 
   &:hover {
-    background: var(--border-color);
+    background: var(--color-primary, #4f46e5);
+    color: #ffffff;
+    border-color: var(--color-primary, #4f46e5);
   }
 
   &:focus-visible {
-    outline: 3px solid var(--text-primary);
-    outline-offset: 3px;
+    outline: 3px solid var(--color-primary, #4f46e5);
+    outline-offset: 2px;
   }
 }
-dl {
+
+.learning-tiles {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
-  margin-bottom: 0;
+  margin: 0;
 }
-dd {
-  margin: 8px 0 0;
-  font-size: 1.5rem;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
+
+.learning-tile {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--bg-subtle, #f8fafc);
+  border: 1px solid var(--border-color);
+
+  dt {
+    color: var(--text-muted, var(--text-secondary));
+    font-size: 0.76rem;
+    font-weight: 600;
+  }
+
+  dd {
+    margin: 6px 0 0;
+    font-size: 1.45rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
+  }
+
+  &.is-indigo dd {
+    color: var(--color-primary, #4f46e5);
+  }
+
+  &.is-warning dd {
+    color: var(--color-warning-text, #b45309);
+  }
+
+  &.is-success dd {
+    color: var(--color-success-text, #059669);
+  }
 }
-@media (max-width: 540px) {
-  dl {
+
+.empty-learning {
+  margin: 12px 0 0;
+  font-size: 0.82rem;
+  color: var(--text-muted, var(--text-secondary));
+}
+
+.completions-box {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-color);
+
+  h4 {
+    margin: 0 0 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-muted, var(--text-secondary));
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    background: var(--bg-subtle, #f8fafc);
+    border: 1px solid var(--border-color);
+    font-size: 0.82rem;
+  }
+
+  .course-title {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .course-date {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--color-success-text, #059669);
+    background: var(--color-success-soft, rgba(16, 185, 129, 0.12));
+    padding: 3px 9px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 600px) {
+  .learning-tiles {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
 @media (max-width: 340px) {
-  dl {
+  .learning-tiles {
     grid-template-columns: 1fr;
+  }
+}
+
+:host-context([data-theme='dark']) {
+  a {
+    color: #c7d2fe;
+    border-color: rgba(129, 140, 248, 0.28);
+    background: rgba(79, 70, 229, 0.18);
+
+    &:hover {
+      color: #ffffff;
+    }
+  }
+
+  .learning-tile {
+    &.is-indigo dd {
+      color: #a5b4fc;
+    }
+
+    &.is-warning dd {
+      color: #fbbf24;
+    }
+
+    &.is-success dd {
+      color: #34d399;
+    }
+  }
+
+  .completions-box .course-date {
+    color: #34d399;
+    background: rgba(16, 185, 129, 0.16);
   }
 }

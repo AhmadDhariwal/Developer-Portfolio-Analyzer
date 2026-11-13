@@ -3,10 +3,22 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 
-  &.size-sm { width: 130px; height: 130px; }
-  &.size-md { width: 170px; height: 170px; }
-  &.size-lg { width: 210px; height: 210px; }
+  &.size-sm {
+    width: 120px;
+    height: 120px;
+  }
+
+  &.size-md {
+    width: 156px;
+    height: 156px;
+  }
+
+  &.size-lg {
+    width: 176px;
+    height: 176px;
+  }
 
   .score-svg {
     position: absolute;
@@ -17,15 +29,15 @@
 
     .track {
       fill: none;
-      stroke: var(--border-color, #E2E8F0);
-      stroke-width: 9;
+      stroke: var(--bg-subtle, #edf2f7);
+      stroke-width: 11;
     }
 
     .progress-arc {
       fill: none;
-      stroke-width: 9;
+      stroke-width: 11;
       stroke-linecap: round;
-      transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: stroke-dashoffset 0.75s cubic-bezier(0.22, 1, 0.36, 1);
     }
   }
 
@@ -36,25 +48,48 @@
     justify-content: center;
     z-index: 1;
     text-align: center;
+    gap: 2px;
 
     .score-value {
-      font-family: var(--font-heading, 'Inter', -apple-system, BlinkMacSystemFont, sans-serif);
-      font-weight: 700;
-      line-height: 1;
-      font-size: 3rem;
-      color: var(--text-primary, #0F172A);
-      letter-spacing: -0.03em;
+      font-family: var(
+        --font-heading,
+        'Manrope',
+        'Inter',
+        -apple-system,
+        BlinkMacSystemFont,
+        sans-serif
+      );
+      font-weight: 800;
+      line-height: 0.95;
+      font-size: 2.75rem;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-primary, #0f172a);
+      letter-spacing: -0.04em;
     }
 
     .score-out {
-      font-size: 0.8125rem;
-      color: var(--text-muted, #64748B);
-      margin-top: 4px;
-      font-weight: 500;
+      font-size: 0.78rem;
+      color: var(--text-muted, #64748b);
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
     }
   }
 
-  &.size-sm .score-label .score-value { font-size: 1.875rem; }
-  &.size-md .score-label .score-value { font-size: 2.375rem; }
-  &.size-lg .score-label .score-value { font-size: 3rem; }
+  &.size-sm .score-label .score-value {
+    font-size: 1.75rem;
+  }
+
+  &.size-md .score-label .score-value {
+    font-size: 2.25rem;
+  }
+
+  &.size-lg .score-label .score-value {
+    font-size: 2.65rem;
+  }
+}
+
+:host-context([data-theme='dark']) .score-meter {
+  .score-svg .track {
+    stroke: rgba(148, 163, 184, 0.16);
+  }
 }

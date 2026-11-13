@@ -1,48 +1,98 @@
 <section aria-labelledby="dashboard-progress-title" [attr.aria-busy]="loading">
-  <h3 id="dashboard-progress-title">Developer Progress &amp; Evidence</h3>
-  <p *ngIf="loading" role="status">Validating source evidence…</p>
-  <p *ngIf="error" role="alert">{{ error }}</p>
-  <p *ngIf="stale">
+  <div class="progress-section-head">
+    <div>
+      <h3 id="dashboard-progress-title">Developer Progress &amp; Evidence</h3>
+      <p class="section-caption">
+        Verified historical assessments, sprint cadence, and source health
+      </p>
+    </div>
+    <span class="section-status-pill" *ngIf="stale">Refresh recommended</span>
+  </div>
+
+  <p *ngIf="loading" role="status" class="status-note">Validating source evidence…</p>
+  <p *ngIf="error" role="alert" class="status-note is-error">{{ error }}</p>
+  <p *ngIf="stale" class="status-note is-warning">
     Some saved analyses predate their dependencies. Refresh them in their source modules.
   </p>
+
   <div class="progress-grid" *ngIf="data as progress">
-    <article aria-labelledby="readiness-history-title">
-      <h4 id="readiness-history-title">Comparable Portfolio Readiness</h4>
-      <p>{{ progress.history.reason }}</p>
+    <article class="bento-card" aria-labelledby="readiness-history-title">
+      <div class="article-head">
+        <div>
+          <h4 id="readiness-history-title">Comparable Portfolio Readiness</h4>
+          <p class="article-sub">{{ progress.history.reason }}</p>
+        </div>
+        <span class="status-chip" [class.is-success]="progress.history.status === 'available'">
+          {{ progress.history.status === 'available' ? 'Recorded' : 'Unavailable' }}
+        </span>
+      </div>
+
       <ng-container *ngIf="progress.history.status === 'available'">
-        <svg
-          viewBox="-25 0 330 130"
-          role="img"
-          aria-label="Comparable portfolio scores on a zero to one hundred scale; exact dates and scores in the table below"
-        >
-          <text x="-20" y="14" class="axis-label">100</text>
-          <text x="-8" y="113" class="axis-label">0</text>
-          <path d="M10 10V110H290" class="axis" />
-          <polyline [attr.points]="historyPolyline" class="history-line" />
-        </svg>
+        <div class="svg-frame">
+          <svg
+            viewBox="-25 0 330 130"
+            role="img"
+            aria-label="Comparable portfolio scores on a zero to one hundred scale; exact dates and scores in the table below"
+          >
+            <defs>
+              <linearGradient id="progressHistoryGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#4F46E5" stop-opacity="0.24" />
+                <stop offset="100%" stop-color="#4F46E5" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+            <line x1="10" y1="10" x2="290" y2="10" class="grid-guide" />
+            <line x1="10" y1="60" x2="290" y2="60" class="grid-guide" />
+            <text x="-22" y="14" class="axis-label">100</text>
+            <text x="-16" y="64" class="axis-label">50</text>
+            <text x="-10" y="113" class="axis-label">0</text>
+            <path d="M10 10V110H290" class="axis" />
+            <polygon
+              *ngIf="historyAreaPoints"
+              [attr.points]="historyAreaPoints"
+              fill="url(#progressHistoryGrad)"
+            />
+            <polyline [attr.points]="historyPolyline" class="history-line" />
+            <circle
+              *ngFor="let pt of historyCoords"
+              [attr.cx]="pt.x"
+              [attr.cy]="pt.y"
+              r="3.2"
+              class="history-dot"
+            />
+          </svg>
+        </div>
         <details>
           <summary>Assessment dates and scores</summary>
-          <table>
-            <thead>
-              <tr>
-                <th scope="col">Assessment</th>
-                <th scope="col">Score / 100</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let point of progress.history.points">
-                <td>{{ point.at | date: 'medium' }}</td>
-                <td>{{ point.value }}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Assessment</th>
+                  <th scope="col">Score / 100</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let point of progress.history.points">
+                  <td>{{ point.at | date: 'medium' }}</td>
+                  <td class="num-cell">{{ point.value }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </details>
       </ng-container>
     </article>
-    <article aria-labelledby="sprint-velocity-title">
-      <h4 id="sprint-velocity-title">Sprint Task Velocity</h4>
-      <p>{{ progress.sprint.basis }}</p>
-      <p *ngIf="!progress.sprint.available">No saved sprint is available.</p>
+
+    <article class="bento-card" aria-labelledby="sprint-velocity-title">
+      <div class="article-head">
+        <div>
+          <h4 id="sprint-velocity-title">Sprint Task Velocity</h4>
+          <p class="article-sub">{{ progress.sprint.basis }}</p>
+        </div>
+        <span class="status-chip" *ngIf="progress.sprint.available">7-Day UTC</span>
+      </div>
+
+      <p *ngIf="!progress.sprint.available" class="empty-msg">No saved sprint is available.</p>
       <ng-container *ngIf="progress.sprint.available">
         <div
           class="velocity"
@@ -57,92 +107,133 @@
             <small>{{ day.day + 'T00:00:00Z' | date: 'EEE' : 'UTC' }}</small>
           </div>
         </div>
-        <p *ngIf="progress.sprint.undatedCompletions">
+        <p *ngIf="progress.sprint.undatedCompletions" class="muted-foot">
           {{ progress.sprint.undatedCompletions }} completions have no recorded date and are
           excluded.
         </p>
         <details>
           <summary>Daily completion data</summary>
-          <table>
-            <thead>
-              <tr>
-                <th scope="col">UTC date</th>
-                <th scope="col">Tasks</th>
-                <th scope="col">Points</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let day of progress.sprint.velocity">
-                <td>{{ day.day }}</td>
-                <td>{{ day.completed }}</td>
-                <td>{{ day.points }}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">UTC date</th>
+                  <th scope="col">Tasks</th>
+                  <th scope="col">Points</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let day of progress.sprint.velocity">
+                  <td>{{ day.day }}</td>
+                  <td class="num-cell">{{ day.completed }}</td>
+                  <td class="num-cell">{{ day.points }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </details>
       </ng-container>
     </article>
-    <article aria-labelledby="evidence-health-title">
-      <h4 id="evidence-health-title">Evidence Completeness</h4>
-      <p>Availability describes source records, not developer quality.</p>
-      <dl>
+
+    <article class="bento-card" aria-labelledby="evidence-health-title">
+      <div class="article-head">
         <div>
+          <h4 id="evidence-health-title">Evidence Completeness</h4>
+          <p class="article-sub">Availability describes source records, not developer quality.</p>
+        </div>
+        <span class="status-chip is-indigo">
+          {{ progress.evidence.available }} / {{ progress.evidence.totalSources }}
+        </span>
+      </div>
+      <dl class="metric-tiles">
+        <div class="metric-tile">
           <dt>Available sources</dt>
           <dd>{{ progress.evidence.available }} / {{ progress.evidence.totalSources }}</dd>
         </div>
-        <div>
+        <div class="metric-tile is-success">
           <dt>Current / valid</dt>
           <dd>{{ progress.evidence.fresh }}</dd>
         </div>
-        <div>
+        <div class="metric-tile is-warning">
           <dt>Stale</dt>
           <dd>{{ progress.evidence.stale }}</dd>
         </div>
-        <div>
+        <div class="metric-tile is-muted">
           <dt>Missing</dt>
           <dd>{{ progress.evidence.missing }}</dd>
         </div>
       </dl>
-      <p>See Source Freshness for individual timestamps and refresh guidance.</p>
+      <p class="muted-foot">See Source Freshness for individual timestamps and refresh guidance.</p>
     </article>
-    <article aria-labelledby="skill-evidence-title">
-      <h4 id="skill-evidence-title">Skill Evidence</h4>
-      <p>{{ progress.skills.basis }}</p>
-      <dl>
+
+    <article class="bento-card" aria-labelledby="skill-evidence-title">
+      <div class="article-head">
         <div>
+          <h4 id="skill-evidence-title">Skill Evidence</h4>
+          <p class="article-sub">{{ progress.skills.basis }}</p>
+        </div>
+        <span class="status-chip" [class.is-success]="progress.skills.available">
+          {{ progress.skills.available ? 'Analyzed' : 'Unavailable' }}
+        </span>
+      </div>
+      <dl class="metric-tiles">
+        <div class="metric-tile is-success">
           <dt>Proven skills</dt>
           <dd>{{ progress.skills.proven === null ? 'Unavailable' : progress.skills.proven }}</dd>
         </div>
-        <div>
+        <div class="metric-tile is-warning">
           <dt>Claimed, not proven</dt>
           <dd>{{ progress.skills.claimed === null ? 'Unavailable' : progress.skills.claimed }}</dd>
         </div>
       </dl>
     </article>
-    <article aria-labelledby="integration-connectivity-title">
-      <h4 id="integration-connectivity-title">Integration Connectivity</h4>
-      <p *ngIf="integrationHealthState === 'loading'" role="status">
+
+    <article class="bento-card connectivity-card" aria-labelledby="integration-connectivity-title">
+      <div class="article-head">
+        <div>
+          <h4 id="integration-connectivity-title">Integration Connectivity</h4>
+          <p class="article-sub">Connected account telemetry and sync reliability</p>
+        </div>
+        <span class="status-chip is-success" *ngIf="integrationHealth as health">
+          {{ health.connectedCount }} Connected
+        </span>
+      </div>
+
+      <p *ngIf="integrationHealthState === 'loading'" role="status" class="status-note">
         Loading connection and sync health…
       </p>
-      <p *ngIf="integrationHealthState === 'error'" role="alert">
+      <p *ngIf="integrationHealthState === 'error'" role="alert" class="status-note is-error">
         Connection health is unavailable. Refresh to retry.
       </p>
+      <p *ngIf="integrationHealthState === 'ready' && !integrationHealth" class="muted-foot">
+        No integration connection summary recorded for this profile yet.
+      </p>
       <ng-container *ngIf="integrationHealth as health">
-        <p>
+        <div class="provider-pill-list" *ngIf="health.providers.length > 0">
+          <span class="provider-pill" *ngFor="let provider of health.providers">
+            <span class="dot"></span>
+            {{ provider }}
+          </span>
+        </div>
+        <p class="connectivity-line">
           {{ health.connectedCount }} connected:
           {{ health.providers.join(', ') || 'No current connections' }}
         </p>
-        <p>
+        <p class="connectivity-line">
           {{ health.failedSyncCount }} failed attempts out of {{ health.syncCount }} syncs over
           {{ health.days }} days.
         </p>
-        <p>
+        <p class="connectivity-line">
           Last recorded connection sync:
           {{ health.lastSyncedAt ? (health.lastSyncedAt | date: 'medium') : 'Not synced yet' }}
         </p>
-        <p>Connectivity does not establish ownership or verified skill evidence.</p>
+        <p class="muted-foot">
+          Connectivity does not establish ownership or verified skill evidence.
+        </p>
       </ng-container>
     </article>
   </div>
-  <p *ngIf="!data && !loading && !error">No validated progress snapshot is available.</p>
+  <p *ngIf="!data && !loading && !error" class="empty-msg">
+    No validated progress snapshot is available.
+  </p>
 </section>
