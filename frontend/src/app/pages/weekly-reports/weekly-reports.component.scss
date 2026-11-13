@@ -27,8 +27,11 @@
 .weekly-reports-page {
   display: grid;
   gap: 24px;
-  padding: 0;
-  padding-bottom: 32px;
+  width: 100%;
+  max-width: 1540px;
+  margin: 0 auto;
+  padding: 0 0 48px;
+  box-sizing: border-box;
   color: var(--text-primary);
   font-family: var(--font-sans);
   font-size: 14px;
@@ -36,6 +39,12 @@
   min-width: 0;
   overflow-x: clip;
   font-variant-numeric: tabular-nums;
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
 }
 
 // ── Card surfaces: Standardized with Skill-Gap ───────────────────
@@ -193,12 +202,10 @@
   display: block;
   height: 0.9rem;
   border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    rgba(30, 41, 59, 0.9),
-    rgba(51, 65, 85, 0.92),
-    rgba(30, 41, 59, 0.9)
-  );
+  background: linear-gradient(90deg,
+      rgba(30, 41, 59, 0.9),
+      rgba(51, 65, 85, 0.92),
+      rgba(30, 41, 59, 0.9));
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite linear;
 }
@@ -228,11 +235,24 @@
   font-size: 13px;
   line-height: 1.55;
   color: var(--text-secondary);
+  min-width: 0;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 
   strong {
     color: var(--text-primary);
     font-weight: 700;
     font-size: 14px;
+    overflow-wrap: anywhere;
+  }
+
+  span {
+    overflow-wrap: anywhere;
+  }
+
+  @media (max-width: 480px) {
+    padding: 14px 16px;
   }
 }
 
@@ -243,11 +263,16 @@
   border-radius: 12px;
   background: rgba(245, 158, 11, 0.08);
   color: var(--text-primary);
+  min-width: 0;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 
   strong {
     color: var(--weekly-warning, #f59e0b);
     font-weight: 700;
     font-size: 14px;
+    overflow-wrap: anywhere;
   }
 
   p {
@@ -255,12 +280,18 @@
     color: var(--text-secondary);
     font-size: 13px;
     line-height: 1.55;
+    overflow-wrap: anywhere;
   }
 
   small {
     color: var(--weekly-warning, #f59e0b);
     font-size: 12px;
     font-weight: 500;
+    overflow-wrap: anywhere;
+  }
+
+  @media (max-width: 480px) {
+    padding: 14px 16px;
   }
 }
 
@@ -358,13 +389,14 @@
 // ── Responsive ─────────────────────────────────────────────────
 @media (max-width: 1024px) {
   .weekly-reports-page {
-    padding: 24px;
+    gap: 20px;
   }
 }
 
 @media (max-width: 640px) {
   .weekly-reports-page {
-    padding: 16px;
+    gap: 16px;
+    padding-bottom: 32px;
   }
 
   .page-header,
@@ -379,12 +411,27 @@
   }
 }
 
+@media (max-width: 420px) {
+
+  .page-header,
+  .state-card,
+  .empty-state {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .generate-btn {
+    width: 100%;
+  }
+}
+
 button:focus-visible {
   outline: 2px solid #4f46e5;
   outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {

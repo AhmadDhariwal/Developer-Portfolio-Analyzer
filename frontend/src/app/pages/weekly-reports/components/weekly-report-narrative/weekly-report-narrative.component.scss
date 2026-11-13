@@ -6,9 +6,14 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1.25rem;
+  min-width: 0;
 
   @media (max-width: 920px) {
     grid-template-columns: 1fr;
+  }
+
+  @media (max-width: 640px) {
+    gap: 16px;
   }
 }
 
@@ -18,12 +23,19 @@
   border-radius: 16px;
   background: var(--surface-card);
   color: var(--text-primary);
+  min-width: 0;
+  box-sizing: border-box;
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.03),
     0 8px 24px -4px rgba(0, 0, 0, 0.04);
 
   @media (max-width: 640px) {
     padding: 20px;
+  }
+
+  @media (max-width: 360px) {
+    padding: 16px;
+    border-radius: 14px;
   }
 }
 
@@ -36,6 +48,7 @@
   margin-bottom: 1rem;
   padding-bottom: 0.75rem;
   border-bottom: 1px solid var(--border-color, rgba(100, 116, 139, 0.14));
+  min-width: 0;
 
   h3 {
     margin: 0;
@@ -44,6 +57,7 @@
     letter-spacing: -0.015em;
     line-height: 1.35;
     color: var(--text-primary);
+    overflow-wrap: anywhere;
   }
 }
 
@@ -51,6 +65,7 @@
   color: var(--text-muted);
   font-size: 12.5px;
   font-weight: 500;
+  overflow-wrap: anywhere;
 }
 
 .rich-list {
@@ -71,6 +86,9 @@
     font-size: 13.5px;
     line-height: 1.65;
     overflow-wrap: anywhere;
+    word-break: break-word;
+    min-width: 0;
+    box-sizing: border-box;
     transition:
       border-color 0.16s ease,
       background 0.16s ease;
@@ -88,6 +106,15 @@
       height: 6px;
       border-radius: 50%;
       background: var(--weekly-accent, #4f46e5);
+    }
+
+    @media (max-width: 480px) {
+      padding: 11px 14px 11px 32px;
+
+      &::before {
+        left: 14px;
+        top: 18px;
+      }
     }
   }
 
@@ -119,6 +146,18 @@
       display: grid;
       place-content: center;
     }
+
+    @media (max-width: 480px) {
+      padding-left: 36px;
+
+      &::before {
+        left: 10px;
+        top: 11px;
+        width: 18px;
+        height: 18px;
+        font-size: 10px;
+      }
+    }
   }
 }
 
@@ -133,6 +172,10 @@
   font-size: 13.5px;
   line-height: 1.65;
   font-weight: 500;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .focus-chips {
@@ -150,5 +193,8 @@
     color: var(--weekly-accent);
     font-size: 0.76rem;
     font-weight: 600;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    max-width: 100%;
   }
 }

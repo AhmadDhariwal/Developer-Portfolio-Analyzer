@@ -208,7 +208,10 @@ details {
 
   summary {
     cursor: pointer;
-    padding: 4px 0;
+    padding: 8px 0;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
     width: fit-content;
     color: var(--text-primary);
     font-weight: 600;
@@ -245,14 +248,15 @@ details {
   border-top: 1px solid var(--border-color);
 
   .project-link {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 7px 12px;
-    border-radius: 6px;
+    gap: 6px;
+    padding: 10px 16px;
+    min-height: 40px;
+    border-radius: 8px;
     transition:
       background 0.2s ease,
       border-color 0.2s ease,
@@ -299,12 +303,17 @@ summary {
     padding: 18px;
   }
 
+  summary {
+    width: 100%;
+  }
+
   .project-links {
-    gap: 8px;
+    gap: 10px;
 
     .project-link {
       width: 100%;
       justify-content: center;
+      min-height: 42px;
     }
   }
 }

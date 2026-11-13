@@ -2,6 +2,8 @@
 
 :host {
   display: block;
+  min-width: 0;
+  width: 100%;
   font-family: var(--font-sans, 'Manrope', 'Segoe UI', sans-serif);
 }
 
@@ -25,6 +27,11 @@
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
+
+  @media (max-width: 480px) {
+    padding: 16px;
+    border-radius: 12px;
+  }
 }
 
 .section-heading {
@@ -285,6 +292,11 @@ textarea {
   &:hover:not(:disabled) {
     background: #4338ca;
     box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.4);
   }
 
   &:disabled {

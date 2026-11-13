@@ -8,12 +8,19 @@
   border-radius: 16px;
   background: var(--surface-card);
   color: var(--text-primary);
+  min-width: 0;
+  box-sizing: border-box;
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.03),
     0 8px 24px -4px rgba(0, 0, 0, 0.04);
 
   @media (max-width: 640px) {
     padding: 20px;
+  }
+
+  @media (max-width: 360px) {
+    padding: 16px;
+    border-radius: 14px;
   }
 }
 
@@ -24,6 +31,7 @@
   flex-wrap: wrap;
   gap: 0.8rem;
   margin-bottom: 0.75rem;
+  min-width: 0;
 
   h3 {
     margin: 0;
@@ -32,10 +40,12 @@
     letter-spacing: -0.015em;
     line-height: 1.35;
     color: var(--text-primary);
+    overflow-wrap: anywhere;
   }
 
   small {
     color: var(--text-muted);
+    overflow-wrap: anywhere;
   }
 }
 
@@ -45,6 +55,7 @@
   font-weight: 500;
   display: block;
   margin-top: 2px;
+  overflow-wrap: anywhere;
 }
 
 .comparison-note {
@@ -52,6 +63,8 @@
   line-height: 1.6;
   font-size: 13px;
   margin: 0 0 1rem;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .comparison-list {
@@ -69,6 +82,8 @@
   border-radius: 12px;
   background: var(--surface-secondary);
   border: 1px solid rgba(255, 255, 255, 0.06);
+  min-width: 0;
+  box-sizing: border-box;
   transition:
     background 0.16s ease,
     border-color 0.16s ease;
@@ -83,6 +98,7 @@
     font-size: 13px;
     font-weight: 500;
     overflow-wrap: anywhere;
+    min-width: 0;
   }
 
   strong {
@@ -94,15 +110,26 @@
   }
 
   small {
-    white-space: nowrap;
     font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.35;
   }
 
-  @media (max-width: 560px) {
-    grid-template-columns: 1fr;
+  @media (max-width: 640px) {
+    grid-template-columns: minmax(0, 1fr) auto;
 
-    strong,
     small {
+      grid-column: 1 / -1;
+      white-space: normal;
+    }
+  }
+
+  @media (max-width: 380px) {
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
+
+    strong {
       white-space: normal;
     }
   }

@@ -5,9 +5,11 @@
 
 :host {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1rem;
   width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .telemetry-card {
@@ -351,18 +353,26 @@
 .daemon-card {
   .daemon-stats {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 6px;
     border-radius: 10px;
     background: var(--surface-secondary, #f8fafc);
     padding: 8px 10px;
     border: 1px solid var(--border-color, #e2e8f0);
+    box-sizing: border-box;
+    min-width: 0;
+
+    @media (max-width: 520px) {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
   }
 
   .daemon-stat-item {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    min-width: 0;
   }
 
   .daemon-stat-label {
@@ -372,6 +382,9 @@
     color: var(--text-muted, #64748b);
     text-transform: uppercase;
     letter-spacing: 0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .daemon-stat-val {
@@ -380,6 +393,8 @@
     font-family: inherit;
     color: var(--text-primary, #0f172a);
     font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 
     &.text-cyan {
       color: var(--color-info-text, #0284c7);
@@ -395,6 +410,7 @@
 
   .btn-ghost-terminal {
     width: 100%;
+    min-height: 38px;
     padding: 7px 12px;
     background: var(--surface-secondary, #f8fafc);
     border: 1px solid var(--border-color, #cbd5e1);
@@ -409,11 +425,17 @@
     justify-content: center;
     gap: 6px;
     transition: all 0.15s ease;
+    box-sizing: border-box;
 
     &:hover {
       background: var(--surface-hover, #f1f5f9);
       border-color: var(--color-primary-border, #c7d2fe);
       color: var(--color-primary, #4f46e5);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-primary, #4f46e5);
+      outline-offset: 2px;
     }
   }
 }
@@ -593,12 +615,18 @@
 
 @media (max-width: 1200px) {
   :host {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 860px) {
   :host {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@container (max-width: 620px) {
+  :host {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

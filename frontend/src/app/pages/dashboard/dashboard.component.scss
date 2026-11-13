@@ -26,6 +26,24 @@
     text-decoration: underline;
   }
 
+  button {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid currentColor;
+    color: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 6px;
+    padding: 6px 14px;
+    min-height: 36px;
+    cursor: pointer;
+    margin-left: 8px;
+    transition: opacity 0.2s ease;
+
+    &:hover {
+      opacity: 0.85;
+    }
+  }
+
   code {
     font-family: 'JetBrains Mono', monospace;
     background: rgba(255, 255, 255, 0.08);
@@ -90,16 +108,22 @@
   border: 1px solid rgba(148, 163, 184, 0.16);
 
   .header-text {
+    min-width: 0;
+
     h2 {
-      font-size: 1.875rem;
+      font-size: clamp(1.4rem, 4vw, 1.875rem);
       font-weight: 700;
       color: var(--text-primary);
       margin: 0 0 6px;
+      word-break: break-word;
+      overflow-wrap: anywhere;
     }
 
     .header-sub {
       font-size: 0.85rem;
       color: var(--text-muted);
+      word-break: break-word;
+      overflow-wrap: anywhere;
     }
   }
 
@@ -117,9 +141,9 @@
     flex-shrink: 0;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid var(--border-color);
-    padding: 6px 12px;
+    padding: 0 12px;
     border-radius: 10px;
-    min-height: 36px;
+    min-height: 40px;
     min-width: 178px;
     box-sizing: border-box;
 
@@ -129,6 +153,7 @@
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-muted);
+      flex-shrink: 0;
     }
 
     .role-value {
@@ -140,12 +165,16 @@
 
     .role-dropdown {
       min-width: 88px;
+      width: 100%;
+      height: 100%;
+      min-height: 38px;
+      flex: 1;
       background: transparent;
       border: none;
       color: var(--text-primary);
       font-size: 0.82rem;
       font-weight: 600;
-      padding-right: 16px;
+      padding: 8px 16px 8px 4px;
       cursor: pointer;
       outline: none;
       appearance: none;
@@ -163,7 +192,7 @@
     justify-content: center;
     gap: 8px;
     flex-shrink: 0;
-    padding: 0 14px;
+    padding: 0 16px;
     background: linear-gradient(135deg, #6366f1, #8b5cf6);
     border: none;
     border-radius: 10px;
@@ -172,7 +201,7 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
-    min-height: 36px;
+    min-height: 40px;
     min-width: 140px;
     box-sizing: border-box;
 
@@ -239,14 +268,10 @@
 
 .readiness-grid {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 12px;
 
-  @media (max-width: 1300px) {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  @media (max-width: 700px) {
+  @media (max-width: 480px) {
     grid-template-columns: 1fr;
   }
 }
@@ -512,10 +537,24 @@
   @media (max-width: 1200px) {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  @media (max-width: 480px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  @media (max-width: 360px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .stat-card {
   padding: 20px;
+  min-width: 0;
+
+  @media (max-width: 480px) {
+    padding: 14px 12px;
+  }
 
   .stat-top {
     display: flex;
@@ -571,6 +610,12 @@
     line-height: 1;
     margin-bottom: 4px;
     font-family: 'Poppins', sans-serif;
+    overflow-wrap: anywhere;
+    min-width: 0;
+
+    @media (max-width: 480px) {
+      font-size: clamp(1.4rem, 6vw, 1.8rem);
+    }
   }
 
   .stat-label {
@@ -656,6 +701,11 @@
   position: relative;
   width: 100%;
   padding: 16px 24px;
+  box-sizing: border-box;
+
+  @media (max-width: 540px) {
+    padding: 12px 10px;
+  }
 
   &.activity-wrap {
     height: 240px;
@@ -666,6 +716,11 @@
   &.radar-wrap {
     height: 300px;
     padding: 16px 16px;
+
+    @media (max-width: 540px) {
+      height: clamp(240px, 45vh, 280px);
+      padding: 12px 8px;
+    }
   }
 }
 
@@ -681,16 +736,21 @@
 }
 
 .view-all-link {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 4px;
   font-size: 0.8rem;
   font-weight: 600;
   color: var(--text-muted);
   cursor: pointer;
-  transition: color 0.15s;
+  transition:
+    color 0.15s,
+    background-color 0.15s;
   text-decoration: none;
   white-space: nowrap;
+  min-height: 36px;
+  padding: 6px 10px;
+  border-radius: 8px;
 
   svg {
     width: 14px;
@@ -699,6 +759,7 @@
 
   &:hover {
     color: #818cf8;
+    background: rgba(99, 102, 241, 0.08);
   }
 }
 
@@ -837,12 +898,8 @@
 
 .rec-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 16px;
-
-  @media (max-width: 1200px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
 
   @media (max-width: 600px) {
     grid-template-columns: 1fr;
@@ -1180,17 +1237,20 @@ select:focus-visible {
 @media (max-width: 700px) {
   .page-header {
     flex-direction: column;
-    gap: 20px;
-    padding: 20px;
+    gap: 16px;
+    padding: 18px 14px;
   }
   .page-header .header-actions {
     width: 100%;
+    flex-direction: column;
     align-items: stretch;
+    gap: 10px;
   }
   .page-header .role-selector,
   .page-header .reanalyze-btn {
     min-width: 0;
     width: 100%;
+    min-height: 42px;
   }
   .header-text {
     min-width: 0;
@@ -1211,9 +1271,17 @@ select:focus-visible {
   margin: 16px 24px;
   font-size: 0.8rem;
   color: var(--text-secondary);
+
+  @media (max-width: 540px) {
+    margin: 12px 14px;
+  }
 }
 .repository-history-note summary {
   cursor: pointer;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 0;
 }
 .repository-history-note summary:focus-visible {
   outline: 3px solid var(--text-primary);

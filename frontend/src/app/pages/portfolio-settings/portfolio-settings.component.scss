@@ -127,6 +127,7 @@ button:disabled {
   justify-content: center;
   gap: 8px;
   padding: 9px 18px;
+  min-height: 40px;
   font-size: 13px;
   font-weight: 600;
   border-radius: 10px;
@@ -152,6 +153,7 @@ button:disabled {
   justify-content: center;
   gap: 8px;
   padding: 10px 22px;
+  min-height: 40px;
   font-size: 13px;
   font-weight: 600;
   border-radius: 10px;
@@ -242,7 +244,11 @@ button:disabled {
 
   button {
     white-space: nowrap;
-    padding: 9px 18px;
+    padding: 10px 18px;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background: transparent;
     border: 1px solid transparent;
     border-radius: 8px;
@@ -822,7 +828,7 @@ input[type='file'] {
   gap: 20px;
 
   &.cards-grid {
-    grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
     align-items: stretch;
 
     @media (max-width: 768px) {
@@ -1271,7 +1277,7 @@ input[type='file'] {
   .activity-body {
     padding: 20px 24px;
     display: grid;
-    grid-template-columns: minmax(320px, 1fr) minmax(360px, 1.1fr);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
     gap: 28px;
     align-items: center;
 
@@ -1291,6 +1297,16 @@ input[type='file'] {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 12px;
+
+    @media (max-width: 600px) {
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+      gap: 10px;
+    }
+
+    @media (max-width: 380px) {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
 
     .hero-stat {
       padding: 14px 16px;

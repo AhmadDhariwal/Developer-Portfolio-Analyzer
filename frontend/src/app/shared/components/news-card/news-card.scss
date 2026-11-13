@@ -209,11 +209,11 @@ summary {
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
-  min-height: 32px;
+  min-height: 44px;
   list-style: none;
   color: var(--color-primary-text);
   font-weight: 600;
-  padding: 4px 6px;
+  padding: 6px 8px;
   border-radius: 6px;
   transition: background 0.15s ease;
 
@@ -306,12 +306,13 @@ summary::-webkit-details-marker {
 .actions button {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  min-height: 38px;
+  min-height: 44px;
   font: inherit;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 600;
-  padding: 7px 12px;
+  padding: 8px 14px;
   background: var(--surface-card);
   color: var(--text-secondary);
   border: 1.5px solid var(--border-color);
@@ -348,12 +349,13 @@ summary::-webkit-details-marker {
   text-decoration: none;
   font-size: 12px;
   font-weight: 700;
-  min-height: 38px;
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 5px;
   margin-left: auto;
-  padding: 7px 14px;
+  padding: 8px 16px;
   border-radius: 8px;
   background: var(--color-primary-soft);
   border: 1.5px solid var(--color-primary-border);
@@ -384,6 +386,12 @@ summary:focus-visible {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+@media (min-width: 1800px) {
+  .image-wrap {
+    height: 184px;
+  }
 }
 
 @media (max-width: 480px) {

@@ -181,12 +181,14 @@ summary:focus-visible {
 
 .primary-button,
 .secondary-button {
-  min-height: 42px;
+  min-height: 44px;
   border-radius: 8px;
   padding: 9px 18px;
   font-size: 13px;
   font-weight: 600;
-  white-space: nowrap;
+  white-space: normal;
+  text-align: center;
+  line-height: 1.3;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -304,27 +306,22 @@ summary:focus-visible {
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--text-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .view-tabs {
-  display: inline-flex;
-  align-self: flex-start;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  align-self: flex-start;
   background: var(--surface-secondary);
   padding: 4px;
   border-radius: 12px;
   border: 1.5px solid var(--border-color);
-  gap: 4px;
-  overflow-x: auto;
+  gap: 6px;
   max-width: 100%;
-  scrollbar-width: none;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
 }
 
 .view-tabs button {
@@ -332,11 +329,14 @@ summary:focus-visible {
   border-radius: 8px;
   background: transparent;
   color: var(--text-secondary);
-  min-height: 38px;
+  min-height: 44px;
   padding: 8px 16px;
   font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 
@@ -439,9 +439,13 @@ summary:focus-visible {
   background: var(--surface-card);
   color: var(--text-secondary);
   border-radius: 9999px;
-  padding: 5px 12px;
-  font-size: 11.5px;
+  min-height: 44px;
+  padding: 8px 16px;
+  font-size: 12px;
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   transition: all 0.15s ease;
 
@@ -470,8 +474,10 @@ summary:focus-visible {
   font-size: 12px;
   font-weight: 700;
   text-decoration: underline;
-  min-height: 38px;
-  padding: 6px 10px;
+  min-height: 44px;
+  padding: 8px 12px;
+  display: inline-flex;
+  align-items: center;
   cursor: pointer;
 }
 
@@ -488,6 +494,7 @@ summary:focus-visible {
   align-items: center;
   gap: 14px;
   padding: 16px 20px;
+  min-height: 44px;
   list-style: none;
   cursor: pointer;
   font-size: 13.5px;
@@ -704,7 +711,11 @@ details[open] .disclosure-arrow {
 
 .source-disclosure summary {
   cursor: pointer;
-  min-height: 32px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
   font-weight: 600;
 }
 
@@ -747,14 +758,17 @@ details[open] .disclosure-arrow {
 }
 
 .history-filters button {
-  min-height: 40px;
+  min-height: 44px;
   background: var(--surface-card);
   color: var(--text-secondary);
   border: 1.5px solid var(--border-color);
   border-radius: 8px;
-  padding: 8px 16px;
+  padding: 8px 18px;
   font-size: 12.5px;
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.15s ease;
 
   &:hover {
@@ -852,13 +866,13 @@ details[open] .disclosure-arrow {
 
 .saved-actions button,
 .saved-actions a {
-  padding: 8px 14px;
-  min-height: 38px;
+  padding: 9px 16px;
+  min-height: 44px;
   border: 1.5px solid var(--border-color);
   border-radius: 8px;
   color: var(--text-primary);
   background: var(--surface-card);
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 600;
   text-decoration: none;
   display: inline-flex;
@@ -1051,10 +1065,41 @@ details[open] .disclosure-arrow {
   }
 }
 
+@media (min-width: 1800px) {
+  .news-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 28px;
+  }
+
+  .saved-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 28px;
+  }
+}
+
+@media (min-width: 2400px) {
+  .news-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 32px;
+  }
+
+  .saved-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 32px;
+  }
+}
+
 @media (max-width: 1200px) {
   .news-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 20px;
+  }
+}
+
+@media (max-width: 900px) {
+  .metric-strip {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
   }
 }
 
@@ -1079,42 +1124,38 @@ details[open] .disclosure-arrow {
     button {
       width: 100%;
       justify-content: center;
+      min-height: 44px;
     }
   }
 
-  .metric-strip {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
-  }
-
   .metric-card {
-    padding: 12px 10px;
-    gap: 10px;
+    padding: 14px 16px;
+    gap: 12px;
   }
 
   .metric-icon-wrap {
-    width: 34px;
-    height: 34px;
+    width: 38px;
+    height: 38px;
     border-radius: 8px;
   }
 
   .metric-icon {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
   }
 
   .metric-data strong {
-    font-size: 18px;
+    font-size: 22px;
   }
 
   .metric-data span {
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 0.02em;
   }
 
-  .view-tabs {
-    gap: 4px;
-    width: 100%;
+  .topic-list button {
+    min-height: 44px;
+    padding: 8px 16px;
   }
 
   .feed-status {
@@ -1126,6 +1167,7 @@ details[open] .disclosure-arrow {
   .mobile-filter-toggle {
     display: inline-flex;
     justify-self: start;
+    min-height: 44px;
   }
 
   .filter-panel {
@@ -1157,25 +1199,67 @@ details[open] .disclosure-arrow {
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
+  .metric-strip {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
   .header-actions {
     grid-template-columns: 1fr;
   }
 
+  .view-tabs {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    padding: 4px;
+  }
+
   .view-tabs button {
-    padding: 8px 12px;
+    width: 100%;
+    padding: 8px 6px;
     font-size: 12px;
+    min-height: 44px;
+    text-align: center;
+    white-space: normal;
+    line-height: 1.2;
+  }
+
+  .saved-actions button,
+  .saved-actions a {
+    flex: 1 1 calc(50% - 6px);
+    min-height: 44px;
+    text-align: center;
+    justify-content: center;
   }
 }
 
-@media (max-width: 380px) {
-  .metric-strip {
-    grid-template-columns: 1fr;
-    gap: 8px;
+@media (max-width: 480px) {
+  .context-disclosure summary {
+    padding: 12px 14px;
+    gap: 10px;
+    font-size: 12.5px;
+  }
+
+  .context-body {
+    padding: 0 14px 16px;
+  }
+}
+
+@media (max-width: 360px) {
+  .view-tabs {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .saved-actions button,
+  .saved-actions a {
+    flex: 1 1 100%;
   }
 
   .metric-card {
-    padding: 14px 12px;
+    padding: 12px 14px;
   }
 }
 

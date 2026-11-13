@@ -79,6 +79,10 @@
   justify-content: flex-start;
   gap: 18px;
   padding: 6px 4px;
+
+  @media (max-width: 360px) {
+    gap: 12px;
+  }
 }
 
 .score-gauge-wrap {
@@ -89,6 +93,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+
+  @media (max-width: 360px) {
+    width: 84px;
+    height: 84px;
+  }
 
   .score-gauge-svg {
     width: 100%;
@@ -121,6 +130,10 @@
       color: var(--text-primary);
       line-height: 1;
       letter-spacing: -0.02em;
+
+      @media (max-width: 360px) {
+        font-size: 19px;
+      }
     }
 
     .score-max {
@@ -129,6 +142,10 @@
       color: var(--text-muted);
       line-height: 1;
       margin-top: 3px;
+
+      @media (max-width: 360px) {
+        font-size: 10px;
+      }
     }
   }
 }
@@ -190,17 +207,24 @@
   border: 1px solid var(--border-color, #e2e8f0);
   border-radius: 8px;
   font-size: 13px;
+  min-width: 0;
+  box-sizing: border-box;
+  gap: 8px;
 
   .stat-label {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     color: var(--text-secondary);
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   .stat-value {
     font-weight: 700;
     color: var(--text-primary);
+    white-space: nowrap;
+    flex-shrink: 0;
 
     &--skills {
       color: #059669;

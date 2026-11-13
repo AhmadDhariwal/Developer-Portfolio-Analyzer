@@ -93,6 +93,11 @@
   border-radius: inherit;
   background: transparent;
   cursor: zoom-in;
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.45);
+  }
 }
 
 .avatar-preview-button:disabled {
@@ -128,6 +133,11 @@
     background: #4338ca;
   }
 
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.45);
+  }
+
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -143,6 +153,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
+  flex-wrap: wrap;
   max-width: 100%;
   color: var(--text-secondary);
   font-size: 12px;

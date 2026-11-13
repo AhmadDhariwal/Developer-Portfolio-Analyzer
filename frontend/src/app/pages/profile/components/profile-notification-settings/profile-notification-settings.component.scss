@@ -136,9 +136,15 @@
   border: 1px solid var(--border-color, #e2e8f0);
   border-radius: 10px;
   transition: all 0.2s ease;
+  box-sizing: border-box;
 
   &:hover {
     border-color: var(--border-strong, #cbd5e1);
+  }
+
+  @media (max-width: 480px) {
+    padding: 12px;
+    gap: 12px;
   }
 
   .notif-info {
@@ -158,6 +164,7 @@
       color: var(--text-secondary);
       line-height: 1.45;
       margin: 0;
+      overflow-wrap: anywhere;
     }
   }
 }
@@ -173,9 +180,10 @@
 
 .toggle-btn {
   position: relative;
-  width: 44px;
-  height: 24px;
-  border-radius: 12px;
+  width: 52px;
+  height: 32px;
+  min-height: 32px;
+  border-radius: 16px;
   background: #cbd5e1;
   border: 1px solid #94a3b8;
   cursor: pointer;
@@ -186,13 +194,14 @@
     box-shadow 0.25s ease;
   padding: 0;
   outline: none;
+  box-sizing: border-box;
 
   .toggle-knob {
     position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 18px;
-    height: 18px;
+    top: 3px;
+    left: 3px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     background: #ffffff;
     transition:
@@ -212,7 +221,7 @@
   }
 
   &:focus-visible {
-    box-shadow: 0 0 0 2px #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.35);
   }
 }
 

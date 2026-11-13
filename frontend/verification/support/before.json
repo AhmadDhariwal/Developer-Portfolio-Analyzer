@@ -1,0 +1,648 @@
+{
+  "phase": "before",
+  "timestamp": "2026-11-13T09:42:15.771Z",
+  "summary": {
+    "totalMatrix": 36,
+    "passedMatrix": 36,
+    "failedMatrix": 0,
+    "allPassed": true
+  },
+  "defects": [],
+  "matrixResults": [
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "dimensions": "320x640",
+      "theme": "dark",
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "mobile-320-dark.png"
+    },
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "dimensions": "320x640",
+      "theme": "light",
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "mobile-320-light.png"
+    },
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "dimensions": "320x640",
+      "theme": "system",
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "mobile-320-system.png"
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "dimensions": "375x667",
+      "theme": "dark",
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "mobile-375-dark.png"
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "dimensions": "375x667",
+      "theme": "light",
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "mobile-375-light.png"
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "dimensions": "375x667",
+      "theme": "system",
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "mobile-375-system.png"
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "dimensions": "390x844",
+      "theme": "dark",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "mobile-390-dark.png"
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "dimensions": "390x844",
+      "theme": "light",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "mobile-390-light.png"
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "dimensions": "390x844",
+      "theme": "system",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "mobile-390-system.png"
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "dimensions": "430x932",
+      "theme": "dark",
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "mobile-430-dark.png"
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "dimensions": "430x932",
+      "theme": "light",
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "mobile-430-light.png"
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "dimensions": "430x932",
+      "theme": "system",
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "mobile-430-system.png"
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "dimensions": "768x1024",
+      "theme": "dark",
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "tablet-768-dark.png"
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "dimensions": "768x1024",
+      "theme": "light",
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "tablet-768-light.png"
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "dimensions": "768x1024",
+      "theme": "system",
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "tablet-768-system.png"
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "dimensions": "820x1180",
+      "theme": "dark",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "tablet-820-dark.png"
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "dimensions": "820x1180",
+      "theme": "light",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "tablet-820-light.png"
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "dimensions": "820x1180",
+      "theme": "system",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "tablet-820-system.png"
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "dimensions": "1024x768",
+      "theme": "dark",
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "tablet-1024-dark.png"
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "dimensions": "1024x768",
+      "theme": "light",
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "tablet-1024-light.png"
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "dimensions": "1024x768",
+      "theme": "system",
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "tablet-1024-system.png"
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "dimensions": "1280x800",
+      "theme": "dark",
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "laptop-1280-dark.png"
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "dimensions": "1280x800",
+      "theme": "light",
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "laptop-1280-light.png"
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "dimensions": "1280x800",
+      "theme": "system",
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "laptop-1280-system.png"
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "dimensions": "1366x768",
+      "theme": "dark",
+      "scrollWidth": 1366,
+      "clientWidth": 1366,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "laptop-1366-dark.png"
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "dimensions": "1366x768",
+      "theme": "light",
+      "scrollWidth": 1366,
+      "clientWidth": 1366,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "laptop-1366-light.png"
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "dimensions": "1366x768",
+      "theme": "system",
+      "scrollWidth": 1366,
+      "clientWidth": 1366,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "laptop-1366-system.png"
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "dimensions": "1440x900",
+      "theme": "dark",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "desktop-1440-dark.png"
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "dimensions": "1440x900",
+      "theme": "light",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "desktop-1440-light.png"
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "dimensions": "1440x900",
+      "theme": "system",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "desktop-1440-system.png"
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "dimensions": "1920x1080",
+      "theme": "dark",
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "desktop-1920-dark.png"
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "dimensions": "1920x1080",
+      "theme": "light",
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "desktop-1920-light.png"
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "dimensions": "1920x1080",
+      "theme": "system",
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "desktop-1920-system.png"
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "dimensions": "2560x1440",
+      "theme": "dark",
+      "scrollWidth": 2560,
+      "clientWidth": 2560,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "large-2560-dark.png"
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "dimensions": "2560x1440",
+      "theme": "light",
+      "scrollWidth": 2560,
+      "clientWidth": 2560,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "large-2560-light.png"
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "dimensions": "2560x1440",
+      "theme": "system",
+      "scrollWidth": 2560,
+      "clientWidth": 2560,
+      "hasOverflow": false,
+      "overflowDelta": 0,
+      "usesManrope": true,
+      "passed": true,
+      "screenshot": "large-2560-system.png"
+    }
+  ],
+  "landscapeResults": [
+    {
+      "name": "mobile-390-landscape",
+      "width": 844,
+      "height": 390,
+      "scrollWidth": 844,
+      "clientWidth": 844,
+      "hasOverflow": false,
+      "passed": true,
+      "screenshot": "mobile-390-landscape-dark.png"
+    },
+    {
+      "name": "tablet-768-landscape",
+      "width": 1024,
+      "height": 768,
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "hasOverflow": false,
+      "passed": true,
+      "screenshot": "tablet-768-landscape-dark.png"
+    }
+  ],
+  "scenarioResults": {
+    "emptyRequests": {
+      "passed": true,
+      "screenshot": "scenario-empty-requests-375.png"
+    },
+    "longTextStress": {
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "hasOverflow": false,
+      "passed": true,
+      "screenshot": "scenario-longtext-support-320.png"
+    },
+    "errorFeedback": {
+      "passed": true,
+      "isErrorVisible": true,
+      "screenshot": "scenario-error-banner-390.png"
+    },
+    "ticketDetailsModal": {
+      "found": true,
+      "modalRect": {
+        "width": 320,
+        "left": 0,
+        "right": 320
+      },
+      "buttonBoxes": [
+        {
+          "text": "Close",
+          "width": 69,
+          "height": 36
+        },
+        {
+          "text": "deleteDelete Ticket",
+          "width": 138,
+          "height": 36
+        }
+      ],
+      "closeBtnWithinViewport": true,
+      "passed": true,
+      "screenshot": "scenario-ticket-details-modal-320.png"
+    },
+    "confirmDialog": {
+      "dialogVisible": true,
+      "passed": true,
+      "screenshot": "scenario-confirm-dialog-320.png"
+    },
+    "faqAccordion": {
+      "answerVisible": true,
+      "ariaExpanded": "true",
+      "passed": true,
+      "screenshot": "scenario-faq-open-375.png"
+    },
+    "touchTargetAudit": {
+      "defectsCount": 1,
+      "touchDefects": [
+        {
+          "tag": "BUTTON",
+          "className": "btn-toggle-all",
+          "text": "View all FAQs",
+          "width": 96,
+          "height": 27
+        }
+      ],
+      "passed": false
+    },
+    "categoryCardsAudit": {
+      "audits": [
+        {
+          "viewportWidth": 1280,
+          "winW": 1280,
+          "docW": 1280,
+          "gridWidth": 972,
+          "cardCount": 5,
+          "cardWidths": [
+            182,
+            182,
+            182,
+            182,
+            182
+          ],
+          "columnsCount": 5
+        },
+        {
+          "viewportWidth": 1024,
+          "winW": 1024,
+          "docW": 1024,
+          "gridWidth": 869,
+          "cardCount": 5,
+          "cardWidths": [
+            279,
+            279,
+            279,
+            279,
+            279
+          ],
+          "columnsCount": 3
+        },
+        {
+          "viewportWidth": 768,
+          "winW": 768,
+          "docW": 768,
+          "gridWidth": 740,
+          "cardCount": 5,
+          "cardWidths": [
+            362,
+            362,
+            362,
+            362,
+            362
+          ],
+          "columnsCount": 2
+        },
+        {
+          "viewportWidth": 480,
+          "winW": 480,
+          "docW": 480,
+          "gridWidth": 702,
+          "cardCount": 5,
+          "cardWidths": [
+            702,
+            702,
+            702,
+            702,
+            702
+          ],
+          "columnsCount": 1
+        },
+        {
+          "viewportWidth": 320,
+          "winW": 320,
+          "docW": 320,
+          "gridWidth": 702,
+          "cardCount": 5,
+          "cardWidths": [
+            702,
+            702,
+            702,
+            702,
+            702
+          ],
+          "columnsCount": 1
+        }
+      ],
+      "passed": true
+    }
+  }
+}

@@ -2,6 +2,8 @@
 
 :host {
   display: block;
+  min-width: 0;
+  width: 100%;
   font-family: var(--font-sans, 'Manrope', 'Segoe UI', sans-serif);
 }
 
@@ -132,8 +134,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  min-width: 36px;
+  min-height: 36px;
+  width: 36px;
+  height: 36px;
   border-radius: 8px;
   transition: all 0.15s ease;
 
@@ -145,6 +149,12 @@
     color: var(--text-primary);
     background: var(--surface-hover, rgba(0, 0, 0, 0.04));
     border-color: #4f46e5;
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.35);
   }
 }
 
@@ -339,7 +349,7 @@
 /* ── Telemetry & Metadata Cards Grid ─────────────────────────────────────── */
 .telemetry-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
   gap: 12px;
 }
 
@@ -351,6 +361,8 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
+  box-sizing: border-box;
 
   &.chip-wide {
     grid-column: 1 / -1;
@@ -393,11 +405,13 @@
     border: none;
     color: var(--text-muted);
     cursor: pointer;
-    padding: 3px;
+    padding: 4px;
     border-radius: 4px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    min-width: 28px;
+    min-height: 28px;
     transition: all 0.15s ease;
 
     .material-symbols-outlined {
@@ -407,6 +421,11 @@
     &:hover {
       color: #4f46e5;
       background: rgba(79, 70, 229, 0.08);
+    }
+
+    &:focus-visible {
+      outline: 2px solid #4f46e5;
+      outline-offset: 1px;
     }
   }
 
@@ -527,6 +546,13 @@
   gap: 12px;
   background: var(--surface-secondary, #f8fafc);
   flex-shrink: 0;
+
+  @media (max-width: 480px) {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 10px;
+    padding: 12px 16px;
+  }
 }
 
 :host-context([data-theme='dark']) .modal-footer,
@@ -545,11 +571,25 @@
   font-size: 13px;
   font-weight: 600;
   font-family: inherit;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.15s ease;
 
   &:hover {
     background: var(--surface-card, #ffffff);
     border-color: #4f46e5;
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.35);
+  }
+
+  @media (max-width: 480px) {
+    width: 100%;
   }
 }
 
@@ -572,10 +612,12 @@
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   font-size: 13px;
   font-weight: 600;
   font-family: inherit;
+  min-height: 40px;
   transition: all 0.15s ease;
 
   .material-symbols-outlined {
@@ -587,9 +629,18 @@
     border-color: #fca5a5;
   }
 
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.35);
+  }
+
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  @media (max-width: 480px) {
+    width: 100%;
   }
 }
 

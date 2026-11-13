@@ -2,6 +2,8 @@
 
 :host {
   display: block;
+  min-width: 0;
+  width: 100%;
   font-family: var(--font-sans, 'Manrope', 'Segoe UI', sans-serif);
 }
 
@@ -25,6 +27,11 @@
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
+
+  @media (max-width: 480px) {
+    padding: 16px;
+    border-radius: 12px;
+  }
 }
 
 .section-heading {
@@ -74,17 +81,27 @@
   background: transparent;
   border: 1px solid var(--border-color, #e2e8f0);
   border-radius: 6px;
-  padding: 4px 10px;
+  padding: 6px 12px;
   font-size: 12px;
   font-weight: 600;
   color: var(--text-secondary);
   cursor: pointer;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.15s ease;
 
   &:hover {
     color: var(--text-primary);
     background: var(--surface-hover, rgba(0, 0, 0, 0.03));
     border-color: #4f46e5;
+  }
+
+  &:focus-visible {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.35);
   }
 }
 
@@ -150,7 +167,7 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.15s ease;
-    min-height: 34px;
+    min-height: 36px;
 
     .nav-icon {
       font-size: 16px;
@@ -159,6 +176,12 @@
     &:hover:not(:disabled) {
       border-color: #4f46e5;
       background: var(--surface-card, #ffffff);
+    }
+
+    &:focus-visible {
+      outline: none;
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.35);
     }
 
     &:disabled {
@@ -171,6 +194,8 @@
     display: flex;
     align-items: center;
     gap: 4px;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 
   .page-num {
@@ -178,8 +203,8 @@
     border: 1px solid var(--border-color, #e2e8f0);
     color: var(--text-secondary);
     border-radius: 6px;
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -191,6 +216,12 @@
     &:hover:not(.active) {
       border-color: #4f46e5;
       color: var(--text-primary);
+    }
+
+    &:focus-visible {
+      outline: none;
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.35);
     }
 
     &.active {

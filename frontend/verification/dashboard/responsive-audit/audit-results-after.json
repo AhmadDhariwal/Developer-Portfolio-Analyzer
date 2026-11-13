@@ -1,0 +1,323 @@
+{
+  "phase": "after",
+  "timestamp": "2026-11-13T10:10:09.376Z",
+  "viewportsTested": [
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "dimensions": "320x640",
+      "theme": "dark",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "dimensions": "320x640",
+      "theme": "light",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "dimensions": "320x640",
+      "theme": "system",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "dimensions": "375x667",
+      "theme": "dark",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "dimensions": "375x667",
+      "theme": "light",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "dimensions": "375x667",
+      "theme": "system",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "dimensions": "390x844",
+      "theme": "dark",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "dimensions": "390x844",
+      "theme": "light",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "dimensions": "390x844",
+      "theme": "system",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "dimensions": "430x932",
+      "theme": "dark",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "dimensions": "430x932",
+      "theme": "light",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "dimensions": "430x932",
+      "theme": "system",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "dimensions": "768x1024",
+      "theme": "dark",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "dimensions": "768x1024",
+      "theme": "light",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "dimensions": "768x1024",
+      "theme": "system",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "dimensions": "820x1180",
+      "theme": "dark",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "dimensions": "820x1180",
+      "theme": "light",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "dimensions": "820x1180",
+      "theme": "system",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "dimensions": "1024x768",
+      "theme": "dark",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "dimensions": "1024x768",
+      "theme": "light",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "dimensions": "1024x768",
+      "theme": "system",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "dimensions": "1280x800",
+      "theme": "dark",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "dimensions": "1280x800",
+      "theme": "light",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "dimensions": "1280x800",
+      "theme": "system",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "dimensions": "1366x768",
+      "theme": "dark",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "dimensions": "1366x768",
+      "theme": "light",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "dimensions": "1366x768",
+      "theme": "system",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "dimensions": "1440x900",
+      "theme": "dark",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "dimensions": "1440x900",
+      "theme": "light",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "dimensions": "1440x900",
+      "theme": "system",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "dimensions": "1920x1080",
+      "theme": "dark",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "dimensions": "1920x1080",
+      "theme": "light",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "dimensions": "1920x1080",
+      "theme": "system",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "dimensions": "2560x1440",
+      "theme": "dark",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "dimensions": "2560x1440",
+      "theme": "light",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "dimensions": "2560x1440",
+      "theme": "system",
+      "overflow": "PASS",
+      "smallTouchTargetCount": 0
+    }
+  ],
+  "overflowViolations": [],
+  "touchTargetViolations": [],
+  "interactiveChecks": [
+    {
+      "action": "expand-all-details",
+      "viewportWidth": 375,
+      "overflow": "PASS"
+    },
+    {
+      "action": "expand-all-details",
+      "viewportWidth": 768,
+      "overflow": "PASS"
+    },
+    {
+      "action": "expand-all-details",
+      "viewportWidth": 1440,
+      "overflow": "PASS"
+    },
+    {
+      "action": "stale-degraded-state",
+      "viewportWidth": 375,
+      "overflow": "PASS"
+    },
+    {
+      "action": "stale-degraded-state",
+      "viewportWidth": 1440,
+      "overflow": "PASS"
+    }
+  ]
+}

@@ -89,27 +89,44 @@ button:focus-visible {
 .consent {
   display: flex;
   align-items: flex-start;
+  gap: 10px;
   line-height: 1.6;
+  cursor: pointer;
 }
-.consent input {
-  margin-top: 5px;
+.consent input[type='checkbox'] {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  margin-top: 3px;
+  padding: 0;
+  accent-color: var(--color-primary, #6d28d9);
   flex: none;
+  cursor: pointer;
 }
 .notice {
   padding: 12px;
   border-radius: 10px;
   background: #a78bfa15;
   border: 1px solid #a78bfa55;
+  word-break: break-word;
 }
 .validation {
   color: var(--color-warning-text, #fcd34d);
   margin: 0;
+  word-break: break-word;
 }
 footer {
   display: flex;
   gap: 12px;
   justify-content: flex-end;
   border-top: 1px solid var(--border-color, #475569);
+
+  button {
+    min-height: 44px;
+    padding: 10px 18px;
+    font-weight: 600;
+  }
 }
 button {
   cursor: pointer;
@@ -122,6 +139,53 @@ button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+:host-context(:is([data-theme='dark'], .dark)) {
+  dialog {
+    background: #151d2a;
+    color: #f8fafc;
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 24px 100px rgba(0, 0, 0, 0.7);
+  }
+
+  header {
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+  }
+
+  footer {
+    border-top-color: rgba(255, 255, 255, 0.1);
+  }
+
+  fieldset {
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  input,
+  select,
+  button {
+    background: #101622;
+    color: #f8fafc;
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+
+  button.primary {
+    background: #6366f1;
+    color: #ffffff;
+    border-color: #6366f1;
+
+    &:hover:not(:disabled) {
+      background: #4f46e5;
+    }
+  }
+
+  .notice {
+    background: rgba(99, 102, 241, 0.12);
+    border-color: rgba(99, 102, 241, 0.3);
+    color: #c7d2fe;
+  }
+}
+
 @media (max-width: 600px) {
   dialog {
     width: 100%;
@@ -134,12 +198,16 @@ button:disabled {
   header,
   .fields,
   footer {
-    padding: 20px;
+    padding: 16px;
   }
   .project-grid {
     grid-template-columns: 1fr;
   }
   footer {
     flex-direction: column;
+
+    button {
+      width: 100%;
+    }
   }
 }

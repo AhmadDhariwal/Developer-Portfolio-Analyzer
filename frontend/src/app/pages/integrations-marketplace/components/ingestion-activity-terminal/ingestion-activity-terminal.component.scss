@@ -1,4 +1,8 @@
 :host {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   background: #0f172a;
   color: #f8fafc;
   border: 1px solid #334155;
@@ -19,17 +23,26 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  :host {
+    animation: none;
+  }
+}
+
 .terminal-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
   padding: 8px 14px;
   background: #1e293b;
   border-bottom: 1px solid #334155;
+  min-width: 0;
 
   .terminal-dots {
     display: flex;
     gap: 6px;
+    flex-shrink: 0;
 
     .term-dot {
       width: 9px;
@@ -48,11 +61,16 @@
   }
 
   .terminal-title {
-    font-size: 0.72rem;
+    font-size: clamp(0.65rem, 2.5vw, 0.72rem);
     font-weight: 600;
     font-family: inherit;
     color: #94a3b8;
     letter-spacing: 0.04em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex: 1 1 auto;
   }
 
   .terminal-close {
@@ -63,9 +81,21 @@
     cursor: pointer;
     line-height: 1;
     padding: 0 4px;
+    min-width: 32px;
+    min-height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    flex-shrink: 0;
 
     &:hover {
       color: #f8fafc;
+    }
+
+    &:focus-visible {
+      outline: 2px solid #53ddfc;
+      outline-offset: 1px;
     }
   }
 }
@@ -84,6 +114,9 @@
     align-items: baseline;
     gap: 8px;
     line-height: 1.5;
+    flex-wrap: wrap;
+    word-break: break-word;
+    min-width: 0;
   }
 
   .log-timestamp {
@@ -118,5 +151,9 @@
 
   .log-msg {
     color: #cbd5e1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    flex: 1 1 auto;
   }
 }

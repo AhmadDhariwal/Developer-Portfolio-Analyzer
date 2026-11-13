@@ -1,4 +1,5 @@
 {
+  "testedHead": "4ff189d9105c1a680b84d6fdadab9ad1c35d3ebe",
   "themes": [
     {
       "name": "1440-light",
@@ -85,6 +86,7 @@
   },
   "evidenceStates": {
     "missingScoreNotZero": true,
+    "comparisonUnavailableWithoutCompleteEvidence": true,
     "unavailableSprintAndInterview": true,
     "staleSourcesWarned": true,
     "measuredGitHubZeroPreserved": true
