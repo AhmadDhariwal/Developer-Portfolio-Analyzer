@@ -1,3 +1,4 @@
+const { normalizeDashboardActivity } = require('../utils/dashboardActivity');
 const portfolioScoring = require('../services/scoring/portfolioScore');
 const {
   buildCachePipeline,
@@ -301,7 +302,39 @@ const deriveReadinessBreakdown = ({
             ]),
           )
         : null,
-    projectImpact: saved ? dimension('projectImpact') : null,
+    projectImpact: saved
+      ? dimension('projectImpact')
+      : (() => {
+          const githubImpact = analysis?.updatedAt
+            ? numeric(
+                analysis.githubSignals?.scoring?.breakdown?.projectImpact?.value ??
+                  analysis.githubSignals?.scoring?.inputs?.projectImpact,
+              )
+            : null;
+          const githubConsistency = analysis?.updatedAt
+            ? numeric(
+                analysis.githubSignals?.scoring?.breakdown?.consistency?.value ??
+                  analysis.githubSignals?.scoring?.inputs?.consistency,
+              )
+            : null;
+          const githubContribution = analysis?.updatedAt
+            ? numeric(
+                analysis.githubSignals?.scoring?.breakdown?.contribution?.value ??
+                  analysis.githubSignals?.scoring?.inputs?.contribution,
+              )
+            : null;
+          const integrationImpact =
+            Array.isArray(integrationInsight?.providers) && integrationInsight.providers.length > 0
+              ? numeric(integrationInsight.integrationScore)
+              : null;
+          const avg = safeAverage([
+            githubImpact,
+            githubConsistency,
+            githubContribution,
+            integrationImpact,
+          ]);
+          return score(avg);
+        })(),
   };
 };
 
@@ -981,12 +1014,12 @@ const getDashboardSummary = async (req, res) => {
       commandCenter,
       sourceFreshness,
       activitySnapshot: {
-        data: analysis?.updatedAt ? analysis.contributionActivity || [] : [],
-        available: Boolean(analysis?.updatedAt),
+        data: normalizeDashboardActivity(analysis?.contributionActivity),
+        available: normalizeDashboardActivity(analysis?.contributionActivity).length > 0,
       },
       languageSnapshot: {
         data: normalizeLanguageMap(analysis?.languageDistribution),
-        available: Boolean(analysis?.updatedAt),
+        available: Object.keys(normalizeLanguageMap(analysis?.languageDistribution)).length > 0,
       },
       progress: buildDashboardProgress(
         {
@@ -1059,10 +1092,7 @@ const getDashboardContributions = async (req, res) => {
       .lean();
     const githubUsername = developerContext.resolveGithubUsername(user) || '';
     const { analysis, rateLimited } = await ensureAnalysis(req.user._id, githubUsername);
-    const data =
-      Array.isArray(analysis?.contributionActivity) && analysis.contributionActivity.length
-        ? analysis.contributionActivity
-        : [];
+    const data = normalizeDashboardActivity(analysis?.contributionActivity);
 
     res.json({
       data,

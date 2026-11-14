@@ -1,4 +1,5 @@
 import { Observable, Subject, of } from 'rxjs';
+import { Chart } from 'chart.js';
 import { DashboardComponent } from './dashboard.component';
 
 describe('Personal dashboard request lifecycle', () => {
@@ -132,6 +133,135 @@ describe('Personal dashboard request lifecycle', () => {
     page.loadDashboardData();
     summary.next(payload);
     expect(page.totalActivity).toBe(0);
+    page.ngOnDestroy();
+  });
+  it('shows measured-zero fallback activity and clears visibility on missing evidence', () => {
+    const { page, api } = create();
+    api.getDashboardContributions.mockReturnValue(
+      of({ data: [{ month: 'Nov', count: 0 }] }) as never,
+    );
+    page.loadActivityAndLanguage();
+    expect(page.activityAvailable).toBe(true);
+    expect(page.totalActivity).toBe(0);
+    api.getDashboardContributions.mockReturnValue(of({ data: [] }));
+    page.loadActivityAndLanguage();
+    expect(page.activityAvailable).toBe(false);
+    page.ngOnDestroy();
+  });
+
+  it('rejects unavailable activity counts and does not reuse a previous profile snapshot', () => {
+    const { page, summary } = create();
+    page.loadDashboardData();
+    summary.next({
+      ...payload,
+      activitySnapshot: { available: true, data: [{ month: 'Nov', count: 0 }] },
+    });
+    expect(page.activityAvailable).toBe(true);
+    summary.next({
+      ...payload,
+      activitySnapshot: { available: true, data: [{ month: 'Nov', count: null }] },
+    });
+    expect(page.activityAvailable).toBe(false);
+    expect(page.totalActivity).toBe(0);
+    expect(page.hasLanguageData).toBe(false);
+    expect(page.aiBreakdown?.skillCoverage).toBeNull();
+    page.ngOnDestroy();
+  });
+  it('coalesces asynchronous updates, waits for size, and cancels rendering on destruction', () => {
+    const { page } = create();
+    const callbacks: FrameRequestCallback[] = [];
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+      callbacks.push(callback);
+      return callbacks.length;
+    });
+    const cancel = vi.fn();
+    vi.stubGlobal('cancelAnimationFrame', cancel);
+    const canvas = document.createElement('canvas');
+    vi.spyOn(canvas, 'getContext').mockReturnValue({} as never);
+    document.body.append(canvas);
+    let width = 0;
+    vi.spyOn(canvas, 'getBoundingClientRect').mockImplementation(
+      () => ({ width, height: 150 }) as DOMRect,
+    );
+    vi.spyOn(canvas, 'getClientRects').mockReturnValue([{}] as unknown as DOMRectList);
+    (page as any).viewInitialized = true;
+    page.languageChart = { nativeElement: canvas };
+    page.hasLanguageData = true;
+    (page as any).pendingLanguageData = { JavaScript: 57, TypeScript: 43 };
+    const render = vi.spyOn(page, 'initLanguageChart').mockImplementation(() => {});
+    const chartLookup = vi
+      .spyOn(Chart, 'getChart')
+      .mockReturnValue({ ctx: {}, width: 300, height: 150 } as never);
+    try {
+      (page as any).requestChartRender();
+      page.ngAfterViewChecked();
+      page.ngAfterViewChecked();
+      expect(callbacks).toHaveLength(1);
+      callbacks.shift()!(0);
+      expect(render).not.toHaveBeenCalled();
+      width = 300;
+      page.ngAfterViewChecked();
+      callbacks.shift()!(1);
+      expect(render).toHaveBeenCalledOnce();
+      (page as any).requestChartRender();
+      page.ngAfterViewChecked();
+      page.ngOnDestroy();
+      expect(cancel).toHaveBeenCalled();
+      callbacks.shift()!(2);
+      expect(render).toHaveBeenCalledOnce();
+    } finally {
+      render.mockRestore();
+      chartLookup.mockRestore();
+      canvas.remove();
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('reports a rendering failure without retaining a misleading language legend', () => {
+    const { page } = create();
+    let frame: FrameRequestCallback = () => {};
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+      frame = callback;
+      return 1;
+    });
+    const canvas = document.createElement('canvas');
+    vi.spyOn(canvas, 'getContext').mockReturnValue({} as never);
+    document.body.append(canvas);
+    vi.spyOn(canvas, 'getBoundingClientRect').mockReturnValue({
+      width: 300,
+      height: 150,
+    } as DOMRect);
+    vi.spyOn(canvas, 'getClientRects').mockReturnValue([{}] as unknown as DOMRectList);
+    (page as any).viewInitialized = true;
+    page.languageChart = { nativeElement: canvas };
+    page.hasLanguageData = true;
+    const render = vi.spyOn(page, 'initLanguageChart').mockImplementation(() => {
+      throw new Error('Context lost');
+    });
+    try {
+      (page as any).requestChartRender();
+      page.ngAfterViewChecked();
+      frame(0);
+      expect(page.chartErrors.language).toContain('could not be drawn');
+      expect(page.languageLegend).toEqual([]);
+    } finally {
+      page.ngOnDestroy();
+      render.mockRestore();
+      canvas.remove();
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('distinguishes an unavailable radar from measured zero dimensions', () => {
+    const { page } = create();
+    expect(page.hasRadarData).toBe(false);
+    page.aiBreakdown = {
+      codeQuality: 0,
+      skillCoverage: null,
+      industryReadiness: null,
+      projectImpact: null,
+    };
+    expect(page.hasRadarData).toBe(true);
     page.ngOnDestroy();
   });
 });

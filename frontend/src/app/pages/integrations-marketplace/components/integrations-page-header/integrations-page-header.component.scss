@@ -17,14 +17,14 @@
   box-sizing: border-box;
 
   .page-head__info {
-    max-width: 780px;
+    max-width: min(780px, 100%);
     min-width: 0;
   }
 
   .page-head__eyebrow {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px 10px;
     flex-wrap: wrap;
     font-size: 0.74rem;
     font-weight: 600;
@@ -34,11 +34,20 @@
     color: var(--color-primary-text, #4338ca);
     background: var(--color-primary-soft, #eef2ff);
     border: 1px solid var(--color-primary-border, #c7d2fe);
-    padding: 4px 12px;
-    border-radius: 9999px;
+    padding: 6px 12px;
+    border-radius: 14px;
     margin-bottom: 0.65rem;
     max-width: 100%;
     box-sizing: border-box;
+    overflow: hidden;
+
+    .eyebrow-label {
+      display: inline-flex;
+      align-items: flex-start;
+      gap: 8px;
+      min-width: 0;
+      max-width: 100%;
+    }
 
     .eyebrow-dot {
       width: 7px;
@@ -47,10 +56,13 @@
       background: var(--color-primary, #4f46e5);
       box-shadow: 0 0 6px rgba(79, 70, 229, 0.4);
       flex-shrink: 0;
+      margin-top: 0.36em;
     }
 
     .eyebrow-text {
-      overflow-wrap: anywhere;
+      min-width: 0;
+      line-height: 1.35;
+      overflow-wrap: break-word;
     }
 
     .eyebrow-tag {
@@ -59,10 +71,13 @@
       color: var(--color-success-text, #059669);
       background: var(--color-success-soft, #ecfdf5);
       border: 1px solid var(--color-success-border, #a7f3d0);
-      padding: 1px 7px;
+      padding: 2px 8px;
       border-radius: 4px;
       letter-spacing: 0.04em;
-      flex-shrink: 0;
+      line-height: 1.3;
+      max-width: 100%;
+      box-sizing: border-box;
+      flex: 0 1 auto;
     }
   }
 

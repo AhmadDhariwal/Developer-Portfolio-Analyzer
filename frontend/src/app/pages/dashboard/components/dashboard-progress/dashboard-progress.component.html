@@ -81,6 +81,15 @@
           </div>
         </details>
       </ng-container>
+
+      <div class="history-empty" *ngIf="progress.history.status !== 'available'">
+        <p class="empty-msg">{{ progress.history.reason }}</p>
+        <p class="history-guidance">
+          Readiness trends require at least two trusted assessments generated with matching scoring
+          rules and profile identity. Run and save verified portfolio assessments to establish a
+          comparable historical trend.
+        </p>
+      </div>
     </article>
 
     <article class="bento-card" aria-labelledby="sprint-velocity-title">

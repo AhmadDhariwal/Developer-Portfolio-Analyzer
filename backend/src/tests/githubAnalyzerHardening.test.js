@@ -1262,3 +1262,26 @@ test('canonical README fallback recognizes an extensionless document without exp
   assert.equal(result.dataVersion, 'github-normalized-v2');
   assertScores(result);
 });
+
+test('a successful save cannot refresh old-profile monthly activity from repository totals', async () => {
+  const harness = createHarness();
+  const { state } = harness;
+  const { controller } = harness.loadInstance();
+  const first = await invoke(controller.analyzeAndSaveGitHubProfile, {
+    username: 'alpha',
+    savedUsername: 'alpha'
+  });
+  assert.equal(first.statusCode, 200);
+  const record = state.analyses.get('user-1');
+  record.githubSignals.username = 'previous-profile';
+  record.contributionActivity = [{ month: 'Nov', count: 999 }];
+  const next = await invoke(controller.analyzeAndSaveGitHubProfile, {
+    username: 'alpha',
+    savedUsername: 'alpha',
+    forceRefresh: true
+  });
+  assert.equal(next.statusCode, 200);
+  assert.equal(record.githubSignals.username.toLowerCase(), 'alpha');
+  assert.deepEqual(record.contributionActivity, []);
+  assert.equal(Object.hasOwn(next.body, 'monthlyCommitActivity'), false);
+});

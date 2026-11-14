@@ -8,6 +8,7 @@ import {
   OnInit,
   inject,
 } from '@angular/core';
+import { SearchableSelectComponent } from '../../shared/components/searchable-select/searchable-select.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -39,6 +40,7 @@ import {
   standalone: true,
   imports: [
     CommonModule,
+    SearchableSelectComponent,
     FormsModule,
     RouterLink,
     SprintTaskEditorComponent,
@@ -97,6 +99,124 @@ export class CareerSprintComponent implements OnInit, OnDestroy {
   preferencesLoaded = false;
   preferenceError = '';
   zones = this.timeZones();
+  calendarSprint: CareerSprint | null = null;
+  dateMessage = '';
+  dateError = '';
+  preferenceMessage = '';
+  get zoneOptions() {
+    return this.zones.map((value) => ({ value, label: value }));
+  }
+  get calendarSprints(): CareerSprint[] {
+    return this.knownSprints.filter(
+      (item, index, all) => all.findIndex((other) => other._id === item._id) === index,
+    );
+  }
+  get calendarSprintOptions() {
+    return this.calendarSprints.map((record) => ({
+      value: record._id,
+      label: record.title || 'Career Sprint',
+      meta: `${this.calendarStatus(record)} · ${this.date(record.sprintStartDate || record.weekStartDate, record)} – ${this.date(record.sprintEndDate || record.weekEndDate, record)}`,
+    }));
+  }
+  get calendarDirty(): boolean {
+    return (
+      !!this.calendarSprint &&
+      (this.sprintStartDate !==
+        calendarKey(
+          this.calendarSprint.sprintStartDate || this.calendarSprint.weekStartDate,
+          sprintZone(this.calendarSprint),
+        ) ||
+        this.sprintEndDate !==
+          calendarKey(
+            this.calendarSprint.sprintEndDate || this.calendarSprint.weekEndDate,
+            sprintZone(this.calendarSprint),
+          ))
+    );
+  }
+  get dateDuration(): number {
+    return (
+      Math.round((Date.parse(this.sprintEndDate) - Date.parse(this.sprintStartDate)) / 86400000) + 1
+    );
+  }
+  get dateConflict(): CareerSprint | undefined {
+    return sprintWindowConflict(
+      this.calendarSprints.filter((s) => s._id !== this.calendarSprint?._id),
+      this.sprintStartDate,
+      this.sprintEndDate,
+      this.calendarSprint ? sprintZone(this.calendarSprint) || 'UTC' : 'UTC',
+    );
+  }
+  get calendarDisabled(): boolean {
+    return (
+      !this.calendarSprint ||
+      sprintReadOnly(this.calendarSprint) ||
+      this.stale ||
+      this.isRefreshing ||
+      !!this.busy
+    );
+  }
+  calendarStatus(record: CareerSprint): string {
+    if (sprintReadOnly(record)) return 'Read-only legacy';
+    const start = Date.parse(record.sprintStartDate || record.weekStartDate);
+    const end = Date.parse(record.sprintEndDate || record.weekEndDate);
+    return this.now < start ? 'Upcoming' : this.now > end ? 'Completed' : 'Active';
+  }
+  get taskDateWarning(): string {
+    const record = this.calendarSprint;
+    if (
+      !record ||
+      !Array.isArray(record.tasks) ||
+      !record.analytics ||
+      record.tasks.length !== record.analytics.totalTasks
+    )
+      return 'Complete task records are unavailable; review task dates before saving. Task dates will remain unchanged.';
+    const outside = record.tasks.filter((task) =>
+      [task.startDate, task.endDate, task.dueDate, task.deadline].some((value) => {
+        const day = value ? calendarKey(value, sprintZone(record)) : '';
+        return day && (day < this.sprintStartDate || day > this.sprintEndDate);
+      }),
+    );
+    return outside.length
+      ? `${outside.length} tasks have dates outside this window. Their dates will remain unchanged.`
+      : 'Loaded task dates remain unchanged when the Sprint window changes.';
+  }
+  resetCalendarDates(): void {
+    const record = this.calendarSprint;
+    this.sprintStartDate = record
+      ? calendarKey(record.sprintStartDate || record.weekStartDate, sprintZone(record))
+      : '';
+    this.sprintEndDate = record
+      ? calendarKey(record.sprintEndDate || record.weekEndDate, sprintZone(record))
+      : '';
+    this.dateMessage = this.dateError = '';
+  }
+  selectCalendarSprint(id: string): void {
+    if (
+      this.busy ||
+      (this.calendarDirty && !window.confirm('Discard unsaved Sprint date changes?'))
+    )
+      return;
+    this.calendarSprint = this.calendarSprints.find((record) => record._id === id) || null;
+    this.resetCalendarDates();
+  }
+  toggleCalendarSettings(): void {
+    if (this.busy) return;
+    if (
+      this.settingsOpen &&
+      (this.calendarDirty || this.preferenceZone !== this.savedPreferenceZone) &&
+      !window.confirm('Discard unsaved Calendar settings changes?')
+    )
+      return;
+    this.settingsOpen = !this.settingsOpen;
+    this.preferenceZone = this.savedPreferenceZone;
+    this.preferenceMessage = '';
+    if (!this.calendarSprint) this.calendarSprint = this.sprint;
+    this.resetCalendarDates();
+  }
+  cancelPreference(): void {
+    this.preferenceZone = this.savedPreferenceZone;
+    this.preferenceError = this.preferenceMessage = '';
+  }
 
   get readOnly(): boolean {
     return Boolean(this.sprint && sprintReadOnly(this.sprint));
@@ -356,14 +476,13 @@ export class CareerSprintComponent implements OnInit, OnDestroy {
 
   private acceptSprint(sprint: CareerSprint): void {
     this.sprint = sprint;
-    this.sprintStartDate = calendarKey(
-      sprint.sprintStartDate || sprint.weekStartDate,
-      sprintZone(sprint),
-    );
-    this.sprintEndDate = calendarKey(
-      sprint.sprintEndDate || sprint.weekEndDate,
-      sprintZone(sprint),
-    );
+    if (!this.calendarSprint) {
+      this.calendarSprint = sprint;
+      this.resetCalendarDates();
+    } else if (this.calendarSprint._id === sprint._id && !this.calendarDirty) {
+      this.calendarSprint = sprint;
+      this.resetCalendarDates();
+    }
     if (!this.zone && ['today', 'week', 'custom'].includes(this.dateFilter))
       this.dateFilter = 'all';
   }
@@ -453,19 +572,42 @@ export class CareerSprintComponent implements OnInit, OnDestroy {
     );
   }
   saveDates(): void {
-    if (
-      !this.sprint ||
-      this.mutationsDisabled ||
-      !this.sprintStartDate ||
-      !this.sprintEndDate ||
-      this.sprintStartDate > this.sprintEndDate
-    )
+    const selected = this.calendarSprint;
+    if (!selected || this.calendarDisabled) return;
+    if (!Number.isFinite(this.dateDuration) || this.dateDuration < 1 || this.dateDuration > 366) {
+      this.dateError = 'Choose a valid window of 1–366 days.';
       return;
-    this.mutate(
-      'dates',
-      this.api.updateSprintDates(this.sprint._id, this.sprintStartDate, this.sprintEndDate),
-      'Sprint dates updated.',
-    );
+    }
+    if (this.dateConflict) {
+      this.dateError = 'These dates overlap another loaded Sprint.';
+      return;
+    }
+    this.busy = 'dates';
+    this.dateError = this.dateMessage = '';
+    this.api
+      .updateSprintDates(selected._id, this.sprintStartDate, this.sprintEndDate)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (updated) => {
+          this.busy = '';
+          this.calendarSprint = updated;
+          this.resetCalendarDates();
+          if (this.sprint?._id === updated._id) {
+            this.acceptSprint(updated);
+            this.resetFilters();
+          }
+          if (this.planningTarget?._id === updated._id) this.planningTarget = updated;
+          this.history = this.history.map((item) => (item._id === updated._id ? updated : item));
+          this.dateMessage = 'Sprint dates updated. Task dates were preserved.';
+          this.refreshHistory();
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          this.busy = '';
+          this.dateError = sprintError(error, 'Sprint dates could not be saved.');
+          this.cdr.markForCheck();
+        },
+      });
   }
   restoreStreak(): void {
     if (!this.sprint || !this.canRestore) return;
@@ -530,7 +672,12 @@ export class CareerSprintComponent implements OnInit, OnDestroy {
       });
   }
   savePreference(): void {
-    if (this.busy || !this.preferenceZone.trim()) return;
+    if (this.busy) return;
+    if (!this.zones.includes(this.preferenceZone)) {
+      this.preferenceError = 'Select a valid IANA timezone.';
+      return;
+    }
+    this.preferenceMessage = '';
     this.busy = 'zone';
     this.api
       .savePreferences(this.preferenceZone.trim())
@@ -542,7 +689,7 @@ export class CareerSprintComponent implements OnInit, OnDestroy {
           this.busy = '';
           this.preferenceError = '';
           this.actionFailed = false;
-          this.actionMessage =
+          this.preferenceMessage =
             'Timezone preference saved for future Sprints. Existing Sprint dates and calendars are unchanged.';
           this.cdr.markForCheck();
         },

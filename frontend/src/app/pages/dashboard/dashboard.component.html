@@ -358,6 +358,7 @@
      ════════════════════════════════════════════ -->
 <section class="analytics-trio-grid" aria-label="Analytics Overview">
   <div class="card activity-card">
+    <p *ngIf="chartErrors.activity" role="alert">{{ chartErrors.activity }}</p>
     <div class="card-head">
       <div class="head-text">
         <h3>Contribution Activity</h3>
@@ -368,7 +369,8 @@
       </div>
     </div>
     <p *ngIf="!isLoading && !activityAvailable" class="empty-state">
-      No contribution evidence with verified source identity is available.
+      Monthly contribution activity is unavailable. The saved GitHub analysis contains no verified
+      monthly activity records.
     </p>
     <details class="repository-history-note" *ngIf="progress">
       <summary>Repository history availability</summary>
@@ -384,6 +386,7 @@
   </div>
 
   <div class="card language-card">
+    <p *ngIf="chartErrors.language" role="alert">{{ chartErrors.language }}</p>
     <div class="card-head">
       <div class="head-text">
         <h3>Language Distribution</h3>
@@ -398,7 +401,7 @@
         aria-label="Language distribution; percentages listed below"
       ></canvas>
     </div>
-    <div class="empty-state" *ngIf="!hasLanguageData">
+    <div class="empty-state" *ngIf="!isLoading && !hasLanguageData">
       <p>No language distribution available for the saved default GitHub profile yet.</p>
     </div>
     <div class="lang-legend" *ngIf="languageLegend.length > 0">
@@ -413,6 +416,7 @@
   </div>
 
   <div class="card radar-card">
+    <p *ngIf="chartErrors.radar" role="alert">{{ chartErrors.radar }}</p>
     <div class="card-head">
       <div class="head-text">
         <h3>Skills Radar</h3>
@@ -420,7 +424,10 @@
       </div>
       <span class="bento-pill pill-violet">4-Axis View</span>
     </div>
-    <div class="chart-wrap radar-wrap">
+    <p *ngIf="!isLoading && !hasRadarData" class="empty-state">
+      Readiness dimensions are unavailable. Save verified analysis evidence to populate this chart.
+    </p>
+    <div class="chart-wrap radar-wrap" [hidden]="!hasRadarData">
       <canvas
         #skillRadar
         role="img"

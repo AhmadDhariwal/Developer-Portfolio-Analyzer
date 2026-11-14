@@ -5,6 +5,7 @@ import {
 import { DashboardProgressComponent } from './components/dashboard-progress/dashboard-progress.component';
 import {
   AfterViewInit,
+  AfterViewChecked,
   ChangeDetectorRef,
   Component,
   ElementRef,
@@ -152,7 +153,7 @@ interface SourceFreshnessEntry {
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
-export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
+export class DashboardComponent implements OnInit, AfterViewInit, AfterViewChecked, OnDestroy {
   @ViewChild('skillRadar') skillRadar!: ElementRef<HTMLCanvasElement>;
   @ViewChild('activityChart') activityChart!: ElementRef<HTMLCanvasElement>;
   @ViewChild('languageChart') languageChart!: ElementRef<HTMLCanvasElement>;
@@ -232,6 +233,100 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private radarInstance: Chart | null = null;
   private viewInitialized = false;
+  private chartFrame: number | null = null;
+  private chartResizeObserver: ResizeObserver | null = null;
+  private readonly dirtyCharts = new Set<'activity' | 'language' | 'radar'>();
+  chartErrors = { activity: '', language: '', radar: '' };
+
+  get hasRadarData(): boolean {
+    return Object.values(this.buildRadarBreakdown()).some((value) => value !== null);
+  }
+
+  private requestChartRender(): void {
+    if (this.destroyed) return;
+    for (const key of ['activity', 'language', 'radar'] as const) this.dirtyCharts.add(key);
+  }
+
+  ngAfterViewChecked(): void {
+    this.scheduleChartRender();
+  }
+
+  private scheduleChartRender(): void {
+    if (!this.viewInitialized || this.destroyed || this.chartFrame !== null) return;
+    if (!this.dirtyCharts.size) return;
+    // Angular has updated visibility; measure layout on the next browser paint.
+    this.chartFrame = requestAnimationFrame(() => {
+      this.chartFrame = null;
+      if (this.destroyed) return;
+      let processed = false;
+      const entries = [
+        [
+          'activity',
+          this.activityChart,
+          this.activityAvailable,
+          () => this.initActivityChart(this.pendingActivityData || []),
+        ],
+        [
+          'language',
+          this.languageChart,
+          this.hasLanguageData,
+          () => this.initLanguageChart(this.pendingLanguageData || {}),
+        ],
+        ['radar', this.skillRadar, this.hasRadarData, () => this.initRadarChart()],
+      ] as const;
+      for (const [key, ref, available, render] of entries) {
+        if (!this.dirtyCharts.has(key)) continue;
+        const canvas = ref?.nativeElement;
+        const instance =
+          key === 'activity'
+            ? this.activityInstance
+            : key === 'language'
+              ? this.languageInstance
+              : this.radarInstance;
+        if (!available) {
+          instance?.destroy();
+          if (key === 'activity') this.activityInstance = null;
+          if (key === 'language') {
+            this.languageInstance = null;
+            this.languageLegend = [];
+          }
+          if (key === 'radar') this.radarInstance = null;
+          this.chartErrors[key] = '';
+          this.dirtyCharts.delete(key);
+          processed = true;
+          continue;
+        }
+        const bounds = canvas?.getBoundingClientRect();
+        if (
+          !canvas?.isConnected ||
+          !canvas.getClientRects().length ||
+          canvas.checkVisibility?.({ checkOpacity: true, checkVisibilityCSS: true }) === false ||
+          !bounds ||
+          bounds.width <= 0 ||
+          bounds.height <= 0
+        )
+          continue;
+        try {
+          if (!canvas.getContext('2d')) throw new Error('Canvas context unavailable');
+          render();
+          const chart = Chart.getChart(canvas);
+          if (!chart?.ctx || chart.width <= 0 || chart.height <= 0)
+            throw new Error('Canvas unavailable');
+          this.chartErrors[key] = '';
+        } catch {
+          Chart.getChart(canvas)?.destroy();
+          if (key === 'activity') this.activityInstance = null;
+          if (key === 'language') this.languageInstance = null;
+          if (key === 'radar') this.radarInstance = null;
+          if (key === 'language') this.languageLegend = [];
+          this.chartErrors[key] = 'Chart could not be drawn. Refresh the dashboard to retry.';
+        }
+        this.dirtyCharts.delete(key);
+        processed = true;
+      }
+      if (processed) this.cdr.detectChanges();
+    });
+  }
   private activityInstance: Chart | null = null;
   private languageInstance: Chart | null = null;
   private pendingActivityData: { month: string; count: number }[] | null = null;
@@ -404,15 +499,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.progress = data.progress || null;
     this.hasSummaryCharts = Boolean(data.activitySnapshot && data.languageSnapshot);
     if (this.hasSummaryCharts) {
-      this.activityAvailable = data.activitySnapshot.available === true;
-      this.pendingActivityData = data.activitySnapshot.data || [];
+      this.pendingActivityData = this.normalizeActivity(data.activitySnapshot.data);
+      this.activityAvailable = this.pendingActivityData.length > 0;
       this.pendingLanguageData = data.languageSnapshot.data || {};
       this.totalActivity = this.pendingActivityData!.reduce((sum, item) => sum + item.count, 0);
       this.hasLanguageData = Object.keys(this.pendingLanguageData!).length > 0;
-      if (this.viewInitialized) {
-        this.initActivityChart(this.pendingActivityData!);
-        this.initLanguageChart(this.pendingLanguageData!);
-      }
     }
     this.integrationScore = Number(data?.integration?.score || 0);
     this.sourcesUsed = data?.sourcesUsed || {};
@@ -470,10 +561,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.applySkillsSnapshot(data?.skillsSnapshot);
     this.applyRecommendationsSnapshot(data?.recommendationSnapshot);
 
-    if (this.viewInitialized) {
-      this.initRadarChart();
-    }
-
+    this.requestChartRender();
     this.isLoading = false;
     this.cdr.detectChanges();
   }
@@ -492,16 +580,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     ).subscribe({
       next: (payload: any) => {
         if (!this.isActiveCycle(cycle)) return;
-        const data = Array.isArray(payload?.data) ? payload.data : [];
+        const data = this.normalizeActivity(payload?.data);
+        this.activityAvailable = data.length > 0;
         this.totalActivity = data.reduce(
           (sum: number, item: any) => sum + Math.max(0, Number(item?.count) || 0),
           0,
         );
-        if (this.viewInitialized && this.activityChart?.nativeElement) {
-          this.initActivityChart(data);
-        } else {
-          this.pendingActivityData = data;
-        }
+        this.pendingActivityData = data;
+        this.requestChartRender();
         this.cdr.detectChanges();
       },
       error: () => {
@@ -520,19 +606,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         if (!this.isActiveCycle(cycle)) return;
         const data = payload?.data && typeof payload.data === 'object' ? payload.data : {};
         this.languageSource = String(payload?.source || this.languageSource);
+        this.requestChartRender();
         if (Object.keys(data).length > 0) {
           this.hasLanguageData = true;
-          if (this.viewInitialized && this.languageChart?.nativeElement) {
-            this.initLanguageChart(data);
-          } else {
-            this.pendingLanguageData = data;
-          }
+          this.pendingLanguageData = data;
         } else {
           this.hasLanguageData = false;
           this.pendingLanguageData = null;
           this.languageLegend = [];
-          this.languageInstance?.destroy();
-          this.languageInstance = null;
         }
         this.cdr.detectChanges();
       },
@@ -770,23 +851,25 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       attributes: true,
       attributeFilter: ['data-theme'],
     });
-    setTimeout(() => {
-      if (this.destroyed) return;
-      this.initRadarChart();
-      if (this.pendingActivityData) {
-        this.initActivityChart(this.pendingActivityData);
-        this.pendingActivityData = null;
+    this.chartResizeObserver = new ResizeObserver(() => {
+      for (const chart of [this.activityInstance, this.languageInstance, this.radarInstance]) {
+        if (chart && chart.canvas?.isConnected) chart.resize();
       }
-      if (this.pendingLanguageData) {
-        this.initLanguageChart(this.pendingLanguageData);
-        this.pendingLanguageData = null;
-      }
-      this.cdr.detectChanges();
-    }, 50);
+      this.scheduleChartRender();
+    });
+    for (const ref of [this.activityChart, this.languageChart, this.skillRadar]) {
+      if (ref?.nativeElement.parentElement)
+        this.chartResizeObserver.observe(ref.nativeElement.parentElement);
+    }
+    this.requestChartRender();
+    this.scheduleChartRender();
   }
 
   ngOnDestroy(): void {
     this.destroyed = true;
+    if (this.chartFrame !== null) cancelAnimationFrame(this.chartFrame);
+    this.chartResizeObserver?.disconnect();
+    this.dirtyCharts.clear();
     this.requestCycle += 1;
     this.requestCancelled.next();
     this.requestCancelled.complete();
@@ -837,6 +920,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
               breakdown.industryReadiness,
               breakdown.projectImpact,
             ],
+            spanGaps: true,
             borderColor: '#4F46E5',
             backgroundColor: 'rgba(99, 102, 241, 0.16)',
             borderWidth: 2.25,
@@ -850,6 +934,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         ],
       },
       options: {
+        animation: false,
         responsive: true,
         maintainAspectRatio: false,
         layout: {
@@ -857,7 +942,18 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         },
         plugins: {
           legend: { display: false },
-          tooltip: this.buildChartTooltipOptions(),
+          tooltip: {
+            ...this.buildChartTooltipOptions(),
+            callbacks: {
+              label: (ctx) => {
+                const raw = ctx.raw;
+                if (raw === null || raw === undefined) {
+                  return ` ${ctx.dataset.label}: Unavailable`;
+                }
+                return ` ${ctx.dataset.label}: ${raw}%`;
+              },
+            },
+          },
         },
         scales: {
           r: {
@@ -1040,6 +1136,17 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
+  private normalizeActivity(value: unknown): { month: string; count: number }[] {
+    return (Array.isArray(value) ? value : []).filter(
+      (item) =>
+        typeof item?.month === 'string' &&
+        item.month.trim().length > 0 &&
+        typeof item.count === 'number' &&
+        Number.isSafeInteger(item.count) &&
+        item.count >= 0,
+    );
+  }
+
   initActivityChart(activityData: { month: string; count: number }[]): void {
     if (!this.activityChart?.nativeElement) return;
     this.activityInstance?.destroy();
@@ -1077,6 +1184,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         ],
       },
       options: {
+        animation: false,
         responsive: true,
         maintainAspectRatio: false,
         interaction: {
@@ -1119,7 +1227,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         layout: { padding: { top: 8, bottom: 4, left: 2, right: 6 } },
       },
     });
-    this.cdr.detectChanges();
   }
 
   initLanguageChart(langData: Record<string, number>): void {
@@ -1136,12 +1243,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const values = [...top.map((key) => Number(langData[key] || 0)), ...(other > 0 ? [other] : [])];
     const colors = ['#4F46E5', '#8B5CF6', '#10B981', '#0EA5E9', '#64748B'];
     this.hasLanguageData = values.length > 0 && total > 0;
-
-    this.languageLegend = labels.map((label, index) => ({
-      label,
-      percentage: total > 0 ? Math.round((values[index] / total) * 100) : 0,
-      color: colors[index],
-    }));
 
     this.languageInstance = new Chart(this.languageChart.nativeElement, {
       type: 'doughnut',
@@ -1160,6 +1261,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         ],
       },
       options: {
+        animation: false,
         responsive: true,
         maintainAspectRatio: false,
         cutout: '72%',
@@ -1169,6 +1271,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         },
       },
     });
+    this.languageLegend = labels.map((label, index) => ({
+      label,
+      percentage: total > 0 ? Math.round((values[index] / total) * 100) : 0,
+      color: colors[index],
+    }));
   }
 
   private isDarkTheme(): boolean {
@@ -1198,32 +1305,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private refreshChartTheme(): void {
-    const text = this.chartColor('--text-secondary');
-    const gridStroke = this.chartGridColor();
-    const cardBg = this.chartColor('--bg-card');
-    const tooltipOpts = this.buildChartTooltipOptions();
-
-    for (const chart of [this.radarInstance, this.activityInstance, this.languageInstance]) {
-      if (!chart) continue;
-      if (chart.options.plugins?.tooltip) {
-        Object.assign(chart.options.plugins.tooltip, tooltipOpts);
-      }
-      for (const scale of Object.values(chart.options.scales || {})) {
-        if (!scale) continue;
-        if (scale.ticks) scale.ticks.color = text;
-        if (scale.grid) scale.grid.color = gridStroke;
-        if ('angleLines' in scale && scale.angleLines) scale.angleLines.color = gridStroke;
-        if ('pointLabels' in scale && scale.pointLabels) scale.pointLabels.color = text;
-      }
-      const ds = chart.data.datasets[0] as unknown as Record<string, unknown>;
-      if (ds) {
-        if (chart === this.languageInstance) ds['borderColor'] = cardBg;
-        if (chart === this.activityInstance || chart === this.radarInstance) {
-          ds['pointBorderColor'] = cardBg;
-        }
-      }
-      chart.update('none');
-    }
+    this.requestChartRender();
+    this.scheduleChartRender();
   }
 
   private buildRadarBreakdown(): ScoreBreakdown {

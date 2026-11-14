@@ -1,4 +1,6 @@
 import { ChangeDetectorRef } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { of, Subject, throwError } from 'rxjs';
 import { RecommendationsComponent } from './recommendations.component';
 import {
@@ -207,5 +209,87 @@ describe('Recommendations evidence workspace', () => {
     component.result!.cacheMetadata = {};
     component.startSprint(action);
     expect(rec.handoffToSprint).not.toHaveBeenCalled();
+  });
+});
+
+describe('Recommendations focus group disclosure', () => {
+  it('keeps "More key actions" open across change detection cycles after clicking summary', async () => {
+    const mockResult: RecommendationsResult = {
+      ...result(),
+      recommendations: [card('s1', 'learning'), card('s2', 'learning'), card('s3', 'learning')],
+    };
+
+    await TestBed.configureTestingModule({
+      imports: [RecommendationsComponent],
+      providers: [
+        provideRouter([]),
+        {
+          provide: RecommendationsService,
+          useValue: {
+            getRecommendations: vi.fn().mockReturnValue(of(mockResult)),
+            getSavedPreviews: vi.fn().mockReturnValue(of([])),
+            clearCache: vi.fn(),
+          },
+        },
+        {
+          provide: GithubService,
+          useValue: {
+            getActiveUsername: vi.fn().mockReturnValue(of({ username: 'fixture' })),
+          },
+        },
+        {
+          provide: CareerProfileService,
+          useValue: {
+            snapshot: { careerStack: 'Backend', experienceLevel: 'Student' },
+            careerStack: 'Backend',
+            experienceLevel: 'Student',
+            careerProfile$: of({ careerStack: 'Backend', experienceLevel: 'Student' }),
+          },
+        },
+        {
+          provide: FrontendAnalysisCacheService,
+          useValue: {
+            getLatestSignalHash: vi.fn().mockReturnValue(null),
+            getCurrentSignalHash: vi.fn().mockReturnValue(null),
+            get: vi.fn().mockReturnValue(null),
+            clear: vi.fn(),
+            setCurrentSignalHash: vi.fn(),
+            set: vi.fn(),
+          },
+        },
+        {
+          provide: AuthService,
+          useValue: {
+            getCurrentUser: () => ({ _id: 'fixture', activeGithubUsername: 'fixture' }),
+          },
+        },
+        {
+          provide: ResumeService,
+          useValue: {},
+        },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(RecommendationsComponent);
+    fixture.detectChanges();
+
+    const details = fixture.nativeElement.querySelector('.focus-details') as HTMLDetailsElement;
+    const summary = details?.querySelector('summary') as HTMLElement;
+    expect(details).toBeTruthy();
+    expect(details.open).toBe(false);
+
+    summary.click();
+    expect(details.open).toBe(true);
+
+    // Simulate document-level click / Zone change detection running after the click
+    fixture.detectChanges();
+    const updatedDetails = fixture.nativeElement.querySelector(
+      '.focus-details',
+    ) as HTMLDetailsElement;
+    expect(updatedDetails).toBe(details);
+    expect(updatedDetails.open).toBe(true);
+    expect(
+      Array.from(updatedDetails.querySelectorAll('li')).map((el) => el.textContent?.trim()),
+    ).toEqual(['Action s2', 'Action s3']);
   });
 });

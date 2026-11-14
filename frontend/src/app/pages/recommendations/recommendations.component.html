@@ -677,7 +677,7 @@
       </div>
 
       <div class="focus-grid">
-        <div *ngFor="let group of focusGroups" class="focus-group">
+        <div *ngFor="let group of focusGroups; trackBy: trackFocusGroup" class="focus-group">
           <div class="focus-heading">
             <h3>{{ group.title }}</h3>
             <span class="count">
@@ -688,7 +688,9 @@
           <details *ngIf="group.cards.length > 1" class="focus-details">
             <summary>More key actions</summary>
             <ul>
-              <li *ngFor="let card of group.cards | slice: 1 : 3">{{ card.title }}</li>
+              <li *ngFor="let card of group.cards | slice: 1 : 3; trackBy: trackFocusCard">
+                {{ card.title }}
+              </li>
             </ul>
           </details>
           <div class="actions focus-actions">

@@ -669,6 +669,12 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
       .map((g) => ({ ...g, cards: this.allCards.filter((c) => g.categories.includes(c.category)) }))
       .filter((g) => g.cards.length);
   }
+  trackFocusGroup(_index: number, group: { title: string }): string {
+    return group.title;
+  }
+  trackFocusCard(index: number, card: RecommendationCard): string {
+    return card.id || `${index}:${card.title}`;
+  }
   canSprint(card: RecommendationCard): boolean {
     return (
       !this.isPreviewMode &&

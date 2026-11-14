@@ -3,6 +3,7 @@ import { signal } from '@angular/core';
 import { GithubProfileSearchComponent } from './github-profile-search/github-profile-search.component';
 import { GithubRepositoryTableComponent } from './github-repository-table/github-repository-table.component';
 import { GithubChartsComponent } from './github-charts/github-charts.component';
+import { GithubTechnicalAuditComponent } from './github-technical-audit/github-technical-audit.component';
 import { ThemeService } from '../../../shared/services/theme.service';
 import {
   GitHubAnalysisResult,
@@ -102,5 +103,100 @@ describe('GitHub presentation boundaries', () => {
     fixture.destroy();
     expect(charts.destroyed).toHaveBeenCalledTimes(6);
     vi.restoreAllMocks();
+  });
+
+  it('renders audit provenance, weights, source metadata, tech evidence, inputs and notices with zero vs unavailable fidelity', () => {
+    const fixture = TestBed.createComponent(GithubTechnicalAuditComponent);
+    const result: GitHubAnalysisResult = {
+      analysisVersion: 'github-analysis/v3',
+      dataVersion: 'github-data/v2',
+      repoCount: 12,
+      totalStars: 0,
+      totalForks: 0,
+      activityScore: 64,
+      githubHealthScore: 64,
+      cache: { source: 'fresh', hit: false },
+      dataAvailability: { activityScope: 'repository_contributor_history' },
+      languageDistribution: [],
+      repositoryActivity: [{ repo: 'alpha', commits: 0 }],
+      repositories: [],
+      warning: 'Partial repository metrics.',
+      scoring: {
+        score: 64,
+        breakdown: {},
+        warnings: ['activity_sampled_repository_history'],
+        ruleVersion: 'github-health/v2',
+        calculatedAt: '2026-11-14T10:00:00Z',
+        evidence: {
+          sources: [{ type: 'github-user', id: 'octocat' }],
+          inputs: { codeQuality: 0, profileStrength: null },
+          facts: { activeRepos: 4 },
+        },
+      },
+    };
+    for (const [name, value] of Object.entries({
+      showEvidenceDrawer: true,
+      result,
+      ruleVersion: 'github-health/v2',
+      calculationTimestamp: 'Nov 14, 2026',
+      cacheStatusLabel: 'Fresh compute',
+      originalRepoCount: 10,
+      forkedRepoCount: 2,
+      archivedRepoCount: 1,
+      totalSampledCommits: 0,
+      evidenceFacts: result.scoring?.evidence.facts,
+      scoreBreakdownList: [
+        {
+          id: 'codeQuality',
+          label: 'Code Quality',
+          description: 'Repository documentation and code signals',
+          weightPct: 24,
+          value: 72,
+          contribution: 17.3,
+          available: true,
+          color: 'primary',
+        },
+        {
+          id: 'profileStrength',
+          label: 'Profile Strength',
+          description: 'Follower and star visibility signals',
+          weightPct: 12,
+          value: null,
+          contribution: null,
+          available: false,
+          color: 'info',
+        },
+      ],
+      hasTechnologyData: true,
+      technologyCategories: [
+        {
+          category: 'Frontend',
+          items: [{ name: 'Angular', category: 'Frontend', confidence: 82, sources: ['repo-a'] }],
+        },
+      ],
+      scoringWarnings: ['activity_sampled_repository_history'],
+    })) {
+      fixture.componentRef.setInput(name, value);
+    }
+
+    fixture.detectChanges();
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('github-health/v2');
+    expect(text).toContain('64/100');
+    expect(text).toContain('Source Metadata');
+    expect(text).toContain('Sampled repository contributor history');
+    expect(text).toContain('octocat');
+    expect(text).toContain('Partial repository metrics.');
+    expect(text).toContain('Angular');
+    expect(text).toContain('82% confidence');
+    expect(text).toContain('Code Quality');
+    expect(text).toContain('Unavailable');
+    expect(fixture.nativeElement.querySelectorAll('.drawer-weight-row').length).toBe(2);
+    expect(fixture.nativeElement.querySelectorAll('.drawer-input-card')[0].textContent).toContain(
+      '0',
+    );
+    expect(fixture.nativeElement.querySelector('.drawer-notices-box')?.textContent).toContain(
+      'activity_sampled_repository_history',
+    );
   });
 });

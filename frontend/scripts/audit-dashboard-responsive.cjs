@@ -479,6 +479,22 @@ async function main() {
     );
 
     const page = await context.newPage();
+    auditResults.browserRuntime = {
+      unhandledErrors: [],
+      consoleErrorCount: 0,
+      consoleErrorMessages: {},
+    };
+    page.on('pageerror', (error) =>
+      auditResults.browserRuntime.unhandledErrors.push(error.message),
+    );
+    page.on('console', (message) => {
+      if (message.type() === 'error') {
+        auditResults.browserRuntime.consoleErrorCount++;
+        const text = message.text();
+        const messages = auditResults.browserRuntime.consoleErrorMessages;
+        messages[text] = (messages[text] || 0) + 1;
+      }
+    });
 
     // Mock network responses
     await page.route('**/api/**', async (route) => {
@@ -537,7 +553,7 @@ async function main() {
     console.log(` PHASE 1: 12 VIEWPORTS x 3 THEMES (36 RUNS)`);
     console.log(`======================================================`);
 
-    for (const vp of VIEWPORTS) {
+    for (const vp of phase.startsWith('chart-states-') ? [] : VIEWPORTS) {
       for (const theme of THEMES) {
         await page.setViewportSize({ width: vp.width, height: vp.height });
 
@@ -760,6 +776,249 @@ async function main() {
       });
     }
 
+    // Explicitly synthetic response fixtures: exercise chart state transitions in a real browser.
+    for (const width of [390, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      for (const theme of [...THEMES, 'system-dark']) {
+        await page.emulateMedia({
+          colorScheme: theme === 'dark' || theme === 'system-dark' ? 'dark' : 'light',
+        });
+        let state = 'populated';
+        await page.route('**/api/dashboard/summary*', async (route) => {
+          if (state === 'loading') await new Promise((resolve) => setTimeout(resolve, 1000));
+          if (state === 'error')
+            return route.fulfill({ status: 500, json: { message: 'Fixture outage' } });
+          const response = JSON.parse(JSON.stringify(mockSummary));
+          response.languageSnapshot = { available: true, data: { JavaScript: 57, TypeScript: 43 } };
+          if (state === 'empty' || state === 'profile-switch') {
+            response.githubHandle = 'other-fixture-profile';
+            response.activitySnapshot = { available: false, data: [] };
+            response.languageSnapshot = { available: false, data: {} };
+            response.readinessBreakdown = {
+              codeQuality: null,
+              skillCoverage: null,
+              industryReadiness: null,
+              projectImpact: null,
+            };
+          }
+          if (state === 'zero') {
+            response.activitySnapshot = { available: true, data: [{ month: 'Nov', count: 0 }] };
+            response.readinessBreakdown = {
+              codeQuality: 0,
+              skillCoverage: 0,
+              industryReadiness: 0,
+              projectImpact: 0,
+            };
+          }
+          if (state === 'stale')
+            response.dashboardContext = { ...response.dashboardContext, stale: true };
+          return route.fulfill({ json: response });
+        });
+        for (const scenario of ['populated', 'zero', 'empty', 'stale', 'error', 'loading']) {
+          state = scenario;
+          await page.goto(`http://localhost:${port}/app/dashboard`, {
+            waitUntil: 'domcontentloaded',
+          });
+          await page.waitForSelector('app-dashboard');
+          await page.evaluate((value) => {
+            const resolved =
+              value === 'system' ? 'light' : value === 'system-dark' ? 'dark' : value;
+            const root = document.documentElement;
+            root.setAttribute('data-theme', resolved);
+            root.classList.toggle('dark', resolved === 'dark');
+            root.classList.toggle('light', resolved === 'light');
+            root.style.colorScheme = resolved;
+          }, theme);
+          if (scenario === 'loading') {
+            await page.getByText('Refreshing dashboard evidence…', { exact: true }).waitFor();
+          }
+          await page.getByRole('button', { name: 'Refresh dashboard', exact: true }).waitFor();
+          await page.waitForTimeout(500);
+          const appearance = await page.locator('.language-card').evaluate((card) => ({
+            background: getComputedStyle(card).backgroundColor,
+            active: document.documentElement.getAttribute('data-theme'),
+            darkClass: document.documentElement.classList.contains('dark'),
+          }));
+          const expectDark = theme === 'dark' || theme === 'system-dark';
+          assert.equal(appearance.active, expectDark ? 'dark' : 'light');
+          assert.equal(appearance.darkClass, expectDark);
+          assert.equal(
+            appearance.background,
+            expectDark ? 'rgb(21, 29, 42)' : 'rgb(255, 255, 255)',
+          );
+
+          if (scenario === 'error') {
+            await page
+              .getByText(/Dashboard could not be refreshed/)
+              .first()
+              .waitFor();
+          } else if (scenario === 'empty') {
+            assert.equal(await page.locator('.activity-wrap').isVisible(), false);
+            await page.getByText(/Monthly contribution activity is unavailable/).waitFor();
+            await page.getByText(/No language distribution available/).waitFor();
+            await page.getByText(/Readiness dimensions are unavailable/).waitFor();
+            assert.equal(await page.locator('.radar-wrap').isVisible(), false);
+          } else {
+            assert.equal(await page.locator('.activity-wrap').isVisible(), true);
+            for (const selector of [
+              '.activity-wrap canvas',
+              '.donut-wrap canvas',
+              '.radar-wrap canvas',
+            ]) {
+              const shape = await page.locator(selector).evaluate((canvas) => {
+                const ctx = canvas.getContext('2d');
+                const { width, height } = canvas;
+                const pixels = ctx.getImageData(0, 0, width, height).data;
+                let purple = 0;
+                let indigo = 0;
+                let violet = 0;
+                let radarFill = 0;
+                for (let i = 0; i < pixels.length; i += 4) {
+                  if (
+                    Math.abs(pixels[i] - 79) < 3 &&
+                    Math.abs(pixels[i + 1] - 70) < 3 &&
+                    Math.abs(pixels[i + 2] - 229) < 3 &&
+                    pixels[i + 3] > 240
+                  )
+                    indigo++;
+                  if (
+                    Math.abs(pixels[i] - 139) < 3 &&
+                    Math.abs(pixels[i + 1] - 92) < 3 &&
+                    Math.abs(pixels[i + 2] - 246) < 3 &&
+                    pixels[i + 3] > 240
+                  )
+                    violet++;
+                  if (
+                    Math.abs(pixels[i] - 99) < 5 &&
+                    Math.abs(pixels[i + 1] - 102) < 5 &&
+                    pixels[i + 2] > 230 &&
+                    pixels[i + 3] > 30 &&
+                    pixels[i + 3] < 55
+                  )
+                    radarFill++;
+
+                  // Dataset purple/indigo only: gray axes, labels, white/card backgrounds do not qualify.
+                  if (
+                    pixels[i + 3] > 20 &&
+                    pixels[i + 2] > 150 &&
+                    pixels[i + 2] > pixels[i] * 1.4 &&
+                    pixels[i + 2] > pixels[i + 1] * 1.4
+                  )
+                    purple++;
+                }
+                return {
+                  width,
+                  height,
+                  purple,
+                  indigo,
+                  violet,
+                  radarFill,
+                  centerAlpha:
+                    pixels[(Math.floor(height / 2) * width + Math.floor(width / 2)) * 4 + 3],
+                };
+              });
+              assert.ok(shape.width > 0 && shape.height > 0);
+              assert.ok(
+                shape.purple > (selector.includes('donut') ? 1000 : scenario === 'zero' ? 3 : 50),
+                `${scenario} ${selector}: dataset pixels missing: ${JSON.stringify(shape)}`,
+              );
+              if (selector.includes('radar')) {
+                if (scenario === 'zero')
+                  assert.ok(shape.indigo > 5, 'Measured zero Radar center point missing');
+                else assert.ok(shape.radarFill > 100, 'Radar filled dataset polygon missing');
+              }
+              if (selector.includes('activity'))
+                assert.ok(
+                  shape.indigo > (scenario === 'zero' ? 3 : 10),
+                  'Activity dataset stroke/zero point missing',
+                );
+              if (selector.includes('donut')) {
+                assert.ok(
+                  shape.indigo > 500 && shape.violet > 500,
+                  'Both doughnut segments must be painted',
+                );
+              }
+              if (selector.includes('donut'))
+                assert.equal(shape.centerAlpha, 0, 'Doughnut hole must be transparent');
+              auditResults.interactiveChecks.push({
+                action: 'plotted-dataset',
+                selector,
+                width,
+                theme,
+                scenario,
+                shape,
+                status: 'PASS',
+              });
+            }
+            if (scenario === 'populated')
+              await page.screenshot({
+                path: path.join(screenshotsDir, `plotted-${width}-${theme}.png`),
+                fullPage: true,
+              });
+            if (scenario === 'stale')
+              await page
+                .getByText('Analysis refresh recommended', { exact: true })
+                .first()
+                .waitFor();
+          }
+          if ((width === 1440 && theme === 'light') || (width === 390 && theme === 'dark')) {
+            await page.locator('.analytics-trio-grid').screenshot({
+              path: path.join(screenshotsDir, `charts-${scenario}-${width}-${theme}.png`),
+            });
+          }
+          auditResults.interactiveChecks.push({
+            action: `chart-${scenario}`,
+            width,
+            theme,
+            status: 'PASS',
+          });
+        }
+        state = 'populated';
+        await page.getByRole('button', { name: 'Refresh dashboard', exact: true }).click();
+        await page.waitForTimeout(500);
+        state = 'profile-switch';
+        await page.getByRole('button', { name: 'Refresh dashboard', exact: true }).click();
+        await page.getByText(/Monthly contribution activity is unavailable/).waitFor();
+        assert.equal(await page.locator('.activity-wrap').isVisible(), false);
+        auditResults.interactiveChecks.push({
+          action: 'chart-profile-switch',
+          width,
+          theme,
+          status: 'PASS',
+        });
+        state = 'populated';
+        await page.evaluate(() => {
+          window.__originalChartContext = HTMLCanvasElement.prototype.getContext;
+          HTMLCanvasElement.prototype.getContext = function (...args) {
+            if (this.closest('.donut-wrap')) return null;
+            return window.__originalChartContext.apply(this, args);
+          };
+        });
+        await page.getByRole('button', { name: 'Refresh dashboard', exact: true }).click();
+        await page.locator('.language-card [role="alert"]').waitFor();
+        assert.equal(await page.locator('.lang-legend').isVisible(), false);
+        await page.evaluate(() => {
+          HTMLCanvasElement.prototype.getContext = window.__originalChartContext;
+          delete window.__originalChartContext;
+        });
+        await page.getByRole('button', { name: 'Refresh dashboard', exact: true }).click();
+        await page.locator('.lang-legend').waitFor();
+        assert.equal(await page.locator('.language-card [role="alert"]').count(), 0);
+        auditResults.interactiveChecks.push({
+          action: 'chart-render-failure-recovery',
+          width,
+          theme,
+          status: 'PASS',
+        });
+        await page.unroute('**/api/dashboard/summary*');
+      }
+    }
+
+    assert.deepEqual(
+      auditResults.browserRuntime.unhandledErrors,
+      [],
+      'Unexpected browser runtime errors',
+    );
     // Save machine-readable results
     const resultsFile = path.join(outputDir, `audit-results-${phase}.json`);
     fs.writeFileSync(resultsFile, JSON.stringify(auditResults, null, 2));
