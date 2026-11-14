@@ -1,5 +1,23 @@
+import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { UiPageHeaderComponent } from './ui-page-header.component';
+
+@Component({
+  standalone: true,
+  imports: [UiPageHeaderComponent],
+  template: `
+    <app-ui-page-header
+      title="Resume Analyzer"
+      subtitle="Evidence-based parsing, deterministic quality scoring, and AI advisory recommendations."
+    >
+      <div page-actions class="header-actions">
+        <button type="button">Download Report</button>
+        <button type="button">Refresh Analysis</button>
+      </div>
+    </app-ui-page-header>
+  `,
+})
+class TestHostWithActionsComponent {}
 
 describe('UiPageHeaderComponent', () => {
   let component: UiPageHeaderComponent;
@@ -7,7 +25,7 @@ describe('UiPageHeaderComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [UiPageHeaderComponent]
+      imports: [UiPageHeaderComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(UiPageHeaderComponent);
@@ -43,5 +61,21 @@ describe('UiPageHeaderComponent', () => {
 
     component.onBack();
     expect(backEmitted).toBe(true);
+  });
+
+  it('should project page actions alongside title and subtitle inside header-main-row', () => {
+    const hostFixture = TestBed.createComponent(TestHostWithActionsComponent);
+    hostFixture.detectChanges();
+
+    const mainRow = hostFixture.nativeElement.querySelector('.header-main-row') as HTMLElement;
+    const titleCluster = mainRow?.querySelector('.title-cluster') as HTMLElement;
+    const actionsSlot = mainRow?.querySelector('.actions-slot') as HTMLElement;
+
+    expect(mainRow).toBeTruthy();
+    expect(titleCluster.textContent).toContain('Resume Analyzer');
+    expect(titleCluster.textContent).toContain(
+      'Evidence-based parsing, deterministic quality scoring, and AI advisory recommendations.',
+    );
+    expect(actionsSlot.querySelectorAll('button').length).toBe(2);
   });
 });
