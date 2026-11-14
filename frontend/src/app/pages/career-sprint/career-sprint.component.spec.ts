@@ -52,6 +52,37 @@ describe('Career Sprint dashboard', () => {
     fixture.detectChanges();
     return fixture;
   }
+  it('keeps calendar selection independent of planning and resets cancelled dates', () => {
+    const component = mount().componentInstance;
+    const other = sprintFixture({
+      _id: 'other',
+      weekStartDate: '2027-01-01T00:00:00Z',
+      weekEndDate: '2027-01-07T23:59:59Z',
+    });
+    component.history = [other];
+    component.selectCalendarSprint('other');
+    expect(component.calendarSprint?._id).toBe('other');
+    expect(component.planningTarget).toBeNull();
+    component.preferenceZone = 'UTC';
+    component.sprintStartDate = '2027-01-02';
+    component.resetCalendarDates();
+    expect(component.sprintStartDate).toBe('2027-01-01');
+    expect(component.preferenceZone).toBe('UTC');
+  });
+  it('protects unsaved edits on close and rejects invalid timezone', () => {
+    const component = mount().componentInstance;
+    component.toggleCalendarSettings();
+    component.preferenceZone = 'invalid';
+    component.savePreference();
+    expect(component.preferenceError).toContain('valid IANA');
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    component.toggleCalendarSettings();
+    expect(component.settingsOpen).toBe(true);
+    confirm.mockReturnValue(true);
+    component.toggleCalendarSettings();
+    expect(component.preferenceZone).toBe(component.savedPreferenceZone);
+    confirm.mockRestore();
+  });
   it('renders backend-authoritative progress, level and XP without recomputing them from tasks', () => {
     const fixture = mount(),
       text = fixture.nativeElement.textContent;
@@ -192,7 +223,7 @@ describe('Career Sprint dashboard', () => {
     expect(api.updateSprintDates).toHaveBeenCalledTimes(1);
     expect(component.stale).toBe(false);
     expect(component.mutationsDisabled).toBe(false);
-    expect(component.actionMessage).toMatch(/Choose dates/);
+    expect(component.dateError).toMatch(/Choose dates/);
     component.stale = true;
     expect(component.planningDisabledReason).toMatch(/Refresh Sprint/);
     component.sprint = legacyFixture();

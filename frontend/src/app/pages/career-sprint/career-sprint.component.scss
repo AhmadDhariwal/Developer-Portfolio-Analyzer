@@ -2012,3 +2012,126 @@ p {
     animation: none !important;
   }
 }
+
+.calendar-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+}
+.calendar-settings-card {
+  min-width: 0;
+  padding: 24px;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  background: var(--bg-card);
+}
+.calendar-settings-card select {
+  width: 100%;
+  min-width: 0;
+}
+.calendar-settings-card button,
+.calendar-settings-card input,
+.calendar-settings-card select {
+  min-height: 44px;
+}
+.calendar-date-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.calendar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+.calendar-settings-card :focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 3px;
+}
+@media (max-width: 767px) {
+  .calendar-settings-grid,
+  .calendar-date-grid {
+    grid-template-columns: 1fr;
+  }
+  .calendar-settings-card {
+    padding: 16px;
+  }
+}
+
+// Calendar selectors share the page surfaces in light, dark and resolved system themes.
+:host ::ng-deep .calendar-settings-card .searchable-select {
+  --select-scroll-thumb: var(--text-muted, #64748b);
+  --select-scroll-track: var(--bg-subtle, #e2e8f0);
+}
+:host ::ng-deep .calendar-settings-card .searchable-select--open {
+  z-index: 40;
+}
+:host ::ng-deep .calendar-settings-card .searchable-select__trigger,
+:host ::ng-deep .calendar-settings-card .searchable-select__panel,
+:host ::ng-deep .calendar-settings-card .searchable-select__search {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+  min-height: 44px;
+  border-radius: 12px;
+}
+:host ::ng-deep .calendar-settings-card .searchable-select__panel {
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
+}
+:host ::ng-deep .calendar-settings-card .searchable-select__option {
+  color: var(--text-primary);
+  min-height: 48px;
+}
+:host ::ng-deep .calendar-settings-card .searchable-select__option-meta {
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+:host ::ng-deep .calendar-settings-card .searchable-select__option:hover,
+:host ::ng-deep .calendar-settings-card .searchable-select__option--active {
+  background: var(--bg-subtle);
+  border-color: #6366f1;
+}
+.calendar-settings-card {
+  align-self: start;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.03);
+}
+.calendar-settings-card h3 {
+  margin: 8px 0 12px;
+}
+.calendar-settings-card > p {
+  color: var(--text-secondary);
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+.calendar-field-label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin: 20px 0 8px;
+}
+.calendar-date-grid {
+  margin-top: 20px;
+}
+.calendar-date-grid label {
+  min-width: 0;
+}
+.calendar-date-grid input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+@media (max-width: 1023px) {
+  .calendar-settings-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 479px) {
+  .calendar-actions {
+    flex-direction: column;
+  }
+  .calendar-actions button {
+    width: 100%;
+  }
+}

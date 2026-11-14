@@ -28,7 +28,8 @@
     <div class="header-actions">
       <button
         type="button"
-        (click)="settingsOpen = !settingsOpen"
+        (click)="toggleCalendarSettings()"
+        [class.primary]="settingsOpen"
         [attr.aria-expanded]="settingsOpen"
         aria-controls="sprint-settings"
       >
@@ -93,65 +94,132 @@
           <h2 id="calendar-heading">Calendar settings</h2>
           <p>Timezone changes apply to future Sprints. Existing dates and calendars stay intact.</p>
         </div>
-      </div>
-      <form (ngSubmit)="savePreference()" class="settings-form">
-        <label
-          >IANA timezone for future Sprints<input
-            name="timezone"
-            [(ngModel)]="preferenceZone"
-            list="sprint-timezones"
-            required
-            maxlength="100"
-            placeholder="e.g. Asia/Karachi"
-            [disabled]="!!busy" /><datalist id="sprint-timezones">
-            @for (zoneName of zones; track zoneName) {
-              <option [value]="zoneName"></option>
-            }</datalist></label
-        ><button type="submit" [disabled]="!!busy || !preferenceZone.trim()">
-          {{ busy === 'zone' ? 'Saving…' : 'Save timezone' }}
+        <button type="button" (click)="toggleCalendarSettings()" [disabled]="!!busy">
+          Close settings
         </button>
-      </form>
-      @if (preferenceError) {
-        <p class="form-error" role="status">
-          {{ preferenceError }}
-          <button type="button" (click)="loadPreferences()">Retry preferences</button>
-        </p>
-      }
-      @if (sprint) {
-        <p class="meta">
-          Current Sprint calendar:
-          {{ zone || 'Original timezone unconfirmed. Exact timestamps are shown in UTC.' }}
-        </p>
-        <form (ngSubmit)="saveDates()">
-          <fieldset class="date-fields" [disabled]="mutationsDisabled">
-            <legend>Adjust current Sprint dates</legend>
-            <label
-              >Start date<input
-                type="date"
-                name="sprintStartDate"
-                [(ngModel)]="sprintStartDate"
-                required /></label
-            ><label
-              >End date<input
-                type="date"
-                name="sprintEndDate"
-                [(ngModel)]="sprintEndDate"
-                [min]="sprintStartDate"
-                required /></label
-            ><button
-              type="submit"
-              [disabled]="
-                mutationsDisabled ||
-                !sprintStartDate ||
-                !sprintEndDate ||
-                sprintStartDate > sprintEndDate
-              "
+      </div>
+      <div class="calendar-settings-grid">
+        <article class="calendar-settings-card">
+          <span class="eyebrow">Future Sprint windows</span>
+          <h3>Calendar preferences</h3>
+          <p>
+            Timezone applies to future Sprint windows. Existing Sprints retain their pinned
+            timezone.
+          </p>
+          <span class="calendar-field-label">Timezone for future Sprints</span>
+          <app-searchable-select
+            ariaLabel="Timezone for future Sprints"
+            [options]="zoneOptions"
+            [value]="preferenceZone"
+            (valueChange)="preferenceZone = $event"
+            [disabled]="!!busy"
+            searchPlaceholder="Search IANA timezones"
+          />
+          <p>Saved timezone: {{ savedPreferenceZone || 'Unavailable' }}</p>
+          <div class="calendar-actions">
+            <button
+              type="button"
+              class="primary"
+              (click)="savePreference()"
+              [disabled]="!!busy || preferenceZone === savedPreferenceZone"
             >
-              {{ busy === 'dates' ? 'Saving…' : 'Update dates' }}
+              {{ busy === 'zone' ? 'Saving…' : 'Save timezone' }}
             </button>
-          </fieldset>
-        </form>
-      }
+            <button type="button" (click)="cancelPreference()" [disabled]="!!busy">
+              Cancel changes
+            </button>
+          </div>
+          @if (preferenceMessage) {
+            <p class="notice success" role="status">{{ preferenceMessage }}</p>
+          }
+          @if (preferenceError) {
+            <p class="form-error" role="alert">{{ preferenceError }}</p>
+          }
+        </article>
+        <article class="calendar-settings-card">
+          <span class="eyebrow">Manage a saved Sprint</span>
+          <h3>Sprint calendar</h3>
+          <span class="calendar-field-label">Sprint to manage</span>
+          <app-searchable-select
+            ariaLabel="Sprint to manage"
+            [options]="calendarSprintOptions"
+            [value]="calendarSprint?._id || ''"
+            (valueChange)="selectCalendarSprint($event)"
+            [disabled]="!!busy || isRefreshing"
+            placeholder="Choose a Sprint"
+            searchPlaceholder="Search Sprints or status"
+            emptyStateLabel="No matching Sprints"
+          />
+          <p class="meta">
+            Loaded current and recent Sprints. The server checks all owned windows for overlap.
+          </p>
+          @if (historyError) {
+            <p role="alert">{{ historyError }}</p>
+          }
+          @if (calendarSprint; as selected) {
+            <p>{{ selected.title }} · {{ calendarStatus(selected) }}</p>
+            <p>
+              Pinned timezone:
+              {{
+                selected.timeZone || selected.migrationCalendarTimeZone || 'Unconfirmed · read-only'
+              }}
+            </p>
+            <form (ngSubmit)="saveDates()">
+              <div class="calendar-date-grid">
+                <label
+                  >Start date<input
+                    type="date"
+                    name="calendarStart"
+                    [(ngModel)]="sprintStartDate"
+                    [disabled]="calendarDisabled"
+                    required
+                /></label>
+                <label
+                  >End date<input
+                    type="date"
+                    name="calendarEnd"
+                    [(ngModel)]="sprintEndDate"
+                    [min]="sprintStartDate"
+                    [disabled]="calendarDisabled"
+                    required
+                /></label>
+              </div>
+              @if (dateDuration > 0) {
+                <p>Duration: {{ dateDuration }} calendar days (maximum 366).</p>
+              }
+              @if (dateConflict) {
+                <p role="status">Overlaps {{ dateConflict.title }}. Choose another window.</p>
+              }
+              <p role="status">{{ taskDateWarning }}</p>
+              <div class="calendar-actions">
+                <button
+                  type="submit"
+                  class="primary"
+                  [disabled]="
+                    calendarDisabled ||
+                    !calendarDirty ||
+                    !(dateDuration >= 1 && dateDuration <= 366) ||
+                    !!dateConflict
+                  "
+                >
+                  {{ busy === 'dates' ? 'Saving…' : 'Update dates' }}
+                </button>
+                <button type="button" (click)="resetCalendarDates()" [disabled]="!!busy">
+                  Cancel changes
+                </button>
+              </div>
+            </form>
+          } @else {
+            <p>No loaded Sprints available.</p>
+          }
+          @if (dateMessage) {
+            <p class="notice success" role="status">{{ dateMessage }}</p>
+          }
+          @if (dateError) {
+            <p class="form-error" role="alert">{{ dateError }}</p>
+          }
+        </article>
+      </div>
     </section>
   }
   @if (newSprintOpen) {
