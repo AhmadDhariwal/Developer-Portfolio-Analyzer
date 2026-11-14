@@ -302,7 +302,39 @@ const deriveReadinessBreakdown = ({
             ]),
           )
         : null,
-    projectImpact: saved ? dimension('projectImpact') : null,
+    projectImpact: saved
+      ? dimension('projectImpact')
+      : (() => {
+          const githubImpact = analysis?.updatedAt
+            ? numeric(
+                analysis.githubSignals?.scoring?.breakdown?.projectImpact?.value ??
+                  analysis.githubSignals?.scoring?.inputs?.projectImpact,
+              )
+            : null;
+          const githubConsistency = analysis?.updatedAt
+            ? numeric(
+                analysis.githubSignals?.scoring?.breakdown?.consistency?.value ??
+                  analysis.githubSignals?.scoring?.inputs?.consistency,
+              )
+            : null;
+          const githubContribution = analysis?.updatedAt
+            ? numeric(
+                analysis.githubSignals?.scoring?.breakdown?.contribution?.value ??
+                  analysis.githubSignals?.scoring?.inputs?.contribution,
+              )
+            : null;
+          const integrationImpact =
+            Array.isArray(integrationInsight?.providers) && integrationInsight.providers.length > 0
+              ? numeric(integrationInsight.integrationScore)
+              : null;
+          const avg = safeAverage([
+            githubImpact,
+            githubConsistency,
+            githubContribution,
+            integrationImpact,
+          ]);
+          return score(avg);
+        })(),
   };
 };
 

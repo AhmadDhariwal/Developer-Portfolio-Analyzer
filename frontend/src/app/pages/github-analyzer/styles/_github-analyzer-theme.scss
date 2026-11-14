@@ -702,6 +702,7 @@ canvas {
   border-collapse: separate;
   border-spacing: 0;
   width: 100%;
+  min-width: 880px;
   font-size: var(--dev-text-sm, 13px);
   font-variant-numeric: tabular-nums;
 
@@ -725,6 +726,7 @@ canvas {
     letter-spacing: 0.04em;
     backdrop-filter: blur(8px);
     box-shadow: 0 1px 0 var(--border-color, #e2e8f0);
+    white-space: nowrap;
 
     button {
       background: none;
@@ -733,45 +735,56 @@ canvas {
       color: inherit;
       font-weight: inherit;
       text-align: left;
+      white-space: nowrap;
     }
   }
 
   @media (min-width: 601px) {
     th:nth-child(1),
     td:nth-child(1) {
-      width: 32%;
+      width: 28%;
     }
     th:nth-child(2),
     td:nth-child(2) {
-      width: 12%;
+      width: 10%;
     }
     th:nth-child(3),
     td:nth-child(3) {
-      width: 11%;
+      width: 9%;
     }
     th:nth-child(4),
     td:nth-child(4) {
-      width: 16%;
+      width: 13%;
     }
     th:nth-child(5),
     td:nth-child(5) {
-      width: 7%;
+      width: 8%;
       text-align: right;
+      padding-left: 8px;
+      padding-right: 8px;
     }
     th:nth-child(6),
     td:nth-child(6) {
-      width: 7%;
+      width: 8%;
       text-align: right;
+      padding-left: 8px;
+      padding-right: 8px;
+      white-space: nowrap;
     }
     th:nth-child(7),
     td:nth-child(7) {
-      width: 9%;
+      width: 15%;
       text-align: center;
+      padding-left: 8px;
+      padding-right: 8px;
     }
     th:nth-child(8),
     td:nth-child(8) {
-      width: 6%;
+      width: 9%;
       text-align: center;
+      padding-left: 6px;
+      padding-right: 6px;
+      white-space: nowrap;
     }
   }
 
@@ -786,7 +799,7 @@ canvas {
 
 .td-name {
   @media (min-width: 601px) {
-    width: 32%;
+    width: 28%;
   }
 }
 
@@ -838,25 +851,32 @@ canvas {
 .table-score-wrap {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
 }
 
 .table-score-num {
   font-size: 14px;
   font-weight: 700;
   color: var(--text-primary, #0f172a);
+  flex-shrink: 0;
+  min-width: 22px;
+  text-align: right;
+  white-space: nowrap;
 }
 
 .table-score-progress {
-  min-width: 55px;
+  min-width: 45px;
   flex: 1;
-  max-width: 140px;
+  max-width: 110px;
   margin-top: 2px;
 }
 
 .repo-ext-link {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
   font-weight: 600;
   color: var(--color-primary-text, #4f46e5);
@@ -1159,7 +1179,7 @@ canvas {
   }
 
   .clean-repo-table {
-    min-width: 850px;
+    min-width: 880px;
   }
 }
 

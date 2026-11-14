@@ -252,6 +252,28 @@ svg {
   line-height: 1.5;
 }
 
+.history-empty {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 14px;
+  border-radius: 12px;
+  background: var(--bg-subtle, rgba(248, 250, 252, 0.6));
+  border: 1px dashed var(--border-color);
+
+  .empty-msg {
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .history-guidance {
+    margin: 0;
+    font-size: 0.76rem;
+    line-height: 1.5;
+    color: var(--text-muted, var(--text-secondary));
+  }
+}
+
 .table-scroll {
   width: 100%;
   overflow-x: auto;

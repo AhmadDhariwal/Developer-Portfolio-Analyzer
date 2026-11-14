@@ -920,6 +920,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
               breakdown.industryReadiness,
               breakdown.projectImpact,
             ],
+            spanGaps: true,
             borderColor: '#4F46E5',
             backgroundColor: 'rgba(99, 102, 241, 0.16)',
             borderWidth: 2.25,
@@ -941,7 +942,18 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
         },
         plugins: {
           legend: { display: false },
-          tooltip: this.buildChartTooltipOptions(),
+          tooltip: {
+            ...this.buildChartTooltipOptions(),
+            callbacks: {
+              label: (ctx) => {
+                const raw = ctx.raw;
+                if (raw === null || raw === undefined) {
+                  return ` ${ctx.dataset.label}: Unavailable`;
+                }
+                return ` ${ctx.dataset.label}: ${raw}%`;
+              },
+            },
+          },
         },
         scales: {
           r: {
