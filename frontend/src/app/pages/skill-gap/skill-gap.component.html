@@ -482,7 +482,7 @@
             midTermSkills.length ||
             longTermSkills.length
           ) {
-            <details class="horizons-section">
+            <details class="horizons-section" open>
               <summary>Skill acquisition horizons</summary>
               <div class="horizons-stepper">
                 <div class="horizon-step horizon-step--immediate">
@@ -605,7 +605,7 @@
             }
           </div>
           @if (weeklyMilestones.length) {
-            <details class="weekly-plan">
+            <details class="weekly-plan" open>
               <summary>
                 Weekly milestones breakdown <span>{{ weeklyMilestones.length }} weeks</span>
               </summary>

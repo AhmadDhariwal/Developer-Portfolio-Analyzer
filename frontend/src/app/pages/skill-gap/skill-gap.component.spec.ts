@@ -358,6 +358,29 @@ describe('Skill Gap evidence presentation', () => {
     expect(text()).toContain('Immediate');
     expect(text()).toContain('Docker');
     expect(text()).toContain('PostgreSQL');
+
+    const horizonsDetails = fixture.nativeElement.querySelector(
+      'details.horizons-section',
+    ) as HTMLDetailsElement;
+    const weeklyDetails = fixture.nativeElement.querySelector(
+      'details.weekly-plan',
+    ) as HTMLDetailsElement;
+    expect(horizonsDetails).toBeTruthy();
+    expect(weeklyDetails).toBeTruthy();
+    expect(horizonsDetails.open).toBe(true);
+    expect(weeklyDetails.open).toBe(true);
+
+    (horizonsDetails.querySelector('summary') as HTMLElement).click();
+    (weeklyDetails.querySelector('summary') as HTMLElement).click();
+    fixture.detectChanges();
+    expect(horizonsDetails.open).toBe(false);
+    expect(weeklyDetails.open).toBe(false);
+
+    (horizonsDetails.querySelector('summary') as HTMLElement).click();
+    (weeklyDetails.querySelector('summary') as HTMLElement).click();
+    fixture.detectChanges();
+    expect(horizonsDetails.open).toBe(true);
+    expect(weeklyDetails.open).toBe(true);
   });
 
   it('supports sorting skills by name, status, and confidence', () => {
