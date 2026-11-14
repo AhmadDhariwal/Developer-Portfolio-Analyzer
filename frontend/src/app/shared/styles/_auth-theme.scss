@@ -1,11 +1,17 @@
-@import './public-theme-tokens';
+@use './public-theme-tokens' as *;
 
 .auth-themed {
   @include landing-theme-dark;
 
-  &.theme--dark { @include landing-theme-dark; }
-  &.theme--light { @include landing-theme-light; }
-  &.theme--premium { @include landing-theme-premium; }
+  &.theme--dark {
+    @include landing-theme-dark;
+  }
+  &.theme--light {
+    @include landing-theme-light;
+  }
+  &.theme--premium {
+    @include landing-theme-premium;
+  }
 
   min-height: 100vh;
   background: var(--auth-bg);
@@ -83,11 +89,11 @@
 
   .logo {
     font-size: 2.25rem;
-    font-weight: 700;
+    font-weight: 800;
     color: var(--auth-brand);
     margin: 0 0 var(--spacing-xs) 0;
-    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
-    letter-spacing: -0.02em;
+    font-family: var(--font-heading, 'Manrope', 'Plus Jakarta Sans', sans-serif);
+    letter-spacing: -0.025em;
 
     span {
       background: var(--auth-brand-accent);
@@ -101,8 +107,8 @@
   .tagline {
     color: var(--auth-tagline);
     font-size: 0.75rem;
-    font-family: 'JetBrains Mono', monospace;
-    letter-spacing: 0.15em;
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    letter-spacing: 0.12em;
     margin: 0;
   }
 }
@@ -114,11 +120,23 @@
   border: 1px solid var(--auth-card-border);
   box-shadow: var(--auth-shadow);
   color: var(--auth-ink);
+  overflow: hidden;
+  --surface-card: var(--auth-card-bg);
+  --border-color: var(--auth-input-border);
+  --text-primary: var(--auth-ink);
+  --text-secondary: var(--auth-muted);
 
-  &:deep(.card-body),
-  :deep(.card-body) {
+  ::ng-deep .ui-card {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: inherit !important;
+    border-radius: inherit;
+  }
+
+  ::ng-deep .card-body {
     padding: var(--spacing-2xl);
-    background: var(--auth-card-bg);
+    background: transparent !important;
     color: var(--auth-ink);
   }
 
@@ -131,12 +149,15 @@
       font-weight: 700;
       margin: 0 0 var(--spacing-xs) 0;
       color: var(--auth-ink);
+      font-family: var(--font-heading, 'Manrope', 'Plus Jakarta Sans', sans-serif);
+      letter-spacing: -0.02em;
     }
 
     p {
       color: var(--auth-muted);
       font-size: 0.875rem;
       margin: 0;
+      font-family: var(--font-sans, 'Inter', sans-serif);
     }
   }
 
@@ -168,6 +189,15 @@
         border-color: var(--auth-input-border-focus);
         outline: none;
         box-shadow: 0 0 0 3px color-mix(in srgb, var(--lp-primary) 18%, transparent);
+      }
+
+      &:-webkit-autofill,
+      &:-webkit-autofill:hover,
+      &:-webkit-autofill:focus {
+        -webkit-text-fill-color: var(--auth-ink);
+        -webkit-box-shadow: 0 0 0px 1000px var(--auth-input-bg) inset;
+        box-shadow: 0 0 0px 1000px var(--auth-input-bg) inset;
+        transition: background-color 5000s ease-in-out 0s;
       }
     }
   }

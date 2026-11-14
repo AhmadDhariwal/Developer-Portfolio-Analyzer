@@ -1,0 +1,23 @@
+{
+  "mongoFixtures": [
+    {
+      "mongoStopped": true,
+      "temporaryFilesRemoved": 56
+    },
+    {
+      "mongoStopped": true,
+      "temporaryFilesRemoved": 147
+    },
+    {
+      "mongoStopped": true,
+      "temporaryFilesRemoved": 95
+    }
+  ],
+  "redisFixturePort": 27172,
+  "redisStopped": true,
+  "retainedRedisLog": true,
+  "deletedExactTemporaryFiles": [
+    "/tmp/portfolio-final-27172.log"
+  ],
+  "productionDataUsed": false
+}

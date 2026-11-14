@@ -1,0 +1,696 @@
+{
+  "layouts": [
+    {
+      "theme": "light",
+      "width": 320,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "pageWidth": 292,
+      "mainPadding": "14px",
+      "title": "28px",
+      "section": "19px",
+      "score": "44px",
+      "charts": [
+        {
+          "width": 180,
+          "height": 180,
+          "displayWidth": 180
+        },
+        {
+          "width": 289,
+          "height": 200,
+          "displayWidth": 289.796875
+        }
+      ]
+    },
+    {
+      "theme": "light",
+      "width": 375,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "pageWidth": 347,
+      "mainPadding": "14px",
+      "title": "28px",
+      "section": "19px",
+      "score": "44px",
+      "charts": [
+        {
+          "width": 180,
+          "height": 180,
+          "displayWidth": 180
+        },
+        {
+          "width": 347,
+          "height": 200,
+          "displayWidth": 347
+        }
+      ]
+    },
+    {
+      "theme": "light",
+      "width": 425,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "pageWidth": 397,
+      "mainPadding": "14px",
+      "title": "28px",
+      "section": "19px",
+      "score": "44px",
+      "charts": [
+        {
+          "width": 180,
+          "height": 180,
+          "displayWidth": 180
+        },
+        {
+          "width": 397,
+          "height": 200,
+          "displayWidth": 397
+        }
+      ]
+    },
+    {
+      "theme": "light",
+      "width": 768,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "pageWidth": 740,
+      "mainPadding": "14px",
+      "title": "28px",
+      "section": "19px",
+      "score": "44px",
+      "charts": [
+        {
+          "width": 180,
+          "height": 180,
+          "displayWidth": 180
+        },
+        {
+          "width": 740,
+          "height": 200,
+          "displayWidth": 740
+        }
+      ]
+    },
+    {
+      "theme": "light",
+      "width": 1024,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "pageWidth": 716,
+      "mainPadding": "24px",
+      "title": "28px",
+      "section": "19px",
+      "score": "44px",
+      "charts": [
+        {
+          "width": 180,
+          "height": 180,
+          "displayWidth": 180
+        },
+        {
+          "width": 346,
+          "height": 200,
+          "displayWidth": 346.1875
+        }
+      ]
+    },
+    {
+      "theme": "light",
+      "width": 1280,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "pageWidth": 972,
+      "mainPadding": "24px",
+      "title": "28px",
+      "section": "19px",
+      "score": "44px",
+      "charts": [
+        {
+          "width": 180,
+          "height": 180,
+          "displayWidth": 180
+        },
+        {
+          "width": 474,
+          "height": 200,
+          "displayWidth": 474
+        }
+      ]
+    },
+    {
+      "theme": "light",
+      "width": 1440,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "pageWidth": 1132,
+      "mainPadding": "24px",
+      "title": "28px",
+      "section": "19px",
+      "score": "44px",
+      "charts": [
+        {
+          "width": 180,
+          "height": 180,
+          "displayWidth": 180
+        },
+        {
+          "width": 554,
+          "height": 200,
+          "displayWidth": 554
+        }
+      ]
+    },
+    {
+      "theme": "light",
+      "width": 1600,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "pageWidth": 1292,
+      "mainPadding": "24px",
+      "title": "28px",
+      "section": "19px",
+      "score": "44px",
+      "charts": [
+        {
+          "width": 180,
+          "height": 180,
+          "displayWidth": 180
+        },
+        {
+          "width": 554,
+          "height": 200,
+          "displayWidth": 554
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "width": 320,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "pageWidth": 292,
+      "mainPadding": "14px",
+      "title": "28px",
+      "section": "19px",
+      "score": "44px",
+      "charts": [
+        {
+          "width": 180,
+          "height": 180,
+          "displayWidth": 180
+        },
+        {
+          "width": 289,
+          "height": 200,
+          "displayWidth": 289.796875
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "width": 375,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "pageWidth": 347,
+      "mainPadding": "14px",
+      "title": "28px",
+      "section": "19px",
+      "score": "44px",
+      "charts": [
+        {
+          "width": 180,
+          "height": 180,
+          "displayWidth": 180
+        },
+        {
+          "width": 292,
+          "height": 200,
+          "displayWidth": 292
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "width": 425,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "pageWidth": 397,
+      "mainPadding": "14px",
+      "title": "28px",
+      "section": "19px",
+      "score": "44px",
+      "charts": [
+        {
+          "width": 180,
+          "height": 180,
+          "displayWidth": 180
+        },
+        {
+          "width": 347,
+          "height": 200,
+          "displayWidth": 347
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "width": 768,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "pageWidth": 740,
+      "mainPadding": "14px",
+      "title": "28px",
+      "section": "19px",
+      "score": "44px",
+      "charts": [
+        {
+          "width": 180,
+          "height": 180,
+          "displayWidth": 180
+        },
+        {
+          "width": 740,
+          "height": 200,
+          "displayWidth": 740
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "width": 1024,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "pageWidth": 716,
+      "mainPadding": "24px",
+      "title": "28px",
+      "section": "19px",
+      "score": "44px",
+      "charts": [
+        {
+          "width": 180,
+          "height": 180,
+          "displayWidth": 180
+        },
+        {
+          "width": 346,
+          "height": 200,
+          "displayWidth": 346
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "width": 1280,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "pageWidth": 972,
+      "mainPadding": "24px",
+      "title": "28px",
+      "section": "19px",
+      "score": "44px",
+      "charts": [
+        {
+          "width": 180,
+          "height": 180,
+          "displayWidth": 180
+        },
+        {
+          "width": 474,
+          "height": 200,
+          "displayWidth": 474
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "width": 1440,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "pageWidth": 1132,
+      "mainPadding": "24px",
+      "title": "28px",
+      "section": "19px",
+      "score": "44px",
+      "charts": [
+        {
+          "width": 180,
+          "height": 180,
+          "displayWidth": 180
+        },
+        {
+          "width": 554,
+          "height": 200,
+          "displayWidth": 554
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "width": 1600,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "pageWidth": 1292,
+      "mainPadding": "24px",
+      "title": "28px",
+      "section": "19px",
+      "score": "44px",
+      "charts": [
+        {
+          "width": 180,
+          "height": 180,
+          "displayWidth": 180
+        },
+        {
+          "width": 554,
+          "height": 200,
+          "displayWidth": 554
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "width": 320,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "pageWidth": 292,
+      "mainPadding": "14px",
+      "title": "28px",
+      "section": "19px",
+      "score": "44px",
+      "charts": [
+        {
+          "width": 180,
+          "height": 180,
+          "displayWidth": 180
+        },
+        {
+          "width": 292,
+          "height": 200,
+          "displayWidth": 292
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "width": 375,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "pageWidth": 347,
+      "mainPadding": "14px",
+      "title": "28px",
+      "section": "19px",
+      "score": "44px",
+      "charts": [
+        {
+          "width": 180,
+          "height": 180,
+          "displayWidth": 180
+        },
+        {
+          "width": 347,
+          "height": 200,
+          "displayWidth": 347
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "width": 425,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "pageWidth": 397,
+      "mainPadding": "14px",
+      "title": "28px",
+      "section": "19px",
+      "score": "44px",
+      "charts": [
+        {
+          "width": 180,
+          "height": 180,
+          "displayWidth": 180
+        },
+        {
+          "width": 397,
+          "height": 200,
+          "displayWidth": 397
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "width": 768,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "pageWidth": 740,
+      "mainPadding": "14px",
+      "title": "28px",
+      "section": "19px",
+      "score": "44px",
+      "charts": [
+        {
+          "width": 180,
+          "height": 180,
+          "displayWidth": 180
+        },
+        {
+          "width": 740,
+          "height": 200,
+          "displayWidth": 740
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "width": 1024,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "pageWidth": 716,
+      "mainPadding": "24px",
+      "title": "28px",
+      "section": "19px",
+      "score": "44px",
+      "charts": [
+        {
+          "width": 180,
+          "height": 180,
+          "displayWidth": 180
+        },
+        {
+          "width": 346,
+          "height": 200,
+          "displayWidth": 346.1875
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "width": 1280,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "pageWidth": 972,
+      "mainPadding": "24px",
+      "title": "28px",
+      "section": "19px",
+      "score": "44px",
+      "charts": [
+        {
+          "width": 180,
+          "height": 180,
+          "displayWidth": 180
+        },
+        {
+          "width": 474,
+          "height": 200,
+          "displayWidth": 474
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "width": 1440,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "pageWidth": 1132,
+      "mainPadding": "24px",
+      "title": "28px",
+      "section": "19px",
+      "score": "44px",
+      "charts": [
+        {
+          "width": 180,
+          "height": 180,
+          "displayWidth": 180
+        },
+        {
+          "width": 554,
+          "height": 200,
+          "displayWidth": 554
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "width": 1600,
+      "overflow": false,
+      "font": "Manrope, \"Segoe UI\", sans-serif",
+      "pageWidth": 1292,
+      "mainPadding": "24px",
+      "title": "28px",
+      "section": "19px",
+      "score": "44px",
+      "charts": [
+        {
+          "width": 180,
+          "height": 180,
+          "displayWidth": 180
+        },
+        {
+          "width": 634,
+          "height": 200,
+          "displayWidth": 634
+        }
+      ]
+    }
+  ],
+  "interactions": [
+    {
+      "theme": "light",
+      "liveBackend": true,
+      "username": "octocat",
+      "score": 37
+    },
+    {
+      "theme": "light",
+      "sorting": true,
+      "viewAll": true,
+      "keyboardEvidence": true,
+      "drawerEscape": true,
+      "refreshSaved": true,
+      "previewUnsaved": true,
+      "returnSaved": true,
+      "notFound": true,
+      "empty": true,
+      "stale": true,
+      "partial": true,
+      "loading": true,
+      "refreshRecovery": true,
+      "mobileEvidence": true,
+      "mobileNavigation": true,
+      "consoleErrors": []
+    },
+    {
+      "theme": "light",
+      "skillGapReference": {
+        "font": "Manrope, \"Segoe UI\", sans-serif",
+        "title": "28px",
+        "section": "19px",
+        "padding": "24px"
+      }
+    },
+    {
+      "theme": "light",
+      "regressionRoute": "/app/dashboard",
+      "loaded": true,
+      "overflow": false
+    },
+    {
+      "theme": "light",
+      "regressionRoute": "/app/resume-analyzer",
+      "loaded": true,
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "liveBackend": true,
+      "username": "octocat",
+      "score": 37
+    },
+    {
+      "theme": "dark",
+      "sorting": true,
+      "viewAll": true,
+      "keyboardEvidence": true,
+      "drawerEscape": true,
+      "refreshSaved": true,
+      "previewUnsaved": true,
+      "returnSaved": true,
+      "notFound": true,
+      "empty": true,
+      "stale": true,
+      "partial": true,
+      "loading": true,
+      "refreshRecovery": true,
+      "mobileEvidence": true,
+      "mobileNavigation": true,
+      "consoleErrors": []
+    },
+    {
+      "theme": "dark",
+      "skillGapReference": {
+        "font": "Manrope, \"Segoe UI\", sans-serif",
+        "title": "28px",
+        "section": "19px",
+        "padding": "24px"
+      }
+    },
+    {
+      "theme": "dark",
+      "regressionRoute": "/app/dashboard",
+      "loaded": true,
+      "overflow": false
+    },
+    {
+      "theme": "dark",
+      "regressionRoute": "/app/resume-analyzer",
+      "loaded": true,
+      "overflow": false
+    },
+    {
+      "theme": "system",
+      "liveBackend": true,
+      "username": "octocat",
+      "score": 37
+    },
+    {
+      "theme": "system",
+      "sorting": true,
+      "viewAll": true,
+      "keyboardEvidence": true,
+      "drawerEscape": true,
+      "refreshSaved": true,
+      "previewUnsaved": true,
+      "returnSaved": true,
+      "notFound": true,
+      "empty": true,
+      "stale": true,
+      "partial": true,
+      "loading": true,
+      "refreshRecovery": true,
+      "mobileEvidence": true,
+      "mobileNavigation": true,
+      "consoleErrors": []
+    },
+    {
+      "theme": "system",
+      "skillGapReference": {
+        "font": "Manrope, \"Segoe UI\", sans-serif",
+        "title": "28px",
+        "section": "19px",
+        "padding": "24px"
+      }
+    },
+    {
+      "theme": "system",
+      "regressionRoute": "/app/dashboard",
+      "loaded": true,
+      "overflow": false
+    },
+    {
+      "theme": "system",
+      "regressionRoute": "/app/resume-analyzer",
+      "loaded": true,
+      "overflow": false
+    }
+  ]
+}

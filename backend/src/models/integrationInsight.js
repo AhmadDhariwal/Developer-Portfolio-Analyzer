@@ -1,18 +1,37 @@
 const mongoose = require('mongoose');
 
-const providerInsightSchema = new mongoose.Schema({
-  provider: {
-    type: String,
-    enum: ['linkedin', 'github', 'leetcode', 'kaggle', 'stackoverflow', 'hackerrank', 'portfolio', 'certifications', 'devblogs'],
-    required: true
+const providerInsightSchema = new mongoose.Schema(
+  {
+    provider: {
+      type: String,
+      enum: [
+        'linkedin',
+        'github',
+        'leetcode',
+        'kaggle',
+        'stackoverflow',
+        'hackerrank',
+        'portfolio',
+        'certifications',
+        'devblogs'
+      ],
+      required: true
+    },
+    ownershipVerified: { type: Boolean, default: false },
+    evidenceKind: {
+      type: String,
+      enum: ['provider-observed', 'self-reported'],
+      default: 'provider-observed'
+    },
+    profileScore: { type: Number, default: 0 },
+    activityScore: { type: Number, default: 0 },
+    confidence: { type: Number, default: 0 },
+    inferredSkills: [{ type: String }],
+    normalized: { type: mongoose.Schema.Types.Mixed, default: {} },
+    syncedAt: { type: Date, default: Date.now }
   },
-  profileScore: { type: Number, default: 0 },
-  activityScore: { type: Number, default: 0 },
-  confidence: { type: Number, default: 0 },
-  inferredSkills: [{ type: String }],
-  normalized: { type: mongoose.Schema.Types.Mixed, default: {} },
-  syncedAt: { type: Date, default: Date.now }
-}, { _id: false });
+  { _id: false }
+);
 
 const integrationInsightSchema = new mongoose.Schema({
   userId: {

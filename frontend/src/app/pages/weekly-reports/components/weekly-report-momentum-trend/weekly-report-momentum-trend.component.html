@@ -1,0 +1,32 @@
+<section
+  class="momentum-trend"
+  *ngIf="trendReports.length > 1"
+  aria-label="Saved weekly score trend"
+>
+  <div>
+    <span class="eyebrow">The bigger picture</span>
+    <h2>Your momentum over time</h2>
+    <p>Saved weekly scores. Missing weeks are not estimated.</p>
+  </div>
+  <div class="trend-bars">
+    <button
+      type="button"
+      *ngFor="let item of trendReports; trackBy: trackByReportId"
+      (click)="selectReport.emit(item)"
+      [attr.aria-label]="
+        reportDate(item.weekStartDate, item) +
+        ': ' +
+        overallLabel(item) +
+        (item.meta.evidence?.scoreAvailable === false ? '' : ' out of 100')
+      "
+      [attr.aria-pressed]="item._id === selectedReportId"
+    >
+      <strong>{{ overallLabel(item) }}</strong
+      ><span class="trend-track"
+        ><span
+          [style.height.%]="item.meta.evidence?.scoreAvailable === false ? 0 : item.score"
+        ></span></span
+      ><small>{{ reportDate(item.weekStartDate, item) }}</small>
+    </button>
+  </div>
+</section>

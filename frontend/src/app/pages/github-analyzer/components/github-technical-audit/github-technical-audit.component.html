@@ -1,0 +1,375 @@
+<!-- Technical Metadata & Scoring Evidence Drawer -->
+<app-ui-drawer
+  [isOpen]="showEvidenceDrawer"
+  title="Analysis Details & Audit Evidence"
+  subtitle="Deterministic provenance, scoring weights, and backend cache audit"
+  size="lg"
+  (close)="closed.emit()"
+>
+  <div class="drawer-evidence-content" *ngIf="result">
+    <!-- Audit Overview Strip -->
+    <div class="drawer-summary-strip">
+      <div class="summary-strip-item">
+        <span class="summary-strip-label">Audit Score</span>
+        <span class="summary-strip-value">
+          {{ overallAuditScore !== null ? overallAuditScore + '/100' : 'Unavailable' }}
+        </span>
+      </div>
+      <div class="summary-strip-item">
+        <span class="summary-strip-label">Rule Engine</span>
+        <span class="summary-strip-value font-mono">{{ ruleVersion }}</span>
+      </div>
+      <div class="summary-strip-item summary-strip-badge">
+        <span class="summary-strip-label">Snapshot</span>
+        <app-ui-badge [variant]="result.cache?.hit ? 'info' : 'success'" size="sm">
+          {{ result.cache?.hit ? 'Cached Snapshot' : 'Fresh Compute' }}
+        </app-ui-badge>
+      </div>
+    </div>
+
+    <!-- Group 1: Engine Provenance -->
+    <section class="drawer-section">
+      <div class="drawer-section-header">
+        <div class="drawer-section-heading">
+          <svg
+            class="drawer-section-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            aria-hidden="true"
+          >
+            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+            <path d="M2 17l10 5 10-5" />
+            <path d="M2 12l10 5 10-5" />
+          </svg>
+          <h4 class="drawer-section-title">Engine Provenance</h4>
+        </div>
+        <span class="drawer-section-tag">Deterministic</span>
+      </div>
+      <div class="drawer-kv-grid">
+        <div class="drawer-kv-item">
+          <span class="kv-label">Rule Engine</span>
+          <span class="kv-value font-mono">{{ ruleVersion }}</span>
+        </div>
+        <div class="drawer-kv-item">
+          <span class="kv-label">Calculated At</span>
+          <span class="kv-value">{{ calculationTimestamp }}</span>
+        </div>
+        <div class="drawer-kv-item">
+          <span class="kv-label">Cache Status</span>
+          <span class="kv-value">{{ cacheStatusLabel }}</span>
+        </div>
+        <div class="drawer-kv-item">
+          <span class="kv-label">Cache Hit</span>
+          <span class="kv-value">{{
+            result.cache?.hit ? 'Yes (Cached)' : 'No (Fresh compute)'
+          }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Group 2: Audit Fact Counts -->
+    <section class="drawer-section">
+      <div class="drawer-section-header">
+        <div class="drawer-section-heading">
+          <svg
+            class="drawer-section-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            aria-hidden="true"
+          >
+            <rect x="3" y="4" width="18" height="16" rx="2" />
+            <path d="M8 10h8" />
+            <path d="M8 14h5" />
+          </svg>
+          <h4 class="drawer-section-title">Audit Facts & Scope</h4>
+        </div>
+        <span class="drawer-section-tag">
+          {{ evidenceFacts?.activeRepos ?? result.repositoryActivity.length }} evaluated
+        </span>
+      </div>
+      <div class="drawer-kv-grid drawer-facts-grid">
+        <div class="drawer-kv-item">
+          <span class="kv-label">Total Repositories</span>
+          <span class="kv-value">{{ result.repoCount }}</span>
+        </div>
+        <div class="drawer-kv-item">
+          <span class="kv-label">Original Repositories</span>
+          <span class="kv-value">{{ originalRepoCount }}</span>
+        </div>
+        <div class="drawer-kv-item">
+          <span class="kv-label">Forked Repositories</span>
+          <span class="kv-value">{{ forkedRepoCount }}</span>
+        </div>
+        <div class="drawer-kv-item">
+          <span class="kv-label">Archived Repositories</span>
+          <span class="kv-value">{{ archivedRepoCount }}</span>
+        </div>
+        <div class="drawer-kv-item">
+          <span class="kv-label">Sampled Commits</span>
+          <span class="kv-value">{{
+            totalSampledCommits !== null ? formatNumber(totalSampledCommits) : 'Unavailable'
+          }}</span>
+        </div>
+        <div class="drawer-kv-item">
+          <span class="kv-label">Active Repos Evaluated</span>
+          <span class="kv-value">
+            {{ evidenceFacts?.activeRepos ?? result.repositoryActivity.length }} repositories
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Group 3: Scoring Formulas & Weights -->
+    <section class="drawer-section">
+      <div class="drawer-section-header">
+        <div class="drawer-section-heading">
+          <svg
+            class="drawer-section-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            aria-hidden="true"
+          >
+            <path d="M4 19h16" />
+            <path d="M7 15v-5" />
+            <path d="M12 15V5" />
+            <path d="M17 15v-8" />
+          </svg>
+          <h4 class="drawer-section-title">Scoring Component Weights</h4>
+        </div>
+        <span class="drawer-section-tag">{{ scoreBreakdownList.length }} factors</span>
+      </div>
+      <div class="drawer-weights-list">
+        <div
+          class="drawer-weight-row"
+          *ngFor="let item of scoreBreakdownList"
+          [class.weight-unavailable]="!item.available"
+        >
+          <div class="weight-row-top">
+            <div class="weight-row-left">
+              <div class="weight-title-line">
+                <strong>{{ item.label }}</strong>
+                <span class="weight-score-pill" *ngIf="item.value !== null">
+                  {{ formatAuditScoreValue(item.value) }}/100
+                </span>
+                <app-ui-badge *ngIf="!item.available" variant="neutral" size="sm">
+                  Unavailable
+                </app-ui-badge>
+              </div>
+              <small>{{ item.description }}</small>
+            </div>
+            <div class="weight-row-right">
+              <span class="weight-pct">{{ item.weightPct }}%</span>
+              <span class="weight-pts" *ngIf="item.contribution !== null">
+                +{{ item.contribution }} pts
+              </span>
+              <span class="weight-pts-muted" *ngIf="item.contribution === null">Excluded</span>
+            </div>
+          </div>
+          <div class="weight-bar-track" aria-hidden="true">
+            <div
+              class="weight-bar-fill"
+              [class.weight-bar-primary]="item.color === 'primary'"
+              [class.weight-bar-secondary]="item.color === 'secondary'"
+              [class.weight-bar-success]="item.color === 'success'"
+              [class.weight-bar-warning]="item.color === 'warning'"
+              [class.weight-bar-danger]="item.color === 'danger'"
+              [class.weight-bar-info]="item.color === 'info'"
+              [style.width.%]="item.available ? getItemBarWidth(item.value) : 0"
+            ></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Group 4: Source Metadata -->
+    <section class="drawer-section">
+      <div class="drawer-section-header">
+        <div class="drawer-section-heading">
+          <svg
+            class="drawer-section-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 8v4l2.5 2.5" />
+          </svg>
+          <h4 class="drawer-section-title">Source Metadata</h4>
+        </div>
+      </div>
+      <div class="drawer-kv-grid drawer-meta-grid">
+        <div class="drawer-kv-item">
+          <span class="kv-label">Analysis Version</span>
+          <span class="kv-value font-mono">{{ result.analysisVersion || 'Unavailable' }}</span>
+        </div>
+        <div class="drawer-kv-item">
+          <span class="kv-label">Data Version</span>
+          <span class="kv-value font-mono">{{ result.dataVersion || 'Unavailable' }}</span>
+        </div>
+        <div class="drawer-kv-item kv-item-wide">
+          <span class="kv-label">Activity Scope</span>
+          <span class="kv-value">
+            {{ formatActivityScope(result.dataAvailability?.activityScope) }}
+          </span>
+        </div>
+      </div>
+      <div class="drawer-sources-block" *ngIf="result.scoring?.evidence?.sources?.length">
+        <span class="drawer-sublabel">Verified Data Sources</span>
+        <ul class="drawer-source-chips">
+          <li class="source-chip" *ngFor="let source of result.scoring?.evidence?.sources">
+            <span class="source-chip-type">{{ formatSourceType(source.type) }}</span>
+            <span class="source-chip-id font-mono">{{ source.id }}</span>
+          </li>
+        </ul>
+      </div>
+      <div class="drawer-inline-warning" *ngIf="result.warning">
+        <svg
+          class="inline-warning-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="M12 9v4" />
+          <path d="M12 17h.01" />
+          <path
+            d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+          />
+        </svg>
+        <span>{{ result.warning }}</span>
+      </div>
+    </section>
+
+    <!-- Group 5: Technology Detection Evidence -->
+    <section class="drawer-section" *ngIf="hasTechnologyData">
+      <div class="drawer-section-header">
+        <div class="drawer-section-heading">
+          <svg
+            class="drawer-section-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            aria-hidden="true"
+          >
+            <path d="M16 18l6-6-6-6" />
+            <path d="M8 6l-6 6 6 6" />
+          </svg>
+          <h4 class="drawer-section-title">Technology Detection Evidence</h4>
+        </div>
+        <span class="drawer-section-tag">{{ technologyCategories.length }} categories</span>
+      </div>
+      <div class="drawer-tech-groups">
+        <div class="drawer-tech-group" *ngFor="let group of technologyCategories">
+          <div class="drawer-tech-group-header">
+            <h5>{{ group.category }}</h5>
+            <span class="drawer-group-count">{{ group.items.length }}</span>
+          </div>
+          <ul class="drawer-tech-list">
+            <li class="drawer-tech-item" *ngFor="let tech of group.items">
+              <div class="drawer-tech-top">
+                <span class="tech-item-name">{{ tech.name }}</span>
+                <app-ui-badge [variant]="getConfidenceVariant(tech.confidence)" size="sm">
+                  {{ tech.confidence }}% confidence
+                </app-ui-badge>
+              </div>
+              <div class="drawer-tech-sources">
+                <ng-container *ngIf="tech.sources?.length; else noTechSources">
+                  <span class="tech-source-chip" *ngFor="let src of tech.sources">{{ src }}</span>
+                </ng-container>
+                <ng-template #noTechSources>
+                  <span class="tech-source-empty">Sources not supplied</span>
+                </ng-template>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Group 6: Scoring Inputs -->
+    <section class="drawer-section" *ngIf="result.scoring?.evidence?.inputs">
+      <div class="drawer-section-header">
+        <div class="drawer-section-heading">
+          <svg
+            class="drawer-section-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            aria-hidden="true"
+          >
+            <path d="M9 11l3 3L22 4" />
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+          </svg>
+          <h4 class="drawer-section-title">Scoring Inputs</h4>
+        </div>
+      </div>
+      <dl class="drawer-inputs-grid">
+        <div
+          class="drawer-input-card"
+          *ngFor="let input of result.scoring?.evidence?.inputs | keyvalue"
+          [class.input-unavailable]="input.value === null || input.value === undefined"
+        >
+          <dt class="drawer-input-term">{{ formatAuditInputLabel(input.key) }}</dt>
+          <dd class="drawer-input-val">{{ formatAuditScoreValue(input.value) }}</dd>
+        </div>
+      </dl>
+    </section>
+
+    <!-- Group 7: Backend Audit Notices -->
+    <section class="drawer-section" *ngIf="scoringWarnings.length">
+      <div class="drawer-section-header">
+        <div class="drawer-section-heading">
+          <svg
+            class="drawer-section-icon drawer-section-icon-warning"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            aria-hidden="true"
+          >
+            <path
+              d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+            />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+          <h4 class="drawer-section-title">Backend Audit Notices</h4>
+        </div>
+        <span class="drawer-section-tag">{{ scoringWarnings.length }}</span>
+      </div>
+      <div class="drawer-notices-box">
+        <ul class="drawer-notices-list">
+          <li class="drawer-notice-item" *ngFor="let notice of scoringWarnings">
+            <svg
+              class="notice-bullet-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="9" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            <div class="notice-content">
+              <span class="notice-text">{{ formatAuditNotice(notice) }}</span>
+              <code class="notice-code" *ngIf="notice.includes('_')">{{ notice }}</code>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section>
+  </div>
+</app-ui-drawer>

@@ -37,6 +37,18 @@ export class LandingThemeService {
     this.themeSignal.set(theme);
     try {
       localStorage.setItem(STORAGE_KEY, theme);
+      if (typeof document !== 'undefined' && document.documentElement) {
+        const appTheme = theme === 'light' ? 'light' : 'dark';
+        localStorage.setItem('devinsight_theme', appTheme);
+        document.documentElement.setAttribute('data-theme', appTheme);
+        if (appTheme === 'dark') {
+          document.documentElement.classList.add('dark');
+          document.documentElement.classList.remove('light');
+        } else {
+          document.documentElement.classList.add('light');
+          document.documentElement.classList.remove('dark');
+        }
+      }
     } catch {
       // Theme selection remains usable when storage is unavailable.
     }
@@ -48,7 +60,12 @@ export class LandingThemeService {
 
   private readSavedTheme(): LandingThemeId {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved =
+        localStorage.getItem(STORAGE_KEY) ||
+        (typeof document !== 'undefined' && document.documentElement
+          ? document.documentElement.getAttribute('data-theme')
+          : null) ||
+        localStorage.getItem('devinsight_theme');
       if (!saved) {
         return 'dark';
       }

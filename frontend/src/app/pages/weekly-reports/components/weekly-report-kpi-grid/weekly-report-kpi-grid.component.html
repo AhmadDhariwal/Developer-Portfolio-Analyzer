@@ -1,0 +1,69 @@
+<section class="kpi-grid">
+  <article class="kpi-card">
+    <span class="kpi-label">GitHub Score</span>
+
+    <div class="kpi-value-wrap">
+      <strong
+        [class.is-text]="isTextValue(metricLabel('github', report.meta.githubScore))"
+        [title]="metricLabel('github', report.meta.githubScore)"
+      >
+        {{ metricLabel('github', report.meta.githubScore) }}
+      </strong>
+    </div>
+
+    <small [class]="deltaClass(report.meta.comparisons.githubDelta)">{{
+      formatDelta(report.meta.comparisons.githubDelta)
+    }}</small>
+  </article>
+
+  <article class="kpi-card">
+    <span class="kpi-label">Resume Score</span>
+
+    <div class="kpi-value-wrap">
+      <strong
+        [class.is-text]="isTextValue(metricLabel('resume', report.meta.resumeScore))"
+        [title]="metricLabel('resume', report.meta.resumeScore)"
+      >
+        {{ metricLabel('resume', report.meta.resumeScore) }}
+      </strong>
+    </div>
+
+    <small [class]="deltaClass(report.meta.comparisons.resumeDelta)">{{
+      formatDelta(report.meta.comparisons.resumeDelta)
+    }}</small>
+  </article>
+
+  <article class="kpi-card">
+    <span class="kpi-label">Sprint Completion</span>
+
+    <div class="kpi-value-wrap">
+      <strong
+        [class.is-text]="isTextValue(sprintMetricLabel(report))"
+        [title]="sprintMetricLabel(report)"
+      >
+        {{ sprintMetricLabel(report) }}
+      </strong>
+    </div>
+
+    <small [class]="deltaClass(report.meta.comparisons.sprintCompletionDelta)">{{
+      formatDelta(report.meta.comparisons.sprintCompletionDelta)
+    }}</small>
+  </article>
+
+  <article class="kpi-card">
+    <span class="kpi-label">Interview Progress</span>
+
+    <div class="kpi-value-wrap">
+      <strong
+        [class.is-text]="isTextValue(interviewActivityLabel(report))"
+        [title]="interviewActivityLabel(report)"
+      >
+        {{ interviewActivityLabel(report) }}
+      </strong>
+    </div>
+
+    <small [class]="deltaClass(report.meta.comparisons.interviewQuestionsDelta)">{{
+      formatDelta(report.meta.comparisons.interviewQuestionsDelta, 'qs')
+    }}</small>
+  </article>
+</section>

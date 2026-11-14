@@ -1,22 +1,14 @@
 <div [class]="'score-meter size-' + size">
-  <svg viewBox="0 0 200 200" class="score-svg">
+  <svg viewBox="0 0 200 200" class="score-svg" aria-hidden="true">
     <defs>
-      <filter [attr.id]="'glow-' + size">
-        <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-        <feMerge>
-          <feMergeNode in="coloredBlur"/>
-          <feMergeNode in="SourceGraphic"/>
-        </feMerge>
-      </filter>
+      <linearGradient [attr.id]="gradientId" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" [attr.stop-color]="scoreColor" />
+        <stop offset="100%" [attr.stop-color]="gradientEndColor" />
+      </linearGradient>
     </defs>
 
     <!-- Track -->
-    <circle
-      [attr.cx]="cx"
-      [attr.cy]="cy"
-      [attr.r]="radius"
-      class="track"
-    ></circle>
+    <circle [attr.cx]="cx" [attr.cy]="cy" [attr.r]="radius" class="track"></circle>
 
     <!-- Progress arc -->
     <circle
@@ -24,16 +16,16 @@
       [attr.cy]="cy"
       [attr.r]="radius"
       class="progress-arc"
-      [style.stroke]="scoreColor"
+      [attr.stroke]="'url(#' + gradientId + ')'"
       [style.strokeDasharray]="circumference"
       [style.strokeDashoffset]="dashOffset"
-      [style.filter]="'drop-shadow(0 0 8px ' + glowColor + ')'"
+      [style.filter]="'drop-shadow(0 2px 8px ' + glowColor + ')'"
     ></circle>
   </svg>
 
   <!-- Center label -->
   <div class="score-label">
     <span class="score-value" [style.color]="scoreColor">{{ score }}</span>
-    <span class="score-out">out of {{ maxScore }}</span>
+    <span class="score-out">/ {{ maxScore }}</span>
   </div>
 </div>

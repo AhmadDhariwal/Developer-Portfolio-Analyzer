@@ -1,0 +1,326 @@
+{
+  "before": {
+    "htmlLines": 2043,
+    "tsLines": 929,
+    "scssLines": 4554,
+    "hashes": {
+      "ts": "db9d3b238e5d6ab0a9449feb82c9b8d93ceed7160f5afdf8cec726484cd66d6e",
+      "html": "962d3dbd84a06408ffaa682dcd4c48ed27687ed6838026cbc5aa1b8b56d332bc",
+      "scss": "4fcb16062772a169f88a511c52cbea35e54afcad3cd82a727ce0c3445e391945"
+    }
+  },
+  "files": [
+    "frontend/src/app/pages/scenario-simulator/components/scenario-presentation.ts",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-context.component.ts",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-context.component.html",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-inputs.component.ts",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-inputs.component.html",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-results.component.ts",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-results.component.html",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-history.component.ts",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-history.component.html",
+    "frontend/src/app/pages/scenario-simulator/scenario-simulator.component.html",
+    "frontend/src/app/pages/scenario-simulator/scenario-simulator.component.ts",
+    "frontend/src/app/pages/scenario-simulator/scenario-simulator.component.scss",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-context.component.scss",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-inputs.component.scss",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-results.component.scss",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-history.component.scss",
+    "frontend/src/app/pages/scenario-simulator/styles/_scenario-shared.scss"
+  ],
+  "sharedMixins": 14,
+  "after": [
+    {
+      "component": "scenario-simulator",
+      "lines": {
+        "ts": 746,
+        "html": 361,
+        "scss": 518
+      },
+      "compiledCssBytes": 9402,
+      "files": {
+        "ts": "frontend/src/app/pages/scenario-simulator/scenario-simulator.component.ts",
+        "html": "frontend/src/app/pages/scenario-simulator/scenario-simulator.component.html",
+        "scss": "frontend/src/app/pages/scenario-simulator/scenario-simulator.component.scss"
+      }
+    },
+    {
+      "component": "components/scenario-context",
+      "lines": {
+        "ts": 30,
+        "html": 225,
+        "scss": 510
+      },
+      "compiledCssBytes": 11032,
+      "files": {
+        "ts": "frontend/src/app/pages/scenario-simulator/components/scenario-context.component.ts",
+        "html": "frontend/src/app/pages/scenario-simulator/components/scenario-context.component.html",
+        "scss": "frontend/src/app/pages/scenario-simulator/components/scenario-context.component.scss"
+      }
+    },
+    {
+      "component": "components/scenario-history",
+      "lines": {
+        "ts": 53,
+        "html": 432,
+        "scss": 1108
+      },
+      "compiledCssBytes": 24638,
+      "files": {
+        "ts": "frontend/src/app/pages/scenario-simulator/components/scenario-history.component.ts",
+        "html": "frontend/src/app/pages/scenario-simulator/components/scenario-history.component.html",
+        "scss": "frontend/src/app/pages/scenario-simulator/components/scenario-history.component.scss"
+      }
+    },
+    {
+      "component": "components/scenario-inputs",
+      "lines": {
+        "ts": 58,
+        "html": 400,
+        "scss": 932
+      },
+      "compiledCssBytes": 21227,
+      "files": {
+        "ts": "frontend/src/app/pages/scenario-simulator/components/scenario-inputs.component.ts",
+        "html": "frontend/src/app/pages/scenario-simulator/components/scenario-inputs.component.html",
+        "scss": "frontend/src/app/pages/scenario-simulator/components/scenario-inputs.component.scss"
+      }
+    },
+    {
+      "component": "components/scenario-results",
+      "lines": {
+        "ts": 60,
+        "html": 718,
+        "scss": 1604
+      },
+      "compiledCssBytes": 31277,
+      "files": {
+        "ts": "frontend/src/app/pages/scenario-simulator/components/scenario-results.component.ts",
+        "html": "frontend/src/app/pages/scenario-simulator/components/scenario-results.component.html",
+        "scss": "frontend/src/app/pages/scenario-simulator/components/scenario-results.component.scss"
+      }
+    }
+  ],
+  "baselineCompiledCssBytes": 85382,
+  "afterCompiledCssBytes": 97576,
+  "warningLimitBytes": 49152,
+  "errorLimitBytes": 65536,
+  "budgetConfigurationChanged": false,
+  "sourceFiles": [
+    "frontend/src/app/pages/scenario-simulator/scenario-simulator.component.ts",
+    "frontend/src/app/pages/scenario-simulator/scenario-simulator.component.html",
+    "frontend/src/app/pages/scenario-simulator/scenario-simulator.component.scss",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-components.spec.ts",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-context.component.html",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-context.component.scss",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-context.component.ts",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-history.component.html",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-history.component.scss",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-history.component.ts",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-inputs.component.html",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-inputs.component.scss",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-inputs.component.ts",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-presentation.ts",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-results.component.html",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-results.component.scss",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-results.component.ts",
+    "frontend/src/app/pages/scenario-simulator/styles/_scenario-shared.scss",
+    "frontend/scripts/verify-scenario-decomposition-ui.cjs",
+    "backend/src/controllers/analysiscontroller.js",
+    "backend/src/tests/integrationsLocalAcceptance.test.js",
+    "backend/src/tests/fixtures/integrationsRuntime.js"
+  ],
+  "bundleFiles": [
+    {
+      "name": "chunk-5NA3BGOZ.js",
+      "bytes": 1919
+    },
+    {
+      "name": "chunk-7XKWIEVF.js",
+      "bytes": 203038
+    },
+    {
+      "name": "chunk-FGHI5EO4.js",
+      "bytes": 204413
+    },
+    {
+      "name": "chunk-NITOHJS4.js",
+      "bytes": 243688
+    },
+    {
+      "name": "chunk-RAOCZCQP.js",
+      "bytes": 519514
+    },
+    {
+      "name": "chunk-SJ5CDTVD.js",
+      "bytes": 7567
+    },
+    {
+      "name": "chunk-SYT2JEC7.js",
+      "bytes": 28384
+    },
+    {
+      "name": "chunk-TNPFBJJK.js",
+      "bytes": 392609
+    },
+    {
+      "name": "chunk-WJNX4I3S.js",
+      "bytes": 35670
+    },
+    {
+      "name": "main-USPTMQ7U.js",
+      "bytes": 2676713
+    },
+    {
+      "name": "styles-77GYJXKG.css",
+      "bytes": 15101
+    }
+  ],
+  "visualCases": 20,
+  "visualRelativeParity": 20,
+  "productionVisualCases": 8,
+  "frontendTests": {
+    "files": 5,
+    "passed": 18
+  },
+  "typeScript": "PASS",
+  "productionBuild": "PASS",
+  "productionInitial": {
+    "raw": "3.36 MB",
+    "estimatedTransfer": "526.65 kB",
+    "main": "main-USPTMQ7U.js",
+    "durationSeconds": 112.893
+  },
+  "historicalFailedBuildInitial": {
+    "raw": "3.26 MB",
+    "estimatedTransfer": "523.71 kB",
+    "attribution": "Comparison includes concurrent auth/Landing work; not a controlled Scenario-only bundle delta."
+  },
+  "sourceHashes": {
+    "frontend/src/app/pages/scenario-simulator/scenario-simulator.component.ts": "8743b6b90f251d18cf0db74cff1dd5ac3c43c84877db4c0c869f8de5a9cf3091",
+    "frontend/src/app/pages/scenario-simulator/scenario-simulator.component.html": "50205298f27e8061f3dd5290052280bd453da80ea41b08ca2f84d6b1d448a037",
+    "frontend/src/app/pages/scenario-simulator/scenario-simulator.component.scss": "c64cae5c1730980cf9b1616fd6026c2fdacdb3a49986dc5245cfcb406964aa88",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-components.spec.ts": "f08da1d193ec81c2e75635f52d8afb2eb09fcb7a6374a2bf78da8c28a132465a",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-context.component.html": "5eb24001cae805b161383eabb34485ef36f34fb2adde9f7832e389f928b8b6ba",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-context.component.scss": "54315021e11234c7705300911aade18126eef4a661d24246542023c5a1ef3078",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-context.component.ts": "0051b2d1d771d2fac10a37ce665a4777ff3ff00b255f0d8584d644a668e505f4",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-history.component.html": "4a443d39104e749cab5bb0a4dbffe128ad87c3192d61376f5e297e8602896b1a",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-history.component.scss": "cbac564df7e8cb9ffee8596d66b2ab2fed8267a7aafac5ae8d7f1f42337542ce",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-history.component.ts": "658ed92dfddc6b91c41451556909d327a754cd10836a3db50ce3b3cc4754df1f",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-inputs.component.html": "92ae2831f3339201cb7c094d06be9e9aae65817ea5258fe4697072ae4ae5262a",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-inputs.component.scss": "ede9ceef4d8c83e21e73f181172578f00a6a81f9092a05cb96e53648c6482ef2",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-inputs.component.ts": "7f586e3891512559166c0b313f67c71f989b4d091d1cba131dc8aa4e583b8cb3",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-presentation.ts": "9c06ffd232efbb49d5d06f5285b835ade14b33be0706efa15da5b2ed305623ab",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-results.component.html": "0a01987bbf5ce8a49e4954461d661af05cc53493cf759bdc9094c123352c9d4b",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-results.component.scss": "689bf7e08855201918b05aa33b60bb9bab130ec150669a18bcf3609c1a4caa25",
+    "frontend/src/app/pages/scenario-simulator/components/scenario-results.component.ts": "45e5e2088861225149af3b2d1445c9b145a91b9c9ce0ec8b9b53ccdabc0e2df5",
+    "frontend/src/app/pages/scenario-simulator/styles/_scenario-shared.scss": "300788e4cafe07f86da766ac09466b2165b989060f9642e33c80decee0b7c811",
+    "frontend/scripts/verify-scenario-decomposition-ui.cjs": "88e37ba63fdec750092a85080b99ae935b8b9aab0327711afc65ea88810341ee",
+    "backend/src/controllers/analysiscontroller.js": "52746afd1effc18fe36af93b5891b9781769f2d584e5fe7bf1c5225eb598768e",
+    "backend/src/tests/integrationsLocalAcceptance.test.js": "493b0a65546ee9e60ea1e1fc1539e9e27e86be7b338f247d29dd32e778076c44",
+    "backend/src/tests/fixtures/integrationsRuntime.js": "16a40680ed374e3f8f37ef23b720883d1180e003a79f6dfda21eefa018a83ece"
+  },
+  "backendFocusedTests": {
+    "passed": 28,
+    "failed": 0,
+    "skipped": 0,
+    "evidence": "backend/verification/integrations/local-acceptance/post-cleanup-tests.tap"
+  },
+  "documentationFiles": [
+    "docs/features/scenario-simulator.md",
+    "docs/features/integrations.md",
+    "docs/CACHE_SYSTEM.md"
+  ],
+  "retainedEvidence": [
+    "frontend/verification/scenario-simulator/decomposition/after-1440-dark-breakdown.png",
+    "frontend/verification/scenario-simulator/decomposition/after-1440-dark-comparison.png",
+    "frontend/verification/scenario-simulator/decomposition/after-1440-dark-draft.png",
+    "frontend/verification/scenario-simulator/decomposition/after-1440-dark-result.png",
+    "frontend/verification/scenario-simulator/decomposition/after-1440-dark-roadmap.png",
+    "frontend/verification/scenario-simulator/decomposition/after-1440-light-breakdown.png",
+    "frontend/verification/scenario-simulator/decomposition/after-1440-light-comparison.png",
+    "frontend/verification/scenario-simulator/decomposition/after-1440-light-draft.png",
+    "frontend/verification/scenario-simulator/decomposition/after-1440-light-result.png",
+    "frontend/verification/scenario-simulator/decomposition/after-1440-light-roadmap.png",
+    "frontend/verification/scenario-simulator/decomposition/after-375-dark-breakdown.png",
+    "frontend/verification/scenario-simulator/decomposition/after-375-dark-comparison.png",
+    "frontend/verification/scenario-simulator/decomposition/after-375-dark-draft.png",
+    "frontend/verification/scenario-simulator/decomposition/after-375-dark-result.png",
+    "frontend/verification/scenario-simulator/decomposition/after-375-dark-roadmap.png",
+    "frontend/verification/scenario-simulator/decomposition/after-375-light-breakdown.png",
+    "frontend/verification/scenario-simulator/decomposition/after-375-light-comparison.png",
+    "frontend/verification/scenario-simulator/decomposition/after-375-light-draft.png",
+    "frontend/verification/scenario-simulator/decomposition/after-375-light-result.png",
+    "frontend/verification/scenario-simulator/decomposition/after-375-light-roadmap.png",
+    "frontend/verification/scenario-simulator/decomposition/after.json",
+    "frontend/verification/scenario-simulator/decomposition/before-1440-dark-breakdown.png",
+    "frontend/verification/scenario-simulator/decomposition/before-1440-dark-comparison.png",
+    "frontend/verification/scenario-simulator/decomposition/before-1440-dark-draft.png",
+    "frontend/verification/scenario-simulator/decomposition/before-1440-dark-result.png",
+    "frontend/verification/scenario-simulator/decomposition/before-1440-dark-roadmap.png",
+    "frontend/verification/scenario-simulator/decomposition/before-1440-light-breakdown.png",
+    "frontend/verification/scenario-simulator/decomposition/before-1440-light-comparison.png",
+    "frontend/verification/scenario-simulator/decomposition/before-1440-light-draft.png",
+    "frontend/verification/scenario-simulator/decomposition/before-1440-light-result.png",
+    "frontend/verification/scenario-simulator/decomposition/before-1440-light-roadmap.png",
+    "frontend/verification/scenario-simulator/decomposition/before-375-dark-breakdown.png",
+    "frontend/verification/scenario-simulator/decomposition/before-375-dark-comparison.png",
+    "frontend/verification/scenario-simulator/decomposition/before-375-dark-draft.png",
+    "frontend/verification/scenario-simulator/decomposition/before-375-dark-result.png",
+    "frontend/verification/scenario-simulator/decomposition/before-375-dark-roadmap.png",
+    "frontend/verification/scenario-simulator/decomposition/before-375-light-breakdown.png",
+    "frontend/verification/scenario-simulator/decomposition/before-375-light-comparison.png",
+    "frontend/verification/scenario-simulator/decomposition/before-375-light-draft.png",
+    "frontend/verification/scenario-simulator/decomposition/before-375-light-result.png",
+    "frontend/verification/scenario-simulator/decomposition/before-375-light-roadmap.png",
+    "frontend/verification/scenario-simulator/decomposition/before.json",
+    "frontend/verification/scenario-simulator/decomposition/cache-cleanup-manifest.json",
+    "frontend/verification/scenario-simulator/decomposition/component-inventory.json",
+    "frontend/verification/scenario-simulator/decomposition/differences.json",
+    "frontend/verification/scenario-simulator/decomposition/final-frontend-tests.txt",
+    "frontend/verification/scenario-simulator/decomposition/final-production-build.txt",
+    "frontend/verification/scenario-simulator/decomposition/frontend-tests.txt",
+    "frontend/verification/scenario-simulator/decomposition/local-cleanup.json",
+    "frontend/verification/scenario-simulator/decomposition/production-1440-dark-draft.png",
+    "frontend/verification/scenario-simulator/decomposition/production-1440-dark-result.png",
+    "frontend/verification/scenario-simulator/decomposition/production-1440-light-draft.png",
+    "frontend/verification/scenario-simulator/decomposition/production-1440-light-result.png",
+    "frontend/verification/scenario-simulator/decomposition/production-375-dark-draft.png",
+    "frontend/verification/scenario-simulator/decomposition/production-375-dark-result.png",
+    "frontend/verification/scenario-simulator/decomposition/production-375-light-draft.png",
+    "frontend/verification/scenario-simulator/decomposition/production-375-light-result.png",
+    "frontend/verification/scenario-simulator/decomposition/production-build.txt",
+    "frontend/verification/scenario-simulator/decomposition/production.json",
+    "frontend/verification/scenario-simulator/decomposition/REPORT.md",
+    "frontend/verification/scenario-simulator/decomposition/visual-comparison.json"
+  ],
+  "sourceFilesNotMovedOrDeleted": true,
+  "originalPassingBuild": {
+    "main": "main-HBX546FY.js",
+    "durationSeconds": 77.437,
+    "estimatedTransfer": "526.76 kB"
+  },
+  "finalFrontendEvidence": "final-frontend-tests.txt",
+  "finalBackendEvidence": "backend/verification/integrations/local-acceptance/post-cleanup-tests.tap",
+  "cleanup": {
+    "scratchFiles": 7,
+    "duplicateHelpers": 6,
+    "nodeBytecodeArtifacts": 1384,
+    "npmArtifacts": 4,
+    "recursiveDeletion": false,
+    "finalBuildCacheArtifacts": 2,
+    "runtimeFilesRemaining": 0
+  },
+  "finalChecks": {
+    "typeScript": "PASS",
+    "syntax": "PASS",
+    "documentation": "PASS",
+    "sourceFormatting": "PASS",
+    "workingTreeWhitespace": "PASS",
+    "indexWhitespace": "PASS",
+    "styleBudgetConfig": "UNCHANGED",
+    "testsFrontend": 18,
+    "testsBackend": 28,
+    "testServersStopped": true
+  }
+}

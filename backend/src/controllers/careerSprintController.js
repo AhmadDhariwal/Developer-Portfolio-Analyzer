@@ -10,31 +10,32 @@ const {
   importScenarioPlanToSprint,
   assertObjectId,
   sanitizeBoundedText,
+  editTask,
+  deleteTask,
+  mutateDraft,
   LIMITS
 } = require('../services/careerSprintService');
 const { generateTasks, generateAiTasksWithLLM } = require('../services/aiTaskService');
 const { invalidateDashboardSummaryCache } = require('./dashboardcontroller');
 const { invalidateContextCache } = require('../services/scenarioSimulatorService');
 const { invalidateNewsSignalCache } = require('../services/newsService');
-const { createNotification } = require('../services/notificationService');
 
-const invalidateSprintDependents = (userId) => {
+const invalidateSprintDependents = (userId, { news = true } = {}) => {
   invalidateDashboardSummaryCache(userId);
   invalidateContextCache(userId);
-  invalidateNewsSignalCache(userId);
+  if (news) invalidateNewsSignalCache(userId);
 };
 
-const INTERNAL_ERROR_PATTERN = /E\d{4}|Mongo|CastError|TypeError|at\s+\S+:\d+|ENOENT|ECONN|stack|password|token|api[_-]?key|secret|prompt/i;
+const INTERNAL_ERROR_PATTERN =
+  /E\d{4}|Mongo|CastError|TypeError|at\s+\S+:\d+|ENOENT|ECONN|stack|password|token|api[_-]?key|secret|prompt/i;
 
 const normalizeError = (error, fallback) => {
   const statusCode = Number(error?.statusCode) || 500;
   const rawMessage = String(error?.message || '').trim();
-  const safeClientMessage = statusCode >= 400
-    && statusCode < 500
-    && rawMessage
-    && !INTERNAL_ERROR_PATTERN.test(rawMessage)
-    ? rawMessage
-    : fallback;
+  const safeClientMessage =
+    statusCode >= 400 && statusCode < 500 && rawMessage && !INTERNAL_ERROR_PATTERN.test(rawMessage)
+      ? rawMessage
+      : fallback;
 
   return {
     message: safeClientMessage,
@@ -130,26 +131,21 @@ const updateCareerSprintTask = async (req, res) => {
     assertObjectId(req.params.id, 'Sprint');
     assertObjectId(req.params.taskId, 'Task');
     const { isCompleted } = req.body || {};
+    if (isCompleted === undefined) {
+      const sprint = await editTask(userId, req.params.id, req.params.taskId, req.body || {});
+      if (!sprint) return res.status(404).json({ message: 'Sprint or task not found.' });
+      invalidateSprintDependents(userId);
+      return res.json(sprint);
+    }
     if (typeof isCompleted !== 'boolean') {
       return res.status(400).json({ message: 'isCompleted must be a boolean.' });
+    }
+    if (Object.keys(req.body).some((key) => key !== 'isCompleted')) {
+      return res.status(400).json({ message: 'Submit completion and task edits separately.' });
     }
     const sprint = await toggleTaskCompletion(userId, req.params.id, req.params.taskId, isCompleted);
     if (!sprint) return res.status(404).json({ message: 'Sprint or task not found.' });
     invalidateSprintDependents(userId);
-    if (isCompleted) {
-      const completedTask = (sprint.tasks || []).find((task) => String(task._id) === String(req.params.taskId));
-      setImmediate(() => {
-        createNotification({
-          userId,
-          type: 'success',
-          title: 'Sprint Task Completed',
-          message: completedTask?.title ? `${completedTask.title} was completed.` : 'A Career Sprint task was completed.',
-          dedupeKey: `sprint_task_completed:${req.params.id}:${req.params.taskId}`,
-          dedupeWindowHours: 24,
-          meta: { sprintId: req.params.id, taskId: req.params.taskId, level: sprint.level, streak: sprint.currentStreak }
-        }).catch(() => {});
-      });
-    }
     res.json(sprint);
   } catch (error) {
     console.error('Career sprint update task error:', error.message);
@@ -177,17 +173,7 @@ const restoreCareerStreakController = async (req, res) => {
     assertObjectId(req.params.id, 'Sprint');
     const sprint = await restoreStreak(userId, req.params.id);
     if (!sprint) return res.status(400).json({ message: 'Cannot restore streak at this time.' });
-    invalidateSprintDependents(userId);
-    setImmediate(() => {
-      createNotification({
-        userId,
-        type: 'success',
-        title: 'Career Streak Restored',
-        message: `Your ${Number(sprint.currentStreak || sprint.streak || 0)} day streak is active again.`,
-        dedupeKey: `sprint_streak_restored:${req.params.id}`,
-        dedupeWindowHours: 24
-      }).catch(() => {});
-    });
+    invalidateSprintDependents(userId, { news: false });
     res.json(sprint);
   } catch (error) {
     console.error('Career sprint restore streak error:', error.message);
@@ -250,7 +236,7 @@ const saveAiPlanController = async (req, res) => {
     assertObjectId(req.params.id, 'Sprint');
     const sprint = await saveAiPlanToSprint(userId, req.params.id, req.body || {});
     if (!sprint) return res.status(404).json({ message: 'Sprint not found.' });
-    invalidateSprintDependents(userId);
+    invalidateSprintDependents(userId, { news: false });
     res.json(sprint);
   } catch (error) {
     console.error('Save AI sprint plan error:', error.message);
@@ -267,7 +253,7 @@ const importScenarioPlanController = async (req, res) => {
     if (scenarioId) assertObjectId(scenarioId, 'Scenario');
     const sprint = await importScenarioPlanToSprint(userId, req.params.id, scenarioId);
     if (!sprint) return res.status(404).json({ message: 'Sprint not found.' });
-    invalidateSprintDependents(userId);
+    invalidateSprintDependents(userId, { news: false });
     res.json(sprint);
   } catch (error) {
     console.error('Import scenario sprint plan error:', error.message);
@@ -275,7 +261,44 @@ const importScenarioPlanController = async (req, res) => {
   }
 };
 
+const mutateSprintResource = (operation, fallback, invalidation) => async (req, res) => {
+  try {
+    const userId = requireUser(req, res);
+    if (!userId) return;
+    const sprint = await operation(userId, req);
+    if (!sprint) return res.status(404).json({ message: 'Sprint resource not found.' });
+    invalidateSprintDependents(userId, invalidation);
+    res.json(sprint);
+  } catch (error) {
+    res.status(error.statusCode || 500).json(normalizeError(error, fallback));
+  }
+};
+
+const deleteCareerSprintTask = mutateSprintResource(
+  (userId, req) => deleteTask(userId, req.params.id, req.params.taskId),
+  'Failed to delete task.'
+);
+const deleteAiPlanController = mutateSprintResource(
+  (userId, req) => mutateDraft(userId, req.params.id, req.params.planId),
+  'Failed to delete draft.',
+  { news: false }
+);
+const addDraftTasksController = mutateSprintResource(
+  (userId, req) =>
+    mutateDraft(
+      userId,
+      req.params.id,
+      req.params.planId,
+      req.body?.taskIndexes ?? [],
+      req.body?.acknowledgeContextFingerprint
+    ),
+  'Failed to add draft tasks.'
+);
+
 module.exports = {
+  deleteCareerSprintTask,
+  deleteAiPlanController,
+  addDraftTasksController,
   getCurrentCareerSprint,
   createCareerSprint,
   addCareerSprintTask,

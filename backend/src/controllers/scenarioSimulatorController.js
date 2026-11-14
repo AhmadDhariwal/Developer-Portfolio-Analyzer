@@ -1,116 +1,62 @@
-const {
-  sanitizeScenarioInput,
-  simulateHiringOutcome,
-  getScenarioContext,
-  saveScenarioForUser,
-  getScenarioHistoryForUser,
-  deleteScenarioForUser,
-  createSprintFromScenario
-} = require('../services/scenarioSimulatorService');
-
-const validationResponse = (res, errors) => res.status(400).json({
-  message: 'Scenario input is invalid.',
-  errors
+'use strict';
+const service = require('../services/scenarioSimulatorService');
+const telemetry = require('../services/scenarioTelemetryService');
+const handle = (operation, work) => async (req, res) => {
+  res.set('Cache-Control', 'private, no-store');
+  try {
+    return await work(req, res);
+  } catch (error) {
+    const status = [400, 404, 409, 413, 429, 503].includes(error.statusCode) ? error.statusCode : 500;
+    telemetry.event(operation, String(status));
+    if (status === 503) res.set('Retry-After', '2');
+    return res.status(status).json({
+      message: status === 500 ? 'Scenario operation failed.' : error.message,
+      ...(error.details?.length ? { errors: error.details } : {}),
+    });
+  }
+};
+const runScenarioSimulation = handle('evaluate', async (req, res) => {
+  const result = await service.evaluateForUser(req.user._id, req.body || {});
+  telemetry.event('evaluate', 'success', req.body.ruleVersion || 'scenario-planning-legacy-v1');
+  return res.json({ message: 'Simulation complete.', result });
 });
-
-const runScenarioSimulation = async (req, res) => {
-  try {
-    const normalized = sanitizeScenarioInput(req.body || {});
-    if (!normalized.isValid) return validationResponse(res, normalized.errors);
-
-    const context = await getScenarioContext(req.user._id);
-    const result = simulateHiringOutcome({
-      ...normalized.value,
-      inputWarnings: normalized.warnings || []
-    }, {
-      resumeConnected: context.sources.some((source) => source.key === 'resume' && source.connected),
-      githubConnected: context.sources.some((source) => source.key === 'github' && source.connected),
-      sources: context.sources
-    });
-
-    return res.json({
-      message: 'Simulation complete.',
-      result
-    });
-  } catch (error) {
-    console.error('Scenario simulator error:', error.message);
-    return res.status(500).json({ message: 'Failed to run scenario simulation.' });
-  }
-};
-
-const getScenarioSimulatorContext = async (req, res) => {
-  try {
-    const context = await getScenarioContext(req.user._id, {
-      forceRefresh: String(req.query.forceRefresh || '').toLowerCase() === 'true'
-    });
-    return res.json({ context });
-  } catch (error) {
-    console.error('Scenario simulator context error:', error.message);
-    return res.status(500).json({ message: 'Failed to load scenario simulator context.' });
-  }
-};
-
-const saveScenarioSimulation = async (req, res) => {
-  try {
-    const scenario = await saveScenarioForUser(req.user._id, req.body || {});
-    return res.status(201).json({
-      message: 'Scenario saved successfully.',
-      scenario
-    });
-  } catch (error) {
-    if (error.statusCode === 400) return validationResponse(res, error.details || []);
-    console.error('Scenario save error:', error.message);
-    return res.status(500).json({ message: 'Failed to save scenario.' });
-  }
-};
-
-const getScenarioSimulationHistory = async (req, res) => {
-  try {
-    const limit = Number(req.query.limit || 8);
-    const payload = await getScenarioHistoryForUser(req.user._id, limit, {
-      forceRefresh: String(req.query.forceRefresh || '').toLowerCase() === 'true'
-    });
-    return res.json(payload);
-  } catch (error) {
-    console.error('Scenario history error:', error.message);
-    return res.status(500).json({ message: 'Failed to load scenario history.' });
-  }
-};
-
-const deleteScenarioSimulation = async (req, res) => {
-  try {
-    const deleted = await deleteScenarioForUser(req.user._id, req.params.id);
-    if (!deleted) {
-      return res.status(404).json({ message: 'Scenario not found.' });
-    }
-    return res.json({ message: 'Scenario deleted.' });
-  } catch (error) {
-    console.error('Scenario delete error:', error.message);
-    return res.status(500).json({ message: 'Failed to delete scenario.' });
-  }
-};
-
-const createSprintFromScenarioController = async (req, res) => {
-  try {
-    const sprint = await createSprintFromScenario(req.user._id, req.body || {});
-    return res.json({
-      message: sprint.tasksAdded
-        ? `Scenario sprint updated: ${sprint.tasksCreated} created, ${sprint.tasksMerged} merged, ${sprint.tasksSkipped} skipped.`
-        : `This scenario is already reflected in your current Career Sprint: 0 created, 0 merged, ${sprint.tasksSkipped || 0} skipped.`,
-      sprint
-    });
-  } catch (error) {
-    if (error.statusCode === 400) return validationResponse(res, error.details || []);
-    console.error('Scenario sprint handoff error:', error.message);
-    return res.status(500).json({ message: 'Failed to create sprint from scenario.' });
-  }
-};
-
+const getScenarioSimulatorContext = handle('context', async (req, res) =>
+  res.json({ context: await service.getScenarioContext(req.user._id, { user: req.user }) }),
+);
+const saveScenarioSimulation = handle('save', async (req, res) =>
+  res.status(201).json({
+    message: 'Scenario saved successfully.',
+    scenario: await service.saveScenarioForUser(req.user._id, req.body || {}),
+  }),
+);
+const getScenarioSimulationHistory = handle('history', async (req, res) =>
+  res.json(
+    await service.getScenarioHistoryForUser(req.user._id, Number(req.query.limit || 8), {
+      cursor: req.query.cursor,
+    }),
+  ),
+);
+const deleteScenarioSimulation = handle('delete', async (req, res) => {
+  if (!(await service.deleteScenarioForUser(req.user._id, req.params.id)))
+    return res.status(404).json({ message: 'Scenario not found.' });
+  return res.json({ message: 'Scenario deleted.' });
+});
+const createSprintFromScenarioController = handle('export', async (req, res) => {
+  const sprint = await service.createSprintFromScenario(req.user._id, req.body || {});
+  const { sprint: document, ...summary } = sprint;
+  return res.json({
+    message:
+      sprint.mode === 'draft'
+        ? 'Scenario saved as a reviewable draft.'
+        : 'Scenario exported as incomplete active tasks.',
+    sprint: summary,
+  });
+});
 module.exports = {
   runScenarioSimulation,
   getScenarioSimulatorContext,
   saveScenarioSimulation,
   getScenarioSimulationHistory,
   deleteScenarioSimulation,
-  createSprintFromScenarioController
+  createSprintFromScenarioController,
 };

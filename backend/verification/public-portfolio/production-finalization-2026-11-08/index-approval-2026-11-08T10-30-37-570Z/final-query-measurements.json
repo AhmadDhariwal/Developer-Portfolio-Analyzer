@@ -1,0 +1,278 @@
+{
+  "fixtureOnly": true,
+  "queries": {
+    "published-slug": {
+      "returned": 1,
+      "documentsExamined": 1,
+      "keysExamined": 1,
+      "executionMilliseconds": 14,
+      "winningPlan": {
+        "isCached": false,
+        "stage": "FETCH",
+        "filter": {
+          "isPublic": {
+            "$eq": true
+          }
+        },
+        "inputStage": {
+          "stage": "IXSCAN",
+          "keyPattern": {
+            "slug": 1
+          },
+          "indexName": "slug_1",
+          "isMultiKey": false,
+          "multiKeyPaths": {
+            "slug": []
+          },
+          "isUnique": true,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "slug": [
+              "[\"query-fixture\", \"query-fixture\"]"
+            ]
+          }
+        }
+      }
+    },
+    "owner-profile": {
+      "returned": 1,
+      "documentsExamined": 1,
+      "keysExamined": 1,
+      "executionMilliseconds": 0,
+      "winningPlan": {
+        "isCached": false,
+        "stage": "FETCH",
+        "inputStage": {
+          "stage": "IXSCAN",
+          "keyPattern": {
+            "userId": 1
+          },
+          "indexName": "userId_1",
+          "isMultiKey": false,
+          "multiKeyPaths": {
+            "userId": []
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "userId": [
+              "[ObjectId('6af04fb66a60b575577dd7e5'), ObjectId('6af04fb66a60b575577dd7e5')]"
+            ]
+          }
+        }
+      }
+    },
+    "visitor-receipt": {
+      "returned": 1,
+      "documentsExamined": 1,
+      "keysExamined": 1,
+      "executionMilliseconds": 1,
+      "winningPlan": {
+        "isCached": false,
+        "stage": "FETCH",
+        "inputStage": {
+          "stage": "IXSCAN",
+          "keyPattern": {
+            "profileId": 1,
+            "viewerHash": 1
+          },
+          "indexName": "profileId_1_viewerHash_1",
+          "isMultiKey": false,
+          "multiKeyPaths": {
+            "profileId": [],
+            "viewerHash": []
+          },
+          "isUnique": true,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "profileId": [
+              "[ObjectId('6af04fb66a60b575577dd7e4'), ObjectId('6af04fb66a60b575577dd7e4')]"
+            ],
+            "viewerHash": [
+              "[\"fixture-1001\", \"fixture-1001\"]"
+            ]
+          }
+        }
+      }
+    },
+    "current-seven-days": {
+      "returned": 11,
+      "documentsExamined": 11,
+      "keysExamined": 11,
+      "executionMilliseconds": 1,
+      "winningPlan": {
+        "isCached": false,
+        "stage": "FETCH",
+        "filter": {
+          "recordType": {
+            "$not": {
+              "$eq": "unique_guard"
+            }
+          }
+        },
+        "inputStage": {
+          "stage": "IXSCAN",
+          "keyPattern": {
+            "profileId": 1,
+            "viewedAt": 1
+          },
+          "indexName": "profileId_1_viewedAt_1",
+          "isMultiKey": false,
+          "multiKeyPaths": {
+            "profileId": [],
+            "viewedAt": []
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "profileId": [
+              "[ObjectId('6af04fb66a60b575577dd7e4'), ObjectId('6af04fb66a60b575577dd7e4')]"
+            ],
+            "viewedAt": [
+              "[new Date(1793615542336), new Date(9223372036854775807)]"
+            ]
+          }
+        }
+      }
+    },
+    "legacy-seven-days": {
+      "returned": 10,
+      "documentsExamined": 10,
+      "keysExamined": 10,
+      "executionMilliseconds": 1,
+      "winningPlan": {
+        "isCached": false,
+        "stage": "FETCH",
+        "filter": {
+          "recordType": {
+            "$not": {
+              "$eq": "unique_guard"
+            }
+          }
+        },
+        "inputStage": {
+          "stage": "IXSCAN",
+          "keyPattern": {
+            "profileId": 1,
+            "viewedAt": 1
+          },
+          "indexName": "profileId_1_viewedAt_1",
+          "isMultiKey": false,
+          "multiKeyPaths": {
+            "profileId": [],
+            "viewedAt": []
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "profileId": [
+              "[ObjectId('6af04fb66a60b575577dd7e4'), ObjectId('6af04fb66a60b575577dd7e4')]"
+            ],
+            "viewedAt": [
+              "[new Date(1793615542336), new Date(9223372036854775807)]"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "cache": {
+    "coldMilliseconds": 99.94249999999738,
+    "warmP50Milliseconds": 0.05559999999968568,
+    "warmP95Milliseconds": 0.22409999999945285,
+    "loaderCallsFor52Reads": 1
+  },
+  "sessionFences": {
+    "notificationCommitRejected": true,
+    "assetCommitRejected": true,
+    "persistedWrite": false
+  },
+  "analytics": {
+    "concurrentFirstViews": 5,
+    "repeatedViews": 10,
+    "totalViews": 1,
+    "uniqueViews": 1,
+    "receipts": 1
+  },
+  "legacyIndexes": [
+    {
+      "v": 2,
+      "key": {
+        "_id": 1
+      },
+      "name": "_id_"
+    },
+    {
+      "v": 2,
+      "key": {
+        "profileId": 1
+      },
+      "name": "profileId_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "viewerHash": 1
+      },
+      "name": "viewerHash_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "recordType": 1
+      },
+      "name": "recordType_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "viewedAt": 1
+      },
+      "name": "viewedAt_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "profileId": 1,
+        "viewerHash": 1,
+        "recordType": 1
+      },
+      "name": "profileId_1_viewerHash_1_recordType_1",
+      "unique": true,
+      "partialFilterExpression": {
+        "recordType": "unique_guard"
+      }
+    },
+    {
+      "v": 2,
+      "key": {
+        "uniqueWindowUntil": 1
+      },
+      "name": "uniqueWindowUntil_1",
+      "expireAfterSeconds": 0
+    },
+    {
+      "v": 2,
+      "key": {
+        "profileId": 1,
+        "viewedAt": 1
+      },
+      "name": "profileId_1_viewedAt_1"
+    }
+  ]
+}

@@ -1,0 +1,2077 @@
+{
+  "runId": "842a896c-4bfb-4d4d-99f4-faf11de81989",
+  "mode": "FOCUSED_NOT_FULL_ACCEPTANCE",
+  "startedAt": "2026-10-25T15:28:14.268Z",
+  "status": "FOCUSED_PASS_NOT_FULL_ACCEPTANCE",
+  "productionDataModified": false,
+  "checks": [
+    {
+      "label": "Actual full unique user/hash index installed locally",
+      "passed": true
+    },
+    {
+      "label": "Actual compound history cursor index installed locally",
+      "passed": true
+    },
+    {
+      "label": "direct-burst: every offered request succeeds",
+      "passed": true,
+      "details": {
+        "200": 1380,
+        "201": 120
+      }
+    },
+    {
+      "label": "direct-burst: original latency thresholds",
+      "passed": true,
+      "details": {
+        "context": {
+          "count": 600,
+          "p95Ms": 89,
+          "p99Ms": 301,
+          "maxMs": 379.5714000000007,
+          "meanMs": 28.88879283333326
+        },
+        "evaluate": {
+          "count": 525,
+          "p95Ms": 65,
+          "p99Ms": 190,
+          "maxMs": 248.55460000000312,
+          "meanMs": 18.80724247619049
+        },
+        "history": {
+          "count": 225,
+          "p95Ms": 22,
+          "p99Ms": 26,
+          "maxMs": 32.71630000000005,
+          "meanMs": 12.426799555555755
+        },
+        "save": {
+          "count": 120,
+          "p95Ms": 24,
+          "p99Ms": 26,
+          "maxMs": 25.370600000002014,
+          "meanMs": 14.43787749999977
+        },
+        "export": {
+          "count": 30,
+          "p95Ms": 33,
+          "p99Ms": 51,
+          "maxMs": 50.221699999998236,
+          "meanMs": 20.881743333333482
+        }
+      }
+    },
+    {
+      "label": "focused-restart: every offered request succeeds",
+      "passed": true,
+      "details": {
+        "200": 184,
+        "201": 16
+      }
+    },
+    {
+      "label": "focused-restart: original latency thresholds",
+      "passed": true,
+      "details": {
+        "context": {
+          "count": 80,
+          "p95Ms": 87,
+          "p99Ms": 201,
+          "maxMs": 200.49839999999676,
+          "meanMs": 33.616333749999924
+        },
+        "evaluate": {
+          "count": 70,
+          "p95Ms": 23,
+          "p99Ms": 66,
+          "maxMs": 65.21860000000015,
+          "meanMs": 21.0594385714292
+        },
+        "history": {
+          "count": 30,
+          "p95Ms": 24,
+          "p99Ms": 28,
+          "maxMs": 27.809199999996054,
+          "meanMs": 19.93919666666528
+        },
+        "save": {
+          "count": 16,
+          "p95Ms": 38,
+          "p99Ms": 38,
+          "maxMs": 37.19129999999859,
+          "meanMs": 24.075943750000533
+        },
+        "export": {
+          "count": 4,
+          "p95Ms": 261,
+          "p99Ms": 261,
+          "maxMs": 260.7566000000006,
+          "meanMs": 86.27687499999956
+        }
+      }
+    },
+    {
+      "label": "Short bounded memory check: original growth/heap/drain limits",
+      "passed": true,
+      "details": [
+        {
+          "instance": 0,
+          "baselineHeap": 36434608,
+          "finalHeap": 35748512,
+          "growth": -0.018830887380481776,
+          "rss": 129781760,
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "pool": {
+            "connections": 10,
+            "peakConnections": 9,
+            "checkedOut": 0,
+            "peakCheckedOut": 8,
+            "waiting": 0,
+            "peakWaiting": 15,
+            "checkOutFailures": 0,
+            "commands": 1891,
+            "commandsInFlight": 0,
+            "peakCommands": 8,
+            "waitP95Ms": 1
+          },
+          "observerBytes": 80004
+        },
+        {
+          "instance": 1,
+          "baselineHeap": 36177104,
+          "finalHeap": 35302232,
+          "growth": -0.024183030239236403,
+          "rss": 204701696,
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "pool": {
+            "connections": 18,
+            "peakConnections": 17,
+            "checkedOut": 0,
+            "peakCheckedOut": 16,
+            "waiting": 0,
+            "peakWaiting": 5,
+            "checkOutFailures": 0,
+            "commands": 5728,
+            "commandsInFlight": 0,
+            "peakCommands": 16,
+            "waitP95Ms": 1
+          },
+          "observerBytes": 80004
+        }
+      ]
+    }
+  ],
+  "phases": [
+    {
+      "label": "direct-warmup",
+      "seconds": 10,
+      "rps": 20,
+      "scheduled": 200,
+      "completed": 200,
+      "statuses": {
+        "200": 184,
+        "201": 16
+      },
+      "errors": {},
+      "peakPending": 6,
+      "elapsedMs": 10005.9068,
+      "latency": {
+        "context": {
+          "count": 80,
+          "p95Ms": 128,
+          "p99Ms": 233,
+          "maxMs": 232.23099999999977,
+          "meanMs": 36.461313750000116
+        },
+        "evaluate": {
+          "count": 70,
+          "p95Ms": 23,
+          "p99Ms": 30,
+          "maxMs": 29.54869999999937,
+          "meanMs": 19.573088571428706
+        },
+        "history": {
+          "count": 30,
+          "p95Ms": 26,
+          "p99Ms": 27,
+          "maxMs": 26.665899999999965,
+          "meanMs": 21.678683333333176
+        },
+        "save": {
+          "count": 16,
+          "p95Ms": 37,
+          "p99Ms": 37,
+          "maxMs": 36.332900000001246,
+          "meanMs": 25.725731249999853
+        },
+        "export": {
+          "count": 4,
+          "p95Ms": 295,
+          "p99Ms": 295,
+          "maxMs": 294.6931000000004,
+          "meanMs": 157.6000750000003
+        }
+      },
+      "diagnostics": [
+        {
+          "quota": {
+            "count": 100,
+            "failures": 0,
+            "p95Ms": 1,
+            "p99Ms": 6
+          },
+          "loop": {
+            "p99Ms": 33.619967,
+            "maxMs": 183.894015
+          },
+          "cpu": {
+            "user": 2312000,
+            "system": 1125000
+          },
+          "memory": {
+            "rss": 172789760,
+            "heapTotal": 107044864,
+            "heapUsed": 44041288,
+            "external": 23375557,
+            "arrayBuffers": 19320502
+          },
+          "queue": {
+            "toSend": 0,
+            "waitingForReply": 0,
+            "total": 0
+          }
+        },
+        {
+          "quota": {
+            "count": 100,
+            "failures": 0,
+            "p95Ms": 1,
+            "p99Ms": 7
+          },
+          "loop": {
+            "p99Ms": 33.308671,
+            "maxMs": 216.662015
+          },
+          "cpu": {
+            "user": 2203000,
+            "system": 1265000
+          },
+          "memory": {
+            "rss": 173285376,
+            "heapTotal": 108093440,
+            "heapUsed": 43758840,
+            "external": 23307434,
+            "arrayBuffers": 19252379
+          },
+          "queue": {
+            "toSend": 0,
+            "waitingForReply": 0,
+            "total": 0
+          }
+        }
+      ],
+      "cpuPercentOneCore": [15.620773121732453, 16.87003520760357]
+    },
+    {
+      "label": "direct-burst",
+      "seconds": 15,
+      "rps": 100,
+      "scheduled": 1500,
+      "completed": 1500,
+      "statuses": {
+        "200": 1380,
+        "201": 120
+      },
+      "errors": {},
+      "peakPending": 28,
+      "elapsedMs": 15011.570300000003,
+      "latency": {
+        "context": {
+          "count": 600,
+          "p95Ms": 89,
+          "p99Ms": 301,
+          "maxMs": 379.5714000000007,
+          "meanMs": 28.88879283333326
+        },
+        "evaluate": {
+          "count": 525,
+          "p95Ms": 65,
+          "p99Ms": 190,
+          "maxMs": 248.55460000000312,
+          "meanMs": 18.80724247619049
+        },
+        "history": {
+          "count": 225,
+          "p95Ms": 22,
+          "p99Ms": 26,
+          "maxMs": 32.71630000000005,
+          "meanMs": 12.426799555555755
+        },
+        "save": {
+          "count": 120,
+          "p95Ms": 24,
+          "p99Ms": 26,
+          "maxMs": 25.370600000002014,
+          "meanMs": 14.43787749999977
+        },
+        "export": {
+          "count": 30,
+          "p95Ms": 33,
+          "p99Ms": 51,
+          "maxMs": 50.221699999998236,
+          "meanMs": 20.881743333333482
+        }
+      },
+      "diagnostics": [
+        {
+          "quota": {
+            "count": 750,
+            "failures": 0,
+            "p95Ms": 3,
+            "p99Ms": 48
+          },
+          "loop": {
+            "p99Ms": 41.287679,
+            "maxMs": 63.012863
+          },
+          "cpu": {
+            "user": 7250000,
+            "system": 1781000
+          },
+          "memory": {
+            "rss": 180609024,
+            "heapTotal": 113860608,
+            "heapUsed": 59665768,
+            "external": 23727628,
+            "arrayBuffers": 19672573
+          },
+          "queue": {
+            "toSend": 0,
+            "waitingForReply": 0,
+            "total": 0
+          }
+        },
+        {
+          "quota": {
+            "count": 750,
+            "failures": 0,
+            "p95Ms": 4,
+            "p99Ms": 74
+          },
+          "loop": {
+            "p99Ms": 36.208639,
+            "maxMs": 97.386495
+          },
+          "cpu": {
+            "user": 7265000,
+            "system": 2171000
+          },
+          "memory": {
+            "rss": 180760576,
+            "heapTotal": 113074176,
+            "heapUsed": 59745768,
+            "external": 23863799,
+            "arrayBuffers": 19808744
+          },
+          "queue": {
+            "toSend": 0,
+            "waitingForReply": 0,
+            "total": 0
+          }
+        }
+      ],
+      "cpuPercentOneCore": [36.43189813393472, 39.13647861343326]
+    },
+    {
+      "label": "focused-restart",
+      "seconds": 10,
+      "rps": 20,
+      "scheduled": 200,
+      "completed": 200,
+      "statuses": {
+        "200": 184,
+        "201": 16
+      },
+      "errors": {},
+      "peakPending": 4,
+      "elapsedMs": 10006.971399999995,
+      "latency": {
+        "context": {
+          "count": 80,
+          "p95Ms": 87,
+          "p99Ms": 201,
+          "maxMs": 200.49839999999676,
+          "meanMs": 33.616333749999924
+        },
+        "evaluate": {
+          "count": 70,
+          "p95Ms": 23,
+          "p99Ms": 66,
+          "maxMs": 65.21860000000015,
+          "meanMs": 21.0594385714292
+        },
+        "history": {
+          "count": 30,
+          "p95Ms": 24,
+          "p99Ms": 28,
+          "maxMs": 27.809199999996054,
+          "meanMs": 19.93919666666528
+        },
+        "save": {
+          "count": 16,
+          "p95Ms": 38,
+          "p99Ms": 38,
+          "maxMs": 37.19129999999859,
+          "meanMs": 24.075943750000533
+        },
+        "export": {
+          "count": 4,
+          "p95Ms": 261,
+          "p99Ms": 261,
+          "maxMs": 260.7566000000006,
+          "meanMs": 86.27687499999956
+        }
+      },
+      "diagnostics": [
+        {
+          "quota": {
+            "count": 69,
+            "failures": 0,
+            "p95Ms": 3,
+            "p99Ms": 7
+          },
+          "loop": {
+            "p99Ms": 62.259199,
+            "maxMs": 195.428351
+          },
+          "cpu": {
+            "user": 2218000,
+            "system": 1203000
+          },
+          "memory": {
+            "rss": 164524032,
+            "heapTotal": 108355584,
+            "heapUsed": 41611040,
+            "external": 23155105,
+            "arrayBuffers": 19100090
+          },
+          "queue": {
+            "toSend": 0,
+            "waitingForReply": 0,
+            "total": 0
+          }
+        },
+        {
+          "quota": {
+            "count": 131,
+            "failures": 0,
+            "p95Ms": 2,
+            "p99Ms": 13
+          },
+          "loop": {
+            "p99Ms": 32.980991,
+            "maxMs": 53.346303
+          },
+          "cpu": {
+            "user": 8234000,
+            "system": 2281000
+          },
+          "memory": {
+            "rss": 181547008,
+            "heapTotal": 111763456,
+            "heapUsed": 42221000,
+            "external": 24246976,
+            "arrayBuffers": 20196859
+          },
+          "queue": {
+            "toSend": 0,
+            "waitingForReply": 0,
+            "total": 0
+          }
+        }
+      ],
+      "cpuPercentOneCore": [-56.99026980330935, 9.373465382343358]
+    },
+    {
+      "label": "memory-warmup",
+      "seconds": 10,
+      "rps": 20,
+      "scheduled": 200,
+      "completed": 200,
+      "statuses": {
+        "200": 184,
+        "201": 16
+      },
+      "errors": {},
+      "peakPending": 2,
+      "elapsedMs": 10003.852600000006,
+      "latency": {
+        "context": {
+          "count": 80,
+          "p95Ms": 39,
+          "p99Ms": 74,
+          "maxMs": 73.97750000000087,
+          "meanMs": 26.826514999999564
+        },
+        "evaluate": {
+          "count": 70,
+          "p95Ms": 22,
+          "p99Ms": 36,
+          "maxMs": 35.17160000000149,
+          "meanMs": 19.802004285714066
+        },
+        "history": {
+          "count": 30,
+          "p95Ms": 25,
+          "p99Ms": 25,
+          "maxMs": 24.835399999996298,
+          "meanMs": 20.768103333333904
+        },
+        "save": {
+          "count": 16,
+          "p95Ms": 29,
+          "p99Ms": 29,
+          "maxMs": 28.252100000005157,
+          "meanMs": 23.685656250000193
+        },
+        "export": {
+          "count": 4,
+          "p95Ms": 31,
+          "p99Ms": 31,
+          "maxMs": 30.165500000002794,
+          "meanMs": 29.00315000000046
+        }
+      },
+      "diagnostics": [
+        {
+          "quota": {
+            "count": 100,
+            "failures": 0,
+            "p95Ms": 1,
+            "p99Ms": 2
+          },
+          "loop": {
+            "p99Ms": 33.128447,
+            "maxMs": 35.487743
+          },
+          "cpu": {
+            "user": 3265000,
+            "system": 1390000
+          },
+          "memory": {
+            "rss": 115163136,
+            "heapTotal": 41246720,
+            "heapUsed": 37264424,
+            "external": 23061270,
+            "arrayBuffers": 19006215
+          },
+          "queue": {
+            "toSend": 0,
+            "waitingForReply": 0,
+            "total": 0
+          }
+        },
+        {
+          "quota": {
+            "count": 100,
+            "failures": 0,
+            "p95Ms": 1,
+            "p99Ms": 2
+          },
+          "loop": {
+            "p99Ms": 33.390591,
+            "maxMs": 53.346303
+          },
+          "cpu": {
+            "user": 8984000,
+            "system": 2500000
+          },
+          "memory": {
+            "rss": 181923840,
+            "heapTotal": 111763456,
+            "heapUsed": 46265752,
+            "external": 24246558,
+            "arrayBuffers": 20196441
+          },
+          "queue": {
+            "toSend": 0,
+            "waitingForReply": 0,
+            "total": 0
+          }
+        }
+      ],
+      "cpuPercentOneCore": [11.395609727396417, 9.066507037498729]
+    },
+    {
+      "label": "bounded-memory-1",
+      "seconds": 10,
+      "rps": 20,
+      "scheduled": 200,
+      "completed": 200,
+      "statuses": {
+        "200": 184,
+        "201": 16
+      },
+      "errors": {},
+      "peakPending": 3,
+      "elapsedMs": 10010.432999999997,
+      "latency": {
+        "context": {
+          "count": 80,
+          "p95Ms": 76,
+          "p99Ms": 117,
+          "maxMs": 116.68759999999747,
+          "meanMs": 33.688628749999864
+        },
+        "evaluate": {
+          "count": 70,
+          "p95Ms": 25,
+          "p99Ms": 33,
+          "maxMs": 32.46639999999752,
+          "meanMs": 20.42236000000027
+        },
+        "history": {
+          "count": 30,
+          "p95Ms": 26,
+          "p99Ms": 27,
+          "maxMs": 26.602999999995518,
+          "meanMs": 19.946383333333262
+        },
+        "save": {
+          "count": 16,
+          "p95Ms": 26,
+          "p99Ms": 26,
+          "maxMs": 25.82549999999901,
+          "meanMs": 23.443062499999087
+        },
+        "export": {
+          "count": 4,
+          "p95Ms": 33,
+          "p99Ms": 33,
+          "maxMs": 32.49620000000141,
+          "meanMs": 29.137675000001764
+        }
+      },
+      "diagnostics": [
+        {
+          "quota": {
+            "count": 100,
+            "failures": 0,
+            "p95Ms": 2,
+            "p99Ms": 9
+          },
+          "loop": {
+            "p99Ms": 33.488895,
+            "maxMs": 88.014847
+          },
+          "cpu": {
+            "user": 4140000,
+            "system": 1671000
+          },
+          "memory": {
+            "rss": 122527744,
+            "heapTotal": 49897472,
+            "heapUsed": 40130704,
+            "external": 23781031,
+            "arrayBuffers": 19725976
+          },
+          "queue": {
+            "toSend": 0,
+            "waitingForReply": 0,
+            "total": 0
+          }
+        },
+        {
+          "quota": {
+            "count": 100,
+            "failures": 0,
+            "p95Ms": 1,
+            "p99Ms": 2
+          },
+          "loop": {
+            "p99Ms": 35.323903,
+            "maxMs": 82.771967
+          },
+          "cpu": {
+            "user": 9984000,
+            "system": 2687000
+          },
+          "memory": {
+            "rss": 182652928,
+            "heapTotal": 178085888,
+            "heapUsed": 43413264,
+            "external": 23460097,
+            "arrayBuffers": 19409980
+          },
+          "queue": {
+            "toSend": 0,
+            "waitingForReply": 0,
+            "total": 0
+          }
+        }
+      ],
+      "cpuPercentOneCore": [10.28926520960682, 9.989577873404679]
+    },
+    {
+      "label": "bounded-memory-2",
+      "seconds": 10,
+      "rps": 20,
+      "scheduled": 200,
+      "completed": 200,
+      "statuses": {
+        "200": 184,
+        "201": 16
+      },
+      "errors": {},
+      "peakPending": 2,
+      "elapsedMs": 10001.756699999998,
+      "latency": {
+        "context": {
+          "count": 80,
+          "p95Ms": 46,
+          "p99Ms": 85,
+          "maxMs": 84.96850000000268,
+          "meanMs": 28.78906999999981
+        },
+        "evaluate": {
+          "count": 70,
+          "p95Ms": 24,
+          "p99Ms": 26,
+          "maxMs": 25.027900000000955,
+          "meanMs": 20.396048571428192
+        },
+        "history": {
+          "count": 30,
+          "p95Ms": 25,
+          "p99Ms": 26,
+          "maxMs": 25.280300000013085,
+          "meanMs": 21.296020000000134
+        },
+        "save": {
+          "count": 16,
+          "p95Ms": 57,
+          "p99Ms": 57,
+          "maxMs": 56.630300000004354,
+          "meanMs": 27.492287499999293
+        },
+        "export": {
+          "count": 4,
+          "p95Ms": 41,
+          "p99Ms": 41,
+          "maxMs": 40.65920000000915,
+          "meanMs": 30.110624999997526
+        }
+      },
+      "diagnostics": [
+        {
+          "quota": {
+            "count": 100,
+            "failures": 0,
+            "p95Ms": 2,
+            "p99Ms": 2
+          },
+          "loop": {
+            "p99Ms": 33.226751,
+            "maxMs": 40.108031
+          },
+          "cpu": {
+            "user": 5062000,
+            "system": 1859000
+          },
+          "memory": {
+            "rss": 127459328,
+            "heapTotal": 58548224,
+            "heapUsed": 41275904,
+            "external": 23105751,
+            "arrayBuffers": 19050696
+          },
+          "queue": {
+            "toSend": 0,
+            "waitingForReply": 0,
+            "total": 0
+          }
+        },
+        {
+          "quota": {
+            "count": 100,
+            "failures": 0,
+            "p95Ms": 2,
+            "p99Ms": 10
+          },
+          "loop": {
+            "p99Ms": 32.686079,
+            "maxMs": 34.734079
+          },
+          "cpu": {
+            "user": 11140000,
+            "system": 2734000
+          },
+          "memory": {
+            "rss": 205160448,
+            "heapTotal": 176775168,
+            "heapUsed": 44824976,
+            "external": 24240533,
+            "arrayBuffers": 20190416
+          },
+          "queue": {
+            "toSend": 0,
+            "waitingForReply": 0,
+            "total": 0
+          }
+        }
+      ],
+      "cpuPercentOneCore": [10.308189160410194, 10.938078507748546]
+    },
+    {
+      "label": "bounded-memory-3",
+      "seconds": 10,
+      "rps": 20,
+      "scheduled": 200,
+      "completed": 200,
+      "statuses": {
+        "200": 184,
+        "201": 16
+      },
+      "errors": {},
+      "peakPending": 3,
+      "elapsedMs": 10012.065799999997,
+      "latency": {
+        "context": {
+          "count": 80,
+          "p95Ms": 57,
+          "p99Ms": 131,
+          "maxMs": 130.3197000000073,
+          "meanMs": 31.238296250000893
+        },
+        "evaluate": {
+          "count": 70,
+          "p95Ms": 23,
+          "p99Ms": 25,
+          "maxMs": 24.27730000000156,
+          "meanMs": 20.598578571428828
+        },
+        "history": {
+          "count": 30,
+          "p95Ms": 22,
+          "p99Ms": 23,
+          "maxMs": 22.117400000002817,
+          "meanMs": 19.710316666666767
+        },
+        "save": {
+          "count": 16,
+          "p95Ms": 26,
+          "p99Ms": 26,
+          "maxMs": 25.003899999996065,
+          "meanMs": 23.17766874999961
+        },
+        "export": {
+          "count": 4,
+          "p95Ms": 30,
+          "p99Ms": 30,
+          "maxMs": 29.480999999999767,
+          "meanMs": 27.861525000000256
+        }
+      },
+      "diagnostics": [
+        {
+          "quota": {
+            "count": 100,
+            "failures": 0,
+            "p95Ms": 2,
+            "p99Ms": 2
+          },
+          "loop": {
+            "p99Ms": 33.079295,
+            "maxMs": 59.408383
+          },
+          "cpu": {
+            "user": 5921000,
+            "system": 1984000
+          },
+          "memory": {
+            "rss": 130584576,
+            "heapTotal": 57761792,
+            "heapUsed": 40970128,
+            "external": 23794996,
+            "arrayBuffers": 19744879
+          },
+          "queue": {
+            "toSend": 0,
+            "waitingForReply": 0,
+            "total": 0
+          }
+        },
+        {
+          "quota": {
+            "count": 100,
+            "failures": 0,
+            "p95Ms": 1,
+            "p99Ms": 3
+          },
+          "loop": {
+            "p99Ms": 36.831231,
+            "maxMs": 44.105727
+          },
+          "cpu": {
+            "user": 11921000,
+            "system": 2921000
+          },
+          "memory": {
+            "rss": 205697024,
+            "heapTotal": 176775168,
+            "heapUsed": 44589016,
+            "external": 24239223,
+            "arrayBuffers": 20189106
+          },
+          "queue": {
+            "toSend": 0,
+            "waitingForReply": 0,
+            "total": 0
+          }
+        }
+      ],
+      "cpuPercentOneCore": [8.419840788501412, 8.26003360864848]
+    }
+  ],
+  "samples": [
+    {
+      "label": "direct-warmup",
+      "at": "2026-10-25T15:28:33.728Z",
+      "workers": [
+        {
+          "memoryBeforeGc": {
+            "rss": 172789760,
+            "heapTotal": 107044864,
+            "heapUsed": 44053312,
+            "external": 23375594,
+            "arrayBuffers": 19320539
+          },
+          "pid": 17028,
+          "memory": {
+            "rss": 171794432,
+            "heapTotal": 107307008,
+            "heapUsed": 36091200,
+            "external": 23375594,
+            "arrayBuffers": 18808461
+          },
+          "cpu": {
+            "user": 2375000,
+            "system": 1125000
+          },
+          "eventLoopP99Ms": 33.619967,
+          "pool": {
+            "connections": 14,
+            "peakConnections": 13,
+            "checkedOut": 0,
+            "peakCheckedOut": 13,
+            "waiting": 0,
+            "peakWaiting": 5,
+            "checkOutFailures": 0,
+            "commands": 430,
+            "commandsInFlight": 0,
+            "peakCommands": 13,
+            "waitP95Ms": 4
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 2,
+            "joiners": 0,
+            "pending": 2
+          },
+          "redisReady": true
+        },
+        {
+          "memoryBeforeGc": {
+            "rss": 173285376,
+            "heapTotal": 108093440,
+            "heapUsed": 43767736,
+            "external": 23307471,
+            "arrayBuffers": 19252416
+          },
+          "pid": 12060,
+          "memory": {
+            "rss": 172163072,
+            "heapTotal": 108093440,
+            "heapUsed": 36074864,
+            "external": 23307471,
+            "arrayBuffers": 18808413
+          },
+          "cpu": {
+            "user": 2265000,
+            "system": 1296000
+          },
+          "eventLoopP99Ms": 33.308671,
+          "pool": {
+            "connections": 12,
+            "peakConnections": 11,
+            "checkedOut": 0,
+            "peakCheckedOut": 10,
+            "waiting": 0,
+            "peakWaiting": 5,
+            "checkOutFailures": 0,
+            "commands": 432,
+            "commandsInFlight": 0,
+            "peakCommands": 10,
+            "waitP95Ms": 1
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 2,
+            "joiners": 0,
+            "pending": 2
+          },
+          "redisReady": true
+        }
+      ]
+    },
+    {
+      "label": "direct-burst",
+      "at": "2026-10-25T15:28:48.768Z",
+      "workers": [
+        {
+          "memoryBeforeGc": {
+            "rss": 180609024,
+            "heapTotal": 113860608,
+            "heapUsed": 59673856,
+            "external": 23727665,
+            "arrayBuffers": 19672610
+          },
+          "pid": 17028,
+          "memory": {
+            "rss": 179683328,
+            "heapTotal": 110714880,
+            "heapUsed": 37462696,
+            "external": 23722727,
+            "arrayBuffers": 19005149
+          },
+          "cpu": {
+            "user": 7312000,
+            "system": 1781000
+          },
+          "eventLoopP99Ms": 41.287679,
+          "pool": {
+            "connections": 18,
+            "peakConnections": 17,
+            "checkedOut": 0,
+            "peakCheckedOut": 18,
+            "waiting": 0,
+            "peakWaiting": 5,
+            "checkOutFailures": 0,
+            "commands": 3490,
+            "commandsInFlight": 0,
+            "peakCommands": 18,
+            "waitP95Ms": 1
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 4,
+            "joiners": 0,
+            "pending": 4
+          },
+          "redisReady": true
+        },
+        {
+          "memoryBeforeGc": {
+            "rss": 180760576,
+            "heapTotal": 113074176,
+            "heapUsed": 59753208,
+            "external": 23863836,
+            "arrayBuffers": 19808781
+          },
+          "pid": 12060,
+          "memory": {
+            "rss": 179863552,
+            "heapTotal": 111763456,
+            "heapUsed": 37368352,
+            "external": 23858898,
+            "arrayBuffers": 19136189
+          },
+          "cpu": {
+            "user": 7328000,
+            "system": 2171000
+          },
+          "eventLoopP99Ms": 36.208639,
+          "pool": {
+            "connections": 18,
+            "peakConnections": 17,
+            "checkedOut": 0,
+            "peakCheckedOut": 16,
+            "waiting": 0,
+            "peakWaiting": 5,
+            "checkOutFailures": 0,
+            "commands": 3507,
+            "commandsInFlight": 0,
+            "peakCommands": 16,
+            "waitP95Ms": 1
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 5,
+            "joiners": 0,
+            "pending": 5
+          },
+          "redisReady": true
+        }
+      ]
+    },
+    {
+      "label": "focused-restart",
+      "at": "2026-10-25T15:28:58.803Z",
+      "workers": [
+        {
+          "memoryBeforeGc": {
+            "rss": 164524032,
+            "heapTotal": 108355584,
+            "heapUsed": 41619952,
+            "external": 23155182,
+            "arrayBuffers": 19100127
+          },
+          "pid": 23212,
+          "memory": {
+            "rss": 163524608,
+            "heapTotal": 108355584,
+            "heapUsed": 35888872,
+            "external": 23155182,
+            "arrayBuffers": 18742845
+          },
+          "cpu": {
+            "user": 2281000,
+            "system": 1234000
+          },
+          "eventLoopP99Ms": 62.259199,
+          "pool": {
+            "connections": 10,
+            "peakConnections": 9,
+            "checkedOut": 0,
+            "peakCheckedOut": 8,
+            "waiting": 0,
+            "peakWaiting": 15,
+            "checkOutFailures": 0,
+            "commands": 259,
+            "commandsInFlight": 0,
+            "peakCommands": 8,
+            "waitP95Ms": 34
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 2,
+            "joiners": 0,
+            "pending": 2
+          },
+          "redisReady": true
+        },
+        {
+          "memoryBeforeGc": {
+            "rss": 181555200,
+            "heapTotal": 111763456,
+            "heapUsed": 42236720,
+            "external": 24247013,
+            "arrayBuffers": 20196896
+          },
+          "pid": 12060,
+          "memory": {
+            "rss": 180572160,
+            "heapTotal": 111763456,
+            "heapUsed": 36544808,
+            "external": 24247013,
+            "arrayBuffers": 19136189
+          },
+          "cpu": {
+            "user": 8281000,
+            "system": 2296000
+          },
+          "eventLoopP99Ms": 32.980991,
+          "pool": {
+            "connections": 18,
+            "peakConnections": 17,
+            "checkedOut": 0,
+            "peakCheckedOut": 16,
+            "waiting": 0,
+            "peakWaiting": 5,
+            "checkOutFailures": 0,
+            "commands": 4088,
+            "commandsInFlight": 0,
+            "peakCommands": 16,
+            "waitP95Ms": 1
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 5,
+            "joiners": 0,
+            "pending": 5
+          },
+          "redisReady": true
+        }
+      ]
+    },
+    {
+      "label": "memory-warmup",
+      "at": "2026-10-25T15:29:08.832Z",
+      "workers": [
+        {
+          "memoryBeforeGc": {
+            "rss": 115163136,
+            "heapTotal": 41246720,
+            "heapUsed": 37272040,
+            "external": 23061307,
+            "arrayBuffers": 19006252
+          },
+          "pid": 23212,
+          "memory": {
+            "rss": 115318784,
+            "heapTotal": 41246720,
+            "heapUsed": 36448560,
+            "external": 23061307,
+            "arrayBuffers": 18808381
+          },
+          "cpu": {
+            "user": 3312000,
+            "system": 1390000
+          },
+          "eventLoopP99Ms": 33.128447,
+          "pool": {
+            "connections": 10,
+            "peakConnections": 9,
+            "checkedOut": 0,
+            "peakCheckedOut": 8,
+            "waiting": 0,
+            "peakWaiting": 15,
+            "checkOutFailures": 0,
+            "commands": 667,
+            "commandsInFlight": 0,
+            "peakCommands": 8,
+            "waitP95Ms": 1
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 2,
+            "joiners": 0,
+            "pending": 2
+          },
+          "redisReady": true
+        },
+        {
+          "memoryBeforeGc": {
+            "rss": 181923840,
+            "heapTotal": 111763456,
+            "heapUsed": 46269536,
+            "external": 24246596,
+            "arrayBuffers": 20196479
+          },
+          "pid": 12060,
+          "memory": {
+            "rss": 180613120,
+            "heapTotal": 111239168,
+            "heapUsed": 36494264,
+            "external": 24246596,
+            "arrayBuffers": 19136190
+          },
+          "cpu": {
+            "user": 9062000,
+            "system": 2500000
+          },
+          "eventLoopP99Ms": 33.390591,
+          "pool": {
+            "connections": 18,
+            "peakConnections": 17,
+            "checkedOut": 0,
+            "peakCheckedOut": 16,
+            "waiting": 0,
+            "peakWaiting": 5,
+            "checkOutFailures": 0,
+            "commands": 4498,
+            "commandsInFlight": 0,
+            "peakCommands": 16,
+            "waitP95Ms": 1
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 5,
+            "joiners": 0,
+            "pending": 5
+          },
+          "redisReady": true
+        }
+      ]
+    },
+    {
+      "label": "memory-baseline",
+      "at": "2026-10-25T15:29:08.857Z",
+      "workers": [
+        {
+          "memoryBeforeGc": {
+            "rss": 115318784,
+            "heapTotal": 41246720,
+            "heapUsed": 36483640,
+            "external": 22863473,
+            "arrayBuffers": 18808418
+          },
+          "pid": 23212,
+          "memory": {
+            "rss": 115318784,
+            "heapTotal": 41246720,
+            "heapUsed": 36434608,
+            "external": 22863473,
+            "arrayBuffers": 18808381
+          },
+          "cpu": {
+            "user": 3375000,
+            "system": 1406000
+          },
+          "eventLoopP99Ms": 33.947647,
+          "pool": {
+            "connections": 10,
+            "peakConnections": 9,
+            "checkedOut": 0,
+            "peakCheckedOut": 8,
+            "waiting": 0,
+            "peakWaiting": 15,
+            "checkOutFailures": 0,
+            "commands": 667,
+            "commandsInFlight": 0,
+            "peakCommands": 8,
+            "waitP95Ms": 1
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 2,
+            "joiners": 0,
+            "pending": 2
+          },
+          "redisReady": true
+        },
+        {
+          "memoryBeforeGc": {
+            "rss": 180613120,
+            "heapTotal": 111239168,
+            "heapUsed": 36528248,
+            "external": 23186345,
+            "arrayBuffers": 19136228
+          },
+          "pid": 12060,
+          "memory": {
+            "rss": 181010432,
+            "heapTotal": 110452736,
+            "heapUsed": 36177104,
+            "external": 23186345,
+            "arrayBuffers": 19136190
+          },
+          "cpu": {
+            "user": 9171000,
+            "system": 2500000
+          },
+          "eventLoopP99Ms": 33.390591,
+          "pool": {
+            "connections": 18,
+            "peakConnections": 17,
+            "checkedOut": 0,
+            "peakCheckedOut": 16,
+            "waiting": 0,
+            "peakWaiting": 5,
+            "checkOutFailures": 0,
+            "commands": 4498,
+            "commandsInFlight": 0,
+            "peakCommands": 16,
+            "waitP95Ms": 1
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 5,
+            "joiners": 0,
+            "pending": 5
+          },
+          "redisReady": true
+        }
+      ]
+    },
+    {
+      "label": "bounded-memory-1",
+      "at": "2026-10-25T15:29:18.892Z",
+      "workers": [
+        {
+          "memoryBeforeGc": {
+            "rss": 122540032,
+            "heapTotal": 49897472,
+            "heapUsed": 39940768,
+            "external": 23781068,
+            "arrayBuffers": 19726013
+          },
+          "pid": 23212,
+          "memory": {
+            "rss": 121995264,
+            "heapTotal": 49897472,
+            "heapUsed": 36885872,
+            "external": 23781068,
+            "arrayBuffers": 19201597
+          },
+          "cpu": {
+            "user": 4203000,
+            "system": 1687000
+          },
+          "eventLoopP99Ms": 33.488895,
+          "pool": {
+            "connections": 10,
+            "peakConnections": 9,
+            "checkedOut": 0,
+            "peakCheckedOut": 8,
+            "waiting": 0,
+            "peakWaiting": 15,
+            "checkOutFailures": 0,
+            "commands": 1075,
+            "commandsInFlight": 0,
+            "peakCommands": 8,
+            "waitP95Ms": 1
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 2,
+            "joiners": 0,
+            "pending": 2
+          },
+          "redisReady": true
+        },
+        {
+          "memoryBeforeGc": {
+            "rss": 182652928,
+            "heapTotal": 178085888,
+            "heapUsed": 43417608,
+            "external": 23460135,
+            "arrayBuffers": 19410018
+          },
+          "pid": 12060,
+          "memory": {
+            "rss": 181936128,
+            "heapTotal": 176513024,
+            "heapUsed": 35304424,
+            "external": 23460135,
+            "arrayBuffers": 19136190
+          },
+          "cpu": {
+            "user": 10031000,
+            "system": 2687000
+          },
+          "eventLoopP99Ms": 35.323903,
+          "pool": {
+            "connections": 18,
+            "peakConnections": 17,
+            "checkedOut": 0,
+            "peakCheckedOut": 16,
+            "waiting": 0,
+            "peakWaiting": 5,
+            "checkOutFailures": 0,
+            "commands": 4908,
+            "commandsInFlight": 0,
+            "peakCommands": 16,
+            "waitP95Ms": 1
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 5,
+            "joiners": 0,
+            "pending": 5
+          },
+          "redisReady": true
+        }
+      ]
+    },
+    {
+      "label": "bounded-memory-2",
+      "at": "2026-10-25T15:29:28.936Z",
+      "workers": [
+        {
+          "memoryBeforeGc": {
+            "rss": 127459328,
+            "heapTotal": 58548224,
+            "heapUsed": 41280560,
+            "external": 23105789,
+            "arrayBuffers": 19050734
+          },
+          "pid": 23212,
+          "memory": {
+            "rss": 127750144,
+            "heapTotal": 57237504,
+            "heapUsed": 35588376,
+            "external": 23100851,
+            "arrayBuffers": 18873918
+          },
+          "cpu": {
+            "user": 5156000,
+            "system": 1875000
+          },
+          "eventLoopP99Ms": 33.226751,
+          "pool": {
+            "connections": 10,
+            "peakConnections": 9,
+            "checkedOut": 0,
+            "peakCheckedOut": 8,
+            "waiting": 0,
+            "peakWaiting": 15,
+            "checkOutFailures": 0,
+            "commands": 1483,
+            "commandsInFlight": 0,
+            "peakCommands": 8,
+            "waitP95Ms": 1
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 2,
+            "joiners": 0,
+            "pending": 2
+          },
+          "redisReady": true
+        },
+        {
+          "memoryBeforeGc": {
+            "rss": 205160448,
+            "heapTotal": 176775168,
+            "heapUsed": 44828928,
+            "external": 24240571,
+            "arrayBuffers": 20190454
+          },
+          "pid": 12060,
+          "memory": {
+            "rss": 204169216,
+            "heapTotal": 176775168,
+            "heapUsed": 35383464,
+            "external": 24240571,
+            "arrayBuffers": 19136190
+          },
+          "cpu": {
+            "user": 11234000,
+            "system": 2750000
+          },
+          "eventLoopP99Ms": 32.686079,
+          "pool": {
+            "connections": 18,
+            "peakConnections": 17,
+            "checkedOut": 0,
+            "peakCheckedOut": 16,
+            "waiting": 0,
+            "peakWaiting": 5,
+            "checkOutFailures": 0,
+            "commands": 5318,
+            "commandsInFlight": 0,
+            "peakCommands": 16,
+            "waitP95Ms": 1
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 5,
+            "joiners": 0,
+            "pending": 5
+          },
+          "redisReady": true
+        }
+      ]
+    },
+    {
+      "label": "bounded-memory-3",
+      "at": "2026-10-25T15:29:38.978Z",
+      "workers": [
+        {
+          "memoryBeforeGc": {
+            "rss": 130584576,
+            "heapTotal": 57761792,
+            "heapUsed": 40973768,
+            "external": 23795034,
+            "arrayBuffers": 19744917
+          },
+          "pid": 23212,
+          "memory": {
+            "rss": 129589248,
+            "heapTotal": 57761792,
+            "heapUsed": 35825912,
+            "external": 23795034,
+            "arrayBuffers": 18873918
+          },
+          "cpu": {
+            "user": 5968000,
+            "system": 1984000
+          },
+          "eventLoopP99Ms": 33.079295,
+          "pool": {
+            "connections": 10,
+            "peakConnections": 9,
+            "checkedOut": 0,
+            "peakCheckedOut": 8,
+            "waiting": 0,
+            "peakWaiting": 15,
+            "checkOutFailures": 0,
+            "commands": 1891,
+            "commandsInFlight": 0,
+            "peakCommands": 8,
+            "waitP95Ms": 1
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 2,
+            "joiners": 0,
+            "pending": 2
+          },
+          "redisReady": true
+        },
+        {
+          "memoryBeforeGc": {
+            "rss": 205697024,
+            "heapTotal": 176775168,
+            "heapUsed": 44592712,
+            "external": 24239261,
+            "arrayBuffers": 20189144
+          },
+          "pid": 12060,
+          "memory": {
+            "rss": 204480512,
+            "heapTotal": 176775168,
+            "heapUsed": 35458072,
+            "external": 24239261,
+            "arrayBuffers": 19136190
+          },
+          "cpu": {
+            "user": 11968000,
+            "system": 2921000
+          },
+          "eventLoopP99Ms": 36.831231,
+          "pool": {
+            "connections": 18,
+            "peakConnections": 17,
+            "checkedOut": 0,
+            "peakCheckedOut": 16,
+            "waiting": 0,
+            "peakWaiting": 5,
+            "checkOutFailures": 0,
+            "commands": 5728,
+            "commandsInFlight": 0,
+            "peakCommands": 16,
+            "waitP95Ms": 1
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 5,
+            "joiners": 0,
+            "pending": 5
+          },
+          "redisReady": true
+        }
+      ]
+    },
+    {
+      "label": "memory-final",
+      "at": "2026-10-25T15:29:39.515Z",
+      "workers": [
+        {
+          "memoryBeforeGc": {
+            "rss": 129589248,
+            "heapTotal": 57761792,
+            "heapUsed": 35885288,
+            "external": 22924073,
+            "arrayBuffers": 18873956
+          },
+          "pid": 23212,
+          "memory": {
+            "rss": 129781760,
+            "heapTotal": 42033152,
+            "heapUsed": 35748512,
+            "external": 22924073,
+            "arrayBuffers": 18873918
+          },
+          "cpu": {
+            "user": 6015000,
+            "system": 1984000
+          },
+          "eventLoopP99Ms": 32.948223,
+          "pool": {
+            "connections": 10,
+            "peakConnections": 9,
+            "checkedOut": 0,
+            "peakCheckedOut": 8,
+            "waiting": 0,
+            "peakWaiting": 15,
+            "checkOutFailures": 0,
+            "commands": 1891,
+            "commandsInFlight": 0,
+            "peakCommands": 8,
+            "waitP95Ms": 1
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 2,
+            "joiners": 0,
+            "pending": 2
+          },
+          "redisReady": true
+        },
+        {
+          "memoryBeforeGc": {
+            "rss": 204480512,
+            "heapTotal": 176775168,
+            "heapUsed": 35519272,
+            "external": 23186345,
+            "arrayBuffers": 19136228
+          },
+          "pid": 12060,
+          "memory": {
+            "rss": 204701696,
+            "heapTotal": 43606016,
+            "heapUsed": 35302232,
+            "external": 23186345,
+            "arrayBuffers": 19136190
+          },
+          "cpu": {
+            "user": 12015000,
+            "system": 2921000
+          },
+          "eventLoopP99Ms": 36.175871,
+          "pool": {
+            "connections": 18,
+            "peakConnections": 17,
+            "checkedOut": 0,
+            "peakCheckedOut": 16,
+            "waiting": 0,
+            "peakWaiting": 5,
+            "checkOutFailures": 0,
+            "commands": 5728,
+            "commandsInFlight": 0,
+            "peakCommands": 16,
+            "waitP95Ms": 1
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 5,
+            "joiners": 0,
+            "pending": 5
+          },
+          "redisReady": true
+        }
+      ]
+    }
+  ],
+  "failures": [],
+  "limitations": [],
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32",
+    "os": "10.0.26300",
+    "logicalCpus": 8,
+    "cpu": "Intel(R) Core(TM) i5-8365U CPU @ 1.60GHz",
+    "totalMemory": 16976740352,
+    "mongoose": "9.2.4",
+    "mongodb": "7.1.0",
+    "redisClient": "4.7.1",
+    "redisInfo": [
+      "redis_version:7.2.11",
+      "redis_mode:standalone",
+      "os:Linux 4.4.0-26100-Microsoft x86_64",
+      "arch_bits:64"
+    ],
+    "redisConfig": "bind 127.0.0.1\nport <ephemeral>\nprotected-mode yes\nsave \"\"\nappendonly no\nmaxmemory 64mb\nmaxmemory-policy noeviction\n",
+    "mongoBuild": {
+      "version": "8.2.2",
+      "allocator": "tcmalloc-gperf"
+    },
+    "workers": [26532, 28608],
+    "mongoClientOptions": {
+      "serverSelectionTimeoutMS": 30000,
+      "socketTimeoutMS": 45000,
+      "maxPoolSize": 100,
+      "waitQueueTimeoutMS": 0,
+      "directConnection": true,
+      "autoIndex": false
+    }
+  },
+  "indexes": [
+    {
+      "v": 2,
+      "key": {
+        "_id": 1
+      },
+      "name": "_id_"
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1
+      },
+      "name": "userId_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "scenarioHash": 1
+      },
+      "name": "scenarioHash_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1,
+        "createdAt": -1,
+        "_id": -1
+      },
+      "name": "scenario_history_cursor"
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1,
+        "scenarioHash": 1
+      },
+      "name": "userId_1_scenarioHash_1",
+      "unique": true
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1,
+        "role": 1,
+        "experienceLevel": 1
+      },
+      "name": "userId_1_role_1_experienceLevel_1"
+    }
+  ],
+  "focused": {
+    "label": "unprofiled",
+    "longDurationAcceptance": false,
+    "profiles": [],
+    "cold": [],
+    "restart": {
+      "previous": 17028,
+      "replacement": 23212
+    },
+    "memory": [
+      {
+        "instance": 0,
+        "baselineHeap": 36434608,
+        "finalHeap": 35748512,
+        "growth": -0.018830887380481776,
+        "rss": 129781760,
+        "context": {
+          "active": 0,
+          "joiners": 0,
+          "pending": 0
+        },
+        "pool": {
+          "connections": 10,
+          "peakConnections": 9,
+          "checkedOut": 0,
+          "peakCheckedOut": 8,
+          "waiting": 0,
+          "peakWaiting": 15,
+          "checkOutFailures": 0,
+          "commands": 1891,
+          "commandsInFlight": 0,
+          "peakCommands": 8,
+          "waitP95Ms": 1
+        },
+        "observerBytes": 80004
+      },
+      {
+        "instance": 1,
+        "baselineHeap": 36177104,
+        "finalHeap": 35302232,
+        "growth": -0.024183030239236403,
+        "rss": 204701696,
+        "context": {
+          "active": 0,
+          "joiners": 0,
+          "pending": 0
+        },
+        "pool": {
+          "connections": 18,
+          "peakConnections": 17,
+          "checkedOut": 0,
+          "peakCheckedOut": 16,
+          "waiting": 0,
+          "peakWaiting": 5,
+          "checkOutFailures": 0,
+          "commands": 5728,
+          "commandsInFlight": 0,
+          "peakCommands": 16,
+          "waitP95Ms": 1
+        },
+        "observerBytes": 80004
+      }
+    ]
+  },
+  "removedTemporaryFiles": [
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\collection-0837b99a-baf2-440e-842c-b4318ec151d0.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\collection-11fa39ab-a1ee-41f1-885b-01b0765de64c.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\collection-1a90e83a-6ae7-4bd4-a781-72506c7ec379.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\collection-2533ed2c-f8e2-4b2b-92fd-0f349f638e1e.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\collection-2fd15383-05ad-41e6-b78e-71fdd800bb7f.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\collection-3a5c6a9b-513b-4e6a-b29e-21c173646090.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\collection-3ab6f89e-31e2-4436-91e1-43fb91527b11.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\collection-4b161aa2-58fb-41e4-a223-08cd9a329bca.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\collection-4f2066ad-3a01-4d6e-ab14-b3897a1597ca.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\collection-4f961831-cea4-4a25-9e2e-7725131486d9.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\collection-58febbb4-8a0e-4a4a-bb54-3fa58cc0a938.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\collection-71b4ed27-03c5-4680-995f-e6cc50457658.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\collection-748d3bf3-a83c-4148-bd6a-89a4adf90db9.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\collection-803d8acc-f1ea-4b31-9da6-5dae07eff8d8.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\collection-84c310ac-dd08-4d88-b8d4-8b14835d6cc7.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\collection-95f4d63a-9a73-409e-8461-c133c2ee78ec.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\collection-a657aece-c51b-49ce-92a6-575a647d5dce.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\collection-ae86e566-e6bd-4cb0-a611-6720c0a93238.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\collection-b7b72676-8098-4c94-8791-69ee74cce49e.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\collection-c3c93e99-cb02-4ee1-a163-4ed6115302fe.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\collection-c4ff7ea2-74d1-4d86-87aa-7ffefc15ce98.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\collection-d0fcba45-bcc4-4bca-b88b-1f95e7f000b5.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\collection-ea50d702-b469-4f76-8566-770e37e70be6.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\collection-f1143855-018f-4cf2-97cb-0b36cf4b4c55.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-016979ce-e3a3-4942-a2db-335957f1b68b.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-0e1718ff-cb71-4b58-9456-d4a0e1e6ed96.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-1b5df4bd-41fa-46d4-90f6-fe960220b65e.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-1e1d9be6-cb8b-490d-89e1-cbf727d7c103.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-20d584ac-6caa-4eb2-b23d-fc4472128e93.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-2bfbe57d-c498-4240-8943-fb15d898f3fb.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-2c30d6ee-ab64-46fc-a9f2-3a05a76a01e8.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-2cd36872-a607-4de8-92d7-bb947ad7e447.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-2e97a374-dab3-4b49-980b-a47f79b02639.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-3341b868-4b93-4e77-a3cb-75ba3fb76869.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-3d82b074-035a-48bd-8da4-5ddb484cb0e2.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-4b2fbc2c-317f-4ec5-bcd5-5e71abf19c6b.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-4c03b980-7653-4a1b-9a4b-77f473d2b74e.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-4db1c866-6c0c-4414-8a44-a935ce1de09f.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-4dbc02ee-e45d-46dd-9e3f-37898b3a6098.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-4e8642da-194b-4321-8d9c-0a03c84ca22d.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-533b67eb-2d48-4d32-925b-f68e03f7c889.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-53a3e2a0-54d4-4c07-929a-157a917bcecc.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-541e36b5-e74b-4446-bc80-c275d707b2eb.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-62afcf9d-4aad-40a2-a650-732bc32dba5a.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-62f1b9ce-0a8f-419c-913a-d21805a33461.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-6a79d0b2-dcde-4775-a26a-46a197834451.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-7176bd85-f07b-4351-834d-2184f00d2731.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-74b38b7b-6920-4fbb-a400-f1cde4665201.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-7521b6e2-5259-4daa-9a06-e3aad39f1092.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-7c3db299-06a7-476d-abae-cf30325399cf.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-8108af7f-435b-434e-8871-dec2f8888917.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-8303fc11-81df-40c1-b9e5-50406091596f.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-866ec196-4c16-4fd7-af8d-c52f8f854fe2.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-92e8a66e-8cb5-4d83-9116-47c8678ec204.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-94b1e3d6-6073-4042-b35e-2192f3782a22.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-957a2356-8e3b-42c8-bb06-5fd43eff6df2.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-9b71e141-a347-4098-a252-177f403896a1.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-b3832238-bf77-4e08-8449-78c2b4958c80.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-c54da62f-03c8-472a-8019-4730c4a47bd8.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-c6293aca-6654-4cb0-9578-85c6c150de61.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-c6758ba3-9faf-41c4-98d6-8faab27198be.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-c98df661-cf2f-493d-a39c-a8bcd14b80bb.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-cdc12a6a-bcf9-4d85-b0b8-66c2aac9d59d.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-d0a0cea1-bf20-4e56-8e0c-ec9be4a61218.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-d0ecbed0-3b87-44e3-a6d4-e6f773976c2c.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-d13454fd-2ce1-4c5b-a613-6d6fc65e7de0.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-d781ec46-827a-458e-b590-b76551b1a551.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-e43b13ee-e4f1-4103-81f2-54c5c3c216d4.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-e52dcb0b-4034-4234-9673-f1f180e1ca4c.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-e73da0fc-962c-4757-be31-fdb6956821d9.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-e8589ca8-bc0a-418a-b861-e94b2e6d7775.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-eb8d56c3-214d-4262-acee-3e25657c7f0b.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-ecf4a69f-9662-4ed3-ad60-cdb2236ffe5e.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-f3e89f71-f5c7-4620-bc3f-624763c7bb84.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-f7d5d75b-387b-4a31-85e8-9ebce3e6dfd6.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-fab0be47-0f24-4184-840c-d44f5420aa16.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\index-fb94538a-0f92-410c-891b-f33d3b8e0528.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\mongod.lock",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\sizeStorer.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\storage.bson",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\WiredTiger",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\WiredTiger.lock",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\WiredTiger.turtle",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\WiredTiger.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\WiredTigerHS.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\_mdb_catalog.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\journal\\WiredTigerLog.0000000001",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\journal\\WiredTigerPreplog.0000000001",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\diagnostic.data\\metrics.2026-10-25T15-28-16Z-00000",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3\\diagnostic.data\\metrics.interim"
+  ],
+  "finishedAt": "2026-10-25T15:29:40.102Z",
+  "runtimeDirectory": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-xLpKB3",
+  "cleanup": {
+    "workersStopped": true,
+    "mongoStopped": true,
+    "redisShutdownRequested": true,
+    "redisProcessExitCode": 0,
+    "recursiveDeletion": false
+  }
+}

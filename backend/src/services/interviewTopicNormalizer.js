@@ -12,40 +12,115 @@ const IMPORTANT_TOPICS = [
   { key: 'java', type: TOPIC_TYPES.LANGUAGE, label: 'Java', aliases: [] },
   { key: 'cpp', type: TOPIC_TYPES.LANGUAGE, label: 'C++', aliases: ['c++', 'cplusplus', 'c plus plus'] },
   { key: 'csharp', type: TOPIC_TYPES.LANGUAGE, label: 'C#', aliases: ['c#', 'c-sharp', 'c sharp'] },
-  { key: 'dotnet', type: TOPIC_TYPES.FRAMEWORK, label: '.NET', aliases: ['.net', 'dotnet', 'dot net', 'asp.net', 'asp.net core'] },
+  {
+    key: 'dotnet',
+    type: TOPIC_TYPES.FRAMEWORK,
+    label: '.NET',
+    aliases: ['.net', 'dotnet', 'dot net', 'asp.net', 'asp.net core']
+  },
 
-  { key: 'angular', type: TOPIC_TYPES.FRAMEWORK, label: 'Angular', aliases: ['angularjs'] },
+  { key: 'angular', type: TOPIC_TYPES.FRAMEWORK, label: 'Angular', aliases: [] },
   { key: 'react', type: TOPIC_TYPES.FRAMEWORK, label: 'React', aliases: ['reactjs', 'react.js'] },
-  { key: 'react-native', type: TOPIC_TYPES.FRAMEWORK, label: 'React Native', aliases: ['react native', 'react-native'] },
+  {
+    key: 'react-native',
+    type: TOPIC_TYPES.FRAMEWORK,
+    label: 'React Native',
+    aliases: ['react native', 'react-native']
+  },
   { key: 'nodejs', type: TOPIC_TYPES.FRAMEWORK, label: 'Node.js', aliases: ['node', 'node.js', 'node js'] },
-  { key: 'expressjs', type: TOPIC_TYPES.FRAMEWORK, label: 'Express.js', aliases: ['express', 'express.js', 'express js'] },
+  {
+    key: 'expressjs',
+    type: TOPIC_TYPES.FRAMEWORK,
+    label: 'Express.js',
+    aliases: ['express', 'express.js', 'express js']
+  },
   { key: 'nextjs', type: TOPIC_TYPES.FRAMEWORK, label: 'Next.js', aliases: ['next', 'next.js', 'next js'] },
 
   { key: 'mongodb', type: TOPIC_TYPES.TECHNOLOGY, label: 'MongoDB', aliases: ['mongo', 'mongo db'] },
   { key: 'mysql', type: TOPIC_TYPES.TECHNOLOGY, label: 'MySQL', aliases: ['my sql'] },
-  { key: 'postgresql', type: TOPIC_TYPES.TECHNOLOGY, label: 'PostgreSQL', aliases: ['postgres', 'postgresql db', 'postgres sql'] },
+  {
+    key: 'postgresql',
+    type: TOPIC_TYPES.TECHNOLOGY,
+    label: 'PostgreSQL',
+    aliases: ['postgres', 'postgresql db', 'postgres sql']
+  },
   { key: 'sql', type: TOPIC_TYPES.TECHNOLOGY, label: 'SQL', aliases: ['structured query language'] },
   { key: 'redis', type: TOPIC_TYPES.TECHNOLOGY, label: 'Redis', aliases: [] },
   { key: 'docker', type: TOPIC_TYPES.TECHNOLOGY, label: 'Docker', aliases: ['docker container', 'docker containers'] },
   { key: 'kubernetes', type: TOPIC_TYPES.TECHNOLOGY, label: 'Kubernetes', aliases: ['k8s', 'k8s cluster'] },
-  { key: 'rest-apis', type: TOPIC_TYPES.TECHNOLOGY, label: 'REST APIs', aliases: ['rest', 'rest api', 'restful api', 'restful apis'] },
+  {
+    key: 'rest-apis',
+    type: TOPIC_TYPES.TECHNOLOGY,
+    label: 'REST APIs',
+    aliases: ['rest', 'rest api', 'restful api', 'restful apis']
+  },
   { key: 'graphql', type: TOPIC_TYPES.TECHNOLOGY, label: 'GraphQL', aliases: ['graph ql'] },
   { key: 'html', type: TOPIC_TYPES.TECHNOLOGY, label: 'HTML', aliases: ['hypertext markup language'] },
   { key: 'css', type: TOPIC_TYPES.TECHNOLOGY, label: 'CSS', aliases: ['cascading style sheets'] },
-  { key: 'git-github', type: TOPIC_TYPES.TECHNOLOGY, label: 'Git/GitHub', aliases: ['git', 'github', 'git github', 'git and github'] },
-  { key: 'oop', type: TOPIC_TYPES.TECHNOLOGY, label: 'OOP', aliases: ['object oriented programming', 'object-oriented programming'] },
-  { key: 'dsa', type: TOPIC_TYPES.TECHNOLOGY, label: 'DSA', aliases: ['data structures and algorithms', 'data structures', 'algorithms'] },
-  { key: 'aws', type: TOPIC_TYPES.TECHNOLOGY, label: 'AWS', aliases: ['amazon web services', 'amazon services', 'aws cloud'] },
-  { key: 'generative-ai', type: TOPIC_TYPES.TECHNOLOGY, label: 'Generative AI', aliases: ['gen ai', 'genai', 'generative ai'] },
-  { key: 'ai-agents', type: TOPIC_TYPES.TECHNOLOGY, label: 'AI Agents', aliases: ['agents', 'agentic ai', 'agent systems'] },
-  { key: 'llm', type: TOPIC_TYPES.TECHNOLOGY, label: 'LLM', aliases: ['large language model', 'large language models', 'llms'] },
-  { key: 'rag', type: TOPIC_TYPES.TECHNOLOGY, label: 'RAG', aliases: ['retrieval augmented generation', 'retrieval-augmented generation'] },
+  {
+    key: 'git-github',
+    type: TOPIC_TYPES.TECHNOLOGY,
+    label: 'Git/GitHub',
+    aliases: ['git', 'github', 'git github', 'git and github']
+  },
+  {
+    key: 'oop',
+    type: TOPIC_TYPES.TECHNOLOGY,
+    label: 'OOP',
+    aliases: ['object oriented programming', 'object-oriented programming']
+  },
+  {
+    key: 'dsa',
+    type: TOPIC_TYPES.TECHNOLOGY,
+    label: 'DSA',
+    aliases: ['data structures and algorithms', 'data structures', 'algorithms']
+  },
+  {
+    key: 'aws',
+    type: TOPIC_TYPES.TECHNOLOGY,
+    label: 'AWS',
+    aliases: ['amazon web services', 'amazon services', 'aws cloud']
+  },
+  {
+    key: 'generative-ai',
+    type: TOPIC_TYPES.TECHNOLOGY,
+    label: 'Generative AI',
+    aliases: ['gen ai', 'genai', 'generative ai']
+  },
+  {
+    key: 'ai-agents',
+    type: TOPIC_TYPES.TECHNOLOGY,
+    label: 'AI Agents',
+    aliases: ['agents', 'agentic ai', 'agent systems']
+  },
+  {
+    key: 'llm',
+    type: TOPIC_TYPES.TECHNOLOGY,
+    label: 'LLM',
+    aliases: ['large language model', 'large language models', 'llms']
+  },
+  {
+    key: 'rag',
+    type: TOPIC_TYPES.TECHNOLOGY,
+    label: 'RAG',
+    aliases: ['retrieval augmented generation', 'retrieval-augmented generation']
+  },
   { key: 'langchain', type: TOPIC_TYPES.TECHNOLOGY, label: 'LangChain', aliases: ['lang chain'] },
-  { key: 'system-design', type: TOPIC_TYPES.TECHNOLOGY, label: 'System Design', aliases: ['system design', 'systems design', 'distributed systems'] },
+  {
+    key: 'system-design',
+    type: TOPIC_TYPES.TECHNOLOGY,
+    label: 'System Design',
+    aliases: ['system design', 'systems design', 'distributed systems']
+  },
 
   { key: 'mern', type: TOPIC_TYPES.STACK, label: 'MERN', aliases: ['mongo express react node', 'mern stack'] },
   { key: 'mean', type: TOPIC_TYPES.STACK, label: 'MEAN', aliases: ['mongo express angular node', 'mean stack'] },
-  { key: 'full-stack-web-development', type: TOPIC_TYPES.STACK, label: 'Full Stack Web Development', aliases: ['fullstack', 'full stack', 'full stack web', 'full stack development'] }
+  {
+    key: 'full-stack-web-development',
+    type: TOPIC_TYPES.STACK,
+    label: 'Full Stack Web Development',
+    aliases: ['fullstack', 'full stack', 'full stack web', 'full stack development']
+  }
 ];
 
 const normalizeAlias = (value = '') => {
@@ -123,9 +198,7 @@ const resolveTopic = (value = '', preferredType = '') => {
 
 const splitValues = (value = '') => {
   if (Array.isArray(value)) {
-    return value
-      .map((item) => String(item || '').trim())
-      .filter(Boolean);
+    return value.map((item) => String(item || '').trim()).filter(Boolean);
   }
 
   return String(value || '')
@@ -199,18 +272,18 @@ const detectTopicsInText = (value = '') => {
   const seen = new Set();
   const matches = [];
 
-  const candidates = IMPORTANT_TOPICS
-    .map((topic) => ({
-      topic,
-      aliases: [...new Set([topic.key, topic.label, ...(topic.aliases || [])]
-        .map((alias) => normalizeAlias(alias))
-        .filter(Boolean))]
-    }))
-    .sort((left, right) => {
-      const leftLongest = Math.max(...left.aliases.map((alias) => alias.length), 0);
-      const rightLongest = Math.max(...right.aliases.map((alias) => alias.length), 0);
-      return rightLongest - leftLongest;
-    });
+  const candidates = IMPORTANT_TOPICS.map((topic) => ({
+    topic,
+    aliases: [
+      ...new Set(
+        [topic.key, topic.label, ...(topic.aliases || [])].map((alias) => normalizeAlias(alias)).filter(Boolean)
+      )
+    ]
+  })).sort((left, right) => {
+    const leftLongest = Math.max(...left.aliases.map((alias) => alias.length), 0);
+    const rightLongest = Math.max(...right.aliases.map((alias) => alias.length), 0);
+    return rightLongest - leftLongest;
+  });
 
   for (const candidate of candidates) {
     const matchedAlias = candidate.aliases.find((alias) => haystack.includes(` ${alias} `));

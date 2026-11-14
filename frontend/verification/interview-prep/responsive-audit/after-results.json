@@ -1,0 +1,1201 @@
+{
+  "phase": "after",
+  "timestamp": "2026-11-13T04:55:08.017Z",
+  "viewportsTested": 12,
+  "themesTested": 3,
+  "matrixResults": [
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "width": 320,
+      "height": 640,
+      "theme": "dark",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 320,
+        "clientWidth": 320,
+        "pageScroll": 292,
+        "pageClient": 292,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 292,
+        "filtersGridWidth": 262,
+        "questionListWidth": 292
+      },
+      "screenshot": "dark-mobile-320.png"
+    },
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "width": 320,
+      "height": 640,
+      "theme": "light",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 320,
+        "clientWidth": 320,
+        "pageScroll": 292,
+        "pageClient": 292,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 292,
+        "filtersGridWidth": 262,
+        "questionListWidth": 292
+      },
+      "screenshot": "light-mobile-320.png"
+    },
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "width": 320,
+      "height": 640,
+      "theme": "system",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 320,
+        "clientWidth": 320,
+        "pageScroll": 292,
+        "pageClient": 292,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 292,
+        "filtersGridWidth": 262,
+        "questionListWidth": 292
+      },
+      "screenshot": "system-mobile-320.png"
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "width": 375,
+      "height": 667,
+      "theme": "dark",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 375,
+        "clientWidth": 375,
+        "pageScroll": 347,
+        "pageClient": 347,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 347,
+        "filtersGridWidth": 317,
+        "questionListWidth": 347
+      },
+      "screenshot": "dark-mobile-375.png"
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "width": 375,
+      "height": 667,
+      "theme": "light",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 375,
+        "clientWidth": 375,
+        "pageScroll": 347,
+        "pageClient": 347,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 347,
+        "filtersGridWidth": 317,
+        "questionListWidth": 347
+      },
+      "screenshot": "light-mobile-375.png"
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "width": 375,
+      "height": 667,
+      "theme": "system",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 375,
+        "clientWidth": 375,
+        "pageScroll": 347,
+        "pageClient": 347,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 347,
+        "filtersGridWidth": 317,
+        "questionListWidth": 347
+      },
+      "screenshot": "system-mobile-375.png"
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "width": 390,
+      "height": 844,
+      "theme": "dark",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "pageScroll": 362,
+        "pageClient": 362,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 362,
+        "filtersGridWidth": 332,
+        "questionListWidth": 362
+      },
+      "screenshot": "dark-mobile-390.png"
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "pageScroll": 362,
+        "pageClient": 362,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 362,
+        "filtersGridWidth": 332,
+        "questionListWidth": 362
+      },
+      "screenshot": "light-mobile-390.png"
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "width": 390,
+      "height": 844,
+      "theme": "system",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "pageScroll": 362,
+        "pageClient": 362,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 362,
+        "filtersGridWidth": 332,
+        "questionListWidth": 362
+      },
+      "screenshot": "system-mobile-390.png"
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "width": 430,
+      "height": 932,
+      "theme": "dark",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 430,
+        "clientWidth": 430,
+        "pageScroll": 402,
+        "pageClient": 402,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 402,
+        "filtersGridWidth": 372,
+        "questionListWidth": 402
+      },
+      "screenshot": "dark-mobile-430.png"
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "width": 430,
+      "height": 932,
+      "theme": "light",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 430,
+        "clientWidth": 430,
+        "pageScroll": 402,
+        "pageClient": 402,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 402,
+        "filtersGridWidth": 372,
+        "questionListWidth": 402
+      },
+      "screenshot": "light-mobile-430.png"
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "width": 430,
+      "height": 932,
+      "theme": "system",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 430,
+        "clientWidth": 430,
+        "pageScroll": 402,
+        "pageClient": 402,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 402,
+        "filtersGridWidth": 372,
+        "questionListWidth": 402
+      },
+      "screenshot": "system-mobile-430.png"
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "width": 768,
+      "height": 1024,
+      "theme": "dark",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "pageScroll": 740,
+        "pageClient": 740,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 740,
+        "filtersGridWidth": 710,
+        "questionListWidth": 740
+      },
+      "screenshot": "dark-tablet-768.png"
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "width": 768,
+      "height": 1024,
+      "theme": "light",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "pageScroll": 740,
+        "pageClient": 740,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 740,
+        "filtersGridWidth": 710,
+        "questionListWidth": 740
+      },
+      "screenshot": "light-tablet-768.png"
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "width": 768,
+      "height": 1024,
+      "theme": "system",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "pageScroll": 740,
+        "pageClient": 740,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 740,
+        "filtersGridWidth": 710,
+        "questionListWidth": 740
+      },
+      "screenshot": "system-tablet-768.png"
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "width": 820,
+      "height": 1180,
+      "theme": "dark",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 820,
+        "clientWidth": 820,
+        "pageScroll": 512,
+        "pageClient": 512,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [
+          {
+            "tag": "button",
+            "cls": "nav-tab",
+            "right": 860,
+            "width": 178
+          },
+          {
+            "tag": "span",
+            "cls": "",
+            "right": 844,
+            "width": 122
+          }
+        ],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 512,
+        "filtersGridWidth": 470,
+        "questionListWidth": 512
+      },
+      "screenshot": "dark-tablet-820.png"
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "width": 820,
+      "height": 1180,
+      "theme": "light",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 820,
+        "clientWidth": 820,
+        "pageScroll": 512,
+        "pageClient": 512,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [
+          {
+            "tag": "button",
+            "cls": "nav-tab",
+            "right": 860,
+            "width": 178
+          },
+          {
+            "tag": "span",
+            "cls": "",
+            "right": 844,
+            "width": 122
+          }
+        ],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 512,
+        "filtersGridWidth": 470,
+        "questionListWidth": 512
+      },
+      "screenshot": "light-tablet-820.png"
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "width": 820,
+      "height": 1180,
+      "theme": "system",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 820,
+        "clientWidth": 820,
+        "pageScroll": 512,
+        "pageClient": 512,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [
+          {
+            "tag": "button",
+            "cls": "nav-tab",
+            "right": 860,
+            "width": 178
+          },
+          {
+            "tag": "span",
+            "cls": "",
+            "right": 844,
+            "width": 122
+          }
+        ],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 512,
+        "filtersGridWidth": 470,
+        "questionListWidth": 512
+      },
+      "screenshot": "system-tablet-820.png"
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "width": 1024,
+      "height": 768,
+      "theme": "dark",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1024,
+        "clientWidth": 1024,
+        "pageScroll": 716,
+        "pageClient": 716,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 716,
+        "filtersGridWidth": 674,
+        "questionListWidth": 716
+      },
+      "screenshot": "dark-tablet-1024.png"
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "width": 1024,
+      "height": 768,
+      "theme": "light",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1024,
+        "clientWidth": 1024,
+        "pageScroll": 716,
+        "pageClient": 716,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 716,
+        "filtersGridWidth": 674,
+        "questionListWidth": 716
+      },
+      "screenshot": "light-tablet-1024.png"
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "width": 1024,
+      "height": 768,
+      "theme": "system",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1024,
+        "clientWidth": 1024,
+        "pageScroll": 716,
+        "pageClient": 716,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 716,
+        "filtersGridWidth": 674,
+        "questionListWidth": 716
+      },
+      "screenshot": "system-tablet-1024.png"
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "width": 1280,
+      "height": 800,
+      "theme": "dark",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1280,
+        "clientWidth": 1280,
+        "pageScroll": 972,
+        "pageClient": 972,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [
+          {
+            "tag": "div",
+            "cls": "loading-bar-indicator",
+            "right": 1601,
+            "width": 389
+          }
+        ],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 972,
+        "filtersGridWidth": 930,
+        "questionListWidth": 972
+      },
+      "screenshot": "dark-laptop-1280.png"
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "width": 1280,
+      "height": 800,
+      "theme": "light",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1280,
+        "clientWidth": 1280,
+        "pageScroll": 972,
+        "pageClient": 972,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 972,
+        "filtersGridWidth": 930,
+        "questionListWidth": 972
+      },
+      "screenshot": "light-laptop-1280.png"
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "width": 1280,
+      "height": 800,
+      "theme": "system",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1280,
+        "clientWidth": 1280,
+        "pageScroll": 972,
+        "pageClient": 972,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 972,
+        "filtersGridWidth": 930,
+        "questionListWidth": 972
+      },
+      "screenshot": "system-laptop-1280.png"
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "width": 1366,
+      "height": 768,
+      "theme": "dark",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1366,
+        "clientWidth": 1366,
+        "pageScroll": 1058,
+        "pageClient": 1058,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 1058,
+        "filtersGridWidth": 1016,
+        "questionListWidth": 1058
+      },
+      "screenshot": "dark-laptop-1366.png"
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "width": 1366,
+      "height": 768,
+      "theme": "light",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1366,
+        "clientWidth": 1366,
+        "pageScroll": 1058,
+        "pageClient": 1058,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 1058,
+        "filtersGridWidth": 1016,
+        "questionListWidth": 1058
+      },
+      "screenshot": "light-laptop-1366.png"
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "width": 1366,
+      "height": 768,
+      "theme": "system",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1366,
+        "clientWidth": 1366,
+        "pageScroll": 1058,
+        "pageClient": 1058,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [
+          {
+            "tag": "div",
+            "cls": "loading-bar-indicator",
+            "right": 1481,
+            "width": 423
+          }
+        ],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 1058,
+        "filtersGridWidth": 1016,
+        "questionListWidth": 1058
+      },
+      "screenshot": "system-laptop-1366.png"
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "width": 1440,
+      "height": 900,
+      "theme": "dark",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "pageScroll": 1132,
+        "pageClient": 1132,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 1132,
+        "filtersGridWidth": 1090,
+        "questionListWidth": 1132
+      },
+      "screenshot": "dark-desktop-1440.png"
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "width": 1440,
+      "height": 900,
+      "theme": "light",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "pageScroll": 1132,
+        "pageClient": 1132,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 1132,
+        "filtersGridWidth": 1090,
+        "questionListWidth": 1132
+      },
+      "screenshot": "light-desktop-1440.png"
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "width": 1440,
+      "height": 900,
+      "theme": "system",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "pageScroll": 1132,
+        "pageClient": 1132,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 1132,
+        "filtersGridWidth": 1090,
+        "questionListWidth": 1132
+      },
+      "screenshot": "system-desktop-1440.png"
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "width": 1920,
+      "height": 1080,
+      "theme": "dark",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1920,
+        "clientWidth": 1920,
+        "pageScroll": 1600,
+        "pageClient": 1600,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [
+          {
+            "tag": "div",
+            "cls": "loading-bar-indicator",
+            "right": 1924,
+            "width": 640
+          }
+        ],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 1600,
+        "filtersGridWidth": 1558,
+        "questionListWidth": 1600
+      },
+      "screenshot": "dark-desktop-1920.png"
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "width": 1920,
+      "height": 1080,
+      "theme": "light",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1920,
+        "clientWidth": 1920,
+        "pageScroll": 1600,
+        "pageClient": 1600,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 1600,
+        "filtersGridWidth": 1558,
+        "questionListWidth": 1600
+      },
+      "screenshot": "light-desktop-1920.png"
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "width": 1920,
+      "height": 1080,
+      "theme": "system",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1920,
+        "clientWidth": 1920,
+        "pageScroll": 1600,
+        "pageClient": 1600,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 1600,
+        "filtersGridWidth": 1558,
+        "questionListWidth": 1600
+      },
+      "screenshot": "system-desktop-1920.png"
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "width": 2560,
+      "height": 1440,
+      "theme": "dark",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 2560,
+        "clientWidth": 2560,
+        "pageScroll": 1600,
+        "pageClient": 1600,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 1600,
+        "filtersGridWidth": 1558,
+        "questionListWidth": 1600
+      },
+      "screenshot": "dark-large-2560.png"
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "width": 2560,
+      "height": 1440,
+      "theme": "light",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 2560,
+        "clientWidth": 2560,
+        "pageScroll": 1600,
+        "pageClient": 1600,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 1600,
+        "filtersGridWidth": 1558,
+        "questionListWidth": 1600
+      },
+      "screenshot": "light-large-2560.png"
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "width": 2560,
+      "height": 1440,
+      "theme": "system",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 2560,
+        "clientWidth": 2560,
+        "pageScroll": 1600,
+        "pageClient": 1600,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "hubWidth": 1600,
+        "filtersGridWidth": 1558,
+        "questionListWidth": 1600
+      },
+      "screenshot": "system-large-2560.png"
+    }
+  ],
+  "scenarioChecks": {
+    "expanded_answers_mobile-320": {
+      "pass": true,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "screenshot": "scenario-expanded-answers-mobile-320.png"
+    },
+    "expanded_answers_mobile-375": {
+      "pass": true,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "screenshot": "scenario-expanded-answers-mobile-375.png"
+    },
+    "expanded_answers_tablet-768": {
+      "pass": true,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "screenshot": "scenario-expanded-answers-tablet-768.png"
+    },
+    "expanded_answers_desktop-1440": {
+      "pass": true,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "screenshot": "scenario-expanded-answers-desktop-1440.png"
+    },
+    "filters_active_mobile-320": {
+      "pass": true,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "screenshot": "scenario-filters-active-mobile-320.png"
+    },
+    "filters_active_mobile-375": {
+      "pass": true,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "screenshot": "scenario-filters-active-mobile-375.png"
+    },
+    "filters_active_tablet-768": {
+      "pass": true,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "screenshot": "scenario-filters-active-tablet-768.png"
+    },
+    "filters_active_desktop-1440": {
+      "pass": true,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "screenshot": "scenario-filters-active-desktop-1440.png"
+    },
+    "drill_runner_mobile-320": {
+      "pass": true,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "screenshot": "scenario-drill-runner-mobile-320.png"
+    },
+    "drill_runner_mobile-375": {
+      "pass": true,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "screenshot": "scenario-drill-runner-mobile-375.png"
+    },
+    "drill_runner_tablet-768": {
+      "pass": true,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "screenshot": "scenario-drill-runner-tablet-768.png"
+    },
+    "drill_runner_desktop-1440": {
+      "pass": true,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "screenshot": "scenario-drill-runner-desktop-1440.png"
+    },
+    "custom_answer_mobile-320": {
+      "pass": true,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "screenshot": "scenario-custom-answer-mobile-320.png"
+    },
+    "custom_answer_mobile-375": {
+      "pass": true,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "screenshot": "scenario-custom-answer-mobile-375.png"
+    },
+    "custom_answer_tablet-768": {
+      "pass": true,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "screenshot": "scenario-custom-answer-tablet-768.png"
+    },
+    "custom_answer_desktop-1440": {
+      "pass": true,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "screenshot": "scenario-custom-answer-desktop-1440.png"
+    },
+    "history_detail_mobile-320": {
+      "pass": true,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "screenshot": "scenario-history-detail-mobile-320.png"
+    },
+    "history_detail_mobile-375": {
+      "pass": true,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "screenshot": "scenario-history-detail-mobile-375.png"
+    },
+    "history_detail_tablet-768": {
+      "pass": true,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "screenshot": "scenario-history-detail-tablet-768.png"
+    },
+    "history_detail_desktop-1440": {
+      "pass": true,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "screenshot": "scenario-history-detail-desktop-1440.png"
+    },
+    "history_completed_mobile-320": {
+      "pass": true,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "screenshot": "scenario-history-completed-mobile-320.png"
+    },
+    "history_completed_mobile-375": {
+      "pass": true,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "screenshot": "scenario-history-completed-mobile-375.png"
+    },
+    "history_completed_tablet-768": {
+      "pass": true,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "screenshot": "scenario-history-completed-tablet-768.png"
+    },
+    "history_completed_desktop-1440": {
+      "pass": true,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "screenshot": "scenario-history-completed-desktop-1440.png"
+    },
+    "empty_library_mobile-320": {
+      "pass": true,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "screenshot": "scenario-empty-library-mobile-320.png"
+    },
+    "empty_library_mobile-375": {
+      "pass": true,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "screenshot": "scenario-empty-library-mobile-375.png"
+    },
+    "empty_library_tablet-768": {
+      "pass": true,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "screenshot": "scenario-empty-library-tablet-768.png"
+    },
+    "empty_library_desktop-1440": {
+      "pass": true,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "screenshot": "scenario-empty-library-desktop-1440.png"
+    },
+    "error_mobile-320": {
+      "pass": true,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "screenshot": "scenario-error-mobile-320.png"
+    },
+    "error_mobile-375": {
+      "pass": true,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "screenshot": "scenario-error-mobile-375.png"
+    },
+    "error_tablet-768": {
+      "pass": true,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "screenshot": "scenario-error-tablet-768.png"
+    },
+    "error_desktop-1440": {
+      "pass": true,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "screenshot": "scenario-error-desktop-1440.png"
+    },
+    "empty_history_mobile-320": {
+      "pass": true,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "screenshot": "scenario-empty-history-mobile-320.png"
+    },
+    "empty_history_mobile-375": {
+      "pass": true,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "screenshot": "scenario-empty-history-mobile-375.png"
+    },
+    "empty_history_tablet-768": {
+      "pass": true,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "screenshot": "scenario-empty-history-tablet-768.png"
+    },
+    "empty_history_desktop-1440": {
+      "pass": true,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "screenshot": "scenario-empty-history-desktop-1440.png"
+    },
+    "orientation_mobile-landscape-667x375": {
+      "pass": true,
+      "scrollWidth": 667,
+      "clientWidth": 667,
+      "screenshot": "scenario-orientation-mobile-landscape-667x375.png"
+    },
+    "orientation_mobile-landscape-844x390": {
+      "pass": true,
+      "scrollWidth": 844,
+      "clientWidth": 844,
+      "screenshot": "scenario-orientation-mobile-landscape-844x390.png"
+    },
+    "orientation_tablet-landscape-1024x768": {
+      "pass": true,
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "screenshot": "scenario-orientation-tablet-landscape-1024x768.png"
+    },
+    "zoom_125": {
+      "pass": true,
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "screenshot": "scenario-zoom-125.png"
+    },
+    "zoom_150": {
+      "pass": true,
+      "scrollWidth": 853,
+      "clientWidth": 853,
+      "screenshot": "scenario-zoom-150.png"
+    },
+    "zoom_175": {
+      "pass": true,
+      "scrollWidth": 731,
+      "clientWidth": 731,
+      "screenshot": "scenario-zoom-175.png"
+    },
+    "zoom_200": {
+      "pass": true,
+      "scrollWidth": 640,
+      "clientWidth": 640,
+      "screenshot": "scenario-zoom-200.png"
+    },
+    "keyboard_focus": {
+      "pass": true,
+      "focusedTag": "a",
+      "screenshot": "scenario-keyboard-focus.png"
+    }
+  },
+  "overflowDefects": [],
+  "touchTargetDefects": [],
+  "layoutDefects": [],
+  "accessibilityDefects": []
+}

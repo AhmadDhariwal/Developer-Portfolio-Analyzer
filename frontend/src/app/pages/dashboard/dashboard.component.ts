@@ -1,24 +1,47 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {
+  DashboardProgress,
+  DashboardIntegrationConnectivity,
+} from '../../shared/models/dashboard.model';
+import { DashboardProgressComponent } from './components/dashboard-progress/dashboard-progress.component';
+import {
+  AfterViewInit,
+  AfterViewChecked,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Chart, registerables } from 'chart.js';
-import { Observable, Subscription, of } from 'rxjs';
-import { catchError, debounceTime, distinctUntilChanged, finalize, shareReplay, skip, tap } from 'rxjs/operators';
+import { Observable, Subject, Subscription, of } from 'rxjs';
+import { distinctUntilChanged, finalize, shareReplay, skip, tap, takeUntil } from 'rxjs/operators';
 import { ApiService } from '../../shared/services/api.service';
 import { CareerProfileService } from '../../shared/services/career-profile.service';
-import { FrontendAnalysisCacheService, FrontendAnalysisCacheKey } from '../../shared/services/frontend-analysis-cache.service';
-import { CAREER_STACKS, EXPERIENCE_LEVELS, CareerStack, ExperienceLevel, buildCareerProfileSignature } from '../../shared/models/career-profile.model';
+import {
+  FrontendAnalysisCacheService,
+  FrontendAnalysisCacheKey,
+} from '../../shared/services/frontend-analysis-cache.service';
+import {
+  CAREER_STACKS,
+  EXPERIENCE_LEVELS,
+  CareerStack,
+  ExperienceLevel,
+  buildCareerProfileSignature,
+} from '../../shared/models/career-profile.model';
 import { ScoreMeterComponent } from '../../shared/components/score-meter/score-meter.component';
 import { UiBadgeComponent } from '../../shared/components/ui-badge/ui-badge.component';
-import { TenantContextService } from '../../shared/services/tenant-context.service';
+import { DashboardLearningSummaryComponent } from './components/dashboard-learning-summary/dashboard-learning-summary.component';
 
 Chart.register(...registerables);
 
 export interface StatCard {
   label: string;
-  value: number;
+  value: number | null;
   growth: string;
   iconType: 'repos' | 'stars' | 'forks' | 'followers';
 }
@@ -43,6 +66,7 @@ export interface IntegrationAnalyticsCard {
   profileScore: number;
   confidence: number;
   trendDelta: number;
+  trendAvailable: boolean;
   successRate: number;
   syncCount: number;
   lastSyncedAt: string;
@@ -75,10 +99,10 @@ interface IntegrationInsightProvider {
 }
 
 interface ScoreBreakdown {
-  codeQuality: number;
-  skillCoverage: number;
-  industryReadiness: number;
-  projectImpact: number;
+  codeQuality: number | null;
+  skillCoverage: number | null;
+  industryReadiness: number | null;
+  projectImpact: number | null;
 }
 
 interface DashboardSourcesUsed {
@@ -92,7 +116,7 @@ interface DashboardSourcesUsed {
 interface ReadinessCenterItem {
   key: string;
   label: string;
-  value: number;
+  value: number | null;
   tone?: string;
 }
 
@@ -111,26 +135,51 @@ interface SourceFreshnessEntry {
   status: string;
   refreshRecommended: boolean;
   reason?: string;
+  policy?: string;
 }
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, ScoreMeterComponent, UiBadgeComponent],
+  imports: [
+    CommonModule,
+    RouterLink,
+    FormsModule,
+    ScoreMeterComponent,
+    UiBadgeComponent,
+    DashboardLearningSummaryComponent,
+    DashboardProgressComponent,
+  ],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.scss'
+  styleUrl: './dashboard.component.scss',
 })
-export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
+export class DashboardComponent implements OnInit, AfterViewInit, AfterViewChecked, OnDestroy {
   @ViewChild('skillRadar') skillRadar!: ElementRef<HTMLCanvasElement>;
   @ViewChild('activityChart') activityChart!: ElementRef<HTMLCanvasElement>;
   @ViewChild('languageChart') languageChart!: ElementRef<HTMLCanvasElement>;
 
   developerScore = 0;
+  readinessAvailable = false;
+  readinessBasis = 'missing';
+  private recordedWeights: Record<string, number> | null = null;
+  progress: DashboardProgress | null = null;
+  integrationConnectivity: DashboardIntegrationConnectivity | null = null;
+  integrationHealthState: 'loading' | 'ready' | 'error' = 'loading';
+  private hasSummaryCharts = false;
+  private snapshotCareerStack: CareerStack | null = null;
   githubScore = 0;
   lastAnalyzed = 'Loading...';
   lastAnalyzedAt: string | null = null;
   githubHandle = '';
   isLoading = true;
+  loadError = '';
+  secondaryErrors: string[] = [];
+  learningSnapshot: {
+    totalTracked: number;
+    savedCount: number;
+    inProgressCount: number;
+    completedCount: number;
+  } | null = null;
   rateLimitWarning = false;
   noGithubUsername = false;
   scoreChangeFromLastMonth: number | null = null;
@@ -139,36 +188,29 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly experienceLevels: ExperienceLevel[] = EXPERIENCE_LEVELS;
 
   statCards: StatCard[] = [
-    { label: 'Repositories', value: 0, growth: '', iconType: 'repos' },
-    { label: 'Total Stars', value: 0, growth: '', iconType: 'stars' },
-    { label: 'Total Forks', value: 0, growth: '', iconType: 'forks' },
-    { label: 'Followers', value: 0, growth: '', iconType: 'followers' }
+    { label: 'Repositories', value: null, growth: '', iconType: 'repos' },
+    { label: 'Total Stars', value: null, growth: '', iconType: 'stars' },
+    { label: 'Total Forks', value: null, growth: '', iconType: 'forks' },
+    { label: 'Followers', value: null, growth: '', iconType: 'followers' },
   ];
 
   totalActivity = 0;
-  coveragePercentage = 0;
+  activityAvailable = false;
+  coveragePercentage: number | null = null;
   topSkills: string[] = [];
   missingSkills: string[] = [];
   languageLegend: LanguageLegendItem[] = [];
   hasLanguageData = false;
   recommendations: RecommendationItem[] = [];
   aiBreakdown: ScoreBreakdown | null = null;
-  confidenceScore = 0;
   scoreReasons: string[] = [];
-  explainabilityBreakdown: { weights: Record<string, number>; featureScores: ScoreBreakdown } | null = null;
+  explainabilityBreakdown: {
+    weights: Record<string, number>;
+    featureScores: ScoreBreakdown;
+  } | null = null;
   integrationScore = 0;
   integrationAnalyticsCards: IntegrationAnalyticsCard[] = [];
   integrationInsightsByProvider: Record<string, IntegrationInsightProvider> = {};
-  tenantOrgName = '';
-  tenantTeamName = '';
-  tenantTeamAnalytics: {
-    totalMembers: number;
-    averageReadinessScore: number;
-    teamScore?: number;
-    teamActivity?: number;
-    recruiterEngagement?: number;
-    hiringPerformance?: number;
-  } | null = null;
   readinessCenter: ReadinessCenterItem[] = [];
   commandCenter: CommandCenterAction[] = [];
   sourceFreshnessRows: SourceFreshnessEntry[] = [];
@@ -177,15 +219,114 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   dashboardStale = false;
   dashboardRefreshMessage = '';
   fromFrontendCache = false;
-  resumeMetrics = {
+  resumeMetrics: {
+    atsScore: number | null;
+    keywordDensity: number | null;
+    formatScore: number | null;
+    contentQuality: number | null;
+  } = {
     atsScore: 0,
     keywordDensity: 0,
     formatScore: 0,
-    contentQuality: 0
+    contentQuality: 0,
   };
 
   private radarInstance: Chart | null = null;
   private viewInitialized = false;
+  private chartFrame: number | null = null;
+  private chartResizeObserver: ResizeObserver | null = null;
+  private readonly dirtyCharts = new Set<'activity' | 'language' | 'radar'>();
+  chartErrors = { activity: '', language: '', radar: '' };
+
+  get hasRadarData(): boolean {
+    return Object.values(this.buildRadarBreakdown()).some((value) => value !== null);
+  }
+
+  private requestChartRender(): void {
+    if (this.destroyed) return;
+    for (const key of ['activity', 'language', 'radar'] as const) this.dirtyCharts.add(key);
+  }
+
+  ngAfterViewChecked(): void {
+    this.scheduleChartRender();
+  }
+
+  private scheduleChartRender(): void {
+    if (!this.viewInitialized || this.destroyed || this.chartFrame !== null) return;
+    if (!this.dirtyCharts.size) return;
+    // Angular has updated visibility; measure layout on the next browser paint.
+    this.chartFrame = requestAnimationFrame(() => {
+      this.chartFrame = null;
+      if (this.destroyed) return;
+      let processed = false;
+      const entries = [
+        [
+          'activity',
+          this.activityChart,
+          this.activityAvailable,
+          () => this.initActivityChart(this.pendingActivityData || []),
+        ],
+        [
+          'language',
+          this.languageChart,
+          this.hasLanguageData,
+          () => this.initLanguageChart(this.pendingLanguageData || {}),
+        ],
+        ['radar', this.skillRadar, this.hasRadarData, () => this.initRadarChart()],
+      ] as const;
+      for (const [key, ref, available, render] of entries) {
+        if (!this.dirtyCharts.has(key)) continue;
+        const canvas = ref?.nativeElement;
+        const instance =
+          key === 'activity'
+            ? this.activityInstance
+            : key === 'language'
+              ? this.languageInstance
+              : this.radarInstance;
+        if (!available) {
+          instance?.destroy();
+          if (key === 'activity') this.activityInstance = null;
+          if (key === 'language') {
+            this.languageInstance = null;
+            this.languageLegend = [];
+          }
+          if (key === 'radar') this.radarInstance = null;
+          this.chartErrors[key] = '';
+          this.dirtyCharts.delete(key);
+          processed = true;
+          continue;
+        }
+        const bounds = canvas?.getBoundingClientRect();
+        if (
+          !canvas?.isConnected ||
+          !canvas.getClientRects().length ||
+          canvas.checkVisibility?.({ checkOpacity: true, checkVisibilityCSS: true }) === false ||
+          !bounds ||
+          bounds.width <= 0 ||
+          bounds.height <= 0
+        )
+          continue;
+        try {
+          if (!canvas.getContext('2d')) throw new Error('Canvas context unavailable');
+          render();
+          const chart = Chart.getChart(canvas);
+          if (!chart?.ctx || chart.width <= 0 || chart.height <= 0)
+            throw new Error('Canvas unavailable');
+          this.chartErrors[key] = '';
+        } catch {
+          Chart.getChart(canvas)?.destroy();
+          if (key === 'activity') this.activityInstance = null;
+          if (key === 'language') this.languageInstance = null;
+          if (key === 'radar') this.radarInstance = null;
+          if (key === 'language') this.languageLegend = [];
+          this.chartErrors[key] = 'Chart could not be drawn. Refresh the dashboard to retry.';
+        }
+        this.dirtyCharts.delete(key);
+        processed = true;
+      }
+      if (processed) this.cdr.detectChanges();
+    });
+  }
   private activityInstance: Chart | null = null;
   private languageInstance: Chart | null = null;
   private pendingActivityData: { month: string; count: number }[] | null = null;
@@ -194,7 +335,10 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private requestCycle = 0;
   private sourcesUsed: DashboardSourcesUsed = {};
   private languageSource = 'cached_snapshot';
-  private readonly cacheVersion = 'dashboard-v3';
+  private readonly cacheVersion = 'dashboard-v5';
+  private readonly requestCancelled = new Subject<void>();
+  private destroyed = false;
+  private themeObserver: MutationObserver | null = null;
   private readonly activeRequests = new Map<string, Observable<any>>();
 
   readonly statIconHtml: Record<string, SafeHtml>;
@@ -204,75 +348,50 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     private readonly apiService: ApiService,
     private readonly careerProfileService: CareerProfileService,
     private readonly cdr: ChangeDetectorRef,
-    private readonly tenantContext: TenantContextService,
     private readonly frontendCache: FrontendAnalysisCacheService,
-    private readonly sanitizer: DomSanitizer
+    private readonly sanitizer: DomSanitizer,
   ) {
     const statIcons: Record<string, string> = {
       repos: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`,
       stars: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
       forks: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><path d="M18 9v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V9"/><path d="M12 12v3"/></svg>`,
-      followers: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`
+      followers: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
     };
 
     const recIcons: Record<string, string> = {
       project: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
       certification: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>`,
       opensource: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>`,
-      technology: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`
+      technology: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
     };
 
     this.statIconHtml = Object.fromEntries(
-      Object.entries(statIcons).map(([key, svg]) => [key, this.sanitizer.bypassSecurityTrustHtml(svg)])
+      Object.entries(statIcons).map(([key, svg]) => [
+        key,
+        this.sanitizer.bypassSecurityTrustHtml(svg),
+      ]),
     );
     this.recIconHtml = Object.fromEntries(
-      Object.entries(recIcons).map(([key, svg]) => [key, this.sanitizer.bypassSecurityTrustHtml(svg)])
+      Object.entries(recIcons).map(([key, svg]) => [
+        key,
+        this.sanitizer.bypassSecurityTrustHtml(svg),
+      ]),
     );
   }
 
   ngOnInit(): void {
     this.subscriptions.add(
-      this.careerProfileService.careerProfile$.pipe(
-        skip(1),
-        debounceTime(250),
-        distinctUntilChanged((a, b) => buildCareerProfileSignature(a) === buildCareerProfileSignature(b))
-      ).subscribe(() => {
-        this.clearDashboardCache();
-        this.loadDashboardData();
-      })
-    );
-
-    this.subscriptions.add(
-      this.tenantContext.state$.pipe(
-        distinctUntilChanged((a, b) =>
-          a.organizationId === b.organizationId &&
-          a.teamId === b.teamId &&
-          a.organizationName === b.organizationName &&
-          a.teamName === b.teamName
+      this.careerProfileService.careerProfile$
+        .pipe(
+          skip(1),
+          distinctUntilChanged(
+            (a, b) => buildCareerProfileSignature(a) === buildCareerProfileSignature(b),
+          ),
         )
-      ).subscribe((ctx) => {
-        this.tenantOrgName = ctx.organizationName || '';
-        this.tenantTeamName = ctx.teamName || '';
-
-        if (ctx.teamId) {
-          this.apiService.getTeamAnalytics(ctx.teamId).pipe(
-            catchError(() => of(null))
-          ).subscribe((res: any) => {
-            this.tenantTeamAnalytics = res ? {
-              totalMembers: Number(res.totalMembers || 0),
-              averageReadinessScore: Number(res.averageReadinessScore || 0),
-              teamScore: Number(res.teamScore || res.averageReadinessScore || 0),
-              teamActivity: Number(res.teamActivity || 0),
-              recruiterEngagement: Number(res.recruiterEngagement || 0),
-              hiringPerformance: Number(res.hiringPerformance || 0)
-            } : null;
-            this.cdr.detectChanges();
-          });
-        } else {
-          this.tenantTeamAnalytics = null;
-          this.cdr.detectChanges();
-        }
-      })
+        .subscribe(() => {
+          this.clearDashboardCache();
+          this.loadDashboardData();
+        }),
     );
 
     this.loadDashboardData();
@@ -287,17 +406,15 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onCareerStackChange(stack: CareerStack): void {
-    this.careerProfileService.setActiveCareerProfile(
-      stack,
-      this.careerProfileService.experienceLevel
-    ).subscribe();
+    this.careerProfileService
+      .setActiveCareerProfile(stack, this.careerProfileService.experienceLevel)
+      .subscribe();
   }
 
   onExperienceLevelChange(level: ExperienceLevel): void {
-    this.careerProfileService.setActiveCareerProfile(
-      this.careerProfileService.careerStack,
-      level
-    ).subscribe();
+    this.careerProfileService
+      .setActiveCareerProfile(this.careerProfileService.careerStack, level)
+      .subscribe();
   }
 
   reanalyze(): void {
@@ -307,35 +424,32 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   loadDashboardData(forceRefresh = false): void {
     const cycle = ++this.requestCycle;
+    this.requestCancelled.next();
+    this.loadError = '';
+    this.secondaryErrors = [];
     this.isLoading = true;
     this.fromFrontendCache = false;
     this.cdr.detectChanges();
 
-    if (!forceRefresh) {
-      const cached = this.frontendCache.get<any>(this.dashboardCacheKey('dashboardSummary'));
-      if (cached) {
-        this.fromFrontendCache = true;
-        this.applyDashboardSummary(cached, cycle);
-        this.loadSecondaryDashboardData(false, cycle);
-        return;
-      }
-    }
-
+    // Always validate the summary against durable evidence on entry/refresh.
+    // A local signal hash cannot detect writes from another tab or API replica.
     this.cachedDashboardRequest(
       'dashboardSummary',
       () => this.apiService.getDashboardSummary(forceRefresh),
-      forceRefresh
+      true,
     ).subscribe({
       next: (data: any) => {
         if (!this.isActiveCycle(cycle)) return;
         this.applyDashboardSummary(data, cycle);
-        setTimeout(() => this.loadSecondaryDashboardData(forceRefresh, cycle), 0);
+        this.loadSecondaryDashboardData(true, cycle);
       },
       error: () => {
         if (!this.isActiveCycle(cycle)) return;
         this.isLoading = false;
+        this.loadError =
+          'Dashboard could not be refreshed. Previously displayed values may be out of date.';
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
@@ -343,17 +457,31 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.isActiveCycle(cycle)) return;
 
     const context = data?.dashboardContext || data?.signalMetadata || {};
+    this.snapshotCareerStack = CAREER_STACKS.includes(context.careerStack)
+      ? context.careerStack
+      : null;
     this.signalHash = String(context.signalHash || data?.signalHash || '');
-    const dependencySignalHash = String(context.dependencySignalHash || data?.dependencySignalHash || '');
+    const dependencySignalHash = String(
+      context.dependencySignalHash || data?.dependencySignalHash || '',
+    );
     this.contextVersion = String(context.contextVersion || '');
-    this.dashboardStale = Boolean(context.stale || context.refreshRecommended || data?.signalMetadata?.staleSources?.length);
+    this.dashboardStale = Boolean(
+      context.stale || context.refreshRecommended || data?.signalMetadata?.staleSources?.length,
+    );
     this.dashboardRefreshMessage = this.dashboardStale ? 'Analysis refresh recommended' : '';
-    if (dependencySignalHash) {
-      this.frontendCache.setCurrentSignalHash({
-        module: 'developer-signals',
-        careerStack: String(context.careerStack || this.selectedCareerStack || ''),
-        experienceLevel: String(context.experienceLevel || this.selectedExperienceLevel || '')
-      }, dependencySignalHash);
+    if (dependencySignalHash && !context.sourceRevisionPolicy) {
+      try {
+        this.frontendCache.setCurrentSignalHash(
+          {
+            module: 'developer-signals',
+            careerStack: String(context.careerStack || this.selectedCareerStack || ''),
+            experienceLevel: String(context.experienceLevel || this.selectedExperienceLevel || ''),
+          },
+          dependencySignalHash,
+        );
+      } catch {
+        /* Evidence remains usable when browser storage is unavailable. */
+      }
     }
 
     this.githubHandle = data.githubHandle ? `@${data.githubHandle}` : '';
@@ -363,132 +491,153 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.noGithubUsername = data.noUsername === true;
     this.githubScore = Number(data.score || 0);
     this.scoreChangeFromLastMonth = data.scoreChangeFromLastMonth ?? null;
+    this.readinessBasis = data.readinessMeasurement?.basis || 'legacy';
+    this.readinessAvailable = data.readinessMeasurement
+      ? data.readinessMeasurement.value !== null
+      : true;
     this.developerScore = Number(data.readinessScore || 0);
+    this.progress = data.progress || null;
+    this.hasSummaryCharts = Boolean(data.activitySnapshot && data.languageSnapshot);
+    if (this.hasSummaryCharts) {
+      this.pendingActivityData = this.normalizeActivity(data.activitySnapshot.data);
+      this.activityAvailable = this.pendingActivityData.length > 0;
+      this.pendingLanguageData = data.languageSnapshot.data || {};
+      this.totalActivity = this.pendingActivityData!.reduce((sum, item) => sum + item.count, 0);
+      this.hasLanguageData = Object.keys(this.pendingLanguageData!).length > 0;
+    }
     this.integrationScore = Number(data?.integration?.score || 0);
     this.sourcesUsed = data?.sourcesUsed || {};
     this.languageSource = String(data?.languageSource || 'cached_snapshot');
 
     this.resumeMetrics = {
-      atsScore: Number(data?.resume?.atsScore || 0),
-      keywordDensity: Number(data?.resume?.keywordDensity || 0),
-      formatScore: Number(data?.resume?.formatScore || 0),
-      contentQuality: Number(data?.resume?.contentQuality || 0)
+      atsScore: this.normalizeCoverage(data?.resume?.atsScore),
+      keywordDensity: this.normalizeCoverage(data?.resume?.keywordDensity),
+      formatScore: this.normalizeCoverage(data?.resume?.formatScore),
+      contentQuality: this.normalizeCoverage(data?.resume?.contentQuality),
     };
 
+    this.recordedWeights =
+      data.readinessModel?.basis === 'recorded' ? data.readinessModel.weights : null;
     this.aiBreakdown = this.normalizeBreakdown(data?.readinessBreakdown);
     this.readinessCenter = this.normalizeReadinessCenter(data?.readinessCenter);
     this.commandCenter = this.normalizeCommandCenter(data?.commandCenter);
-    this.sourceFreshnessRows = this.normalizeSourceFreshness(data?.sourceFreshness || data?.signalMetadata?.sourceFreshness);
+    this.sourceFreshnessRows = this.normalizeSourceFreshness(
+      data?.sourceFreshness || data?.signalMetadata?.sourceFreshness,
+    );
     this.explainabilityBreakdown = {
       weights: this.getBreakdownWeights(),
-      featureScores: this.aiBreakdown
+      featureScores: this.aiBreakdown,
     };
-    this.confidenceScore = this.buildConfidenceScore();
     this.scoreReasons = this.buildScoreReasons();
 
     this.statCards = [
-      { label: 'Repositories', value: Number(data.repositories || 0), growth: '', iconType: 'repos' },
-      { label: 'Total Stars', value: Number(data.stars || 0), growth: '', iconType: 'stars' },
-      { label: 'Total Forks', value: Number(data.forks || 0), growth: '', iconType: 'forks' },
-      { label: 'Followers', value: Number(data.followers || 0), growth: '', iconType: 'followers' }
+      {
+        label: 'Repositories',
+        value: this.sourcesUsed.github?.available ? Number(data.repositories ?? 0) : null,
+        growth: '',
+        iconType: 'repos',
+      },
+      {
+        label: 'Total Stars',
+        value: this.sourcesUsed.github?.available ? Number(data.stars ?? 0) : null,
+        growth: '',
+        iconType: 'stars',
+      },
+      {
+        label: 'Total Forks',
+        value: this.sourcesUsed.github?.available ? Number(data.forks ?? 0) : null,
+        growth: '',
+        iconType: 'forks',
+      },
+      {
+        label: 'Followers',
+        value: this.sourcesUsed.github?.available ? Number(data.followers ?? 0) : null,
+        growth: '',
+        iconType: 'followers',
+      },
     ];
 
+    this.learningSnapshot = data?.learningSnapshot || null;
     this.applySkillsSnapshot(data?.skillsSnapshot);
     this.applyRecommendationsSnapshot(data?.recommendationSnapshot);
 
-    if (this.viewInitialized) {
-      this.initRadarChart();
-    }
-
+    this.requestChartRender();
     this.isLoading = false;
     this.cdr.detectChanges();
   }
 
   private loadSecondaryDashboardData(forceRefresh: boolean, cycle: number): void {
     if (!this.isActiveCycle(cycle)) return;
-    this.loadActivityAndLanguage(forceRefresh, cycle);
-    this.loadSkills(forceRefresh, cycle);
+    if (!this.hasSummaryCharts) this.loadActivityAndLanguage(forceRefresh, cycle);
     this.loadIntegrationAnalytics(cycle, forceRefresh);
   }
 
   loadActivityAndLanguage(forceRefresh = false, cycle = this.requestCycle): void {
-    this.cachedDashboardRequest('dashboardContributions', () => this.apiService.getDashboardContributions(forceRefresh), forceRefresh).subscribe({
+    this.cachedDashboardRequest(
+      'dashboardContributions',
+      () => this.apiService.getDashboardContributions(forceRefresh),
+      forceRefresh,
+    ).subscribe({
       next: (payload: any) => {
         if (!this.isActiveCycle(cycle)) return;
-        const data = Array.isArray(payload?.data) ? payload.data : [];
-        if (data.length > 0) {
-          if (this.viewInitialized && this.activityChart?.nativeElement) {
-            this.initActivityChart(data);
-          } else {
-            this.pendingActivityData = data;
-          }
-        }
-        this.cdr.detectChanges();
-      },
-      error: () => {}
-    });
-
-    this.cachedDashboardRequest('dashboardLanguages', () => this.apiService.getDashboardLanguages(forceRefresh), forceRefresh).subscribe({
-      next: (payload: any) => {
-        if (!this.isActiveCycle(cycle)) return;
-        const data = payload?.data && typeof payload.data === 'object' ? payload.data : {};
-        this.languageSource = String(payload?.source || this.languageSource);
-        if (Object.keys(data).length > 0) {
-          this.hasLanguageData = true;
-          if (this.viewInitialized && this.languageChart?.nativeElement) {
-            this.initLanguageChart(data);
-          } else {
-            this.pendingLanguageData = data;
-          }
-        } else {
-          this.hasLanguageData = false;
-          this.pendingLanguageData = null;
-          this.languageLegend = [];
-          this.languageInstance?.destroy();
-          this.languageInstance = null;
-        }
-        this.cdr.detectChanges();
-      },
-      error: () => {}
-    });
-  }
-
-  loadSkills(forceRefresh = false, cycle = this.requestCycle): void {
-    this.cachedDashboardRequest('dashboardSkills', () => this.apiService.getDashboardSkills(forceRefresh), forceRefresh).subscribe({
-      next: (payload: any) => {
-        if (!this.isActiveCycle(cycle)) return;
-
-        this.applySkillsSnapshot(payload);
-        this.aiBreakdown = this.buildRadarBreakdown();
-        this.explainabilityBreakdown = {
-          weights: this.getBreakdownWeights(),
-          featureScores: this.aiBreakdown
-        };
-        this.scoreReasons = this.buildScoreReasons();
-
-        if (this.viewInitialized) {
-          this.initRadarChart();
-        }
-
-        this.isLoading = false;
+        const data = this.normalizeActivity(payload?.data);
+        this.activityAvailable = data.length > 0;
+        this.totalActivity = data.reduce(
+          (sum: number, item: any) => sum + Math.max(0, Number(item?.count) || 0),
+          0,
+        );
+        this.pendingActivityData = data;
+        this.requestChartRender();
         this.cdr.detectChanges();
       },
       error: () => {
         if (!this.isActiveCycle(cycle)) return;
-        this.topSkills = [];
-        this.missingSkills = [];
-        this.coveragePercentage = 0;
-        this.isLoading = false;
+        this.secondaryErrors.push('Contribution activity');
         this.cdr.detectChanges();
-      }
+      },
+    });
+
+    this.cachedDashboardRequest(
+      'dashboardLanguages',
+      () => this.apiService.getDashboardLanguages(forceRefresh),
+      forceRefresh,
+    ).subscribe({
+      next: (payload: any) => {
+        if (!this.isActiveCycle(cycle)) return;
+        const data = payload?.data && typeof payload.data === 'object' ? payload.data : {};
+        this.languageSource = String(payload?.source || this.languageSource);
+        this.requestChartRender();
+        if (Object.keys(data).length > 0) {
+          this.hasLanguageData = true;
+          this.pendingLanguageData = data;
+        } else {
+          this.hasLanguageData = false;
+          this.pendingLanguageData = null;
+          this.languageLegend = [];
+        }
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        if (!this.isActiveCycle(cycle)) return;
+        this.secondaryErrors.push('Language distribution');
+        this.cdr.detectChanges();
+      },
     });
   }
 
   loadIntegrationAnalytics(cycle = this.requestCycle, forceRefresh = false): void {
-    this.cachedDashboardRequest('dashboardIntegrationAnalytics', () => this.apiService.getDashboardIntegrationAnalytics(7), forceRefresh, { limit: 7 }).subscribe({
+    this.integrationHealthState = 'loading';
+    this.cachedDashboardRequest(
+      'dashboardIntegrationAnalytics',
+      () => this.apiService.getDashboardIntegrationAnalytics(7),
+      forceRefresh,
+      { limit: 7 },
+    ).subscribe({
       next: (payload: any) => {
         if (!this.isActiveCycle(cycle)) return;
 
+        this.integrationConnectivity = payload.connectivity || null;
+        this.integrationHealthState = 'ready';
         this.integrationAnalyticsCards = Array.isArray(payload?.cards)
           ? payload.cards.map((card: any) => ({
               provider: String(card.provider || '').toLowerCase(),
@@ -496,9 +645,10 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
               profileScore: Number(card.profileScore || 0),
               confidence: Number(card.confidence || 0),
               trendDelta: Number(card.trendDelta || 0),
+              trendAvailable: card.trendAvailable ?? card.syncCount >= 2,
               successRate: Number(card.successRate || 0),
               syncCount: Number(card.syncCount || 0),
-              lastSyncedAt: String(card.lastSyncedAt || '')
+              lastSyncedAt: String(card.lastSyncedAt || ''),
             }))
           : [];
         this.cdr.detectChanges();
@@ -506,16 +656,23 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       error: () => {
         if (!this.isActiveCycle(cycle)) return;
         this.integrationAnalyticsCards = [];
+        this.integrationHealthState = 'error';
+        this.integrationConnectivity = null;
+        this.secondaryErrors.push('Integration trends');
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
   private applySkillsSnapshot(payload: any): void {
     if (!payload) return;
     this.topSkills = Array.isArray(payload?.topSkills) ? payload.topSkills : this.topSkills;
-    this.missingSkills = Array.isArray(payload?.missingSkills) ? payload.missingSkills : this.missingSkills;
-    this.coveragePercentage = Math.max(0, Math.min(100, Number(payload?.coveragePercentage ?? this.coveragePercentage ?? 0)));
+    this.missingSkills = Array.isArray(payload?.missingSkills)
+      ? payload.missingSkills
+      : this.missingSkills;
+    if (Object.hasOwn(payload, 'coveragePercentage')) {
+      this.coveragePercentage = this.normalizeCoverage(payload.coveragePercentage);
+    }
     if (payload?.stale) {
       this.dashboardStale = true;
       this.dashboardRefreshMessage = 'Analysis refresh recommended';
@@ -529,8 +686,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       title: String(item?.title || 'Recommendation'),
       priority: item?.priority === 'Low' || item?.priority === 'Medium' ? item.priority : 'High',
       category: String(item?.category || 'Technology'),
-      priorityType: item?.priorityType === 'low' || item?.priorityType === 'medium' ? item.priorityType : 'high',
-      icon: this.iconForCategory(item?.category)
+      priorityType:
+        item?.priorityType === 'low' || item?.priorityType === 'medium'
+          ? item.priorityType
+          : 'high',
+      icon: this.iconForCategory(item?.category),
     }));
     if (payload?.stale) {
       this.dashboardStale = true;
@@ -542,47 +702,67 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     module: string,
     producer: () => Observable<T>,
     forceRefresh = false,
-    extra: Partial<FrontendAnalysisCacheKey> = {}
+    extra: Partial<FrontendAnalysisCacheKey> = {},
   ): Observable<T> {
     const key = this.dashboardCacheKey(module, extra);
     const requestKey = `${module}:${key.signalHash || 'latest'}:${key.careerStack}:${key.experienceLevel}:${forceRefresh ? 'refresh' : 'cache'}:${key.limit || ''}`;
 
     if (!forceRefresh) {
-      const cached = this.frontendCache.get<T>(key);
-      if (cached) return of(cached);
+      try {
+        const cached = this.frontendCache.get<T>(key);
+        if (cached) return of(cached);
+      } catch {
+        /* Continue with an authenticated read if storage is unavailable. */
+      }
       const active = this.activeRequests.get(requestKey);
       if (active) return active as Observable<T>;
     }
 
+    const cycle = this.requestCycle;
     const request$ = producer().pipe(
+      takeUntil(this.requestCancelled),
       tap((payload: any) => {
-        const payloadSignalHash = payload?.dashboardContext?.signalHash
-          || payload?.signalMetadata?.signalHash
-          || payload?.signalHash
-          || this.signalHash
-          || key.signalHash;
-        this.frontendCache.set({
-          ...key,
-          signalHash: payloadSignalHash || 'no-signals',
-          version: this.dashboardCacheVersion(module, payloadSignalHash)
-        }, payload);
+        if (!this.isActiveCycle(cycle)) return;
+        const payloadSignalHash =
+          payload?.dashboardContext?.signalHash ||
+          payload?.signalMetadata?.signalHash ||
+          payload?.signalHash ||
+          this.signalHash ||
+          key.signalHash;
+        try {
+          this.frontendCache.set(
+            {
+              ...key,
+              signalHash: payloadSignalHash || 'no-signals',
+              version: this.dashboardCacheVersion(module, payloadSignalHash),
+            },
+            payload,
+          );
+        } catch {
+          // Storage denial/quota must not hide successfully fetched evidence.
+        }
       }),
       finalize(() => this.activeRequests.delete(requestKey)),
-      shareReplay({ bufferSize: 1, refCount: true })
+      shareReplay({ bufferSize: 1, refCount: true }),
     );
 
     if (!forceRefresh) this.activeRequests.set(requestKey, request$);
     return request$;
   }
 
-  private dashboardCacheKey(module: string, extra: Partial<FrontendAnalysisCacheKey> = {}): FrontendAnalysisCacheKey {
+  private dashboardCacheKey(
+    module: string,
+    extra: Partial<FrontendAnalysisCacheKey> = {},
+  ): FrontendAnalysisCacheKey {
     return {
       module,
       careerStack: this.selectedCareerStack,
       experienceLevel: this.selectedExperienceLevel,
       signalHash: extra.signalHash || this.signalHash || '',
-      version: extra.version || this.dashboardCacheVersion(module, extra.signalHash || this.signalHash),
-      ...extra
+      ttlMs: 60_000,
+      version:
+        extra.version || this.dashboardCacheVersion(module, extra.signalHash || this.signalHash),
+      ...extra,
     };
   }
 
@@ -597,8 +777,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       'dashboardLanguages',
       'dashboardSkills',
       'dashboardRecommendations',
-      'dashboardIntegrationAnalytics'
-    ].forEach((module) => this.frontendCache.clearModule(module));
+      'dashboardIntegrationAnalytics',
+    ].forEach((module) => {
+      try {
+        this.frontendCache.clearModule(module);
+      } catch {
+        /* Refresh still bypasses storage. */
+      }
+    });
     this.activeRequests.clear();
   }
 
@@ -608,30 +794,25 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       return items.map((item) => ({
         key: String(item?.key || item?.label || ''),
         label: String(item?.label || 'Readiness'),
-        value: this.normalizePercent(Number(item?.value || 0)),
-        tone: String(item?.tone || 'primary')
+        value: this.normalizeCoverage(item?.value),
+        tone: String(item?.tone || 'primary'),
       }));
     }
 
-    return [
-      { key: 'overall', label: 'Overall Readiness', value: this.normalizePercent(this.developerScore), tone: 'primary' },
-      { key: 'resume', label: 'Resume Readiness', value: this.normalizePercent(this.resumeMetrics.atsScore), tone: 'blue' },
-      { key: 'portfolio', label: 'Portfolio Readiness', value: this.normalizePercent(this.aiBreakdown?.projectImpact || 0), tone: 'green' },
-      { key: 'interview', label: 'Interview Readiness', value: this.normalizePercent(this.aiBreakdown?.industryReadiness || 0), tone: 'amber' },
-      { key: 'market', label: 'Market Readiness', value: this.normalizePercent(this.coveragePercentage), tone: 'cyan' },
-      { key: 'integration', label: 'Integration Readiness', value: this.normalizePercent(this.integrationScore), tone: 'violet' }
-    ];
+    return [];
   }
 
   private normalizeCommandCenter(raw: any): CommandCenterAction[] {
     const items = Array.isArray(raw) ? raw : [];
-    return items.map((item) => ({
-      key: String(item?.key || item?.label || ''),
-      label: String(item?.label || 'Priority'),
-      value: String(item?.value || 'Not available yet'),
-      source: String(item?.source || 'Dashboard'),
-      route: String(item?.route || '/app/dashboard')
-    })).slice(0, 6);
+    return items
+      .map((item) => ({
+        key: String(item?.key || item?.label || ''),
+        label: String(item?.label || 'Priority'),
+        value: String(item?.value || 'Not available yet'),
+        source: String(item?.source || 'Dashboard'),
+        route: String(item?.route || '/app/dashboard'),
+      }))
+      .slice(0, 6);
   }
 
   private normalizeSourceFreshness(raw: any): SourceFreshnessEntry[] {
@@ -642,7 +823,10 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       recommendations: 'Recommendations',
       weeklyReports: 'Weekly Reports',
       jobs: 'Jobs',
-      news: 'News'
+      news: 'News',
+      careerSprint: 'Career Sprint',
+      learning: 'Learning Hub',
+      integrations: 'Integrations',
     };
     const source = raw && typeof raw === 'object' ? raw : {};
     return Object.keys(labels).map((key) => {
@@ -653,29 +837,43 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         label: labels[key],
         lastUpdated: item.lastUpdated || item.updatedAt || null,
         status,
+        policy: item.policy,
         refreshRecommended: Boolean(item.refreshRecommended ?? status !== 'fresh'),
-        reason: String(item.reason || '')
+        reason: String(item.reason || ''),
       };
     });
   }
 
   ngAfterViewInit(): void {
     this.viewInitialized = true;
-    setTimeout(() => {
-      this.initRadarChart();
-      if (this.pendingActivityData) {
-        this.initActivityChart(this.pendingActivityData);
-        this.pendingActivityData = null;
+    this.themeObserver = new MutationObserver(() => this.refreshChartTheme());
+    this.themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    });
+    this.chartResizeObserver = new ResizeObserver(() => {
+      for (const chart of [this.activityInstance, this.languageInstance, this.radarInstance]) {
+        if (chart && chart.canvas?.isConnected) chart.resize();
       }
-      if (this.pendingLanguageData) {
-        this.initLanguageChart(this.pendingLanguageData);
-        this.pendingLanguageData = null;
-      }
-      this.cdr.detectChanges();
-    }, 50);
+      this.scheduleChartRender();
+    });
+    for (const ref of [this.activityChart, this.languageChart, this.skillRadar]) {
+      if (ref?.nativeElement.parentElement)
+        this.chartResizeObserver.observe(ref.nativeElement.parentElement);
+    }
+    this.requestChartRender();
+    this.scheduleChartRender();
   }
 
   ngOnDestroy(): void {
+    this.destroyed = true;
+    if (this.chartFrame !== null) cancelAnimationFrame(this.chartFrame);
+    this.chartResizeObserver?.disconnect();
+    this.dirtyCharts.clear();
+    this.requestCycle += 1;
+    this.requestCancelled.next();
+    this.requestCancelled.complete();
+    this.themeObserver?.disconnect();
     this.subscriptions.unsubscribe();
     this.radarInstance?.destroy();
     this.activityInstance?.destroy();
@@ -687,7 +885,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       github: 'GitHub',
       linkedin: 'LinkedIn',
       leetcode: 'LeetCode',
-      kaggle: 'Kaggle'
+      kaggle: 'Kaggle',
     };
     return map[String(provider || '').toLowerCase()] || provider;
   }
@@ -701,109 +899,208 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.radarInstance?.destroy();
 
     const breakdown = this.buildRadarBreakdown();
+    const gridStroke = this.chartGridColor();
+    const labelColor = this.chartColor('--text-secondary');
+
     this.radarInstance = new Chart(this.skillRadar.nativeElement, {
       type: 'radar',
       data: {
-        labels: ['Code Quality', 'Skill Coverage', 'Industry Readiness', 'Project Impact'],
-        datasets: [{
-          label: 'Your Skills',
-          data: [
-            breakdown.codeQuality,
-            breakdown.skillCoverage,
-            breakdown.industryReadiness,
-            breakdown.projectImpact
-          ],
-          borderColor: '#6366F1',
-          backgroundColor: 'rgba(99, 102, 241, 0.12)',
-          borderWidth: 2,
-          pointBackgroundColor: '#6366F1',
-          pointBorderColor: '#1E293B',
-          pointBorderWidth: 2,
-          pointRadius: 4,
-          pointHoverRadius: 6
-        }]
+        labels: [
+          ['Code', 'Quality'],
+          ['Skill', 'Coverage'],
+          ['Industry', 'Readiness'],
+          ['Project', 'Impact'],
+        ],
+        datasets: [
+          {
+            label: 'Your Skills',
+            data: [
+              breakdown.codeQuality,
+              breakdown.skillCoverage,
+              breakdown.industryReadiness,
+              breakdown.projectImpact,
+            ],
+            spanGaps: true,
+            borderColor: '#4F46E5',
+            backgroundColor: 'rgba(99, 102, 241, 0.16)',
+            borderWidth: 2.25,
+            pointBackgroundColor: '#4F46E5',
+            pointBorderColor: this.chartColor('--bg-card'),
+            pointBorderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            pointHoverBackgroundColor: '#8B5CF6',
+          },
+        ],
       },
       options: {
+        animation: false,
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
+        layout: {
+          padding: { top: 4, right: 8, bottom: 4, left: 8 },
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            ...this.buildChartTooltipOptions(),
+            callbacks: {
+              label: (ctx) => {
+                const raw = ctx.raw;
+                if (raw === null || raw === undefined) {
+                  return ` ${ctx.dataset.label}: Unavailable`;
+                }
+                return ` ${ctx.dataset.label}: ${raw}%`;
+              },
+            },
+          },
+        },
         scales: {
           r: {
             beginAtZero: true,
             max: 100,
-            ticks: { display: false, stepSize: 20 },
-            grid: { color: 'rgba(51, 65, 85, 0.6)' },
-            angleLines: { color: 'rgba(51, 65, 85, 0.6)' },
+            ticks: { display: false, stepSize: 25 },
+            grid: { color: gridStroke },
+            angleLines: { color: gridStroke },
             pointLabels: {
-              color: '#94A3B8',
-              font: { size: 11, family: 'Inter' }
-            }
-          }
-        }
-      }
+              color: labelColor,
+              font: { size: 10.5, weight: 600, family: 'Manrope, Inter, sans-serif' },
+            },
+          },
+        },
+      },
     });
   }
 
+  readinessStatusLabel(value: number | null): string {
+    if (value === null || Number.isNaN(value)) return 'Unavailable';
+    if (value >= 80) return 'Strong';
+    if (value >= 60) return 'On Track';
+    return 'Building';
+  }
+
+  readinessToneClass(value: number | null): string {
+    if (value === null || Number.isNaN(value)) return 'pill-muted';
+    if (value >= 80) return 'pill-success';
+    if (value >= 60) return 'pill-indigo';
+    return 'pill-warning';
+  }
+
+  statStatusLabel(card: StatCard): string {
+    if (this.isLoading) return 'Syncing';
+    return card.value === null ? 'Unavailable' : 'Measured';
+  }
+
+  statSparkPath(iconType: StatCard['iconType']): string {
+    switch (iconType) {
+      case 'repos':
+        return 'M2 24 C18 24, 24 14, 38 16 C50 18, 56 8, 72 11 C84 13, 94 20, 118 6';
+      case 'stars':
+        return 'M2 26 C20 22, 32 10, 48 15 C64 20, 74 12, 92 9 C104 7, 110 14, 118 8';
+      case 'forks':
+        return 'M2 22 C16 26, 30 12, 44 18 C58 24, 72 7, 88 12 C100 16, 108 9, 118 5';
+      case 'followers':
+      default:
+        return 'M2 24 C20 18, 34 22, 50 13 C66 4, 80 17, 96 11 C106 7, 112 10, 118 7';
+    }
+  }
+
+  freshnessStatusLabel(source: SourceFreshnessEntry): string {
+    if (source.status === 'fresh') {
+      return source.policy === 'durable-record' ? 'Saved' : 'Fresh';
+    }
+    if (source.status === 'missing') return 'No evidence';
+    return 'Stale';
+  }
+
+  freshnessPillClass(status: string): string {
+    if (status === 'fresh') return 'pill-success';
+    if (status === 'missing') return 'pill-muted';
+    if (status === 'incompatible') return 'pill-danger';
+    return 'pill-warning';
+  }
+
   get scoreTrendLabel(): string {
-    if (this.scoreChangeFromLastMonth === null) return 'No prior data yet';
-    if (this.scoreChangeFromLastMonth === 0) return 'No change from last month';
+    if (this.scoreChangeFromLastMonth === null)
+      return this.progress?.history.status === 'available'
+        ? 'Comparable portfolio history below'
+        : 'No comparable history';
+    if (this.scoreChangeFromLastMonth === 0) return 'Portfolio unchanged from prior snapshot';
     const sign = this.scoreChangeFromLastMonth > 0 ? '+' : '';
-    return `${sign}${this.scoreChangeFromLastMonth} pts from last month`;
+    return `${sign}${this.scoreChangeFromLastMonth} portfolio pts vs prior snapshot`;
   }
 
   get scoreTrendUp(): boolean {
     return (this.scoreChangeFromLastMonth ?? 0) >= 0;
   }
 
-  get percentileLabel(): string {
-    const score = Math.round(this.developerScore);
-    if (score >= 90) return 'top 5%';
-    if (score >= 80) return 'top 15%';
-    if (score >= 70) return 'top 30%';
-    if (score >= 60) return 'top 50%';
-    if (score >= 50) return 'top 65%';
-    return 'bottom 35%';
-  }
-
-  get scoreBreakdownRows(): { label: string; value: number }[] {
+  get scoreBreakdownRows(): { label: string; value: number | null }[] {
     const src = this.buildRadarBreakdown();
     return [
       { label: 'Code Quality', value: src.codeQuality },
       { label: 'Skill Coverage', value: src.skillCoverage },
       { label: 'Industry Readiness', value: src.industryReadiness },
-      { label: 'Project Impact', value: src.projectImpact }
+      { label: 'Project Impact', value: src.projectImpact },
     ];
   }
 
-  get profileSignalRows(): { label: string; value: number }[] {
+  get profileSignalRows(): { label: string; value: number | null }[] {
     return [
-      { label: 'GitHub Strength', value: this.normalizePercent(this.githubScore) },
-      { label: 'Resume ATS', value: this.normalizePercent(this.resumeMetrics.atsScore) },
-      { label: 'Keyword Density', value: this.normalizePercent(this.resumeMetrics.keywordDensity) },
-      { label: 'Skill Coverage', value: this.normalizePercent(this.coveragePercentage) }
+      {
+        label: 'GitHub Strength',
+        value: this.sourcesUsed.github?.available ? this.normalizePercent(this.githubScore) : null,
+      },
+      {
+        label: 'Resume ATS',
+        value: this.sourcesUsed.resume?.available
+          ? this.normalizeCoverage(this.resumeMetrics.atsScore)
+          : null,
+      },
+      {
+        label: 'Keyword Density',
+        value: this.sourcesUsed.resume?.available
+          ? this.normalizeCoverage(this.resumeMetrics.keywordDensity)
+          : null,
+      },
+      { label: 'Skill Coverage', value: this.normalizeCoverage(this.coveragePercentage) },
     ];
   }
 
-  get explainabilityRows(): { label: string; value: number; weight: number }[] {
+  get explainabilityRows(): { label: string; value: number | null; weight: number }[] {
     const scores = this.buildRadarBreakdown();
     const weights = this.getBreakdownWeights();
     return [
-      { label: 'Code Quality', value: scores.codeQuality, weight: Math.round(weights['codeQuality'] * 100) },
-      { label: 'Skill Coverage', value: scores.skillCoverage, weight: Math.round(weights['skillCoverage'] * 100) },
-      { label: 'Industry Readiness', value: scores.industryReadiness, weight: Math.round(weights['industryReadiness'] * 100) },
-      { label: 'Project Impact', value: scores.projectImpact, weight: Math.round(weights['projectImpact'] * 100) }
+      {
+        label: 'Code Quality',
+        value: scores.codeQuality,
+        weight: Math.round(weights['codeQuality'] * 100),
+      },
+      {
+        label: 'Skill Coverage',
+        value: scores.skillCoverage,
+        weight: Math.round(weights['skillCoverage'] * 100),
+      },
+      {
+        label: 'Industry Readiness',
+        value: scores.industryReadiness,
+        weight: Math.round(weights['industryReadiness'] * 100),
+      },
+      {
+        label: 'Project Impact',
+        value: scores.projectImpact,
+        weight: Math.round(weights['projectImpact'] * 100),
+      },
     ];
   }
 
   get dashboardIdentityLine(): string {
     const handle = this.githubHandle || 'Not connected';
-    const orgPart = this.tenantOrgName ? ` | Org: ${this.tenantOrgName}` : '';
-    const teamPart = this.tenantTeamName ? ` | Team: ${this.tenantTeamName}` : '';
-    return `Default profile source | Last analyzed: ${this.lastAnalyzed} | GitHub: ${handle}${orgPart}${teamPart}`;
+    return `Active personal profile | Latest evidence: ${this.lastAnalyzed} | GitHub: ${handle}`;
   }
 
   get dashboardScoreLine(): string {
-    return `Readiness Score: ${Math.round(this.developerScore)} | GitHub Score: ${Math.round(this.githubScore)} | Integration Score: ${Math.round(this.integrationScore)}`;
+    if (this.isLoading) return 'Loading dashboard evidence…';
+    return `Readiness Score: ${this.readinessAvailable ? Math.round(this.developerScore) : 'Unavailable'} | GitHub Score: ${this.sourcesUsed.github?.available ? Math.round(this.githubScore) : 'Unavailable'} | Integration Score: ${this.sourcesUsed.integrations?.available ? Math.round(this.integrationScore) : 'Unavailable'}`;
   }
 
   get sourceHealthLine(): string {
@@ -839,6 +1136,17 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   }
 
+  private normalizeActivity(value: unknown): { month: string; count: number }[] {
+    return (Array.isArray(value) ? value : []).filter(
+      (item) =>
+        typeof item?.month === 'string' &&
+        item.month.trim().length > 0 &&
+        typeof item.count === 'number' &&
+        Number.isSafeInteger(item.count) &&
+        item.count >= 0,
+    );
+  }
+
   initActivityChart(activityData: { month: string; count: number }[]): void {
     if (!this.activityChart?.nativeElement) return;
     this.activityInstance?.destroy();
@@ -850,103 +1158,155 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const ctx = this.activityChart.nativeElement.getContext('2d') as CanvasRenderingContext2D;
     const gradient = ctx.createLinearGradient(0, 0, 0, 220);
-    gradient.addColorStop(0, 'rgba(99, 102, 241, 0.35)');
-    gradient.addColorStop(1, 'rgba(99, 102, 241, 0)');
+    gradient.addColorStop(0, 'rgba(79, 70, 229, 0.28)');
+    gradient.addColorStop(0.55, 'rgba(99, 102, 241, 0.10)');
+    gradient.addColorStop(1, 'rgba(139, 92, 246, 0)');
 
     this.activityInstance = new Chart(this.activityChart.nativeElement, {
       type: 'line',
       data: {
         labels,
-        datasets: [{
-          data,
-          borderColor: '#6366F1',
-          backgroundColor: gradient,
-          borderWidth: 3,
-          fill: true,
-          tension: 0.45,
-          pointBackgroundColor: '#6366F1',
-          pointBorderColor: '#1E293B',
-          pointBorderWidth: 2,
-          pointRadius: 5,
-          pointHoverRadius: 7
-        }]
+        datasets: [
+          {
+            data,
+            borderColor: '#4F46E5',
+            backgroundColor: gradient,
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.42,
+            pointBackgroundColor: '#4F46E5',
+            pointBorderColor: this.chartColor('--bg-card'),
+            pointBorderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            pointHoverBackgroundColor: '#8B5CF6',
+          },
+        ],
       },
       options: {
+        animation: false,
         responsive: true,
         maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
         plugins: {
           legend: { display: false },
           tooltip: {
+            ...this.buildChartTooltipOptions(),
             callbacks: {
-              label: (ctx) => ` ${ctx.parsed.y} commit${ctx.parsed.y !== 1 ? 's' : ''}`
-            }
-          }
+              label: (ctx) => ` ${ctx.parsed.y} commit${ctx.parsed.y !== 1 ? 's' : ''}`,
+            },
+          },
         },
         scales: {
           x: {
             display: true,
             grid: { display: false },
             border: { display: false },
-            ticks: { color: '#64748B', font: { size: 11 } }
+            ticks: {
+              color: this.chartColor('--text-secondary'),
+              font: { size: 11, family: 'Manrope, Inter, sans-serif' },
+            },
           },
           y: {
             display: true,
             min: 0,
             suggestedMax: Math.ceil(maxVal * 1.2),
-            grid: { color: 'rgba(255,255,255,0.05)' },
+            grid: { color: this.chartGridColor() },
             border: { display: false },
             ticks: {
-              color: '#64748B',
-              font: { size: 10 },
+              color: this.chartColor('--text-secondary'),
+              font: { size: 10, family: 'Inter, sans-serif' },
               maxTicksLimit: 5,
-              precision: 0
-            }
-          }
+              precision: 0,
+            },
+          },
         },
-        layout: { padding: { top: 10, bottom: 10 } }
-      }
+        layout: { padding: { top: 8, bottom: 4, left: 2, right: 6 } },
+      },
     });
-    this.cdr.detectChanges();
   }
 
   initLanguageChart(langData: Record<string, number>): void {
     if (!this.languageChart?.nativeElement) return;
     this.languageInstance?.destroy();
 
-    const keys = Object.keys(langData).sort((left, right) => Number(langData[right] || 0) - Number(langData[left] || 0));
+    const keys = Object.keys(langData).sort(
+      (left, right) => Number(langData[right] || 0) - Number(langData[left] || 0),
+    );
     const total = keys.reduce((sum, key) => sum + Number(langData[key] || 0), 0);
     const top = keys.slice(0, 4);
     const other = keys.slice(4).reduce((sum, key) => sum + Number(langData[key] || 0), 0);
     const labels = [...top, ...(other > 0 ? ['Other'] : [])];
     const values = [...top.map((key) => Number(langData[key] || 0)), ...(other > 0 ? [other] : [])];
-    const colors = ['#6366F1', '#8B5CF6', '#22C55E', '#F59E0B', '#64748B'];
+    const colors = ['#4F46E5', '#8B5CF6', '#10B981', '#0EA5E9', '#64748B'];
     this.hasLanguageData = values.length > 0 && total > 0;
-
-    this.languageLegend = labels.map((label, index) => ({
-      label,
-      percentage: total > 0 ? Math.round((values[index] / total) * 100) : 0,
-      color: colors[index]
-    }));
 
     this.languageInstance = new Chart(this.languageChart.nativeElement, {
       type: 'doughnut',
       data: {
         labels,
-        datasets: [{
-          data: values,
-          backgroundColor: colors,
-          borderWidth: 3,
-          borderColor: '#111827',
-          hoverOffset: 6
-        }]
+        datasets: [
+          {
+            data: values,
+            backgroundColor: colors,
+            borderWidth: 2,
+            borderRadius: 4,
+            spacing: 2,
+            borderColor: this.chartColor('--bg-card'),
+            hoverOffset: 6,
+          },
+        ],
       },
       options: {
+        animation: false,
         responsive: true,
         maintainAspectRatio: false,
-        cutout: '68%',
-        plugins: { legend: { display: false } }
-      }
+        cutout: '72%',
+        plugins: {
+          legend: { display: false },
+          tooltip: this.buildChartTooltipOptions(),
+        },
+      },
     });
+    this.languageLegend = labels.map((label, index) => ({
+      label,
+      percentage: total > 0 ? Math.round((values[index] / total) * 100) : 0,
+      color: colors[index],
+    }));
+  }
+
+  private isDarkTheme(): boolean {
+    return document.documentElement.getAttribute('data-theme') === 'dark';
+  }
+
+  private chartGridColor(): string {
+    return this.isDarkTheme() ? 'rgba(148, 163, 184, 0.14)' : 'rgba(203, 213, 225, 0.55)';
+  }
+
+  private buildChartTooltipOptions() {
+    const dark = this.isDarkTheme();
+    return {
+      backgroundColor: dark ? '#0F172A' : '#0F172A',
+      titleColor: '#F8FAFC',
+      bodyColor: '#E2E8F0',
+      borderColor: dark ? 'rgba(148, 163, 184, 0.2)' : 'rgba(15, 23, 42, 0.12)',
+      borderWidth: 1,
+      cornerRadius: 10,
+      padding: 10,
+      displayColors: true,
+    };
+  }
+
+  private chartColor(token: string): string {
+    return getComputedStyle(document.documentElement).getPropertyValue(token).trim() || '#64748b';
+  }
+
+  private refreshChartTheme(): void {
+    this.requestChartRender();
+    this.scheduleChartRender();
   }
 
   private buildRadarBreakdown(): ScoreBreakdown {
@@ -954,71 +1314,60 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       return this.normalizeBreakdown(this.aiBreakdown);
     }
 
-    const repoCount = Number(this.statCards[0]?.value || 0);
-    const starCount = Number(this.statCards[1]?.value || 0);
-    const repoSignal = this.normalizePercent((repoCount / 18) * 100);
-    const starSignal = this.normalizePercent((Math.log10(starCount + 1) / 2.2) * 100);
-    const industryReadiness = this.normalizePercent(
-      (this.resumeMetrics.atsScore + this.resumeMetrics.keywordDensity + this.resumeMetrics.contentQuality + this.resumeMetrics.formatScore) / 4 ||
-      this.developerScore
-    );
-
-    return {
-      codeQuality: this.normalizePercent(this.githubScore),
-      skillCoverage: this.normalizePercent(this.coveragePercentage),
-      industryReadiness,
-      projectImpact: this.normalizePercent((starSignal * 0.55) + (repoSignal * 0.25) + (this.integrationScore * 0.2))
-    };
+    return { codeQuality: null, skillCoverage: null, industryReadiness: null, projectImpact: null };
   }
 
   private normalizeBreakdown(value: any): ScoreBreakdown {
     return {
-      codeQuality: this.normalizePercent(value?.codeQuality || 0),
-      skillCoverage: this.normalizePercent(value?.skillCoverage || 0),
-      industryReadiness: this.normalizePercent(value?.industryReadiness || 0),
-      projectImpact: this.normalizePercent(value?.projectImpact || 0)
+      codeQuality: this.normalizeCoverage(value?.codeQuality),
+      skillCoverage: this.normalizeCoverage(value?.skillCoverage),
+      industryReadiness: this.normalizeCoverage(value?.industryReadiness),
+      projectImpact: this.normalizeCoverage(value?.projectImpact),
     };
   }
 
   private getBreakdownWeights(): Record<string, number> {
-    if (this.selectedCareerStack === 'Frontend') {
-      return { codeQuality: 0.30, skillCoverage: 0.34, industryReadiness: 0.20, projectImpact: 0.16 };
+    if (this.recordedWeights) return this.recordedWeights;
+    if ((this.snapshotCareerStack || this.selectedCareerStack) === 'Frontend') {
+      return { codeQuality: 0.3, skillCoverage: 0.34, industryReadiness: 0.2, projectImpact: 0.16 };
     }
-    if (this.selectedCareerStack === 'Backend') {
-      return { codeQuality: 0.36, skillCoverage: 0.24, industryReadiness: 0.22, projectImpact: 0.18 };
+    if ((this.snapshotCareerStack || this.selectedCareerStack) === 'Backend') {
+      return {
+        codeQuality: 0.36,
+        skillCoverage: 0.24,
+        industryReadiness: 0.22,
+        projectImpact: 0.18,
+      };
     }
-    if (this.selectedCareerStack === 'AI/ML') {
-      return { codeQuality: 0.28, skillCoverage: 0.24, industryReadiness: 0.28, projectImpact: 0.20 };
+    if ((this.snapshotCareerStack || this.selectedCareerStack) === 'AI/ML') {
+      return {
+        codeQuality: 0.28,
+        skillCoverage: 0.24,
+        industryReadiness: 0.28,
+        projectImpact: 0.2,
+      };
     }
     return { codeQuality: 0.32, skillCoverage: 0.28, industryReadiness: 0.22, projectImpact: 0.18 };
   }
 
-  private buildConfidenceScore(): number {
-    const checks = [
-      Boolean(this.sourcesUsed.github?.available),
-      Boolean(this.sourcesUsed.resume?.available),
-      Boolean(this.sourcesUsed.skillGap?.available),
-      Boolean(this.sourcesUsed.recommendations?.available),
-      Boolean(this.sourcesUsed.integrations?.available)
-    ];
-    const ratio = checks.filter(Boolean).length / checks.length;
-    return this.normalizePercent(40 + (ratio * 60));
-  }
-
   private buildScoreReasons(): string[] {
-    const weights = this.getBreakdownWeights();
-    const breakdown = this.buildRadarBreakdown();
-    const reasons = [
-      `Code quality contributes ${Math.round(weights['codeQuality'] * 100)}% weight and is currently ${breakdown.codeQuality}%.`,
-      `Skill coverage contributes ${Math.round(weights['skillCoverage'] * 100)}% weight and is currently ${breakdown.skillCoverage}%.`,
-      `Industry readiness contributes ${Math.round(weights['industryReadiness'] * 100)}% weight and is currently ${breakdown.industryReadiness}%.`,
-      `Project impact contributes ${Math.round(weights['projectImpact'] * 100)}% weight and is currently ${breakdown.projectImpact}%.`
-    ];
+    const reasons = this.explainabilityRows.map((row) =>
+      row.value === null
+        ? `${row.label} is unavailable; missing evidence does not establish zero.`
+        : `${row.label}: ${row.weight}% portfolio weight; saved dimension ${row.value}%.`,
+    );
+    reasons.push(
+      'Overall readiness uses the saved base score with an 85/15 integration blend when the integration score is positive.',
+    );
 
     if (this.languageSource === 'language_bytes') {
-      reasons.push('Language distribution is based on real GitHub language-byte data across repositories.');
+      reasons.push(
+        'Language distribution is based on real GitHub language-byte data across repositories.',
+      );
     } else if (this.languageSource === 'primary_language') {
-      reasons.push('Language distribution is currently based on primary repo languages because byte data was unavailable.');
+      reasons.push(
+        'Language distribution is currently based on primary repo languages because byte data was unavailable.',
+      );
     }
 
     if (this.rateLimitWarning) {
@@ -1036,12 +1385,19 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     return 'technology';
   }
 
+  private normalizeCoverage(value: unknown): number | null {
+    if ((typeof value !== 'number' && typeof value !== 'string') || String(value).trim() === '')
+      return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? this.normalizePercent(parsed) : null;
+  }
+
   private normalizePercent(value: number): number {
     const numeric = Number(value || 0);
     return Math.max(0, Math.min(100, Math.round(numeric)));
   }
 
   private isActiveCycle(cycle: number): boolean {
-    return this.requestCycle === cycle;
+    return !this.destroyed && this.requestCycle === cycle;
   }
 }

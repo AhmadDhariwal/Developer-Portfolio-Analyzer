@@ -14,6 +14,15 @@ const aiServiceSource = read('backend', 'src', 'services', 'aiTaskService.js');
 const routesSource = read('backend', 'src', 'routes', 'careerSprint.routes.js');
 const promptSource = read('backend', 'src', 'prompts', 'careerSprintPrompt.js');
 const componentSource = read('frontend', 'src', 'app', 'pages', 'career-sprint', 'career-sprint.component.ts');
+const plannerSource = read(
+  'frontend',
+  'src',
+  'app',
+  'pages',
+  'career-sprint',
+  'components',
+  'sprint-planner.component.ts'
+);
 const clientSource = read('frontend', 'src', 'app', 'shared', 'services', 'career-sprint.service.ts');
 
 const {
@@ -35,12 +44,36 @@ const {
 const { getCareerSprintPrompt } = require('../prompts/careerSprintPrompt');
 
 const groundedTasks = [
-  { title: 'Learn React hooks deeply', description: 'Build a small React dashboard using hooks for Frontend Intern growth.', category: 'learning' },
-  { title: 'Ship React portfolio section', description: 'Publish a React project page that proves Frontend delivery quality.', category: 'project' },
-  { title: 'Practice React testing basics', description: 'Write unit tests for React components covering happy-path Intern workflows.', category: 'practice' },
-  { title: 'Close TypeScript gap', description: 'Convert one React module to TypeScript with strict typing and readable types.', category: 'learning' },
-  { title: 'Improve GitHub README', description: 'Rewrite the React repo README so recruiters can understand the Frontend proof quickly.', category: 'practice' },
-  { title: 'Build React form validation', description: 'Implement accessible form validation in a React feature for Intern interview readiness.', category: 'project' }
+  {
+    title: 'Learn React hooks deeply',
+    description: 'Build a small React dashboard using hooks for Frontend Intern growth.',
+    category: 'learning'
+  },
+  {
+    title: 'Ship React portfolio section',
+    description: 'Publish a React project page that proves Frontend delivery quality.',
+    category: 'project'
+  },
+  {
+    title: 'Practice React testing basics',
+    description: 'Write unit tests for React components covering happy-path Intern workflows.',
+    category: 'practice'
+  },
+  {
+    title: 'Close TypeScript gap',
+    description: 'Convert one React module to TypeScript with strict typing and readable types.',
+    category: 'learning'
+  },
+  {
+    title: 'Improve GitHub README',
+    description: 'Rewrite the React repo README so recruiters can understand the Frontend proof quickly.',
+    category: 'practice'
+  },
+  {
+    title: 'Build React form validation',
+    description: 'Implement accessible form validation in a React feature for Intern interview readiness.',
+    category: 'project'
+  }
 ];
 
 test('career sprint routes require JWT protect middleware', () => {
@@ -60,8 +93,14 @@ test('controller sanitizes client errors and never leaks internals', () => {
 });
 
 test('invalid ObjectIds are rejected as 404 before mongoose cast', () => {
-  assert.throws(() => assertObjectId('not-an-id', 'Sprint'), (error) => error.statusCode === 404);
-  assert.throws(() => assertObjectId('', 'Task'), (error) => error.statusCode === 404);
+  assert.throws(
+    () => assertObjectId('not-an-id', 'Sprint'),
+    (error) => error.statusCode === 404
+  );
+  assert.throws(
+    () => assertObjectId('', 'Task'),
+    (error) => error.statusCode === 404
+  );
   assert.doesNotThrow(() => assertObjectId('507f1f77bcf86cd799439011', 'Sprint'));
   assert.match(serviceSource, /assertObjectId\(sprintId/);
   assert.match(controllerSource, /assertObjectId\(req\.params\.id/);
@@ -84,14 +123,15 @@ test('ownership is enforced on every sprint and scenario mutation query', () => 
   assert.match(serviceSource, /findOne\(\{\s*_id:\s*sprintId,\s*userId\s*\}\)/);
   assert.match(serviceSource, /ScenarioSimulation\.findOne\(\{\s*_id:\s*scenarioId,\s*userId\s*\}\)/);
   assert.match(serviceSource, /CareerSprint\.find\(\{\s*userId\s*\}/);
-  assert.match(serviceSource, /sort\(\{\s*updatedAt:\s*-1\s*\}\)/);
+  assert.match(serviceSource, /sort\(\{\s*updatedAt:\s*-1,\s*_id:\s*-1\s*\}\)/);
 });
 
-test('failed force refresh preserves previous valid cache entry', () => {
-  assert.match(serviceSource, /if \(forceRefresh && previousValid\) return timer\.attach\(cloneCached\(previousValid\)\)/);
-  assert.match(serviceSource, /sprintOverviewInflight/);
-  assert.match(serviceSource, /sprintCacheEpoch/);
-  assert.match(serviceSource, /withBudget\(/);
+test('overview reads fail closed and immutable cache keys depend on fresh database snapshots', () => {
+  const cacheSource = read('backend', 'src', 'services', 'sprintOverviewCacheService.js');
+  assert.doesNotMatch(serviceSource, /previousValid/);
+  assert.match(serviceSource, /loadCurrentSprint/);
+  assert.match(cacheSource, /identity\(sprint, previous/);
+  assert.match(cacheSource, /revision/);
   assert.match(aiServiceSource, /dedupeGeneration/);
   assert.match(aiServiceSource, /generationInflight/);
 });
@@ -113,42 +153,83 @@ test('AI fact pollution and low-quality tasks are rejected', () => {
   assert.equal(isUsableTaskText('todo placeholder task'), false);
   assert.equal(isUsableTaskText('Ship a React portfolio proof page with measurable outcomes'), true);
 
-  const polluted = validateAiTaskPlan({
-    tasks: groundedTasks,
-    readinessScore: 88
-  }, { focusTechnology: 'React', effectiveStack: 'Frontend', missingSkills: ['TypeScript'] });
+  const polluted = validateAiTaskPlan(
+    {
+      tasks: groundedTasks,
+      readinessScore: 88
+    },
+    { focusTechnology: 'React', effectiveStack: 'Frontend', missingSkills: ['TypeScript'] }
+  );
   assert.equal(polluted.ok, false);
   assert.equal(polluted.reason, 'pollution');
 
-  const lowQuality = validateAiTaskPlan({
-    tasks: Array.from({ length: 6 }, () => ({
-      title: 'Do something important',
-      description: 'It is important to understand the situation and generally speaking improve.',
-      category: 'learning'
-    }))
-  }, { focusTechnology: 'React', effectiveStack: 'Frontend', missingSkills: ['TypeScript'] });
+  const lowQuality = validateAiTaskPlan(
+    {
+      tasks: Array.from({ length: 6 }, () => ({
+        title: 'Do something important',
+        description: 'It is important to understand the situation and generally speaking improve.',
+        category: 'learning'
+      }))
+    },
+    { focusTechnology: 'React', effectiveStack: 'Frontend', missingSkills: ['TypeScript'] }
+  );
   assert.equal(lowQuality.ok, false);
 
-  const ungrounded = validateAiTaskPlan({
-    tasks: [
-      { title: 'Study quantum hardware topology', description: 'Prepare an executive quantum leadership briefing for tomorrow.', category: 'learning' },
-      { title: 'Build quantum orchestration mesh', description: 'Create a worldwide quantum hardware control plane prototype.', category: 'project' },
-      { title: 'Practice quantum executive talks', description: 'Rehearse quantum leadership answers for executive interviews.', category: 'practice' },
-      { title: 'Review quantum roadmap notes', description: 'Summarize quantum hardware strategy notes into one page.', category: 'learning' },
-      { title: 'Polish quantum case study', description: 'Improve the quantum hardware case study presentation draft.', category: 'practice' },
-      { title: 'Ship quantum demo reel', description: 'Record a short quantum hardware demo for stakeholders.', category: 'project' }
-    ]
-  }, { focusTechnology: 'React', effectiveStack: 'Frontend', missingSkills: ['TypeScript'], recommendationTechnologies: ['React'] });
+  const ungrounded = validateAiTaskPlan(
+    {
+      tasks: [
+        {
+          title: 'Study quantum hardware topology',
+          description: 'Prepare an executive quantum leadership briefing for tomorrow.',
+          category: 'learning'
+        },
+        {
+          title: 'Build quantum orchestration mesh',
+          description: 'Create a worldwide quantum hardware control plane prototype.',
+          category: 'project'
+        },
+        {
+          title: 'Practice quantum executive talks',
+          description: 'Rehearse quantum leadership answers for executive interviews.',
+          category: 'practice'
+        },
+        {
+          title: 'Review quantum roadmap notes',
+          description: 'Summarize quantum hardware strategy notes into one page.',
+          category: 'learning'
+        },
+        {
+          title: 'Polish quantum case study',
+          description: 'Improve the quantum hardware case study presentation draft.',
+          category: 'practice'
+        },
+        {
+          title: 'Ship quantum demo reel',
+          description: 'Record a short quantum hardware demo for stakeholders.',
+          category: 'project'
+        }
+      ]
+    },
+    {
+      focusTechnology: 'React',
+      effectiveStack: 'Frontend',
+      missingSkills: ['TypeScript'],
+      recommendationTechnologies: ['React']
+    }
+  );
   assert.equal(ungrounded.ok, false);
   assert.equal(ungrounded.reason, 'ungrounded');
 
-  const valid = validateAiTaskPlan({ tasks: groundedTasks }, {
-    focusTechnology: 'React',
-    effectiveStack: 'Frontend',
-    effectiveExperience: 'Intern',
-    missingSkills: ['TypeScript'],
-    recommendationTechnologies: ['React']
-  });
+  const valid = validateAiTaskPlan(
+    { tasks: groundedTasks },
+    {
+      focusTechnology: 'React',
+      effectiveStack: 'Frontend',
+      effectiveExperience: 'Intern',
+      missingSkills: ['TypeScript'],
+      recommendationTechnologies: ['React']
+    }
+  );
   assert.equal(valid.ok, true);
   assert.equal(valid.tasks.length >= 6, true);
   assert.ok(valid.tasks.every((task) => Number.isFinite(task.points)));
@@ -185,22 +266,22 @@ test('prompt is compact, schema-bound, and forbids score invention', () => {
   });
 
   assert.match(prompt, /Return ONLY valid JSON/);
-  assert.match(prompt, /"category": "learning\|project\|practice"/);
+  const structured = JSON.parse(prompt);
+  assert.equal(structured.schema.taskIds.length, 1);
+  assert.equal(structured.targets.length, groundedTasks.length);
+  assert.ok(structured.targets.every((target) => target.id && target.title && target.category));
   assert.match(prompt, /Do NOT assign XP, points, streaks, scores/);
   assert.match(prompt, /Do NOT return markdown/);
   assert.equal(prompt.includes('"xpPoints"'), false);
   assert.equal(prompt.includes('"confidenceScore"'), false);
-  assert.match(promptSource, /Ground tasks in the provided stack/);
+  assert.match(promptSource, /deterministic, owned preview targets/);
 });
 
 test('frontend failed refresh and failed AI generation preserve previous valid results', () => {
-  assert.match(componentSource, /const previousSprint = this\.sprint/);
-  assert.match(componentSource, /const preservePrevious = Boolean\(previousSprint\)/);
-  assert.match(componentSource, /if \(preservePrevious && previousSprint\)/);
-  assert.match(componentSource, /const previousTasks = \[\.\.\.this\.generatedTasks\]/);
-  assert.match(componentSource, /this\.generatedTasks = previousTasks/);
-  assert.match(componentSource, /pendingTaskIds/);
-  assert.match(componentSource, /Failed to add generated tasks\. Previous plan was preserved\./);
+  assert.match(componentSource, /this\.stale = !!this\.sprint/);
+  assert.match(componentSource, /Previously loaded records are preserved/);
+  assert.match(plannerSource, /Planning failed\. Your previous preview is still available\./);
+  assert.match(plannerSource, /The action could not be saved\. Retry when ready\./);
 });
 
 test('frontend request dedupe and profile-scoped cache keys prevent cross-user bleed', () => {

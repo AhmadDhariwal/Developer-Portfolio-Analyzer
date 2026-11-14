@@ -1,0 +1,72 @@
+{
+  "startedAt": "2026-10-19T14:04:42.288Z",
+  "database": "jobs_hub_final_e2e_eff3d44abca94b5faf33d756976b88f1",
+  "port": 4328,
+  "checks": [
+    {
+      "name": "JWT authentication enforcement",
+      "status": "PASS",
+      "detail": true
+    },
+    {
+      "name": "Discovery feed and personalized ranking for User A vs User B",
+      "status": "PASS",
+      "detail": true
+    },
+    {
+      "name": "Query filtering: platform, location, jobType, skills",
+      "status": "PASS",
+      "detail": true
+    },
+    {
+      "name": "Deterministic server-side pagination",
+      "status": "PASS",
+      "detail": true
+    },
+    {
+      "name": "Job Details endpoint with provenance and metadata",
+      "status": "PASS",
+      "detail": true
+    },
+    {
+      "name": "Job actions: Save, Mark Applied, Hide and Unhide",
+      "status": "PASS",
+      "detail": true
+    },
+    {
+      "name": "Two-Account Isolation: User B unaffected by User A actions",
+      "status": "PASS",
+      "detail": true
+    },
+    {
+      "name": "Direct MongoDB persistence check",
+      "status": "PASS",
+      "detail": true
+    },
+    {
+      "name": "Query parameter pollution and invalid ID rejection",
+      "status": "PASS",
+      "detail": true
+    },
+    {
+      "name": "Strict action rate-limiting and safe fallback",
+      "status": "PASS",
+      "detail": true
+    },
+    {
+      "name": "Playwright browser UI integration with live MongoDB backend",
+      "status": "PASS",
+      "detail": true
+    }
+  ],
+  "screenshots": [
+    "e2e-desktop-jobs-feed.png",
+    "e2e-desktop-applied-tracker.png",
+    "e2e-desktop-job-details.png",
+    "e2e-mobile-jobs-feed.png"
+  ],
+  "limitations": [
+    "External provider HTTP ingestion is mocked at the transport boundary to ensure zero paid API calls and no external network dependency.",
+    "Test database is completely isolated from production and automatically dropped upon completion."
+  ]
+}

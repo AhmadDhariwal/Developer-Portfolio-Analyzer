@@ -1,5 +1,18 @@
-import { Injectable } from '@angular/core';
-import { Observable, catchError, map, shareReplay, tap, throwError } from 'rxjs';
+import { Injectable, OnDestroy } from '@angular/core';
+import {
+  Observable,
+  Subject,
+  Subscription,
+  defer,
+  distinctUntilChanged,
+  finalize,
+  map,
+  shareReplay,
+  takeUntil,
+  tap,
+  throwError,
+} from 'rxjs';
+import { AuthService } from './auth.service';
 import { ApiService } from './api.service';
 import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 
@@ -124,10 +137,18 @@ export interface PublicProfilePayload {
   phoneNumber?: string;
   resumeUrl?: string;
   defaultResumeUrl?: string;
-  analytics: PublicProfileAnalytics;
+  analytics?: PublicProfileAnalytics;
   profileStrengthScore?: number;
   momentum?: PublicProfileMomentum | null;
-  user: { name: string; jobTitle: string; location: string; avatar: string; githubUsername: string; email?: string; phoneNumber?: string };
+  user: {
+    name: string;
+    jobTitle: string;
+    location: string;
+    avatar: string;
+    githubUsername: string;
+    email?: string;
+    phoneNumber?: string;
+  };
   frontendCacheState?: 'network' | 'cached' | 'stale';
 }
 
@@ -147,83 +168,145 @@ export interface PublicProfileCompletedCourse {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
-export class PublicProfileService {
-  private readonly cacheTtlMs = 24 * 60 * 60 * 1000;
-  private readonly maxCacheEntries = 50;
-  private readonly cache = new Map<string, { value$: Observable<PublicProfilePayload>; expiresAt: number }>();
+export class PublicProfileService implements OnDestroy {
+  private readonly requests = new Map<string, Observable<PublicProfilePayload>>();
+  private readonly cancelReads = new Subject<void>();
+  private readonly accountChanged = new Subject<void>();
+  readonly sessionChanged$ = this.accountChanged.asObservable();
+  private readonly changes = new Subject<void>();
+  readonly invalidated$ = this.changes.asObservable();
+  private readonly authSubscription: Subscription;
+  private readonly channel =
+    typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('devinsight-portfolio') : null;
+  private readonly storageListener = (event: StorageEvent) => {
+    if (['token', 'user'].includes(event.key || '')) {
+      this.accountChanged.next();
+      this.clearCache();
+    }
+    if (event.key === 'devinsight_portfolio_revision') this.clearCache();
+  };
 
-  constructor(private readonly api: ApiService, private readonly cacheInvalidation: FrontendCacheInvalidationService) {
-    this.cacheInvalidation.register('public-portfolio', () => this.clearCache());
+  constructor(
+    private readonly api: ApiService,
+    private readonly cacheInvalidation: FrontendCacheInvalidationService,
+    private readonly auth: AuthService,
+  ) {
+    this.cacheInvalidation.register('public-portfolio', () => {
+      this.clearCache();
+      this.broadcast();
+    });
+    this.authSubscription = this.auth.currentUser$
+      .pipe(
+        map((user) => String(user?._id || 'anonymous')),
+        distinctUntilChanged(),
+      )
+      .subscribe(() => {
+        this.accountChanged.next();
+        this.clearCache();
+      });
+    if (this.channel) this.channel.onmessage = () => this.clearCache();
+    globalThis.addEventListener?.('storage', this.storageListener);
   }
 
-  getPublicProfile(slug: string, options: { forceRefresh?: boolean; queryParams?: Record<string, unknown> } = {}): Observable<PublicProfilePayload> {
-    const key = this.buildKey(slug, options.queryParams);
-    const now = Date.now();
-    this.pruneCache(now);
-    const existing = this.cache.get(key);
-    if (!options.forceRefresh && existing && existing.expiresAt > now) {
-      this.cache.delete(key);
-      this.cache.set(key, existing);
-      return existing.value$.pipe(map((profile) => ({ ...profile, frontendCacheState: 'cached' })));
-    }
-
-    const previewVal = options.queryParams?.['preview'] as string | undefined;
-    const request$ = this.api.getPublicProfile(slug, previewVal).pipe(
-      map((profile) => ({ ...profile, frontendCacheState: 'network' as const })),
-      catchError((error) => {
-        this.cache.delete(key);
-        if (existing) return existing.value$.pipe(map((profile) => ({ ...profile, frontendCacheState: 'stale' as const })));
-        return throwError(() => error);
+  getPublicProfile(
+    slug: string,
+    options: { forceRefresh?: boolean; queryParams?: Record<string, unknown> } = {},
+  ): Observable<PublicProfilePayload> {
+    const preview = options.queryParams?.['preview'];
+    // Preview responses are never retained or shared. Completed public results are
+    // not cached either: the backend's no-store/visibility boundary wins.
+    if (preview !== undefined)
+      return defer(() => this.api.getPublicProfile(slug, String(preview))).pipe(
+        takeUntil(this.cancelReads),
+      );
+    const key = String(slug).toLowerCase();
+    if (options.forceRefresh) this.requests.delete(key);
+    const existing = this.requests.get(key);
+    if (existing) return existing;
+    if (this.requests.size >= 25)
+      return throwError(() => ({ status: 503, error: { message: 'Please retry shortly.' } }));
+    const request = defer(() =>
+      this.api.getPublicProfile(slug, undefined, this.auth.isLoggedIn()),
+    ).pipe(
+      takeUntil(this.cancelReads),
+      finalize(() => {
+        if (this.requests.get(key) === request) this.requests.delete(key);
       }),
-      shareReplay({ bufferSize: 1, refCount: false })
+      shareReplay({ bufferSize: 1, refCount: true }),
     );
-    this.cache.set(key, { value$: request$, expiresAt: now + this.cacheTtlMs });
-    this.pruneCache(now);
-    return request$;
+    this.requests.set(key, request);
+    return request;
   }
 
   getMyPublicProfile(): Observable<PublicProfilePayload> {
-    return this.api.getMyPublicProfile();
+    return defer(() => this.api.getMyPublicProfile()).pipe(takeUntil(this.cancelReads));
   }
 
   updateMyPublicProfile(payload: Partial<PublicProfilePayload>): Observable<PublicProfilePayload> {
-    return this.api.updateMyPublicProfile(payload).pipe(tap(() => {
-      this.cacheInvalidation.clearPublicPortfolioCaches();
-      this.cacheInvalidation.clearDashboardCaches();
-      this.cacheInvalidation.clearScenarioCaches();
-      this.cacheInvalidation.clearWeeklyReportCaches();
-    }));
+    return defer(() => {
+      this.clearCache();
+      this.broadcast();
+      return this.api.updateMyPublicProfile(payload).pipe(
+        takeUntil(this.accountChanged),
+        tap(() => {
+          this.cacheInvalidation.clearPublicPortfolioCaches();
+          this.cacheInvalidation.clearDashboardCaches();
+          this.cacheInvalidation.clearScenarioCaches();
+          this.cacheInvalidation.clearWeeklyReportCaches();
+        }),
+      );
+    });
   }
 
   getAnalytics(): Observable<PublicProfileAnalytics> {
-    return this.api.getPublicProfileAnalytics();
+    return defer(() => this.api.getPublicProfileAnalytics()).pipe(takeUntil(this.cancelReads));
   }
 
-  clearCache(usernameOrSlug?: string): void {
-    if (!usernameOrSlug) {
-      this.cache.clear();
-      return;
-    }
-    const normalized = String(usernameOrSlug).trim().toLowerCase();
-    for (const key of this.cache.keys()) {
-      if (key.startsWith(`${normalized}|`)) this.cache.delete(key);
+  uploadImage(file: File): Observable<{ imageUrl: string }> {
+    const body = new FormData();
+    body.append('image', file);
+    return this.api.uploadPortfolioImage(body).pipe(takeUntil(this.accountChanged));
+  }
+
+  contact(slug: string, message: string, website = ''): Observable<{ sent: boolean }> {
+    return this.api
+      .contactPublicPortfolio(slug, { message, website })
+      .pipe(takeUntil(this.accountChanged));
+  }
+
+  downloadResume(slug: string, owner = false): Observable<Blob> {
+    return this.api
+      .downloadPortfolioResume(owner ? 'me' : slug)
+      .pipe(takeUntil(this.accountChanged));
+  }
+
+  clearCache(_slug?: string): void {
+    this.requests.clear();
+    this.cancelReads.next();
+    this.changes.next();
+  }
+
+  private broadcast(): void {
+    if (this.channel) this.channel.postMessage('invalidate');
+    else {
+      try {
+        localStorage.setItem('devinsight_portfolio_revision', String(Date.now()));
+      } catch {
+        /* Storage can be unavailable. */
+      }
     }
   }
 
-  private buildKey(slug: string, queryParams: Record<string, unknown> = {}): string {
-    return `${String(slug || '').trim().toLowerCase()}|${JSON.stringify(Object.entries(queryParams).sort(([left], [right]) => left.localeCompare(right)))}`;
-  }
-
-  private pruneCache(now = Date.now()): void {
-    for (const [key, entry] of this.cache) {
-      if (entry.expiresAt <= now) this.cache.delete(key);
-    }
-    while (this.cache.size > this.maxCacheEntries) {
-      const oldestKey = this.cache.keys().next().value as string | undefined;
-      if (!oldestKey) break;
-      this.cache.delete(oldestKey);
-    }
+  ngOnDestroy(): void {
+    this.authSubscription.unsubscribe();
+    this.channel?.close();
+    globalThis.removeEventListener?.('storage', this.storageListener);
+    this.cancelReads.next();
+    this.accountChanged.next();
+    this.cancelReads.complete();
+    this.accountChanged.complete();
+    this.changes.complete();
   }
 }

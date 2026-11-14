@@ -1,0 +1,82 @@
+{
+  "focused": false,
+  "exitCode": 0,
+  "concurrency": 1,
+  "database": "devinsight_rec_verify_0d33b9131e89",
+  "suiteFiles": [
+    "backend\\src\\tests\\aiCompatibilityPaths.test.js",
+    "backend\\src\\tests\\careerSprintHardening.test.js",
+    "backend\\src\\tests\\careerSprintPerformance.test.js",
+    "backend\\src\\tests\\careerSprintService.test.js",
+    "backend\\src\\tests\\coursesHardening.test.js",
+    "backend\\src\\tests\\coursesPerformance.test.js",
+    "backend\\src\\tests\\developerContextService.test.js",
+    "backend\\src\\tests\\githubAnalyzerHardening.test.js",
+    "backend\\src\\tests\\githubAnalyzerPerformance.test.js",
+    "backend\\src\\tests\\integrationInsightService.test.js",
+    "backend\\src\\tests\\integrationsAdapters.test.js",
+    "backend\\src\\tests\\integrationsLifecycle.test.js",
+    "backend\\src\\tests\\integrationSyncService.test.js",
+    "backend\\src\\tests\\interviewEnrichmentOrchestrator.test.js",
+    "backend\\src\\tests\\interviewPrepHardening.test.js",
+    "backend\\src\\tests\\interviewPrepPerformance.test.js",
+    "backend\\src\\tests\\interviewPrepService.test.js",
+    "backend\\src\\tests\\interviewQuestionQualityService.test.js",
+    "backend\\src\\tests\\interviewQuestionSeedCatalog.test.js",
+    "backend\\src\\tests\\interviewTopicNormalizer.test.js",
+    "backend\\src\\tests\\recommendationEngine.test.js",
+    "backend\\src\\tests\\recommendationGeneration.test.js",
+    "backend\\src\\tests\\recommendationsHardening.test.js",
+    "backend\\src\\tests\\recommendationsMongo.integration.test.js",
+    "backend\\src\\tests\\recommendationsPerformance.test.js",
+    "backend\\src\\tests\\recruiterRankingEngine.test.js",
+    "backend\\src\\tests\\resumeAnalyzerHardening.test.js",
+    "backend\\src\\tests\\resumeAnalyzerPerformance.test.js",
+    "backend\\src\\tests\\resumePipelineFinalization.test.js",
+    "backend\\src\\tests\\resumeService.test.js",
+    "backend\\src\\tests\\scenarioSimulatorService.test.js",
+    "backend\\src\\tests\\scoringFoundation.test.js",
+    "backend\\src\\tests\\skilldetector.test.js",
+    "backend\\src\\tests\\skillGapEvidence.test.js",
+    "backend\\src\\tests\\skillgapHardening.test.js",
+    "backend\\src\\tests\\skillGapMongo.integration.test.js",
+    "backend\\src\\tests\\skillgapPerformance.test.js",
+    "backend\\src\\tests\\skillGapScoring.test.js",
+    "backend\\src\\tests\\skillGraphService.test.js",
+    "backend\\src\\tests\\supportRedisFallback.test.js",
+    "backend\\src\\tests\\transparentScoringService.test.js",
+    "backend\\src\\tests\\weeklyReportScheduler.test.js"
+  ],
+  "summary": {
+    "tests": 325,
+    "suites": 0,
+    "pass": 325,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "duration_ms": 103790.191
+  },
+  "failures": [],
+  "cleanup": {
+    "ownedDatabaseRemoved": true
+  },
+  "priorRuns": [
+    {
+      "summary": {
+        "tests": 325,
+        "suites": 0,
+        "pass": 324,
+        "fail": 1,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0,
+        "duration_ms": 167075.3565
+      },
+      "failures": [
+        "not ok 176 - recommendations cache hierarchy and concurrency meet production targets\n  ---\n  duration_ms: 4843.3451\n  type: 'test'\n  location: 'C:\\\\Users\\\\ahmad.hassan\\\\Desktop\\\\Developer-Portfolio-Analyzer\\\\backend\\\\src\\\\tests\\\\recommendationsPerformance.test.js:403:1'\n  failureType: 'testCodeFailure'\n  error: 'memory p95 56.08'\n  code: 'ERR_ASSERTION'\n  name: 'AssertionError'\n  expected: true\n  actual: false\n  operator: '=='\n  stack: |-\n    TestContext.<anonymous> (C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\recommendationsPerformance.test.js:438:10)\n    async Test.run (node:internal/test_runner/test:1389:7)\n    async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3)\n  ...\n# Subtest: recommendation index migration is idempotent\nok 177 - recommendation index migration is idempotent\n  ---\n  duration_ms: 45.152\n  type: 'test'\n  ...\n# Subtest: calculateWeightedScore applies recruiter formula weights"
+      ],
+      "concurrency": 1
+    }
+  ]
+}

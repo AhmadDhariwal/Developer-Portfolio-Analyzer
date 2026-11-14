@@ -1,0 +1,7 @@
+{
+  "command": "node frontend/scripts/verify-jobs-ui.cjs",
+  "dependencySource": "Existing Codex bundled Playwright via process-local NODE_PATH",
+  "exitCode": 0,
+  "milliseconds": 67744,
+  "output": "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\jobs-hub\\production-hidden-password-final-2026-11-08"
+}

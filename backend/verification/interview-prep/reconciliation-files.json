@@ -1,0 +1,725 @@
+{
+  "branch": "fix/interview-prep",
+  "baseAndTarget": "release1",
+  "files": [
+    {
+      "path": "backend/src/scripts/captureBackendRegression.cjs",
+      "bytes": 6884,
+      "sha256": "c97d331d2b6249116b3104b64c1f032f3fc619a95195edd8f63a77f86203a335",
+      "kind": "source/test"
+    },
+    {
+      "path": "backend/src/scripts/reconcileBackendTap.cjs",
+      "bytes": 4517,
+      "sha256": "9cfcdf12025629f729cb6a17054b10317e22f7ca776bc92ea85bea166866fb7e",
+      "kind": "source/test"
+    },
+    {
+      "path": "backend/src/scripts/verifyBackendRegression.cjs",
+      "bytes": 5686,
+      "sha256": "56e23c76a00643794b667d902f639b52fa986c9c692307a2fd79142b8e732b4d",
+      "kind": "source/test"
+    },
+    {
+      "path": "backend/src/tests/backendTapInventory.test.js",
+      "bytes": 1874,
+      "sha256": "53dd07b7be5df1c5bcb8ef99c5625397adac6871c851c9b54c4918dbef29fa72",
+      "kind": "source/test"
+    },
+    {
+      "path": "backend/src/tests/coursesPerformance.test.js",
+      "bytes": 14582,
+      "sha256": "851100860df1a68b92e77ee7f8005114f25f7c70cc820a2439df3906392e3540",
+      "kind": "source/test"
+    },
+    {
+      "path": "backend/src/tests/fixtures/resume/columns.pdf",
+      "bytes": 42873,
+      "sha256": "afc7751932945abcf1e5e38cdf75051930368eb6699a3133d846a65d21d3cc22",
+      "kind": "essential synthetic fixture"
+    },
+    {
+      "path": "backend/src/tests/fixtures/resume/corrupt.pdf",
+      "bytes": 34,
+      "sha256": "83e1caf5b18318069dd1598bb856ef327389b574ededc4fc63901167594ff9db",
+      "kind": "essential synthetic fixture"
+    },
+    {
+      "path": "backend/src/tests/fixtures/resume/empty.pdf",
+      "bytes": 1298,
+      "sha256": "d90f5c0ad72a67341295f79c67274f934f38c68518de29fc6f62b39f541629cf",
+      "kind": "essential synthetic fixture"
+    },
+    {
+      "path": "backend/src/tests/fixtures/resume/encrypted.pdf",
+      "bytes": 42889,
+      "sha256": "87f97be9ad144e9d02b7f0f467f7ab5edc95a28e2f1adc77450193d79de65937",
+      "kind": "essential synthetic fixture"
+    },
+    {
+      "path": "backend/src/tests/fixtures/resume/layout-shift.pdf",
+      "bytes": 42859,
+      "sha256": "1d3a6c942e67080084f19255779bedc23166ab286aba990016fb4ce4bb25de6b",
+      "kind": "essential synthetic fixture"
+    },
+    {
+      "path": "backend/src/tests/fixtures/resume/page-limit.pdf",
+      "bytes": 20933,
+      "sha256": "55cf59525050c43125e3002083c0384eee69adc72ff3253ecc571b0f18f4365e",
+      "kind": "essential synthetic fixture"
+    },
+    {
+      "path": "backend/src/tests/fixtures/resume/scanned.pdf",
+      "bytes": 3855,
+      "sha256": "9265102a2f761adfd3a8ac84f369f940e8e9eea3351d443766e6bec6e4e7f0ed",
+      "kind": "essential synthetic fixture"
+    },
+    {
+      "path": "backend/src/tests/fixtures/resume/standard.pdf",
+      "bytes": 42859,
+      "sha256": "b48f3e1eb6e11577cdb2014ce8f1663241b53890dfd74b07acc6b5649af1f287",
+      "kind": "essential synthetic fixture"
+    },
+    {
+      "path": "backend/verification/interview-prep/BACKEND-REGRESSION-RECONCILIATION.md",
+      "bytes": 43732,
+      "sha256": "59c269cb7ccb27ddb5316765b3e6dcd475ba2a72fb3afd9d86f9add076bbf9ff",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/final-results.json",
+      "bytes": 904,
+      "sha256": "547e707d2d5f68fab7e11d818985a0d305a06e2ad980483a95ab95c0ad918cf5",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated-results.json",
+      "bytes": 17345,
+      "sha256": "0dc8b4d74cca201c9cc473eef45c279dffa9bd5453d926010c8f36a347fd8743",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-careerSprintLegacy.integration.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-careerSprintLegacy.integration.test.tap",
+      "bytes": 394,
+      "sha256": "50167833acb0dd233c1f9e7eec10274f7d7f6dcd3317dbeb428ce588ca5f026a",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-careerSprintMongo.integration.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-careerSprintMongo.integration.test.tap",
+      "bytes": 847,
+      "sha256": "7a9d52626bb51e1d8a04f3ea9a233ab01ed0ee9971d8ac5429ab7e0f4d7bd1a9",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-careerSprintPerformance.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-careerSprintPerformance.test.tap",
+      "bytes": 10066,
+      "sha256": "04068e26bb7553acb8359e27c24fc477490a5436ddfd98b33fccc143c17b6d30",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-careerSprintWorkers.integration.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-careerSprintWorkers.integration.test.tap",
+      "bytes": 534,
+      "sha256": "59543b333a457faedef78f359805234a697124451a37697fef1c29da87026eaa",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-courseViewSeparation.integration.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-courseViewSeparation.integration.test.tap",
+      "bytes": 2397,
+      "sha256": "252cda632ce7863105c489d4da6a40218b03cb4c939093e240e3dc0717407133",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-coursesPerformance-catalog-fixed.tap",
+      "bytes": 1398,
+      "sha256": "1678ee3a8a5d4b3c0c86f85b6d1a3a072de38cd890e5470baa208fc8dda90df1",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-coursesPerformance-fixed.tap",
+      "bytes": 5739,
+      "sha256": "c0bef6278416d26243fff66da4e2049d6ee1487d70370a3bab2fdc91b514f9f3",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-coursesPerformance.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-coursesPerformance.test.tap",
+      "bytes": 6528,
+      "sha256": "a5076681ba41962b4c0c65d188b4dc87c0dfe7a1a9907bfbf4365300f106dce4",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-generate-pdf-fixtures.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-generate-pdf-fixtures.tap",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-integrationPublicSnapshot.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-integrationPublicSnapshot.test.tap",
+      "bytes": 1721,
+      "sha256": "a217fdd84f9e64d8f9c29262ddb3c3df1b56893dae9df41c537665dfb7755516",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-interviewPrepFinalization.integration.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-interviewPrepFinalization.integration.test.tap",
+      "bytes": 5574,
+      "sha256": "60d0a903a8f926e19ab81a1ab664bbf359322859a2c278f2a0c3d32ea8833295",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-newsConfiguration.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-newsConfiguration.test.tap",
+      "bytes": 1750,
+      "sha256": "7d21114a5b79548f5f1bb6fd473567194df69d7b891f42b72664971eafb55d1b",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-notificationsProduction.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-notificationsProduction.test.tap",
+      "bytes": 4834,
+      "sha256": "f53e2a803d9fa0232678f4d6180851c310ca6550e8a11bcfe82a32b218a8542d",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-pdf-fixtures-after.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-pdf-fixtures-after.tap",
+      "bytes": 3448,
+      "sha256": "709159bbb0caa7a5c99ce6c6afd7f44ab1bf0486a43e251152ef1cc7b2cdddaf",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-recommendationsMongo.integration.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-recommendationsMongo.integration.test.tap",
+      "bytes": 2216,
+      "sha256": "cbb83e3a1f9e570e28329fd724b1787117e79644bc135967dd2bfa8c4d9406d7",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-resumeProduction.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-resumeProduction.test.tap",
+      "bytes": 8720,
+      "sha256": "2ec7ae244f4023ff03b4f44e589830c58816b8b3b536c5ba5cd24e6bc355ef42",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-resumeProductionMongo.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-resumeProductionMongo.test.tap",
+      "bytes": 1216,
+      "sha256": "fdca28f54f0ede620e23f042893dce56ecb71a825a23f61cefc137835fc56e6a",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-scenarioSimulatorMongo.integration.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-scenarioSimulatorMongo.integration.test.tap",
+      "bytes": 360,
+      "sha256": "82a7c925c57d0ca1a2dbc24a4a35eb529c80a09241dea827433a9003c4a246db",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-scenarioSimulatorWorkers.integration.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-scenarioSimulatorWorkers.integration.test.tap",
+      "bytes": 346,
+      "sha256": "349b20bb4c5f347c778617f0c0408af4920c9fbd8ff1049d7e4c096429f8dbca",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-skillGapAcceptance.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-skillGapAcceptance.test.tap",
+      "bytes": 630,
+      "sha256": "e3a89cd43505cc4bbf9672022fec6f43ddc887b96da02509768867549e18d0e1",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-skillgapPerformance.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-skillgapPerformance.test.tap",
+      "bytes": 35227,
+      "sha256": "ed436e1fe3ed566c07e95aee0fd52ab3aba9103293923f2f67069f6af34eb994",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-sprintAiAdmission.integration.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/candidate-sprintAiAdmission.integration.test.tap",
+      "bytes": 2142,
+      "sha256": "36f4ef67989685050b86b2e24e88f698d21f4ed7a950f0a96d2661fe1154d446",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/harness-invalid-database-name.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/harness-invalid-database-name.tap",
+      "bytes": 1980,
+      "sha256": "1264009e09f21ae98b8f25c709c3d4789abbb201ce8de199b59067718ad48a92",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/production-regression-final.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/production-regression-final.tap",
+      "bytes": 474235,
+      "sha256": "40c0e016eef746d96a89d3432527b0bdd5b1d687dfb64d984c42f99b69e0d618",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-careerSprintLegacy.integration.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-careerSprintLegacy.integration.test.tap",
+      "bytes": 394,
+      "sha256": "86e167e02a361636215baa061ea9bfb3555c11c92bbbce7b53491b2cc01d5c94",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-careerSprintMongo.integration.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-careerSprintMongo.integration.test.tap",
+      "bytes": 847,
+      "sha256": "06162069c90bb96168e9806aa224f0b4864131de7842ed47be43cd7748caefc2",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-careerSprintPerformance.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-careerSprintPerformance.test.tap",
+      "bytes": 10067,
+      "sha256": "7c36238cb84feb8ca2041e3d2c5bcb2878fab6d2c32d45d7bd8c5a688bac90a0",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-careerSprintWorkers.integration.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-careerSprintWorkers.integration.test.tap",
+      "bytes": 535,
+      "sha256": "48e339a6ce0349d69e02521b5d554c9b13bcbee228d24d264282c195ac3492a7",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-courseViewSeparation.integration.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-courseViewSeparation.integration.test.tap",
+      "bytes": 2382,
+      "sha256": "c703cbc2ebb97b4d10b30c612baea997817566fa10fc7a40bf83368daf080cdd",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-coursesPerformance.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-coursesPerformance.test.tap",
+      "bytes": 6562,
+      "sha256": "201e64f5fc6268ad3d877cd275a6667fb257fdbda8bdef558d38eb9000d9efce",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-generate-pdf-fixtures.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-generate-pdf-fixtures.tap",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-integrationPublicSnapshot.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-integrationPublicSnapshot.test.tap",
+      "bytes": 1721,
+      "sha256": "371b27eb32ee1f16463e3ef886749d8aba8cbcdb62c50f4321e4b7860cabe83f",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-interviewPrepFinalization.integration.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-interviewPrepFinalization.integration.test.tap",
+      "bytes": 7185,
+      "sha256": "b9cb4a42362416a4806fdf473899933d0ffd62d395a17a087f99d1145c106bf3",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-newsConfiguration.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-newsConfiguration.test.tap",
+      "bytes": 1756,
+      "sha256": "a5f74a681b60a29ddf98c6228767f9dd6b8b78374f245414ff41ba08184383bc",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-notificationsProduction.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-notificationsProduction.test.tap",
+      "bytes": 4822,
+      "sha256": "e46c71cc6a0ff872d9f402630bde20133b2a400d1df8da65827cbf9a51d22239",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-pdf-fixtures-after.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-pdf-fixtures-after.tap",
+      "bytes": 3435,
+      "sha256": "eb77c47c235a75fe5f1a76ff45cca9fb2dc614590ec9ab9e8852a209b94ccd99",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-recommendationsMongo.integration.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-recommendationsMongo.integration.test.tap",
+      "bytes": 2217,
+      "sha256": "777c18e14a658cfae91300d5804cf35f06460b0eadaf6e952d272e35294dd726",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-resumeProduction.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-resumeProduction.test.tap",
+      "bytes": 8748,
+      "sha256": "75c8eeafb170cb9519124b8063c71d21ff5e7c6d3b365ea324f50fdc8bd12513",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-resumeProductionMongo.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-resumeProductionMongo.test.tap",
+      "bytes": 1222,
+      "sha256": "a6b2c1a8bc9af54b16a60f52455b9ebf5eb730b87b6e132734e1dd0ebde48191",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-scenarioSimulatorMongo.integration.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-scenarioSimulatorMongo.integration.test.tap",
+      "bytes": 360,
+      "sha256": "02336555e46944a9a096ae699a7695567593d65f707d6d349a8bbf79595411e5",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-scenarioSimulatorWorkers.integration.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-scenarioSimulatorWorkers.integration.test.tap",
+      "bytes": 346,
+      "sha256": "3d3663264d07644ba2767cbd11d0b202faf78123c3d95d82febc505417ac0d1a",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-skillGapAcceptance.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-skillGapAcceptance.test.tap",
+      "bytes": 631,
+      "sha256": "4c87c9431dab88f179319a9795c89b7a799e8fe48fdf0d9a7f3c11049ff46e6a",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-skillgapPerformance.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-skillgapPerformance.test.tap",
+      "bytes": 35968,
+      "sha256": "e22437be49ee76d7b10487f581637a24741005f1c677a9875f90d9a1934ad9d3",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-sprintAiAdmission.integration.test.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/isolated/release1-sprintAiAdmission.integration.test.tap",
+      "bytes": 2142,
+      "sha256": "6cfaf12187e5c1cec3af1d88e72325cbc7d80311a5c880b9ea00e3f21e68a7e7",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/original-execution-excerpts.json",
+      "bytes": 44322,
+      "sha256": "f8dbf5df23154fdf4d3613e9a64a96640eb324e78119d3c6c307d0a9386fdca3",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/original-recovered-inventory.json",
+      "bytes": 24751,
+      "sha256": "f6458d13868ac7d3cdb007a8f85a636cc733bf14013ac1630d3de21b1b87e846",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/post-cleanup-inventory.json",
+      "bytes": 2083,
+      "sha256": "94dfca9faeb6e94f88af6588ec90dbbddc8630422c540063859f25b711d74c62",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/post-cleanup-verified.tap",
+      "bytes": 5675,
+      "sha256": "830d40c0786a8ca6494adac83ff4b984d1fcba153d5cd39c6d423692cff95fb7",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/post-cleanup.tap",
+      "bytes": 5541,
+      "sha256": "0fcb627873aa92a756b07d480f2e774cc039c316715635a6c904cbbf8b26de9f",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/production-regression-final-inventory.json",
+      "bytes": 25703,
+      "sha256": "73d9752b4126fcb8eaf5f42c5e85828bd804ea37379ba05b339efe969da78ff1",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/production-regression-inventory.json",
+      "bytes": 142286,
+      "sha256": "2f778fc062fe0957abe199997f4f48f635ae23fd51737b26e08281d95d087fd8",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/production-regression-run.json",
+      "bytes": 313521,
+      "sha256": "09efaab445152695b5ce4f6456264d0ec0277927c35cba5b389c5c555e5d9c01",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/production-regression.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/production-regression.tap",
+      "bytes": 504388,
+      "sha256": "6b266bb2ae18081164e6626bb99f977724b3ee5188d211d417bc4c13dbaf5859",
+      "kind": "retained evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/reconciliation-cleanup.json",
+      "bytes": 525690,
+      "sha256": "3ea6e3750f193467ddee2eb17061bb6aa0c5e05307426f178b1e559d3fce8e43",
+      "kind": "retained evidence"
+    }
+  ],
+  "generatedManifest": "backend/verification/interview-prep/reconciliation-files.json",
+  "sourceFilesMoved": [],
+  "sourceFilesDeleted": [],
+  "evidenceRenames": [
+    "isolated/candidate-careerSprintLegacy.integration.test.tap -> isolated/harness-invalid-database-name.tap",
+    "isolated/candidate-careerSprintLegacy.integration.test.stderr.txt -> isolated/harness-invalid-database-name.stderr.txt"
+  ],
+  "temporaryDeletions": "backend/verification/interview-prep/reconciliation-cleanup.json",
+  "historicalIntegrity": [
+    {
+      "path": "backend/verification/interview-prep/final-tests.tap",
+      "unchanged": true
+    },
+    {
+      "path": "backend/verification/interview-prep/after-cleanup-tests.tap",
+      "unchanged": true
+    },
+    {
+      "path": "backend/verification/interview-prep/INTERVIEW-PREP-PRODUCTION-FINAL.md",
+      "unchanged": true
+    },
+    {
+      "path": "backend/verification/interview-prep/regression-generated-evidence.json",
+      "unchanged": true
+    }
+  ],
+  "checks": {
+    "formatterWrite": "PASS, explicit paths",
+    "formatterCheck": "PASS",
+    "javascriptSyntax": "PASS, five changed JS/CJS files",
+    "gitWhitespace": "PASS",
+    "stagedWhitespace": "PASS",
+    "extractorTests": "2 passed",
+    "focusedCourseAfter": "6 passed",
+    "focusedResumeAfter": "9 passed on each ref",
+    "finalFull": "897 passed, 2 failed, 0 cancelled, 20 skipped; exit 1",
+    "postCleanup": "15 passed, 1 failed; exit 1; memory p95 74.2 > 50 ms",
+    "frontend": "not affected; not run"
+  },
+  "unrelatedWork": "Existing/concurrent AI-provider, environment example and documentation changes preserved; not part of task file inventory",
+  "commitsPushesMergesDeployments": "none"
+}

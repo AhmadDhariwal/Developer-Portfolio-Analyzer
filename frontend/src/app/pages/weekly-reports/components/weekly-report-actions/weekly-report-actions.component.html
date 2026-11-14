@@ -1,0 +1,41 @@
+<div class="header-actions">
+  <div class="actions-left">
+    <div class="cache-indicator" *ngIf="loadedAt">
+      <strong>{{ loadSourceLabel }}</strong>
+      <span>{{ formatDate(loadedAt.toISOString()) }}</span>
+    </div>
+
+    <button class="generate-btn" type="button" (click)="generate.emit()" [disabled]="isGenerating">
+      {{ isGenerating ? 'Working…' : 'Generate current week' }}
+    </button>
+  </div>
+
+  <div class="snapshot-actions" *ngIf="report as saved">
+    <div class="action-buttons-right">
+      <button
+        type="button"
+        (click)="refresh.emit()"
+        [disabled]="isGenerating || !isCurrentWeek || isArchivedVersion"
+        title="Refresh the current week only when saved source signals changed"
+      >
+        Refresh current week
+      </button>
+      <button type="button" (click)="downloadPdf.emit()" [disabled]="isExporting">
+        {{ isExporting ? 'Preparing PDF…' : 'Download PDF' }}
+      </button>
+      <button
+        type="button"
+        (click)="resendEmail.emit()"
+        [disabled]="
+          isResending ||
+          isArchivedVersion ||
+          saved.emailDelivery?.status === 'uncertain' ||
+          saved.emailDelivery?.status === 'processing'
+        "
+      >
+        {{ isResending ? 'Sending…' : 'Resend email' }}
+      </button>
+    </div>
+    <small>Resend: 5-minute cooldown · 3 per week. Delivery preferences apply.</small>
+  </div>
+</div>

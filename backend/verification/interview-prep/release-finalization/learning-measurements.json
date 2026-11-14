@@ -1,0 +1,61 @@
+{
+  "scope": "Synthetic persistence/provider benchmark, unchanged assertions; actual database coverage is separate",
+  "observations": [
+    {
+      "memory": {
+        "p50": 31.38,
+        "p95": 32.67
+      },
+      "evidenceP95": 31.9214,
+      "cacheP95": 0.2419,
+      "counters": {
+        "mongoReads": 18,
+        "mongoWrites": 1,
+        "providerCalls": 1,
+        "redisGets": 1,
+        "redisSets": 1,
+        "poolBuilds": 1,
+        "pruneCalls": 2,
+        "aiCalls": 0
+      }
+    },
+    {
+      "redisSeries": {
+        "p50": 31.74,
+        "p95": 47.56
+      },
+      "scope": "First Redis hit then memory promotion; synthetic I/O",
+      "counters": {
+        "mongoReads": 15,
+        "mongoWrites": 1,
+        "providerCalls": 1,
+        "redisGets": 2,
+        "redisSets": 1,
+        "poolBuilds": 1,
+        "pruneCalls": 2,
+        "aiCalls": 0
+      }
+    },
+    {
+      "coldSeriesIncludingFixtureDrain": {
+        "p50": 158.67,
+        "p95": 159.56
+      },
+      "requestP95": 159.5553,
+      "scope": "Synthetic providers and persistence",
+      "counters": {
+        "mongoReads": 16,
+        "mongoWrites": 8,
+        "providerCalls": 8,
+        "redisGets": 8,
+        "redisSets": 8,
+        "poolBuilds": 8,
+        "pruneCalls": 16,
+        "aiCalls": 0
+      }
+    }
+  ],
+  "memoryMeasuredHits": 16,
+  "memoryMeasuredRequests": 16,
+  "providerCallsDuringMeasuredWarmSeries": 0
+}

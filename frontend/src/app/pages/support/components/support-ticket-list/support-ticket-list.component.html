@@ -1,0 +1,70 @@
+<div class="panel">
+  <div class="section-heading">
+    <div>
+      <h2>My Support Requests</h2>
+      <p>Track progress and responses from the support team.</p>
+    </div>
+    <div class="header-actions">
+      <span class="tag" *ngIf="!loading && tickets.length > 0">
+        {{ tickets.length }} {{ tickets.length === 1 ? 'Request' : 'Requests' }}
+      </span>
+      <button type="button" class="btn-refresh" *ngIf="totalPages > 1" (click)="pageChange.emit(1)">
+        View all
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <span class="material-symbols-outlined spinning-icon">progress_activity</span>
+    <span class="loading-text">Loading requests...</span>
+  </div>
+
+  <!-- Empty State -->
+  <app-support-empty-state
+    *ngIf="!loading && tickets.length === 0"
+    message="You have no active support requests."
+    icon="inbox"
+  ></app-support-empty-state>
+
+  <!-- Ticket List -->
+  <div class="ticket-list" *ngIf="!loading && tickets.length > 0">
+    <app-support-ticket-card
+      *ngFor="let ticket of tickets"
+      [ticket]="ticket"
+      (open)="open.emit($event)"
+    ></app-support-ticket-card>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="!loading && totalPages > 1">
+    <button
+      class="nav-btn"
+      [disabled]="page <= 1"
+      (click)="pageChange.emit(page - 1)"
+      aria-label="Previous page"
+    >
+      <span class="material-symbols-outlined nav-icon">chevron_left</span>
+      <span>Prev</span>
+    </button>
+    <div class="page-numbers">
+      <button
+        *ngFor="let p of pageNumbers"
+        class="page-num"
+        [class.active]="page === p"
+        (click)="pageChange.emit(p)"
+      >
+        {{ p }}
+      </button>
+    </div>
+    <button
+      class="nav-btn"
+      [disabled]="page >= totalPages"
+      (click)="pageChange.emit(page + 1)"
+      aria-label="Next page"
+    >
+      <span>Next</span>
+      <span class="material-symbols-outlined nav-icon">chevron_right</span>
+    </button>
+  </div>
+</div>

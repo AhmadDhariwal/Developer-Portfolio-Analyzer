@@ -1,0 +1,44 @@
+[
+  {
+    "kind": "avatars",
+    "key": "v1/avatars/6ae34086c91246d480ee6ce6/7a402212-f3b1-4d65-be81-41c4f4a992c2.png",
+    "versionId": "4_z35a973dd4f3e8878a81f031e_f109b78c5aaa1f2b7_d20261029_m124807_c005_v0521006_t0011_u01793278087695",
+    "bucketAlias": "images",
+    "sha256": "a38a4ff7320a3d8764ac959b264f15e335360d7c1e23a0627dee7f366c95c58f"
+  },
+  {
+    "kind": "avatars",
+    "key": "v1/avatars/6ae34086c91246d480ee6ce6/c8a7741c-8370-4ced-87da-1d90b378d5c2.png",
+    "versionId": "4_z35a973dd4f3e8878a81f031e_f104489b49b05020e_d20261029_m124810_c005_v0501005_t0009_u01793278090629",
+    "bucketAlias": "images",
+    "sha256": "a38a4ff7320a3d8764ac959b264f15e335360d7c1e23a0627dee7f366c95c58f"
+  },
+  {
+    "kind": "portfolio-images",
+    "key": "v1/portfolio-images/6ae34086c91246d480ee6ce6/08952da1-ff90-45ac-b2fe-c53622ea8920.png",
+    "versionId": "4_z35a973dd4f3e8878a81f031e_f104454bfd8e9b877_d20261029_m124811_c005_v0501051_t0035_u01793278091226",
+    "bucketAlias": "images",
+    "sha256": "a38a4ff7320a3d8764ac959b264f15e335360d7c1e23a0627dee7f366c95c58f"
+  },
+  {
+    "kind": "portfolio-images",
+    "key": "v1/portfolio-images/6ae34086c91246d480ee6ce6/c050c9c8-80e2-4825-958a-2e2f6006ff6a.png",
+    "versionId": "4_z35a973dd4f3e8878a81f031e_f11372496cea095ce_d20261029_m124812_c005_v0501051_t0020_u01793278092937",
+    "bucketAlias": "images",
+    "sha256": "a38a4ff7320a3d8764ac959b264f15e335360d7c1e23a0627dee7f366c95c58f"
+  },
+  {
+    "kind": "resumes",
+    "key": "v1/resumes/6ae34086c91246d480ee6ce6/bd4a0ec4-e925-48de-8542-46f8fd921649.pdf",
+    "versionId": "4_z65c9c35d4f3e8878a81f031e_f101312cf3ae2d274_d20261029_m124814_c005_v0501008_t0037_u01793278094770",
+    "bucketAlias": "resumes",
+    "sha256": "f7610e47d2fc75b8befe0c83c06e42f89a78805c9ed99dfe0586671cae39e636"
+  },
+  {
+    "kind": "resumes",
+    "key": "v1/resumes/6ae34086c91246d480ee6ce6/f06cb4ee-a093-4641-80c2-41437e531f4e.pdf",
+    "versionId": "4_z65c9c35d4f3e8878a81f031e_f10462baf4dac84ac_d20261029_m124816_c005_v0501043_t0035_u01793278096111",
+    "bucketAlias": "resumes",
+    "sha256": "f7610e47d2fc75b8befe0c83c06e42f89a78805c9ed99dfe0586671cae39e636"
+  }
+]

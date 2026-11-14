@@ -1,0 +1,331 @@
+[
+  {
+    "path": ".kiro/specs/notifications-finalization/design.md",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": ".kiro/specs/notifications-finalization/requirements.md",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": ".kiro/specs/notifications-finalization/tasks.md",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/index.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/controllers/authcontroller.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/controllers/careerSprintController.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/controllers/githubcontroller.js",
+    "options": [
+      "--single-quote",
+      "true",
+      "--trailing-comma",
+      "none",
+      "--print-width",
+      "100",
+      "--tab-width",
+      "4"
+    ]
+  },
+  {
+    "path": "backend/src/controllers/notificationcontroller.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/controllers/profilecontroller.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/controllers/publicProfileController.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/controllers/resumecontoller.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/controllers/skillgapcontroller.js",
+    "options": ["--single-quote", "false", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/controllers/support.controller.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/controllers/weeklyReportController.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/middleware/notificationAdmission.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/models/notification.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/models/notificationReceipt.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/models/notificationState.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/models/supportTicket.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/models/weeklyReport.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/routes/notification.routes.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/scripts/migrateNotificationIndexes.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/scripts/verifyNotificationAssetRegressions.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/scripts/verifyNotificationsBrowser.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/services/accountDeletionService.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/services/careerSprintService.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/services/emailRetryQueueService.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/services/integrationMongoGovernanceService.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/services/integrationPersistenceService.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/services/notificationMetrics.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/services/notificationPersistenceService.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/services/notificationService.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/services/notificationStreamService.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/services/publicProfileService.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/services/recommendationService.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "all", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/services/storedAssetService.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/services/support.service.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/services/supportNotificationDeliveryService.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/services/weeklyReportDeliveryService.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/services/weeklyReportService.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/tests/fixtures/disposableRequestMongo.js",
+    "options": ["--single-quote", "false", "--trailing-comma", "all", "--print-width", "80"]
+  },
+  {
+    "path": "backend/src/tests/fixtures/notificationWorker.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/tests/githubAnalyzerHardening.test.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/tests/githubAnalyzerPerformance.test.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/tests/integrationMongoGovernance.test.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "all", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/tests/notificationsProduction.test.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/tests/profileAccountSecurity.test.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/tests/profileSettingsProduction.test.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/tests/recommendationsHardening.test.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "all", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/tests/recommendationsPerformance.test.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "all", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/tests/resumePipelineFinalization.test.js",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/src/tests/skillgapHardening.test.js",
+    "options": ["--single-quote", "false", "--trailing-comma", "all", "--print-width", "80"]
+  },
+  {
+    "path": "backend/verification/notifications/NOTIFICATIONS-INTEGRATION-HANDOFF.md",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/verification/notifications/NOTIFICATIONS-PRODUCTION-FINAL.md",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/verification/notifications/cleanup.json",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/verification/notifications/file-inventory.json",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/verification/notifications/finalization.json",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/verification/notifications/format-manifest.json",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/verification/notifications/governance-regression.json",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "backend/verification/notifications/integration-results.json",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "docs/API_REFERENCE.md",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "docs/features/notifications.md",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  },
+  {
+    "path": "frontend/scripts/notifications-vitest.config.ts",
+    "options": ["--config", "frontend/.prettierrc"]
+  },
+  {
+    "path": "frontend/src/app/layout/main-layout/navbar/navbar.html",
+    "options": ["--config", "frontend/.prettierrc"]
+  },
+  {
+    "path": "frontend/src/app/layout/main-layout/navbar/navbar.ts",
+    "options": ["--config", "frontend/.prettierrc"]
+  },
+  {
+    "path": "frontend/src/app/pages/notifications/components/notification-bulk-actions/notification-bulk-actions.component.html",
+    "options": ["--config", "frontend/.prettierrc"]
+  },
+  {
+    "path": "frontend/src/app/pages/notifications/components/notification-bulk-actions/notification-bulk-actions.component.scss",
+    "options": ["--config", "frontend/.prettierrc"]
+  },
+  {
+    "path": "frontend/src/app/pages/notifications/components/notification-bulk-actions/notification-bulk-actions.component.ts",
+    "options": ["--config", "frontend/.prettierrc"]
+  },
+  {
+    "path": "frontend/src/app/pages/notifications/components/notification-confirm-dialog/notification-confirm-dialog.component.html",
+    "options": ["--config", "frontend/.prettierrc"]
+  },
+  {
+    "path": "frontend/src/app/pages/notifications/components/notification-confirm-dialog/notification-confirm-dialog.component.scss",
+    "options": ["--config", "frontend/.prettierrc"]
+  },
+  {
+    "path": "frontend/src/app/pages/notifications/components/notification-confirm-dialog/notification-confirm-dialog.component.spec.ts",
+    "options": ["--config", "frontend/.prettierrc"]
+  },
+  {
+    "path": "frontend/src/app/pages/notifications/components/notification-confirm-dialog/notification-confirm-dialog.component.ts",
+    "options": ["--config", "frontend/.prettierrc"]
+  },
+  {
+    "path": "frontend/src/app/pages/notifications/notifications.component.html",
+    "options": ["--config", "frontend/.prettierrc"]
+  },
+  {
+    "path": "frontend/src/app/pages/notifications/notifications.component.scss",
+    "options": ["--config", "frontend/.prettierrc"]
+  },
+  {
+    "path": "frontend/src/app/pages/notifications/notifications.component.ts",
+    "options": ["--config", "frontend/.prettierrc"]
+  },
+  {
+    "path": "frontend/src/app/shared/services/notification.service.spec.ts",
+    "options": ["--config", "frontend/.prettierrc"]
+  },
+  {
+    "path": "frontend/src/app/shared/services/notification.service.ts",
+    "options": ["--config", "frontend/.prettierrc"]
+  },
+  {
+    "path": "frontend/src/app/shared/utils/notification-navigation.spec.ts",
+    "options": ["--config", "frontend/.prettierrc"]
+  },
+  {
+    "path": "frontend/src/app/shared/utils/notification-navigation.ts",
+    "options": ["--config", "frontend/.prettierrc"]
+  },
+  {
+    "path": "frontend/verification/notifications/browser-results.json",
+    "options": ["--single-quote", "true", "--trailing-comma", "none", "--print-width", "100"]
+  }
+]

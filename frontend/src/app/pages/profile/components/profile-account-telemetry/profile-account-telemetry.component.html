@@ -1,0 +1,129 @@
+<div class="stats-head">
+  <h3 class="stats-head__title">ACCOUNT TELEMETRY</h3>
+  <span class="stats-badge">AST_VERIFIED</span>
+</div>
+
+<!-- Circular gauge score -->
+<div class="score-display">
+  <div class="score-gauge-wrap">
+    <svg class="score-gauge-svg" viewBox="-4 -4 44 44" aria-hidden="true">
+      <path
+        class="gauge-bg"
+        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+        fill="none"
+        stroke-width="3.2"
+      />
+      <path
+        class="gauge-fill"
+        [ngClass]="scoreClass"
+        [attr.stroke-dasharray]="profile.stats.developerScore + ', 100'"
+        d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+        fill="none"
+        stroke-dashoffset="0"
+        stroke-linecap="round"
+        stroke-width="3.2"
+      />
+    </svg>
+    <div class="score-gauge-center">
+      <span class="score-val">{{ profile.stats.developerScore }}</span>
+      <span class="score-max">/100</span>
+    </div>
+  </div>
+  <div class="score-meta">
+    <span class="score-label">Developer Impact</span>
+    <span class="score-pill" [ngClass]="scoreClass">
+      {{
+        profile.stats.developerScore >= 75
+          ? 'Optimal Standing'
+          : profile.stats.developerScore >= 50
+            ? 'Steady Progress'
+            : 'Initial Calibration'
+      }}
+    </span>
+  </div>
+</div>
+
+<!-- Telemetry items -->
+<div class="telemetry-items">
+  <div class="stat-row">
+    <span class="stat-label">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" />
+        <path d="M6 6h10" />
+        <path d="M6 10h10" />
+      </svg>
+      Repos Analyzed
+    </span>
+    <span class="stat-value">{{ profile.stats.reposAnalyzed }}</span>
+  </div>
+
+  <div class="stat-row">
+    <span class="stat-label">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <polygon
+          points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+        />
+      </svg>
+      Skills Detected
+    </span>
+    <span class="stat-value stat-value--skills">{{ profile.stats.skillsDetected }} verified</span>
+  </div>
+
+  <div class="stat-row">
+    <span class="stat-label">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+        <line x1="16" y1="2" x2="16" y2="6" />
+        <line x1="8" y1="2" x2="8" y2="6" />
+        <line x1="3" y1="10" x2="21" y2="10" />
+      </svg>
+      Member Since
+    </span>
+    <span class="stat-value">{{ profile.stats.memberSince }}</span>
+  </div>
+</div>
+
+<!-- Telemetry Cadence bar -->
+<div class="cadence-block">
+  <div class="cadence-header">
+    <span>PIPELINE CADENCE</span>
+    <span class="cadence-status">OPTIMAL</span>
+  </div>
+  <div class="cadence-ticks" aria-hidden="true">
+    <span class="cadence-tick active"></span>
+    <span class="cadence-tick active"></span>
+    <span class="cadence-tick active"></span>
+    <span class="cadence-tick active"></span>
+    <span class="cadence-tick active"></span>
+    <span class="cadence-tick active"></span>
+    <span class="cadence-tick active"></span>
+    <span class="cadence-tick"></span>
+  </div>
+</div>

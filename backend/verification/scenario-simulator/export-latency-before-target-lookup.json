@@ -1,0 +1,145 @@
+{
+  "database": "disposable loopback MongoDB",
+  "productionDataModified": false,
+  "checks": [
+    "JWT protection, foreign delete isolation, stale evaluation rejection and real eight-source context",
+    "Goal-only/incomplete Sprint and saved simulations do not establish completed skills",
+    "Authenticated production-bundle browser: evaluate, dirty guard, save, draft export, desktop/mobile screenshots and no runtime errors",
+    "Authenticated local quota rejects excess requests"
+  ],
+  "latency": {
+    "steady": {
+      "seconds": 60,
+      "rps": 20,
+      "requests": 1200,
+      "statuses": {
+        "200": 1104,
+        "201": 96
+      },
+      "elapsedMs": 60010.0138,
+      "latency": {
+        "context": {
+          "count": 480,
+          "p95": 90.80229999999938,
+          "p99": 482.91129999999976
+        },
+        "evaluate": {
+          "count": 420,
+          "p95": 23.98309999999765,
+          "p99": 26.513300000002346
+        },
+        "history": {
+          "count": 180,
+          "p95": 26.443500000001222,
+          "p99": 43.1875
+        },
+        "save": {
+          "count": 96,
+          "p95": 35.62909999999829,
+          "p99": 118.60589999999866
+        },
+        "export": {
+          "count": 24,
+          "p95": 597.3714,
+          "p99": 681.1800000000003
+        }
+      }
+    },
+    "burst": {
+      "seconds": 10,
+      "rps": 100,
+      "requests": 1000,
+      "statuses": {
+        "200": 920,
+        "201": 80
+      },
+      "elapsedMs": 10016.8021,
+      "latency": {
+        "context": {
+          "count": 400,
+          "p95": 112.98219999999856,
+          "p99": 156.42439999998896
+        },
+        "evaluate": {
+          "count": 350,
+          "p95": 24.000899999999092,
+          "p99": 50.101499999989755
+        },
+        "history": {
+          "count": 150,
+          "p95": 26.5168999999878,
+          "p99": 31.171000000002095
+        },
+        "save": {
+          "count": 80,
+          "p95": 32.99629999999888,
+          "p99": 36.840299999996205
+        },
+        "export": {
+          "count": 20,
+          "p95": 73.57919999999285,
+          "p99": 73.57919999999285
+        }
+      }
+    }
+  },
+  "screenshots": ["browser-light-1440.png", "browser-dark-375.png"],
+  "runtime": {
+    "node": "v24.19.0"
+  },
+  "limitations": [
+    "Short local mixed load; production 15-minute capacity and 60-minute soak targets remain unverified.",
+    "Live distributed Redis quota verification requires an isolated Redis test service."
+  ],
+  "indexes": [
+    {
+      "v": 2,
+      "key": {
+        "_id": 1
+      },
+      "name": "_id_"
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1
+      },
+      "name": "userId_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "scenarioHash": 1
+      },
+      "name": "scenarioHash_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1,
+        "createdAt": -1,
+        "_id": -1
+      },
+      "name": "scenario_history_cursor"
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1,
+        "scenarioHash": 1
+      },
+      "name": "userId_1_scenarioHash_1",
+      "unique": true
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1,
+        "role": 1,
+        "experienceLevel": 1
+      },
+      "name": "userId_1_role_1_experienceLevel_1"
+    }
+  ],
+  "status": "PASS_WITH_PRODUCTION_GATES"
+}

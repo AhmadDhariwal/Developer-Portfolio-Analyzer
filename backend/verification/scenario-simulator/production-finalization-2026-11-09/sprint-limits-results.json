@@ -1,0 +1,5 @@
+{
+  "command": "node --test --test-reporter=tap backend/src/tests/scenarioSprintExport.test.js",
+  "exitCode": 0,
+  "milliseconds": 13806
+}

@@ -1,0 +1,83 @@
+<!-- 4. Languages & Sampled Activity (Side-by-Side 2-Column Grid on Desktop, Fluid Single Column on Mobile) -->
+<section
+  class="charts-section"
+  *ngIf="hasLanguageData || hasActivityData"
+  aria-label="Languages and Activity"
+>
+  <div class="charts-grid" [class.charts-grid--single]="!hasLanguageData || !hasActivityData">
+    <!-- Languages Card -->
+    <div class="chart-panel" *ngIf="hasLanguageData">
+      <div class="panel-header-row">
+        <div>
+          <h2 class="panel-title">Language Distribution</h2>
+          <p class="panel-subtitle">
+            Which languages constitute your codebase? ({{
+              result.languageDistributionSource === 'language_bytes'
+                ? 'From byte counts'
+                : 'Primary languages'
+            }})
+          </p>
+        </div>
+      </div>
+
+      <div class="chart-body donut-chart-layout">
+        <div class="donut-canvas-wrap">
+          <canvas
+            #donutCanvas
+            role="img"
+            aria-label="Language distribution; percentages listed alongside"
+          ></canvas>
+        </div>
+        <ul class="lang-legend-list">
+          <li *ngFor="let lang of displayLanguages; let i = index" class="legend-row">
+            <span class="legend-color-dot" [style.background]="getLangColour(i)"></span>
+            <span class="legend-lang-name">{{ lang.language }}</span>
+            <span class="legend-lang-pct">{{ lang.percentage }}%</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="support-lang-footer" *ngIf="supportLanguages.length">
+        <span class="support-lang-label">Support & Config Files:</span>
+        <div class="support-chips-wrap">
+          <span class="support-chip" *ngFor="let lang of supportLanguages.slice(0, 6)">
+            {{ lang.language }} {{ lang.percentage }}%
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sampled Activity Card -->
+    <div class="chart-panel" *ngIf="hasActivityData">
+      <div class="panel-header-row">
+        <div>
+          <h2 class="panel-title">Sampled Commit Activity</h2>
+          <p class="panel-subtitle">Where is commit effort concentrated across top projects?</p>
+        </div>
+        <app-ui-badge variant="neutral" size="sm">Sampled</app-ui-badge>
+      </div>
+
+      <div class="activity-disclaimer-callout">
+        <span class="disclaimer-bullet" aria-hidden="true">ℹ️</span>
+        <span
+          >Sampled repository contributor history (top 5 active repositories) — not lifetime total
+          commits.</span
+        >
+      </div>
+
+      <div class="chart-body bar-chart-layout">
+        <canvas
+          #barCanvas
+          role="img"
+          aria-label="Sampled repository commits; exact counts listed below"
+        ></canvas>
+      </div>
+      <ul class="activity-values">
+        <li *ngFor="let activity of result.repositoryActivity">
+          <span>{{ activity.repo }}</span
+          ><strong>{{ formatNumber(activity.commits) }} sampled commits</strong>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>

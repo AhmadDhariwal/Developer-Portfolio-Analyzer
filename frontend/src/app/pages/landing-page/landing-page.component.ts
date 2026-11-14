@@ -1,4 +1,11 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, OnDestroy } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  HostListener,
+  OnDestroy,
+} from '@angular/core';
 import { CommonModule, NgStyle } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { UiButtonComponent } from '../../shared/components/ui-button/ui-button.component';
@@ -11,7 +18,7 @@ import { LandingThemeId, LandingThemeService } from '../../shared/services/landi
   imports: [CommonModule, NgStyle, RouterLink, UiButtonComponent],
   templateUrl: './landing-page.component.html',
   styleUrl: './landing-page.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LandingPageComponent implements AfterViewInit, OnDestroy {
   private revealObserver?: IntersectionObserver;
@@ -27,115 +34,127 @@ export class LandingPageComponent implements AfterViewInit, OnDestroy {
     return this.themeService.selectedTheme;
   }
 
-  get selectedThemeLabel(): string {
-    return this.themes.find((theme) => theme.id === this.selectedTheme)?.label ?? 'Dark';
-  }
-
   trustedLogos = ['Google', 'Microsoft', 'Spotify', 'Airbnb', 'Amazon', 'Netflix'];
 
-  stats: { value: string; label: string; icon: string; target: number; suffix: string; prefix?: string; decimals?: number; duration?: number }[] = [
+  stats: {
+    value: string;
+    label: string;
+    icon: string;
+    target: number;
+    suffix: string;
+    prefix?: string;
+    decimals?: number;
+    duration?: number;
+  }[] = [
     { value: '50K+', label: 'Developers Analyzed', icon: 'users', target: 50, suffix: 'K+' },
     { value: '2M+', label: 'Skills Extracted', icon: 'database', target: 2, suffix: 'M+' },
     { value: '18K+', label: 'Career Surprises', icon: 'sparkles', target: 18, suffix: 'K+' },
-    { value: '+34%', label: 'Avg Salary Bump', icon: 'briefcase', target: 34, prefix: '+', suffix: '%' },
-    { value: '97%', label: 'Satisfaction Rate', icon: 'award', target: 97, suffix: '%' }
+    {
+      value: '+34%',
+      label: 'Avg Salary Bump',
+      icon: 'briefcase',
+      target: 34,
+      prefix: '+',
+      suffix: '%',
+    },
+    { value: '97%', label: 'Satisfaction Rate', icon: 'award', target: 97, suffix: '%' },
   ];
 
   insightBullets = [
     'Code quality and best practices',
     'Skill assessment and gap detection',
     'Industry benchmark comparison',
-    'Personalized learning roadmap'
+    'Personalized learning roadmap',
   ];
 
   recruiterHighlights = [
     {
       icon: 'rank',
       title: 'AI-Ranked Developers',
-      description: 'Prioritize top candidates with AI-scored readiness and impact signals.'
+      description: 'Prioritize top candidates with AI-scored readiness and impact signals.',
     },
     {
       icon: 'shield-check',
       title: 'GitHub Verification',
-      description: 'Validate contributions, repos, and code consistency with verified data.'
+      description: 'Validate contributions, repos, and code consistency with verified data.',
     },
     {
       icon: 'file-check',
       title: 'Resume Intelligence',
-      description: 'Extract key experience and outcomes so hiring teams see the full story.'
+      description: 'Extract key experience and outcomes so hiring teams see the full story.',
     },
     {
       icon: 'target',
       title: 'Candidate Matching',
-      description: 'Match roles with real skills, not just keyword-heavy resumes.'
+      description: 'Match roles with real skills, not just keyword-heavy resumes.',
     },
     {
       icon: 'chart',
       title: 'Hiring Insights',
-      description: 'Get signal-rich analytics that make screening faster and fairer.'
-    }
+      description: 'Get signal-rich analytics that make screening faster and fairer.',
+    },
   ];
 
   growthMetrics = [
     { label: 'Hiring Score', value: '92', detail: '+18 pts this quarter' },
     { label: 'Salary Lift', value: '+34%', detail: 'Projected impact' },
-    { label: 'Skill Progression', value: '6/8', detail: 'Target skills mastered' }
+    { label: 'Skill Progression', value: '6/8', detail: 'Target skills mastered' },
   ];
 
   analysisSteps = [
     {
       status: 'done',
       title: 'GitHub scanned',
-      detail: '128 repos, 6 languages detected'
+      detail: '128 repos, 6 languages detected',
     },
     {
       status: 'done',
       title: 'Skills extracted',
-      detail: '34 skills mapped, 6 strengths highlighted'
+      detail: '34 skills mapped, 6 strengths highlighted',
     },
     {
       status: 'processing',
       title: 'Missing skills detected',
-      detail: 'System design, Kubernetes, distributed systems'
+      detail: 'System design, Kubernetes, distributed systems',
     },
     {
       status: 'queued',
       title: 'Roadmap generated',
-      detail: '12-week growth plan preparing'
-    }
+      detail: '12-week growth plan preparing',
+    },
   ];
 
   features = [
     {
       icon: 'github',
       title: 'GitHub Analysis',
-      description: 'Analyze repositories, contribution patterns, and code quality signals.'
+      description: 'Analyze repositories, contribution patterns, and code quality signals.',
     },
     {
       icon: 'file',
       title: 'Resume Intelligence',
-      description: 'AI parsing extracts skills, experience, and project impact fast.'
+      description: 'AI parsing extracts skills, experience, and project impact fast.',
     },
     {
       icon: 'target',
       title: 'Skill Gap Detection',
-      description: 'Compare your skills against industry standards and role benchmarks.'
+      description: 'Compare your skills against industry standards and role benchmarks.',
     },
     {
       icon: 'lightbulb',
       title: 'AI Career Recommendations',
-      description: 'Personalized roadmaps, project ideas, and role-fit guidance.'
+      description: 'Personalized roadmaps, project ideas, and role-fit guidance.',
     },
     {
       icon: 'book',
       title: 'Learning Resources',
-      description: 'Curated resources and courses aligned to your growth plan.'
+      description: 'Curated resources and courses aligned to your growth plan.',
     },
     {
       icon: 'activity',
       title: 'Progress Tracking',
-      description: 'Track milestones, measure progress, and celebrate wins.'
-    }
+      description: 'Track milestones, measure progress, and celebrate wins.',
+    },
   ];
 
   careerStacks = [
@@ -144,49 +163,54 @@ export class LandingPageComponent implements AfterViewInit, OnDestroy {
     { icon: 'ai', title: 'AI/ML', description: 'LLMs, Python, MLOps' },
     { icon: 'fullstack', title: 'Full Stack', description: 'Product and platform skills' },
     { icon: 'devops', title: 'DevOps', description: 'CI/CD, cloud, IaC' },
-    { icon: 'mobile', title: 'Mobile', description: 'iOS, Android, Flutter' }
+    { icon: 'mobile', title: 'Mobile', description: 'iOS, Android, Flutter' },
   ];
 
   steps = [
     {
       number: '01',
       title: 'Connect GitHub',
-      description: 'Link your GitHub profile to analyze repositories, commits, and contribution history.'
+      description:
+        'Link your GitHub profile to analyze repositories, commits, and contribution history.',
     },
     {
       number: '02',
       title: 'Upload Resume',
-      description: 'Drop your resume for instant AI-powered skill extraction and analysis.'
+      description: 'Drop your resume for instant AI-powered skill extraction and analysis.',
     },
     {
       number: '03',
       title: 'Get Career Insights',
-      description: 'Receive your Developer Readiness Score and personalized growth recommendations.'
-    }
+      description:
+        'Receive your Developer Readiness Score and personalized growth recommendations.',
+    },
   ];
 
   testimonials = [
     {
-      quote: "DevInsight AI helped me identify critical skill gaps before my job hunt. I landed my dream role at Stripe within 3 months of using the platform.",
-      author: "Sarah Chen",
-      role: "Senior Frontend Engineer @ Stripe",
-      initials: "SC",
-      color: "#8B5CF6"
+      quote:
+        'DevInsight AI helped me identify critical skill gaps before my job hunt. I landed my dream role at Stripe within 3 months of using the platform.',
+      author: 'Sarah Chen',
+      role: 'Senior Frontend Engineer @ Stripe',
+      initials: 'SC',
+      color: '#8B5CF6',
     },
     {
-      quote: "The GitHub analysis is incredibly detailed. It showed me patterns in my code that I never realized, and the AI recommendations were spot on.",
-      author: "Marcus Rodriguez",
-      role: "Full Stack Developer @ Vercel",
-      initials: "MR",
-      color: "#6366F1"
+      quote:
+        'The GitHub analysis is incredibly detailed. It showed me patterns in my code that I never realized, and the AI recommendations were spot on.',
+      author: 'Marcus Rodriguez',
+      role: 'Full Stack Developer @ Vercel',
+      initials: 'MR',
+      color: '#6366F1',
     },
     {
-      quote: "The resume intelligence feature is a game-changer. It parsed my resume better than any recruiter tool I've used and gave actionable suggestions.",
-      author: "Priya Patel",
-      role: "Backend Engineer @ Uber",
-      initials: "PP",
-      color: "#22C55E"
-    }
+      quote:
+        "The resume intelligence feature is a game-changer. It parsed my resume better than any recruiter tool I've used and gave actionable suggestions.",
+      author: 'Priya Patel',
+      role: 'Backend Engineer @ Uber',
+      initials: 'PP',
+      color: '#22C55E',
+    },
   ];
 
   private static readonly CODE_SNIPPET = `<span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="type">VisualTemperature</span>
@@ -220,7 +244,7 @@ export class LandingPageComponent implements AfterViewInit, OnDestroy {
   constructor(
     private readonly sanitizer: DomSanitizer,
     private readonly themeService: LandingThemeService,
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
   ) {
     const icons: Record<string, string> = {
       github: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -329,7 +353,7 @@ export class LandingPageComponent implements AfterViewInit, OnDestroy {
       mobile: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="7" y="2" width="10" height="20" rx="2"></rect>
         <line x1="11" y1="18" x2="13" y2="18"></line>
-      </svg>`
+      </svg>`,
     };
 
     const safe: Record<string, SafeHtml> = {};
@@ -338,7 +362,9 @@ export class LandingPageComponent implements AfterViewInit, OnDestroy {
     }
     this.iconHtml = safe;
 
-    this.codeSnippetHtml = this.sanitizer.bypassSecurityTrustHtml(LandingPageComponent.CODE_SNIPPET);
+    this.codeSnippetHtml = this.sanitizer.bypassSecurityTrustHtml(
+      LandingPageComponent.CODE_SNIPPET,
+    );
   }
 
   quoted(text: string): string {
@@ -377,6 +403,16 @@ export class LandingPageComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
+    const revealIfVisible = () => {
+      const vh = window.innerHeight || document.documentElement.clientHeight;
+      elements.forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top < vh + 100) {
+          el.classList.add('in-view');
+        }
+      });
+    };
+
     this.revealObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -386,14 +422,15 @@ export class LandingPageComponent implements AfterViewInit, OnDestroy {
           }
         });
       },
-      { threshold: 0.05, rootMargin: '0px 0px 50px 0px' }
+      { threshold: 0.02, rootMargin: '200px 0px 400px 0px' },
     );
 
     elements.forEach((el) => this.revealObserver?.observe(el));
 
-    setTimeout(() => {
-      elements.slice(0, 4).forEach((el) => el.classList.add('in-view'));
-    }, 100);
+    // Reveal elements immediately that are in or near the viewport
+    revealIfVisible();
+    setTimeout(revealIfVisible, 120);
+    setTimeout(revealIfVisible, 400);
   }
 
   private initCounterObserver(): void {
@@ -416,7 +453,7 @@ export class LandingPageComponent implements AfterViewInit, OnDestroy {
           }
         });
       },
-      { threshold: 0.4 }
+      { threshold: 0.4 },
     );
 
     counters.forEach((el) => this.counterObserver?.observe(el));
@@ -425,6 +462,7 @@ export class LandingPageComponent implements AfterViewInit, OnDestroy {
   toggleThemeMenu(event: MouseEvent): void {
     event.stopPropagation();
     this.themeMenuOpen = !this.themeMenuOpen;
+    this.cdr.markForCheck();
   }
 
   setTheme(theme: LandingThemeId): void {

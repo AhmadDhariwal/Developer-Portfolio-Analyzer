@@ -1,0 +1,269 @@
+{
+  "results": [
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--write",
+        "--single-quote",
+        "--trailing-comma",
+        "none",
+        "--print-width",
+        "120",
+        "backend/src/config/aiProviders.js",
+        "backend/src/services/aiProviderManager.js",
+        "backend/src/scripts/configureSharedAiEnvironment.js",
+        "backend/src/scripts/verifyCareerSprintAiLive.js",
+        "backend/src/scripts/verifySharedAiProviders.js",
+        "backend/src/scripts/auditReleaseEnvironment.cjs",
+        "backend/src/scripts/verifyBackendRelease.cjs",
+        "backend/src/scripts/verifyReleaseIndexes.cjs",
+        "backend/src/tests/aiProviderPlatform.test.js"
+      ],
+      "exitCode": 0,
+      "milliseconds": 625,
+      "stdout": "backend/src/config/aiProviders.js 72ms (unchanged)\nbackend/src/services/aiProviderManager.js 94ms (unchanged)\nbackend/src/scripts/configureSharedAiEnvironment.js 15ms (unchanged)\nbackend/src/scripts/verifyCareerSprintAiLive.js 18ms (unchanged)\nbackend/src/scripts/verifySharedAiProviders.js 9ms (unchanged)\nbackend/src/scripts/auditReleaseEnvironment.cjs 12ms (unchanged)\nbackend/src/scripts/verifyBackendRelease.cjs 28ms (unchanged)\nbackend/src/scripts/verifyReleaseIndexes.cjs 8ms (unchanged)\nbackend/src/tests/aiProviderPlatform.test.js 35ms (unchanged)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--check",
+        "--single-quote",
+        "--trailing-comma",
+        "none",
+        "--print-width",
+        "120",
+        "backend/src/config/aiProviders.js",
+        "backend/src/services/aiProviderManager.js",
+        "backend/src/scripts/configureSharedAiEnvironment.js",
+        "backend/src/scripts/verifyCareerSprintAiLive.js",
+        "backend/src/scripts/verifySharedAiProviders.js",
+        "backend/src/scripts/auditReleaseEnvironment.cjs",
+        "backend/src/scripts/verifyBackendRelease.cjs",
+        "backend/src/scripts/verifyReleaseIndexes.cjs",
+        "backend/src/tests/aiProviderPlatform.test.js"
+      ],
+      "exitCode": 0,
+      "milliseconds": 617,
+      "stdout": "Checking formatting...\nAll matched files use Prettier code style!\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--write",
+        "--single-quote",
+        "--trailing-comma",
+        "all",
+        "--print-width",
+        "100",
+        "backend/src/services/courseRecommendationService.js",
+        "backend/src/tests/coursesPerformance.test.js",
+        "backend/src/tests/publicPortfolio.integration.test.js"
+      ],
+      "exitCode": 0,
+      "milliseconds": 525,
+      "stdout": "backend/src/services/courseRecommendationService.js 149ms (unchanged)\nbackend/src/tests/coursesPerformance.test.js 45ms (unchanged)\nbackend/src/tests/publicPortfolio.integration.test.js 68ms (unchanged)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--check",
+        "--single-quote",
+        "--trailing-comma",
+        "all",
+        "--print-width",
+        "100",
+        "backend/src/services/courseRecommendationService.js",
+        "backend/src/tests/coursesPerformance.test.js",
+        "backend/src/tests/publicPortfolio.integration.test.js"
+      ],
+      "exitCode": 0,
+      "milliseconds": 544,
+      "stdout": "Checking formatting...\nAll matched files use Prettier code style!\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--write",
+        "--single-quote=false",
+        "--trailing-comma",
+        "all",
+        "--print-width",
+        "80",
+        "backend/src/tests/fixtures/disposableRequestMongo.js"
+      ],
+      "exitCode": 0,
+      "milliseconds": 351,
+      "stdout": "backend/src/tests/fixtures/disposableRequestMongo.js 84ms (unchanged)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--check",
+        "--single-quote=false",
+        "--trailing-comma",
+        "all",
+        "--print-width",
+        "80",
+        "backend/src/tests/fixtures/disposableRequestMongo.js"
+      ],
+      "exitCode": 0,
+      "milliseconds": 293,
+      "stdout": "Checking formatting...\nAll matched files use Prettier code style!\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/config/aiProviders.js"
+      ],
+      "exitCode": 0,
+      "milliseconds": 89,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/services/aiProviderManager.js"
+      ],
+      "exitCode": 0,
+      "milliseconds": 84,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/scripts/configureSharedAiEnvironment.js"
+      ],
+      "exitCode": 0,
+      "milliseconds": 83,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/scripts/verifyCareerSprintAiLive.js"
+      ],
+      "exitCode": 0,
+      "milliseconds": 90,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/scripts/verifySharedAiProviders.js"
+      ],
+      "exitCode": 0,
+      "milliseconds": 81,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/scripts/auditReleaseEnvironment.cjs"
+      ],
+      "exitCode": 0,
+      "milliseconds": 94,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/scripts/verifyBackendRelease.cjs"
+      ],
+      "exitCode": 0,
+      "milliseconds": 96,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/scripts/verifyReleaseIndexes.cjs"
+      ],
+      "exitCode": 0,
+      "milliseconds": 85,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/tests/aiProviderPlatform.test.js"
+      ],
+      "exitCode": 0,
+      "milliseconds": 84,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/services/courseRecommendationService.js"
+      ],
+      "exitCode": 0,
+      "milliseconds": 125,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/tests/coursesPerformance.test.js"
+      ],
+      "exitCode": 0,
+      "milliseconds": 88,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/tests/publicPortfolio.integration.test.js"
+      ],
+      "exitCode": 0,
+      "milliseconds": 87,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/tests/fixtures/disposableRequestMongo.js"
+      ],
+      "exitCode": 0,
+      "milliseconds": 91,
+      "stdout": "",
+      "stderr": ""
+    }
+  ]
+}

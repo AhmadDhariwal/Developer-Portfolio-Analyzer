@@ -1,0 +1,15 @@
+{
+  "pr": "https://github.com/AhmadDhariwal/Developer-Portfolio-Analyzer/pull/61",
+  "head": "fix/skill-gap",
+  "headSha": "454f46d8028f5ad289e749a34eb31db3afc14f21",
+  "base": "release1",
+  "baseSha": "6fd0901cac4780269d611b9178c8eaa8937186ab",
+  "githubMergeable": true,
+  "simulationTree": "07085fab70d3bb7c2abe1517a8895f064ccd3161",
+  "simulationEqualsHeadTree": true,
+  "textualConflicts": 0,
+  "conflictsRequiringResolution": 0,
+  "actualMergePerformed": false,
+  "combinedCommitStatuses": [],
+  "note": "Other local feature branches are not this PR target; their historical simulated conflicts were not merged or discarded."
+}

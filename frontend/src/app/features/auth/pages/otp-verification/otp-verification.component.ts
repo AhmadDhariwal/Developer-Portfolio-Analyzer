@@ -7,13 +7,24 @@ import { OtpInputComponent } from '../../components/otp-input/otp-input.componen
 import { UiButtonComponent } from '../../../../shared/components/ui-button/ui-button.component';
 import { UiCardComponent } from '../../../../shared/components/ui-card/ui-card.component';
 import { ResumeOnboardingService } from '../../../../shared/services/resume-onboarding.service';
+import {
+  LandingThemeId,
+  LandingThemeService,
+} from '../../../../shared/services/landing-theme.service';
 
 @Component({
   selector: 'app-otp-verification',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, OtpInputComponent, UiButtonComponent, UiCardComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    OtpInputComponent,
+    UiButtonComponent,
+    UiCardComponent,
+  ],
   templateUrl: './otp-verification.component.html',
-  styleUrl: './otp-verification.component.scss'
+  styleUrl: './otp-verification.component.scss',
 })
 export class OtpVerificationComponent implements OnInit {
   userId = '';
@@ -35,21 +46,26 @@ export class OtpVerificationComponent implements OnInit {
   expiryDisplay = '';
   private expiryTimer: ReturnType<typeof setInterval> | null = null;
 
+  get selectedTheme(): LandingThemeId {
+    return this.themeService.selectedTheme;
+  }
+
   constructor(
     private readonly authService: AuthService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef,
-    private readonly resumeOnboarding: ResumeOnboardingService
+    private readonly resumeOnboarding: ResumeOnboardingService,
+    private readonly themeService: LandingThemeService,
   ) {}
 
   ngOnInit(): void {
     const state = history.state || {};
-    this.userId    = String(state.userId    || '');
+    this.userId = String(state.userId || '');
     this.pendingId = String(state.pendingId || '');
-    this.type      = state.type === 'phone' ? 'phone' : 'email';
-    this.purpose   = state.purpose === 'forgot-password' ? 'forgot-password' : 'signup';
-    this.email       = String(state.email       || '');
+    this.type = state.type === 'phone' ? 'phone' : 'email';
+    this.purpose = state.purpose === 'forgot-password' ? 'forgot-password' : 'signup';
+    this.email = String(state.email || '');
     this.phoneNumber = String(state.phoneNumber || '');
     this.countryCode = String(state.countryCode || '');
 
@@ -59,11 +75,13 @@ export class OtpVerificationComponent implements OnInit {
     }
 
     this.route.queryParamMap.subscribe((params) => {
-      if (!this.userId    && params.get('userId'))    this.userId    = String(params.get('userId'));
-      if (!this.pendingId && params.get('pendingId')) this.pendingId = String(params.get('pendingId'));
+      if (!this.userId && params.get('userId')) this.userId = String(params.get('userId'));
+      if (!this.pendingId && params.get('pendingId'))
+        this.pendingId = String(params.get('pendingId'));
       if (!state.type && params.get('type') === 'phone') this.type = 'phone';
-      if (!state.purpose && params.get('purpose') === 'forgot-password') this.purpose = 'forgot-password';
-      if (!this.email)       this.email       = String(params.get('email')       || '');
+      if (!state.purpose && params.get('purpose') === 'forgot-password')
+        this.purpose = 'forgot-password';
+      if (!this.email) this.email = String(params.get('email') || '');
       if (!this.phoneNumber) this.phoneNumber = String(params.get('phoneNumber') || '');
       if (!this.countryCode) this.countryCode = String(params.get('countryCode') || '');
     });
@@ -93,9 +111,9 @@ export class OtpVerificationComponent implements OnInit {
     this.error = '';
 
     const payload: any = {
-      otp:     this.otp,
-      type:    this.type,
-      purpose: this.purpose
+      otp: this.otp,
+      type: this.type,
+      purpose: this.purpose,
     };
     if (this.purpose === 'signup') {
       payload.pendingId = this.pendingId;
@@ -108,7 +126,7 @@ export class OtpVerificationComponent implements OnInit {
         this.isLoading = false;
         if (this.purpose === 'forgot-password') {
           this.router.navigate(['/auth/reset-password'], {
-            state: { resetToken: res?.resetToken || '' }
+            state: { resetToken: res?.resetToken || '' },
           });
           return;
         }
@@ -120,7 +138,7 @@ export class OtpVerificationComponent implements OnInit {
         this.isLoading = false;
         this.error = err?.error?.message || 'OTP verification failed.';
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
@@ -129,7 +147,7 @@ export class OtpVerificationComponent implements OnInit {
 
     this.isResending = true;
     this.error = '';
-    this.info  = '';
+    this.info = '';
 
     let request$: any;
 
@@ -137,17 +155,17 @@ export class OtpVerificationComponent implements OnInit {
       // Resend for pending registration
       request$ = this.authService.sendOtp({
         pendingId: this.pendingId,
-        email:     this.email,
-        type:      this.type,
-        purpose:   'signup'
+        email: this.email,
+        type: this.type,
+        purpose: 'signup',
       } as any);
     } else {
       // Forgot-password resend
       request$ = this.authService.forgotPassword({
-        email:       this.email,
+        email: this.email,
         phoneNumber: this.phoneNumber,
         countryCode: this.countryCode,
-        type:        this.type
+        type: this.type,
       });
     }
 
@@ -166,25 +184,25 @@ export class OtpVerificationComponent implements OnInit {
         this.isResending = false;
         this.error = err?.error?.message || 'Failed to resend OTP.';
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
   private startResendCountdown(): void {
     this.resendSeconds = 30;
     if (this.resendTimer) clearInterval(this.resendTimer);
-    
+
     const endTime = Date.now() + 30000;
-    
+
     this.resendTimer = setInterval(() => {
       const remains = endTime - Date.now();
       const newSeconds = Math.max(0, Math.ceil(remains / 1000));
-      
+
       if (this.resendSeconds !== newSeconds) {
         this.resendSeconds = newSeconds;
         this.cdr.detectChanges();
       }
-      
+
       if (newSeconds === 0 && this.resendTimer) {
         clearInterval(this.resendTimer);
         this.resendTimer = null;
@@ -196,29 +214,29 @@ export class OtpVerificationComponent implements OnInit {
     if (this.expiryTimer) {
       clearInterval(this.expiryTimer);
     }
-    
+
     const updateDisplay = () => {
       if (!this.expiresAt) return;
       const remains = this.expiresAt.getTime() - Date.now();
-      
+
       if (remains <= 0) {
         this.expiryDisplay = 'OTP Expired';
         if (this.expiryTimer) clearInterval(this.expiryTimer);
         this.cdr.detectChanges();
         return;
       }
-      
+
       const totalSeconds = Math.floor((remains + 999) / 1000);
       const m = Math.floor(totalSeconds / 60);
       const s = totalSeconds % 60;
       const newDisplay = `Expires in ${m}:${s.toString().padStart(2, '0')}`;
-      
+
       if (this.expiryDisplay !== newDisplay) {
         this.expiryDisplay = newDisplay;
         this.cdr.detectChanges();
       }
     };
-    
+
     updateDisplay();
     this.expiryTimer = setInterval(updateDisplay, 250);
   }

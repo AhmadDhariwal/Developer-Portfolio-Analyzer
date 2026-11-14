@@ -1,4 +1,5 @@
 const axios = require('axios');
+const governance = require('../integrationGovernanceService');
 
 class BaseIntegrationAdapter {
   constructor(provider) {
@@ -40,12 +41,22 @@ class BaseIntegrationAdapter {
       ...(config.headers || {})
     };
     if (token) headers.Authorization = `Bearer ${token}`;
-    const response = await axios.get(url, { ...config, headers, timeout: 15000 });
+    const response = await governance.request(
+      this.provider,
+      (controls) => axios.get(url, { ...config, ...controls, headers }),
+      true
+    );
+    if (response.data?.errors?.length || response.data?.error_id)
+      throw new Error('Provider returned an invalid response.');
     return response.data;
   }
 
   async post(url, data, config = {}) {
-    const response = await axios.post(url, data, { timeout: 15000, ...config });
+    const response = await governance.request(this.provider, (controls) =>
+      axios.post(url, data, { ...config, ...controls })
+    );
+    if (response.data?.errors?.length || response.data?.error_id)
+      throw new Error('Provider returned an invalid response.');
     return response.data;
   }
 }

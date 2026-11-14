@@ -1,0 +1,164 @@
+[
+  {
+    "label": "backend-format",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "frontend/node_modules/prettier/bin/prettier.cjs",
+      "--check",
+      "--single-quote",
+      "--trailing-comma",
+      "none",
+      "--print-width",
+      "100",
+      "backend/src/controllers/publicProfileController.js",
+      "backend/src/services/publicPortfolioAnalyticsPersistence.js",
+      "backend/src/services/publicProfileService.js",
+      "backend/src/services/storedAssetService.js",
+      "backend/src/tests/publicPortfolioHardening.test.js",
+      "backend/src/scripts/auditPublicPortfolioQueries.cjs",
+      "backend/src/scripts/verifyPublicPortfolioFinalization.cjs"
+    ],
+    "exitCode": 0,
+    "milliseconds": 4129
+  },
+  {
+    "label": "frontend-format",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "frontend/node_modules/prettier/bin/prettier.cjs",
+      "--check",
+      "--config",
+      "frontend/.prettierrc",
+      "frontend/src/app/pages/portfolio-settings/portfolio-settings.component.ts",
+      "frontend/src/app/pages/portfolio-settings/portfolio-settings.component.spec.ts",
+      "frontend/src/app/pages/public-portfolio/public-portfolio.component.ts",
+      "frontend/src/app/pages/public-portfolio/public-portfolio.component.html",
+      "frontend/src/app/pages/public-portfolio/public-portfolio.component.scss",
+      "frontend/src/app/pages/public-portfolio/public-portfolio.component.spec.ts"
+    ],
+    "exitCode": 0,
+    "milliseconds": 15445
+  },
+  {
+    "label": "report-format",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "frontend/node_modules/prettier/bin/prettier.cjs",
+      "--check",
+      "backend/verification/public-portfolio/production-finalization-2026-11-08/PUBLIC-PORTFOLIO-PRODUCTION-FINAL.md"
+    ],
+    "exitCode": 0,
+    "milliseconds": 1590
+  },
+  {
+    "label": "syntax-0",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--check",
+      "backend/src/controllers/publicProfileController.js"
+    ],
+    "exitCode": 0,
+    "milliseconds": 1127
+  },
+  {
+    "label": "syntax-1",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--check",
+      "backend/src/services/publicPortfolioAnalyticsPersistence.js"
+    ],
+    "exitCode": 0,
+    "milliseconds": 353
+  },
+  {
+    "label": "syntax-2",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--check",
+      "backend/src/services/publicProfileService.js"
+    ],
+    "exitCode": 0,
+    "milliseconds": 800
+  },
+  {
+    "label": "syntax-3",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--check",
+      "backend/src/services/storedAssetService.js"
+    ],
+    "exitCode": 0,
+    "milliseconds": 960
+  },
+  {
+    "label": "syntax-4",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--check",
+      "backend/src/tests/publicPortfolioHardening.test.js"
+    ],
+    "exitCode": 0,
+    "milliseconds": 566
+  },
+  {
+    "label": "syntax-5",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--check",
+      "backend/src/scripts/auditPublicPortfolioQueries.cjs"
+    ],
+    "exitCode": 0,
+    "milliseconds": 456
+  },
+  {
+    "label": "syntax-6",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--check",
+      "backend/src/scripts/verifyPublicPortfolioFinalization.cjs"
+    ],
+    "exitCode": 0,
+    "milliseconds": 624
+  },
+  {
+    "label": "git-whitespace",
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exitCode": 0,
+    "milliseconds": 736
+  },
+  {
+    "label": "git-staged-whitespace",
+    "command": [
+      "git",
+      "diff",
+      "--cached",
+      "--check"
+    ],
+    "exitCode": 0,
+    "milliseconds": 643
+  },
+  {
+    "label": "git-status",
+    "command": [
+      "git",
+      "status",
+      "--short"
+    ],
+    "exitCode": 0,
+    "milliseconds": 1527
+  },
+  {
+    "label": "git-branch",
+    "command": [
+      "git",
+      "branch",
+      "--show-current"
+    ],
+    "exitCode": 0,
+    "milliseconds": 590
+  }
+]

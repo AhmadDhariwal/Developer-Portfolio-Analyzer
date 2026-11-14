@@ -1,0 +1,149 @@
+{
+  "status": "DEVELOPMENT COMPLETE \u2014 STABLE CANDIDATE \u2014 PRODUCTION GATES PENDING",
+  "branch": "task/notifications",
+  "source": "release1",
+  "productionGatesPending": true,
+  "productionDatabaseUsed": false,
+  "liveEmailSent": false,
+  "dependenciesChangedByTask": false,
+  "scoringFormulasChanged": false,
+  "verification": {
+    "backendBroadFinal": {
+      "passed": 130,
+      "failedSetup": 1,
+      "skipped": 2,
+      "note": "Cold startup failure resolved by isolated governance retry."
+    },
+    "governanceRetry": {
+      "passed": 13,
+      "failed": 0
+    },
+    "optionalAssets": {
+      "passed": 14,
+      "failed": 0,
+      "overlapWithBroad": 12
+    },
+    "notificationAcceptance": {
+      "passed": 15,
+      "failed": 0
+    },
+    "distinctBackendTestsCovered": 160,
+    "frontend": {
+      "files": 80,
+      "passed": 446,
+      "failed": 0
+    },
+    "typecheck": "PASS",
+    "productionBuild": "PASS; pre-existing landing-page stylesheet budget warning",
+    "browser": {
+      "checks": 5,
+      "runtimeErrors": 0,
+      "screenshots": 4,
+      "contrast": "PASS",
+      "visualReview": "PASS desktop/mobile light theme; dark screenshots retained"
+    },
+    "formatter": "PASS: explicit-path --write then same-path --check for 80 files",
+    "backendSyntax": "PASS: node --check for 49 backend JavaScript files",
+    "gitWhitespace": "PASS: git diff --check and git diff --cached --check"
+  },
+  "environmentIssues": [
+    "Earlier sandbox temporary-file restrictions and C: space pressure; moved verification temporary storage to D: without deleting unrelated files.",
+    "Frontend runner stalled; serial retry passed.",
+    "Host reported 100 percent CPU. Only test worker startup allowances increased to 45 seconds; product deadlines and assertions unchanged."
+  ],
+  "cleanupInventory": "cleanup.json",
+  "exactFileInventory": "file-inventory.json",
+  "formatterPathsAndOptions": "format-manifest.json",
+  "movedSourceFiles": [],
+  "deletedSourceFiles": [],
+  "committed": false,
+  "pushed": false,
+  "deployed": false,
+  "consolidatedVerificationLogResults": [
+    {
+      "formerTemporaryLog": "backend/verification/notifications/asset-regressions.log",
+      "bytes": 4458,
+      "sha256": "57cf0aa9cf22dd1900573e87eb88c2c5a7dc444af62925f97232db3ab0cad6ad",
+      "result": {
+        "tests": "14",
+        "pass": "14",
+        "fail": "0",
+        "skipped": "0",
+        "cancelled": "0",
+        "duration_ms": "83104.5307"
+      }
+    },
+    {
+      "formerTemporaryLog": "backend/verification/notifications/backend-integration.log",
+      "bytes": 2701,
+      "sha256": "cc7537f40857344f67e8a132f2669f83e7aa165575222563105cb23da727321e",
+      "result": {
+        "tests": "15",
+        "pass": "15",
+        "fail": "0",
+        "skipped": "0",
+        "cancelled": "0",
+        "duration_ms": "110617.1665"
+      }
+    },
+    {
+      "formerTemporaryLog": "backend/verification/notifications/backend-regressions.log",
+      "bytes": 149445,
+      "sha256": "7a4b733ff94b39a15849be0e8de45336e85525bed6700a6ad442a47517b4829a",
+      "result": {
+        "tests": "133",
+        "pass": "130",
+        "fail": "1",
+        "skipped": "2",
+        "cancelled": "0",
+        "duration_ms": "188918.9384"
+      }
+    },
+    {
+      "formerTemporaryLog": "backend/verification/notifications/governance-retry.log",
+      "bytes": 2947,
+      "sha256": "5e2d07120593b21d5cf6300b00191dfc52deb4e3d098f1adb0c615e9722c6cc5",
+      "result": {
+        "tests": "13",
+        "pass": "13",
+        "fail": "0",
+        "skipped": "0",
+        "cancelled": "0",
+        "duration_ms": "97186.7964"
+      }
+    },
+    {
+      "formerTemporaryLog": "frontend/verification/notifications/frontend-build.log",
+      "bytes": 1525,
+      "sha256": "41da2d20b62c84a736d98109ce39c8706dabbe59c11d09cf20e3a8f479fd5562",
+      "result": {
+        "build": "PASS",
+        "warning": "Existing landing-page stylesheet exceeds 48 kB budget by 8.67 kB."
+      }
+    },
+    {
+      "formerTemporaryLog": "frontend/verification/notifications/frontend-tests.log",
+      "bytes": 56018,
+      "sha256": "b2bf15eea1d43677609a9a2971fedd6f3a99c68a96b03c37a874b0b754546a97",
+      "result": {
+        "filesPassed": 80,
+        "testsPassed": 446
+      }
+    }
+  ],
+  "cleanupFollowup": {
+    "deletedRedundantLogs": 6,
+    "deletedLogBytes": 217094,
+    "applicationSourceChanged": false,
+    "runtimeTestsRerun": false,
+    "reason": "Only redundant logs, empty task temporary directories and inventory/report metadata changed. Prior runtime verification remains valid.",
+    "checks": [
+      "Retained result summaries verified against original logs before deletion",
+      "Remaining inventory paths exist",
+      "No active report references to deleted logs",
+      "JSON parsing",
+      "Explicit-path formatter write/check",
+      "Working tree and index whitespace"
+    ]
+  }
+}

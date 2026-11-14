@@ -16,16 +16,13 @@ const assert = (condition, message) => {
   if (!condition) throw new Error(message || 'assertion failed');
 };
 
-const signToken = (userId) => jwt.sign(
-  { id: userId },
-  process.env.JWT_SECRET,
-  {
+const signToken = (userId) =>
+  jwt.sign({ id: userId }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN || '20h',
     algorithm: 'HS256',
     issuer: process.env.JWT_ISSUER || 'devinsight-api',
-    audience: process.env.JWT_AUDIENCE || 'devinsight-web'
-  }
-);
+    audience: process.env.JWT_AUDIENCE || 'devinsight-web',
+  });
 
 async function ensureMongo() {
   if (mongoose.connection.readyState === 1) return;
@@ -51,16 +48,20 @@ async function bootstrapSession() {
     isActive: { $ne: false },
     $or: [
       { activeGithubUsername: { $exists: true, $nin: [null, ''] } },
-      { githubUsername: { $exists: true, $nin: [null, ''] } }
-    ]
+      { githubUsername: { $exists: true, $nin: [null, ''] } },
+    ],
   })
     .sort({ updatedAt: -1 })
-    .select('_id name email githubUsername activeGithubUsername careerStack experienceLevel activeCareerStack activeExperienceLevel role organizationId')
+    .select(
+      '_id name email githubUsername activeGithubUsername careerStack experienceLevel activeCareerStack activeExperienceLevel role organizationId',
+    )
     .lean();
   if (!user?._id) {
     user = await User.findOne({ isActive: { $ne: false } })
       .sort({ updatedAt: -1 })
-      .select('_id name email githubUsername activeGithubUsername careerStack experienceLevel activeCareerStack activeExperienceLevel role organizationId')
+      .select(
+        '_id name email githubUsername activeGithubUsername careerStack experienceLevel activeCareerStack activeExperienceLevel role organizationId',
+      )
       .lean();
   }
   if (!user?._id) throw new Error('No active user available for release verification');
@@ -77,8 +78,8 @@ async function bootstrapSession() {
       githubUsername: user.githubUsername || github,
       careerStack: user.activeCareerStack || user.careerStack || 'Full Stack',
       experienceLevel: user.activeExperienceLevel || user.experienceLevel || 'Student',
-      role: user.role || 'developer'
-    }
+      role: user.role || 'developer',
+    },
   };
 }
 
@@ -99,7 +100,7 @@ async function runApiWorkflow(session) {
     failure: 0,
     dashboard: 0,
     unauthorized: 0,
-    preview: 0
+    preview: 0,
   };
 
   try {
@@ -113,69 +114,117 @@ async function runApiWorkflow(session) {
   const first = await postRecommendations(headers, { username, forceRefresh: false });
   counts.normal += 1;
   assert(first.status === 200, 'normal flow must succeed');
-  assert(Array.isArray(first.data?.projects) && first.data.projects.length > 0, 'projects required');
-  assert(Number.isFinite(Number(first.data?.recommendationScores?.overallRecommendationScore)), 'overall score must be finite');
-  assert(!Number.isNaN(Number(first.data?.recommendationScores?.overallRecommendationScore)), 'overall score must not be NaN');
-  const firstScore = Number(first.data.recommendationScores.overallRecommendationScore);
-  const firstSignalHash = first.data?.cacheMetadata?.signalHash || first.data?.recommendationSignals?.signalHash || '';
+  assert(
+    first.data?.ruleVersion === 'recommendations-evidence-v1' &&
+      Array.isArray(first.data?.recommendations) &&
+      first.data.recommendations.length > 0,
+    'versioned evidence-backed recommendations required',
+  );
+  assert(
+    first.data?.recommendationScores?.overallRecommendationScore === null,
+    'uncalibrated legacy composite must be unavailable',
+  );
+  assert(
+    first.data.recommendations.every(
+      (item) => item.id && item.priority && item.evidence && item.actionableNextStep,
+    ),
+    'actions must have stable identity, evidence and next steps',
+  );
+  const firstScore = first.data.recommendationScores.overallRecommendationScore;
+  const firstSignalHash =
+    first.data?.cacheMetadata?.signalHash || first.data?.recommendationSignals?.signalHash || '';
 
   const cached = await postRecommendations(headers, { username, forceRefresh: false });
   counts.cached += 1;
   assert(cached.status === 200);
   assert(
-    cached.data?.fromCache === true
-      || cached.data?.cacheMetadata?.loadedFromCache === true
-      || Number(cached.data?.recommendationScores?.overallRecommendationScore) === firstScore,
-    'cached flow must reuse prior result'
+    cached.data?.fromCache === true ||
+      cached.data?.cacheMetadata?.loadedFromCache === true ||
+      cached.data?.cacheMetadata?.signalHash === firstSignalHash,
+    'cached flow must reuse prior result',
   );
-  assert((cached.data?.cacheMetadata?.stageTimingsMs?.AI || 0) === 0 || cached.data?.fromCache === true || cached.data?.cacheMetadata?.loadedFromCache === true, 'cache hit should not require AI when stage timings present');
+  assert(
+    (cached.data?.cacheMetadata?.stageTimingsMs?.AI || 0) === 0 ||
+      cached.data?.fromCache === true ||
+      cached.data?.cacheMetadata?.loadedFromCache === true,
+    'cache hit should not require AI when stage timings present',
+  );
 
   const rapid = await Promise.allSettled([
     postRecommendations(headers, { username, forceRefresh: true }),
     postRecommendations(headers, { username, forceRefresh: true }),
     postRecommendations(headers, { username, forceRefresh: true }),
     postRecommendations(headers, { username, forceRefresh: true }),
-    postRecommendations(headers, { username, forceRefresh: true })
+    postRecommendations(headers, { username, forceRefresh: true }),
   ]);
   counts.rapid += rapid.filter((entry) => entry.status === 'fulfilled').length;
-  assert(rapid.every((entry) => entry.status === 'fulfilled'), 'rapid identical refresh must all succeed');
-  const rapidScores = rapid.map((entry) => Number(entry.value.data.recommendationScores?.overallRecommendationScore));
-  assert(rapidScores.every((value) => value === rapidScores[0]), 'rapid callers must share one result');
+  assert(
+    rapid.every((entry) => entry.status === 'fulfilled'),
+    'rapid identical refresh must all succeed',
+  );
+  const rapidHashes = rapid.map((entry) => entry.value.data.cacheMetadata?.signalHash);
+  assert(
+    rapidHashes.every((value) => value === rapidHashes[0]),
+    'rapid callers must share one result',
+  );
 
   const refresh = await postRecommendations(headers, { username, forceRefresh: true });
   counts.refresh += 1;
   assert(refresh.status === 200);
-  assert(Number.isFinite(Number(refresh.data?.recommendationScores?.overallRecommendationScore)));
+  assert(refresh.data?.ruleVersion === 'recommendations-evidence-v1');
 
   try {
-    await axios.post(`${API}/recommendations/generate`, {
-      githubUsername: '',
-      careerStack: 'Frontend',
-      experienceLevel: 'Intern',
-      isTemporary: true
-    }, { headers, timeout: 30000 });
-    throw new Error('expected validation failure for empty preview username');
+    await axios.post(
+      `${API}/recommendations/generate`,
+      {
+        githubUsername: 'bad user!!',
+        careerStack: 'Frontend',
+        experienceLevel: 'Intern',
+        isTemporary: true,
+      },
+      { headers, timeout: 30000 },
+    );
+    throw new Error('expected validation failure for malformed preview username');
   } catch (error) {
-    assert([400, 413].includes(error.response?.status), `expected 400/413 got ${error.response?.status}`);
+    assert(
+      [400, 413].includes(error.response?.status),
+      `expected 400/413 got ${error.response?.status}`,
+    );
     counts.failure += 1;
   }
 
   const afterFailure = await postRecommendations(headers, { username, forceRefresh: false });
   counts.cached += 1;
-  assert(Number.isFinite(Number(afterFailure.data?.recommendationScores?.overallRecommendationScore)), 'failure must not corrupt cached profile result');
-  assert(Array.isArray(afterFailure.data?.projects) && afterFailure.data.projects.length > 0, 'previous valid projects must remain');
+  assert(
+    afterFailure.data?.ruleVersion === 'recommendations-evidence-v1',
+    'failure must not corrupt the current versioned result',
+  );
+  assert(
+    Array.isArray(afterFailure.data?.recommendations) &&
+      afterFailure.data.recommendations.length > 0,
+    'previous valid actions must remain',
+  );
 
   // Preview isolation
-  const preview = await axios.post(`${API}/recommendations/generate`, {
-    githubUsername: 'octocat',
-    careerStack: 'Frontend',
-    experienceLevel: 'Intern',
-    isTemporary: true,
-    forceRefresh: true
-  }, { headers, timeout: 180000 });
+  const preview = await axios.post(
+    `${API}/recommendations/generate`,
+    {
+      githubUsername: 'octocat',
+      careerStack: 'Frontend',
+      experienceLevel: 'Intern',
+      isTemporary: true,
+      forceRefresh: true,
+    },
+    { headers, timeout: 180000 },
+  );
   counts.preview += 1;
   assert(preview.status === 200, 'preview generate must succeed');
-  assert(preview.data?.isTemporary === true || preview.data?.mode === 'preview' || preview.data?.cacheMetadata?.temporary === true, 'preview must be temporary');
+  assert(
+    preview.data?.isTemporary === true ||
+      preview.data?.mode === 'preview' ||
+      preview.data?.cacheMetadata?.temporary === true,
+    'preview must be temporary',
+  );
 
   // Cross-module freshness: dashboard recommendations consumer
   let dashboardFresh = false;
@@ -184,13 +233,13 @@ async function runApiWorkflow(session) {
     const dash = await axios.get(`${API}/dashboard/recommendations`, { headers, timeout: 120000 });
     counts.dashboard += 1;
     dashboardPayload = dash.data;
-    dashboardFresh = dash.status === 200 && (
-      Array.isArray(dash.data?.recommendations)
-      || Array.isArray(dash.data?.items)
-      || Array.isArray(dash.data?.data)
-      || Boolean(dash.data?.sourcesUsed?.recommendations)
-      || Boolean(dash.data)
-    );
+    dashboardFresh =
+      dash.status === 200 &&
+      (Array.isArray(dash.data?.recommendations) ||
+        Array.isArray(dash.data?.items) ||
+        Array.isArray(dash.data?.data) ||
+        Boolean(dash.data?.sourcesUsed?.recommendations) ||
+        Boolean(dash.data));
     assert(dash.status === 200, 'dashboard/recommendations must load after recommendations update');
   } catch (error) {
     try {
@@ -200,7 +249,9 @@ async function runApiWorkflow(session) {
       dashboardFresh = dash.status === 200;
       assert(dash.status === 200, 'dashboard/summary must load after recommendations update');
     } catch (inner) {
-      throw new Error(`dashboard freshness failed: ${inner.response?.status || inner.message || error.message}`);
+      throw new Error(
+        `dashboard freshness failed: ${inner.response?.status || inner.message || error.message}`,
+      );
     }
   }
 
@@ -221,10 +272,13 @@ async function runApiWorkflow(session) {
   let explain = null;
   try {
     const coll = mongoose.connection.collection('analysiscaches');
-    explain = await coll.find({
-      userId: new mongoose.Types.ObjectId(session.user._id),
-      analysisVersion: 'v5-career-advisor-data-quality'
-    }).limit(1).explain('executionStats');
+    explain = await coll
+      .find({
+        userId: new mongoose.Types.ObjectId(session.user._id),
+        analysisVersion: 'v5-career-advisor-data-quality',
+      })
+      .limit(1)
+      .explain('executionStats');
   } catch (error) {
     explain = { error: error.message };
   }
@@ -236,20 +290,22 @@ async function runApiWorkflow(session) {
     experienceLevel,
     firstScore,
     firstSignalHash,
-    refreshScore: Number(refresh.data.recommendationScores?.overallRecommendationScore),
+    refreshScore: refresh.data.recommendationScores?.overallRecommendationScore ?? null,
     cachedFromCache: Boolean(cached.data?.fromCache || cached.data?.cacheMetadata?.loadedFromCache),
-    rapidShared: rapidScores.every((value) => value === rapidScores[0]),
-    stalePreserved: Number.isFinite(Number(afterFailure.data?.recommendationScores?.overallRecommendationScore)),
+    rapidShared: rapidHashes.every((value) => value === rapidHashes[0]),
+    stalePreserved:
+      afterFailure.data?.cacheMetadata?.signalHash === refresh.data?.cacheMetadata?.signalHash,
     dashboardFresh,
     weeklyFresh,
     dashboardHasPayload: Boolean(dashboardPayload),
     migration,
-    explainStage: explain?.queryPlanner?.winningPlan?.stage
-      || explain?.executionStats?.executionStages?.stage
-      || explain?.error
-      || 'unknown',
+    explainStage:
+      explain?.queryPlanner?.winningPlan?.stage ||
+      explain?.executionStats?.executionStages?.stage ||
+      explain?.error ||
+      'unknown',
     explainDocsExamined: explain?.executionStats?.totalDocsExamined,
-    explainNReturned: explain?.executionStats?.nReturned
+    explainNReturned: explain?.executionStats?.nReturned,
   };
 }
 
@@ -264,7 +320,7 @@ async function runBrowserSmoke(session) {
       const { execSync } = require('child_process');
       execSync('npm install playwright@1.51.0 --no-save', {
         cwd: path.join(__dirname, '../..'),
-        stdio: 'ignore'
+        stdio: 'ignore',
       });
       ({ chromium } = require('playwright'));
     }
@@ -284,9 +340,11 @@ async function runBrowserSmoke(session) {
 
   for (const profile of [
     { name: 'desktop', width: 1366, height: 900 },
-    { name: 'mobile', width: 375, height: 812 }
+    { name: 'mobile', width: 375, height: 812 },
   ]) {
-    const context = await browser.newContext({ viewport: { width: profile.width, height: profile.height } });
+    const context = await browser.newContext({
+      viewport: { width: profile.width, height: profile.height },
+    });
     context.setDefaultTimeout(180000);
     const page = await context.newPage();
     const consoleErrors = [];
@@ -300,34 +358,54 @@ async function runBrowserSmoke(session) {
     page.on('request', (req) => {
       const url = req.url();
       if (url.includes('/api/recommendations') && !url.includes('saved-previews')) {
-        recRequests.push(`${req.method()} ${url.includes('/generate') ? 'recommendations/generate' : 'recommendations'}`);
+        recRequests.push(
+          `${req.method()} ${url.includes('/generate') ? 'recommendations/generate' : 'recommendations'}`,
+        );
       }
     });
 
-    await page.addInitScript((payload) => {
-      localStorage.setItem('token', payload.token);
-      localStorage.setItem('user', JSON.stringify({ ...payload.user, role: 'developer', token: payload.token }));
-      localStorage.setItem('loginExpiry', String(Date.now() + 20 * 60 * 60 * 1000));
-    }, { token: session.token, user: session.user });
+    await page.addInitScript(
+      (payload) => {
+        localStorage.setItem('token', payload.token);
+        localStorage.setItem(
+          'user',
+          JSON.stringify({ ...payload.user, role: 'developer', token: payload.token }),
+        );
+        localStorage.setItem('loginExpiry', String(Date.now() + 20 * 60 * 60 * 1000));
+      },
+      { token: session.token, user: session.user },
+    );
 
     const dismissOverlays = async () => {
-      await page.evaluate(() => {
-        document.querySelectorAll('vite-error-overlay').forEach((node) => node.remove());
-      }).catch(() => {});
+      await page
+        .evaluate(() => {
+          document.querySelectorAll('vite-error-overlay').forEach((node) => node.remove());
+        })
+        .catch(() => {});
     };
 
-    await page.goto(`${WEB}/app/recommendations`, { waitUntil: 'domcontentloaded', timeout: 90000 });
+    await page.goto(`${WEB}/app/recommendations`, {
+      waitUntil: 'domcontentloaded',
+      timeout: 90000,
+    });
     assert(page.url().includes('/recommendations'), `unexpected route ${page.url()}`);
 
     await page.waitForSelector('.rec-page', { timeout: 90000 });
-    await page.waitForFunction(() => {
-      const loading = document.querySelector('.spinner, .skeleton-stack');
-      const ready = document.querySelector('.advisor-section, .rec-empty, .rec-error, .executive-hero, .rec-search-card');
-      return Boolean(ready) && !document.querySelector('.skeleton-stack');
-    }, { timeout: 180000 });
+    await page.waitForFunction(
+      () => {
+        const loading = document.querySelector('.spinner, .skeleton-stack');
+        const ready = document.querySelector(
+          '.advisor-section, .rec-empty, .rec-error, .executive-hero, .rec-search-card',
+        );
+        return Boolean(ready) && !document.querySelector('.skeleton-stack');
+      },
+      { timeout: 180000 },
+    );
     await dismissOverlays();
 
-    const overflowX = await page.evaluate(() => Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth));
+    const overflowX = await page.evaluate(() =>
+      Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth),
+    );
     const hasNaN = await page.evaluate(() => {
       const text = document.body?.innerText || '';
       return /\bNaN\b/.test(text) || /\bundefined\b/i.test(text);
@@ -339,7 +417,9 @@ async function runBrowserSmoke(session) {
     if (await refreshBtn.count()) {
       await dismissOverlays();
       await refreshBtn.click({ force: true, timeout: 30000 });
-      await page.waitForFunction(() => !document.querySelector('.spinner-wrap, .skeleton-stack'), { timeout: 180000 });
+      await page.waitForFunction(() => !document.querySelector('.spinner-wrap, .skeleton-stack'), {
+        timeout: 180000,
+      });
     }
     const afterRefresh = recRequests.length;
 
@@ -347,7 +427,9 @@ async function runBrowserSmoke(session) {
       await dismissOverlays();
       await refreshBtn.click({ force: true, timeout: 30000 });
       await refreshBtn.click({ force: true }).catch(() => {});
-      await page.waitForFunction(() => !document.querySelector('.spinner-wrap, .skeleton-stack'), { timeout: 180000 });
+      await page.waitForFunction(() => !document.querySelector('.spinner-wrap, .skeleton-stack'), {
+        timeout: 180000,
+      });
     }
     const afterRapid = recRequests.length;
 
@@ -358,17 +440,21 @@ async function runBrowserSmoke(session) {
         await route.fulfill({
           status: 500,
           contentType: 'application/json',
-          body: JSON.stringify({ message: 'Forced failure for preserve check' })
+          body: JSON.stringify({ message: 'Forced failure for preserve check' }),
         });
         return;
       }
       await route.continue();
     });
-    const hadResult = await page.evaluate(() => Boolean(document.querySelector('.advisor-section, .executive-hero')));
-    if (hadResult && await refreshBtn.count()) {
+    const hadResult = await page.evaluate(() =>
+      Boolean(document.querySelector('.advisor-section, .executive-hero')),
+    );
+    if (hadResult && (await refreshBtn.count())) {
       await refreshBtn.click({ force: true, timeout: 30000 });
       await page.waitForTimeout(1500);
-      preserved = await page.evaluate(() => Boolean(document.querySelector('.advisor-section, .executive-hero')));
+      preserved = await page.evaluate(() =>
+        Boolean(document.querySelector('.advisor-section, .executive-hero')),
+      );
       const errVisible = await page.evaluate(() => Boolean(document.querySelector('.rec-error')));
       assert(errVisible, `${profile.name} failed refresh must show error`);
       assert(preserved, `${profile.name} failed refresh must preserve previous valid result`);
@@ -377,7 +463,9 @@ async function runBrowserSmoke(session) {
 
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForSelector('.rec-page', { timeout: 90000 });
-    await page.waitForFunction(() => !document.querySelector('.skeleton-stack'), { timeout: 180000 }).catch(() => {});
+    await page
+      .waitForFunction(() => !document.querySelector('.skeleton-stack'), { timeout: 180000 })
+      .catch(() => {});
 
     await page.evaluate(() => {
       localStorage.removeItem('token');
@@ -385,37 +473,68 @@ async function runBrowserSmoke(session) {
       localStorage.removeItem('loginExpiry');
     });
     await page.goto(`${WEB}/login`, { waitUntil: 'domcontentloaded', timeout: 60000 });
-    await page.addInitScript((payload) => {
-      localStorage.setItem('token', payload.token);
-      localStorage.setItem('user', JSON.stringify({ ...payload.user, role: 'developer', token: payload.token }));
-      localStorage.setItem('loginExpiry', String(Date.now() + 20 * 60 * 60 * 1000));
-    }, { token: session.token, user: session.user });
-    await page.goto(`${WEB}/app/recommendations`, { waitUntil: 'domcontentloaded', timeout: 90000 });
+    await page.addInitScript(
+      (payload) => {
+        localStorage.setItem('token', payload.token);
+        localStorage.setItem(
+          'user',
+          JSON.stringify({ ...payload.user, role: 'developer', token: payload.token }),
+        );
+        localStorage.setItem('loginExpiry', String(Date.now() + 20 * 60 * 60 * 1000));
+      },
+      { token: session.token, user: session.user },
+    );
+    await page.goto(`${WEB}/app/recommendations`, {
+      waitUntil: 'domcontentloaded',
+      timeout: 90000,
+    });
     await page.waitForSelector('.rec-page', { timeout: 90000 });
-    await page.waitForFunction(() => !document.querySelector('.skeleton-stack'), { timeout: 180000 }).catch(() => {});
+    await page
+      .waitForFunction(() => !document.querySelector('.skeleton-stack'), { timeout: 180000 })
+      .catch(() => {});
 
     // Dependent module: dashboard should load after recommendations activity
     await page.goto(`${WEB}/app/dashboard`, { waitUntil: 'domcontentloaded', timeout: 90000 });
     await page.waitForTimeout(2000);
     const dashboardOk = page.url().includes('/dashboard');
 
-    await page.goto(`${WEB}/app/recommendations`, { waitUntil: 'domcontentloaded', timeout: 90000 });
+    await page.goto(`${WEB}/app/recommendations`, {
+      waitUntil: 'domcontentloaded',
+      timeout: 90000,
+    });
     await page.waitForSelector('.rec-page', { timeout: 90000 });
 
-    const overflowXAfter = await page.evaluate(() => Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth));
+    const overflowXAfter = await page.evaluate(() =>
+      Math.max(0, document.documentElement.scrollWidth - document.documentElement.clientWidth),
+    );
     const hasNaNAfter = await page.evaluate(() => {
       const text = document.body?.innerText || '';
       return /\bNaN\b/.test(text) || /\bundefined\b/i.test(text);
     });
 
-    const filteredConsole = consoleErrors.filter((line) => !/favicon|websocket|sockjs|hmr|Avatar failed|Failed to load resource|NG0\d+/i.test(line));
-    assert(filteredConsole.length === 0, `${profile.name} console errors: ${filteredConsole.join(' | ')}`);
+    const filteredConsole = consoleErrors.filter(
+      (line) =>
+        !/favicon|websocket|sockjs|hmr|Avatar failed|Failed to load resource|NG0\d+/i.test(line),
+    );
+    assert(
+      filteredConsole.length === 0,
+      `${profile.name} console errors: ${filteredConsole.join(' | ')}`,
+    );
     assert(pageErrors.length === 0, `${profile.name} page errors: ${pageErrors.join(' | ')}`);
     assert(!hasNaN && !hasNaNAfter, `${profile.name} rendered NaN/undefined`);
     assert(!hasMojibake, `${profile.name} rendered mojibake`);
-    assert(Math.max(overflowX, overflowXAfter) === 0, `${profile.name} horizontal overflow ${Math.max(overflowX, overflowXAfter)}`);
-    assert((afterRefresh - requestsBefore) <= 1, `${profile.name} refresh fired ${afterRefresh - requestsBefore} recommendation requests`);
-    assert((afterRapid - afterRefresh) <= 1, `${profile.name} rapid click fired ${afterRapid - afterRefresh} recommendation requests`);
+    assert(
+      Math.max(overflowX, overflowXAfter) === 0,
+      `${profile.name} horizontal overflow ${Math.max(overflowX, overflowXAfter)}`,
+    );
+    assert(
+      afterRefresh - requestsBefore <= 1,
+      `${profile.name} refresh fired ${afterRefresh - requestsBefore} recommendation requests`,
+    );
+    assert(
+      afterRapid - afterRefresh <= 1,
+      `${profile.name} rapid click fired ${afterRapid - afterRefresh} recommendation requests`,
+    );
     assert(dashboardOk, `${profile.name} dashboard route must open for freshness check`);
 
     results[profile.name] = {
@@ -430,7 +549,7 @@ async function runBrowserSmoke(session) {
       rapidRequests: afterRapid - afterRefresh,
       totalRecommendationRequests: recRequests.length,
       requests: [...recRequests],
-      dashboardOk
+      dashboardOk,
     };
 
     await context.close();

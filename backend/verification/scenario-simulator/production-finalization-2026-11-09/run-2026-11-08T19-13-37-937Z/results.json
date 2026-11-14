@@ -1,0 +1,18 @@
+[
+  {
+    "label": "mongo-and-workers",
+    "command": [
+      "node",
+      "--test",
+      "--test-concurrency=1",
+      "--test-reporter=tap",
+      "backend/src/tests/scenarioSimulatorMongo.integration.test.js",
+      "backend/src/tests/scenarioSimulatorWorkers.integration.test.js",
+      "backend/src/tests/scenarioSprintExport.test.js",
+      "backend/src/tests/scenarioMigration.integration.test.js"
+    ],
+    "cwd": "D:\\Developer-Portfolio-Analyzer",
+    "exitCode": 0,
+    "milliseconds": 34911
+  }
+]

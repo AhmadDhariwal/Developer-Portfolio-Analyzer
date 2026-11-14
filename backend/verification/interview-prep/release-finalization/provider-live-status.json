@@ -1,0 +1,29 @@
+{
+  "scope": "Independent adapters; not a production load, quota or Mongo admission acceptance test",
+  "results": [
+    {
+      "provider": "gemini",
+      "model": "gemini-2.5-flash",
+      "status": "PASS",
+      "reason": "synthetic_json_accepted",
+      "elapsedMs": 877
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-6-luna",
+      "status": "PASS",
+      "reason": "synthetic_json_accepted",
+      "elapsedMs": 2771
+    },
+    {
+      "provider": "xai",
+      "status": "BLOCKED",
+      "reason": "missing_key"
+    },
+    {
+      "provider": "anthropic",
+      "status": "BLOCKED",
+      "reason": "missing_key"
+    }
+  ]
+}

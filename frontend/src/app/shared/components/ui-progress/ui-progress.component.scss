@@ -1,0 +1,139 @@
+@use '../../styles/design-tokens' as *;
+
+// Bar Progress
+.ui-progress-bar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  font-family: var(--font-sans, 'Inter', sans-serif);
+
+  .progress-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8125rem;
+
+    .progress-label-text {
+      color: var(--text-secondary, #94A3B8);
+      font-weight: 500;
+    }
+
+    .progress-percent-text {
+      color: var(--text-primary, #F8FAFC);
+      font-weight: 600;
+      font-family: var(--font-mono, monospace);
+    }
+  }
+
+  .progress-track {
+    width: 100%;
+    background: rgba(51, 65, 85, 0.4);
+    border-radius: var(--radius-full, 9999px);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: var(--radius-full, 9999px);
+    transition: width 0.4s ease-out;
+
+    &.striped {
+      background-image: linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.15) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgba(255, 255, 255, 0.15) 50%,
+        rgba(255, 255, 255, 0.15) 75%,
+        transparent 75%,
+        transparent
+      );
+      background-size: 1rem 1rem;
+    }
+  }
+
+  // Sizes
+  &.size-sm .progress-track { height: 4px; }
+  &.size-md .progress-track { height: 8px; }
+  &.size-lg .progress-track { height: 12px; }
+
+  // Colors
+  &.color-primary   .progress-fill { background: var(--color-primary, #6366F1); }
+  &.color-secondary .progress-fill { background: var(--color-secondary, #8B5CF6); }
+  &.color-success   .progress-fill { background: var(--color-success, #22C55E); }
+  &.color-warning   .progress-fill { background: var(--color-warning, #F59E0B); }
+  &.color-danger    .progress-fill { background: var(--color-danger, #EF4444); }
+  &.color-info      .progress-fill { background: var(--color-info, #3B82F6); }
+
+  // Indeterminate animation
+  &.is-indeterminate .progress-fill {
+    width: 30% !important;
+    position: absolute;
+    animation: bar-indeterminate 1.5s infinite ease-in-out;
+  }
+}
+
+// Circle Progress
+.ui-progress-circle-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+
+  &.size-sm { width: 36px; height: 36px; }
+  &.size-md { width: 64px; height: 64px; }
+  &.size-lg { width: 96px; height: 96px; }
+
+  .progress-circle-svg {
+    transform: rotate(-90deg);
+    width: 100%;
+    height: 100%;
+
+    .circle-track {
+      stroke: rgba(51, 65, 85, 0.4);
+    }
+
+    .circle-fill {
+      transition: stroke-dashoffset 0.4s ease-out;
+      stroke-linecap: round;
+    }
+  }
+
+  &.color-primary   .circle-fill { stroke: var(--color-primary, #6366F1); }
+  &.color-secondary .circle-fill { stroke: var(--color-secondary, #8B5CF6); }
+  &.color-success   .circle-fill { stroke: var(--color-success, #22C55E); }
+  &.color-warning   .circle-fill { stroke: var(--color-warning, #F59E0B); }
+  &.color-danger    .circle-fill { stroke: var(--color-danger, #EF4444); }
+  &.color-info      .circle-fill { stroke: var(--color-info, #3B82F6); }
+
+  .circle-content {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.8125rem;
+    color: var(--text-primary, #F8FAFC);
+    font-family: var(--font-heading, 'Space Grotesk', sans-serif);
+  }
+
+  &.is-indeterminate .progress-circle-svg {
+    animation: circle-spin 1.4s linear infinite;
+
+    .circle-fill {
+      stroke-dasharray: 80 200 !important;
+      stroke-dashoffset: 0 !important;
+    }
+  }
+}
+
+@keyframes bar-indeterminate {
+  0%   { left: -30%; }
+  100% { left: 100%; }
+}
+
+@keyframes circle-spin {
+  to { transform: rotate(270deg); }
+}

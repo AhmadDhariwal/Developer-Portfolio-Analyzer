@@ -1,0 +1,10 @@
+{
+  "scope": "Focused frontend verification using synthetic HTTP fixtures; no provider or backend traffic.",
+  "checks": [
+    "desktop-light: broad Explore, independent search and bounded discovery status",
+    "mobile-dark: broad Explore, independent search and bounded discovery status"
+  ],
+  "screenshots": ["explore-desktop-light.png", "explore-mobile-dark.png"],
+  "errors": [],
+  "status": "VERIFIED"
+}

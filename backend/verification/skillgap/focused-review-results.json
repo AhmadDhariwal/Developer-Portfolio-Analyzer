@@ -1,0 +1,50 @@
+{
+  "review": "PASS — focused local correctness",
+  "integration": "FAIL — textual conflicts in 12 divergent local refs; actual integration target not merged",
+  "production": "BLOCKED — independent live gates remain pending",
+  "repository": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer",
+  "branch": "fix/skill-gap",
+  "head": "6b024bbdcfd83249fcd793934b9a84ed33eecf17",
+  "adapter": {
+    "demonstratedAvailable": false,
+    "maximumCoveragePercent": 50,
+    "unknownCoverage": null,
+    "syntheticRequirementCombinations": 28
+  },
+  "tests": {
+    "backend": 196,
+    "mongo": 12,
+    "frontend": 537,
+    "frontendFiles": 92,
+    "failures": 0,
+    "skipped": 0
+  },
+  "checks": {
+    "applicationTypeScript": "PASS",
+    "testTypeScript": "PASS",
+    "productionBuild": "PASS — existing landing stylesheet budget warning",
+    "formatting": "PASS",
+    "syntax": "PASS",
+    "gitWhitespace": "PASS"
+  },
+  "sourceFiles": [
+    "backend/src/controllers/dashboardcontroller.js",
+    "backend/src/controllers/skillgapcontroller.js",
+    "backend/src/services/developerSignalService.js",
+    "backend/src/services/skillGapCacheContract.js",
+    "backend/src/tests/fixtures/skillGapWorker.js",
+    "backend/src/tests/skillGapFocusedReview.test.js",
+    "backend/src/tests/skillGapConsumerMongo.test.js",
+    "frontend/src/app/pages/dashboard/dashboard.component.ts",
+    "frontend/src/app/pages/dashboard/dashboard.component.html",
+    "frontend/src/app/pages/dashboard/dashboard-skill-gap-contract.spec.ts"
+  ],
+  "sourceFileDeletionCount": 0,
+  "movedFiles": [],
+  "liveProviders": false,
+  "productionDataUsed": false,
+  "committed": false,
+  "merged": false,
+  "pushed": false,
+  "deployed": false
+}

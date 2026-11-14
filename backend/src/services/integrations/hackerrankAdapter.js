@@ -12,7 +12,8 @@ class HackerRankAdapter extends BaseIntegrationAdapter {
   getManualAuthHints() {
     return {
       requiredFields: ['externalUsername'],
-      helpText: 'Enter your HackerRank username to fetch public badges, certifications, and coding scores.'
+      helpText:
+        'Public HackerRank developer profile ingestion is unavailable because no supported public profile API is configured.'
     };
   }
 
@@ -47,7 +48,7 @@ class HackerRankAdapter extends BaseIntegrationAdapter {
 
     // HackerRank doesn't expose a single numeric score publicly;
     // derive a proxy from badge count and certification count
-    const codingScore = Math.min(100, (totalBadges * 8) + (totalCerts * 15));
+    const codingScore = Math.min(100, totalBadges * 8 + totalCerts * 15);
 
     return {
       provider: this.provider,
@@ -62,32 +63,17 @@ class HackerRankAdapter extends BaseIntegrationAdapter {
         certifications: certNames.slice(0, 10)
       },
       inferredSkills,
-      raw: { badges: badges.slice(0, 10), certifications: certifications.slice(0, 10) }
+      raw: {
+        badges: badges.slice(0, 10),
+        certifications: certifications.slice(0, 10)
+      }
     };
   }
 
-  async fetchProfile(username) {
-    // HackerRank public profile API
-    try {
-      const data = await this.get(
-        `https://www.hackerrank.com/rest/hackers/${encodeURIComponent(username)}/profile`,
-        null,
-        { headers: { Accept: 'application/json', 'User-Agent': 'Developer-Portfolio-Analyzer' } }
-      );
-      return data;
-    } catch {
-      // Fallback: try the community profile endpoint
-      try {
-        const data = await this.get(
-          `https://www.hackerrank.com/community/v1/hackers/${encodeURIComponent(username)}/profile`,
-          null,
-          { headers: { Accept: 'application/json', 'User-Agent': 'Developer-Portfolio-Analyzer' } }
-        );
-        return data;
-      } catch {
-        return null;
-      }
-    }
+  async fetchProfile() {
+    throw new Error(
+      'HackerRank developer profile ingestion is unavailable: no supported public profile API is configured.'
+    );
   }
 }
 

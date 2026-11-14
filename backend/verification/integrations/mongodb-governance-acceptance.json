@@ -1,0 +1,68 @@
+{
+  "checkedAt": "2026-10-28T08:40:20.159Z",
+  "providerHttpRequests": 0,
+  "checks": [
+    "provider/user 429; denied requests do not consume other counters",
+    "two worker processes: one provider winner; global cap; job cap; release",
+    "logical expiry independent of TTL sweep; crash/restart leases; stale-token fencing",
+    "payload/header backoff; 401/403/429; three failures; cooldown extension",
+    "real authenticated routes and captured lee215 fixture; owner isolation; cross-worker revision invalidation",
+    "OAuth state owner isolation/replay rejection; admitted token exchange/identity; encrypted persistence",
+    "duplicate connection claim rejected; action 11 returns 429",
+    "authenticated encryption/AAD isolation; Mongo 503 with zero outbound calls; reconnect recovery",
+    "background polling admitted through Mongo; self-reported fixture persisted",
+    "HTTP 503 before provider work; immutable process store selection",
+    "zero Redis governance calls; 12-admission bounded comparison"
+  ],
+  "performance": {
+    "workload": "12 sequential admissions, release outside timing",
+    "n": 12,
+    "p50Ms": 15.787900000001173,
+    "p95Ms": 31.8195999999989,
+    "p99Ms": 31.8195999999989,
+    "samplesMs": [
+      14.390299999999115, 14.824899999999616, 15.260499999998501, 15.333000000000538,
+      15.74369999999908, 15.787900000001173, 15.848299999999654, 15.91269999999895,
+      16.23989999999867, 29.058099999998376, 31.76209999999992, 31.8195999999989
+    ]
+  },
+  "indexes": [
+    {
+      "v": 2,
+      "key": {
+        "_id": 1
+      },
+      "name": "_id_"
+    },
+    {
+      "v": 2,
+      "key": {
+        "expiresAt": 1
+      },
+      "name": "governance_expiry",
+      "expireAfterSeconds": 0
+    }
+  ],
+  "redisGovernanceCalls": 0,
+  "fixtureReplays": 4,
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 115,
+    "productionDataUsed": false
+  },
+  "focusedTests": {
+    "command": "node --test src/tests/integrationMongoGovernance.test.js src/tests/integrationsGovernance.test.js src/tests/integrationsLifecycle.test.js",
+    "passed": 20,
+    "failed": 0,
+    "skipped": 0
+  },
+  "verdict": {
+    "redisIndependentConnectSync": "PASS",
+    "rateLimits": "PASS",
+    "concurrency": "PASS",
+    "security": "PASS",
+    "scope": "Disposable local replica, two real workers, captured/manual fixtures. Activation and production topology not certified."
+  },
+  "productionConfigurationChanged": false,
+  "mode": "mongo selected explicitly; default redis preserved; no automatic switching"
+}

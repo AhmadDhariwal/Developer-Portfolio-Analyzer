@@ -1,0 +1,147 @@
+{
+  "productionAccess": false,
+  "inspect": {
+    "mode": "inspect",
+    "transactionTopology": true,
+    "collections": {
+      "storedassets": {
+        "present": false,
+        "indexes": []
+      },
+      "accountdeletioncleanups": {
+        "present": false,
+        "indexes": []
+      }
+    }
+  },
+  "apply": {
+    "mode": "apply",
+    "transactionTopology": true,
+    "collections": {
+      "storedassets": {
+        "present": true,
+        "indexes": [
+          {
+            "key": {
+              "_id": 1
+            },
+            "unique": false
+          },
+          {
+            "key": {
+              "reference": 1
+            },
+            "unique": true
+          },
+          {
+            "key": {
+              "ownerId": 1
+            },
+            "unique": false
+          },
+          {
+            "key": {
+              "state": 1,
+              "retryAfter": 1,
+              "expiresAt": 1
+            },
+            "unique": false
+          }
+        ]
+      },
+      "accountdeletioncleanups": {
+        "present": true,
+        "indexes": [
+          {
+            "key": {
+              "_id": 1
+            },
+            "unique": false
+          },
+          {
+            "key": {
+              "retryAfter": 1,
+              "createdAt": 1,
+              "_id": 1
+            },
+            "unique": false
+          }
+        ]
+      }
+    }
+  },
+  "apply-again": {
+    "mode": "apply",
+    "transactionTopology": true,
+    "collections": {
+      "storedassets": {
+        "present": true,
+        "indexes": [
+          {
+            "key": {
+              "_id": 1
+            },
+            "unique": false
+          },
+          {
+            "key": {
+              "reference": 1
+            },
+            "unique": true
+          },
+          {
+            "key": {
+              "ownerId": 1
+            },
+            "unique": false
+          },
+          {
+            "key": {
+              "state": 1,
+              "retryAfter": 1,
+              "expiresAt": 1
+            },
+            "unique": false
+          }
+        ]
+      },
+      "accountdeletioncleanups": {
+        "present": true,
+        "indexes": [
+          {
+            "key": {
+              "_id": 1
+            },
+            "unique": false
+          },
+          {
+            "key": {
+              "retryAfter": 1,
+              "createdAt": 1,
+              "_id": 1
+            },
+            "unique": false
+          }
+        ]
+      }
+    }
+  },
+  "retryStorageCleanup.js": {
+    "event": "storage_cleanup_batch",
+    "objectBatchLimit": 50,
+    "objectReceiptsProcessed": 0,
+    "accountReceiptsProcessed": 0,
+    "failures": 0,
+    "oldestSelectedAccountAgeMs": 0,
+    "elapsedMs": 273
+  },
+  "retryAccountDeletionCleanup.js": {
+    "event": "storage_cleanup_batch",
+    "objectBatchLimit": 50,
+    "objectReceiptsProcessed": 0,
+    "accountReceiptsProcessed": 0,
+    "failures": 0,
+    "oldestSelectedAccountAgeMs": 0,
+    "elapsedMs": 28
+  }
+}

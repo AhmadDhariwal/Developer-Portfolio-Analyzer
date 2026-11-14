@@ -1,0 +1,256 @@
+{
+  "sourceBranch": "fix/interview-prep",
+  "prTarget": "not applicable",
+  "initialWorktree": "clean",
+  "moved": [],
+  "deletedSourceFiles": [],
+  "temporaryFileDeletions": "backend/verification/interview-prep/production-cleanup.json",
+  "files": [
+    {
+      "path": "backend/src/controllers/interviewPrepController.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\controllers\\interviewPrepController.js",
+      "change": "modified",
+      "kind": "source or reusable verifier"
+    },
+    {
+      "path": "backend/src/models/interviewCoordination.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\models\\interviewCoordination.js",
+      "change": "added",
+      "kind": "source or reusable verifier"
+    },
+    {
+      "path": "backend/src/models/interviewPrepSession.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\models\\interviewPrepSession.js",
+      "change": "modified",
+      "kind": "source or reusable verifier"
+    },
+    {
+      "path": "backend/src/models/interviewQuestionBank.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\models\\interviewQuestionBank.js",
+      "change": "modified",
+      "kind": "source or reusable verifier"
+    },
+    {
+      "path": "backend/src/repositories/interviewQuestionRepository.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\repositories\\interviewQuestionRepository.js",
+      "change": "modified",
+      "kind": "source or reusable verifier"
+    },
+    {
+      "path": "backend/src/routes/interviewPrep.routes.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\routes\\interviewPrep.routes.js",
+      "change": "modified",
+      "kind": "source or reusable verifier"
+    },
+    {
+      "path": "backend/src/services/aiservice.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\services\\aiservice.js",
+      "change": "modified",
+      "kind": "source or reusable verifier"
+    },
+    {
+      "path": "backend/src/services/interviewCoordinationService.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\services\\interviewCoordinationService.js",
+      "change": "added",
+      "kind": "source or reusable verifier"
+    },
+    {
+      "path": "backend/src/services/interviewPrepService.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\services\\interviewPrepService.js",
+      "change": "modified",
+      "kind": "source or reusable verifier"
+    },
+    {
+      "path": "backend/src/services/interviewSessionService.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\services\\interviewSessionService.js",
+      "change": "added",
+      "kind": "source or reusable verifier"
+    },
+    {
+      "path": "backend/src/services/interviewTopicNormalizer.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\services\\interviewTopicNormalizer.js",
+      "change": "modified",
+      "kind": "source or reusable verifier"
+    },
+    {
+      "path": "backend/src/services/providers/interviewAIProvider.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\services\\providers\\interviewAIProvider.js",
+      "change": "modified",
+      "kind": "source or reusable verifier"
+    },
+    {
+      "path": "backend/src/tests/fixtures/interviewCoordinationWorker.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\fixtures\\interviewCoordinationWorker.js",
+      "change": "added",
+      "kind": "source or reusable verifier"
+    },
+    {
+      "path": "backend/src/tests/interviewPrepFinalization.integration.test.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\interviewPrepFinalization.integration.test.js",
+      "change": "modified",
+      "kind": "source or reusable verifier"
+    },
+    {
+      "path": "backend/src/tests/interviewPrepPerformance.test.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\interviewPrepPerformance.test.js",
+      "change": "modified",
+      "kind": "source or reusable verifier"
+    },
+    {
+      "path": "backend/src/tests/interviewProduction.integration.test.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\interviewProduction.integration.test.js",
+      "change": "added",
+      "kind": "source or reusable verifier"
+    },
+    {
+      "path": "backend/src/tests/interviewTopicNormalizer.test.js",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\interviewTopicNormalizer.test.js",
+      "change": "modified",
+      "kind": "source or reusable verifier"
+    },
+    {
+      "path": "backend/verification/interview-prep/INTERVIEW-PREP-PRODUCTION-FINAL.md",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\INTERVIEW-PREP-PRODUCTION-FINAL.md",
+      "change": "added",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/frontend-focused.txt",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\frontend-focused.txt",
+      "change": "added",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/frontend-regression.txt",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\frontend-regression.txt",
+      "change": "added",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/production-after-cleanup.txt",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\production-after-cleanup.txt",
+      "change": "added",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/production-build.txt",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\production-build.txt",
+      "change": "added",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/production-cleanup.json",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\production-cleanup.json",
+      "change": "added",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/production-file-inventory.json",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\production-file-inventory.json",
+      "change": "added",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/production-final-checks.json",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\production-final-checks.json",
+      "change": "added",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/production-focused.tap",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\production-focused.tap",
+      "change": "added",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/production-regression.tap",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\production-regression.tap",
+      "change": "added",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/query-before.tap",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\query-before.tap",
+      "change": "added",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/question-coverage.json",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\question-coverage.json",
+      "change": "added",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "backend/verification/interview-prep/regression-generated-evidence.json",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\regression-generated-evidence.json",
+      "change": "added",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "frontend/scripts/interview-prep-preview.cjs",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\frontend\\scripts\\interview-prep-preview.cjs",
+      "change": "modified",
+      "kind": "source or reusable verifier"
+    },
+    {
+      "path": "frontend/scripts/verify-interview-production.cjs",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\frontend\\scripts\\verify-interview-production.cjs",
+      "change": "added",
+      "kind": "source or reusable verifier"
+    },
+    {
+      "path": "frontend/src/app/pages/interview-prep/interview-prep.component.html",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\pages\\interview-prep\\interview-prep.component.html",
+      "change": "modified",
+      "kind": "source or reusable verifier"
+    },
+    {
+      "path": "frontend/src/app/pages/interview-prep/interview-prep.component.spec.ts",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\pages\\interview-prep\\interview-prep.component.spec.ts",
+      "change": "modified",
+      "kind": "source or reusable verifier"
+    },
+    {
+      "path": "frontend/src/app/pages/interview-prep/interview-prep.component.ts",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\pages\\interview-prep\\interview-prep.component.ts",
+      "change": "modified",
+      "kind": "source or reusable verifier"
+    },
+    {
+      "path": "frontend/src/app/shared/models/interview-prep.model.ts",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\models\\interview-prep.model.ts",
+      "change": "modified",
+      "kind": "source or reusable verifier"
+    },
+    {
+      "path": "frontend/src/app/shared/services/api.service.ts",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\services\\api.service.ts",
+      "change": "modified",
+      "kind": "source or reusable verifier"
+    },
+    {
+      "path": "frontend/src/app/shared/services/interview-prep.service.ts",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\services\\interview-prep.service.ts",
+      "change": "modified",
+      "kind": "source or reusable verifier"
+    },
+    {
+      "path": "frontend/verification/interview-prep/production-final/browser-results.json",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\interview-prep\\production-final\\browser-results.json",
+      "change": "added",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "frontend/verification/interview-prep/production-final/desktop-completed.png",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\interview-prep\\production-final\\desktop-completed.png",
+      "change": "added",
+      "kind": "retained verification evidence"
+    },
+    {
+      "path": "frontend/verification/interview-prep/production-final/mobile-completed.png",
+      "absolutePath": "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\interview-prep\\production-final\\mobile-completed.png",
+      "change": "added",
+      "kind": "retained verification evidence"
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "date": "2026-10-26",
+  "branch": "task/integrations",
+  "target": "not applicable; no PR or integration requested",
+  "moves": [
+    {
+      "from": "frontend/src/app/pages/scenario-simulator/components/scenario-context.component.ts",
+      "to": "frontend/src/app/pages/scenario-simulator/components/scenario-context/scenario-context.component.ts"
+    },
+    {
+      "from": "frontend/src/app/pages/scenario-simulator/components/scenario-context.component.html",
+      "to": "frontend/src/app/pages/scenario-simulator/components/scenario-context/scenario-context.component.html"
+    },
+    {
+      "from": "frontend/src/app/pages/scenario-simulator/components/scenario-context.component.scss",
+      "to": "frontend/src/app/pages/scenario-simulator/components/scenario-context/scenario-context.component.scss"
+    },
+    {
+      "from": "frontend/src/app/pages/scenario-simulator/components/scenario-inputs.component.ts",
+      "to": "frontend/src/app/pages/scenario-simulator/components/scenario-inputs/scenario-inputs.component.ts"
+    },
+    {
+      "from": "frontend/src/app/pages/scenario-simulator/components/scenario-inputs.component.html",
+      "to": "frontend/src/app/pages/scenario-simulator/components/scenario-inputs/scenario-inputs.component.html"
+    },
+    {
+      "from": "frontend/src/app/pages/scenario-simulator/components/scenario-inputs.component.scss",
+      "to": "frontend/src/app/pages/scenario-simulator/components/scenario-inputs/scenario-inputs.component.scss"
+    },
+    {
+      "from": "frontend/src/app/pages/scenario-simulator/components/scenario-results.component.ts",
+      "to": "frontend/src/app/pages/scenario-simulator/components/scenario-results/scenario-results.component.ts"
+    },
+    {
+      "from": "frontend/src/app/pages/scenario-simulator/components/scenario-results.component.html",
+      "to": "frontend/src/app/pages/scenario-simulator/components/scenario-results/scenario-results.component.html"
+    },
+    {
+      "from": "frontend/src/app/pages/scenario-simulator/components/scenario-results.component.scss",
+      "to": "frontend/src/app/pages/scenario-simulator/components/scenario-results/scenario-results.component.scss"
+    },
+    {
+      "from": "frontend/src/app/pages/scenario-simulator/components/scenario-history.component.ts",
+      "to": "frontend/src/app/pages/scenario-simulator/components/scenario-history/scenario-history.component.ts"
+    },
+    {
+      "from": "frontend/src/app/pages/scenario-simulator/components/scenario-history.component.html",
+      "to": "frontend/src/app/pages/scenario-simulator/components/scenario-history/scenario-history.component.html"
+    },
+    {
+      "from": "frontend/src/app/pages/scenario-simulator/components/scenario-history.component.scss",
+      "to": "frontend/src/app/pages/scenario-simulator/components/scenario-history/scenario-history.component.scss"
+    },
+    {
+      "from": "frontend/src/app/pages/scenario-simulator/components/scenario-presentation.ts",
+      "to": "frontend/src/app/pages/scenario-simulator/utils/scenario-presentation.ts"
+    }
+  ],
+  "splitSpec": {
+    "from": "frontend/src/app/pages/scenario-simulator/components/scenario-components.spec.ts",
+    "to": [
+      "frontend/src/app/pages/scenario-simulator/components/scenario-inputs/scenario-inputs.component.spec.ts",
+      "frontend/src/app/pages/scenario-simulator/components/scenario-results/scenario-results.component.spec.ts",
+      "frontend/src/app/pages/scenario-simulator/components/scenario-history/scenario-history.component.spec.ts"
+    ]
+  },
+  "newContextSpec": "frontend/src/app/pages/scenario-simulator/components/scenario-context/scenario-context.component.spec.ts",
+  "otherSourceChanges": [
+    "frontend/src/app/pages/scenario-simulator/scenario-simulator.component.ts"
+  ],
+  "styles": [
+    {
+      "component": "scenario-context",
+      "compiledCssBytes": 11032,
+      "previousCompiledCssBytes": 11032,
+      "spec": "frontend/src/app/pages/scenario-simulator/components/scenario-context/scenario-context.component.spec.ts"
+    },
+    {
+      "component": "scenario-inputs",
+      "compiledCssBytes": 21227,
+      "previousCompiledCssBytes": 21227,
+      "spec": "frontend/src/app/pages/scenario-simulator/components/scenario-inputs/scenario-inputs.component.spec.ts"
+    },
+    {
+      "component": "scenario-results",
+      "compiledCssBytes": 31277,
+      "previousCompiledCssBytes": 31277,
+      "spec": "frontend/src/app/pages/scenario-simulator/components/scenario-results/scenario-results.component.spec.ts"
+    },
+    {
+      "component": "scenario-history",
+      "compiledCssBytes": 24638,
+      "previousCompiledCssBytes": 24638,
+      "spec": "frontend/src/app/pages/scenario-simulator/components/scenario-history/scenario-history.component.spec.ts"
+    }
+  ],
+  "tests": {
+    "passed": 19,
+    "files": 8
+  },
+  "typeScript": "PASS",
+  "formatting": "PASS",
+  "productionBuild": {
+    "status": "PASS",
+    "seconds": 49.127,
+    "main": "main-IMMPL6QL.js",
+    "initialRaw": "3.36 MB",
+    "estimatedTransfer": "526.65 kB",
+    "scenarioStyleWarnings": 0,
+    "unrelatedWarning": "Landing stylesheet 56.05 kB exceeds 48 kB warning threshold"
+  }
+}

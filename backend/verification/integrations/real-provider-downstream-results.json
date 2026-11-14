@@ -1,0 +1,521 @@
+{
+  "startedAt": "2026-10-26T12:03:30.867Z",
+  "infrastructure": {
+    "redisPing": "PONG",
+    "mongo": {
+      "version": "8.2",
+      "replicaSet": "integration-live",
+      "transactionCommitted": true,
+      "isolation": "ephemeral port and task-owned temporary directory",
+      "originalKeyringConfigured": false,
+      "temporaryKeyring": "process-only; disposable test database only"
+    }
+  },
+  "providers": [
+    {
+      "provider": "leetcode",
+      "publicInput": "lee215",
+      "requests": [],
+      "status": "PASS",
+      "stages": {
+        "connect": "PASS",
+        "extractionPersistence": "PASS",
+        "syncDuplicatePrevention": "PASS",
+        "downstream": "PASS",
+        "disconnect": "PASS"
+      },
+      "sourceEvidence": {
+        "file": "real-provider-live-followup.json",
+        "provider": "leetcode",
+        "liveStagesReused": [
+          "connect",
+          "extractionPersistence",
+          "syncDuplicatePrevention"
+        ],
+        "downstreamUsesRehydratedRealSnapshot": true
+      },
+      "persisted": {
+        "provider": "leetcode",
+        "ownershipVerified": false,
+        "evidenceKind": "provider-observed",
+        "profileScore": 100,
+        "activityScore": 100,
+        "confidence": 81,
+        "inferredSkills": [
+          "Data Structures",
+          "Algorithms",
+          "Problem Solving"
+        ],
+        "normalized": {
+          "profile": {
+            "username": "lee215",
+            "ranking": 102721,
+            "reputation": 231289,
+            "solvedProblems": 692
+          },
+          "activity": {
+            "easy": 127,
+            "medium": 414,
+            "hard": 151
+          }
+        },
+        "syncedAt": "2026-10-26T12:00:52.739Z"
+      },
+      "downstream": {
+        "dashboard": true,
+        "scenario": true,
+        "scenarioInferredSkills": [
+          "Data Structures",
+          "Algorithms",
+          "Problem Solving"
+        ],
+        "scenarioDemonstratedSkills": [],
+        "sprint": true,
+        "weeklyReport": true,
+        "skillGap": true,
+        "verifiedSkills": [],
+        "observedSkills": [
+          "Data Structures",
+          "Algorithms",
+          "Problem Solving"
+        ],
+        "portfolioBefore": null,
+        "portfolioAfter": 96,
+        "cacheInvalidated": true,
+        "cacheReused": true,
+        "revisionBeforeSync": "2026-10-26T12:00:52.755Z",
+        "revisionAfterSync": "2026-10-26T12:00:53.464Z",
+        "disconnectedPortfolioInput": null,
+        "disconnectedScenarioSkills": [],
+        "disconnectedSprintProviders": [],
+        "rehydratedRevision": "2026-10-26T12:03:43.761Z"
+      }
+    },
+    {
+      "provider": "stackoverflow",
+      "publicInput": "22656",
+      "requests": [],
+      "status": "PASS",
+      "stages": {
+        "connect": "PASS",
+        "extractionPersistence": "PASS",
+        "syncDuplicatePrevention": "PASS",
+        "downstream": "PASS",
+        "disconnect": "PASS"
+      },
+      "sourceEvidence": {
+        "file": "real-provider-live-followup.json",
+        "provider": "stackoverflow",
+        "liveStagesReused": [
+          "connect",
+          "extractionPersistence",
+          "syncDuplicatePrevention"
+        ],
+        "downstreamUsesRehydratedRealSnapshot": true
+      },
+      "persisted": {
+        "provider": "stackoverflow",
+        "ownershipVerified": false,
+        "evidenceKind": "provider-observed",
+        "profileScore": 100,
+        "activityScore": 100,
+        "confidence": 93,
+        "inferredSkills": [
+          "c#",
+          "java",
+          ".net",
+          "linq",
+          "string",
+          "generics",
+          "date",
+          "timezone"
+        ],
+        "normalized": {
+          "profile": {
+            "username": "Jon Skeet",
+            "userId": "22656",
+            "reputation": 1530323,
+            "goldBadges": 895,
+            "silverBadges": 9325,
+            "bronzeBadges": 9364,
+            "totalBadges": 19584,
+            "answerCount": 35806,
+            "questionCount": 56
+          },
+          "activity": {
+            "topTags": [
+              "c#",
+              "java",
+              ".net",
+              "linq",
+              "string",
+              "generics",
+              "date",
+              "timezone"
+            ],
+            "namedBadges": [
+              "parallel-processing",
+              "datetimeoffset",
+              "Nice Answer",
+              "new-operator",
+              "linq-to-xml",
+              "scala",
+              "hash",
+              "constraints",
+              "mono",
+              "datetime-format"
+            ],
+            "acceptRate": 86
+          }
+        },
+        "syncedAt": "2026-10-26T12:00:55.943Z"
+      },
+      "downstream": {
+        "dashboard": true,
+        "scenario": true,
+        "scenarioInferredSkills": [
+          "c#",
+          "java",
+          ".net",
+          "linq",
+          "string",
+          "generics",
+          "date",
+          "timezone"
+        ],
+        "scenarioDemonstratedSkills": [],
+        "sprint": true,
+        "weeklyReport": true,
+        "skillGap": true,
+        "verifiedSkills": [],
+        "observedSkills": [
+          "c#",
+          "java",
+          ".net",
+          "linq",
+          "string",
+          "generics",
+          "date",
+          "timezone"
+        ],
+        "portfolioBefore": null,
+        "portfolioAfter": 99,
+        "cacheInvalidated": true,
+        "cacheReused": true,
+        "revisionBeforeSync": "2026-10-26T12:00:55.951Z",
+        "revisionAfterSync": "2026-10-26T12:00:57.789Z",
+        "disconnectedPortfolioInput": null,
+        "disconnectedScenarioSkills": [],
+        "disconnectedSprintProviders": [],
+        "rehydratedRevision": "2026-10-26T12:03:44.931Z"
+      }
+    },
+    {
+      "provider": "portfolio",
+      "publicInput": "https://leerob.com/",
+      "requests": [],
+      "status": "PASS",
+      "stages": {
+        "connect": "PASS",
+        "extractionPersistence": "PASS",
+        "syncDuplicatePrevention": "PASS",
+        "downstream": "PASS",
+        "disconnect": "PASS"
+      },
+      "sourceEvidence": {
+        "file": "real-provider-live-results.json",
+        "provider": "portfolio",
+        "liveStagesReused": [
+          "connect",
+          "extractionPersistence",
+          "syncDuplicatePrevention"
+        ],
+        "downstreamUsesRehydratedRealSnapshot": true
+      },
+      "persisted": {
+        "provider": "portfolio",
+        "ownershipVerified": false,
+        "evidenceKind": "provider-observed",
+        "profileScore": 59,
+        "activityScore": 95,
+        "confidence": 74,
+        "inferredSkills": [
+          "React",
+          "Next.js",
+          "Vercel"
+        ],
+        "normalized": {
+          "profile": {
+            "username": "https://leerob.com/",
+            "url": "https://leerob.com/",
+            "isReachable": true,
+            "statusCode": 200,
+            "responseTimeMs": 530
+          },
+          "activity": {
+            "technologies": [
+              "React",
+              "Next.js",
+              "Vercel"
+            ],
+            "hasSSL": true,
+            "hasMeta": true,
+            "hasViewport": true,
+            "hasOgTags": true,
+            "wordCount": 134,
+            "seoScore": 100,
+            "performanceScore": 95
+          }
+        },
+        "syncedAt": "2026-10-26T11:53:46.858Z"
+      },
+      "downstream": {
+        "dashboard": true,
+        "scenario": true,
+        "scenarioInferredSkills": [
+          "React",
+          "Next.js",
+          "Vercel"
+        ],
+        "scenarioDemonstratedSkills": [],
+        "sprint": true,
+        "weeklyReport": true,
+        "skillGap": true,
+        "verifiedSkills": [],
+        "observedSkills": [
+          "React",
+          "Next.js",
+          "Vercel"
+        ],
+        "portfolioBefore": null,
+        "portfolioAfter": 77,
+        "cacheInvalidated": true,
+        "cacheReused": true,
+        "revisionBeforeSync": "2026-10-26T11:53:46.866Z",
+        "revisionAfterSync": "2026-10-26T11:53:47.410Z",
+        "disconnectedPortfolioInput": null,
+        "disconnectedScenarioSkills": [],
+        "disconnectedSprintProviders": [],
+        "rehydratedRevision": "2026-10-26T12:03:46.137Z"
+      }
+    },
+    {
+      "provider": "certifications",
+      "publicInput": "AWS Certified Solutions Architect",
+      "requests": [],
+      "status": "PASS",
+      "stages": {
+        "connect": "PASS",
+        "extractionPersistence": "PASS",
+        "syncDuplicatePrevention": "PASS",
+        "backgroundSync": "PASS",
+        "downstream": "PASS",
+        "disconnect": "PASS"
+      },
+      "sourceEvidence": {
+        "file": "real-provider-live-followup.json",
+        "provider": "certifications",
+        "liveStagesReused": [
+          "connect",
+          "extractionPersistence",
+          "syncDuplicatePrevention"
+        ],
+        "downstreamUsesRehydratedRealSnapshot": true
+      },
+      "persisted": {
+        "provider": "certifications",
+        "ownershipVerified": false,
+        "evidenceKind": "self-reported",
+        "profileScore": 12,
+        "activityScore": 10,
+        "confidence": 78,
+        "inferredSkills": [
+          "AWS"
+        ],
+        "normalized": {
+          "profile": {
+            "username": "AWS Certified Solutions Architect",
+            "totalCertifications": 1,
+            "certScore": 12
+          },
+          "activity": {
+            "certifications": [
+              "AWS Certified Solutions Architect"
+            ],
+            "platforms": [
+              "AWS"
+            ]
+          }
+        },
+        "syncedAt": "2026-10-26T12:00:58.936Z"
+      },
+      "downstream": {
+        "dashboard": true,
+        "scenario": true,
+        "scenarioInferredSkills": [
+          "AWS"
+        ],
+        "scenarioDemonstratedSkills": [],
+        "sprint": true,
+        "weeklyReport": true,
+        "skillGap": true,
+        "verifiedSkills": [],
+        "observedSkills": [
+          "AWS"
+        ],
+        "portfolioBefore": null,
+        "portfolioAfter": 24,
+        "cacheInvalidated": true,
+        "cacheReused": true,
+        "revisionBeforeSync": "2026-10-26T12:00:58.945Z",
+        "revisionAfterSync": "2026-10-26T12:00:59.159Z",
+        "disconnectedPortfolioInput": null,
+        "disconnectedScenarioSkills": [],
+        "disconnectedSprintProviders": [],
+        "rehydratedRevision": "2026-10-26T12:03:47.268Z"
+      }
+    },
+    {
+      "provider": "devblogs",
+      "publicInput": "devto@swyx",
+      "requests": [],
+      "status": "PASS",
+      "stages": {
+        "connect": "PASS",
+        "extractionPersistence": "PASS",
+        "syncDuplicatePrevention": "PASS",
+        "downstream": "PASS",
+        "disconnect": "PASS"
+      },
+      "sourceEvidence": {
+        "file": "real-provider-live-followup.json",
+        "provider": "devblogs",
+        "liveStagesReused": [
+          "connect",
+          "extractionPersistence",
+          "syncDuplicatePrevention"
+        ],
+        "downstreamUsesRehydratedRealSnapshot": true
+      },
+      "persisted": {
+        "provider": "devblogs",
+        "ownershipVerified": false,
+        "evidenceKind": "provider-observed",
+        "profileScore": 100,
+        "activityScore": 100,
+        "confidence": 71,
+        "inferredSkills": [
+          "JavaScript",
+          "React",
+          "AI/ML"
+        ],
+        "normalized": {
+          "profile": {
+            "username": "swyx",
+            "totalArticles": 30,
+            "totalReactions": 2091,
+            "totalViews": null,
+            "brandingScore": 100
+          },
+          "activity": {
+            "topTags": [
+              "reflections",
+              "tech",
+              "creators",
+              "javascript",
+              "react",
+              "ai",
+              "aie",
+              "tips"
+            ],
+            "platforms": [
+              "Dev.to"
+            ],
+            "recentArticles": [
+              {
+                "title": "Welcome to AI Engineer New York",
+                "reactions": 18,
+                "publishedAt": "2026-10-11T19:41:56Z",
+                "platform": "Dev.to"
+              },
+              {
+                "title": "Welcome to AI Engineer World’s Fair 2026",
+                "reactions": 66,
+                "publishedAt": "2026-06-29T16:04:30Z",
+                "platform": "Dev.to"
+              },
+              {
+                "title": "Running Docker without Docker Desktop",
+                "reactions": 41,
+                "publishedAt": "2022-05-27T19:51:36Z",
+                "platform": "Dev.to"
+              },
+              {
+                "title": "Why TurboRepo Will Be The First Big Trend of 2022",
+                "reactions": 369,
+                "publishedAt": "2021-12-27T16:08:03Z",
+                "platform": "Dev.to"
+              },
+              {
+                "title": "Using Datasette for an ELT Personal Twitter Data Warehouse",
+                "reactions": 29,
+                "publishedAt": "2021-12-26T20:52:14Z",
+                "platform": "Dev.to"
+              }
+            ]
+          }
+        },
+        "syncedAt": "2026-10-26T12:01:00.630Z"
+      },
+      "downstream": {
+        "dashboard": true,
+        "scenario": true,
+        "scenarioInferredSkills": [
+          "JavaScript",
+          "React",
+          "AI/ML"
+        ],
+        "scenarioDemonstratedSkills": [],
+        "sprint": true,
+        "weeklyReport": true,
+        "skillGap": true,
+        "verifiedSkills": [],
+        "observedSkills": [
+          "JavaScript",
+          "React",
+          "AI/ML"
+        ],
+        "portfolioBefore": null,
+        "portfolioAfter": 94,
+        "cacheInvalidated": true,
+        "cacheReused": true,
+        "revisionBeforeSync": "2026-10-26T12:01:00.639Z",
+        "revisionAfterSync": "2026-10-26T12:01:00.996Z",
+        "disconnectedPortfolioInput": null,
+        "disconnectedScenarioSkills": [],
+        "disconnectedSprintProviders": [],
+        "rehydratedRevision": "2026-10-26T12:03:48.495Z"
+      }
+    }
+  ],
+  "oauthConfiguration": {
+    "github": {
+      "credentialsPresent": true,
+      "redirectConfigured": true,
+      "redirectValid": true,
+      "consentAvailable": false
+    },
+    "linkedin": {
+      "credentialsPresent": true,
+      "redirectConfigured": true,
+      "redirectValid": true,
+      "consentAvailable": false
+    }
+  },
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 120,
+    "productionDataUsed": false
+  },
+  "finishedAt": "2026-10-26T12:03:49.655Z"
+}

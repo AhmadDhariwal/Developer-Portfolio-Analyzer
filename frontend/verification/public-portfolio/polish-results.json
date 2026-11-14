@@ -1,0 +1,34 @@
+{
+  "synthetic": true,
+  "target": "http://127.0.0.1:4220",
+  "checks": ["Final typography/label polish and UTC analytics calendar label"],
+  "screenshots": ["public-light-desktop.png", "settings-light-desktop.png"],
+  "pageErrors": [],
+  "apiRequests": [
+    {
+      "method": "GET",
+      "path": "/api/public-profiles/maya-chen"
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications"
+    },
+    {
+      "method": "GET",
+      "path": "/api/tenant/organizations"
+    },
+    {
+      "method": "GET",
+      "path": "/api/public-profiles/me"
+    },
+    {
+      "method": "GET",
+      "path": "/api/notifications/stream"
+    },
+    {
+      "method": "GET",
+      "path": "/api/public-profiles/me/analytics"
+    }
+  ],
+  "status": "VERIFIED"
+}

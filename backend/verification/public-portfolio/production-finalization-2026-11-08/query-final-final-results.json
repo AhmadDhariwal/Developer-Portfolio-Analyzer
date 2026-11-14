@@ -1,0 +1,12 @@
+[
+  {
+    "label": "query-audit",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "backend/src/scripts/auditPublicPortfolioQueries.cjs",
+      "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\public-portfolio\\production-finalization-2026-11-08\\final-query-measurements.json"
+    ],
+    "exitCode": 0,
+    "milliseconds": 9269
+  }
+]

@@ -1,0 +1,1011 @@
+{
+  "status": "VERIFIED",
+  "branch": "task/skill-gap",
+  "comparisonBase": "task/ui",
+  "mergeBase": "bf92c32673ebb54205d2e014c99208a39c69795f",
+  "originalInventory": [
+    "backend/SKILL_GAP_BACKEND_REPORT.md",
+    "backend/src/controllers/recommendationscontroller.js",
+    "backend/src/controllers/skillgapcontroller.js",
+    "backend/src/prompts/skillGapPrompt.js",
+    "backend/src/scripts/verifySkillGapIntegrationE2E.js",
+    "backend/src/services/skillGapCompatibilityService.js",
+    "backend/src/services/skillGapEvidenceService.js",
+    "backend/src/services/skillGapRequirements.js",
+    "backend/src/services/skillGapScoringService.js",
+    "backend/src/tests/skillGapEvidence.test.js",
+    "backend/src/tests/skillGapMongo.integration.test.js",
+    "backend/src/tests/skillGapScoring.test.js",
+    "backend/src/tests/skillgapHardening.test.js",
+    "backend/src/tests/skillgapPerformance.test.js",
+    "frontend/SKILL_GAP_FRONTEND_REPORT.md",
+    "frontend/public/fonts/manrope/Manrope.ttf",
+    "frontend/public/fonts/manrope/OFL.txt",
+    "frontend/scripts/github-browser-fixture.cjs",
+    "frontend/scripts/skill-gap-browser-fixture.cjs",
+    "frontend/scripts/verify-github-ui.cjs",
+    "frontend/scripts/verify-shared-ui.cjs",
+    "frontend/scripts/verify-skill-gap-ui.cjs",
+    "frontend/src/app/layout/main-layout/main-layout.html",
+    "frontend/src/app/layout/main-layout/main-layout.scss",
+    "frontend/src/app/layout/main-layout/main-layout.spec.ts",
+    "frontend/src/app/layout/main-layout/main-layout.ts",
+    "frontend/src/app/layout/main-layout/navbar/navbar.html",
+    "frontend/src/app/layout/main-layout/navbar/navbar.scss",
+    "frontend/src/app/layout/main-layout/navbar/navbar.spec.ts",
+    "frontend/src/app/layout/main-layout/navbar/navbar.ts",
+    "frontend/src/app/layout/main-layout/sidebar/sidebar.html",
+    "frontend/src/app/layout/main-layout/sidebar/sidebar.scss",
+    "frontend/src/app/layout/main-layout/sidebar/sidebar.ts",
+    "frontend/src/app/pages/github-analyzer/github-analyzer.component.html",
+    "frontend/src/app/pages/github-analyzer/github-analyzer.component.scss",
+    "frontend/src/app/pages/github-analyzer/github-analyzer.component.spec.ts",
+    "frontend/src/app/pages/github-analyzer/github-analyzer.component.ts",
+    "frontend/src/app/pages/skill-gap/skill-gap.component.html",
+    "frontend/src/app/pages/skill-gap/skill-gap.component.scss",
+    "frontend/src/app/pages/skill-gap/skill-gap.component.spec.ts",
+    "frontend/src/app/pages/skill-gap/skill-gap.component.ts",
+    "frontend/src/app/shared/components/ui-card/ui-card.component.scss",
+    "frontend/src/app/shared/components/ui-page-header/ui-page-header.component.scss",
+    "frontend/src/app/shared/components/ui-section-header/ui-section-header.component.scss",
+    "frontend/src/app/shared/models/skill-gap-evidence.model.ts",
+    "frontend/src/app/shared/services/skill-gap.service.spec.ts",
+    "frontend/src/app/shared/services/skill-gap.service.ts",
+    "frontend/src/app/shared/styles/_developer-ui.scss",
+    "frontend/src/app/shared/styles/_fonts.scss",
+    "frontend/src/styles.scss",
+    "frontend/verification/github-ui/REPORT.md",
+    "frontend/verification/github-ui/functionality-audit.json",
+    "frontend/verification/github-ui/live-response.json",
+    "frontend/verification/github-ui/results.json",
+    "frontend/verification/shared-ui/REPORT.md",
+    "frontend/verification/shared-ui/results.json",
+    "frontend/verification/shared-ui/skill-gap-consistency.json",
+    "frontend/verification/skill-gap/REFACTOR-REPORT.md",
+    "frontend/verification/skill-gap/results.json"
+  ],
+  "filesFormatted": [
+    "backend/SKILL_GAP_BACKEND_REPORT.md",
+    "backend/src/controllers/recommendationscontroller.js",
+    "backend/src/controllers/skillgapcontroller.js",
+    "backend/src/prompts/skillGapPrompt.js",
+    "backend/src/scripts/verifySkillGapIntegrationE2E.js",
+    "backend/src/services/skillGapCompatibilityService.js",
+    "backend/src/services/skillGapEvidenceService.js",
+    "backend/src/services/skillGapRequirements.js",
+    "backend/src/services/skillGapScoringService.js",
+    "backend/src/tests/skillGapEvidence.test.js",
+    "backend/src/tests/skillGapMongo.integration.test.js",
+    "backend/src/tests/skillGapScoring.test.js",
+    "backend/src/tests/skillgapHardening.test.js",
+    "backend/src/tests/skillgapPerformance.test.js",
+    "frontend/SKILL_GAP_FRONTEND_REPORT.md",
+    "frontend/scripts/github-browser-fixture.cjs",
+    "frontend/scripts/skill-gap-browser-fixture.cjs",
+    "frontend/scripts/verify-github-ui.cjs",
+    "frontend/scripts/verify-shared-ui.cjs",
+    "frontend/scripts/verify-skill-gap-ui.cjs",
+    "frontend/src/app/layout/main-layout/main-layout.html",
+    "frontend/src/app/layout/main-layout/main-layout.scss",
+    "frontend/src/app/layout/main-layout/main-layout.spec.ts",
+    "frontend/src/app/layout/main-layout/main-layout.ts",
+    "frontend/src/app/layout/main-layout/navbar/navbar.html",
+    "frontend/src/app/layout/main-layout/navbar/navbar.scss",
+    "frontend/src/app/layout/main-layout/navbar/navbar.spec.ts",
+    "frontend/src/app/layout/main-layout/navbar/navbar.ts",
+    "frontend/src/app/layout/main-layout/sidebar/sidebar.html",
+    "frontend/src/app/layout/main-layout/sidebar/sidebar.scss",
+    "frontend/src/app/layout/main-layout/sidebar/sidebar.ts",
+    "frontend/src/app/pages/github-analyzer/github-analyzer.component.html",
+    "frontend/src/app/pages/github-analyzer/github-analyzer.component.scss",
+    "frontend/src/app/pages/github-analyzer/github-analyzer.component.spec.ts",
+    "frontend/src/app/pages/github-analyzer/github-analyzer.component.ts",
+    "frontend/src/app/pages/skill-gap/skill-gap.component.html",
+    "frontend/src/app/pages/skill-gap/skill-gap.component.scss",
+    "frontend/src/app/pages/skill-gap/skill-gap.component.spec.ts",
+    "frontend/src/app/pages/skill-gap/skill-gap.component.ts",
+    "frontend/src/app/shared/components/ui-card/ui-card.component.scss",
+    "frontend/src/app/shared/components/ui-page-header/ui-page-header.component.scss",
+    "frontend/src/app/shared/components/ui-section-header/ui-section-header.component.scss",
+    "frontend/src/app/shared/models/skill-gap-evidence.model.ts",
+    "frontend/src/app/shared/services/skill-gap.service.spec.ts",
+    "frontend/src/app/shared/services/skill-gap.service.ts",
+    "frontend/src/app/shared/styles/_developer-ui.scss",
+    "frontend/src/app/shared/styles/_fonts.scss",
+    "frontend/src/styles.scss",
+    "frontend/verification/github-ui/REPORT.md",
+    "frontend/verification/github-ui/functionality-audit.json",
+    "frontend/verification/github-ui/live-response.json",
+    "frontend/verification/github-ui/results.json",
+    "frontend/verification/shared-ui/REPORT.md",
+    "frontend/verification/shared-ui/results.json",
+    "frontend/verification/shared-ui/skill-gap-consistency.json",
+    "frontend/verification/skill-gap/REFACTOR-REPORT.md",
+    "frontend/verification/skill-gap/results.json",
+    "backend/src/tests/recommendationsHardening.test.js"
+  ],
+  "filesMoved": [],
+  "filesDeleted": [
+    {
+      "path": "frontend/verification/github-ui/dark-1024-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/dark-1024-page.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/dark-1024.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/dark-1280-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/dark-1280-page.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/dark-1280.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/dark-1440-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/dark-1440-page.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/dark-1600-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/dark-1600-page.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/dark-1600.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/dark-320-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/dark-320-page.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/dark-320.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/dark-375-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/dark-375-page.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/dark-425-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/dark-425-page.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/dark-425.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/dark-768-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/dark-768-page.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/dark-768.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/dark-mobile-repository-evidence.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/dark-skill-gap-reference.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/light-1024-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/light-1024-page.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/light-1024.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/light-1280-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/light-1280-page.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/light-1280.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/light-1440-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/light-1440-page.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/light-1600-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/light-1600-page.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/light-1600.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/light-320-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/light-320-page.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/light-320.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/light-375-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/light-375-page.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/light-425-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/light-425-page.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/light-425.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/light-768-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/light-768-page.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/light-768.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/light-mobile-repository-evidence.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/light-skill-gap-reference.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/system-1024-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/system-1024-page.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/system-1024.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/system-1280-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/system-1280-page.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/system-1280.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/system-1440-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/system-1440-page.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/system-1440.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/system-1600-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/system-1600-page.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/system-1600.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/system-320-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/system-320-page.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/system-320.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/system-375-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/system-375-page.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/system-375.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/system-425-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/system-425-page.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/system-425.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/system-768-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/system-768-page.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/system-768.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/system-live-octocat-1440.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/system-mobile-repository-evidence.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/github-ui/system-skill-gap-reference.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/dark-1024-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/dark-1280-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/dark-1440-collapsed.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/dark-1440-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/dark-1600-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/dark-320-drawer.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/dark-320-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/dark-375-drawer.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/dark-375-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/dark-425-drawer.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/dark-425-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/dark-768-drawer.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/dark-768-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/dark-dashboard-1440.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/dark-github-analyzer-1440.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/dark-resume-analyzer-1440.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/light-1024-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/light-1280-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/light-1440-collapsed.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/light-1440-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/light-1600-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/light-320-drawer.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/light-320-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/light-375-drawer.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/light-375-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/light-425-drawer.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/light-425-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/light-768-drawer.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/light-768-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/light-dashboard-1440.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/light-github-analyzer-1440.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/light-resume-analyzer-1440.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/system-1024-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/system-1280-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/system-1440-collapsed.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/system-1440-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/system-1440.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/system-1600-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/system-320-drawer.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/system-320-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/system-375-drawer.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/system-375-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/system-375.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/system-425-drawer.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/system-425-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/system-768-drawer.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/shared-ui/system-768-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/skill-gap/dark-1024-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/skill-gap/dark-1024.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/skill-gap/dark-1440-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/skill-gap/dark-1600-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/skill-gap/dark-1600.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/skill-gap/dark-375-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/skill-gap/dark-768-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/skill-gap/dark-768.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/skill-gap/light-1024-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/skill-gap/light-1024.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/skill-gap/light-1440-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/skill-gap/light-1600-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/skill-gap/light-1600.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/skill-gap/light-375-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/skill-gap/light-768-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/skill-gap/light-768.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/skill-gap/system-1024-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/skill-gap/system-1024.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/skill-gap/system-1440-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/skill-gap/system-1440.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/skill-gap/system-1600-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/skill-gap/system-1600.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/skill-gap/system-375-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/skill-gap/system-375.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/skill-gap/system-768-fold.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": "frontend/verification/skill-gap/system-768.png",
+      "reason": "Redundant browser viewport, fold, region, System, drawer or reference capture; numerical results and representative Light/Dark captures retained."
+    },
+    {
+      "path": ".cleanup-pass.cjs",
+      "reason": "Temporary cleanup helper or raw test log; final verification summary retained."
+    },
+    {
+      "path": ".cleanup-verify.cjs",
+      "reason": "Temporary cleanup helper or raw test log; final verification summary retained."
+    },
+    {
+      "path": ".cleanup-artifacts.cjs",
+      "reason": "Temporary cleanup helper or raw test log; final verification summary retained."
+    },
+    {
+      "path": ".cleanup-report.cjs",
+      "reason": "Temporary cleanup helper or raw test log; final verification summary retained."
+    },
+    {
+      "path": "frontend/verification/implementation-cleanup/backend-tests.log",
+      "reason": "Temporary cleanup helper or raw test log; final verification summary retained."
+    },
+    {
+      "path": "frontend/verification/implementation-cleanup/focused-frontend.log",
+      "reason": "Temporary cleanup helper or raw test log; final verification summary retained."
+    },
+    {
+      "path": "frontend/verification/implementation-cleanup/frontend-tests.log",
+      "reason": "Temporary cleanup helper or raw test log; final verification summary retained."
+    },
+    {
+      "path": "frontend/verification/implementation-cleanup/github-browser.log",
+      "reason": "Temporary cleanup helper or raw test log; final verification summary retained."
+    },
+    {
+      "path": "frontend/verification/implementation-cleanup/shared-browser-final.log",
+      "reason": "Temporary cleanup helper or raw test log; final verification summary retained."
+    },
+    {
+      "path": "frontend/verification/implementation-cleanup/shared-browser.log",
+      "reason": "Temporary cleanup helper or raw test log; final verification summary retained."
+    },
+    {
+      "path": "frontend/verification/implementation-cleanup/skill-gap-browser.log",
+      "reason": "Temporary cleanup helper or raw test log; final verification summary retained."
+    },
+    {
+      "path": "frontend/verification/implementation-cleanup/inventory.json",
+      "reason": "Temporary cleanup helper or raw test log; final verification summary retained."
+    },
+    {
+      "path": "frontend/verification/implementation-cleanup/artifacts.json",
+      "reason": "Temporary cleanup helper or raw test log; final verification summary retained."
+    },
+    {
+      "path": "frontend/verification/implementation-cleanup/screenshot-baseline.json",
+      "reason": "Temporary cleanup helper or raw test log; final verification summary retained."
+    }
+  ],
+  "filesPreserved": [
+    "frontend/verification/github-ui/dark-1440.png",
+    "frontend/verification/github-ui/dark-375.png",
+    "frontend/verification/github-ui/dark-live-octocat-1440.png",
+    "frontend/verification/github-ui/functionality-audit.json",
+    "frontend/verification/github-ui/light-1440.png",
+    "frontend/verification/github-ui/light-375.png",
+    "frontend/verification/github-ui/light-live-octocat-1440.png",
+    "frontend/verification/github-ui/live-response.json",
+    "frontend/verification/github-ui/REPORT.md",
+    "frontend/verification/github-ui/results.json",
+    "frontend/verification/shared-ui/admin-1440.png",
+    "frontend/verification/shared-ui/dark-1440.png",
+    "frontend/verification/shared-ui/dark-375.png",
+    "frontend/verification/shared-ui/light-1440.png",
+    "frontend/verification/shared-ui/light-375.png",
+    "frontend/verification/shared-ui/recruiter-1440.png",
+    "frontend/verification/shared-ui/REPORT.md",
+    "frontend/verification/shared-ui/results.json",
+    "frontend/verification/shared-ui/skill-gap-consistency.json",
+    "frontend/verification/skill-gap/dark-1440.png",
+    "frontend/verification/skill-gap/dark-375.png",
+    "frontend/verification/skill-gap/light-1440.png",
+    "frontend/verification/skill-gap/light-375.png",
+    "frontend/verification/skill-gap/REFACTOR-REPORT.md",
+    "frontend/verification/skill-gap/results.json"
+  ],
+  "formattingAstChecks": [
+    {
+      "file": "backend/src/controllers/recommendationscontroller.js",
+      "unchanged": true
+    },
+    {
+      "file": "backend/src/controllers/skillgapcontroller.js",
+      "unchanged": true
+    },
+    {
+      "file": "backend/src/prompts/skillGapPrompt.js",
+      "unchanged": true
+    },
+    {
+      "file": "backend/src/scripts/verifySkillGapIntegrationE2E.js",
+      "unchanged": true
+    },
+    {
+      "file": "backend/src/services/skillGapCompatibilityService.js",
+      "unchanged": true
+    },
+    {
+      "file": "backend/src/services/skillGapEvidenceService.js",
+      "unchanged": true
+    },
+    {
+      "file": "backend/src/services/skillGapRequirements.js",
+      "unchanged": true
+    },
+    {
+      "file": "backend/src/services/skillGapScoringService.js",
+      "unchanged": true
+    },
+    {
+      "file": "backend/src/tests/skillGapEvidence.test.js",
+      "unchanged": true
+    },
+    {
+      "file": "backend/src/tests/skillGapMongo.integration.test.js",
+      "unchanged": true
+    },
+    {
+      "file": "backend/src/tests/skillGapScoring.test.js",
+      "unchanged": true
+    },
+    {
+      "file": "backend/src/tests/skillgapHardening.test.js",
+      "unchanged": true
+    },
+    {
+      "file": "backend/src/tests/skillgapPerformance.test.js",
+      "unchanged": true
+    },
+    {
+      "file": "frontend/scripts/github-browser-fixture.cjs",
+      "unchanged": true
+    },
+    {
+      "file": "frontend/scripts/skill-gap-browser-fixture.cjs",
+      "unchanged": true
+    },
+    {
+      "file": "frontend/scripts/verify-github-ui.cjs",
+      "unchanged": true
+    },
+    {
+      "file": "frontend/scripts/verify-shared-ui.cjs",
+      "unchanged": true
+    },
+    {
+      "file": "frontend/scripts/verify-skill-gap-ui.cjs",
+      "unchanged": true
+    },
+    {
+      "file": "frontend/src/app/layout/main-layout/main-layout.spec.ts",
+      "unchanged": true
+    },
+    {
+      "file": "frontend/src/app/layout/main-layout/main-layout.ts",
+      "unchanged": true
+    },
+    {
+      "file": "frontend/src/app/layout/main-layout/navbar/navbar.spec.ts",
+      "unchanged": true
+    },
+    {
+      "file": "frontend/src/app/layout/main-layout/navbar/navbar.ts",
+      "unchanged": true
+    },
+    {
+      "file": "frontend/src/app/layout/main-layout/sidebar/sidebar.ts",
+      "unchanged": true
+    },
+    {
+      "file": "frontend/src/app/pages/github-analyzer/github-analyzer.component.spec.ts",
+      "unchanged": true
+    },
+    {
+      "file": "frontend/src/app/pages/github-analyzer/github-analyzer.component.ts",
+      "unchanged": true
+    },
+    {
+      "file": "frontend/src/app/pages/skill-gap/skill-gap.component.spec.ts",
+      "unchanged": true
+    },
+    {
+      "file": "frontend/src/app/pages/skill-gap/skill-gap.component.ts",
+      "unchanged": true
+    },
+    {
+      "file": "frontend/src/app/shared/models/skill-gap-evidence.model.ts",
+      "unchanged": true
+    },
+    {
+      "file": "frontend/src/app/shared/services/skill-gap.service.spec.ts",
+      "unchanged": true
+    },
+    {
+      "file": "frontend/src/app/shared/services/skill-gap.service.ts",
+      "unchanged": true
+    }
+  ],
+  "frontend": {
+    "suites": 37,
+    "tests": 181,
+    "passed": true
+  },
+  "focusedFrontend": {
+    "suites": 5,
+    "tests": 51,
+    "passed": true
+  },
+  "backend": {
+    "tests": 71,
+    "passed": true,
+    "skipped": 0,
+    "mongoIntegration": true
+  },
+  "browser": {
+    "shared": "PASS: 24 shell layouts; drawer/keyboard/theme/search checks; 9 feature smoke checks; 2 preserved role presentations.",
+    "skillGap": "PASS: 24 theme/viewport combinations; keyboard, contrast, score states, error/retry and System changes.",
+    "github": {
+      "layouts": 24,
+      "passed": true,
+      "liveLocalBackend": true
+    }
+  },
+  "typescript": "PASS",
+  "productionBuild": "PASS",
+  "prettier": "PASS",
+  "gitWhitespace": "PASS",
+  "sharedAnimationWait": "Ignore continuous animations in test settlement; all finite animation and interaction checks retained",
+  "remainingIssues": [
+    "Existing landing-page stylesheet budget warning (55.89 kB vs 48 kB).",
+    "Existing jsdom canvas/navigation notices; real rendering verified in Chromium.",
+    "Existing unused declarations outside scope and write-only compatibility/cache fields were preserved."
+  ],
+  "readyForIntegration": true,
+  "trackedCleanupChanges": [
+    "backend/SKILL_GAP_BACKEND_REPORT.md",
+    "backend/src/controllers/recommendationscontroller.js",
+    "backend/src/controllers/skillgapcontroller.js",
+    "backend/src/prompts/skillGapPrompt.js",
+    "backend/src/scripts/verifySkillGapIntegrationE2E.js",
+    "backend/src/services/skillGapEvidenceService.js",
+    "backend/src/services/skillGapScoringService.js",
+    "backend/src/tests/recommendationsHardening.test.js",
+    "backend/src/tests/skillGapMongo.integration.test.js",
+    "backend/src/tests/skillGapScoring.test.js",
+    "backend/src/tests/skillgapHardening.test.js",
+    "backend/src/tests/skillgapPerformance.test.js",
+    "frontend/scripts/verify-shared-ui.cjs",
+    "frontend/src/app/layout/main-layout/navbar/navbar.ts",
+    "frontend/src/app/pages/github-analyzer/github-analyzer.component.ts",
+    "frontend/src/app/shared/models/skill-gap-evidence.model.ts",
+    "frontend/verification/github-ui/REPORT.md",
+    "frontend/verification/github-ui/live-response.json",
+    "frontend/verification/github-ui/results.json",
+    "frontend/verification/shared-ui/REPORT.md",
+    "frontend/verification/shared-ui/results.json",
+    "frontend/verification/shared-ui/skill-gap-consistency.json",
+    "frontend/verification/skill-gap/REFACTOR-REPORT.md",
+    "frontend/verification/skill-gap/results.json"
+  ],
+  "syntaxChecks": {
+    "passed": true,
+    "files": 19
+  },
+  "githubScreenshotComparison": [
+    {
+      "file": "frontend/verification/github-ui/light-1440.png",
+      "unchangedBytes": false
+    },
+    {
+      "file": "frontend/verification/github-ui/light-375.png",
+      "unchangedBytes": true
+    },
+    {
+      "file": "frontend/verification/github-ui/dark-1440.png",
+      "unchangedBytes": true
+    },
+    {
+      "file": "frontend/verification/github-ui/dark-375.png",
+      "unchangedBytes": true
+    }
+  ]
+}

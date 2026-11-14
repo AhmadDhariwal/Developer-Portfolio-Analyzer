@@ -1,0 +1,2058 @@
+{
+  "phase": "chart-states-render-lifecycle-2026-11-13",
+  "timestamp": "2026-11-13T14:21:52.284Z",
+  "viewportsTested": [],
+  "overflowViolations": [],
+  "touchTargetViolations": [],
+  "interactiveChecks": [
+    {
+      "action": "expand-all-details",
+      "viewportWidth": 375,
+      "overflow": "PASS"
+    },
+    {
+      "action": "expand-all-details",
+      "viewportWidth": 768,
+      "overflow": "PASS"
+    },
+    {
+      "action": "expand-all-details",
+      "viewportWidth": 1440,
+      "overflow": "PASS"
+    },
+    {
+      "action": "stale-degraded-state",
+      "viewportWidth": 375,
+      "overflow": "PASS"
+    },
+    {
+      "action": "stale-degraded-state",
+      "viewportWidth": 1440,
+      "overflow": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 390,
+      "theme": "dark",
+      "scenario": "populated",
+      "shape": {
+        "width": 332,
+        "height": 228,
+        "purple": 9479,
+        "indigo": 532,
+        "violet": 0,
+        "radarFill": 652,
+        "centerAlpha": 28
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 390,
+      "theme": "dark",
+      "scenario": "populated",
+      "shape": {
+        "width": 332,
+        "height": 175,
+        "purple": 9965,
+        "indigo": 5406,
+        "violet": 4096,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 390,
+      "theme": "dark",
+      "scenario": "populated",
+      "shape": {
+        "width": 332,
+        "height": 235,
+        "purple": 10178,
+        "indigo": 555,
+        "violet": 0,
+        "radarFill": 7205,
+        "centerAlpha": 56
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-populated",
+      "width": 390,
+      "theme": "dark",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 390,
+      "theme": "dark",
+      "scenario": "zero",
+      "shape": {
+        "width": 332,
+        "height": 228,
+        "purple": 14,
+        "indigo": 6,
+        "violet": 0,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 390,
+      "theme": "dark",
+      "scenario": "zero",
+      "shape": {
+        "width": 332,
+        "height": 175,
+        "purple": 9965,
+        "indigo": 5406,
+        "violet": 4096,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 390,
+      "theme": "dark",
+      "scenario": "zero",
+      "shape": {
+        "width": 332,
+        "height": 235,
+        "purple": 32,
+        "indigo": 16,
+        "violet": 0,
+        "radarFill": 0,
+        "centerAlpha": 18
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-zero",
+      "width": 390,
+      "theme": "dark",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-empty",
+      "width": 390,
+      "theme": "dark",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 390,
+      "theme": "dark",
+      "scenario": "stale",
+      "shape": {
+        "width": 332,
+        "height": 228,
+        "purple": 9479,
+        "indigo": 532,
+        "violet": 0,
+        "radarFill": 652,
+        "centerAlpha": 28
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 390,
+      "theme": "dark",
+      "scenario": "stale",
+      "shape": {
+        "width": 332,
+        "height": 175,
+        "purple": 9965,
+        "indigo": 5406,
+        "violet": 4096,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 390,
+      "theme": "dark",
+      "scenario": "stale",
+      "shape": {
+        "width": 332,
+        "height": 235,
+        "purple": 10178,
+        "indigo": 555,
+        "violet": 0,
+        "radarFill": 7205,
+        "centerAlpha": 56
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-stale",
+      "width": 390,
+      "theme": "dark",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-error",
+      "width": 390,
+      "theme": "dark",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 390,
+      "theme": "dark",
+      "scenario": "loading",
+      "shape": {
+        "width": 332,
+        "height": 228,
+        "purple": 9479,
+        "indigo": 532,
+        "violet": 0,
+        "radarFill": 652,
+        "centerAlpha": 28
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 390,
+      "theme": "dark",
+      "scenario": "loading",
+      "shape": {
+        "width": 332,
+        "height": 175,
+        "purple": 9965,
+        "indigo": 5406,
+        "violet": 4096,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 390,
+      "theme": "dark",
+      "scenario": "loading",
+      "shape": {
+        "width": 332,
+        "height": 235,
+        "purple": 10178,
+        "indigo": 555,
+        "violet": 0,
+        "radarFill": 7205,
+        "centerAlpha": 56
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-loading",
+      "width": 390,
+      "theme": "dark",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-profile-switch",
+      "width": 390,
+      "theme": "dark",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-render-failure-recovery",
+      "width": 390,
+      "theme": "dark",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 390,
+      "theme": "light",
+      "scenario": "populated",
+      "shape": {
+        "width": 332,
+        "height": 228,
+        "purple": 9270,
+        "indigo": 531,
+        "violet": 0,
+        "radarFill": 653,
+        "centerAlpha": 28
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 390,
+      "theme": "light",
+      "scenario": "populated",
+      "shape": {
+        "width": 332,
+        "height": 175,
+        "purple": 9958,
+        "indigo": 5407,
+        "violet": 4097,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 390,
+      "theme": "light",
+      "scenario": "populated",
+      "shape": {
+        "width": 332,
+        "height": 235,
+        "purple": 8979,
+        "indigo": 555,
+        "violet": 0,
+        "radarFill": 7205,
+        "centerAlpha": 100
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-populated",
+      "width": 390,
+      "theme": "light",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 390,
+      "theme": "light",
+      "scenario": "zero",
+      "shape": {
+        "width": 332,
+        "height": 228,
+        "purple": 15,
+        "indigo": 6,
+        "violet": 0,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 390,
+      "theme": "light",
+      "scenario": "zero",
+      "shape": {
+        "width": 332,
+        "height": 175,
+        "purple": 9958,
+        "indigo": 5407,
+        "violet": 4097,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 390,
+      "theme": "light",
+      "scenario": "zero",
+      "shape": {
+        "width": 332,
+        "height": 235,
+        "purple": 32,
+        "indigo": 16,
+        "violet": 0,
+        "radarFill": 0,
+        "centerAlpha": 70
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-zero",
+      "width": 390,
+      "theme": "light",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-empty",
+      "width": 390,
+      "theme": "light",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 390,
+      "theme": "light",
+      "scenario": "stale",
+      "shape": {
+        "width": 332,
+        "height": 228,
+        "purple": 9270,
+        "indigo": 531,
+        "violet": 0,
+        "radarFill": 653,
+        "centerAlpha": 28
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 390,
+      "theme": "light",
+      "scenario": "stale",
+      "shape": {
+        "width": 332,
+        "height": 175,
+        "purple": 9958,
+        "indigo": 5407,
+        "violet": 4097,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 390,
+      "theme": "light",
+      "scenario": "stale",
+      "shape": {
+        "width": 332,
+        "height": 235,
+        "purple": 8979,
+        "indigo": 555,
+        "violet": 0,
+        "radarFill": 7205,
+        "centerAlpha": 100
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-stale",
+      "width": 390,
+      "theme": "light",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-error",
+      "width": 390,
+      "theme": "light",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 390,
+      "theme": "light",
+      "scenario": "loading",
+      "shape": {
+        "width": 332,
+        "height": 228,
+        "purple": 9270,
+        "indigo": 531,
+        "violet": 0,
+        "radarFill": 653,
+        "centerAlpha": 28
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 390,
+      "theme": "light",
+      "scenario": "loading",
+      "shape": {
+        "width": 332,
+        "height": 175,
+        "purple": 9958,
+        "indigo": 5407,
+        "violet": 4097,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 390,
+      "theme": "light",
+      "scenario": "loading",
+      "shape": {
+        "width": 332,
+        "height": 235,
+        "purple": 8979,
+        "indigo": 555,
+        "violet": 0,
+        "radarFill": 7205,
+        "centerAlpha": 100
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-loading",
+      "width": 390,
+      "theme": "light",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-profile-switch",
+      "width": 390,
+      "theme": "light",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-render-failure-recovery",
+      "width": 390,
+      "theme": "light",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 390,
+      "theme": "system",
+      "scenario": "populated",
+      "shape": {
+        "width": 332,
+        "height": 228,
+        "purple": 9270,
+        "indigo": 531,
+        "violet": 0,
+        "radarFill": 653,
+        "centerAlpha": 28
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 390,
+      "theme": "system",
+      "scenario": "populated",
+      "shape": {
+        "width": 332,
+        "height": 175,
+        "purple": 9958,
+        "indigo": 5407,
+        "violet": 4097,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 390,
+      "theme": "system",
+      "scenario": "populated",
+      "shape": {
+        "width": 332,
+        "height": 235,
+        "purple": 8979,
+        "indigo": 555,
+        "violet": 0,
+        "radarFill": 7205,
+        "centerAlpha": 100
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-populated",
+      "width": 390,
+      "theme": "system",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 390,
+      "theme": "system",
+      "scenario": "zero",
+      "shape": {
+        "width": 332,
+        "height": 228,
+        "purple": 15,
+        "indigo": 6,
+        "violet": 0,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 390,
+      "theme": "system",
+      "scenario": "zero",
+      "shape": {
+        "width": 332,
+        "height": 175,
+        "purple": 9958,
+        "indigo": 5407,
+        "violet": 4097,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 390,
+      "theme": "system",
+      "scenario": "zero",
+      "shape": {
+        "width": 332,
+        "height": 235,
+        "purple": 32,
+        "indigo": 16,
+        "violet": 0,
+        "radarFill": 0,
+        "centerAlpha": 70
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-zero",
+      "width": 390,
+      "theme": "system",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-empty",
+      "width": 390,
+      "theme": "system",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 390,
+      "theme": "system",
+      "scenario": "stale",
+      "shape": {
+        "width": 332,
+        "height": 228,
+        "purple": 9270,
+        "indigo": 531,
+        "violet": 0,
+        "radarFill": 653,
+        "centerAlpha": 28
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 390,
+      "theme": "system",
+      "scenario": "stale",
+      "shape": {
+        "width": 332,
+        "height": 175,
+        "purple": 9958,
+        "indigo": 5407,
+        "violet": 4097,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 390,
+      "theme": "system",
+      "scenario": "stale",
+      "shape": {
+        "width": 332,
+        "height": 235,
+        "purple": 8979,
+        "indigo": 555,
+        "violet": 0,
+        "radarFill": 7205,
+        "centerAlpha": 100
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-stale",
+      "width": 390,
+      "theme": "system",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-error",
+      "width": 390,
+      "theme": "system",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 390,
+      "theme": "system",
+      "scenario": "loading",
+      "shape": {
+        "width": 332,
+        "height": 228,
+        "purple": 9270,
+        "indigo": 531,
+        "violet": 0,
+        "radarFill": 653,
+        "centerAlpha": 28
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 390,
+      "theme": "system",
+      "scenario": "loading",
+      "shape": {
+        "width": 332,
+        "height": 175,
+        "purple": 9958,
+        "indigo": 5407,
+        "violet": 4097,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 390,
+      "theme": "system",
+      "scenario": "loading",
+      "shape": {
+        "width": 332,
+        "height": 235,
+        "purple": 8979,
+        "indigo": 555,
+        "violet": 0,
+        "radarFill": 7205,
+        "centerAlpha": 100
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-loading",
+      "width": 390,
+      "theme": "system",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-profile-switch",
+      "width": 390,
+      "theme": "system",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-render-failure-recovery",
+      "width": 390,
+      "theme": "system",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 390,
+      "theme": "system-dark",
+      "scenario": "populated",
+      "shape": {
+        "width": 332,
+        "height": 228,
+        "purple": 9479,
+        "indigo": 532,
+        "violet": 0,
+        "radarFill": 652,
+        "centerAlpha": 28
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 390,
+      "theme": "system-dark",
+      "scenario": "populated",
+      "shape": {
+        "width": 332,
+        "height": 175,
+        "purple": 9965,
+        "indigo": 5406,
+        "violet": 4096,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 390,
+      "theme": "system-dark",
+      "scenario": "populated",
+      "shape": {
+        "width": 332,
+        "height": 235,
+        "purple": 10178,
+        "indigo": 555,
+        "violet": 0,
+        "radarFill": 7205,
+        "centerAlpha": 56
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-populated",
+      "width": 390,
+      "theme": "system-dark",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 390,
+      "theme": "system-dark",
+      "scenario": "zero",
+      "shape": {
+        "width": 332,
+        "height": 228,
+        "purple": 14,
+        "indigo": 6,
+        "violet": 0,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 390,
+      "theme": "system-dark",
+      "scenario": "zero",
+      "shape": {
+        "width": 332,
+        "height": 175,
+        "purple": 9965,
+        "indigo": 5406,
+        "violet": 4096,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 390,
+      "theme": "system-dark",
+      "scenario": "zero",
+      "shape": {
+        "width": 332,
+        "height": 235,
+        "purple": 32,
+        "indigo": 16,
+        "violet": 0,
+        "radarFill": 0,
+        "centerAlpha": 18
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-zero",
+      "width": 390,
+      "theme": "system-dark",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-empty",
+      "width": 390,
+      "theme": "system-dark",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 390,
+      "theme": "system-dark",
+      "scenario": "stale",
+      "shape": {
+        "width": 332,
+        "height": 228,
+        "purple": 9479,
+        "indigo": 532,
+        "violet": 0,
+        "radarFill": 652,
+        "centerAlpha": 28
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 390,
+      "theme": "system-dark",
+      "scenario": "stale",
+      "shape": {
+        "width": 332,
+        "height": 175,
+        "purple": 9965,
+        "indigo": 5406,
+        "violet": 4096,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 390,
+      "theme": "system-dark",
+      "scenario": "stale",
+      "shape": {
+        "width": 332,
+        "height": 235,
+        "purple": 10178,
+        "indigo": 555,
+        "violet": 0,
+        "radarFill": 7205,
+        "centerAlpha": 56
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-stale",
+      "width": 390,
+      "theme": "system-dark",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-error",
+      "width": 390,
+      "theme": "system-dark",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 390,
+      "theme": "system-dark",
+      "scenario": "loading",
+      "shape": {
+        "width": 332,
+        "height": 228,
+        "purple": 9479,
+        "indigo": 532,
+        "violet": 0,
+        "radarFill": 652,
+        "centerAlpha": 28
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 390,
+      "theme": "system-dark",
+      "scenario": "loading",
+      "shape": {
+        "width": 332,
+        "height": 175,
+        "purple": 9965,
+        "indigo": 5406,
+        "violet": 4096,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 390,
+      "theme": "system-dark",
+      "scenario": "loading",
+      "shape": {
+        "width": 332,
+        "height": 235,
+        "purple": 10178,
+        "indigo": 555,
+        "violet": 0,
+        "radarFill": 7205,
+        "centerAlpha": 56
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-loading",
+      "width": 390,
+      "theme": "system-dark",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-profile-switch",
+      "width": 390,
+      "theme": "system-dark",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-render-failure-recovery",
+      "width": 390,
+      "theme": "system-dark",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 1440,
+      "theme": "dark",
+      "scenario": "populated",
+      "shape": {
+        "width": 401,
+        "height": 228,
+        "purple": 11788,
+        "indigo": 630,
+        "violet": 0,
+        "radarFill": 810,
+        "centerAlpha": 28
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 1440,
+      "theme": "dark",
+      "scenario": "populated",
+      "shape": {
+        "width": 286,
+        "height": 175,
+        "purple": 9972,
+        "indigo": 5405,
+        "violet": 4089,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 1440,
+      "theme": "dark",
+      "scenario": "populated",
+      "shape": {
+        "width": 286,
+        "height": 235,
+        "purple": 10069,
+        "indigo": 554,
+        "violet": 0,
+        "radarFill": 7169,
+        "centerAlpha": 56
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-populated",
+      "width": 1440,
+      "theme": "dark",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 1440,
+      "theme": "dark",
+      "scenario": "zero",
+      "shape": {
+        "width": 401,
+        "height": 228,
+        "purple": 14,
+        "indigo": 6,
+        "violet": 0,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 1440,
+      "theme": "dark",
+      "scenario": "zero",
+      "shape": {
+        "width": 286,
+        "height": 175,
+        "purple": 9972,
+        "indigo": 5405,
+        "violet": 4089,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 1440,
+      "theme": "dark",
+      "scenario": "zero",
+      "shape": {
+        "width": 286,
+        "height": 235,
+        "purple": 32,
+        "indigo": 16,
+        "violet": 0,
+        "radarFill": 0,
+        "centerAlpha": 18
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-zero",
+      "width": 1440,
+      "theme": "dark",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-empty",
+      "width": 1440,
+      "theme": "dark",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 1440,
+      "theme": "dark",
+      "scenario": "stale",
+      "shape": {
+        "width": 401,
+        "height": 228,
+        "purple": 11788,
+        "indigo": 630,
+        "violet": 0,
+        "radarFill": 810,
+        "centerAlpha": 28
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 1440,
+      "theme": "dark",
+      "scenario": "stale",
+      "shape": {
+        "width": 286,
+        "height": 175,
+        "purple": 9972,
+        "indigo": 5405,
+        "violet": 4089,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 1440,
+      "theme": "dark",
+      "scenario": "stale",
+      "shape": {
+        "width": 286,
+        "height": 235,
+        "purple": 10069,
+        "indigo": 554,
+        "violet": 0,
+        "radarFill": 7169,
+        "centerAlpha": 56
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-stale",
+      "width": 1440,
+      "theme": "dark",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-error",
+      "width": 1440,
+      "theme": "dark",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 1440,
+      "theme": "dark",
+      "scenario": "loading",
+      "shape": {
+        "width": 401,
+        "height": 228,
+        "purple": 11788,
+        "indigo": 630,
+        "violet": 0,
+        "radarFill": 810,
+        "centerAlpha": 28
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 1440,
+      "theme": "dark",
+      "scenario": "loading",
+      "shape": {
+        "width": 286,
+        "height": 175,
+        "purple": 9972,
+        "indigo": 5405,
+        "violet": 4089,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 1440,
+      "theme": "dark",
+      "scenario": "loading",
+      "shape": {
+        "width": 286,
+        "height": 235,
+        "purple": 10069,
+        "indigo": 554,
+        "violet": 0,
+        "radarFill": 7169,
+        "centerAlpha": 56
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-loading",
+      "width": 1440,
+      "theme": "dark",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-profile-switch",
+      "width": 1440,
+      "theme": "dark",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-render-failure-recovery",
+      "width": 1440,
+      "theme": "dark",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 1440,
+      "theme": "light",
+      "scenario": "populated",
+      "shape": {
+        "width": 401,
+        "height": 228,
+        "purple": 11523,
+        "indigo": 630,
+        "violet": 0,
+        "radarFill": 810,
+        "centerAlpha": 28
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 1440,
+      "theme": "light",
+      "scenario": "populated",
+      "shape": {
+        "width": 286,
+        "height": 175,
+        "purple": 9962,
+        "indigo": 5411,
+        "violet": 4090,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 1440,
+      "theme": "light",
+      "scenario": "populated",
+      "shape": {
+        "width": 286,
+        "height": 235,
+        "purple": 9036,
+        "indigo": 554,
+        "violet": 0,
+        "radarFill": 7017,
+        "centerAlpha": 100
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-populated",
+      "width": 1440,
+      "theme": "light",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 1440,
+      "theme": "light",
+      "scenario": "zero",
+      "shape": {
+        "width": 401,
+        "height": 228,
+        "purple": 15,
+        "indigo": 6,
+        "violet": 0,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 1440,
+      "theme": "light",
+      "scenario": "zero",
+      "shape": {
+        "width": 286,
+        "height": 175,
+        "purple": 9962,
+        "indigo": 5411,
+        "violet": 4090,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 1440,
+      "theme": "light",
+      "scenario": "zero",
+      "shape": {
+        "width": 286,
+        "height": 235,
+        "purple": 32,
+        "indigo": 16,
+        "violet": 0,
+        "radarFill": 0,
+        "centerAlpha": 70
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-zero",
+      "width": 1440,
+      "theme": "light",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-empty",
+      "width": 1440,
+      "theme": "light",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 1440,
+      "theme": "light",
+      "scenario": "stale",
+      "shape": {
+        "width": 401,
+        "height": 228,
+        "purple": 11523,
+        "indigo": 630,
+        "violet": 0,
+        "radarFill": 810,
+        "centerAlpha": 28
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 1440,
+      "theme": "light",
+      "scenario": "stale",
+      "shape": {
+        "width": 286,
+        "height": 175,
+        "purple": 9962,
+        "indigo": 5411,
+        "violet": 4090,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 1440,
+      "theme": "light",
+      "scenario": "stale",
+      "shape": {
+        "width": 286,
+        "height": 235,
+        "purple": 9036,
+        "indigo": 554,
+        "violet": 0,
+        "radarFill": 7017,
+        "centerAlpha": 100
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-stale",
+      "width": 1440,
+      "theme": "light",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-error",
+      "width": 1440,
+      "theme": "light",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 1440,
+      "theme": "light",
+      "scenario": "loading",
+      "shape": {
+        "width": 401,
+        "height": 228,
+        "purple": 11523,
+        "indigo": 630,
+        "violet": 0,
+        "radarFill": 810,
+        "centerAlpha": 28
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 1440,
+      "theme": "light",
+      "scenario": "loading",
+      "shape": {
+        "width": 286,
+        "height": 175,
+        "purple": 9962,
+        "indigo": 5411,
+        "violet": 4090,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 1440,
+      "theme": "light",
+      "scenario": "loading",
+      "shape": {
+        "width": 286,
+        "height": 235,
+        "purple": 9036,
+        "indigo": 554,
+        "violet": 0,
+        "radarFill": 7017,
+        "centerAlpha": 100
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-loading",
+      "width": 1440,
+      "theme": "light",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-profile-switch",
+      "width": 1440,
+      "theme": "light",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-render-failure-recovery",
+      "width": 1440,
+      "theme": "light",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 1440,
+      "theme": "system",
+      "scenario": "populated",
+      "shape": {
+        "width": 401,
+        "height": 228,
+        "purple": 11523,
+        "indigo": 630,
+        "violet": 0,
+        "radarFill": 810,
+        "centerAlpha": 28
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 1440,
+      "theme": "system",
+      "scenario": "populated",
+      "shape": {
+        "width": 286,
+        "height": 175,
+        "purple": 9962,
+        "indigo": 5411,
+        "violet": 4090,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 1440,
+      "theme": "system",
+      "scenario": "populated",
+      "shape": {
+        "width": 286,
+        "height": 235,
+        "purple": 9036,
+        "indigo": 554,
+        "violet": 0,
+        "radarFill": 7017,
+        "centerAlpha": 100
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-populated",
+      "width": 1440,
+      "theme": "system",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 1440,
+      "theme": "system",
+      "scenario": "zero",
+      "shape": {
+        "width": 401,
+        "height": 228,
+        "purple": 15,
+        "indigo": 6,
+        "violet": 0,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 1440,
+      "theme": "system",
+      "scenario": "zero",
+      "shape": {
+        "width": 286,
+        "height": 175,
+        "purple": 9962,
+        "indigo": 5411,
+        "violet": 4090,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 1440,
+      "theme": "system",
+      "scenario": "zero",
+      "shape": {
+        "width": 286,
+        "height": 235,
+        "purple": 32,
+        "indigo": 16,
+        "violet": 0,
+        "radarFill": 0,
+        "centerAlpha": 70
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-zero",
+      "width": 1440,
+      "theme": "system",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-empty",
+      "width": 1440,
+      "theme": "system",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 1440,
+      "theme": "system",
+      "scenario": "stale",
+      "shape": {
+        "width": 401,
+        "height": 228,
+        "purple": 11523,
+        "indigo": 630,
+        "violet": 0,
+        "radarFill": 810,
+        "centerAlpha": 28
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 1440,
+      "theme": "system",
+      "scenario": "stale",
+      "shape": {
+        "width": 286,
+        "height": 175,
+        "purple": 9962,
+        "indigo": 5411,
+        "violet": 4090,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 1440,
+      "theme": "system",
+      "scenario": "stale",
+      "shape": {
+        "width": 286,
+        "height": 235,
+        "purple": 9036,
+        "indigo": 554,
+        "violet": 0,
+        "radarFill": 7017,
+        "centerAlpha": 100
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-stale",
+      "width": 1440,
+      "theme": "system",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-error",
+      "width": 1440,
+      "theme": "system",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 1440,
+      "theme": "system",
+      "scenario": "loading",
+      "shape": {
+        "width": 401,
+        "height": 228,
+        "purple": 11523,
+        "indigo": 630,
+        "violet": 0,
+        "radarFill": 810,
+        "centerAlpha": 28
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 1440,
+      "theme": "system",
+      "scenario": "loading",
+      "shape": {
+        "width": 286,
+        "height": 175,
+        "purple": 9962,
+        "indigo": 5411,
+        "violet": 4090,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 1440,
+      "theme": "system",
+      "scenario": "loading",
+      "shape": {
+        "width": 286,
+        "height": 235,
+        "purple": 9036,
+        "indigo": 554,
+        "violet": 0,
+        "radarFill": 7017,
+        "centerAlpha": 100
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-loading",
+      "width": 1440,
+      "theme": "system",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-profile-switch",
+      "width": 1440,
+      "theme": "system",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-render-failure-recovery",
+      "width": 1440,
+      "theme": "system",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 1440,
+      "theme": "system-dark",
+      "scenario": "populated",
+      "shape": {
+        "width": 401,
+        "height": 228,
+        "purple": 11788,
+        "indigo": 630,
+        "violet": 0,
+        "radarFill": 810,
+        "centerAlpha": 28
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 1440,
+      "theme": "system-dark",
+      "scenario": "populated",
+      "shape": {
+        "width": 286,
+        "height": 175,
+        "purple": 9972,
+        "indigo": 5405,
+        "violet": 4089,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 1440,
+      "theme": "system-dark",
+      "scenario": "populated",
+      "shape": {
+        "width": 286,
+        "height": 235,
+        "purple": 10069,
+        "indigo": 554,
+        "violet": 0,
+        "radarFill": 7169,
+        "centerAlpha": 56
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-populated",
+      "width": 1440,
+      "theme": "system-dark",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 1440,
+      "theme": "system-dark",
+      "scenario": "zero",
+      "shape": {
+        "width": 401,
+        "height": 228,
+        "purple": 14,
+        "indigo": 6,
+        "violet": 0,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 1440,
+      "theme": "system-dark",
+      "scenario": "zero",
+      "shape": {
+        "width": 286,
+        "height": 175,
+        "purple": 9972,
+        "indigo": 5405,
+        "violet": 4089,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 1440,
+      "theme": "system-dark",
+      "scenario": "zero",
+      "shape": {
+        "width": 286,
+        "height": 235,
+        "purple": 32,
+        "indigo": 16,
+        "violet": 0,
+        "radarFill": 0,
+        "centerAlpha": 18
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-zero",
+      "width": 1440,
+      "theme": "system-dark",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-empty",
+      "width": 1440,
+      "theme": "system-dark",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 1440,
+      "theme": "system-dark",
+      "scenario": "stale",
+      "shape": {
+        "width": 401,
+        "height": 228,
+        "purple": 11788,
+        "indigo": 630,
+        "violet": 0,
+        "radarFill": 810,
+        "centerAlpha": 28
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 1440,
+      "theme": "system-dark",
+      "scenario": "stale",
+      "shape": {
+        "width": 286,
+        "height": 175,
+        "purple": 9972,
+        "indigo": 5405,
+        "violet": 4089,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 1440,
+      "theme": "system-dark",
+      "scenario": "stale",
+      "shape": {
+        "width": 286,
+        "height": 235,
+        "purple": 10069,
+        "indigo": 554,
+        "violet": 0,
+        "radarFill": 7169,
+        "centerAlpha": 56
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-stale",
+      "width": 1440,
+      "theme": "system-dark",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-error",
+      "width": 1440,
+      "theme": "system-dark",
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".activity-wrap canvas",
+      "width": 1440,
+      "theme": "system-dark",
+      "scenario": "loading",
+      "shape": {
+        "width": 401,
+        "height": 228,
+        "purple": 11788,
+        "indigo": 630,
+        "violet": 0,
+        "radarFill": 810,
+        "centerAlpha": 28
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".donut-wrap canvas",
+      "width": 1440,
+      "theme": "system-dark",
+      "scenario": "loading",
+      "shape": {
+        "width": 286,
+        "height": 175,
+        "purple": 9972,
+        "indigo": 5405,
+        "violet": 4089,
+        "radarFill": 0,
+        "centerAlpha": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "plotted-dataset",
+      "selector": ".radar-wrap canvas",
+      "width": 1440,
+      "theme": "system-dark",
+      "scenario": "loading",
+      "shape": {
+        "width": 286,
+        "height": 235,
+        "purple": 10069,
+        "indigo": 554,
+        "violet": 0,
+        "radarFill": 7169,
+        "centerAlpha": 56
+      },
+      "status": "PASS"
+    },
+    {
+      "action": "chart-loading",
+      "width": 1440,
+      "theme": "system-dark",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-profile-switch",
+      "width": 1440,
+      "theme": "system-dark",
+      "status": "PASS"
+    },
+    {
+      "action": "chart-render-failure-recovery",
+      "width": 1440,
+      "theme": "system-dark",
+      "status": "PASS"
+    }
+  ],
+  "browserRuntime": {
+    "unhandledErrors": [],
+    "consoleErrorCount": 61,
+    "consoleErrorMessages": {
+      "Failed to load resource: the server responded with a status of 403 ()": 53,
+      "Failed to load resource: the server responded with a status of 500 (Internal Server Error)": 8
+    }
+  }
+}

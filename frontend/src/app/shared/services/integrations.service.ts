@@ -24,6 +24,20 @@ export interface IntegrationMarketplaceItem {
   status: 'connected' | 'disconnected' | 'error' | 'pending' | 'connecting';
   externalUsername?: string;
   lastSyncedAt?: string | null;
+  available?: boolean;
+  resourceSummary?: { notebooks: number; datasets: number; ownershipVerified: false };
+}
+
+export interface HackerRankLinkedProfile {
+  provider: 'hackerrank';
+  username: string;
+  profileUrl: string;
+  ownershipVerified: false;
+  evidenceKind: 'user-entered-link';
+}
+
+export interface KaggleLinkedProfile extends Omit<HackerRankLinkedProfile, 'provider'> {
+  provider: 'kaggle';
 }
 
 export interface ProviderInsightNormalized {
@@ -107,9 +121,43 @@ export interface IntegrationInsightsResponse {
 export class IntegrationsService {
   private readonly baseUrl = `${environment.apiBaseUrl}/integrations`;
 
+  getKaggleLinkedProfile(): Observable<{ linkedProfile: KaggleLinkedProfile | null }> {
+    return this.http.get<{ linkedProfile: KaggleLinkedProfile | null }>(
+      `${this.baseUrl}/linked-profiles/kaggle`,
+    );
+  }
+  saveKaggleLinkedProfile(profile: string): Observable<{ linkedProfile: KaggleLinkedProfile }> {
+    return this.http.post<{ linkedProfile: KaggleLinkedProfile }>(
+      `${this.baseUrl}/linked-profiles/kaggle`,
+      { profile },
+    );
+  }
+  removeKaggleLinkedProfile(): Observable<{ linkedProfile: null }> {
+    return this.http.delete<{ linkedProfile: null }>(`${this.baseUrl}/linked-profiles/kaggle`);
+  }
+
+  getHackerRankLinkedProfile(): Observable<{ linkedProfile: HackerRankLinkedProfile | null }> {
+    return this.http.get<{ linkedProfile: HackerRankLinkedProfile | null }>(
+      `${this.baseUrl}/linked-profiles/hackerrank`,
+    );
+  }
+
+  saveHackerRankLinkedProfile(
+    profile: string,
+  ): Observable<{ linkedProfile: HackerRankLinkedProfile }> {
+    return this.http.post<{ linkedProfile: HackerRankLinkedProfile }>(
+      `${this.baseUrl}/linked-profiles/hackerrank`,
+      { profile },
+    );
+  }
+
+  removeHackerRankLinkedProfile(): Observable<{ linkedProfile: null }> {
+    return this.http.delete<{ linkedProfile: null }>(`${this.baseUrl}/linked-profiles/hackerrank`);
+  }
+
   constructor(
     private readonly http: HttpClient,
-    private readonly cacheInvalidation: FrontendCacheInvalidationService
+    private readonly cacheInvalidation: FrontendCacheInvalidationService,
   ) {}
 
   private invalidateDependents<T>() {
@@ -117,7 +165,9 @@ export class IntegrationsService {
   }
 
   getMarketplace(): Observable<{ integrations: IntegrationMarketplaceItem[] }> {
-    return this.http.get<{ integrations: IntegrationMarketplaceItem[] }>(`${this.baseUrl}/marketplace`);
+    return this.http.get<{ integrations: IntegrationMarketplaceItem[] }>(
+      `${this.baseUrl}/marketplace`,
+    );
   }
 
   startOAuth(provider: ProviderName): Observable<{
@@ -133,12 +183,21 @@ export class IntegrationsService {
     return this.http.post<any>(`${this.baseUrl}/oauth/start`, { provider });
   }
 
-  oauthCallback(provider: ProviderName, code: string, state: string, username?: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/oauth/callback`, { provider, code, state, username }).pipe(this.invalidateDependents());
+  oauthCallback(
+    provider: ProviderName,
+    code: string,
+    state: string,
+    username?: string,
+  ): Observable<any> {
+    return this.http
+      .post(`${this.baseUrl}/oauth/callback`, { provider, code, state, username })
+      .pipe(this.invalidateDependents());
   }
 
   manualConnect(provider: ProviderName, externalUsername: string, apiKey = ''): Observable<any> {
-    return this.http.post(`${this.baseUrl}/manual/connect`, { provider, externalUsername, apiKey }).pipe(this.invalidateDependents());
+    return this.http
+      .post(`${this.baseUrl}/manual/connect`, { provider, externalUsername, apiKey })
+      .pipe(this.invalidateDependents());
   }
 
   ingest(provider: ProviderName): Observable<any> {
@@ -146,11 +205,15 @@ export class IntegrationsService {
   }
 
   syncNow(provider?: ProviderName): Observable<any> {
-    return this.http.post(`${this.baseUrl}/sync-now`, provider ? { provider } : {}).pipe(this.invalidateDependents());
+    return this.http
+      .post(`${this.baseUrl}/sync-now`, provider ? { provider } : {})
+      .pipe(this.invalidateDependents());
   }
 
   disconnect(provider: ProviderName): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/connections/${provider}`).pipe(this.invalidateDependents());
+    return this.http
+      .delete(`${this.baseUrl}/connections/${provider}`)
+      .pipe(this.invalidateDependents());
   }
 
   getInsights(): Observable<IntegrationInsightsResponse> {

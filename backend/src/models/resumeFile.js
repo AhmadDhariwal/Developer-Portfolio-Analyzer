@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const resumeFileSchema = new mongoose.Schema({
+  contentQualityState: { type: mongoose.Schema.Types.Mixed, default: null },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

@@ -1,0 +1,573 @@
+{
+  "checkedAt": "2026-11-05T13:57:52.239Z",
+  "files": [
+    {
+      "status": "M ",
+      "path": "backend/.env.example",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/.env.example"
+    },
+    {
+      "status": "M ",
+      "path": "backend/src/controllers/courseProgressController.js",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/controllers/courseProgressController.js"
+    },
+    {
+      "status": "M ",
+      "path": "backend/src/middleware/authmiddleware.js",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/middleware/authmiddleware.js"
+    },
+    {
+      "status": "M ",
+      "path": "backend/src/middleware/courseAdmission.js",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/middleware/courseAdmission.js"
+    },
+    {
+      "status": "M ",
+      "path": "backend/src/models/userCourseProgress.js",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/models/userCourseProgress.js"
+    },
+    {
+      "status": "M ",
+      "path": "backend/src/routes/courseRoutes.js",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/routes/courseRoutes.js"
+    },
+    {
+      "status": "M ",
+      "path": "backend/src/scripts/verifyLearningIsolated.js",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/scripts/verifyLearningIsolated.js"
+    },
+    {
+      "status": "M ",
+      "path": "backend/src/services/courseCatalogMaintenanceService.js",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/services/courseCatalogMaintenanceService.js"
+    },
+    {
+      "status": "AM",
+      "path": "backend/src/services/courseCatalogSearchService.js",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/services/courseCatalogSearchService.js"
+    },
+    {
+      "status": "M ",
+      "path": "backend/src/services/courseGovernanceService.js",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/services/courseGovernanceService.js"
+    },
+    {
+      "status": "M ",
+      "path": "backend/src/services/courseProgressService.js",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/services/courseProgressService.js"
+    },
+    {
+      "status": "M ",
+      "path": "backend/src/services/courseRecommendationService.js",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/services/courseRecommendationService.js"
+    },
+    {
+      "status": "M ",
+      "path": "backend/src/services/courseService.js",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/services/courseService.js"
+    },
+    {
+      "status": "M ",
+      "path": "backend/src/services/sharedCourseCatalogService.js",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/services/sharedCourseCatalogService.js"
+    },
+    {
+      "status": "AM",
+      "path": "backend/src/tests/coursesDiscovery.integration.test.js",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/tests/coursesDiscovery.integration.test.js"
+    },
+    {
+      "status": "M ",
+      "path": "backend/src/tests/coursesMongo.integration.test.js",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/tests/coursesMongo.integration.test.js"
+    },
+    {
+      "status": "M ",
+      "path": "backend/src/tests/coursesPoolWorkers.integration.test.js",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/tests/coursesPoolWorkers.integration.test.js"
+    },
+    {
+      "status": "M ",
+      "path": "backend/src/tests/sharedCourseCatalog.integration.test.js",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/tests/sharedCourseCatalog.integration.test.js"
+    },
+    {
+      "status": "M ",
+      "path": "backend/src/utils/courseIdentity.js",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/utils/courseIdentity.js"
+    },
+    {
+      "status": "MM",
+      "path": "backend/verification/architecture/request-flow-governance-results.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/architecture/request-flow-governance-results.json"
+    },
+    {
+      "status": " M",
+      "path": "backend/verification/courses/LEARNING-HUB-PRODUCTION-FINAL.md",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/LEARNING-HUB-PRODUCTION-FINAL.md"
+    },
+    {
+      "status": "AM",
+      "path": "backend/verification/courses/defects-2026-11-05/browser/end-to-end.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/browser/end-to-end.json"
+    },
+    {
+      "status": "AM",
+      "path": "backend/verification/courses/defects-2026-11-05/cleanup-browser.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/cleanup-browser.json"
+    },
+    {
+      "status": "AM",
+      "path": "backend/verification/courses/defects-2026-11-05/cleanup-courses.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/cleanup-courses.json"
+    },
+    {
+      "status": "AM",
+      "path": "backend/verification/courses/defects-2026-11-05/cleanup-full.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/cleanup-full.json"
+    },
+    {
+      "status": "AM",
+      "path": "backend/verification/courses/defects-2026-11-05/fixture/browser-results.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/fixture/browser-results.json"
+    },
+    {
+      "status": "AM",
+      "path": "backend/verification/courses/defects-2026-11-05/mongo-network.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/mongo-network.json"
+    },
+    {
+      "status": "AM",
+      "path": "backend/verification/courses/defects-2026-11-05/shared-catalog.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/shared-catalog.json"
+    },
+    {
+      "status": "M ",
+      "path": "backend/verification/courses/shared-catalog-2026-11-05.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/shared-catalog-2026-11-05.json"
+    },
+    {
+      "status": "MM",
+      "path": "backend/verification/integrations/cleanup.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/integrations/cleanup.json"
+    },
+    {
+      "status": "MM",
+      "path": "backend/verification/integrations/final-scalability-acceptance.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/integrations/final-scalability-acceptance.json"
+    },
+    {
+      "status": "MM",
+      "path": "backend/verification/integrations/query-plans.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/integrations/query-plans.json"
+    },
+    {
+      "status": "MM",
+      "path": "backend/verification/integrations/repeated-requests-cache-audit.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/integrations/repeated-requests-cache-audit.json"
+    },
+    {
+      "status": "MM",
+      "path": "backend/verification/integrations/scalability-governance-regression.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/integrations/scalability-governance-regression.json"
+    },
+    {
+      "status": "MM",
+      "path": "backend/verification/notifications/integration-results.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/notifications/integration-results.json"
+    },
+    {
+      "status": "MM",
+      "path": "backend/verification/notifications/retention-results.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/notifications/retention-results.json"
+    },
+    {
+      "status": "MM",
+      "path": "backend/verification/resume/extraction-accuracy.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/resume/extraction-accuracy.json"
+    },
+    {
+      "status": "MM",
+      "path": "backend/verification/resume/mongo-acceptance.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/resume/mongo-acceptance.json"
+    },
+    {
+      "status": "MM",
+      "path": "backend/verification/skillgap/production-results.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/skillgap/production-results.json"
+    },
+    {
+      "status": "MM",
+      "path": "frontend/scripts/verify-courses-ui.cjs",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/scripts/verify-courses-ui.cjs"
+    },
+    {
+      "status": "M ",
+      "path": "frontend/src/app/pages/courses/components/my-learning.component.html",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/pages/courses/components/my-learning.component.html"
+    },
+    {
+      "status": "M ",
+      "path": "frontend/src/app/pages/courses/components/my-learning.component.ts",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/pages/courses/components/my-learning.component.ts"
+    },
+    {
+      "status": "MM",
+      "path": "frontend/src/app/pages/courses/courses.component.html",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/pages/courses/courses.component.html"
+    },
+    {
+      "status": "M ",
+      "path": "frontend/src/app/pages/courses/courses.component.spec.ts",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/pages/courses/courses.component.spec.ts"
+    },
+    {
+      "status": "M ",
+      "path": "frontend/src/app/pages/courses/courses.component.ts",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/pages/courses/courses.component.ts"
+    },
+    {
+      "status": "M ",
+      "path": "frontend/src/app/pages/courses/services/course-learning.store.spec.ts",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/pages/courses/services/course-learning.store.spec.ts"
+    },
+    {
+      "status": "M ",
+      "path": "frontend/src/app/pages/courses/services/course-learning.store.ts",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/pages/courses/services/course-learning.store.ts"
+    },
+    {
+      "status": "M ",
+      "path": "frontend/src/app/shared/components/course-card/course-card.html",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/shared/components/course-card/course-card.html"
+    },
+    {
+      "status": "M ",
+      "path": "frontend/src/app/shared/components/course-card/course-card.scss",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/shared/components/course-card/course-card.scss"
+    },
+    {
+      "status": "M ",
+      "path": "frontend/src/app/shared/components/course-card/course-card.ts",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/shared/components/course-card/course-card.ts"
+    },
+    {
+      "status": "M ",
+      "path": "frontend/src/app/shared/models/course.model.ts",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/shared/models/course.model.ts"
+    },
+    {
+      "status": "M ",
+      "path": "frontend/src/app/shared/services/course.service.ts",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/frontend/src/app/shared/services/course.service.ts"
+    },
+    {
+      "status": "??",
+      "path": "backend/src/scripts/finalizeLearningDefects.js",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/scripts/finalizeLearningDefects.js"
+    },
+    {
+      "status": "??",
+      "path": "backend/src/tests/fixtures/resume/columns.pdf",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/tests/fixtures/resume/columns.pdf"
+    },
+    {
+      "status": "??",
+      "path": "backend/src/tests/fixtures/resume/corrupt.pdf",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/tests/fixtures/resume/corrupt.pdf"
+    },
+    {
+      "status": "??",
+      "path": "backend/src/tests/fixtures/resume/empty.pdf",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/tests/fixtures/resume/empty.pdf"
+    },
+    {
+      "status": "??",
+      "path": "backend/src/tests/fixtures/resume/encrypted.pdf",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/tests/fixtures/resume/encrypted.pdf"
+    },
+    {
+      "status": "??",
+      "path": "backend/src/tests/fixtures/resume/layout-shift.pdf",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/tests/fixtures/resume/layout-shift.pdf"
+    },
+    {
+      "status": "??",
+      "path": "backend/src/tests/fixtures/resume/page-limit.pdf",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/tests/fixtures/resume/page-limit.pdf"
+    },
+    {
+      "status": "??",
+      "path": "backend/src/tests/fixtures/resume/scanned.pdf",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/tests/fixtures/resume/scanned.pdf"
+    },
+    {
+      "status": "??",
+      "path": "backend/src/tests/fixtures/resume/standard.pdf",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/src/tests/fixtures/resume/standard.pdf"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/acceptance-summary.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/acceptance-summary.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/browser.log",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/browser.log"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/browser/real-dark-1440.png",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/browser/real-dark-1440.png"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/browser/real-dark-375.png",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/browser/real-dark-375.png"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/browser/real-light-1440.png",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/browser/real-light-1440.png"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/browser/real-light-375.png",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/browser/real-light-375.png"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/build.log",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/build.log"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/change-inventory.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/change-inventory.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/courses.log",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/courses.log"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/cross-module-recovery.log",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/cross-module-recovery.log"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/final-checks.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/final-checks.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/fixture.log",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/fixture.log"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/fixture/dark-1440-discover.png",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/fixture/dark-1440-discover.png"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/fixture/dark-1440-learning.png",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/fixture/dark-1440-learning.png"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/fixture/dark-375-course.png",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/fixture/dark-375-course.png"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/fixture/dark-375-discover.png",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/fixture/dark-375-discover.png"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/fixture/dark-375-filters.png",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/fixture/dark-375-filters.png"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/fixture/dark-375-learning.png",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/fixture/dark-375-learning.png"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/fixture/light-1440-discover.png",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/fixture/light-1440-discover.png"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/fixture/light-1440-learning.png",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/fixture/light-1440-learning.png"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/fixture/light-375-course.png",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/fixture/light-375-course.png"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/fixture/light-375-discover.png",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/fixture/light-375-discover.png"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/fixture/light-375-filters.png",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/fixture/light-375-filters.png"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/fixture/light-375-learning.png",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/fixture/light-375-learning.png"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/frontend.log",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/frontend.log"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/full-interrupted.log",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/full-interrupted.log"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/full.log",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/full.log"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/historical-before/backend/verification/architecture/request-flow-governance-results.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/historical-before/backend/verification/architecture/request-flow-governance-results.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/historical-before/backend/verification/courses/shared-catalog-2026-11-05.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/historical-before/backend/verification/courses/shared-catalog-2026-11-05.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/historical-before/backend/verification/integrations/final-scalability-acceptance.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/historical-before/backend/verification/integrations/final-scalability-acceptance.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/historical-before/backend/verification/integrations/query-plans.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/historical-before/backend/verification/integrations/query-plans.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/historical-before/backend/verification/integrations/repeated-requests-cache-audit.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/historical-before/backend/verification/integrations/repeated-requests-cache-audit.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/historical-before/backend/verification/integrations/scalability-governance-regression.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/historical-before/backend/verification/integrations/scalability-governance-regression.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/historical-before/backend/verification/notifications/integration-results.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/historical-before/backend/verification/notifications/integration-results.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/historical-before/backend/verification/notifications/retention-results.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/historical-before/backend/verification/notifications/retention-results.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/historical-before/backend/verification/resume/extraction-accuracy.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/historical-before/backend/verification/resume/extraction-accuracy.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/historical-before/backend/verification/resume/mongo-acceptance.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/historical-before/backend/verification/resume/mongo-acceptance.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/historical-before/backend/verification/skillgap/production-results.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/historical-before/backend/verification/skillgap/production-results.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/historical-reports.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/historical-reports.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/pdf-byte-integrity.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/pdf-byte-integrity.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/regression-artifacts/backend/verification/architecture/request-flow-governance-results.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/regression-artifacts/backend/verification/architecture/request-flow-governance-results.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/regression-artifacts/backend/verification/courses/shared-catalog-2026-11-05.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/regression-artifacts/backend/verification/courses/shared-catalog-2026-11-05.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/regression-artifacts/backend/verification/integrations/final-scalability-acceptance.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/regression-artifacts/backend/verification/integrations/final-scalability-acceptance.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/regression-artifacts/backend/verification/integrations/query-plans.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/regression-artifacts/backend/verification/integrations/query-plans.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/regression-artifacts/backend/verification/integrations/repeated-requests-cache-audit.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/regression-artifacts/backend/verification/integrations/repeated-requests-cache-audit.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/regression-artifacts/backend/verification/integrations/scalability-governance-regression.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/regression-artifacts/backend/verification/integrations/scalability-governance-regression.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/regression-artifacts/backend/verification/notifications/integration-results.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/regression-artifacts/backend/verification/notifications/integration-results.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/regression-artifacts/backend/verification/notifications/retention-results.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/regression-artifacts/backend/verification/notifications/retention-results.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/regression-artifacts/backend/verification/resume/extraction-accuracy.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/regression-artifacts/backend/verification/resume/extraction-accuracy.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/regression-artifacts/backend/verification/resume/mongo-acceptance.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/regression-artifacts/backend/verification/resume/mongo-acceptance.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-2026-11-05/regression-artifacts/backend/verification/skillgap/production-results.json",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-2026-11-05/regression-artifacts/backend/verification/skillgap/production-results.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/defects-unit.log",
+      "absolutePath": "C:/Users/ahmad.hassan/Desktop/Developer-Portfolio-Analyzer/backend/verification/courses/defects-unit.log"
+    }
+  ],
+  "deletedTrackedFiles": [],
+  "movedFiles": [],
+  "cleanup": "No source, user work, historical evidence or fixtures deleted. Disposable Mongo fixtures retain exact-scope cleanup results."
+}

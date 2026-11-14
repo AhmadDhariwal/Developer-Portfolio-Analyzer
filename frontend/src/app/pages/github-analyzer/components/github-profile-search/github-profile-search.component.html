@@ -1,0 +1,90 @@
+<!-- Search & Identity Bar -->
+<section class="identity-bar-card" aria-label="GitHub Profile Selection">
+  <div class="identity-bar-inner">
+    <!-- Search Input Form -->
+    <div class="search-form-wrap">
+      <div class="search-input-group">
+        <span class="search-prefix-text" aria-hidden="true">github.com/</span>
+        <input
+          class="search-input-field"
+          type="text"
+          aria-label="GitHub username"
+          placeholder="Enter username (e.g. torvalds)"
+          [ngModel]="username"
+          (ngModelChange)="usernameChange.emit($event)"
+          [disabled]="isAnalyzing"
+          (keyup.enter)="analyzeRequested.emit()"
+        />
+      </div>
+      <app-ui-button
+        variant="primary"
+        size="md"
+        (clicked)="analyzeRequested.emit()"
+        [loading]="isAnalyzing"
+        [disabled]="!username.trim() || isAnalyzing"
+      >
+        {{ isAnalyzing ? 'Analyzing...' : 'Analyze' }}
+      </app-ui-button>
+    </div>
+
+    <!-- Identity Context Meta -->
+    <div class="identity-meta-wrap" *ngIf="analysisReady && result && !errorMessage">
+      <div class="identity-profile">
+        <span class="identity-user-label">Current:</span>
+        <a
+          [href]="'https://github.com/' + viewedUsername"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="identity-username-link"
+        >
+          @{{ viewedUsername }}
+        </a>
+        <app-ui-badge [variant]="isDefaultProfile ? 'neutral' : 'warning'" size="sm">
+          {{ isDefaultProfile ? 'Saved Profile' : 'Preview Mode' }}
+        </app-ui-badge>
+      </div>
+
+      <div class="identity-freshness">
+        <span class="meta-label">Analyzed:</span>
+        <span class="meta-val">{{ calculationTimestamp }}</span>
+        <span class="meta-dot" aria-hidden="true">•</span>
+        <span class="meta-cache-tag">{{ cacheStatusLabel }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preview Mode Notice Banner -->
+  <div class="preview-mode-banner" *ngIf="isTemporaryView && analysisReady && result">
+    <div class="banner-body">
+      <span class="banner-icon" aria-hidden="true">ℹ️</span>
+      <div class="banner-text">
+        <strong>Previewing @{{ viewedUsername }}</strong>
+        <span>This analysis is not saved to your personal profile.</span>
+      </div>
+    </div>
+    <app-ui-button
+      variant="outline"
+      size="sm"
+      (clicked)="returnRequested.emit()"
+      [disabled]="isAnalyzing"
+    >
+      Return to My Profile (@{{ defaultUsername }})
+    </app-ui-button>
+  </div>
+
+  <!-- Active Warning or Rate Limit Callout Banner -->
+  <div class="warning-callout" *ngIf="isStale || result?.warning">
+    <div class="callout-icon" aria-hidden="true">⚠️</div>
+    <div class="callout-body">
+      <strong>{{
+        result?.rateLimited ? 'GitHub API Rate Limit Reached' : 'Cached Snapshot Active'
+      }}</strong>
+      <p>
+        {{
+          result?.warning ||
+            'GitHub API rate limits prevent fresh retrieval right now. Presenting the latest verified cached snapshot.'
+        }}
+      </p>
+    </div>
+  </div>
+</section>

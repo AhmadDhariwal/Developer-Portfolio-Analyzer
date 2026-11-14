@@ -1,0 +1,51 @@
+{
+  "backendSyntax": [
+    {
+      "path": "backend/src/services/coursePersonalizationService.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/services/courseService.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/services/courseRecommendationService.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/tests/coursePersonalizedEligibility.test.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/tests/courseViewSeparation.integration.test.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/tests/courseSearchRelevance.integration.test.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/tests/coursesDiscovery.integration.test.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/tests/coursesPoolWorkers.integration.test.js",
+      "exitCode": 0
+    }
+  ],
+  "typeScriptExitCode": 0,
+  "workingWhitespaceExitCode": 0,
+  "indexWhitespaceExitCode": 0,
+  "backendFormat": [
+    "Checking formatting...",
+    "All matched files use Prettier code style!"
+  ],
+  "frontendFormat": [
+    "Checking formatting...",
+    "All matched files use Prettier code style!"
+  ],
+  "reportFormat": [
+    "Checking formatting...",
+    "All matched files use Prettier code style!"
+  ]
+}

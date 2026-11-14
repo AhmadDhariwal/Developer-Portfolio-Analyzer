@@ -1,0 +1,23 @@
+{
+  "synthetic": true,
+  "productionDataUsed": false,
+  "checks": [
+    "navbar/page mark-read synchronization PASS",
+    "bounded bulk delete confirmation, keyboard focus, Escape and second-tab synchronization PASS",
+    "real bearer SSE and multi-tab production PASS",
+    "search, empty state, explicit error and retry PASS",
+    "desktop/mobile light/dark and overflow PASS"
+  ],
+  "screenshots": [
+    "notifications-1440-dark.png",
+    "notifications-1440-light.png",
+    "notifications-390-dark.png",
+    "notifications-390-light.png"
+  ],
+  "errors": [],
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 93,
+    "productionDataUsed": false
+  }
+}

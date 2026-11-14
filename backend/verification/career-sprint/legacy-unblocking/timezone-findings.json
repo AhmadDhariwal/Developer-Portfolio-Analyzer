@@ -1,0 +1,259 @@
+{
+  "source": "Fresh read-only database projection; no original IANA zone fields found",
+  "records": [
+    {
+      "_id": "69cb89cd2a3592cb0892c7ae",
+      "userId": "69cb7bef2a3592cb0892c5f0",
+      "weekStartDate": "2026-03-29T19:00:00.000Z",
+      "weekEndDate": "2026-04-05T18:59:59.999Z",
+      "createdAt": "2026-03-31T08:46:05.663Z",
+      "updatedAt": "2026-04-01T08:43:55.135Z",
+      "originalIanaTimeZone": null,
+      "provenance": "unresolved",
+      "boundaryUtcHours": {
+        "start": 19,
+        "end": 18
+      }
+    },
+    {
+      "_id": "69d353735f845da253033315",
+      "userId": "69cb7bef2a3592cb0892c5f0",
+      "weekStartDate": "2026-04-05T19:00:00.000Z",
+      "weekEndDate": "2026-04-12T18:59:59.999Z",
+      "createdAt": "2026-04-06T06:32:19.866Z",
+      "updatedAt": "2026-04-06T06:32:19.866Z",
+      "originalIanaTimeZone": null,
+      "provenance": "unresolved",
+      "boundaryUtcHours": {
+        "start": 19,
+        "end": 18
+      }
+    },
+    {
+      "_id": "69e5ff4864eb4700684907fa",
+      "userId": "69e5caff43b4a0c2a8792ee0",
+      "weekStartDate": "2026-04-19T19:00:00.000Z",
+      "weekEndDate": "2026-04-26T18:59:59.999Z",
+      "createdAt": "2026-04-20T10:26:16.864Z",
+      "updatedAt": "2026-04-20T10:26:16.864Z",
+      "originalIanaTimeZone": null,
+      "provenance": "unresolved",
+      "boundaryUtcHours": {
+        "start": 19,
+        "end": 18
+      }
+    },
+    {
+      "_id": "69e72d29aa2cdea0a8ffc9f7",
+      "userId": "69cb7bef2a3592cb0892c5f0",
+      "weekStartDate": "2026-04-19T19:00:00.000Z",
+      "weekEndDate": "2026-04-26T18:59:59.999Z",
+      "createdAt": "2026-04-21T07:54:17.485Z",
+      "updatedAt": "2026-04-22T10:45:07.494Z",
+      "sprintEndDate": "2026-04-26T18:59:59.999Z",
+      "sprintStartDate": "2026-04-18T19:00:00.000Z",
+      "originalIanaTimeZone": null,
+      "provenance": "unresolved",
+      "boundaryUtcHours": {
+        "start": 19,
+        "end": 18
+      }
+    },
+    {
+      "_id": "69e7505aaa2cdea0a8ffceef",
+      "userId": "69e74e10aa2cdea0a8ffcc29",
+      "weekStartDate": "2026-04-19T19:00:00.000Z",
+      "weekEndDate": "2026-04-26T18:59:59.999Z",
+      "createdAt": "2026-04-21T10:24:26.205Z",
+      "updatedAt": "2026-04-21T10:24:26.205Z",
+      "originalIanaTimeZone": null,
+      "provenance": "unresolved",
+      "boundaryUtcHours": {
+        "start": 19,
+        "end": 18
+      }
+    },
+    {
+      "_id": "69f1bcfcf27c336c4e1fde82",
+      "userId": "69cb7bef2a3592cb0892c5f0",
+      "sprintStartDate": "2026-04-26T19:00:00.000Z",
+      "sprintEndDate": "2026-05-03T18:59:59.999Z",
+      "weekStartDate": "2026-04-26T19:00:00.000Z",
+      "weekEndDate": "2026-05-03T18:59:59.999Z",
+      "createdAt": "2026-04-29T08:10:36.273Z",
+      "updatedAt": "2026-04-29T08:10:36.273Z",
+      "originalIanaTimeZone": null,
+      "provenance": "unresolved",
+      "boundaryUtcHours": {
+        "start": 19,
+        "end": 18
+      }
+    },
+    {
+      "_id": "6a030a6eab79ad1781e90abb",
+      "userId": "69fb1593acc018164c80f7a8",
+      "sprintStartDate": "2026-05-10T19:00:00.000Z",
+      "sprintEndDate": "2026-05-17T18:59:59.999Z",
+      "weekStartDate": "2026-05-10T19:00:00.000Z",
+      "weekEndDate": "2026-05-17T18:59:59.999Z",
+      "createdAt": "2026-05-12T11:09:34.089Z",
+      "updatedAt": "2026-05-12T11:09:34.089Z",
+      "originalIanaTimeZone": null,
+      "provenance": "unresolved",
+      "boundaryUtcHours": {
+        "start": 19,
+        "end": 18
+      }
+    },
+    {
+      "_id": "6a1eafbfe47387fa951fd44d",
+      "userId": "69e9efd85a0084c767771781",
+      "sprintStartDate": "2026-05-31T19:00:00.000Z",
+      "sprintEndDate": "2026-06-07T18:59:59.999Z",
+      "weekStartDate": "2026-05-31T19:00:00.000Z",
+      "weekEndDate": "2026-06-07T18:59:59.999Z",
+      "createdAt": "2026-06-02T10:26:07.969Z",
+      "updatedAt": "2026-06-02T10:26:07.969Z",
+      "originalIanaTimeZone": null,
+      "provenance": "unresolved",
+      "boundaryUtcHours": {
+        "start": 19,
+        "end": 18
+      }
+    },
+    {
+      "_id": "6a2910e8ca9c1a48a40252a4",
+      "userId": "69e9efd85a0084c767771781",
+      "sprintStartDate": "2026-06-07T19:00:00.000Z",
+      "sprintEndDate": "2026-06-14T18:59:59.999Z",
+      "weekStartDate": "2026-06-07T19:00:00.000Z",
+      "weekEndDate": "2026-06-14T18:59:59.999Z",
+      "createdAt": "2026-06-10T07:23:20.541Z",
+      "updatedAt": "2026-06-10T07:23:20.541Z",
+      "originalIanaTimeZone": null,
+      "provenance": "unresolved",
+      "boundaryUtcHours": {
+        "start": 19,
+        "end": 18
+      }
+    },
+    {
+      "_id": "6a2fea5531d790519d0180e8",
+      "userId": "69e9efd85a0084c767771781",
+      "createdAt": "2026-06-15T12:04:37.319Z",
+      "sprintEndDate": "2026-06-21T18:59:59.999Z",
+      "sprintStartDate": "2026-06-14T19:00:00.000Z",
+      "updatedAt": "2026-06-15T12:04:37.319Z",
+      "weekEndDate": "2026-06-21T18:59:59.999Z",
+      "weekStartDate": "2026-06-14T19:00:00.000Z",
+      "originalIanaTimeZone": null,
+      "provenance": "unresolved",
+      "boundaryUtcHours": {
+        "start": 19,
+        "end": 18
+      }
+    },
+    {
+      "_id": "6a4394c73484a5beee511dff",
+      "userId": "69e9efd85a0084c767771781",
+      "createdAt": "2026-06-30T10:04:55.875Z",
+      "sprintEndDate": "2026-07-05T18:59:59.999Z",
+      "sprintStartDate": "2026-06-28T19:00:00.000Z",
+      "updatedAt": "2026-06-30T10:04:55.875Z",
+      "weekEndDate": "2026-07-05T18:59:59.999Z",
+      "weekStartDate": "2026-06-28T19:00:00.000Z",
+      "originalIanaTimeZone": null,
+      "provenance": "unresolved",
+      "boundaryUtcHours": {
+        "start": 19,
+        "end": 18
+      }
+    },
+    {
+      "_id": "6a4e4ff719b693d01b6dc086",
+      "userId": "69e9efd85a0084c767771781",
+      "createdAt": "2026-07-08T13:26:15.842Z",
+      "sprintEndDate": "2026-07-12T18:59:59.999Z",
+      "sprintStartDate": "2026-07-05T19:00:00.000Z",
+      "updatedAt": "2026-07-09T14:17:30.266Z",
+      "weekEndDate": "2026-07-12T18:59:59.999Z",
+      "weekStartDate": "2026-07-05T19:00:00.000Z",
+      "originalIanaTimeZone": null,
+      "provenance": "unresolved",
+      "boundaryUtcHours": {
+        "start": 19,
+        "end": 18
+      }
+    },
+    {
+      "_id": "6a5482ee19b693d01b6dc300",
+      "userId": "69e9efd85a0084c767771781",
+      "createdAt": "2026-07-13T06:17:18.157Z",
+      "sprintEndDate": "2026-07-22T18:59:59.999Z",
+      "sprintStartDate": "2026-07-10T19:00:00.000Z",
+      "updatedAt": "2026-07-20T11:40:24.966Z",
+      "weekEndDate": "2026-07-19T18:59:59.999Z",
+      "weekStartDate": "2026-07-12T19:00:00.000Z",
+      "originalIanaTimeZone": null,
+      "provenance": "unresolved",
+      "boundaryUtcHours": {
+        "start": 19,
+        "end": 18
+      }
+    },
+    {
+      "_id": "6a67630448b4bbcacc0dfb1e",
+      "userId": "69e9efd85a0084c767771781",
+      "createdAt": "2026-07-27T13:54:12.391Z",
+      "sprintEndDate": "2026-08-02T18:59:59.999Z",
+      "sprintStartDate": "2026-07-26T19:00:00.000Z",
+      "updatedAt": "2026-07-27T13:54:12.391Z",
+      "weekEndDate": "2026-08-02T18:59:59.999Z",
+      "weekStartDate": "2026-07-26T19:00:00.000Z",
+      "originalIanaTimeZone": null,
+      "provenance": "unresolved",
+      "boundaryUtcHours": {
+        "start": 19,
+        "end": 18
+      }
+    },
+    {
+      "_id": "6ad0ba6f116d4a0d4aa83c64",
+      "weekStartDate": "2026-10-11T19:00:00.000Z",
+      "userId": "69e9efd85a0084c767771781",
+      "weekEndDate": "2026-10-18T18:59:59.999Z",
+      "createdAt": "2026-10-15T11:35:11.231Z",
+      "sprintEndDate": "2026-10-18T18:59:59.999Z",
+      "sprintStartDate": "2026-10-11T19:00:00.000Z",
+      "updatedAt": "2026-10-15T11:35:11.231Z",
+      "originalIanaTimeZone": null,
+      "provenance": "unresolved",
+      "boundaryUtcHours": {
+        "start": 19,
+        "end": 18
+      }
+    }
+  ],
+  "historicalCode": [
+    {
+      "commit": "b3a8e14f",
+      "path": "backend/src/services/careerSprintService.js",
+      "finding": "Local getDay/setDate/setHours; no recorded IANA zone (March 2026 baseline)."
+    },
+    {
+      "commit": "8d52cc23",
+      "path": "backend/src/services/careerSprintService.js",
+      "finding": "Custom windows and week boundaries use local Date setters (July 2026)."
+    },
+    {
+      "commit": "cfe95782",
+      "path": "backend/src/utils/dateUtils.js",
+      "finding": "startOfDay/endOfDay/addDays use host-local Date setters (August 2026)."
+    }
+  ],
+  "deploymentEvidence": {
+    "trackedDeploymentTimezone": "No server timezone pin or record-to-deployment provenance found in repository history/configuration.",
+    "boundaryInference": "All 15 start at 19:00Z and end at 18:59:59.999Z. This is consistent with UTC+05:00 local midnight, but identifies neither IANA zone nor original host.",
+    "decision": "Keep original IANA timezone null for all records; retain exact instants as read-only exceptions."
+  }
+}

@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Injectable, OnDestroy } from '@angular/core';
+import { HttpEventType, HttpResponse, HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { finalize, map, shareReplay, tap } from 'rxjs/operators';
+import { filter, finalize, map, shareReplay, tap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { CareerProfileService } from './career-profile.service';
 import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service';
@@ -10,17 +10,17 @@ import { environment } from '../../../environments/environment';
 import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 
 export interface NotificationPrefs {
-  weeklyScoreReport:  boolean;
-  skillTrendAlerts:   boolean;
+  weeklyScoreReport: boolean;
+  skillTrendAlerts: boolean;
   newRecommendations: boolean;
-  jobMatchAlerts:     boolean;
+  jobMatchAlerts: boolean;
 }
 
 export interface AccountStats {
   developerScore: number;
-  reposAnalyzed:  number;
+  reposAnalyzed: number;
   skillsDetected: number;
-  memberSince:    string;
+  memberSince: string;
 }
 
 export interface ResumeContextFile {
@@ -31,49 +31,49 @@ export interface ResumeContextFile {
 }
 
 export interface UserProfile {
-  _id:                string;
-  name:               string;
-  email:              string;
-  phoneNumber?:       string;
-  countryCode?:       string;
-  githubUsername:     string;
+  _id: string;
+  name: string;
+  email: string;
+  phoneNumber?: string;
+  countryCode?: string;
+  githubUsername: string;
   activeGithubUsername?: string;
-  avatar:             string;
-  jobTitle:           string;
-  location:           string;
-  bio:                string;
-  website:            string;
-  twitter:            string;
-  linkedin:           string;
-  notifications:      NotificationPrefs;
-  careerStack:        CareerStack;
-  experienceLevel:    ExperienceLevel;
+  avatar: string;
+  jobTitle: string;
+  location: string;
+  bio: string;
+  website: string;
+  twitter: string;
+  linkedin: string;
+  notifications: NotificationPrefs;
+  careerStack: CareerStack;
+  experienceLevel: ExperienceLevel;
   activeCareerStack?: CareerStack;
   activeExperienceLevel?: ExperienceLevel;
-  careerGoal:         CareerGoal;
-  targetTimeline?:    string;
+  careerGoal: CareerGoal;
+  targetTimeline?: string;
   learningPreference?: string;
-  profileHash?:       string;
-  isConfigured:       boolean;
-  isPublic?:          boolean;
-  role?:              string;
-  profileCompleted?:  boolean;
-  defaultResume?:     ResumeContextFile | null;
-  activeResume?:      ResumeContextFile | null;
-  stats:              AccountStats;
+  profileHash?: string;
+  isConfigured: boolean;
+  isPublic?: boolean;
+  role?: string;
+  profileCompleted?: boolean;
+  defaultResume?: ResumeContextFile | null;
+  activeResume?: ResumeContextFile | null;
+  stats: AccountStats;
 }
 
 export interface UpdateProfilePayload {
-  name?:          string;
+  name?: string;
   githubUsername?: string;
   defaultResumeFileId?: string | null;
-  jobTitle?:      string;
-  location?:      string;
-  bio?:           string;
-  website?:       string;
-  twitter?:       string;
-  linkedin?:      string;
-  phoneNumber?:   string;
+  jobTitle?: string;
+  location?: string;
+  bio?: string;
+  website?: string;
+  twitter?: string;
+  linkedin?: string;
+  phoneNumber?: string;
   notifications?: Partial<NotificationPrefs>;
   targetTimeline?: string;
   learningPreference?: string;
@@ -81,7 +81,7 @@ export interface UpdateProfilePayload {
 
 export interface PasswordPayload {
   currentPassword: string;
-  newPassword:     string;
+  newPassword: string;
 }
 
 export interface AvatarUploadResponse {
@@ -90,98 +90,143 @@ export interface AvatarUploadResponse {
 }
 
 @Injectable({ providedIn: 'root' })
-export class ProfileService {
+export class ProfileService implements OnDestroy {
   private readonly baseUrl = `${environment.apiBaseUrl}/profile`;
   private readonly apiOrigin = environment.apiOrigin;
   private readonly cacheKey = 'devinsight_profile_cache';
-  private readonly dependentCacheModules = [
-    'dashboardSummary',
-    'dashboardContributions',
-    'dashboardLanguages',
-    'dashboardSkills',
-    'dashboardRecommendations',
-    'dashboardIntegrationAnalytics',
-    'skillGap',
-    'recommendations',
-    'news',
-    'weeklyReports'
-  ];
   private inflightProfile$: Observable<UserProfile> | null = null;
   private memoryProfile: UserProfile | null = null;
   private readonly profileCacheTtlMs = 5 * 60 * 1000;
-  private readonly inflight = new Map<string, Observable<UserProfile>>();
-  private cachedProfile: UserProfile | null = null;
-  private cachedAt = 0;
+  private cacheExpiresAt = 0;
+  private generation = 0;
+  private readonly onStorage = (event: StorageEvent): void => {
+    if (event.key === this.cacheKey) {
+      this.memoryProfile = null;
+      this.cacheExpiresAt = 0;
+      this.generation += 1;
+      this.inflightProfile$ = null;
+      this.invalidateDependentCaches();
+    }
+  };
+
   constructor(
     private readonly http: HttpClient,
     private readonly authService: AuthService,
     private readonly careerProfileService: CareerProfileService,
     private readonly frontendCache: FrontendAnalysisCacheService,
-    private readonly cacheInvalidation: FrontendCacheInvalidationService
+    private readonly cacheInvalidation: FrontendCacheInvalidationService,
   ) {
     this.cacheInvalidation.register('profile', () => this.clearCache());
+    globalThis.addEventListener?.('storage', this.onStorage);
+  }
+
+  ngOnDestroy(): void {
+    globalThis.removeEventListener?.('storage', this.onStorage);
   }
 
   clearCache(): void {
     this.inflightProfile$ = null;
-    this.inflight.clear();
     this.memoryProfile = null;
-    this.cachedProfile = null;
-    this.cachedAt = 0;
+    this.cacheExpiresAt = 0;
+    this.generation += 1;
     localStorage.removeItem(this.cacheKey);
   }
 
-  // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ Fetch profile + stats from backend ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
   getProfile(forceRefresh = false): Observable<UserProfile> {
     if (!forceRefresh) {
-      const cached = this.memoryProfile || this.readCachedProfile();
+      const owner = this.authService.getCurrentUser()?._id;
+      const cached =
+        this.memoryProfile?._id === owner && this.cacheExpiresAt > Date.now()
+          ? this.memoryProfile
+          : this.readCachedProfile();
       if (cached) return of(cached);
       if (this.inflightProfile$) return this.inflightProfile$;
     }
 
+    const token = this.authService.getToken();
+    const generation = ++this.generation;
     this.inflightProfile$ = this.http.get<UserProfile>(`${this.baseUrl}/me`).pipe(
+      filter(() => generation === this.generation && token === this.authService.getToken()),
       map((profile) => this.normalizeProfile(profile)),
-      tap(profile => this.applyProfile(profile)),
-      finalize(() => { this.inflightProfile$ = null; }),
-      shareReplay({ bufferSize: 1, refCount: false })
+      tap((profile) => this.applyProfile(profile)),
+      finalize(() => {
+        if (generation === this.generation) this.inflightProfile$ = null;
+      }),
+      shareReplay({ bufferSize: 1, refCount: false }),
     );
 
     return this.inflightProfile$;
   }
 
   updateProfile(payload: UpdateProfilePayload): Observable<Partial<UserProfile>> {
+    const token = this.authService.getToken();
     return this.http.put<Partial<UserProfile>>(`${this.baseUrl}/me`, payload).pipe(
+      filter(() => token === this.authService.getToken()),
       map((updated) => ({
         ...updated,
-        ...(typeof updated.avatar === 'string' ? { avatar: this.resolveAvatarUrl(updated.avatar) } : {})
+        ...(typeof updated.avatar === 'string'
+          ? { avatar: this.resolveAvatarUrl(updated.avatar) }
+          : {}),
       })),
       tap((updated) => {
+        this.generation += 1;
+        this.inflightProfile$ = null;
         this.authService.updateCurrentUser(updated);
         this.mergeProfileUpdate(updated);
         this.cacheInvalidation.clearPublicPortfolioCaches();
-      })
+      }),
     );
   }
 
-  updatePassword(payload: PasswordPayload): Observable<{ message: string }> {
-    return this.http.put<{ message: string }>(`${this.baseUrl}/password`, payload);
+  updatePassword(payload: PasswordPayload): Observable<{ message: string; token?: string }> {
+    const token = this.authService.getToken();
+    return this.http
+      .put<{ message: string; token?: string }>(`${this.baseUrl}/password`, payload)
+      .pipe(
+        filter(() => token === this.authService.getToken()),
+        tap((response) => {
+          if (response.token) this.authService.rotateSessionToken(response.token);
+        }),
+      );
   }
 
-  uploadAvatar(file: File): Observable<AvatarUploadResponse> {
+  uploadAvatar(
+    file: File,
+    onProgress?: (percent: number) => void,
+  ): Observable<AvatarUploadResponse> {
     const form = new FormData();
     form.append('avatar', file);
 
-    return this.http.post<AvatarUploadResponse>(`${this.baseUrl}/avatar`, form).pipe(
-      map((res) => ({
-        ...res,
-        avatar: this.resolveAvatarUrl(res.avatar)
-      })),
-      tap((res) => {
-        this.authService.updateCurrentUser({ avatar: res.avatar });
-        this.mergeProfileUpdate({ avatar: res.avatar });
-        this.cacheInvalidation.clearPublicPortfolioCaches();
+    const token = this.authService.getToken();
+    return this.http
+      .post<AvatarUploadResponse>(`${this.baseUrl}/avatar`, form, {
+        observe: 'events',
+        reportProgress: true,
       })
-    );
+      .pipe(
+        tap((event) => {
+          if (event.type === HttpEventType.UploadProgress && event.total) {
+            onProgress?.(Math.round((event.loaded / event.total) * 100));
+          }
+        }),
+        filter(
+          (event): event is HttpResponse<AvatarUploadResponse> =>
+            event.type === HttpEventType.Response,
+        ),
+        map((event) => event.body!),
+        filter(() => token === this.authService.getToken()),
+        map((res) => ({
+          ...res,
+          avatar: this.resolveAvatarUrl(res.avatar),
+        })),
+        tap((res) => {
+          this.generation += 1;
+          this.inflightProfile$ = null;
+          this.authService.updateCurrentUser({ avatar: res.avatar });
+          this.mergeProfileUpdate({ avatar: res.avatar });
+          this.cacheInvalidation.clearPublicPortfolioCaches();
+        }),
+      );
   }
 
   deleteAccount(): Observable<{ message: string }> {
@@ -189,8 +234,15 @@ export class ProfileService {
   }
 
   updateVisibility(isPublic: boolean): Observable<{ isPublic: boolean }> {
+    const token = this.authService.getToken();
     return this.http.put<{ isPublic: boolean }>(`${this.baseUrl}/visibility`, { isPublic }).pipe(
-      tap((res) => this.mergeProfileUpdate({ isPublic: res.isPublic }))
+      filter(() => token === this.authService.getToken()),
+      tap((res) => {
+        this.generation += 1;
+        this.inflightProfile$ = null;
+        this.mergeProfileUpdate({ isPublic: res.isPublic });
+        this.cacheInvalidation.clearPublicPortfolioCaches();
+      }),
     );
   }
 
@@ -209,9 +261,10 @@ export class ProfileService {
 
     if (/^data:/i.test(raw) || raw.startsWith('blob:')) return raw;
 
-    const browserOrigin = typeof window !== 'undefined' && window.location?.origin
-      ? window.location.origin
-      : this.apiOrigin;
+    const browserOrigin =
+      typeof window !== 'undefined' && window.location?.origin
+        ? window.location.origin
+        : this.apiOrigin;
 
     if (/^https?:\/\//i.test(raw)) {
       try {
@@ -247,20 +300,22 @@ export class ProfileService {
       activeExperienceLevel: profile.activeExperienceLevel || profile.experienceLevel || 'Student',
       targetTimeline: profile.targetTimeline || '',
       learningPreference: profile.learningPreference || '',
-      profileHash: profile.profileHash || this.stableProfileHash(profile)
+      profileHash: profile.profileHash || this.stableProfileHash(profile),
     };
   }
 
   private applyProfile(profile: UserProfile): void {
-    const previousHash = this.memoryProfile?.profileHash || this.readCachedProfile()?.profileHash || '';
+    const previousHash =
+      this.memoryProfile?.profileHash || this.readCachedProfile()?.profileHash || '';
     this.memoryProfile = profile;
+    this.cacheExpiresAt = Date.now() + this.profileCacheTtlMs;
     this.writeCachedProfile(profile);
     this.syncStoredUser({
       _id: profile._id,
       name: profile.name,
       githubUsername: profile.githubUsername,
       activeGithubUsername: profile.activeGithubUsername,
-      avatar: profile.avatar
+      avatar: profile.avatar,
     });
 
     this.careerProfileService.hydrateFromServer({
@@ -273,7 +328,7 @@ export class ProfileService {
       targetTimeline: profile.targetTimeline ?? '',
       learningPreference: profile.learningPreference ?? '',
       profileHash: profile.profileHash ?? '',
-      isConfigured: profile.isConfigured ?? false
+      isConfigured: profile.isConfigured ?? false,
     });
 
     if (previousHash && profile.profileHash && previousHash !== profile.profileHash) {
@@ -296,12 +351,17 @@ export class ProfileService {
       const raw = localStorage.getItem(this.cacheKey);
       if (!raw) return null;
       const parsed = JSON.parse(raw);
-      if (Number(parsed?.expiresAt || 0) <= Date.now() || !parsed?.profile) {
+      if (
+        Number(parsed?.expiresAt || 0) <= Date.now() ||
+        !parsed?.profile ||
+        parsed.profile._id !== this.authService.getCurrentUser()?._id
+      ) {
         localStorage.removeItem(this.cacheKey);
         return null;
       }
       const profile = this.normalizeProfile(parsed.profile);
       this.memoryProfile = profile;
+      this.cacheExpiresAt = Number(parsed.expiresAt);
       return profile;
     } catch {
       localStorage.removeItem(this.cacheKey);
@@ -310,11 +370,14 @@ export class ProfileService {
   }
 
   private writeCachedProfile(profile: UserProfile): void {
-    localStorage.setItem(this.cacheKey, JSON.stringify({
-      cachedAt: Date.now(),
-      expiresAt: Date.now() + 24 * 60 * 60 * 1000,
-      profile
-    }));
+    localStorage.setItem(
+      this.cacheKey,
+      JSON.stringify({
+        cachedAt: Date.now(),
+        expiresAt: Date.now() + this.profileCacheTtlMs,
+        profile,
+      }),
+    );
   }
 
   private invalidateDependentCaches(): void {
@@ -324,12 +387,19 @@ export class ProfileService {
 
   private stableProfileHash(profile: Partial<UserProfile>): string {
     const payload = JSON.stringify({
-      activeGithubUsername: String(profile.activeGithubUsername || profile.githubUsername || '').trim().toLowerCase(),
-      activeCareerStack: String(profile.activeCareerStack || profile.careerStack || 'Full Stack').trim(),
-      activeExperienceLevel: String(profile.activeExperienceLevel || profile.experienceLevel || 'Student').trim(),
+      activeGithubUsername: String(profile.activeGithubUsername || profile.githubUsername || '')
+        .trim()
+        .toLowerCase(),
+      activeCareerStack: String(
+        profile.activeCareerStack || profile.careerStack || 'Full Stack',
+      ).trim(),
+      activeExperienceLevel: String(
+        profile.activeExperienceLevel || profile.experienceLevel || 'Student',
+      ).trim(),
       careerGoal: String(profile.careerGoal || '').trim(),
       targetTimeline: String(profile.targetTimeline || '').trim(),
-      learningPreference: String(profile.learningPreference || '').trim()
+      learningPreference: String(profile.learningPreference || '').trim(),
+      resumeFileId: profile.activeResume?.fileId || profile.defaultResume?.fileId || '',
     });
     let hash = 0;
     for (let i = 0; i < payload.length; i += 1) {
@@ -338,11 +408,11 @@ export class ProfileService {
     return `profile-${Math.abs(hash)}`;
   }
 
-  private syncStoredUser(partial: Partial<Pick<UserProfile, '_id' | 'name' | 'githubUsername' | 'activeGithubUsername' | 'avatar'>>): void {
+  private syncStoredUser(
+    partial: Partial<
+      Pick<UserProfile, '_id' | 'name' | 'githubUsername' | 'activeGithubUsername' | 'avatar'>
+    >,
+  ): void {
     this.authService.updateCurrentUser(partial);
   }
 }
-
-
-
-

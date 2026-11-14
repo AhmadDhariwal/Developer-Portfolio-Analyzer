@@ -1,0 +1,9 @@
+{
+  "orchestrationUnchanged": true,
+  "orchestrationSha256": "3ad9edd3234f7e9c38297fed6f4ab214e4afe2efc7bfc063137c6b7ec6361352",
+  "metadataUnchanged": true,
+  "keyframesUnchanged": true,
+  "animationNames": ["pulse-beacon", "slide-down", "spin"],
+  "childrenWithoutServiceOrSubscriptions": true,
+  "noGlobalStylingWorkaround": true
+}

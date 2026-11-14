@@ -1,0 +1,212 @@
+<div class="section-head">
+  <div class="section-head__icon section-head__icon--purple">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      aria-hidden="true"
+    >
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  </div>
+  <div class="section-head__text">
+    <h2>Personal Information</h2>
+    <p>Update your developer profile identity and contact information</p>
+  </div>
+</div>
+
+<div class="form-grid">
+  <div class="form-field">
+    <label for="profile-full-name">Full Name <span class="required-star">*</span></label>
+    <div class="input-wrap">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        class="field-icon"
+        aria-hidden="true"
+      >
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </svg>
+      <input
+        id="profile-full-name"
+        type="text"
+        [(ngModel)]="profile.name"
+        placeholder="Alex Johnson"
+        title="Full name"
+        required
+      />
+    </div>
+  </div>
+
+  <div class="form-field">
+    <div class="field-header-row">
+      <label for="profile-email">Email Address</label>
+      <span class="field-badge field-badge--verified">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="11"
+          height="11"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          aria-hidden="true"
+        >
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+        Verified Account
+      </span>
+    </div>
+    <div class="input-wrap input-wrap--readonly">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        class="field-icon"
+        aria-hidden="true"
+      >
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+        <polyline points="22,6 12,13 2,6" />
+      </svg>
+      <input
+        id="profile-email"
+        type="email"
+        [(ngModel)]="profile.email"
+        placeholder="alex@example.com"
+        readonly
+        title="Primary email (read-only)"
+      />
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        class="readonly-lock"
+        aria-hidden="true"
+        title="Managed by auth provider"
+      >
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+      </svg>
+    </div>
+  </div>
+
+  <div class="form-field">
+    <label for="profile-job-title">Job Title</label>
+    <div class="input-wrap">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        class="field-icon"
+        aria-hidden="true"
+      >
+        <rect x="2" y="7" width="20" height="14" rx="2" />
+        <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+      </svg>
+      <input
+        id="profile-job-title"
+        type="text"
+        [(ngModel)]="profile.jobTitle"
+        placeholder="Full Stack Engineer"
+        title="Job title"
+      />
+    </div>
+  </div>
+
+  <div class="form-field">
+    <label for="profile-location">Location</label>
+    <div class="input-wrap">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        class="field-icon"
+        aria-hidden="true"
+      >
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+        <circle cx="12" cy="10" r="3" />
+      </svg>
+      <input
+        id="profile-location"
+        type="text"
+        [(ngModel)]="profile.location"
+        placeholder="San Francisco, CA"
+        title="Location"
+      />
+    </div>
+  </div>
+
+  <div class="form-field form-field--span-2">
+    <label for="profile-mobile">Direct Contact Mobile</label>
+    <div class="input-wrap">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        class="field-icon"
+        aria-hidden="true"
+      >
+        <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+        <line x1="12" y1="18" x2="12" y2="18" />
+      </svg>
+      <input
+        id="profile-mobile"
+        type="text"
+        [(ngModel)]="profile.phoneNumber"
+        placeholder="+1 555 000 0000"
+        title="Mobile number"
+      />
+    </div>
+    <p class="field-hint">
+      Adding your mobile number increases your visibility to verified recruiters in the talent pool.
+    </p>
+  </div>
+
+  <div class="form-field form-field--span-2">
+    <div class="field-header-row">
+      <label for="profile-bio">Bio &amp; Technical Summary</label>
+      <span class="char-count" [class.char-count--warn]="(profile.bio.length || 0) > 550">
+        {{ profile.bio.length || 0 }} / 600 characters
+      </span>
+    </div>
+    <textarea
+      id="profile-bio"
+      [(ngModel)]="profile.bio"
+      placeholder="Passionate full-stack developer specializing in distributed systems, high-velocity frontend architecture, and cloud platforms…"
+      title="Bio"
+      rows="3"
+      maxlength="600"
+    ></textarea>
+  </div>
+</div>

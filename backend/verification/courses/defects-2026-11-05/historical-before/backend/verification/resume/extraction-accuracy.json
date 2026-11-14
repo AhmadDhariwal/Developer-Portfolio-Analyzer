@@ -1,0 +1,44 @@
+{
+  "measurements": [
+    {
+      "fixture": "standard",
+      "assertions": 27,
+      "correct": 27,
+      "milliseconds": 701,
+      "score": 78
+    },
+    {
+      "fixture": "layout-shift",
+      "assertions": 27,
+      "correct": 27,
+      "milliseconds": 605,
+      "score": 78
+    },
+    {
+      "fixture": "columns",
+      "assertions": 27,
+      "correct": 27,
+      "milliseconds": 590,
+      "score": 78
+    }
+  ],
+  "limitations": [
+    "Hidden annotation URLs are not text evidence",
+    "Arbitrary interleaved table/column semantics",
+    "OCR",
+    "Non-English section labels without an explicit alias",
+    "Claims are extracted, not independently verified credentials"
+  ],
+  "ambiguous": [
+    "Year-only ranges use January boundaries",
+    "Present means the UTC analysis month",
+    "Wrapped bullets may be split into evidence fragments"
+  ],
+  "missing": [
+    "Location",
+    "Portfolio URL"
+  ],
+  "inferred": [
+    "Seniority is a tenure heuristic, not a verified job title"
+  ]
+}

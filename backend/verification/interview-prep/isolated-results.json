@@ -1,0 +1,525 @@
+{
+  "baseline": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\release1",
+  "candidate": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source",
+  "prerequisites": "Disposable Mongo replica set; Redis unavailable; bundled Python; credentials cleared",
+  "results": [
+    {
+      "label": "candidate-careerSprintLegacy.integration.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/careerSprintLegacy.integration.test.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 2761
+    },
+    {
+      "label": "release1-careerSprintLegacy.integration.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\release1",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/careerSprintLegacy.integration.test.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 2630
+    },
+    {
+      "label": "candidate-careerSprintMongo.integration.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/careerSprintMongo.integration.test.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 8302
+    },
+    {
+      "label": "release1-careerSprintMongo.integration.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\release1",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/careerSprintMongo.integration.test.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 9770
+    },
+    {
+      "label": "candidate-careerSprintPerformance.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/careerSprintPerformance.test.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 8564
+    },
+    {
+      "label": "release1-careerSprintPerformance.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\release1",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/careerSprintPerformance.test.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 6674
+    },
+    {
+      "label": "candidate-careerSprintWorkers.integration.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/careerSprintWorkers.integration.test.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 11485
+    },
+    {
+      "label": "release1-careerSprintWorkers.integration.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\release1",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/careerSprintWorkers.integration.test.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 16544
+    },
+    {
+      "label": "candidate-courseViewSeparation.integration.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/courseViewSeparation.integration.test.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 15960
+    },
+    {
+      "label": "release1-courseViewSeparation.integration.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\release1",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/courseViewSeparation.integration.test.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 17225
+    },
+    {
+      "label": "candidate-coursesPerformance.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/coursesPerformance.test.js"
+      ],
+      "exitCode": 1,
+      "signal": null,
+      "milliseconds": 1596
+    },
+    {
+      "label": "release1-coursesPerformance.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\release1",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/coursesPerformance.test.js"
+      ],
+      "exitCode": 1,
+      "signal": null,
+      "milliseconds": 2294
+    },
+    {
+      "label": "candidate-integrationPublicSnapshot.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/integrationPublicSnapshot.test.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 33578
+    },
+    {
+      "label": "release1-integrationPublicSnapshot.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\release1",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/integrationPublicSnapshot.test.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 32184
+    },
+    {
+      "label": "candidate-interviewPrepFinalization.integration.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/interviewPrepFinalization.integration.test.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 17733
+    },
+    {
+      "label": "release1-interviewPrepFinalization.integration.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\release1",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/interviewPrepFinalization.integration.test.js"
+      ],
+      "exitCode": 1,
+      "signal": null,
+      "milliseconds": 21569
+    },
+    {
+      "label": "candidate-newsConfiguration.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/newsConfiguration.test.js"
+      ],
+      "exitCode": 1,
+      "signal": null,
+      "milliseconds": 472
+    },
+    {
+      "label": "release1-newsConfiguration.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\release1",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/newsConfiguration.test.js"
+      ],
+      "exitCode": 1,
+      "signal": null,
+      "milliseconds": 409
+    },
+    {
+      "label": "candidate-notificationsProduction.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/notificationsProduction.test.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 29955
+    },
+    {
+      "label": "release1-notificationsProduction.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\release1",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/notificationsProduction.test.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 38622
+    },
+    {
+      "label": "candidate-recommendationsMongo.integration.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/recommendationsMongo.integration.test.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 8506
+    },
+    {
+      "label": "release1-recommendationsMongo.integration.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\release1",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/recommendationsMongo.integration.test.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 11795
+    },
+    {
+      "label": "candidate-resumeProduction.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/resumeProduction.test.js"
+      ],
+      "exitCode": 1,
+      "signal": null,
+      "milliseconds": 4655
+    },
+    {
+      "label": "release1-resumeProduction.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\release1",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/resumeProduction.test.js"
+      ],
+      "exitCode": 1,
+      "signal": null,
+      "milliseconds": 8352
+    },
+    {
+      "label": "candidate-resumeProductionMongo.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/resumeProductionMongo.test.js"
+      ],
+      "exitCode": 1,
+      "signal": null,
+      "milliseconds": 11131
+    },
+    {
+      "label": "release1-resumeProductionMongo.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\release1",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/resumeProductionMongo.test.js"
+      ],
+      "exitCode": 1,
+      "signal": null,
+      "milliseconds": 11286
+    },
+    {
+      "label": "candidate-scenarioSimulatorMongo.integration.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/scenarioSimulatorMongo.integration.test.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 7953
+    },
+    {
+      "label": "release1-scenarioSimulatorMongo.integration.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\release1",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/scenarioSimulatorMongo.integration.test.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 7227
+    },
+    {
+      "label": "candidate-scenarioSimulatorWorkers.integration.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/scenarioSimulatorWorkers.integration.test.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 22673
+    },
+    {
+      "label": "release1-scenarioSimulatorWorkers.integration.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\release1",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/scenarioSimulatorWorkers.integration.test.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 17425
+    },
+    {
+      "label": "candidate-skillGapAcceptance.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/skillGapAcceptance.test.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 5373
+    },
+    {
+      "label": "release1-skillGapAcceptance.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\release1",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/skillGapAcceptance.test.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 8070
+    },
+    {
+      "label": "candidate-skillgapPerformance.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/skillgapPerformance.test.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 6221
+    },
+    {
+      "label": "release1-skillgapPerformance.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\release1",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/skillgapPerformance.test.js"
+      ],
+      "exitCode": 1,
+      "signal": null,
+      "milliseconds": 4861
+    },
+    {
+      "label": "candidate-sprintAiAdmission.integration.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/sprintAiAdmission.integration.test.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 5836
+    },
+    {
+      "label": "release1-sprintAiAdmission.integration.test",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\release1",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/sprintAiAdmission.integration.test.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 7199
+    },
+    {
+      "label": "candidate-generate-pdf-fixtures",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "backend/scripts/generate-resume-fixtures.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 4259
+    },
+    {
+      "label": "candidate-pdf-fixtures-after",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\source",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/resumeProduction.test.js",
+        "backend/src/tests/resumeProductionMongo.test.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 36723
+    },
+    {
+      "label": "release1-generate-pdf-fixtures",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\release1",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "backend/scripts/generate-resume-fixtures.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 5620
+    },
+    {
+      "label": "release1-pdf-fixtures-after",
+      "cwd": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\backend-regression-audit-UIC0e2\\release1",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "--test-reporter=tap",
+        "backend/src/tests/resumeProduction.test.js",
+        "backend/src/tests/resumeProductionMongo.test.js"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 32184
+    }
+  ]
+}

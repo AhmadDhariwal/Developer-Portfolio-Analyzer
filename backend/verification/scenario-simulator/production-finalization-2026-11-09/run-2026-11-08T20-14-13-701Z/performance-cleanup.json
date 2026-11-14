@@ -1,0 +1,20 @@
+{
+  "mongoProcessStillRunning": false,
+  "recursiveDeletion": false,
+  "removedFiles": [
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\_tmp\\spilldb\\WiredTiger",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\_tmp\\spilldb\\WiredTiger.lock",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\_tmp\\spilldb\\WiredTiger.turtle",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\_tmp\\spilldb\\WiredTiger.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\_tmp\\spilldb\\WiredTigerHS.wt"
+  ],
+  "removedEmptyDirectories": [
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\_tmp\\spilldb",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\_tmp",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\diagnostic.data",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0\\journal",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp\\devinsight-p3-GEaNa0",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T20-14-13-701Z\\performance-confirmation-temp"
+  ],
+  "remainingRoot": false
+}

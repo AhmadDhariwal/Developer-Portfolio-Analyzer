@@ -1,0 +1,84 @@
+{
+  "date": "2026-10-16",
+  "status": "VERIFIED",
+  "backendImplementation": "VERIFIED",
+  "frontendDevelopmentMayProceed": true,
+  "productionMigrationApplied": false,
+  "productionApply": "BLOCKED pending explicit deployment authorization",
+  "originalTimezonesConfirmed": 0,
+  "originalTimezonesUnresolved": 15,
+  "timezoneDecision": "No inferred UTC or Asia/Karachi. Explicit read-only legacy exceptions preserve exact instants.",
+  "migration": {
+    "safe": true,
+    "records": 15,
+    "proposals": 15,
+    "grandfatheredConflicts": 1,
+    "problems": 0,
+    "orphaned": 0,
+    "reservationMismatches": 0,
+    "scheduleOwnersToSeed": 5,
+    "isolatedApply": "passed; idempotency, interrupted application/resume, complete document preservation and reservation guards"
+  },
+  "focused": {
+    "tests": 49,
+    "passed": 49,
+    "failed": 0,
+    "skipped": 0,
+    "durationMs": 44384.1694,
+    "log": "focused-final.txt"
+  },
+  "full": {
+    "tests": 375,
+    "passed": 375,
+    "failed": 0,
+    "skipped": 0,
+    "durationMs": 206928.1895,
+    "log": "full-backend.txt"
+  },
+  "postCleanup": {
+    "tests": 16,
+    "passed": 16,
+    "failed": 0,
+    "skipped": 0,
+    "durationMs": 4872.2867,
+    "log": "post-cleanup-unit.txt"
+  },
+  "commands": {
+    "focused": "node --test --test-concurrency=1 src/tests/careerSprint*.test.js",
+    "full": "node --test --test-concurrency=1 src/tests/**/*.test.js",
+    "postCleanup": "node --test backend/src/tests/careerSprintLegacyPolicy.test.js backend/src/tests/careerSprintReleasePolicies.test.js backend/src/tests/careerSprintFinalization.test.js",
+    "mongoEnvironment": {
+      "MONGODB_URI": "mongodb://127.0.0.1:27186/career_sprint_regression_test_01a14358",
+      "MONGO_URI": "same isolated database",
+      "CAREER_SPRINT_ISOLATED_MONGO_URI": "mongodb://127.0.0.1:27186/career_sprint_legacy_test_01a14358"
+    }
+  },
+  "checks": {
+    "syntax": {
+      "passed": true,
+      "files": 14
+    },
+    "prettier": "explicit write followed by matching check passed for all 14 changed source files and retained JSON/Markdown artifacts",
+    "whitespace": "unstaged and staged checks passed",
+    "frontend": "not started; backend-only task"
+  },
+  "cleanup": {
+    "localMongoVersion": "8.2.6",
+    "serverShutdown": "confirmed exit 0 after local shutdown command; connection reset expected during shutdown",
+    "runtimeRemoved": true,
+    "sourceFilesMovedOrDeleted": 0
+  },
+  "preliminary": {
+    "focused": {
+      "passed": 45,
+      "failed": 2,
+      "reason": "source assertions updated for deterministic sort"
+    },
+    "full": {
+      "passed": 373,
+      "failed": 2,
+      "reason": "race fixture incorrectly assumed insertion order; unchanged Learning Hub performance threshold failed",
+      "finalRerun": "375/375 passed without changing thresholds"
+    }
+  }
+}

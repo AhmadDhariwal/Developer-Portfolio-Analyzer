@@ -1,0 +1,707 @@
+{
+  "checkedAt": "2026-10-27T14:08:44.893Z",
+  "applicationDatabaseUsed": false,
+  "liveRequests": [],
+  "checks": {
+    "upstashPing": "PASS",
+    "devtoAuthorMetadata": "PASS: replay of retained one-request author metadata",
+    "dashboardResourceMetrics": "PASS: no fabricated scored analytics for resource-only connection",
+    "ownerIsolation": "PASS: other user reads/disconnect do not reveal or mutate owner observations",
+    "backgroundSync": "PASS: real scheduler, Mongo lease/commit and retained response replay",
+    "concurrentSyncDisconnect": "PASS: one lease; disconnected observation cannot be resurrected; scored history unchanged",
+    "controlOutage": "PASS: injected Redis unavailability blocks mutation; disconnect remains available",
+    "retiredIngestion": "PASS: Hashnode sync and HackerRank extraction rejected without HTTP",
+    "sharedAdmission": "PASS: real Upstash admission rejects second per-account request; synthetic keys expire normally",
+    "sharedCache": "PASS: real Upstash round-trip; task key expires after 30 seconds"
+  },
+  "api": [
+    {
+      "owner": 2,
+      "method": "POST",
+      "endpoint": "integrations/manual/connect",
+      "status": 200
+    },
+    {
+      "owner": 2,
+      "method": "GET",
+      "endpoint": "integrations/insights",
+      "status": 200
+    },
+    {
+      "owner": 2,
+      "method": "POST",
+      "endpoint": "integrations/sync-now",
+      "status": 200
+    },
+    {
+      "owner": 2,
+      "method": "DELETE",
+      "endpoint": "integrations/connections/devblogs",
+      "status": 200
+    },
+    {
+      "owner": 0,
+      "method": "POST",
+      "endpoint": "analysis/portfolio-score",
+      "status": 200
+    },
+    {
+      "owner": 0,
+      "method": "GET",
+      "endpoint": "dashboard/integration-analytics",
+      "status": 200
+    },
+    {
+      "owner": 0,
+      "method": "GET",
+      "endpoint": "simulator/context",
+      "status": 200
+    },
+    {
+      "owner": 0,
+      "method": "GET",
+      "endpoint": "career-sprint/current",
+      "status": 200
+    },
+    {
+      "owner": 0,
+      "method": "POST",
+      "endpoint": "weekly-reports/generate",
+      "status": 200
+    },
+    {
+      "owner": 0,
+      "method": "POST",
+      "endpoint": "skillgap/skill-gap",
+      "status": 200
+    },
+    {
+      "owner": 0,
+      "method": "POST",
+      "endpoint": "integrations/manual/connect",
+      "status": 200
+    },
+    {
+      "owner": 0,
+      "method": "GET",
+      "endpoint": "integrations/marketplace",
+      "status": 200
+    },
+    {
+      "owner": 0,
+      "method": "GET",
+      "endpoint": "integrations/insights",
+      "status": 200
+    },
+    {
+      "owner": 0,
+      "method": "POST",
+      "endpoint": "analysis/portfolio-score",
+      "status": 200
+    },
+    {
+      "owner": 0,
+      "method": "GET",
+      "endpoint": "dashboard/integration-analytics",
+      "status": 200
+    },
+    {
+      "owner": 0,
+      "method": "GET",
+      "endpoint": "simulator/context",
+      "status": 200
+    },
+    {
+      "owner": 0,
+      "method": "GET",
+      "endpoint": "career-sprint/current",
+      "status": 200
+    },
+    {
+      "owner": 0,
+      "method": "POST",
+      "endpoint": "weekly-reports/generate",
+      "status": 200
+    },
+    {
+      "owner": 0,
+      "method": "POST",
+      "endpoint": "skillgap/skill-gap",
+      "status": 200
+    },
+    {
+      "owner": 1,
+      "method": "GET",
+      "endpoint": "integrations/insights",
+      "status": 200
+    },
+    {
+      "owner": 1,
+      "method": "DELETE",
+      "endpoint": "integrations/connections/kaggle",
+      "status": 200
+    },
+    {
+      "owner": 0,
+      "method": "GET",
+      "endpoint": "integrations/insights",
+      "status": 200
+    },
+    {
+      "owner": 0,
+      "method": "GET",
+      "endpoint": "integrations/connections",
+      "status": 200
+    },
+    {
+      "owner": 0,
+      "method": "DELETE",
+      "endpoint": "integrations/connections/kaggle",
+      "status": 200
+    },
+    {
+      "owner": 0,
+      "method": "GET",
+      "endpoint": "integrations/insights",
+      "status": 200
+    },
+    {
+      "owner": 0,
+      "method": "POST",
+      "endpoint": "integrations/sync-now",
+      "status": 503
+    },
+    {
+      "owner": 0,
+      "method": "DELETE",
+      "endpoint": "integrations/connections/kaggle",
+      "status": 200
+    }
+  ],
+  "devtoSourceEvidence": "functional-gaps-2026-10-27.json",
+  "kaggleDownstream": {
+    "before": {
+      "portfolioInput": 96,
+      "dashboard": {
+        "days": 7,
+        "cards": [
+          {
+            "provider": "leetcode",
+            "activityScore": 100,
+            "profileScore": 100,
+            "confidence": 81,
+            "trendDelta": 0,
+            "successRate": 0,
+            "syncCount": 0,
+            "lastSyncedAt": "2026-10-26T12:00:52.739Z"
+          }
+        ],
+        "syncStatus": "fresh",
+        "updatedAt": "2026-10-27T14:08:51.608Z"
+      },
+      "inferredSkills": ["Data Structures", "Algorithms", "Problem Solving"],
+      "demonstratedSkills": [],
+      "sprintProviders": ["leetcode"],
+      "weekly": {
+        "connectedProviders": ["leetcode"],
+        "providerCount": 1,
+        "integrationScore": 96,
+        "strongestProof": [],
+        "weakProof": []
+      },
+      "gap": {
+        "publicResources": [],
+        "providers": ["leetcode"],
+        "score": 96,
+        "strongestProof": []
+      },
+      "provenSkills": []
+    },
+    "after": {
+      "portfolioInput": 96,
+      "dashboard": {
+        "days": 7,
+        "cards": [
+          {
+            "provider": "leetcode",
+            "activityScore": 100,
+            "profileScore": 100,
+            "confidence": 81,
+            "trendDelta": 0,
+            "successRate": 0,
+            "syncCount": 0,
+            "lastSyncedAt": "2026-10-26T12:00:52.739Z"
+          }
+        ],
+        "syncStatus": "fresh",
+        "updatedAt": "2026-10-27T14:08:51.608Z"
+      },
+      "inferredSkills": ["Data Structures", "Algorithms", "Problem Solving"],
+      "demonstratedSkills": [],
+      "sprintProviders": ["leetcode"],
+      "weekly": {
+        "connectedProviders": ["kaggle", "leetcode"],
+        "providerCount": 2,
+        "integrationScore": 96,
+        "strongestProof": [],
+        "weakProof": []
+      },
+      "gap": {
+        "publicResources": [
+          {
+            "provider": "kaggle",
+            "version": "kaggle-resources-v1",
+            "ownershipVerified": false,
+            "evidenceKind": "public-resources",
+            "profile": {
+              "username": "dansbecker",
+              "ownershipVerified": false,
+              "visibility": "public"
+            },
+            "activity": {
+              "notebooks": {
+                "resources": [
+                  {
+                    "ref": "dansbecker/exercise-machine-learning-competitions-testing",
+                    "title": "Exercise: Machine Learning Competitions testing",
+                    "author": "DanB",
+                    "lastRunTime": "2019-09-19T11:51:11.453Z",
+                    "totalVotes": 48
+                  },
+                  {
+                    "ref": "dansbecker/exercise-partial-plots-daily",
+                    "title": "Exercise: Partial Plots Daily",
+                    "author": "DanB",
+                    "lastRunTime": "2019-04-23T17:28:12.457Z",
+                    "totalVotes": 47
+                  },
+                  {
+                    "ref": "dansbecker/use-cases-for-model-insights-daily",
+                    "title": "Use Cases for Model Insights Daily",
+                    "author": "DanB",
+                    "lastRunTime": "2019-04-23T17:28:16.473Z",
+                    "totalVotes": 51
+                  },
+                  {
+                    "ref": "dansbecker/explore-your-data-testing",
+                    "title": "Explore Your Data testing",
+                    "author": "DanB",
+                    "lastRunTime": "2018-11-28T22:50:48.043Z",
+                    "totalVotes": 31
+                  },
+                  {
+                    "ref": "dansbecker/permutation-importance-daily",
+                    "title": "Permutation Importance Daily",
+                    "author": "DanB",
+                    "lastRunTime": "2019-04-23T17:28:17.917Z",
+                    "totalVotes": 38
+                  },
+                  {
+                    "ref": "dansbecker/exercise-creating-reading-and-writing-daily",
+                    "title": "Exercise: Creating, Reading and Writing Daily",
+                    "author": "DanB",
+                    "lastRunTime": "2019-07-09T18:06:55.357Z",
+                    "totalVotes": 53
+                  },
+                  {
+                    "ref": "dansbecker/indexing-selecting-assigning-daily",
+                    "title": "Indexing, Selecting & Assigning Daily",
+                    "author": "DanB",
+                    "lastRunTime": "2019-07-09T18:06:17.170Z",
+                    "totalVotes": 33
+                  },
+                  {
+                    "ref": "dansbecker/exercise-select-from-and-where",
+                    "title": "Exercise: Select, From And Where",
+                    "author": "DanB",
+                    "lastRunTime": "2019-01-18T17:12:31.807Z",
+                    "totalVotes": 31
+                  },
+                  {
+                    "ref": "dansbecker/exercise-shap-values-daily",
+                    "title": "Exercise: SHAP Values Daily",
+                    "author": "DanB",
+                    "lastRunTime": "2019-04-23T17:28:10.740Z",
+                    "totalVotes": 27
+                  },
+                  {
+                    "ref": "dansbecker/data-types-and-missing-values",
+                    "title": "Data Types and Missing Values",
+                    "author": "DanB",
+                    "lastRunTime": "2019-07-09T17:54:55.620Z",
+                    "totalVotes": 26
+                  },
+                  {
+                    "ref": "dansbecker/renaming-and-combining-workbook",
+                    "title": "Renaming and combining workbook",
+                    "author": "DanB",
+                    "lastRunTime": "2019-04-18T23:21:04.447Z",
+                    "totalVotes": 26
+                  },
+                  {
+                    "ref": "dansbecker/random-forests-daily-challenge",
+                    "title": "Random Forests (Daily Challenge)",
+                    "author": "DanB",
+                    "lastRunTime": "2018-11-30T18:37:23.157Z",
+                    "totalVotes": 24
+                  },
+                  {
+                    "ref": "dansbecker/creating-your-own-notebooks-test",
+                    "title": "Creating Your Own Notebooks test",
+                    "author": "DanB",
+                    "lastRunTime": "2019-03-27T22:07:10.823Z",
+                    "totalVotes": 21
+                  },
+                  {
+                    "ref": "dansbecker/intro-to-dl-for-computer-vision-daily",
+                    "title": "Intro to DL for Computer Vision Daily",
+                    "author": "DanB",
+                    "lastRunTime": "2019-03-22T18:56:34.117Z",
+                    "totalVotes": 19
+                  },
+                  {
+                    "ref": "dansbecker/exercise-advanced-uses-of-shap-values-daily",
+                    "title": "Exercise: Advanced Uses of SHAP Values Daily",
+                    "author": "DanB",
+                    "lastRunTime": "2019-04-23T17:28:08.730Z",
+                    "totalVotes": 19
+                  },
+                  {
+                    "ref": "dansbecker/renaming-and-combining-reference-daily",
+                    "title": "Renaming and Combining Reference Daily",
+                    "author": "DanB",
+                    "lastRunTime": "2019-05-13T15:49:56.807Z",
+                    "totalVotes": 19
+                  },
+                  {
+                    "ref": "dansbecker/partial-plots-daily",
+                    "title": "Partial Plots Daily",
+                    "author": "DanB",
+                    "lastRunTime": "2019-04-23T17:28:19.567Z",
+                    "totalVotes": 18
+                  },
+                  {
+                    "ref": "dansbecker/summary-functions-and-maps-reference-daily",
+                    "title": "Summary functions and maps reference Daily",
+                    "author": "DanB",
+                    "lastRunTime": "2019-05-14T00:09:20.067Z",
+                    "totalVotes": 59
+                  },
+                  {
+                    "ref": "dansbecker/summary-functions-and-maps",
+                    "title": "Summary Functions and Maps",
+                    "author": "DanB",
+                    "lastRunTime": "2019-07-09T17:49:21.430Z",
+                    "totalVotes": 17
+                  },
+                  {
+                    "ref": "dansbecker/exercise-model-validation-testing",
+                    "title": "Exercise: Model Validation testing",
+                    "author": "DanB",
+                    "lastRunTime": "2019-09-19T11:51:25.197Z",
+                    "totalVotes": 17
+                  }
+                ],
+                "nextPageToken": null,
+                "pageSize": 20,
+                "page": 1,
+                "completeness": "bounded sample; missing next-page token does not prove a complete catalog",
+                "scope": "public resource sample",
+                "ownershipVerified": false
+              },
+              "datasets": {
+                "resources": [
+                  {
+                    "id": 179555,
+                    "ref": "dansbecker/powerlifting-database",
+                    "title": "powerlifting-database",
+                    "subtitle": "An unchanging copy of the Powerlifting Database",
+                    "ownerRef": "dansbecker",
+                    "licenseName": "Unknown",
+                    "lastUpdated": "2019-04-30T21:07:41.560Z",
+                    "downloadCount": 35593,
+                    "viewCount": 157211,
+                    "voteCount": 444,
+                    "totalBytes": 9277600,
+                    "currentVersionNumber": 1
+                  },
+                  {
+                    "id": 2709,
+                    "ref": "dansbecker/melbourne-housing-snapshot",
+                    "title": "Melbourne Housing Snapshot",
+                    "subtitle": "Snapshot of Tony Pino's Melbourne Housing Dataset",
+                    "ownerRef": "dansbecker",
+                    "licenseName": "CC BY-NC-SA 4.0",
+                    "lastUpdated": "2018-06-05T12:52:24.087Z",
+                    "downloadCount": 224269,
+                    "viewCount": 658182,
+                    "voteCount": 1805,
+                    "totalBytes": 461423,
+                    "currentVersionNumber": 5
+                  },
+                  {
+                    "id": 108980,
+                    "ref": "dansbecker/home-data-for-ml-course",
+                    "title": "home data for ml course",
+                    "subtitle": "Data for Learn ML Course. Same as the Housing Price Getting Started Competition",
+                    "ownerRef": "dansbecker",
+                    "licenseName": "Unknown",
+                    "lastUpdated": "2019-01-23T00:45:18.757Z",
+                    "downloadCount": 31334,
+                    "viewCount": 77960,
+                    "voteCount": 339,
+                    "totalBytes": 96211,
+                    "currentVersionNumber": 1
+                  },
+                  {
+                    "id": 52431,
+                    "ref": "dansbecker/hospital-readmissions",
+                    "title": "Medical Data and Hospital Readmissions",
+                    "subtitle": "",
+                    "ownerRef": "dansbecker",
+                    "licenseName": "Unknown",
+                    "lastUpdated": "2018-09-13T17:46:50.960Z",
+                    "downloadCount": 7985,
+                    "viewCount": 35681,
+                    "voteCount": 67,
+                    "totalBytes": 534254,
+                    "currentVersionNumber": 1
+                  },
+                  {
+                    "id": 52463,
+                    "ref": "dansbecker/new-york-city-taxi-fare-prediction",
+                    "title": "New York City Taxi Fare Prediction",
+                    "subtitle": "",
+                    "ownerRef": "dansbecker",
+                    "licenseName": "Unknown",
+                    "lastUpdated": "2018-09-13T20:32:07.773Z",
+                    "downloadCount": 6217,
+                    "viewCount": 18603,
+                    "voteCount": 36,
+                    "totalBytes": 1569790,
+                    "currentVersionNumber": 1
+                  },
+                  {
+                    "id": 8544,
+                    "ref": "dansbecker/food-101",
+                    "title": "Food 101",
+                    "subtitle": "Pictures of 101 types of food",
+                    "ownerRef": "dansbecker",
+                    "licenseName": "Other (specified in description)",
+                    "lastUpdated": "2018-01-03T20:44:28.610Z",
+                    "downloadCount": 57636,
+                    "viewCount": 281089,
+                    "voteCount": 316,
+                    "totalBytes": 10067059132,
+                    "currentVersionNumber": 1
+                  },
+                  {
+                    "id": 22655,
+                    "ref": "dansbecker/cityscapes-image-pairs",
+                    "title": "Cityscapes Image Pairs",
+                    "subtitle": "Semantic Segmentation for Improving Automated Driving",
+                    "ownerRef": "dansbecker",
+                    "licenseName": "Other (specified in description)",
+                    "lastUpdated": "2018-04-20T13:55:20.627Z",
+                    "downloadCount": 20272,
+                    "viewCount": 155790,
+                    "voteCount": 271,
+                    "totalBytes": 211492512,
+                    "currentVersionNumber": 1
+                  },
+                  {
+                    "id": 98,
+                    "ref": "dansbecker/nba-shot-logs",
+                    "title": "NBA shot logs",
+                    "subtitle": "Moneyball data, for basketball.",
+                    "ownerRef": "dansbecker",
+                    "licenseName": "Unknown",
+                    "lastUpdated": "2016-08-18T05:16:10.990Z",
+                    "downloadCount": 19894,
+                    "viewCount": 188096,
+                    "voteCount": 372,
+                    "totalBytes": 2952076,
+                    "currentVersionNumber": 1
+                  },
+                  {
+                    "id": 4318,
+                    "ref": "dansbecker/5-celebrity-faces-dataset",
+                    "title": "5 Celebrity Faces Dataset",
+                    "subtitle": "Can you identify faces based on very few photos?",
+                    "ownerRef": "dansbecker",
+                    "licenseName": "Unknown",
+                    "lastUpdated": "2017-11-10T04:08:41.557Z",
+                    "downloadCount": 20878,
+                    "viewCount": 116888,
+                    "voteCount": 179,
+                    "totalBytes": 5275912,
+                    "currentVersionNumber": 3
+                  },
+                  {
+                    "id": 2996,
+                    "ref": "dansbecker/aer-credit-card-data",
+                    "title": "Credit Card Data from book \"Econometric Analysis\"",
+                    "subtitle": "credit-card-econometrics",
+                    "ownerRef": "dansbecker",
+                    "licenseName": "Data files © Original Authors",
+                    "lastUpdated": "2017-10-13T17:17:33.507Z",
+                    "downloadCount": 14404,
+                    "viewCount": 47814,
+                    "voteCount": 73,
+                    "totalBytes": 24174,
+                    "currentVersionNumber": 1
+                  },
+                  {
+                    "id": 8552,
+                    "ref": "dansbecker/hot-dog-not-hot-dog",
+                    "title": "Hot Dog - Not Hot Dog",
+                    "subtitle": "",
+                    "ownerRef": "dansbecker",
+                    "licenseName": "Other (specified in description)",
+                    "lastUpdated": "2018-07-19T05:52:04.077Z",
+                    "downloadCount": 9278,
+                    "viewCount": 63355,
+                    "voteCount": 132,
+                    "totalBytes": 93629064,
+                    "currentVersionNumber": 5
+                  },
+                  {
+                    "id": 7467,
+                    "ref": "dansbecker/python-utility-code-for-deep-learning-exercises",
+                    "title": "Python Utility Code for Deep Learning and Gans",
+                    "subtitle": "",
+                    "ownerRef": "dansbecker",
+                    "licenseName": "CC0: Public Domain",
+                    "lastUpdated": "2018-04-27T22:27:45.640Z",
+                    "downloadCount": 2093,
+                    "viewCount": 12872,
+                    "voteCount": 17,
+                    "totalBytes": 13250,
+                    "currentVersionNumber": 15
+                  },
+                  {
+                    "id": 4427,
+                    "ref": "dansbecker/urban-and-rural-photos",
+                    "title": "Urban and Rural Photos",
+                    "subtitle": "",
+                    "ownerRef": "dansbecker",
+                    "licenseName": "CC0: Public Domain",
+                    "lastUpdated": "2018-03-27T01:33:20.657Z",
+                    "downloadCount": 4003,
+                    "viewCount": 16318,
+                    "voteCount": 30,
+                    "totalBytes": 6450132,
+                    "currentVersionNumber": 2
+                  },
+                  {
+                    "id": 9237,
+                    "ref": "dansbecker/dogs-gone-sideways",
+                    "title": "Dogs Gone Sideways",
+                    "subtitle": "Can Your Model Find Rotated Images?",
+                    "ownerRef": "dansbecker",
+                    "licenseName": "Other (specified in description)",
+                    "lastUpdated": "2018-01-10T18:03:02.737Z",
+                    "downloadCount": 2516,
+                    "viewCount": 8868,
+                    "voteCount": 30,
+                    "totalBytes": 24167998,
+                    "currentVersionNumber": 1
+                  },
+                  {
+                    "id": 39452,
+                    "ref": "dansbecker/flight-revenue-simulator",
+                    "title": "Flight Revenue Simulator",
+                    "subtitle": "Code for in the August 2 Micro-Challenge",
+                    "ownerRef": "dansbecker",
+                    "licenseName": "GPL 2",
+                    "lastUpdated": "2019-05-17T22:31:37.127Z",
+                    "downloadCount": 2100,
+                    "viewCount": 31379,
+                    "voteCount": 51,
+                    "totalBytes": 1311,
+                    "currentVersionNumber": 6
+                  },
+                  {
+                    "id": 109344,
+                    "ref": "dansbecker/dog-breed-identification",
+                    "title": "dog breed identification",
+                    "subtitle": "",
+                    "ownerRef": "dansbecker",
+                    "licenseName": "Unknown",
+                    "lastUpdated": "2019-03-18T15:54:45.843Z",
+                    "downloadCount": 1766,
+                    "viewCount": 16812,
+                    "voteCount": 36,
+                    "totalBytes": 853544,
+                    "currentVersionNumber": 4
+                  },
+                  {
+                    "id": 127631,
+                    "ref": "dansbecker/learn-images",
+                    "title": "Learn Images",
+                    "subtitle": "Images used in kaggle learn micro-courses",
+                    "ownerRef": "dansbecker",
+                    "licenseName": "CC0: Public Domain",
+                    "lastUpdated": "2019-02-26T16:51:32.560Z",
+                    "downloadCount": 35,
+                    "viewCount": 3058,
+                    "voteCount": 3,
+                    "totalBytes": 7813368,
+                    "currentVersionNumber": 1
+                  },
+                  {
+                    "id": 139492,
+                    "ref": "dansbecker/bayesian-methods",
+                    "title": "Bayesian Methods Data",
+                    "subtitle": "Data from Probabilistic Programming & Bayesian Methods for Hackers",
+                    "ownerRef": "dansbecker",
+                    "licenseName": "Unknown",
+                    "lastUpdated": "2019-03-14T15:39:45.983Z",
+                    "downloadCount": 299,
+                    "viewCount": 7835,
+                    "voteCount": 9,
+                    "totalBytes": 119015,
+                    "currentVersionNumber": 1
+                  },
+                  {
+                    "id": 139509,
+                    "ref": "dansbecker/training-sky",
+                    "title": "Train Skies",
+                    "subtitle": "Galaxy Data for Bayesian Methods course",
+                    "ownerRef": "dansbecker",
+                    "licenseName": "Unknown",
+                    "lastUpdated": "2019-03-14T15:59:52.990Z",
+                    "downloadCount": 120,
+                    "viewCount": 3389,
+                    "voteCount": 5,
+                    "totalBytes": 6249018,
+                    "currentVersionNumber": 1
+                  }
+                ],
+                "nextPageToken": null,
+                "pageSize": 20,
+                "page": 1,
+                "completeness": "bounded sample; missing next-page token does not prove a complete catalog",
+                "scope": "public resource sample",
+                "ownershipVerified": false
+              }
+            },
+            "observedAt": "2026-10-27T14:08:52.709Z"
+          }
+        ],
+        "providers": ["leetcode"],
+        "score": 96,
+        "strongestProof": []
+      },
+      "provenSkills": []
+    },
+    "scoredHistoryUnchanged": true,
+    "dashboardResourceCard": null
+  },
+  "status": "PASS",
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 121,
+    "productionDataUsed": false
+  }
+}

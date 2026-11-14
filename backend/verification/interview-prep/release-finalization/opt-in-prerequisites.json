@@ -1,0 +1,301 @@
+{
+  "originalSkippedCount": 20,
+  "records": [
+    {
+      "id": 1,
+      "name": "disposable Mongo + fixture S3: existing upload APIs, privacy, replacement, cleanup, restart and legacy reads",
+      "file": "backend/src/tests/b2Storage.test.js",
+      "originalStatus": "SKIPPED; original missing diagnostics remain unavailable",
+      "prerequisites": [
+        "B2_ACCEPTANCE_MONGO (owned replica on port 27140)",
+        "fixture S3 server; no live B2 credentials required"
+      ],
+      "classification": "FIXABLE",
+      "localResolution": "Opt-in supplied using disposable loopback replica/Redis; see retained targeted and full TAP",
+      "cloudGate": null,
+      "finalLocalStatus": "PASS",
+      "finalEvidence": "release-regression.tap"
+    },
+    {
+      "id": 2,
+      "name": "local Redis executes actual Lua for shared admission, cooldown, concurrency and ownership",
+      "file": "backend/src/tests/jobsHubLocal.integration.test.js",
+      "originalStatus": "SKIPPED; original missing diagnostics remain unavailable",
+      "prerequisites": [
+        "JOBS_TEST_REDIS_URL (disposable loopback)"
+      ],
+      "classification": "FIXABLE",
+      "localResolution": "Opt-in supplied using disposable loopback replica/Redis; see retained targeted and full TAP",
+      "cloudGate": null,
+      "finalLocalStatus": "PASS",
+      "finalEvidence": "release-regression.tap"
+    },
+    {
+      "id": 3,
+      "name": "local Mongo verifies real upserts, owner isolation, persistence, expiry and cache indexes",
+      "file": "backend/src/tests/jobsHubLocal.integration.test.js",
+      "originalStatus": "SKIPPED; original missing diagnostics remain unavailable",
+      "prerequisites": [
+        "JOBS_TEST_MONGODB_URI (disposable loopback)"
+      ],
+      "classification": "FIXABLE",
+      "localResolution": "Opt-in supplied using disposable loopback replica/Redis; see retained targeted and full TAP",
+      "cloudGate": null,
+      "finalLocalStatus": "PASS",
+      "finalEvidence": "release-regression.tap"
+    },
+    {
+      "id": 4,
+      "name": "isolated Upstash Redis TLS validates Jobs Hub integration",
+      "file": "backend/src/tests/jobsHubUpstash.integration.test.js",
+      "originalStatus": "SKIPPED; original missing diagnostics remain unavailable",
+      "prerequisites": [
+        "JOBS_TEST_REDIS_URL",
+        "Remote: JOBS_TEST_REDIS_DISPOSABLE=true; distinct TLS Upstash endpoint and password"
+      ],
+      "classification": "FIXABLE",
+      "localResolution": "Opt-in supplied using disposable loopback replica/Redis; see retained targeted and full TAP",
+      "cloudGate": "Loopback verifies Lua behavior only; dedicated TLS Upstash test endpoint and distinct credential still required",
+      "finalLocalStatus": "PASS",
+      "finalEvidence": "release-regression.tap"
+    },
+    {
+      "id": 5,
+      "name": "isolated adaptive demand selects a topic, reserves governed prewarm work and persists through the worker",
+      "file": "backend/src/tests/newsAdaptiveRuntime.integration.test.js",
+      "originalStatus": "SKIPPED; original missing diagnostics remain unavailable",
+      "prerequisites": [
+        "NEWS_TEST_REDIS_URL",
+        "NEWS_TEST_MONGODB_URI"
+      ],
+      "classification": "FIXABLE",
+      "localResolution": "Opt-in supplied using disposable loopback replica/Redis; see retained targeted and full TAP",
+      "cloudGate": null,
+      "finalLocalStatus": "PASS",
+      "finalEvidence": "release-regression.tap"
+    },
+    {
+      "id": 6,
+      "name": "isolated catalog: scheduled ingestion, discovery, indexed history, shared tags, refresh and worker caches",
+      "file": "backend/src/tests/newsCatalog.integration.test.js",
+      "originalStatus": "SKIPPED; original missing diagnostics remain unavailable",
+      "prerequisites": [
+        "NEWS_TEST_REDIS_URL",
+        "NEWS_TEST_MONGODB_URI"
+      ],
+      "classification": "FIXABLE",
+      "localResolution": "Opt-in supplied using disposable loopback replica/Redis; see retained targeted and full TAP",
+      "cloudGate": null,
+      "finalLocalStatus": "PASS",
+      "finalEvidence": "release-regression.tap"
+    },
+    {
+      "id": 7,
+      "name": "isolated Mongo read/unread contract persists history atomically",
+      "file": "backend/src/tests/newsContractMongo.integration.test.js",
+      "originalStatus": "SKIPPED; original missing diagnostics remain unavailable",
+      "prerequisites": [
+        "NEWS_TEST_MONGODB_URI"
+      ],
+      "classification": "FIXABLE",
+      "localResolution": "Opt-in supplied using disposable loopback replica/Redis; see retained targeted and full TAP",
+      "cloudGate": null,
+      "finalLocalStatus": "PASS",
+      "finalEvidence": "release-regression.tap"
+    },
+    {
+      "id": 8,
+      "name": "isolated Mongo discovery persistence, source expiry and cold-worker fallback preserve the general pool",
+      "file": "backend/src/tests/newsDiscovery.integration.test.js",
+      "originalStatus": "SKIPPED; original missing diagnostics remain unavailable",
+      "prerequisites": [
+        "NEWS_TEST_MONGODB_URI (disposable loopback)"
+      ],
+      "classification": "FIXABLE",
+      "localResolution": "Opt-in supplied using disposable loopback replica/Redis; see retained targeted and full TAP",
+      "cloudGate": null,
+      "finalLocalStatus": "PASS",
+      "finalEvidence": "release-regression.tap"
+    },
+    {
+      "id": 9,
+      "name": "isolated Redis/Upstash discovery queue is atomic, bounded, recoverable and fenced across workers",
+      "file": "backend/src/tests/newsDiscovery.integration.test.js",
+      "originalStatus": "SKIPPED; original missing diagnostics remain unavailable",
+      "prerequisites": [
+        "NEWS_TEST_REDIS_URL (disposable loopback)"
+      ],
+      "classification": "FIXABLE",
+      "localResolution": "Opt-in supplied using disposable loopback replica/Redis; see retained targeted and full TAP",
+      "cloudGate": "Loopback verifies Lua behavior only; dedicated TLS Upstash test endpoint and distinct credential still required",
+      "finalLocalStatus": "PASS",
+      "finalEvidence": "release-regression.tap"
+    },
+    {
+      "id": 10,
+      "name": "atomic discovery accounting, reserved capacity, deduplication and expired quota revalidation",
+      "file": "backend/src/tests/newsFlow.integration.test.js",
+      "originalStatus": "SKIPPED; original missing diagnostics remain unavailable",
+      "prerequisites": [
+        "NEWS_TEST_REDIS_URL"
+      ],
+      "classification": "FIXABLE",
+      "localResolution": "Opt-in supplied using disposable loopback replica/Redis; see retained targeted and full TAP",
+      "cloudGate": null,
+      "finalLocalStatus": "PASS",
+      "finalEvidence": "release-regression.tap"
+    },
+    {
+      "id": 11,
+      "name": "isolated free-text HTTP search, Redis worker and Mongo publication round trip",
+      "file": "backend/src/tests/newsFreeText.integration.test.js",
+      "originalStatus": "SKIPPED; original missing diagnostics remain unavailable",
+      "prerequisites": [
+        "NEWS_TEST_REDIS_URL",
+        "NEWS_TEST_MONGODB_URI"
+      ],
+      "classification": "FIXABLE",
+      "localResolution": "Opt-in supplied using disposable loopback replica/Redis; see retained targeted and full TAP",
+      "cloudGate": null,
+      "finalLocalStatus": "PASS",
+      "finalEvidence": "release-regression.tap"
+    },
+    {
+      "id": 12,
+      "name": "disposable Upstash: atomic quotas, cooldown, circuits, leases, shared cache and outage fallback",
+      "file": "backend/src/tests/newsHub.integration.test.js",
+      "originalStatus": "SKIPPED; original missing diagnostics remain unavailable",
+      "prerequisites": [
+        "NEWS_TEST_REDIS_URL (loopback or distinct disposable Upstash TLS)",
+        "Remote only: NEWS_TEST_REDIS_DISPOSABLE=true"
+      ],
+      "classification": "FIXABLE",
+      "localResolution": "Opt-in supplied using disposable loopback replica/Redis; see retained targeted and full TAP",
+      "cloudGate": "Loopback verifies Lua behavior only; dedicated TLS Upstash test endpoint and distinct credential still required",
+      "finalLocalStatus": "PASS",
+      "finalEvidence": "release-regression.tap"
+    },
+    {
+      "id": 13,
+      "name": "isolated local Mongo: actual cache persistence, indexes, JWT ownership and idempotent saved actions",
+      "file": "backend/src/tests/newsHub.integration.test.js",
+      "originalStatus": "SKIPPED; original missing diagnostics remain unavailable",
+      "prerequisites": [
+        "NEWS_TEST_MONGODB_URI (disposable loopback)"
+      ],
+      "classification": "FIXABLE",
+      "localResolution": "Opt-in supplied using disposable loopback replica/Redis; see retained targeted and full TAP",
+      "cloudGate": null,
+      "finalLocalStatus": "PASS",
+      "finalEvidence": "release-regression.tap"
+    },
+    {
+      "id": 14,
+      "name": "approved live metadata search through an isolated governed worker and Mongo cache",
+      "file": "backend/src/tests/newsLiveSearch.integration.test.js",
+      "originalStatus": "SKIPPED; original missing diagnostics remain unavailable",
+      "prerequisites": [
+        "NEWS_TEST_LIVE_PROVIDERS=true",
+        "NEWS_TEST_REDIS_URL",
+        "NEWS_TEST_MONGODB_URI",
+        "approved News metadata budgets and live external endpoints; application Redis read-only preflight"
+      ],
+      "classification": "INFRASTRUCTURE-BLOCKED",
+      "localResolution": "Not enabled in isolated regression; cannot infer live-provider acceptance from local tests",
+      "cloudGate": null,
+      "finalLocalStatus": "SKIP",
+      "finalEvidence": "release-regression.tap"
+    },
+    {
+      "id": 15,
+      "name": "isolated scheduled provider pipeline: all sources persist with attribution, retention, shared pacing and cache invalidation",
+      "file": "backend/src/tests/newsProviders.integration.test.js",
+      "originalStatus": "SKIPPED; original missing diagnostics remain unavailable",
+      "prerequisites": [
+        "NEWS_TEST_REDIS_URL",
+        "NEWS_TEST_MONGODB_URI"
+      ],
+      "classification": "FIXABLE",
+      "localResolution": "Opt-in supplied using disposable loopback replica/Redis; see retained targeted and full TAP",
+      "cloudGate": null,
+      "finalLocalStatus": "PASS",
+      "finalEvidence": "release-regression.tap"
+    },
+    {
+      "id": 16,
+      "name": "isolated refresh: exact EC2 interval, shared headroom, manual dedup, Mongo publication and cross-worker version visibility",
+      "file": "backend/src/tests/newsRefresh.integration.test.js",
+      "originalStatus": "SKIPPED; original missing diagnostics remain unavailable",
+      "prerequisites": [
+        "NEWS_TEST_REDIS_URL",
+        "NEWS_TEST_MONGODB_URI for catalog/queue case"
+      ],
+      "classification": "FIXABLE",
+      "localResolution": "Opt-in supplied using disposable loopback replica/Redis; see retained targeted and full TAP",
+      "cloudGate": null,
+      "finalLocalStatus": "PASS",
+      "finalEvidence": "release-regression.tap"
+    },
+    {
+      "id": 17,
+      "name": "isolated upstream cooldown propagates precise reason and expiry without a retry",
+      "file": "backend/src/tests/newsRefresh.integration.test.js",
+      "originalStatus": "SKIPPED; original missing diagnostics remain unavailable",
+      "prerequisites": [
+        "NEWS_TEST_REDIS_URL (disposable loopback)"
+      ],
+      "classification": "FIXABLE",
+      "localResolution": "Opt-in supplied using disposable loopback replica/Redis; see retained targeted and full TAP",
+      "cloudGate": null,
+      "finalLocalStatus": "PASS",
+      "finalEvidence": "release-regression.tap"
+    },
+    {
+      "id": 18,
+      "name": "isolated Mongo: indexed DevOps aliases, multi-tags, dates and totals update across warm worker caches",
+      "file": "backend/src/tests/newsSearchCorrections.integration.test.js",
+      "originalStatus": "SKIPPED; original missing diagnostics remain unavailable",
+      "prerequisites": [
+        "NEWS_TEST_MONGODB_URI"
+      ],
+      "classification": "FIXABLE",
+      "localResolution": "Opt-in supplied using disposable loopback replica/Redis; see retained targeted and full TAP",
+      "cloudGate": null,
+      "finalLocalStatus": "PASS",
+      "finalEvidence": "release-regression.tap"
+    },
+    {
+      "id": 19,
+      "name": "disposable replica set: CRUD, ownership, concurrency, upload, deletion rollback and cleanup",
+      "file": "backend/src/tests/profileSettingsProduction.test.js",
+      "originalStatus": "SKIPPED; original missing diagnostics remain unavailable",
+      "prerequisites": [
+        "PROFILE_ACCEPTANCE_MONGO (owned replica on port 27139)"
+      ],
+      "classification": "FIXABLE",
+      "localResolution": "Opt-in supplied using disposable loopback replica/Redis; see retained targeted and full TAP",
+      "cloudGate": null,
+      "finalLocalStatus": "PASS",
+      "finalEvidence": "release-regression.tap"
+    },
+    {
+      "id": 20,
+      "name": "disposable Mongo provisioning is additive/idempotent; retry batch respects backoff and preserves records",
+      "file": "backend/src/tests/storageSecurityFinal.test.js",
+      "originalStatus": "SKIPPED; original missing diagnostics remain unavailable",
+      "prerequisites": [
+        "STORAGE_SECURITY_MONGO (owned replica on port 27141, replicaSet=profileB2Security)"
+      ],
+      "classification": "FIXABLE",
+      "localResolution": "Opt-in supplied using disposable loopback replica/Redis; see retained targeted and full TAP",
+      "cloudGate": null,
+      "finalLocalStatus": "PASS",
+      "finalEvidence": "release-regression.tap"
+    }
+  ],
+  "additionalOptIn": {
+    "file": "backend/src/tests/aiProviderAdmission.integration.test.js",
+    "prerequisite": "AI_TEST_MONGO_URI",
+    "classification": "FIXABLE; disposable Mongo supplied"
+  }
+}

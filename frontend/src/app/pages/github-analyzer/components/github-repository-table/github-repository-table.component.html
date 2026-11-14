@@ -1,0 +1,218 @@
+<!-- 5. Repository Evidence -->
+<section
+  class="repositories-section"
+  *ngIf="repositoryRows.length"
+  aria-label="Repository Evidence"
+>
+  <div class="repositories-panel">
+    <div class="panel-header-row">
+      <div>
+        <span class="eyebrow">Repository signals</span>
+        <h2 class="panel-title">
+          {{ showAllRepositories ? 'All Repositories' : 'Top Repositories' }}
+        </h2>
+        <p class="panel-subtitle">
+          Evaluated by code documentation, testing signals, commit cadence, and community adoption.
+        </p>
+      </div>
+      <div class="panel-actions-wrap">
+        <app-ui-button variant="outline" size="sm" (clicked)="showAllRequested.emit()">
+          {{
+            showAllRepositories
+              ? 'Show Top Repositories Only'
+              : 'View All Repositories (' + repositoryRows.length + ')'
+          }}
+        </app-ui-button>
+      </div>
+    </div>
+
+    <!-- Mode B: Full Interactive Repositories Table -->
+    <div class="full-table-wrap">
+      <!-- Sort Controls Strip -->
+      <div class="table-sort-strip">
+        <span class="sort-strip-label">Sort by:</span>
+        <button
+          type="button"
+          class="sort-pill-btn"
+          [class.active]="repoSortField === 'score'"
+          [attr.aria-pressed]="repoSortField === 'score'"
+          (click)="sortRequested.emit('score')"
+        >
+          Quality Score {{ repoSortField === 'score' ? (repoSortAsc ? '↑' : '↓') : '' }}
+        </button>
+        <button
+          type="button"
+          class="sort-pill-btn"
+          [class.active]="repoSortField === 'stars'"
+          [attr.aria-pressed]="repoSortField === 'stars'"
+          (click)="sortRequested.emit('stars')"
+        >
+          Stars {{ repoSortField === 'stars' ? (repoSortAsc ? '↑' : '↓') : '' }}
+        </button>
+        <button
+          type="button"
+          class="sort-pill-btn"
+          [class.active]="repoSortField === 'name'"
+          [attr.aria-pressed]="repoSortField === 'name'"
+          (click)="sortRequested.emit('name')"
+        >
+          Name {{ repoSortField === 'name' ? (repoSortAsc ? '↓' : '↑') : '' }}
+        </button>
+      </div>
+
+      <div class="table-scroll-container">
+        <table class="clean-repo-table">
+          <thead>
+            <tr>
+              <th
+                scope="col"
+                [attr.aria-sort]="
+                  repoSortField === 'name' ? (repoSortAsc ? 'descending' : 'ascending') : 'none'
+                "
+              >
+                <button type="button" (click)="sortRequested.emit('name')">Repository</button>
+              </th>
+              <th scope="col">Category</th>
+              <th scope="col">Language</th>
+              <th scope="col">Tech Stack</th>
+              <th
+                scope="col"
+                [attr.aria-sort]="
+                  repoSortField === 'stars' ? (repoSortAsc ? 'ascending' : 'descending') : 'none'
+                "
+              >
+                <button type="button" (click)="sortRequested.emit('stars')">Stars</button>
+              </th>
+              <th scope="col">Forks</th>
+              <th
+                scope="col"
+                [attr.aria-sort]="
+                  repoSortField === 'score' ? (repoSortAsc ? 'ascending' : 'descending') : 'none'
+                "
+              >
+                <button type="button" (click)="sortRequested.emit('score')">Quality Score</button>
+              </th>
+              <th scope="col">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="
+                let repo of showAllRepositories
+                  ? sortedRepositoryRows
+                  : sortedRepositoryRows.slice(0, 5)
+              "
+            >
+              <td class="td-name" data-label="Repository">
+                <div class="table-repo-name-wrap">
+                  <strong class="table-repo-name">{{ repo.name }}</strong>
+                  <app-ui-badge *ngIf="repo.fork" variant="neutral" size="sm">Fork</app-ui-badge>
+                  <app-ui-badge *ngIf="repo.archived" variant="warning" size="sm"
+                    >Archived</app-ui-badge
+                  >
+                </div>
+                <small class="table-repo-desc" *ngIf="repo.description">{{
+                  repo.description
+                }}</small>
+                <details class="repository-evidence">
+                  <summary>Repository evidence</summary>
+                  <dl>
+                    <div>
+                      <dt>README detected</dt>
+                      <dd>
+                        {{
+                          repo.hasReadme === true
+                            ? 'Yes'
+                            : repo.hasReadme === false
+                              ? 'No'
+                              : 'Unavailable'
+                        }}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>README quality</dt>
+                      <dd>{{ repo.readmeQuality ?? 'Unavailable' }}</dd>
+                    </div>
+                    <div>
+                      <dt>Sampled commits</dt>
+                      <dd>{{ repo.commits ?? 'Unavailable' }}</dd>
+                    </div>
+                    <div>
+                      <dt>Last push</dt>
+                      <dd>
+                        {{ repo.pushedAt ? formatDateTime(repo.pushedAt) : 'Unavailable' }}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Repository size (KB)</dt>
+                      <dd>{{ repo.size ?? 'Unavailable' }}</dd>
+                    </div>
+                  </dl>
+                  <p>Quality signals are heuristic evidence, not a code review.</p>
+                </details>
+              </td>
+
+              <td data-label="Category">
+                <span class="table-category-tag">{{ repo.category || 'Portfolio' }}</span>
+              </td>
+
+              <td data-label="Language">
+                <span class="table-lang-text">{{ repo.language || '—' }}</span>
+              </td>
+
+              <td data-label="Tech Stack" class="td-tech">
+                <span class="mini-tech-chip" *ngFor="let tech of repositoryTechnologies(repo)">{{
+                  tech
+                }}</span>
+                <span *ngIf="!repositoryTechnologies(repo).length" class="text-muted">—</span>
+              </td>
+
+              <td data-label="Stars">
+                {{ formatNumber(repo.stars) }}
+              </td>
+
+              <td data-label="Forks">
+                {{ formatNumber(repo.forks) }}
+              </td>
+
+              <td data-label="Quality Score" class="td-score">
+                <div class="table-score-wrap">
+                  <span class="table-score-num" [ngClass]="getScoreClass(repositoryScore(repo))">
+                    {{ repositoryScore(repo) }}
+                  </span>
+                  <div class="table-score-progress">
+                    <app-ui-progress
+                      [value]="repositoryScore(repo)"
+                      [max]="100"
+                      [color]="
+                        repositoryScore(repo) >= 70
+                          ? 'success'
+                          : repositoryScore(repo) >= 45
+                            ? 'warning'
+                            : 'danger'
+                      "
+                      size="sm"
+                    >
+                    </app-ui-progress>
+                  </div>
+                </div>
+              </td>
+
+              <td data-label="Action">
+                <a
+                  [href]="'https://github.com/' + (viewedUsername || username) + '/' + repo.name"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="repo-ext-link"
+                  [attr.aria-label]="'Open ' + repo.name + ' on GitHub'"
+                >
+                  View ↗
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>

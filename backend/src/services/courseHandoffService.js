@@ -1,0 +1,112 @@
+'use strict';
+const CareerSprint = require('../models/careerSprint');
+const legacyPolicy = require('./sprintLegacyPolicy');
+const { getCurrentSprint, invalidateCareerSprintCache } = require('./careerSprintService');
+const { ownedProgress, fail } = require('./courseProgressService');
+const { digest, skills, safeCourseUrl } = require('../utils/courseIdentity');
+const handoff = async (userId, courseId, body = {}) => {
+  if (
+    !body ||
+    typeof body !== 'object' ||
+    Array.isArray(body) ||
+    Object.keys(body).some((key) => key !== 'targetSkill')
+  )
+    fail(400, 'Only targetSkill is accepted.');
+  const progress = await ownedProgress(userId, courseId);
+  if (progress.status === 'completed')
+    fail(
+      409,
+      'This course is self-reported completed. Update My Learning before adding study work.',
+    );
+  const course = progress.course;
+  if (!safeCourseUrl(course.url, course.platform))
+    fail(409, 'The saved course link is unavailable.');
+  const targetSkill =
+    body.targetSkill === undefined
+      ? skills(course.topics, 1)[0] || ''
+      : skills([body.targetSkill], 1)[0];
+  if (
+    body.targetSkill !== undefined &&
+    (typeof body.targetSkill !== 'string' ||
+      body.targetSkill.length > 40 ||
+      !targetSkill ||
+      !skills(course.topics, 5).some((skill) => skill.toLowerCase() === targetSkill.toLowerCase()))
+  )
+    fail(400, 'Target skill must match a recorded course topic.');
+  const sprint = await getCurrentSprint(userId);
+  if (!sprint?._id) fail(503, 'Career Sprint is unavailable.');
+  // Same owned atomic insertion pattern as Recommendations. Sprint supplies its existing manual-task defaults.
+  legacyPolicy.assertWritable(sprint);
+  const title = `Study ${course.title.slice(0, 88)} [${digest(courseId).slice(0, 12)}]`;
+  const task = {
+    sourceCourseId: courseId,
+    sourceCourseSkill: targetSkill || null,
+    title,
+    description:
+      `Study the recorded course and review what you learned.\nCourse: ${courseId}\nSkill: ${targetSkill || 'Not specified'}\n${course.url}`.slice(
+        0,
+        1000,
+      ),
+    category: 'learning',
+    taskType: 'manual',
+  };
+  const marker = `\nCourse: ${courseId}\n`;
+  const legacyMatch = { description: { $regex: marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') } };
+  const updated = await CareerSprint.findOneAndUpdate(
+    {
+      _id: sprint._id,
+      userId,
+      reservationPolicy: { $ne: legacyPolicy.EXCEPTION_POLICY },
+      $or: [
+        { calendarPolicy: 'sprint-calendar-48h-v1' },
+        { migrationCalendarTimeZone: { $type: 'string' } },
+      ],
+      'tasks.sourceCourseId': { $ne: courseId },
+      'tasks.title': { $ne: title },
+      tasks: { $not: { $elemMatch: legacyMatch } },
+      $expr: { $lt: [{ $size: { $ifNull: ['$tasks', []] } }, 500] },
+    },
+    { $push: { tasks: task }, $inc: { __v: 1 } },
+    { returnDocument: 'after', runValidators: true },
+  ).lean();
+  if (!updated) {
+    const existing = await CareerSprint.findOne({
+      _id: sprint._id,
+      userId,
+      $or: [
+        { 'tasks.sourceCourseId': courseId },
+        { 'tasks.title': title },
+        { tasks: { $elemMatch: legacyMatch } },
+      ],
+    }).lean();
+    if (!existing) fail(409, 'Sprint changed. Retry the handoff.');
+    const matchedTask = existing.tasks.find(
+      (item) =>
+        item.sourceCourseId === courseId ||
+        item.title === title ||
+        (item.description && item.description.includes(marker)),
+    );
+    let skillMatched = false;
+    if (matchedTask?.sourceCourseSkill !== undefined && matchedTask?.sourceCourseSkill !== null) {
+      skillMatched =
+        (matchedTask.sourceCourseSkill || '').toLowerCase() === (targetSkill || '').toLowerCase();
+    } else {
+      skillMatched = Boolean(
+        matchedTask?.description &&
+        (matchedTask.description.includes(`\nSkill: ${targetSkill || 'Not specified'}\n`) ||
+          matchedTask.description.includes(`Skill: ${targetSkill || 'Not specified'}`)),
+      );
+    }
+    if (!skillMatched)
+      fail(409, 'This course is already in the current Sprint with a different target skill.');
+  }
+  invalidateCareerSprintCache(userId);
+  return {
+    sprintId: String(sprint._id),
+    courseId,
+    targetSkill: targetSkill || null,
+    alreadyAdded: !updated,
+    route: '/app/career-sprint',
+  };
+};
+module.exports = { handoff };

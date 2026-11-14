@@ -1,9 +1,4 @@
-const {
-  compactJson,
-  compactArray,
-  summarizeResume,
-  summarizeGithub
-} = require('../services/promptBuilderService');
+const { compactJson, compactArray, summarizeGithub } = require('../services/promptBuilderService');
 
 /**
  * Recommendation prompt for text-only enrichment of a deterministic plan.
@@ -25,18 +20,35 @@ const getRecommendationPrompt = (
   resumeInsights = {},
   githubInsights = {},
   developerSignals = {},
-  deterministicPlan = {}
+  deterministicPlan = {},
 ) => {
   const compactKnownSkills = compactArray(knownSkills, 20);
   const compactMissingSkills = compactArray(missingSkills, 20);
-  const compactResume = compactJson(summarizeResume(resumeInsights), 0);
+  const compactResume = compactJson(
+    {
+      analyzed: resumeInsights.analyzed === true,
+      overallScore: resumeInsights.overallScore ?? null,
+      skills: compactArray(resumeInsights.skills, 20),
+      analysisVersion: resumeInsights.analysisVersion || null,
+    },
+    0,
+  );
   const compactGithub = compactJson(summarizeGithub(githubInsights), 0);
   const compactSignals = compactJson(developerSignals, 0);
-  const compactPlan = compactJson({
-    projects: (deterministicPlan.projects || []).slice(0, 4).map(({ id, title }) => ({ id, title })),
-    technologies: (deterministicPlan.technologies || []).slice(0, 8).map(({ name }) => ({ name })),
-    careerPaths: (deterministicPlan.careerPaths || []).slice(0, 4).map(({ id, title }) => ({ id, title }))
-  }, 0);
+  const compactPlan = compactJson(
+    {
+      projects: (deterministicPlan.projects || [])
+        .slice(0, 4)
+        .map(({ id, title }) => ({ id, title })),
+      technologies: (deterministicPlan.technologies || [])
+        .slice(0, 8)
+        .map(({ name }) => ({ name })),
+      careerPaths: (deterministicPlan.careerPaths || [])
+        .slice(0, 4)
+        .map(({ id, title }) => ({ id, title })),
+    },
+    0,
+  );
 
   return `
     You are a senior software engineering mentor.
@@ -66,6 +78,9 @@ const getRecommendationPrompt = (
     8. Do NOT infer by re-analyzing raw resume text or raw GitHub repositories; those are intentionally unavailable.
     9. AI may only enrich narrative and action wording. Deterministic platform output remains authoritative.
     10. Never return projects, technologies, careerPaths, recommendationScores, roadmap, impact, match, jobDemand, salaryRange, startUrl, or exploreUrl fields.
+    11. NOT_EVIDENCED and UNKNOWN describe unavailable proof, never missing ability. Resume skill statements are claims.
+    12. Coverage is required-skill evidence coverage, not career readiness. Null means unavailable; zero is a genuine observed score.
+    13. Do not claim factual weaknesses, completed work, scores, gains, hiring probability, timelines or guarantees. Suggest optional learning ideas only.
 
     Return ONLY valid JSON (no markdown, no code fences):
 

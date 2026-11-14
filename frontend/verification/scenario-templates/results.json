@@ -1,0 +1,165 @@
+{
+  "checks": [
+    "Focused Upskill: second account has empty editable fallback; Escape cancels without navigation",
+    "Portfolio Push: second account has empty editable fallback; Escape cancels without navigation",
+    "Balanced Plan: second account has empty editable fallback; Escape cancels without navigation",
+    "Real compatible source context; completed-project exclusion; account isolation",
+    "All three templates at desktop/mobile: cancellation, dirty consent, explicit baseline, real HTTP V2 equality and stale-result invalidation",
+    "Apply/evaluate never persist; immutable save and idempotent Sprint export; foreign snapshot rejected"
+  ],
+  "calculations": [
+    {
+      "mobile": false,
+      "label": "Focused Upskill",
+      "improvements": {
+        "hiringScore": 16,
+        "jobMatch": 12
+      },
+      "breakdown": {
+        "skills": 16,
+        "projects": 0,
+        "synergy": 0,
+        "penalty": 0,
+        "total": 16
+      }
+    },
+    {
+      "mobile": false,
+      "label": "Portfolio Push",
+      "improvements": {
+        "hiringScore": 9,
+        "jobMatch": 6
+      },
+      "breakdown": {
+        "skills": 0,
+        "projects": 9,
+        "synergy": 0,
+        "penalty": 0,
+        "total": 9
+      }
+    },
+    {
+      "mobile": false,
+      "label": "Balanced Plan",
+      "improvements": {
+        "hiringScore": 26,
+        "jobMatch": 19
+      },
+      "breakdown": {
+        "skills": 14,
+        "projects": 9,
+        "synergy": 4,
+        "penalty": 0,
+        "total": 26
+      }
+    },
+    {
+      "mobile": true,
+      "label": "Focused Upskill",
+      "improvements": {
+        "hiringScore": 16,
+        "jobMatch": 12
+      },
+      "breakdown": {
+        "skills": 16,
+        "projects": 0,
+        "synergy": 0,
+        "penalty": 0,
+        "total": 16
+      }
+    },
+    {
+      "mobile": true,
+      "label": "Portfolio Push",
+      "improvements": {
+        "hiringScore": 9,
+        "jobMatch": 6
+      },
+      "breakdown": {
+        "skills": 0,
+        "projects": 9,
+        "synergy": 0,
+        "penalty": 0,
+        "total": 9
+      }
+    },
+    {
+      "mobile": true,
+      "label": "Balanced Plan",
+      "improvements": {
+        "hiringScore": 26,
+        "jobMatch": 19
+      },
+      "breakdown": {
+        "skills": 14,
+        "projects": 9,
+        "synergy": 4,
+        "penalty": 0,
+        "total": 26
+      }
+    }
+  ],
+  "layouts": [
+    {
+      "mobile": false,
+      "label": "Focused Upskill",
+      "box": {
+        "x": 380,
+        "y": 24,
+        "width": 680,
+        "height": 952
+      }
+    },
+    {
+      "mobile": false,
+      "label": "Portfolio Push",
+      "box": {
+        "x": 380,
+        "y": 26.78125,
+        "width": 680,
+        "height": 946.421875
+      }
+    },
+    {
+      "mobile": false,
+      "label": "Balanced Plan",
+      "box": {
+        "x": 380,
+        "y": 24,
+        "width": 680,
+        "height": 952
+      }
+    },
+    {
+      "mobile": true,
+      "label": "Focused Upskill",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "mobile": true,
+      "label": "Portfolio Push",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "mobile": true,
+      "label": "Balanced Plan",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844
+      }
+    }
+  ],
+  "errors": []
+}

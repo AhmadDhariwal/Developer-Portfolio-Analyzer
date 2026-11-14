@@ -2,8 +2,11 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
   simulateHiringOutcome,
-  sanitizeScenarioInput
+  sanitizeScenarioInput,
+  evaluateForUser,
 } = require('../services/scenarioSimulatorService');
+const engine = require('../services/scoring/scenarioPlanningScore');
+const legacy = require('../services/scoring/scenarioPlanningLegacy');
 
 test('simulateHiringOutcome returns bounded prediction with improvements', () => {
   const result = simulateHiringOutcome({
@@ -12,8 +15,8 @@ test('simulateHiringOutcome returns bounded prediction with improvements', () =>
     skills: ['System Design', 'Docker', 'Kubernetes'],
     projects: [
       { name: 'Scalable API Platform', impact: 84, complexity: 'high', weeks: 6 },
-      { name: 'Observability Dashboard', impact: 78, complexity: 'medium', weeks: 4 }
-    ]
+      { name: 'Observability Dashboard', impact: 78, complexity: 'medium', weeks: 4 },
+    ],
   });
 
   assert.ok(result.predicted.hiringScore >= 0 && result.predicted.hiringScore <= 100);
@@ -32,7 +35,7 @@ test('simulateHiringOutcome is deterministic for the same skill-only plan', () =
     experienceLevel: 'junior',
     durationWeeks: 6,
     skills: ['React', 'TypeScript'],
-    projects: []
+    projects: [],
   };
 
   const first = simulateHiringOutcome(payload);
@@ -52,7 +55,7 @@ test('simulateHiringOutcome supports project-only plans', () => {
     experienceLevel: 'mid',
     durationWeeks: 8,
     skills: [],
-    projects: [{ name: 'Production API', impact: 85, complexity: 'high', weeks: 6 }]
+    projects: [{ name: 'Production API', impact: 85, complexity: 'high', weeks: 6 }],
   });
 
   assert.equal(result.skillDetails.length, 0);
@@ -69,7 +72,7 @@ test('simulateHiringOutcome rewards skill and project synergy', () => {
     experienceLevel: 'mid',
     durationWeeks: 8,
     skills: ['React'],
-    projects: []
+    projects: [],
   });
 
   const synergized = simulateHiringOutcome({
@@ -79,7 +82,7 @@ test('simulateHiringOutcome rewards skill and project synergy', () => {
     experienceLevel: 'mid',
     durationWeeks: 8,
     skills: ['React'],
-    projects: [{ name: 'React Dashboard', impact: 80, complexity: 'medium', weeks: 5 }]
+    projects: [{ name: 'React Dashboard', impact: 80, complexity: 'medium', weeks: 5 }],
   });
 
   assert.ok(synergized.breakdown.synergy > skillOnly.breakdown.synergy);
@@ -91,7 +94,7 @@ test('simulateHiringOutcome normalizes duplicate skills and empty projects', () 
     baselineHiringScore: 60,
     baselineJobMatch: 55,
     skills: ['React', 'react', 'React '],
-    projects: []
+    projects: [],
   });
 
   assert.equal(result.assumptions.skillsConsidered.length, 1);
@@ -106,11 +109,15 @@ test('simulateHiringOutcome exposes an ordered uncertainty range', () => {
     experienceLevel: 'junior',
     durationWeeks: 8,
     skills: ['Node.js', 'Docker', 'PostgreSQL'],
-    projects: [{ name: 'Production API', impact: 82, complexity: 'high', weeks: 6 }]
+    projects: [{ name: 'Production API', impact: 82, complexity: 'high', weeks: 6 }],
   });
 
-  assert.ok(result.uncertaintyRange.low.hiringScore <= result.uncertaintyRange.expected.hiringScore);
-  assert.ok(result.uncertaintyRange.expected.hiringScore <= result.uncertaintyRange.high.hiringScore);
+  assert.ok(
+    result.uncertaintyRange.low.hiringScore <= result.uncertaintyRange.expected.hiringScore,
+  );
+  assert.ok(
+    result.uncertaintyRange.expected.hiringScore <= result.uncertaintyRange.high.hiringScore,
+  );
   assert.ok(result.uncertaintyRange.low.jobMatch <= result.uncertaintyRange.expected.jobMatch);
   assert.ok(result.uncertaintyRange.expected.jobMatch <= result.uncertaintyRange.high.jobMatch);
 });
@@ -123,7 +130,7 @@ test('simulateHiringOutcome lowers confidence for overloaded low-relevance plans
     experienceLevel: 'junior',
     durationWeeks: 8,
     skills: ['React', 'TypeScript', 'Next.js'],
-    projects: [{ name: 'React Commerce App', impact: 84, complexity: 'medium', weeks: 5 }]
+    projects: [{ name: 'React Commerce App', impact: 84, complexity: 'medium', weeks: 5 }],
   });
 
   const overloaded = simulateHiringOutcome({
@@ -135,8 +142,8 @@ test('simulateHiringOutcome lowers confidence for overloaded low-relevance plans
     skills: ['React', 'Vue', 'Angular', 'Svelte', 'Tailwind', 'Figma', 'Kubernetes'],
     projects: [
       { name: 'Frontend Design System', impact: 85, complexity: 'high', weeks: 8 },
-      { name: 'Animation Playground', impact: 78, complexity: 'medium', weeks: 5 }
-    ]
+      { name: 'Animation Playground', impact: 78, complexity: 'medium', weeks: 5 },
+    ],
   });
 
   assert.ok(overloaded.confidenceScore < focused.confidenceScore);
@@ -151,7 +158,7 @@ test('simulateHiringOutcome warns on very short overloaded plans and stays stabl
     experienceLevel: 'junior',
     durationWeeks: 1,
     skills: ['Docker', 'Kubernetes', 'Terraform', 'AWS', 'Linux'],
-    projects: [{ name: 'Kubernetes Platform', impact: 90, complexity: 'high', weeks: 8 }]
+    projects: [{ name: 'Kubernetes Platform', impact: 90, complexity: 'high', weeks: 8 }],
   });
 
   const long = simulateHiringOutcome({
@@ -161,7 +168,7 @@ test('simulateHiringOutcome warns on very short overloaded plans and stays stabl
     experienceLevel: 'junior',
     durationWeeks: 24,
     skills: ['Docker', 'Kubernetes', 'Terraform'],
-    projects: [{ name: 'Kubernetes Platform', impact: 90, complexity: 'high', weeks: 8 }]
+    projects: [{ name: 'Kubernetes Platform', impact: 90, complexity: 'high', weeks: 8 }],
   });
 
   assert.equal(short.meta.overloaded, true);
@@ -175,7 +182,7 @@ test('sanitizeScenarioInput returns clear validation errors', () => {
     baselineHiringScore: 140,
     baselineJobMatch: -5,
     skills: [],
-    projects: [{ name: '', impact: 70, complexity: 'medium', weeks: 3 }]
+    projects: [{ name: '', impact: 70, complexity: 'medium', weeks: 3 }],
   });
 
   assert.equal(result.isValid, false);
@@ -189,7 +196,7 @@ test('sanitizeScenarioInput rejects no-input plans', () => {
     baselineHiringScore: 50,
     baselineJobMatch: 50,
     skills: [],
-    projects: []
+    projects: [],
   });
 
   assert.equal(result.isValid, false);
@@ -204,8 +211,8 @@ test('sanitizeScenarioInput removes duplicate skills and projects with warnings'
     skills: ['React', 'react', 'React '],
     projects: [
       { name: 'React Dashboard', impact: 80, complexity: 'medium', weeks: 4 },
-      { name: 'react dashboard', impact: 70, complexity: 'medium', weeks: 3 }
-    ]
+      { name: 'react dashboard', impact: 70, complexity: 'medium', weeks: 3 },
+    ],
   });
 
   assert.equal(result.isValid, true);
@@ -220,11 +227,37 @@ test('sanitizeScenarioInput validates project fields', () => {
     baselineJobMatch: 50,
     durationWeeks: 6,
     skills: [],
-    projects: [{ name: 'Broken Plan', impact: 120, complexity: 'massive', weeks: 30 }]
+    projects: [{ name: 'Broken Plan', impact: 120, complexity: 'massive', weeks: 30 }],
   });
 
   assert.equal(result.isValid, false);
   assert.ok(result.errors.some((error) => error.field === 'projects[0].impact'));
   assert.ok(result.errors.some((error) => error.field === 'projects[0].complexity'));
   assert.ok(result.errors.some((error) => error.field === 'projects[0].weeks'));
+});
+
+test('v2 evaluation normalizes once while preserving the deterministic result', async (t) => {
+  let normalizationCount = 0;
+  const original = legacy.sanitizeScenarioInput;
+  t.mock.method(legacy, 'sanitizeScenarioInput', (...args) => {
+    normalizationCount++;
+    return original(...args);
+  });
+  const payload = {
+    ruleVersion: engine.RULE_VERSION,
+    baselineHiringScore: 52,
+    baselineJobMatch: 47,
+    baselineAuthority: 'user-assumption',
+    baselineConfirmed: true,
+    role: 'frontend',
+    experienceLevel: 'junior',
+    durationWeeks: 6,
+    skills: ['React', 'TypeScript'],
+    projects: [],
+  };
+  const expected = engine.calculate(payload);
+  normalizationCount = 0;
+  const actual = await evaluateForUser('fixture-owner', payload);
+  assert.deepEqual(actual, expected);
+  assert.equal(normalizationCount, 1);
 });

@@ -1,261 +1,147 @@
-<section class="weekly-reports-page">
+<section
+  class="weekly-reports-page"
+  [attr.aria-busy]="isLoading || isGenerating || isExporting || isResending"
+>
   <header class="page-header">
     <div class="header-copy">
-      <span class="eyebrow">AI Weekly Reports</span>
-      <h1>Weekly Performance</h1>
-      <p>Deterministic developer metrics enhanced with AI summaries across GitHub, resume, sprint, interview prep, and portfolio signals.</p>
+      <span class="eyebrow">Your career, in perspective</span>
+
+      <h1>Weekly progress</h1>
+
+      <p>
+        Deterministic developer metrics enhanced with AI summaries across GitHub, resume, sprint,
+        interview prep, and portfolio signals.
+      </p>
     </div>
 
-    <div class="header-actions">
-      <div class="cache-indicator" *ngIf="loadedAt">
-        <strong>{{ loadSourceLabel }}</strong>
-        <span>{{ formatDate(loadedAt.toISOString()) }}</span>
-      </div>
-      <button class="generate-btn" type="button" (click)="generateReport()" [disabled]="isGenerating">
-        {{ isGenerating ? 'Refreshing report...' : 'Generate Weekly Report' }}
-      </button>
-    </div>
+    <app-weekly-report-actions
+      [report]="latestReport"
+      [loadedAt]="loadedAt"
+      [loadSourceLabel]="loadSourceLabel"
+      [isGenerating]="isGenerating"
+      [isExporting]="isExporting"
+      [isResending]="isResending"
+      [isCurrentWeek]="isCurrentWeek"
+      [isArchivedVersion]="isArchivedVersion"
+      (generate)="generateReport()"
+      (refresh)="generateReport(true)"
+      (downloadPdf)="downloadPdf()"
+      (resendEmail)="resendEmail()"
+    ></app-weekly-report-actions>
   </header>
 
-  <section class="state-card error-state" *ngIf="!isLoading && errorMessage">
+  <section role="alert" class="state-card error-state" *ngIf="!isLoading && errorMessage">
     <div>
       <h3>Unable to load weekly reports</h3>
+
       <p>{{ errorMessage }}</p>
     </div>
+
     <button type="button" (click)="loadReports()">Retry</button>
   </section>
 
+  <p role="status" aria-live="polite" *ngIf="actionMessage">{{ actionMessage }}</p>
+  <p role="alert" *ngIf="actionError">{{ actionError }}</p>
   <div class="skeleton-grid" *ngIf="isLoading">
     <article class="skeleton-card hero" *ngFor="let item of skeletonItems">
       <span class="skeleton-line short"></span>
+
       <span class="skeleton-line large"></span>
+
       <span class="skeleton-line"></span>
+
       <span class="skeleton-line medium"></span>
     </article>
   </div>
 
   <ng-container *ngIf="!isLoading && latestReport as report">
+    <div class="snapshot-notice">
+      <strong>Saved snapshot · version {{ report.meta.version || 1 }}</strong>
+      <span
+        >Source changes are applied only by an explicit current-week refresh. Historical weeks stay
+        saved.</span
+      >
+      <span *ngIf="report.meta.evidence?.scoreAvailable === false"
+        >Overall score not assessed · {{ report.meta.evidence?.coverageWeight }}% of weighted
+        evidence available. Missing evidence is not zero.</span
+      >
+      <span *ngIf="!report.meta.evidence"
+        >Legacy snapshot: original values retained; input completeness was not recorded.</span
+      >
+      <span *ngIf="report.emailDelivery?.status === 'uncertain'"
+        >Email outcome is uncertain. Provider reconciliation is required before another send.</span
+      >
+    </div>
     <section class="stale-warning" *ngIf="report.meta.sourceFreshness?.detection">
       <strong>Source data needs attention</strong>
+
       <p>{{ report.meta.sourceFreshness?.message }}</p>
-      <small *ngIf="report.meta.sourceFreshness?.recommendation">{{ report.meta.sourceFreshness?.recommendation }}</small>
-    </section>
-    <section class="hero-grid">
-      <article class="hero-card">
-        <div class="hero-score">
-          <div class="score">{{ report.score }}<span>%</span></div>
-          <div class="score-copy">
-            <h2>Weekly Growth Score</h2>
-            <p>{{ report.progressSummary }}</p>
-          </div>
-        </div>
 
-        <div class="hero-meta">
-          <span>
-            <strong>Period</strong>
-            {{ report.weekStartDate | date:'MMM d' }} - {{ report.weekEndDate | date:'MMM d' }}
-          </span>
-          <span *ngIf="report.emailStatus">
-            <strong>Email</strong>
-            <mark [class]="statusBadgeClass(report.emailStatus)">{{ report.emailStatus }}</mark>
-          </span>
-          <span>
-            <strong>Updated</strong>
-            {{ formatDate(report.updatedAt || report.weekEndDate) }}
-          </span>
-          <span>
-            <strong>Narrative</strong>
-            <mark class="narrative-badge" [class.narrative-badge--ai]="report.meta.narrativeSource === 'ai-enhanced'" [class.narrative-badge--cached]="report.meta.narrativeSource === 'cached'">{{ narrativeSourceLabel }}</mark>
-          </span>
-          <span *ngIf="report.meta.signalHash">
-            <strong>Signal</strong>
-            {{ report.meta.signalHash.slice(0, 10) }}
-          </span>
-        </div>
-      </article>
-
-      <article class="readiness-card">
-        <div class="card-label">Readiness Forecast</div>
-        <div class="readiness-score" [ngClass]="getReadinessClass(getReadinessScore(report))">
-          <span class="value">{{ getReadinessScore(report) }}%</span>
-          <span class="label">{{ getReadinessTone(getReadinessScore(report)) }}</span>
-        </div>
-        <p>{{ report.predictedHiringReadiness.reason }}</p>
-      </article>
+      <small *ngIf="report.meta.sourceFreshness?.recommendation">{{
+        report.meta.sourceFreshness?.recommendation
+      }}</small>
     </section>
 
-    <section class="kpi-grid">
-      <article class="kpi-card">
-        <span class="kpi-label">GitHub Score</span>
-        <strong>{{ report.meta.githubScore }}%</strong>
-        <small [class]="deltaClass(report.meta.comparisons.githubDelta)">{{ formatDelta(report.meta.comparisons.githubDelta) }}</small>
-      </article>
-      <article class="kpi-card">
-        <span class="kpi-label">Resume Score</span>
-        <strong>{{ report.meta.resumeScore }}%</strong>
-        <small [class]="deltaClass(report.meta.comparisons.resumeDelta)">{{ formatDelta(report.meta.comparisons.resumeDelta) }}</small>
-      </article>
-      <article class="kpi-card">
-        <span class="kpi-label">Sprint Completion</span>
-        <strong>{{ report.meta.sprint.completionRate }}%</strong>
-        <small [class]="deltaClass(report.meta.comparisons.sprintCompletionDelta)">{{ formatDelta(report.meta.comparisons.sprintCompletionDelta) }}</small>
-      </article>
-      <article class="kpi-card">
-        <span class="kpi-label">Interview Progress</span>
-        <strong>{{ report.meta.interview.questionsGenerated }}</strong>
-        <small [class]="deltaClass(report.meta.comparisons.interviewQuestionsDelta)">{{ formatDelta(report.meta.comparisons.interviewQuestionsDelta, 'qs') }}</small>
-      </article>
-    </section>
+    <app-weekly-report-overview
+      [report]="report"
+      [narrativeSourceLabel]="narrativeSourceLabel"
+    ></app-weekly-report-overview>
 
-    <section class="breakdown-card" *ngIf="scoreBreakdown.length">
-      <div class="panel-head">
-        <div>
-          <h3>Score Breakdown</h3>
-          <span class="panel-subtitle">Deterministic weighted inputs used before AI polish</span>
-        </div>
-        <small>{{ report.score }}% total</small>
-      </div>
+    <app-weekly-report-momentum-trend
+      *ngIf="history.length > 1"
+      [trendReports]="trendReports"
+      [selectedReportId]="report._id"
+      (selectReport)="selectReport($event)"
+    ></app-weekly-report-momentum-trend>
 
-      <div class="breakdown-grid">
-        <article class="breakdown-row" *ngFor="let item of scoreBreakdown">
-          <div>
-            <strong>{{ item.label }}</strong>
-            <span>{{ item.weight }}% weight</span>
-          </div>
-          <div class="breakdown-meter">
-            <span [style.width.%]="item.score"></span>
-          </div>
-          <small>{{ item.score }}% - {{ item.contribution }} pts</small>
-        </article>
-      </div>
-    </section>
+    <app-weekly-report-kpi-grid
+      [report]="report"
+      [comparisonAvailable]="comparisonAvailable"
+    ></app-weekly-report-kpi-grid>
+
+    <app-weekly-report-score-breakdown
+      *ngIf="scoreBreakdown.length"
+      [items]="scoreBreakdown"
+      [overallLabel]="overallLabel(report)"
+    ></app-weekly-report-score-breakdown>
 
     <section class="analytics-grid">
-      <article class="panel-card">
-        <div class="panel-head">
-          <h3>Progress Comparison</h3>
-          <span class="panel-subtitle">Current vs previous report</span>
-        </div>
+      <app-weekly-report-comparison
+        [report]="report"
+        [comparisonAvailable]="comparisonAvailable"
+      ></app-weekly-report-comparison>
 
-        <div class="comparison-list">
-          <div class="comparison-row">
-            <span>Overall Score</span>
-            <strong>{{ report.score }}%</strong>
-            <small [class]="deltaClass(report.meta.comparisons.scoreDelta)">{{ formatDelta(report.meta.comparisons.scoreDelta) }}</small>
-          </div>
-          <div class="comparison-row">
-            <span>Readiness</span>
-            <strong>{{ getReadinessScore(report) }}%</strong>
-            <small [class]="deltaClass(report.meta.comparisons.readinessDelta)">{{ formatDelta(report.meta.comparisons.readinessDelta) }}</small>
-          </div>
-          <div class="comparison-row">
-            <span>Weekly Commit Signal</span>
-            <strong>{{ report.meta.activity.weeklyCommitSignal }}</strong>
-            <small [class]="deltaClass(report.meta.comparisons.activityCommitsDelta)">{{ formatDelta(report.meta.comparisons.activityCommitsDelta, 'pts') }}</small>
-          </div>
-          <div class="comparison-row">
-            <span>Active Repositories</span>
-            <strong>{{ report.meta.activity.activeRepositories }}</strong>
-            <small [class]="deltaClass(report.meta.comparisons.activeReposDelta)">{{ formatDelta(report.meta.comparisons.activeReposDelta, 'repos') }}</small>
-          </div>
-        </div>
-      </article>
-
-      <article class="panel-card history-panel" *ngIf="history.length">
-        <button class="history-toggle" type="button" (click)="toggleHistory()" [attr.aria-expanded]="isHistoryOpen">
-          <span>
-            <strong>Momentum History</strong>
-            <small>Last {{ history.length }} reports</small>
-          </span>
-          <span class="history-toggle__icon">{{ isHistoryOpen ? '-' : '+' }}</span>
-        </button>
-
-        <div class="history-list" [class.history-list--open]="isHistoryOpen">
-          <button class="history-row" type="button" *ngFor="let item of history; trackBy: trackByReportId" (click)="selectReport(item)" [class.latest]="item._id === report._id">
-            <div class="history-copy">
-              <span>{{ item.weekStartDate | date:'MMM d' }} � {{ item.weekEndDate | date:'MMM d' }}</span>
-              <strong>{{ item.score }}%</strong>
-            </div>
-            <div class="history-track">
-              <span class="history-fill" [style.width.%]="item.score"></span>
-            </div>
-          </button>
-        </div>
-      </article>
+      <app-weekly-report-history
+        *ngIf="history.length"
+        [history]="history"
+        [selectedReportId]="report._id"
+        [isOpen]="isHistoryOpen"
+        (toggle)="toggleHistory()"
+        (selectReport)="selectReport($event)"
+      ></app-weekly-report-history>
     </section>
 
-    <section class="detail-grid">
-      <article class="panel-card" *ngIf="hasText(report.topAchievements)">
-        <div class="panel-head">
-          <h3>Achievements</h3>
-          <span class="panel-subtitle">Wins worth repeating</span>
-        </div>
-        <ol class="rich-list ordered">
-          <li *ngFor="let achievement of report.topAchievements">{{ achievement }}</li>
-        </ol>
-      </article>
+    <app-weekly-report-narrative [report]="report"></app-weekly-report-narrative>
 
-      <article class="panel-card" *ngIf="getRiskArea(report) || report.meta.skillFocus.length">
-        <div class="panel-head">
-          <h3>Risks and Focus</h3>
-          <span class="panel-subtitle">Primary blocker this week</span>
-        </div>
-        <p class="risk-copy" *ngIf="getRiskArea(report)">{{ getRiskArea(report) }}</p>
-        <div class="focus-chips" *ngIf="report.meta.skillFocus.length">
-          <span *ngFor="let skill of report.meta.skillFocus">{{ skill }}</span>
-        </div>
-      </article>
-    </section>
-
-    <section class="detail-grid">
-      <article class="panel-card" *ngIf="hasText(report.insights)">
-        <div class="panel-head">
-          <h3>Insights</h3>
-          <span class="panel-subtitle">Deterministic metrics, AI summarized</span>
-        </div>
-        <ul class="rich-list">
-          <li *ngFor="let insight of report.insights">{{ insight }}</li>
-        </ul>
-      </article>
-
-      <article class="panel-card" *ngIf="hasText(report.recommendations)">
-        <div class="panel-head">
-          <h3>Recommendations</h3>
-          <span class="panel-subtitle">Next-week actions</span>
-        </div>
-        <ul class="rich-list accent">
-          <li *ngFor="let recommendation of report.recommendations">{{ recommendation }}</li>
-        </ul>
-      </article>
-    </section>
-
-    <section class="sources-card" *ngIf="dataSources.length">
-      <div class="panel-head">
-        <div>
-          <h3>Data Sources Used</h3>
-          <span class="panel-subtitle">Connection state and latest analysis signal</span>
-        </div>
-        <small *ngIf="report.emailStatus === 'failed' && report.emailError">{{ report.emailError }}</small>
-      </div>
-
-      <div class="sources-grid">
-        <article *ngFor="let source of dataSources; trackBy: trackByLabel" [class]="sourceTone(source.status)">
-          <div class="source-top">
-            <strong>{{ source.label }}</strong>
-            <span>{{ source.status.status }}</span>
-          </div>
-          <small *ngIf="source.status.freshness">{{ source.status.freshness | titlecase }}</small>
-          <small *ngIf="sourceFreshness(source.status)">{{ sourceFreshness(source.status) }}</small>
-          <small *ngIf="source.status.lastAnalyzedAt">{{ formatDate(source.status.lastAnalyzedAt) }}</small>
-        </article>
-      </div>
-    </section>
+    <app-weekly-report-data-sources
+      *ngIf="dataSources.length"
+      [dataSources]="dataSources"
+      [report]="report"
+      [emailStatus]="report.emailStatus"
+      [emailError]="report.emailError"
+    ></app-weekly-report-data-sources>
   </ng-container>
 
   <section class="empty-state" *ngIf="!isLoading && !errorMessage && !latestReport">
     <div class="empty-icon">Report</div>
+
     <h3>No Reports Generated</h3>
-    <p>Start your first weekly analysis to see your developer momentum, readiness changes, and cross-module insights.</p>
+
+    <p>
+      Start your first weekly analysis to see your developer momentum, readiness changes, and
+      cross-module insights.
+    </p>
+
     <button class="generate-btn" type="button" (click)="generateReport()" [disabled]="isGenerating">
       {{ isGenerating ? 'Generating...' : 'Generate First Report' }}
     </button>

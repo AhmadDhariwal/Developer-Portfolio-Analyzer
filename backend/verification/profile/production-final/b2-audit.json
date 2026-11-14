@@ -1,0 +1,65 @@
+{
+  "configuredDriver": "b2",
+  "b2ActivationConfigurationValid": true,
+  "configurationChanged": false,
+  "runtimeCapabilities": [
+    "readFiles",
+    "writeFiles",
+    "listFiles",
+    "deleteFiles"
+  ],
+  "buckets": {
+    "images": {
+      "authenticated": true,
+      "intendedBucketOnly": true,
+      "endpointMatches": true,
+      "fileCapabilitiesPresent": true,
+      "excessRuntimeCapabilities": [
+        "writeBucketLifecycleRules",
+        "writeBucketLogging",
+        "readBucketReplications",
+        "writeBucketNotifications",
+        "listBuckets",
+        "readBucketLogging",
+        "readBuckets",
+        "writeBuckets",
+        "readBucketLifecycleRules",
+        "writeBucketEncryption",
+        "readBucketEncryption",
+        "readBucketNotifications",
+        "shareFiles",
+        "writeBucketReplications"
+      ],
+      "private": true,
+      "defaultSSEB2": true,
+      "lifecycleRuleCount": 0,
+      "retentionMetadataVisible": false
+    },
+    "resumes": {
+      "authenticated": true,
+      "intendedBucketOnly": true,
+      "endpointMatches": true,
+      "fileCapabilitiesPresent": true,
+      "excessRuntimeCapabilities": [
+        "writeBucketLifecycleRules",
+        "writeBucketLogging",
+        "readBucketReplications",
+        "writeBucketNotifications",
+        "listBuckets",
+        "readBucketLogging",
+        "readBuckets",
+        "writeBuckets",
+        "readBucketLifecycleRules",
+        "writeBucketEncryption",
+        "readBucketEncryption",
+        "readBucketNotifications",
+        "shareFiles",
+        "writeBucketReplications"
+      ],
+      "private": true,
+      "defaultSSEB2": true,
+      "lifecycleRuleCount": 0,
+      "retentionMetadataVisible": false
+    }
+  }
+}

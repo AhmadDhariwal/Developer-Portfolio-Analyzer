@@ -1,0 +1,938 @@
+{
+  "sourceFiles": 52,
+  "sourceFileDeletionCount": 0,
+  "movedFiles": [],
+  "files": [
+    {
+      "path": "backend/src/controllers/dashboardcontroller.js",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "b7a0579a60cad6657439387ccc9b3e3c4050e2dc0c79d6dedf945e0fc31ae1bd",
+      "baselineSha256": "ed98af5aa1b290c8a6cfe4e687714be36698769def9d004086a2f4d6149c82d6"
+    },
+    {
+      "path": "backend/src/controllers/resumecontoller.js",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "87d25362e7fe09723ead12645ffc4ed71ebe112d8bd151161134d8ae3cb05c67",
+      "baselineSha256": "c09bd43ba7d7dd01f69144e94b69c7dba568c04bcd4f6a0bdcd13329de3a83a2"
+    },
+    {
+      "path": "backend/src/controllers/skillgapcontroller.js",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "649fc7c9eaf9fd2f5280622c0620a22be9979b5ecaef8a63ec72999b070cc310",
+      "baselineSha256": "bed0bc99a2e175bd7742cf8ea62986878e436b0180ae5fe0ed126a5eb34174a8"
+    },
+    {
+      "path": "backend/src/middleware/skillGapAdmission.js",
+      "kind": "source-or-test",
+      "change": "added",
+      "sha256": "ddc2f89e88437ad53c572b67ccba0092b1ed467c0361f91aafb2540870d4c776",
+      "baselineSha256": null
+    },
+    {
+      "path": "backend/src/prompts/skillGapPrompt.js",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "d9a33287057b34479496c7d2a288410340d5208343782136b18656dfd880b9de",
+      "baselineSha256": "917fdb78be772cd42e417f489e297482c18d5a4c96f24753d6334c66f2e6b775"
+    },
+    {
+      "path": "backend/src/routes/preview.routes.js",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "7070aab3381eab48dc05e993fc7be9c713bea4df88a642172bbc804bea9883a7",
+      "baselineSha256": "bfb89045e366deded18295c2a3f26f58a81ad77cc578893836e4ffab16e96baa"
+    },
+    {
+      "path": "backend/src/routes/skillgap.routes.js",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "cc0e229a5b79f4b97781e48f49693797db93db079406375d22de357fadea693d",
+      "baselineSha256": "cd46a3ea1aa90f8f0da72cf14228f8616085d75c050ba7fa29e345f54cbd0a19"
+    },
+    {
+      "path": "backend/src/services/aiProviderManager.js",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "5b57db9e411927dfbdceacb99e1c6779fe791446abbdad6c80743587ca28b800",
+      "baselineSha256": "09fce74b7f94eb69df05d5ad0147672911d00f351b97ee9f713bb7e9f2fb33f5"
+    },
+    {
+      "path": "backend/src/services/aiservice.js",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "97c0a2a0ae4b7d6b9afa4500792d3bfb1724f359243907697944c7e833353057",
+      "baselineSha256": "78d0d13ef32486e22a2f591e287da8c5b484c3219bed53f0dd46cce449be5aa3"
+    },
+    {
+      "path": "backend/src/services/coursePersonalizationService.js",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "e8be7cf2a5285381a48de6d0dba467884e6a6c112c3f1e26b691360273de3538",
+      "baselineSha256": "e752915fcd791ee8c4498fc4726d0e3da86d83fcbc416c84bd27b9747496322c"
+    },
+    {
+      "path": "backend/src/services/developerSignalService.js",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "c6c94a6831c494fe713731b53af606bd9b2caeb932d0ef0b74e2b85e4e82e173",
+      "baselineSha256": "e8aa839dc1dcf999b409e2353de8feb090edc435b73fe051686413a56568065a"
+    },
+    {
+      "path": "backend/src/services/githubservice.js",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "fe7a96d32d8c1c344510874dc360e002e593897a0e03a58095216b1783140e25",
+      "baselineSha256": "e1248aab4a59a29184ead6d4a0c8d5681db2c8ea52ae845fdb222ab1dc15ac51"
+    },
+    {
+      "path": "backend/src/services/integrationMongoGovernanceService.js",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "e2ec643fb449c4047d9be82d07fdffacda5c24c7ada60cd9f597678d6a1560f1",
+      "baselineSha256": "0681ae531a127ab8c167f70f0442aeb9dc192f954f87a348b08e871e04c9d4fb"
+    },
+    {
+      "path": "backend/src/services/previewResumeCacheService.js",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "437db66cf70ab76346d8a455d2216cd6172ee72c1df07276b742ef90786a4750",
+      "baselineSha256": "9ca0d8998bf71f39df51b4663f8b0d257a2364f6be035ee04aed41c71202dfef"
+    },
+    {
+      "path": "backend/src/services/recommendationEngineService.js",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "56a50e8f1caa52d604a7717fa635ecb782300f70de5238f81c7bb1b35c9bc9f1",
+      "baselineSha256": "78bca99c89d177c8a045de443462c3e137d99fc6a653f1294d7b0c0017e1d586"
+    },
+    {
+      "path": "backend/src/services/recommendationService.js",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "f64ba1a0c33da373761c270716f0132c58262a446bfaa4119d8fb9eb0a0aa039",
+      "baselineSha256": "9b4658bb454ffa7244756a18a91e8d02b1d41349fbad6600c81f205f93cb47e8"
+    },
+    {
+      "path": "backend/src/services/skillGapCompatibilityService.js",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "40fc0912e256ea3c642ab00e9babb956adc52d444779f2cfc9abaac6f6cc26a4",
+      "baselineSha256": "e6c74f159f4c1355dd1868a8f2b61c4c6b8f1d0d38f0eae8475b7f20610e481f"
+    },
+    {
+      "path": "backend/src/services/skillGapEvidenceService.js",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "9332801996534df5cd16dfa0c578323b45501a76d093463ef3810338a2a9bf09",
+      "baselineSha256": "3e6be6b07fab98388bccf104f1d1c022036061515825846824f1912c34e2cd75"
+    },
+    {
+      "path": "backend/src/services/skillGapGovernanceService.js",
+      "kind": "source-or-test",
+      "change": "added",
+      "sha256": "4429e4805e804d7e65e21ba10c2ec1b94edd68a62471f5dc3d8b12c7b98109bf",
+      "baselineSha256": null
+    },
+    {
+      "path": "backend/src/services/skillGapMetrics.js",
+      "kind": "source-or-test",
+      "change": "added",
+      "sha256": "4ac245cde05bfe9e9d808b501b3dd487bb300cbf1ea71ac52b3378fed61930d4",
+      "baselineSha256": null
+    },
+    {
+      "path": "backend/src/services/skillGapRequirements.js",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "2978efdbd991b3e4e97515e03ecefb0d282823e1b7550fc69c5272e86d449163",
+      "baselineSha256": "0a647cb1e4e433ca55af989a70e85ea921923f6e69e333e5219d4d10f0253cff"
+    },
+    {
+      "path": "backend/src/services/skillGapResumeClaimsService.js",
+      "kind": "source-or-test",
+      "change": "added",
+      "sha256": "3ec35cbd093b7a0185cc56fc87b448d1c772c0292c13970e61bd27b99604ec23",
+      "baselineSha256": null
+    },
+    {
+      "path": "backend/src/services/skillGraphService.js",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "5a86be015fdd724a2c105dec6e3b43226a93eccd7fa5ddce377bcb375a4cae53",
+      "baselineSha256": "b5621b93207aec98d18143e146d1ae089b2c05695dee89043b086a54e6e461ae"
+    },
+    {
+      "path": "backend/src/tests/fixtures/skillGapWorker.js",
+      "kind": "source-or-test",
+      "change": "added",
+      "sha256": "d64fcc1d2562c693881ec7dfee084ade0e41a8202202cb57b76b1f5c4cd5ff7b",
+      "baselineSha256": null
+    },
+    {
+      "path": "backend/src/tests/skillGapAdmission.test.js",
+      "kind": "source-or-test",
+      "change": "added",
+      "sha256": "07c7ab91b61eb6d571b7659bc902a0ded7688c340957369d74ebe36c80b7176a",
+      "baselineSha256": null
+    },
+    {
+      "path": "backend/src/tests/skillGapAiPolicy.test.js",
+      "kind": "source-or-test",
+      "change": "added",
+      "sha256": "ab19cd088b19e568a3b3ed424d3ce7f9c218d8a59c0b624186b225ccbdd9b46c",
+      "baselineSha256": null
+    },
+    {
+      "path": "backend/src/tests/skillGapConsumerContracts.test.js",
+      "kind": "source-or-test",
+      "change": "added",
+      "sha256": "76cb36727320fbf9c320965606d398459070f148d156bc448f230fe197c71870",
+      "baselineSha256": null
+    },
+    {
+      "path": "backend/src/tests/skillGapEvidence.test.js",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "f4407dcedbd70b435ed093c6e003f9847e49c8ab7b9614789a7da61cebe19f0f",
+      "baselineSha256": "e466223d05650e7364d9c3d47dcff6215b2edf9be75f8e60ac8495d8e6b62115"
+    },
+    {
+      "path": "backend/src/tests/skillGapGolden.test.js",
+      "kind": "source-or-test",
+      "change": "added",
+      "sha256": "da8b23608fdf764db4385fa58804a231007fab8877127130a9d15b6a5ef5b839",
+      "baselineSha256": null
+    },
+    {
+      "path": "backend/src/tests/skillGapMongo.integration.test.js",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "7431697aaa364298ce9ff344d2d0e802c53fe19dbe54a2d8ddfe33300dfaf590",
+      "baselineSha256": "f9b6d75ce0b46db7911541ccb6eeea7e9215398dc732cac16e7a9e3869bb8bf0"
+    },
+    {
+      "path": "backend/src/tests/skillGapProduction.test.js",
+      "kind": "source-or-test",
+      "change": "added",
+      "sha256": "675325fb171da0a15d30538eb6a64d8c8d2dde1179ef607034fb0b1249db938b",
+      "baselineSha256": null
+    },
+    {
+      "path": "backend/src/tests/skillgapHardening.test.js",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "f1e01392493f283fb7f1975a4dc578f0797e6eff245f8aa7420f1613c9e3ebef",
+      "baselineSha256": "6e6293071ee1ec08b97213c85086f75c496bc1896fcb33fa5e94051eaf0d0102"
+    },
+    {
+      "path": "backend/src/tests/skillgapPerformance.test.js",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "8dc6315661291ce8f26bc4feb90e34b23de773101159ce4353d4f913299184d9",
+      "baselineSha256": "92d5332a9689faf9c2a660d28df3030759d0308f8c3b34a8b2e436891b7adb87"
+    },
+    {
+      "path": "backend/verification/skillgap/SKILL-GAP-PRODUCTION-FINAL.md",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "5f188e3773f32babae13be0460f88518a3cb5f4b8eb932379f94b254ac6af961",
+      "baselineSha256": null
+    },
+    {
+      "path": "backend/verification/skillgap/backend-tests.log",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "f9e9eccb726bf799abe3771d6a5596769d46410f06c8c9981d4f1875d7abfd95",
+      "baselineSha256": null
+    },
+    {
+      "path": "backend/verification/skillgap/browser-tests.log",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "ba9afbca36dad3f3498f83d777ef48c389be217cd4d405b90e1571f659625439",
+      "baselineSha256": null
+    },
+    {
+      "path": "backend/verification/skillgap/changed-files.json",
+      "kind": "verification",
+      "change": "added",
+      "sha256": null,
+      "baselineSha256": null
+    },
+    {
+      "path": "backend/verification/skillgap/cleanup.json",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "e13cc8d92f19c47cdc9278c579a86cf6b1d546aa84d5ad70bad8dfb302ba977f",
+      "baselineSha256": null
+    },
+    {
+      "path": "backend/verification/skillgap/focused-tests.log",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "7d73e332771c750620e46de54dcb9c060ffa5b0a1ae00653e329527908547277",
+      "baselineSha256": null
+    },
+    {
+      "path": "backend/verification/skillgap/formatting.json",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "69c73888493448ffdccda18d178b3c78ca5923fee9d1ffb8818920a1d6acf7a0",
+      "baselineSha256": null
+    },
+    {
+      "path": "backend/verification/skillgap/frontend-build.log",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "472db1e40fc7cccd5927e43c2b2b030d7e4e2245e7cde1f8a6c5d194c5dd5752",
+      "baselineSha256": null
+    },
+    {
+      "path": "backend/verification/skillgap/frontend-tests.log",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "ba1cd1a9bf87b9e508df968ed7aa309657f38038473775825e7f33adfbc1943c",
+      "baselineSha256": null
+    },
+    {
+      "path": "backend/verification/skillgap/git-final-state.txt",
+      "kind": "verification",
+      "change": "added",
+      "sha256": null,
+      "baselineSha256": null
+    },
+    {
+      "path": "backend/verification/skillgap/golden-accuracy.json",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "8bef710ef02926073a6c74e11fbbfd596b3f44abb6462313cca15fbc745258a5",
+      "baselineSha256": null
+    },
+    {
+      "path": "backend/verification/skillgap/mongo-tests.log",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "90d05dd1010c217f14cb00eb76c018446a62d24ce83f1cb1a0134ec028ef6d80",
+      "baselineSha256": null
+    },
+    {
+      "path": "backend/verification/skillgap/parallel-fixture-setup-note.json",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "db6ef37533745b50e95945b65f6c25be942b5cb853169939f4d57a3985161924",
+      "baselineSha256": null
+    },
+    {
+      "path": "backend/verification/skillgap/parity-comparison.json",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "d3d6ad0e49f972d11b703cd12453a5058f83db5271c721696d1eb8c6d78d5e33",
+      "baselineSha256": null
+    },
+    {
+      "path": "backend/verification/skillgap/parity-tests.log",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "fca7cf31f5c301eaa7a35e76dc84bd28b21a5d4e2ce7f0e4f92d19fc194cf2d7",
+      "baselineSha256": null
+    },
+    {
+      "path": "backend/verification/skillgap/production-results.json",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "b4043fb48138c6c7b353a64cd42a4312cf6e41a2edca44fa79fcdbffa74fd4ba",
+      "baselineSha256": null
+    },
+    {
+      "path": "backend/verification/skillgap/public-source-replay.json",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "419ca7af73d3c4f366d3506f20005fb5a6cb93adacae6403dd8e64e455e572c8",
+      "baselineSha256": null
+    },
+    {
+      "path": "backend/verification/skillgap/validation-summary.json",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "e23e37e00e239c84255f2c2bfbedeae8a474e6410729379d84586d69d533ea47",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/scripts/compare-skill-gap-parity.py",
+      "kind": "source-or-test",
+      "change": "added",
+      "sha256": "14d100c3d30b22b6aab324e24c309000e58a2ee7e3660b0edfe2a1041e25294f",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/scripts/verify-skill-gap-parity.cjs",
+      "kind": "source-or-test",
+      "change": "added",
+      "sha256": "b78f3b2b6e15935b35481c9520cb19da1701ed8c2ace81fd1cf554c70c82655c",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/src/app/pages/skill-gap/components/categories/skill-gap-categories.component.html",
+      "kind": "source-or-test",
+      "change": "added",
+      "sha256": "57c0b2d4b06a52db850b09f3ac36d31e1c35b5cbe2f23d32d5dbf0c2b31be495",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/src/app/pages/skill-gap/components/categories/skill-gap-categories.component.ts",
+      "kind": "source-or-test",
+      "change": "added",
+      "sha256": "99009039af695ad4aa2d87e531dd987e0d6ed08d1f373d03701a86cfce72072e",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.html",
+      "kind": "source-or-test",
+      "change": "added",
+      "sha256": "e3eb0b55fe5056c7d7a4e3d29b2883276ebc15fca7d2d523a858ef48dec39ad0",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.ts",
+      "kind": "source-or-test",
+      "change": "added",
+      "sha256": "f3e03b3a25e19943f858a487f7a7db2cc60998db29e3321129a07370205b0303",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/src/app/pages/skill-gap/components/priorities/skill-gap-priorities.component.html",
+      "kind": "source-or-test",
+      "change": "added",
+      "sha256": "22ac1104d6726a0812f769751b1831f376cdfdb6dc2875a0c361e2c702414eac",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/src/app/pages/skill-gap/components/priorities/skill-gap-priorities.component.ts",
+      "kind": "source-or-test",
+      "change": "added",
+      "sha256": "f087f71f2c8d9c5ca03ee422dc6f681a5798ac11eaf3c38d67212d238bb512ee",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/src/app/pages/skill-gap/components/projects/skill-gap-projects.component.html",
+      "kind": "source-or-test",
+      "change": "added",
+      "sha256": "41f78f07d63c6f0e9fd0e83f525049e0156e10c92a7eeb65f8a36a021bbbd9b2",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/src/app/pages/skill-gap/components/projects/skill-gap-projects.component.ts",
+      "kind": "source-or-test",
+      "change": "added",
+      "sha256": "4b1650e8a8557e8d4494d617092d3d776bcdb4eca588fc53a6affecb136e7884",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/src/app/pages/skill-gap/components/sources/skill-gap-sources.component.html",
+      "kind": "source-or-test",
+      "change": "added",
+      "sha256": "4d84c7a45a469949bf4279b3e7c7e7de11358dec45d1d92b348add02538db154",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/src/app/pages/skill-gap/components/sources/skill-gap-sources.component.ts",
+      "kind": "source-or-test",
+      "change": "added",
+      "sha256": "b106392c3e2c65bb594e8379d442b73dcffb803c8a2ed9886bc48d448bc3f8ee",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/src/app/pages/skill-gap/skill-gap-presentation.ts",
+      "kind": "source-or-test",
+      "change": "added",
+      "sha256": "1fc2a648888017eaa63127a38d992b6a081bb012c21a451327fdaa9a1cfa21ba",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/src/app/pages/skill-gap/skill-gap.component.html",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "f62a7d1a6cdd36b734423e61a9c2b391f2bab31849613b42b2ae2868ffcebd6b",
+      "baselineSha256": "bbc918ceb1f9568405085513a51770a67af6e9be06f6a8b6631b56f5ebff2bd7"
+    },
+    {
+      "path": "frontend/src/app/pages/skill-gap/skill-gap.component.scss",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "e3e210e1053a359f8c66b59ca4a5412220676a1876fee39ed6aa6d73d2333856",
+      "baselineSha256": "a0250c7c5a94df06498e0ae74236af8552225a1f52b44b23f4c4505e32cc7093"
+    },
+    {
+      "path": "frontend/src/app/pages/skill-gap/skill-gap.component.ts",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "11302128ad3c48755d5b6a41814f38b77a2720b1476ee2abde598bb72ea4a286",
+      "baselineSha256": "dd98bdd66f98738cd626dadd1ef9c7e8b5e2fd17a66f84a544480035ee1f917a"
+    },
+    {
+      "path": "frontend/src/app/shared/models/skill-gap-evidence.model.ts",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "6a6b99556be9e98e49754b7614787fccb43c6da70e3d35c5d8e1f78e6c48dcc2",
+      "baselineSha256": "d0461e6963291ee515047bb4c6358ac04cea84e6e9fec65e5bb4e6dc43f97d01"
+    },
+    {
+      "path": "frontend/src/app/shared/services/skill-gap.service.spec.ts",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "4bebf9aad01b6996749634c984903d27161eddb2c9f492c3dbfe6e812a937b26",
+      "baselineSha256": "58a8115ad9a83ea1b1c2cceed2343546d7b4c8e30f65e27b042553bba621aa37"
+    },
+    {
+      "path": "frontend/src/app/shared/services/skill-gap.service.ts",
+      "kind": "source-or-test",
+      "change": "modified",
+      "sha256": "bbf40fdc921b2ccd5a507c9773316dbecff5011a19fdb7e2c6c696fe76401676",
+      "baselineSha256": "3c97975de6ca8356a7e4b01037f60b46d998e70f407a5f18357d8e2a4128bffd"
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/dark-1024-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "2a63f090d404403646d89d0161d8a2845ced1ebfbcfd01a18f339cd31f7b2414",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/dark-1024.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "5cd9b643bcb9ae268e139d60c425e8b1fb3b538d0906ded9165e8efb2ac6f15e",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/dark-1440-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "38fc098cec4d7a4586be4fa4552bac98a9066126c110528f8320fb4d6d84ee71",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/dark-1440.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "85c5da82ba815ef9b5fc1e3cca150b8628f06c7771422770181c1bed7fe64eaf",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/dark-1600-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "5234ff26539ce0d961bcc630d50bb492d665f6960a7d611d6bf272b601c611b2",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/dark-1600.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "c5fab93507309d21d6c51d73ed589d68725e6cbfdb29d98f36b3675e4c575a3a",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/dark-375-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "187116f83ee68c02ac6115e848055f1cf8be1469628a905bca512029a9a6b0f4",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/dark-375.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "9eda6538771cbcd8054143d42dd930500a2c14f489478400821ba11781ba4b21",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/dark-768-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "daf3ae19c5f88883851facffa2020e75dfd3e7348aaecac220eef7972b54c0be",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/dark-768.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "3ea30ae96403fcf7a88437c904f262ccecf2d9294b8e5b500e423116d64484e6",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/light-1024-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "75bc1db542df1069b7251a2dec38e8ea8e1fd15e25eac7c8c6d2d82c7984c1e6",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/light-1024.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "7ac99e5988c2d7b93e49985c42b98befe11c6781794bf4b3f610a3b1e6da9d5a",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/light-1440-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "7376fe4479dd0215f0f8ec49293c2eb602de5185ed51c50dff2b223c6c8c86ac",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/light-1440.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "72ef5c5c79c0a0069efa3814e3bd53a4b9843caf1f6cddba0e43ddd7972856ae",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/light-1600-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "91b70064c09d13663116b5537b00b94083a0477bd7fb8917182c4874f3458e12",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/light-1600.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "2040b856860a0712bb53c4ea036e9394e359485f0a0093ee248af7e2443a7dab",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/light-375-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "c69aaea552e8a05e71fcf57c6fcdbcd1edf8401b295af9dde870536b7cbc5ffd",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/light-375.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "3a274ce8fa579926d5baecde927672945f94ab27ad4417f7f5c1d627a5fc42b3",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/light-768-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "72be408d047c426f7bc7bcad1b248ec17b7d2fbd511a7c9f014e8b18b1106d53",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/light-768.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "a962c522260c98f55e4e4b5c74194f309310fe13ebd1ee4e2e178911399fdf4c",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/results.json",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "9d8e4ca65950521ea6bc46bd5d53f043161087b7eea6025840018189c1897ad7",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/system-1024-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "2a63f090d404403646d89d0161d8a2845ced1ebfbcfd01a18f339cd31f7b2414",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/system-1024.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "5cd9b643bcb9ae268e139d60c425e8b1fb3b538d0906ded9165e8efb2ac6f15e",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/system-1440-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "38fc098cec4d7a4586be4fa4552bac98a9066126c110528f8320fb4d6d84ee71",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/system-1440.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "85c5da82ba815ef9b5fc1e3cca150b8628f06c7771422770181c1bed7fe64eaf",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/system-1600-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "5234ff26539ce0d961bcc630d50bb492d665f6960a7d611d6bf272b601c611b2",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/system-1600.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "c5fab93507309d21d6c51d73ed589d68725e6cbfdb29d98f36b3675e4c575a3a",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/system-375-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "187116f83ee68c02ac6115e848055f1cf8be1469628a905bca512029a9a6b0f4",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/system-375.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "9eda6538771cbcd8054143d42dd930500a2c14f489478400821ba11781ba4b21",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/system-768-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "daf3ae19c5f88883851facffa2020e75dfd3e7348aaecac220eef7972b54c0be",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/after-stable/system-768.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "3ea30ae96403fcf7a88437c904f262ccecf2d9294b8e5b500e423116d64484e6",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/dark-1024-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "2a63f090d404403646d89d0161d8a2845ced1ebfbcfd01a18f339cd31f7b2414",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/dark-1024.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "5cd9b643bcb9ae268e139d60c425e8b1fb3b538d0906ded9165e8efb2ac6f15e",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/dark-1440-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "38fc098cec4d7a4586be4fa4552bac98a9066126c110528f8320fb4d6d84ee71",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/dark-1440.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "85c5da82ba815ef9b5fc1e3cca150b8628f06c7771422770181c1bed7fe64eaf",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/dark-1600-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "5234ff26539ce0d961bcc630d50bb492d665f6960a7d611d6bf272b601c611b2",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/dark-1600.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "c5fab93507309d21d6c51d73ed589d68725e6cbfdb29d98f36b3675e4c575a3a",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/dark-375-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "187116f83ee68c02ac6115e848055f1cf8be1469628a905bca512029a9a6b0f4",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/dark-375.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "9eda6538771cbcd8054143d42dd930500a2c14f489478400821ba11781ba4b21",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/dark-768-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "daf3ae19c5f88883851facffa2020e75dfd3e7348aaecac220eef7972b54c0be",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/dark-768.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "3ea30ae96403fcf7a88437c904f262ccecf2d9294b8e5b500e423116d64484e6",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/light-1024-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "75bc1db542df1069b7251a2dec38e8ea8e1fd15e25eac7c8c6d2d82c7984c1e6",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/light-1024.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "7ac99e5988c2d7b93e49985c42b98befe11c6781794bf4b3f610a3b1e6da9d5a",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/light-1440-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "7376fe4479dd0215f0f8ec49293c2eb602de5185ed51c50dff2b223c6c8c86ac",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/light-1440.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "72ef5c5c79c0a0069efa3814e3bd53a4b9843caf1f6cddba0e43ddd7972856ae",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/light-1600-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "91b70064c09d13663116b5537b00b94083a0477bd7fb8917182c4874f3458e12",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/light-1600.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "2040b856860a0712bb53c4ea036e9394e359485f0a0093ee248af7e2443a7dab",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/light-375-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "c69aaea552e8a05e71fcf57c6fcdbcd1edf8401b295af9dde870536b7cbc5ffd",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/light-375.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "3a274ce8fa579926d5baecde927672945f94ab27ad4417f7f5c1d627a5fc42b3",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/light-768-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "72be408d047c426f7bc7bcad1b248ec17b7d2fbd511a7c9f014e8b18b1106d53",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/light-768.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "a962c522260c98f55e4e4b5c74194f309310fe13ebd1ee4e2e178911399fdf4c",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/results.json",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "9d8e4ca65950521ea6bc46bd5d53f043161087b7eea6025840018189c1897ad7",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/system-1024-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "2a63f090d404403646d89d0161d8a2845ced1ebfbcfd01a18f339cd31f7b2414",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/system-1024.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "5cd9b643bcb9ae268e139d60c425e8b1fb3b538d0906ded9165e8efb2ac6f15e",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/system-1440-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "38fc098cec4d7a4586be4fa4552bac98a9066126c110528f8320fb4d6d84ee71",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/system-1440.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "85c5da82ba815ef9b5fc1e3cca150b8628f06c7771422770181c1bed7fe64eaf",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/system-1600-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "5234ff26539ce0d961bcc630d50bb492d665f6960a7d611d6bf272b601c611b2",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/system-1600.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "c5fab93507309d21d6c51d73ed589d68725e6cbfdb29d98f36b3675e4c575a3a",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/system-375-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "187116f83ee68c02ac6115e848055f1cf8be1469628a905bca512029a9a6b0f4",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/system-375.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "9eda6538771cbcd8054143d42dd930500a2c14f489478400821ba11781ba4b21",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/system-768-fold.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "daf3ae19c5f88883851facffa2020e75dfd3e7348aaecac220eef7972b54c0be",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/before-stable/system-768.png",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "3ea30ae96403fcf7a88437c904f262ccecf2d9294b8e5b500e423116d64484e6",
+      "baselineSha256": null
+    },
+    {
+      "path": "frontend/verification/skill-gap/production-parity/comparison.json",
+      "kind": "verification",
+      "change": "added",
+      "sha256": "d3d6ad0e49f972d11b703cd12453a5058f83db5271c721696d1eb8c6d78d5e33",
+      "baselineSha256": null
+    }
+  ]
+}

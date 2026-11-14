@@ -1,0 +1,196 @@
+{
+  "releaseStatus": "BLOCKED",
+  "branch": "fix/career-sprint",
+  "integrationTarget": "not applicable",
+  "preexistingUserWork": "backend/.env.example: initial 11-line hunk preserved",
+  "approvals": [
+    "5 uncached AI attempts/owner/fixed hour; 1 active/owner; 8 globally; deterministic fallback",
+    "Optional new Weekly Reports tasksOverdue count without changing scores"
+  ],
+  "backendPostCleanup": {
+    "status": "FAIL",
+    "tests": 62,
+    "pass": 61,
+    "fail": 1,
+    "skipped": 0,
+    "failure": "careerSprintPerformance.test.js memory p95 61.24ms vs unchanged <50ms"
+  },
+  "mongo": {
+    "status": "PASS",
+    "tests": 11,
+    "pass": 11,
+    "fail": 0,
+    "skipped": 0,
+    "actualRedisAvailable": false,
+    "disposableReplicaSet": true
+  },
+  "crossModule": {
+    "status": "FAIL",
+    "tests": 39,
+    "pass": 36,
+    "fail": 3,
+    "failedChildren": 2,
+    "failedParent": 1,
+    "details": "Learning Hub pagination 3 vs expected 4; evidence-unavailable 503 vs expected 200; Sprint handoff passed"
+  },
+  "angular": {
+    "status": "PASS",
+    "tests": 30,
+    "files": 5,
+    "skipped": 0,
+    "postCleanup": true
+  },
+  "typeScript": "PASS",
+  "productionBuild": {
+    "status": "PASS",
+    "postCleanup": true,
+    "seconds": 80.243,
+    "bundle": "main-IF3PLBTM.js",
+    "unchangedFromBrowserVerification": true,
+    "warning": "Existing Landing Page SCSS 56.67kB vs 48kB warning budget"
+  },
+  "realApi": {
+    "status": "PASS",
+    "groups": 5
+  },
+  "realBrowser": {
+    "status": "PASS",
+    "groups": 5,
+    "approvedOverdueCount": true
+  },
+  "ui": {
+    "status": "PASS",
+    "layouts": 24,
+    "interactions": 3,
+    "additionalStates": 8,
+    "bundle": "main-IF3PLBTM.js"
+  },
+  "formatting": {
+    "status": "PASS",
+    "sourceFileCount": 17,
+    "executable": "frontend/node_modules/prettier/bin/prettier.cjs",
+    "writeThenCheck": true,
+    "backendNone": {
+      "paths": [
+        "backend/src/controllers/careerSprintController.js",
+        "backend/src/services/aiTaskService.js",
+        "backend/src/services/sprintOverviewCacheService.js",
+        "backend/src/services/sprintAiAdmissionService.js",
+        "backend/src/models/weeklyReport.js",
+        "backend/src/tests/careerSprintPlanningFinalization.test.js",
+        "backend/src/tests/careerSprintPerformance.test.js",
+        "backend/src/tests/sprintOverviewCache.test.js",
+        "backend/src/tests/sprintInvalidation.test.js",
+        "backend/src/tests/sprintAiAdmission.integration.test.js",
+        "backend/src/tests/weeklyReportSprint.test.js"
+      ],
+      "singleQuote": true,
+      "trailingComma": "none",
+      "printWidth": 120,
+      "endOfLine": "lf"
+    },
+    "weeklyReport": {
+      "paths": ["backend/src/services/weeklyReportService.js"],
+      "singleQuote": true,
+      "trailingComma": "all",
+      "printWidth": 100,
+      "endOfLine": "lf"
+    },
+    "frontend": {
+      "paths": [
+        "frontend/scripts/verify-career-sprint-live.cjs",
+        "frontend/src/app/pages/career-sprint/career-sprint.component.ts",
+        "frontend/src/app/pages/career-sprint/career-sprint.component.spec.ts",
+        "frontend/src/app/shared/services/career-sprint.service.ts",
+        "frontend/src/app/shared/services/career-sprint.service.spec.ts"
+      ],
+      "config": "frontend/.prettierrc"
+    },
+    "docs": "Existing configured ignore applies to docs; readable targeted edits retained without historical report reformatting"
+  },
+  "syntax": "PASS: all 13 changed backend/verifier JavaScript files",
+  "gitWhitespace": "PASS: unstaged and staged checks; index remains empty",
+  "cleanup": {
+    "removedTaskTemporaryFiles": 770,
+    "recursiveDeletion": false,
+    "sourceFilesMoved": [],
+    "sourceFilesDeleted": [],
+    "userWorkDeleted": false
+  },
+  "codeHashes": [
+    {
+      "path": "backend/src/controllers/careerSprintController.js",
+      "sha256": "3cbf1b5aa3737c29b2cf5dadf28dfe9f35169edf8a231fa6a2a1a4cd840e5ea5"
+    },
+    {
+      "path": "backend/src/services/aiTaskService.js",
+      "sha256": "06f6b9da253acc46b07fe073e9229b75c1d6afdc7cc3b49f69b1d4cd6b31fbde"
+    },
+    {
+      "path": "backend/src/services/sprintOverviewCacheService.js",
+      "sha256": "91acaa7c4ef963a88c9fbfff2446dfefd50fead0336cc0d7783c8e4236602efc"
+    },
+    {
+      "path": "backend/src/services/sprintAiAdmissionService.js",
+      "sha256": "37fead816ab66d95019d71dc0111172881a87d778d97a4f265877024c9b2a4ec"
+    },
+    {
+      "path": "backend/src/models/weeklyReport.js",
+      "sha256": "2430ce72b292ec05b3d77b429cebcd03178bd90fc75a293a3a95203cf5311d80"
+    },
+    {
+      "path": "backend/src/tests/careerSprintPlanningFinalization.test.js",
+      "sha256": "1c84ec5fbb078854fa3dd910c4fe3605be0b957facf4db5fe3b48b52c85f75d4"
+    },
+    {
+      "path": "backend/src/tests/careerSprintPerformance.test.js",
+      "sha256": "3793cf4a5e3f093658e4539dde5f4a714df331a4e1432bad4050351ef4941c6a"
+    },
+    {
+      "path": "backend/src/tests/sprintOverviewCache.test.js",
+      "sha256": "b385f5f2d2f08f4190d44f100182c833f580d5f8e365290e556783d8b2e94782"
+    },
+    {
+      "path": "backend/src/tests/sprintInvalidation.test.js",
+      "sha256": "fe591484040bd209b4a46883584ac4ae0115fe259015a3d68576219b297247da"
+    },
+    {
+      "path": "backend/src/tests/sprintAiAdmission.integration.test.js",
+      "sha256": "bd6b84973a7190c867497e3e2f0be7b034057b4a71f5ce931690e201002a149b"
+    },
+    {
+      "path": "backend/src/tests/weeklyReportSprint.test.js",
+      "sha256": "6b01b4c97a1137a3de9e2ac7b1c5743c5756df38ed941988a25ccb24ed105e13"
+    },
+    {
+      "path": "backend/src/services/weeklyReportService.js",
+      "sha256": "1a4a00dd1ce25eb24c26d8d8362cae1e6d67561e7cd8d1e41eb4b2e088278059"
+    },
+    {
+      "path": "frontend/scripts/verify-career-sprint-live.cjs",
+      "sha256": "736539a320e066f001cf3d5bc0f3832f617081962f1178f7e6f00e753484fada"
+    },
+    {
+      "path": "frontend/src/app/pages/career-sprint/career-sprint.component.ts",
+      "sha256": "bee9a1e69b0fa26fc6eb090af229c092e22c90f12d94c021bedc1fdc41d77efc"
+    },
+    {
+      "path": "frontend/src/app/pages/career-sprint/career-sprint.component.spec.ts",
+      "sha256": "6cdc20548879bea5c27576e79d73fe93b92360651f45dc60fa8f5a3775511ee7"
+    },
+    {
+      "path": "frontend/src/app/shared/services/career-sprint.service.ts",
+      "sha256": "76f1005d39dc041d4221e36bdad0a3f5161bba4c760b25d9e44e9f47d6f2ad19"
+    },
+    {
+      "path": "frontend/src/app/shared/services/career-sprint.service.spec.ts",
+      "sha256": "2de0f5180dc7c7c3580169515ecebf8234996c7fc79914d5d2bef355d4e7a94b"
+    }
+  ],
+  "remaining": [
+    "Intermittent Sprint memory latency gate",
+    "Two pre-existing Learning Hub test-contract failures",
+    "Live Redis and staging load/failover verification",
+    "Real configured provider quality/model compatibility and production legacy provenance verification"
+  ]
+}

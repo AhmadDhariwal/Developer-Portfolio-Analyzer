@@ -1,0 +1,134 @@
+{
+  "checkedAt": "2026-10-28T09:56:34.994Z",
+  "providerHttpRequests": 0,
+  "checks": [
+    "provider/user 429; denied requests do not consume other counters",
+    "two worker processes: one provider winner; global cap; job cap; release",
+    "logical expiry independent of TTL sweep; crash/restart leases; stale-token fencing",
+    "payload/header backoff; 401/403/429; three failures; cooldown extension",
+    "real authenticated routes and captured lee215 fixture; owner isolation; cross-worker revision invalidation",
+    "OAuth state owner isolation/replay rejection; admitted token exchange/identity; encrypted persistence",
+    "duplicate connection claim rejected; action 11 returns 429",
+    "authenticated encryption/AAD isolation; Mongo 503 with zero outbound calls; reconnect recovery",
+    "background polling admitted through Mongo; self-reported fixture persisted",
+    "HTTP 503 before provider work; immutable process store selection",
+    "five real cache-client states; Connect/Sync/downstream/disconnect; monotonically preserved Mongo counters; historical fixture snapshot/indexes unchanged",
+    "zero Redis governance calls; 12-admission bounded comparison"
+  ],
+  "performance": {
+    "workload": "12 sequential admissions, release outside timing",
+    "n": 12,
+    "p50Ms": 30.64140000000043,
+    "p95Ms": 45.66759999999704,
+    "p99Ms": 45.66759999999704,
+    "samplesMs": [
+      15.297600000001694, 22.068099999996775, 30.261600000001636, 30.30869999999777,
+      30.431300000000192, 30.64140000000043, 30.719199999999546, 30.98279999999795,
+      31.54229999999734, 31.892800000001444, 39.29320000000007, 45.66759999999704
+    ],
+    "collectionReads": 60,
+    "collectionReplacements": 48
+  },
+  "indexes": [
+    {
+      "v": 2,
+      "key": {
+        "_id": 1
+      },
+      "name": "_id_"
+    },
+    {
+      "v": 2,
+      "key": {
+        "expiresAt": 1
+      },
+      "name": "governance_expiry",
+      "expireAfterSeconds": 0
+    }
+  ],
+  "redisStates": [
+    {
+      "mode": "healthy",
+      "cacheResult": "redis",
+      "connect": 200,
+      "sync": 200,
+      "downstream": 200,
+      "before": 2,
+      "after": 4,
+      "cacheCommands": ["CLIENT", "CLIENT", "SET", "GET"]
+    },
+    {
+      "mode": "unavailable",
+      "cacheResult": "miss",
+      "connect": 200,
+      "sync": 200,
+      "downstream": 200,
+      "before": 4,
+      "after": 6,
+      "cacheCommands": []
+    },
+    {
+      "mode": "quota",
+      "cacheResult": "miss",
+      "connect": 200,
+      "sync": 200,
+      "downstream": 200,
+      "before": 6,
+      "after": 8,
+      "cacheCommands": ["CLIENT", "CLIENT", "SET", "GET"]
+    },
+    {
+      "mode": "timeout",
+      "cacheResult": "miss",
+      "connect": 200,
+      "sync": 200,
+      "downstream": 200,
+      "before": 8,
+      "after": 10,
+      "cacheCommands": ["CLIENT", "CLIENT", "GET"]
+    },
+    {
+      "mode": "recovered",
+      "cacheResult": "redis",
+      "connect": 200,
+      "sync": 200,
+      "downstream": 200,
+      "before": 10,
+      "after": 12,
+      "cacheCommands": ["CLIENT", "CLIENT", "SET", "GET"]
+    }
+  ],
+  "redisGovernanceCalls": 0,
+  "fixtureReplays": 14,
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 115,
+    "productionDataUsed": false
+  },
+  "focusedTests": {
+    "passed": 25,
+    "failed": 0,
+    "skipped": 0,
+    "scope": "13 checks in the final Mongo/cache acceptance invocation plus 12 affected governance/lifecycle/cache-probe checks passed in the preceding invocation; that preceding invocation also had a worker-startup timeout, resolved by running only the affected Mongo acceptance file.",
+    "commands": [
+      "node --test src/tests/integrationMongoGovernance.test.js",
+      "node --test src/tests/integrationMongoGovernance.test.js src/tests/integrationsGovernance.test.js src/tests/integrationsLifecycle.test.js src/tests/redisConnectionProbe.test.js"
+    ]
+  },
+  "verdict": {
+    "redisIndependentConnectSync": "PASS",
+    "rateLimits": "PASS",
+    "concurrency": "PASS",
+    "authorization": "PASS",
+    "failureRecovery": "PASS",
+    "dataPreservation": "PASS",
+    "localReadiness": "PASS",
+    "scope": "Current working tree, disposable local replica, two worker processes and a Redis-protocol fixture through real node-redis; not deployment acceptance."
+  },
+  "authority": "MongoDB always; legacy INTEGRATION_GOVERNANCE_STORE cannot select Redis",
+  "failedAttempts": [
+    "First Redis matrix exposed a real cache shutdown race during QUIT; fixed by awaiting disconnect rejection and avoiding already-closed disconnect.",
+    "Following combined invocation hit the existing six-second worker startup deadline before Mongo subtests; other 12 focused checks passed. Running only the affected acceptance file passed without changing any timeout."
+  ],
+  "productionConfigurationChanged": false
+}

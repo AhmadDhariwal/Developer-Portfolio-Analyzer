@@ -9,7 +9,8 @@ import { environment } from '../../environments/environment';
 const BACKEND_ORIGINS = [environment.apiOrigin].filter(Boolean);
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const isBackend = req.url.startsWith('/api') || BACKEND_ORIGINS.some((origin) => req.url.startsWith(origin));
+  const isBackend =
+    req.url.startsWith('/api') || BACKEND_ORIGINS.some((origin) => req.url.startsWith(origin));
 
   // X-Skip-Auth signals that this request must NOT carry a JWT
   // (used for public endpoints like invite-details that should work without auth)
@@ -23,7 +24,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const maintenanceMode = inject(MaintenanceModeService);
 
   // Ignore 401s from login/register/auth endpoints so credential errors display on the login form
-  const isAuthEndpoint = req.url.includes('/auth/login') ||
+  const isAuthEndpoint =
+    req.url.includes('/auth/login') ||
     req.url.includes('/auth/register') ||
     req.url.includes('/auth/verify-otp') ||
     req.url.includes('/auth/forgot-password') ||
@@ -38,32 +40,53 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     if (!currentUrl.startsWith('/auth/')) {
       authService.logout(true, currentUrl);
     }
-    return throwError(() => new HttpErrorResponse({
-      error: { message: 'Session expired' },
-      status: 401,
-      statusText: 'Unauthorized',
-      url: req.url
-    }));
+    return throwError(
+      () =>
+        new HttpErrorResponse({
+          error: { message: 'Session expired' },
+          status: 401,
+          statusText: 'Unauthorized',
+          url: req.url,
+        }),
+    );
   }
 
-  const authReq = (isBackend && token && !skipAuth)
-    ? cleanReq.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
-    : cleanReq;
+  const authReq =
+    isBackend && token && !skipAuth
+      ? cleanReq.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
+      : cleanReq;
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
       // Only treat 401 as session expiry for our own backend protected endpoints
-      if (isBackend && !skipAuth && !isAuthEndpoint && error.status === 401) {
+      const passwordChallengeFailed =
+        req.url.split('?')[0].endsWith('/profile/password') &&
+        error.error?.code === 'CURRENT_PASSWORD_INCORRECT';
+      if (
+        isBackend &&
+        !skipAuth &&
+        !isAuthEndpoint &&
+        !passwordChallengeFailed &&
+        error.status === 401
+      ) {
         const currentUrl = router.url;
         const isAlreadyOnAuth = currentUrl.startsWith('/auth/');
         authService.logout(true, isAlreadyOnAuth ? undefined : currentUrl);
       }
-      if (isBackend && error.status === 503 && String(error.error?.message || '').toLowerCase().includes('maintenance')) {
+      if (
+        isBackend &&
+        error.status === 503 &&
+        String(error.error?.message || '')
+          .toLowerCase()
+          .includes('maintenance')
+      ) {
         authService.logout(false);
-        maintenanceMode.open('Application is under maintenance. Go back to sign in because access is disabled while maintenance mode is active.');
+        maintenanceMode.open(
+          'Application is under maintenance. Go back to sign in because access is disabled while maintenance mode is active.',
+        );
         router.navigate(['/auth/login']);
       }
       return throwError(() => error);
-    })
+    }),
   );
 };

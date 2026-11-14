@@ -1,0 +1,56 @@
+{
+  "gate": "Gate 1: Live B2 Verification",
+  "timestamp": "2026-11-02T10:03:04.059Z",
+  "configuration": {
+    "driver": "b2",
+    "resumesBucketConfigured": true,
+    "resumesRegion": "us-east-005",
+    "resumesEndpoint": "https://s3.us-east-005.backblazeb2.com",
+    "imagesBucketConfigured": true,
+    "imagesRegion": "us-east-005",
+    "distinctBuckets": true,
+    "distinctCredentials": true
+  },
+  "checks": {
+    "bucketPrivacy": {
+      "directPublicAccessUrl": "https://s3.us-east-005.backblazeb2.com/***/probe-check-unauth.txt",
+      "directPublicHttpStatus": 401,
+      "isPrivate": true
+    },
+    "authenticatedResumesBucketAccess": true,
+    "crossCredentialAccessDenied": true,
+    "uploadV1": {
+      "versionIdRecorded": true,
+      "versionIdPrefix": "4_z65c9c..."
+    },
+    "readV1": {
+      "bytesMatches": true,
+      "sha256Matches": true
+    },
+    "replacementV2": {
+      "versionIdRecorded": true,
+      "distinctVersions": true
+    },
+    "versionPinnedIntegrity": {
+      "v1PinnedShaMatches": true,
+      "v2PinnedShaMatches": true
+    },
+    "encryption": {
+      "serverSideEncryption": "AES256",
+      "cacheControl": "private, no-store"
+    },
+    "versionedDeletion": {
+      "deletedCount": 2,
+      "minimumVersionsDeleted": true,
+      "remainingVersions": 0
+    }
+  },
+  "performance": {
+    "headBucketMs": 808,
+    "putV1Ms": 1286,
+    "readV1Ms": 242,
+    "putV2Ms": 941,
+    "removeMs": 677
+  },
+  "passed": true
+}

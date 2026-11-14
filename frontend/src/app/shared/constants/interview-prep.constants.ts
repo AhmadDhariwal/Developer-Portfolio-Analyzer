@@ -7,13 +7,43 @@
 
 /** Canonical list of supported interview prep skill/topic keys. */
 export const INTERVIEW_SKILLS: string[] = [
-  'javascript', 'typescript', 'python', 'java', 'cpp',
-  'angular', 'react', 'nodejs', 'expressjs', 'nextjs',
-  'mongodb', 'mysql', 'postgresql', 'redis', 'rest-apis',
-  'graphql', 'html', 'css', 'git-github', 'oop', 'dsa',
-  'aws', 'generative-ai', 'ai-agents', 'llm', 'rag',
-  'langchain', 'system-design', 'mern', 'mean',
-  'full-stack-web-development'
+  'javascript',
+  'typescript',
+  'python',
+  'java',
+  'cpp',
+  'csharp',
+  'dotnet',
+  'angular',
+  'react',
+  'react-native',
+  'nodejs',
+  'expressjs',
+  'nextjs',
+  'mongodb',
+  'mysql',
+  'postgresql',
+  'sql',
+  'redis',
+  'docker',
+  'kubernetes',
+  'rest-apis',
+  'graphql',
+  'html',
+  'css',
+  'git-github',
+  'oop',
+  'dsa',
+  'aws',
+  'generative-ai',
+  'ai-agents',
+  'llm',
+  'rag',
+  'langchain',
+  'system-design',
+  'mern',
+  'mean',
+  'full-stack-web-development',
 ];
 
 /** Human-readable display labels keyed by skill key. */
@@ -23,6 +53,12 @@ export const SKILL_LABELS: Record<string, string> = {
   python: 'Python',
   java: 'Java',
   cpp: 'C++',
+  csharp: 'C#',
+  dotnet: '.NET',
+  'react-native': 'React Native',
+  sql: 'SQL',
+  docker: 'Docker',
+  kubernetes: 'Kubernetes',
   angular: 'Angular',
   react: 'React',
   nodejs: 'Node.js',
@@ -48,7 +84,7 @@ export const SKILL_LABELS: Record<string, string> = {
   'system-design': 'System Design',
   mern: 'Full Stack / MERN',
   mean: 'MEAN',
-  'full-stack-web-development': 'Full Stack Web Development'
+  'full-stack-web-development': 'Full Stack Web Development',
 };
 
 /**
@@ -88,9 +124,12 @@ export const SKILL_MATCH_ALIASES: Record<string, string[]> = {
   mern: ['mern', 'mongo express react node', 'mern stack'],
   mean: ['mean', 'mongo express angular node', 'mean stack'],
   'full-stack-web-development': [
-    'full-stack-web-development', 'fullstack', 'full stack',
-    'full stack web', 'full stack development'
-  ]
+    'full-stack-web-development',
+    'fullstack',
+    'full stack',
+    'full stack web',
+    'full stack development',
+  ],
 };
 
 /**
@@ -100,17 +139,17 @@ export const SKILL_MATCH_ALIASES: Record<string, string[]> = {
  * Returns '' for unknown stacks — avoids forcing the wrong skill.
  */
 export const CAREER_STACK_TO_SKILL: Record<string, string> = {
-  'frontend': 'react',
-  'backend': 'nodejs',
+  frontend: 'react',
+  backend: 'nodejs',
   'full stack': 'mern',
   'ai/ml': 'generative-ai',
   // extra aliases for flexibility
-  'fullstack': 'mern',
+  fullstack: 'mern',
   'full-stack': 'mern',
-  'python': 'python',
-  'java': 'java',
-  'devops': 'aws',
-  'angular': 'angular',
-  'react': 'react',
-  'node': 'nodejs'
+  python: 'python',
+  java: 'java',
+  devops: 'aws',
+  angular: 'angular',
+  react: 'react',
+  node: 'nodejs',
 };

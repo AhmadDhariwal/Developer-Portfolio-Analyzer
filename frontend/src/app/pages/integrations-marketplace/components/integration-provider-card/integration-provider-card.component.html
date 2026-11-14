@@ -1,0 +1,230 @@
+<!-- Card Top / Header -->
+<div class="card-top">
+  <div class="card-top__left">
+    <div class="provider-icon" [style.color]="color || '#94a3b8'" [innerHTML]="icon"></div>
+    <div class="provider-heading">
+      <h3 class="provider-name">{{ item.name }}</h3>
+      <span class="category-pill">{{ item.category }}</span>
+    </div>
+  </div>
+
+  <div class="card-top__status">
+    <span class="status-pill" [ngClass]="item.status">
+      <span *ngIf="item.status === 'connected' && !unavailable" class="status-dot-pulse"></span>
+      {{
+        unavailable
+          ? 'Unavailable'
+          : item.status === 'connected'
+            ? 'Connected'
+            : item.status === 'error'
+              ? 'Error'
+              : item.status === 'pending' || item.status === 'connecting'
+                ? 'Pending'
+                : 'Available'
+      }}
+    </span>
+  </div>
+</div>
+
+<!-- Description (Stable Height) -->
+<p class="description">{{ item.description }}</p>
+
+<!-- Impact Tags (Stable Height) -->
+<div class="impact-tags">
+  <span class="impact-tag" *ngFor="let impact of getImpactItems(item.provider)">{{ impact }}</span>
+</div>
+
+<!-- Credentials & Connection Metadata Zone (Zero Fluctuation Height) -->
+<div class="credentials-zone">
+  <!-- Connected State Meta -->
+  <div class="meta-connected" *ngIf="item.status === 'connected'">
+    <div class="meta-row" *ngIf="item.externalUsername">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </svg>
+      <span class="meta-user font-mono">{{ item.externalUsername }}</span>
+    </div>
+    <div class="meta-row" *ngIf="item.lastSyncedAt">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="12 6 12 12 16 14" />
+      </svg>
+      <span class="meta-sync font-mono">Synced {{ item.lastSyncedAt | date: 'MMM d, HH:mm' }}</span>
+    </div>
+    <p class="field-hint" *ngIf="item.resourceSummary">
+      Public sample: {{ item.resourceSummary.notebooks }} notebooks,
+      {{ item.resourceSummary.datasets }} datasets. Ownership unverified; scoring unchanged.
+    </p>
+    <div class="meta-live-badge" *ngIf="!unavailable && item.provider !== 'kaggle'">
+      <span class="live-dot"></span>
+      <span>{{
+        item.provider === 'github'
+          ? 'Webhook & Live Ingestion Active'
+          : 'On-Demand Ingestion Synced'
+      }}</span>
+    </div>
+  </div>
+
+  <!-- Disconnected OAuth2 Mode Badge -->
+  <div class="meta-oauth" *ngIf="item.status !== 'connected' && item.authMode === 'oauth2'">
+    <div class="oauth-badge">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="13"
+        height="13"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+      </svg>
+      <span>OAuth2 Secure Authentication</span>
+    </div>
+    <p class="oauth-desc">
+      OAuth tokens are encrypted server-side. This page does not collect provider passwords.
+    </p>
+  </div>
+
+  <!-- Disconnected Manual Inputs -->
+  <div
+    class="manual-fields"
+    *ngIf="item.status !== 'connected' && item.authMode === 'manual' && !unavailable"
+  >
+    <div class="field-wrap">
+      <label [for]="'input-' + item.provider">{{ getInputLabel(item.provider) }}</label>
+      <div class="input-shell">
+        <input
+          [id]="'input-' + item.provider"
+          type="text"
+          [placeholder]="getInputPlaceholder(item.provider)"
+          [ngModel]="username"
+          (ngModelChange)="usernameChange.emit($event)"
+          [disabled]="busyProvider === item.provider"
+        />
+      </div>
+      <span class="field-hint" *ngIf="getInputHint(item.provider)">{{
+        getInputHint(item.provider)
+      }}</span>
+    </div>
+  </div>
+</div>
+
+<!-- Secondary Action for Kaggle: Linked Profile Fallback inside card -->
+<div class="card-secondary-zone" *ngIf="item.provider === 'kaggle'">
+  <app-kaggle-linked-profile />
+</div>
+
+<!-- Action Footer (Anchored to Bottom) -->
+<div class="actions">
+  <!-- Connected State Buttons -->
+  <ng-container *ngIf="item.status === 'connected'">
+    <button
+      type="button"
+      class="btn btn-secondary sync-btn"
+      (click)="sync.emit(item.provider)"
+      [disabled]="busyProvider === item.provider || unavailable"
+    >
+      <svg
+        [class.spinning]="busyProvider === item.provider && busyAction === 'sync'"
+        xmlns="http://www.w3.org/2000/svg"
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+      >
+        <polyline points="23 4 23 10 17 10" />
+        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+      </svg>
+      <span>{{
+        busyProvider === item.provider && busyAction === 'sync' ? 'Syncing…' : 'Sync Now'
+      }}</span>
+    </button>
+
+    <button
+      type="button"
+      class="btn btn-danger disconnect-btn"
+      (click)="disconnect.emit(item)"
+      [disabled]="busyProvider === item.provider"
+    >
+      <span
+        *ngIf="busyProvider === item.provider && busyAction === 'disconnect'"
+        class="btn-spinner"
+      ></span>
+      <span>{{
+        busyProvider === item.provider && busyAction === 'disconnect'
+          ? 'Disconnecting…'
+          : 'Disconnect'
+      }}</span>
+    </button>
+  </ng-container>
+
+  <!-- Disconnected State Connect Button -->
+  <ng-container *ngIf="item.status !== 'connected'">
+    <button
+      type="button"
+      class="btn btn-primary connect-btn"
+      (click)="connect.emit(item)"
+      [disabled]="busyProvider === item.provider || unavailable"
+    >
+      <svg
+        *ngIf="busyProvider !== item.provider && item.authMode === 'oauth2'"
+        xmlns="http://www.w3.org/2000/svg"
+        width="13"
+        height="13"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+      >
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+      </svg>
+      <svg
+        *ngIf="busyProvider !== item.provider && item.authMode === 'manual'"
+        xmlns="http://www.w3.org/2000/svg"
+        width="13"
+        height="13"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+      >
+        <line x1="22" y1="2" x2="11" y2="13" />
+        <polygon points="22 2 15 22 11 13 2 9 22 2" />
+      </svg>
+      <span *ngIf="busyProvider === item.provider" class="btn-spinner"></span>
+      <span>
+        {{
+          busyProvider === item.provider
+            ? item.authMode === 'oauth2'
+              ? 'Connecting…'
+              : 'Connecting + Syncing…'
+            : item.authMode === 'oauth2'
+              ? 'Connect with OAuth'
+              : 'Connect + Sync'
+        }}
+      </span>
+    </button>
+  </ng-container>
+</div>

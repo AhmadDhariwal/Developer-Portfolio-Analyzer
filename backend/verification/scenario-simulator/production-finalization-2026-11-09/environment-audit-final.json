@@ -1,0 +1,176 @@
+[
+  {
+    "file": "backend/.env",
+    "relevant": [
+      {
+        "name": "NODE_ENV",
+        "occurrences": 1,
+        "configured": true
+      },
+      {
+        "name": "MONGODB_URI",
+        "occurrences": 1,
+        "configured": true
+      },
+      {
+        "name": "REDIS_URL",
+        "occurrences": 1,
+        "configured": true
+      },
+      {
+        "name": "UPSTASH_REDIS_HOST",
+        "occurrences": 1,
+        "configured": true
+      },
+      {
+        "name": "UPSTASH_REDIS_PORT",
+        "occurrences": 1,
+        "configured": true
+      },
+      {
+        "name": "UPSTASH_REDIS_TOKEN",
+        "occurrences": 1,
+        "configured": true
+      },
+      {
+        "name": "JWT_SECRET",
+        "occurrences": 1,
+        "configured": true
+      },
+      {
+        "name": "JWT_ISSUER",
+        "occurrences": 1,
+        "configured": true
+      },
+      {
+        "name": "JWT_AUDIENCE",
+        "occurrences": 1,
+        "configured": true
+      },
+      {
+        "name": "SCENARIO_LIMIT_MODE",
+        "occurrences": 0,
+        "configured": false
+      },
+      {
+        "name": "SCENARIO_AUDIT_URI",
+        "occurrences": 0,
+        "configured": false
+      },
+      {
+        "name": "SCENARIO_MIGRATION_URI",
+        "occurrences": 0,
+        "configured": false
+      }
+    ],
+    "duplicateNames": [
+      {
+        "Name": "COURSES_SPRINT_RATE_LIMIT_MAX",
+        "Count": 2
+      },
+      {
+        "Name": "SUPPORT_INBOX_EMAIL",
+        "Count": 2
+      }
+    ]
+  },
+  {
+    "file": "backend/.env.example",
+    "relevant": [
+      {
+        "name": "NODE_ENV",
+        "occurrences": 1,
+        "configured": true
+      },
+      {
+        "name": "MONGODB_URI",
+        "occurrences": 1,
+        "configured": true
+      },
+      {
+        "name": "REDIS_URL",
+        "occurrences": 1,
+        "configured": false
+      },
+      {
+        "name": "UPSTASH_REDIS_HOST",
+        "occurrences": 1,
+        "configured": false
+      },
+      {
+        "name": "UPSTASH_REDIS_PORT",
+        "occurrences": 1,
+        "configured": true
+      },
+      {
+        "name": "UPSTASH_REDIS_TOKEN",
+        "occurrences": 1,
+        "configured": false
+      },
+      {
+        "name": "JWT_SECRET",
+        "occurrences": 1,
+        "configured": true
+      },
+      {
+        "name": "JWT_ISSUER",
+        "occurrences": 1,
+        "configured": true
+      },
+      {
+        "name": "JWT_AUDIENCE",
+        "occurrences": 1,
+        "configured": true
+      },
+      {
+        "name": "SCENARIO_LIMIT_MODE",
+        "occurrences": 1,
+        "configured": false
+      },
+      {
+        "name": "SCENARIO_AUDIT_URI",
+        "occurrences": 1,
+        "configured": false
+      },
+      {
+        "name": "SCENARIO_MIGRATION_URI",
+        "occurrences": 1,
+        "configured": false
+      }
+    ],
+    "duplicateNames": [
+      {
+        "Name": "COURSES_MEMORY_TTL_MS",
+        "Count": 2
+      },
+      {
+        "Name": "COURSES_MUTATION_RATE_LIMIT_MAX",
+        "Count": 2
+      },
+      {
+        "Name": "COURSES_RATE_LIMIT_WINDOW_MS",
+        "Count": 2
+      },
+      {
+        "Name": "COURSES_READ_RATE_LIMIT_MAX",
+        "Count": 2
+      },
+      {
+        "Name": "COURSES_REDIS_LOOKUP_BUDGET_MS",
+        "Count": 2
+      },
+      {
+        "Name": "COURSES_REDIS_TTL_SECONDS",
+        "Count": 2
+      },
+      {
+        "Name": "COURSES_REFRESH_RATE_LIMIT_MAX",
+        "Count": 2
+      },
+      {
+        "Name": "COURSES_SPRINT_RATE_LIMIT_MAX",
+        "Count": 2
+      }
+    ]
+  }
+]

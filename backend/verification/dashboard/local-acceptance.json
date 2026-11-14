@@ -1,0 +1,469 @@
+{
+  "synthetic": true,
+  "productionDataUsed": false,
+  "checks": [
+    "real JWT, two users isolated, canonical skill scope, zero portfolio, no cross-stack trend, weighted sprint, learning progress, canonical news, cross-process 304",
+    "upstream write visible immediately in both independent API processes"
+  ],
+  "performance": {
+    "sampleCount": 30,
+    "concurrency": 10,
+    "users": 2,
+    "apiProcesses": 2,
+    "maxPoolSizePerProcess": 10,
+    "p50Ms": 209,
+    "p95Ms": 352,
+    "maxMs": 354,
+    "summaryBytes": 7824,
+    "limitation": "Synthetic loopback, single-member disposable replica set, not representative staging load"
+  },
+  "plans": {
+    "newsCanonical": {
+      "winningPlan": {
+        "isCached": true,
+        "stage": "LIMIT",
+        "limitAmount": 1,
+        "inputStage": {
+          "stage": "PROJECTION_SIMPLE",
+          "transformBy": {
+            "trendingTopics": 1,
+            "lastUpdated": 1,
+            "updatedAt": 1
+          },
+          "inputStage": {
+            "stage": "FETCH",
+            "filter": {
+              "expiresAt": {
+                "$gt": "2026-11-12T08:15:20.000Z"
+              }
+            },
+            "inputStage": {
+              "stage": "IXSCAN",
+              "keyPattern": {
+                "cacheKey": 1
+              },
+              "indexName": "cacheKey_1",
+              "isMultiKey": false,
+              "multiKeyPaths": {
+                "cacheKey": []
+              },
+              "isUnique": true,
+              "isSparse": false,
+              "isPartial": false,
+              "indexVersion": 2,
+              "direction": "forward",
+              "indexBounds": {
+                "cacheKey": [
+                  "[\"news:v3:public:pool\", \"news:v3:public:pool\"]"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "keysExamined": 1,
+      "documentsExamined": 1,
+      "returned": 1
+    },
+    "newsLegacy": {
+      "winningPlan": {
+        "isCached": false,
+        "stage": "SORT",
+        "sortPattern": {
+          "lastUpdated": -1,
+          "updatedAt": -1
+        },
+        "memLimit": 104857600,
+        "limitAmount": 1,
+        "type": "simple",
+        "inputStage": {
+          "stage": "FETCH",
+          "inputStage": {
+            "stage": "IXSCAN",
+            "keyPattern": {
+              "expiresAt": 1
+            },
+            "indexName": "expiresAt_1",
+            "isMultiKey": false,
+            "multiKeyPaths": {
+              "expiresAt": []
+            },
+            "isUnique": false,
+            "isSparse": false,
+            "isPartial": false,
+            "indexVersion": 2,
+            "direction": "forward",
+            "indexBounds": {
+              "expiresAt": [
+                "(new Date(1794471320001), new Date(9223372036854775807)]"
+              ]
+            }
+          }
+        }
+      },
+      "keysExamined": 500,
+      "documentsExamined": 500,
+      "returned": 1
+    },
+    "portfolioCurrent": {
+      "winningPlan": {
+        "isCached": true,
+        "stage": "SORT",
+        "sortPattern": {
+          "updatedAt": -1,
+          "_id": -1
+        },
+        "memLimit": 104857600,
+        "limitAmount": 1,
+        "type": "simple",
+        "inputStage": {
+          "stage": "FETCH",
+          "filter": {
+            "analysisData.portfolioScore.overallScore": {
+              "$exists": true
+            }
+          },
+          "inputStage": {
+            "stage": "IXSCAN",
+            "keyPattern": {
+              "userId": 1,
+              "githubUsername": 1,
+              "careerStack": 1,
+              "experienceLevel": 1,
+              "analysisVersion": 1,
+              "resumeHash": 1,
+              "resumeAnalysisId": 1,
+              "signalHash": 1
+            },
+            "indexName": "userId_1_githubUsername_1_careerStack_1_experienceLevel_1_analysisVersion_1_resumeHash_1_resumeAnalysisId_1_signalHash_1",
+            "isMultiKey": false,
+            "multiKeyPaths": {
+              "userId": [],
+              "githubUsername": [],
+              "careerStack": [],
+              "experienceLevel": [],
+              "analysisVersion": [],
+              "resumeHash": [],
+              "resumeAnalysisId": [],
+              "signalHash": []
+            },
+            "isUnique": false,
+            "isSparse": false,
+            "isPartial": false,
+            "indexVersion": 2,
+            "direction": "forward",
+            "indexBounds": {
+              "userId": [
+                "[ObjectId('6af57582d76ee6dcf1d723e6'), ObjectId('6af57582d76ee6dcf1d723e6')]"
+              ],
+              "githubUsername": [
+                "[\"fixture-dev\", \"fixture-dev\"]"
+              ],
+              "careerStack": [
+                "[\"Backend\", \"Backend\"]"
+              ],
+              "experienceLevel": [
+                "[\"Student\", \"Student\"]"
+              ],
+              "analysisVersion": [
+                "[MinKey, MaxKey]"
+              ],
+              "resumeHash": [
+                "[\"no-resume\", \"no-resume\"]"
+              ],
+              "resumeAnalysisId": [
+                "[\"no-resume\", \"no-resume\"]"
+              ],
+              "signalHash": [
+                "[MinKey, MaxKey]"
+              ]
+            }
+          }
+        }
+      },
+      "keysExamined": 3,
+      "documentsExamined": 2,
+      "returned": 1
+    },
+    "declaredIndexes": {
+      "analysisCache": [
+        {
+          "v": 2,
+          "key": {
+            "_id": 1
+          },
+          "name": "_id_"
+        },
+        {
+          "v": 2,
+          "key": {
+            "createdAt": 1
+          },
+          "name": "createdAt_1",
+          "expireAfterSeconds": 604800
+        },
+        {
+          "v": 2,
+          "key": {
+            "userId": 1,
+            "githubUsername": 1,
+            "careerStack": 1,
+            "experienceLevel": 1,
+            "analysisVersion": 1,
+            "resumeHash": 1,
+            "resumeAnalysisId": 1,
+            "signalHash": 1
+          },
+          "name": "userId_1_githubUsername_1_careerStack_1_experienceLevel_1_analysisVersion_1_resumeHash_1_resumeAnalysisId_1_signalHash_1"
+        },
+        {
+          "v": 2,
+          "key": {
+            "userId": 1,
+            "analysisVersion": 1,
+            "updatedAt": -1
+          },
+          "name": "userId_1_analysisVersion_1_updatedAt_-1"
+        },
+        {
+          "v": 2,
+          "key": {
+            "userId": 1,
+            "updatedAt": -1
+          },
+          "name": "skill_gap_signal_lookup",
+          "partialFilterExpression": {
+            "analysisData.missingSkills.0": {
+              "$exists": true
+            }
+          }
+        },
+        {
+          "v": 2,
+          "key": {
+            "userId": 1,
+            "careerStack": 1,
+            "experienceLevel": 1,
+            "analysisVersion": 1,
+            "updatedAt": -1
+          },
+          "name": "course_skill_signal_lookup",
+          "partialFilterExpression": {
+            "analysisVersion": "v6-skill-intelligence",
+            "analysisData.missingSkills.0": {
+              "$exists": true
+            }
+          }
+        },
+        {
+          "v": 2,
+          "key": {
+            "userId": 1,
+            "analysisVersion": 1,
+            "signalHash": 1,
+            "updatedAt": -1
+          },
+          "name": "course_pool_lookup",
+          "partialFilterExpression": {
+            "analysisVersion": "courses_pool_v5"
+          }
+        }
+      ],
+      "news": [
+        {
+          "v": 2,
+          "key": {
+            "_id": 1
+          },
+          "name": "_id_"
+        },
+        {
+          "v": 2,
+          "key": {
+            "cacheKey": 1
+          },
+          "name": "cacheKey_1",
+          "unique": true
+        },
+        {
+          "v": 2,
+          "key": {
+            "expiresAt": 1
+          },
+          "name": "expiresAt_1",
+          "expireAfterSeconds": 0
+        }
+      ],
+      "analysis": [
+        {
+          "v": 2,
+          "key": {
+            "_id": 1
+          },
+          "name": "_id_"
+        },
+        {
+          "v": 2,
+          "key": {
+            "userId": 1,
+            "updatedAt": -1,
+            "createdAt": -1
+          },
+          "name": "userId_1_updatedAt_-1_createdAt_-1"
+        },
+        {
+          "v": 2,
+          "key": {
+            "userId": 1,
+            "githubAnalysisVersion": 1,
+            "updatedAt": -1
+          },
+          "name": "userId_1_githubAnalysisVersion_1_updatedAt_-1"
+        }
+      ],
+      "userCourseProgress": [
+        {
+          "v": 2,
+          "key": {
+            "_id": 1
+          },
+          "name": "_id_"
+        },
+        {
+          "v": 2,
+          "key": {
+            "userId": 1,
+            "courseId": 1
+          },
+          "name": "user_course_identity",
+          "unique": true
+        },
+        {
+          "v": 2,
+          "key": {
+            "userId": 1,
+            "status": 1,
+            "updatedAt": -1,
+            "_id": -1
+          },
+          "name": "user_course_status"
+        },
+        {
+          "v": 2,
+          "key": {
+            "userId": 1,
+            "updatedAt": -1,
+            "_id": -1
+          },
+          "name": "user_course_recent"
+        }
+      ],
+      "integrationSyncLog": [
+        {
+          "v": 2,
+          "key": {
+            "_id": 1
+          },
+          "name": "_id_"
+        },
+        {
+          "v": 2,
+          "key": {
+            "userId": 1
+          },
+          "name": "userId_1"
+        },
+        {
+          "v": 2,
+          "key": {
+            "provider": 1
+          },
+          "name": "provider_1"
+        },
+        {
+          "v": 2,
+          "key": {
+            "createdAt": 1
+          },
+          "name": "createdAt_1"
+        },
+        {
+          "v": 2,
+          "key": {
+            "userId": 1,
+            "provider": 1,
+            "createdAt": -1
+          },
+          "name": "userId_1_provider_1_createdAt_-1"
+        }
+      ]
+    }
+  },
+  "browser": {
+    "requestPaths": [
+      "/api/dashboard/summary",
+      "/api/dashboard/contributions",
+      "/api/dashboard/languages",
+      "/api/dashboard/integration-analytics"
+    ],
+    "status": "PASS",
+    "themes": [
+      "light",
+      "dark",
+      "system"
+    ],
+    "mobileWidth": 390,
+    "consoleErrors": [],
+    "screenshots": [
+      "desktop-light.png",
+      "desktop-dark.png",
+      "mobile-dark.png"
+    ],
+    "limitation": "Synthetic authenticated local fixture, including System preference changes"
+  },
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 174,
+    "productionDataUsed": false
+  },
+  "summaryQueryCount": 27,
+  "apiEndpoints": {
+    "summary": {
+      "status": 200,
+      "elapsedMs": 73,
+      "bytes": 7824,
+      "queries": 27
+    },
+    "contributions": {
+      "status": 200,
+      "elapsedMs": 27,
+      "bytes": 189,
+      "queries": 3
+    },
+    "languages": {
+      "status": 200,
+      "elapsedMs": 12,
+      "bytes": 129,
+      "queries": 3
+    },
+    "skills": {
+      "status": 200,
+      "elapsedMs": 19,
+      "bytes": 140,
+      "queries": 6
+    },
+    "recommendations": {
+      "status": 200,
+      "elapsedMs": 27,
+      "bytes": 51,
+      "queries": 5
+    },
+    "integration-analytics": {
+      "status": 200,
+      "elapsedMs": 24,
+      "bytes": 61,
+      "queries": 4
+    }
+  },
+  "status": "PASS"
+}

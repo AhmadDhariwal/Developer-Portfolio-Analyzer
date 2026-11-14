@@ -1,0 +1,1358 @@
+{
+  "phase": "before",
+  "timestamp": "2026-11-13T07:40:41.465Z",
+  "viewportsTested": 12,
+  "themesTested": 3,
+  "matrixResults": [
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "width": 320,
+      "height": 640,
+      "theme": "dark",
+      "pass": true,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "containerScrollWidth": 292,
+      "containerClientWidth": 292,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 1,
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 101,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "width": 320,
+      "height": 640,
+      "theme": "light",
+      "pass": true,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "containerScrollWidth": 292,
+      "containerClientWidth": 292,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 1,
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 101,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "width": 320,
+      "height": 640,
+      "theme": "system",
+      "pass": true,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "containerScrollWidth": 292,
+      "containerClientWidth": 292,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 1,
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 101,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "width": 375,
+      "height": 667,
+      "theme": "dark",
+      "pass": true,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "containerScrollWidth": 347,
+      "containerClientWidth": 347,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 1,
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 156,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "width": 375,
+      "height": 667,
+      "theme": "light",
+      "pass": true,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "containerScrollWidth": 347,
+      "containerClientWidth": 347,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 1,
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 156,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "width": 375,
+      "height": 667,
+      "theme": "system",
+      "pass": true,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "containerScrollWidth": 347,
+      "containerClientWidth": 347,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 1,
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 156,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "width": 390,
+      "height": 844,
+      "theme": "dark",
+      "pass": true,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "containerScrollWidth": 362,
+      "containerClientWidth": 362,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 1,
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 171,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "pass": true,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "containerScrollWidth": 362,
+      "containerClientWidth": 362,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 1,
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 171,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "width": 390,
+      "height": 844,
+      "theme": "system",
+      "pass": true,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "containerScrollWidth": 362,
+      "containerClientWidth": 362,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 1,
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 171,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "width": 430,
+      "height": 932,
+      "theme": "dark",
+      "pass": true,
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "containerScrollWidth": 402,
+      "containerClientWidth": 402,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 1,
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 211,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "width": 430,
+      "height": 932,
+      "theme": "light",
+      "pass": true,
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "containerScrollWidth": 402,
+      "containerClientWidth": 402,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 1,
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 211,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "width": 430,
+      "height": 932,
+      "theme": "system",
+      "pass": true,
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "containerScrollWidth": 402,
+      "containerClientWidth": 402,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 1,
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 211,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "width": 768,
+      "height": 1024,
+      "theme": "dark",
+      "pass": true,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "containerScrollWidth": 740,
+      "containerClientWidth": 740,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 1,
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 549,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "width": 768,
+      "height": 1024,
+      "theme": "light",
+      "pass": true,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "containerScrollWidth": 740,
+      "containerClientWidth": 740,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 1,
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 549,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "width": 768,
+      "height": 1024,
+      "theme": "system",
+      "pass": true,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "containerScrollWidth": 740,
+      "containerClientWidth": 740,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 1,
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 549,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "width": 820,
+      "height": 1180,
+      "theme": "dark",
+      "pass": true,
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "containerScrollWidth": 512,
+      "containerClientWidth": 512,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 1,
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 55,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "width": 820,
+      "height": 1180,
+      "theme": "light",
+      "pass": true,
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "containerScrollWidth": 512,
+      "containerClientWidth": 512,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 1,
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 55,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "width": 820,
+      "height": 1180,
+      "theme": "system",
+      "pass": true,
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "containerScrollWidth": 512,
+      "containerClientWidth": 512,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 1,
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 55,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "width": 1024,
+      "height": 768,
+      "theme": "dark",
+      "pass": true,
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "containerScrollWidth": 716,
+      "containerClientWidth": 716,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 1,
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 157,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "width": 1024,
+      "height": 768,
+      "theme": "light",
+      "pass": true,
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "containerScrollWidth": 716,
+      "containerClientWidth": 716,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 1,
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 157,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "width": 1024,
+      "height": 768,
+      "theme": "system",
+      "pass": true,
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "containerScrollWidth": 716,
+      "containerClientWidth": 716,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 1,
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 157,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ],
+      "pageErrors": []
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "width": 1280,
+      "height": 800,
+      "theme": "dark",
+      "pass": true,
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "containerScrollWidth": 972,
+      "containerClientWidth": 972,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 0,
+      "touchDefects": [],
+      "pageErrors": []
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "width": 1280,
+      "height": 800,
+      "theme": "light",
+      "pass": true,
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "containerScrollWidth": 972,
+      "containerClientWidth": 972,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 0,
+      "touchDefects": [],
+      "pageErrors": []
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "width": 1280,
+      "height": 800,
+      "theme": "system",
+      "pass": true,
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "containerScrollWidth": 972,
+      "containerClientWidth": 972,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 0,
+      "touchDefects": [],
+      "pageErrors": []
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "width": 1366,
+      "height": 768,
+      "theme": "dark",
+      "pass": true,
+      "scrollWidth": 1366,
+      "clientWidth": 1366,
+      "containerScrollWidth": 1058,
+      "containerClientWidth": 1058,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 0,
+      "touchDefects": [],
+      "pageErrors": []
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "width": 1366,
+      "height": 768,
+      "theme": "light",
+      "pass": true,
+      "scrollWidth": 1366,
+      "clientWidth": 1366,
+      "containerScrollWidth": 1058,
+      "containerClientWidth": 1058,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 0,
+      "touchDefects": [],
+      "pageErrors": []
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "width": 1366,
+      "height": 768,
+      "theme": "system",
+      "pass": true,
+      "scrollWidth": 1366,
+      "clientWidth": 1366,
+      "containerScrollWidth": 1058,
+      "containerClientWidth": 1058,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 0,
+      "touchDefects": [],
+      "pageErrors": []
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "width": 1440,
+      "height": 900,
+      "theme": "dark",
+      "pass": true,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "containerScrollWidth": 1132,
+      "containerClientWidth": 1132,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 0,
+      "touchDefects": [],
+      "pageErrors": []
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "width": 1440,
+      "height": 900,
+      "theme": "light",
+      "pass": true,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "containerScrollWidth": 1132,
+      "containerClientWidth": 1132,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 0,
+      "touchDefects": [],
+      "pageErrors": []
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "width": 1440,
+      "height": 900,
+      "theme": "system",
+      "pass": true,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "containerScrollWidth": 1132,
+      "containerClientWidth": 1132,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 0,
+      "touchDefects": [],
+      "pageErrors": []
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "width": 1920,
+      "height": 1080,
+      "theme": "dark",
+      "pass": true,
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "containerScrollWidth": 1612,
+      "containerClientWidth": 1612,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 0,
+      "touchDefects": [],
+      "pageErrors": []
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "width": 1920,
+      "height": 1080,
+      "theme": "light",
+      "pass": true,
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "containerScrollWidth": 1612,
+      "containerClientWidth": 1612,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 0,
+      "touchDefects": [],
+      "pageErrors": []
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "width": 1920,
+      "height": 1080,
+      "theme": "system",
+      "pass": true,
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "containerScrollWidth": 1612,
+      "containerClientWidth": 1612,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 0,
+      "touchDefects": [],
+      "pageErrors": []
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "width": 2560,
+      "height": 1440,
+      "theme": "dark",
+      "pass": true,
+      "scrollWidth": 2560,
+      "clientWidth": 2560,
+      "containerScrollWidth": 2252,
+      "containerClientWidth": 2252,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 0,
+      "touchDefects": [],
+      "pageErrors": []
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "width": 2560,
+      "height": 1440,
+      "theme": "light",
+      "pass": true,
+      "scrollWidth": 2560,
+      "clientWidth": 2560,
+      "containerScrollWidth": 2252,
+      "containerClientWidth": 2252,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 0,
+      "touchDefects": [],
+      "pageErrors": []
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "width": 2560,
+      "height": 1440,
+      "theme": "system",
+      "pass": true,
+      "scrollWidth": 2560,
+      "clientWidth": 2560,
+      "containerScrollWidth": 2252,
+      "containerClientWidth": 2252,
+      "offendersCount": 0,
+      "offenders": [],
+      "touchDefectsCount": 0,
+      "touchDefects": [],
+      "pageErrors": []
+    }
+  ],
+  "stateChecks": {
+    "terminal-open-w375": {
+      "width": 375,
+      "pass": true,
+      "metrics": {
+        "scrollWidth": 375,
+        "clientWidth": 375,
+        "hasDocOverflow": false,
+        "containerScrollWidth": 347,
+        "containerClientWidth": 347,
+        "hasContainerOverflow": false,
+        "offenders": [],
+        "touchDefects": [
+          {
+            "tag": "button",
+            "className": "terminal-close",
+            "width": 17,
+            "height": 18,
+            "text": "×"
+          },
+          {
+            "tag": "input",
+            "className": "ng-untouched ng-pristine ng-valid",
+            "width": 156,
+            "height": 27,
+            "text": "Kaggle username or profile URL"
+          }
+        ]
+      }
+    },
+    "terminal-open-w1440": {
+      "width": 1440,
+      "pass": true,
+      "metrics": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "hasDocOverflow": false,
+        "containerScrollWidth": 1132,
+        "containerClientWidth": 1132,
+        "hasContainerOverflow": false,
+        "offenders": [],
+        "touchDefects": []
+      }
+    },
+    "empty-search-w375": {
+      "width": 375,
+      "pass": true,
+      "metrics": {
+        "scrollWidth": 375,
+        "clientWidth": 375,
+        "hasDocOverflow": false,
+        "containerScrollWidth": 347,
+        "containerClientWidth": 347,
+        "hasContainerOverflow": false,
+        "offenders": [],
+        "touchDefects": [
+          {
+            "tag": "button",
+            "className": "search-clear",
+            "width": 17,
+            "height": 22,
+            "text": "×"
+          }
+        ]
+      }
+    },
+    "empty-search-w1440": {
+      "width": 1440,
+      "pass": true,
+      "metrics": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "hasDocOverflow": false,
+        "containerScrollWidth": 1132,
+        "containerClientWidth": 1132,
+        "hasContainerOverflow": false,
+        "offenders": [],
+        "touchDefects": []
+      }
+    },
+    "category-tabs": {
+      "pass": true,
+      "metrics": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasDocOverflow": false,
+        "containerScrollWidth": 362,
+        "containerClientWidth": 362,
+        "hasContainerOverflow": false,
+        "offenders": [],
+        "touchDefects": []
+      }
+    },
+    "error-banner-w320": {
+      "width": 320,
+      "pass": true,
+      "metrics": {
+        "scrollWidth": 320,
+        "clientWidth": 320,
+        "hasDocOverflow": false,
+        "containerScrollWidth": 292,
+        "containerClientWidth": 292,
+        "hasContainerOverflow": false,
+        "offenders": [],
+        "touchDefects": [
+          {
+            "tag": "button",
+            "className": "error-close",
+            "width": 18,
+            "height": 20,
+            "text": "×"
+          },
+          {
+            "tag": "input",
+            "className": "ng-untouched ng-pristine ng-valid",
+            "width": 101,
+            "height": 27,
+            "text": "Kaggle username or profile URL"
+          }
+        ]
+      }
+    },
+    "error-banner-w768": {
+      "width": 768,
+      "pass": true,
+      "metrics": {
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "hasDocOverflow": false,
+        "containerScrollWidth": 740,
+        "containerClientWidth": 740,
+        "hasContainerOverflow": false,
+        "offenders": [],
+        "touchDefects": [
+          {
+            "tag": "button",
+            "className": "error-close",
+            "width": 18,
+            "height": 20,
+            "text": "×"
+          },
+          {
+            "tag": "input",
+            "className": "ng-untouched ng-pristine ng-valid",
+            "width": 549,
+            "height": 27,
+            "text": "Kaggle username or profile URL"
+          }
+        ]
+      }
+    },
+    "long-text": {
+      "pass": true,
+      "metrics": {
+        "scrollWidth": 375,
+        "clientWidth": 375,
+        "hasDocOverflow": false,
+        "containerScrollWidth": 347,
+        "containerClientWidth": 347,
+        "hasContainerOverflow": false,
+        "offenders": [],
+        "touchDefects": [
+          {
+            "tag": "input",
+            "className": "ng-untouched ng-pristine ng-valid",
+            "width": 156,
+            "height": 27,
+            "text": "Kaggle username or profile URL"
+          }
+        ]
+      }
+    },
+    "zoom-200": {
+      "pass": true,
+      "metrics": {
+        "scrollWidth": 1280,
+        "clientWidth": 1280,
+        "hasDocOverflow": false,
+        "containerScrollWidth": 972,
+        "containerClientWidth": 972,
+        "hasContainerOverflow": false,
+        "offenders": [],
+        "touchDefects": []
+      }
+    },
+    "mobile-landscape": {
+      "pass": true,
+      "metrics": {
+        "scrollWidth": 844,
+        "clientWidth": 844,
+        "hasDocOverflow": false,
+        "containerScrollWidth": 536,
+        "containerClientWidth": 536,
+        "hasContainerOverflow": false,
+        "offenders": [],
+        "touchDefects": [
+          {
+            "tag": "input",
+            "className": "ng-untouched ng-pristine ng-valid",
+            "width": 67,
+            "height": 27,
+            "text": "Kaggle username or profile URL"
+          }
+        ]
+      }
+    },
+    "tablet-landscape": {
+      "pass": true,
+      "metrics": {
+        "scrollWidth": 1024,
+        "clientWidth": 1024,
+        "hasDocOverflow": false,
+        "containerScrollWidth": 716,
+        "containerClientWidth": 716,
+        "hasContainerOverflow": false,
+        "offenders": [],
+        "touchDefects": [
+          {
+            "tag": "input",
+            "className": "ng-untouched ng-pristine ng-valid",
+            "width": 157,
+            "height": 27,
+            "text": "Kaggle username or profile URL"
+          }
+        ]
+      }
+    },
+    "keyboard-nav": {
+      "pass": true,
+      "activeTag": "A"
+    }
+  },
+  "discoveredDefects": [
+    {
+      "context": "mobile-320 (dark)",
+      "hasOverflow": false,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "offenders": [],
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 101,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ]
+    },
+    {
+      "context": "mobile-320 (light)",
+      "hasOverflow": false,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "offenders": [],
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 101,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ]
+    },
+    {
+      "context": "mobile-320 (system)",
+      "hasOverflow": false,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "offenders": [],
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 101,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ]
+    },
+    {
+      "context": "mobile-375 (dark)",
+      "hasOverflow": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "offenders": [],
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 156,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ]
+    },
+    {
+      "context": "mobile-375 (light)",
+      "hasOverflow": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "offenders": [],
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 156,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ]
+    },
+    {
+      "context": "mobile-375 (system)",
+      "hasOverflow": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "offenders": [],
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 156,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ]
+    },
+    {
+      "context": "mobile-390 (dark)",
+      "hasOverflow": false,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "offenders": [],
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 171,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ]
+    },
+    {
+      "context": "mobile-390 (light)",
+      "hasOverflow": false,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "offenders": [],
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 171,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ]
+    },
+    {
+      "context": "mobile-390 (system)",
+      "hasOverflow": false,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "offenders": [],
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 171,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ]
+    },
+    {
+      "context": "mobile-430 (dark)",
+      "hasOverflow": false,
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "offenders": [],
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 211,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ]
+    },
+    {
+      "context": "mobile-430 (light)",
+      "hasOverflow": false,
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "offenders": [],
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 211,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ]
+    },
+    {
+      "context": "mobile-430 (system)",
+      "hasOverflow": false,
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "offenders": [],
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 211,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ]
+    },
+    {
+      "context": "tablet-768 (dark)",
+      "hasOverflow": false,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "offenders": [],
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 549,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ]
+    },
+    {
+      "context": "tablet-768 (light)",
+      "hasOverflow": false,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "offenders": [],
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 549,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ]
+    },
+    {
+      "context": "tablet-768 (system)",
+      "hasOverflow": false,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "offenders": [],
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 549,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ]
+    },
+    {
+      "context": "tablet-820 (dark)",
+      "hasOverflow": false,
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "offenders": [],
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 55,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ]
+    },
+    {
+      "context": "tablet-820 (light)",
+      "hasOverflow": false,
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "offenders": [],
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 55,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ]
+    },
+    {
+      "context": "tablet-820 (system)",
+      "hasOverflow": false,
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "offenders": [],
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 55,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ]
+    },
+    {
+      "context": "tablet-1024 (dark)",
+      "hasOverflow": false,
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "offenders": [],
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 157,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ]
+    },
+    {
+      "context": "tablet-1024 (light)",
+      "hasOverflow": false,
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "offenders": [],
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 157,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ]
+    },
+    {
+      "context": "tablet-1024 (system)",
+      "hasOverflow": false,
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "offenders": [],
+      "touchDefects": [
+        {
+          "tag": "input",
+          "className": "ng-untouched ng-pristine ng-valid",
+          "width": 157,
+          "height": 27,
+          "text": "Kaggle username or profile URL"
+        }
+      ]
+    }
+  ]
+}

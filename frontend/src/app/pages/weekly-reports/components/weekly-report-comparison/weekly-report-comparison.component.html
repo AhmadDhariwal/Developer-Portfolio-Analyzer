@@ -1,0 +1,69 @@
+<article class="panel-card">
+  <div class="panel-head">
+    <h3>Progress Comparison</h3>
+
+    <span class="panel-subtitle">Adjacent reporting weeks only</span>
+  </div>
+
+  <p class="comparison-note">
+    {{ report.meta.comparison?.reason || 'No verified adjacent-week comparison recorded.' }}
+  </p>
+
+  <div class="comparison-list" *ngIf="comparisonAvailable">
+    <div class="comparison-row">
+      <span>Overall Score</span>
+
+      <strong>{{ overallLabel }}</strong>
+
+      <small [class]="deltaClass(report.meta.comparisons.scoreDelta)">{{
+        formatDelta(report.meta.comparisons.scoreDelta)
+      }}</small>
+    </div>
+
+    <div class="comparison-row">
+      <span>Readiness</span>
+
+      <strong>{{
+        report.meta.evidence?.scoreAvailable === false ? 'Not assessed' : readinessScore + '%'
+      }}</strong>
+
+      <small [class]="deltaClass(report.meta.comparisons.readinessDelta)">{{
+        formatDelta(report.meta.comparisons.readinessDelta)
+      }}</small>
+    </div>
+
+    <div class="comparison-row">
+      <span>Weekly commits</span>
+
+      <strong>{{
+        report.meta.activity.weeklyCommitSignal == null || !report.meta.provenance
+          ? 'Not measured'
+          : report.meta.activity.weeklyCommitSignal
+      }}</strong>
+
+      <small [class]="deltaClass(report.meta.comparisons.activityCommitsDelta)">{{
+        'Repository totals are lifetime counters'
+      }}</small>
+    </div>
+
+    <div class="comparison-row">
+      <span>Active Repositories</span>
+
+      <strong>{{ report.meta.activity.activeRepositories }}</strong>
+
+      <small [class]="deltaClass(report.meta.comparisons.activeReposDelta)">{{
+        formatDelta(report.meta.comparisons.activeReposDelta, 'repos')
+      }}</small>
+    </div>
+  </div>
+
+  <div class="comparison-empty" *ngIf="!comparisonAvailable">
+    <div class="empty-badge">
+      <span class="empty-dot"></span>
+      <span>Comparison unavailable</span>
+    </div>
+    <p class="empty-hint">
+      Delta comparisons require complete evidence in saved reports for both adjacent weeks.
+    </p>
+  </div>
+</article>

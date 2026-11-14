@@ -11,14 +11,29 @@ const redisCachePath = require.resolve('../services/redisCacheService');
 const TOKEN = 'github_pat_acceptance_secret';
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-const copy = (value) => value == null ? value : structuredClone(value);
+const copy = (value) => (value == null ? value : structuredClone(value));
 const thenable = (value) => ({ lean: async () => copy(value) });
 
 const freshCounters = () => ({
-  github: { profile: 0, repositories: 0, languages: 0, contributors: 0, content: 0, commits: 0 },
+  github: {
+    profile: 0,
+    repositories: 0,
+    languages: 0,
+    contributors: 0,
+    content: 0,
+    commits: 0
+  },
   ai: 0,
   cache: { reads: 0, writes: 0 },
-  persistence: { jobs: 0, repositoryUpserts: 0, staleDeletes: 0, analysisFinds: 0, analysisSaves: 0, historyUpdates: 0, userUpdates: 0 },
+  persistence: {
+    jobs: 0,
+    repositoryUpserts: 0,
+    staleDeletes: 0,
+    analysisFinds: 0,
+    analysisSaves: 0,
+    historyUpdates: 0,
+    userUpdates: 0
+  },
   notifications: 0,
   invalidations: 0,
   locks: { redisAcquire: 0, redisRelease: 0, mongoAcquire: 0, mongoRelease: 0 }
@@ -44,64 +59,124 @@ const createHarness = () => {
     logs: []
   };
 
-  const reposFor = (username) => Array.from({ length: 10 }, (_, index) => ({
-    name: `${username}-repo-${index + 1}`,
-    description: index === 0 ? 'React Node Docker production application' : 'Useful project',
-    topics: index === 0 ? ['react', 'nodejs'] : [],
-    language: index % 2 ? 'TypeScript' : 'JavaScript',
-    stargazers_count: 20 - index,
-    forks_count: index % 3,
-    pushed_at: new Date(Date.now() - index * 86400000).toISOString(),
-    updated_at: new Date(Date.now() - index * 86400000).toISOString(),
-    created_at: '2024-01-01T00:00:00.000Z',
-    fork: false,
-    archived: false,
-    size: 1000 + index
-  }));
+  const reposFor = (username) =>
+    Array.from({ length: 10 }, (_, index) => ({
+      name: `${username}-repo-${index + 1}`,
+      description: index === 0 ? 'React Node Docker production application' : 'Useful project',
+      topics: index === 0 ? ['react', 'nodejs'] : [],
+      language: index % 2 ? 'TypeScript' : 'JavaScript',
+      stargazers_count: 20 - index,
+      forks_count: index % 3,
+      pushed_at: new Date(Date.now() - index * 86400000).toISOString(),
+      updated_at: new Date(Date.now() - index * 86400000).toISOString(),
+      created_at: '2024-01-01T00:00:00.000Z',
+      fork: false,
+      archived: false,
+      size: 1000 + index
+    }));
 
   const axios = {
-    async get(url) {
+    async get(url, config = {}) {
       await delay(state.delays.github);
       if (url.includes(`/users/`) && !url.includes('/repos/')) {
         if (url.endsWith('/repos')) state.counters.github.repositories += 1;
         else state.counters.github.profile += 1;
       } else if (url.includes('/languages')) state.counters.github.languages += 1;
       else if (url.includes('/contributors')) state.counters.github.contributors += 1;
-      else if (url.includes('/contents/')) state.counters.github.content += 1;
+      else if (url.includes('/contents/') || url.endsWith('/readme'))
+        state.counters.github.content += 1;
       else if (url.includes('/commits')) state.counters.github.commits += 1;
 
       const isFullRequest = /\/users\/[^/]+(?:\/repos)?$/.test(url);
       if (state.githubFailure && isFullRequest) {
         if (state.githubFailure === '404') {
           const error = new Error('remote missing');
-          error.response = { status: 404, data: { message: 'Not Found' }, headers: {} };
+          error.response = {
+            status: 404,
+            data: { message: 'Not Found' },
+            headers: {}
+          };
           throw error;
         }
         if (state.githubFailure === '429') {
           const error = new Error('rate limit');
-          error.response = { status: 429, data: { message: 'rate limit exceeded' }, headers: {} };
+          error.response = {
+            status: 429,
+            data: { message: 'rate limit exceeded' },
+            headers: {}
+          };
           throw error;
         }
         if (state.githubFailure === 'timeout') {
           throw new Error(`socket timeout ${TOKEN}`);
         }
       }
-      if (state.optionalFailure && !isFullRequest) throw new Error('optional deep signal unavailable');
+      if (state.optionalFailure && !isFullRequest)
+        throw new Error('optional deep signal unavailable');
 
       if (/\/users\/[^/]+$/.test(url)) {
         const username = decodeURIComponent(url.split('/').pop());
-        return { data: { login: username, followers: 7, following: 3, public_repos: 10, bio: 'Developer' }, headers: {} };
+        return {
+          data: {
+            login: username,
+            followers: 7,
+            following: 3,
+            public_repos: 10,
+            bio: 'Developer'
+          },
+          headers: {}
+        };
       }
       if (url.endsWith('/repos')) {
         const username = decodeURIComponent(url.split('/').at(-2));
-        return { data: reposFor(username), headers: {} };
+        return {
+          data: state.repoPages
+            ? state.repoPages[config.params.page - 1] || []
+            : (state.repoOverride ?? reposFor(username)),
+          headers: {}
+        };
       }
-      if (url.includes('/languages')) return { data: { JavaScript: 7500, TypeScript: 2500 }, headers: {} };
-      if (url.includes('/contributors')) return { data: [{ login: 'developer', contributions: 12 }], headers: {} };
-      if (url.includes('/contents/')) {
+      if (url.includes('/languages'))
+        return {
+          data: state.languageOverride ?? {
+            JavaScript: 7500,
+            TypeScript: 2500
+          },
+          headers: {}
+        };
+      if (url.includes('/contributors'))
+        return {
+          data: state.contributorOverride ?? [{ login: 'developer', contributions: 12 }],
+          headers: {}
+        };
+      if (state.readmeAlternateName && url.endsWith('/contents/README.md')) {
+        const error = new Error('README.md not found');
+        error.response = { status: 404 };
+        throw error;
+      }
+      if (url.includes('/contents/') || url.endsWith('/readme')) {
+        if (url.endsWith('/readme'))
+          return {
+            data: {
+              encoding: 'base64',
+              content: Buffer.from('# Alternate README\nDocumented original project.').toString(
+                'base64'
+              )
+            },
+            headers: {}
+          };
         const path = decodeURIComponent(url.split('/contents/')[1]);
-        const content = path === 'README.md' ? '# Project\nDocumented application.' : '{"dependencies":{"react":"latest","express":"latest"}}';
-        return { data: { encoding: 'base64', content: Buffer.from(content).toString('base64') }, headers: {} };
+        const content =
+          path === 'README.md'
+            ? '# Project\nDocumented application.'
+            : '{"dependencies":{"react":"latest","express":"latest"}}';
+        return {
+          data: {
+            encoding: 'base64',
+            content: Buffer.from(content).toString('base64')
+          },
+          headers: {}
+        };
       }
       if (url.includes('/commits')) return { data: [], headers: {} };
       throw new Error(`Unexpected mocked GitHub URL: ${url}`);
@@ -111,6 +186,26 @@ const createHarness = () => {
   const aiService = {
     async runAIAnalysis(_prompt, fallback) {
       state.counters.ai += 1;
+      if (state.aiMode === 'hang') return new Promise(() => {});
+      if (state.aiMode === 'unsupported-claims')
+        return {
+          strengths: [
+            'Proficient in Ruby through the copied-engine repository',
+            'Demonstrates strong originality in personal commits'
+          ],
+          weakAreas: ['Improve testing in copied-engine', 'Document copied-engine architecture'],
+          summary: 'This developer successfully manages copied-engine in production.',
+          explanation: 'Personal commits demonstrate expertise and strong originality.',
+          interviewTalkingPoints: [
+            'Discuss architecture of copied-engine',
+            'Explain your personal commits in copied-engine'
+          ]
+        };
+      assert.ok(
+        state.counters.cache.writes > 0,
+        'deterministic analysis must be durable before AI'
+      );
+      if (state.aiMode === 'throw') throw new Error('AI unavailable');
       await delay(state.delays.ai);
       if (state.aiMode === 'timeout') return fallback;
       if (state.aiMode === 'malformed') return { malformed: '{not-json' };
@@ -124,19 +219,35 @@ const createHarness = () => {
       }
       if (state.aiMode === 'score-pollution') {
         return {
-          strengths: ['Strong React delivery across production repositories', 'Clear backend Node.js and API ownership'],
-          weakAreas: ['Testing tools are underrepresented', 'DevOps automation signals remain thin'],
-          summary: 'This profile shows durable full-stack delivery with production-ready repositories.',
-          explanation: 'Deterministic drivers emphasize repository quality, activity depth, and technology coverage.',
+          strengths: [
+            'Strong React delivery across production repositories',
+            'Clear backend Node.js and API ownership'
+          ],
+          weakAreas: [
+            'Testing tools are underrepresented',
+            'DevOps automation signals remain thin'
+          ],
+          summary:
+            'Repository metadata contains React and Express dependency signals in inspected original repositories.',
+          explanation:
+            'Deterministic drivers emphasize repository quality, activity depth, and technology coverage.',
           scores: { healthScore: 999 },
-          githubHealthScore: 999
+          githubHealthScore: 999,
+          interviewTalkingPoints: [
+            'How would you review the React dependencies of this repository?',
+            'What would you review about the Express dependencies of this repository?'
+          ]
         };
       }
       return {
-        strengths: ['Consistent delivery across active repositories', 'Clear technology depth in primary stack'],
+        strengths: [
+          'Consistent delivery across active repositories',
+          'Clear technology depth in primary stack'
+        ],
         weakAreas: ['Add more automated tests', 'Strengthen DevOps visibility'],
         summary: 'Deterministic mocked narrative for recruiter review of this GitHub profile.',
-        explanation: 'Evidence-based mocked explanation grounded in repository quality and activity.',
+        explanation:
+          'Evidence-based mocked explanation grounded in repository quality and activity.',
         scores: { healthScore: 999 }
       };
     },
@@ -144,12 +255,26 @@ const createHarness = () => {
   };
 
   const GitHubAnalysisCache = {
-    collection: { async indexes() { return []; }, async dropIndex() {}, async createIndex() {} },
+    async updateOne(query, update) {
+      const entry = state.cache.get(`${query.normalizedUsername}:${query.analysisVersion}`);
+      if (entry?.result?.scoring?.calculatedAt !== query['result.scoring.calculatedAt']) return;
+      for (const [key, value] of Object.entries(update.$set))
+        entry.result[key.slice(7)] = copy(value);
+    },
+    collection: {
+      async indexes() {
+        return [];
+      },
+      async dropIndex() {},
+      async createIndex() {}
+    },
     findOne(query) {
       state.counters.cache.reads += 1;
       const row = state.cache.get(`${query.normalizedUsername}:${query.analysisVersion}`) || null;
       return {
-        select() { return this; },
+        select() {
+          return this;
+        },
         lean: async () => copy(row)
       };
     },
@@ -157,8 +282,17 @@ const createHarness = () => {
       state.counters.cache.writes += 1;
       const key = `${query.normalizedUsername}:${query.analysisVersion}`;
       const previous = state.cache.get(key);
-      const snapshots = [...(previous?.snapshots || []), ...copy(update.$push.snapshots.$each)].slice(-12);
-      const row = { ...(previous || {}), ...copy(update.$set), snapshots, createdAt: previous?.createdAt || new Date(), updatedAt: new Date() };
+      const snapshots = [
+        ...(previous?.snapshots || []),
+        ...copy(update.$push.snapshots.$each)
+      ].slice(-12);
+      const row = {
+        ...(previous || {}),
+        ...copy(update.$set),
+        snapshots,
+        createdAt: previous?.createdAt || new Date(),
+        updatedAt: new Date()
+      };
       state.cache.set(key, row);
       return thenable(row);
     }
@@ -172,21 +306,31 @@ const createHarness = () => {
       if (state.repositoryFailure) throw new Error('required repository upsert failed');
       for (const operation of operations) {
         const { filter, update } = operation.updateOne;
-        state.repositories.set(`${filter.ownerId}:${filter.repoName}`, { ...copy(update.$setOnInsert), ...copy(update.$set) });
+        state.repositories.set(`${filter.ownerId}:${filter.repoName}`, {
+          ...copy(update.$setOnInsert),
+          ...copy(update.$set)
+        });
       }
     },
     async deleteMany(query) {
       state.counters.persistence.staleDeletes += 1;
       const keep = new Set(query.repoName?.$nin || []);
       for (const [key, row] of state.repositories) {
-        if (String(row.ownerId) === String(query.ownerId) && (!query.repoName || !keep.has(row.repoName))) state.repositories.delete(key);
+        if (
+          String(row.ownerId) === String(query.ownerId) &&
+          (!query.repoName || !keep.has(row.repoName))
+        )
+          state.repositories.delete(key);
       }
     }
   };
 
   class Analysis {
     constructor(data) {
-      Object.assign(this, data, { githubAnalysisHistory: [], contributionActivity: [] });
+      Object.assign(this, data, {
+        githubAnalysisHistory: [],
+        contributionActivity: []
+      });
     }
     static findOne(query) {
       state.counters.persistence.analysisFinds += 1;
@@ -209,7 +353,10 @@ const createHarness = () => {
   const User = {
     async findByIdAndUpdate(id, update) {
       state.counters.persistence.userUpdates += 1;
-      state.users.set(String(id), { ...(state.users.get(String(id)) || {}), ...copy(update) });
+      state.users.set(String(id), {
+        ...(state.users.get(String(id)) || {}),
+        ...copy(update)
+      });
     },
     findById(id) {
       const row = state.users.get(String(id)) || null;
@@ -240,6 +387,7 @@ const createHarness = () => {
     },
     async setCacheJson() {},
     async acquireCacheLock(key, token) {
+      if (state.saveLockError) throw state.saveLockError;
       state.counters.locks.redisAcquire += 1;
       if (!state.redisHealthy) return null;
       if (state.redisLocks.has(key)) return false;
@@ -255,8 +403,15 @@ const createHarness = () => {
   const mocks = {
     axios,
     './aiservice': aiService,
-    '../prompts/githubPrompt': { getGitHubPrompt: () => 'sanitized deterministic prompt' },
-    './platformSettingsService': { getIntegrationSecretsSync: () => ({ githubEnabled: true }) },
+    '../prompts/githubPrompt': {
+      getGitHubPrompt: (data) => {
+        state.promptData = copy(data);
+        return 'sanitized deterministic prompt';
+      }
+    },
+    './platformSettingsService': {
+      getIntegrationSecretsSync: () => ({ githubEnabled: true })
+    },
     './redisCacheService': redisService,
     '../services/redisCacheService': redisService,
     '../models/githubAnalysisCache': GitHubAnalysisCache,
@@ -270,15 +425,18 @@ const createHarness = () => {
     '../models/analysis': Analysis,
     '../models/user': User,
     '../models/githubSaveLock': GitHubSaveLock,
-    '../services/notificationService': {
-      async createNotification(payload) {
+    '../services/notificationPersistenceService': {
+      async commit(_owner, work, payload) {
+        const result = await work(null);
         state.counters.notifications += 1;
-        state.notifications.push(copy(payload));
-        return payload;
+        state.notifications.push(copy(typeof payload === 'function' ? payload(result) : payload));
+        return result;
       }
     },
     './dashboardcontroller': {
-      invalidateDashboardSummaryCache() { state.counters.invalidations += 1; }
+      invalidateDashboardSummaryCache() {
+        state.counters.invalidations += 1;
+      }
     }
   };
 
@@ -331,20 +489,47 @@ const createHarness = () => {
   return { state, loadInstance, reset };
 };
 
-const invoke = async (handler, { username = 'octocat', userId = 'user-1', savedUsername = username, forceRefresh = false } = {}) => {
-  const response = { statusCode: 200, body: undefined, status(code) { this.statusCode = code; return this; }, json(body) { this.body = body; return this; } };
+const invoke = async (
+  handler,
+  { username = 'octocat', userId = 'user-1', savedUsername = username, forceRefresh = false } = {}
+) => {
+  const response = {
+    statusCode: 200,
+    body: undefined,
+    status(code) {
+      this.statusCode = code;
+      return this;
+    },
+    json(body) {
+      this.body = body;
+      return this;
+    }
+  };
   const req = {
     body: { username, ...(forceRefresh ? { forceRefresh: true } : {}) },
     query: {},
-    user: { _id: userId, githubUsername: savedUsername, activeGithubUsername: savedUsername }
+    user: {
+      _id: userId,
+      githubUsername: savedUsername,
+      activeGithubUsername: savedUsername
+    }
   };
   await handler(req, response);
   return response;
 };
 
-const scoreSnapshot = (result) => copy({ scores: result.scores, githubHealthScore: result.githubHealthScore, activityScore: result.activityScore });
+const scoreSnapshot = (result) =>
+  copy({
+    scores: result.scores,
+    githubHealthScore: result.githubHealthScore,
+    activityScore: result.activityScore
+  });
 const assertScores = (result) => {
-  for (const value of [...Object.values(result.scores || {}), result.githubHealthScore, result.activityScore]) {
+  for (const value of [
+    ...Object.values(result.scores || {}),
+    result.githubHealthScore,
+    result.activityScore
+  ]) {
     assert.equal(Number.isFinite(value), true);
     assert.ok(value >= 0 && value <= 100);
   }
@@ -374,7 +559,9 @@ test('fresh analysis, cache hit, concurrency, force refresh, and username isolat
   assert.equal(state.counters.ai, 1);
 
   harness.reset();
-  const concurrent = await Promise.all(Array.from({ length: 5 }, () => service.analyzeGitHubProfile('Bravo')));
+  const concurrent = await Promise.all(
+    Array.from({ length: 5 }, () => service.analyzeGitHubProfile('Bravo'))
+  );
   assert.equal(state.counters.github.profile, 1);
   assert.equal(state.counters.github.repositories, 1);
   assert.equal(state.counters.ai, 1);
@@ -382,14 +569,19 @@ test('fresh analysis, cache hit, concurrency, force refresh, and username isolat
 
   const beforeRefresh = copy(state.counters.github);
   const aiBeforeRefresh = state.counters.ai;
-  const refreshed = await Promise.all(Array.from({ length: 5 }, () => service.analyzeGitHubProfile('Bravo', { forceRefresh: true })));
+  const refreshed = await Promise.all(
+    Array.from({ length: 5 }, () => service.analyzeGitHubProfile('Bravo', { forceRefresh: true }))
+  );
   assert.equal(state.counters.github.profile - beforeRefresh.profile, 1);
   assert.equal(state.counters.github.repositories - beforeRefresh.repositories, 1);
   assert.equal(state.counters.ai - aiBeforeRefresh, 1);
   assert.ok(refreshed.every((result) => result === refreshed[0]));
 
   harness.reset();
-  const [alpha, beta] = await Promise.all([service.analyzeGitHubProfile('alpha'), service.analyzeGitHubProfile('beta')]);
+  const [alpha, beta] = await Promise.all([
+    service.analyzeGitHubProfile('alpha'),
+    service.analyzeGitHubProfile('beta')
+  ]);
   assert.equal(state.counters.github.profile, 2);
   assert.equal(state.counters.ai, 2);
   assert.notEqual(alpha.repositories[0].name, beta.repositories[0].name);
@@ -402,8 +594,21 @@ const runCrossInstanceSave = async (redisHealthy) => {
   state.delays = { github: 4, ai: 4, persistence: 4 };
   const first = harness.loadInstance();
   const second = harness.loadInstance();
-  const handlers = [first.controller, second.controller, first.controller, second.controller, first.controller];
-  const responses = await Promise.all(handlers.map(({ analyzeAndSaveGitHubProfile }) => invoke(analyzeAndSaveGitHubProfile, { username: 'shared', savedUsername: 'shared' })));
+  const handlers = [
+    first.controller,
+    second.controller,
+    first.controller,
+    second.controller,
+    first.controller
+  ];
+  const responses = await Promise.all(
+    handlers.map(({ analyzeAndSaveGitHubProfile }) =>
+      invoke(analyzeAndSaveGitHubProfile, {
+        username: 'shared',
+        savedUsername: 'shared'
+      })
+    )
+  );
   assert.ok(responses.every((response) => response.statusCode === 200));
   assert.equal(state.counters.github.profile, 1);
   assert.equal(state.counters.github.repositories, 1);
@@ -416,7 +621,11 @@ const runCrossInstanceSave = async (redisHealthy) => {
   assert.equal(state.counters.invalidations, 1);
   assert.equal(state.repositories.size, 10);
   assert.equal(state.analyses.get('user-1').githubAnalysisHistory.length, 1);
-  assert.ok(responses.every((response) => response.body.githubHealthScore === responses[0].body.githubHealthScore));
+  assert.ok(
+    responses.every(
+      (response) => response.body.githubHealthScore === responses[0].body.githubHealthScore
+    )
+  );
   if (redisHealthy) {
     assert.ok(state.counters.locks.redisAcquire >= 2);
     assert.equal(state.counters.locks.mongoAcquire, 0);
@@ -439,9 +648,16 @@ test('repository failure preserves old rows and prevents later commits', async (
   const harness = createHarness();
   const { state } = harness;
   const { controller } = harness.loadInstance();
-  state.repositories.set('user-1:legacy', { ownerId: 'user-1', repoName: 'legacy', stars: 99 });
+  state.repositories.set('user-1:legacy', {
+    ownerId: 'user-1',
+    repoName: 'legacy',
+    stars: 99
+  });
   state.repositoryFailure = true;
-  const response = await invoke(controller.analyzeAndSaveGitHubProfile, { username: 'failure', savedUsername: 'failure' });
+  const response = await invoke(controller.analyzeAndSaveGitHubProfile, {
+    username: 'failure',
+    savedUsername: 'failure'
+  });
   assert.equal(response.statusCode, 500);
   assert.equal(state.counters.persistence.staleDeletes, 0);
   assert.equal(state.counters.persistence.analysisSaves, 0);
@@ -471,9 +687,13 @@ test('AI score pollution is ignored and narrative stays schema-safe', async () =
   const { service } = harness.loadInstance();
   const result = await service.analyzeGitHubProfile('ai-scores');
   assertScores(result);
+  assert.equal(result.githubSignals.scoring.ruleVersion, 'github-health-score-v1');
+  assert.equal(result.githubSignals.scoring.score, result.githubHealthScore);
+  assert.ok(Buffer.byteLength(JSON.stringify(result.githubSignals.scoring.evidence)) < 2048);
+  assert.equal(result.githubSignals.scoring.evidence.inputs.githubPayload, undefined);
   assert.equal(result.githubHealthScore, result.scores.healthScore);
   assert.notEqual(result.githubHealthScore, 999);
-  assert.match(result.summary, /full-stack delivery/i);
+  assert.match(result.summary, /repository metadata/i);
   assert.ok(result.strengths.length >= 2);
 });
 
@@ -487,13 +707,18 @@ test('failed refresh preserves previous valid cache and skips unsafe persistence
   const writesBefore = state.counters.cache.writes;
 
   state.githubFailure = 'timeout';
-  const preserved = await service.analyzeGitHubProfile('sticky', { forceRefresh: true });
+  const preserved = await service.analyzeGitHubProfile('sticky', {
+    forceRefresh: true
+  });
   assert.equal(preserved.cache.source, 'stale-cache');
   assert.equal(preserved.githubHealthScore, health);
   assert.match(preserved.warning || '', /refresh failed|cached analysis/i);
   assert.equal(state.counters.cache.writes, writesBefore);
 
-  state.users.set('user-1', { githubUsername: 'sticky', activeGithubUsername: 'sticky' });
+  state.users.set('user-1', {
+    githubUsername: 'sticky',
+    activeGithubUsername: 'sticky'
+  });
   state.analyses.set('user-1', {
     userId: 'user-1',
     githubScore: health,
@@ -516,14 +741,24 @@ test('username validation returns 400/413 and skill-gap invalidation escapes saf
   const harness = createHarness();
   const { state } = harness;
   const { controller, service } = harness.loadInstance();
-  assert.throws(() => service.parseGitHubUsername('bad user'), (error) => error.status === 400);
-  assert.throws(() => service.parseGitHubUsername('a'.repeat(250)), (error) => error.status === 413);
+  assert.throws(
+    () => service.parseGitHubUsername('bad user'),
+    (error) => error.status === 400
+  );
+  assert.throws(
+    () => service.parseGitHubUsername('a'.repeat(250)),
+    (error) => error.status === 413
+  );
 
-  const invalid = await invoke(controller.analyzeGitHub, { username: 'not valid!' });
+  const invalid = await invoke(controller.analyzeGitHub, {
+    username: 'not valid!'
+  });
   assert.equal(invalid.statusCode, 400);
   assert.equal(state.counters.cache.writes, 0);
 
-  const oversized = await invoke(controller.analyzeGitHub, { username: 'x'.repeat(250) });
+  const oversized = await invoke(controller.analyzeGitHub, {
+    username: 'x'.repeat(250)
+  });
   assert.equal(oversized.statusCode, 413);
 
   const source = require('node:fs').readFileSync(servicePath, 'utf8');
@@ -548,9 +783,15 @@ test('saveJobs only clears the owning in-flight promise', async () => {
   const { state } = harness;
   state.delays = { github: 20, ai: 20, persistence: 20 };
   const { controller } = harness.loadInstance();
-  const firstPromise = invoke(controller.analyzeAndSaveGitHubProfile, { username: 'owner', savedUsername: 'owner' });
+  const firstPromise = invoke(controller.analyzeAndSaveGitHubProfile, {
+    username: 'owner',
+    savedUsername: 'owner'
+  });
   await delay(5);
-  const secondPromise = invoke(controller.analyzeAndSaveGitHubProfile, { username: 'owner', savedUsername: 'owner' });
+  const secondPromise = invoke(controller.analyzeAndSaveGitHubProfile, {
+    username: 'owner',
+    savedUsername: 'owner'
+  });
   const [first, second] = await Promise.all([firstPromise, secondPromise]);
   assert.equal(first.statusCode, 200);
   assert.equal(second.statusCode, 200);
@@ -567,21 +808,36 @@ test('GitHub optional and full failures are sanitized and never cached', async (
     const optional = optionalHarness.loadInstance();
     const optionalResult = await optional.service.analyzeGitHubProfile('optional');
     assert.equal(optionalResult.repoCount, 10);
+    assert.equal(optionalResult.repositoryQuality[0].hasReadme, null);
+    assert.equal(optionalResult.repositories[0].readmeQuality, null);
     assertScores(optionalResult);
 
-    for (const [failure, expectedStatus, expectedText] of [['404', 404, /not found/i], ['429', 429, /rate limit/i], ['timeout', 500, /failed to fetch/i]]) {
+    for (const [failure, expectedStatus, expectedText] of [
+      ['404', 404, /not found/i],
+      ['429', 429, /rate limit/i],
+      ['timeout', 500, /failed to fetch/i]
+    ]) {
       const harness = createHarness();
       harness.state.githubFailure = failure;
       const { controller } = harness.loadInstance();
       const originalError = console.error;
       console.error = (...args) => harness.state.logs.push(args.join(' '));
       let response;
-      try { response = await invoke(controller.analyzeGitHub, { username: `full-${failure}` }); }
-      finally { console.error = originalError; }
+      try {
+        response = await invoke(controller.analyzeGitHub, {
+          username: `full-${failure}`
+        });
+      } finally {
+        console.error = originalError;
+      }
       assert.equal(response.statusCode, expectedStatus);
       assert.match(response.body.message, expectedText);
       assert.equal(harness.state.counters.cache.writes, 0);
-      const captured = JSON.stringify({ response: response.body, cache: [...harness.state.cache.values()], logs: harness.state.logs });
+      const captured = JSON.stringify({
+        response: response.body,
+        cache: [...harness.state.cache.values()],
+        logs: harness.state.logs
+      });
       assert.equal(captured.includes(TOKEN), false);
     }
   } finally {
@@ -594,12 +850,17 @@ test('preview mode is side-effect free and save rejects mismatched usernames', a
   const harness = createHarness();
   const { state } = harness;
   const { controller } = harness.loadInstance();
-  const preview = await invoke(controller.analyzeGitHub, { username: 'preview' });
+  const preview = await invoke(controller.analyzeGitHub, {
+    username: 'preview'
+  });
   assert.equal(preview.statusCode, 200);
   assert.deepEqual(state.counters.persistence, freshCounters().persistence);
   assert.equal(state.counters.notifications, 0);
   assert.equal(state.counters.invalidations, 0);
-  const mismatch = await invoke(controller.analyzeAndSaveGitHubProfile, { username: 'other', savedUsername: 'saved' });
+  const mismatch = await invoke(controller.analyzeAndSaveGitHubProfile, {
+    username: 'other',
+    savedUsername: 'saved'
+  });
   assert.equal(mismatch.statusCode, 400);
   assert.equal(state.counters.persistence.jobs, 0);
 });
@@ -622,18 +883,405 @@ test('deterministic timing benchmark', async (t) => {
       const username = `benchmark-${index}`;
       await measure('fresh', () => service.analyzeGitHubProfile(username));
       await measure('cache', () => service.analyzeGitHubProfile(username));
-      await measure('forceRefresh', () => service.analyzeGitHubProfile(username, { forceRefresh: true }));
-      await measure('save', () => invoke(controller.analyzeAndSaveGitHubProfile, { username, savedUsername: username, userId: `benchmark-user-${index}` }));
+      await measure('forceRefresh', () =>
+        service.analyzeGitHubProfile(username, { forceRefresh: true })
+      );
+      await measure('save', () =>
+        invoke(controller.analyzeAndSaveGitHubProfile, {
+          username,
+          savedUsername: username,
+          userId: `benchmark-user-${index}`
+        })
+      );
     }
     assert.ok(percentile(timings.cache, 95) < 300);
     assert.ok(percentile(timings.save, 95) < 500);
-    t.diagnostic(`TIMING fresh p50=${percentile(timings.fresh, 50).toFixed(1)}ms p95=${percentile(timings.fresh, 95).toFixed(1)}ms`);
-    t.diagnostic(`TIMING cache p50=${percentile(timings.cache, 50).toFixed(1)}ms p95=${percentile(timings.cache, 95).toFixed(1)}ms`);
-    t.diagnostic(`TIMING forceRefresh p50=${percentile(timings.forceRefresh, 50).toFixed(1)}ms p95=${percentile(timings.forceRefresh, 95).toFixed(1)}ms`);
-    t.diagnostic(`TIMING analyze-save p50=${percentile(timings.save, 50).toFixed(1)}ms p95=${percentile(timings.save, 95).toFixed(1)}ms`);
-    t.diagnostic(`COUNTS GitHub=${Object.values(state.counters.github).reduce((sum, value) => sum + value, 0)} AI=${state.counters.ai} persistence=${state.counters.persistence.jobs}`);
+    t.diagnostic(
+      `TIMING fresh p50=${percentile(timings.fresh, 50).toFixed(1)}ms p95=${percentile(timings.fresh, 95).toFixed(1)}ms`
+    );
+    t.diagnostic(
+      `TIMING cache p50=${percentile(timings.cache, 50).toFixed(1)}ms p95=${percentile(timings.cache, 95).toFixed(1)}ms`
+    );
+    t.diagnostic(
+      `TIMING forceRefresh p50=${percentile(timings.forceRefresh, 50).toFixed(1)}ms p95=${percentile(timings.forceRefresh, 95).toFixed(1)}ms`
+    );
+    t.diagnostic(
+      `TIMING analyze-save p50=${percentile(timings.save, 50).toFixed(1)}ms p95=${percentile(timings.save, 95).toFixed(1)}ms`
+    );
+    t.diagnostic(
+      `COUNTS GitHub=${Object.values(state.counters.github).reduce((sum, value) => sum + value, 0)} AI=${state.counters.ai} persistence=${state.counters.persistence.jobs}`
+    );
   } finally {
     if (previousTiming === undefined) delete process.env.GITHUB_TIMING;
     else process.env.GITHUB_TIMING = previousTiming;
   }
+});
+
+const githubScoreEngine = require('../services/scoring/githubHealthScore');
+test('zero accessible repositories retain centralized metadata and measured zeros', async () => {
+  const h = createHarness();
+  h.state.repoOverride = [];
+  const { service } = h.loadInstance();
+  const result = await service.analyzeGitHubProfile('empty');
+  assert.equal(result.repoCount, 0);
+  assert.equal(result.scoring.score, 0);
+  assert.equal(result.scoring.ruleVersion, 'github-health-score-v1');
+  assert.equal(result.githubSignals.scoring.score, 0);
+  assertScores(result);
+  assert.equal(h.state.counters.ai, 0);
+});
+test('forked repositories do not supply original activity or technology scoring', async () => {
+  const h = createHarness();
+  h.state.repoOverride = [
+    {
+      name: 'fork',
+      fork: true,
+      stars: 9999,
+      stargazers_count: 9999,
+      language: 'JavaScript',
+      topics: [],
+      archived: false
+    }
+  ];
+  const { service } = h.loadInstance();
+  const result = await service.analyzeGitHubProfile('forked');
+  assert.equal(result.repoCount, 1);
+  assert.equal(result.scoring.evidence.facts.originalRepoCount, 0);
+  assert.equal(result.scoring.evidence.facts.forkRepoCount, 1);
+  assert.equal(result.repositoryActivity.length, 0);
+  assert.equal(result.scoring.breakdown.projectImpact.value, 0);
+  assertScores(result);
+});
+test('normalization deduplicates repositories and preserves unavailable activity', async () => {
+  const h = createHarness();
+  h.state.optionalFailure = true;
+  h.state.repoOverride = [
+    { name: 'one', topics: null, stargazers_count: -3, pushed_at: 'invalid' },
+    { name: 'ONE' },
+    null
+  ];
+  const { service } = h.loadInstance();
+  const result = await service.analyzeGitHubProfile('partial');
+  assert.equal(result.repoCount, 1);
+  assert.equal(result.repositories[0].pushedAt, null);
+  assert.ok(result.repositoryQuality.every((repo) => repo.commits === null));
+  assert.equal(result.scoring.breakdown.contribution.available, false);
+  assert.equal(result.scoring.evidence.facts.totalCommits, null);
+  assert.ok(result.scoring.warnings.includes('activity_partial_or_unavailable'));
+  assertScores(result);
+});
+test('measured zero stars and activity differ from unavailable data and preserve score parity', async () => {
+  const h = createHarness();
+  h.state.contributorOverride = [];
+  h.state.languageOverride = {};
+  h.state.repoOverride = [
+    {
+      name: 'zero',
+      stargazers_count: 0,
+      forks_count: 0,
+      fork: false,
+      archived: false,
+      pushed_at: new Date().toISOString(),
+      language: null
+    }
+  ];
+  const { service } = h.loadInstance();
+  const result = await service.analyzeGitHubProfile('zeros');
+  assert.equal(result.totalStars, 0);
+  assert.equal(result.scoring.evidence.facts.totalCommits, 0);
+  assert.equal(result.scoring.breakdown.contribution.available, true);
+  assert.deepEqual(result.rawLanguageBytes, {});
+  const parity = githubScoreEngine.calculate(result.scoring.evidence.inputs);
+  assert.equal(parity.score, result.githubHealthScore);
+  assertScores(result);
+  assert.ok(JSON.stringify(result.scoring.evidence).length < 2500);
+});
+test('AI thrown errors preserve durable scoring and repeat freshness', async () => {
+  const h = createHarness();
+  h.state.aiMode = 'throw';
+  const { service } = h.loadInstance();
+  const first = await service.analyzeGitHubProfile('aierror');
+  const second = await service.analyzeGitHubProfile('aierror');
+  assert.equal(second.fetchedAt, first.fetchedAt);
+  assert.deepEqual(second.scoring, first.scoring);
+  assert.equal(h.state.counters.github.profile, 1);
+  assertScores(first);
+  assert.match(first.summary, /Rule-based/);
+});
+test('canonical active identity takes priority and rejects preview overwrite', async () => {
+  const h = createHarness();
+  const { controller } = h.loadInstance();
+  const res = {
+    statusCode: 200,
+    status(code) {
+      this.statusCode = code;
+      return this;
+    },
+    json(data) {
+      this.body = data;
+      return this;
+    }
+  };
+  await controller.analyzeAndSaveGitHubProfile(
+    {
+      body: {},
+      query: {},
+      user: {
+        _id: 'canonical',
+        activeGithubUsername: 'active',
+        githubUsername: 'legacy'
+      }
+    },
+    res
+  );
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.body.githubSignals.username, 'active');
+  assert.ok(h.state.analysisCacheDeletes.length > 0);
+  const saved = h.state.analyses.get('canonical');
+  const history = saved.githubAnalysisHistory.length;
+  await controller.analyzeAndSaveGitHubProfile(
+    {
+      body: { forceRefresh: true },
+      query: {},
+      user: {
+        _id: 'canonical',
+        activeGithubUsername: 'active',
+        githubUsername: 'legacy'
+      }
+    },
+    res
+  );
+  assert.equal(saved.githubAnalysisHistory.length, history + 1);
+  assert.equal(saved.githubAnalysisHistory[0].healthScore, res.body.analysisHistory[0].healthScore);
+});
+
+test('successful narrative cache preserves facts, dates and snapshot count', async () => {
+  const h = createHarness();
+  h.state.aiMode = 'score-pollution';
+  const { service } = h.loadInstance();
+  const first = await service.analyzeGitHubProfile('narrative');
+  const second = await service.analyzeGitHubProfile('narrative');
+  assert.equal(second.summary, first.summary);
+  assert.deepEqual(second.scoring, first.scoring);
+  assert.equal(second.fetchedAt, first.fetchedAt);
+  assert.equal(second.analysisHistory.length, 1);
+  assert.equal(second.repoCount, first.repoCount);
+  assert.equal(second.totalStars, first.totalStars);
+});
+
+test('missing canonical identity cannot be replaced by a save request username', async () => {
+  const h = createHarness();
+  const { controller } = h.loadInstance();
+  const res = await invoke(controller.analyzeAndSaveGitHubProfile, {
+    username: 'preview',
+    savedUsername: ''
+  });
+  assert.equal(res.statusCode, 400);
+  assert.equal(h.state.counters.github.profile, 0);
+});
+test('mostly forked accounts score original work only', async () => {
+  const h = createHarness();
+  const original = {
+    name: 'original',
+    fork: false,
+    archived: true,
+    language: 'Python',
+    stargazers_count: 0,
+    forks_count: 0
+  };
+  h.state.repoOverride = [original];
+  const { service } = h.loadInstance();
+  const first = await service.analyzeGitHubProfile('mixed');
+  h.state.repoOverride = [
+    original,
+    ...Array.from({ length: 8 }, (_, i) => ({
+      name: 'fork' + i,
+      fork: true,
+      language: 'JavaScript',
+      stargazers_count: 1000,
+      forks_count: 200
+    }))
+  ];
+  const second = await service.analyzeGitHubProfile('mixed', {
+    forceRefresh: true
+  });
+  assert.equal(first.githubHealthScore, second.githubHealthScore);
+  assert.equal(second.repoCount, 9);
+  assert.equal(second.scoring.evidence.facts.forkRepoCount, 8);
+});
+
+test('repository pagination includes later pages without duplicate influence', async () => {
+  const h = createHarness();
+  h.state.repoPages = [
+    Array.from({ length: 100 }, (_, i) => ({
+      name: 'repo' + i,
+      archived: true,
+      stargazers_count: 0,
+      forks_count: 0
+    })),
+    [{ name: 'repo99' }, { name: 'last', archived: true, stargazers_count: 0, forks_count: 0 }]
+  ];
+  const { service } = h.loadInstance();
+  const result = await service.analyzeGitHubProfile('paged');
+  assert.equal(result.repoCount, 101);
+  assert.equal(h.state.counters.github.repositories, 2);
+  assertScores(result);
+});
+
+const waitForRefresh = async (service) => {
+  const deadline = Date.now() + 10000;
+  while (service.getGitHubRefreshState().running && Date.now() < deadline) await delay(10);
+  assert.equal(service.getGitHubRefreshState().running, 0);
+};
+
+test('expired cache returns immediately and revalidates once across instances with AI enrichment', async () => {
+  const h = createHarness();
+  const first = h.loadInstance();
+  const initial = await first.service.analyzeGitHubProfile('swr');
+  h.state.cache.get('swr:github-v2').expiresAt = new Date(0);
+  first.service.clearGitHubAnalysisMemoryCache();
+  const second = h.loadInstance();
+  h.state.delays.github = 20;
+  h.state.aiMode = 'score-pollution';
+  const before = h.state.counters.cache.writes;
+  const results = await Promise.all([
+    first.service.analyzeGitHubProfile('swr'),
+    second.service.analyzeGitHubProfile('swr')
+  ]);
+  assert.ok(
+    results.every((result) => result.cache.stale && result.fetchedAt === initial.fetchedAt)
+  );
+  assert.equal(h.state.counters.cache.writes, before, 'stale response must not wait for refresh');
+  await Promise.all([waitForRefresh(first.service), waitForRefresh(second.service)]);
+  assert.equal(h.state.counters.github.profile, 2);
+  assert.equal(h.state.counters.ai, 2);
+  const refreshed = await second.service.analyzeGitHubProfile('swr');
+  assert.equal(refreshed.cache.stale, false);
+  assert.match(refreshed.summary, /repository metadata/i);
+  assert.match(refreshed.recruiterInsights.interviewTalkingPoints[0], /React dependencies/);
+  assert.equal(refreshed.analysisHistory.length, 2);
+  assert.notEqual(refreshed.githubHealthScore, 999);
+  assert.ok(h.state.analysisCacheDeletes.length > 0);
+});
+
+test('failed SWR preserves the durable snapshot and releases the distributed lock', async () => {
+  const h = createHarness();
+  const { service } = h.loadInstance();
+  await service.analyzeGitHubProfile('swr-failed');
+  const cached = h.state.cache.get('swr-failed:github-v2');
+  cached.expiresAt = new Date(0);
+  const original = copy(cached);
+  service.clearGitHubAnalysisMemoryCache();
+  h.state.githubFailure = '429';
+  const stale = await service.analyzeGitHubProfile('swr-failed');
+  assert.equal(stale.cache.stale, true);
+  await waitForRefresh(service);
+  assert.deepEqual(h.state.cache.get('swr-failed:github-v2'), original);
+  assert.equal(h.state.redisLocks.size, 0);
+});
+
+test('an unresponsive AI provider is bounded by the real hard timeout', async () => {
+  const h = createHarness();
+  h.state.aiMode = 'hang';
+  const { service } = h.loadInstance();
+  const start = performance.now();
+  const result = await service.analyzeGitHubProfile('hung-ai');
+  assert.ok(performance.now() - start < 6500);
+  assert.match(result.summary, /Rule-based/);
+  assert.ok(result.recruiterInsights.interviewTalkingPoints.length);
+  assertScores(result);
+});
+
+test('client errors scrub filesystem paths, classic PATs and URL credentials', async () => {
+  for (const message of [
+    'Cannot read C:/private/config',
+    'Cannot read /var/app/config',
+    'Authorization failed ghp_exampleCredential',
+    'Connection failed https://user:credential@example.com',
+    'Unexpected token: credential'
+  ]) {
+    const h = createHarness();
+    h.state.saveLockError = Object.assign(new Error(message), { status: 400 });
+    const { controller } = h.loadInstance();
+    const response = await invoke(controller.analyzeAndSaveGitHubProfile, {
+      username: 'safe'
+    });
+    assert.equal(response.statusCode, 400);
+    assert.equal(response.body.message, 'Invalid GitHub username.');
+  }
+});
+
+test('qualitative evidence excludes forks and rejects unverified proficiency and authorship', async () => {
+  const h = createHarness();
+  h.state.aiMode = 'unsupported-claims';
+  h.state.repoOverride = [
+    {
+      name: 'original-engine',
+      fork: false,
+      archived: false,
+      language: 'Python',
+      stargazers_count: 2,
+      forks_count: 0
+    },
+    {
+      name: 'copied-engine',
+      fork: true,
+      archived: false,
+      language: 'Ruby',
+      stargazers_count: 5000,
+      forks_count: 300
+    }
+  ];
+  const { service } = h.loadInstance();
+  const result = await service.analyzeGitHubProfile('narrative-evidence');
+  assert.ok(h.state.promptData.topRepos.every((repo) => repo.name !== 'copied-engine'));
+  const narrative = JSON.stringify({
+    summary: result.summary,
+    explanation: result.explanation,
+    strengths: result.strengths,
+    weakAreas: result.weakAreas,
+    recruiterInsights: result.recruiterInsights
+  });
+  assert.doesNotMatch(
+    narrative,
+    /copied-engine|proficient|expertise|personal commits|hands-on|successfully manages/i
+  );
+  assert.match(result.strengths[0], /original-engine/);
+  assertScores(result);
+});
+
+test('canonical README fallback recognizes an extensionless document without expanding the repository sample', async () => {
+  const h = createHarness();
+  h.state.readmeAlternateName = true;
+  const { service } = h.loadInstance();
+  const result = await service.analyzeGitHubProfile('readme-name');
+  const inspected = result.repositoryQuality.filter((repo) => repo.hasReadme !== null);
+  assert.equal(inspected.length, 2);
+  assert.ok(inspected.every((repo) => repo.hasReadme && repo.readmeQuality > 0));
+  assert.equal(h.state.counters.github.content, 14);
+  assert.equal(result.dataVersion, 'github-normalized-v2');
+  assertScores(result);
+});
+
+test('a successful save cannot refresh old-profile monthly activity from repository totals', async () => {
+  const harness = createHarness();
+  const { state } = harness;
+  const { controller } = harness.loadInstance();
+  const first = await invoke(controller.analyzeAndSaveGitHubProfile, {
+    username: 'alpha',
+    savedUsername: 'alpha'
+  });
+  assert.equal(first.statusCode, 200);
+  const record = state.analyses.get('user-1');
+  record.githubSignals.username = 'previous-profile';
+  record.contributionActivity = [{ month: 'Nov', count: 999 }];
+  const next = await invoke(controller.analyzeAndSaveGitHubProfile, {
+    username: 'alpha',
+    savedUsername: 'alpha',
+    forceRefresh: true
+  });
+  assert.equal(next.statusCode, 200);
+  assert.equal(record.githubSignals.username.toLowerCase(), 'alpha');
+  assert.deepEqual(record.contributionActivity, []);
+  assert.equal(Object.hasOwn(next.body, 'monthlyCommitActivity'), false);
 });

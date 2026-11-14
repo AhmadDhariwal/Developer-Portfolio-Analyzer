@@ -1,0 +1,57 @@
+<div class="conversation">
+  <div class="conversation-header">
+    <strong class="conversation-title">Conversation &amp; Replies</strong>
+    <span class="reply-count-chip" *ngIf="replies && replies.length > 0">
+      {{ replies.length }} {{ replies.length === 1 ? 'Message' : 'Messages' }}
+    </span>
+  </div>
+
+  <div class="conversation-empty" *ngIf="!replies || replies.length === 0">
+    <span class="material-symbols-outlined empty-icon">chat_bubble_outline</span>
+    <span>No replies yet. Add a message below to continue the conversation.</span>
+  </div>
+
+  <div class="reply-thread" *ngIf="replies && replies.length > 0">
+    <div
+      class="reply-item"
+      *ngFor="let reply of replies"
+      [ngClass]="reply.authorRole === 'admin' ? 'reply-admin' : 'reply-user'"
+    >
+      <div class="reply-head">
+        <div class="author-group">
+          <span
+            class="material-symbols-outlined author-icon"
+            [ngClass]="reply.authorRole === 'admin' ? 'icon-support' : 'icon-user'"
+          >
+            {{ reply.authorRole === 'admin' ? 'support_agent' : 'person' }}
+          </span>
+          <span class="reply-author">
+            {{ reply.authorRole === 'admin' ? 'Support Team' : 'You' }}
+          </span>
+          <span class="role-badge" *ngIf="reply.authorRole === 'admin'">Staff</span>
+        </div>
+        <span class="reply-time" *ngIf="reply.createdAt">
+          {{ reply.createdAt | date: 'medium' }}
+        </span>
+      </div>
+      <p class="reply-body">{{ reply.body }}</p>
+    </div>
+  </div>
+
+  <form class="reply-form" (ngSubmit)="onSubmit()">
+    <label for="replyBody" class="reply-label">Add a reply</label>
+    <textarea
+      id="replyBody"
+      name="replyBody"
+      [(ngModel)]="replyBody"
+      maxlength="5000"
+      placeholder="Type your reply or additional details..."
+      [disabled]="posting"
+    ></textarea>
+    <button type="submit" class="btn-reply" [disabled]="posting || !replyBody.trim()">
+      <span class="material-symbols-outlined" *ngIf="!posting">send</span>
+      <span class="material-symbols-outlined spinning-icon" *ngIf="posting">progress_activity</span>
+      <span>{{ posting ? 'Sending...' : 'Send Reply' }}</span>
+    </button>
+  </form>
+</div>

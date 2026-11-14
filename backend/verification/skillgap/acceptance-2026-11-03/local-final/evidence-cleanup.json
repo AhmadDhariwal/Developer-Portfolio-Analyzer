@@ -1,0 +1,41 @@
+{
+  "preflightTrackedWorkingTree": "clean",
+  "sourceFilesRestored": 0,
+  "testOnlyEvidenceReplacedAfterRetention": [
+    {
+      "path": "backend/verification/architecture/request-flow-governance-results.json",
+      "retained": "backend/verification/skillgap/acceptance-2026-11-03/local-final/other-module-evidence/backend__verification__architecture__request-flow-governance-results.json",
+      "sha256": "59f0ae5c61c91e17ada9399ad5a013b2acb2db1df63fe85ddc585210f9975952"
+    },
+    {
+      "path": "backend/verification/integrations/final-scalability-acceptance.json",
+      "retained": "backend/verification/skillgap/acceptance-2026-11-03/local-final/other-module-evidence/backend__verification__integrations__final-scalability-acceptance.json",
+      "sha256": "9be405886eaa32bdd33187527191367aea0d564ee91866c5c00ccc4411a2512f"
+    },
+    {
+      "path": "backend/verification/integrations/repeated-requests-cache-audit.json",
+      "retained": "backend/verification/skillgap/acceptance-2026-11-03/local-final/other-module-evidence/backend__verification__integrations__repeated-requests-cache-audit.json",
+      "sha256": "12cac6c244fc676339451f384a7781f7e2f91bd9538adb123384476926a6b39b"
+    },
+    {
+      "path": "backend/verification/integrations/scalability-governance-regression.json",
+      "retained": "backend/verification/skillgap/acceptance-2026-11-03/local-final/other-module-evidence/backend__verification__integrations__scalability-governance-regression.json",
+      "sha256": "0a298b60048f784269c12941fcca8bc3c916b257b26adae01a68d28043b15d05"
+    },
+    {
+      "path": "backend/verification/notifications/integration-results.json",
+      "retained": "backend/verification/skillgap/acceptance-2026-11-03/local-final/other-module-evidence/backend__verification__notifications__integration-results.json",
+      "sha256": "acc86f42264aa3b0a0deeff27b6553ac1225705c5c44b6a75ea80103ef1db3ce"
+    },
+    {
+      "path": "backend/verification/resume/extraction-accuracy.json",
+      "retained": "backend/verification/skillgap/acceptance-2026-11-03/local-final/other-module-evidence/backend__verification__resume__extraction-accuracy.json",
+      "sha256": "763642e60455e97e04f32f8f354624ddc4010204c35b30de8176f36ad438b6ce"
+    },
+    {
+      "path": "backend/verification/resume/mongo-acceptance.json",
+      "retained": "backend/verification/skillgap/acceptance-2026-11-03/local-final/other-module-evidence/backend__verification__resume__mongo-acceptance.json",
+      "sha256": "5ccfb0859cc1e0dc112093ea08aa2eb64ab2169906902f58dc193842e2b6010f"
+    }
+  ]
+}

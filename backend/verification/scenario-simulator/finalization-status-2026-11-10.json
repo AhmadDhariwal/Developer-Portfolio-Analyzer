@@ -1,0 +1,319 @@
+{
+  "date": "2026-11-10",
+  "timezone": "Asia/Karachi",
+  "branch": "fix/scenario-final",
+  "head": "9b188487d6a13d0d3508b9fac2ec06abe16c292b",
+  "prTarget": "not applicable",
+  "preflight": {
+    "workingTreeClean": false,
+    "indexClean": true,
+    "commitsMade": false,
+    "pushesMade": false,
+    "mergesMade": false,
+    "deploymentsMade": false,
+    "productionDataModified": false,
+    "existingChangesAtStart": [
+      "backend/verification/scenario-simulator/SCENARIO-SIMULATOR-PRODUCTION-FINAL.md (modified)",
+      "backend/verification/scenario-simulator/finalization-status-2026-11-10.json (untracked)"
+    ],
+    "existingWorkPreserved": true
+  },
+  "productionReady": false,
+  "decision": "NOT PRODUCTION-READY — performance acceptance is DEFERRED; latest retained 6,000-request acceptance remains FAIL",
+  "rootCause": {
+    "source": "Retained request-correlated local diagnostic from 2026-11-09; see scenario-correlated-diagnostic-local-2026-11-09.json.",
+    "diagnosticLoad": {
+      "requests": 1500,
+      "rps": 100,
+      "seconds": 15,
+      "quota503": 136,
+      "redisEvalFailures": 0,
+      "redisClientEvalMs": {
+        "p50": 44,
+        "p95": 228,
+        "p99": 386
+      },
+      "redisServerEvalAverageMs": 0.115,
+      "redisSlowEval": false,
+      "eventLoopP99MsPerWorker": 234,
+      "mongoCommandMs": {
+        "p95": 204,
+        "p99": 286
+      },
+      "mongoCheckoutWaitMs": {
+        "p95": 163,
+        "p99": 226
+      },
+      "mongoCheckoutQueuePeakPerWorker": [50, 47],
+      "contextSourceFanout": 4,
+      "contextJoinersObserved": 0,
+      "quotaDeadlineMs": 150
+    },
+    "conclusion": "Application-visible event-loop scheduling delay and Mongo checkout/command queueing coincide with Redis replies exceeding the fixed fail-closed quota deadline. Context admission capacity is a second overload path. The diagnostic does not isolate the underlying host, Mongo scheduling, or production-representative source-query cost, so no pool, fanout, timeout, threshold, or quota relaxation is justified."
+  },
+  "latestCompletedAcceptance": {
+    "evidence": "scenario-performance-6000-100rps-confirmation-2026-11-09.json",
+    "runDate": "2026-11-09",
+    "status": "FAIL",
+    "offered": 6000,
+    "completed": 6000,
+    "rps": 100,
+    "seconds": 60,
+    "httpStatuses": {
+      "200": 4532,
+      "201": 458,
+      "503": 1010
+    },
+    "unexpected503Reasons": {
+      "sharedQuotaUnavailable": 811,
+      "contextCapacityReached": 199
+    },
+    "endpointLatencyMs": {
+      "context": {
+        "p95": 3321,
+        "p99": 3832,
+        "targetP95": 500,
+        "targetP99": 1000
+      },
+      "evaluate": {
+        "p95": 1544,
+        "p99": 2027,
+        "targetP95": 200
+      },
+      "history": {
+        "p95": 2537,
+        "p99": 3445,
+        "targetP95": 150
+      },
+      "save": {
+        "p95": 2772,
+        "p99": 3322,
+        "targetP95": 500
+      },
+      "export": {
+        "p95": 4756,
+        "p99": 5210,
+        "targetP95": 500
+      }
+    },
+    "availabilityTarget": "zero unexpected 5xx",
+    "availabilityPassed": false,
+    "latencyPassed": false,
+    "freshAcceptanceOnCurrentMachine": "DEFERRED",
+    "blocker": "WSL is not installed (exit 50); no Redis server/container runtime exists locally; the harness starts Redis through WSL. No performance run was started this turn."
+  },
+  "infrastructureAvailabilityCheck": {
+    "status": "BLOCKED",
+    "checkedBeforePerformanceRun": true,
+    "localHost": {
+      "platform": "win32",
+      "node": "v24.19.0",
+      "wslInstalled": false,
+      "wslStatusExitCode": 50,
+      "wslStatusError": "The Windows Subsystem for Linux is not installed.",
+      "redisServerAvailable": false,
+      "dockerAvailable": false,
+      "podmanAvailable": false,
+      "mongoBinaryAvailable": true,
+      "mongoBinary": "C:\\Program Files\\MongoDB\\Server\\8.2\\bin\\mongod.exe",
+      "mongoVersion": "8.2.6",
+      "deploymentEquivalent": false
+    },
+    "savedCloudEnvironment": {
+      "name": "Developer-Portfolio-Analyzer",
+      "status": "ready",
+      "runnable": true,
+      "repositoryRef": "main",
+      "serviceInventoryConfirmsRedisAndMongo": false,
+      "usableForAuthorizedBranchAcceptance": false,
+      "reason": "The configuration references main and does not expose service availability for real Redis and MongoDB."
+    },
+    "acceptanceHarnessRequirement": "backend/src/scripts/verifyScenarioP3.js starts Redis through wsl.exe -d Ubuntu using /usr/bin/redis-server.",
+    "performanceRunStartedThisTurn": false,
+    "runtimeChangesThisTurn": []
+  },
+  "verification": [
+    {
+      "gate": "Backend Scenario and consumer contracts",
+      "status": "PASS",
+      "command": "node --test --test-reporter=tap backend/src/tests/scenarioPlanningScore.test.js backend/src/tests/scenarioLegacyParity.test.js backend/src/tests/scenarioSimulatorService.test.js backend/src/tests/scenarioSimulatorCharacterization.test.js backend/src/tests/scenarioSimulatorContext.test.js backend/src/tests/scenarioSimulatorReliability.test.js backend/src/tests/scenarioProductionContracts.test.js backend/src/tests/skillGapConsumerContracts.test.js",
+      "passed": 33,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "gate": "MongoDB persistence and two-worker recovery",
+      "status": "PASS",
+      "command": "node --test --test-concurrency=1 --test-reporter=tap backend/src/tests/scenarioSimulatorMongo.integration.test.js backend/src/tests/scenarioSimulatorWorkers.integration.test.js backend/src/tests/scenarioSprintExport.test.js backend/src/tests/scenarioMigration.integration.test.js",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "gate": "Scenario Simulator Angular tests",
+      "status": "PASS",
+      "command": "npm test -- --watch=false --include=src/app/pages/scenario-simulator/**/*.spec.ts --include=src/app/shared/services/scenario-simulator.service.spec.ts --runner-config=scripts/scenario-vitest.config.mjs",
+      "passedFiles": 7,
+      "passed": 20,
+      "failed": 0,
+      "skipped": 0,
+      "note": "Dedicated 20 tests are included in the full 594-test suite run; this current run also confirms them PASS."
+    },
+    {
+      "gate": "TypeScript",
+      "status": "PASS",
+      "command": "node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.app.json",
+      "exitCode": 0
+    },
+    {
+      "gate": "Production build",
+      "status": "PASS",
+      "command": "npm run build",
+      "durationSeconds": 65.332,
+      "warnings": [
+        "landing-page SCSS 56.67 kB exceeds the 48 kB budget",
+        "jobs SCSS 52.97 kB exceeds the 48 kB budget"
+      ]
+    },
+    {
+      "gate": "Full Angular test suite",
+      "status": "PASS",
+      "command": "npm test -- --watch=false --runner-config=scripts/scenario-vitest.config.mjs",
+      "specFiles": 94,
+      "passed": 594,
+      "failed": 0,
+      "skipped": 0,
+      "durationSeconds": 102.42,
+      "runnerMitigation": [
+        "TEMP and TMP pointed to task-owned writable temp directory",
+        "NODE_DISABLE_COMPILE_CACHE=1",
+        "existing config maxWorkers=1 and fileParallelism=false"
+      ],
+      "note": "Complete suite ran with every spec and assertion enabled; no test or application changes."
+    },
+    {
+      "gate": "Production-bundle browser journey",
+      "status": "PASS",
+      "command": "node frontend/scripts/verify-scenario-decomposition-ui.cjs production-final-20261110",
+      "browser": "Installed Google Chrome",
+      "playwrightResolution": "Codex runtime bundled node_modules via process-local NODE_PATH; no dependency added",
+      "captures": 32,
+      "viewportWidths": [1440, 375],
+      "themes": ["light", "dark", "system"],
+      "horizontalOverflows": 0,
+      "pageErrors": 0,
+      "fixtureStates": [
+        "draft and evaluation",
+        "comparison",
+        "breakdown and roadmap",
+        "delayed context loading",
+        "recovered 503 and empty history",
+        "partial/degraded context"
+      ],
+      "results": "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110.json",
+      "screenshotsPattern": "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-*.png"
+    },
+    {
+      "gate": "Scenario frontend ownership, loading/error and cancellation",
+      "status": "PASS",
+      "source": "Scenario Simulator tests included in the full Angular run",
+      "passed": 20,
+      "details": [
+        "authoritative history reads and session invalidation",
+        "cancels old account context request and discards late response",
+        "releases loading flags on completion",
+        "preserves history and cursor on pagination error",
+        "drops superseded history pages",
+        "rejects stale evaluation and cancels on component teardown",
+        "template cancel and Escape do not apply changes",
+        "prevents save/export for edited stale result"
+      ]
+    },
+    {
+      "gate": "Real shared Redis quota, reconnect, and cross-worker quota",
+      "status": "DEFERRED",
+      "reason": "No real Redis server or deployment-equivalent Linux environment. Unit fail-closed quota contracts pass."
+    },
+    {
+      "gate": "Fresh request-correlated profile and 6,000-request acceptance",
+      "status": "DEFERRED",
+      "latestRetainedAcceptance": "FAIL",
+      "reason": "WSL unavailable (exit 50); no Redis/Docker/Podman; no run started."
+    }
+  ],
+  "formatting": {
+    "applicationSourceFilesChanged": [],
+    "jsonFormattedWithRepositoryPrettier": true,
+    "markdownKeptExistingReportStyle": true,
+    "gitDiffCheck": "PASS",
+    "gitCachedDiffCheck": "PASS",
+    "verifiedTaskTemporaryCleanup": {
+      "filesRemovedIndividually": 1348,
+      "directoriesRemovedIndividually": 4,
+      "recursiveDeleteUsed": false,
+      "rootRemoved": true
+    },
+    "externalBrowserTempDirVerifiedEmptyAndRemoved": true,
+    "externalTaskTempDirectoriesVerifiedEmptyAndRemoved": [
+      "scenario-full-suite-20261110",
+      "scenario-browser-temp-20261110"
+    ]
+  },
+  "taskFilesChanged": [
+    "backend/verification/scenario-simulator/SCENARIO-SIMULATOR-PRODUCTION-FINAL.md",
+    "backend/verification/scenario-simulator/finalization-status-2026-11-10.json",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-1440-dark-breakdown.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-1440-dark-comparison.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-1440-dark-draft.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-1440-dark-result.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-1440-dark-roadmap.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-1440-light-breakdown.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-1440-light-comparison.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-1440-light-draft.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-1440-light-result.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-1440-light-roadmap.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-1440-system-breakdown.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-1440-system-comparison.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-1440-system-draft.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-1440-system-result.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-1440-system-roadmap.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-375-dark-breakdown.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-375-dark-comparison.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-375-dark-draft.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-375-dark-result.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-375-dark-roadmap.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-375-light-breakdown.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-375-light-comparison.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-375-light-draft.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-375-light-result.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-375-light-roadmap.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-375-system-breakdown.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-375-system-comparison.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-375-system-draft.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-375-system-result.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-375-system-roadmap.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-loading-recovered-error-empty.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110-partial-healthy-sources-retained.png",
+    "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110.json"
+  ],
+  "filesMoved": [],
+  "filesDeleted": [],
+  "runtimeChanges": [],
+  "performanceAcceptance": {
+    "status": "DEFERRED",
+    "latestRetainedAcceptance": "FAIL",
+    "freshRequestCorrelatedProfile": "not run",
+    "fresh6000RequestRun": "not run",
+    "infraBlocker": "Windows host; WSL absent (exit 50); no Redis/Docker/Podman; available Windows Mongo binary is not deployment-equivalent",
+    "productionReady": false
+  },
+  "browserVerification": {
+    "status": "PASS",
+    "browser": "Chrome",
+    "captures": 32,
+    "horizontalOverflows": 0,
+    "pageErrors": 0,
+    "syntheticFixturesOnly": true,
+    "evidence": "frontend/verification/scenario-simulator/browser-finalization-2026-11-10/production-final-20261110.json"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "command": [
+    "node",
+    "node_modules/@angular/cli/bin/ng.js",
+    "test",
+    "--watch=false",
+    "--include=src/app/pages/skill-gap/**/*.spec.ts",
+    "--include=src/app/pages/interview-prep/**/*.spec.ts"
+  ],
+  "cwd": "D:\\Developer-Portfolio-Analyzer\\frontend",
+  "exitCode": 1,
+  "signal": null,
+  "milliseconds": 52507
+}

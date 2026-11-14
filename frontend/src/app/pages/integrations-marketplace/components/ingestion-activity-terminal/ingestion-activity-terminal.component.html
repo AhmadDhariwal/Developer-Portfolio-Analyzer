@@ -1,0 +1,23 @@
+<div class="terminal-head">
+  <div class="terminal-dots">
+    <span class="term-dot term-dot--red"></span>
+    <span class="term-dot term-dot--yellow"></span>
+    <span class="term-dot term-dot--green"></span>
+  </div>
+  <span class="terminal-title">DAEMON_LOG // INGESTION_STREAM_MONITOR</span>
+  <button
+    type="button"
+    class="terminal-close"
+    (click)="closeTerminal.emit()"
+    aria-label="Close terminal"
+  >
+    ×
+  </button>
+</div>
+<div class="terminal-body font-mono">
+  <div *ngFor="let log of terminalLogs" class="log-line">
+    <span class="log-timestamp">[{{ log.time }}]</span>
+    <span class="log-level" [class]="log.level">{{ log.level.toUpperCase() }}</span>
+    <span class="log-msg">{{ log.message }}</span>
+  </div>
+</div>

@@ -1,68 +1,328 @@
 /* ==========================================================================
-   DevInsight AI Design System
+   DevInsight AI Design System — Light, Dark & System Theme Architecture
    ========================================================================== */
 
-/* Google Fonts — loaded globally to avoid per-component budget overruns */
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@use './app/shared/styles/design-tokens' as *;
+@use './app/shared/styles/fonts';
+@use './app/shared/styles/developer-ui' as developer;
+@use './app/shared/styles/layout-helpers' as *;
 
-:root {
-  /* Primary Colors */
-  --color-primary: #6366F1;       /* Indigo */
-  --color-primary-dark: #4F46E5;
-  --color-primary-light: #818CF8;
-  
-  --color-secondary: #8B5CF6;     /* Purple */
-  --color-accent: #22C55E;        /* Green */
-  
-  /* Background */
-  --bg-main: #0F172A;             /* Dark navy */
-  --bg-card: #1E293B;             /* Card background */
-  --bg-hover: #334155;            /* Hover state */
-  
+// Remote font styles are already linked in index.html. An @import here makes
+// loading the production stylesheet depend on that remote request succeeding,
+// leaving its deferred media="print" unchanged when offline. Manrope is local.
+
+/* --------------------------------------------------------------------------
+   LIGHT THEME (Default — Production Hybrid SaaS Theme)
+   -------------------------------------------------------------------------- */
+:root,
+[data-theme='light'],
+.light {
+  /* Brand Indigo Palette */
+  --color-primary: #4f46e5; /* Brand Indigo */
+  --color-primary-dark: #4338ca; /* Brand Hover */
+  --color-primary-light: #6366f1;
+  --color-primary-soft: #eef2ff; /* Brand Soft */
+  --color-primary-border: #c7d2fe;
+  --color-primary-text: #4338ca;
+  --color-primary-hover: #4338ca;
+
+  --color-secondary: #6366f1;
+  --color-secondary-soft: #f3e8ff;
+  --color-secondary-border: #ddd6fe;
+  --color-secondary-text: #6d28d9;
+  --color-accent: #10b981;
+
+  /* Hybrid SaaS Surface Architecture */
+  --bg-main: #f6f8fb; /* Workspace background */
+  --bg-card: #ffffff; /* Primary content surface */
+  --bg-hover: #f8fafc; /* Hover state */
+  --bg-subtle: #f1f5f9;
+
+  /* Surfaces */
+  --surface-base: #f6f8fb; /* Workspace background */
+  --surface-card: #ffffff; /* Primary content surface (white) */
+  --surface-secondary: #f8fafc; /* Secondary surface (subtle off-white) */
+  --surface-tertiary: #f1f5f9; /* Subtle surface */
+  --surface-subtle: #f1f5f9; /* Subtle surface */
+  --surface-hover: #f8fafc;
+  --surface-glass: #ffffff;
+  --surface-modal: #ffffff;
+  --surface-drawer: #ffffff;
+  --surface-input: #ffffff;
+
+  /* Sidebar Dark Branded Tokens (Preserved in light mode) */
+  --sidebar-bg: #111827;
+  --sidebar-elevated: #1f2937;
+  --sidebar-text: #cbd5e1;
+  --sidebar-text-muted: #94a3b8;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-active-bg: #4f46e5;
+  --sidebar-active-text: #ffffff;
+
+  /* Topbar Light Theme Tokens */
+  --navbar-bg: #ffffff;
+  --navbar-border: #e2e8f0;
+  --navbar-text: #0f172a;
+  --navbar-text-muted: #64748b;
+  --navbar-input-bg: #f8fafc;
+  --navbar-input-border: #cbd5e1;
+
   /* Text Colors */
-  --text-primary: #F8FAFC;        /* White text */
-  --text-secondary: #94A3B8;      /* Gray text */
-  --text-muted: #64748B;          /* Muted gray */
-  
-  /* Status Colors */
-  --color-success: #22C55E;
-  --color-success-dark: #16A34A;
-  --color-warning: #F59E0B;
-  --color-danger: #EF4444;
-  --color-info: #3B82F6;
-  
-  /* Borders */
-  --border-color: #334155;
-  --border-light: #475569;
-  
-  /* Shadows */
-  --shadow-sm: 0px 2px 8px rgba(0, 0, 0, 0.15);
-  --shadow-md: 0px 8px 16px rgba(0, 0, 0, 0.2);
-  --shadow-lg: 0px 16px 32px rgba(0, 0, 0, 0.25);
-  --shadow-glow: 0px 0px 20px rgba(99, 102, 241, 0.2);
-  
-  /* Layout */
-  --sidebar-width: 280px;
-  --navbar-height: 70px;
-  --spacing-xs: 0.5rem;   /* 8px */
-  --spacing-sm: 1rem;     /* 16px */
-  --spacing-md: 1.5rem;   /* 24px */
-  --spacing-lg: 2rem;     /* 32px */
-  --spacing-xl: 3rem;     /* 48px */
-  --spacing-2xl: 2.5rem;  /* 40px */
-  
+  --text-primary: #0f172a; /* Primary high-contrast text */
+  --text-secondary: #475569; /* Secondary text */
+  --text-muted: #526075; /* Muted metadata text (WCAG AA compliant 5.5:1 on light surfaces) */
+  --text-inverse: #ffffff;
+
+  /* Semantic Status Colors (Restrained Light Mode) */
+  --color-success: #10b981;
+  --color-success-dark: #059669;
+  --color-success-soft: #ecfdf5;
+  --color-success-border: #a7f3d0;
+  --color-success-text: #059669;
+  --color-success-bg: #ecfdf5;
+
+  --color-warning: #f59e0b;
+  --color-warning-dark: #d97706;
+  --color-warning-soft: #fef3c7;
+  --color-warning-border: #fde68a;
+  --color-warning-text: #92400e;
+  --color-warning-bg: #fef3c7;
+
+  --color-danger: #ef4444;
+  --color-danger-dark: #dc2626;
+  --color-danger-soft: #fef2f2;
+  --color-danger-border: #fecaca;
+  --color-danger-text: #991b1b;
+  --color-danger-bg: #fef2f2;
+
+  --color-info: #0284c7;
+  --color-info-dark: #0369a1;
+  --color-info-soft: #eff6ff;
+  --color-info-border: #bfdbfe;
+  --color-info-text: #1e40af;
+  --color-info-bg: #eff6ff;
+
+  --color-neutral: #64748b;
+  --color-neutral-soft: #f1f5f9;
+  --color-neutral-border: #e2e8f0;
+  --color-neutral-text: #475569;
+
+  /* Crisp Hairline Borders */
+  --border-color: #e2e8f0;
+  --border-light: #cbd5e1; /* Strong border */
+  --border-strong: #cbd5e1;
+  --border-subtle: #f1f5f9;
+
+  /* Chart Tokens */
+  --chart-grid: #f1f5f9;
+  --chart-tick: #526075;
+  --chart-label: #475569;
+  --chart-donut-border: #ffffff;
+  --chart-bar-bg: rgba(79, 70, 229, 0.85);
+  --chart-bar-border: #4f46e5;
+
+  /* Restrained SaaS Shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --shadow-glow: none;
+
+  /* Focus & Disabled States */
+  --focus-ring: 0 0 0 2px #ffffff, 0 0 0 4px #4f46e5;
+  --focus-ring-offset: 2px;
+  --opacity-disabled: 0.55;
+
+  /* Compatibility Aliases */
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-muted);
+  --color-border-default: var(--border-color);
+  --color-border-strong: var(--border-strong);
+
+  /* Layout & Spacing */
+  --sidebar-width: 260px;
+  --navbar-height: 64px;
+  --spacing-3xs: 0.125rem;
+  --spacing-2xs: 0.25rem;
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 1rem;
+  --spacing-md: 1.5rem;
+  --spacing-lg: 2rem;
+  --spacing-xl: 3rem;
+  --spacing-2xl: 2.5rem;
+  --spacing-3xl: 4rem;
+
   /* Border Radius */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
   --radius-full: 9999px;
-  
+
+  /* Typography Tokens */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+
+  /* Form Sizing Tokens */
+  --form-height-sm: 34px;
+  --form-height-md: 40px;
+  --form-height-lg: 48px;
+  --form-padding-sm: 0 0.75rem;
+  --form-padding-md: 0 1rem;
+  --form-padding-lg: 0 1.25rem;
+  --form-radius: var(--radius-md);
+
+  /* Card Padding Tokens */
+  --card-padding-sm: 1rem;
+  --card-padding-md: 1.5rem;
+  --card-padding-lg: 2rem;
+
   /* Transitions */
   --transition-fast: 0.15s ease-in-out;
-  --transition-base: 0.3s ease-in-out;
+  --transition-base: 0.25s ease-in-out;
 }
 
-/* Global Styles */
+/* --------------------------------------------------------------------------
+   DARK THEME (Coordinated Dark Mode Palette)
+   -------------------------------------------------------------------------- */
+[data-theme='dark'],
+.dark {
+  /* Brand Indigo Palette */
+  --color-primary: #6366f1; /* Indigo slightly brighter for dark contrast */
+  --color-primary-dark: #4f46e5;
+  --color-primary-light: #818cf8;
+  --color-primary-soft: rgba(99, 102, 241, 0.18);
+  --color-primary-border: rgba(99, 102, 241, 0.35);
+  --color-primary-text: #a5b4fc;
+  --color-primary-hover: #4f46e5;
+
+  --color-secondary: #818cf8;
+  --color-secondary-soft: rgba(139, 92, 246, 0.16);
+  --color-secondary-border: rgba(139, 92, 246, 0.35);
+  --color-secondary-text: #c4b5fd;
+  --color-accent: #34d399;
+
+  /* Dark Surface Architecture */
+  --bg-main: #0b0f17; /* Sleek dark obsidian workspace */
+  --bg-card: #151d2a; /* Elevated dark slate card surface */
+  --bg-hover: #1e293b;
+  --bg-subtle: #192231;
+
+  /* Surfaces */
+  --surface-base: #0b0f17;
+  --surface-card: #151d2a; /* Elevated dark card */
+  --surface-secondary: #101622; /* Inner wells, table rows */
+  --surface-tertiary: #192231; /* Tags, chips, secondary cards */
+  --surface-subtle: #192231;
+  --surface-hover: #1e293b;
+  --surface-glass: #151d2a;
+  --surface-modal: #151d2a;
+  --surface-drawer: #151d2a;
+  --surface-input: #101622;
+
+  /* Sidebar Dark Theme Tokens (Coordinated) */
+  --sidebar-bg: #0b0f17;
+  --sidebar-elevated: #151d2a;
+  --sidebar-text: #cbd5e1;
+  --sidebar-text-muted: #94a3b8;
+  --sidebar-border: #1e293b;
+  --sidebar-active-bg: #4f46e5;
+  --sidebar-active-text: #ffffff;
+
+  /* Topbar Dark Theme Tokens */
+  --navbar-bg: #151d2a;
+  --navbar-border: #1e293b;
+  --navbar-text: #f8fafc;
+  --navbar-text-muted: #94a3b8;
+  --navbar-input-bg: #101622;
+  --navbar-input-border: #2e3c51;
+
+  /* Text Colors */
+  --text-primary: #f8fafc; /* High contrast crisp white */
+  --text-secondary: #cbd5e1; /* Crisp light slate */
+  --text-muted: #94a3b8; /* Accessible muted metadata */
+  --text-inverse: #0f172a;
+
+  /* Semantic Status Colors (Dark Mode Accessible Tints) */
+  --color-success: #34d399;
+  --color-success-dark: #10b981;
+  --color-success-soft: rgba(16, 185, 129, 0.14);
+  --color-success-border: rgba(16, 185, 129, 0.3);
+  --color-success-text: #34d399;
+  --color-success-bg: rgba(16, 185, 129, 0.14);
+
+  --color-warning: #fbbf24;
+  --color-warning-dark: #f59e0b;
+  --color-warning-soft: rgba(245, 158, 11, 0.14);
+  --color-warning-border: rgba(245, 158, 11, 0.3);
+  --color-warning-text: #fde68a;
+  --color-warning-bg: rgba(245, 158, 11, 0.14);
+
+  --color-danger: #f87171;
+  --color-danger-dark: #ef4444;
+  --color-danger-soft: rgba(239, 68, 68, 0.14);
+  --color-danger-border: rgba(239, 68, 68, 0.3);
+  --color-danger-text: #fca5a5;
+  --color-danger-bg: rgba(239, 68, 68, 0.14);
+
+  --color-info: #38bdf8;
+  --color-info-dark: #0284c7;
+  --color-info-soft: rgba(56, 189, 248, 0.14);
+  --color-info-border: rgba(56, 189, 248, 0.3);
+  --color-info-text: #bae6fd;
+  --color-info-bg: rgba(56, 189, 248, 0.14);
+
+  --color-neutral: #94a3b8;
+  --color-neutral-soft: #192231;
+  --color-neutral-border: #2e3c51;
+  --color-neutral-text: #cbd5e1;
+
+  /* Crisp Hairline Borders */
+  --border-color: #1e293b;
+  --border-light: #2a384f;
+  --border-strong: #334155;
+  --border-subtle: #151d2a;
+
+  /* Chart Tokens */
+  --chart-grid: rgba(255, 255, 255, 0.08);
+  --chart-tick: #94a3b8;
+  --chart-label: #cbd5e1;
+  --chart-donut-border: #151d2a;
+  --chart-bar-bg: rgba(99, 102, 241, 0.85);
+  --chart-bar-border: #6366f1;
+
+  /* Dark Mode Shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.45), 0 2px 4px -2px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+
+  /* Focus & Disabled States */
+  --focus-ring: 0 0 0 2px #0b0f17, 0 0 0 4px #6366f1;
+
+  /* Compatibility Aliases */
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-muted);
+  --color-border-default: var(--border-color);
+  --color-border-strong: var(--border-strong);
+}
+
+/* --------------------------------------------------------------------------
+   GLOBAL ELEMENT STYLES
+   -------------------------------------------------------------------------- */
 * {
   margin: 0;
   padding: 0;
@@ -70,35 +330,57 @@
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
   font-size: 14px;
   line-height: 1.6;
   color: var(--text-primary);
   background-color: var(--bg-main);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Poppins', 'Inter', sans-serif;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
   font-weight: 600;
   line-height: 1.3;
   color: var(--text-primary);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
 }
 
-code, pre, .mono {
+code,
+pre,
+.mono {
   font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
   font-size: 0.9em;
 }
 
 a {
   text-decoration: none;
-  color: var(--color-primary-light);
+  color: var(--color-primary);
   transition: color var(--transition-fast);
-  
+
   &:hover {
-    color: var(--color-primary);
+    color: var(--color-primary-dark);
   }
 }
 
@@ -111,13 +393,14 @@ button {
 
 /* Scrollbar styling */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: var(--bg-main);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border-color);
+  background: var(--border-light);
   border-radius: var(--radius-full);
   &:hover {
     background: var(--text-muted);
@@ -126,15 +409,17 @@ button {
 
 /* Utility Classes */
 .glass-panel {
-  background: rgba(30, 41, 59, 0.7);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--surface-card);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-lg);
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, var(--color-primary-light), var(--color-secondary));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--color-primary);
+}
+
+// Opt-in Developer primitives; role scoping preserves other workspaces.
+.developer-workspace {
+  @include developer.utilities;
 }

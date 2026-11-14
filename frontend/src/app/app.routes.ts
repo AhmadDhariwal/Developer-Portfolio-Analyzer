@@ -63,13 +63,17 @@ export const routes: Routes = [
   { path: 'app/super-admin/dashboard', redirectTo: 'super-admin/dashboard', pathMatch: 'full' },
 
   // Auth pages (only when NOT logged in)
-  { path: 'auth/login',            component: Login,                    canActivate: [publicGuard] },
-  { path: 'auth/signup',           component: Signup,                   canActivate: [publicGuard] },
-  { path: 'auth/forgot-password',  component: ForgotPasswordComponent,  canActivate: [publicGuard] },
-  { path: 'auth/otp-verification', component: OtpVerificationComponent, canActivate: [publicGuard] },
-  { path: 'auth/reset-password',   component: ResetPasswordComponent,   canActivate: [publicGuard] },
+  { path: 'auth/login', component: Login, canActivate: [publicGuard] },
+  { path: 'auth/signup', component: Signup, canActivate: [publicGuard] },
+  { path: 'auth/forgot-password', component: ForgotPasswordComponent, canActivate: [publicGuard] },
+  {
+    path: 'auth/otp-verification',
+    component: OtpVerificationComponent,
+    canActivate: [publicGuard],
+  },
+  { path: 'auth/reset-password', component: ResetPasswordComponent, canActivate: [publicGuard] },
   // OAuth callback — NO publicGuard: guard would redirect before token can be extracted
-  { path: 'auth/oauth/callback',   component: OAuthCallbackComponent },
+  { path: 'auth/oauth/callback', component: OAuthCallbackComponent },
 
   // Recruiter invitation — public
   { path: 'invitations/accept/:token', component: AcceptInvitationComponent },
@@ -80,39 +84,44 @@ export const routes: Routes = [
     component: MainLayout,
     canActivate: [authGuard],
     children: [
-      { path: '',                   redirectTo: 'dashboard', pathMatch: 'full' },
-      { path: 'dashboard',          component: DashboardComponent },
-      { path: 'github-analyzer',    component: GithubAnalyzerComponent },
-      { path: 'resume-analyzer',    component: ResumeAnalyzerComponent },
-      { path: 'skill-gap',          component: SkillGapComponent },
-      { path: 'recommendations',    component: RecommendationsComponent },
-      { path: 'courses',            component: CoursesComponent },
-      { path: 'jobs',               component: JobsComponent },
-      { path: 'jobs/:id',            component: JobDetailsComponent },
-      { path: 'integrations',       component: IntegrationsMarketplaceComponent },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', component: DashboardComponent },
+      { path: 'github-analyzer', component: GithubAnalyzerComponent },
+      { path: 'resume-analyzer', component: ResumeAnalyzerComponent },
+      { path: 'skill-gap', component: SkillGapComponent },
+      { path: 'recommendations', component: RecommendationsComponent },
+      { path: 'courses', component: CoursesComponent },
+      { path: 'jobs', component: JobsComponent },
+      { path: 'jobs/:id', component: JobDetailsComponent },
+      { path: 'integrations', component: IntegrationsMarketplaceComponent },
       { path: 'scenario-simulator', component: ScenarioSimulatorComponent },
-      { path: 'profile',            component: ProfileComponent },
-      { path: 'support',            component: SupportComponent },
-      { path: 'portfolio',          component: PortfolioSettingsComponent },
-      { path: 'weekly-reports',     component: WeeklyReportsComponent },
-      { path: 'interview-prep',     component: InterviewPrepComponent },
-      { path: 'career-sprint',      component: CareerSprintComponent },
+      { path: 'profile', component: ProfileComponent },
+      { path: 'support', component: SupportComponent },
+      { path: 'portfolio', component: PortfolioSettingsComponent },
+      { path: 'weekly-reports', component: WeeklyReportsComponent },
+      { path: 'interview-prep', component: InterviewPrepComponent },
+      { path: 'career-sprint', component: CareerSprintComponent },
       { path: 'interviews-reports', component: InterviewsReportsComponent },
-      { path: 'news',               component: NewsComponent },
-      { path: 'notifications',      component: NotificationsComponent },
+      { path: 'news', component: NewsComponent },
+      { path: 'notifications', component: NotificationsComponent },
       { path: 'invitations/accept/:token', component: AcceptInvitationComponent },
 
       // Recruiter hub
       {
         path: 'recruiter',
         canActivate: [noAdminTabsGuard, recruiterRoleGuard],
-        loadChildren: () => import('./features/recruiter/recruiter.module').then((m) => m.RecruiterModule)
+        loadChildren: () =>
+          import('./features/recruiter/recruiter.module').then((m) => m.RecruiterModule),
       },
 
       // Org Admin Console — now lives inside /app/admin/console
       { path: 'admin-console', redirectTo: 'admin/console', pathMatch: 'full' },
       { path: 'admin-console/overview', redirectTo: 'admin/dashboard', pathMatch: 'full' },
-      { path: 'admin-console/performance-statistics', redirectTo: 'admin/console/performance-statistics', pathMatch: 'full' },
+      {
+        path: 'admin-console/performance-statistics',
+        redirectTo: 'admin/console/performance-statistics',
+        pathMatch: 'full',
+      },
 
       // Super Admin aliases under /app to preserve role-based landing URLs
       { path: 'super-admin', redirectTo: '/super-admin/dashboard', pathMatch: 'full' },
@@ -122,34 +131,34 @@ export const routes: Routes = [
       {
         path: 'admin',
         canActivate: [noAdminTabsGuard, adminSettingsGuard],
-        loadChildren: () => import('./admin/admin.module').then((m) => m.AdminModule)
+        loadChildren: () => import('./admin/admin.module').then((m) => m.AdminModule),
       },
 
       // Legacy redirects
       { path: 'team-management', redirectTo: 'settings/user-management', pathMatch: 'full' },
-      { path: 'ai-versions',     redirectTo: 'settings/ai-versions',     pathMatch: 'full' },
+      { path: 'ai-versions', redirectTo: 'settings/ai-versions', pathMatch: 'full' },
 
       // Settings (super admin only)
       {
         path: 'settings',
         canActivate: [superAdminGuard],
         children: [
-          { path: '',                component: SettingsPageComponent },
-          { path: 'ai-versions',     component: AiVersionsComponent },
+          { path: '', component: SettingsPageComponent },
+          { path: 'ai-versions', component: AiVersionsComponent },
           { path: 'user-management', component: TeamManagementComponent },
-          { path: 'activity-logs',   component: ActivityLogsComponent }
-        ]
-      }
-    ]
+          { path: 'activity-logs', component: ActivityLogsComponent },
+        ],
+      },
+    ],
   },
 
   // Super Admin area — standalone routes, no NgModule
   {
     path: 'super-admin',
     canActivate: [authGuard, superAdminGuard],
-    loadChildren: () => import('./super-admin/super-admin.module').then((m) => m.SuperAdminModule)
+    loadChildren: () => import('./super-admin/super-admin.module').then((m) => m.SuperAdminModule),
   },
 
   // Wildcard
-  { path: '**', redirectTo: '' }
+  { path: '**', redirectTo: '' },
 ];

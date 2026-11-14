@@ -1,0 +1,38 @@
+{
+  "checkedAt": "2026-10-27T10:47:22.315Z",
+  "publicAccount": "kaggle",
+  "config": {
+    "ok": true,
+    "missing": []
+  },
+  "requests": [
+    {
+      "endpoint": "https://api.kaggle.com/v1/kernels.KernelsApiService/ListKernels",
+      "status": 200,
+      "contentType": "application/json",
+      "keys": [],
+      "rowCount": 0
+    },
+    {
+      "endpoint": "https://api.kaggle.com/v1/datasets.DatasetApiService/ListDatasets",
+      "status": 200,
+      "contentType": "application/json",
+      "keys": ["datasets"],
+      "rowCount": 20
+    }
+  ],
+  "status": "BLOCKED",
+  "notebooks": {
+    "status": "PASS",
+    "resources": [],
+    "nextPageToken": null,
+    "pageSize": 20,
+    "scope": "public resource sample",
+    "ownershipVerified": false
+  },
+  "datasets": {
+    "status": "BLOCKED",
+    "classifiedStatus": 502,
+    "reason": "Kaggle resource attribution is unavailable."
+  }
+}

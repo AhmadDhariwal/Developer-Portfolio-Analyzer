@@ -1,0 +1,42 @@
+[
+  {
+    "name": "1440-light",
+    "overflow": false,
+    "pageErrors": 0,
+    "sources": 9
+  },
+  {
+    "name": "loading-error-retry-empty",
+    "pageErrors": 0
+  },
+  {
+    "name": "1440-dark",
+    "overflow": false,
+    "pageErrors": 0,
+    "sources": 9
+  },
+  {
+    "name": "1440-system",
+    "overflow": false,
+    "pageErrors": 0,
+    "sources": 9
+  },
+  {
+    "name": "375-light",
+    "overflow": false,
+    "pageErrors": 0,
+    "sources": 9
+  },
+  {
+    "name": "375-dark",
+    "overflow": false,
+    "pageErrors": 0,
+    "sources": 9
+  },
+  {
+    "name": "375-system",
+    "overflow": false,
+    "pageErrors": 0,
+    "sources": 9
+  }
+]

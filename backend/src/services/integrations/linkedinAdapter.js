@@ -88,6 +88,8 @@ class LinkedInAdapter extends BaseIntegrationAdapter {
     const token = connection.accessToken;
     const profile = await this.get('https://api.linkedin.com/v2/userinfo', token);
 
+    if (connection.externalAccountId && String(profile?.sub) !== connection.externalAccountId)
+      throw Error('LinkedIn identity changed.');
     const inferredSkills = [];
     if (profile?.locale) inferredSkills.push('Global Collaboration');
     if (profile?.name) inferredSkills.push('Professional Branding');
@@ -101,13 +103,14 @@ class LinkedInAdapter extends BaseIntegrationAdapter {
       Boolean(profile?.picture),
       Boolean(profile?.locale)
     ];
-    const completenessRatio = completenessSignals.filter(Boolean).length / completenessSignals.length;
+    const completenessRatio =
+      completenessSignals.filter(Boolean).length / completenessSignals.length;
     const profileCompleteness = Math.round(completenessRatio * 100);
 
     // LinkedIn OpenID profile does not expose full network analytics by default.
     // Use a conservative activity proxy derived from claim completeness and trust.
     const accountTrust = profile?.email_verified ? 85 : 55;
-    const accountActivityProxy = Math.round((profileCompleteness * 0.55) + (accountTrust * 0.45));
+    const accountActivityProxy = Math.round(profileCompleteness * 0.55 + accountTrust * 0.45);
 
     return {
       provider: this.provider,

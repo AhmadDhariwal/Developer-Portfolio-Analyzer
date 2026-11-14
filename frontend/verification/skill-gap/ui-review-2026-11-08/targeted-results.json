@@ -1,0 +1,49 @@
+{
+  "results": [
+    {
+      "label": "backend-contracts",
+      "command": [
+        "node",
+        "--test",
+        "backend/src/tests/skillGapFullStackCoverage.test.js",
+        "backend/src/tests/skillGapEvidence.test.js",
+        "backend/src/tests/skillGapScoring.test.js",
+        "backend/src/tests/developerContextService.test.js",
+        "backend/src/tests/skillGapConsumerContracts.test.js"
+      ],
+      "cwd": "D:\\Developer-Portfolio-Analyzer",
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 12797
+    },
+    {
+      "label": "typescript",
+      "command": [
+        "node",
+        "frontend/node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "-p",
+        "frontend/tsconfig.app.json"
+      ],
+      "cwd": "D:\\Developer-Portfolio-Analyzer",
+      "exitCode": 0,
+      "signal": null,
+      "milliseconds": 18639
+    },
+    {
+      "label": "angular-targeted",
+      "command": [
+        "node",
+        "node_modules/@angular/cli/bin/ng.js",
+        "test",
+        "--watch=false",
+        "--include=src/app/pages/skill-gap/**/*.spec.ts",
+        "--include=src/app/pages/interview-prep/**/*.spec.ts"
+      ],
+      "cwd": "D:\\Developer-Portfolio-Analyzer\\frontend",
+      "exitCode": 1,
+      "signal": null,
+      "milliseconds": 50297
+    }
+  ]
+}

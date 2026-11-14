@@ -1,0 +1,1177 @@
+{
+  "phase": "after",
+  "timestamp": "2026-11-12T19:46:47.697Z",
+  "viewportsTested": 12,
+  "themesTested": 3,
+  "matrixResults": [
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "width": 320,
+      "height": 640,
+      "theme": "dark",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 320,
+        "clientWidth": 320,
+        "pageScroll": 292,
+        "pageClient": 292,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 292,
+        "rhythmWidth": 292,
+        "metricGridWidth": 292,
+        "taskFiltersWidth": 258
+      },
+      "screenshot": "dark-mobile-320.png"
+    },
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "width": 320,
+      "height": 640,
+      "theme": "light",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 320,
+        "clientWidth": 320,
+        "pageScroll": 292,
+        "pageClient": 292,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 292,
+        "rhythmWidth": 292,
+        "metricGridWidth": 292,
+        "taskFiltersWidth": 258
+      },
+      "screenshot": "light-mobile-320.png"
+    },
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "width": 320,
+      "height": 640,
+      "theme": "system",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 320,
+        "clientWidth": 320,
+        "pageScroll": 292,
+        "pageClient": 292,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 292,
+        "rhythmWidth": 292,
+        "metricGridWidth": 292,
+        "taskFiltersWidth": 258
+      },
+      "screenshot": "system-mobile-320.png"
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "width": 375,
+      "height": 667,
+      "theme": "dark",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 375,
+        "clientWidth": 375,
+        "pageScroll": 347,
+        "pageClient": 347,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 347,
+        "rhythmWidth": 347,
+        "metricGridWidth": 347,
+        "taskFiltersWidth": 313
+      },
+      "screenshot": "dark-mobile-375.png"
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "width": 375,
+      "height": 667,
+      "theme": "light",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 375,
+        "clientWidth": 375,
+        "pageScroll": 347,
+        "pageClient": 347,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 347,
+        "rhythmWidth": 347,
+        "metricGridWidth": 347,
+        "taskFiltersWidth": 313
+      },
+      "screenshot": "light-mobile-375.png"
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "width": 375,
+      "height": 667,
+      "theme": "system",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 375,
+        "clientWidth": 375,
+        "pageScroll": 347,
+        "pageClient": 347,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 347,
+        "rhythmWidth": 347,
+        "metricGridWidth": 347,
+        "taskFiltersWidth": 313
+      },
+      "screenshot": "system-mobile-375.png"
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "width": 390,
+      "height": 844,
+      "theme": "dark",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "pageScroll": 362,
+        "pageClient": 362,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 362,
+        "rhythmWidth": 362,
+        "metricGridWidth": 362,
+        "taskFiltersWidth": 328
+      },
+      "screenshot": "dark-mobile-390.png"
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "pageScroll": 362,
+        "pageClient": 362,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 362,
+        "rhythmWidth": 362,
+        "metricGridWidth": 362,
+        "taskFiltersWidth": 328
+      },
+      "screenshot": "light-mobile-390.png"
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "width": 390,
+      "height": 844,
+      "theme": "system",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "pageScroll": 362,
+        "pageClient": 362,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 362,
+        "rhythmWidth": 362,
+        "metricGridWidth": 362,
+        "taskFiltersWidth": 328
+      },
+      "screenshot": "system-mobile-390.png"
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "width": 430,
+      "height": 932,
+      "theme": "dark",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 430,
+        "clientWidth": 430,
+        "pageScroll": 402,
+        "pageClient": 402,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 402,
+        "rhythmWidth": 402,
+        "metricGridWidth": 402,
+        "taskFiltersWidth": 368
+      },
+      "screenshot": "dark-mobile-430.png"
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "width": 430,
+      "height": 932,
+      "theme": "light",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 430,
+        "clientWidth": 430,
+        "pageScroll": 402,
+        "pageClient": 402,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 402,
+        "rhythmWidth": 402,
+        "metricGridWidth": 402,
+        "taskFiltersWidth": 368
+      },
+      "screenshot": "light-mobile-430.png"
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "width": 430,
+      "height": 932,
+      "theme": "system",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 430,
+        "clientWidth": 430,
+        "pageScroll": 402,
+        "pageClient": 402,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 402,
+        "rhythmWidth": 402,
+        "metricGridWidth": 402,
+        "taskFiltersWidth": 368
+      },
+      "screenshot": "system-mobile-430.png"
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "width": 768,
+      "height": 1024,
+      "theme": "dark",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "pageScroll": 740,
+        "pageClient": 740,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 740,
+        "rhythmWidth": 740,
+        "metricGridWidth": 740,
+        "taskFiltersWidth": 738
+      },
+      "screenshot": "dark-tablet-768.png"
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "width": 768,
+      "height": 1024,
+      "theme": "light",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "pageScroll": 740,
+        "pageClient": 740,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 740,
+        "rhythmWidth": 740,
+        "metricGridWidth": 740,
+        "taskFiltersWidth": 738
+      },
+      "screenshot": "light-tablet-768.png"
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "width": 768,
+      "height": 1024,
+      "theme": "system",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "pageScroll": 740,
+        "pageClient": 740,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 740,
+        "rhythmWidth": 740,
+        "metricGridWidth": 740,
+        "taskFiltersWidth": 738
+      },
+      "screenshot": "system-tablet-768.png"
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "width": 820,
+      "height": 1180,
+      "theme": "dark",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 820,
+        "clientWidth": 820,
+        "pageScroll": 512,
+        "pageClient": 512,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 512,
+        "rhythmWidth": 512,
+        "metricGridWidth": 512,
+        "taskFiltersWidth": 510
+      },
+      "screenshot": "dark-tablet-820.png"
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "width": 820,
+      "height": 1180,
+      "theme": "light",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 820,
+        "clientWidth": 820,
+        "pageScroll": 512,
+        "pageClient": 512,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 512,
+        "rhythmWidth": 512,
+        "metricGridWidth": 512,
+        "taskFiltersWidth": 510
+      },
+      "screenshot": "light-tablet-820.png"
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "width": 820,
+      "height": 1180,
+      "theme": "system",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 820,
+        "clientWidth": 820,
+        "pageScroll": 512,
+        "pageClient": 512,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 512,
+        "rhythmWidth": 512,
+        "metricGridWidth": 512,
+        "taskFiltersWidth": 510
+      },
+      "screenshot": "system-tablet-820.png"
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "width": 1024,
+      "height": 768,
+      "theme": "dark",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1024,
+        "clientWidth": 1024,
+        "pageScroll": 716,
+        "pageClient": 716,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 416,
+        "rhythmWidth": 280,
+        "metricGridWidth": 716,
+        "taskFiltersWidth": 714
+      },
+      "screenshot": "dark-tablet-1024.png"
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "width": 1024,
+      "height": 768,
+      "theme": "light",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1024,
+        "clientWidth": 1024,
+        "pageScroll": 716,
+        "pageClient": 716,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 416,
+        "rhythmWidth": 280,
+        "metricGridWidth": 716,
+        "taskFiltersWidth": 714
+      },
+      "screenshot": "light-tablet-1024.png"
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "width": 1024,
+      "height": 768,
+      "theme": "system",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1024,
+        "clientWidth": 1024,
+        "pageScroll": 716,
+        "pageClient": 716,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 416,
+        "rhythmWidth": 280,
+        "metricGridWidth": 716,
+        "taskFiltersWidth": 714
+      },
+      "screenshot": "system-tablet-1024.png"
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "width": 1280,
+      "height": 800,
+      "theme": "dark",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1280,
+        "clientWidth": 1280,
+        "pageScroll": 972,
+        "pageClient": 972,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 587,
+        "rhythmWidth": 365,
+        "metricGridWidth": 972,
+        "taskFiltersWidth": 970
+      },
+      "screenshot": "dark-laptop-1280.png"
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "width": 1280,
+      "height": 800,
+      "theme": "light",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1280,
+        "clientWidth": 1280,
+        "pageScroll": 972,
+        "pageClient": 972,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 587,
+        "rhythmWidth": 365,
+        "metricGridWidth": 972,
+        "taskFiltersWidth": 970
+      },
+      "screenshot": "light-laptop-1280.png"
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "width": 1280,
+      "height": 800,
+      "theme": "system",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1280,
+        "clientWidth": 1280,
+        "pageScroll": 972,
+        "pageClient": 972,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 587,
+        "rhythmWidth": 365,
+        "metricGridWidth": 972,
+        "taskFiltersWidth": 970
+      },
+      "screenshot": "system-laptop-1280.png"
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "width": 1366,
+      "height": 768,
+      "theme": "dark",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1366,
+        "clientWidth": 1366,
+        "pageScroll": 1058,
+        "pageClient": 1058,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 640,
+        "rhythmWidth": 398,
+        "metricGridWidth": 1058,
+        "taskFiltersWidth": 1056
+      },
+      "screenshot": "dark-laptop-1366.png"
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "width": 1366,
+      "height": 768,
+      "theme": "light",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1366,
+        "clientWidth": 1366,
+        "pageScroll": 1058,
+        "pageClient": 1058,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 640,
+        "rhythmWidth": 398,
+        "metricGridWidth": 1058,
+        "taskFiltersWidth": 1056
+      },
+      "screenshot": "light-laptop-1366.png"
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "width": 1366,
+      "height": 768,
+      "theme": "system",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1366,
+        "clientWidth": 1366,
+        "pageScroll": 1058,
+        "pageClient": 1058,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 640,
+        "rhythmWidth": 398,
+        "metricGridWidth": 1058,
+        "taskFiltersWidth": 1056
+      },
+      "screenshot": "system-laptop-1366.png"
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "width": 1440,
+      "height": 900,
+      "theme": "dark",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "pageScroll": 1132,
+        "pageClient": 1132,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 686,
+        "rhythmWidth": 426,
+        "metricGridWidth": 1132,
+        "taskFiltersWidth": 1130
+      },
+      "screenshot": "dark-desktop-1440.png"
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "width": 1440,
+      "height": 900,
+      "theme": "light",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "pageScroll": 1132,
+        "pageClient": 1132,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 686,
+        "rhythmWidth": 426,
+        "metricGridWidth": 1132,
+        "taskFiltersWidth": 1130
+      },
+      "screenshot": "light-desktop-1440.png"
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "width": 1440,
+      "height": 900,
+      "theme": "system",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "pageScroll": 1132,
+        "pageClient": 1132,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 686,
+        "rhythmWidth": 426,
+        "metricGridWidth": 1132,
+        "taskFiltersWidth": 1130
+      },
+      "screenshot": "system-desktop-1440.png"
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "width": 1920,
+      "height": 1080,
+      "theme": "dark",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1920,
+        "clientWidth": 1920,
+        "pageScroll": 1600,
+        "pageClient": 1600,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 974,
+        "rhythmWidth": 606,
+        "metricGridWidth": 1600,
+        "taskFiltersWidth": 1598
+      },
+      "screenshot": "dark-desktop-1920.png"
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "width": 1920,
+      "height": 1080,
+      "theme": "light",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1920,
+        "clientWidth": 1920,
+        "pageScroll": 1600,
+        "pageClient": 1600,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 974,
+        "rhythmWidth": 606,
+        "metricGridWidth": 1600,
+        "taskFiltersWidth": 1598
+      },
+      "screenshot": "light-desktop-1920.png"
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "width": 1920,
+      "height": 1080,
+      "theme": "system",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 1920,
+        "clientWidth": 1920,
+        "pageScroll": 1600,
+        "pageClient": 1600,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 974,
+        "rhythmWidth": 606,
+        "metricGridWidth": 1600,
+        "taskFiltersWidth": 1598
+      },
+      "screenshot": "system-desktop-1920.png"
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "width": 2560,
+      "height": 1440,
+      "theme": "dark",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 2560,
+        "clientWidth": 2560,
+        "pageScroll": 1600,
+        "pageClient": 1600,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 974,
+        "rhythmWidth": 606,
+        "metricGridWidth": 1600,
+        "taskFiltersWidth": 1598
+      },
+      "screenshot": "dark-large-2560.png"
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "width": 2560,
+      "height": 1440,
+      "theme": "light",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 2560,
+        "clientWidth": 2560,
+        "pageScroll": 1600,
+        "pageClient": 1600,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 974,
+        "rhythmWidth": 606,
+        "metricGridWidth": 1600,
+        "taskFiltersWidth": 1598
+      },
+      "screenshot": "light-large-2560.png"
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "width": 2560,
+      "height": 1440,
+      "theme": "system",
+      "pass": true,
+      "hasHorizontalOverflow": false,
+      "pageErrors": [],
+      "measurement": {
+        "scrollWidth": 2560,
+        "clientWidth": 2560,
+        "pageScroll": 1600,
+        "pageClient": 1600,
+        "hasHorizontalOverflow": false,
+        "overflowingElements": [],
+        "smallTouchTargets": [],
+        "totalSmallTouchTargets": 0,
+        "overviewWidth": 974,
+        "rhythmWidth": 606,
+        "metricGridWidth": 1600,
+        "taskFiltersWidth": 1598
+      },
+      "screenshot": "system-large-2560.png"
+    }
+  ],
+  "scenarioChecks": {
+    "settings_mobile-320": {
+      "pass": true,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "screenshot": "scenario-settings-mobile-320.png"
+    },
+    "settings_mobile-375": {
+      "pass": true,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "screenshot": "scenario-settings-mobile-375.png"
+    },
+    "settings_tablet-768": {
+      "pass": true,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "screenshot": "scenario-settings-tablet-768.png"
+    },
+    "settings_desktop-1440": {
+      "pass": true,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "screenshot": "scenario-settings-desktop-1440.png"
+    },
+    "new_sprint_mobile-320": {
+      "pass": true,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "screenshot": "scenario-new-sprint-mobile-320.png"
+    },
+    "new_sprint_mobile-375": {
+      "pass": true,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "screenshot": "scenario-new-sprint-mobile-375.png"
+    },
+    "new_sprint_tablet-768": {
+      "pass": true,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "screenshot": "scenario-new-sprint-tablet-768.png"
+    },
+    "new_sprint_desktop-1440": {
+      "pass": true,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "screenshot": "scenario-new-sprint-desktop-1440.png"
+    },
+    "task_editor_mobile-320": {
+      "pass": true,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "screenshot": "scenario-task-editor-mobile-320.png"
+    },
+    "task_editor_mobile-375": {
+      "pass": true,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "screenshot": "scenario-task-editor-mobile-375.png"
+    },
+    "task_editor_tablet-768": {
+      "pass": true,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "screenshot": "scenario-task-editor-tablet-768.png"
+    },
+    "task_editor_desktop-1440": {
+      "pass": true,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "screenshot": "scenario-task-editor-desktop-1440.png"
+    },
+    "sprint_studio_mobile-320": {
+      "pass": true,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "screenshot": "scenario-sprint-studio-mobile-320.png"
+    },
+    "sprint_studio_mobile-375": {
+      "pass": true,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "screenshot": "scenario-sprint-studio-mobile-375.png"
+    },
+    "sprint_studio_tablet-768": {
+      "pass": true,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "screenshot": "scenario-sprint-studio-tablet-768.png"
+    },
+    "sprint_studio_desktop-1440": {
+      "pass": true,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "screenshot": "scenario-sprint-studio-desktop-1440.png"
+    },
+    "history_mobile-320": {
+      "pass": true,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "screenshot": "scenario-history-mobile-320.png"
+    },
+    "history_mobile-375": {
+      "pass": true,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "screenshot": "scenario-history-mobile-375.png"
+    },
+    "history_tablet-768": {
+      "pass": true,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "screenshot": "scenario-history-tablet-768.png"
+    },
+    "history_desktop-1440": {
+      "pass": true,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "screenshot": "scenario-history-desktop-1440.png"
+    },
+    "legacy_mobile-320": {
+      "pass": true,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "screenshot": "scenario-legacy-readonly-mobile-320.png"
+    },
+    "legacy_mobile-375": {
+      "pass": true,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "screenshot": "scenario-legacy-readonly-mobile-375.png"
+    },
+    "legacy_tablet-768": {
+      "pass": true,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "screenshot": "scenario-legacy-readonly-tablet-768.png"
+    },
+    "legacy_desktop-1440": {
+      "pass": true,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "screenshot": "scenario-legacy-readonly-desktop-1440.png"
+    },
+    "empty_mobile-320": {
+      "pass": true,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "screenshot": "scenario-empty-mobile-320.png"
+    },
+    "empty_mobile-375": {
+      "pass": true,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "screenshot": "scenario-empty-mobile-375.png"
+    },
+    "empty_tablet-768": {
+      "pass": true,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "screenshot": "scenario-empty-tablet-768.png"
+    },
+    "empty_desktop-1440": {
+      "pass": true,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "screenshot": "scenario-empty-desktop-1440.png"
+    },
+    "error_mobile-320": {
+      "pass": true,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "screenshot": "scenario-error-mobile-320.png"
+    },
+    "error_mobile-375": {
+      "pass": true,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "screenshot": "scenario-error-mobile-375.png"
+    },
+    "error_tablet-768": {
+      "pass": true,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "screenshot": "scenario-error-tablet-768.png"
+    },
+    "error_desktop-1440": {
+      "pass": true,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "screenshot": "scenario-error-desktop-1440.png"
+    },
+    "restore_mobile-320": {
+      "pass": true,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "screenshot": "scenario-restore-mobile-320.png"
+    },
+    "restore_mobile-375": {
+      "pass": true,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "screenshot": "scenario-restore-mobile-375.png"
+    },
+    "restore_tablet-768": {
+      "pass": true,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "screenshot": "scenario-restore-tablet-768.png"
+    },
+    "restore_desktop-1440": {
+      "pass": true,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "screenshot": "scenario-restore-desktop-1440.png"
+    },
+    "orientation_mobile-landscape-667x375": {
+      "pass": true,
+      "scrollWidth": 667,
+      "clientWidth": 667,
+      "screenshot": "scenario-orientation-mobile-landscape-667x375.png"
+    },
+    "orientation_mobile-landscape-844x390": {
+      "pass": true,
+      "scrollWidth": 844,
+      "clientWidth": 844,
+      "screenshot": "scenario-orientation-mobile-landscape-844x390.png"
+    },
+    "orientation_tablet-landscape-1024x768": {
+      "pass": true,
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "screenshot": "scenario-orientation-tablet-landscape-1024x768.png"
+    },
+    "zoom_125": {
+      "pass": true,
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "screenshot": "scenario-zoom-125.png"
+    },
+    "zoom_150": {
+      "pass": true,
+      "scrollWidth": 853,
+      "clientWidth": 853,
+      "screenshot": "scenario-zoom-150.png"
+    },
+    "zoom_175": {
+      "pass": true,
+      "scrollWidth": 731,
+      "clientWidth": 731,
+      "screenshot": "scenario-zoom-175.png"
+    },
+    "zoom_200": {
+      "pass": true,
+      "scrollWidth": 640,
+      "clientWidth": 640,
+      "screenshot": "scenario-zoom-200.png"
+    },
+    "keyboard_focus": {
+      "pass": true,
+      "focusedTag": "a",
+      "screenshot": "scenario-keyboard-focus.png"
+    }
+  },
+  "overflowDefects": [],
+  "touchTargetDefects": [],
+  "layoutDefects": [],
+  "accessibilityDefects": []
+}

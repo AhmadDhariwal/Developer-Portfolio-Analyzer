@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const mongoose = require('mongoose');
-require('dotenv').config({ path: require('node:path').resolve(__dirname, '../../.env') });
+const { startMongo } = require('./fixtures/disposableRequestMongo');
 
 const User = require('../models/user');
 const SupportTicket = require('../models/supportTicket');
@@ -12,11 +12,7 @@ const redisCache = require('../services/redisCacheService');
 const notificationService = require('../services/notificationService');
 const emailService = require('../services/emailService');
 
-const WINDOW_MS = 10 * 60 * 1000;
 const qaPrefix = `support-redis-fallback-${Date.now()}-${crypto.randomUUID()}`;
-const hash = (subject, message) => crypto.createHash('sha256')
-  .update(`${subject.toLowerCase()}\n${message.toLowerCase()}`)
-  .digest('hex');
 const payload = (subject, message = 'A deterministic Support fallback verification message.') => ({
   category: 'bug',
   priority: 'medium',
@@ -27,8 +23,15 @@ const payload = (subject, message = 'A deterministic Support fallback verificati
 });
 
 test('Support uses Mongo as the durable authority when Redis fails and recovers', async (t) => {
-  assert.ok(process.env.MONGODB_URI, 'MONGODB_URI is required for this focused verification');
-  await mongoose.connect(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 5000, socketTimeoutMS: 5000 });
+  const runtime = await startMongo({ replicaSet: 'support-merge-test' });
+  t.after(async () => {
+    await mongoose.disconnect();
+    await runtime.stop();
+  });
+  await mongoose.connect(runtime.uri, { serverSelectionTimeoutMS: 5000, socketTimeoutMS: 5000 });
+  for (const Model of [User, SupportTicket, SupportTicketQuota, SupportTicketDedupe]) {
+    await Model.init();
+  }
 
   let user;
   const originals = {
@@ -67,15 +70,7 @@ test('Support uses Mongo as the durable authority when Redis fails and recovers'
     redisCache.getRedisCacheClient = originals.client;
     notificationService.createNotification = originals.notification;
     emailService.sendConfiguredEmail = originals.email;
-    if (user?._id) {
-      await Promise.all([
-        SupportTicket.deleteMany({ userId: user._id }),
-        SupportTicketDedupe.deleteMany({ userId: user._id }),
-        SupportTicketQuota.deleteMany({ userId: user._id }),
-        User.deleteOne({ _id: user._id })
-      ]);
-    }
-    await mongoose.disconnect();
+    // The isolated database and all test data are removed by the runtime cleanup.
   });
 
   redisCache.isRedisCacheEnabled = () => true;

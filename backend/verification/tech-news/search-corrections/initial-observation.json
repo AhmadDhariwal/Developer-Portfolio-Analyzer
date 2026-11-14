@@ -1,0 +1,40 @@
+{
+  "evidenceKind": "Sanitized summary of the initial real authenticated API and Mongo tool observations, before explicit discovery",
+  "catalogArticles": 109,
+  "devopsTaggedArticles": 0,
+  "storedArticleTextMatchingDevopsTaxonomy": 0,
+  "catalogIndexes": 8,
+  "ordinaryExploreWeek": {
+    "http": 200,
+    "total": 0,
+    "items": 0,
+    "coverage": "coverage_gap",
+    "enrichment": "not_needed",
+    "reason": "catalog_only"
+  },
+  "legacyTopicDiagnostics": {
+    "lastAttemptAt": "2026-10-23T08:32:26.034Z",
+    "devtosearchReportedArticles": 30,
+    "kubernetesblogStatus": "unavailable",
+    "note": "Earlier topic-cache results were not present in the authoritative NewsArticle catalog. Diagnostics are not evidence of catalog coverage."
+  },
+  "explicitExploreMonth": {
+    "query": "mode=explore&search=devops&date=month&discover=true",
+    "http": 200,
+    "totalAtAdmission": 0,
+    "enrichment": "queued",
+    "reason": "background_discovery"
+  },
+  "completedDiscovery": {
+    "lastAttemptAt": "2026-10-23T20:13:46.892Z",
+    "hackernewssearchAccepted": 6,
+    "devtosearchAccepted": 28,
+    "catalogDevopsArticles": 34,
+    "http": 200,
+    "monthTotal": 34,
+    "returnedItems": 12,
+    "coverage": "sufficient",
+    "enrichment": "ready",
+    "restartBetweenAdmissionAndVisibility": false
+  }
+}

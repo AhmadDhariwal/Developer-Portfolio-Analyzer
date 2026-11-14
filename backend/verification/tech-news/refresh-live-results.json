@@ -1,0 +1,113 @@
+{
+  "checkedAt": "2026-10-23T11:39:19.175Z",
+  "applicationRedisWrites": 0,
+  "isolatedWrites": true,
+  "requestsPerProviderMaximum": 1,
+  "providers": [
+    {
+      "key": "hackernewssearch",
+      "query": "generative ai",
+      "approved": true,
+      "configuredDaily": 12,
+      "configuredMonthly": 300,
+      "status": "ready",
+      "preflight": {
+        "dailyUsed": 3,
+        "monthlyUsed": 3,
+        "siblingDailyUsed": 13,
+        "siblingMonthlyUsed": 24,
+        "sourceCooldown": false,
+        "siblingCooldown": false,
+        "sourceInterval": false
+      },
+      "diagnostics": [
+        {
+          "provider": "hackernewssearch",
+          "status": "success",
+          "articlesFetched": 1,
+          "reason": null,
+          "nextEligibleAt": null,
+          "checkedAt": "2026-10-23T11:39:20.943Z"
+        }
+      ],
+      "persistedArticles": 1,
+      "cachedArticles": 1,
+      "sample": {
+        "title": "How Generative AI Is Scaling Transnational Repression",
+        "url": "https://www.justsecurity.org/159245/how-generative-ai-scaling-transnational-repression/",
+        "source": "Hacker News",
+        "publishedAt": "2026-10-23T10:15:11.000Z"
+      },
+      "lastAttempt": {
+        "status": "ready",
+        "reason": "articles_cached",
+        "nextEligibleAt": "2026-10-23T11:40:20.960Z",
+        "lastAttemptAt": "2026-10-23T11:39:20.943Z",
+        "checkedAtMs": 1792755560943,
+        "sourceHealth": [
+          {
+            "provider": "hackernewssearch",
+            "status": "success",
+            "articlesFound": 1,
+            "reason": null,
+            "nextEligibleAt": null
+          }
+        ],
+        "lastSuccessfulCheckAt": "2026-10-23T11:39:20.943Z",
+        "cacheVersion": "1792755560943",
+        "newArticles": 1
+      }
+    },
+    {
+      "key": "devtosearch",
+      "query": "Python async",
+      "approved": true,
+      "configuredDaily": 12,
+      "configuredMonthly": 300,
+      "status": "exhausted",
+      "preflight": {
+        "dailyUsed": 3,
+        "monthlyUsed": 4,
+        "siblingDailyUsed": 13,
+        "siblingMonthlyUsed": 24,
+        "sourceCooldown": false,
+        "siblingCooldown": false,
+        "sourceInterval": false
+      },
+      "diagnostics": [
+        {
+          "provider": "devtosearch",
+          "status": "success",
+          "articlesFetched": 0,
+          "reason": null,
+          "nextEligibleAt": null,
+          "checkedAt": "2026-10-23T11:39:22.355Z"
+        }
+      ],
+      "persistedArticles": 0,
+      "cachedArticles": 0,
+      "sample": null,
+      "lastAttempt": {
+        "status": "exhausted",
+        "reason": "no_matching_articles",
+        "nextEligibleAt": "2026-10-23T11:40:22.365Z",
+        "lastAttemptAt": "2026-10-23T11:39:22.355Z",
+        "checkedAtMs": 1792755562355,
+        "sourceHealth": [
+          {
+            "provider": "devtosearch",
+            "status": "success",
+            "articlesFound": 0,
+            "reason": null,
+            "nextEligibleAt": null
+          }
+        ],
+        "lastSuccessfulCheckAt": "2026-10-23T11:39:22.355Z",
+        "cacheVersion": "1792755562355",
+        "newArticles": 0
+      }
+    }
+  ],
+  "applicationRedisReadOnly": true,
+  "actualProviderAttempts": 2
+}

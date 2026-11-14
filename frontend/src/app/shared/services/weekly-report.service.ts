@@ -1,8 +1,22 @@
 import { Injectable } from '@angular/core';
-import { finalize, forkJoin, map, Observable, of, shareReplay, tap } from 'rxjs';
+import {
+  filter,
+  finalize,
+  forkJoin,
+  map,
+  Observable,
+  of,
+  shareReplay,
+  tap,
+  Subject,
+  takeUntil,
+} from 'rxjs';
 import { ApiService } from './api.service';
 import { AuthService } from './auth.service';
-import { FrontendAnalysisCacheService, FrontendAnalysisCacheKey } from './frontend-analysis-cache.service';
+import {
+  FrontendAnalysisCacheService,
+  FrontendAnalysisCacheKey,
+} from './frontend-analysis-cache.service';
 import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 
 export interface WeeklyReportDataSourceStatus {
@@ -27,6 +41,11 @@ export interface WeeklyReport {
   predictedHiringReadiness: { score: number; reason: string };
   reportText: string;
   emailStatus?: 'sent' | 'skipped' | 'failed';
+  emailDelivery?: {
+    status: string;
+    contentHash?: string;
+    history?: Array<{ status: string; requestedAt: string; finishedAt?: string }>;
+  };
   emailedAt: string | null;
   emailError: string;
   createdAt?: string | null;
@@ -35,6 +54,18 @@ export interface WeeklyReport {
   cachedAt?: number | null;
   cacheExpiresAt?: number | null;
   meta: {
+    version?: number;
+    evidence?: {
+      scoreAvailable: boolean;
+      measuredScore: number | null;
+      coverageWeight: number;
+      inputs: Record<
+        string,
+        { available: boolean; value: number | null; weight: number; reason: string }
+      >;
+    };
+    comparison?: { available: boolean; baselineWeekStartDate?: string; reason: string };
+    provenance?: { assessedAt?: string; timezone?: string; activityBasis?: string };
     githubScore: number;
     resumeScore: number;
     skillFocus: string[];
@@ -42,7 +73,7 @@ export interface WeeklyReport {
       repositoriesTracked: number;
       activeRepositories: number;
       commits: number;
-      weeklyCommitSignal: number;
+      weeklyCommitSignal: number | null;
       stars: number;
       forks: number;
     };
@@ -80,12 +111,19 @@ export interface WeeklyReport {
       interviewPrep: WeeklyReportDataSourceStatus;
       portfolio: WeeklyReportDataSourceStatus;
       integrations: WeeklyReportDataSourceStatus;
+      learning?: WeeklyReportDataSourceStatus;
     };
     signalHash: string;
     reportHash: string;
     narrativeSource: 'ai-enhanced' | 'deterministic' | 'cached';
     scoreBreakdown: Record<string, { label: string; score: number; weight: number }>;
-    sourceFreshness?: { detection?: boolean; message?: string; staleSources?: string[]; severity?: string; recommendation?: string } | null;
+    sourceFreshness?: {
+      detection?: boolean;
+      message?: string;
+      staleSources?: string[];
+      severity?: string;
+      recommendation?: string;
+    } | null;
     usesAI?: boolean;
     deterministicScore?: boolean;
     fallbackUsed?: boolean;
@@ -106,7 +144,7 @@ interface WeeklyReportLatestCacheEntry {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class WeeklyReportService {
   private readonly cacheVersion = 'weekly-report-v2';
@@ -116,17 +154,23 @@ export class WeeklyReportService {
   private latestRequests = new Map<string, Observable<WeeklyReport | null>>();
   private historyRequests = new Map<string, Observable<{ reports: WeeklyReport[] }>>();
   private dashboardRequests = new Map<string, Observable<WeeklyReportDashboard>>();
+  private readonly invalidated = new Subject<void>();
+  private epoch = 0;
 
   constructor(
     private readonly api: ApiService,
     private readonly auth: AuthService,
     private readonly frontendCache: FrontendAnalysisCacheService,
-    private readonly cacheInvalidation: FrontendCacheInvalidationService
+    private readonly cacheInvalidation: FrontendCacheInvalidationService,
   ) {
     this.cacheInvalidation.register('weekly-reports', () => this.clearCache());
   }
 
-  clearCache(): void {
+  clearCache(cancelPending = true): void {
+    if (cancelPending) {
+      this.epoch++;
+      this.invalidated.next();
+    }
     this.latestRequests.clear();
     this.historyRequests.clear();
     this.dashboardRequests.clear();
@@ -135,17 +179,45 @@ export class WeeklyReportService {
     this.frontendCache.clearModule('weeklyReports:history');
   }
 
-  generateReport(forceRefresh = true): Observable<WeeklyReport> {
-    const cachedHistory = this.frontendCache.get<{ reports: WeeklyReport[] }>(this.historyCacheKey(6));
-    return this.api.generateWeeklyReport(forceRefresh).pipe(
+  getReport(id: string, version?: string): Observable<WeeklyReport> {
+    return this.api.getWeeklyReport(id, version).pipe(
+      map((raw) => this.normalizeReport(raw)),
+      takeUntil(this.invalidated),
+    );
+  }
+  downloadPdf(report: WeeklyReport): Observable<Blob> {
+    return this.api
+      .downloadWeeklyReport(report._id, report.meta.reportHash || undefined)
+      .pipe(takeUntil(this.invalidated));
+  }
+  resendEmail(report: WeeklyReport): Observable<any> {
+    return this.api
+      .resendWeeklyReport(report._id, report.meta.reportHash)
+      .pipe(takeUntil(this.invalidated));
+  }
+  refreshReport(report: WeeklyReport): Observable<WeeklyReport> {
+    return this.mutateReport(this.api.refreshWeeklyReport(report._id, report.meta.reportHash));
+  }
+  generateReport(forceRefresh = false): Observable<WeeklyReport> {
+    return this.mutateReport(this.api.generateWeeklyReport(forceRefresh));
+  }
+  private mutateReport(request: Observable<any>): Observable<WeeklyReport> {
+    const epoch = this.epoch;
+    const owner = JSON.stringify(this.latestCacheKey());
+    const cachedHistory = this.frontendCache.get<{ reports: WeeklyReport[] }>(
+      this.historyCacheKey(6),
+    );
+    return request.pipe(
+      filter(() => epoch === this.epoch && owner === JSON.stringify(this.latestCacheKey())),
       map((report) => this.normalizeReport(report)),
       tap((report) => {
-        this.clearCache();
+        this.clearCache(false);
+        // Invalidate downstream modules before this report is cached again.
         this.cacheInvalidation.clearDeveloperSignalCaches();
         this.cacheLatest(report);
         this.cacheHistory(this.mergeHistory(report, cachedHistory?.reports || []), 6);
       }),
-      shareReplay({ bufferSize: 1, refCount: false })
+      shareReplay({ bufferSize: 1, refCount: false }),
     );
   }
 
@@ -153,15 +225,17 @@ export class WeeklyReportService {
     const key = JSON.stringify(this.latestCacheKey());
     if (!forceRefresh) {
       const cached = this.frontendCache.get<WeeklyReportLatestCacheEntry>(this.latestCacheKey());
-      if (cached && Object.prototype.hasOwnProperty.call(cached, 'report')) return of(cached.report);
+      if (cached && Object.prototype.hasOwnProperty.call(cached, 'report'))
+        return of(cached.report);
       const active = this.latestRequests.get(key);
       if (active) return active;
     }
     const request$ = this.api.getWeeklyReportLatest().pipe(
+      takeUntil(this.invalidated),
       map((report) => (report ? this.normalizeReport(report) : null)),
       tap((report) => this.cacheLatest(report)),
       finalize(() => this.latestRequests.delete(key)),
-      shareReplay({ bufferSize: 1, refCount: false })
+      shareReplay({ bufferSize: 1, refCount: false }),
     );
     if (!forceRefresh) this.latestRequests.set(key, request$);
     return request$;
@@ -177,19 +251,22 @@ export class WeeklyReportService {
       if (active) return active;
     }
     const request$ = this.api.getWeeklyReportHistory(limit).pipe(
+      takeUntil(this.invalidated),
       map((response) => ({
-        reports: Array.isArray(response?.reports) ? response.reports.map((report: unknown) => this.normalizeReport(report)) : []
+        reports: Array.isArray(response?.reports)
+          ? response.reports.map((report: unknown) => this.normalizeReport(report))
+          : [],
       })),
       tap((response) => this.cacheHistory(response.reports, limit)),
       finalize(() => this.historyRequests.delete(key)),
-      shareReplay({ bufferSize: 1, refCount: false })
+      shareReplay({ bufferSize: 1, refCount: false }),
     );
     if (!forceRefresh) this.historyRequests.set(key, request$);
     return request$;
   }
 
   getDashboard(limit = 6, forceRefresh = false): Observable<WeeklyReportDashboard> {
-    const requestKey = `${limit}:${forceRefresh ? 'refresh' : 'cache'}`;
+    const requestKey = `${JSON.stringify(this.latestCacheKey())}:${limit}:${forceRefresh ? 'refresh' : 'cache'}`;
     if (!forceRefresh) {
       const cached = this.getCachedDashboard(limit);
       if (cached) return of(cached);
@@ -200,17 +277,17 @@ export class WeeklyReportService {
 
     const request$ = forkJoin({
       latest: this.getLatest(forceRefresh),
-      history: this.getHistory(limit, forceRefresh)
+      history: this.getHistory(limit, forceRefresh),
     }).pipe(
       map(({ latest, history }) => ({
         latest,
         history: history.reports,
         fromFrontendCache: false,
-        cachedAt: null
+        cachedAt: null,
       })),
       tap((dashboard) => this.cacheDashboard(dashboard, limit)),
       finalize(() => this.dashboardRequests.delete(requestKey)),
-      shareReplay({ bufferSize: 1, refCount: false })
+      shareReplay({ bufferSize: 1, refCount: false }),
     );
 
     if (!forceRefresh) this.dashboardRequests.set(requestKey, request$);
@@ -233,9 +310,10 @@ export class WeeklyReportService {
       biggestRiskArea: String(raw?.biggestRiskArea || ''),
       predictedHiringReadiness: {
         score: this.clamp(raw?.predictedHiringReadiness?.score),
-        reason: String(raw?.predictedHiringReadiness?.reason || '')
+        reason: String(raw?.predictedHiringReadiness?.reason || ''),
       },
       reportText: String(raw?.reportText || ''),
+      emailDelivery: raw?.emailDelivery,
       emailStatus: ['sent', 'skipped', 'failed'].includes(String(raw?.emailStatus || ''))
         ? raw.emailStatus
         : undefined,
@@ -244,6 +322,10 @@ export class WeeklyReportService {
       createdAt: raw?.createdAt || null,
       updatedAt: raw?.updatedAt || null,
       meta: {
+        version: raw?.meta?.version,
+        evidence: raw?.meta?.evidence,
+        comparison: raw?.meta?.comparison,
+        provenance: raw?.meta?.provenance,
         githubScore: this.clamp(raw?.meta?.githubScore),
         resumeScore: this.clamp(raw?.meta?.resumeScore),
         skillFocus: this.normalizeStrings(raw?.meta?.skillFocus, 8),
@@ -251,20 +333,23 @@ export class WeeklyReportService {
           repositoriesTracked: this.number(raw?.meta?.activity?.repositoriesTracked),
           activeRepositories: this.number(raw?.meta?.activity?.activeRepositories),
           commits: this.number(raw?.meta?.activity?.commits),
-          weeklyCommitSignal: this.number(raw?.meta?.activity?.weeklyCommitSignal),
+          weeklyCommitSignal:
+            raw?.meta?.activity?.weeklyCommitSignal == null
+              ? null
+              : this.number(raw.meta.activity.weeklyCommitSignal),
           stars: this.number(raw?.meta?.activity?.stars),
-          forks: this.number(raw?.meta?.activity?.forks)
+          forks: this.number(raw?.meta?.activity?.forks),
         },
         sprint: {
           tasksCompleted: this.number(raw?.meta?.sprint?.tasksCompleted),
           tasksTotal: this.number(raw?.meta?.sprint?.tasksTotal),
           completionRate: this.clamp(raw?.meta?.sprint?.completionRate),
           weeklyGoal: this.number(raw?.meta?.sprint?.weeklyGoal),
-          streak: this.number(raw?.meta?.sprint?.streak)
+          streak: this.number(raw?.meta?.sprint?.streak),
         },
         interview: {
           sessions: this.number(raw?.meta?.interview?.sessions),
-          questionsGenerated: this.number(raw?.meta?.interview?.questionsGenerated)
+          questionsGenerated: this.number(raw?.meta?.interview?.questionsGenerated),
         },
         comparisons: {
           scoreDelta: this.number(comparisons.scoreDelta),
@@ -278,7 +363,7 @@ export class WeeklyReportService {
           activityCommitsDelta: this.number(comparisons.activityCommitsDelta),
           activeReposDelta: this.number(comparisons.activeReposDelta),
           missingSkillsDelta: this.number(comparisons.missingSkillsDelta),
-          coverageDelta: this.number(comparisons.coverageDelta)
+          coverageDelta: this.number(comparisons.coverageDelta),
         },
         dataSourcesUsed: {
           github: this.normalizeSourceStatus(dataSources.github, false, true),
@@ -288,7 +373,8 @@ export class WeeklyReportService {
           careerSprint: this.normalizeSourceStatus(dataSources.careerSprint, false, true),
           interviewPrep: this.normalizeSourceStatus(dataSources.interviewPrep, true, false),
           portfolio: this.normalizeSourceStatus(dataSources.portfolio, false, true),
-          integrations: this.normalizeSourceStatus(dataSources.integrations, false, true)
+          learning: this.normalizeSourceStatus(dataSources.learning),
+          integrations: this.normalizeSourceStatus(dataSources.integrations, false, true),
         },
         signalHash: String(raw?.meta?.signalHash || ''),
         reportHash: String(raw?.meta?.reportHash || ''),
@@ -298,21 +384,24 @@ export class WeeklyReportService {
         usesAI: raw?.meta?.usesAI === true,
         deterministicScore: raw?.meta?.deterministicScore === true,
         fallbackUsed: raw?.meta?.fallbackUsed === true,
-        dataSourceFreshness: raw?.meta?.dataSourceFreshness || {}
-      }
+        dataSourceFreshness: raw?.meta?.dataSourceFreshness || {},
+      },
     };
   }
 
   private getCachedDashboard(limit: number): WeeklyReportDashboard | null {
     const latest = this.frontendCache.get<WeeklyReportLatestCacheEntry>(this.latestCacheKey());
-    const history = this.frontendCache.get<{ reports: WeeklyReport[]; cachedAt?: number | null }>(this.historyCacheKey(limit));
-    if (!latest || !Object.prototype.hasOwnProperty.call(latest, 'report') || !history?.reports) return null;
+    const history = this.frontendCache.get<{ reports: WeeklyReport[]; cachedAt?: number | null }>(
+      this.historyCacheKey(limit),
+    );
+    if (!latest || !Object.prototype.hasOwnProperty.call(latest, 'report') || !history?.reports)
+      return null;
 
     return {
       latest: latest.report,
       history: history.reports,
       fromFrontendCache: true,
-      cachedAt: latest.cachedAt || history.cachedAt || null
+      cachedAt: latest.cachedAt || history.cachedAt || null,
     };
   }
 
@@ -327,7 +416,10 @@ export class WeeklyReportService {
   }
 
   private cacheHistory(reports: WeeklyReport[], limit: number): void {
-    this.frontendCache.set({ ...this.historyCacheKey(limit), ttlMs: this.historyTtlMs }, { reports });
+    this.frontendCache.set(
+      { ...this.historyCacheKey(limit), ttlMs: this.historyTtlMs },
+      { reports },
+    );
     this.capWeeklyCacheEntries();
   }
 
@@ -337,15 +429,27 @@ export class WeeklyReportService {
     const entries = Object.keys(localStorage)
       .filter((key) => key.startsWith(prefix))
       .map((key) => {
-        try { return { key, cachedAt: Number(JSON.parse(localStorage.getItem(key) || '{}')?.cachedAt || 0) }; }
-        catch { return { key, cachedAt: 0 }; }
+        try {
+          return {
+            key,
+            cachedAt: Number(JSON.parse(localStorage.getItem(key) || '{}')?.cachedAt || 0),
+          };
+        } catch {
+          return { key, cachedAt: 0 };
+        }
       })
       .sort((left, right) => right.cachedAt - left.cachedAt);
     entries.slice(this.maxCacheEntries).forEach(({ key }) => localStorage.removeItem(key));
   }
   private mergeHistory(report: WeeklyReport, history: WeeklyReport[]): WeeklyReport[] {
-    return [report, ...(Array.isArray(history) ? history : []).filter((entry) => entry._id !== report._id)]
-      .sort((left, right) => new Date(right.weekEndDate).getTime() - new Date(left.weekEndDate).getTime())
+    return [
+      report,
+      ...(Array.isArray(history) ? history : []).filter((entry) => entry._id !== report._id),
+    ]
+      .sort(
+        (left, right) =>
+          new Date(right.weekEndDate).getTime() - new Date(left.weekEndDate).getTime(),
+      )
       .slice(0, 6);
   }
 
@@ -359,7 +463,7 @@ export class WeeklyReportService {
       githubUsername: currentUser?.activeGithubUsername || currentUser?.githubUsername,
       careerStack: currentUser?.activeCareerStack || currentUser?.careerStack,
       experienceLevel: currentUser?.activeExperienceLevel || currentUser?.experienceLevel,
-      version: this.cacheVersion
+      version: this.cacheVersion,
     };
   }
 
@@ -373,7 +477,7 @@ export class WeeklyReportService {
       experienceLevel: currentUser?.activeExperienceLevel || currentUser?.experienceLevel,
       limit,
       ttlMs: this.historyTtlMs,
-      version: this.cacheVersion
+      version: this.cacheVersion,
     };
   }
 
@@ -382,27 +486,38 @@ export class WeeklyReportService {
     return source === 'ai-enhanced' || source === 'cached' ? source : 'deterministic';
   }
 
-  private normalizeScoreBreakdown(raw: any): Record<string, { label: string; score: number; weight: number }> {
+  private normalizeScoreBreakdown(
+    raw: any,
+  ): Record<string, { label: string; score: number; weight: number }> {
     if (!raw || typeof raw !== 'object') return {};
-    return Object.entries(raw).reduce((accumulator, [key, value]) => {
-      const item = value as any;
-      accumulator[key] = {
-        label: String(item?.label || key),
-        score: this.clamp(item?.score),
-        weight: this.number(item?.weight)
-      };
-      return accumulator;
-    }, {} as Record<string, { label: string; score: number; weight: number }>);
+    return Object.entries(raw).reduce(
+      (accumulator, [key, value]) => {
+        const item = value as any;
+        accumulator[key] = {
+          label: String(item?.label || key),
+          score: this.clamp(item?.score),
+          weight: this.number(item?.weight),
+        };
+        return accumulator;
+      },
+      {} as Record<string, { label: string; score: number; weight: number }>,
+    );
   }
 
-  private normalizeSourceStatus(raw: any, analyzed = false, connected = false): WeeklyReportDataSourceStatus {
+  private normalizeSourceStatus(
+    raw: any,
+    analyzed = false,
+    connected = false,
+  ): WeeklyReportDataSourceStatus {
     return {
       connected: connected ? Boolean(raw?.connected) : undefined,
       analyzed: analyzed ? Boolean(raw?.analyzed) : undefined,
       available: !analyzed && !connected ? Boolean(raw?.available) : undefined,
       lastAnalyzedAt: raw?.lastAnalyzedAt || null,
-      status: String(raw?.status || ''),
-      freshness: ['fresh', 'stale', 'unavailable'].includes(String(raw?.freshness || '')) ? raw.freshness : undefined
+      status: String(raw?.status || 'Unavailable'),
+      freshness: ['fresh', 'stale', 'unavailable'].includes(String(raw?.freshness || ''))
+        ? raw.freshness
+        : undefined,
     };
   }
 

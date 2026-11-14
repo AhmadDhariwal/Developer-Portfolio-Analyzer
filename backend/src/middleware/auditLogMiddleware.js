@@ -1,3 +1,4 @@
+const requestLogPath = require('../utils/requestLogPath');
 const jwt = require('jsonwebtoken');
 const AuditLog = require('../models/auditLog');
 const Team = require('../models/team');
@@ -32,13 +33,16 @@ const maskValue = (key, value) => {
 
 const deepMask = (obj) => {
   if (Array.isArray(obj)) {
-    return obj.map((item) => (typeof item === 'object' && item !== null ? deepMask(item) : maskValue('', item)));
+    return obj.map((item) =>
+      typeof item === 'object' && item !== null ? deepMask(item) : maskValue('', item)
+    );
   }
   if (typeof obj !== 'object' || obj === null) return obj;
 
   const masked = {};
   for (const [key, value] of Object.entries(obj)) {
-    const isSensitive = typeof key === 'string' && SENSITIVE_KEY_PATTERNS.some((pattern) => pattern.test(key));
+    const isSensitive =
+      typeof key === 'string' && SENSITIVE_KEY_PATTERNS.some((pattern) => pattern.test(key));
     if (isSensitive) {
       masked[key] = '***MASKED***';
     } else if (typeof value === 'object' && value !== null) {
@@ -119,7 +123,9 @@ const auditLogMiddleware = (req, res, next) => {
   if (!req.originalUrl.startsWith('/api/')) return next();
 
   const actor = req.user?._id || resolveActorFromToken(req) || null;
-  const ipAddress = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '').split(',')[0]?.trim() || null;
+  const ipAddress =
+    (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || '').split(',')[0]?.trim() ||
+    null;
   const userAgent = req.headers['user-agent']?.slice(0, 500) || null;
 
   const before = {
@@ -146,7 +152,7 @@ const auditLogMiddleware = (req, res, next) => {
         teamId,
         action,
         method: req.method,
-        route: req.originalUrl,
+        route: requestLogPath(req),
         before: trimPayload(before),
         after: trimPayload(responseBody),
         statusCode: res.statusCode,

@@ -1,3 +1,7 @@
+const sprintProgressScore = require('./scoring/sprintProgressScore');
+const { clampScore: clamp, numeric } = require('./scoring/math');
+const developerContext = require('./developerContextService');
+const skillGapContract = require('./skillGapCacheContract');
 const crypto = require('node:crypto');
 const Analysis = require('../models/analysis');
 const AnalysisCache = require('../models/analysisCache');
@@ -12,61 +16,87 @@ const User = require('../models/user');
 const JobCache = require('../models/jobCache');
 const { buildPublicProfilePayload } = require('./publicProfileService');
 const { getIntegrationInsight } = require('./integrationInsightService');
+const publicResources = require('./kaggleResourceObservationService');
 const { extractSkillsFromText, canonicalizeSkillName } = require('../utils/skilldetector');
 
 const TOPIC_STOP_WORDS = new Set([
-  'the', 'and', 'for', 'with', 'from', 'into', 'your', 'this', 'that', 'task',
-  'tasks', 'build', 'work', 'learn', 'practice', 'complete', 'completed',
-  'improve', 'improving', 'create', 'project', 'projects', 'roadmap', 'review',
-  'daily', 'weekly', 'career', 'sprint', 'focus', 'goal', 'using', 'more',
-  'less', 'need', 'next', 'level', 'high', 'medium', 'low', 'setup', 'deploy'
+  'the',
+  'and',
+  'for',
+  'with',
+  'from',
+  'into',
+  'your',
+  'this',
+  'that',
+  'task',
+  'tasks',
+  'build',
+  'work',
+  'learn',
+  'practice',
+  'complete',
+  'completed',
+  'improve',
+  'improving',
+  'create',
+  'project',
+  'projects',
+  'roadmap',
+  'review',
+  'daily',
+  'weekly',
+  'career',
+  'sprint',
+  'focus',
+  'goal',
+  'using',
+  'more',
+  'less',
+  'need',
+  'next',
+  'level',
+  'high',
+  'medium',
+  'low',
+  'setup',
+  'deploy',
 ]);
 
-const clamp = (value, min = 0, max = 100) => {
-  const numeric = Number(value || 0);
-  if (!Number.isFinite(numeric)) return min;
-  return Math.max(min, Math.min(max, Math.round(numeric)));
-};
-
-const calcWeightedProgress = (tasks) => {
-  if (!Array.isArray(tasks) || tasks.length === 0) return 0;
-  const totalPoints = tasks.reduce((sum, task) => sum + (Number(task?.points) || 1), 0);
-  const completedPoints = tasks
-    .filter((task) => Boolean(task?.isCompleted))
-    .reduce((sum, task) => sum + (Number(task?.points) || 1), 0);
-
-  return totalPoints > 0 ? Math.round((completedPoints / totalPoints) * 100) : 0;
-};
+const calcWeightedProgress = (tasks) => sprintProgressScore.calculate(tasks).score ?? 0;
 
 const uniqLower = (values = []) => {
   const seen = new Set();
   return values.filter((value) => {
-    const key = String(value || '').trim().toLowerCase();
+    const key = String(value || '')
+      .trim()
+      .toLowerCase();
     if (!key || seen.has(key)) return false;
     seen.add(key);
     return true;
   });
 };
 
-const safeStrings = (values = [], limit = 6) => uniqLower(
-  (Array.isArray(values) ? values : [])
-    .map((value) => String(value || '').trim())
-    .filter(Boolean)
-).slice(0, limit);
+const safeStrings = (values = [], limit = 6) =>
+  uniqLower(
+    (Array.isArray(values) ? values : [])
+      .map((value) => String(value || '').trim())
+      .filter(Boolean),
+  ).slice(0, limit);
 
-const buildProfileHash = (user = {}) => crypto.createHash('sha256').update(JSON.stringify({
-  activeGithubUsername: String(user.activeGithubUsername || user.githubUsername || '').trim().toLowerCase(),
-  activeCareerStack: String(user.activeCareerStack || user.careerStack || 'Full Stack').trim(),
-  activeExperienceLevel: String(user.activeExperienceLevel || user.experienceLevel || 'Student').trim(),
-  careerGoal: String(user.careerGoal || '').trim(),
-  targetTimeline: String(user.targetTimeline || '').trim(),
-  learningPreference: String(user.learningPreference || '').trim()
-})).digest('hex');
+const buildProfileHash = developerContext.buildProfileHash;
 
 const flattenResumeSkills = (skillsMap = {}) => {
   if (!skillsMap) return [];
-  const values = skillsMap instanceof Map ? Array.from(skillsMap.values()) : Object.values(skillsMap);
-  return safeStrings(values.flat().map((value) => canonicalizeSkillName(value)).filter(Boolean), 30);
+  const values =
+    skillsMap instanceof Map ? Array.from(skillsMap.values()) : Object.values(skillsMap);
+  return safeStrings(
+    values
+      .flat()
+      .map((value) => canonicalizeSkillName(value))
+      .filter(Boolean),
+    30,
+  );
 };
 
 const deriveResumeStrengths = (analysis = {}) => {
@@ -77,8 +107,10 @@ const deriveResumeStrengths = (analysis = {}) => {
   if (Number(safeAnalysis.keywordDensity || 0) >= 70) strengths.push('Good keyword coverage');
   if (Number(safeAnalysis.formatScore || 0) >= 70) strengths.push('Clear formatting');
   if (Number(safeAnalysis.contentQuality || 0) >= 70) strengths.push('Strong content quality');
-  if (Array.isArray(safeAnalysis.keyAchievements) && safeAnalysis.keyAchievements.length) strengths.push('Quantified achievements present');
-  if (Array.isArray(safeAnalysis.certifications) && safeAnalysis.certifications.length) strengths.push('Certifications highlighted');
+  if (Array.isArray(safeAnalysis.keyAchievements) && safeAnalysis.keyAchievements.length)
+    strengths.push('Quantified achievements present');
+  if (Array.isArray(safeAnalysis.certifications) && safeAnalysis.certifications.length)
+    strengths.push('Certifications highlighted');
 
   return safeStrings(strengths, 8);
 };
@@ -90,12 +122,15 @@ const deriveResumeWeaknesses = (analysis = {}) => {
   if (Number(safeAnalysis.atsScore || 0) < 70) weaknesses.push('ATS structure needs improvement');
   if (Number(safeAnalysis.keywordDensity || 0) < 65) weaknesses.push('Keyword coverage is thin');
   if (Number(safeAnalysis.formatScore || 0) < 65) weaknesses.push('Formatting could be clearer');
-  if (Number(safeAnalysis.contentQuality || 0) < 65) weaknesses.push('Content lacks strong impact language');
+  if (Number(safeAnalysis.contentQuality || 0) < 65)
+    weaknesses.push('Content lacks strong impact language');
 
-  (Array.isArray(safeAnalysis.suggestions) ? safeAnalysis.suggestions : []).forEach((suggestion) => {
-    const title = String(suggestion?.title || '').trim();
-    if (title) weaknesses.push(title);
-  });
+  (Array.isArray(safeAnalysis.suggestions) ? safeAnalysis.suggestions : []).forEach(
+    (suggestion) => {
+      const title = String(suggestion?.title || '').trim();
+      if (title) weaknesses.push(title);
+    },
+  );
 
   return safeStrings(weaknesses, 10);
 };
@@ -103,24 +138,38 @@ const deriveResumeWeaknesses = (analysis = {}) => {
 const deriveMissingResumeSections = (analysis = {}) => {
   const safeAnalysis = analysis || {};
   const catalog = [
-    { label: 'Professional Summary', patterns: ['professional summary', 'summary section', 'summary'] },
+    {
+      label: 'Professional Summary',
+      patterns: ['professional summary', 'summary section', 'summary'],
+    },
     { label: 'Projects', patterns: ['project section', 'projects section', 'project'] },
     { label: 'Skills', patterns: ['skills section', 'skill section'] },
     { label: 'Experience', patterns: ['experience section', 'work experience', 'experience'] },
     { label: 'Education', patterns: ['education section', 'education'] },
-    { label: 'Contact Info', patterns: ['contact information', 'contact info', 'email', 'phone'] },
-    { label: 'Achievements', patterns: ['achievement', 'quantified', 'metrics', 'measurable results'] }
+    {
+      label: 'Contact Info',
+      patterns: ['contact information', 'contact info', 'email', 'phone'],
+    },
+    {
+      label: 'Achievements',
+      patterns: ['achievement', 'quantified', 'metrics', 'measurable results'],
+    },
   ];
 
   const evidenceText = [
     ...Object.values(safeAnalysis.scoreBreakdown || {}),
     ...(Array.isArray(safeAnalysis.suggestions)
-      ? safeAnalysis.suggestions.flatMap((suggestion) => [suggestion?.title, suggestion?.description])
-      : [])
+      ? safeAnalysis.suggestions.flatMap((suggestion) => [
+          suggestion?.title,
+          suggestion?.description,
+        ])
+      : []),
   ].map((value) => String(value || '').toLowerCase());
 
   const detected = catalog
-    .filter(({ patterns }) => evidenceText.some((text) => patterns.some((pattern) => text.includes(pattern))))
+    .filter(({ patterns }) =>
+      evidenceText.some((text) => patterns.some((pattern) => text.includes(pattern))),
+    )
     .map(({ label }) => label);
 
   if (!Array.isArray(safeAnalysis.keyAchievements) || !safeAnalysis.keyAchievements.length) {
@@ -130,11 +179,13 @@ const deriveMissingResumeSections = (analysis = {}) => {
   return safeStrings(detected, 8);
 };
 
-const deriveResumeImprovementSuggestions = (analysis = {}) => safeStrings(
-  (Array.isArray((analysis || {}).suggestions) ? (analysis || {}).suggestions : [])
-    .flatMap((suggestion) => [suggestion?.title, suggestion?.description]),
-  10
-);
+const deriveResumeImprovementSuggestions = (analysis = {}) =>
+  safeStrings(
+    (Array.isArray((analysis || {}).suggestions) ? (analysis || {}).suggestions : []).flatMap(
+      (suggestion) => [suggestion?.title, suggestion?.description],
+    ),
+    10,
+  );
 
 const buildResumeAnalysisSignals = (analysis, fallbackExperienceLevel = '') => {
   if (analysis?.resumeSignals && typeof analysis.resumeSignals === 'object') {
@@ -145,30 +196,47 @@ const buildResumeAnalysisSignals = (analysis, fallbackExperienceLevel = '') => {
       analysisId: analysis?._id ? String(analysis._id) : 'no-resume',
       fileId: analysis?.fileId ? String(analysis.fileId) : '',
       fileName: String(analysis?.fileName || '').trim(),
-      experienceLevel: analysis?.experienceLevel || stored.experienceLevel || fallbackExperienceLevel || '',
+      experienceLevel:
+        analysis?.experienceLevel || stored.experienceLevel || fallbackExperienceLevel || '',
       experienceYears: Number(analysis?.experienceYears || stored.experienceYears || 0),
       atsScore: Number(analysis?.atsScore || stored.scores?.atsScore || 0),
-      keywordDensity: Number(analysis?.keywordDensity || stored.scores?.keywordDensity || stored.scores?.keywordCoverage || 0),
-      formatScore: Number(analysis?.formatScore || stored.scores?.formatScore || stored.scores?.formattingScore || 0),
+      keywordDensity: Number(
+        analysis?.keywordDensity ||
+          stored.scores?.keywordDensity ||
+          stored.scores?.keywordCoverage ||
+          0,
+      ),
+      formatScore: Number(
+        analysis?.formatScore || stored.scores?.formatScore || stored.scores?.formattingScore || 0,
+      ),
       contentQuality: Number(analysis?.contentQuality || stored.scores?.contentQuality || 0),
       skills: safeStrings(stored.skills || [], 25),
       technicalSkills: safeStrings(stored.skills || [], 25),
       extractedSkills: safeStrings(stored.skills || [], 25),
-      experienceKeywords: safeStrings([
-        ...(stored.skills || []),
-        ...(stored.achievements || []),
-        ...(stored.projects || [])
-      ], 16),
-      strengths: safeStrings(stored.recruiterPerspective?.strengths || deriveResumeStrengths(analysis), 8),
-      weaknesses: safeStrings([
-        ...(stored.recruiterPerspective?.concerns || []),
-        ...(Array.isArray(stored.warnings) ? stored.warnings.map((warning) => warning?.message) : [])
-      ], 10),
+      experienceKeywords: safeStrings(
+        [...(stored.skills || []), ...(stored.achievements || []), ...(stored.projects || [])],
+        16,
+      ),
+      strengths: safeStrings(
+        stored.recruiterPerspective?.strengths || deriveResumeStrengths(analysis),
+        8,
+      ),
+      weaknesses: safeStrings(
+        [
+          ...(stored.recruiterPerspective?.concerns || []),
+          ...(Array.isArray(stored.warnings)
+            ? stored.warnings.map((warning) => warning?.message)
+            : []),
+        ],
+        10,
+      ),
       missingSections: safeStrings(
         Array.isArray(stored.warnings)
-          ? stored.warnings.filter((warning) => String(warning?.code || '').startsWith('missing_')).map((warning) => warning.message)
+          ? stored.warnings
+              .filter((warning) => String(warning?.code || '').startsWith('missing_'))
+              .map((warning) => warning.message)
           : deriveMissingResumeSections(analysis),
-        8
+        8,
       ),
       improvementSuggestions: deriveResumeImprovementSuggestions(analysis),
       keyAchievements: safeStrings(analysis?.keyAchievements || stored.achievements || [], 8),
@@ -180,32 +248,39 @@ const buildResumeAnalysisSignals = (analysis, fallbackExperienceLevel = '') => {
       lastAnalyzedAt: analyzedAt,
       statusMessage: analysis?._id
         ? `Resume analyzed${analysis?.fileName ? `: ${analysis.fileName}` : ''}`
-        : 'Resume not analyzed yet'
+        : 'Resume not analyzed yet',
     };
   }
 
   const resumeSkills = flattenResumeSkills(analysis?.skills);
-  const skillEntries = analysis?.skills instanceof Map
-    ? Array.from(analysis.skills.entries())
-    : Object.entries(analysis?.skills || {});
+  const skillEntries =
+    analysis?.skills instanceof Map
+      ? Array.from(analysis.skills.entries())
+      : Object.entries(analysis?.skills || {});
   const technicalSkills = safeStrings(
     skillEntries
       .filter(([category]) => String(category || '').toLowerCase() !== 'soft skills')
-      .flatMap(([, values]) => Array.isArray(values) ? values : [])
+      .flatMap(([, values]) => (Array.isArray(values) ? values : []))
       .map((value) => canonicalizeSkillName(value))
       .filter(Boolean),
-    25
+    25,
   );
-  const experienceKeywords = safeStrings([
-    ...extractSkillsFromText([
-      ...(analysis?.keyAchievements || []),
-      ...(Array.isArray(analysis?.suggestions)
-        ? analysis.suggestions.flatMap((suggestion) => [suggestion?.title, suggestion?.description])
-        : []),
-      ...Object.values(analysis?.scoreBreakdown || {})
-    ]),
-    ...resumeSkills
-  ], 16);
+  const experienceKeywords = safeStrings(
+    [
+      ...extractSkillsFromText([
+        ...(analysis?.keyAchievements || []),
+        ...(Array.isArray(analysis?.suggestions)
+          ? analysis.suggestions.flatMap((suggestion) => [
+              suggestion?.title,
+              suggestion?.description,
+            ])
+          : []),
+        ...Object.values(analysis?.scoreBreakdown || {}),
+      ]),
+      ...resumeSkills,
+    ],
+    16,
+  );
 
   const analyzedAt = analysis?.analyzedAt || analysis?.createdAt || null;
   const analyzed = Boolean(analysis?._id);
@@ -234,7 +309,7 @@ const buildResumeAnalysisSignals = (analysis, fallbackExperienceLevel = '') => {
     lastAnalyzedAt: analyzedAt,
     statusMessage: analyzed
       ? `Resume analyzed${analysis?.fileName ? `: ${analysis.fileName}` : ''}`
-      : 'Resume not analyzed yet'
+      : 'Resume not analyzed yet',
   };
 };
 
@@ -243,7 +318,7 @@ const buildResumeCacheIdentity = ({ resumeText = '', resumeAnalysis = null } = {
   if (cleanResume) {
     return {
       resumeHash: crypto.createHash('sha256').update(cleanResume).digest('hex'),
-      resumeAnalysisId: resumeAnalysis?._id ? String(resumeAnalysis._id) : 'manual-resume-text'
+      resumeAnalysisId: resumeAnalysis?._id ? String(resumeAnalysis._id) : 'manual-resume-text',
     };
   }
 
@@ -261,18 +336,18 @@ const buildResumeCacheIdentity = ({ resumeText = '', resumeAnalysis = null } = {
       skills: flattenResumeSkills(resumeAnalysis.skills),
       suggestions: deriveResumeImprovementSuggestions(resumeAnalysis),
       keyAchievements: safeStrings(resumeAnalysis.keyAchievements || [], 8),
-      analyzedAt: resumeAnalysis.analyzedAt || resumeAnalysis.createdAt || null
+      analyzedAt: resumeAnalysis.analyzedAt || resumeAnalysis.createdAt || null,
     };
 
     return {
       resumeHash: crypto.createHash('sha256').update(JSON.stringify(payload)).digest('hex'),
-      resumeAnalysisId: String(resumeAnalysis._id)
+      resumeAnalysisId: String(resumeAnalysis._id),
     };
   }
 
   return {
     resumeHash: 'no-resume',
-    resumeAnalysisId: 'no-resume'
+    resumeAnalysisId: 'no-resume',
   };
 };
 
@@ -281,14 +356,14 @@ const buildAnalysisBasedOn = ({
   careerStack = '',
   experienceLevel = '',
   resumeInsights = {},
-  lastAnalyzedAt = null
+  lastAnalyzedAt = null,
 } = {}) => ({
   githubUsername: String(username || '').trim(),
   resumeAnalyzed: Boolean(resumeInsights?.analyzed),
   resumeStatus: String(resumeInsights?.statusMessage || 'Resume not analyzed yet'),
   careerStack: String(careerStack || '').trim(),
   experienceLevel: String(experienceLevel || '').trim(),
-  lastAnalyzedAt: lastAnalyzedAt || resumeInsights?.lastAnalyzedAt || null
+  lastAnalyzedAt: lastAnalyzedAt || resumeInsights?.lastAnalyzedAt || null,
 });
 
 const scoreToStatus = (score) => {
@@ -333,7 +408,7 @@ const summarizeCareerSprintSignal = async (userId) => {
       completedSkillSignals: [],
       progressPercent: 0,
       status: 'No sprint data',
-      updatedAt: null
+      updatedAt: null,
     };
   }
 
@@ -348,18 +423,21 @@ const summarizeCareerSprintSignal = async (userId) => {
   const repeatedIncompleteSkills = extractTopics(
     incompleteTasks.map((task) => task?.title),
     incompleteTasks.map((task) => task?.description),
-    sprint.goalTechnology
+    sprint.goalTechnology,
   ).slice(0, 5);
-  const completedSkillSignals = extractTopics(
+  const recordedActivitySkills = extractTopics(
     completedTasks.map((task) => task?.title),
     completedTasks.map((task) => task?.description),
-    sprint.goalTechnology
   ).slice(0, 5);
   const progressPercent = clamp(calcWeightedProgress(tasks));
   const streak = Number(sprint.currentStreak || sprint.streak || 0);
-  const consistencyScore = clamp((progressPercent * 0.72) + (Math.min(streak, 14) / 14 * 28));
+  const consistencyScore = clamp(progressPercent * 0.72 + (Math.min(streak, 14) / 14) * 28);
   const activeLearningFocus = String(
-    sprint.goalTechnology || sprint.goalStack || sprint.goalTitle || repeatedIncompleteSkills[0] || ''
+    sprint.goalTechnology ||
+      sprint.goalStack ||
+      sprint.goalTitle ||
+      repeatedIncompleteSkills[0] ||
+      '',
   ).trim();
 
   return {
@@ -370,10 +448,17 @@ const summarizeCareerSprintSignal = async (userId) => {
     consistencyScore,
     activeLearningFocus,
     repeatedIncompleteSkills,
-    completedSkillSignals,
+    completedSkillSignals: [],
+    recordedActivitySkills,
+    evidenceClass: 'recorded-activity',
     progressPercent,
-    status: consistencyScore >= 70 ? 'Consistent' : consistencyScore >= 45 ? 'Mixed' : 'Needs smaller steps',
-    updatedAt: sprint.updatedAt || null
+    status:
+      consistencyScore >= 70
+        ? 'Consistent'
+        : consistencyScore >= 45
+          ? 'Mixed'
+          : 'Needs smaller steps',
+    updatedAt: sprint.updatedAt || null,
   };
 };
 
@@ -381,17 +466,17 @@ const summarizeWeeklyReportSignal = async (userId) => {
   const reports = await WeeklyReport.find({ userId }).sort({ weekEndDate: -1 }).limit(4).lean();
   const latest = reports[0];
 
-  if (!latest) {
+  if (!latest || latest.meta?.evidence?.scoreAvailable === false) {
     return {
       present: false,
       weeklyProgressScore: 0,
-      status: 'No weekly report',
+      status: latest ? 'Weekly report needs evidence' : 'No weekly report',
       completedRecommendations: null,
       missedRecommendations: null,
       skillsImprovedThisWeek: [],
       repeatedWeakAreas: [],
       trendDelta: 0,
-      updatedAt: null
+      updatedAt: null,
     };
   }
 
@@ -400,17 +485,23 @@ const summarizeWeeklyReportSignal = async (userId) => {
     latest?.meta?.skillFocus?.length
       ? latest.meta.skillFocus
       : extractTopics(latest.topAchievements, latest.insights),
-    6
+    6,
   );
   const repeatedWeakAreas = safeStrings(
     extractTopics(
       reports.map((report) => report.biggestRiskArea),
-      reports.flatMap((report) => report.recommendations || [])
+      reports.flatMap((report) => report.recommendations || []),
     ),
-    5
+    5,
   );
   const weeklyProgressScore = clamp(latest.score);
-  const trendDelta = clamp((latest?.meta?.comparisons?.scoreDelta ?? (latest.score - Number(previous?.score || 0))), -100, 100);
+  const trendDelta = clamp(
+    latest.meta?.comparison?.available === false
+      ? 0
+      : (latest?.meta?.comparisons?.scoreDelta ?? latest.score - Number(previous?.score || 0)),
+    -100,
+    100,
+  );
 
   return {
     present: true,
@@ -421,7 +512,7 @@ const summarizeWeeklyReportSignal = async (userId) => {
     skillsImprovedThisWeek,
     repeatedWeakAreas,
     trendDelta,
-    updatedAt: latest.weekEndDate || latest.updatedAt || null
+    updatedAt: latest.weekEndDate || latest.updatedAt || null,
   };
 };
 
@@ -454,22 +545,31 @@ const summarizePortfolioSignal = async (userId) => {
       projectPresentationQuality: 0,
       publicEnabled: false,
       portfolioSkills: [],
-      updatedAt: null
+      updatedAt: null,
     };
   }
 
   const user = await User.findById(userId)
-    .select('name email phoneNumber jobTitle location avatar githubUsername website twitter linkedin bio')
+    .select(
+      'name email phoneNumber jobTitle location avatar githubUsername website twitter linkedin bio',
+    )
     .lean();
   const payload = await buildPublicProfilePayload(profile, user);
   const projects = Array.isArray(payload?.projects) ? payload.projects : [];
   const liveLinks = projects.filter((project) => Boolean(String(project?.url || '').trim())).length;
-  const githubLinks = projects.filter((project) => Boolean(String(project?.repoUrl || '').trim())).length;
-  const contactVisibility = Boolean(payload?.sections?.contact?.email || payload?.user?.phoneNumber);
-  const portfolioSkills = safeStrings([
-    ...(payload?.skills || []).map((skill) => skill?.name),
-    ...projects.flatMap((project) => project?.tech || [])
-  ], 10);
+  const githubLinks = projects.filter((project) =>
+    Boolean(String(project?.repoUrl || '').trim()),
+  ).length;
+  const contactVisibility = Boolean(
+    payload?.sections?.contact?.email || payload?.user?.phoneNumber,
+  );
+  const portfolioSkills = safeStrings(
+    [
+      ...(payload?.skills || []).map((skill) => skill?.name),
+      ...projects.flatMap((project) => project?.tech || []),
+    ],
+    10,
+  );
 
   return {
     present: true,
@@ -481,73 +581,128 @@ const summarizePortfolioSignal = async (userId) => {
     projectPresentationQuality: calculateProjectPresentationQuality(projects),
     publicEnabled: Boolean(payload?.isPublic),
     portfolioSkills,
-    updatedAt: profile.updatedAt || null
+    updatedAt: profile.updatedAt || null,
   };
 };
 
 const summarizeIntegrationSignal = async (userId) => {
   const insight = await getIntegrationInsight(userId);
   const providers = Array.isArray(insight.providers) ? insight.providers : [];
-  const usedProviders = safeStrings(providers.map((provider) => provider.provider), 10);
-  const providerScores = providers.map((provider) => ({
-    provider: provider.provider,
-    score: clamp(((provider.profileScore || 0) * 0.45) + ((provider.activityScore || 0) * 0.35) + ((provider.confidence || 0) * 0.2))
-  }));
-  const strongestProof = providerScores.filter((provider) => provider.score >= 70).map((provider) => provider.provider).slice(0, 4);
-  const weakProof = providerScores.filter((provider) => provider.score > 0 && provider.score < 45).map((provider) => provider.provider).slice(0, 4);
-  const certificationsProvider = providers.find((provider) => provider.provider === 'certifications');
+  const usedProviders = safeStrings(
+    providers.map((provider) => provider.provider),
+    10,
+  );
+  const providerScores = providers
+    .filter((provider) => provider.ownershipVerified === true)
+    .map((provider) => ({
+      provider: provider.provider,
+      score: clamp(
+        (provider.profileScore || 0) * 0.45 +
+          (provider.activityScore || 0) * 0.35 +
+          (provider.confidence || 0) * 0.2,
+      ),
+    }));
+  const strongestProof = providerScores
+    .filter((provider) => provider.score >= 70)
+    .map((provider) => provider.provider)
+    .slice(0, 4);
+  const weakProof = providerScores
+    .filter((provider) => provider.score > 0 && provider.score < 45)
+    .map((provider) => provider.provider)
+    .slice(0, 4);
+  const certificationsProvider = providers.find(
+    (provider) => provider.provider === 'certifications',
+  );
   const certifications = safeStrings(
     Array.isArray(certificationsProvider?.normalized?.certifications)
       ? certificationsProvider.normalized.certifications
       : certificationsProvider?.inferredSkills,
-    6
+    6,
   );
 
   return {
     present: providers.length > 0,
     usedProviders,
+    publicResources: await publicResources.getForUser(userId),
     integrationScore: clamp(insight.integrationScore || 0),
     strongestProof,
     weakProof,
     detectedSkills: safeStrings(insight.mergedSkills || [], 14),
+    verifiedSkills: safeStrings(
+      providers
+        .filter((provider) => provider.ownershipVerified === true)
+        .flatMap((provider) => provider.inferredSkills || []),
+      14,
+    ),
+    observedProviders: providers
+      .filter(
+        (provider) =>
+          provider.ownershipVerified !== true &&
+          provider.evidenceKind !== 'self-reported' &&
+          provider.provider !== 'certifications',
+      )
+      .map((provider) => provider.provider),
+    selfReportedProviders: providers
+      .filter(
+        (provider) =>
+          provider.evidenceKind === 'self-reported' || provider.provider === 'certifications',
+      )
+      .map((provider) => provider.provider),
     certifications,
-    updatedAt: insight.updatedAt || null
+    updatedAt: insight.updatedAt || null,
   };
 };
 
 const summarizeCareerProfileSignal = async (userId) => {
   const user = userId
-    ? await User.findById(userId).select('careerStack activeCareerStack experienceLevel activeExperienceLevel careerGoal targetTimeline learningPreference githubUsername activeGithubUsername updatedAt').lean()
+    ? await User.findById(userId)
+        .select(
+          'careerStack activeCareerStack experienceLevel activeExperienceLevel careerGoal targetTimeline learningPreference githubUsername activeGithubUsername activeResumeFileId defaultResumeFileId updatedAt',
+        )
+        .lean()
     : null;
 
   return {
     present: Boolean(user),
-    careerStack: String(user?.activeCareerStack || user?.careerStack || '').trim(),
-    experienceLevel: String(user?.activeExperienceLevel || user?.experienceLevel || '').trim(),
-    activeCareerStack: String(user?.activeCareerStack || user?.careerStack || '').trim(),
-    activeExperienceLevel: String(user?.activeExperienceLevel || user?.experienceLevel || '').trim(),
+    careerStack: String(developerContext.resolveCareerStack(user) || '').trim(),
+    experienceLevel: String(developerContext.resolveExperienceLevel(user) || '').trim(),
+    activeCareerStack: String(developerContext.resolveCareerStack(user) || '').trim(),
+    activeExperienceLevel: String(developerContext.resolveExperienceLevel(user) || '').trim(),
     careerGoal: String(user?.careerGoal || '').trim(),
     targetTimeline: String(user?.targetTimeline || '').trim(),
     learningPreference: String(user?.learningPreference || '').trim(),
-    githubUsername: String(user?.activeGithubUsername || user?.githubUsername || '').trim(),
-    activeGithubUsername: String(user?.activeGithubUsername || user?.githubUsername || '').trim(),
+    githubUsername: String(developerContext.resolveGithubUsername(user) || '').trim(),
+    activeGithubUsername: String(developerContext.resolveGithubUsername(user) || '').trim(),
     profileHash: user ? buildProfileHash(user) : 'no-profile',
-    updatedAt: user?.updatedAt || null
+    updatedAt: user?.updatedAt || null,
   };
 };
 
 const summarizeJobsDemandSignal = async () => {
   const now = new Date();
-  const records = await JobCache.find({ expiresAt: { $gt: now } })
-    .select('skills title updatedAt lastSynced')
+  const records = await JobCache.find({
+    expiresAt: { $gt: now },
+    freshUntil: { $gt: now },
+    hidden: { $ne: true },
+    $or: [{ validThrough: null }, { validThrough: { $gt: now } }],
+  })
+    .select(
+      'skills title updatedAt lastSynced source externalJobId jobId url location experienceLevel freshUntil expiresAt',
+    )
     .sort({ lastSynced: -1, updatedAt: -1 })
     .limit(250)
     .lean();
 
+  const seen = new Set();
+  const uniqueRecords = records.filter((record) => {
+    const identity = `${record.source || 'unknown'}:${record.externalJobId || record.jobId || record._id}`;
+    if (seen.has(identity)) return false;
+    seen.add(identity);
+    return true;
+  });
   const counts = new Map();
-  records.forEach((record) => {
-    safeStrings(record.skills || [], 20)
-      .map((skill) => canonicalizeSkillName(skill))
+  uniqueRecords.forEach((record) => {
+    [...new Set(safeStrings(record.skills || [], 20).map((skill) => canonicalizeSkillName(skill)))]
       .filter(Boolean)
       .forEach((skill) => {
         const key = skill.toLowerCase();
@@ -562,15 +717,35 @@ const summarizeJobsDemandSignal = async () => {
     .slice(0, 18)
     .map((entry) => ({
       name: entry.skill,
-      demandScore: clamp((entry.count / Math.max(records.length, 1)) * 420),
-      postings: entry.count
+      demandScore: clamp((entry.count / Math.max(uniqueRecords.length, 1)) * 420),
+      postings: entry.count,
     }));
 
   return {
     present: records.length > 0,
-    sampledJobs: records.length,
+    sampledJobs: uniqueRecords.length,
+    kind: 'cached-provider-sample',
+    demandScoreKind: 'legacy-scaled-heuristic',
+    live: false,
+    geography: 'mixed-unfiltered',
+    role: 'mixed-unfiltered',
+    seniority: 'mixed-unfiltered',
+    sources: [...new Set(uniqueRecords.map((record) => record.source).filter(Boolean))].slice(
+      0,
+      20,
+    ),
+    duplicatesRemoved: records.length - uniqueRecords.length,
+    limitations: [
+      'Bounded cache sample; not representative of the entire job market.',
+      'Demand is an uncalibrated scaled frequency, not a live market percentage.',
+    ],
+    expiresAt: [
+      ...uniqueRecords
+        .flatMap((record) => [record.expiresAt, record.freshUntil, record.validThrough])
+        .filter(Boolean),
+    ].reduce((earliest, value) => (!earliest || value < earliest ? value : earliest), null),
     topSkills,
-    updatedAt: records[0]?.lastSynced || records[0]?.updatedAt || null
+    updatedAt: records[0]?.lastSynced || records[0]?.updatedAt || null,
   };
 };
 
@@ -586,7 +761,7 @@ const summarizeRecommendationSignal = async (userId) => {
       priority: String(recommendation.priority || '').trim(),
       impact: String(recommendation.impact || '').trim(),
       techStack: safeStrings(recommendation.techStack || [], 8),
-      createdAt: recommendation.createdAt || null
+      createdAt: recommendation.createdAt || null,
     }))
     .filter((recommendation) => recommendation.title);
 
@@ -594,26 +769,31 @@ const summarizeRecommendationSignal = async (userId) => {
     present: priorityRecommendations.length > 0,
     priorityRecommendations,
     skills: {
-      recommendedTechnologies: safeStrings(priorityRecommendations.flatMap((item) => item.techStack), 16),
+      recommendedTechnologies: safeStrings(
+        priorityRecommendations.flatMap((item) => item.techStack),
+        16,
+      ),
       missingSkills: safeStrings(
         priorityRecommendations
           .filter((item) => /skill|learn|gap/i.test(`${item.category} ${item.title}`))
-          .flatMap((item) => item.techStack.length ? item.techStack : [item.title]),
-        12
+          .flatMap((item) => (item.techStack.length ? item.techStack : [item.title])),
+        12,
       ),
-      weakSkills: []
+      weakSkills: [],
     },
-    updatedAt: priorityRecommendations[0]?.createdAt || null
+    updatedAt: priorityRecommendations[0]?.createdAt || null,
   };
 };
 
 const summarizeScenarioSimulatorSignal = async (userId) => {
   const scenarios = userId
     ? await ScenarioSimulation.find({ userId })
-      .sort({ createdAt: -1 })
-      .limit(8)
-      .select('name role experienceLevel durationWeeks skills projects predicted improvements confidenceScore scenarioHash createdAt')
-      .lean()
+        .sort({ createdAt: -1 })
+        .limit(8)
+        .select(
+          'name role experienceLevel durationWeeks skills projects predicted improvements confidenceScore scenarioHash createdAt',
+        )
+        .lean()
     : [];
 
   return {
@@ -621,6 +801,8 @@ const summarizeScenarioSimulatorSignal = async (userId) => {
     savedCount: scenarios.length,
     latestScenarioHash: scenarios[0]?.scenarioHash || '',
     latestCreatedAt: scenarios[0]?.createdAt || null,
+    evidenceClass: 'planned-intent',
+    establishesProficiency: false,
     savedScenarios: scenarios.map((scenario) => ({
       id: String(scenario._id),
       name: scenario.name,
@@ -628,38 +810,43 @@ const summarizeScenarioSimulatorSignal = async (userId) => {
       experienceLevel: scenario.experienceLevel,
       durationWeeks: scenario.durationWeeks,
       skills: safeStrings(scenario.skills || [], 8),
-      projectNames: safeStrings((scenario.projects || []).map((project) => project.name), 6),
+      projectNames: safeStrings(
+        (scenario.projects || []).map((project) => project.name),
+        6,
+      ),
       predicted: scenario.predicted || {},
       improvements: scenario.improvements || {},
       confidenceScore: Number(scenario.confidenceScore || 0),
       scenarioHash: scenario.scenarioHash || '',
-      createdAt: scenario.createdAt || null
-    }))
+      createdAt: scenario.createdAt || null,
+    })),
   };
 };
 
 const toPlainLanguageDistribution = (languageDistribution = {}) => {
-  const raw = languageDistribution instanceof Map
-    ? Object.fromEntries(languageDistribution)
-    : languageDistribution && typeof languageDistribution === 'object'
-      ? languageDistribution
-      : {};
+  const raw =
+    languageDistribution instanceof Map
+      ? Object.fromEntries(languageDistribution)
+      : languageDistribution && typeof languageDistribution === 'object'
+        ? languageDistribution
+        : {};
 
   return Object.entries(raw)
     .map(([language, percentage]) => ({
       language,
-      percentage: clamp(percentage)
+      percentage: clamp(percentage),
     }))
     .filter((entry) => entry.language && entry.percentage > 0)
     .sort((left, right) => right.percentage - left.percentage);
 };
 
 const summarizeGithubSignal = async (userId, source = {}) => {
-  const analysis = source.analysis !== undefined
-    ? source.analysis
-    : userId
-      ? await Analysis.findOne({ userId }).sort({ updatedAt: -1, createdAt: -1 }).lean()
-      : null;
+  const analysis =
+    source.analysis !== undefined
+      ? source.analysis
+      : userId
+        ? await Analysis.findOne({ userId }).sort({ updatedAt: -1, createdAt: -1 }).lean()
+        : null;
 
   if (!analysis) {
     return {
@@ -673,42 +860,48 @@ const summarizeGithubSignal = async (userId, source = {}) => {
       technologies: [],
       repositories: [],
       scores: {},
-      updatedAt: null
+      updatedAt: null,
     };
   }
 
-  const stored = analysis.githubSignals && typeof analysis.githubSignals === 'object'
-    ? analysis.githubSignals
-    : {};
+  const stored =
+    analysis.githubSignals && typeof analysis.githubSignals === 'object'
+      ? analysis.githubSignals
+      : {};
   const repositories = Array.isArray(source.repositories)
     ? source.repositories
     : await Repository.find({ ownerId: userId })
-      .select('repoName language stars forks commits lastUpdated')
-      .sort({ lastUpdated: -1 })
-      .limit(24)
-      .lean()
-      .catch(() => []);
+        .select('repoName language stars forks commits lastUpdated')
+        .sort({ lastUpdated: -1 })
+        .limit(24)
+        .lean()
+        .catch(() => []);
 
   const storedRepositories = Array.isArray(stored.repositories) ? stored.repositories : [];
-  const normalizedRepositories = (repositories.length ? repositories : storedRepositories).map((repo) => ({
-    name: repo.repoName || repo.name || '',
-    language: repo.language || '',
-    stars: Number(repo.stars || 0),
-    forks: Number(repo.forks || 0),
-    commits: Number(repo.commits || 0),
-    pushedAt: repo.lastUpdated || repo.pushedAt || repo.updatedAt || null,
-    description: repo.description || '',
-    technologies: Array.isArray(repo.technologies) ? repo.technologies : []
-  }));
+  const normalizedRepositories = (repositories.length ? repositories : storedRepositories).map(
+    (repo) => ({
+      name: repo.repoName || repo.name || '',
+      language: repo.language || '',
+      stars: Number(repo.stars || 0),
+      forks: Number(repo.forks || 0),
+      commits: Number(repo.commits || 0),
+      pushedAt: repo.lastUpdated || repo.pushedAt || repo.updatedAt || null,
+      description: repo.description || '',
+      technologies: Array.isArray(repo.technologies) ? repo.technologies : [],
+    }),
+  );
 
-  const languageDistribution = Array.isArray(stored?.languages?.main) && stored.languages.main.length
-    ? stored.languages.main
-    : toPlainLanguageDistribution(analysis.languageDistribution);
+  const languageDistribution =
+    Array.isArray(stored?.languages?.main) && stored.languages.main.length
+      ? stored.languages.main
+      : toPlainLanguageDistribution(analysis.languageDistribution);
 
   return {
     present: true,
     username: String(stored.username || '').trim(),
-    repoCount: Number(stored.stats?.repos || analysis.githubStats?.repos || normalizedRepositories.length || 0),
+    repoCount: Number(
+      stored.stats?.repos || analysis.githubStats?.repos || normalizedRepositories.length || 0,
+    ),
     developerLevel: String(stored.developerLevel || '').trim(),
     strengths: safeStrings(stored.recruiterInsights?.proofPoints || [], 8),
     weakAreas: safeStrings(stored.weakAreas || [], 8),
@@ -718,48 +911,48 @@ const summarizeGithubSignal = async (userId, source = {}) => {
     repositories: normalizedRepositories,
     scores: {
       healthScore: Number(stored.healthScore || analysis.githubScore || 0),
-      activity: Number(stored.healthScore || analysis.githubScore || 0)
+      activity: Number(stored.healthScore || analysis.githubScore || 0),
     },
     recruiterInsights: stored.recruiterInsights || {},
-    updatedAt: stored.analyzedAt || analysis.updatedAt || analysis.createdAt || null
+    updatedAt: stored.analyzedAt || analysis.updatedAt || analysis.createdAt || null,
   };
 };
 
-const loadDefaultResumeAnalysis = async (userId) => {
-  const user = userId
-    ? await User.findById(userId).select('defaultResumeFileId').lean()
-    : null;
-
-  if (user?.defaultResumeFileId) {
-    const activeAnalysis = await ResumeAnalysis.findOne({ userId, fileId: user.defaultResumeFileId })
-      .sort({ analyzedAt: -1 })
-      .lean();
-    if (activeAnalysis) return activeAnalysis;
-  }
-
-  return userId
-    ? ResumeAnalysis.findOne({ userId }).sort({ analyzedAt: -1 }).lean()
-    : null;
-};
+const loadDefaultResumeAnalysis = (userId) =>
+  developerContext.resolveResumeAnalysis(userId, undefined, { User, ResumeAnalysis });
 
 const summarizeResumeSignal = async (userId, sourceAnalysis) => {
-  const latestResume = sourceAnalysis !== undefined ? sourceAnalysis : await loadDefaultResumeAnalysis(userId);
+  const latestResume =
+    sourceAnalysis !== undefined ? sourceAnalysis : await loadDefaultResumeAnalysis(userId);
   return buildResumeAnalysisSignals(latestResume);
 };
 
-const normalizeSkillItems = (values = [], limit = 16) => safeStrings(
-  (Array.isArray(values) ? values : [])
-    .map((item) => item?.name || item?.skill || item)
-    .filter(Boolean),
-  limit
-);
+const normalizeSkillItems = (values = [], limit = 16) =>
+  safeStrings(
+    (Array.isArray(values) ? values : [])
+      .map((item) => item?.name || item?.skill || item)
+      .filter(Boolean),
+    limit,
+  );
 
 const summarizeSkillGapSignal = async (userId) => {
+  const context = userId ? await developerContext.loadUser(userId, { User }) : null;
+  const selected = context
+    ? await developerContext.resolveResumeAnalysis(userId, context, { ResumeAnalysis })
+    : null;
+  const identity = skillGapContract.buildScope({
+    userId,
+    user: context,
+    resumeIdentity: buildResumeCacheIdentity({ resumeAnalysis: selected }),
+  });
   const cache = userId
     ? await AnalysisCache.findOne({
         userId,
-        'analysisData.missingSkills.0': { $exists: true }
-      }).sort({ updatedAt: -1 }).lean()
+        ...identity,
+        'analysisData.missingSkills': { $exists: true },
+      })
+        .sort({ updatedAt: -1 })
+        .lean()
     : null;
 
   if (!cache?.analysisData) {
@@ -769,16 +962,15 @@ const summarizeSkillGapSignal = async (userId) => {
       missingSkills: [],
       weakSkills: [],
       highDemandSkills: [],
-      coverage: 0,
+      coverage: null,
       updatedAt: null,
-      signalHash: ''
+      signalHash: '',
     };
   }
 
   const data = cache.analysisData;
-  const storedSignals = data.skillGapSignals && typeof data.skillGapSignals === 'object'
-    ? data.skillGapSignals
-    : {};
+  const storedSignals =
+    data.skillGapSignals && typeof data.skillGapSignals === 'object' ? data.skillGapSignals : {};
 
   return {
     present: true,
@@ -787,15 +979,28 @@ const summarizeSkillGapSignal = async (userId) => {
     weakSkills: normalizeSkillItems(storedSignals.weakSkills || data.weakSkills, 12),
     highDemandSkills: Array.isArray(storedSignals.highDemandSkills)
       ? storedSignals.highDemandSkills.slice(0, 12)
-      : (Array.isArray(data.highDemandSkills) ? data.highDemandSkills.slice(0, 12) : []),
-    immediateSkills: safeStrings(storedSignals.immediateSkills || data.immediateSkills?.map((skill) => skill?.name || skill), 8),
-    shortTermSkills: safeStrings(storedSignals.shortTermSkills || data.shortTermSkills?.map((skill) => skill?.name || skill), 8),
-    coverage: clamp(storedSignals.coverage || data.coverage || 0),
+      : Array.isArray(data.highDemandSkills)
+        ? data.highDemandSkills.slice(0, 12)
+        : [],
+    immediateSkills: safeStrings(
+      storedSignals.immediateSkills || data.immediateSkills?.map((skill) => skill?.name || skill),
+      8,
+    ),
+    shortTermSkills: safeStrings(
+      storedSignals.shortTermSkills || data.shortTermSkills?.map((skill) => skill?.name || skill),
+      8,
+    ),
+    coverage: skillGapContract.coverage(data.coverage),
+    ruleVersion: data.ruleVersion,
+    evidencePolicyVersion: data.evidencePolicyVersion,
     coverageBreakdown: storedSignals.coverageBreakdown || data.coverageBreakdown || {},
     provenSkills: safeStrings(storedSignals.provenSkills || data.provenSkills || [], 16),
-    claimedButNotProvenSkills: safeStrings(storedSignals.claimedButNotProvenSkills || data.claimedButNotProvenSkills || [], 16),
+    claimedButNotProvenSkills: safeStrings(
+      storedSignals.claimedButNotProvenSkills || data.claimedButNotProvenSkills || [],
+      16,
+    ),
     updatedAt: cache.updatedAt || cache.createdAt || null,
-    signalHash: storedSignals.signalHash || cache.signalHash || ''
+    signalHash: storedSignals.signalHash || cache.signalHash || '',
   };
 };
 
@@ -805,12 +1010,27 @@ const getPublicJobMarketSignal = () => summarizeJobsDemandSignal();
 const getDeveloperSignals = async (userId, overrides = {}) => {
   const githubSignalOverride = overrides.githubSignals || overrides.githubSignal || null;
   const resumeSignalOverride = overrides.resumeSignals || overrides.resumeSignal || null;
-  const careerProfileSignalOverride = overrides.careerProfileSignal || overrides.careerProfile || null;
+  const careerProfileSignalOverride =
+    overrides.careerProfileSignal || overrides.careerProfile || null;
   const githubSourceOverride = overrides.githubSource || {};
-  const resumeAnalysisOverride = Object.prototype.hasOwnProperty.call(overrides, 'resumeAnalysis') ? overrides.resumeAnalysis : undefined;
+  const resumeAnalysisOverride = Object.prototype.hasOwnProperty.call(overrides, 'resumeAnalysis')
+    ? overrides.resumeAnalysis
+    : undefined;
 
   if (!userId) {
-    const [githubSignals, resumeSignals, skillGapSignals, careerSprintSignal, weeklyReportSignal, portfolioSignal, integrationSignal, careerProfileSignal, jobsDemandSignal, recommendationSignal, scenarioSimulatorSignal] = await Promise.all([
+    const [
+      githubSignals,
+      resumeSignals,
+      skillGapSignals,
+      careerSprintSignal,
+      weeklyReportSignal,
+      portfolioSignal,
+      integrationSignal,
+      careerProfileSignal,
+      jobsDemandSignal,
+      recommendationSignal,
+      scenarioSimulatorSignal,
+    ] = await Promise.all([
       githubSignalOverride ? Promise.resolve(githubSignalOverride) : summarizeGithubSignal(null),
       resumeSignalOverride ? Promise.resolve(resumeSignalOverride) : summarizeResumeSignal(null),
       summarizeSkillGapSignal(null),
@@ -818,10 +1038,12 @@ const getDeveloperSignals = async (userId, overrides = {}) => {
       summarizeWeeklyReportSignal(null),
       summarizePortfolioSignal(null),
       summarizeIntegrationSignal(null),
-      careerProfileSignalOverride ? Promise.resolve(careerProfileSignalOverride) : summarizeCareerProfileSignal(null),
+      careerProfileSignalOverride
+        ? Promise.resolve(careerProfileSignalOverride)
+        : summarizeCareerProfileSignal(null),
       summarizeJobsDemandSignal(),
       summarizeRecommendationSignal(null),
-      summarizeScenarioSimulatorSignal(null)
+      summarizeScenarioSimulatorSignal(null),
     ]);
     return {
       githubSignals,
@@ -842,22 +1064,40 @@ const getDeveloperSignals = async (userId, overrides = {}) => {
       recommendationSignal,
       recommendationSignals: recommendationSignal,
       scenarioSimulatorSignal,
-      scenarioSimulatorSignals: scenarioSimulatorSignal
+      scenarioSimulatorSignals: scenarioSimulatorSignal,
     };
   }
 
-  const [githubSignals, resumeSignals, skillGapSignals, careerSprintSignal, weeklyReportSignal, portfolioSignal, integrationSignal, careerProfileSignal, jobsDemandSignal, recommendationSignal, scenarioSimulatorSignal] = await Promise.all([
-    githubSignalOverride ? Promise.resolve(githubSignalOverride) : summarizeGithubSignal(userId, githubSourceOverride),
-    resumeSignalOverride ? Promise.resolve(resumeSignalOverride) : summarizeResumeSignal(userId, resumeAnalysisOverride),
+  const [
+    githubSignals,
+    resumeSignals,
+    skillGapSignals,
+    careerSprintSignal,
+    weeklyReportSignal,
+    portfolioSignal,
+    integrationSignal,
+    careerProfileSignal,
+    jobsDemandSignal,
+    recommendationSignal,
+    scenarioSimulatorSignal,
+  ] = await Promise.all([
+    githubSignalOverride
+      ? Promise.resolve(githubSignalOverride)
+      : summarizeGithubSignal(userId, githubSourceOverride),
+    resumeSignalOverride
+      ? Promise.resolve(resumeSignalOverride)
+      : summarizeResumeSignal(userId, resumeAnalysisOverride),
     summarizeSkillGapSignal(userId),
     summarizeCareerSprintSignal(userId),
     summarizeWeeklyReportSignal(userId),
     summarizePortfolioSignal(userId),
     summarizeIntegrationSignal(userId),
-    careerProfileSignalOverride ? Promise.resolve(careerProfileSignalOverride) : summarizeCareerProfileSignal(userId),
+    careerProfileSignalOverride
+      ? Promise.resolve(careerProfileSignalOverride)
+      : summarizeCareerProfileSignal(userId),
     summarizeJobsDemandSignal(),
     summarizeRecommendationSignal(userId),
-    summarizeScenarioSimulatorSignal(userId)
+    summarizeScenarioSimulatorSignal(userId),
   ]);
 
   return {
@@ -879,7 +1119,7 @@ const getDeveloperSignals = async (userId, overrides = {}) => {
     recommendationSignal,
     recommendationSignals: recommendationSignal,
     scenarioSimulatorSignal,
-    scenarioSimulatorSignals: scenarioSimulatorSignal
+    scenarioSimulatorSignals: scenarioSimulatorSignal,
   };
 };
 
@@ -894,13 +1134,18 @@ const buildSignalHash = (signals = {}) => {
     recommendationSignal: signals.recommendationSignal || signals.recommendationSignals || {},
     githubSignals: signals.githubSignals || {},
     resumeSignals: signals.resumeSignals || {},
-    skillGapSignals: signals.skillGapSignals || {}
+    skillGapSignals: signals.skillGapSignals || {},
   };
 
   return crypto.createHash('sha256').update(JSON.stringify(payload)).digest('hex');
 };
 
-const buildSignalsUsedSummary = ({ username = '', resumeInsights = {}, githubInsights = {}, signals = {} } = {}) => {
+const buildSignalsUsedSummary = ({
+  username = '',
+  resumeInsights = {},
+  githubInsights = {},
+  signals = {},
+} = {}) => {
   const githubSignal = signals.githubSignals || {};
   const resumeSignal = signals.resumeSignals || {};
   const skillGapSignal = signals.skillGapSignals || {};
@@ -911,15 +1156,18 @@ const buildSignalsUsedSummary = ({ username = '', resumeInsights = {}, githubIns
   const careerProfileSignal = signals.careerProfileSignal || {};
   const jobsDemandSignal = signals.jobsDemandSignal || {};
   const recommendationSignal = signals.recommendationSignal || signals.recommendationSignals || {};
-  const scenarioSimulatorSignal = signals.scenarioSimulatorSignal || signals.scenarioSimulatorSignals || {};
+  const scenarioSimulatorSignal =
+    signals.scenarioSimulatorSignal || signals.scenarioSimulatorSignals || {};
 
   return {
     github: {
       connected: Boolean(String(username || '').trim()),
       username: String(username || '').trim(),
       repoCount: Number(githubInsights.repoCount || githubSignal.repoCount || 0),
-      developerLevel: String(githubInsights.developerLevel || githubSignal.developerLevel || '').trim(),
-      source: githubSignal.present ? 'githubSignals' : 'fallback'
+      developerLevel: String(
+        githubInsights.developerLevel || githubSignal.developerLevel || '',
+      ).trim(),
+      source: githubSignal.present ? 'githubSignals' : 'fallback',
     },
     resume: {
       analyzed: Boolean(resumeInsights.analyzed || resumeSignal.analyzed),
@@ -927,44 +1175,57 @@ const buildSignalsUsedSummary = ({ username = '', resumeInsights = {}, githubIns
       fileName: String(resumeInsights.fileName || resumeSignal.fileName || '').trim(),
       lastAnalyzedAt: resumeInsights.lastAnalyzedAt || resumeSignal.lastAnalyzedAt || null,
       atsScore: Number(resumeInsights.atsScore || resumeSignal.atsScore || 0),
-      experienceLevel: String(resumeInsights.experienceLevel || resumeSignal.experienceLevel || '').trim(),
+      experienceLevel: String(
+        resumeInsights.experienceLevel || resumeSignal.experienceLevel || '',
+      ).trim(),
       extractedSkills: safeStrings(resumeInsights.skills || resumeSignal.skills || [], 12),
-      experienceKeywords: safeStrings(resumeInsights.experienceKeywords || resumeSignal.experienceKeywords || [], 12),
+      experienceKeywords: safeStrings(
+        resumeInsights.experienceKeywords || resumeSignal.experienceKeywords || [],
+        12,
+      ),
       strengths: safeStrings(resumeInsights.strengths || resumeSignal.strengths || [], 6),
       weaknesses: safeStrings(resumeInsights.weaknesses || resumeSignal.weaknesses || [], 6),
-      missingSections: safeStrings(resumeInsights.missingSections || resumeSignal.missingSections || [], 6),
-      statusMessage: String(resumeInsights.statusMessage || resumeSignal.statusMessage || '').trim(),
-      source: resumeSignal.analyzed ? 'resumeSignals' : 'fallback'
+      missingSections: safeStrings(
+        resumeInsights.missingSections || resumeSignal.missingSections || [],
+        6,
+      ),
+      statusMessage: String(
+        resumeInsights.statusMessage || resumeSignal.statusMessage || '',
+      ).trim(),
+      source: resumeSignal.analyzed ? 'resumeSignals' : 'fallback',
     },
     skillGap: {
       present: Boolean(skillGapSignal.present),
-      coverage: Number(skillGapSignal.coverage || 0),
+      coverage: skillGapContract.coverage(skillGapSignal.coverage),
       knownSkills: safeStrings(skillGapSignal.knownSkills || [], 10),
       missingSkills: safeStrings(skillGapSignal.missingSkills || [], 10),
       weakSkills: safeStrings(skillGapSignal.weakSkills || [], 8),
-      highDemandSkills: Array.isArray(skillGapSignal.highDemandSkills) ? skillGapSignal.highDemandSkills.slice(0, 8) : [],
-      updatedAt: skillGapSignal.updatedAt || null
+      highDemandSkills: Array.isArray(skillGapSignal.highDemandSkills)
+        ? skillGapSignal.highDemandSkills.slice(0, 8)
+        : [],
+      updatedAt: skillGapSignal.updatedAt || null,
     },
     portfolio: {
       present: Boolean(portfolioSignal.present),
       completenessScore: Number(portfolioSignal.completenessScore || 0),
       projectCount: Number(portfolioSignal.listedProjects || 0),
-      liveLinkCount: Number(portfolioSignal.liveLinks || 0)
+      liveLinkCount: Number(portfolioSignal.liveLinks || 0),
     },
     integrations: {
+      publicResources: integrationSignal.publicResources || [],
       providers: safeStrings(integrationSignal.usedProviders || [], 10),
       score: Number(integrationSignal.integrationScore || 0),
-      strongestProof: safeStrings(integrationSignal.strongestProof || [], 4)
+      strongestProof: safeStrings(integrationSignal.strongestProof || [], 4),
     },
     weeklyProgress: {
       status: String(weeklyReportSignal.status || 'Unavailable'),
       score: Number(weeklyReportSignal.weeklyProgressScore || 0),
-      trendDelta: Number(weeklyReportSignal.trendDelta || 0)
+      trendDelta: Number(weeklyReportSignal.trendDelta || 0),
     },
     careerSprint: {
       consistencyScore: Number(careerSprintSignal.consistencyScore || 0),
       streak: Number(careerSprintSignal.streak || 0),
-      activeLearningFocus: String(careerSprintSignal.activeLearningFocus || '').trim()
+      activeLearningFocus: String(careerSprintSignal.activeLearningFocus || '').trim(),
     },
     careerProfile: {
       careerStack: String(careerProfileSignal.careerStack || '').trim(),
@@ -972,17 +1233,27 @@ const buildSignalsUsedSummary = ({ username = '', resumeInsights = {}, githubIns
       careerGoal: String(careerProfileSignal.careerGoal || '').trim(),
       targetTimeline: String(careerProfileSignal.targetTimeline || '').trim(),
       learningPreference: String(careerProfileSignal.learningPreference || '').trim(),
-      profileHash: String(careerProfileSignal.profileHash || '').trim()
+      profileHash: String(careerProfileSignal.profileHash || '').trim(),
     },
     jobsDemand: {
+      kind: jobsDemandSignal.kind || 'unavailable',
+      live: false,
+      demandScoreKind: jobsDemandSignal.demandScoreKind || 'unavailable',
+      sources: jobsDemandSignal.sources || [],
+      geography: jobsDemandSignal.geography || 'unavailable',
+      seniority: jobsDemandSignal.seniority || 'unavailable',
+      expiresAt: jobsDemandSignal.expiresAt || null,
+      limitations: jobsDemandSignal.limitations || [],
       sampledJobs: Number(jobsDemandSignal.sampledJobs || 0),
-      topSkills: Array.isArray(jobsDemandSignal.topSkills) ? jobsDemandSignal.topSkills.slice(0, 10) : []
+      topSkills: Array.isArray(jobsDemandSignal.topSkills)
+        ? jobsDemandSignal.topSkills.slice(0, 10)
+        : [],
     },
     recommendations: {
       present: Boolean(recommendationSignal.present),
       priorityRecommendations: Array.isArray(recommendationSignal.priorityRecommendations)
         ? recommendationSignal.priorityRecommendations.slice(0, 6)
-        : []
+        : [],
     },
     scenarioSimulator: {
       present: Boolean(scenarioSimulatorSignal.present),
@@ -990,8 +1261,8 @@ const buildSignalsUsedSummary = ({ username = '', resumeInsights = {}, githubIns
       latestScenarioHash: String(scenarioSimulatorSignal.latestScenarioHash || '').trim(),
       savedScenarios: Array.isArray(scenarioSimulatorSignal.savedScenarios)
         ? scenarioSimulatorSignal.savedScenarios.slice(0, 6)
-        : []
-    }
+        : [],
+    },
   };
 };
 
@@ -1002,5 +1273,7 @@ module.exports = {
   buildResumeAnalysisSignals,
   buildResumeCacheIdentity,
   buildAnalysisBasedOn,
-  getPublicJobMarketSignal
+  getPublicJobMarketSignal,
+  summarizeSkillGapSignal,
+  summarizeIntegrationSignal,
 };

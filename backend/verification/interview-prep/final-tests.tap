@@ -1,0 +1,502 @@
+TAP version 13
+# Subtest: orchestrator skips provider calls when pool already satisfies target
+ok 1 - orchestrator skips provider calls when pool already satisfies target
+  ---
+  duration_ms: 25.424
+  type: 'test'
+  ...
+# Subtest: orchestrator uses AI first and persists enriched records
+ok 2 - orchestrator uses AI first and persists enriched records
+  ---
+  duration_ms: 24.6557
+  type: 'test'
+  ...
+# Subtest: orchestrator retains scraped candidates pending review when AI is insufficient
+ok 3 - orchestrator retains scraped candidates pending review when AI is insufficient
+  ---
+  duration_ms: 8.3393
+  type: 'test'
+  ...
+# [redis] cache read failed; using application fallback.
+# Subtest: Interview cache TTL, cross-worker revisions, targeted invalidation, and outage recovery
+    # Subtest: Redis promotion respects the remaining source TTL
+    ok 1 - Redis promotion respects the remaining source TTL
+      ---
+      duration_ms: 4.3732
+      type: 'test'
+      ...
+    # Subtest: topic revisions invalidate other workers and late fills without flushing unrelated topics
+    ok 2 - topic revisions invalidate other workers and late fills without flushing unrelated topics
+      ---
+      duration_ms: 8.0723
+      type: 'test'
+      ...
+    # Subtest: memory is bounded during optional Redis failure and recovery uses a fresh namespace
+    ok 3 - memory is bounded during optional Redis failure and recovery uses a fresh namespace
+      ---
+      duration_ms: 117.8976
+      type: 'test'
+      ...
+    1..3
+ok 4 - Interview cache TTL, cross-worker revisions, targeted invalidation, and outage recovery
+  ---
+  duration_ms: 2145.684
+  type: 'test'
+  ...
+# [AIProviderManager] DISABLED Groq (missing_key)
+# [AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"groq","envKey":"GROQ_API_KEY"}
+# [AIProviderManager] DISABLED OpenAI (missing_key)
+# [AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"openai","envKey":"OPENAI_API_KEY"}
+# [AIProviderManager] DISABLED Gemini (missing_key)
+# [AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"gemini","envKey":"GEMINI_API_KEY"}
+# [AIProviderManager] DISABLED Anthropic (missing_key)
+# [AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"anthropic","envKey":"ANTHROPIC_API_KEY"}
+# [AIProviderManager] DISABLED OpenRouter (missing_key)
+# [AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"openrouter","envKey":"OPENROUTER_API_KEY"}
+# [AIProviderManager] {"scope":"AIProviderManager","event":"no_providers_ready","providers":[],"priority":""}
+# Subtest: Interview Prep isolated Mongo critical paths
+    # Subtest: real unique indexes and atomic trust protection survive competing workers
+    ok 1 - real unique indexes and atomic trust protection survive competing workers
+      ---
+      duration_ms: 212.396
+      type: 'test'
+      ...
+    # Subtest: All Questions paginates past 500 records with stable nonoverlapping pages
+    ok 2 - All Questions paginates past 500 records with stable nonoverlapping pages
+      ---
+      duration_ms: 3728.9987
+      type: 'test'
+      ...
+    # Subtest: scraped and legacy private content cannot enter public approved results
+    ok 3 - scraped and legacy private content cannot enter public approved results
+      ---
+      duration_ms: 57.1383
+      type: 'test'
+      ...
+    # Subtest: Mongo lease excludes overlapping workers, releases on failure, and retries
+    ok 4 - Mongo lease excludes overlapping workers, releases on failure, and retries
+      ---
+      duration_ms: 28.5555
+      type: 'test'
+      ...
+    # Subtest: owned history remains bounded and isolated
+    ok 5 - owned history remains bounded and isolated
+      ---
+      duration_ms: 28.1596
+      type: 'test'
+      ...
+    # Subtest: Top 30 and text search read existing data without AI, scraper, or seed writes
+    ok 6 - Top 30 and text search read existing data without AI, scraper, or seed writes
+      ---
+      duration_ms: 137.5277
+      type: 'test'
+      ...
+    # Warm Top 30 (20 requests, local Mongo, Redis disabled): p50=0.088ms p95=0.178ms; zero provider calls/writes.
+# {"ts":"2026-10-18T16:05:10.483Z","level":"info","message":"interview-prep-ai","reasonCode":"provider_success"}
+# {"ts":"2026-10-18T16:05:10.592Z","level":"info","message":"interview-prep-ai","reasonCode":"provider_success"}
+    # Subtest: custom AI answers persist privately, reuse owned history, and isolate users
+    ok 7 - custom AI answers persist privately, reuse owned history, and isolate users
+      ---
+      duration_ms: 196.8582
+      type: 'test'
+      ...
+# Generate fresh interview questions error: Error: provider unavailable fixture
+#     at Object.<anonymous> (D:\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\interviewPrepFinalization.integration.test.js:276:15)
+#     at Object.apply (node:internal/test_runner/mock/mock:767:20)
+#     at D:\\Developer-Portfolio-Analyzer\\backend\\src\\services\\interviewPrepService.js:1559:18
+#     at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+#     at async withAiDeadline (D:\\Developer-Portfolio-Analyzer\\backend\\src\\services\\interviewPrepService.js:57:12)
+#     at async generateFreshInterviewQuestions (D:\\Developer-Portfolio-Analyzer\\backend\\src\\services\\interviewPrepService.js:1558:23)
+#     at async generateInterviewPrepQuestions (D:\\Developer-Portfolio-Analyzer\\backend\\src\\controllers\\interviewPrepController.js:206:21)
+# {"ts":"2026-10-18T16:05:12.103Z","level":"warn","message":"provider unavailable fixture","topicKey":"javascript"}
+# AI generation fallback engaged for topic: javascript. Reason: generation_exception
+# {"ts":"2026-10-18T16:05:12.105Z","level":"warn","message":"provider unavailable fixture","topicKey":"javascript","reason":"generation_exception"}
+    # Subtest: authenticated API contracts, input rejection, practice fallback, and canonical personalization
+    ok 8 - authenticated API contracts, input rejection, practice fallback, and canonical personalization
+      ---
+      duration_ms: 1611.8713
+      type: 'test'
+      ...
+# {"ts":"2026-10-18T16:05:18.756Z","level":"info","message":"interview-prep-ai","reasonCode":"provider_error"}
+# {"ts":"2026-10-18T16:05:18.756Z","level":"info","message":"interview-prep-ai","reasonCode":"fallback_missing"}
+    # Subtest: explicit custom generation honors the existing 6500ms AI deadline
+    ok 9 - explicit custom generation honors the existing 6500ms AI deadline
+      ---
+      duration_ms: 6538.1201
+      type: 'test'
+      ...
+    # AI timeout fallback completed in 6537.7ms (existing AI budget: 6500ms).
+    1..9
+ok 5 - Interview Prep isolated Mongo critical paths
+  ---
+  duration_ms: 13342.7623
+  type: 'test'
+  ...
+# [AIProviderManager] DISABLED Groq (missing_key)
+# [AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"groq","envKey":"GROQ_API_KEY"}
+# [AIProviderManager] DISABLED OpenAI (missing_key)
+# [AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"openai","envKey":"OPENAI_API_KEY"}
+# [AIProviderManager] DISABLED Gemini (missing_key)
+# [AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"gemini","envKey":"GEMINI_API_KEY"}
+# [AIProviderManager] DISABLED Anthropic (missing_key)
+# [AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"anthropic","envKey":"ANTHROPIC_API_KEY"}
+# [AIProviderManager] DISABLED OpenRouter (missing_key)
+# [AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"openrouter","envKey":"OPENROUTER_API_KEY"}
+# [AIProviderManager] {"scope":"AIProviderManager","event":"no_providers_ready","providers":[],"priority":""}
+# Subtest: Top-Question Correctness: Every supported topic yields exactly 30 top questions ranked 1-30 deterministically
+ok 6 - Top-Question Correctness: Every supported topic yields exactly 30 top questions ranked 1-30 deterministically
+  ---
+  duration_ms: 606.2351
+  type: 'test'
+  ...
+# Subtest: Strict Technology Boundary Enforcement: Java !== JavaScript, React !== React Native, Node.js !== Next.js, C\# !== C++
+ok 7 - Strict Technology Boundary Enforcement: Java !== JavaScript, React !== React Native, Node.js !== Next.js, C\# !== C++
+  ---
+  duration_ms: 4.8055
+  type: 'test'
+  ...
+# Subtest: Topic Normalization: Canonical aliases for all supported technologies resolve cleanly
+ok 8 - Topic Normalization: Canonical aliases for all supported technologies resolve cleanly
+  ---
+  duration_ms: 0.8895
+  type: 'test'
+  ...
+# Subtest: Topic Normalization: Unknown or ambiguous topics stay isolated without mapping to unrelated topics
+ok 9 - Topic Normalization: Unknown or ambiguous topics stay isolated without mapping to unrelated topics
+  ---
+  duration_ms: 1.4649
+  type: 'test'
+  ...
+# Subtest: Search Resolution Hierarchy & Quality Validation: Weak similarity does not return unrelated questions
+ok 10 - Search Resolution Hierarchy & Quality Validation: Weak similarity does not return unrelated questions
+  ---
+  duration_ms: 16.0371
+  type: 'test'
+  ...
+# Subtest: AI Ownership & Quality: Mandatory structured JSON schema and pre-persistence validation
+ok 11 - AI Ownership & Quality: Mandatory structured JSON schema and pre-persistence validation
+  ---
+  duration_ms: 5.4525
+  type: 'test'
+  ...
+# Subtest: Shared-Bank Safety: Idempotent upserts protect verified_seed records from AI overwrites
+ok 12 - Shared-Bank Safety: Idempotent upserts protect verified_seed records from AI overwrites
+  ---
+  duration_ms: 1.3303
+  type: 'test'
+  ...
+# Subtest: Single-Flight Execution: Concurrent identical requests coalesce into a single execution pipeline
+ok 13 - Single-Flight Execution: Concurrent identical requests coalesce into a single execution pipeline
+  ---
+  duration_ms: 6.0874
+  type: 'test'
+  ...
+# Subtest: Security & Input Protection: Custom question length validation (12-500 chars)
+ok 14 - Security & Input Protection: Custom question length validation (12-500 chars)
+  ---
+  duration_ms: 3.0167
+  type: 'test'
+  ...
+# Subtest: Deduplication & Quality Service: Normalizes text and eliminates exact/semantic duplicates
+ok 15 - Deduplication & Quality Service: Normalizes text and eliminates exact/semantic duplicates
+  ---
+  duration_ms: 1.3154
+  type: 'test'
+  ...
+# [AIProviderManager] DISABLED Groq (missing_key)
+# [AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"groq","envKey":"GROQ_API_KEY"}
+# [AIProviderManager] DISABLED OpenAI (missing_key)
+# [AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"openai","envKey":"OPENAI_API_KEY"}
+# [AIProviderManager] DISABLED Gemini (missing_key)
+# [AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"gemini","envKey":"GEMINI_API_KEY"}
+# [AIProviderManager] DISABLED Anthropic (missing_key)
+# [AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"anthropic","envKey":"ANTHROPIC_API_KEY"}
+# [AIProviderManager] DISABLED OpenRouter (missing_key)
+# [AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"openrouter","envKey":"OPENROUTER_API_KEY"}
+# [AIProviderManager] {"scope":"AIProviderManager","event":"no_providers_ready","providers":[],"priority":""}
+# Subtest: memory cache is the first layer and bypasses Redis
+ok 16 - memory cache is the first layer and bypasses Redis
+  ---
+  duration_ms: 6.5438
+  type: 'test'
+  ...
+# {"ts":"2026-10-18T16:05:05.236Z","level":"info","message":"interview-prep-ai","reasonCode":"provider_success"}
+# {"ts":"2026-10-18T16:05:05.303Z","level":"info","message":"interview-prep-ai","reasonCode":"provider_error"}
+# {"ts":"2026-10-18T16:05:05.306Z","level":"info","message":"interview-prep-ai","reasonCode":"fallback_missing"}
+# {"ts":"2026-10-18T16:05:05.314Z","level":"info","message":"interview-prep-ai","reasonCode":"provider_error"}
+# {"ts":"2026-10-18T16:05:05.315Z","level":"info","message":"interview-prep-ai","reasonCode":"fallback_missing"}
+# {"ts":"2026-10-18T16:05:05.320Z","level":"info","message":"interview-prep-ai","reasonCode":"provider_error"}
+# {"ts":"2026-10-18T16:05:05.321Z","level":"info","message":"interview-prep-ai","reasonCode":"fallback_missing"}
+# {"ts":"2026-10-18T16:05:05.325Z","level":"info","message":"interview-prep-ai","reasonCode":"provider_error"}
+# {"ts":"2026-10-18T16:05:05.327Z","level":"info","message":"interview-prep-ai","reasonCode":"fallback_missing"}
+# {"ts":"2026-10-18T16:05:05.333Z","level":"info","message":"interview-prep-ai","reasonCode":"provider_success"}
+# {"ts":"2026-10-18T16:05:05.339Z","level":"info","message":"interview-prep-ai","reasonCode":"semantic_rejected"}
+# {"ts":"2026-10-18T16:05:05.342Z","level":"info","message":"interview-prep-ai","reasonCode":"fallback_missing"}
+# {"ts":"2026-10-18T16:05:05.347Z","level":"info","message":"interview-prep-ai","reasonCode":"provider_success"}
+# {"ts":"2026-10-18T16:05:05.350Z","level":"info","message":"interview-prep-ai","reasonCode":"semantic_rejected"}
+# {"ts":"2026-10-18T16:05:05.351Z","level":"info","message":"interview-prep-ai","reasonCode":"fallback_missing"}
+# {"ts":"2026-10-18T16:05:05.357Z","level":"info","message":"interview-prep-ai","reasonCode":"provider_success"}
+# {"ts":"2026-10-18T16:05:05.359Z","level":"info","message":"interview-prep-ai","reasonCode":"semantic_rejected"}
+# {"ts":"2026-10-18T16:05:05.360Z","level":"info","message":"interview-prep-ai","reasonCode":"fallback_missing"}
+# {"ts":"2026-10-18T16:05:05.363Z","level":"info","message":"interview-prep-ai","reasonCode":"provider_success"}
+# {"ts":"2026-10-18T16:05:05.365Z","level":"info","message":"interview-prep-ai","reasonCode":"semantic_rejected"}
+# {"ts":"2026-10-18T16:05:05.366Z","level":"info","message":"interview-prep-ai","reasonCode":"fallback_missing"}
+# {"ts":"2026-10-18T16:05:05.373Z","level":"info","message":"interview-prep-ai","reasonCode":"provider_success"}
+# {"ts":"2026-10-18T16:05:05.375Z","level":"info","message":"interview-prep-ai","reasonCode":"semantic_rejected"}
+# {"ts":"2026-10-18T16:05:05.377Z","level":"info","message":"interview-prep-ai","reasonCode":"fallback_missing"}
+# {"ts":"2026-10-18T16:05:05.382Z","level":"info","message":"interview-prep-ai","reasonCode":"provider_success"}
+# {"ts":"2026-10-18T16:05:05.386Z","level":"info","message":"interview-prep-ai","reasonCode":"semantic_rejected"}
+# {"ts":"2026-10-18T16:05:05.388Z","level":"info","message":"interview-prep-ai","reasonCode":"fallback_missing"}
+# {"ts":"2026-10-18T16:05:05.410Z","level":"info","message":"interview-prep-ai","reasonCode":"fallback_found"}
+# {"ts":"2026-10-18T16:05:05.420Z","level":"info","message":"interview-prep-ai","reasonCode":"fallback_missing"}
+# Subtest: five identical custom requests share one AI call and one persistence operation
+ok 17 - five identical custom requests share one AI call and one persistence operation
+  ---
+  duration_ms: 135.2698
+  type: 'test'
+  ...
+# Subtest: controlled AI faults are rejected without persistence, cache contamination, or provider-detail leakage
+    # Subtest: timeout
+    ok 1 - timeout
+      ---
+      duration_ms: 26.3363
+      type: 'test'
+      ...
+    # Subtest: quota
+    ok 2 - quota
+      ---
+      duration_ms: 11.4891
+      type: 'test'
+      ...
+    # Subtest: malformed
+    ok 3 - malformed
+      ---
+      duration_ms: 24.6655
+      type: 'test'
+      ...
+    # Subtest: low-quality
+    ok 4 - low-quality
+      ---
+      duration_ms: 14.0941
+      type: 'test'
+      ...
+    # Subtest: generic-boilerplate
+    ok 5 - generic-boilerplate
+      ---
+      duration_ms: 21.7997
+      type: 'test'
+      ...
+    1..5
+ok 18 - controlled AI faults are rejected without persistence, cache contamination, or provider-detail leakage
+  ---
+  duration_ms: 104.3347
+  type: 'test'
+  ...
+# Subtest: provider accepts a complete structured AI answer and reports typed failures
+ok 19 - provider accepts a complete structured AI answer and reports typed failures
+  ---
+  duration_ms: 8.0066
+  type: 'test'
+  ...
+# Subtest: verified fallback selection reports useful content or an honest missing result
+ok 20 - verified fallback selection reports useful content or an honest missing result
+  ---
+  duration_ms: 21.584
+  type: 'test'
+  ...
+# Subtest: practice provider rejects failed and malformed structured output
+ok 21 - practice provider rejects failed and malformed structured output
+  ---
+  duration_ms: 2.6827
+  type: 'test'
+  ...
+# Subtest: scraper preserves the healthy source and retains only safe provenance URLs
+ok 22 - scraper preserves the healthy source and retains only safe provenance URLs
+  ---
+  duration_ms: 9.6095
+  type: 'test'
+  ...
+# [AIProviderManager] DISABLED Groq (missing_key)
+# [AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"groq","envKey":"GROQ_API_KEY"}
+# [AIProviderManager] DISABLED OpenAI (missing_key)
+# [AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"openai","envKey":"OPENAI_API_KEY"}
+# [AIProviderManager] DISABLED Gemini (missing_key)
+# [AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"gemini","envKey":"GEMINI_API_KEY"}
+# [AIProviderManager] DISABLED Anthropic (missing_key)
+# [AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"anthropic","envKey":"ANTHROPIC_API_KEY"}
+# [AIProviderManager] DISABLED OpenRouter (missing_key)
+# [AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"openrouter","envKey":"OPENROUTER_API_KEY"}
+# [AIProviderManager] {"scope":"AIProviderManager","event":"no_providers_ready","providers":[],"priority":""}
+# AI generation failed validation, using fallback questions
+# AI generation fallback engaged for topic: javascript. Reason: validated_questions_empty
+# {"ts":"2026-10-18T16:05:05.080Z","level":"warn","message":"","topicKey":"javascript","reason":"validated_questions_empty"}
+# Subtest: generateFreshInterviewQuestions falls back to the question bank when AI output fails validation
+ok 23 - generateFreshInterviewQuestions falls back to the question bank when AI output fails validation
+  ---
+  duration_ms: 57.3035
+  type: 'test'
+  ...
+# Subtest: answerCustomInterviewQuestion rejects explicit skill mismatches before storing
+ok 24 - answerCustomInterviewQuestion rejects explicit skill mismatches before storing
+  ---
+  duration_ms: 5.8394
+  type: 'test'
+  ...
+# Subtest: normalizeQuestionText appends question mark when missing
+ok 25 - normalizeQuestionText appends question mark when missing
+  ---
+  duration_ms: 4.0804
+  type: 'test'
+  ...
+# Subtest: computeJaccardSimilarity returns high score for similar questions
+ok 26 - computeJaccardSimilarity returns high score for similar questions
+  ---
+  duration_ms: 1.6688
+  type: 'test'
+  ...
+# Subtest: dedupeQuestions removes exact and near duplicates
+ok 27 - dedupeQuestions removes exact and near duplicates
+  ---
+  duration_ms: 4.464
+  type: 'test'
+  ...
+# Subtest: isQualityQuestionAnswer enforces minimum useful length
+ok 28 - isQualityQuestionAnswer enforces minimum useful length
+  ---
+  duration_ms: 3.2747
+  type: 'test'
+  ...
+# Subtest: production category and difficulty sanitizers support ranked bank values
+ok 29 - production category and difficulty sanitizers support ranked bank values
+  ---
+  duration_ms: 0.9688
+  type: 'test'
+  ...
+# Subtest: validateInterviewQuestionQuality rejects placeholder or AI-disclaimer content
+ok 30 - validateInterviewQuestionQuality rejects placeholder or AI-disclaimer content
+  ---
+  duration_ms: 6.0353
+  type: 'test'
+  ...
+# Subtest: validateInterviewQuestionQuality accepts a structured answer that uses different technical wording
+ok 31 - validateInterviewQuestionQuality accepts a structured answer that uses different technical wording
+  ---
+  duration_ms: 2.9007
+  type: 'test'
+  ...
+# Subtest: semantic validation rejects the reproduced inheritance versus polymorphism boilerplate
+ok 32 - semantic validation rejects the reproduced inheritance versus polymorphism boilerplate
+  ---
+  duration_ms: 3.2934
+  type: 'test'
+  ...
+# Subtest: semantic validation accepts a complete inheritance versus polymorphism comparison
+ok 33 - semantic validation accepts a complete inheritance versus polymorphism comparison
+  ---
+  duration_ms: 2.577
+  type: 'test'
+  ...
+# Subtest: semantic regressions reject generic and cross-topic answers
+ok 34 - semantic regressions reject generic and cross-topic answers
+  ---
+  duration_ms: 23.6703
+  type: 'test'
+  ...
+# Subtest: comparison validation accepts semantic tradeoffs without requiring the literal word tradeoff
+ok 35 - comparison validation accepts semantic tradeoffs without requiring the literal word tradeoff
+  ---
+  duration_ms: 1.4788
+  type: 'test'
+  ...
+# [AIProviderManager] DISABLED Groq (missing_key)
+# [AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"groq","envKey":"GROQ_API_KEY"}
+# [AIProviderManager] DISABLED OpenAI (missing_key)
+# [AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"openai","envKey":"OPENAI_API_KEY"}
+# [AIProviderManager] DISABLED Gemini (missing_key)
+# [AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"gemini","envKey":"GEMINI_API_KEY"}
+# [AIProviderManager] DISABLED Anthropic (missing_key)
+# [AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"anthropic","envKey":"ANTHROPIC_API_KEY"}
+# [AIProviderManager] DISABLED OpenRouter (missing_key)
+# [AIProviderManager] {"scope":"AIProviderManager","event":"provider_missing_key","provider":"openrouter","envKey":"OPENROUTER_API_KEY"}
+# [AIProviderManager] {"scope":"AIProviderManager","event":"no_providers_ready","providers":[],"priority":""}
+# Subtest: every supported topic has exactly 30 ranked top seed questions
+ok 36 - every supported topic has exactly 30 ranked top seed questions
+  ---
+  duration_ms: 9.2282
+  type: 'test'
+  ...
+# Subtest: all approved seed questions use valid production schema values
+ok 37 - all approved seed questions use valid production schema values
+  ---
+  duration_ms: 394.878
+  type: 'test'
+  ...
+# Subtest: seed catalog validation report is clean and rank buckets match the production ranking contract
+ok 38 - seed catalog validation report is clean and rank buckets match the production ranking contract
+  ---
+  duration_ms: 4763.291
+  type: 'test'
+  ...
+# Subtest: invalid seed catalog data fails loudly
+ok 39 - invalid seed catalog data fails loudly
+  ---
+  duration_ms: 13.9986
+  type: 'test'
+  ...
+# Subtest: duplicate and near-duplicate seed questions are rejected
+ok 40 - duplicate and near-duplicate seed questions are rejected
+  ---
+  duration_ms: 12.6534
+  type: 'test'
+  ...
+# Subtest: buildSeedRecordsForTopic maps ranked seed metadata into database records
+ok 41 - buildSeedRecordsForTopic maps ranked seed metadata into database records
+  ---
+  duration_ms: 13.7804
+  type: 'test'
+  ...
+# Subtest: getQuestionBank returns top questions in rank order
+ok 42 - getQuestionBank returns top questions in rank order
+  ---
+  duration_ms: 12.7662
+  type: 'test'
+  ...
+# Subtest: normalizeTopicInput resolves known aliases to canonical topic keys
+ok 43 - normalizeTopicInput resolves known aliases to canonical topic keys
+  ---
+  duration_ms: 10.3259
+  type: 'test'
+  ...
+# Subtest: normalizeTopicInput preserves fallback for unknown topics
+ok 44 - normalizeTopicInput preserves fallback for unknown topics
+  ---
+  duration_ms: 1.0805
+  type: 'test'
+  ...
+# Subtest: resolveTopic handles stack aliases and important topics list is populated
+ok 45 - resolveTopic handles stack aliases and important topics list is populated
+  ---
+  duration_ms: 0.9345
+  type: 'test'
+  ...
+# Subtest: detectTopicsInText finds explicit skill mentions without false-matching adjacent names
+ok 46 - detectTopicsInText finds explicit skill mentions without false-matching adjacent names
+  ---
+  duration_ms: 6.9264
+  type: 'test'
+  ...
+# Subtest: every supported interview topic has exactly 30 top questions and a larger seed pool
+ok 47 - every supported interview topic has exactly 30 top questions and a larger seed pool
+  ---
+  duration_ms: 2.557
+  type: 'test'
+  ...
+1..47
+# tests 64
+# suites 0
+# pass 64
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 18667.8992

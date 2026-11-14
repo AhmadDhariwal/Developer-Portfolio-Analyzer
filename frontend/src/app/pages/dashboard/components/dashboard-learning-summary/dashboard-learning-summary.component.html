@@ -1,0 +1,41 @@
+<section *ngIf="snapshot as progress" aria-labelledby="dashboard-learning-title">
+  <div class="heading">
+    <div>
+      <h3 id="dashboard-learning-title">Learning Progress</h3>
+      <p>User-entered tracking; completions are self-reported.</p>
+    </div>
+    <a routerLink="/app/courses">Open Learning Hub</a>
+  </div>
+  <dl class="learning-tiles">
+    <div class="learning-tile is-indigo">
+      <dt>Tracked</dt>
+      <dd>{{ progress.totalTracked }}</dd>
+    </div>
+    <div class="learning-tile is-slate">
+      <dt>Saved</dt>
+      <dd>{{ progress.savedCount }}</dd>
+    </div>
+    <div class="learning-tile is-warning">
+      <dt>In progress</dt>
+      <dd>{{ progress.inProgressCount }}</dd>
+    </div>
+    <div class="learning-tile is-success">
+      <dt>Completed</dt>
+      <dd>{{ progress.completedCount }}</dd>
+    </div>
+  </dl>
+  <p *ngIf="progress.totalTracked === 0" class="empty-learning">
+    Save a course in Learning Hub to start tracking.
+  </p>
+  <div class="completions-box" *ngIf="completedCourses.length">
+    <h4>Recently recorded completions</h4>
+    <ul>
+      <li *ngFor="let course of completedCourses">
+        <span class="course-title">{{ course.title }}</span>
+        <span class="course-date">{{
+          course.completedAt ? (course.completedAt | date: 'mediumDate') : 'Date not recorded'
+        }}</span>
+      </li>
+    </ul>
+  </div>
+</section>

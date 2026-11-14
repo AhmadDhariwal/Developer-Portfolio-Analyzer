@@ -1,0 +1,81 @@
+{
+  "startedAt": "2026-10-29T12:48:02.805Z",
+  "configuredWriteDriver": "filesystem",
+  "productionDatabaseAccessed": false,
+  "credentialsLogged": false,
+  "buckets": {
+    "images": {
+      "authentication": "PASS",
+      "scopedToExpectedBucketOnly": true,
+      "privacy": "allPrivate",
+      "requiredFileCapabilities": true,
+      "extraWriteCapabilities": [
+        "writeBucketLogging",
+        "writeBucketReplications",
+        "writeBucketEncryption",
+        "writeBucketLifecycleRules",
+        "writeBucketNotifications",
+        "writeBuckets"
+      ],
+      "defaultEncryption": "SSE-B2",
+      "lifecycleRuleCount": 0,
+      "retentionReadable": false,
+      "defaultRetention": "none or not visible"
+    },
+    "resumes": {
+      "authentication": "PASS",
+      "scopedToExpectedBucketOnly": true,
+      "privacy": "allPrivate",
+      "requiredFileCapabilities": true,
+      "extraWriteCapabilities": [
+        "writeBucketLogging",
+        "writeBucketReplications",
+        "writeBucketEncryption",
+        "writeBucketLifecycleRules",
+        "writeBucketNotifications",
+        "writeBuckets"
+      ],
+      "defaultEncryption": "SSE-B2",
+      "lifecycleRuleCount": 0,
+      "retentionReadable": false,
+      "defaultRetention": "none or not visible"
+    }
+  },
+  "checks": [
+    "avatars: upload, version-pinned hash retrieval, replacement, foreign-owner denial, SSE AES256, anonymous denial, cross-bucket credential denial",
+    "portfolio-images: upload, version-pinned hash retrieval, replacement, foreign-owner denial, SSE AES256, anonymous denial, cross-bucket credential denial",
+    "resumes: upload, version-pinned hash retrieval, replacement, foreign-owner denial, SSE AES256, anonymous denial, cross-bucket credential denial",
+    "multiple B2 versions retain pinned original reads; exact-key cleanup deletes both",
+    "injected deletion outage persists retry metadata; fresh OS process reads four live ready objects and recovers two cleanup receipts",
+    "all disposable managed references and receipts cleaned; historical resume stayed ready until fixture teardown"
+  ],
+  "fixtureObjects": 6,
+  "status": "PASS",
+  "cleanup": [
+    {
+      "kind": "avatars",
+      "exactKeyAbsent": true
+    },
+    {
+      "kind": "avatars",
+      "exactKeyAbsent": true
+    },
+    {
+      "kind": "portfolio-images",
+      "exactKeyAbsent": true
+    },
+    {
+      "kind": "portfolio-images",
+      "exactKeyAbsent": true
+    },
+    {
+      "kind": "resumes",
+      "exactKeyAbsent": true
+    },
+    {
+      "kind": "resumes",
+      "exactKeyAbsent": true
+    }
+  ],
+  "finishedAt": "2026-10-29T12:48:32.225Z"
+}

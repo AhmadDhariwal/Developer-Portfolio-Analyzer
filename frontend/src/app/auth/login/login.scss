@@ -1,4 +1,4 @@
-@import '../../shared/styles/auth-theme';
+@use '../../shared/styles/auth-theme' as *;
 
 .auth-page {
   min-height: 100vh;
@@ -23,8 +23,8 @@
     text-decoration: none;
     padding: 6px 12px;
     border-radius: 20px;
-    border: 1px solid var(--auth-home-border, rgba(175, 115, 75, 0.25));
-    background: var(--auth-home-bg, rgba(233, 218, 200, 0.9));
+    border: 1px solid var(--auth-home-border, var(--border-color, #e2e8f0));
+    background: var(--auth-home-bg, var(--surface-card, #ffffff));
     transition: all 0.2s ease;
     z-index: 20;
 
@@ -57,11 +57,11 @@
 
   .logo {
     font-size: 2.25rem;
-    font-weight: 700;
+    font-weight: 800;
     color: var(--auth-brand);
     margin: 0 0 var(--spacing-xs) 0;
-    font-family: 'Inter', sans-serif;
-    letter-spacing: -0.02em;
+    font-family: var(--font-heading, 'Manrope', 'Plus Jakarta Sans', sans-serif);
+    letter-spacing: -0.025em;
 
     span {
       background: var(--auth-brand-accent);
@@ -75,22 +75,36 @@
   .tagline {
     color: var(--auth-tagline);
     font-size: 0.75rem;
-    font-family: 'JetBrains Mono', monospace;
-    letter-spacing: 0.15em;
+    font-family: var(--font-mono, 'JetBrains Mono', monospace);
+    letter-spacing: 0.12em;
     margin: 0;
   }
 }
 
 .auth-card {
   width: 100%;
-  max-width: 400px;
+  max-width: 440px;
   background: var(--auth-card-bg);
   border-radius: 1.5rem;
   border: 1px solid var(--auth-card-border);
   box-shadow: var(--auth-shadow);
+  overflow: hidden;
+  --surface-card: var(--auth-card-bg);
+  --border-color: var(--auth-input-border);
+  --text-primary: var(--auth-ink);
+  --text-secondary: var(--auth-muted);
 
-  &:deep(.card-body) {
+  ::ng-deep .ui-card {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: inherit !important;
+    border-radius: inherit;
+  }
+
+  ::ng-deep .card-body {
     padding: var(--spacing-2xl);
+    background: transparent !important;
   }
 
   .auth-header {
@@ -99,15 +113,18 @@
 
     h2 {
       font-size: 1.5rem;
-      font-weight: 600;
+      font-weight: 700;
       margin: 0 0 var(--spacing-xs) 0;
       color: var(--auth-ink);
+      font-family: var(--font-heading, 'Manrope', 'Plus Jakarta Sans', sans-serif);
+      letter-spacing: -0.02em;
     }
 
     p {
       color: var(--auth-muted);
       font-size: 0.875rem;
       margin: 0;
+      font-family: var(--font-sans, 'Inter', sans-serif);
     }
   }
 
@@ -161,7 +178,7 @@
         border: 1px solid var(--auth-input-border);
         border-radius: 0.75rem;
         color: var(--auth-ink);
-        font-family: 'Inter', sans-serif;
+        font-family: var(--font-sans, 'Inter', sans-serif);
         font-size: 0.9rem;
         min-height: 42px;
         transition: all var(--transition-fast, 0.15s ease);
@@ -180,6 +197,15 @@
         &:disabled {
           opacity: 0.6;
           cursor: not-allowed;
+        }
+
+        &:-webkit-autofill,
+        &:-webkit-autofill:hover,
+        &:-webkit-autofill:focus {
+          -webkit-text-fill-color: var(--auth-ink);
+          -webkit-box-shadow: 0 0 0px 1000px var(--auth-input-bg) inset;
+          box-shadow: 0 0 0px 1000px var(--auth-input-bg) inset;
+          transition: background-color 5000s ease-in-out 0s;
         }
       }
 
@@ -255,7 +281,7 @@
     min-height: 40px;
     padding: 8px 16px;
     border-radius: 0.5rem;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-sans, 'Inter', sans-serif);
     font-weight: 500;
     font-size: 0.85rem;
     cursor: pointer;
@@ -319,8 +345,8 @@
       }
 
       &:not(:disabled):focus-visible {
-        outline-color: #4285F4;
-        border-color: #4285F4;
+        outline-color: #4285f4;
+        border-color: #4285f4;
       }
     }
 
@@ -363,5 +389,7 @@
 
 // Spinner keyframes (shared)
 @keyframes oauth-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }

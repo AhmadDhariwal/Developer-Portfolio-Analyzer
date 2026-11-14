@@ -1,0 +1,8 @@
+{
+  "mongoStopped": true,
+  "redisStopped": true,
+  "filesRemoved": 137,
+  "applicationDatabasesUsed": false,
+  "quotaResets": 0,
+  "recursiveDeletion": false
+}

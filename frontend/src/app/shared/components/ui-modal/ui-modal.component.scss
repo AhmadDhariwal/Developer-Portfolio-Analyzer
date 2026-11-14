@@ -1,0 +1,98 @@
+@use '../../styles/design-tokens' as *;
+
+.ui-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  background: rgba(15, 23, 42, 0.75);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md, 1.5rem);
+  box-sizing: border-box;
+  animation: modal-fade 0.2s ease-out;
+}
+
+.ui-modal-dialog {
+  background: var(--surface-modal, #1E293B);
+  border: 1px solid var(--border-light, #475569);
+  border-radius: var(--radius-xl, 20px);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  color: var(--text-primary, #F8FAFC);
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 3rem);
+  width: 100%;
+  position: relative;
+  outline: none;
+  animation: modal-scale 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+
+  // Sizes
+  &.size-sm   { max-width: 420px; }
+  &.size-md   { max-width: 560px; }
+  &.size-lg   { max-width: 768px; }
+  &.size-xl   { max-width: 960px; }
+  &.size-full { max-width: 96vw; height: 92vh; }
+
+  .ui-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: var(--spacing-lg, 1.5rem) var(--spacing-xl, 2rem);
+    border-bottom: 1px solid var(--border-color, #334155);
+    gap: var(--spacing-md, 1rem);
+
+    .header-titles {
+      flex: 1;
+
+      .modal-title {
+        margin: 0;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text-primary, #F8FAFC);
+        font-family: var(--font-heading, 'Poppins', sans-serif);
+      }
+
+      .modal-subtitle {
+        margin: 0.35rem 0 0 0;
+        font-size: 0.875rem;
+        color: var(--text-secondary, #94A3B8);
+      }
+    }
+  }
+
+  .ui-modal-body {
+    padding: var(--spacing-xl, 2rem);
+    overflow-y: auto;
+    flex: 1;
+
+    @include custom-scrollbar;
+  }
+
+  .ui-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--spacing-xs, 8px);
+    padding: var(--spacing-md, 1rem) var(--spacing-xl, 2rem);
+    border-top: 1px solid var(--border-color, #334155);
+    background: rgba(15, 23, 42, 0.4);
+
+    &:empty {
+      display: none;
+    }
+  }
+}
+
+@keyframes modal-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes modal-scale {
+  from { transform: scale(0.94) translateY(8px); opacity: 0; }
+  to   { transform: scale(1) translateY(0); opacity: 1; }
+}

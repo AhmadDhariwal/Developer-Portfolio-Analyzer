@@ -1,0 +1,3409 @@
+{
+  "runId": "1b5545fa-5eb5-45c4-9618-fa894cb1a0f5",
+  "mode": "SMOKE_NOT_EXTENDED_ACCEPTANCE",
+  "startedAt": "2026-11-08T19:20:03.679Z",
+  "status": "FAIL",
+  "productionDataModified": false,
+  "traceQuota": false,
+  "sources": {
+    "src/scripts/verifyScenarioP3.js": "3bbb07ebfc10a8f2dfcced48367587b7653a9404d27787cc5f6cab1e94b4f806",
+    "src/scripts/scenarioAcceptanceWorker.js": "ac5674cc45a716e42f327a3dc133ce9b3559cef7bc9a7afdefb794fd0b31e5c1",
+    "src/scripts/scenarioFocusedVerification.js": "fa9e20795ae84aa53a82d743c053b5a7ef9a1694b4768d2f4f35b3c3417bed2a",
+    "src/scripts/scenarioQuotaTrace.js": "3e97e069c5ecdb29e2c660e5a4973cb2eb615cfb33910c67ad8ac31a395476dd",
+    "src/scripts/scenarioRedisTrace.js": "66b941a7b8213e07eec5d99cedb41bedf6aaa627a185be17e5234343fb158786",
+    "src/services/redisCacheService.js": "0377aca09fe53880bae8b86586dcebe7d404955c92d1f08a6d19b5fbe28a2509",
+    "src/services/scenarioContextService.js": "19413c05a1b8d612c9a21779c65a279ed63ed769db1626e8a0d1d937ccb7d5a4",
+    "src/services/scenarioSimulatorService.js": "6f1f9be4bcd7fb9c6875ac6b950a6b31dbf9c36e3b57ef37060346d458ea647a",
+    "src/services/scenarioSprintExportService.js": "96529021d8aa53168f65265b450a1f9cf95d54b6bce6f05caf1d69bdc4aa2c9f",
+    "src/services/scoring/scenarioPlanningScore.js": "2214de883ab3423d0bafc1ed75536fe436063dfbf3785e6c24663cd08f1b134a",
+    "src/middleware/scenarioSimulatorMiddleware.js": "21fa9cb11eef98ed863458d3e0def1ed318f8155163410a54bb17920d95f0b2b",
+    "src/middleware/authMiddleware.js": "1edb50f04654c900ef02d90ecc7e618562f4f28c1fdb6a715c001c82aa83ce2b"
+  },
+  "checks": [
+    {
+      "label": "Actual full unique user/hash index installed locally",
+      "passed": true
+    },
+    {
+      "label": "Actual compound history cursor index installed locally",
+      "passed": true
+    },
+    {
+      "label": "Two instances concurrently save 100 identical plans as one immutable snapshot",
+      "passed": true
+    },
+    {
+      "label": "Two instances concurrently export 50 requests as one durable receipt/item set",
+      "passed": true
+    },
+    {
+      "label": "Real JWT foreign scenario/Sprint export is not found",
+      "passed": true
+    },
+    {
+      "label": "Pure deterministic engine at 100 evaluations/sec/instance meets p95/p99 thresholds",
+      "passed": true,
+      "details": [
+        {
+          "count": 100,
+          "elapsedMs": 1006.7583999999988,
+          "p95": 1.3332999999984168,
+          "p99": 2.8696000000018103
+        },
+        {
+          "count": 100,
+          "elapsedMs": 1010.632599999999,
+          "p95": 2.2255999999997584,
+          "p99": 4.96140000000014
+        }
+      ]
+    },
+    {
+      "label": "Two real instances share evaluate quota 60/minute",
+      "passed": true,
+      "details": {
+        "accepted": 60,
+        "denied": 5,
+        "statuses": [
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          429,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          429,
+          429,
+          429,
+          429,
+          200
+        ]
+      }
+    },
+    {
+      "label": "Two real instances share context quota 30/minute",
+      "passed": true,
+      "details": {
+        "accepted": 30,
+        "denied": 5,
+        "statuses": [
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          429,
+          200,
+          429,
+          200,
+          429,
+          429,
+          429
+        ]
+      }
+    },
+    {
+      "label": "Two real instances share refresh quota 6/minute",
+      "passed": true,
+      "details": {
+        "accepted": 6,
+        "denied": 5,
+        "statuses": [
+          200,
+          200,
+          429,
+          200,
+          429,
+          200,
+          429,
+          200,
+          429,
+          200,
+          429
+        ]
+      }
+    },
+    {
+      "label": "Two real instances share history quota 60/minute",
+      "passed": false,
+      "details": {
+        "accepted": 56,
+        "denied": 5,
+        "statuses": [
+          503,
+          200,
+          503,
+          200,
+          503,
+          200,
+          503,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          429,
+          429,
+          429,
+          429,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          429,
+          200,
+          200,
+          200,
+          200
+        ]
+      }
+    },
+    {
+      "label": "Two real instances share save quota 20/minute",
+      "passed": true,
+      "details": {
+        "accepted": 20,
+        "denied": 5,
+        "statuses": [
+          201,
+          201,
+          201,
+          201,
+          201,
+          201,
+          201,
+          201,
+          201,
+          201,
+          201,
+          201,
+          201,
+          201,
+          201,
+          429,
+          201,
+          429,
+          201,
+          429,
+          201,
+          429,
+          201,
+          429,
+          201
+        ]
+      }
+    },
+    {
+      "label": "Two real instances share export quota 10/minute",
+      "passed": true,
+      "details": {
+        "accepted": 10,
+        "denied": 5,
+        "statuses": [
+          200,
+          200,
+          200,
+          200,
+          200,
+          200,
+          429,
+          200,
+          429,
+          200,
+          429,
+          200,
+          429,
+          200,
+          429
+        ]
+      }
+    },
+    {
+      "label": "Two real instances share delete quota 20/minute",
+      "passed": true,
+      "details": {
+        "accepted": 20,
+        "denied": 5,
+        "statuses": [
+          404,
+          404,
+          404,
+          404,
+          404,
+          404,
+          404,
+          404,
+          404,
+          404,
+          404,
+          404,
+          404,
+          404,
+          404,
+          404,
+          429,
+          404,
+          429,
+          404,
+          429,
+          404,
+          429,
+          404,
+          429
+        ]
+      }
+    },
+    {
+      "label": "Quota survives application restart and remains account isolated",
+      "passed": true
+    },
+    {
+      "label": "Real Redis quota keys have bounded TTL",
+      "passed": true
+    },
+    {
+      "label": "Redis TCP blackhole fails closed on both instances within bounded time",
+      "passed": true,
+      "details": [
+        {
+          "status": 503,
+          "elapsedMs": 168.56439999999566
+        },
+        {
+          "status": 503,
+          "elapsedMs": 167.5025999999998
+        }
+      ]
+    },
+    {
+      "label": "Real Redis disconnect/reconnect restores both instances without local quota fallback",
+      "passed": true,
+      "details": {
+        "recoveryMs": 544.3312000000005
+      }
+    },
+    {
+      "label": "Real Mongo wire stall affects only one source; healthy evidence survives within 2.2 sec",
+      "passed": true,
+      "details": {
+        "status": 200,
+        "elapsedMs": 823.4556999999986,
+        "sources": [
+          {
+            "key": "github",
+            "status": "missing"
+          },
+          {
+            "key": "resume",
+            "status": "missing"
+          },
+          {
+            "key": "skillGap",
+            "status": "missing"
+          },
+          {
+            "key": "recommendations",
+            "status": "missing"
+          },
+          {
+            "key": "careerSprint",
+            "status": "available"
+          },
+          {
+            "key": "portfolio",
+            "status": "timeout"
+          },
+          {
+            "key": "integrations",
+            "status": "available"
+          },
+          {
+            "key": "jobsDemand",
+            "status": "missing"
+          }
+        ],
+        "delayedFrames": 1
+      }
+    },
+    {
+      "label": "Real Mongo aborted-source connections recover after the stall",
+      "passed": true
+    },
+    {
+      "label": "Real Mongo delay flood enforces context admission bounds and drains pending work",
+      "passed": true,
+      "details": {
+        "rejected": 340,
+        "sample": {
+          "memoryBeforeGc": {
+            "rss": 138887168,
+            "heapTotal": 106102784,
+            "heapUsed": 45574288,
+            "external": 21583468,
+            "arrayBuffers": 18651194
+          },
+          "pid": 15760,
+          "memory": {
+            "rss": 141258752,
+            "heapTotal": 100073472,
+            "heapUsed": 29270272,
+            "external": 21583508,
+            "arrayBuffers": 18611061
+          },
+          "cpu": {
+            "user": 1968000,
+            "system": 2218000
+          },
+          "eventLoopP99Ms": 51.707903,
+          "pool": {
+            "connections": 2,
+            "peakConnections": 7,
+            "checkedOut": 0,
+            "peakCheckedOut": 6,
+            "waiting": 0,
+            "peakWaiting": 24,
+            "checkOutFailures": 0,
+            "commands": 36,
+            "commandsInFlight": 0,
+            "peakCommands": 6,
+            "waitP95Ms": 30
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 32,
+            "joiners": 64,
+            "pending": 32
+          },
+          "redisReady": true,
+          "observer": {
+            "checkoutBytes": 80004,
+            "quotaBytes": 8004,
+            "cpuProfilerActive": false
+          }
+        }
+      }
+    },
+    {
+      "label": "Hot-account singleflight caps joiners at 256 and drains after real driver abort",
+      "passed": true,
+      "details": {
+        "statuses": {
+          "503": 400
+        },
+        "sample": {
+          "memoryBeforeGc": {
+            "rss": 141271040,
+            "heapTotal": 100073472,
+            "heapUsed": 32744672,
+            "external": 21569414,
+            "arrayBuffers": 18637100
+          },
+          "pid": 15760,
+          "memory": {
+            "rss": 141373440,
+            "heapTotal": 33751040,
+            "heapUsed": 29251584,
+            "external": 21569414,
+            "arrayBuffers": 18611061
+          },
+          "cpu": {
+            "user": 2046000,
+            "system": 2250000
+          },
+          "eventLoopP99Ms": 49.217535,
+          "pool": {
+            "connections": 1,
+            "peakConnections": 7,
+            "checkedOut": 0,
+            "peakCheckedOut": 6,
+            "waiting": 0,
+            "peakWaiting": 24,
+            "checkOutFailures": 0,
+            "commands": 37,
+            "commandsInFlight": 0,
+            "peakCommands": 6,
+            "waitP95Ms": 30
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 32,
+            "joiners": 256,
+            "pending": 32
+          },
+          "redisReady": true,
+          "observer": {
+            "checkoutBytes": 80004,
+            "quotaBytes": 8004,
+            "cpuProfilerActive": false
+          }
+        }
+      }
+    },
+    {
+      "label": "Real Mongo pool pressure queues and drains without lost queries",
+      "passed": true,
+      "details": {
+        "pressure": {
+          "completed": 160,
+          "failed": 0
+        },
+        "sample": {
+          "memoryBeforeGc": {
+            "rss": 142614528,
+            "heapTotal": 52887552,
+            "heapUsed": 33384176,
+            "external": 21943379,
+            "arrayBuffers": 19011065
+          },
+          "pid": 15760,
+          "memory": {
+            "rss": 142376960,
+            "heapTotal": 36372480,
+            "heapUsed": 30521440,
+            "external": 21943379,
+            "arrayBuffers": 18874709
+          },
+          "cpu": {
+            "user": 2656000,
+            "system": 2390000
+          },
+          "eventLoopP99Ms": 44.007423,
+          "pool": {
+            "connections": 100,
+            "peakConnections": 99,
+            "checkedOut": 0,
+            "peakCheckedOut": 100,
+            "waiting": 0,
+            "peakWaiting": 157,
+            "checkOutFailures": 0,
+            "commands": 197,
+            "commandsInFlight": 0,
+            "peakCommands": 100,
+            "waitP95Ms": 1968
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 32,
+            "joiners": 256,
+            "pending": 32
+          },
+          "redisReady": true,
+          "observer": {
+            "checkoutBytes": 80004,
+            "quotaBytes": 8004,
+            "cpuProfilerActive": false
+          }
+        }
+      }
+    },
+    {
+      "label": "Real history query uses bounded index access",
+      "passed": true,
+      "details": {
+        "plan": {
+          "isCached": true,
+          "stage": "LIMIT",
+          "limitAmount": 20,
+          "inputStage": {
+            "stage": "FETCH",
+            "inputStage": {
+              "stage": "IXSCAN",
+              "keyPattern": {
+                "userId": 1,
+                "createdAt": -1,
+                "_id": -1
+              },
+              "indexName": "scenario_history_cursor",
+              "isMultiKey": false,
+              "multiKeyPaths": {
+                "userId": [],
+                "createdAt": [],
+                "_id": []
+              },
+              "isUnique": false,
+              "isSparse": false,
+              "isPartial": false,
+              "indexVersion": 2,
+              "direction": "forward",
+              "indexBounds": {
+                "userId": [
+                  "[ObjectId('6af0cb67c504f82cdc4fb5a9'), ObjectId('6af0cb67c504f82cdc4fb5a9')]"
+                ],
+                "createdAt": [
+                  "[MaxKey, MinKey]"
+                ],
+                "_id": [
+                  "[MaxKey, MinKey]"
+                ]
+              }
+            }
+          }
+        },
+        "returned": 20,
+        "keysExamined": 20,
+        "docsExamined": 20
+      }
+    },
+    {
+      "label": "Real unique query uses bounded index access",
+      "passed": true,
+      "details": {
+        "plan": {
+          "isCached": false,
+          "stage": "LIMIT",
+          "limitAmount": 1,
+          "inputStage": {
+            "stage": "FETCH",
+            "inputStage": {
+              "stage": "IXSCAN",
+              "keyPattern": {
+                "userId": 1,
+                "scenarioHash": 1
+              },
+              "indexName": "userId_1_scenarioHash_1",
+              "isMultiKey": false,
+              "multiKeyPaths": {
+                "userId": [],
+                "scenarioHash": []
+              },
+              "isUnique": true,
+              "isSparse": false,
+              "isPartial": false,
+              "indexVersion": 2,
+              "direction": "forward",
+              "indexBounds": {
+                "userId": [
+                  "[ObjectId('6af0cb67c504f82cdc4fb5a9'), ObjectId('6af0cb67c504f82cdc4fb5a9')]"
+                ],
+                "scenarioHash": [
+                  "[\"p3-heavy-500\", \"p3-heavy-500\"]"
+                ]
+              }
+            }
+          }
+        },
+        "returned": 1,
+        "keysExamined": 1,
+        "docsExamined": 1
+      }
+    },
+    {
+      "label": "warmup: no unexpected network/5xx failure",
+      "passed": true,
+      "details": {
+        "label": "warmup",
+        "seconds": 5,
+        "rps": 20,
+        "scheduled": 100,
+        "completed": 100,
+        "statuses": {
+          "200": 92,
+          "201": 8
+        },
+        "errors": [],
+        "errorClasses": {},
+        "healthyContexts": 40,
+        "degradedContexts": 0,
+        "peakPending": 6,
+        "startedAt": "2026-11-08T19:21:20.041Z",
+        "elapsedMs": 5436.705000000002,
+        "admittedRequests": 100,
+        "quotaRejected": 0,
+        "successfulThroughputRps": 18.393493853354187,
+        "finishedAt": "2026-11-08T19:21:25.480Z",
+        "latency": {
+          "context": {
+            "count": 40,
+            "p95Ms": 211,
+            "p99Ms": 268,
+            "maxMs": 267.16650000000664,
+            "meanMs": 63.03494250000076
+          },
+          "evaluate": {
+            "count": 35,
+            "p95Ms": 81,
+            "p99Ms": 102,
+            "maxMs": 101.82809999999881,
+            "meanMs": 29.34990571428498
+          },
+          "history": {
+            "count": 15,
+            "p95Ms": 34,
+            "p99Ms": 34,
+            "maxMs": 33.549199999994016,
+            "meanMs": 25.8289666666659
+          },
+          "save": {
+            "count": 8,
+            "p95Ms": 47,
+            "p99Ms": 47,
+            "maxMs": 46.29809999999998,
+            "meanMs": 31.714412499999526
+          },
+          "export": {
+            "count": 2,
+            "p95Ms": 495,
+            "p99Ms": 495,
+            "maxMs": 494.4118000000017,
+            "meanMs": 487.39540000000125
+          }
+        }
+      }
+    },
+    {
+      "label": "steady-15min: no unexpected network/5xx failure",
+      "passed": true,
+      "details": {
+        "label": "steady-15min",
+        "seconds": 5,
+        "rps": 20,
+        "scheduled": 100,
+        "completed": 100,
+        "statuses": {
+          "200": 92,
+          "201": 8
+        },
+        "errors": [],
+        "errorClasses": {},
+        "healthyContexts": 40,
+        "degradedContexts": 0,
+        "peakPending": 2,
+        "startedAt": "2026-11-08T19:21:25.625Z",
+        "elapsedMs": 5004.861899999989,
+        "admittedRequests": 100,
+        "quotaRejected": 0,
+        "successfulThroughputRps": 19.980571292087042,
+        "finishedAt": "2026-11-08T19:21:30.631Z",
+        "latency": {
+          "context": {
+            "count": 40,
+            "p95Ms": 45,
+            "p99Ms": 70,
+            "maxMs": 69.69370000000345,
+            "meanMs": 35.01040250000151
+          },
+          "evaluate": {
+            "count": 35,
+            "p95Ms": 35,
+            "p99Ms": 42,
+            "maxMs": 41.13860000000568,
+            "meanMs": 23.6298342857144
+          },
+          "history": {
+            "count": 15,
+            "p95Ms": 26,
+            "p99Ms": 26,
+            "maxMs": 25.086899999994785,
+            "meanMs": 23.79305999999924
+          },
+          "save": {
+            "count": 8,
+            "p95Ms": 34,
+            "p99Ms": 34,
+            "maxMs": 33.47619999999006,
+            "meanMs": 23.836687500001062
+          },
+          "export": {
+            "count": 2,
+            "p95Ms": 34,
+            "p99Ms": 34,
+            "maxMs": 33.411999999996624,
+            "meanMs": 33.03639999999723
+          }
+        }
+      }
+    },
+    {
+      "label": "steady-15min: unchanged normal HTTP latency targets",
+      "passed": true,
+      "details": {
+        "context": {
+          "count": 40,
+          "p95Ms": 45,
+          "p99Ms": 70,
+          "maxMs": 69.69370000000345,
+          "meanMs": 35.01040250000151
+        },
+        "evaluate": {
+          "count": 35,
+          "p95Ms": 35,
+          "p99Ms": 42,
+          "maxMs": 41.13860000000568,
+          "meanMs": 23.6298342857144
+        },
+        "history": {
+          "count": 15,
+          "p95Ms": 26,
+          "p99Ms": 26,
+          "maxMs": 25.086899999994785,
+          "meanMs": 23.79305999999924
+        },
+        "save": {
+          "count": 8,
+          "p95Ms": 34,
+          "p99Ms": 34,
+          "maxMs": 33.47619999999006,
+          "meanMs": 23.836687500001062
+        },
+        "export": {
+          "count": 2,
+          "p95Ms": 34,
+          "p99Ms": 34,
+          "maxMs": 33.411999999996624,
+          "meanMs": 33.03639999999723
+        }
+      }
+    },
+    {
+      "label": "burst-60sec: no unexpected network/5xx failure",
+      "passed": true,
+      "details": {
+        "label": "burst-60sec",
+        "seconds": 5,
+        "rps": 100,
+        "scheduled": 500,
+        "completed": 500,
+        "statuses": {
+          "200": 460,
+          "201": 40
+        },
+        "errors": [],
+        "errorClasses": {},
+        "healthyContexts": 200,
+        "degradedContexts": 0,
+        "peakPending": 24,
+        "startedAt": "2026-11-08T19:21:30.670Z",
+        "elapsedMs": 5008.852399999989,
+        "admittedRequests": 500,
+        "quotaRejected": 0,
+        "successfulThroughputRps": 99.82326490594954,
+        "finishedAt": "2026-11-08T19:21:35.679Z",
+        "latency": {
+          "context": {
+            "count": 200,
+            "p95Ms": 228,
+            "p99Ms": 284,
+            "maxMs": 326.37420000000566,
+            "meanMs": 65.67156450000017
+          },
+          "evaluate": {
+            "count": 175,
+            "p95Ms": 123,
+            "p99Ms": 169,
+            "maxMs": 179.8685000000114,
+            "meanMs": 29.057279428572176
+          },
+          "history": {
+            "count": 75,
+            "p95Ms": 111,
+            "p99Ms": 124,
+            "maxMs": 123.10500000001048,
+            "meanMs": 27.351497333334216
+          },
+          "save": {
+            "count": 40,
+            "p95Ms": 37,
+            "p99Ms": 39,
+            "maxMs": 38.82490000000689,
+            "meanMs": 20.93441249999996
+          },
+          "export": {
+            "count": 10,
+            "p95Ms": 53,
+            "p99Ms": 53,
+            "maxMs": 52.38960000000952,
+            "meanMs": 28.772470000003523
+          }
+        }
+      }
+    },
+    {
+      "label": "burst-60sec: unchanged normal HTTP latency targets",
+      "passed": true,
+      "details": {
+        "context": {
+          "count": 200,
+          "p95Ms": 228,
+          "p99Ms": 284,
+          "maxMs": 326.37420000000566,
+          "meanMs": 65.67156450000017
+        },
+        "evaluate": {
+          "count": 175,
+          "p95Ms": 123,
+          "p99Ms": 169,
+          "maxMs": 179.8685000000114,
+          "meanMs": 29.057279428572176
+        },
+        "history": {
+          "count": 75,
+          "p95Ms": 111,
+          "p99Ms": 124,
+          "maxMs": 123.10500000001048,
+          "meanMs": 27.351497333334216
+        },
+        "save": {
+          "count": 40,
+          "p95Ms": 37,
+          "p99Ms": 39,
+          "maxMs": 38.82490000000689,
+          "meanMs": 20.93441249999996
+        },
+        "export": {
+          "count": 10,
+          "p95Ms": 53,
+          "p99Ms": 53,
+          "maxMs": 52.38960000000952,
+          "meanMs": 28.772470000003523
+        }
+      }
+    },
+    {
+      "label": "source-timeout-under-load: no unexpected network/5xx failure",
+      "passed": true,
+      "details": {
+        "label": "source-timeout-under-load",
+        "seconds": 3,
+        "rps": 20,
+        "scheduled": 60,
+        "completed": 60,
+        "statuses": {
+          "200": 60
+        },
+        "errors": [],
+        "errorClasses": {},
+        "healthyContexts": 0,
+        "degradedContexts": 40,
+        "peakPending": 17,
+        "startedAt": "2026-11-08T19:21:35.722Z",
+        "elapsedMs": 3012.625700000004,
+        "admittedRequests": 60,
+        "quotaRejected": 0,
+        "successfulThroughputRps": 19.916181422736955,
+        "finishedAt": "2026-11-08T19:21:38.735Z",
+        "latency": {
+          "context": {
+            "count": 40,
+            "p95Ms": 787,
+            "p99Ms": 799,
+            "maxMs": 798.6352999999945,
+            "meanMs": 782.6823724999991
+          },
+          "evaluate": {
+            "count": 20,
+            "p95Ms": 24,
+            "p99Ms": 25,
+            "maxMs": 24.353799999997136,
+            "meanMs": 20.356614999999145
+          },
+          "history": {
+            "count": 0,
+            "p95Ms": 0,
+            "p99Ms": 0,
+            "maxMs": 0,
+            "meanMs": 0
+          },
+          "save": {
+            "count": 0,
+            "p95Ms": 0,
+            "p99Ms": 0,
+            "maxMs": 0,
+            "meanMs": 0
+          },
+          "export": {
+            "count": 0,
+            "p95Ms": 0,
+            "p99Ms": 0,
+            "maxMs": 0,
+            "meanMs": 0
+          }
+        }
+      }
+    },
+    {
+      "label": "source-timeout-under-load: unchanged normal HTTP latency targets",
+      "passed": true,
+      "details": {
+        "context": {
+          "count": 40,
+          "p95Ms": 787,
+          "p99Ms": 799,
+          "maxMs": 798.6352999999945,
+          "meanMs": 782.6823724999991
+        },
+        "evaluate": {
+          "count": 20,
+          "p95Ms": 24,
+          "p99Ms": 25,
+          "maxMs": 24.353799999997136,
+          "meanMs": 20.356614999999145
+        },
+        "history": {
+          "count": 0,
+          "p95Ms": 0,
+          "p99Ms": 0,
+          "maxMs": 0,
+          "meanMs": 0
+        },
+        "save": {
+          "count": 0,
+          "p95Ms": 0,
+          "p99Ms": 0,
+          "maxMs": 0,
+          "meanMs": 0
+        },
+        "export": {
+          "count": 0,
+          "p95Ms": 0,
+          "p99Ms": 0,
+          "maxMs": 0,
+          "meanMs": 0
+        }
+      }
+    },
+    {
+      "label": "mongo-latency-under-load: no unexpected network/5xx failure",
+      "passed": true,
+      "details": {
+        "label": "mongo-latency-under-load",
+        "seconds": 3,
+        "rps": 20,
+        "scheduled": 60,
+        "completed": 60,
+        "statuses": {
+          "200": 52,
+          "201": 8
+        },
+        "errors": [],
+        "errorClasses": {},
+        "healthyContexts": 20,
+        "degradedContexts": 0,
+        "peakPending": 5,
+        "startedAt": "2026-11-08T19:21:40.633Z",
+        "elapsedMs": 3099.170299999998,
+        "admittedRequests": 60,
+        "quotaRejected": 0,
+        "successfulThroughputRps": 19.36002032544002,
+        "finishedAt": "2026-11-08T19:21:43.733Z",
+        "latency": {
+          "context": {
+            "count": 20,
+            "p95Ms": 205,
+            "p99Ms": 214,
+            "maxMs": 213.05079999999725,
+            "meanMs": 158.99663
+          },
+          "evaluate": {
+            "count": 15,
+            "p95Ms": 67,
+            "p99Ms": 67,
+            "maxMs": 66.89519999999902,
+            "meanMs": 57.83723999999929
+          },
+          "history": {
+            "count": 15,
+            "p95Ms": 118,
+            "p99Ms": 118,
+            "maxMs": 117.10250000000815,
+            "meanMs": 102.27595333333399
+          },
+          "save": {
+            "count": 8,
+            "p95Ms": 116,
+            "p99Ms": 116,
+            "maxMs": 115.39609999999811,
+            "meanMs": 103.77819999999883
+          },
+          "export": {
+            "count": 2,
+            "p95Ms": 197,
+            "p99Ms": 197,
+            "maxMs": 196.58920000000217,
+            "meanMs": 192.90434999999707
+          }
+        }
+      }
+    },
+    {
+      "label": "mongo-latency-under-load: unchanged normal HTTP latency targets",
+      "passed": true,
+      "details": {
+        "context": {
+          "count": 20,
+          "p95Ms": 205,
+          "p99Ms": 214,
+          "maxMs": 213.05079999999725,
+          "meanMs": 158.99663
+        },
+        "evaluate": {
+          "count": 15,
+          "p95Ms": 67,
+          "p99Ms": 67,
+          "maxMs": 66.89519999999902,
+          "meanMs": 57.83723999999929
+        },
+        "history": {
+          "count": 15,
+          "p95Ms": 118,
+          "p99Ms": 118,
+          "maxMs": 117.10250000000815,
+          "meanMs": 102.27595333333399
+        },
+        "save": {
+          "count": 8,
+          "p95Ms": 116,
+          "p99Ms": 116,
+          "maxMs": 115.39609999999811,
+          "meanMs": 103.77819999999883
+        },
+        "export": {
+          "count": 2,
+          "p95Ms": 197,
+          "p99Ms": 197,
+          "maxMs": 196.58920000000217,
+          "meanMs": 192.90434999999707
+        }
+      }
+    },
+    {
+      "label": "rolling-restart-under-load: no unexpected network/5xx failure",
+      "passed": true,
+      "details": {
+        "label": "rolling-restart-under-load",
+        "seconds": 5,
+        "rps": 20,
+        "scheduled": 100,
+        "completed": 100,
+        "statuses": {
+          "200": 92,
+          "201": 8
+        },
+        "errors": [],
+        "errorClasses": {},
+        "healthyContexts": 40,
+        "degradedContexts": 0,
+        "peakPending": 2,
+        "startedAt": "2026-11-08T19:21:43.768Z",
+        "elapsedMs": 5000.907300000006,
+        "admittedRequests": 100,
+        "quotaRejected": 0,
+        "successfulThroughputRps": 19.996371458435128,
+        "finishedAt": "2026-11-08T19:21:48.770Z",
+        "latency": {
+          "context": {
+            "count": 40,
+            "p95Ms": 51,
+            "p99Ms": 82,
+            "maxMs": 81.67439999998896,
+            "meanMs": 37.14118250000138
+          },
+          "evaluate": {
+            "count": 35,
+            "p95Ms": 27,
+            "p99Ms": 29,
+            "maxMs": 28.693700000003446,
+            "meanMs": 23.548737142857032
+          },
+          "history": {
+            "count": 15,
+            "p95Ms": 31,
+            "p99Ms": 31,
+            "maxMs": 30.509900000004563,
+            "meanMs": 24.836353333333197
+          },
+          "save": {
+            "count": 8,
+            "p95Ms": 42,
+            "p99Ms": 42,
+            "maxMs": 41.66259999999602,
+            "meanMs": 32.13945000000058
+          },
+          "export": {
+            "count": 2,
+            "p95Ms": 44,
+            "p99Ms": 44,
+            "maxMs": 43.642699999996694,
+            "meanMs": 36.951750000000175
+          }
+        }
+      }
+    },
+    {
+      "label": "rolling-restart-under-load: unchanged normal HTTP latency targets",
+      "passed": true,
+      "details": {
+        "context": {
+          "count": 40,
+          "p95Ms": 51,
+          "p99Ms": 82,
+          "maxMs": 81.67439999998896,
+          "meanMs": 37.14118250000138
+        },
+        "evaluate": {
+          "count": 35,
+          "p95Ms": 27,
+          "p99Ms": 29,
+          "maxMs": 28.693700000003446,
+          "meanMs": 23.548737142857032
+        },
+        "history": {
+          "count": 15,
+          "p95Ms": 31,
+          "p99Ms": 31,
+          "maxMs": 30.509900000004563,
+          "meanMs": 24.836353333333197
+        },
+        "save": {
+          "count": 8,
+          "p95Ms": 42,
+          "p99Ms": 42,
+          "maxMs": 41.66259999999602,
+          "meanMs": 32.13945000000058
+        },
+        "export": {
+          "count": 2,
+          "p95Ms": 44,
+          "p99Ms": 44,
+          "maxMs": 43.642699999996694,
+          "meanMs": 36.951750000000175
+        }
+      }
+    }
+  ],
+  "phases": [
+    {
+      "label": "warmup",
+      "seconds": 5,
+      "rps": 20,
+      "scheduled": 100,
+      "completed": 100,
+      "statuses": {
+        "200": 92,
+        "201": 8
+      },
+      "errors": [],
+      "errorClasses": {},
+      "healthyContexts": 40,
+      "degradedContexts": 0,
+      "peakPending": 6,
+      "startedAt": "2026-11-08T19:21:20.041Z",
+      "elapsedMs": 5436.705000000002,
+      "admittedRequests": 100,
+      "quotaRejected": 0,
+      "successfulThroughputRps": 18.393493853354187,
+      "finishedAt": "2026-11-08T19:21:25.480Z",
+      "latency": {
+        "context": {
+          "count": 40,
+          "p95Ms": 211,
+          "p99Ms": 268,
+          "maxMs": 267.16650000000664,
+          "meanMs": 63.03494250000076
+        },
+        "evaluate": {
+          "count": 35,
+          "p95Ms": 81,
+          "p99Ms": 102,
+          "maxMs": 101.82809999999881,
+          "meanMs": 29.34990571428498
+        },
+        "history": {
+          "count": 15,
+          "p95Ms": 34,
+          "p99Ms": 34,
+          "maxMs": 33.549199999994016,
+          "meanMs": 25.8289666666659
+        },
+        "save": {
+          "count": 8,
+          "p95Ms": 47,
+          "p99Ms": 47,
+          "maxMs": 46.29809999999998,
+          "meanMs": 31.714412499999526
+        },
+        "export": {
+          "count": 2,
+          "p95Ms": 495,
+          "p99Ms": 495,
+          "maxMs": 494.4118000000017,
+          "meanMs": 487.39540000000125
+        }
+      }
+    },
+    {
+      "label": "steady-15min",
+      "seconds": 5,
+      "rps": 20,
+      "scheduled": 100,
+      "completed": 100,
+      "statuses": {
+        "200": 92,
+        "201": 8
+      },
+      "errors": [],
+      "errorClasses": {},
+      "healthyContexts": 40,
+      "degradedContexts": 0,
+      "peakPending": 2,
+      "startedAt": "2026-11-08T19:21:25.625Z",
+      "elapsedMs": 5004.861899999989,
+      "admittedRequests": 100,
+      "quotaRejected": 0,
+      "successfulThroughputRps": 19.980571292087042,
+      "finishedAt": "2026-11-08T19:21:30.631Z",
+      "latency": {
+        "context": {
+          "count": 40,
+          "p95Ms": 45,
+          "p99Ms": 70,
+          "maxMs": 69.69370000000345,
+          "meanMs": 35.01040250000151
+        },
+        "evaluate": {
+          "count": 35,
+          "p95Ms": 35,
+          "p99Ms": 42,
+          "maxMs": 41.13860000000568,
+          "meanMs": 23.6298342857144
+        },
+        "history": {
+          "count": 15,
+          "p95Ms": 26,
+          "p99Ms": 26,
+          "maxMs": 25.086899999994785,
+          "meanMs": 23.79305999999924
+        },
+        "save": {
+          "count": 8,
+          "p95Ms": 34,
+          "p99Ms": 34,
+          "maxMs": 33.47619999999006,
+          "meanMs": 23.836687500001062
+        },
+        "export": {
+          "count": 2,
+          "p95Ms": 34,
+          "p99Ms": 34,
+          "maxMs": 33.411999999996624,
+          "meanMs": 33.03639999999723
+        }
+      }
+    },
+    {
+      "label": "burst-60sec",
+      "seconds": 5,
+      "rps": 100,
+      "scheduled": 500,
+      "completed": 500,
+      "statuses": {
+        "200": 460,
+        "201": 40
+      },
+      "errors": [],
+      "errorClasses": {},
+      "healthyContexts": 200,
+      "degradedContexts": 0,
+      "peakPending": 24,
+      "startedAt": "2026-11-08T19:21:30.670Z",
+      "elapsedMs": 5008.852399999989,
+      "admittedRequests": 500,
+      "quotaRejected": 0,
+      "successfulThroughputRps": 99.82326490594954,
+      "finishedAt": "2026-11-08T19:21:35.679Z",
+      "latency": {
+        "context": {
+          "count": 200,
+          "p95Ms": 228,
+          "p99Ms": 284,
+          "maxMs": 326.37420000000566,
+          "meanMs": 65.67156450000017
+        },
+        "evaluate": {
+          "count": 175,
+          "p95Ms": 123,
+          "p99Ms": 169,
+          "maxMs": 179.8685000000114,
+          "meanMs": 29.057279428572176
+        },
+        "history": {
+          "count": 75,
+          "p95Ms": 111,
+          "p99Ms": 124,
+          "maxMs": 123.10500000001048,
+          "meanMs": 27.351497333334216
+        },
+        "save": {
+          "count": 40,
+          "p95Ms": 37,
+          "p99Ms": 39,
+          "maxMs": 38.82490000000689,
+          "meanMs": 20.93441249999996
+        },
+        "export": {
+          "count": 10,
+          "p95Ms": 53,
+          "p99Ms": 53,
+          "maxMs": 52.38960000000952,
+          "meanMs": 28.772470000003523
+        }
+      }
+    },
+    {
+      "label": "source-timeout-under-load",
+      "seconds": 3,
+      "rps": 20,
+      "scheduled": 60,
+      "completed": 60,
+      "statuses": {
+        "200": 60
+      },
+      "errors": [],
+      "errorClasses": {},
+      "healthyContexts": 0,
+      "degradedContexts": 40,
+      "peakPending": 17,
+      "startedAt": "2026-11-08T19:21:35.722Z",
+      "elapsedMs": 3012.625700000004,
+      "admittedRequests": 60,
+      "quotaRejected": 0,
+      "successfulThroughputRps": 19.916181422736955,
+      "finishedAt": "2026-11-08T19:21:38.735Z",
+      "latency": {
+        "context": {
+          "count": 40,
+          "p95Ms": 787,
+          "p99Ms": 799,
+          "maxMs": 798.6352999999945,
+          "meanMs": 782.6823724999991
+        },
+        "evaluate": {
+          "count": 20,
+          "p95Ms": 24,
+          "p99Ms": 25,
+          "maxMs": 24.353799999997136,
+          "meanMs": 20.356614999999145
+        },
+        "history": {
+          "count": 0,
+          "p95Ms": 0,
+          "p99Ms": 0,
+          "maxMs": 0,
+          "meanMs": 0
+        },
+        "save": {
+          "count": 0,
+          "p95Ms": 0,
+          "p99Ms": 0,
+          "maxMs": 0,
+          "meanMs": 0
+        },
+        "export": {
+          "count": 0,
+          "p95Ms": 0,
+          "p99Ms": 0,
+          "maxMs": 0,
+          "meanMs": 0
+        }
+      }
+    },
+    {
+      "label": "mongo-latency-under-load",
+      "seconds": 3,
+      "rps": 20,
+      "scheduled": 60,
+      "completed": 60,
+      "statuses": {
+        "200": 52,
+        "201": 8
+      },
+      "errors": [],
+      "errorClasses": {},
+      "healthyContexts": 20,
+      "degradedContexts": 0,
+      "peakPending": 5,
+      "startedAt": "2026-11-08T19:21:40.633Z",
+      "elapsedMs": 3099.170299999998,
+      "admittedRequests": 60,
+      "quotaRejected": 0,
+      "successfulThroughputRps": 19.36002032544002,
+      "finishedAt": "2026-11-08T19:21:43.733Z",
+      "latency": {
+        "context": {
+          "count": 20,
+          "p95Ms": 205,
+          "p99Ms": 214,
+          "maxMs": 213.05079999999725,
+          "meanMs": 158.99663
+        },
+        "evaluate": {
+          "count": 15,
+          "p95Ms": 67,
+          "p99Ms": 67,
+          "maxMs": 66.89519999999902,
+          "meanMs": 57.83723999999929
+        },
+        "history": {
+          "count": 15,
+          "p95Ms": 118,
+          "p99Ms": 118,
+          "maxMs": 117.10250000000815,
+          "meanMs": 102.27595333333399
+        },
+        "save": {
+          "count": 8,
+          "p95Ms": 116,
+          "p99Ms": 116,
+          "maxMs": 115.39609999999811,
+          "meanMs": 103.77819999999883
+        },
+        "export": {
+          "count": 2,
+          "p95Ms": 197,
+          "p99Ms": 197,
+          "maxMs": 196.58920000000217,
+          "meanMs": 192.90434999999707
+        }
+      }
+    },
+    {
+      "label": "rolling-restart-under-load",
+      "seconds": 5,
+      "rps": 20,
+      "scheduled": 100,
+      "completed": 100,
+      "statuses": {
+        "200": 92,
+        "201": 8
+      },
+      "errors": [],
+      "errorClasses": {},
+      "healthyContexts": 40,
+      "degradedContexts": 0,
+      "peakPending": 2,
+      "startedAt": "2026-11-08T19:21:43.768Z",
+      "elapsedMs": 5000.907300000006,
+      "admittedRequests": 100,
+      "quotaRejected": 0,
+      "successfulThroughputRps": 19.996371458435128,
+      "finishedAt": "2026-11-08T19:21:48.770Z",
+      "latency": {
+        "context": {
+          "count": 40,
+          "p95Ms": 51,
+          "p99Ms": 82,
+          "maxMs": 81.67439999998896,
+          "meanMs": 37.14118250000138
+        },
+        "evaluate": {
+          "count": 35,
+          "p95Ms": 27,
+          "p99Ms": 29,
+          "maxMs": 28.693700000003446,
+          "meanMs": 23.548737142857032
+        },
+        "history": {
+          "count": 15,
+          "p95Ms": 31,
+          "p99Ms": 31,
+          "maxMs": 30.509900000004563,
+          "meanMs": 24.836353333333197
+        },
+        "save": {
+          "count": 8,
+          "p95Ms": 42,
+          "p99Ms": 42,
+          "maxMs": 41.66259999999602,
+          "meanMs": 32.13945000000058
+        },
+        "export": {
+          "count": 2,
+          "p95Ms": 44,
+          "p99Ms": 44,
+          "maxMs": 43.642699999996694,
+          "meanMs": 36.951750000000175
+        }
+      }
+    }
+  ],
+  "samples": [
+    {
+      "generator": {
+        "memory": {
+          "rss": 111804416,
+          "heapTotal": 49258496,
+          "heapUsed": 39934976,
+          "external": 26170068,
+          "arrayBuffers": 21542849
+        },
+        "cpu": {
+          "user": 7140000,
+          "system": 3968000
+        }
+      },
+      "mongo": {
+        "memory": {
+          "bits": 64,
+          "resident": 172,
+          "virtual": 4534,
+          "supported": true,
+          "secureAllocByteCount": 0,
+          "secureAllocBytesInPages": 0
+        },
+        "connections": {
+          "current": 29,
+          "available": 999971,
+          "totalCreated": 193,
+          "rejected": 0,
+          "active": 4,
+          "queuedForEstablishment": 0,
+          "establishmentRateLimit": {
+            "rejected": 0,
+            "exempted": 0,
+            "interruptedDueToClientDisconnect": 0
+          },
+          "threaded": 29,
+          "exhaustIsMaster": 0,
+          "exhaustHello": 2,
+          "awaitingTopologyChanges": 3,
+          "loadBalanced": 0
+        },
+        "cursors": {
+          "multiTarget": 0,
+          "noTimeout": 0,
+          "pinned": 0,
+          "queuedData": 0,
+          "singleTarget": 0,
+          "total": 0
+        }
+      },
+      "at": "2026-11-08T19:21:25.566Z",
+      "label": "warmup",
+      "workers": [
+        {
+          "memoryBeforeGc": {
+            "rss": 110383104,
+            "heapTotal": 55664640,
+            "heapUsed": 37142664,
+            "external": 22800360,
+            "arrayBuffers": 18745345
+          },
+          "pid": 22476,
+          "memory": {
+            "rss": 110415872,
+            "heapTotal": 55664640,
+            "heapUsed": 35756840,
+            "external": 22800400,
+            "arrayBuffers": 18742845
+          },
+          "cpu": {
+            "user": 3984000,
+            "system": 3156000
+          },
+          "eventLoopP99Ms": 76.414975,
+          "pool": {
+            "connections": 10,
+            "peakConnections": 9,
+            "checkedOut": 0,
+            "peakCheckedOut": 8,
+            "waiting": 0,
+            "peakWaiting": 5,
+            "checkOutFailures": 0,
+            "commands": 229,
+            "commandsInFlight": 0,
+            "peakCommands": 8,
+            "waitP95Ms": 39
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 2,
+            "joiners": 0,
+            "pending": 2
+          },
+          "redisReady": true,
+          "observer": {
+            "checkoutBytes": 80004,
+            "quotaBytes": 8004,
+            "cpuProfilerActive": false
+          }
+        },
+        {
+          "memoryBeforeGc": {
+            "rss": 163221504,
+            "heapTotal": 108355584,
+            "heapUsed": 40009744,
+            "external": 23060387,
+            "arrayBuffers": 19005372
+          },
+          "pid": 40284,
+          "memory": {
+            "rss": 162648064,
+            "heapTotal": 108355584,
+            "heapUsed": 35789304,
+            "external": 22797900,
+            "arrayBuffers": 18742845
+          },
+          "cpu": {
+            "user": 3562000,
+            "system": 2546000
+          },
+          "eventLoopP99Ms": 89.522175,
+          "pool": {
+            "connections": 10,
+            "peakConnections": 9,
+            "checkedOut": 0,
+            "peakCheckedOut": 8,
+            "waiting": 0,
+            "peakWaiting": 5,
+            "checkOutFailures": 0,
+            "commands": 230,
+            "commandsInFlight": 0,
+            "peakCommands": 8,
+            "waitP95Ms": 45
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 2,
+            "joiners": 0,
+            "pending": 2
+          },
+          "redisReady": true,
+          "observer": {
+            "checkoutBytes": 80004,
+            "quotaBytes": 8004,
+            "cpuProfilerActive": false
+          }
+        }
+      ],
+      "phase": "warmup",
+      "redisMemory": [
+        "used_memory:1165160",
+        "used_memory_rss:13647872",
+        "used_memory_peak:1176792"
+      ]
+    },
+    {
+      "generator": {
+        "memory": {
+          "rss": 115560448,
+          "heapTotal": 49520640,
+          "heapUsed": 41917064,
+          "external": 25915560,
+          "arrayBuffers": 21770375
+        },
+        "cpu": {
+          "user": 7156000,
+          "system": 3968000
+        }
+      },
+      "mongo": {
+        "memory": {
+          "bits": 64,
+          "resident": 172,
+          "virtual": 4534,
+          "supported": true,
+          "secureAllocByteCount": 0,
+          "secureAllocBytesInPages": 0
+        },
+        "connections": {
+          "current": 29,
+          "available": 999971,
+          "totalCreated": 193,
+          "rejected": 0,
+          "active": 4,
+          "queuedForEstablishment": 0,
+          "establishmentRateLimit": {
+            "rejected": 0,
+            "exempted": 0,
+            "interruptedDueToClientDisconnect": 0
+          },
+          "threaded": 29,
+          "exhaustIsMaster": 0,
+          "exhaustHello": 2,
+          "awaitingTopologyChanges": 3,
+          "loadBalanced": 0
+        },
+        "cursors": {
+          "multiTarget": 0,
+          "noTimeout": 0,
+          "pinned": 0,
+          "queuedData": 0,
+          "singleTarget": 0,
+          "total": 0
+        }
+      },
+      "at": "2026-11-08T19:21:25.622Z",
+      "label": "post-warmup-baseline",
+      "workers": [
+        {
+          "memoryBeforeGc": {
+            "rss": 110546944,
+            "heapTotal": 55664640,
+            "heapUsed": 35807648,
+            "external": 22797937,
+            "arrayBuffers": 18742882
+          },
+          "pid": 22476,
+          "memory": {
+            "rss": 110559232,
+            "heapTotal": 55402496,
+            "heapUsed": 35732232,
+            "external": 22797937,
+            "arrayBuffers": 18742845
+          },
+          "cpu": {
+            "user": 4031000,
+            "system": 3156000
+          },
+          "eventLoopP99Ms": 76.414975,
+          "pool": {
+            "connections": 10,
+            "peakConnections": 9,
+            "checkedOut": 0,
+            "peakCheckedOut": 8,
+            "waiting": 0,
+            "peakWaiting": 5,
+            "checkOutFailures": 0,
+            "commands": 229,
+            "commandsInFlight": 0,
+            "peakCommands": 8,
+            "waitP95Ms": 39
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 2,
+            "joiners": 0,
+            "pending": 2
+          },
+          "redisReady": true,
+          "observer": {
+            "checkoutBytes": 80004,
+            "quotaBytes": 8004,
+            "cpuProfilerActive": false
+          }
+        },
+        {
+          "memoryBeforeGc": {
+            "rss": 162664448,
+            "heapTotal": 108355584,
+            "heapUsed": 35851240,
+            "external": 22797937,
+            "arrayBuffers": 18742882
+          },
+          "pid": 40284,
+          "memory": {
+            "rss": 162672640,
+            "heapTotal": 108355584,
+            "heapUsed": 35703352,
+            "external": 22797937,
+            "arrayBuffers": 18742845
+          },
+          "cpu": {
+            "user": 3718000,
+            "system": 2546000
+          },
+          "eventLoopP99Ms": 89.522175,
+          "pool": {
+            "connections": 10,
+            "peakConnections": 9,
+            "checkedOut": 0,
+            "peakCheckedOut": 8,
+            "waiting": 0,
+            "peakWaiting": 5,
+            "checkOutFailures": 0,
+            "commands": 230,
+            "commandsInFlight": 0,
+            "peakCommands": 8,
+            "waitP95Ms": 45
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 2,
+            "joiners": 0,
+            "pending": 2
+          },
+          "redisReady": true,
+          "observer": {
+            "checkoutBytes": 80004,
+            "quotaBytes": 8004,
+            "cpuProfilerActive": false
+          }
+        }
+      ],
+      "phase": "warmup",
+      "redisMemory": [
+        "used_memory:1165160",
+        "used_memory_rss:13647872",
+        "used_memory_peak:1185560"
+      ]
+    },
+    {
+      "generator": {
+        "memory": {
+          "rss": 115900416,
+          "heapTotal": 50569216,
+          "heapUsed": 41554648,
+          "external": 26282957,
+          "arrayBuffers": 22137772
+        },
+        "cpu": {
+          "user": 7453000,
+          "system": 4093000
+        }
+      },
+      "mongo": {
+        "memory": {
+          "bits": 64,
+          "resident": 172,
+          "virtual": 4535,
+          "supported": true,
+          "secureAllocByteCount": 0,
+          "secureAllocBytesInPages": 0
+        },
+        "connections": {
+          "current": 30,
+          "available": 999970,
+          "totalCreated": 194,
+          "rejected": 0,
+          "active": 4,
+          "queuedForEstablishment": 0,
+          "establishmentRateLimit": {
+            "rejected": 0,
+            "exempted": 0,
+            "interruptedDueToClientDisconnect": 0
+          },
+          "threaded": 30,
+          "exhaustIsMaster": 0,
+          "exhaustHello": 3,
+          "awaitingTopologyChanges": 3,
+          "loadBalanced": 0
+        },
+        "cursors": {
+          "multiTarget": 0,
+          "noTimeout": 0,
+          "pinned": 0,
+          "queuedData": 0,
+          "singleTarget": 0,
+          "total": 0
+        }
+      },
+      "at": "2026-11-08T19:21:30.666Z",
+      "label": "steady-15min",
+      "workers": [
+        {
+          "memoryBeforeGc": {
+            "rss": 119349248,
+            "heapTotal": 56713216,
+            "heapUsed": 38064240,
+            "external": 23191213,
+            "arrayBuffers": 19136158
+          },
+          "pid": 22476,
+          "memory": {
+            "rss": 119697408,
+            "heapTotal": 56188928,
+            "heapUsed": 36201552,
+            "external": 23191213,
+            "arrayBuffers": 18808381
+          },
+          "cpu": {
+            "user": 4796000,
+            "system": 3281000
+          },
+          "eventLoopP99Ms": 65.175551,
+          "pool": {
+            "connections": 10,
+            "peakConnections": 9,
+            "checkedOut": 0,
+            "peakCheckedOut": 8,
+            "waiting": 0,
+            "peakWaiting": 5,
+            "checkOutFailures": 0,
+            "commands": 433,
+            "commandsInFlight": 0,
+            "peakCommands": 8,
+            "waitP95Ms": 12
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 2,
+            "joiners": 0,
+            "pending": 2
+          },
+          "redisReady": true,
+          "observer": {
+            "checkoutBytes": 80004,
+            "quotaBytes": 8004,
+            "cpuProfilerActive": false
+          }
+        },
+        {
+          "memoryBeforeGc": {
+            "rss": 164216832,
+            "heapTotal": 109142016,
+            "heapUsed": 44464024,
+            "external": 23382177,
+            "arrayBuffers": 19327122
+          },
+          "pid": 40284,
+          "memory": {
+            "rss": 163115008,
+            "heapTotal": 108879872,
+            "heapUsed": 36164232,
+            "external": 23382177,
+            "arrayBuffers": 18808381
+          },
+          "cpu": {
+            "user": 4296000,
+            "system": 2718000
+          },
+          "eventLoopP99Ms": 66.322431,
+          "pool": {
+            "connections": 10,
+            "peakConnections": 9,
+            "checkedOut": 0,
+            "peakCheckedOut": 8,
+            "waiting": 0,
+            "peakWaiting": 5,
+            "checkOutFailures": 0,
+            "commands": 435,
+            "commandsInFlight": 0,
+            "peakCommands": 8,
+            "waitP95Ms": 9
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 2,
+            "joiners": 0,
+            "pending": 2
+          },
+          "redisReady": true,
+          "observer": {
+            "checkoutBytes": 80004,
+            "quotaBytes": 8004,
+            "cpuProfilerActive": false
+          }
+        }
+      ],
+      "phase": "steady-15min",
+      "redisMemory": [
+        "used_memory:1183752",
+        "used_memory_rss:13778944",
+        "used_memory_peak:1185560"
+      ]
+    },
+    {
+      "generator": {
+        "memory": {
+          "rss": 126980096,
+          "heapTotal": 76259328,
+          "heapUsed": 49079416,
+          "external": 27771040,
+          "arrayBuffers": 23627466
+        },
+        "cpu": {
+          "user": 9234000,
+          "system": 4796000
+        }
+      },
+      "mongo": {
+        "memory": {
+          "bits": 64,
+          "resident": 173,
+          "virtual": 4552,
+          "supported": true,
+          "secureAllocByteCount": 0,
+          "secureAllocBytesInPages": 0
+        },
+        "connections": {
+          "current": 47,
+          "available": 999953,
+          "totalCreated": 211,
+          "rejected": 0,
+          "active": 4,
+          "queuedForEstablishment": 0,
+          "establishmentRateLimit": {
+            "rejected": 0,
+            "exempted": 0,
+            "interruptedDueToClientDisconnect": 0
+          },
+          "threaded": 47,
+          "exhaustIsMaster": 0,
+          "exhaustHello": 3,
+          "awaitingTopologyChanges": 3,
+          "loadBalanced": 0
+        },
+        "cursors": {
+          "multiTarget": 0,
+          "noTimeout": 0,
+          "pinned": 0,
+          "queuedData": 0,
+          "singleTarget": 0,
+          "total": 0
+        }
+      },
+      "at": "2026-11-08T19:21:35.718Z",
+      "label": "burst-60sec",
+      "workers": [
+        {
+          "memoryBeforeGc": {
+            "rss": 139567104,
+            "heapTotal": 77422592,
+            "heapUsed": 53284064,
+            "external": 23900904,
+            "arrayBuffers": 19845849
+          },
+          "pid": 22476,
+          "memory": {
+            "rss": 138448896,
+            "heapTotal": 77422592,
+            "heapUsed": 36584352,
+            "external": 23895966,
+            "arrayBuffers": 18939581
+          },
+          "cpu": {
+            "user": 8109000,
+            "system": 3734000
+          },
+          "eventLoopP99Ms": 61.964287,
+          "pool": {
+            "connections": 18,
+            "peakConnections": 17,
+            "checkedOut": 0,
+            "peakCheckedOut": 16,
+            "waiting": 0,
+            "peakWaiting": 7,
+            "checkOutFailures": 0,
+            "commands": 1453,
+            "commandsInFlight": 0,
+            "peakCommands": 16,
+            "waitP95Ms": 8
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 6,
+            "joiners": 0,
+            "pending": 6
+          },
+          "redisReady": true,
+          "observer": {
+            "checkoutBytes": 80004,
+            "quotaBytes": 8004,
+            "cpuProfilerActive": false
+          }
+        },
+        {
+          "memoryBeforeGc": {
+            "rss": 171380736,
+            "heapTotal": 112025600,
+            "heapUsed": 48350640,
+            "external": 23941752,
+            "arrayBuffers": 19886697
+          },
+          "pid": 40284,
+          "memory": {
+            "rss": 170618880,
+            "heapTotal": 112025600,
+            "heapUsed": 38076016,
+            "external": 23941752,
+            "arrayBuffers": 19070669
+          },
+          "cpu": {
+            "user": 7328000,
+            "system": 3296000
+          },
+          "eventLoopP99Ms": 64.356351,
+          "pool": {
+            "connections": 19,
+            "peakConnections": 18,
+            "checkedOut": 0,
+            "peakCheckedOut": 17,
+            "waiting": 0,
+            "peakWaiting": 7,
+            "checkOutFailures": 0,
+            "commands": 1460,
+            "commandsInFlight": 0,
+            "peakCommands": 17,
+            "waitP95Ms": 3
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 6,
+            "joiners": 0,
+            "pending": 6
+          },
+          "redisReady": true,
+          "observer": {
+            "checkoutBytes": 80004,
+            "quotaBytes": 8004,
+            "cpuProfilerActive": false
+          }
+        }
+      ],
+      "phase": "burst-60sec",
+      "redisMemory": [
+        "used_memory:1216360",
+        "used_memory_rss:13778944",
+        "used_memory_peak:1216360"
+      ]
+    },
+    {
+      "generator": {
+        "memory": {
+          "rss": 132231168,
+          "heapTotal": 76259328,
+          "heapUsed": 47587192,
+          "external": 27324777,
+          "arrayBuffers": 23181203
+        },
+        "cpu": {
+          "user": 9453000,
+          "system": 4953000
+        }
+      },
+      "mongo": {
+        "memory": {
+          "bits": 64,
+          "resident": 172,
+          "virtual": 4521,
+          "supported": true,
+          "secureAllocByteCount": 0,
+          "secureAllocBytesInPages": 0
+        },
+        "connections": {
+          "current": 16,
+          "available": 999984,
+          "totalCreated": 220,
+          "rejected": 0,
+          "active": 4,
+          "queuedForEstablishment": 0,
+          "establishmentRateLimit": {
+            "rejected": 0,
+            "exempted": 0,
+            "interruptedDueToClientDisconnect": 0
+          },
+          "threaded": 16,
+          "exhaustIsMaster": 0,
+          "exhaustHello": 3,
+          "awaitingTopologyChanges": 3,
+          "loadBalanced": 0
+        },
+        "cursors": {
+          "multiTarget": 0,
+          "noTimeout": 0,
+          "pinned": 0,
+          "queuedData": 0,
+          "singleTarget": 0,
+          "total": 0
+        }
+      },
+      "at": "2026-11-08T19:21:38.822Z",
+      "label": "source-timeout-under-load",
+      "workers": [
+        {
+          "memoryBeforeGc": {
+            "rss": 138944512,
+            "heapTotal": 77422592,
+            "heapUsed": 46240560,
+            "external": 23416918,
+            "arrayBuffers": 19366801
+          },
+          "pid": 22476,
+          "memory": {
+            "rss": 137977856,
+            "heapTotal": 75063296,
+            "heapUsed": 36045576,
+            "external": 23416918,
+            "arrayBuffers": 18874045
+          },
+          "cpu": {
+            "user": 8687000,
+            "system": 3859000
+          },
+          "eventLoopP99Ms": 61.603839,
+          "pool": {
+            "connections": 3,
+            "peakConnections": 17,
+            "checkedOut": 0,
+            "peakCheckedOut": 16,
+            "waiting": 0,
+            "peakWaiting": 7,
+            "checkOutFailures": 0,
+            "commands": 1623,
+            "commandsInFlight": 0,
+            "peakCommands": 16,
+            "waitP95Ms": 4
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 8,
+            "joiners": 0,
+            "pending": 8
+          },
+          "redisReady": true,
+          "observer": {
+            "checkoutBytes": 80004,
+            "quotaBytes": 8004,
+            "cpuProfilerActive": false
+          }
+        },
+        {
+          "memoryBeforeGc": {
+            "rss": 171368448,
+            "heapTotal": 112025600,
+            "heapUsed": 60235024,
+            "external": 23521878,
+            "arrayBuffers": 19466823
+          },
+          "pid": 40284,
+          "memory": {
+            "rss": 170356736,
+            "heapTotal": 110977024,
+            "heapUsed": 37517808,
+            "external": 23521878,
+            "arrayBuffers": 18939597
+          },
+          "cpu": {
+            "user": 7796000,
+            "system": 3406000
+          },
+          "eventLoopP99Ms": 63.045631,
+          "pool": {
+            "connections": 3,
+            "peakConnections": 18,
+            "checkedOut": 0,
+            "peakCheckedOut": 17,
+            "waiting": 0,
+            "peakWaiting": 7,
+            "checkOutFailures": 0,
+            "commands": 1630,
+            "commandsInFlight": 0,
+            "peakCommands": 17,
+            "waitP95Ms": 2
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 8,
+            "joiners": 0,
+            "pending": 8
+          },
+          "redisReady": true,
+          "observer": {
+            "checkoutBytes": 80004,
+            "quotaBytes": 8004,
+            "cpuProfilerActive": false
+          }
+        }
+      ],
+      "phase": "source-timeout-under-load",
+      "redisMemory": [
+        "used_memory:1216184",
+        "used_memory_rss:13778944",
+        "used_memory_peak:1236760"
+      ]
+    },
+    {
+      "generator": {
+        "memory": {
+          "rss": 137363456,
+          "heapTotal": 77307904,
+          "heapUsed": 47157952,
+          "external": 27281552,
+          "arrayBuffers": 23137978
+        },
+        "cpu": {
+          "user": 9687000,
+          "system": 5000000
+        }
+      },
+      "mongo": {
+        "memory": {
+          "bits": 64,
+          "resident": 172,
+          "virtual": 4527,
+          "supported": true,
+          "secureAllocByteCount": 0,
+          "secureAllocBytesInPages": 0
+        },
+        "connections": {
+          "current": 22,
+          "available": 999978,
+          "totalCreated": 226,
+          "rejected": 0,
+          "active": 4,
+          "queuedForEstablishment": 0,
+          "establishmentRateLimit": {
+            "rejected": 0,
+            "exempted": 0,
+            "interruptedDueToClientDisconnect": 0
+          },
+          "threaded": 22,
+          "exhaustIsMaster": 0,
+          "exhaustHello": 3,
+          "awaitingTopologyChanges": 3,
+          "loadBalanced": 0
+        },
+        "cursors": {
+          "multiTarget": 0,
+          "noTimeout": 0,
+          "pinned": 0,
+          "queuedData": 0,
+          "singleTarget": 0,
+          "total": 0
+        }
+      },
+      "at": "2026-11-08T19:21:43.765Z",
+      "label": "mongo-latency-under-load",
+      "workers": [
+        {
+          "memoryBeforeGc": {
+            "rss": 139051008,
+            "heapTotal": 75063296,
+            "heapUsed": 43521672,
+            "external": 23138132,
+            "arrayBuffers": 19088015
+          },
+          "pid": 22476,
+          "memory": {
+            "rss": 139055104,
+            "heapTotal": 75063296,
+            "heapUsed": 36065272,
+            "external": 23138132,
+            "arrayBuffers": 19005117
+          },
+          "cpu": {
+            "user": 9015000,
+            "system": 3906000
+          },
+          "eventLoopP99Ms": 61.603839,
+          "pool": {
+            "connections": 7,
+            "peakConnections": 17,
+            "checkedOut": 0,
+            "peakCheckedOut": 16,
+            "waiting": 0,
+            "peakWaiting": 7,
+            "checkOutFailures": 0,
+            "commands": 1737,
+            "commandsInFlight": 0,
+            "peakCommands": 16,
+            "waitP95Ms": 3
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 8,
+            "joiners": 0,
+            "pending": 8
+          },
+          "redisReady": true,
+          "observer": {
+            "checkoutBytes": 80004,
+            "quotaBytes": 8004,
+            "cpuProfilerActive": false
+          }
+        },
+        {
+          "memoryBeforeGc": {
+            "rss": 171409408,
+            "heapTotal": 110977024,
+            "heapUsed": 57990408,
+            "external": 23579144,
+            "arrayBuffers": 19524089
+          },
+          "pid": 40284,
+          "memory": {
+            "rss": 171503616,
+            "heapTotal": 110977024,
+            "heapUsed": 37537296,
+            "external": 23579144,
+            "arrayBuffers": 19070669
+          },
+          "cpu": {
+            "user": 8015000,
+            "system": 3437000
+          },
+          "eventLoopP99Ms": 61.669375,
+          "pool": {
+            "connections": 5,
+            "peakConnections": 18,
+            "checkedOut": 0,
+            "peakCheckedOut": 17,
+            "waiting": 0,
+            "peakWaiting": 7,
+            "checkOutFailures": 0,
+            "commands": 1745,
+            "commandsInFlight": 0,
+            "peakCommands": 17,
+            "waitP95Ms": 2
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 8,
+            "joiners": 0,
+            "pending": 8
+          },
+          "redisReady": true,
+          "observer": {
+            "checkoutBytes": 80004,
+            "quotaBytes": 8004,
+            "cpuProfilerActive": false
+          }
+        }
+      ],
+      "phase": "mongo-latency-under-load",
+      "redisMemory": [
+        "used_memory:1217416",
+        "used_memory_rss:13778944",
+        "used_memory_peak:1236760"
+      ]
+    },
+    {
+      "generator": {
+        "memory": {
+          "rss": 138706944,
+          "heapTotal": 78618624,
+          "heapUsed": 42282368,
+          "external": 26134838,
+          "arrayBuffers": 21991264
+        },
+        "cpu": {
+          "user": 10421000,
+          "system": 5343000
+        }
+      },
+      "mongo": {
+        "memory": {
+          "bits": 64,
+          "resident": 172,
+          "virtual": 4520,
+          "supported": true,
+          "secureAllocByteCount": 0,
+          "secureAllocBytesInPages": 0
+        },
+        "connections": {
+          "current": 17,
+          "available": 999983,
+          "totalCreated": 230,
+          "rejected": 0,
+          "active": 4,
+          "queuedForEstablishment": 0,
+          "establishmentRateLimit": {
+            "rejected": 0,
+            "exempted": 0,
+            "interruptedDueToClientDisconnect": 0
+          },
+          "threaded": 17,
+          "exhaustIsMaster": 0,
+          "exhaustHello": 3,
+          "awaitingTopologyChanges": 3,
+          "loadBalanced": 0
+        },
+        "cursors": {
+          "multiTarget": 0,
+          "noTimeout": 0,
+          "pinned": 0,
+          "queuedData": 0,
+          "singleTarget": 0,
+          "total": 0
+        }
+      },
+      "at": "2026-11-08T19:22:25.659Z",
+      "label": "periodic",
+      "workers": [
+        {
+          "memoryBeforeGc": {
+            "rss": 90722304,
+            "heapTotal": 27721728,
+            "heapUsed": 26016096,
+            "external": 21455893,
+            "arrayBuffers": 18545439
+          },
+          "pid": 3944,
+          "memory": {
+            "rss": 90722304,
+            "heapTotal": 27721728,
+            "heapUsed": 26024080,
+            "external": 21455933,
+            "arrayBuffers": 18545439
+          },
+          "cpu": {
+            "user": 1859000,
+            "system": 1937000
+          },
+          "eventLoopP99Ms": 34.668543,
+          "pool": {
+            "connections": 2,
+            "peakConnections": 1,
+            "checkedOut": 0,
+            "peakCheckedOut": 1,
+            "waiting": 0,
+            "peakWaiting": 0,
+            "checkOutFailures": 0,
+            "commands": 3,
+            "commandsInFlight": 0,
+            "peakCommands": 1,
+            "waitP95Ms": 19
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "redisReady": true,
+          "observer": {
+            "checkoutBytes": 80004,
+            "quotaBytes": 8004,
+            "cpuProfilerActive": false
+          }
+        },
+        {
+          "memoryBeforeGc": {
+            "rss": 110039040,
+            "heapTotal": 40198144,
+            "heapUsed": 36535864,
+            "external": 23060189,
+            "arrayBuffers": 19005134
+          },
+          "pid": 40284,
+          "memory": {
+            "rss": 110039040,
+            "heapTotal": 40198144,
+            "heapUsed": 36539656,
+            "external": 23060189,
+            "arrayBuffers": 19005134
+          },
+          "cpu": {
+            "user": 9546000,
+            "system": 3765000
+          },
+          "eventLoopP99Ms": 41.877503,
+          "pool": {
+            "connections": 5,
+            "peakConnections": 18,
+            "checkedOut": 0,
+            "peakCheckedOut": 17,
+            "waiting": 0,
+            "peakWaiting": 7,
+            "checkOutFailures": 0,
+            "commands": 2154,
+            "commandsInFlight": 0,
+            "peakCommands": 17,
+            "waitP95Ms": 1
+          },
+          "context": {
+            "active": 0,
+            "joiners": 0,
+            "pending": 0
+          },
+          "contextPeak": {
+            "active": 8,
+            "joiners": 0,
+            "pending": 8
+          },
+          "redisReady": true,
+          "observer": {
+            "checkoutBytes": 80004,
+            "quotaBytes": 8004,
+            "cpuProfilerActive": false
+          }
+        }
+      ],
+      "phase": "rolling-restart-under-load",
+      "redisMemory": [
+        "used_memory:1161688",
+        "used_memory_rss:13778944",
+        "used_memory_peak:1237816"
+      ]
+    }
+  ],
+  "failures": [
+    "Two real instances share history quota 60/minute",
+    "Error: Worker sample timed out.\n    at Timeout._onTimeout (D:\\Developer-Portfolio-Analyzer\\backend\\src\\scripts\\verifyScenarioP3.js:402:16)\n    at listOnTimeout (node:internal/timers:635:17)\n    at process.processTimers (node:internal/timers:571:7)"
+  ],
+  "limitations": [],
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32",
+    "os": "10.0.26300",
+    "logicalCpus": 8,
+    "cpu": "Intel(R) Core(TM) i5-8365U CPU @ 1.60GHz",
+    "totalMemory": 16976740352,
+    "mongoose": "9.2.4",
+    "mongodb": "7.1.0",
+    "redisClient": "4.7.1",
+    "redisInfo": [
+      "redis_version:7.0.15",
+      "redis_mode:standalone",
+      "os:Linux 6.18.54.1-microsoft-standard-WSL2 x86_64",
+      "arch_bits:64"
+    ],
+    "redisConfig": "bind 127.0.0.1\nport <ephemeral>\nprotected-mode yes\nsave \"\"\nappendonly no\nmaxmemory 64mb\nmaxmemory-policy noeviction\n",
+    "mongoBuild": {
+      "version": "8.2.2",
+      "allocator": "tcmalloc-gperf"
+    },
+    "workers": [
+      32620,
+      41696
+    ],
+    "mongoClientOptions": {
+      "serverSelectionTimeoutMS": 30000,
+      "socketTimeoutMS": 45000,
+      "maxPoolSize": 100,
+      "waitQueueTimeoutMS": 0,
+      "directConnection": true,
+      "autoIndex": false
+    },
+    "normalTrafficRedisPath": "direct loopback WSL Redis; proxy used only for explicit Redis fault tests"
+  },
+  "indexes": [
+    {
+      "v": 2,
+      "key": {
+        "_id": 1
+      },
+      "name": "_id_"
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1
+      },
+      "name": "userId_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "scenarioHash": 1
+      },
+      "name": "scenarioHash_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1,
+        "createdAt": -1,
+        "_id": -1
+      },
+      "name": "scenario_history_cursor"
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1,
+        "scenarioHash": 1
+      },
+      "name": "userId_1_scenarioHash_1",
+      "unique": true
+    },
+    {
+      "v": 2,
+      "key": {
+        "userId": 1,
+        "role": 1,
+        "experienceLevel": 1
+      },
+      "name": "userId_1_role_1_experienceLevel_1"
+    }
+  ],
+  "engine": [
+    {
+      "count": 100,
+      "elapsedMs": 1006.7583999999988,
+      "p95": 1.3332999999984168,
+      "p99": 2.8696000000018103
+    },
+    {
+      "count": 100,
+      "elapsedMs": 1010.632599999999,
+      "p95": 2.2255999999997584,
+      "p99": 4.96140000000014
+    }
+  ],
+  "coldStartWarmup": [
+    {
+      "operation": "context",
+      "instance": 0,
+      "status": 200,
+      "elapsedMs": 143.5447000000022
+    },
+    {
+      "operation": "context",
+      "instance": 1,
+      "status": 200,
+      "elapsedMs": 106.08099999999831
+    },
+    {
+      "operation": "evaluate",
+      "instance": 0,
+      "status": 200,
+      "elapsedMs": 122.61929999999847
+    },
+    {
+      "operation": "evaluate",
+      "instance": 1,
+      "status": 200,
+      "elapsedMs": 28.915100000001985
+    },
+    {
+      "operation": "history",
+      "instance": 0,
+      "status": 200,
+      "elapsedMs": 26.554199999998673
+    },
+    {
+      "operation": "history",
+      "instance": 1,
+      "status": 200,
+      "elapsedMs": 43.784099999997125
+    },
+    {
+      "operation": "save",
+      "instance": 0,
+      "status": 201,
+      "elapsedMs": 39.08229999999821
+    },
+    {
+      "operation": "save",
+      "instance": 1,
+      "status": 201,
+      "elapsedMs": 70.56940000000031
+    },
+    {
+      "operation": "export",
+      "instance": 0,
+      "status": 200,
+      "elapsedMs": 151.32749999999942
+    },
+    {
+      "operation": "export",
+      "instance": 1,
+      "status": 200,
+      "elapsedMs": 30.8179999999993
+    },
+    {
+      "operation": "context",
+      "instance": 0,
+      "status": 200,
+      "elapsedMs": 89.06560000000172
+    },
+    {
+      "operation": "context",
+      "instance": 1,
+      "status": 200,
+      "elapsedMs": 74.67339999999967
+    },
+    {
+      "operation": "evaluate",
+      "instance": 0,
+      "status": 200,
+      "elapsedMs": 28.76300000000265
+    },
+    {
+      "operation": "evaluate",
+      "instance": 1,
+      "status": 200,
+      "elapsedMs": 36.39009999999689
+    },
+    {
+      "operation": "history",
+      "instance": 0,
+      "status": 200,
+      "elapsedMs": 37.93920000000071
+    },
+    {
+      "operation": "history",
+      "instance": 1,
+      "status": 200,
+      "elapsedMs": 31.066900000001624
+    },
+    {
+      "operation": "save",
+      "instance": 0,
+      "status": 201,
+      "elapsedMs": 55.77520000000004
+    },
+    {
+      "operation": "save",
+      "instance": 1,
+      "status": 201,
+      "elapsedMs": 50.513300000002346
+    },
+    {
+      "operation": "export",
+      "instance": 0,
+      "status": 200,
+      "elapsedMs": 45.94880000000194
+    },
+    {
+      "operation": "export",
+      "instance": 1,
+      "status": 200,
+      "elapsedMs": 28.818299999999
+    }
+  ],
+  "quotaKeys": {
+    "count": 15,
+    "ttls": [
+      54870,
+      52464,
+      51008,
+      54718,
+      52511,
+      53759,
+      54092,
+      52580,
+      54099,
+      52692,
+      59979,
+      55067,
+      54333,
+      53970,
+      52156
+    ]
+  },
+  "faults": {
+    "redisStall": [
+      {
+        "status": 503,
+        "elapsedMs": 168.56439999999566
+      },
+      {
+        "status": 503,
+        "elapsedMs": 167.5025999999998
+      }
+    ],
+    "afterFault": {
+      "memoryBeforeGc": {
+        "rss": 138887168,
+        "heapTotal": 106102784,
+        "heapUsed": 45574288,
+        "external": 21583468,
+        "arrayBuffers": 18651194
+      },
+      "pid": 15760,
+      "memory": {
+        "rss": 141258752,
+        "heapTotal": 100073472,
+        "heapUsed": 29270272,
+        "external": 21583508,
+        "arrayBuffers": 18611061
+      },
+      "cpu": {
+        "user": 1968000,
+        "system": 2218000
+      },
+      "eventLoopP99Ms": 51.707903,
+      "pool": {
+        "connections": 2,
+        "peakConnections": 7,
+        "checkedOut": 0,
+        "peakCheckedOut": 6,
+        "waiting": 0,
+        "peakWaiting": 24,
+        "checkOutFailures": 0,
+        "commands": 36,
+        "commandsInFlight": 0,
+        "peakCommands": 6,
+        "waitP95Ms": 30
+      },
+      "context": {
+        "active": 0,
+        "joiners": 0,
+        "pending": 0
+      },
+      "contextPeak": {
+        "active": 32,
+        "joiners": 64,
+        "pending": 32
+      },
+      "redisReady": true,
+      "observer": {
+        "checkoutBytes": 80004,
+        "quotaBytes": 8004,
+        "cpuProfilerActive": false
+      }
+    },
+    "hotSample": {
+      "memoryBeforeGc": {
+        "rss": 141271040,
+        "heapTotal": 100073472,
+        "heapUsed": 32744672,
+        "external": 21569414,
+        "arrayBuffers": 18637100
+      },
+      "pid": 15760,
+      "memory": {
+        "rss": 141373440,
+        "heapTotal": 33751040,
+        "heapUsed": 29251584,
+        "external": 21569414,
+        "arrayBuffers": 18611061
+      },
+      "cpu": {
+        "user": 2046000,
+        "system": 2250000
+      },
+      "eventLoopP99Ms": 49.217535,
+      "pool": {
+        "connections": 1,
+        "peakConnections": 7,
+        "checkedOut": 0,
+        "peakCheckedOut": 6,
+        "waiting": 0,
+        "peakWaiting": 24,
+        "checkOutFailures": 0,
+        "commands": 37,
+        "commandsInFlight": 0,
+        "peakCommands": 6,
+        "waitP95Ms": 30
+      },
+      "context": {
+        "active": 0,
+        "joiners": 0,
+        "pending": 0
+      },
+      "contextPeak": {
+        "active": 32,
+        "joiners": 256,
+        "pending": 32
+      },
+      "redisReady": true,
+      "observer": {
+        "checkoutBytes": 80004,
+        "quotaBytes": 8004,
+        "cpuProfilerActive": false
+      }
+    },
+    "poolSample": {
+      "memoryBeforeGc": {
+        "rss": 142614528,
+        "heapTotal": 52887552,
+        "heapUsed": 33384176,
+        "external": 21943379,
+        "arrayBuffers": 19011065
+      },
+      "pid": 15760,
+      "memory": {
+        "rss": 142376960,
+        "heapTotal": 36372480,
+        "heapUsed": 30521440,
+        "external": 21943379,
+        "arrayBuffers": 18874709
+      },
+      "cpu": {
+        "user": 2656000,
+        "system": 2390000
+      },
+      "eventLoopP99Ms": 44.007423,
+      "pool": {
+        "connections": 100,
+        "peakConnections": 99,
+        "checkedOut": 0,
+        "peakCheckedOut": 100,
+        "waiting": 0,
+        "peakWaiting": 157,
+        "checkOutFailures": 0,
+        "commands": 197,
+        "commandsInFlight": 0,
+        "peakCommands": 100,
+        "waitP95Ms": 1968
+      },
+      "context": {
+        "active": 0,
+        "joiners": 0,
+        "pending": 0
+      },
+      "contextPeak": {
+        "active": 32,
+        "joiners": 256,
+        "pending": 32
+      },
+      "redisReady": true,
+      "observer": {
+        "checkoutBytes": 80004,
+        "quotaBytes": 8004,
+        "cpuProfilerActive": false
+      }
+    }
+  },
+  "explain": {
+    "history": {
+      "plan": {
+        "isCached": true,
+        "stage": "LIMIT",
+        "limitAmount": 20,
+        "inputStage": {
+          "stage": "FETCH",
+          "inputStage": {
+            "stage": "IXSCAN",
+            "keyPattern": {
+              "userId": 1,
+              "createdAt": -1,
+              "_id": -1
+            },
+            "indexName": "scenario_history_cursor",
+            "isMultiKey": false,
+            "multiKeyPaths": {
+              "userId": [],
+              "createdAt": [],
+              "_id": []
+            },
+            "isUnique": false,
+            "isSparse": false,
+            "isPartial": false,
+            "indexVersion": 2,
+            "direction": "forward",
+            "indexBounds": {
+              "userId": [
+                "[ObjectId('6af0cb67c504f82cdc4fb5a9'), ObjectId('6af0cb67c504f82cdc4fb5a9')]"
+              ],
+              "createdAt": [
+                "[MaxKey, MinKey]"
+              ],
+              "_id": [
+                "[MaxKey, MinKey]"
+              ]
+            }
+          }
+        }
+      },
+      "returned": 20,
+      "keysExamined": 20,
+      "docsExamined": 20
+    },
+    "unique": {
+      "plan": {
+        "isCached": false,
+        "stage": "LIMIT",
+        "limitAmount": 1,
+        "inputStage": {
+          "stage": "FETCH",
+          "inputStage": {
+            "stage": "IXSCAN",
+            "keyPattern": {
+              "userId": 1,
+              "scenarioHash": 1
+            },
+            "indexName": "userId_1_scenarioHash_1",
+            "isMultiKey": false,
+            "multiKeyPaths": {
+              "userId": [],
+              "scenarioHash": []
+            },
+            "isUnique": true,
+            "isSparse": false,
+            "isPartial": false,
+            "indexVersion": 2,
+            "direction": "forward",
+            "indexBounds": {
+              "userId": [
+                "[ObjectId('6af0cb67c504f82cdc4fb5a9'), ObjectId('6af0cb67c504f82cdc4fb5a9')]"
+              ],
+              "scenarioHash": [
+                "[\"p3-heavy-500\", \"p3-heavy-500\"]"
+              ]
+            }
+          }
+        }
+      },
+      "returned": 1,
+      "keysExamined": 1,
+      "docsExamined": 1
+    }
+  },
+  "capacityTransport": "Mongo fault proxy; direct shared Redis; no CPU profiler",
+  "workerRestart": {
+    "oldPid": 22476,
+    "newPid": 3944,
+    "at": "2026-11-08T19:21:49.325Z",
+    "routing": "verifier routes away from draining worker; real load balancer remains deployment gate"
+  },
+  "removedTemporaryFiles": [
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\collection-061543fa-a145-4d5e-bf7f-23a73c791140.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\collection-0a3b8130-260c-4bf2-a661-37cb9da72dc7.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\collection-1dad3e1f-bd3c-4ca6-8929-3655150c49b1.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\collection-1e7738e8-c30a-4d27-a478-f9ab73ada6ef.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\collection-2536f549-4fb9-493b-a6a9-d3a56362afb4.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\collection-2d8627cf-042b-4519-ad68-402fcc0996fe.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\collection-33032850-2e64-47c1-a2d1-33cbb6981e2e.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\collection-405dfbd3-d650-4a8b-9e0d-235ba2a662d4.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\collection-47beb86d-69e2-4194-aae9-428ec875665b.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\collection-4c3f8f30-cd70-403e-84ca-c77e6cc504f5.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\collection-4f28e1ff-25a1-4f66-a5b6-5af2e4f2b663.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\collection-5a706bcc-18e6-4d1f-adc7-562f1258beb9.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\collection-64ac8d9a-6b98-4db3-8bad-f00b49ee0c53.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\collection-6887fb11-9296-4b62-b228-5ffc8add3191.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\collection-79a6aec7-c17e-45e5-ae65-5f2bbd88016b.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\collection-80f3d324-5ce2-4041-9f65-e33d05baade7.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\collection-81f60231-e02c-4fd6-9842-2ee2a2939fbb.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\collection-94ab88e1-2e87-49b1-94a6-5d874e9b1101.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\collection-98147022-a1d3-4edd-aa3f-a863043cdb6e.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\collection-b9816d9d-9904-496c-9450-763e6197ea39.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\collection-bf72699c-d08d-455c-b3db-c7a9f7bbcf8f.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\collection-c4fb0d98-6214-4c8f-bacb-eacca16a1f83.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\collection-c68696f5-4044-4cb0-825c-b71caaa4aaf2.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\collection-c995bd69-2adc-46f2-aefb-a120ebba009e.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\collection-d5cfdc64-4f20-4479-b7fb-7e80ff51a7de.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\collection-dfcb6cd6-f7c9-48aa-ac36-feefa6bdb09a.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\collection-f96bcb0d-ab65-4903-bc9b-eff3f581c4e8.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-02b62680-6f48-4d49-a20a-6d6c960856b6.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-02ea3417-85fa-4e94-9fd2-51480641f1a7.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-1358cba7-0b54-4ead-ac7f-e6b34b8a35aa.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-155163ce-45f2-446a-90f4-d07aac71f58b.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-1a9cc50c-764d-4b3d-93ed-7fcddc483c90.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-1e5d665e-425e-40f5-8cd9-66aef0614223.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-1e8a6b1c-0f66-481a-bb5f-4bf0b18022dc.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-26c3dcfc-35d9-44f7-a8c1-f29cd58319c2.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-27c01b2b-bc38-4282-aa9a-f42a67d20c85.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-2c1af749-429d-4d02-bf86-a396d33b1488.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-2c6fa8e5-33ad-403b-8b63-b394ae85318a.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-2f31bd5d-6300-4eed-a98c-714cd99dd6d9.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-2fdebb67-d8d9-4956-855b-cf7a61386afd.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-31e09645-19d9-4a5c-a9f8-135f70c3a9c4.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-31e1493c-2afb-4c5a-81de-4997b46f9b70.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-3509e3d9-5d96-4adb-8801-be4d3838391c.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-374eda08-02dd-43d4-9022-98d8f04fe2c5.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-39a487e4-c99c-4559-b7d2-7884852a152d.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-3a58947b-1b74-453b-96d0-00f80b8f6735.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-3a6e1f88-33e4-4820-b098-e8f5fd7efd36.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-3b676523-df9f-4d0f-ac98-7b0f7c00604c.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-3ec0c5a5-f2a6-435d-b532-cc3891dddbd9.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-418b6832-995c-4a3d-822f-36892d9ed3bf.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-4fd18257-966c-4786-b22d-518b3229a618.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-502b7a24-0473-4bdc-9071-75eb4dd563b0.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-5a4f5fa3-172b-4cb9-854b-2b1433326e0f.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-68768c01-a07b-427d-8bcd-7813002cd948.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-697b52d5-c449-45b0-a72d-76dd4356dea0.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-7a538765-ad14-4f22-9b29-083bef50fc5d.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-7a5e4e16-f75c-4bdd-9762-7ce128ca3ab8.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-7b2949fa-9f40-48dd-8a93-7659354d830d.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-805289ef-8c08-4f0c-a78d-11fb879f976a.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-85fbb4cd-6876-4428-a3ba-1730be5aa53f.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-86eeb38b-2e2c-45e8-90f5-fcfec9414e95.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-8b8f1cde-f982-4a0c-9ccb-5376525e20ae.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-951a95b2-c6bc-4178-87fb-0a339671dd5c.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-a8b5c667-fb61-48b7-9a9c-8fcc87895450.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-b2eab32e-df93-4177-bba6-16df9b063ccb.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-b819b2c3-8730-43f1-bee5-8d6632413255.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-b8643726-f697-4b08-b50f-8d4a5f7fbc69.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-b9969c59-a93a-41ef-ac30-b86c2ed7fbfc.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-bac719f8-91e5-4319-abcf-19e25001e3b7.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-bbfb2aa5-c0c1-427e-a465-9f2767877029.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-c843582a-4869-4163-81b0-5c2d9f6cc9a1.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-cd38527f-a7de-4bb8-813e-a24df891cc9c.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-cd4d790c-c4d4-4f5a-8c2c-1d206bf0971f.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-d26bfb55-da68-44c8-ae8e-316ad77099f7.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-db220a20-74ba-459c-8b6f-723e143d0a54.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-e0a67b47-79df-452b-a211-90f0344bfbc1.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-ed3caf02-5fea-4d11-a09e-755b6e5821d5.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-f0d80943-72e0-4e4d-87de-47725a3456da.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-f1c2ca89-3532-40bb-bcd3-01b67707b4b6.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-f21cfb2e-9360-4469-aa16-a2512cae2144.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-f4ceb8a9-418a-40f7-b372-14ed30998121.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-fb0022a0-975d-42a6-8837-cb1267c88067.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\index-ffc37c73-fd3a-4a14-b147-2cfe797382c9.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\mongod.lock",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\sizeStorer.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\storage.bson",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\WiredTiger",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\WiredTiger.lock",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\WiredTiger.turtle",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\WiredTiger.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\WiredTigerHS.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\_mdb_catalog.wt",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\journal\\WiredTigerLog.0000000001",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\journal\\WiredTigerPreplog.0000000001",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\diagnostic.data\\metrics.2026-11-08T19-20-06Z-00000",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34\\diagnostic.data\\metrics.interim"
+  ],
+  "finishedAt": "2026-11-08T19:22:49.905Z",
+  "runtimeDirectory": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\scenario-simulator\\production-finalization-2026-11-09\\run-2026-11-08T19-19-59-589Z\\temporary\\devinsight-p3-esyb34",
+  "cleanup": {
+    "workersStopped": true,
+    "mongoStopped": true,
+    "redisShutdownRequested": true,
+    "redisProcessExitCode": 0,
+    "recursiveDeletion": false
+  }
+}

@@ -1,0 +1,137 @@
+{
+  "sourceBranch": "fix/interview-prep",
+  "sourceHead": "493c6697dad28f01c622c0261a2ce70c03b1a395",
+  "prTarget": "not applicable",
+  "sourceFiles": [
+    "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.ts",
+    "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.html",
+    "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.spec.ts",
+    "frontend/src/app/pages/skill-gap/skill-gap-presentation.ts",
+    "frontend/src/app/pages/interview-prep/interview-prep.component.html",
+    "frontend/src/app/pages/interview-prep/interview-prep.component.spec.ts",
+    "backend/src/tests/skillGapFullStackCoverage.test.js"
+  ],
+  "files": [
+    {
+      "file": "backend/src/tests/skillGapFullStackCoverage.test.js",
+      "bytes": 4741,
+      "sha256": "c84aab950c53eb34915e24eaf3f84a99392528bb0d6d039f4f3df59c9de1a891",
+      "existingStagedWork": false
+    },
+    {
+      "file": "frontend/src/app/pages/interview-prep/interview-prep.component.html",
+      "bytes": 38990,
+      "sha256": "a8a2d4ff409bd1d39bfb65d6dc0f692de58202d78651bbc10c36f73a5fcfcf66",
+      "existingStagedWork": true
+    },
+    {
+      "file": "frontend/src/app/pages/interview-prep/interview-prep.component.spec.ts",
+      "bytes": 13600,
+      "sha256": "8ff4efd5997132f32222d66787f09ca4b621700f01ed1c30a6a2642c03c82998",
+      "existingStagedWork": false
+    },
+    {
+      "file": "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.html",
+      "bytes": 6075,
+      "sha256": "bc7d2d0453e65aa6d41ea548c857a063c5a88096884bce7b4db00a06d011a654",
+      "existingStagedWork": true
+    },
+    {
+      "file": "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.spec.ts",
+      "bytes": 7870,
+      "sha256": "cce452b6b28ff54e8df3b4694e743b702aafbc9ff4409fb1f40824fee7784598",
+      "existingStagedWork": false
+    },
+    {
+      "file": "frontend/src/app/pages/skill-gap/components/overview/skill-gap-overview.component.ts",
+      "bytes": 3189,
+      "sha256": "0822a93537a9527ec976d639abc490c935cb95a3940bc89024ef7d5326e30ab2",
+      "existingStagedWork": true
+    },
+    {
+      "file": "frontend/src/app/pages/skill-gap/skill-gap-presentation.ts",
+      "bytes": 1884,
+      "sha256": "93bf6f5896e0e9a61da864ee366ade12adbd6346c41de0e6534cf97fcc36180b",
+      "existingStagedWork": false
+    },
+    {
+      "file": "frontend/verification/skill-gap/ui-review-2026-11-08/REVIEW.md",
+      "bytes": 9537,
+      "sha256": "6ea381d26ad54a10b633cddf109ae8112fecf92d3d2b85d840df8d8a26b5576c",
+      "existingStagedWork": false
+    },
+    {
+      "file": "frontend/verification/skill-gap/ui-review-2026-11-08/angular-final-result.json",
+      "bytes": 338,
+      "sha256": "d05488ddad8abee75ca869e43eb20ff4df11166a012e921a98a70eeec6007a2f",
+      "existingStagedWork": false
+    },
+    {
+      "file": "frontend/verification/skill-gap/ui-review-2026-11-08/angular-targeted-final.log",
+      "bytes": 4249,
+      "sha256": "dddb81ae0477128ae1ee05de2694edd5f022e80e72f0144c0c01b376dc943399",
+      "existingStagedWork": false
+    },
+    {
+      "file": "frontend/verification/skill-gap/ui-review-2026-11-08/angular-targeted.log",
+      "bytes": 995,
+      "sha256": "628437bd2238ff1184792501f69a478d731cfe322587357d6dc136920449248a",
+      "existingStagedWork": false
+    },
+    {
+      "file": "frontend/verification/skill-gap/ui-review-2026-11-08/angular-verified.log",
+      "bytes": 3527,
+      "sha256": "ddce657c015f80ad4d2deee60413ce4752b1b43fe16d574ba2d16cb46d3bfb8f",
+      "existingStagedWork": false
+    },
+    {
+      "file": "frontend/verification/skill-gap/ui-review-2026-11-08/backend-contracts.log",
+      "bytes": 6857,
+      "sha256": "0ceef62fbdf67ecf7c01fa0dd15704a2e4b49d21fcef93c05956e26c27c54ae2",
+      "existingStagedWork": false
+    },
+    {
+      "file": "frontend/verification/skill-gap/ui-review-2026-11-08/files.json",
+      "note": "Self-referential inventory; hash omitted"
+    },
+    {
+      "file": "frontend/verification/skill-gap/ui-review-2026-11-08/finalization.json",
+      "bytes": 10134,
+      "sha256": "18a3d19a0e226719127f834ef06ef280604bb4e43d0ad378563b0c736dde7913",
+      "existingStagedWork": false
+    },
+    {
+      "file": "frontend/verification/skill-gap/ui-review-2026-11-08/production-build.log",
+      "bytes": 1460,
+      "sha256": "136bc402e274c7d19fad8aad49a507475e847431f7b3ede5ef46d8a3a7cef8ce",
+      "existingStagedWork": false
+    },
+    {
+      "file": "frontend/verification/skill-gap/ui-review-2026-11-08/targeted-results.json",
+      "bytes": 1305,
+      "sha256": "2c311309e6f19afb69714bb59bfaacf139ddb2e2cdc90a2b1ce12ea3dd27ad37",
+      "existingStagedWork": false
+    },
+    {
+      "file": "frontend/verification/skill-gap/ui-review-2026-11-08/typescript-final.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "existingStagedWork": false
+    },
+    {
+      "file": "frontend/verification/skill-gap/ui-review-2026-11-08/typescript.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "existingStagedWork": false
+    },
+    {
+      "file": "frontend/verification/skill-gap/ui-review-2026-11-08/verified-results.json",
+      "bytes": 1071,
+      "sha256": "b1a33912a4c0aa7f4783e4b280ffd7e63ca142f845213c28e349bd4ca1541566",
+      "existingStagedWork": false
+    }
+  ],
+  "moved": [],
+  "deleted": [],
+  "stagedContentsPreserved": true
+}

@@ -1,0 +1,45 @@
+<div class="ui-select-group" [class]="'size-' + size + ' status-' + computedStatus + (disabled ? ' is-disabled' : '')">
+  <label *ngIf="label" [for]="id" class="ui-select-label">
+    {{ label }}
+    <span *ngIf="required" class="required-indicator" aria-hidden="true">*</span>
+  </label>
+
+  <div class="ui-select-wrapper">
+    <select
+      [id]="id"
+      [name]="name || id"
+      [disabled]="disabled"
+      [required]="required"
+      [attr.aria-invalid]="computedStatus === 'error'"
+      [attr.aria-describedby]="describedById"
+      (change)="handleChange($event)"
+      (blur)="handleBlur()"
+      class="ui-native-select">
+      <option *ngIf="placeholder" value="" disabled [selected]="!value">
+        {{ placeholder }}
+      </option>
+      <option
+        *ngFor="let opt of options"
+        [value]="opt.value"
+        [disabled]="opt.disabled"
+        [selected]="opt.value === value">
+        {{ opt.label }}
+      </option>
+      <ng-content></ng-content>
+    </select>
+
+    <div class="select-chevron" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" [id]="id + '-error'" class="ui-select-feedback error-text" role="alert">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!errorMessage && hint" [id]="id + '-hint'" class="ui-select-feedback hint-text">
+    {{ hint }}
+  </div>
+</div>

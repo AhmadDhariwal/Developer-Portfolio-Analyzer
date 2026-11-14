@@ -9,7 +9,17 @@ const integrationSyncLogSchema = new mongoose.Schema({
   },
   provider: {
     type: String,
-    enum: ['linkedin', 'github', 'leetcode', 'kaggle', 'stackoverflow', 'hackerrank', 'portfolio', 'certifications', 'devblogs'],
+    enum: [
+      'linkedin',
+      'github',
+      'leetcode',
+      'kaggle',
+      'stackoverflow',
+      'hackerrank',
+      'portfolio',
+      'certifications',
+      'devblogs'
+    ],
     required: true,
     index: true
   },
@@ -20,6 +30,20 @@ const integrationSyncLogSchema = new mongoose.Schema({
     type: String,
     enum: ['success', 'failed'],
     default: 'success'
+  },
+  expiresAt: {
+    type: Date,
+    default: () =>
+      new Date(
+        Date.now() +
+          require('../services/integrationGovernanceService').integer(
+            'INTEGRATION_SYNC_LOG_RETENTION_DAYS',
+            90,
+            1,
+            3650
+          ) *
+            86400000
+      )
   },
   error: { type: String, default: '' },
   reason: { type: String, default: 'manual' },

@@ -1,0 +1,102 @@
+[
+  {
+    "label": "followup-format",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "frontend/node_modules/prettier/bin/prettier.cjs",
+      "--check",
+      "--single-quote",
+      "--trailing-comma",
+      "none",
+      "--print-width",
+      "100",
+      "backend/src/models/publicProfileView.js",
+      "backend/src/scripts/auditPublicPortfolioQueries.cjs",
+      "backend/src/scripts/verifyPublicPortfolioFinalization.cjs"
+    ],
+    "exitCode": 0,
+    "milliseconds": 3699
+  },
+  {
+    "label": "followup-report-format",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "frontend/node_modules/prettier/bin/prettier.cjs",
+      "--check",
+      "backend/verification/public-portfolio/production-finalization-2026-11-08/PUBLIC-PORTFOLIO-PRODUCTION-FINAL.md"
+    ],
+    "exitCode": 0,
+    "milliseconds": 1291
+  },
+  {
+    "label": "followup-syntax-0",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--check",
+      "backend/src/models/publicProfileView.js"
+    ],
+    "exitCode": 0,
+    "milliseconds": 1027
+  },
+  {
+    "label": "followup-syntax-1",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--check",
+      "backend/src/scripts/auditPublicPortfolioQueries.cjs"
+    ],
+    "exitCode": 0,
+    "milliseconds": 1724
+  },
+  {
+    "label": "followup-syntax-2",
+    "command": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "--check",
+      "backend/src/scripts/verifyPublicPortfolioFinalization.cjs"
+    ],
+    "exitCode": 0,
+    "milliseconds": 677
+  },
+  {
+    "label": "followup-git-whitespace",
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exitCode": 0,
+    "milliseconds": 867
+  },
+  {
+    "label": "followup-staged-whitespace",
+    "command": [
+      "git",
+      "diff",
+      "--cached",
+      "--check"
+    ],
+    "exitCode": 0,
+    "milliseconds": 390
+  },
+  {
+    "label": "followup-branch",
+    "command": [
+      "git",
+      "branch",
+      "--show-current"
+    ],
+    "exitCode": 0,
+    "milliseconds": 429
+  },
+  {
+    "label": "followup-status",
+    "command": [
+      "git",
+      "status",
+      "--short"
+    ],
+    "exitCode": 0,
+    "milliseconds": 855
+  }
+]

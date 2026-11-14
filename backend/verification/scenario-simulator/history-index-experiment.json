@@ -1,0 +1,15 @@
+{
+  "scope": "1000 synthetic evaluations in a disposable loopback database",
+  "before": {
+    "returned": 20,
+    "keysExamined": 1000,
+    "documentsExamined": 1000,
+    "executionTimeMs": 20
+  },
+  "after": {
+    "returned": 20,
+    "keysExamined": 20,
+    "documentsExamined": 20,
+    "executionTimeMs": 6
+  }
+}

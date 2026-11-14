@@ -1,0 +1,23 @@
+{
+  "baseline": "2254f090c6f1c8563ad2d7149ab081eeec09fc4c",
+  "checks": [
+    "rollback PASS",
+    "concurrent dedupe and tombstone PASS",
+    "preferences security scope metadata PASS",
+    "real two-process delivery and reconnect PASS",
+    "HTTP IDOR bulk cursor counts session PASS",
+    "Help atomic creation status and operational email receipts PASS",
+    "organization team and revocation isolation PASS",
+    "Mongo disconnect fail-closed and recovery PASS",
+    "active stream expiry and session revocation PASS",
+    "real process restart and Redis outage independence PASS",
+    "weekly email concurrent claims, stale-outcome fencing and report availability during uncertainty PASS"
+  ],
+  "productionDataUsed": false,
+  "crossWorkerDeliveryMs": 138.4672999999966,
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 177,
+    "productionDataUsed": false
+  }
+}

@@ -1,0 +1,262 @@
+{
+  "branch": "task/integrations",
+  "target": "not applicable",
+  "moves": [
+    {
+      "from": "frontend/src/app/pages/integrations-marketplace/components/header/header.component.ts",
+      "to": "frontend/src/app/pages/integrations-marketplace/components/integrations-page-header/integrations-page-header.component.ts",
+      "beforeSha256": "a6d3ca55903d3feb5d4c16c3bc10385bc71c6a2b71897cdc69103e7296a06281",
+      "afterSha256": "13141b400203e6c0a9c3ad7d7028594ac387cbf129cc0a72e061dcd03ec0e625",
+      "previousTo": "frontend/src/app/pages/integrations-marketplace/components/marketplace-header/marketplace-header.component.ts"
+    },
+    {
+      "from": "frontend/src/app/pages/integrations-marketplace/components/header/header.component.html",
+      "to": "frontend/src/app/pages/integrations-marketplace/components/integrations-page-header/integrations-page-header.component.html",
+      "beforeSha256": "3fcb19c22abaefc30bd8513c1088b4c83d0506e0c884238305e62bd5d1f35c4e",
+      "afterSha256": "3fcb19c22abaefc30bd8513c1088b4c83d0506e0c884238305e62bd5d1f35c4e",
+      "previousTo": "frontend/src/app/pages/integrations-marketplace/components/marketplace-header/marketplace-header.component.html"
+    },
+    {
+      "from": "frontend/src/app/pages/integrations-marketplace/components/header/header.component.scss",
+      "to": "frontend/src/app/pages/integrations-marketplace/components/integrations-page-header/integrations-page-header.component.scss",
+      "beforeSha256": "e69bc4de6ddf8eab9bc0a417fd785ac48e9256a3d2b9375b4dfbcf8c572cbae8",
+      "afterSha256": "e69bc4de6ddf8eab9bc0a417fd785ac48e9256a3d2b9375b4dfbcf8c572cbae8",
+      "previousTo": "frontend/src/app/pages/integrations-marketplace/components/marketplace-header/marketplace-header.component.scss"
+    },
+    {
+      "from": "frontend/src/app/pages/integrations-marketplace/components/telemetry/telemetry.component.ts",
+      "to": "frontend/src/app/pages/integrations-marketplace/components/integration-telemetry/integration-telemetry.component.ts",
+      "beforeSha256": "bfa550a14b93d28726f0879cf201f7762fd4e150c52c25a71d484bb475171f7f",
+      "afterSha256": "875c5c49f9a18bd786abb9921dd7fd3c0e24fd843756d4d0caf99cb4bdbf6a5f",
+      "previousTo": "frontend/src/app/pages/integrations-marketplace/components/marketplace-overview/marketplace-overview.component.ts"
+    },
+    {
+      "from": "frontend/src/app/pages/integrations-marketplace/components/telemetry/telemetry.component.html",
+      "to": "frontend/src/app/pages/integrations-marketplace/components/integration-telemetry/integration-telemetry.component.html",
+      "beforeSha256": "a50703dfa2551727f14ebda30441310e0bacbd4d48419ecf58e3fc1064937f4e",
+      "afterSha256": "a50703dfa2551727f14ebda30441310e0bacbd4d48419ecf58e3fc1064937f4e",
+      "previousTo": "frontend/src/app/pages/integrations-marketplace/components/marketplace-overview/marketplace-overview.component.html"
+    },
+    {
+      "from": "frontend/src/app/pages/integrations-marketplace/components/telemetry/telemetry.component.scss",
+      "to": "frontend/src/app/pages/integrations-marketplace/components/integration-telemetry/integration-telemetry.component.scss",
+      "beforeSha256": "198afb2e1219b77d61972ab3152b10b62c75e794b7b25d8331165e2753466d74",
+      "afterSha256": "198afb2e1219b77d61972ab3152b10b62c75e794b7b25d8331165e2753466d74",
+      "previousTo": "frontend/src/app/pages/integrations-marketplace/components/marketplace-overview/marketplace-overview.component.scss"
+    },
+    {
+      "from": "frontend/src/app/pages/integrations-marketplace/components/filters/filters.component.ts",
+      "to": "frontend/src/app/pages/integrations-marketplace/components/integration-category-filters/integration-category-filters.component.ts",
+      "beforeSha256": "98028af8c3821a49ff26839147dd4a35fc4fa66033a57377ed8da625690d6bd5",
+      "afterSha256": "02a4988284f5dcf47481c11b084b8a2fdd53ef2f02b007b44af0c364220cac38",
+      "previousTo": "frontend/src/app/pages/integrations-marketplace/components/marketplace-category-filters/marketplace-category-filters.component.ts"
+    },
+    {
+      "from": "frontend/src/app/pages/integrations-marketplace/components/filters/filters.component.html",
+      "to": "frontend/src/app/pages/integrations-marketplace/components/integration-category-filters/integration-category-filters.component.html",
+      "beforeSha256": "e3ea71e2c4442222a886177283f415d6950c86674b0c6baf3feef361fc47b151",
+      "afterSha256": "e3ea71e2c4442222a886177283f415d6950c86674b0c6baf3feef361fc47b151",
+      "previousTo": "frontend/src/app/pages/integrations-marketplace/components/marketplace-category-filters/marketplace-category-filters.component.html"
+    },
+    {
+      "from": "frontend/src/app/pages/integrations-marketplace/components/filters/filters.component.scss",
+      "to": "frontend/src/app/pages/integrations-marketplace/components/integration-category-filters/integration-category-filters.component.scss",
+      "beforeSha256": "c9fa7e5eef53c4c9ffcfb7b30955dd84968c17e5800fb1c4f8c4885ef8dfdd4d",
+      "afterSha256": "c9fa7e5eef53c4c9ffcfb7b30955dd84968c17e5800fb1c4f8c4885ef8dfdd4d",
+      "previousTo": "frontend/src/app/pages/integrations-marketplace/components/marketplace-category-filters/marketplace-category-filters.component.scss"
+    },
+    {
+      "from": "frontend/src/app/pages/integrations-marketplace/components/provider-card/provider-card.component.ts",
+      "to": "frontend/src/app/pages/integrations-marketplace/components/integration-provider-card/integration-provider-card.component.ts",
+      "beforeSha256": "b068396ed87e27cbb29d50b95c745d00a637d43984f84f8d4a40f6556af74449",
+      "afterSha256": "48aad8b346a879f41fc12d218981329ea5be0e6dd69e222fc32be2f21013eb0d",
+      "previousTo": "frontend/src/app/pages/integrations-marketplace/components/marketplace-provider-card/marketplace-provider-card.component.ts"
+    },
+    {
+      "from": "frontend/src/app/pages/integrations-marketplace/components/provider-card/provider-card.component.html",
+      "to": "frontend/src/app/pages/integrations-marketplace/components/integration-provider-card/integration-provider-card.component.html",
+      "beforeSha256": "b8f45774e680cdb9e8a9a13cf7df838729485b6e349321382c678af161e9acca",
+      "afterSha256": "b8f45774e680cdb9e8a9a13cf7df838729485b6e349321382c678af161e9acca",
+      "previousTo": "frontend/src/app/pages/integrations-marketplace/components/marketplace-provider-card/marketplace-provider-card.component.html"
+    },
+    {
+      "from": "frontend/src/app/pages/integrations-marketplace/components/provider-card/provider-card.component.scss",
+      "to": "frontend/src/app/pages/integrations-marketplace/components/integration-provider-card/integration-provider-card.component.scss",
+      "beforeSha256": "59d80ca543d43cd4c66f62c1e7ced6418f85562a9746ad8865c37f5f309cd2c1",
+      "afterSha256": "59d80ca543d43cd4c66f62c1e7ced6418f85562a9746ad8865c37f5f309cd2c1",
+      "previousTo": "frontend/src/app/pages/integrations-marketplace/components/marketplace-provider-card/marketplace-provider-card.component.scss"
+    },
+    {
+      "from": "frontend/src/app/pages/integrations-marketplace/components/terminal/terminal.component.ts",
+      "to": "frontend/src/app/pages/integrations-marketplace/components/ingestion-activity-terminal/ingestion-activity-terminal.component.ts",
+      "beforeSha256": "91c5cd26bcd947ddd4921d619e4c03dd13dfe8fab93a7229f4103dcdbc227949",
+      "afterSha256": "bf0e5e0c6d0d962393afca17878349f72bf4e4cd680045e1b429b25ab254a5c7",
+      "previousTo": "frontend/src/app/pages/integrations-marketplace/components/marketplace-ingestion-terminal/marketplace-ingestion-terminal.component.ts"
+    },
+    {
+      "from": "frontend/src/app/pages/integrations-marketplace/components/terminal/terminal.component.html",
+      "to": "frontend/src/app/pages/integrations-marketplace/components/ingestion-activity-terminal/ingestion-activity-terminal.component.html",
+      "beforeSha256": "1b24c43fdac793fc5eb33b6e6422725a1c3fa1dbfe05249d525a5f2e69228941",
+      "afterSha256": "1b24c43fdac793fc5eb33b6e6422725a1c3fa1dbfe05249d525a5f2e69228941",
+      "previousTo": "frontend/src/app/pages/integrations-marketplace/components/marketplace-ingestion-terminal/marketplace-ingestion-terminal.component.html"
+    },
+    {
+      "from": "frontend/src/app/pages/integrations-marketplace/components/terminal/terminal.component.scss",
+      "to": "frontend/src/app/pages/integrations-marketplace/components/ingestion-activity-terminal/ingestion-activity-terminal.component.scss",
+      "beforeSha256": "26475602cd472410734c7449e10b3e71a3fb6c9fe522dd6ca075df6913825ece",
+      "afterSha256": "26475602cd472410734c7449e10b3e71a3fb6c9fe522dd6ca075df6913825ece",
+      "previousTo": "frontend/src/app/pages/integrations-marketplace/components/marketplace-ingestion-terminal/marketplace-ingestion-terminal.component.scss"
+    },
+    {
+      "from": "frontend/src/app/pages/integrations-marketplace/components/kaggle-linked-profile.component.ts",
+      "to": "frontend/src/app/pages/integrations-marketplace/components/kaggle-linked-profile/kaggle-linked-profile.component.ts",
+      "beforeSha256": "10e76f80325b2a84c53e76fdb42329c5dac1aeb10edddaa6b2d1331da07800d6",
+      "afterSha256": "1986f65db93ca463eff9dd719e2d378e26b90d8f805c344a1fabe7e2f07ab53f"
+    },
+    {
+      "from": "frontend/src/app/pages/integrations-marketplace/components/kaggle-linked-profile.component.html",
+      "to": "frontend/src/app/pages/integrations-marketplace/components/kaggle-linked-profile/kaggle-linked-profile.component.html",
+      "beforeSha256": "0f31694f7103e422a3908f5b84ec2d79780af001d6a0682132f08cbc62f082ec",
+      "afterSha256": "0f31694f7103e422a3908f5b84ec2d79780af001d6a0682132f08cbc62f082ec"
+    },
+    {
+      "from": "frontend/src/app/pages/integrations-marketplace/components/kaggle-linked-profile.component.scss",
+      "to": "frontend/src/app/pages/integrations-marketplace/components/kaggle-linked-profile/kaggle-linked-profile.component.scss",
+      "beforeSha256": "f9ba22d0e0834d3a49f9f337a38277d08bafa1d3c5e0a1fd7c24e33552828bfe",
+      "afterSha256": "f9ba22d0e0834d3a49f9f337a38277d08bafa1d3c5e0a1fd7c24e33552828bfe"
+    },
+    {
+      "from": "frontend/src/app/pages/integrations-marketplace/components/kaggle-linked-profile.component.spec.ts",
+      "to": "frontend/src/app/pages/integrations-marketplace/components/kaggle-linked-profile/kaggle-linked-profile.component.spec.ts",
+      "beforeSha256": "909293833fb68434fb2b462f49c2db3a0b58c3e9e706d7fdf25c59928e942494",
+      "afterSha256": "349f4c3cdcd3ff97a8e07977cfcd69d5f0408b4ae74d68a43e2a4422fc92e21f"
+    },
+    {
+      "from": "frontend/src/app/pages/integrations-marketplace/components/hackerrank-linked-profile.component.ts",
+      "to": "frontend/src/app/pages/integrations-marketplace/components/hackerrank-linked-profile/hackerrank-linked-profile.component.ts",
+      "beforeSha256": "0d8a1c579cce55cd0723844cacb6ad95e0640d359395005208df5ecd53dcd190",
+      "afterSha256": "d2ff47af27a45cdb803be43ecdd7318181bf82dd3a14d8fbfe7ecbac9d1a13d7"
+    },
+    {
+      "from": "frontend/src/app/pages/integrations-marketplace/components/hackerrank-linked-profile.component.html",
+      "to": "frontend/src/app/pages/integrations-marketplace/components/hackerrank-linked-profile/hackerrank-linked-profile.component.html",
+      "beforeSha256": "add13c336e677d093912ec77fc572da9c3da2f128c373e01f1c1fb2d44fd057f",
+      "afterSha256": "add13c336e677d093912ec77fc572da9c3da2f128c373e01f1c1fb2d44fd057f"
+    },
+    {
+      "from": "frontend/src/app/pages/integrations-marketplace/components/hackerrank-linked-profile.component.scss",
+      "to": "frontend/src/app/pages/integrations-marketplace/components/hackerrank-linked-profile/hackerrank-linked-profile.component.scss",
+      "beforeSha256": "be9a7406f23bd8f32d396572f1d03720dc029dc1a6cfdc18754ab08102e09a22",
+      "afterSha256": "be9a7406f23bd8f32d396572f1d03720dc029dc1a6cfdc18754ab08102e09a22"
+    },
+    {
+      "from": "frontend/src/app/pages/integrations-marketplace/components/hackerrank-linked-profile.component.spec.ts",
+      "to": "frontend/src/app/pages/integrations-marketplace/components/hackerrank-linked-profile/hackerrank-linked-profile.component.spec.ts",
+      "beforeSha256": "9419077b9c2a1c6511d5e72c22da2e3077885e9fa488026a5ed272692e939177",
+      "afterSha256": "c2352fc1b8e043e84f1c912989ff6eb8a9b331e8da486040fb3efd38d06b39ce"
+    }
+  ],
+  "modified": [
+    "frontend/src/app/pages/integrations-marketplace/integrations-marketplace.component.ts",
+    "frontend/src/app/pages/integrations-marketplace/integrations-marketplace.component.html"
+  ],
+  "added": [
+    "frontend/src/app/pages/integrations-marketplace/components/README.md",
+    "frontend/verification/integrations-component-refactor/component-organization.json"
+  ],
+  "reportUpdated": "frontend/verification/INTEGRATIONS-COMPONENT-REFACTOR-ACCEPTANCE.md",
+  "deleted": [],
+  "notes": "Only file/folder names, class names, template/style URLs and relative imports change. Historical refactor inventories retain their original paths.",
+  "preservation": {
+    "allMovedTemplatesAndStylesByteIdentical": true,
+    "parentOrchestrationHashUnchanged": true,
+    "noLooseComponentFiles": true
+  },
+  "validation": {
+    "focusedTests": {
+      "passed": 30,
+      "failed": 0,
+      "files": 4,
+      "command": "npm test -- --watch=false --include=src/app/pages/integrations-marketplace/**/*.spec.ts --include=src/app/shared/services/integrations.service.spec.ts"
+    },
+    "typecheck": "PASS",
+    "prettierWriteAndCheck": "PASS",
+    "gitWhitespace": "PASS (working tree and index)",
+    "build": {
+      "runs": 1,
+      "status": "PASS",
+      "seconds": 52.412,
+      "main": "main-TEXSIO2W.js",
+      "initialRaw": "3.46 MB",
+      "estimatedTransfer": "534.75 kB",
+      "warning": "Existing Landing stylesheet: 56.67 kB versus 48 kB warning budget."
+    },
+    "browserEvidence": "Reused prior 18 exact screenshot pairs; moved HTML/SCSS byte-identical.",
+    "backendChanged": false
+  },
+  "namingRevision": {
+    "reason": "Replace blanket marketplace prefixes with component responsibilities, including ingestion-specific activity naming.",
+    "mapping": [
+      {
+        "from": "marketplace-header",
+        "to": "integrations-page-header",
+        "oldClass": "MarketplaceHeaderComponent",
+        "newClass": "IntegrationsPageHeaderComponent",
+        "oldSelector": "appMarketplaceHeader",
+        "newSelector": "appIntegrationsPageHeader"
+      },
+      {
+        "from": "marketplace-overview",
+        "to": "integration-telemetry",
+        "oldClass": "MarketplaceOverviewComponent",
+        "newClass": "IntegrationTelemetryComponent",
+        "oldSelector": "appMarketplaceTelemetry",
+        "newSelector": "appIntegrationTelemetry"
+      },
+      {
+        "from": "marketplace-category-filters",
+        "to": "integration-category-filters",
+        "oldClass": "MarketplaceCategoryFiltersComponent",
+        "newClass": "IntegrationCategoryFiltersComponent",
+        "oldSelector": "appMarketplaceFilters",
+        "newSelector": "appIntegrationCategoryFilters"
+      },
+      {
+        "from": "marketplace-provider-card",
+        "to": "integration-provider-card",
+        "oldClass": "MarketplaceProviderCardComponent",
+        "newClass": "IntegrationProviderCardComponent",
+        "oldSelector": "appMarketplaceProviderCard",
+        "newSelector": "appIntegrationProviderCard"
+      },
+      {
+        "from": "marketplace-ingestion-terminal",
+        "to": "ingestion-activity-terminal",
+        "oldClass": "MarketplaceIngestionTerminalComponent",
+        "newClass": "IngestionActivityTerminalComponent",
+        "oldSelector": "appMarketplaceTerminal",
+        "newSelector": "appIngestionActivityTerminal"
+      }
+    ],
+    "internalSelectorsRenamed": true,
+    "validation": {
+      "focusedTests": 30,
+      "failed": 0,
+      "files": 4,
+      "typecheck": "PASS",
+      "templatesAndStyles": "byte-identical",
+      "selectors": "all five component selectors and parent usages renamed together",
+      "behaviorChanges": false,
+      "build": {
+        "runs": 1,
+        "status": "PASS",
+        "seconds": 52.412,
+        "main": "main-TEXSIO2W.js",
+        "initialRaw": "3.46 MB",
+        "estimatedTransfer": "534.75 kB",
+        "warning": "Existing Landing stylesheet: 56.67 kB versus 48 kB warning budget."
+      },
+      "backendApiChanges": false
+    }
+  }
+}

@@ -1,0 +1,3132 @@
+{
+  "phase": "before",
+  "timestamp": "2026-11-13T04:23:54.011Z",
+  "viewportsTested": 12,
+  "themesTested": 3,
+  "matrixResults": [
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "dimensions": "320x640",
+      "theme": "dark",
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 292,
+      "pageClientWidth": 292,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 1,
+      "cardWidth": 292,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "width": 102,
+          "height": 33,
+          "className": ""
+        },
+        {
+          "tag": "A",
+          "text": "Review skill evidence →",
+          "width": 141,
+          "height": 19,
+          "className": "context-link"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "dimensions": "320x640",
+      "theme": "light",
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 292,
+      "pageClientWidth": 292,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 1,
+      "cardWidth": 292,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "width": 102,
+          "height": 33,
+          "className": ""
+        },
+        {
+          "tag": "A",
+          "text": "Review skill evidence →",
+          "width": 141,
+          "height": 19,
+          "className": "context-link"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "dimensions": "320x640",
+      "theme": "system",
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 292,
+      "pageClientWidth": 292,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 1,
+      "cardWidth": 292,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "width": 102,
+          "height": 33,
+          "className": ""
+        },
+        {
+          "tag": "A",
+          "text": "Review skill evidence →",
+          "width": 141,
+          "height": 19,
+          "className": "context-link"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "dimensions": "375x667",
+      "theme": "dark",
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 347,
+      "pageClientWidth": 347,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 1,
+      "cardWidth": 347,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "width": 157,
+          "height": 33,
+          "className": ""
+        },
+        {
+          "tag": "A",
+          "text": "Review skill evidence →",
+          "width": 141,
+          "height": 19,
+          "className": "context-link"
+        },
+        {
+          "tag": "SELECT",
+          "text": "Best matchNewest postedCompany",
+          "width": 131,
+          "height": 34,
+          "className": "sort-select ng-untouched ng-pristine ng-valid"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "dimensions": "375x667",
+      "theme": "light",
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 347,
+      "pageClientWidth": 347,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 1,
+      "cardWidth": 347,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "width": 157,
+          "height": 33,
+          "className": ""
+        },
+        {
+          "tag": "A",
+          "text": "Review skill evidence →",
+          "width": 141,
+          "height": 19,
+          "className": "context-link"
+        },
+        {
+          "tag": "SELECT",
+          "text": "Best matchNewest postedCompany",
+          "width": 131,
+          "height": 34,
+          "className": "sort-select ng-untouched ng-pristine ng-valid"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "dimensions": "375x667",
+      "theme": "system",
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 347,
+      "pageClientWidth": 347,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 1,
+      "cardWidth": 347,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "width": 157,
+          "height": 33,
+          "className": ""
+        },
+        {
+          "tag": "A",
+          "text": "Review skill evidence →",
+          "width": 141,
+          "height": 19,
+          "className": "context-link"
+        },
+        {
+          "tag": "SELECT",
+          "text": "Best matchNewest postedCompany",
+          "width": 131,
+          "height": 34,
+          "className": "sort-select ng-untouched ng-pristine ng-valid"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "dimensions": "390x844",
+      "theme": "dark",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 362,
+      "pageClientWidth": 362,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 1,
+      "cardWidth": 362,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "width": 172,
+          "height": 33,
+          "className": ""
+        },
+        {
+          "tag": "A",
+          "text": "Review skill evidence →",
+          "width": 141,
+          "height": 19,
+          "className": "context-link"
+        },
+        {
+          "tag": "SELECT",
+          "text": "Best matchNewest postedCompany",
+          "width": 131,
+          "height": 34,
+          "className": "sort-select ng-untouched ng-pristine ng-valid"
+        },
+        {
+          "tag": "A",
+          "text": "Remotive",
+          "width": 50,
+          "height": 15,
+          "className": "company-source"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 32,
+          "className": "save-button"
+        },
+        {
+          "tag": "A",
+          "text": "Frontend Engineer",
+          "width": 133,
+          "height": 22,
+          "className": ""
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "dimensions": "390x844",
+      "theme": "light",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 362,
+      "pageClientWidth": 362,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 1,
+      "cardWidth": 362,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "width": 172,
+          "height": 33,
+          "className": ""
+        },
+        {
+          "tag": "A",
+          "text": "Review skill evidence →",
+          "width": 141,
+          "height": 19,
+          "className": "context-link"
+        },
+        {
+          "tag": "SELECT",
+          "text": "Best matchNewest postedCompany",
+          "width": 131,
+          "height": 34,
+          "className": "sort-select ng-untouched ng-pristine ng-valid"
+        },
+        {
+          "tag": "A",
+          "text": "Remotive",
+          "width": 50,
+          "height": 15,
+          "className": "company-source"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 32,
+          "className": "save-button"
+        },
+        {
+          "tag": "A",
+          "text": "Frontend Engineer",
+          "width": 133,
+          "height": 22,
+          "className": ""
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "dimensions": "390x844",
+      "theme": "system",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 362,
+      "pageClientWidth": 362,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 1,
+      "cardWidth": 362,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "width": 172,
+          "height": 33,
+          "className": ""
+        },
+        {
+          "tag": "A",
+          "text": "Review skill evidence →",
+          "width": 141,
+          "height": 19,
+          "className": "context-link"
+        },
+        {
+          "tag": "SELECT",
+          "text": "Best matchNewest postedCompany",
+          "width": 131,
+          "height": 34,
+          "className": "sort-select ng-untouched ng-pristine ng-valid"
+        },
+        {
+          "tag": "A",
+          "text": "Remotive",
+          "width": 50,
+          "height": 15,
+          "className": "company-source"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 32,
+          "className": "save-button"
+        },
+        {
+          "tag": "A",
+          "text": "Frontend Engineer",
+          "width": 133,
+          "height": 22,
+          "className": ""
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "dimensions": "430x932",
+      "theme": "dark",
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 402,
+      "pageClientWidth": 402,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 1,
+      "cardWidth": 402,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "width": 212,
+          "height": 33,
+          "className": ""
+        },
+        {
+          "tag": "A",
+          "text": "Review skill evidence →",
+          "width": 141,
+          "height": 19,
+          "className": "context-link"
+        },
+        {
+          "tag": "SELECT",
+          "text": "Best matchNewest postedCompany",
+          "width": 131,
+          "height": 34,
+          "className": "sort-select ng-untouched ng-pristine ng-valid"
+        },
+        {
+          "tag": "A",
+          "text": "Remotive",
+          "width": 50,
+          "height": 15,
+          "className": "company-source"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 32,
+          "className": "save-button"
+        },
+        {
+          "tag": "A",
+          "text": "Frontend Engineer",
+          "width": 133,
+          "height": 22,
+          "className": ""
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "dimensions": "430x932",
+      "theme": "light",
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 402,
+      "pageClientWidth": 402,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 1,
+      "cardWidth": 402,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "width": 212,
+          "height": 33,
+          "className": ""
+        },
+        {
+          "tag": "A",
+          "text": "Review skill evidence →",
+          "width": 141,
+          "height": 19,
+          "className": "context-link"
+        },
+        {
+          "tag": "SELECT",
+          "text": "Best matchNewest postedCompany",
+          "width": 131,
+          "height": 34,
+          "className": "sort-select ng-untouched ng-pristine ng-valid"
+        },
+        {
+          "tag": "A",
+          "text": "Remotive",
+          "width": 50,
+          "height": 15,
+          "className": "company-source"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 32,
+          "className": "save-button"
+        },
+        {
+          "tag": "A",
+          "text": "Frontend Engineer",
+          "width": 133,
+          "height": 22,
+          "className": ""
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "dimensions": "430x932",
+      "theme": "system",
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 402,
+      "pageClientWidth": 402,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 1,
+      "cardWidth": 402,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "width": 212,
+          "height": 33,
+          "className": ""
+        },
+        {
+          "tag": "A",
+          "text": "Review skill evidence →",
+          "width": 141,
+          "height": 19,
+          "className": "context-link"
+        },
+        {
+          "tag": "SELECT",
+          "text": "Best matchNewest postedCompany",
+          "width": 131,
+          "height": 34,
+          "className": "sort-select ng-untouched ng-pristine ng-valid"
+        },
+        {
+          "tag": "A",
+          "text": "Remotive",
+          "width": 50,
+          "height": 15,
+          "className": "company-source"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 32,
+          "className": "save-button"
+        },
+        {
+          "tag": "A",
+          "text": "Frontend Engineer",
+          "width": 133,
+          "height": 22,
+          "className": ""
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "dimensions": "768x1024",
+      "theme": "dark",
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 740,
+      "pageClientWidth": 740,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 2,
+      "cardWidth": 361,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "width": 260,
+          "height": 33,
+          "className": ""
+        },
+        {
+          "tag": "A",
+          "text": "Review skill evidence →",
+          "width": 141,
+          "height": 19,
+          "className": "context-link"
+        },
+        {
+          "tag": "SELECT",
+          "text": "Best matchNewest postedCompany",
+          "width": 131,
+          "height": 34,
+          "className": "sort-select ng-untouched ng-pristine ng-valid"
+        },
+        {
+          "tag": "A",
+          "text": "Remotive",
+          "width": 50,
+          "height": 15,
+          "className": "company-source"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 32,
+          "className": "save-button"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "dimensions": "768x1024",
+      "theme": "light",
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 740,
+      "pageClientWidth": 740,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 2,
+      "cardWidth": 361,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "width": 260,
+          "height": 33,
+          "className": ""
+        },
+        {
+          "tag": "A",
+          "text": "Review skill evidence →",
+          "width": 141,
+          "height": 19,
+          "className": "context-link"
+        },
+        {
+          "tag": "SELECT",
+          "text": "Best matchNewest postedCompany",
+          "width": 131,
+          "height": 34,
+          "className": "sort-select ng-untouched ng-pristine ng-valid"
+        },
+        {
+          "tag": "A",
+          "text": "Remotive",
+          "width": 50,
+          "height": 15,
+          "className": "company-source"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 32,
+          "className": "save-button"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "dimensions": "768x1024",
+      "theme": "system",
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 740,
+      "pageClientWidth": 740,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 2,
+      "cardWidth": 361,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 44,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "INPUT",
+          "text": "",
+          "width": 260,
+          "height": 33,
+          "className": ""
+        },
+        {
+          "tag": "A",
+          "text": "Review skill evidence →",
+          "width": 141,
+          "height": 19,
+          "className": "context-link"
+        },
+        {
+          "tag": "SELECT",
+          "text": "Best matchNewest postedCompany",
+          "width": 131,
+          "height": 34,
+          "className": "sort-select ng-untouched ng-pristine ng-valid"
+        },
+        {
+          "tag": "A",
+          "text": "Remotive",
+          "width": 50,
+          "height": 15,
+          "className": "company-source"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 32,
+          "className": "save-button"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "dimensions": "820x1180",
+      "theme": "dark",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 512,
+      "pageClientWidth": 512,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 1,
+      "cardWidth": 512,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "GitHub Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Resume Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Skill Gap",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "Recommendations",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Learning Hub",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Career Sprint",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Interview Prep",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "dimensions": "820x1180",
+      "theme": "light",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 512,
+      "pageClientWidth": 512,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 1,
+      "cardWidth": 512,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "GitHub Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Resume Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Skill Gap",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "Recommendations",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Learning Hub",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Career Sprint",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Interview Prep",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "dimensions": "820x1180",
+      "theme": "system",
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 512,
+      "pageClientWidth": 512,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 1,
+      "cardWidth": 512,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "GitHub Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Resume Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Skill Gap",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "Recommendations",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Learning Hub",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Career Sprint",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Interview Prep",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "dimensions": "1024x768",
+      "theme": "dark",
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 716,
+      "pageClientWidth": 716,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 2,
+      "cardWidth": 349,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "GitHub Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Resume Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Skill Gap",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "Recommendations",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Learning Hub",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Career Sprint",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Interview Prep",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "dimensions": "1024x768",
+      "theme": "light",
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 716,
+      "pageClientWidth": 716,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 2,
+      "cardWidth": 349,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "GitHub Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Resume Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Skill Gap",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "Recommendations",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Learning Hub",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Career Sprint",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Interview Prep",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "dimensions": "1024x768",
+      "theme": "system",
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 716,
+      "pageClientWidth": 716,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 2,
+      "cardWidth": 349,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "GitHub Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Resume Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Skill Gap",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "Recommendations",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Learning Hub",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Career Sprint",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Interview Prep",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "dimensions": "1280x800",
+      "theme": "dark",
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 972,
+      "pageClientWidth": 972,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 2,
+      "cardWidth": 477,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "GitHub Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Resume Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Skill Gap",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "Recommendations",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Learning Hub",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Career Sprint",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Interview Prep",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "dimensions": "1280x800",
+      "theme": "light",
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 972,
+      "pageClientWidth": 972,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 2,
+      "cardWidth": 477,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "GitHub Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Resume Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Skill Gap",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "Recommendations",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Learning Hub",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Career Sprint",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Interview Prep",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "dimensions": "1280x800",
+      "theme": "system",
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 972,
+      "pageClientWidth": 972,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 2,
+      "cardWidth": 477,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "GitHub Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Resume Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Skill Gap",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "Recommendations",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Learning Hub",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Career Sprint",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Interview Prep",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "dimensions": "1366x768",
+      "theme": "dark",
+      "scrollWidth": 1366,
+      "clientWidth": 1366,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 1058,
+      "pageClientWidth": 1058,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 3,
+      "cardWidth": 341,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "GitHub Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Resume Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Skill Gap",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "Recommendations",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Learning Hub",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Career Sprint",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Interview Prep",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "dimensions": "1366x768",
+      "theme": "light",
+      "scrollWidth": 1366,
+      "clientWidth": 1366,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 1058,
+      "pageClientWidth": 1058,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 3,
+      "cardWidth": 341,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "GitHub Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Resume Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Skill Gap",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "Recommendations",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Learning Hub",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Career Sprint",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Interview Prep",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "dimensions": "1366x768",
+      "theme": "system",
+      "scrollWidth": 1366,
+      "clientWidth": 1366,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 1058,
+      "pageClientWidth": 1058,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 3,
+      "cardWidth": 341,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "GitHub Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Resume Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Skill Gap",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "Recommendations",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Learning Hub",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Career Sprint",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Interview Prep",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "dimensions": "1440x900",
+      "theme": "dark",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 1132,
+      "pageClientWidth": 1132,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 3,
+      "cardWidth": 365,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "GitHub Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Resume Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Skill Gap",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "Recommendations",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Learning Hub",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Career Sprint",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Interview Prep",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "dimensions": "1440x900",
+      "theme": "light",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 1132,
+      "pageClientWidth": 1132,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 3,
+      "cardWidth": 365,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "GitHub Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Resume Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Skill Gap",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "Recommendations",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Learning Hub",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Career Sprint",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Interview Prep",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "dimensions": "1440x900",
+      "theme": "system",
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 1132,
+      "pageClientWidth": 1132,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 3,
+      "cardWidth": 365,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "GitHub Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Resume Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Skill Gap",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "Recommendations",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Learning Hub",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Career Sprint",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Interview Prep",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "dimensions": "1920x1080",
+      "theme": "dark",
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 1612,
+      "pageClientWidth": 1612,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 4,
+      "cardWidth": 390,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "GitHub Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Resume Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Skill Gap",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "Recommendations",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Learning Hub",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Career Sprint",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Interview Prep",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "dimensions": "1920x1080",
+      "theme": "light",
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 1612,
+      "pageClientWidth": 1612,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 4,
+      "cardWidth": 390,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "GitHub Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Resume Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Skill Gap",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "Recommendations",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Learning Hub",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Career Sprint",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Interview Prep",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "dimensions": "1920x1080",
+      "theme": "system",
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 1612,
+      "pageClientWidth": 1612,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 4,
+      "cardWidth": 390,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "GitHub Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Resume Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Skill Gap",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "Recommendations",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Learning Hub",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Career Sprint",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Interview Prep",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "dimensions": "2560x1440",
+      "theme": "dark",
+      "scrollWidth": 2560,
+      "clientWidth": 2560,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 2252,
+      "pageClientWidth": 2252,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 6,
+      "cardWidth": 360,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "GitHub Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Resume Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Skill Gap",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "Recommendations",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Learning Hub",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Career Sprint",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Interview Prep",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "dimensions": "2560x1440",
+      "theme": "light",
+      "scrollWidth": 2560,
+      "clientWidth": 2560,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 2252,
+      "pageClientWidth": 2252,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 6,
+      "cardWidth": 360,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "GitHub Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Resume Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Skill Gap",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "Recommendations",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Learning Hub",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Career Sprint",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Interview Prep",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "dimensions": "2560x1440",
+      "theme": "system",
+      "scrollWidth": 2560,
+      "clientWidth": 2560,
+      "hasDocOverflow": false,
+      "pageScrollWidth": 2252,
+      "pageClientWidth": 2252,
+      "hasPageOverflow": false,
+      "offenders": [],
+      "gridCols": 6,
+      "cardWidth": 360,
+      "smallTargets": [
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "GitHub Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Resume Analyzer",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Skill Gap",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        },
+        {
+          "tag": "A",
+          "text": "Recommendations",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Learning Hub",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Career Sprint",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "A",
+          "text": "Interview Prep",
+          "width": 210,
+          "height": 34,
+          "className": "nav-link nav-sublink"
+        },
+        {
+          "tag": "BUTTON",
+          "text": "",
+          "width": 32,
+          "height": 42,
+          "className": "group-toggle"
+        }
+      ],
+      "pageErrors": [],
+      "status": "PASS"
+    }
+  ],
+  "stateChecks": {
+    "filters-open-mobile": {
+      "hasOverflow": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "status": "PASS"
+    },
+    "saved-view": {
+      "hasOverflow": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "cardCount": 2,
+      "status": "PASS"
+    },
+    "applied-view": {
+      "hasOverflow": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "cardCount": 2,
+      "status": "PASS"
+    },
+    "hidden-locked": {
+      "hasOverflow": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "hasPasswordInput": true,
+      "status": "PASS"
+    },
+    "hidden-unlocked": {
+      "hasOverflow": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "cardCount": 0,
+      "status": "PASS"
+    },
+    "job-details-mobile": {
+      "hasOverflow": false,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "hasTitle": true,
+      "headerActionsWrap": "wrap",
+      "status": "PASS"
+    },
+    "job-details-desktop": {
+      "hasOverflow": false,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "status": "PASS"
+    }
+  },
+  "orientationChecks": {
+    "mobile-375-landscape": {
+      "hasOverflow": false,
+      "scrollWidth": 667,
+      "clientWidth": 667,
+      "status": "PASS"
+    },
+    "mobile-390-landscape": {
+      "hasOverflow": false,
+      "scrollWidth": 844,
+      "clientWidth": 844,
+      "status": "PASS"
+    },
+    "mobile-430-landscape": {
+      "hasOverflow": false,
+      "scrollWidth": 932,
+      "clientWidth": 932,
+      "status": "PASS"
+    },
+    "tablet-1024-portrait": {
+      "hasOverflow": false,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "status": "PASS"
+    }
+  },
+  "zoomChecks": {
+    "mobile-375-zoom125": {
+      "hasOverflow": false,
+      "scrollWidth": 300,
+      "clientWidth": 300,
+      "effectiveDimensions": "300x534",
+      "status": "PASS"
+    },
+    "desktop-1440-zoom125": {
+      "hasOverflow": false,
+      "scrollWidth": 1152,
+      "clientWidth": 1152,
+      "effectiveDimensions": "1152x720",
+      "status": "PASS"
+    },
+    "mobile-375-zoom150": {
+      "hasOverflow": false,
+      "scrollWidth": 250,
+      "clientWidth": 250,
+      "effectiveDimensions": "250x445",
+      "status": "PASS"
+    },
+    "desktop-1440-zoom150": {
+      "hasOverflow": false,
+      "scrollWidth": 960,
+      "clientWidth": 960,
+      "effectiveDimensions": "960x600",
+      "status": "PASS"
+    }
+  },
+  "overflowDefects": [],
+  "touchTargetDefects": [],
+  "accessibilityDefects": []
+}

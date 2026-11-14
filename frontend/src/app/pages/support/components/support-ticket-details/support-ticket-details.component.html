@@ -1,0 +1,156 @@
+<div class="modal-backdrop" (click)="close.emit()" (window:keydown.escape)="close.emit()">
+  <div
+    class="modal-container"
+    (click)="$event.stopPropagation()"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modal-ticket-title"
+  >
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <div class="modal-title-wrapper">
+        <span class="modal-badge" *ngIf="ticket._id">
+          #TCK-{{ ticket._id.substring(ticket._id.length - 6).toUpperCase() }}
+        </span>
+        <h3 id="modal-ticket-title">Ticket Details</h3>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-category">{{ formatCategory(ticket.category) | titlecase }}</span>
+      </div>
+      <button
+        class="close-btn"
+        (click)="close.emit()"
+        aria-label="Close dialog"
+        title="Close (Esc)"
+      >
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body">
+      <!-- Subject Hero Banner -->
+      <div class="subject-hero">
+        <div class="subject-main">
+          <span class="hero-eyebrow">Subject &amp; Classification</span>
+          <h4 class="ticket-detail-title">{{ ticket.subject }}</h4>
+        </div>
+        <div class="subject-badges">
+          <span class="prio-badge" [ngClass]="'prio-' + (ticket.priority || 'low')">
+            <span class="prio-dot"></span>
+            {{ ticket.priority | uppercase }} PRIORITY
+          </span>
+          <div class="ticket-status-pill" [ngClass]="'status-' + (ticket.status || 'default')">
+            <span class="status-indicator"></span>
+            <span>{{ formatStatus(ticket.status) | titlecase }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Telemetry & Metadata Cards Grid -->
+      <div class="telemetry-grid">
+        <div class="telemetry-chip" *ngIf="ticket._id">
+          <span class="chip-label">Ticket ID</span>
+          <div class="chip-content">
+            <code class="chip-code mono">#{{ ticket._id }}</code>
+            <button
+              type="button"
+              class="chip-copy-btn"
+              (click)="copyToClipboard(ticket._id, 'id')"
+              [title]="copiedField === 'id' ? 'Copied!' : 'Copy Ticket ID'"
+            >
+              <span class="material-symbols-outlined">{{
+                copiedField === 'id' ? 'check' : 'content_copy'
+              }}</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="telemetry-chip" *ngIf="ticket.createdAt">
+          <span class="chip-label">Created Date</span>
+          <div class="chip-content">
+            <span class="chip-val">{{ ticket.createdAt | date: 'medium' }}</span>
+          </div>
+        </div>
+
+        <div class="telemetry-chip" *ngIf="ticket.updatedAt">
+          <span class="chip-label">Last Updated</span>
+          <div class="chip-content">
+            <span class="chip-val">{{ ticket.updatedAt | date: 'medium' }}</span>
+          </div>
+        </div>
+
+        <div class="telemetry-chip" *ngIf="ticket.sourcePage">
+          <span class="chip-label">Source Route</span>
+          <div class="chip-content">
+            <span class="route-pill">
+              <span class="material-symbols-outlined pill-icon">alt_route</span>
+              <code>{{ formatRoute(ticket.sourcePage) }}</code>
+            </span>
+          </div>
+        </div>
+
+        <div class="telemetry-chip chip-wide" *ngIf="ticket.browserInfo">
+          <span class="chip-label">Client Environment</span>
+          <div class="chip-content">
+            <span class="device-pill" [title]="ticket.browserInfo">
+              <span class="material-symbols-outlined pill-icon">devices</span>
+              <span>{{ formatDevice(ticket.browserInfo) }}</span>
+            </span>
+            <button
+              type="button"
+              class="chip-copy-btn"
+              (click)="copyToClipboard(ticket.browserInfo, 'device')"
+              [title]="copiedField === 'device' ? 'Copied full UA!' : 'Copy User Agent'"
+            >
+              <span class="material-symbols-outlined">{{
+                copiedField === 'device' ? 'check' : 'content_copy'
+              }}</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="telemetry-chip" *ngIf="ticket.replyToEmail">
+          <span class="chip-label">Reply-To Address</span>
+          <div class="chip-content">
+            <span class="email-pill">
+              <span class="material-symbols-outlined pill-icon">mail</span>
+              <span>{{ ticket.replyToEmail }}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Incident Message Callout -->
+      <div class="detail-message-box">
+        <div class="message-box-header">
+          <span class="material-symbols-outlined msg-icon">subject</span>
+          <strong>Initial Description &amp; Details</strong>
+        </div>
+        <div class="message-box-content">
+          <p>{{ ticket.message }}</p>
+        </div>
+      </div>
+
+      <!-- Two-Way Conversation Component -->
+      <app-support-ticket-conversation
+        [replies]="ticket.replies || []"
+        [posting]="replyPosting"
+        (submitReply)="reply.emit($event)"
+      ></app-support-ticket-conversation>
+    </div>
+
+    <!-- Modal Footer Actions -->
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" (click)="close.emit()">Close</button>
+      <button
+        type="button"
+        class="btn-danger"
+        (click)="delete.emit(ticket._id)"
+        [disabled]="deleting"
+      >
+        <span class="material-symbols-outlined">delete</span>
+        <span>{{ deleting ? 'Deleting...' : 'Delete Ticket' }}</span>
+      </button>
+    </div>
+  </div>
+</div>

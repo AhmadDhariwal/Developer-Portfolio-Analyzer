@@ -1,0 +1,42 @@
+{
+  "scope": "Focused fixture-backed browser checks, not live API or full E2E",
+  "build": "Production build used for final screenshots",
+  "themes": {
+    "light": "passed",
+    "dark": "passed",
+    "system": "resolved to dark, matching prefers-color-scheme"
+  },
+  "viewports": {
+    "desktop": {
+      "requested": [1440, 1000],
+      "documentWidth": 1434,
+      "horizontalOverflow": false
+    },
+    "mobile": {
+      "requested": [390, 844],
+      "documentWidth": 384,
+      "horizontalOverflow": false
+    }
+  },
+  "checks": [
+    "37 technologies visible",
+    "Top 30 retains backend order and paginates locally",
+    "All questions uses server pagination; page 2 of 4 verified",
+    "Search hooks returned 3 fixture results",
+    "Structured answer, interview tip and code reveal",
+    "Practice generation existing-library fallback",
+    "Self-check toggles without claiming proficiency",
+    "Custom Q&A shows unverified AI provenance and private saved status",
+    "Custom provider failure preserves previous result",
+    "Practice provider failure preserves previous set",
+    "Saved personalized session and history review",
+    "Mobile filter expand/collapse",
+    "Production practice generation returns question 1 of 5"
+  ],
+  "screenshots": [
+    "screenshots/desktop-light.jpg",
+    "screenshots/desktop-dark.jpg",
+    "screenshots/mobile-light.jpg",
+    "screenshots/mobile-dark.jpg"
+  ]
+}

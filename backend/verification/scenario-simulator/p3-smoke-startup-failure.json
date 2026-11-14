@@ -1,0 +1,55 @@
+{
+  "runId": "abe726df-7cb8-4e34-bd71-bcd22e5652d5",
+  "mode": "SMOKE_NOT_EXTENDED_ACCEPTANCE",
+  "startedAt": "2026-10-25T12:50:42.859Z",
+  "status": "FAIL",
+  "productionDataModified": false,
+  "checks": [],
+  "phases": [],
+  "samples": [],
+  "failures": [
+    "Error: connect ECONNREFUSED 127.0.0.1:54278 Redis startup: \n    at D:\\Developer-Portfolio-Analyzer\\backend\\src\\scripts\\verifyScenarioP3.js:150:11\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async startRedis (D:\\Developer-Portfolio-Analyzer\\backend\\src\\scripts\\verifyScenarioP3.js:149:3)\n    at async main (D:\\Developer-Portfolio-Analyzer\\backend\\src\\scripts\\verifyScenarioP3.js:354:21)"
+  ],
+  "limitations": [],
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32",
+    "os": "10.0.26300",
+    "logicalCpus": 8,
+    "cpu": "Intel(R) Core(TM) i5-8365U CPU @ 1.60GHz",
+    "totalMemory": 16976740352,
+    "mongoose": "9.2.4",
+    "mongodb": "7.1.0",
+    "redisClient": "4.7.1"
+  },
+  "removedTemporaryFiles": [
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-ZlFdJ4\\collection-74b4767e-cfff-431c-bcce-c25c72f40a99.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-ZlFdJ4\\collection-e64661f3-282f-488d-87ea-b2f0ee13f560.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-ZlFdJ4\\collection-faf1a64b-dfd9-4064-98d1-89054bffe631.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-ZlFdJ4\\index-1b1ce783-727e-4fcb-980a-329a71de6255.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-ZlFdJ4\\index-1d988a50-916e-4203-80d8-aa1ccdd907a6.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-ZlFdJ4\\index-4a21ef66-9a62-4583-a68e-542c19e5bc13.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-ZlFdJ4\\index-812a61bf-2a6f-473e-9705-c46a5f162822.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-ZlFdJ4\\mongod.lock",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-ZlFdJ4\\sizeStorer.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-ZlFdJ4\\storage.bson",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-ZlFdJ4\\WiredTiger",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-ZlFdJ4\\WiredTiger.lock",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-ZlFdJ4\\WiredTiger.turtle",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-ZlFdJ4\\WiredTiger.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-ZlFdJ4\\WiredTigerHS.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-ZlFdJ4\\_mdb_catalog.wt",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-ZlFdJ4\\journal\\WiredTigerLog.0000000001",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-ZlFdJ4\\journal\\WiredTigerPreplog.0000000001",
+    "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-ZlFdJ4\\diagnostic.data\\metrics.2026-10-25T12-50-47Z-00000"
+  ],
+  "finishedAt": "2026-10-25T12:50:48.654Z",
+  "runtimeDirectory": "C:\\Users\\Ahmad\\AppData\\Local\\Temp\\devinsight-p3-ZlFdJ4",
+  "cleanup": {
+    "workersStopped": true,
+    "mongoStopped": false,
+    "redisShutdownRequested": true,
+    "redisProcessExitCode": 1,
+    "recursiveDeletion": false
+  }
+}

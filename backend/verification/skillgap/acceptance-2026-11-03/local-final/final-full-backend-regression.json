@@ -1,0 +1,13 @@
+{
+  "timestamp": "2026-11-03T12:20:33.358Z",
+  "totalTestFiles": 125,
+  "exitCode": 1,
+  "durationMs": 639112,
+  "counts": {
+    "tests": 770,
+    "pass": 745,
+    "fail": 4,
+    "skipped": 21,
+    "cancelled": 0
+  }
+}

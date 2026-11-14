@@ -1,0 +1,1219 @@
+{
+  "phase": "before",
+  "timestamp": "2026-11-12T18:43:14.105Z",
+  "viewportsTested": 12,
+  "themesTested": 3,
+  "matrixResults": [
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "width": 320,
+      "height": 640,
+      "theme": "dark",
+      "hasOverflow": true,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 381,
+          "width": 117,
+          "clientWidth": 320
+        },
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 320
+        }
+      ],
+      "metricsCols": 1,
+      "filterCols": 1,
+      "focusCols": 1,
+      "resourceCols": 1,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\mobile-320-dark.png"
+    },
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "width": 320,
+      "height": 640,
+      "theme": "light",
+      "hasOverflow": true,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 381,
+          "width": 117,
+          "clientWidth": 320
+        },
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 320
+        }
+      ],
+      "metricsCols": 1,
+      "filterCols": 1,
+      "focusCols": 1,
+      "resourceCols": 1,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\mobile-320-light.png"
+    },
+    {
+      "viewport": "mobile-320",
+      "category": "Mobile",
+      "width": 320,
+      "height": 640,
+      "theme": "system",
+      "hasOverflow": true,
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 381,
+          "width": 117,
+          "clientWidth": 320
+        },
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 320
+        }
+      ],
+      "metricsCols": 1,
+      "filterCols": 1,
+      "focusCols": 1,
+      "resourceCols": 1,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\mobile-320-system.png"
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "width": 375,
+      "height": 667,
+      "theme": "dark",
+      "hasOverflow": true,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 381,
+          "width": 117,
+          "clientWidth": 375
+        },
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 375
+        }
+      ],
+      "metricsCols": 1,
+      "filterCols": 1,
+      "focusCols": 1,
+      "resourceCols": 1,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\mobile-375-dark.png"
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "width": 375,
+      "height": 667,
+      "theme": "light",
+      "hasOverflow": true,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 381,
+          "width": 117,
+          "clientWidth": 375
+        },
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 375
+        }
+      ],
+      "metricsCols": 1,
+      "filterCols": 1,
+      "focusCols": 1,
+      "resourceCols": 1,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\mobile-375-light.png"
+    },
+    {
+      "viewport": "mobile-375",
+      "category": "Mobile",
+      "width": 375,
+      "height": 667,
+      "theme": "system",
+      "hasOverflow": true,
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 381,
+          "width": 117,
+          "clientWidth": 375
+        },
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 375
+        }
+      ],
+      "metricsCols": 1,
+      "filterCols": 1,
+      "focusCols": 1,
+      "resourceCols": 1,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\mobile-375-system.png"
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "width": 390,
+      "height": 844,
+      "theme": "dark",
+      "hasOverflow": true,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 390
+        }
+      ],
+      "metricsCols": 1,
+      "filterCols": 1,
+      "focusCols": 1,
+      "resourceCols": 1,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\mobile-390-dark.png"
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "width": 390,
+      "height": 844,
+      "theme": "light",
+      "hasOverflow": true,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 390
+        }
+      ],
+      "metricsCols": 1,
+      "filterCols": 1,
+      "focusCols": 1,
+      "resourceCols": 1,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\mobile-390-light.png"
+    },
+    {
+      "viewport": "mobile-390",
+      "category": "Mobile",
+      "width": 390,
+      "height": 844,
+      "theme": "system",
+      "hasOverflow": true,
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 390
+        }
+      ],
+      "metricsCols": 1,
+      "filterCols": 1,
+      "focusCols": 1,
+      "resourceCols": 1,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\mobile-390-system.png"
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "width": 430,
+      "height": 932,
+      "theme": "dark",
+      "hasOverflow": true,
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 430
+        }
+      ],
+      "metricsCols": 1,
+      "filterCols": 1,
+      "focusCols": 1,
+      "resourceCols": 1,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\mobile-430-dark.png"
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "width": 430,
+      "height": 932,
+      "theme": "light",
+      "hasOverflow": true,
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 430
+        }
+      ],
+      "metricsCols": 1,
+      "filterCols": 1,
+      "focusCols": 1,
+      "resourceCols": 1,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\mobile-430-light.png"
+    },
+    {
+      "viewport": "mobile-430",
+      "category": "Mobile",
+      "width": 430,
+      "height": 932,
+      "theme": "system",
+      "hasOverflow": true,
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 430
+        }
+      ],
+      "metricsCols": 1,
+      "filterCols": 1,
+      "focusCols": 1,
+      "resourceCols": 1,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\mobile-430-system.png"
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "width": 768,
+      "height": 1024,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "offenders": [],
+      "metricsCols": 2,
+      "filterCols": 2,
+      "focusCols": 2,
+      "resourceCols": 1,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\tablet-768-dark.png"
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "width": 768,
+      "height": 1024,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "offenders": [],
+      "metricsCols": 2,
+      "filterCols": 2,
+      "focusCols": 2,
+      "resourceCols": 1,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\tablet-768-light.png"
+    },
+    {
+      "viewport": "tablet-768",
+      "category": "Tablet",
+      "width": 768,
+      "height": 1024,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 768,
+      "clientWidth": 768,
+      "offenders": [],
+      "metricsCols": 2,
+      "filterCols": 2,
+      "focusCols": 2,
+      "resourceCols": 1,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\tablet-768-system.png"
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "width": 820,
+      "height": 1180,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "offenders": [],
+      "metricsCols": 2,
+      "filterCols": 2,
+      "focusCols": 1,
+      "resourceCols": 2,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\tablet-820-dark.png"
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "width": 820,
+      "height": 1180,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "offenders": [],
+      "metricsCols": 2,
+      "filterCols": 2,
+      "focusCols": 1,
+      "resourceCols": 2,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\tablet-820-light.png"
+    },
+    {
+      "viewport": "tablet-820",
+      "category": "Tablet",
+      "width": 820,
+      "height": 1180,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 820,
+      "clientWidth": 820,
+      "offenders": [],
+      "metricsCols": 2,
+      "filterCols": 2,
+      "focusCols": 1,
+      "resourceCols": 2,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\tablet-820-system.png"
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "width": 1024,
+      "height": 768,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "offenders": [],
+      "metricsCols": 2,
+      "filterCols": 2,
+      "focusCols": 2,
+      "resourceCols": 2,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\tablet-1024-dark.png"
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "width": 1024,
+      "height": 768,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "offenders": [],
+      "metricsCols": 2,
+      "filterCols": 2,
+      "focusCols": 2,
+      "resourceCols": 2,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\tablet-1024-light.png"
+    },
+    {
+      "viewport": "tablet-1024",
+      "category": "Tablet",
+      "width": 1024,
+      "height": 768,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 1024,
+      "clientWidth": 1024,
+      "offenders": [],
+      "metricsCols": 2,
+      "filterCols": 2,
+      "focusCols": 2,
+      "resourceCols": 2,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\tablet-1024-system.png"
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "width": 1280,
+      "height": 800,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "offenders": [],
+      "metricsCols": 4,
+      "filterCols": 4,
+      "focusCols": 3,
+      "resourceCols": 2,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\laptop-1280-dark.png"
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "width": 1280,
+      "height": 800,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "offenders": [],
+      "metricsCols": 4,
+      "filterCols": 4,
+      "focusCols": 3,
+      "resourceCols": 2,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\laptop-1280-light.png"
+    },
+    {
+      "viewport": "laptop-1280",
+      "category": "Laptop",
+      "width": 1280,
+      "height": 800,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "offenders": [],
+      "metricsCols": 4,
+      "filterCols": 4,
+      "focusCols": 3,
+      "resourceCols": 2,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\laptop-1280-system.png"
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "width": 1366,
+      "height": 768,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 1366,
+      "clientWidth": 1366,
+      "offenders": [],
+      "metricsCols": 4,
+      "filterCols": 4,
+      "focusCols": 3,
+      "resourceCols": 2,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\laptop-1366-dark.png"
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "width": 1366,
+      "height": 768,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 1366,
+      "clientWidth": 1366,
+      "offenders": [],
+      "metricsCols": 4,
+      "filterCols": 4,
+      "focusCols": 3,
+      "resourceCols": 2,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\laptop-1366-light.png"
+    },
+    {
+      "viewport": "laptop-1366",
+      "category": "Laptop",
+      "width": 1366,
+      "height": 768,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 1366,
+      "clientWidth": 1366,
+      "offenders": [],
+      "metricsCols": 4,
+      "filterCols": 4,
+      "focusCols": 3,
+      "resourceCols": 2,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\laptop-1366-system.png"
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "width": 1440,
+      "height": 900,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": [],
+      "metricsCols": 4,
+      "filterCols": 4,
+      "focusCols": 3,
+      "resourceCols": 2,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\desktop-1440-dark.png"
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "width": 1440,
+      "height": 900,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": [],
+      "metricsCols": 4,
+      "filterCols": 4,
+      "focusCols": 3,
+      "resourceCols": 2,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\desktop-1440-light.png"
+    },
+    {
+      "viewport": "desktop-1440",
+      "category": "Desktop",
+      "width": 1440,
+      "height": 900,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "offenders": [],
+      "metricsCols": 4,
+      "filterCols": 4,
+      "focusCols": 3,
+      "resourceCols": 2,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\desktop-1440-system.png"
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "width": 1920,
+      "height": 1080,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "offenders": [],
+      "metricsCols": 4,
+      "filterCols": 4,
+      "focusCols": 5,
+      "resourceCols": 2,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\desktop-1920-dark.png"
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "width": 1920,
+      "height": 1080,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "offenders": [],
+      "metricsCols": 4,
+      "filterCols": 4,
+      "focusCols": 5,
+      "resourceCols": 2,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\desktop-1920-light.png"
+    },
+    {
+      "viewport": "desktop-1920",
+      "category": "Desktop",
+      "width": 1920,
+      "height": 1080,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "offenders": [],
+      "metricsCols": 4,
+      "filterCols": 4,
+      "focusCols": 5,
+      "resourceCols": 2,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\desktop-1920-system.png"
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "width": 2560,
+      "height": 1440,
+      "theme": "dark",
+      "hasOverflow": false,
+      "scrollWidth": 2560,
+      "clientWidth": 2560,
+      "offenders": [],
+      "metricsCols": 4,
+      "filterCols": 4,
+      "focusCols": 7,
+      "resourceCols": 2,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\large-2560-dark.png"
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "width": 2560,
+      "height": 1440,
+      "theme": "light",
+      "hasOverflow": false,
+      "scrollWidth": 2560,
+      "clientWidth": 2560,
+      "offenders": [],
+      "metricsCols": 4,
+      "filterCols": 4,
+      "focusCols": 7,
+      "resourceCols": 2,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\large-2560-light.png"
+    },
+    {
+      "viewport": "large-2560",
+      "category": "Large screen",
+      "width": 2560,
+      "height": 1440,
+      "theme": "system",
+      "hasOverflow": false,
+      "scrollWidth": 2560,
+      "clientWidth": 2560,
+      "offenders": [],
+      "metricsCols": 4,
+      "filterCols": 4,
+      "focusCols": 7,
+      "resourceCols": 2,
+      "pageErrors": [],
+      "screenshot": "before\\matrix\\large-2560-system.png"
+    }
+  ],
+  "stateResults": {
+    "preview-mobile-320": {
+      "viewport": "mobile-320",
+      "hasOverflow": false,
+      "previewGridCols": 3,
+      "offenders": [],
+      "screenshot": "before\\states\\candidate-preview-mobile-320.png"
+    },
+    "preview-mobile-375": {
+      "viewport": "mobile-375",
+      "hasOverflow": false,
+      "previewGridCols": 3,
+      "offenders": [],
+      "screenshot": "before\\states\\candidate-preview-mobile-375.png"
+    },
+    "preview-tablet-768": {
+      "viewport": "tablet-768",
+      "hasOverflow": false,
+      "previewGridCols": 3,
+      "offenders": [],
+      "screenshot": "before\\states\\candidate-preview-tablet-768.png"
+    },
+    "preview-desktop-1440": {
+      "viewport": "desktop-1440",
+      "hasOverflow": false,
+      "previewGridCols": 3,
+      "offenders": [],
+      "screenshot": "before\\states\\candidate-preview-desktop-1440.png"
+    },
+    "empty-onboarding": {
+      "state": "empty-onboarding",
+      "hasOverflow": true,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 381,
+          "width": 117,
+          "clientWidth": 375
+        },
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 375
+        }
+      ],
+      "screenshot": "before\\states\\state-empty-onboarding-375.png"
+    },
+    "loading-refreshing": {
+      "state": "loading-refreshing",
+      "hasOverflow": false,
+      "offenders": [],
+      "screenshot": "before\\states\\state-loading-refreshing-375.png"
+    },
+    "error-banner": {
+      "state": "error-banner",
+      "hasOverflow": false,
+      "offenders": [],
+      "screenshot": "before\\states\\state-error-banner-375.png"
+    },
+    "partial-stale": {
+      "state": "partial-stale",
+      "hasOverflow": true,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 381,
+          "width": 117,
+          "clientWidth": 375
+        },
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 375
+        }
+      ],
+      "screenshot": "before\\states\\state-partial-stale-375.png"
+    },
+    "legacy-history": {
+      "state": "legacy-history",
+      "hasOverflow": true,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 381,
+          "width": 117,
+          "clientWidth": 375
+        },
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 375
+        }
+      ],
+      "screenshot": "before\\states\\state-legacy-history-375.png"
+    },
+    "ai-suggestions": {
+      "state": "ai-suggestions",
+      "hasOverflow": true,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 381,
+          "width": 117,
+          "clientWidth": 375
+        },
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 375
+        }
+      ],
+      "screenshot": "before\\states\\state-ai-suggestions-375.png"
+    }
+  },
+  "zoomResults": [
+    {
+      "zoom": "zoom-125",
+      "scale": 1.25,
+      "effectiveWidth": 1024,
+      "hasOverflow": false,
+      "offenders": [],
+      "screenshot": "before\\zoom\\zoom-125.png"
+    },
+    {
+      "zoom": "zoom-150",
+      "scale": 1.5,
+      "effectiveWidth": 853,
+      "hasOverflow": false,
+      "offenders": [],
+      "screenshot": "before\\zoom\\zoom-150.png"
+    },
+    {
+      "zoom": "zoom-200",
+      "scale": 2,
+      "effectiveWidth": 640,
+      "hasOverflow": false,
+      "offenders": [],
+      "screenshot": "before\\zoom\\zoom-200.png"
+    }
+  ],
+  "orientationResults": [
+    {
+      "orientation": "mobile-390-portrait",
+      "width": 390,
+      "height": 844,
+      "hasOverflow": true,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 390
+        }
+      ],
+      "screenshot": "before\\orientations\\mobile-390-portrait.png"
+    },
+    {
+      "orientation": "mobile-390-landscape",
+      "width": 844,
+      "height": 390,
+      "hasOverflow": false,
+      "offenders": [],
+      "screenshot": "before\\orientations\\mobile-390-landscape.png"
+    },
+    {
+      "orientation": "tablet-820-portrait",
+      "width": 820,
+      "height": 1180,
+      "hasOverflow": false,
+      "offenders": [],
+      "screenshot": "before\\orientations\\tablet-820-portrait.png"
+    },
+    {
+      "orientation": "tablet-820-landscape",
+      "width": 1180,
+      "height": 820,
+      "hasOverflow": false,
+      "offenders": [],
+      "screenshot": "before\\orientations\\tablet-820-landscape.png"
+    }
+  ],
+  "defectsDiscovered": [
+    {
+      "type": "HORIZONTAL_OVERFLOW",
+      "viewport": "mobile-320",
+      "theme": "dark",
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 381,
+          "width": 117,
+          "clientWidth": 320
+        },
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 320
+        }
+      ]
+    },
+    {
+      "type": "HORIZONTAL_OVERFLOW",
+      "viewport": "mobile-320",
+      "theme": "light",
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 381,
+          "width": 117,
+          "clientWidth": 320
+        },
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 320
+        }
+      ]
+    },
+    {
+      "type": "HORIZONTAL_OVERFLOW",
+      "viewport": "mobile-320",
+      "theme": "system",
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 381,
+          "width": 117,
+          "clientWidth": 320
+        },
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 320
+        }
+      ]
+    },
+    {
+      "type": "HORIZONTAL_OVERFLOW",
+      "viewport": "mobile-375",
+      "theme": "dark",
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 381,
+          "width": 117,
+          "clientWidth": 375
+        },
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 375
+        }
+      ]
+    },
+    {
+      "type": "HORIZONTAL_OVERFLOW",
+      "viewport": "mobile-375",
+      "theme": "light",
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 381,
+          "width": 117,
+          "clientWidth": 375
+        },
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 375
+        }
+      ]
+    },
+    {
+      "type": "HORIZONTAL_OVERFLOW",
+      "viewport": "mobile-375",
+      "theme": "system",
+      "scrollWidth": 375,
+      "clientWidth": 375,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 381,
+          "width": 117,
+          "clientWidth": 375
+        },
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 375
+        }
+      ]
+    },
+    {
+      "type": "HORIZONTAL_OVERFLOW",
+      "viewport": "mobile-390",
+      "theme": "dark",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 390
+        }
+      ]
+    },
+    {
+      "type": "HORIZONTAL_OVERFLOW",
+      "viewport": "mobile-390",
+      "theme": "light",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 390
+        }
+      ]
+    },
+    {
+      "type": "HORIZONTAL_OVERFLOW",
+      "viewport": "mobile-390",
+      "theme": "system",
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 390
+        }
+      ]
+    },
+    {
+      "type": "HORIZONTAL_OVERFLOW",
+      "viewport": "mobile-430",
+      "theme": "dark",
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 430
+        }
+      ]
+    },
+    {
+      "type": "HORIZONTAL_OVERFLOW",
+      "viewport": "mobile-430",
+      "theme": "light",
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 430
+        }
+      ]
+    },
+    {
+      "type": "HORIZONTAL_OVERFLOW",
+      "viewport": "mobile-430",
+      "theme": "system",
+      "scrollWidth": 430,
+      "clientWidth": 430,
+      "offenders": [
+        {
+          "tag": "BUTTON",
+          "className": "filter-pill",
+          "right": 452,
+          "width": 66,
+          "clientWidth": 430
+        }
+      ]
+    },
+    {
+      "type": "BROKEN_FORM_GRID",
+      "viewport": "mobile-320",
+      "details": "preview-grid forced to 3 columns on 320px"
+    },
+    {
+      "type": "BROKEN_FORM_GRID",
+      "viewport": "mobile-375",
+      "details": "preview-grid forced to 3 columns on 375px"
+    }
+  ],
+  "workflowResults": {
+    "sprintHandoffWorked": true,
+    "hasOverflowWithDisclosuresOpen": true,
+    "offenders": [
+      {
+        "tag": "BUTTON",
+        "className": "filter-pill",
+        "right": 381,
+        "width": 117,
+        "clientWidth": 375
+      },
+      {
+        "tag": "BUTTON",
+        "className": "filter-pill",
+        "right": 452,
+        "width": 66,
+        "clientWidth": 375
+      }
+    ],
+    "screenshot": "before\\states\\workflow-interactive-mobile-375.png"
+  }
+}

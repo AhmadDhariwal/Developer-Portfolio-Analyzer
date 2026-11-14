@@ -1,0 +1,94 @@
+<section
+  class="card-fallback-section"
+  aria-label="Kaggle profile link fallback"
+  [attr.aria-busy]="busy"
+>
+  <div class="fallback-header">
+    <div class="fallback-title-wrap">
+      <svg
+        class="fallback-icon"
+        xmlns="http://www.w3.org/2000/svg"
+        width="13"
+        height="13"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+      </svg>
+      <span class="fallback-title">Linked Profile Fallback</span>
+    </div>
+    <span class="ownership-badge">Ownership unverified</span>
+  </div>
+
+  <p class="fallback-note">
+    User-entered reference; no scoring impact. Statistics syncing is unavailable.
+  </p>
+
+  <div *ngIf="profile" class="saved-profile">
+    <a [href]="profile.profileUrl" target="_blank" rel="noopener noreferrer" class="profile-link">
+      <span>Open {{ profile.username }} on Kaggle</span>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="11"
+        height="11"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+        <polyline points="15 3 21 3 21 9"></polyline>
+        <line x1="10" y1="14" x2="21" y2="3"></line>
+      </svg>
+    </a>
+    <span class="unverified-note">Profile existence and ownership have not been checked.</span>
+  </div>
+
+  <form (ngSubmit)="save()" class="fallback-form">
+    <div class="fallback-input-shell">
+      <div class="input-prefix">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </div>
+      <input
+        id="kaggle-linked-input"
+        name="kaggleLinkedProfile"
+        [(ngModel)]="input"
+        maxlength="300"
+        placeholder="username or kaggle.com/username"
+        [disabled]="busy"
+        aria-label="Kaggle username or profile URL"
+      />
+      <div class="fallback-btn-group">
+        <button type="submit" class="btn-fallback-save" [disabled]="busy">
+          {{ profile ? 'Update' : 'Save link' }}
+        </button>
+        <button
+          type="button"
+          *ngIf="profile"
+          (click)="remove()"
+          class="btn-fallback-remove"
+          [disabled]="busy"
+        >
+          Remove
+        </button>
+      </div>
+    </div>
+  </form>
+  <p *ngIf="error" class="fallback-error" role="alert">{{ error }}</p>
+</section>

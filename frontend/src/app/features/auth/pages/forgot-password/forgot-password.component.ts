@@ -7,12 +7,24 @@ import { AuthService, OtpType } from '../../../../shared/services/auth.service';
 import { UiButtonComponent } from '../../../../shared/components/ui-button/ui-button.component';
 import { UiCardComponent } from '../../../../shared/components/ui-card/ui-card.component';
 
+import {
+  LandingThemeId,
+  LandingThemeService,
+} from '../../../../shared/services/landing-theme.service';
+
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, CountryCodeDropdownComponent, UiButtonComponent, UiCardComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    CountryCodeDropdownComponent,
+    UiButtonComponent,
+    UiCardComponent,
+  ],
   templateUrl: './forgot-password.component.html',
-  styleUrl: './forgot-password.component.scss'
+  styleUrl: './forgot-password.component.scss',
 })
 export class ForgotPasswordComponent {
   type: OtpType = 'email';
@@ -22,7 +34,15 @@ export class ForgotPasswordComponent {
   isLoading = false;
   error = '';
 
-  constructor(private readonly authService: AuthService, private readonly router: Router) {}
+  get selectedTheme(): LandingThemeId {
+    return this.themeService.selectedTheme;
+  }
+
+  constructor(
+    private readonly authService: AuthService,
+    private readonly router: Router,
+    private readonly themeService: LandingThemeService,
+  ) {}
 
   submit(): void {
     if (this.type === 'email' && !this.email) {
@@ -36,30 +56,32 @@ export class ForgotPasswordComponent {
 
     this.isLoading = true;
     this.error = '';
-    this.authService.forgotPassword({
-      email: this.type === 'email' ? this.email : '',
-      phoneNumber: this.type === 'phone' ? this.phoneNumber : '',
-      countryCode: this.type === 'phone' ? this.countryCode : '',
-      type: this.type
-    }).subscribe({
-      next: (res) => {
-        this.isLoading = false;
-        this.router.navigate(['/auth/otp-verification'], {
-          state: {
-            userId: res.userId,
-            type: this.type,
-            purpose: 'forgot-password',
-            email: this.email,
-            phoneNumber: this.phoneNumber,
-            countryCode: this.countryCode,
-            expiresAt: res.expiresAt
-          }
-        });
-      },
-      error: (err) => {
-        this.isLoading = false;
-        this.error = err?.error?.message || 'Failed to send OTP.';
-      }
-    });
+    this.authService
+      .forgotPassword({
+        email: this.type === 'email' ? this.email : '',
+        phoneNumber: this.type === 'phone' ? this.phoneNumber : '',
+        countryCode: this.type === 'phone' ? this.countryCode : '',
+        type: this.type,
+      })
+      .subscribe({
+        next: (res) => {
+          this.isLoading = false;
+          this.router.navigate(['/auth/otp-verification'], {
+            state: {
+              userId: res.userId,
+              type: this.type,
+              purpose: 'forgot-password',
+              email: this.email,
+              phoneNumber: this.phoneNumber,
+              countryCode: this.countryCode,
+              expiresAt: res.expiresAt,
+            },
+          });
+        },
+        error: (err) => {
+          this.isLoading = false;
+          this.error = err?.error?.message || 'Failed to send OTP.';
+        },
+      });
   }
 }

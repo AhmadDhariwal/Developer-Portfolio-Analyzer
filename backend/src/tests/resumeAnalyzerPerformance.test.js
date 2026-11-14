@@ -27,11 +27,12 @@ const SAMPLE = [
   'Node.js, Angular, TypeScript'
 ].join('\n');
 
-const normalize = (text) => String(text || '')
-  .replace(/\r/g, '\n')
-  .replace(/[ \t]+/g, ' ')
-  .replace(/\n{3,}/g, '\n\n')
-  .trim();
+const normalize = (text) =>
+  String(text || '')
+    .replace(/\r/g, '\n')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 
 const createHarness = ({ redisDelayMs = 0, mongoDelayMs = 0 } = {}) => {
   const state = {
@@ -68,7 +69,9 @@ const createHarness = ({ redisDelayMs = 0, mongoDelayMs = 0 } = {}) => {
       state.counters.mongoReads += 1;
       const key = `${query.userId}:${query.resumeFileId}:${query.resumeHash}:${query.analysisVersion}`;
       const chain = {
-        select() { return chain; },
+        select() {
+          return chain;
+        },
         lean: async () => {
           await delay(state.delays.mongo);
           return copy(state.mongo.get(key) || null);
@@ -104,7 +107,10 @@ const createHarness = ({ redisDelayMs = 0, mongoDelayMs = 0 } = {}) => {
           }
         };
       }
-      if (String(request).includes('resumeAnalysisCache') || request === '../models/resumeAnalysisCache') {
+      if (
+        String(request).includes('resumeAnalysisCache') ||
+        request === '../models/resumeAnalysisCache'
+      ) {
         return ResumeAnalysisCache;
       }
       return originalLoad.call(this, request, parent, isMain);
@@ -160,7 +166,10 @@ test('resume tiered cache paths and five-way concurrency', async () => {
   assert.ok(state.counters.mongoWrites >= 1);
   assert.ok(state.counters.redisSets >= 1);
 
-  const hash = crypto.createHash('sha256').update(normalize(SAMPLE)).digest('hex');
+  const hash = crypto
+    .createHash('sha256')
+    .update('text-only:' + normalize(SAMPLE))
+    .digest('hex');
   const redisKey = `resume:analysis:${service.ANALYSIS_VERSION}:user-perf:file-perf:${hash}`;
   if (!state.redis.has(redisKey)) {
     state.redis.set(redisKey, {
@@ -227,13 +236,15 @@ test('resume tiered cache paths and five-way concurrency', async () => {
   state.redis.clear();
   state.counters.ai = 0;
   state.counters.mongoWrites = 0;
-  const concurrent = await Promise.all(Array.from({ length: 5 }, () =>
-    service.analyzeResume(SAMPLE, 'resume.pdf', 1024, {
-      userId: 'user-conc',
-      resumeFileId: 'file-conc',
-      forceRefresh: true
-    })
-  ));
+  const concurrent = await Promise.all(
+    Array.from({ length: 5 }, () =>
+      service.analyzeResume(SAMPLE, 'resume.pdf', 1024, {
+        userId: 'user-conc',
+        resumeFileId: 'file-conc',
+        forceRefresh: true
+      })
+    )
+  );
   assert.equal(concurrent.length, 5);
   assert.equal(state.counters.ai, 1);
   assert.equal(state.counters.mongoWrites, 1);
@@ -261,10 +272,16 @@ test('resume tiered cache paths and five-way concurrency', async () => {
 test('resume cache index supports exact hashed lookup', () => {
   const ResumeAnalysisCache = require('../models/resumeAnalysisCache');
   const indexes = ResumeAnalysisCache.schema.indexes().map(([fields]) => fields);
-  assert.ok(indexes.some((fields) => JSON.stringify(fields) === JSON.stringify({
-    userId: 1,
-    resumeFileId: 1,
-    resumeHash: 1,
-    analysisVersion: 1
-  })));
+  assert.ok(
+    indexes.some(
+      (fields) =>
+        JSON.stringify(fields) ===
+        JSON.stringify({
+          userId: 1,
+          resumeFileId: 1,
+          resumeHash: 1,
+          analysisVersion: 1
+        })
+    )
+  );
 });

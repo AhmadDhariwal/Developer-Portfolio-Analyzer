@@ -1,0 +1,165 @@
+{
+  "date": "2026-10-27",
+  "sourceCommit": "643b7f37",
+  "sourceBranch": "task/integrations",
+  "mergeTarget": "not applicable",
+  "preflight": {
+    "staged": 0,
+    "unstaged": 0,
+    "conflicts": 0
+  },
+  "verdict": {
+    "combinedUI": "PASS",
+    "sixDataWorkflows": "PASS: retained real-source acceptance",
+    "githubOAuth": "BLOCKED by explicit user instruction",
+    "linkedinOAuth": "BLOCKED by explicit user instruction",
+    "localModuleReady": "YES for six accepted non-OAuth workflows; OAuth not certified",
+    "productionReady": false
+  },
+  "providerRequestsThisTask": 0,
+  "app": {
+    "entrypoint": "backend/index.js",
+    "frontend": "ng serve",
+    "ports": {
+      "frontend": 4205,
+      "backend": 5017
+    },
+    "mongo": "disposable local replica",
+    "redis": "configured Upstash; unchanged 150ms cache fallback",
+    "unrelatedSchedulers": "suppressed only in task preload; integration routes/worker/auth/governance unchanged",
+    "stopped": true
+  },
+  "checks": {
+    "backendTests": 14,
+    "frontendTests": 19,
+    "typeScript": "PASS",
+    "productionBuild": "PASS",
+    "productionBuildCompletedAt": "2026-10-27T16:29:59.182Z",
+    "productionBuildWarning": "Existing landing-page stylesheet 56.67 kB against 48 kB",
+    "preliminaryBuild": "PASS, superseded by final build after demonstrated grid clipping fix",
+    "providerHttpRequests": 0,
+    "fixturesAndCredentials": "Disposable local user only; no configured credentials or existing account records changed",
+    "finalSourceHashesMatchBuild": true,
+    "configuredSecretMatches": 0
+  },
+  "frontendSources": [
+    {
+      "file": "frontend/src/app/pages/integrations-marketplace/integrations-marketplace.component.html",
+      "modified": "2026-10-27T16:19:37.493Z",
+      "sha256": "e704eeecfc551b10eb65eaca4f85b9c614b8bbb0a3b7beeb718c898b77094a31"
+    },
+    {
+      "file": "frontend/src/app/pages/integrations-marketplace/integrations-marketplace.component.ts",
+      "modified": "2026-10-27T16:19:37.496Z",
+      "sha256": "8d0d62b92e45a9cedfa11e3b52ab35cc555e1602fce308946a1e3c2c19d3e658"
+    },
+    {
+      "file": "frontend/src/app/pages/integrations-marketplace/integrations-marketplace.component.scss",
+      "modified": "2026-10-27T16:29:02.725Z",
+      "sha256": "433a89bbc77e94f54962f10f79a5b421f8f41d1a8ccb28aaaba69055f932144c"
+    },
+    {
+      "file": "frontend/src/app/pages/integrations-marketplace/components/kaggle-linked-profile.component.html",
+      "modified": "2026-10-27T14:58:56.904Z",
+      "sha256": "0f31694f7103e422a3908f5b84ec2d79780af001d6a0682132f08cbc62f082ec"
+    },
+    {
+      "file": "frontend/src/app/pages/integrations-marketplace/components/kaggle-linked-profile.component.scss",
+      "modified": "2026-10-27T14:59:17.051Z",
+      "sha256": "f9ba22d0e0834d3a49f9f337a38277d08bafa1d3c5e0a1fd7c24e33552828bfe"
+    }
+  ],
+  "taskOwnedFiles": [
+    "backend/src/controllers/integrationscontroller.js",
+    "backend/src/services/integrations/index.js",
+    "backend/src/services/integrations/portfolioScannerAdapter.js",
+    "backend/src/tests/integrationsAdapters.test.js",
+    "backend/src/tests/integrationsLifecycle.test.js",
+    "frontend/src/app/pages/integrations-marketplace/integrations-marketplace.component.html",
+    "frontend/src/app/pages/integrations-marketplace/integrations-marketplace.component.ts",
+    "frontend/src/app/pages/integrations-marketplace/integrations-marketplace.component.scss",
+    "frontend/src/app/pages/integrations-marketplace/integrations-marketplace.component.spec.ts",
+    "backend/src/scripts/startCombinedIntegrationsAcceptance.js",
+    "backend/src/scripts/combinedIntegrationsPreload.js",
+    "backend/src/scripts/combinedIntegrations.proxy.json",
+    "backend/verification/integrations/FUNCTIONAL-ACCEPTANCE-2026-10-27.md",
+    "backend/verification/integrations/combined-browser-runtime-accepted-2026-10-27.json",
+    "backend/verification/integrations/combined-portfolio-validation-2026-10-27.json",
+    "backend/verification/integrations/combined-browser-smoke-2026-10-27.json",
+    "backend/verification/integrations/combined-marketplace-browser-2026-10-27.png",
+    "backend/verification/integrations/combined-marketplace-browser-final-2026-10-27.png",
+    "backend/verification/integrations/combined-final-checks-2026-10-27.json"
+  ],
+  "concurrentChangesPreserved": [
+    "frontend/src/app/pages/integrations-marketplace/components/kaggle-linked-profile.component.html",
+    "frontend/src/app/pages/integrations-marketplace/components/kaggle-linked-profile.component.scss"
+  ],
+  "retainedEvidence": [
+    "backend/verification/integrations/combined-browser-runtime-accepted-2026-10-27.json",
+    "backend/verification/integrations/combined-portfolio-validation-2026-10-27.json",
+    "backend/verification/integrations/combined-browser-smoke-2026-10-27.json",
+    "backend/verification/integrations/combined-marketplace-browser-2026-10-27.png",
+    "backend/verification/integrations/combined-marketplace-browser-final-2026-10-27.png"
+  ],
+  "obsoleteRuntimeDiagnostics": [
+    {
+      "file": "backend/verification/integrations/combined-browser-runtime-2026-10-27.json",
+      "apiRequests": 0,
+      "externalRequests": 0,
+      "cleanup": {
+        "mongoStopped": true,
+        "temporaryFilesRemoved": 398,
+        "productionDataUsed": false
+      }
+    },
+    {
+      "file": "backend/verification/integrations/combined-browser-runtime-final-2026-10-27.json",
+      "apiRequests": 0,
+      "externalRequests": 0,
+      "cleanup": {
+        "mongoStopped": true,
+        "temporaryFilesRemoved": 395,
+        "productionDataUsed": false
+      }
+    },
+    {
+      "file": "backend/verification/integrations/combined-browser-runtime-authenticated-2026-10-27.json",
+      "apiRequests": 8,
+      "externalRequests": 0,
+      "cleanup": {
+        "mongoStopped": true,
+        "temporaryFilesRemoved": 398,
+        "productionDataUsed": false
+      }
+    }
+  ],
+  "deletedTaskOwnedArtifacts": [
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\integrations\\combined-browser-runtime-2026-10-27.json",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\integrations\\combined-browser-runtime-final-2026-10-27.json",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\integrations\\combined-browser-runtime-authenticated-2026-10-27.json"
+  ],
+  "concurrentStaging": "Appeared at finalization; index preserved, task did not stage/unstage. Latest report/check metadata may be newer in working tree.",
+  "finalGitStatusObserved": [
+    "M  backend/src/controllers/integrationscontroller.js",
+    "A  backend/src/scripts/combinedIntegrations.proxy.json",
+    "A  backend/src/scripts/combinedIntegrationsPreload.js",
+    "A  backend/src/scripts/startCombinedIntegrationsAcceptance.js",
+    "M  backend/src/services/integrations/index.js",
+    "M  backend/src/services/integrations/portfolioScannerAdapter.js",
+    "M  backend/src/tests/integrationsAdapters.test.js",
+    "M  backend/src/tests/integrationsLifecycle.test.js",
+    "MM backend/verification/integrations/FUNCTIONAL-ACCEPTANCE-2026-10-27.md",
+    "A  backend/verification/integrations/combined-browser-runtime-accepted-2026-10-27.json",
+    "A  backend/verification/integrations/combined-browser-smoke-2026-10-27.json",
+    "AM backend/verification/integrations/combined-final-checks-2026-10-27.json",
+    "A  backend/verification/integrations/combined-portfolio-validation-2026-10-27.json",
+    "M  frontend/src/app/pages/integrations-marketplace/components/kaggle-linked-profile.component.html",
+    "M  frontend/src/app/pages/integrations-marketplace/components/kaggle-linked-profile.component.scss",
+    "M  frontend/src/app/pages/integrations-marketplace/integrations-marketplace.component.html",
+    "M  frontend/src/app/pages/integrations-marketplace/integrations-marketplace.component.scss",
+    "M  frontend/src/app/pages/integrations-marketplace/integrations-marketplace.component.spec.ts",
+    "M  frontend/src/app/pages/integrations-marketplace/integrations-marketplace.component.ts",
+    "?? backend/verification/integrations/combined-marketplace-browser-2026-10-27.png",
+    "?? backend/verification/integrations/combined-marketplace-browser-final-2026-10-27.png"
+  ]
+}

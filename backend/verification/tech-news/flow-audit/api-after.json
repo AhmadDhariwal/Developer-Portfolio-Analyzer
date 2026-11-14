@@ -1,0 +1,1540 @@
+{
+  "phase": "after",
+  "at": "2026-10-24T19:36:44.994Z",
+  "catalog": 692,
+  "indexes": [
+    {
+      "v": 2,
+      "key": {
+        "_id": 1
+      },
+      "name": "_id_"
+    },
+    {
+      "v": 2,
+      "key": {
+        "canonicalId": 1
+      },
+      "name": "canonicalId_1",
+      "unique": true
+    },
+    {
+      "v": 2,
+      "key": {
+        "expiresAt": 1
+      },
+      "name": "expiresAt_1",
+      "expireAfterSeconds": 0
+    },
+    {
+      "v": 2,
+      "key": {
+        "publishedAt": -1,
+        "canonicalId": 1
+      },
+      "name": "publishedAt_-1_canonicalId_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "technologies": 1,
+        "publishedAt": -1,
+        "canonicalId": 1
+      },
+      "name": "technologies_1_publishedAt_-1_canonicalId_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "searchTerms": 1,
+        "publishedAt": -1,
+        "canonicalId": 1
+      },
+      "name": "searchTerms_1_publishedAt_-1_canonicalId_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "source": 1,
+        "publishedAt": -1,
+        "canonicalId": 1
+      },
+      "name": "source_1_publishedAt_-1_canonicalId_1"
+    },
+    {
+      "v": 2,
+      "key": {
+        "category": 1,
+        "publishedAt": -1,
+        "canonicalId": 1
+      },
+      "name": "category_1_publishedAt_-1_canonicalId_1"
+    }
+  ],
+  "before": {
+    "global": "2",
+    "prewarm": null,
+    "providers": {
+      "newsapi": {
+        "contentApproved": false,
+        "restricted": true,
+        "enabled": false,
+        "limits": {
+          "daily": 0,
+          "monthly": 0,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 0,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "budget_not_configured"
+        }
+      },
+      "gnews": {
+        "contentApproved": false,
+        "restricted": true,
+        "enabled": false,
+        "limits": {
+          "daily": 0,
+          "monthly": 0,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 0,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "budget_not_configured"
+        }
+      },
+      "hackernews": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 72,
+          "monthly": 2200,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 24,
+        "monthlyUsed": 63,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "interval",
+          "nextEligibleAt": "2026-10-24T19:42:49.057Z"
+        }
+      },
+      "devto": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 72,
+          "monthly": 2200,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 24,
+        "monthlyUsed": 63,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "interval",
+          "nextEligibleAt": "2026-10-24T19:42:49.058Z"
+        }
+      },
+      "reddit": {
+        "contentApproved": false,
+        "restricted": true,
+        "enabled": false,
+        "limits": {
+          "daily": 0,
+          "monthly": 0,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 0,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "budget_not_configured"
+        }
+      },
+      "hackernewssearch": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 12,
+          "monthly": 300,
+          "concurrency": 1,
+          "interval": 60000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 3,
+        "monthlyUsed": 11,
+        "coolingDown": false,
+        "admission": {
+          "allowed": true,
+          "reason": "allowed",
+          "nextEligibleAt": null
+        }
+      },
+      "githubreleases": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 6,
+          "monthly": 150,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 6,
+        "monthlyUsed": 12,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "daily_budget",
+          "nextEligibleAt": "2026-10-25T00:00:00.000Z"
+        }
+      },
+      "githubadvisories": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 6,
+          "monthly": 150,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 6,
+        "monthlyUsed": 12,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "daily_budget",
+          "nextEligibleAt": "2026-10-25T00:00:00.000Z"
+        }
+      },
+      "lobsters": {
+        "contentApproved": false,
+        "restricted": false,
+        "enabled": false,
+        "limits": {
+          "daily": 0,
+          "monthly": 0,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 0,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "budget_not_configured"
+        }
+      },
+      "devtosearch": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 12,
+          "monthly": 300,
+          "concurrency": 1,
+          "interval": 60000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 3,
+        "monthlyUsed": 12,
+        "coolingDown": false,
+        "admission": {
+          "allowed": true,
+          "reason": "allowed",
+          "nextEligibleAt": null
+        }
+      },
+      "kubernetesblog": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 4,
+          "monthly": 100,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 4,
+        "monthlyUsed": 9,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "daily_budget",
+          "nextEligibleAt": "2026-10-25T00:00:00.000Z"
+        }
+      },
+      "cloudflarechangelog": {
+        "contentApproved": false,
+        "restricted": false,
+        "enabled": false,
+        "limits": {
+          "daily": 0,
+          "monthly": 0,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 0,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "budget_not_configured"
+        }
+      }
+    }
+  },
+  "responses": [
+    {
+      "search": "kubernets",
+      "date": "week",
+      "query": {
+        "text": "kubernets",
+        "topic": null,
+        "key": "q-27442557223f706b0bd58b135fd8aa38",
+        "groups": [
+          [
+            "kubernets"
+          ]
+        ]
+      },
+      "http": 200,
+      "total": 0,
+      "items": [],
+      "coverage": {
+        "status": "coverage_gap",
+        "topic": "kubernets",
+        "cachedMatches": 0,
+        "minimum": 6,
+        "broaderMatches": 0,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 0,
+        "suggestedDate": null,
+        "suggestion": {
+          "query": "kubernetes",
+          "label": "Kubernetes"
+        }
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "spelling_suggestion",
+        "nextEligibleAt": null
+      },
+      "serverTime": "2026-10-24T19:36:46.273Z"
+    },
+    {
+      "search": "kubernets",
+      "date": "month",
+      "query": {
+        "text": "kubernets",
+        "topic": null,
+        "key": "q-27442557223f706b0bd58b135fd8aa38",
+        "groups": [
+          [
+            "kubernets"
+          ]
+        ]
+      },
+      "http": 200,
+      "total": 0,
+      "items": [],
+      "coverage": {
+        "status": "coverage_gap",
+        "topic": "kubernets",
+        "cachedMatches": 0,
+        "minimum": 6,
+        "broaderMatches": 0,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 0,
+        "suggestedDate": null,
+        "suggestion": {
+          "query": "kubernetes",
+          "label": "Kubernetes"
+        }
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "spelling_suggestion",
+        "nextEligibleAt": null
+      },
+      "serverTime": "2026-10-24T19:36:46.692Z"
+    },
+    {
+      "search": "kubernetes",
+      "date": "week",
+      "query": {
+        "text": "kubernetes",
+        "topic": "kubernetes",
+        "key": "kubernetes",
+        "groups": []
+      },
+      "http": 200,
+      "total": 17,
+      "items": [
+        {
+          "title": "Patch the image, not the version",
+          "source": "Dev.to",
+          "url": "https://dev.to/marufing/patch-the-image-not-the-version-2a2"
+        },
+        {
+          "title": "Kuboard: 5,289 Fingerprinted Consoles, 1,107 Title Matches, and the Cluster Behind Both",
+          "source": "Dev.to",
+          "url": "https://dev.to/facilishz/kuboard-5289-fingerprinted-consoles-1107-title-matches-and-the-cluster-behind-both-2ho3"
+        },
+        {
+          "title": "writable Kubernetes volumes are security contracts now",
+          "source": "Dev.to",
+          "url": "https://dev.to/pvgomes/writable-kubernetes-volumes-are-security-contracts-now-89l"
+        },
+        {
+          "title": "Kubernetes: un contrato de correo para CI",
+          "source": "Dev.to",
+          "url": "https://dev.to/alexcarteruk/kubernetes-un-contrato-de-correo-para-ci-4n19"
+        },
+        {
+          "title": "AIStore's legacy ETL API accepted Kubernetes security settings from the caller",
+          "source": "Dev.to",
+          "url": "https://dev.to/bianliang/aistores-legacy-etl-api-accepted-kubernetes-security-settings-from-the-caller-3mc0"
+        },
+        {
+          "title": "When cert-manager's Ready Condition Runs Past Expiry Until a Reconcile",
+          "source": "Dev.to",
+          "url": "https://dev.to/whenitruns/when-cert-managers-ready-condition-runs-past-expiry-until-a-reconcile-4442"
+        },
+        {
+          "title": "KubeVirt does not run on Apple Silicon, so I built KubeSilicon",
+          "source": "Dev.to",
+          "url": "https://dev.to/matheus_thurler_cea17574b/kubevirt-does-not-run-on-apple-silicon-so-i-built-kubesilicon-3ce2"
+        },
+        {
+          "title": "Kubernetes Requests and Limits: Set CPU and Memory Right",
+          "source": "Dev.to",
+          "url": "https://dev.to/meteorops/kubernetes-requests-and-limits-set-cpu-and-memory-right-cl8"
+        },
+        {
+          "title": "Kubernetes vs. Docker Compose: When Do You Need Orchestration? (2026)",
+          "source": "Hacker News",
+          "url": "https://lucasaguiar.xyz/posts/kubernetes-vs-docker-compose-guia-2026/"
+        },
+        {
+          "title": "Show HN: Stackdome – An open source self-hostable Railway alternative on K8s",
+          "source": "Hacker News",
+          "url": "https://github.com/axernel-labs/stackdome"
+        },
+        {
+          "title": "LLM-D 1.0 Takes Open-Source Kubernetes AI Inference into Production",
+          "source": "Hacker News",
+          "url": "https://techstrong.ai/ai-infrastructure/llm-d-1-0-takes-open-source-kubernetes-ai-inference-into-production/"
+        },
+        {
+          "title": "Adversary emulation tool for Kubernetes clusters",
+          "source": "Hacker News",
+          "url": "https://github.com/Magier/Ran"
+        }
+      ],
+      "coverage": {
+        "status": "sufficient",
+        "topic": "kubernetes",
+        "cachedMatches": 17,
+        "minimum": 6,
+        "broaderMatches": 33,
+        "dateExcludedMatches": 16,
+        "filterExcludedMatches": 16,
+        "suggestedDate": "month"
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null,
+        "sourceHealth": [
+          {
+            "provider": "hackernewssearch",
+            "status": "success",
+            "articlesFound": 25,
+            "reason": null,
+            "nextEligibleAt": null
+          },
+          {
+            "provider": "devtosearch",
+            "status": "success",
+            "articlesFound": 7,
+            "reason": null,
+            "nextEligibleAt": null
+          }
+        ],
+        "lastAttemptAt": "2026-10-24T11:42:27.689Z"
+      },
+      "serverTime": "2026-10-24T19:36:47.159Z"
+    },
+    {
+      "search": "kubernetes",
+      "date": "month",
+      "query": {
+        "text": "kubernetes",
+        "topic": "kubernetes",
+        "key": "kubernetes",
+        "groups": []
+      },
+      "http": 200,
+      "total": 33,
+      "items": [
+        {
+          "title": "Patch the image, not the version",
+          "source": "Dev.to",
+          "url": "https://dev.to/marufing/patch-the-image-not-the-version-2a2"
+        },
+        {
+          "title": "Kuboard: 5,289 Fingerprinted Consoles, 1,107 Title Matches, and the Cluster Behind Both",
+          "source": "Dev.to",
+          "url": "https://dev.to/facilishz/kuboard-5289-fingerprinted-consoles-1107-title-matches-and-the-cluster-behind-both-2ho3"
+        },
+        {
+          "title": "writable Kubernetes volumes are security contracts now",
+          "source": "Dev.to",
+          "url": "https://dev.to/pvgomes/writable-kubernetes-volumes-are-security-contracts-now-89l"
+        },
+        {
+          "title": "Kubernetes: un contrato de correo para CI",
+          "source": "Dev.to",
+          "url": "https://dev.to/alexcarteruk/kubernetes-un-contrato-de-correo-para-ci-4n19"
+        },
+        {
+          "title": "AIStore's legacy ETL API accepted Kubernetes security settings from the caller",
+          "source": "Dev.to",
+          "url": "https://dev.to/bianliang/aistores-legacy-etl-api-accepted-kubernetes-security-settings-from-the-caller-3mc0"
+        },
+        {
+          "title": "When cert-manager's Ready Condition Runs Past Expiry Until a Reconcile",
+          "source": "Dev.to",
+          "url": "https://dev.to/whenitruns/when-cert-managers-ready-condition-runs-past-expiry-until-a-reconcile-4442"
+        },
+        {
+          "title": "KubeVirt does not run on Apple Silicon, so I built KubeSilicon",
+          "source": "Dev.to",
+          "url": "https://dev.to/matheus_thurler_cea17574b/kubevirt-does-not-run-on-apple-silicon-so-i-built-kubesilicon-3ce2"
+        },
+        {
+          "title": "Kubernetes Requests and Limits: Set CPU and Memory Right",
+          "source": "Dev.to",
+          "url": "https://dev.to/meteorops/kubernetes-requests-and-limits-set-cpu-and-memory-right-cl8"
+        },
+        {
+          "title": "Kubernetes vs. Docker Compose: When Do You Need Orchestration? (2026)",
+          "source": "Hacker News",
+          "url": "https://lucasaguiar.xyz/posts/kubernetes-vs-docker-compose-guia-2026/"
+        },
+        {
+          "title": "Show HN: Stackdome – An open source self-hostable Railway alternative on K8s",
+          "source": "Hacker News",
+          "url": "https://github.com/axernel-labs/stackdome"
+        },
+        {
+          "title": "LLM-D 1.0 Takes Open-Source Kubernetes AI Inference into Production",
+          "source": "Hacker News",
+          "url": "https://techstrong.ai/ai-infrastructure/llm-d-1-0-takes-open-source-kubernetes-ai-inference-into-production/"
+        },
+        {
+          "title": "Adversary emulation tool for Kubernetes clusters",
+          "source": "Hacker News",
+          "url": "https://github.com/Magier/Ran"
+        }
+      ],
+      "coverage": {
+        "status": "sufficient",
+        "topic": "kubernetes",
+        "cachedMatches": 33,
+        "minimum": 6,
+        "broaderMatches": 33,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 0,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null,
+        "sourceHealth": [
+          {
+            "provider": "hackernewssearch",
+            "status": "success",
+            "articlesFound": 25,
+            "reason": null,
+            "nextEligibleAt": null
+          },
+          {
+            "provider": "devtosearch",
+            "status": "success",
+            "articlesFound": 7,
+            "reason": null,
+            "nextEligibleAt": null
+          }
+        ],
+        "lastAttemptAt": "2026-10-24T11:42:27.689Z"
+      },
+      "serverTime": "2026-10-24T19:36:47.801Z"
+    },
+    {
+      "search": "k8s",
+      "date": "week",
+      "query": {
+        "text": "kubernetes",
+        "topic": "kubernetes",
+        "key": "kubernetes",
+        "groups": []
+      },
+      "http": 200,
+      "total": 17,
+      "items": [
+        {
+          "title": "Patch the image, not the version",
+          "source": "Dev.to",
+          "url": "https://dev.to/marufing/patch-the-image-not-the-version-2a2"
+        },
+        {
+          "title": "Kuboard: 5,289 Fingerprinted Consoles, 1,107 Title Matches, and the Cluster Behind Both",
+          "source": "Dev.to",
+          "url": "https://dev.to/facilishz/kuboard-5289-fingerprinted-consoles-1107-title-matches-and-the-cluster-behind-both-2ho3"
+        },
+        {
+          "title": "writable Kubernetes volumes are security contracts now",
+          "source": "Dev.to",
+          "url": "https://dev.to/pvgomes/writable-kubernetes-volumes-are-security-contracts-now-89l"
+        },
+        {
+          "title": "Kubernetes: un contrato de correo para CI",
+          "source": "Dev.to",
+          "url": "https://dev.to/alexcarteruk/kubernetes-un-contrato-de-correo-para-ci-4n19"
+        },
+        {
+          "title": "AIStore's legacy ETL API accepted Kubernetes security settings from the caller",
+          "source": "Dev.to",
+          "url": "https://dev.to/bianliang/aistores-legacy-etl-api-accepted-kubernetes-security-settings-from-the-caller-3mc0"
+        },
+        {
+          "title": "When cert-manager's Ready Condition Runs Past Expiry Until a Reconcile",
+          "source": "Dev.to",
+          "url": "https://dev.to/whenitruns/when-cert-managers-ready-condition-runs-past-expiry-until-a-reconcile-4442"
+        },
+        {
+          "title": "KubeVirt does not run on Apple Silicon, so I built KubeSilicon",
+          "source": "Dev.to",
+          "url": "https://dev.to/matheus_thurler_cea17574b/kubevirt-does-not-run-on-apple-silicon-so-i-built-kubesilicon-3ce2"
+        },
+        {
+          "title": "Kubernetes Requests and Limits: Set CPU and Memory Right",
+          "source": "Dev.to",
+          "url": "https://dev.to/meteorops/kubernetes-requests-and-limits-set-cpu-and-memory-right-cl8"
+        },
+        {
+          "title": "Kubernetes vs. Docker Compose: When Do You Need Orchestration? (2026)",
+          "source": "Hacker News",
+          "url": "https://lucasaguiar.xyz/posts/kubernetes-vs-docker-compose-guia-2026/"
+        },
+        {
+          "title": "Show HN: Stackdome – An open source self-hostable Railway alternative on K8s",
+          "source": "Hacker News",
+          "url": "https://github.com/axernel-labs/stackdome"
+        },
+        {
+          "title": "LLM-D 1.0 Takes Open-Source Kubernetes AI Inference into Production",
+          "source": "Hacker News",
+          "url": "https://techstrong.ai/ai-infrastructure/llm-d-1-0-takes-open-source-kubernetes-ai-inference-into-production/"
+        },
+        {
+          "title": "Adversary emulation tool for Kubernetes clusters",
+          "source": "Hacker News",
+          "url": "https://github.com/Magier/Ran"
+        }
+      ],
+      "coverage": {
+        "status": "sufficient",
+        "topic": "kubernetes",
+        "cachedMatches": 17,
+        "minimum": 6,
+        "broaderMatches": 33,
+        "dateExcludedMatches": 16,
+        "filterExcludedMatches": 16,
+        "suggestedDate": "month"
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null,
+        "sourceHealth": [
+          {
+            "provider": "hackernewssearch",
+            "status": "success",
+            "articlesFound": 25,
+            "reason": null,
+            "nextEligibleAt": null
+          },
+          {
+            "provider": "devtosearch",
+            "status": "success",
+            "articlesFound": 7,
+            "reason": null,
+            "nextEligibleAt": null
+          }
+        ],
+        "lastAttemptAt": "2026-10-24T11:42:27.689Z"
+      },
+      "serverTime": "2026-10-24T19:36:48.442Z"
+    },
+    {
+      "search": "k8s",
+      "date": "month",
+      "query": {
+        "text": "kubernetes",
+        "topic": "kubernetes",
+        "key": "kubernetes",
+        "groups": []
+      },
+      "http": 200,
+      "total": 33,
+      "items": [
+        {
+          "title": "Patch the image, not the version",
+          "source": "Dev.to",
+          "url": "https://dev.to/marufing/patch-the-image-not-the-version-2a2"
+        },
+        {
+          "title": "Kuboard: 5,289 Fingerprinted Consoles, 1,107 Title Matches, and the Cluster Behind Both",
+          "source": "Dev.to",
+          "url": "https://dev.to/facilishz/kuboard-5289-fingerprinted-consoles-1107-title-matches-and-the-cluster-behind-both-2ho3"
+        },
+        {
+          "title": "writable Kubernetes volumes are security contracts now",
+          "source": "Dev.to",
+          "url": "https://dev.to/pvgomes/writable-kubernetes-volumes-are-security-contracts-now-89l"
+        },
+        {
+          "title": "Kubernetes: un contrato de correo para CI",
+          "source": "Dev.to",
+          "url": "https://dev.to/alexcarteruk/kubernetes-un-contrato-de-correo-para-ci-4n19"
+        },
+        {
+          "title": "AIStore's legacy ETL API accepted Kubernetes security settings from the caller",
+          "source": "Dev.to",
+          "url": "https://dev.to/bianliang/aistores-legacy-etl-api-accepted-kubernetes-security-settings-from-the-caller-3mc0"
+        },
+        {
+          "title": "When cert-manager's Ready Condition Runs Past Expiry Until a Reconcile",
+          "source": "Dev.to",
+          "url": "https://dev.to/whenitruns/when-cert-managers-ready-condition-runs-past-expiry-until-a-reconcile-4442"
+        },
+        {
+          "title": "KubeVirt does not run on Apple Silicon, so I built KubeSilicon",
+          "source": "Dev.to",
+          "url": "https://dev.to/matheus_thurler_cea17574b/kubevirt-does-not-run-on-apple-silicon-so-i-built-kubesilicon-3ce2"
+        },
+        {
+          "title": "Kubernetes Requests and Limits: Set CPU and Memory Right",
+          "source": "Dev.to",
+          "url": "https://dev.to/meteorops/kubernetes-requests-and-limits-set-cpu-and-memory-right-cl8"
+        },
+        {
+          "title": "Kubernetes vs. Docker Compose: When Do You Need Orchestration? (2026)",
+          "source": "Hacker News",
+          "url": "https://lucasaguiar.xyz/posts/kubernetes-vs-docker-compose-guia-2026/"
+        },
+        {
+          "title": "Show HN: Stackdome – An open source self-hostable Railway alternative on K8s",
+          "source": "Hacker News",
+          "url": "https://github.com/axernel-labs/stackdome"
+        },
+        {
+          "title": "LLM-D 1.0 Takes Open-Source Kubernetes AI Inference into Production",
+          "source": "Hacker News",
+          "url": "https://techstrong.ai/ai-infrastructure/llm-d-1-0-takes-open-source-kubernetes-ai-inference-into-production/"
+        },
+        {
+          "title": "Adversary emulation tool for Kubernetes clusters",
+          "source": "Hacker News",
+          "url": "https://github.com/Magier/Ran"
+        }
+      ],
+      "coverage": {
+        "status": "sufficient",
+        "topic": "kubernetes",
+        "cachedMatches": 33,
+        "minimum": 6,
+        "broaderMatches": 33,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 0,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null,
+        "sourceHealth": [
+          {
+            "provider": "hackernewssearch",
+            "status": "success",
+            "articlesFound": 25,
+            "reason": null,
+            "nextEligibleAt": null
+          },
+          {
+            "provider": "devtosearch",
+            "status": "success",
+            "articlesFound": 7,
+            "reason": null,
+            "nextEligibleAt": null
+          }
+        ],
+        "lastAttemptAt": "2026-10-24T11:42:27.689Z"
+      },
+      "serverTime": "2026-10-24T19:36:48.897Z"
+    },
+    {
+      "search": "devops",
+      "date": "week",
+      "query": {
+        "text": "devops",
+        "topic": "devops",
+        "key": "devops",
+        "groups": []
+      },
+      "http": 200,
+      "total": 72,
+      "items": [
+        {
+          "title": "Patch the image, not the version",
+          "source": "Dev.to",
+          "url": "https://dev.to/marufing/patch-the-image-not-the-version-2a2"
+        },
+        {
+          "title": "Kuboard: 5,289 Fingerprinted Consoles, 1,107 Title Matches, and the Cluster Behind Both",
+          "source": "Dev.to",
+          "url": "https://dev.to/facilishz/kuboard-5289-fingerprinted-consoles-1107-title-matches-and-the-cluster-behind-both-2ho3"
+        },
+        {
+          "title": "writable Kubernetes volumes are security contracts now",
+          "source": "Dev.to",
+          "url": "https://dev.to/pvgomes/writable-kubernetes-volumes-are-security-contracts-now-89l"
+        },
+        {
+          "title": "PHP2Shell: The Patch Is Out. Is It Running in Your Containers?",
+          "source": "Dev.to",
+          "url": "https://dev.to/kielltampubolon/php2shell-the-patch-is-out-is-it-running-in-your-containers-341j"
+        },
+        {
+          "title": "The eMudhra CA Keys Were One Byte Long. Does Your Container Still Trust Them?",
+          "source": "Dev.to",
+          "url": "https://dev.to/kielltampubolon/the-emudhra-ca-keys-were-one-byte-long-does-your-container-still-trust-them-1c5"
+        },
+        {
+          "title": "Kubernetes: un contrato de correo para CI",
+          "source": "Dev.to",
+          "url": "https://dev.to/alexcarteruk/kubernetes-un-contrato-de-correo-para-ci-4n19"
+        },
+        {
+          "title": "I Built a Lightweight SMTP-to-Mailgun Bridge in Go (In Just Two Days)",
+          "source": "Dev.to",
+          "url": "https://dev.to/devrfc83/i-built-a-lightweight-smtp-to-mailgun-bridge-in-go-in-just-two-days-10n1"
+        },
+        {
+          "title": "What Happens in the 50 ms Before Every Request: A Walkthrough of DNS Resolution",
+          "source": "Dev.to",
+          "url": "https://dev.to/manpage/what-happens-in-50ms-before-every-request-37pb"
+        },
+        {
+          "title": "Are free proxies safe? What a free list actually delivers",
+          "source": "Dev.to",
+          "url": "https://dev.to/proxymint/are-free-proxies-safe-what-a-free-list-actually-delivers-2j18"
+        },
+        {
+          "title": "16 containers on 2 cores: what my ZimaBlade home server actually uses",
+          "source": "Dev.to",
+          "url": "https://dev.to/iam-tech/16-containers-on-2-cores-what-my-zimablade-home-server-actually-uses-1p57"
+        },
+        {
+          "title": "Day 70: A Read-Only User and a Template",
+          "source": "Dev.to",
+          "url": "https://dev.to/ndcodes/day-70-a-read-only-user-and-a-template-1mf8"
+        },
+        {
+          "title": "5 Practical Lessons from Scanning GitHub Actions Workflows Ahead of the ubuntu-latest Migration",
+          "source": "Dev.to",
+          "url": "https://dev.to/alapha888/5-practical-lessons-from-scanning-github-actions-workflows-ahead-of-the-ubuntu-latest-migration-4li6"
+        }
+      ],
+      "coverage": {
+        "status": "sufficient",
+        "topic": "devops",
+        "cachedMatches": 72,
+        "minimum": 6,
+        "broaderMatches": 94,
+        "dateExcludedMatches": 22,
+        "filterExcludedMatches": 22,
+        "suggestedDate": "month"
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null,
+        "sourceHealth": [
+          {
+            "provider": "hackernewssearch",
+            "status": "success",
+            "articlesFound": 6,
+            "reason": null,
+            "nextEligibleAt": null
+          },
+          {
+            "provider": "devtosearch",
+            "status": "success",
+            "articlesFound": 27,
+            "reason": null,
+            "nextEligibleAt": null
+          }
+        ],
+        "lastAttemptAt": "2026-10-24T08:51:43.274Z"
+      },
+      "serverTime": "2026-10-24T19:36:50.192Z"
+    },
+    {
+      "search": "devops",
+      "date": "month",
+      "query": {
+        "text": "devops",
+        "topic": "devops",
+        "key": "devops",
+        "groups": []
+      },
+      "http": 200,
+      "total": 94,
+      "items": [
+        {
+          "title": "Patch the image, not the version",
+          "source": "Dev.to",
+          "url": "https://dev.to/marufing/patch-the-image-not-the-version-2a2"
+        },
+        {
+          "title": "Kuboard: 5,289 Fingerprinted Consoles, 1,107 Title Matches, and the Cluster Behind Both",
+          "source": "Dev.to",
+          "url": "https://dev.to/facilishz/kuboard-5289-fingerprinted-consoles-1107-title-matches-and-the-cluster-behind-both-2ho3"
+        },
+        {
+          "title": "writable Kubernetes volumes are security contracts now",
+          "source": "Dev.to",
+          "url": "https://dev.to/pvgomes/writable-kubernetes-volumes-are-security-contracts-now-89l"
+        },
+        {
+          "title": "PHP2Shell: The Patch Is Out. Is It Running in Your Containers?",
+          "source": "Dev.to",
+          "url": "https://dev.to/kielltampubolon/php2shell-the-patch-is-out-is-it-running-in-your-containers-341j"
+        },
+        {
+          "title": "The eMudhra CA Keys Were One Byte Long. Does Your Container Still Trust Them?",
+          "source": "Dev.to",
+          "url": "https://dev.to/kielltampubolon/the-emudhra-ca-keys-were-one-byte-long-does-your-container-still-trust-them-1c5"
+        },
+        {
+          "title": "Kubernetes: un contrato de correo para CI",
+          "source": "Dev.to",
+          "url": "https://dev.to/alexcarteruk/kubernetes-un-contrato-de-correo-para-ci-4n19"
+        },
+        {
+          "title": "I Built a Lightweight SMTP-to-Mailgun Bridge in Go (In Just Two Days)",
+          "source": "Dev.to",
+          "url": "https://dev.to/devrfc83/i-built-a-lightweight-smtp-to-mailgun-bridge-in-go-in-just-two-days-10n1"
+        },
+        {
+          "title": "What Happens in the 50 ms Before Every Request: A Walkthrough of DNS Resolution",
+          "source": "Dev.to",
+          "url": "https://dev.to/manpage/what-happens-in-50ms-before-every-request-37pb"
+        },
+        {
+          "title": "Are free proxies safe? What a free list actually delivers",
+          "source": "Dev.to",
+          "url": "https://dev.to/proxymint/are-free-proxies-safe-what-a-free-list-actually-delivers-2j18"
+        },
+        {
+          "title": "16 containers on 2 cores: what my ZimaBlade home server actually uses",
+          "source": "Dev.to",
+          "url": "https://dev.to/iam-tech/16-containers-on-2-cores-what-my-zimablade-home-server-actually-uses-1p57"
+        },
+        {
+          "title": "Day 70: A Read-Only User and a Template",
+          "source": "Dev.to",
+          "url": "https://dev.to/ndcodes/day-70-a-read-only-user-and-a-template-1mf8"
+        },
+        {
+          "title": "5 Practical Lessons from Scanning GitHub Actions Workflows Ahead of the ubuntu-latest Migration",
+          "source": "Dev.to",
+          "url": "https://dev.to/alapha888/5-practical-lessons-from-scanning-github-actions-workflows-ahead-of-the-ubuntu-latest-migration-4li6"
+        }
+      ],
+      "coverage": {
+        "status": "sufficient",
+        "topic": "devops",
+        "cachedMatches": 94,
+        "minimum": 6,
+        "broaderMatches": 94,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 0,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null,
+        "sourceHealth": [
+          {
+            "provider": "hackernewssearch",
+            "status": "success",
+            "articlesFound": 6,
+            "reason": null,
+            "nextEligibleAt": null
+          },
+          {
+            "provider": "devtosearch",
+            "status": "success",
+            "articlesFound": 27,
+            "reason": null,
+            "nextEligibleAt": null
+          }
+        ],
+        "lastAttemptAt": "2026-10-24T08:51:43.274Z"
+      },
+      "serverTime": "2026-10-24T19:36:50.998Z"
+    },
+    {
+      "search": "EC2",
+      "date": "week",
+      "query": {
+        "text": "ec2",
+        "topic": null,
+        "key": "q-7cba824311e0d9e258de9bc30596f912",
+        "groups": [
+          [
+            "ec2"
+          ]
+        ]
+      },
+      "http": 200,
+      "total": 0,
+      "items": [],
+      "coverage": {
+        "status": "coverage_gap",
+        "topic": "ec2",
+        "cachedMatches": 0,
+        "minimum": 6,
+        "broaderMatches": 0,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 0,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null
+      },
+      "serverTime": "2026-10-24T19:36:51.617Z"
+    },
+    {
+      "search": "EC2",
+      "date": "month",
+      "query": {
+        "text": "ec2",
+        "topic": null,
+        "key": "q-7cba824311e0d9e258de9bc30596f912",
+        "groups": [
+          [
+            "ec2"
+          ]
+        ]
+      },
+      "http": 200,
+      "total": 0,
+      "items": [],
+      "coverage": {
+        "status": "coverage_gap",
+        "topic": "ec2",
+        "cachedMatches": 0,
+        "minimum": 6,
+        "broaderMatches": 0,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 0,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null
+      },
+      "serverTime": "2026-10-24T19:36:52.340Z"
+    },
+    {
+      "search": "generative ai",
+      "date": "week",
+      "query": {
+        "text": "generative ai",
+        "topic": null,
+        "key": "q-7dd9d5f010e8a9a74e0d40763f827351",
+        "groups": [
+          [
+            "generative"
+          ],
+          [
+            "ai",
+            "artificial intelligence"
+          ]
+        ]
+      },
+      "http": 200,
+      "total": 1,
+      "items": [
+        {
+          "title": "Building a Multimodal, Suggestion-Based AI Writing Coach with Gemini and Google Docs",
+          "source": "Dev.to",
+          "url": "https://dev.to/gde/building-a-multimodal-suggestion-based-ai-writing-coach-with-gemini-and-google-docs-ea4"
+        }
+      ],
+      "coverage": {
+        "status": "coverage_gap",
+        "topic": "generative ai",
+        "cachedMatches": 1,
+        "minimum": 6,
+        "broaderMatches": 1,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 0,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null
+      },
+      "serverTime": "2026-10-24T19:36:52.981Z"
+    },
+    {
+      "search": "generative ai",
+      "date": "month",
+      "query": {
+        "text": "generative ai",
+        "topic": null,
+        "key": "q-7dd9d5f010e8a9a74e0d40763f827351",
+        "groups": [
+          [
+            "generative"
+          ],
+          [
+            "ai",
+            "artificial intelligence"
+          ]
+        ]
+      },
+      "http": 200,
+      "total": 1,
+      "items": [
+        {
+          "title": "Building a Multimodal, Suggestion-Based AI Writing Coach with Gemini and Google Docs",
+          "source": "Dev.to",
+          "url": "https://dev.to/gde/building-a-multimodal-suggestion-based-ai-writing-coach-with-gemini-and-google-docs-ea4"
+        }
+      ],
+      "coverage": {
+        "status": "coverage_gap",
+        "topic": "generative ai",
+        "cachedMatches": 1,
+        "minimum": 6,
+        "broaderMatches": 1,
+        "dateExcludedMatches": 0,
+        "filterExcludedMatches": 0,
+        "suggestedDate": null
+      },
+      "enrichment": {
+        "status": "not_needed",
+        "reason": "catalog_only",
+        "nextEligibleAt": null
+      },
+      "serverTime": "2026-10-24T19:36:54.079Z"
+    }
+  ],
+  "budgets": {
+    "NEWS_DISCOVERY_DAILY_JOBS": "12",
+    "NEWS_DISCOVERY_USER_MINUTE_JOBS": "3",
+    "NEWS_DISCOVERY_USER_DAILY_JOBS": "6",
+    "NEWS_DISCOVERY_PREWARM_DAILY_JOBS": "4",
+    "NEWS_PREWARM_RESERVED_USER_JOBS": "6",
+    "NEWS_PREWARM_STRATEGY": "demand-coverage"
+  },
+  "workerHeartbeat": {
+    "present": true,
+    "ageMs": 392
+  },
+  "searchIndexAudit": [
+    {
+      "search": "kubernets",
+      "textMatchesAcrossRetainedCatalog": 0,
+      "missingTechnologyTags": 0,
+      "missingSearchTerms": 0,
+      "examples": []
+    },
+    {
+      "search": "kubernetes",
+      "textMatchesAcrossRetainedCatalog": 37,
+      "missingTechnologyTags": 0,
+      "missingSearchTerms": 0,
+      "examples": [
+        {
+          "title": "Kubernetes Requests and Limits: Set CPU and Memory Right",
+          "source": "Dev.to",
+          "technologies": [
+            "kubernetes",
+            "devops"
+          ]
+        },
+        {
+          "title": "kubernetes/kubernetes: v1.37.1",
+          "source": "GitHub Releases",
+          "technologies": [
+            "kubernetes",
+            "devops"
+          ]
+        }
+      ]
+    },
+    {
+      "search": "k8s",
+      "textMatchesAcrossRetainedCatalog": 37,
+      "missingTechnologyTags": 0,
+      "missingSearchTerms": 0,
+      "examples": [
+        {
+          "title": "Kubernetes Requests and Limits: Set CPU and Memory Right",
+          "source": "Dev.to",
+          "technologies": [
+            "kubernetes",
+            "devops"
+          ]
+        },
+        {
+          "title": "kubernetes/kubernetes: v1.37.1",
+          "source": "GitHub Releases",
+          "technologies": [
+            "kubernetes",
+            "devops"
+          ]
+        }
+      ]
+    },
+    {
+      "search": "devops",
+      "textMatchesAcrossRetainedCatalog": 98,
+      "missingTechnologyTags": 0,
+      "missingSearchTerms": 0,
+      "examples": [
+        {
+          "title": "Is the Future of Engineering a Software Factory?/Patrick Debois (Coined DevOps) [video]",
+          "source": "Hacker News",
+          "technologies": [
+            "devops"
+          ]
+        },
+        {
+          "title": "Neckbeard – A DevOps/platform/SRE plugin for your agent",
+          "source": "Hacker News",
+          "technologies": [
+            "devops"
+          ]
+        }
+      ]
+    },
+    {
+      "search": "EC2",
+      "textMatchesAcrossRetainedCatalog": 0,
+      "missingTechnologyTags": 0,
+      "missingSearchTerms": 0,
+      "examples": []
+    },
+    {
+      "search": "generative ai",
+      "textMatchesAcrossRetainedCatalog": 1,
+      "missingTechnologyTags": 0,
+      "missingSearchTerms": 0,
+      "examples": [
+        {
+          "title": "Building a Multimodal, Suggestion-Based AI Writing Coach with Gemini and Google Docs",
+          "source": "Dev.to",
+          "technologies": [
+            "ai"
+          ]
+        }
+      ]
+    }
+  ],
+  "after": {
+    "global": "2",
+    "prewarm": null,
+    "providers": {
+      "newsapi": {
+        "contentApproved": false,
+        "restricted": true,
+        "enabled": false,
+        "limits": {
+          "daily": 0,
+          "monthly": 0,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 0,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "budget_not_configured"
+        }
+      },
+      "gnews": {
+        "contentApproved": false,
+        "restricted": true,
+        "enabled": false,
+        "limits": {
+          "daily": 0,
+          "monthly": 0,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 0,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "budget_not_configured"
+        }
+      },
+      "hackernews": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 72,
+          "monthly": 2200,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 24,
+        "monthlyUsed": 63,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "interval",
+          "nextEligibleAt": "2026-10-24T19:42:48.849Z"
+        }
+      },
+      "devto": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 72,
+          "monthly": 2200,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 24,
+        "monthlyUsed": 63,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "interval",
+          "nextEligibleAt": "2026-10-24T19:42:48.849Z"
+        }
+      },
+      "reddit": {
+        "contentApproved": false,
+        "restricted": true,
+        "enabled": false,
+        "limits": {
+          "daily": 0,
+          "monthly": 0,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 0,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "budget_not_configured"
+        }
+      },
+      "hackernewssearch": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 12,
+          "monthly": 300,
+          "concurrency": 1,
+          "interval": 60000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 3,
+        "monthlyUsed": 11,
+        "coolingDown": false,
+        "admission": {
+          "allowed": true,
+          "reason": "allowed",
+          "nextEligibleAt": null
+        }
+      },
+      "githubreleases": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 6,
+          "monthly": 150,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 6,
+        "monthlyUsed": 12,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "daily_budget",
+          "nextEligibleAt": "2026-10-25T00:00:00.000Z"
+        }
+      },
+      "githubadvisories": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 6,
+          "monthly": 150,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 6,
+        "monthlyUsed": 12,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "daily_budget",
+          "nextEligibleAt": "2026-10-25T00:00:00.000Z"
+        }
+      },
+      "lobsters": {
+        "contentApproved": false,
+        "restricted": false,
+        "enabled": false,
+        "limits": {
+          "daily": 0,
+          "monthly": 0,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 0,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "budget_not_configured"
+        }
+      },
+      "devtosearch": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 12,
+          "monthly": 300,
+          "concurrency": 1,
+          "interval": 60000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 3,
+        "monthlyUsed": 12,
+        "coolingDown": false,
+        "admission": {
+          "allowed": true,
+          "reason": "allowed",
+          "nextEligibleAt": null
+        }
+      },
+      "kubernetesblog": {
+        "contentApproved": true,
+        "restricted": false,
+        "enabled": true,
+        "limits": {
+          "daily": 4,
+          "monthly": 100,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 4,
+        "monthlyUsed": 9,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "daily_budget",
+          "nextEligibleAt": "2026-10-25T00:00:00.000Z"
+        }
+      },
+      "cloudflarechangelog": {
+        "contentApproved": false,
+        "restricted": false,
+        "enabled": false,
+        "limits": {
+          "daily": 0,
+          "monthly": 0,
+          "concurrency": 1,
+          "interval": 1200000
+        },
+        "quotaStoreAvailable": true,
+        "dailyUsed": 0,
+        "monthlyUsed": 0,
+        "coolingDown": false,
+        "admission": {
+          "allowed": false,
+          "reason": "budget_not_configured"
+        }
+      }
+    }
+  },
+  "countersUnchanged": true
+}

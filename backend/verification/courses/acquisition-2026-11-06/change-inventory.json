@@ -1,0 +1,212 @@
+{
+  "checkedAt": "2026-11-06T09:22:49.0345417Z",
+  "branch": "fix/learning-hub-p1",
+  "baselineCommit": "abe021c0b7e156186ddac8c9c94d47d85ef65b72",
+  "target": "not applicable",
+  "initialWorkingTree": "clean",
+  "files": [
+    {
+      "status": " M",
+      "path": "backend/.env.example",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\.env.example"
+    },
+    {
+      "status": " M",
+      "path": "backend/src/data/openLearningCatalog.js",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\data\\openLearningCatalog.js"
+    },
+    {
+      "status": " M",
+      "path": "backend/src/services/courseCatalogMaintenanceService.js",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\services\\courseCatalogMaintenanceService.js"
+    },
+    {
+      "status": " M",
+      "path": "backend/src/services/courseCatalogSearchService.js",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\services\\courseCatalogSearchService.js"
+    },
+    {
+      "status": " M",
+      "path": "backend/src/services/courseGovernanceService.js",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\services\\courseGovernanceService.js"
+    },
+    {
+      "status": " M",
+      "path": "backend/src/services/sharedCourseCatalogService.js",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\services\\sharedCourseCatalogService.js"
+    },
+    {
+      "status": " M",
+      "path": "backend/src/tests/coursesDiscovery.integration.test.js",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\coursesDiscovery.integration.test.js"
+    },
+    {
+      "status": " M",
+      "path": "backend/src/tests/coursesFinalization.test.js",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\coursesFinalization.test.js"
+    },
+    {
+      "status": " M",
+      "path": "backend/src/tests/sharedCourseCatalog.integration.test.js",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\sharedCourseCatalog.integration.test.js"
+    },
+    {
+      "status": " M",
+      "path": "backend/verification/courses/LEARNING-HUB-PRODUCTION-FINAL.md",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\LEARNING-HUB-PRODUCTION-FINAL.md"
+    },
+    {
+      "status": "??",
+      "path": "backend/src/data/courseAcquisitionCatalog.js",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\data\\courseAcquisitionCatalog.js"
+    },
+    {
+      "status": "??",
+      "path": "backend/src/data/courseAcquisitionSources.md",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\data\\courseAcquisitionSources.md"
+    },
+    {
+      "status": "??",
+      "path": "backend/src/data/freeCodeCamp.LICENSE",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\data\\freeCodeCamp.LICENSE"
+    },
+    {
+      "status": "??",
+      "path": "backend/src/scripts/verifyCourseAcquisition.js",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\scripts\\verifyCourseAcquisition.js"
+    },
+    {
+      "status": "??",
+      "path": "backend/src/services/courseCatalogAcquisitionService.js",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\services\\courseCatalogAcquisitionService.js"
+    },
+    {
+      "status": "??",
+      "path": "backend/src/services/courseCatalogCoverageService.js",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\services\\courseCatalogCoverageService.js"
+    },
+    {
+      "status": "??",
+      "path": "backend/src/services/courseCatalogTaxonomy.js",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\services\\courseCatalogTaxonomy.js"
+    },
+    {
+      "status": "??",
+      "path": "backend/src/tests/courseCatalogAcquisition.test.js",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\courseCatalogAcquisition.test.js"
+    },
+    {
+      "status": "??",
+      "path": "backend/src/tests/courseCatalogCoverage.integration.test.js",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\courseCatalogCoverage.integration.test.js"
+    },
+    {
+      "status": "??",
+      "path": "backend/src/tests/fixtures/courseAcquisitionWorker.js",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\fixtures\\courseAcquisitionWorker.js"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/acquisition-2026-11-06/catalog-verification.json",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\acquisition-2026-11-06\\catalog-verification.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/acquisition-2026-11-06/change-inventory.json",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\acquisition-2026-11-06\\change-inventory.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/acquisition-2026-11-06/cleanup.json",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\acquisition-2026-11-06\\cleanup.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/acquisition-2026-11-06/coverage.json",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\acquisition-2026-11-06\\coverage.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/acquisition-2026-11-06/evidence-preservation.json",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\acquisition-2026-11-06\\evidence-preservation.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/acquisition-2026-11-06/file-cleanup.json",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\acquisition-2026-11-06\\file-cleanup.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/acquisition-2026-11-06/final-checks.json",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\acquisition-2026-11-06\\final-checks.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/acquisition-2026-11-06/final-unit.log",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\acquisition-2026-11-06\\final-unit.log"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/acquisition-2026-11-06/focused.log",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\acquisition-2026-11-06\\focused.log"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/acquisition-2026-11-06/format-check.log",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\acquisition-2026-11-06\\format-check.log"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/acquisition-2026-11-06/format-write.log",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\acquisition-2026-11-06\\format-write.log"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/acquisition-2026-11-06/git-index.log",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\acquisition-2026-11-06\\git-index.log"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/acquisition-2026-11-06/git-working.log",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\acquisition-2026-11-06\\git-working.log"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/acquisition-2026-11-06/live-verification.log",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\acquisition-2026-11-06\\live-verification.log"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/acquisition-2026-11-06/mongo-network.json",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\acquisition-2026-11-06\\mongo-network.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/acquisition-2026-11-06/shared-catalog.json",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\acquisition-2026-11-06\\shared-catalog.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/acquisition-2026-11-06/source-final.log",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\acquisition-2026-11-06\\source-final.log"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/acquisition-2026-11-06/summary.json",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\acquisition-2026-11-06\\summary.json"
+    },
+    {
+      "status": "??",
+      "path": "backend/verification/courses/acquisition-2026-11-06/verification-cleanup.json",
+      "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\acquisition-2026-11-06\\verification-cleanup.json"
+    }
+  ],
+  "movedSourceFiles": [],
+  "deletedSourceFiles": [],
+  "deletedTaskOwnedTemporaryLogs": [
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\acquisition-focused-2026-11-06.log",
+    "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\acquisition-unit-2026-11-06.log"
+  ],
+  "frontendChanges": [],
+  "indexChanges": []
+}

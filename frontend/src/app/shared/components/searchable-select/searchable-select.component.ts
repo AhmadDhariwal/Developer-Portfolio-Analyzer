@@ -13,12 +13,13 @@ export interface SearchableSelectOption {
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './searchable-select.component.html',
-  styleUrl: './searchable-select.component.scss'
+  styleUrl: './searchable-select.component.scss',
 })
 export class SearchableSelectComponent {
   @Input() options: SearchableSelectOption[] = [];
   @Input() value = '';
   @Input() placeholder = 'Select';
+  @Input() ariaLabel = '';
   @Input() searchPlaceholder = 'Search';
   @Input() emptyStateLabel = 'No options found';
   @Input() emptyOptionLabel = '';
@@ -56,6 +57,38 @@ export class SearchableSelectComponent {
     this.valueChange.emit(value);
     this.isOpen = false;
     this.searchTerm = '';
+  }
+
+  @HostListener('keydown', ['$event'])
+  onKeydown(event: KeyboardEvent): void {
+    if (this.disabled) return;
+    if (event.key === 'Escape') {
+      this.isOpen = false;
+      this.searchTerm = '';
+      this.elementRef.nativeElement
+        .querySelector<HTMLButtonElement>('.searchable-select__trigger')
+        ?.focus();
+      event.preventDefault();
+    }
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (!this.isOpen) {
+        this.isOpen = true;
+        setTimeout(() =>
+          this.elementRef.nativeElement.querySelector<HTMLInputElement>('input')?.focus(),
+        );
+        return;
+      }
+      const buttons = Array.from(
+        this.elementRef.nativeElement.querySelectorAll<HTMLButtonElement>(
+          '.searchable-select__option',
+        ),
+      );
+      const index = buttons.indexOf(document.activeElement as HTMLButtonElement);
+      buttons[
+        (index + (event.key === 'ArrowDown' ? 1 : -1) + buttons.length) % buttons.length
+      ]?.focus();
+    }
   }
 
   @HostListener('document:click', ['$event'])

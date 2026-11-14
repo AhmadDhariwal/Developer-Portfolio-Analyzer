@@ -1,0 +1,156 @@
+{
+  "scope": "Authorized configured-database additive news catalog migration",
+  "checkedAt": "2026-10-23T19:55:14.029Z",
+  "before": {
+    "catalogCount": 100,
+    "indexNames": ["_id_"],
+    "savedItems": 5,
+    "savedDigest": "490b7d8d43488338c93cc97ba857c03fb3aec5c296b8963ae5ad16318b9200d9",
+    "publicPoolDigest": "7cd48709ecb5acd8420a08a49a246dff5edeb1526434fb3e4011b0f5da90fbe6",
+    "topicCacheDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "migration": {
+    "apply": true,
+    "eligible": 100,
+    "inserted": 0,
+    "legacyDocuments": 1,
+    "indexes": [
+      [
+        {
+          "canonicalId": 1
+        },
+        {
+          "unique": true
+        }
+      ],
+      [
+        {
+          "expiresAt": 1
+        },
+        {
+          "expireAfterSeconds": 0
+        }
+      ],
+      [
+        {
+          "publishedAt": -1,
+          "canonicalId": 1
+        },
+        {}
+      ],
+      [
+        {
+          "technologies": 1,
+          "publishedAt": -1,
+          "canonicalId": 1
+        },
+        {}
+      ],
+      [
+        {
+          "searchTerms": 1,
+          "publishedAt": -1,
+          "canonicalId": 1
+        },
+        {}
+      ],
+      [
+        {
+          "source": 1,
+          "publishedAt": -1,
+          "canonicalId": 1
+        },
+        {}
+      ],
+      [
+        {
+          "category": 1,
+          "publishedAt": -1,
+          "canonicalId": 1
+        },
+        {}
+      ]
+    ]
+  },
+  "after": {
+    "catalogCount": 100,
+    "indexNames": [
+      "_id_",
+      "canonicalId_1",
+      "expiresAt_1",
+      "publishedAt_-1_canonicalId_1",
+      "technologies_1_publishedAt_-1_canonicalId_1",
+      "searchTerms_1_publishedAt_-1_canonicalId_1",
+      "source_1_publishedAt_-1_canonicalId_1",
+      "category_1_publishedAt_-1_canonicalId_1"
+    ],
+    "savedItems": 5,
+    "savedDigest": "490b7d8d43488338c93cc97ba857c03fb3aec5c296b8963ae5ad16318b9200d9",
+    "publicPoolDigest": "7cd48709ecb5acd8420a08a49a246dff5edeb1526434fb3e4011b0f5da90fbe6",
+    "topicCacheDigest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "legacyAndSavedRecordsPreserved": true,
+  "externalProviderCalls": 0,
+  "liveReadChecks": [
+    {
+      "request": 1,
+      "mode": "explore",
+      "status": 200,
+      "total": 99,
+      "items": 12,
+      "catalogUnavailable": false,
+      "providerAdmission": "catalog_only",
+      "personalizationPresent": false
+    },
+    {
+      "request": 2,
+      "mode": "personalized",
+      "status": 200,
+      "total": 99,
+      "items": 12,
+      "catalogUnavailable": false,
+      "providerAdmission": "catalog_only",
+      "personalizationPresent": true
+    },
+    {
+      "request": 3,
+      "mode": "explore",
+      "status": 200,
+      "total": 99,
+      "items": 12,
+      "catalogUnavailable": false,
+      "providerAdmission": "catalog_only",
+      "personalizationPresent": false
+    },
+    {
+      "request": 4,
+      "mode": "personalized",
+      "status": 200,
+      "total": 99,
+      "items": 12,
+      "catalogUnavailable": false,
+      "providerAdmission": "catalog_only",
+      "personalizationPresent": true
+    },
+    {
+      "request": 5,
+      "mode": "explore",
+      "status": 200,
+      "total": 99,
+      "items": 12,
+      "catalogUnavailable": false,
+      "providerAdmission": "catalog_only",
+      "personalizationPresent": false
+    },
+    {
+      "request": 6,
+      "mode": "personalized",
+      "status": 200,
+      "total": 99,
+      "items": 12,
+      "catalogUnavailable": false,
+      "providerAdmission": "catalog_only",
+      "personalizationPresent": true
+    }
+  ]
+}

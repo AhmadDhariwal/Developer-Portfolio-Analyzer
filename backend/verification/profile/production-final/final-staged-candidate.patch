@@ -1,0 +1,4070 @@
+diff --git a/DEVINSIGHT_AI_SOLUTION_ARCHITECTURE_CHARTER.md b/DEVINSIGHT_AI_SOLUTION_ARCHITECTURE_CHARTER.md
+index 2f78400e651856bede601fa47248443bd768179e..38070c4979d00c9c9535b9e7930d00f0d6341a74 100644
+--- a/DEVINSIGHT_AI_SOLUTION_ARCHITECTURE_CHARTER.md
++++ b/DEVINSIGHT_AI_SOLUTION_ARCHITECTURE_CHARTER.md
+@@ -55,4 +55,6 @@ Stage results, exact files, measurements and rollback instructions are retained
+ - ADR-15: Credential-free LeetCode, numeric Stack Overflow and explicit Dev.to observations may reuse versioned, public-only Mongo snapshots for five minutes. Never share OAuth/private data, ownership or account scores; normalize and persist each account independently. Mongo leases and generation fencing coordinate fetches, with bounded local single-flight/waiting and no stale-on-error reads. Reuse consumes the existing account request budget; only actual outbound attempts consume provider budgets. Redis is not required on this path. Batch governance commands only inside the existing atomic transaction; retain all policy limits and documents.
+ - ADR-16: Identical fresh public Connect may return the existing owned connection without normalization or domain mutation only after consistent Mongo checks of account, connection, snapshot validity and owned observation equality. Action admission still applies; explicit Sync retains its history/timestamp semantics. Manual Connect may not clear an active Sync lease, including a claim acquired after manual validation began. Retain Mongo-only public snapshots: the bounded Redis read-through prototype saved no Mongo reads and did not justify extra cache commands/complexity.
+ 
++- ADR-17: Profile/Portfolio request admission uses MongoDB exclusively through the existing Integrations transaction/index machinery and disjoint `public-portfolio:v3:rate:` keys. Redis remains optional public-content/cache acceleration. Preserve all existing identities, fixed windows, limits and Retry-After; apply the existing upload policy to filesystem resume uploads and anonymous preview parsing before parsing. Mongo admission failure returns 503; exhaustion returns 429. No runtime store selector or automatic Redis fallback. Drain legacy workers and preserve or fully expire every outstanding window before rollout/rollback. Existing authentication, storage ownership, scoring and other module policies remain unchanged; their separately documented fleet-security gaps remain release gates. See `backend/verification/architecture/REQUEST-FLOW-GOVERNANCE-FINAL.md`.
++
+ P0/P1/P2 correctness gates passed their focused checks. P3 local persistence, worker restart, browser and short-load evidence is retained; deployment-equivalent soak, live shared-service verification and production topology/index confirmation remain release gates. Passing local tests never overrides those gates.
+diff --git a/backend/src/middleware/publicPortfolioRateLimit.js b/backend/src/middleware/publicPortfolioRateLimit.js
+index a8041669d87bd3276ebc2a96389ea8aa2f442b83..7dc80fcd83a3c7c4d37e9c085568a47453d7ee39 100644
+--- a/backend/src/middleware/publicPortfolioRateLimit.js
++++ b/backend/src/middleware/publicPortfolioRateLimit.js
+@@ -1,44 +1,39 @@
+ const { createHash } = require('node:crypto');
+-const cache = require('../services/redisCacheService');
+-const COUNTER =
+-  "local n = redis.call('INCR', KEYS[1]); if n == 1 then redis.call('PEXPIRE', KEYS[1], ARGV[1]) end; return n";
++const admission = require('../services/integrationMongoGovernanceService');
++const telemetry = require('../services/requestAdmissionMetrics');
+ 
+-function limiter(name, limit, windowMs, strict = false) {
+-  const local = new Map();
++// Keep the existing factory signature for callers. All Portfolio limits now use
++// one shared authority; strict=false no longer enables process-local allowances.
++function limiter(name, limit, windowMs, _strict = false) {
+   return async (req, res, next) => {
+-    const now = Date.now();
+-    const until = (Math.floor(now / windowMs) + 1) * windowMs;
+-    // req.ip respects Express trust-proxy policy; never trust raw forwarded headers.
++    // Preserve account/IP/recipient-slug identities. Express owns proxy trust.
+     const subject =
+       name === 'contact-recipient' ? req.params.slug : req.user?._id || req.ip || 'unknown';
+     const identity = createHash('sha256').update(String(subject)).digest('hex');
+-    const key = `public-portfolio:v3:rate:${name}:${identity}:${Math.floor(now / windowMs)}`;
+-    let count;
++    let result;
++    const startedAt = process.hrtime.bigint();
+     try {
+-      const redis = cache.getRedisCacheClient();
+-      if (!redis) throw new Error('unavailable');
+-      count = Number(await redis.eval(COUNTER, { keys: [key], arguments: [String(until - now)] }));
++      result = await admission.requestWindow(
++        `public-portfolio:v3:rate:${name}:${identity}`,
++        limit,
++        windowMs
++      );
+     } catch {
+-      if (strict) {
+-        res.set('Retry-After', '30');
+-        return res
+-          .status(503)
+-          .json({ message: 'Portfolio action controls temporarily unavailable.' });
+-      }
+-      for (const [id, entry] of local) if (entry.until <= now) local.delete(id);
+-      if (!local.has(key) && local.size >= 2000)
+-        return res.status(503).json({ message: 'Portfolio service is busy.' });
+-      const entry = local.get(key) || { count: 0, until };
+-      count = ++entry.count;
+-      local.set(key, entry);
++      telemetry.record(name, 'unavailable', startedAt);
++      res.set('Retry-After', '30');
++      return res
++        .status(503)
++        .json({ message: 'Portfolio action controls temporarily unavailable.' });
+     }
+     res.set('RateLimit-Limit', String(limit));
+-    res.set('RateLimit-Remaining', String(Math.max(0, limit - count)));
+-    if (count > limit) {
+-      res.set('Retry-After', String(Math.max(1, Math.ceil((until - now) / 1000))));
++    res.set('RateLimit-Remaining', String(Math.max(0, limit - result.count)));
++    if (result.count > limit) {
++      telemetry.record(name, 'limited', startedAt);
++      res.set('Retry-After', String(Math.max(1, Math.ceil((result.until - Date.now()) / 1000))));
+       return res.status(429).json({ message: 'Too many portfolio requests. Please retry later.' });
+     }
+-    next();
++    telemetry.record(name, 'allowed', startedAt);
++    return next();
+   };
+ }
+ module.exports = {
+diff --git a/backend/src/routes/preview.routes.js b/backend/src/routes/preview.routes.js
+index be89e5328761c956d16157f1b4a7b9c9454ec7f6..eaa25930ee457d79d7fec8d8a6b69293a9a1a05f 100644
+--- a/backend/src/routes/preview.routes.js
++++ b/backend/src/routes/preview.routes.js
+@@ -15,7 +15,10 @@ const previewStorage = multer.diskStorage({
+     cb(null, previewUploadDir);
+   },
+   filename: (req, file, cb) => {
+-    cb(null, `preview-${Date.now()}-${Math.random().toString(36).slice(2)}${path.extname(file.originalname)}`);
++    cb(
++      null,
++      `preview-${Date.now()}-${Math.random().toString(36).slice(2)}${path.extname(file.originalname)}`
++    );
+   }
+ });
+ 
+@@ -26,7 +29,10 @@ const previewUpload = multer({
+     fileSize: 5 * 1024 * 1024 // Size limit <= 5MB
+   },
+   fileFilter: (req, file, cb) => {
+-    if (file.mimetype === 'application/pdf' && path.extname(file.originalname).toLowerCase() === '.pdf') {
++    if (
++      file.mimetype === 'application/pdf' &&
++      path.extname(file.originalname).toLowerCase() === '.pdf'
++    ) {
+       cb(null, true);
+     } else {
+       cb(new Error('Only PDF files are allowed'), false);
+@@ -44,6 +50,11 @@ const previewResumePdfMiddleware = (req, res, next) => {
+   });
+ };
+ 
+-router.post('/resume/parse-text', previewResumePdfMiddleware, parsePreviewResume);
++router.post(
++  '/resume/parse-text',
++  require('../middleware/publicPortfolioRateLimit').uploadLimit,
++  previewResumePdfMiddleware,
++  parsePreviewResume
++);
+ 
+ module.exports = router;
+diff --git a/backend/src/routes/publicProfile.routes.js b/backend/src/routes/publicProfile.routes.js
+index 1c3db229a906457baf2f570f697c724092b2819b..8d7e8eafd5b955d8fc3b00c9eff39d75bcf3b159 100644
+--- a/backend/src/routes/publicProfile.routes.js
++++ b/backend/src/routes/publicProfile.routes.js
+@@ -39,6 +39,7 @@ router.post(
+   '/:slug/contact',
+   protect,
+   mediaSession,
++  require('../services/publicPortfolioContactService').validateContactRequest,
+   contactLimit,
+   contactRecipientLimit,
+   contactPublicProfile
+diff --git a/backend/src/routes/resume.routes.js b/backend/src/routes/resume.routes.js
+index 5d26da716ef9d967b2ea254015ba36f3541d83ee..33808a88f06a17ef2755a09e72ed99ff13681431 100644
+--- a/backend/src/routes/resume.routes.js
++++ b/backend/src/routes/resume.routes.js
+@@ -17,10 +17,7 @@ const upload = require('../middleware/uploadmiddleware');
+ router.post(
+   '/upload',
+   protect,
+-  (req, res, next) =>
+-    process.env.STORAGE_DRIVER === 'b2'
+-      ? require('../middleware/publicPortfolioRateLimit').uploadLimit(req, res, next)
+-      : next(),
++  require('../middleware/publicPortfolioRateLimit').uploadLimit,
+   upload.resumePdf,
+   uploadResume
+ );
+diff --git a/backend/src/scripts/verifyRequestFlowGovernance.js b/backend/src/scripts/verifyRequestFlowGovernance.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..29b6534aad3614f173b4ec8e1fce208beff9bbc1
+--- /dev/null
++++ b/backend/src/scripts/verifyRequestFlowGovernance.js
+@@ -0,0 +1,108 @@
++'use strict';
++// Fixture-only runner. Never load application .env or start the application workers.
++const fs = require('node:fs');
++const path = require('node:path');
++const net = require('node:net');
++const { spawn } = require('node:child_process');
++const { startMongo } = require('../tests/fixtures/disposableRequestMongo');
++
++async function main() {
++  const runtime = await startMongo();
++  const proxies = [];
++  const sockets = new Set();
++  try {
++    const port = Number(new URL(runtime.uri).port);
++    // Existing baseline suites intentionally allow only these loopback fixture ports.
++    for (const fixturePort of [27139, 27140]) {
++      const proxy = net.createServer((incoming) => {
++        const upstream = net.connect(port, '127.0.0.1');
++        for (const socket of [incoming, upstream]) {
++          sockets.add(socket);
++          socket.on('close', () => sockets.delete(socket));
++          socket.on('error', () => {
++            incoming.destroy();
++            upstream.destroy();
++          });
++        }
++        incoming.pipe(upstream).pipe(incoming);
++      });
++      proxies.push(proxy);
++      await new Promise((resolve, reject) => {
++        proxy.once('error', reject);
++        proxy.listen(fixturePort, '127.0.0.1', resolve);
++      });
++    }
++    const directory = path.resolve(__dirname, '../../verification/architecture');
++    fs.mkdirSync(directory, { recursive: true });
++    // Allow only operating-system settings and explicit disposable fixture settings.
++    // Blacklisting credential names can accidentally retain deployment policy flags.
++    const childEnv = Object.fromEntries(
++      [
++        'SystemRoot',
++        'WINDIR',
++        'PATH',
++        'Path',
++        'TEMP',
++        'TMP',
++        'APPDATA',
++        'LOCALAPPDATA',
++        'USERPROFILE'
++      ]
++        .filter((key) => process.env[key] !== undefined)
++        .map((key) => [key, process.env[key]])
++    );
++    Object.assign(childEnv, {
++      NODE_ENV: 'test',
++      INTEGRATION_GOVERNANCE_EVIDENCE_FILE: path.join(
++        directory,
++        'integration-governance-regression.json'
++      ),
++      PROFILE_ACCEPTANCE_MONGO: 'mongodb://127.0.0.1:27139/?replicaSet=integration-live',
++      B2_ACCEPTANCE_MONGO: 'mongodb://127.0.0.1:27140/?replicaSet=integration-live'
++    });
++    if (process.env.INTEGRATION_TEST_MONGOD)
++      childEnv.INTEGRATION_TEST_MONGOD = process.env.INTEGRATION_TEST_MONGOD;
++    const suites = [
++      'requestFlowGovernance',
++      'publicPortfolioHardening',
++      'profileAccountSecurity',
++      'profileSettingsProduction',
++      'b2Storage',
++      'resumePipelineFinalization',
++      'developerContextService',
++      'careerSprintPlanningFinalization',
++      'newsHubHardening',
++      'newsFlow',
++      'integrationsGovernance',
++      'integrationsLifecycle',
++      'integrationMongoGovernance'
++    ];
++    const child = spawn(
++      process.execPath,
++      [
++        '--test',
++        '--test-concurrency=1',
++        '--test-reporter=spec',
++        '--test-reporter-destination=stdout',
++        '--test-reporter=tap',
++        `--test-reporter-destination=${path.join(directory, 'request-flow-tests.tap')}`,
++        ...suites.map((name) => path.resolve(__dirname, `../tests/${name}.test.js`))
++      ],
++      { env: childEnv, windowsHide: true, stdio: 'inherit' }
++    );
++    process.exitCode = await new Promise((resolve, reject) => {
++      child.once('error', reject);
++      child.once('exit', (code) => resolve(code ?? 1));
++    });
++  } finally {
++    for (const socket of sockets) socket.destroy();
++    for (const proxy of proxies)
++      if (proxy.listening) await new Promise((resolve) => proxy.close(resolve));
++    console.log('Request-flow fixture cleanup:', JSON.stringify(await runtime.stop()));
++  }
++}
++
++main().catch(() => {
++  console.error('Request-flow fixture verification failed; inspect the retained TAP evidence.');
++  process.exitCode = 1;
++});
+diff --git a/backend/src/services/integrationMongoGovernanceService.js b/backend/src/services/integrationMongoGovernanceService.js
+index 5a3b85f3de2ad6255ee119060326130f9aaee8b9..78b5e385e6670f2a8554d36f4e0e7f696f7d1426 100644
+--- a/backend/src/services/integrationMongoGovernanceService.js
++++ b/backend/src/services/integrationMongoGovernanceService.js
+@@ -193,4 +193,41 @@ async function consumeSnapshot(provider, owner, cost, maximum) {
+   });
+ }
+ 
+-module.exports = { admit, release, cooldown, failure, action, consumeSnapshot, initialize };
++// Profile/Portfolio fixed windows share the tested transaction/index machinery,
++// but use a disjoint namespace. Redis never participates in this authority.
++async function requestWindow(prefix, maximum, windowMs) {
++  if (
++    typeof prefix !== 'string' ||
++    !/^public-portfolio:v3:rate:[a-z-]+:[a-f0-9]{64}$/.test(prefix) ||
++    !Number.isSafeInteger(maximum) ||
++    maximum < 1 ||
++    !Number.isSafeInteger(windowMs) ||
++    windowMs < 1
++  )
++    throw unavailable();
++  return transaction(async (session, now) => {
++    const bucket = Math.floor(now / windowMs);
++    const until = (bucket + 1) * windowMs;
++    const state = await read(`${prefix}:${bucket}`, session, now);
++    if (!Number.isSafeInteger(state.count) || state.count < 0) throw unavailable();
++    // Saturation bounds hostile repeated writes and preserves legacy denial semantics.
++    const count = Math.min(state.count + 1, maximum + 1);
++    if (count !== state.count) {
++      state.count = count;
++      state.expiresAt = new Date(until);
++      await write(state, session);
++    }
++    return { count, until };
++  });
++}
++
++module.exports = {
++  admit,
++  release,
++  cooldown,
++  failure,
++  action,
++  consumeSnapshot,
++  initialize,
++  requestWindow
++};
+diff --git a/backend/src/services/publicPortfolioContactService.js b/backend/src/services/publicPortfolioContactService.js
+index 44c03da0eb14d6817a7b19e0486b42c0697d491b..6bd08d8e112597957eda5bb96d3af046296240bf 100644
+--- a/backend/src/services/publicPortfolioContactService.js
++++ b/backend/src/services/publicPortfolioContactService.js
+@@ -4,7 +4,7 @@ const { sendConfiguredEmail } = require('./emailService');
+ const { isPortfolioEnabled } = require('./publicPortfolioVisibilityService');
+ 
+ const fail = (message, statusCode) => Object.assign(new Error(message), { statusCode });
+-async function deliverContact(slug, sender, body) {
++function validateContact(sender, body) {
+   if (
+     sender?.role !== 'recruiter' ||
+     sender?.isActive === false ||
+@@ -20,6 +20,11 @@ async function deliverContact(slug, sender, body) {
+     body.website
+   )
+     throw fail('Invalid contact message.', 400);
++  return message;
++}
++
++async function deliverContact(slug, sender, body) {
++  const message = validateContact(sender, body);
+   if (!(await isPortfolioEnabled())) throw fail('Public profile not found.', 404);
+   const profile = await PublicProfile.findOne({ slug, isPublic: true }).select('userId').lean();
+   const recipient =
+@@ -44,4 +49,13 @@ async function deliverContact(slug, sender, body) {
+   }
+   return { sent: true };
+ }
+-module.exports = { deliverContact };
++function validateContactRequest(req, res, next) {
++  try {
++    validateContact(req.user, req.body);
++    return next();
++  } catch (error) {
++    return res.status(error.statusCode || 400).json({ message: error.message });
++  }
++}
++
++module.exports = { deliverContact, validateContactRequest };
+diff --git a/backend/src/services/requestAdmissionMetrics.js b/backend/src/services/requestAdmissionMetrics.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..55e18fb97f48274241ab4b215ba0101e879b203a
+--- /dev/null
++++ b/backend/src/services/requestAdmissionMetrics.js
+@@ -0,0 +1,33 @@
++const { Counter, Histogram } = require('prom-client');
++const { registry } = require('./metricsService');
++
++const outcomes = new Counter({
++  name: 'dpa_portfolio_admission_total',
++  help: 'Shared Mongo Portfolio admission outcomes',
++  labelNames: ['operation', 'outcome'],
++  registers: [registry]
++});
++const duration = new Histogram({
++  name: 'dpa_portfolio_admission_duration_seconds',
++  help: 'Mongo Portfolio admission duration, including initialization and retries',
++  labelNames: ['operation'],
++  buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2, 5],
++  registers: [registry]
++});
++const operations = new Set([
++  'view',
++  'resume',
++  'analytics',
++  'mutation',
++  'upload',
++  'contact',
++  'contact-recipient'
++]);
++
++function record(name, outcome, startedAt) {
++  const operation = operations.has(name) ? name : 'other';
++  outcomes.inc({ operation, outcome });
++  duration.observe({ operation }, Number(process.hrtime.bigint() - startedAt) / 1e9);
++}
++
++module.exports = { record };
+diff --git a/backend/src/tests/b2Storage.test.js b/backend/src/tests/b2Storage.test.js
+index a60c1a3127e56b13a03533de2dedc07f61c5b2f4..773c0eb61b70eefdd3b6b48e9affc374644dac0d 100644
+--- a/backend/src/tests/b2Storage.test.js
++++ b/backend/src/tests/b2Storage.test.js
+@@ -75,9 +75,7 @@ test('S3 operations isolate credentials/buckets and retain versions, integrity a
+       )
+   );
+   assert.ok(
+-    fake.calls
+-      .filter((call) => call.op === 'DeleteObjectCommand')
+-      .every((call) => call.VersionId)
++    fake.calls.filter((call) => call.op === 'DeleteObjectCommand').every((call) => call.VersionId)
+   );
+ });
+ test('reads reject corrupt/oversized bytes and configuration drift without leaking provider failures', async () => {
+@@ -335,10 +333,7 @@ test(
+     const unknown = await Asset.findOne({ state: 'deleting', versionId: '' }).lean();
+     assert.ok(unknown);
+     await assert.rejects(assets.retryCleanup(), { status: 503 });
+-    assert.ok(
+-      await Asset.exists({ _id: unknown._id }),
+-      'uncertain empty listing retains receipt'
+-    );
++    assert.ok(await Asset.exists({ _id: unknown._id }), 'uncertain empty listing retains receipt');
+     // Simulate a delayed provider commit after the caller/process already failed.
+     fake.objects.set(unknown.bucket + '/' + unknown.key, [
+       { VersionId: 'late-version', body: png }
+@@ -435,10 +430,7 @@ test(
+     );
+     const resume = await Resume.findById(uploadedBody.fileId);
+     assert.match(resume.fileUrl, /^b2:\/\/resumes\//);
+-    assert.equal(
+-      String((await User.findById(user._id)).activeResumeFileId),
+-      String(resume._id)
+-    );
++    assert.equal(String((await User.findById(user._id)).activeResumeFileId), String(resume._id));
+     assert.deepEqual(
+       await require('../services/resumeStorageService').read(resume.fileUrl, user._id),
+       pdf
+@@ -470,8 +462,7 @@ test(
+     );
+     await User.updateOne({ _id: user._id }, { $set: { defaultResumeFileId: resume._id } });
+     assert.equal(
+-      (await request(`/api/public-profiles/${profile.slug}/resume`, { anonymous: true }))
+-        .status,
++      (await request(`/api/public-profiles/${profile.slug}/resume`, { anonymous: true })).status,
+       404
+     );
+     fake.fail('GetObjectCommand');
+@@ -482,14 +473,12 @@ test(
+     assert.deepEqual(Buffer.from(await ownPDF.arrayBuffer()), pdf);
+     await publicService.updatePublicProfile(user._id, { isPublic: true });
+     assert.equal(
+-      (await request(`/api/public-profiles/${profile.slug}/resume`, { anonymous: true }))
+-        .status,
++      (await request(`/api/public-profiles/${profile.slug}/resume`, { anonymous: true })).status,
+       200
+     );
+     await publicService.updatePublicProfile(user._id, { isPublic: false });
+     assert.equal(
+-      (await request(`/api/public-profiles/${profile.slug}/resume`, { anonymous: true }))
+-        .status,
++      (await request(`/api/public-profiles/${profile.slug}/resume`, { anonymous: true })).status,
+       404
+     );
+     // Restart adapter and HTTP listener: Mongo references and provider data remain authoritative.
+@@ -518,18 +507,12 @@ test(
+       fileUrl: legacy,
+       fileSize: pdf.length
+     });
+-    assert.deepEqual(
+-      await require('../services/resumeStorageService').read(legacy, user._id),
+-      pdf
+-    );
++    assert.deepEqual(await require('../services/resumeStorageService').read(legacy, user._id), pdf);
+     await assert.rejects(require('../services/resumeStorageService').read(legacy, other._id), {
+       status: 404
+     });
+     await assert.rejects(
+-      require('../services/resumeStorageService').read(
+-        path.join(local, 'outside.pdf'),
+-        user._id
+-      ),
++      require('../services/resumeStorageService').read(path.join(local, 'outside.pdf'), user._id),
+       { status: 404 }
+     );
+     const legacyImage = `/uploads/avatars/${user._id}-legacy.png`;
+@@ -567,6 +550,13 @@ test(
+     });
+     app.use('/strict-resume', strictRouter);
+     const beforeAdmission = fake.calls.length;
++    const admissionOutage = t.mock.method(
++      require('../services/integrationMongoGovernanceService'),
++      'requestWindow',
++      async () => {
++        throw Error('Disposable authoritative admission outage');
++      }
++    );
+     assert.equal(
+       (
+         await request('/strict-resume/upload', {
+@@ -579,8 +569,9 @@ test(
+     assert.equal(
+       fake.calls.length,
+       beforeAdmission,
+-      'missing shared limiter rejects before B2'
++      'unavailable Mongo admission rejects before B2'
+     );
++    admissionOutage.mock.restore();
+     const worker = require('node:child_process').fork(
+       path.join(__dirname, 'fixtures/b2StorageWorker.js'),
+       [],
+@@ -663,9 +654,7 @@ test(
+     await Promise.allSettled([assets.remove(image), deletion.deleteAccount(user._id)]);
+     assert.equal(await User.exists({ _id: user._id }), null);
+     assert.ok(
+-      (await Asset.find({ ownerId: user._id }).lean()).every(
+-        (asset) => asset.state === 'deleting'
+-      )
++      (await Asset.find({ ownerId: user._id }).lean()).every((asset) => asset.state === 'deleting')
+     );
+     assert.ok(await require('../models/accountDeletionCleanup').exists({ _id: user._id }));
+     assert.equal((await request(rollbackAvatar, { anonymous: true })).status, 404);
+@@ -674,10 +663,7 @@ test(
+     await Asset.updateMany({}, { $set: { retryAfter: new Date(0) } });
+     await deletion.processCleanup(user._id);
+     assert.equal(await Asset.countDocuments({ ownerId: user._id }), 0);
+-    assert.equal(
+-      await require('../models/accountDeletionCleanup').exists({ _id: user._id }),
+-      null
+-    );
++    assert.equal(await require('../models/accountDeletionCleanup').exists({ _id: user._id }), null);
+     assert.ok(await User.exists({ _id: other._id }));
+   }
+ );
+diff --git a/backend/src/tests/fixtures/disposableRequestMongo.js b/backend/src/tests/fixtures/disposableRequestMongo.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..bc0586ac7caa8efff272ae626d7c8f3fe83382fd
+--- /dev/null
++++ b/backend/src/tests/fixtures/disposableRequestMongo.js
+@@ -0,0 +1,112 @@
++'use strict';
++// Disposable loopback fixture only. Do not import the live-provider verifier or .env.
++const fs = require('node:fs');
++const os = require('node:os');
++const path = require('node:path');
++const net = require('node:net');
++const assert = require('node:assert/strict');
++const { spawn } = require('node:child_process');
++const { MongoClient } = require('mongodb');
++const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
++
++async function startMongo() {
++  const binary =
++    process.env.INTEGRATION_TEST_MONGOD ||
++    'C:\\Program Files\\MongoDB\\Server\\8.2\\bin\\mongod.exe';
++  assert.ok(fs.existsSync(binary), 'Installed MongoDB server binary is required');
++  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'devinsight-real-integrations-'));
++  const root = fs.realpathSync(directory);
++  const listener = net.createServer();
++  await new Promise((resolve) => listener.listen(0, '127.0.0.1', resolve));
++  const port = listener.address().port;
++  await new Promise((resolve) => listener.close(resolve));
++  const child = spawn(
++    binary,
++    [
++      '--dbpath',
++      root,
++      '--bind_ip',
++      '127.0.0.1',
++      '--port',
++      String(port),
++      '--replSet',
++      'integration-live',
++      '--wiredTigerCacheSizeGB',
++      '0.25',
++      '--quiet'
++    ],
++    { windowsHide: true, stdio: ['ignore', 'ignore', 'ignore'] }
++  );
++  let launchError;
++  child.on('error', (error) => {
++    launchError = error;
++  });
++  let direct;
++  async function stop() {
++    await direct?.close();
++    if (child.pid && child.exitCode === null && child.signalCode === null) {
++      const stopped = new Promise((resolve) => child.once('exit', resolve));
++      child.kill();
++      await Promise.race([stopped, delay(5000)]);
++    }
++    assert.ok(
++      child.exitCode !== null || child.signalCode !== null || launchError,
++      'Disposable Mongo process must stop before cleanup'
++    );
++    const removed = [];
++    function clean(directoryPath) {
++      for (const entry of fs.readdirSync(directoryPath, { withFileTypes: true })) {
++        const target = path.resolve(directoryPath, entry.name);
++        assert.ok(target.startsWith(root + path.sep) && !entry.isSymbolicLink());
++        if (entry.isDirectory()) clean(target);
++        else {
++          fs.unlinkSync(target);
++          removed.push(path.relative(root, target));
++        }
++      }
++      fs.rmdirSync(directoryPath); // Exact, verified empty task-owned directory; never recursive removal.
++    }
++    clean(root);
++    return { mongoStopped: true, temporaryFilesRemoved: removed.length, productionDataUsed: false };
++  }
++  try {
++    for (let attempt = 0; attempt < 50; attempt++) {
++      if (launchError) throw launchError;
++      if (child.exitCode !== null) throw Error('Disposable Mongo exited before readiness');
++      direct = new MongoClient(`mongodb://127.0.0.1:${port}/?directConnection=true`, {
++        serverSelectionTimeoutMS: 300
++      });
++      try {
++        await direct.connect();
++        break;
++      } catch {
++        await direct.close();
++        direct = null;
++        await delay(150);
++      }
++    }
++    assert.ok(direct, 'Disposable Mongo readiness deadline');
++    await direct.db('admin').command({
++      replSetInitiate: {
++        _id: 'integration-live',
++        members: [{ _id: 0, host: `127.0.0.1:${port}` }]
++      }
++    });
++    let primary = false;
++    for (let attempt = 0; attempt < 80; attempt++) {
++      primary = (await direct.db('admin').command({ hello: 1 })).isWritablePrimary;
++      if (primary) break;
++      await delay(150);
++    }
++    assert.ok(primary, 'Replica primary election deadline');
++    return {
++      uri: `mongodb://127.0.0.1:${port}/integration_live_acceptance?replicaSet=integration-live`,
++      stop
++    };
++  } catch (error) {
++    await stop();
++    throw error;
++  }
++}
++
++module.exports = { startMongo };
+diff --git a/backend/src/tests/fixtures/integrationMongoGovernanceWorker.js b/backend/src/tests/fixtures/integrationMongoGovernanceWorker.js
+index 58ca6db294f257d0cab8e9dbf29f8b848d718d46..a0bfbe3718abb56901ddca4ff26034c670d1a231 100644
+--- a/backend/src/tests/fixtures/integrationMongoGovernanceWorker.js
++++ b/backend/src/tests/fixtures/integrationMongoGovernanceWorker.js
+@@ -16,7 +16,13 @@ mongoose.connect(process.env.INTEGRATION_TEST_URI, { autoIndex: false }).then(
+   () => process.send({ ready: true }),
+   () => process.send({ ready: false })
+ );
++const heldJobs = new Map();
+ process.on('message', async (message) => {
++  if (message.action === 'releaseJob') {
++    heldJobs.get(message.provider)?.();
++    heldJobs.delete(message.provider);
++    return;
++  }
+   try {
+     let value;
+     switch (message.action) {
+@@ -33,7 +39,12 @@ process.on('message', async (message) => {
+         break;
+       case 'job':
+         value = await governance.withJob(message.provider, async () => {
+-          await new Promise((resolve) => setTimeout(resolve, 100));
++          if (message.hold) {
++            await new Promise((resolve) => {
++              heldJobs.set(message.provider, resolve);
++              process.send({ event: 'jobHeld', provider: message.provider });
++            });
++          } else await new Promise((resolve) => setTimeout(resolve, 100));
+           return true;
+         });
+         break;
+diff --git a/backend/src/tests/fixtures/requestAdmissionWorker.js b/backend/src/tests/fixtures/requestAdmissionWorker.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..a449ef40b4ecf4349eef81ddda39218a0fd24b67
+--- /dev/null
++++ b/backend/src/tests/fixtures/requestAdmissionWorker.js
+@@ -0,0 +1,23 @@
++'use strict';
++const mongoose = require('mongoose');
++const store = require('../../services/integrationMongoGovernanceService');
++if (
++  !/^mongodb:\/\/127\.0\.0\.1:\d+\/integration_live_acceptance\?replicaSet=integration-live$/.test(
++    process.env.REQUEST_ADMISSION_TEST_URI || ''
++  )
++)
++  throw Error('Disposable loopback replica set required.');
++require('../../services/redisCacheService').getRedisCacheClient = () => {
++  throw Error('Admission cannot access Redis.');
++};
++mongoose
++  .connect(process.env.REQUEST_ADMISSION_TEST_URI, { autoIndex: false })
++  .then(() => process.send({ ready: true }));
++process.on('message', async (message) => {
++  try {
++    const value = await store.requestWindow(message.prefix, message.maximum, message.windowMs);
++    process.send({ id: message.id, value });
++  } catch (error) {
++    process.send({ id: message.id, error: { status: error.status } });
++  }
++});
+diff --git a/backend/src/tests/integrationMongoGovernance.test.js b/backend/src/tests/integrationMongoGovernance.test.js
+index 0488ce02fd3670887349d4c1934f4d508cd8f7f0..3f94e53f81945723682c05078c6a39b03ff80a51 100644
+--- a/backend/src/tests/integrationMongoGovernance.test.js
++++ b/backend/src/tests/integrationMongoGovernance.test.js
+@@ -12,7 +12,7 @@ test(
+   { timeout: 90000 },
+   async (t) => {
+     const originalEnv = { ...process.env };
+-    const { startMongo } = require('../scripts/verifyIntegrationsRealProviders');
++    const { startMongo } = require('./fixtures/disposableRequestMongo');
+     const runtime = await startMongo();
+     Object.assign(process.env, {
+       NODE_ENV: 'test',
+@@ -106,10 +106,11 @@ test(
+         if (!(name in originalEnv)) delete process.env[name];
+       Object.assign(process.env, originalEnv);
+       fs.writeFileSync(
+-        path.resolve(
+-          __dirname,
+-          '../../verification/integrations/scalability-governance-regression.json'
+-        ),
++        process.env.INTEGRATION_GOVERNANCE_EVIDENCE_FILE ||
++          path.resolve(
++            __dirname,
++            '../../verification/integrations/scalability-governance-regression.json'
++          ),
+         JSON.stringify(evidence, null, 2) + '\n'
+       );
+     });
+@@ -205,12 +206,24 @@ test(
+         await assert.rejects(reserve('global-full'), { status: 429 });
+         await governance.finish(first);
+         await governance.finish(second);
+-        const jobs = await Promise.allSettled([
+-          a.request('job', { provider: 'job-race' }),
+-          b.request('job', { provider: 'job-race' })
+-        ]);
+-        assert.equal(jobs.filter((row) => row.status === 'fulfilled').length, 1);
+-        assert.equal(jobs.find((row) => row.status === 'rejected').reason.status, 429);
++        const held = new Promise((resolve, reject) => {
++          const timer = setTimeout(() => reject(Error('Job barrier deadline')), 6000);
++          const receive = (message) => {
++            if (message.event !== 'jobHeld') return;
++            clearTimeout(timer);
++            a.child.off('message', receive);
++            resolve();
++          };
++          a.child.on('message', receive);
++        });
++        const running = a.request('job', { provider: 'job-race', hold: true });
++        try {
++          await held;
++          await assert.rejects(b.request('job', { provider: 'job-race' }), { status: 429 });
++        } finally {
++          a.child.send({ action: 'releaseJob', provider: 'job-race' });
++          await running;
++        }
+         evidence.checks.push(
+           'two worker processes: one provider winner; global cap; job cap; release'
+         );
+diff --git a/backend/src/tests/publicPortfolioHardening.test.js b/backend/src/tests/publicPortfolioHardening.test.js
+index 2edc9f0166c981eadfd4bae298740a4672c229cc..d6e757f9f0d6efd452f50cc41fb4a62ad664a150 100644
+--- a/backend/src/tests/publicPortfolioHardening.test.js
++++ b/backend/src/tests/publicPortfolioHardening.test.js
+@@ -178,10 +178,17 @@ test('bounded local single-flight, TTL and same-revision stale fallback', async
+     /no stale/
+   );
+ });
+-test('rate limiter returns 429/Retry-After, allows privacy edits and closes uploads on Redis outage', async () => {
++test('rate limiter preserves 429/Retry-After and fails closed on Mongo admission outage', async () => {
+   const controls = load('middleware/publicPortfolioRateLimit.js', {
+-    '../services/redisCacheService': { getRedisCacheClient: () => null }
++    '../services/integrationMongoGovernanceService': {
++      requestWindow: async (_key, _maximum, windowMs) => {
++        if (unavailable) throw Error('Mongo unavailable');
++        return { count: ++count, until: Date.now() + windowMs };
++      }
++    }
+   });
++  let count = 0;
++  let unavailable = false;
+   const read = controls.limiter('test', 1, 60000);
+   let allowed = 0;
+   await read({ ip: '127.0.0.1' }, response(), () => allowed++);
+@@ -190,9 +197,12 @@ test('rate limiter returns 429/Retry-After, allows privacy edits and closes uplo
+   assert.equal(allowed, 1);
+   assert.equal(denied.statusCode, 429);
+   assert.ok(Number(denied.headers['Retry-After']) > 0);
++  unavailable = true;
+   const strict = response();
+   await controls.uploadLimit({ user }, strict, () => assert.fail());
+   assert.equal(strict.statusCode, 503);
++  unavailable = false;
++  count = 0;
+   let mutationAllowed = false;
+   await controls.mutationLimit({ user }, response(), () => {
+     mutationAllowed = true;
+diff --git a/backend/src/tests/requestFlowGovernance.test.js b/backend/src/tests/requestFlowGovernance.test.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..a103da3db134ba4bd281766256a7a58dc8c27aff
+--- /dev/null
++++ b/backend/src/tests/requestFlowGovernance.test.js
+@@ -0,0 +1,446 @@
++'use strict';
++const test = require('node:test');
++const assert = require('node:assert/strict');
++const crypto = require('node:crypto');
++const path = require('node:path');
++const fs = require('node:fs');
++const { fork } = require('node:child_process');
++const mongoose = require('mongoose');
++const express = require('express');
++const jwt = require('jsonwebtoken');
++const { load, response } = require('./fixtures/publicPortfolioFixture');
++const { env, fixture, textPDF } = require('./fixtures/b2Fixture');
++
++test(
++  'shared request authority: failures, windows, workers and authenticated upload flows',
++  { timeout: 90000 },
++  async (t) => {
++    const { startMongo } = require('./fixtures/disposableRequestMongo');
++    const runtime = await startMongo();
++    const originalEnv = { ...process.env };
++    Object.assign(process.env, {
++      NODE_ENV: 'test',
++      STORAGE_DRIVER: 'b2',
++      JWT_SECRET: crypto.randomBytes(32).toString('hex')
++    });
++    const workers = [];
++    let server;
++    const timings = [];
++    const evidence = { baseline: 'c612ae80c466f47ab7def651da6537d8cf330b0a', checks: [] };
++    t.after(async () => {
++      if (server) await new Promise((resolve) => server.close(resolve));
++      for (const child of workers)
++        if (child.exitCode === null && child.signalCode === null) {
++          const stopped = new Promise((resolve) => child.once('exit', resolve));
++          child.kill();
++          await stopped;
++        }
++      await mongoose.disconnect();
++      evidence.cleanup = await runtime.stop();
++      evidence.admissionMs = timings.sort((a, b) => a - b);
++      evidence.completed = evidence.checks.length;
++      const report = path.resolve(
++        __dirname,
++        '../../verification/architecture/request-flow-governance-results.json'
++      );
++      fs.mkdirSync(path.dirname(report), { recursive: true });
++      fs.writeFileSync(report, JSON.stringify(evidence, null, 2) + '\n');
++      for (const key of Object.keys(process.env))
++        if (!(key in originalEnv)) delete process.env[key];
++      Object.assign(process.env, originalEnv);
++    });
++    await mongoose.connect(runtime.uri, { autoIndex: false, serverSelectionTimeoutMS: 500 });
++    const store = require('../services/integrationMongoGovernanceService');
++    const State = require('../models/integrationGovernanceState');
++    await store.initialize();
++    evidence.indexes = await State.collection.indexes();
++    assert.ok(evidence.indexes.some((index) => index.name === '_id_' && index.key._id === 1));
++    assert.ok(
++      evidence.indexes.some((index) => index.expireAfterSeconds === 0 && index.key.expiresAt === 1)
++    );
++    const prefix = (kind, subject) =>
++      `public-portfolio:v3:rate:${kind}:${crypto.createHash('sha256').update(String(subject)).digest('hex')}`;
++    const limit = require('../middleware/publicPortfolioRateLimit');
++    const cache = require('../services/redisCacheService');
++    let redisCalls = 0;
++    const redisMock = t.mock.method(cache, 'getRedisCacheClient', () => {
++      redisCalls++;
++      throw Error('Redis unavailable');
++    });
++
++    await t.test(
++      'Redis state never resets quota; boundaries and logical expiry are independent of TTL sweep',
++      async () => {
++        let index = 0;
++        for (const healthy of [true, false, true]) {
++          redisMock.mock.mockImplementation(() => {
++            redisCalls++;
++            if (!healthy) throw Error('Redis down');
++            return { eval: () => assert.fail('Redis must not own admission') };
++          });
++          const res = response();
++          let allowed = false;
++          await limit.limiter('test', 2, 3600000)({ user: { _id: 'stable' } }, res, () => {
++            allowed = true;
++          });
++          assert.equal(res.statusCode, index < 2 ? 200 : 429);
++          assert.equal(allowed, index < 2);
++          index++;
++        }
++        const res = response();
++        await limit.limiter('test', 2, 3600000)({ user: { _id: 'stable' } }, res, () =>
++          assert.fail()
++        );
++        assert.equal(res.statusCode, 429);
++        assert.ok(Number(res.headers['Retry-After']) > 0);
++        const key = prefix('expiry', 'fixture');
++        const bucket = Math.floor(Date.now() / 3600000);
++        await State.collection.insertOne({
++          _id: `${key}:${bucket}`,
++          count: 99,
++          expiresAt: new Date(0)
++        });
++        assert.equal((await store.requestWindow(key, 1, 3600000)).count, 1);
++        assert.equal(redisCalls, 0);
++        evidence.checks.push('redis-toggle-and-logical-expiry');
++      }
++    );
++
++    let requestId = 0;
++    async function worker() {
++      const child = fork(path.resolve(__dirname, 'fixtures/requestAdmissionWorker.js'), [], {
++        windowsHide: true,
++        stdio: ['ignore', 'ignore', 'ignore', 'ipc'],
++        env: { ...process.env, REQUEST_ADMISSION_TEST_URI: runtime.uri }
++      });
++      workers.push(child);
++      await new Promise((resolve, reject) => {
++        const timer = setTimeout(() => reject(Error('Worker readiness deadline')), 6000);
++        child.once('message', (message) => {
++          clearTimeout(timer);
++          assert.equal(message.ready, true);
++          resolve();
++        });
++      });
++      return {
++        child,
++        request: (data) =>
++          new Promise((resolve, reject) => {
++            const id = ++requestId;
++            const timer = setTimeout(() => {
++              child.off('message', receive);
++              reject(Error('Worker command deadline'));
++            }, 6000);
++            function receive(message) {
++              if (message.id !== id) return;
++              clearTimeout(timer);
++              child.off('message', receive);
++              if (message.error) reject(Object.assign(Error('Admission failed'), message.error));
++              else resolve(message.value);
++            }
++            child.on('message', receive);
++            child.send({ id, ...data });
++          })
++      };
++    }
++    await t.test(
++      'two independent workers race at the quota boundary and a restarted worker retains exhaustion',
++      async () => {
++        const a = await worker();
++        const b = await worker();
++        const data = { prefix: prefix('race', 'worker-fixture'), maximum: 5, windowMs: 86400000 };
++        const results = await Promise.all(
++          Array.from({ length: 12 }, (_, index) => (index % 2 ? a : b).request(data))
++        );
++        assert.equal(results.filter((result) => result.count <= 5).length, 5);
++        const stopped = new Promise((resolve) => a.child.once('exit', resolve));
++        a.child.kill();
++        await stopped;
++        const restarted = await worker();
++        assert.equal((await restarted.request(data)).count, 6);
++        evidence.checks.push('two-process-concurrency-and-restart');
++      }
++    );
++
++    const User = require('../models/user');
++    const Asset = require('../models/storedAsset');
++    const Resume = require('../models/resumeFile');
++    const Profile = require('../models/publicProfile');
++    for (const model of [User, Asset, Resume, Profile]) await model.createCollection();
++    await Asset.createIndexes();
++    const owner = await User.create({
++      name: 'Request Fixture',
++      email: 'request-fixture@example.test',
++      providers: ['google']
++    });
++    const recruiter = await User.create({
++      name: 'Recruiter Fixture',
++      email: 'recruiter-fixture@example.test',
++      role: 'recruiter',
++      isVerified: true,
++      providers: ['google']
++    });
++    await Profile.create({ userId: owner._id, slug: 'request-fixture', isPublic: true });
++    const fake = fixture();
++    const adapter = require('../services/b2ObjectStorageService').createAdapter({
++      env,
++      clientFactory: fake.clientFactory
++    });
++    t.mock.method(require('../services/b2ObjectStorageService'), 'getAdapter', () => adapter);
++    let sent = 0;
++    t.mock.method(require('../services/emailService'), 'sendConfiguredEmail', async () => {
++      sent++;
++      return { accepted: ['request-fixture@example.test'] };
++    });
++    t.mock.method(
++      require('../services/publicPortfolioVisibilityService'),
++      'isPortfolioEnabled',
++      async () => true
++    );
++    const notifications = { createNotification: async () => null };
++    const profileController = load('controllers/profilecontroller.js', {
++      '../services/notificationService': notifications,
++      '../services/newsService': { invalidateNewsSignalCache: () => {} },
++      './dashboardcontroller': { invalidateDashboardSummaryCache: () => {} },
++      '../services/platformSettingsService': { getDeveloperSettingsSync: () => ({}) }
++    });
++    const resumeController = load('controllers/resumecontoller.js', {
++      '../services/notificationService': notifications,
++      './dashboardcontroller': { invalidateDashboardSummaryCache: () => {} }
++    });
++    const app = express();
++    app.use(express.json({ limit: '100kb' }));
++    app.post('/ip-fixture', limit.limiter('ip-fixture', 1, 60000), (_req, res) =>
++      res.json({ admitted: true })
++    );
++    app.use(
++      '/api/profile',
++      load('routes/profile.routes.js', { '../controllers/profilecontroller': profileController })
++    );
++    app.use(
++      '/api/resume',
++      load('routes/resume.routes.js', { '../controllers/resumecontoller': resumeController })
++    );
++    app.use('/api/public-profiles', require('../routes/publicProfile.routes'));
++    app.use(
++      '/api/preview',
++      load('routes/preview.routes.js', { '../controllers/resumecontoller': resumeController })
++    );
++    server = await new Promise((resolve) => {
++      const handle = app.listen(0, '127.0.0.1', () => resolve(handle));
++    });
++    const base = `http://127.0.0.1:${server.address().port}`;
++    const png = Buffer.from(
++      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jhbcAAAAASUVORK5CYII=',
++      'base64'
++    );
++    const form = (field, bytes, filename, type) => {
++      const data = new FormData();
++      data.append(field, new Blob([bytes], { type }), filename);
++      return data;
++    };
++    const request = (route, body, user = owner) =>
++      fetch(base + route, {
++        method: 'POST',
++        headers: {
++          ...(user
++            ? {
++                Authorization:
++                  'Bearer ' +
++                  jwt.sign({ id: String(user._id) }, process.env.JWT_SECRET, {
++                    issuer: 'devinsight-api',
++                    audience: 'devinsight-web',
++                    expiresIn: '10m'
++                  })
++              }
++            : {}),
++          ...(body instanceof FormData ? {} : { 'Content-Type': 'application/json' })
++        },
++        body: body instanceof FormData ? body : JSON.stringify(body)
++      });
++    const uploads = [
++      ['/api/profile/avatar', () => form('avatar', png, 'fixture.png', 'image/png'), 200],
++      [
++        '/api/public-profiles/me/project-image',
++        () => form('image', png, 'fixture.png', 'image/png'),
++        201
++      ],
++      [
++        '/api/resume/upload',
++        () =>
++          form(
++            'file',
++            textPDF(
++              'Alex Developer. Software engineer building accessible web applications with JavaScript TypeScript Node MongoDB and React. Experience delivering production applications, collaborating with teams and improving performance. Education Bachelor of Computer Science. Skills JavaScript TypeScript React SQL MongoDB Docker Git. Projects include a tested full stack application with documented APIs.'
++            ),
++            'fixture.pdf',
++            'application/pdf'
++          ),
++        200
++      ]
++    ];
++    await t.test(
++      'untrusted forwarded headers cannot rotate anonymous admission identities',
++      async () => {
++        const one = await fetch(base + '/ip-fixture', {
++          method: 'POST',
++          headers: { 'X-Forwarded-For': '192.0.2.1' }
++        });
++        const two = await fetch(base + '/ip-fixture', {
++          method: 'POST',
++          headers: { 'X-Forwarded-For': '192.0.2.2' }
++        });
++        assert.equal(one.status, 200);
++        assert.equal(two.status, 429);
++        evidence.checks.push('forwarded-header-spoofing-rejected');
++      }
++    );
++    await t.test(
++      'actual JWT, Mongo admission, multipart parsing, fixture B2 and ledger transactions succeed without Redis',
++      async () => {
++        for (const [route, body, status] of uploads) {
++          const result = await request(route, body());
++          assert.equal(result.status, status, `${route}: ${await result.text()}`);
++        }
++        assert.equal(fake.calls.filter((call) => call.op === 'PutObjectCommand').length, 3);
++        assert.equal(await Asset.countDocuments({ ownerId: owner._id }), 3);
++        assert.equal(await Asset.countDocuments({ ownerId: owner._id, state: 'ready' }), 2);
++        const row = await State.collection.findOne({
++          _id: `${prefix('upload', owner._id)}:${Math.floor(Date.now() / 3600000)}`
++        });
++        assert.equal(row.count, 3);
++        assert.equal(redisCalls, 0);
++        evidence.checks.push('authenticated-avatar-portfolio-resume-real-admission');
++      }
++    );
++    await t.test(
++      'Mongo admission failure blocks every parser/storage/delivery path; validation runs first',
++      async () => {
++        const puts = fake.calls.length;
++        const failure = t.mock.method(store, 'requestWindow', async () => {
++          throw Error('Fixture admission outage');
++        });
++        for (const [route] of uploads) {
++          const result = await request(route, form('unexpected', png, 'bad.png', 'image/png'));
++          assert.equal(result.status, 503);
++          assert.equal(result.headers.get('retry-after'), '30');
++          assert.equal(
++            (await request(route, form('unexpected', png, 'bad.png', 'image/png'), null)).status,
++            401
++          );
++        }
++        assert.equal(
++          (
++            await request(
++              '/api/preview/resume/parse-text',
++              form('unexpected', png, 'bad.png', 'image/png'),
++              null
++            )
++          ).status,
++          503
++        );
++        assert.equal(
++          (
++            await request(
++              '/api/public-profiles/request-fixture/contact',
++              { message: 'Interested in discussing your work.' },
++              recruiter
++            )
++          ).status,
++          503
++        );
++        assert.equal(
++          (
++            await request(
++              '/api/public-profiles/request-fixture/contact',
++              { message: 'invalid' },
++              recruiter
++            )
++          ).status,
++          400
++        );
++        assert.equal(fake.calls.length, puts);
++        assert.equal(sent, 0);
++        failure.mock.restore();
++        evidence.checks.push('mongo-failure-before-parsing-storage-mail');
++      }
++    );
++    await t.test(
++      'shared upload cap prevents B2 and filesystem bypasses; contact caps prevent delivery',
++      async () => {
++        const key = `${prefix('upload', owner._id)}:${Math.floor(Date.now() / 3600000)}`;
++        await State.collection.updateOne({ _id: key }, { $set: { count: 10 } });
++        const puts = fake.calls.length;
++        for (const [route, body] of uploads)
++          assert.equal((await request(route, body())).status, 429);
++        process.env.STORAGE_DRIVER = 'filesystem';
++        assert.equal((await request('/api/resume/upload', uploads[2][1]())).status, 429);
++        process.env.STORAGE_DRIVER = 'b2';
++        assert.equal(fake.calls.length, puts);
++        for (let index = 0; index < 3; index++)
++          assert.equal(
++            (
++              await request(
++                '/api/public-profiles/request-fixture/contact',
++                { message: 'Interested in discussing your work.' },
++                recruiter
++              )
++            ).status,
++            200
++          );
++        assert.equal(
++          (
++            await request(
++              '/api/public-profiles/request-fixture/contact',
++              { message: 'Interested in discussing your work.' },
++              recruiter
++            )
++          ).status,
++          429
++        );
++        assert.equal(sent, 3);
++        const recipientKey = `${prefix('contact-recipient', 'request-fixture')}:${Math.floor(Date.now() / 86400000)}`;
++        await State.collection.updateOne({ _id: recipientKey }, { $set: { count: 20 } });
++        const another = await User.create({
++          name: 'Second Recruiter',
++          email: 'second-fixture@example.test',
++          role: 'recruiter',
++          isVerified: true,
++          providers: ['google']
++        });
++        assert.equal(
++          (
++            await request(
++              '/api/public-profiles/request-fixture/contact',
++              { message: 'Interested in discussing your work.' },
++              another
++            )
++          ).status,
++          429
++        );
++        assert.equal(sent, 3);
++        evidence.checks.push('upload-and-contact-no-bypass');
++      }
++    );
++    await t.test(
++      'disconnected shared store fails closed and recovery retains committed budgets',
++      async () => {
++        for (let index = 0; index < 12; index++) {
++          const started = performance.now();
++          await store.requestWindow(prefix('measure', 'fixture'), 100, 86400000);
++          timings.push(Number((performance.now() - started).toFixed(2)));
++        }
++        await mongoose.disconnect();
++        await assert.rejects(store.requestWindow(prefix('measure', 'fixture'), 100, 86400000), {
++          status: 503
++        });
++        await mongoose.connect(runtime.uri, { autoIndex: false, serverSelectionTimeoutMS: 500 });
++        assert.equal(
++          (await store.requestWindow(prefix('measure', 'fixture'), 100, 86400000)).count,
++          13
++        );
++        evidence.checks.push('disconnect-recovery-retains-budget');
++      }
++    );
++  }
++);
+diff --git a/backend/verification/architecture/REQUEST-ENDPOINT-INVENTORY.md b/backend/verification/architecture/REQUEST-ENDPOINT-INVENTORY.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..c991a02148f26535801383da98a20df5510f6585
+--- /dev/null
++++ b/backend/verification/architecture/REQUEST-ENDPOINT-INVENTORY.md
+@@ -0,0 +1,377 @@
++# Mounted request endpoint inventory
++
++Source baseline `c612ae80c466f47ab7def651da6537d8cf330b0a`, with the focused admission candidate applied. Generated from the mounted Express route AST. Each registration below preserves source order. `use` entries apply to following matching routes; `param` validates matching route parameters before handlers. Anonymous middleware is retained inline. This is source execution order, not a claim that every branch received live traffic. Read the final governance report for service-layer authority/cache branches and runtime evidence. Global middleware precedes every row. Dynamic template registrations are shown as source expressions.
++
++## /api/auth — backend/src/routes/auth.routes.js
++
++- Line 19, `POST`: `'/register' → authRateLimiter → registerUser`
++- Line 20, `POST`: `'/login' → authRateLimiter → bruteForceGuard → loginUser`
++- Line 21, `POST`: `'/send-otp' → authRateLimiter → sendOtp`
++- Line 22, `POST`: `'/verify-otp' → authRateLimiter → verifyOtp`
++- Line 23, `POST`: `'/forgot-password' → authRateLimiter → forgotPassword`
++- Line 24, `POST`: `'/reset-password' → authRateLimiter → resetPassword`
++- Line 25, `GET`: `'/invite-details/:token' → getInviteDetails`
++- Line 26, `POST`: `'/accept-invite' → authRateLimiter → acceptInvite`
++- Line 27, `GET`: `'/google' → authRateLimiter → startGoogleOAuth`
++- Line 28, `GET`: `'/google/callback' → authRateLimiter → googleOAuthCallback`
++- Line 29, `GET`: `'/github' → authRateLimiter → startGitHubOAuth`
++- Line 30, `GET`: `'/github/callback' → authRateLimiter → githubOAuthCallback`
++
++## /api/github — backend/src/routes/github.routes.js
++
++- Line 7, `POST`: `'/analyze' → analyzeGitHub`
++- Line 10, `POST`: `'/analyze-save' → protect → analyzeAndSaveGitHubProfile`
++- Line 13, `GET`: `'/active-username' → protect → getActiveUsername`
++
++## /api/resume — backend/src/routes/resume.routes.js
++
++- Line 17, `POST`: `'/upload' → protect → require('../middleware/publicPortfolioRateLimit').uploadLimit → upload.resumePdf → uploadResume`
++- Line 26, `POST`: `'/analyze' → protect → analyzeResumeFile`
++- Line 29, `GET`: `'/result' → protect → getResumeAnalysis`
++- Line 32, `GET`: `'/files' → protect → getResumeFiles`
++- Line 35, `GET`: `'/active' → protect → getActiveResumeContext`
++- Line 38, `PUT`: `'/active' → protect → setActiveResume`
++- Line 41, `GET`: `'/result/:userId' → protect → getResumeAnalysisByUserId`
++- Line 44, `GET`: `'/guide' → protect → downloadResumeGuide`
++
++## /api/analysis — backend/src/routes/analysis.routes.js
++
++- Line 10, `POST`: `'/portfolio-score' → protect → getPortfolioReadiness`
++
++## /api/dashboard — backend/src/routes/dashboard.routes.js
++
++- Line 14, `GET`: `'/summary' → protect → getDashboardSummary`
++- Line 15, `GET`: `'/contributions' → protect → getDashboardContributions`
++- Line 16, `GET`: `'/languages' → protect → getDashboardLanguages`
++- Line 17, `GET`: `'/skills' → protect → getDashboardSkills`
++- Line 18, `GET`: `'/recommendations' → protect → getDashboardRecommendations`
++- Line 19, `GET`: `'/integration-analytics' → protect → getDashboardIntegrationAnalytics`
++
++## /api/super-admin — backend/src/routes/super-admin.routes.js
++
++- Line 17, `USE`: `protect → authorizeRoles('super_admin')`
++- Line 19, `GET`: `'/metrics' → getPlatformMetrics`
++- Line 20, `GET`: `'/dashboard' → getDashboard`
++- Line 21, `GET`: `'/analytics' → getAnalytics`
++- Line 22, `GET`: `'/organizations' → getAllOrganizations`
++- Line 23, `PATCH`: `'/organizations/:id/suspend' → suspendOrganization`
++- Line 24, `PATCH`: `'/organizations/:id/activate' → activateOrganization`
++- Line 25, `GET`: `'/admins' → getAllAdmins`
++- Line 26, `GET`: `'/recruiters' → getAllRecruiters`
++- Line 27, `GET`: `'/developers' → getAllDevelopers`
++- Line 28, `GET`: `'/teams' → getAllTeams`
++- Line 30, `GET`: `'/recruiters/:id/analytics' → getRecruiterAnalytics`
++- Line 31, `POST`: `'/recruiters/:id/teams' → assignTeamToRecruiter`
++- Line 32, `DELETE`: `'/recruiters/:id/teams/:teamId' → removeRecruiterTeam`
++- Line 33, `PATCH`: `'/users/:id/toggle-active' → toggleUserActive`
++- Line 34, `GET`: `'/users/:id' → getUserDetails`
++- Line 35, `POST`: `'/users' → createUser`
++- Line 36, `PATCH`: `'/users/:id' → updateUser`
++- Line 37, `DELETE`: `'/users/:id' → deleteUser`
++- Line 38, `GET`: `'/settings' → getPlatformSettings`
++- Line 39, `PUT`: `'/settings' → updatePlatformSettings`
++
++## /api/skillgap — backend/src/routes/skillgap.routes.js
++
++- Line 16, `POST`: `'/skill-gap' → markSkillGapRouteStart → optionalProtect → markSkillGapAuthComplete → analyzeSkillGap`
++
++## /api/recommendations — backend/src/routes/recommendations.routes.js
++
++- Line 15, `POST`: `'/' → protect → getRecommendations`
++- Line 18, `POST`: `'/generate' → optionalProtect → generateRecommendations`
++- Line 20, `POST`: `'/saved-previews' → protect → savePreview`
++- Line 21, `GET`: `'/saved-previews' → protect → listSavedPreviews`
++- Line 22, `DELETE`: `'/saved-previews/:id' → protect → deleteSavedPreview`
++- Line 23, `POST`: `'/:id/career-sprint' → protect → handoffToCareerSprint`
++- Line 24, `GET`: `'/history' → protect → listRecommendationHistory`
++
++## /api/profile — backend/src/routes/profile.routes.js
++
++- Line 17, `USE`: `(_req, res, next) => { res.set('Cache-Control', 'private, no-store'); next(); }`
++- Line 22, `GET`: `'/me' → protect → mediaSession → getProfile`
++- Line 23, `PUT`: `'/me' → protect → mediaSession → updateProfile`
++- Line 24, `PUT`: `'/career' → protect → mediaSession → updateCareerProfile`
++- Line 25, `PUT`: `'/career/active' → protect → mediaSession → updateActiveCareerProfile`
++- Line 26, `PUT`: `'/password' → protect → mediaSession → updatePassword`
++- Line 27, `PUT`: `'/visibility' → protect → mediaSession → updateProfileVisibility`
++- Line 28, `POST`: `'/avatar' → protect → mediaSession → require('../middleware/publicPortfolioRateLimit').uploadLimit → avatarUpload.single('avatar') → uploadAvatar`
++- Line 36, `DELETE`: `'/me' → protect → mediaSession → deleteAccount`
++
++## /api/courses — backend/src/routes/courseRoutes.js
++
++- Line 10, `GET`: `'/' → protect → fetchCourses`
++- Line 11, `GET`: `'/my-learning' → protect → progress.listProgress`
++- Line 12, `PUT`: `'/:courseId/progress' → protect → progress.saveProgress`
++- Line 13, `DELETE`: `'/:courseId/progress' → protect → progress.removeProgress`
++- Line 14, `POST`: `'/:courseId/career-sprint' → protect → progress.handoffToSprint`
++
++## /api/jobs — backend/src/routes/jobRoutes.js
++
++- Line 21, `USE`: `protect → validateJobsRequest → jobsRateLimit`
++- Line 22, `GET`: `'/' → jobsRefreshLimit → fetchJobs`
++- Line 23, `GET`: `'/source-health' → getSourceHealthStatus`
++- Line 24, `GET`: `'/cache-health' → getCacheHealthStatus`
++- Line 25, `GET`: `'/actions' → actions.list`
++- Line 26, `PUT`: `'/:id/actions' → validateJobsRequest → actionRateLimit → actions.update`
++- Line 32, `POST`: `'/:id/${path}' → validateJobsRequest → actionRateLimit → actions.toggle(field, true)`
++- Line 33, `DELETE`: `'/:id/${path}' → validateJobsRequest → actionRateLimit → actions.toggle(field, false)`
++- Line 35, `GET`: `'/:id' → validateJobsRequest → getJobById`
++
++## /api/notifications — backend/src/routes/notification.routes.js
++
++- Line 12, `GET`: `'/' → protect → getNotifications`
++- Line 13, `GET`: `'/stream' → streamNotifications`
++- Line 14, `PUT`: `'/read-all' → protect → markAllNotificationsRead`
++- Line 15, `PUT`: `'/:id/read' → protect → markNotificationRead`
++- Line 16, `DELETE`: `'/:id' → protect → deleteNotification`
++
++## /api/audit-logs — backend/src/routes/audit.routes.js
++
++- Line 6, `GET`: `'/' → protect → getAuditLogs`
++- Line 7, `DELETE`: `'/:id' → protect → deleteAuditLog`
++
++## /api/workflows — backend/src/routes/workflow.routes.js
++
++- Line 10, `POST`: `'/' → protect → startWorkflow`
++- Line 11, `GET`: `'/' → protect → listWorkflows`
++- Line 12, `GET`: `'/:id' → protect → getWorkflowById`
++
++## /api/ai-versions — backend/src/routes/aiversions.routes.js
++
++- Line 11, `GET`: `'/' → protect → listVersions`
++- Line 12, `POST`: `'/' → protect → createAiVersion`
++- Line 13, `GET`: `'/:id/compare/:compareId' → protect → compareVersions`
++- Line 14, `POST`: `'/:id/rollback' → protect → rollbackVersion`
++
++## /api/tenant — backend/src/routes/tenant.routes.js
++
++- Line 40, `POST`: `'/organizations' → protect → createOrganizationValidators → createOrganization`
++- Line 41, `GET`: `'/organizations' → protect → listOrganizations`
++- Line 43, `POST`: `'/organizations/:organizationId/teams' → protect → requireOrganizationRole('manager') → createTeamValidators → createTeam`
++- Line 51, `GET`: `'/organizations/:organizationId/teams' → protect → requireOrganizationRole('member') → listTeamsValidators → listTeams`
++- Line 59, `POST`: `'/organizations/:organizationId/invitations' → protect → requireOrganizationRole('manager') → inviteUserValidators → inviteUser`
++- Line 67, `GET`: `'/organizations/:organizationId/invitations' → protect → requireOrganizationRole('manager') → listPendingInvitationsValidators → listPendingInvitations`
++- Line 75, `PATCH`: `'/organizations/:organizationId/invitations/:invitationId/revoke' → protect → requireOrganizationRole('manager') → revokeInvitationValidators → revokeInvitation`
++- Line 83, `POST`: `'/invitations/:invitationId/accept' → protect → acceptInvitationValidators → acceptInvitation`
++- Line 84, `POST`: `'/invitations/accept/:token' → protect → acceptInvitationTokenValidators → acceptInvitationByToken`
++- Line 85, `GET`: `'/invitations/:token/details' → invitationDetailsValidators → getInvitationDetailsByToken`
++- Line 86, `POST`: `'/invitations/accept/:token/onboard' → acceptInvitationOnboardValidators → acceptInvitationOnboard`
++- Line 88, `GET`: `'/organizations/:organizationId/members' → protect → requireOrganizationRole('member') → listOrganizationMembersValidators → listOrganizationMembers`
++- Line 96, `GET`: `'/teams/:teamId/members' → protect → requireTeamRole('member') → listTeamMembersValidators → listTeamMembers`
++- Line 98, `PATCH`: `'/memberships/:membershipId/role' → protect → updateMembershipRoleValidators → updateMembershipRole`
++- Line 100, `GET`: `'/teams/:teamId/shared-dashboard' → protect → requireTeamRole('member') → getTeamSharedDashboardValidators → getTeamSharedDashboard`
++- Line 108, `GET`: `'/teams/:teamId/analytics' → protect → requireTeamRole('member') → getTeamAnalyticsValidators → getTeamAnalytics`
++
++## /api/skill-graph — backend/src/routes/skillgraph.routes.js
++
++- Line 6, `POST`: `'/generate' → protect → generateSkillGraph`
++- Line 7, `GET`: `'/latest' → protect → getLatestSkillGraph`
++
++## /api/integrations — backend/src/routes/integrations.routes.js
++
++- Line 3, `USE`: `(_req, res, next) => { res.set('Cache-Control', 'private, no-store'); next(); }`
++- Line 30, `GET`: `'/marketplace' → protect → getMarketplace`
++- Line 31, `GET`: `'/linked-profiles/kaggle' → protect → kaggleLink.get`
++- Line 32, `POST`: `'/linked-profiles/kaggle' → protect → actionLimit('mutate') → kaggleLink.save`
++- Line 33, `DELETE`: `'/linked-profiles/kaggle' → protect → actionLimit('mutate') → kaggleLink.remove`
++- Line 34, `GET`: `'/linked-profiles/hackerrank' → protect → getLinkedProfile`
++- Line 35, `POST`: `'/linked-profiles/hackerrank' → protect → actionLimit('mutate') → saveLinkedProfile`
++- Line 36, `DELETE`: `'/linked-profiles/hackerrank' → protect → actionLimit('mutate') → removeLinkedProfile`
++- Line 37, `GET`: `'/connections' → protect → getConnections`
++- Line 38, `GET`: `'/insights' → protect → getIntegrationInsights`
++- Line 39, `GET`: `'/sync-trends' → protect → getSyncTrends`
++- Line 40, `GET`: `'/github/callback' → actionLimit('callback', false) → githubOauthCallback`
++- Line 41, `POST`: `'/oauth/start' → protect → actionLimit('mutate') → startOAuth`
++- Line 42, `POST`: `'/oauth/callback' → protect → actionLimit('mutate') → oauthCallback`
++- Line 43, `POST`: `'/manual/connect' → protect → actionLimit('mutate') → manualConnectProvider`
++- Line 44, `POST`: `'/ingest' → protect → actionLimit('mutate') → ingestProviderData`
++- Line 45, `POST`: `'/sync-now' → protect → actionLimit('mutate') → syncNow`
++- Line 46, `POST`: `'/webhooks/github' → actionLimit('webhook', false) → githubWebhook`
++- Line 47, `DELETE`: `'/connections/:provider' → protect → disconnectProvider`
++
++## /api/simulator — backend/src/routes/scenarioSimulator.routes.js
++
++- Line 15, `GET`: `'/context' → protect → contextLimit → getScenarioSimulatorContext`
++- Line 16, `GET`: `'/history' → protect → limits.history → getScenarioSimulationHistory`
++- Line 17, `POST`: `'/what-if' → protect → limits.evaluate → runScenarioSimulation`
++- Line 18, `POST`: `'/save' → protect → limits.save → saveScenarioSimulation`
++- Line 19, `POST`: `'/create-sprint' → protect → limits.export → createSprintFromScenarioController`
++- Line 20, `DELETE`: `'/:id' → protect → limits.delete → deleteScenarioSimulation`
++
++## /api/public-profiles — backend/src/routes/publicProfile.routes.js
++
++- Line 24, `USE`: `(req, res, next) => { res.set('Cache-Control', 'private, no-store'); next(); }`
++- Line 28, `PARAM`: `'slug' → (req, res, next, slug) => { if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length > 60) return res.status(400).json({ message: 'Invalid slug.' }); next(); }`
++- Line 33, `GET`: `'/me' → protect → mediaSession → analyticsLimit → getMyPublicProfile`
++- Line 34, `PUT`: `'/me' → protect → mediaSession → mutationLimit → updateMyPublicProfile`
++- Line 35, `POST`: `'/me/project-image' → protect → mediaSession → uploadLimit → uploadPortfolioImage`
++- Line 36, `GET`: `'/me/resume' → protect → mediaSession → resumeLimit → downloadPublicProfileResume`
++- Line 37, `GET`: `'/me/analytics' → protect → mediaSession → analyticsLimit → getMyPublicProfileAnalytics`
++- Line 38, `POST`: `'/:slug/contact' → protect → mediaSession → require('../services/publicPortfolioContactService').validateContactRequest → contactLimit → contactRecipientLimit → contactPublicProfile`
++- Line 47, `GET`: `'/:slug/resume' → resumeLimit → downloadPublicProfileResume`
++- Line 48, `GET`: `'/:slug' → publicViewLimit → attachOptionalUser → getPublicProfile`
++
++## /api/recruiter — backend/src/routes/recruiter.routes.js
++
++- Line 18, `USE`: `protect → authorizeRoles('recruiter') → requireRecruiterAccessEnabled → requireOrganizationContext(['recruiter'])`
++- Line 21, `GET`: `'/dashboard' → getRecruiterDashboard`
++- Line 24, `GET`: `'/candidates' → getRecruiterCandidates`
++- Line 25, `GET`: `'/candidate/:id' → getRecruiterCandidateById`
++- Line 28, `POST`: `'/job' → createRecruiterJob`
++- Line 29, `GET`: `'/jobs' → getRecruiterJobs`
++- Line 30, `PUT`: `'/job/:id' → updateRecruiterJob`
++- Line 31, `DELETE`: `'/job/:id' → deleteRecruiterJob`
++- Line 34, `POST`: `'/match' → matchCandidates`
++- Line 35, `POST`: `'/ai-rank' → aiRankCandidates`
++
++## /api/recruiter-hub — backend/src/routes/recruiter-hub/recruiterHubRoutes.js
++
++- Line 17, `USE`: `protect → authorizeRoles('recruiter') → requireRecruiterAccessEnabled → requireOrganizationContext(['recruiter'])`
++- Line 19, `USE`: `'/candidates' → candidateRoutes`
++- Line 20, `USE`: `'/jobs' → recruiterJobRoutes`
++- Line 21, `USE`: `'/matches' → matchRoutes`
++- Line 22, `USE`: `'/shortlists' → shortlistRoutes`
++- Line 23, `USE`: `'/analytics' → analyticsRoutes`
++- Line 24, `USE`: `'/activity' → activityRoutes`
++- Line 25, `POST`: `'/comparison' → compare`
++- Line 26, `GET`: `'/profile' → getProfile`
++- Line 27, `PATCH`: `'/profile' → patchProfile`
++
++## /api/admin — backend/src/routes/admin.routes.js
++
++- Line 23, `USE`: `protect → authorizeRoles('admin') → requireOrganizationContext(['admin'])`
++- Line 25, `GET`: `'/overview' → getOrganizationOverview`
++- Line 26, `GET`: `'/recruiters' → getRecruiters`
++- Line 27, `POST`: `'/invite-recruiter' → inviteRecruiter`
++- Line 28, `POST`: `'/recruiter' → inviteRecruiter`
++- Line 29, `POST`: `'/recruiters/direct' → addRecruiterDirect`
++- Line 30, `PUT`: `'/recruiters/:id' → updateRecruiter`
++- Line 31, `PATCH`: `'/recruiters/:id/active' → setRecruiterActive`
++- Line 32, `PATCH`: `'/recruiters/:id/revoke' → revokeRecruiterAccess`
++- Line 33, `DELETE`: `'/recruiters/:id' → deleteRecruiter`
++- Line 34, `GET`: `'/invitations/pending' → getPendingInvitations`
++- Line 35, `POST`: `'/invitations/:id/resend' → resendInvitation`
++- Line 36, `PATCH`: `'/invitations/:id/revoke' → revokeInvitation`
++- Line 37, `PATCH`: `'/invitations/:id/expire' → expireInvitation`
++- Line 38, `DELETE`: `'/invitations/:id' → deleteInvitation`
++- Line 39, `GET`: `'/developers' → getDevelopers`
++- Line 40, `GET`: `'/jobs' → getAdminJobs`
++- Line 41, `POST`: `'/jobs' → createAdminJob`
++- Line 42, `PUT`: `'/jobs/:id' → updateAdminJob`
++- Line 43, `PATCH`: `'/jobs/:id/close' → closeAdminJob`
++- Line 44, `DELETE`: `'/jobs/:id' → deleteAdminJob`
++- Line 45, `POST`: `'/ai-rank' → aiRankCandidates`
++
++## /api/admin-console — backend/src/routes/adminConsole.routes.js
++
++- Line 29, `USE`: `protect → authorizeRoles('admin') → requireOrganizationContext(['admin'])`
++- Line 31, `GET`: `'/overview' → getConsoleOverview`
++- Line 32, `GET`: `'/analytics' → getConsoleAnalytics`
++- Line 33, `GET`: `'/activity' → getConsoleActivity`
++- Line 34, `GET`: `'/performance' → getConsolePerformance`
++- Line 35, `GET`: `'/teams' → getConsoleTeams`
++- Line 36, `POST`: `'/teams' → createConsoleTeam`
++- Line 37, `PATCH`: `'/teams/:id' → updateConsoleTeam`
++- Line 38, `PATCH`: `'/teams/:id/active' → toggleConsoleTeamActive`
++- Line 39, `DELETE`: `'/teams/:id' → deleteConsoleTeam`
++- Line 40, `POST`: `'/teams/:id/recruiters' → assignRecruiterToConsoleTeam`
++- Line 41, `DELETE`: `'/teams/:id/recruiters/:recruiterId' → removeRecruiterFromConsoleTeam`
++- Line 42, `GET`: `'/preferences' → getConsolePreferences`
++- Line 43, `PATCH`: `'/preferences' → updateConsolePreferences`
++
++## /api/weekly-reports — backend/src/routes/weeklyReport.routes.js
++
++- Line 10, `POST`: `'/generate' → protect → generateReport`
++- Line 11, `GET`: `'/latest' → protect → getLatestReport`
++- Line 12, `GET`: `'/history' → protect → getReportHistory`
++
++## /api/interview-prep — backend/src/routes/interviewPrep.routes.js
++
++- Line 42, `USE`: `protect → (req, res, next) => { const input = req.method === 'GET' ? req.query : req.body || {}; const fields = [ 'skill', 'topic', 'stack', 'technology', 'language', 'framework', 'difficulty', 'category', 'source', 'block', 'top', 'lookupOnly', 'q', 'query', 'question', 'tags', 'careerStack', 'experienceLevel' ]; for (const field of fields) { if ( input[field] !== undefined && (typeof input[field] !== 'string' || input[field].length > (['q', 'query', 'question', 'tags'].includes(field) ? 500 : 100)) ) { return res.status(400).json({ message: 'Invalid ${field}.' }); } } for (const field of ['page', 'limit', 'target']) { if ( input[field] !== undefined && (!['string', 'number'].includes(typeof input[field]) || !Number.isFinite(Number(input[field])) || Number(input[field]) < 1) ) { return res.status(400).json({ message: 'Invalid ${field}.' }); } } if (input.difficulty && !['easy', 'medium', 'hard', 'senior'].includes(input.difficulty)) return res.status(400).json({ message: 'Invalid difficulty.' }); next(); }`
++- Line 88, `GET`: `'/questions' → getInterviewPrepQuestions`
++- Line 89, `GET`: `'/search' → searchRateLimiter → searchInterviewPrepQuestions`
++- Line 90, `POST`: `'/generate' → generateRateLimiter → generateInterviewPrepQuestions`
++- Line 91, `POST`: `'/ask-question' → customQuestionRateLimiter → askInterviewPrepQuestion`
++- Line 92, `POST`: `'/' → generateRateLimiter → generateInterviewPrepSession`
++- Line 93, `GET`: `'/history' → getInterviewPrepHistory`
++
++## /api/career-sprints — backend/src/routes/careerSprint.routes.js
++
++- Line 22, `GET`: `'/current' → protect → getCurrentCareerSprint`
++- Line 23, `GET`: `'/preferences' → protect → preferenceController.read`
++- Line 24, `PUT`: `'/preferences' → protect → preferenceController.update`
++- Line 25, `POST`: `'/' → protect → createCareerSprint`
++- Line 26, `POST`: `'/generate-plan' → protect → generateAiTasks`
++- Line 27, `POST`: `'/generate-ai-tasks' → protect → generateAiTasks`
++- Line 28, `POST`: `'/generate-ai-plan' → protect → generateTrueAiTasks`
++- Line 29, `POST`: `'/:id/ai-plans' → protect → saveAiPlanController`
++- Line 30, `POST`: `'/:id/import-scenario' → protect → importScenarioPlanController`
++- Line 31, `POST`: `'/:id/tasks' → protect → addCareerSprintTask`
++- Line 32, `PUT`: `'/:id/tasks/:taskId' → protect → updateCareerSprintTask`
++- Line 33, `DELETE`: `'/:id/tasks/:taskId' → protect → deleteCareerSprintTask`
++- Line 34, `DELETE`: `'/:id/ai-plans/:planId' → protect → deleteAiPlanController`
++- Line 35, `POST`: `'/:id/ai-plans/:planId/tasks' → protect → addDraftTasksController`
++- Line 36, `PUT`: `'/:id/dates' → protect → updateSprintDatesController`
++- Line 37, `GET`: `'/history' → protect → getCareerSprintHistory`
++- Line 38, `POST`: `'/:id/restore-streak' → protect → restoreCareerStreakController`
++
++## /api/news — backend/src/routes/newsRoutes.js
++
++- Line 13, `USE`: `protect`
++- Line 14, `USE`: `(_req, res, next) => { res.set('Cache-Control', 'private, no-store'); next(); }`
++- Line 19, `GET`: `'/' → feedLimit → validateFeed → getNews`
++- Line 20, `GET`: `'/saved' → feedLimit → getSavedNews`
++- Line 21, `POST`: `'/save' → mutationLimit → saveNews`
++- Line 22, `DELETE`: `'/save/:id' → mutationLimit → removeSavedNews`
++- Line 23, `PATCH`: `'/save/:id/read' → mutationLimit → markSavedNewsAsRead`
++
++## /api/support — backend/src/routes/support.routes.js
++
++- Line 7, `POST`: `'/tickets' → protect → supportController.createTicket`
++- Line 8, `GET`: `'/my-tickets' → protect → supportController.getMyTickets`
++- Line 9, `GET`: `'/tickets/:id' → protect → supportController.getTicketById`
++- Line 10, `DELETE`: `'/tickets/:id' → protect → supportController.deleteTicket`
++- Line 13, `GET`: `'/admin/tickets' → protect → authorizeRoles('admin', 'super_admin') → supportController.getAdminTickets`
++- Line 14, `PUT`: `'/admin/tickets/:id/status' → protect → authorizeRoles('admin', 'super_admin') → supportController.updateTicketStatus`
++
++## /api/preview — backend/src/routes/preview.routes.js
++
++- Line 53, `POST`: `'/resume/parse-text' → require('../middleware/publicPortfolioRateLimit').uploadLimit → previewResumePdfMiddleware → parsePreviewResume`
++
++## /api/recruiter-hub/candidates — backend/src/routes/recruiter-hub/candidateRoutes.js
++
++- Line 6, `GET`: `'/' → listCandidates`
++- Line 7, `GET`: `'/:id' → getCandidateDetails`
++- Line 8, `POST`: `'/:id/analyze' → analyzeCandidate`
++
++## /api/recruiter-hub/jobs — backend/src/routes/recruiter-hub/recruiterJobRoutes.js
++
++- Line 13, `GET`: `'/' → listJobs`
++- Line 14, `POST`: `'/' → createJob`
++- Line 15, `GET`: `'/:id' → getJobDetails`
++- Line 16, `PATCH`: `'/:id' → updateJob`
++- Line 17, `POST`: `'/:id/archive' → archiveJob`
++- Line 18, `DELETE`: `'/:id' → deleteJob`
++
++## /api/recruiter-hub/matches — backend/src/routes/recruiter-hub/matchRoutes.js
++
++- Line 11, `GET`: `'/' → listMatches`
++- Line 12, `POST`: `'/generate' → generateMatches`
++- Line 13, `GET`: `'/:id' → getMatchDetails`
++- Line 14, `PATCH`: `'/:id/status' → patchMatchStatus`
++
++## /api/recruiter-hub/shortlists — backend/src/routes/recruiter-hub/shortlistRoutes.js
++
++- Line 11, `GET`: `'/' → getShortlists`
++- Line 12, `POST`: `'/' → createShortlist`
++- Line 13, `PATCH`: `'/:id' → patchShortlist`
++- Line 14, `DELETE`: `'/:id' → deleteShortlist`
++
++## /api/recruiter-hub/analytics — backend/src/routes/recruiter-hub/analyticsRoutes.js
++
++- Line 7, `GET`: `'/dashboard' → getDashboard`
++- Line 8, `GET`: `'/' → getAnalytics`
++
++## /api/recruiter-hub/activity — backend/src/routes/recruiter-hub/activityRoutes.js
++
++- Line 6, `GET`: `'/' → getActivity`
+diff --git a/backend/verification/architecture/REQUEST-FLOW-GOVERNANCE-FINAL.md b/backend/verification/architecture/REQUEST-FLOW-GOVERNANCE-FINAL.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..e50daf2b832573792a30c29887e8c03770927e02
+--- /dev/null
++++ b/backend/verification/architecture/REQUEST-FLOW-GOVERNANCE-FINAL.md
+@@ -0,0 +1,142 @@
++# DevInsight AI — request-flow governance final
++
++30 October 2026, Asia/Karachi. Source/current branch: `task/profile`; integration/PR target: not applicable. Baseline: `c612ae80c466f47ab7def651da6537d8cf330b0a`; initial index and checkout were clean. No commit, deployment, infrastructure/configuration change, secret exposure/change, destructive migration or historical-record change was performed.
++
++**Verdict: local implementation and focused verification PASS — 117 passed, 0 failed, 0 skipped; production activation remains gated.** This change removes Redis as an admission dependency for Profile/Portfolio. It does not establish fleet-wide security for unrelated modules, activate B2 or freeze Profile. The stable Profile/B2 contracts and historical acceptance reports remain intact.
++
++## Decision and evidence boundaries
++
++Read the root `AGENTS.md`, architecture charter (especially ADR-14–16), Integrations Mongo governance implementation and acceptance, Profile implementation/B2/security acceptance, Profile development handoff, storage operations and affected controllers/middleware. The plan was: establish the clean branch baseline; inventory mounted request paths and service authorities; reuse the tested Mongo governance machinery; exercise failures/concurrency/authenticated storage with disposable fixtures; format explicit files, retain evidence, inspect exact diff/cleanup and record release gates.
++
++The initial outside-workspace approval review failed because its review model was at capacity. The original checkout was untouched while a candidate was prepared in the chat workspace. After the user requested retry, approval succeeded and focused changes were transferred to the original checkout after a fresh branch/HEAD/clean-status check. Subsequent implementation and final verification use the original checkout. No approval or security check was bypassed.
++
++The companion `REQUEST-ENDPOINT-INVENTORY.md` and `request-endpoint-inventory.json` record 247 mounted route declarations across 36 router mounts, including six nested Recruiter Hub mounts, source line numbers, router-wide guards and ordered handler expressions. Two Jobs templates each expand across save/apply/hide, yielding 251 mounted API method/path combinations. Root `/`, `/metrics` and `/uploads` are described separately in the global flow. These counts distinguish source tracing from runtime coverage. The matrix below supplies service-layer branches; the focused fixture tests exercise the changed paths. Unrelated endpoints were source-audited, not all exercised through live services.
++
++## Global execution order
++
++`backend/index.js`: skill-gap timing marker → Helmet → CORS → global API limiter → request context → bounded JSON/webhook-byte capture (100 kb) → bounded URL-encoded parser (100 kb) → maintenance guard → `/uploads` access/storage/static chain → HTTP metrics → optional request logging → audit middleware → mounted route/router guards → controller/service → error middleware. Multipart bodies are not parsed by the global JSON middleware. CORS preflight may terminate before later middleware. Maintenance exemptions remain unchanged. Redis startup is optional and bounded to four seconds; no new startup dependency was added.
++
++The global limiter precedes persisted authentication. Its verified JWT identity is only an ingress quota key; it does not authorize anything. Route `protect` independently verifies issuer/audience/session revision, loads the Mongo account and checks active status. Owner predicates and storage ledger checks remain authoritative. Existing authentication catches a failed account lookup as authentication failure; a complete database outage is therefore not guaranteed to reach admission or produce its 503. A failure specifically in Mongo admission produces 503 before protected work, as tested.
++
++## Before/after flows by affected endpoint
++
++All rows inherit the global prefix above. `A` = persisted authentication; `M` = media-session cookie middleware; `Q` = fixed shared admission; `O` = current Mongo ownership/publication checks. No file/provider work is inside an admission transaction.
++
++| Endpoint                                                                                                   | Before                                                                                                                                                       | After / retained work order                                                                                                                                                                             |
++| ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| `GET /api/profile/me`                                                                                      | A → M → owned Profile/context reads                                                                                                                          | Unchanged; no route Redis admission or cache requirement                                                                                                                                                |
++| `PUT /api/profile/me`, `/career`, `/career/active`, `/visibility`                                          | A → M → field/reference validation → owned Mongo mutation → dependent-cache invalidation                                                                     | Unchanged; optional invalidation failures cannot become ownership authority                                                                                                                             |
++| `PUT /api/profile/password`                                                                                | A → M → password validation/verification → compare-and-set credential revision → renewed session/media credentials                                           | Unchanged; no new Redis dependency                                                                                                                                                                      |
++| `DELETE /api/profile/me`                                                                                   | A → M → ownership/organization guards → fenced Mongo deletion and durable cleanup receipts                                                                   | Unchanged; cleanup semantics/history preserved                                                                                                                                                          |
++| `POST /api/profile/avatar`                                                                                 | A → M → strict Redis upload Q → bounded multipart/type validation → staged storage PUT → owner-fenced avatar transaction → durable displacement cleanup      | Same order with Mongo Q; Redis never accessed by Q                                                                                                                                                      |
++| `POST /api/public-profiles/me/project-image`                                                               | A → M → strict Redis upload Q → 2 MiB/one-file parser → signature/MIME validation → staged image PUT/ledger → opaque reference                               | Same order with Mongo Q; staging remains intentional until project attachment                                                                                                                           |
++| `POST /api/resume/upload`                                                                                  | A → strict Redis upload Q **only for B2** → 10 MiB PDF parser → metadata/signature/text validation → storage → owned selection/history persistence           | A → Mongo upload Q for **both drivers** → same parser/validation/storage/transactions; existing shared 10/hour upload policy closes filesystem bypass                                                   |
++| `POST /api/preview/resume/parse-text`                                                                      | Public → 5 MiB PDF parser/temp file → text parser/preview                                                                                                    | Public → Mongo upload Q using existing IP identity rule → same bounded parser/preview; no authentication contract change                                                                                |
++| `GET /api/public-profiles/me`, `/me/analytics`                                                             | A → M → Redis analytics Q / bounded local fallback → owned reads                                                                                             | Same order, single Mongo Q; existing 30/minute cap                                                                                                                                                      |
++| `PUT /api/public-profiles/me`                                                                              | A → M → Redis mutation Q / local fallback → payload/foreign-reference validation → owned update → invalidation/notification                                  | Same order, Mongo Q; 20/minute preserved                                                                                                                                                                |
++| `GET /api/public-profiles/me/resume`                                                                       | A → M → Redis resume Q / local fallback → O → owned ledger/filesystem read                                                                                   | Same order, Mongo Q; 10/minute preserved                                                                                                                                                                |
++| `GET /api/public-profiles/:slug/resume`                                                                    | Slug validation → Redis resume Q / local fallback → enabled/published/active-account/visible-CTA/owned-resume checks → bytes                                 | Same order, Mongo Q. Current authorization precedes B2/legacy bytes                                                                                                                                     |
++| `GET /api/public-profiles/:slug`                                                                           | Slug validation → Redis view Q / local fallback → optional authentication → current visibility/account authorization → revision cache → serializer/analytics | Same order, Mongo Q; optional authentication remains after Q, preserving the original anonymous-IP quota identity even when a bearer token is supplied                                                  |
++| `POST /api/public-profiles/:slug/contact`                                                                  | Slug validation → A → M → strict Redis sender Q → recipient-slug Q → recruiter/message validation → enabled/published/current recipient checks → SMTP        | Slug validation → A → M → lightweight recruiter/body validation → Mongo sender Q → Mongo recipient-slug Q → same service validation/current recipient checks → SMTP. No delivery before both admissions |
++| `GET /api/resume/files`, `/active`, `/result`, `/result/:userId`, `/guide`; `PUT /active`; `POST /analyze` | A → controller-specific input/owner checks → existing data/parser/analysis/cache/provider branch                                                             | Unchanged. `/analyze` consumes an already owned file; upload admission cannot be bypassed by changing a driver. Paid analysis governance is separate from upload admission                              |
++| `/uploads/*`                                                                                               | Stored-image authorization/ledger → B2 version-pinned bytes, otherwise legacy confinement/access guard → static reader                                       | Unchanged; no upload counter imposed on byte delivery; current media/publication checks retained                                                                                                        |
++
++Multer validation requiring file bytes necessarily follows admission. Authentication precedes protected parsers; new uploads have no caller-selected foreign object to authorize. Existing commit fences independently recheck ownership/account state after an intervening storage PUT. JSON is bounded globally; contact role/message shape is now rejected before charging its low-frequency quotas. Invalid/missing recipient and SMTP failure still consume prior admission, matching the conservative existing policy.
++
++## Whole-application Redis audit / responsibility matrix
++
++The endpoint appendix lists every mounted declaration, including router-wide authentication/roles/organization guards. The following branches are unchanged unless explicitly marked migrated. A service import alone does not prove a Redis command executes on every request.
++
++| Endpoint family / branch                                                                                                                                                                                                                        | Redis responsibility and outage behavior                                                                                                                                                                                                 | Mongo / other authority                                                                                                                                                                   |
++| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| Profile/Portfolio seven Q categories, including uploads/contact                                                                                                                                                                                 | **Migrated:** no Redis counters, fallback, selector or local Map                                                                                                                                                                         | Existing governance collection; disjoint fixed-window `_id` namespace; majority/snapshot transactions                                                                                     |
++| Public portfolio rendering                                                                                                                                                                                                                      | Optional public revision payload GET/SET and short token-owned refresh lock; bounded local single-flight, Mongo cache/loader fallback. Ordinary command failures are tolerated; real refresh contention can still return busy 503        | Every cache lookup follows current publication/platform/account authorization; no private preview caching; same-revision stale policy retained                                            |
++| `/api/integrations` marketplace/connections/insights/trends/linked-profile reads                                                                                                                                                                | No Redis admission requirement                                                                                                                                                                                                           | Owned Mongo observations/connections; public snapshot freshness/leases as implemented                                                                                                     |
++| Integrations manual Connect, Sync, ingest, OAuth start/callback, linked-profile mutation, webhook; disconnect/provider calls and polling                                                                                                        | Redis not admission authority; legacy store selection ignored                                                                                                                                                                            | Existing Mongo action counters, provider/user budgets, concurrency leases and cooldowns; ownership/state consumption/fencing unchanged                                                    |
++| `/api/jobs` all reads/health/actions                                                                                                                                                                                                            | Read limiter 120/min uses Redis with local fallback; refresh 2/15min and action 30/min fail closed on Redis outage                                                                                                                       | Mongo jobs, actions, ownership; provider refresh separately requires Redis budget/concurrency/cooldown reservation                                                                        |
++| Jobs source refresh/worker and pool publication                                                                                                                                                                                                 | Redis atomic provider budgets/leases/interval/cooldown and guarded pool publication; unavailable admission skips/rejects provider work                                                                                                   | Durable Mongo job pool; existing useful cached reads remain available                                                                                                                     |
++| `/api/simulator/context`, `/history`, `/what-if`, `/save`, `/create-sprint`, `DELETE /:id`                                                                                                                                                      | Redis per-operation quotas; production unavailable → 503 except explicitly configured single-instance mode. Existing local mode is not fleet authority                                                                                   | Mongo owned contexts/history/receipts and export atomicity; cache remains acceleration                                                                                                    |
++| `/api/news` feed/saved/mutations                                                                                                                                                                                                                | Redis request quotas with local fallback; catalog cache/ranking signals optional. Discovery queue and provider admission use explicitly justified Redis coordination                                                                     | Mongo versioned catalog, owned saved records and snapshots. Cached catalog browsing does not require provider admission; provider/discovery branches may remain unavailable without Redis |
++| `/api/github/analyze`, `/analyze-save`, `/active-username`                                                                                                                                                                                      | Analyze branches use optional result cache/lock; save lock can select Redis then Mongo fallback. No route Redis quota on active-username                                                                                                 | Mongo owned repositories/insights and save-lock records. Separate-store save coordination needs its own review before any fleet-wide exclusivity claim                                    |
++| `/api/interview-prep/questions`, `/search`, `/generate`, `/ask-question`, `/`, `/history`                                                                                                                                                       | Optional versioned cache/revision keys and AI-cache acceleration; search/custom/generate route limits currently local express-rate-limit                                                                                                 | Mongo bank/owned histories, normalization and bounded provider paths. Local quotas are a remaining fleet gate                                                                             |
++| `/api/career-sprints` current/preferences/history/mutations; plan/generate variants                                                                                                                                                             | Optional overview and planning caches with existing short Redis budgets; provider/AI-cache branches only when requested                                                                                                                  | Mongo ownership, immutable planning/scoring/history and receipts unchanged                                                                                                                |
++| `/api/courses`, `/api/recommendations`, `/api/skillgap`, `/api/weekly-reports`, `/api/analysis`, `/api/dashboard`, `/api/skill-graph`                                                                                                           | Shared AI/result cache may be called on calculation/generation branches. Courses primarily reuse Mongo AnalysisCache; recommendations have optional enrichment lock. Ordinary persistence/read endpoints do not inherently require Redis | Current Mongo context/ownership and existing deterministic scoring remain authoritative; no new analyses/provider calls added                                                             |
++| `POST /api/support/tickets`                                                                                                                                                                                                                     | Redis preliminary dedupe/rate checks accelerate/restrict; Mongo dedupe/quota also always runs when Redis allows or is unavailable                                                                                                        | Existing durable Mongo dedupe/quota/owned ticket state. This differs from a fallback that initializes a second empty allowance                                                            |
++| Other support methods; `/api/auth`, `/api/notifications`, `/api/audit-logs`, `/api/workflows`, `/api/ai-versions`, `/api/tenant`, `/api/recruiter`, `/api/recruiter-hub` nested routers, `/api/admin`, `/api/admin-console`, `/api/super-admin` | No mandatory route-level Redis dependency found. Invited mail/AI-generation branches use existing delivery/AI services; imports and cache invalidations do not make every CRUD request Redis-dependent                                   | Existing persisted authentication, roles, organization fences, Mongo ownership and optional providers remain as implemented                                                               |
++| Global/auth/login protection                                                                                                                                                                                                                    | Existing global/auth express-rate-limit stores and login failure Map are **process-local**, not Redis-dependent and not reliable shared fleet security                                                                                   | Explicit unresolved production gate; no authentication redesign or quota-policy change in this scoped implementation                                                                      |
++
++The shared Redis cache service retains its existing 150 ms default command wrapper and optional misses; News requests may use bounded longer wrappers. Existing cache-lock release in the generic Redis helper is a non-atomic GET/DEL sequence; the portfolio-specific lock already uses token-checked Lua. The generic lock and GitHub dual-store coordination are audit findings, not silently repurposed mandatory security. Their callers were not rewritten here.
++
++## Admission architecture and conservation
++
++| Approach                                              | Assessment                                                                                                                                                                                                                          |
++| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
++| Redis-primary → empty Mongo/local fallback            | Rejected. A worker/store switch can grant another allowance; restarts and simultaneous stores permit split-brain. Retry-After alone does not transfer state                                                                         |
++| Redis-primary with durable mirrored Mongo reservation | Could conserve quota only if every allowance is committed to the durable authority before work. Redis cannot independently grant credit; this adds reconciliation and another failure surface without avoiding authoritative writes |
++| Mongo-authoritative, optional Redis cache             | Chosen. One durable budget per policy/identity/window for every worker and Redis state; reuses tested initialization, transaction retries, unique `_id`, majority writes and logical expiry                                         |
++
++`requestWindow` is an additive export in `integrationMongoGovernanceService.js`. It uses the existing connection, collection and transaction helper. Integrations' original admission/action/cooldown code and policy defaults are unchanged. Keys are `public-portfolio:v3:rate:<operation>:<SHA256(subject)>:<floor(now/windowMs)>`; they cannot collide with existing integration keys. There is no new collection/schema/dependency. Built-in `_id` uniqueness handles first-writer races; duplicate insert races retry the whole transaction. Existing 2-second transaction retry budget/1-second commit bound remain; collection/index initialization uses bounded commands and is cached per connected DB.
++
++Every count is read and replaced in a snapshot/majority transaction. Contending workers retry rather than admitting from stale reads. Values saturate at limit+1, preserving denial and reducing repeated rejected writes; a saturated request still incurs a bounded point read/transaction. Invalid persisted counters fail closed. Absolute bucket expiry is checked in code, independently of TTL deletion. The existing `governance_expiry` TTL index reclaims governance state, never stored-asset/deletion receipts. No TTL is added to durable storage work.
++
++Original policies: view 60/min; resume download 10/min; analytics 30/min; mutation 20/min; shared avatar/portfolio/B2 résumé upload 10/hour; sender contact 3/hour; recipient slug 20/day. Existing authenticated account, `req.ip`, and recipient-slug identities are preserved. Filesystem uploads now join the same existing upload budget; public preview parsing uses that policy with IP identity. No caller header/body user ID or local allowance is trusted. Sender then recipient counters remain sequential: recipient denial conservatively spends a sender attempt, as before; no refund enables extra delivery. Profile has no additional cooldown state beyond fixed windows. Integrations cooldowns are unchanged.
++
++Allowed responses retain `RateLimit-Limit`/`RateLimit-Remaining`; exhausted quota returns 429, remaining 0 and at least one second of Retry-After until the bucket ends. Mongo admission error returns sanitized 503 and Retry-After 30 before multipart/storage/mail. The previous non-strict Portfolio fallback paths now also fail closed if admission fails; Redis failure alone never changes their authority. No refund occurs after an uncertain downstream result.
++
++## Security, privacy and observability
++
++The focused suite checks atomic boundary admission across two independent OS processes, process restart without counter loss, Redis healthy/unavailable/healthy fixture transitions with zero Redis admission access, expired-but-present Mongo rows, disconnect/reconnect retention and required indexes. It exercises real JWT/account reads, real multipart/PDF parsing, actual Mongo ledger/selection transactions and fixture S3 for avatar/portfolio/résumé uploads. It injects admission failure while authentication remains available, uses malformed multipart fields to demonstrate rejection before parser execution, and checks zero additional storage/mail calls. Shared exhaustion blocks both storage drivers; sender and recipient exhaustion block delivery. Anonymous preview parser failure is blocked by admission. Spoofed forwarded headers must not rotate IP buckets when proxy trust is disabled.
++
++Existing Profile/B2/regression fixtures cover ownership/privacy/session revision, replacement rollback, durable cleanup/restart and legacy readers; some older fixtures intentionally stub admission to isolate storage. The new suite supplies the missing combined real-admission upload coverage. SMTP and S3 are fixtures; this run does not send email or access real B2/Upstash. Previous live-B2 evidence remains historical, not claimed as a fresh live upload run.
++
++New low-cardinality Prometheus metrics: `dpa_portfolio_admission_total{operation,outcome}` and `dpa_portfolio_admission_duration_seconds{operation}`. Outcomes distinguish allowed/limited/unavailable; operation labels use a fixed allowlist. No user/IP/slug/content/credential is logged or used as a metric label. SHA-256 keys are pseudonymous, not anonymous; restrict collection/backup access and retain only through normal governance TTL/backup policy. Existing route status/latency metrics remain available.
++
++Express owns proxy identity. The application currently does not configure `trust proxy`; direct loopback spoof resistance is testable, while the deployed proxy allowlist/header sanitation remains an operator gate. Preserve the original IP identity, including its current IPv6 behavior, rather than silently changing quota policy. All workers must have synchronized clocks and matching policy/software; fixed windows retain the existing clock-based contract.
++
++Mongo TTL deletion is asynchronous, so correctness must never depend on immediate deletion: [MongoDB TTL documentation](https://www.mongodb.com/docs/manual/core/index-ttl/). Transaction contention and retries must be tested under the actual deployment: [MongoDB transaction production considerations](https://www.mongodb.com/docs/manual/core/transactions-production-consideration/).
++
++## Verification and performance
++
++Final original-checkout command: `node backend/src/scripts/verifyRequestFlowGovernance.js`. Run using Node 24.19.0 and the installed MongoDB 8.2 binary. The fixture runner does not load `.env`; it removes inherited provider/database/Redis credentials, starts only disposable loopback replica sets, binds guarded fixture ports for existing acceptance suites, and runs test files serially to avoid workstation oversubscription. Real multi-worker races still run within the new and existing governance suites. Every owned Mongo process/socket/temp directory is cleaned through the existing guarded exact-file cleanup helper.
++
++Final counts/timings and exact finalization results are recorded alongside this report after the original-checkout run. Retained evidence: `request-flow-tests.tap`, `request-flow-governance-results.json`, `integration-governance-regression.json`. Prior reports are not overwritten. The first candidate parallel run had an obsolete Redis-outage assertion and two Integrations 503 failures; the obsolete assertion was corrected to inject the selected Mongo authority's failure. Serial candidate verification passed 116 checks. Initial new-test failures were PDF fixture text and an incorrect staged-versus-ready assertion; no parser/storage/scoring behavior was changed to make them pass.
++
++The first original-checkout run exposed a legacy verifier import that loads application `.env` and contaminates fixture policies. Its failures are retained in `request-flow-tests-initial.tap`. The final runner and affected governance tests instead import a fixture-only Mongo launcher with no dotenv/configuration import; workers receive an allowlist of OS settings and explicit disposable fixture settings. A timing-dependent existing job race was also corrected: one fixture now explicitly holds its job until the competing worker is denied and the parent releases it. This replaces an assumed 100 ms overlap without changing production leases, limits or deadlines. No external provider operation was needed; upload adapters/mail and integration HTTP requests remain fixtures.
++
++Admission cost is one indexed point read plus at most one small replacement and transaction commit per Portfolio counter, with no global/Profile-wide serialization key. Contact uses two such admissions. Mongo work now includes read/mutation rate controls as well as low-frequency uploads/contact, deliberately eliminating their previous local reset behavior. Saturated counters avoid additional writes. This increases Mongo transaction traffic and reduces Redis commands; it is not a claim of lower production cost. Storage/object bytes and expensive parsing occur only after admission.
++
++The final original-checkout run passed **117 tests, 0 failures, 0 skips in 130.61 seconds**, including all 13 selected test files. The new evidence includes 12 sequential warm admission samples: range **6.98–16.59 ms**, median **15.48 ms**, nearest-rank p95/p99 **16.59 ms**. Small local samples describe this workstation only; no live successful Redis baseline, equal-workload speedup, production percentile/SLO, large-account load or fleet soak is claimed. Anonymous-identity cardinality and rejected-read load still require ingress and database capacity validation. TTL bounds normal retention, not instantaneous record count under arbitrary distinct-IP traffic.
++
++## Rollout, rollback and remaining gates
++
++1. **Quota-conserving handover:** drain/stop every old Redis/local-governed Portfolio worker and prevent legacy admission before enabling new workers. With no reviewed exact transfer, wait until all outstanding absolute windows expire: up to the remaining daily recipient window (conservatively 24 hours since the last old admission). Do not run mixed versions. Redis being unreadable is not evidence of an empty budget. No automatic transfer/deployment is performed.
++2. **Rollback:** Mongo remains the authority for an application rollback that retains this middleware. Returning to legacy Redis admission requires the same full drain and reviewed budget transfer/expiry; simply changing environment or restarting old workers is unsafe. Never clear counters to recover service.
++3. **Production Mongo:** verify transaction-capable topology, majority durability, primary read routing, existing built-in `_id` and exact non-partial `{expiresAt:1}`/`expireAfterSeconds:0` TTL contract, app index permissions/provisioning, synchronized clocks, retry/commit deadlines, backups and real outage/failover behavior. No production index or collection was changed here.
++4. **Load and alerts:** measure p50/p95/p99 admission and contact contention under expected fleet/anonymous traffic; alert on unavailable outcomes, 429 surges, latency, transaction retries and governance collection growth. Keep Mongo capacity separate from expensive application query load. Serial local tests are correctness evidence, not a soak result.
++5. **Existing scope gates:** global/auth/login and Interview/News/Jobs-read local fallback quotas remain unsuitable as mandatory fleet-wide controls. Their shared-authority migration requires a separately scoped authentication/module change preserving those policies. Existing Scenario explicit single-instance mode and GitHub/generic-cache coordination findings also remain documented. This prevents declaring the entire application production hardened from this Profile-focused change.
++6. **Profile/B2 operations:** retain least-privilege key/retention review, storage/index provisioning, one bounded cleanup schedule/alerts, explicit B2 activation, original filesystem mounts/readers, same-origin HTTPS/Secure cookies/CORS/proxy checks, JWT/all-worker consistency, external delivery/provider and logout/privacy policy gates from the existing handoff. Redis recovery is no longer the gate for these migrated routes; it remains relevant to unchanged Redis-authoritative modules.
++
++## Exact changes and finalization
++
++Modified source/tests:
++
++- `backend/src/services/integrationMongoGovernanceService.js` — additive isolated fixed-window primitive; existing Integrations behavior unchanged.
++- `backend/src/middleware/publicPortfolioRateLimit.js` — one Mongo authority for seven policies; preserved factory/headers/identities; no local/Redis fallback.
++- `backend/src/routes/resume.routes.js` — apply existing upload admission to both drivers.
++- `backend/src/routes/preview.routes.js` — require admission before public preview parsing.
++- `backend/src/services/publicPortfolioContactService.js` and `backend/src/routes/publicProfile.routes.js` — reusable lightweight contact validation before admission.
++- `backend/src/tests/publicPortfolioHardening.test.js`, `backend/src/tests/b2Storage.test.js` — selected-authority failure regressions.
++- `backend/src/tests/integrationMongoGovernance.test.js` — optional evidence destination, fixture-only Mongo launcher and synchronized job-race barrier.
++- `backend/src/tests/fixtures/integrationMongoGovernanceWorker.js` — fixture IPC barrier; application governance unchanged.
++
++Added source/tests:
++
++- `backend/src/services/requestAdmissionMetrics.js`
++- `backend/src/tests/requestFlowGovernance.test.js`
++- `backend/src/tests/fixtures/requestAdmissionWorker.js`
++- `backend/src/tests/fixtures/disposableRequestMongo.js` — guarded disposable launcher without application environment loading.
++- `backend/src/scripts/verifyRequestFlowGovernance.js`
++
++Documentation/evidence: this report, endpoint Markdown/JSON inventory, three final evidence files and the initial failed-run TAP under `backend/verification/architecture/`; `DEVINSIGHT_AI_SOLUTION_ARCHITECTURE_CHARTER.md` ADR-17; additive governance update in `backend/verification/profile/PROFILE-SETTINGS-DEVELOPMENT-HANDOFF.md`. No frontend, dependencies, model schema, authentication, scoring formulas, integration limits, storage adapter or historical report was modified. No repository file was moved or deleted.
++
++Finalization uses explicit-path installed Prettier write/check, JavaScript syntax checks, the passing original-checkout tests, unstaged/staged Git whitespace checks and exact diff/status inspection. The finalization evidence records those results. Frontend tests/build were not rerun because no frontend source, dependencies or interface changed. Task-owned exploratory files are confined to this chat's `work/` area and are not repository deliverables; duplicate candidate files are removed only by verified exact-path cleanup after retaining final evidence. No production sign-off is implied.
+diff --git a/backend/verification/architecture/finalization.json b/backend/verification/architecture/finalization.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..5c5235b9c26e4e2bdae8e9a2ea56de59d21c0a5a
+--- /dev/null
++++ b/backend/verification/architecture/finalization.json
+@@ -0,0 +1,65 @@
++{
++  "branch": "task/profile",
++  "baseline": "c612ae80c466f47ab7def651da6537d8cf330b0a",
++  "formatter": "Explicit-path Prettier --write and --check passed; singleQuote, width 100, trailingComma none",
++  "syntaxCheckedFiles": [
++    "backend/src/middleware/publicPortfolioRateLimit.js",
++    "backend/src/routes/preview.routes.js",
++    "backend/src/routes/publicProfile.routes.js",
++    "backend/src/routes/resume.routes.js",
++    "backend/src/services/integrationMongoGovernanceService.js",
++    "backend/src/services/publicPortfolioContactService.js",
++    "backend/src/services/requestAdmissionMetrics.js",
++    "backend/src/tests/b2Storage.test.js",
++    "backend/src/tests/integrationMongoGovernance.test.js",
++    "backend/src/tests/publicPortfolioHardening.test.js",
++    "backend/src/tests/requestFlowGovernance.test.js",
++    "backend/src/tests/fixtures/requestAdmissionWorker.js",
++    "backend/src/tests/fixtures/disposableRequestMongo.js",
++    "backend/src/tests/fixtures/integrationMongoGovernanceWorker.js",
++    "backend/src/scripts/verifyRequestFlowGovernance.js"
++  ],
++  "tests": {
++    "durationMs": 130608.6744,
++    "passed": 117,
++    "skipped": 0,
++    "failed": 0
++  },
++  "unstagedWhitespace": "passed",
++  "stagedWhitespace": "passed; index empty",
++  "deletedRepositoryFiles": [],
++  "movedRepositoryFiles": [],
++  "commands": [
++    "node backend/src/scripts/verifyRequestFlowGovernance.js",
++    "node --check <each changed JS>",
++    "git diff --check",
++    "git diff --cached --check"
++  ],
++  "exactFiles": [
++    "DEVINSIGHT_AI_SOLUTION_ARCHITECTURE_CHARTER.md",
++    "backend/src/middleware/publicPortfolioRateLimit.js",
++    "backend/src/routes/preview.routes.js",
++    "backend/src/routes/publicProfile.routes.js",
++    "backend/src/routes/resume.routes.js",
++    "backend/src/services/integrationMongoGovernanceService.js",
++    "backend/src/services/publicPortfolioContactService.js",
++    "backend/src/services/requestAdmissionMetrics.js",
++    "backend/src/tests/b2Storage.test.js",
++    "backend/src/tests/integrationMongoGovernance.test.js",
++    "backend/src/tests/publicPortfolioHardening.test.js",
++    "backend/src/tests/requestFlowGovernance.test.js",
++    "backend/src/tests/fixtures/requestAdmissionWorker.js",
++    "backend/src/tests/fixtures/disposableRequestMongo.js",
++    "backend/src/tests/fixtures/integrationMongoGovernanceWorker.js",
++    "backend/src/scripts/verifyRequestFlowGovernance.js",
++    "backend/verification/profile/PROFILE-SETTINGS-DEVELOPMENT-HANDOFF.md",
++    "backend/verification/architecture/REQUEST-FLOW-GOVERNANCE-FINAL.md",
++    "backend/verification/architecture/REQUEST-ENDPOINT-INVENTORY.md",
++    "backend/verification/architecture/request-endpoint-inventory.json",
++    "backend/verification/architecture/request-flow-governance-results.json",
++    "backend/verification/architecture/integration-governance-regression.json",
++    "backend/verification/architecture/request-flow-tests.tap",
++    "backend/verification/architecture/request-flow-tests-initial.tap",
++    "backend/verification/architecture/finalization.json"
++  ]
++}
+diff --git a/backend/verification/architecture/integration-governance-regression.json b/backend/verification/architecture/integration-governance-regression.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..03825dd87a410d817172bf75b335afc855c5bbf6
+--- /dev/null
++++ b/backend/verification/architecture/integration-governance-regression.json
+@@ -0,0 +1,109 @@
++{
++  "checkedAt": "2026-10-30T07:28:51.440Z",
++  "providerHttpRequests": 0,
++  "checks": [
++    "provider/user 429; denied requests do not consume other counters",
++    "two worker processes: one provider winner; global cap; job cap; release",
++    "logical expiry independent of TTL sweep; crash/restart leases; stale-token fencing",
++    "payload/header backoff; 401/403/429; three failures; cooldown extension",
++    "real authenticated routes and captured lee215 fixture; owner isolation; cross-worker revision invalidation",
++    "OAuth state owner isolation/replay rejection; admitted token exchange/identity; encrypted persistence",
++    "duplicate connection claim rejected; action 11 returns 429",
++    "authenticated encryption/AAD isolation; Mongo 503 with zero outbound calls; reconnect recovery",
++    "background polling admitted through Mongo; self-reported fixture persisted",
++    "HTTP 503 before provider work; immutable process store selection",
++    "five real cache-client states; Connect/Sync/downstream/disconnect; monotonically preserved Mongo counters; historical fixture snapshot/indexes unchanged",
++    "zero Redis governance calls; 12-admission bounded comparison"
++  ],
++  "performance": {
++    "workload": "12 sequential admissions, release outside timing",
++    "n": 12,
++    "p50Ms": 15.290899999999965,
++    "p95Ms": 16.94510000000082,
++    "p99Ms": 16.94510000000082,
++    "samplesMs": [
++      11.29149999999936, 14.538299999996525, 14.952799999999115, 15.162899999999354,
++      15.204899999996996, 15.290899999999965, 15.446100000001024, 15.927200000001903,
++      16.090500000002066, 16.213700000000244, 16.4333000000006, 16.94510000000082
++    ],
++    "collectionReads": 12,
++    "collectionReplacements": 48,
++    "collectionWriteCommands": 12
++  },
++  "indexes": [
++    {
++      "v": 2,
++      "key": {
++        "_id": 1
++      },
++      "name": "_id_"
++    },
++    {
++      "v": 2,
++      "key": {
++        "expiresAt": 1
++      },
++      "name": "governance_expiry",
++      "expireAfterSeconds": 0
++    }
++  ],
++  "redisStates": [
++    {
++      "mode": "healthy",
++      "cacheResult": "redis",
++      "connect": 200,
++      "sync": 200,
++      "downstream": 200,
++      "before": 1,
++      "after": 1,
++      "cacheCommands": ["CLIENT", "CLIENT", "SET", "GET"]
++    },
++    {
++      "mode": "unavailable",
++      "cacheResult": "miss",
++      "connect": 200,
++      "sync": 200,
++      "downstream": 200,
++      "before": 1,
++      "after": 1,
++      "cacheCommands": []
++    },
++    {
++      "mode": "quota",
++      "cacheResult": "miss",
++      "connect": 200,
++      "sync": 200,
++      "downstream": 200,
++      "before": 1,
++      "after": 1,
++      "cacheCommands": ["CLIENT", "CLIENT", "SET", "GET"]
++    },
++    {
++      "mode": "timeout",
++      "cacheResult": "miss",
++      "connect": 200,
++      "sync": 200,
++      "downstream": 200,
++      "before": 1,
++      "after": 1,
++      "cacheCommands": ["CLIENT", "CLIENT", "GET"]
++    },
++    {
++      "mode": "recovered",
++      "cacheResult": "redis",
++      "connect": 200,
++      "sync": 200,
++      "downstream": 200,
++      "before": 1,
++      "after": 1,
++      "cacheCommands": ["CLIENT", "CLIENT", "SET", "GET"]
++    }
++  ],
++  "redisGovernanceCalls": 0,
++  "fixtureReplays": 3,
++  "cleanup": {
++    "mongoStopped": true,
++    "temporaryFilesRemoved": 118,
++    "productionDataUsed": false
++  }
++}
+diff --git a/backend/verification/architecture/request-endpoint-inventory.json b/backend/verification/architecture/request-endpoint-inventory.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..d5e6038dfc242051fec22e04ec6a9616ceb32b71
+--- /dev/null
++++ b/backend/verification/architecture/request-endpoint-inventory.json
+@@ -0,0 +1,2037 @@
++[
++  {
++    "mount": "/api/auth",
++    "file": "backend/src/routes/auth.routes.js",
++    "method": "post",
++    "line": 19,
++    "args": ["'/register'", "authRateLimiter", "registerUser"]
++  },
++  {
++    "mount": "/api/auth",
++    "file": "backend/src/routes/auth.routes.js",
++    "method": "post",
++    "line": 20,
++    "args": ["'/login'", "authRateLimiter", "bruteForceGuard", "loginUser"]
++  },
++  {
++    "mount": "/api/auth",
++    "file": "backend/src/routes/auth.routes.js",
++    "method": "post",
++    "line": 21,
++    "args": ["'/send-otp'", "authRateLimiter", "sendOtp"]
++  },
++  {
++    "mount": "/api/auth",
++    "file": "backend/src/routes/auth.routes.js",
++    "method": "post",
++    "line": 22,
++    "args": ["'/verify-otp'", "authRateLimiter", "verifyOtp"]
++  },
++  {
++    "mount": "/api/auth",
++    "file": "backend/src/routes/auth.routes.js",
++    "method": "post",
++    "line": 23,
++    "args": ["'/forgot-password'", "authRateLimiter", "forgotPassword"]
++  },
++  {
++    "mount": "/api/auth",
++    "file": "backend/src/routes/auth.routes.js",
++    "method": "post",
++    "line": 24,
++    "args": ["'/reset-password'", "authRateLimiter", "resetPassword"]
++  },
++  {
++    "mount": "/api/auth",
++    "file": "backend/src/routes/auth.routes.js",
++    "method": "get",
++    "line": 25,
++    "args": ["'/invite-details/:token'", "getInviteDetails"]
++  },
++  {
++    "mount": "/api/auth",
++    "file": "backend/src/routes/auth.routes.js",
++    "method": "post",
++    "line": 26,
++    "args": ["'/accept-invite'", "authRateLimiter", "acceptInvite"]
++  },
++  {
++    "mount": "/api/auth",
++    "file": "backend/src/routes/auth.routes.js",
++    "method": "get",
++    "line": 27,
++    "args": ["'/google'", "authRateLimiter", "startGoogleOAuth"]
++  },
++  {
++    "mount": "/api/auth",
++    "file": "backend/src/routes/auth.routes.js",
++    "method": "get",
++    "line": 28,
++    "args": ["'/google/callback'", "authRateLimiter", "googleOAuthCallback"]
++  },
++  {
++    "mount": "/api/auth",
++    "file": "backend/src/routes/auth.routes.js",
++    "method": "get",
++    "line": 29,
++    "args": ["'/github'", "authRateLimiter", "startGitHubOAuth"]
++  },
++  {
++    "mount": "/api/auth",
++    "file": "backend/src/routes/auth.routes.js",
++    "method": "get",
++    "line": 30,
++    "args": ["'/github/callback'", "authRateLimiter", "githubOAuthCallback"]
++  },
++  {
++    "mount": "/api/github",
++    "file": "backend/src/routes/github.routes.js",
++    "method": "post",
++    "line": 7,
++    "args": ["'/analyze'", "analyzeGitHub"]
++  },
++  {
++    "mount": "/api/github",
++    "file": "backend/src/routes/github.routes.js",
++    "method": "post",
++    "line": 10,
++    "args": ["'/analyze-save'", "protect", "analyzeAndSaveGitHubProfile"]
++  },
++  {
++    "mount": "/api/github",
++    "file": "backend/src/routes/github.routes.js",
++    "method": "get",
++    "line": 13,
++    "args": ["'/active-username'", "protect", "getActiveUsername"]
++  },
++  {
++    "mount": "/api/resume",
++    "file": "backend/src/routes/resume.routes.js",
++    "method": "post",
++    "line": 17,
++    "args": [
++      "'/upload'",
++      "protect",
++      "require('../middleware/publicPortfolioRateLimit').uploadLimit",
++      "upload.resumePdf",
++      "uploadResume"
++    ]
++  },
++  {
++    "mount": "/api/resume",
++    "file": "backend/src/routes/resume.routes.js",
++    "method": "post",
++    "line": 26,
++    "args": ["'/analyze'", "protect", "analyzeResumeFile"]
++  },
++  {
++    "mount": "/api/resume",
++    "file": "backend/src/routes/resume.routes.js",
++    "method": "get",
++    "line": 29,
++    "args": ["'/result'", "protect", "getResumeAnalysis"]
++  },
++  {
++    "mount": "/api/resume",
++    "file": "backend/src/routes/resume.routes.js",
++    "method": "get",
++    "line": 32,
++    "args": ["'/files'", "protect", "getResumeFiles"]
++  },
++  {
++    "mount": "/api/resume",
++    "file": "backend/src/routes/resume.routes.js",
++    "method": "get",
++    "line": 35,
++    "args": ["'/active'", "protect", "getActiveResumeContext"]
++  },
++  {
++    "mount": "/api/resume",
++    "file": "backend/src/routes/resume.routes.js",
++    "method": "put",
++    "line": 38,
++    "args": ["'/active'", "protect", "setActiveResume"]
++  },
++  {
++    "mount": "/api/resume",
++    "file": "backend/src/routes/resume.routes.js",
++    "method": "get",
++    "line": 41,
++    "args": ["'/result/:userId'", "protect", "getResumeAnalysisByUserId"]
++  },
++  {
++    "mount": "/api/resume",
++    "file": "backend/src/routes/resume.routes.js",
++    "method": "get",
++    "line": 44,
++    "args": ["'/guide'", "protect", "downloadResumeGuide"]
++  },
++  {
++    "mount": "/api/analysis",
++    "file": "backend/src/routes/analysis.routes.js",
++    "method": "post",
++    "line": 10,
++    "args": ["'/portfolio-score'", "protect", "getPortfolioReadiness"]
++  },
++  {
++    "mount": "/api/dashboard",
++    "file": "backend/src/routes/dashboard.routes.js",
++    "method": "get",
++    "line": 14,
++    "args": ["'/summary'", "protect", "getDashboardSummary"]
++  },
++  {
++    "mount": "/api/dashboard",
++    "file": "backend/src/routes/dashboard.routes.js",
++    "method": "get",
++    "line": 15,
++    "args": ["'/contributions'", "protect", "getDashboardContributions"]
++  },
++  {
++    "mount": "/api/dashboard",
++    "file": "backend/src/routes/dashboard.routes.js",
++    "method": "get",
++    "line": 16,
++    "args": ["'/languages'", "protect", "getDashboardLanguages"]
++  },
++  {
++    "mount": "/api/dashboard",
++    "file": "backend/src/routes/dashboard.routes.js",
++    "method": "get",
++    "line": 17,
++    "args": ["'/skills'", "protect", "getDashboardSkills"]
++  },
++  {
++    "mount": "/api/dashboard",
++    "file": "backend/src/routes/dashboard.routes.js",
++    "method": "get",
++    "line": 18,
++    "args": ["'/recommendations'", "protect", "getDashboardRecommendations"]
++  },
++  {
++    "mount": "/api/dashboard",
++    "file": "backend/src/routes/dashboard.routes.js",
++    "method": "get",
++    "line": 19,
++    "args": ["'/integration-analytics'", "protect", "getDashboardIntegrationAnalytics"]
++  },
++  {
++    "mount": "/api/super-admin",
++    "file": "backend/src/routes/super-admin.routes.js",
++    "method": "use",
++    "line": 17,
++    "args": ["protect", "authorizeRoles('super_admin')"]
++  },
++  {
++    "mount": "/api/super-admin",
++    "file": "backend/src/routes/super-admin.routes.js",
++    "method": "get",
++    "line": 19,
++    "args": ["'/metrics'", "getPlatformMetrics"]
++  },
++  {
++    "mount": "/api/super-admin",
++    "file": "backend/src/routes/super-admin.routes.js",
++    "method": "get",
++    "line": 20,
++    "args": ["'/dashboard'", "getDashboard"]
++  },
++  {
++    "mount": "/api/super-admin",
++    "file": "backend/src/routes/super-admin.routes.js",
++    "method": "get",
++    "line": 21,
++    "args": ["'/analytics'", "getAnalytics"]
++  },
++  {
++    "mount": "/api/super-admin",
++    "file": "backend/src/routes/super-admin.routes.js",
++    "method": "get",
++    "line": 22,
++    "args": ["'/organizations'", "getAllOrganizations"]
++  },
++  {
++    "mount": "/api/super-admin",
++    "file": "backend/src/routes/super-admin.routes.js",
++    "method": "patch",
++    "line": 23,
++    "args": ["'/organizations/:id/suspend'", "suspendOrganization"]
++  },
++  {
++    "mount": "/api/super-admin",
++    "file": "backend/src/routes/super-admin.routes.js",
++    "method": "patch",
++    "line": 24,
++    "args": ["'/organizations/:id/activate'", "activateOrganization"]
++  },
++  {
++    "mount": "/api/super-admin",
++    "file": "backend/src/routes/super-admin.routes.js",
++    "method": "get",
++    "line": 25,
++    "args": ["'/admins'", "getAllAdmins"]
++  },
++  {
++    "mount": "/api/super-admin",
++    "file": "backend/src/routes/super-admin.routes.js",
++    "method": "get",
++    "line": 26,
++    "args": ["'/recruiters'", "getAllRecruiters"]
++  },
++  {
++    "mount": "/api/super-admin",
++    "file": "backend/src/routes/super-admin.routes.js",
++    "method": "get",
++    "line": 27,
++    "args": ["'/developers'", "getAllDevelopers"]
++  },
++  {
++    "mount": "/api/super-admin",
++    "file": "backend/src/routes/super-admin.routes.js",
++    "method": "get",
++    "line": 28,
++    "args": ["'/teams'", "getAllTeams"]
++  },
++  {
++    "mount": "/api/super-admin",
++    "file": "backend/src/routes/super-admin.routes.js",
++    "method": "get",
++    "line": 30,
++    "args": ["'/recruiters/:id/analytics'", "getRecruiterAnalytics"]
++  },
++  {
++    "mount": "/api/super-admin",
++    "file": "backend/src/routes/super-admin.routes.js",
++    "method": "post",
++    "line": 31,
++    "args": ["'/recruiters/:id/teams'", "assignTeamToRecruiter"]
++  },
++  {
++    "mount": "/api/super-admin",
++    "file": "backend/src/routes/super-admin.routes.js",
++    "method": "delete",
++    "line": 32,
++    "args": ["'/recruiters/:id/teams/:teamId'", "removeRecruiterTeam"]
++  },
++  {
++    "mount": "/api/super-admin",
++    "file": "backend/src/routes/super-admin.routes.js",
++    "method": "patch",
++    "line": 33,
++    "args": ["'/users/:id/toggle-active'", "toggleUserActive"]
++  },
++  {
++    "mount": "/api/super-admin",
++    "file": "backend/src/routes/super-admin.routes.js",
++    "method": "get",
++    "line": 34,
++    "args": ["'/users/:id'", "getUserDetails"]
++  },
++  {
++    "mount": "/api/super-admin",
++    "file": "backend/src/routes/super-admin.routes.js",
++    "method": "post",
++    "line": 35,
++    "args": ["'/users'", "createUser"]
++  },
++  {
++    "mount": "/api/super-admin",
++    "file": "backend/src/routes/super-admin.routes.js",
++    "method": "patch",
++    "line": 36,
++    "args": ["'/users/:id'", "updateUser"]
++  },
++  {
++    "mount": "/api/super-admin",
++    "file": "backend/src/routes/super-admin.routes.js",
++    "method": "delete",
++    "line": 37,
++    "args": ["'/users/:id'", "deleteUser"]
++  },
++  {
++    "mount": "/api/super-admin",
++    "file": "backend/src/routes/super-admin.routes.js",
++    "method": "get",
++    "line": 38,
++    "args": ["'/settings'", "getPlatformSettings"]
++  },
++  {
++    "mount": "/api/super-admin",
++    "file": "backend/src/routes/super-admin.routes.js",
++    "method": "put",
++    "line": 39,
++    "args": ["'/settings'", "updatePlatformSettings"]
++  },
++  {
++    "mount": "/api/skillgap",
++    "file": "backend/src/routes/skillgap.routes.js",
++    "method": "post",
++    "line": 16,
++    "args": [
++      "'/skill-gap'",
++      "markSkillGapRouteStart",
++      "optionalProtect",
++      "markSkillGapAuthComplete",
++      "analyzeSkillGap"
++    ]
++  },
++  {
++    "mount": "/api/recommendations",
++    "file": "backend/src/routes/recommendations.routes.js",
++    "method": "post",
++    "line": 15,
++    "args": ["'/'", "protect", "getRecommendations"]
++  },
++  {
++    "mount": "/api/recommendations",
++    "file": "backend/src/routes/recommendations.routes.js",
++    "method": "post",
++    "line": 18,
++    "args": ["'/generate'", "optionalProtect", "generateRecommendations"]
++  },
++  {
++    "mount": "/api/recommendations",
++    "file": "backend/src/routes/recommendations.routes.js",
++    "method": "post",
++    "line": 20,
++    "args": ["'/saved-previews'", "protect", "savePreview"]
++  },
++  {
++    "mount": "/api/recommendations",
++    "file": "backend/src/routes/recommendations.routes.js",
++    "method": "get",
++    "line": 21,
++    "args": ["'/saved-previews'", "protect", "listSavedPreviews"]
++  },
++  {
++    "mount": "/api/recommendations",
++    "file": "backend/src/routes/recommendations.routes.js",
++    "method": "delete",
++    "line": 22,
++    "args": ["'/saved-previews/:id'", "protect", "deleteSavedPreview"]
++  },
++  {
++    "mount": "/api/recommendations",
++    "file": "backend/src/routes/recommendations.routes.js",
++    "method": "post",
++    "line": 23,
++    "args": ["'/:id/career-sprint'", "protect", "handoffToCareerSprint"]
++  },
++  {
++    "mount": "/api/recommendations",
++    "file": "backend/src/routes/recommendations.routes.js",
++    "method": "get",
++    "line": 24,
++    "args": ["'/history'", "protect", "listRecommendationHistory"]
++  },
++  {
++    "mount": "/api/profile",
++    "file": "backend/src/routes/profile.routes.js",
++    "method": "use",
++    "line": 17,
++    "args": ["(_req, res, next) => { res.set('Cache-Control', 'private, no-store'); next(); }"]
++  },
++  {
++    "mount": "/api/profile",
++    "file": "backend/src/routes/profile.routes.js",
++    "method": "get",
++    "line": 22,
++    "args": ["'/me'", "protect", "mediaSession", "getProfile"]
++  },
++  {
++    "mount": "/api/profile",
++    "file": "backend/src/routes/profile.routes.js",
++    "method": "put",
++    "line": 23,
++    "args": ["'/me'", "protect", "mediaSession", "updateProfile"]
++  },
++  {
++    "mount": "/api/profile",
++    "file": "backend/src/routes/profile.routes.js",
++    "method": "put",
++    "line": 24,
++    "args": ["'/career'", "protect", "mediaSession", "updateCareerProfile"]
++  },
++  {
++    "mount": "/api/profile",
++    "file": "backend/src/routes/profile.routes.js",
++    "method": "put",
++    "line": 25,
++    "args": ["'/career/active'", "protect", "mediaSession", "updateActiveCareerProfile"]
++  },
++  {
++    "mount": "/api/profile",
++    "file": "backend/src/routes/profile.routes.js",
++    "method": "put",
++    "line": 26,
++    "args": ["'/password'", "protect", "mediaSession", "updatePassword"]
++  },
++  {
++    "mount": "/api/profile",
++    "file": "backend/src/routes/profile.routes.js",
++    "method": "put",
++    "line": 27,
++    "args": ["'/visibility'", "protect", "mediaSession", "updateProfileVisibility"]
++  },
++  {
++    "mount": "/api/profile",
++    "file": "backend/src/routes/profile.routes.js",
++    "method": "post",
++    "line": 28,
++    "args": [
++      "'/avatar'",
++      "protect",
++      "mediaSession",
++      "require('../middleware/publicPortfolioRateLimit').uploadLimit",
++      "avatarUpload.single('avatar')",
++      "uploadAvatar"
++    ]
++  },
++  {
++    "mount": "/api/profile",
++    "file": "backend/src/routes/profile.routes.js",
++    "method": "delete",
++    "line": 36,
++    "args": ["'/me'", "protect", "mediaSession", "deleteAccount"]
++  },
++  {
++    "mount": "/api/courses",
++    "file": "backend/src/routes/courseRoutes.js",
++    "method": "get",
++    "line": 10,
++    "args": ["'/'", "protect", "fetchCourses"]
++  },
++  {
++    "mount": "/api/courses",
++    "file": "backend/src/routes/courseRoutes.js",
++    "method": "get",
++    "line": 11,
++    "args": ["'/my-learning'", "protect", "progress.listProgress"]
++  },
++  {
++    "mount": "/api/courses",
++    "file": "backend/src/routes/courseRoutes.js",
++    "method": "put",
++    "line": 12,
++    "args": ["'/:courseId/progress'", "protect", "progress.saveProgress"]
++  },
++  {
++    "mount": "/api/courses",
++    "file": "backend/src/routes/courseRoutes.js",
++    "method": "delete",
++    "line": 13,
++    "args": ["'/:courseId/progress'", "protect", "progress.removeProgress"]
++  },
++  {
++    "mount": "/api/courses",
++    "file": "backend/src/routes/courseRoutes.js",
++    "method": "post",
++    "line": 14,
++    "args": ["'/:courseId/career-sprint'", "protect", "progress.handoffToSprint"]
++  },
++  {
++    "mount": "/api/jobs",
++    "file": "backend/src/routes/jobRoutes.js",
++    "method": "use",
++    "line": 21,
++    "args": ["protect", "validateJobsRequest", "jobsRateLimit"]
++  },
++  {
++    "mount": "/api/jobs",
++    "file": "backend/src/routes/jobRoutes.js",
++    "method": "get",
++    "line": 22,
++    "args": ["'/'", "jobsRefreshLimit", "fetchJobs"]
++  },
++  {
++    "mount": "/api/jobs",
++    "file": "backend/src/routes/jobRoutes.js",
++    "method": "get",
++    "line": 23,
++    "args": ["'/source-health'", "getSourceHealthStatus"]
++  },
++  {
++    "mount": "/api/jobs",
++    "file": "backend/src/routes/jobRoutes.js",
++    "method": "get",
++    "line": 24,
++    "args": ["'/cache-health'", "getCacheHealthStatus"]
++  },
++  {
++    "mount": "/api/jobs",
++    "file": "backend/src/routes/jobRoutes.js",
++    "method": "get",
++    "line": 25,
++    "args": ["'/actions'", "actions.list"]
++  },
++  {
++    "mount": "/api/jobs",
++    "file": "backend/src/routes/jobRoutes.js",
++    "method": "put",
++    "line": 26,
++    "args": ["'/:id/actions'", "validateJobsRequest", "actionRateLimit", "actions.update"]
++  },
++  {
++    "mount": "/api/jobs",
++    "file": "backend/src/routes/jobRoutes.js",
++    "method": "post",
++    "line": 32,
++    "args": [
++      "`/:id/${path}`",
++      "validateJobsRequest",
++      "actionRateLimit",
++      "actions.toggle(field, true)"
++    ]
++  },
++  {
++    "mount": "/api/jobs",
++    "file": "backend/src/routes/jobRoutes.js",
++    "method": "delete",
++    "line": 33,
++    "args": [
++      "`/:id/${path}`",
++      "validateJobsRequest",
++      "actionRateLimit",
++      "actions.toggle(field, false)"
++    ]
++  },
++  {
++    "mount": "/api/jobs",
++    "file": "backend/src/routes/jobRoutes.js",
++    "method": "get",
++    "line": 35,
++    "args": ["'/:id'", "validateJobsRequest", "getJobById"]
++  },
++  {
++    "mount": "/api/notifications",
++    "file": "backend/src/routes/notification.routes.js",
++    "method": "get",
++    "line": 12,
++    "args": ["'/'", "protect", "getNotifications"]
++  },
++  {
++    "mount": "/api/notifications",
++    "file": "backend/src/routes/notification.routes.js",
++    "method": "get",
++    "line": 13,
++    "args": ["'/stream'", "streamNotifications"]
++  },
++  {
++    "mount": "/api/notifications",
++    "file": "backend/src/routes/notification.routes.js",
++    "method": "put",
++    "line": 14,
++    "args": ["'/read-all'", "protect", "markAllNotificationsRead"]
++  },
++  {
++    "mount": "/api/notifications",
++    "file": "backend/src/routes/notification.routes.js",
++    "method": "put",
++    "line": 15,
++    "args": ["'/:id/read'", "protect", "markNotificationRead"]
++  },
++  {
++    "mount": "/api/notifications",
++    "file": "backend/src/routes/notification.routes.js",
++    "method": "delete",
++    "line": 16,
++    "args": ["'/:id'", "protect", "deleteNotification"]
++  },
++  {
++    "mount": "/api/audit-logs",
++    "file": "backend/src/routes/audit.routes.js",
++    "method": "get",
++    "line": 6,
++    "args": ["'/'", "protect", "getAuditLogs"]
++  },
++  {
++    "mount": "/api/audit-logs",
++    "file": "backend/src/routes/audit.routes.js",
++    "method": "delete",
++    "line": 7,
++    "args": ["'/:id'", "protect", "deleteAuditLog"]
++  },
++  {
++    "mount": "/api/workflows",
++    "file": "backend/src/routes/workflow.routes.js",
++    "method": "post",
++    "line": 10,
++    "args": ["'/'", "protect", "startWorkflow"]
++  },
++  {
++    "mount": "/api/workflows",
++    "file": "backend/src/routes/workflow.routes.js",
++    "method": "get",
++    "line": 11,
++    "args": ["'/'", "protect", "listWorkflows"]
++  },
++  {
++    "mount": "/api/workflows",
++    "file": "backend/src/routes/workflow.routes.js",
++    "method": "get",
++    "line": 12,
++    "args": ["'/:id'", "protect", "getWorkflowById"]
++  },
++  {
++    "mount": "/api/ai-versions",
++    "file": "backend/src/routes/aiversions.routes.js",
++    "method": "get",
++    "line": 11,
++    "args": ["'/'", "protect", "listVersions"]
++  },
++  {
++    "mount": "/api/ai-versions",
++    "file": "backend/src/routes/aiversions.routes.js",
++    "method": "post",
++    "line": 12,
++    "args": ["'/'", "protect", "createAiVersion"]
++  },
++  {
++    "mount": "/api/ai-versions",
++    "file": "backend/src/routes/aiversions.routes.js",
++    "method": "get",
++    "line": 13,
++    "args": ["'/:id/compare/:compareId'", "protect", "compareVersions"]
++  },
++  {
++    "mount": "/api/ai-versions",
++    "file": "backend/src/routes/aiversions.routes.js",
++    "method": "post",
++    "line": 14,
++    "args": ["'/:id/rollback'", "protect", "rollbackVersion"]
++  },
++  {
++    "mount": "/api/tenant",
++    "file": "backend/src/routes/tenant.routes.js",
++    "method": "post",
++    "line": 40,
++    "args": ["'/organizations'", "protect", "createOrganizationValidators", "createOrganization"]
++  },
++  {
++    "mount": "/api/tenant",
++    "file": "backend/src/routes/tenant.routes.js",
++    "method": "get",
++    "line": 41,
++    "args": ["'/organizations'", "protect", "listOrganizations"]
++  },
++  {
++    "mount": "/api/tenant",
++    "file": "backend/src/routes/tenant.routes.js",
++    "method": "post",
++    "line": 43,
++    "args": [
++      "'/organizations/:organizationId/teams'",
++      "protect",
++      "requireOrganizationRole('manager')",
++      "createTeamValidators",
++      "createTeam"
++    ]
++  },
++  {
++    "mount": "/api/tenant",
++    "file": "backend/src/routes/tenant.routes.js",
++    "method": "get",
++    "line": 51,
++    "args": [
++      "'/organizations/:organizationId/teams'",
++      "protect",
++      "requireOrganizationRole('member')",
++      "listTeamsValidators",
++      "listTeams"
++    ]
++  },
++  {
++    "mount": "/api/tenant",
++    "file": "backend/src/routes/tenant.routes.js",
++    "method": "post",
++    "line": 59,
++    "args": [
++      "'/organizations/:organizationId/invitations'",
++      "protect",
++      "requireOrganizationRole('manager')",
++      "inviteUserValidators",
++      "inviteUser"
++    ]
++  },
++  {
++    "mount": "/api/tenant",
++    "file": "backend/src/routes/tenant.routes.js",
++    "method": "get",
++    "line": 67,
++    "args": [
++      "'/organizations/:organizationId/invitations'",
++      "protect",
++      "requireOrganizationRole('manager')",
++      "listPendingInvitationsValidators",
++      "listPendingInvitations"
++    ]
++  },
++  {
++    "mount": "/api/tenant",
++    "file": "backend/src/routes/tenant.routes.js",
++    "method": "patch",
++    "line": 75,
++    "args": [
++      "'/organizations/:organizationId/invitations/:invitationId/revoke'",
++      "protect",
++      "requireOrganizationRole('manager')",
++      "revokeInvitationValidators",
++      "revokeInvitation"
++    ]
++  },
++  {
++    "mount": "/api/tenant",
++    "file": "backend/src/routes/tenant.routes.js",
++    "method": "post",
++    "line": 83,
++    "args": [
++      "'/invitations/:invitationId/accept'",
++      "protect",
++      "acceptInvitationValidators",
++      "acceptInvitation"
++    ]
++  },
++  {
++    "mount": "/api/tenant",
++    "file": "backend/src/routes/tenant.routes.js",
++    "method": "post",
++    "line": 84,
++    "args": [
++      "'/invitations/accept/:token'",
++      "protect",
++      "acceptInvitationTokenValidators",
++      "acceptInvitationByToken"
++    ]
++  },
++  {
++    "mount": "/api/tenant",
++    "file": "backend/src/routes/tenant.routes.js",
++    "method": "get",
++    "line": 85,
++    "args": [
++      "'/invitations/:token/details'",
++      "invitationDetailsValidators",
++      "getInvitationDetailsByToken"
++    ]
++  },
++  {
++    "mount": "/api/tenant",
++    "file": "backend/src/routes/tenant.routes.js",
++    "method": "post",
++    "line": 86,
++    "args": [
++      "'/invitations/accept/:token/onboard'",
++      "acceptInvitationOnboardValidators",
++      "acceptInvitationOnboard"
++    ]
++  },
++  {
++    "mount": "/api/tenant",
++    "file": "backend/src/routes/tenant.routes.js",
++    "method": "get",
++    "line": 88,
++    "args": [
++      "'/organizations/:organizationId/members'",
++      "protect",
++      "requireOrganizationRole('member')",
++      "listOrganizationMembersValidators",
++      "listOrganizationMembers"
++    ]
++  },
++  {
++    "mount": "/api/tenant",
++    "file": "backend/src/routes/tenant.routes.js",
++    "method": "get",
++    "line": 96,
++    "args": [
++      "'/teams/:teamId/members'",
++      "protect",
++      "requireTeamRole('member')",
++      "listTeamMembersValidators",
++      "listTeamMembers"
++    ]
++  },
++  {
++    "mount": "/api/tenant",
++    "file": "backend/src/routes/tenant.routes.js",
++    "method": "patch",
++    "line": 98,
++    "args": [
++      "'/memberships/:membershipId/role'",
++      "protect",
++      "updateMembershipRoleValidators",
++      "updateMembershipRole"
++    ]
++  },
++  {
++    "mount": "/api/tenant",
++    "file": "backend/src/routes/tenant.routes.js",
++    "method": "get",
++    "line": 100,
++    "args": [
++      "'/teams/:teamId/shared-dashboard'",
++      "protect",
++      "requireTeamRole('member')",
++      "getTeamSharedDashboardValidators",
++      "getTeamSharedDashboard"
++    ]
++  },
++  {
++    "mount": "/api/tenant",
++    "file": "backend/src/routes/tenant.routes.js",
++    "method": "get",
++    "line": 108,
++    "args": [
++      "'/teams/:teamId/analytics'",
++      "protect",
++      "requireTeamRole('member')",
++      "getTeamAnalyticsValidators",
++      "getTeamAnalytics"
++    ]
++  },
++  {
++    "mount": "/api/skill-graph",
++    "file": "backend/src/routes/skillgraph.routes.js",
++    "method": "post",
++    "line": 6,
++    "args": ["'/generate'", "protect", "generateSkillGraph"]
++  },
++  {
++    "mount": "/api/skill-graph",
++    "file": "backend/src/routes/skillgraph.routes.js",
++    "method": "get",
++    "line": 7,
++    "args": ["'/latest'", "protect", "getLatestSkillGraph"]
++  },
++  {
++    "mount": "/api/integrations",
++    "file": "backend/src/routes/integrations.routes.js",
++    "method": "use",
++    "line": 3,
++    "args": ["(_req, res, next) => { res.set('Cache-Control', 'private, no-store'); next(); }"]
++  },
++  {
++    "mount": "/api/integrations",
++    "file": "backend/src/routes/integrations.routes.js",
++    "method": "get",
++    "line": 30,
++    "args": ["'/marketplace'", "protect", "getMarketplace"]
++  },
++  {
++    "mount": "/api/integrations",
++    "file": "backend/src/routes/integrations.routes.js",
++    "method": "get",
++    "line": 31,
++    "args": ["'/linked-profiles/kaggle'", "protect", "kaggleLink.get"]
++  },
++  {
++    "mount": "/api/integrations",
++    "file": "backend/src/routes/integrations.routes.js",
++    "method": "post",
++    "line": 32,
++    "args": ["'/linked-profiles/kaggle'", "protect", "actionLimit('mutate')", "kaggleLink.save"]
++  },
++  {
++    "mount": "/api/integrations",
++    "file": "backend/src/routes/integrations.routes.js",
++    "method": "delete",
++    "line": 33,
++    "args": ["'/linked-profiles/kaggle'", "protect", "actionLimit('mutate')", "kaggleLink.remove"]
++  },
++  {
++    "mount": "/api/integrations",
++    "file": "backend/src/routes/integrations.routes.js",
++    "method": "get",
++    "line": 34,
++    "args": ["'/linked-profiles/hackerrank'", "protect", "getLinkedProfile"]
++  },
++  {
++    "mount": "/api/integrations",
++    "file": "backend/src/routes/integrations.routes.js",
++    "method": "post",
++    "line": 35,
++    "args": [
++      "'/linked-profiles/hackerrank'",
++      "protect",
++      "actionLimit('mutate')",
++      "saveLinkedProfile"
++    ]
++  },
++  {
++    "mount": "/api/integrations",
++    "file": "backend/src/routes/integrations.routes.js",
++    "method": "delete",
++    "line": 36,
++    "args": [
++      "'/linked-profiles/hackerrank'",
++      "protect",
++      "actionLimit('mutate')",
++      "removeLinkedProfile"
++    ]
++  },
++  {
++    "mount": "/api/integrations",
++    "file": "backend/src/routes/integrations.routes.js",
++    "method": "get",
++    "line": 37,
++    "args": ["'/connections'", "protect", "getConnections"]
++  },
++  {
++    "mount": "/api/integrations",
++    "file": "backend/src/routes/integrations.routes.js",
++    "method": "get",
++    "line": 38,
++    "args": ["'/insights'", "protect", "getIntegrationInsights"]
++  },
++  {
++    "mount": "/api/integrations",
++    "file": "backend/src/routes/integrations.routes.js",
++    "method": "get",
++    "line": 39,
++    "args": ["'/sync-trends'", "protect", "getSyncTrends"]
++  },
++  {
++    "mount": "/api/integrations",
++    "file": "backend/src/routes/integrations.routes.js",
++    "method": "get",
++    "line": 40,
++    "args": ["'/github/callback'", "actionLimit('callback', false)", "githubOauthCallback"]
++  },
++  {
++    "mount": "/api/integrations",
++    "file": "backend/src/routes/integrations.routes.js",
++    "method": "post",
++    "line": 41,
++    "args": ["'/oauth/start'", "protect", "actionLimit('mutate')", "startOAuth"]
++  },
++  {
++    "mount": "/api/integrations",
++    "file": "backend/src/routes/integrations.routes.js",
++    "method": "post",
++    "line": 42,
++    "args": ["'/oauth/callback'", "protect", "actionLimit('mutate')", "oauthCallback"]
++  },
++  {
++    "mount": "/api/integrations",
++    "file": "backend/src/routes/integrations.routes.js",
++    "method": "post",
++    "line": 43,
++    "args": ["'/manual/connect'", "protect", "actionLimit('mutate')", "manualConnectProvider"]
++  },
++  {
++    "mount": "/api/integrations",
++    "file": "backend/src/routes/integrations.routes.js",
++    "method": "post",
++    "line": 44,
++    "args": ["'/ingest'", "protect", "actionLimit('mutate')", "ingestProviderData"]
++  },
++  {
++    "mount": "/api/integrations",
++    "file": "backend/src/routes/integrations.routes.js",
++    "method": "post",
++    "line": 45,
++    "args": ["'/sync-now'", "protect", "actionLimit('mutate')", "syncNow"]
++  },
++  {
++    "mount": "/api/integrations",
++    "file": "backend/src/routes/integrations.routes.js",
++    "method": "post",
++    "line": 46,
++    "args": ["'/webhooks/github'", "actionLimit('webhook', false)", "githubWebhook"]
++  },
++  {
++    "mount": "/api/integrations",
++    "file": "backend/src/routes/integrations.routes.js",
++    "method": "delete",
++    "line": 47,
++    "args": ["'/connections/:provider'", "protect", "disconnectProvider"]
++  },
++  {
++    "mount": "/api/simulator",
++    "file": "backend/src/routes/scenarioSimulator.routes.js",
++    "method": "get",
++    "line": 15,
++    "args": ["'/context'", "protect", "contextLimit", "getScenarioSimulatorContext"]
++  },
++  {
++    "mount": "/api/simulator",
++    "file": "backend/src/routes/scenarioSimulator.routes.js",
++    "method": "get",
++    "line": 16,
++    "args": ["'/history'", "protect", "limits.history", "getScenarioSimulationHistory"]
++  },
++  {
++    "mount": "/api/simulator",
++    "file": "backend/src/routes/scenarioSimulator.routes.js",
++    "method": "post",
++    "line": 17,
++    "args": ["'/what-if'", "protect", "limits.evaluate", "runScenarioSimulation"]
++  },
++  {
++    "mount": "/api/simulator",
++    "file": "backend/src/routes/scenarioSimulator.routes.js",
++    "method": "post",
++    "line": 18,
++    "args": ["'/save'", "protect", "limits.save", "saveScenarioSimulation"]
++  },
++  {
++    "mount": "/api/simulator",
++    "file": "backend/src/routes/scenarioSimulator.routes.js",
++    "method": "post",
++    "line": 19,
++    "args": ["'/create-sprint'", "protect", "limits.export", "createSprintFromScenarioController"]
++  },
++  {
++    "mount": "/api/simulator",
++    "file": "backend/src/routes/scenarioSimulator.routes.js",
++    "method": "delete",
++    "line": 20,
++    "args": ["'/:id'", "protect", "limits.delete", "deleteScenarioSimulation"]
++  },
++  {
++    "mount": "/api/public-profiles",
++    "file": "backend/src/routes/publicProfile.routes.js",
++    "method": "use",
++    "line": 24,
++    "args": ["(req, res, next) => { res.set('Cache-Control', 'private, no-store'); next(); }"]
++  },
++  {
++    "mount": "/api/public-profiles",
++    "file": "backend/src/routes/publicProfile.routes.js",
++    "method": "param",
++    "line": 28,
++    "args": [
++      "'slug'",
++      "(req, res, next, slug) => { if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length > 60) return res.status(400).json({ message: 'Invalid slug.' }); next(); }"
++    ]
++  },
++  {
++    "mount": "/api/public-profiles",
++    "file": "backend/src/routes/publicProfile.routes.js",
++    "method": "get",
++    "line": 33,
++    "args": ["'/me'", "protect", "mediaSession", "analyticsLimit", "getMyPublicProfile"]
++  },
++  {
++    "mount": "/api/public-profiles",
++    "file": "backend/src/routes/publicProfile.routes.js",
++    "method": "put",
++    "line": 34,
++    "args": ["'/me'", "protect", "mediaSession", "mutationLimit", "updateMyPublicProfile"]
++  },
++  {
++    "mount": "/api/public-profiles",
++    "file": "backend/src/routes/publicProfile.routes.js",
++    "method": "post",
++    "line": 35,
++    "args": [
++      "'/me/project-image'",
++      "protect",
++      "mediaSession",
++      "uploadLimit",
++      "uploadPortfolioImage"
++    ]
++  },
++  {
++    "mount": "/api/public-profiles",
++    "file": "backend/src/routes/publicProfile.routes.js",
++    "method": "get",
++    "line": 36,
++    "args": [
++      "'/me/resume'",
++      "protect",
++      "mediaSession",
++      "resumeLimit",
++      "downloadPublicProfileResume"
++    ]
++  },
++  {
++    "mount": "/api/public-profiles",
++    "file": "backend/src/routes/publicProfile.routes.js",
++    "method": "get",
++    "line": 37,
++    "args": [
++      "'/me/analytics'",
++      "protect",
++      "mediaSession",
++      "analyticsLimit",
++      "getMyPublicProfileAnalytics"
++    ]
++  },
++  {
++    "mount": "/api/public-profiles",
++    "file": "backend/src/routes/publicProfile.routes.js",
++    "method": "post",
++    "line": 38,
++    "args": [
++      "'/:slug/contact'",
++      "protect",
++      "mediaSession",
++      "require('../services/publicPortfolioContactService').validateContactRequest",
++      "contactLimit",
++      "contactRecipientLimit",
++      "contactPublicProfile"
++    ]
++  },
++  {
++    "mount": "/api/public-profiles",
++    "file": "backend/src/routes/publicProfile.routes.js",
++    "method": "get",
++    "line": 47,
++    "args": ["'/:slug/resume'", "resumeLimit", "downloadPublicProfileResume"]
++  },
++  {
++    "mount": "/api/public-profiles",
++    "file": "backend/src/routes/publicProfile.routes.js",
++    "method": "get",
++    "line": 48,
++    "args": ["'/:slug'", "publicViewLimit", "attachOptionalUser", "getPublicProfile"]
++  },
++  {
++    "mount": "/api/recruiter",
++    "file": "backend/src/routes/recruiter.routes.js",
++    "method": "use",
++    "line": 18,
++    "args": [
++      "protect",
++      "authorizeRoles('recruiter')",
++      "requireRecruiterAccessEnabled",
++      "requireOrganizationContext(['recruiter'])"
++    ]
++  },
++  {
++    "mount": "/api/recruiter",
++    "file": "backend/src/routes/recruiter.routes.js",
++    "method": "get",
++    "line": 21,
++    "args": ["'/dashboard'", "getRecruiterDashboard"]
++  },
++  {
++    "mount": "/api/recruiter",
++    "file": "backend/src/routes/recruiter.routes.js",
++    "method": "get",
++    "line": 24,
++    "args": ["'/candidates'", "getRecruiterCandidates"]
++  },
++  {
++    "mount": "/api/recruiter",
++    "file": "backend/src/routes/recruiter.routes.js",
++    "method": "get",
++    "line": 25,
++    "args": ["'/candidate/:id'", "getRecruiterCandidateById"]
++  },
++  {
++    "mount": "/api/recruiter",
++    "file": "backend/src/routes/recruiter.routes.js",
++    "method": "post",
++    "line": 28,
++    "args": ["'/job'", "createRecruiterJob"]
++  },
++  {
++    "mount": "/api/recruiter",
++    "file": "backend/src/routes/recruiter.routes.js",
++    "method": "get",
++    "line": 29,
++    "args": ["'/jobs'", "getRecruiterJobs"]
++  },
++  {
++    "mount": "/api/recruiter",
++    "file": "backend/src/routes/recruiter.routes.js",
++    "method": "put",
++    "line": 30,
++    "args": ["'/job/:id'", "updateRecruiterJob"]
++  },
++  {
++    "mount": "/api/recruiter",
++    "file": "backend/src/routes/recruiter.routes.js",
++    "method": "delete",
++    "line": 31,
++    "args": ["'/job/:id'", "deleteRecruiterJob"]
++  },
++  {
++    "mount": "/api/recruiter",
++    "file": "backend/src/routes/recruiter.routes.js",
++    "method": "post",
++    "line": 34,
++    "args": ["'/match'", "matchCandidates"]
++  },
++  {
++    "mount": "/api/recruiter",
++    "file": "backend/src/routes/recruiter.routes.js",
++    "method": "post",
++    "line": 35,
++    "args": ["'/ai-rank'", "aiRankCandidates"]
++  },
++  {
++    "mount": "/api/recruiter-hub",
++    "file": "backend/src/routes/recruiter-hub/recruiterHubRoutes.js",
++    "method": "use",
++    "line": 17,
++    "args": [
++      "protect",
++      "authorizeRoles('recruiter')",
++      "requireRecruiterAccessEnabled",
++      "requireOrganizationContext(['recruiter'])"
++    ]
++  },
++  {
++    "mount": "/api/recruiter-hub",
++    "file": "backend/src/routes/recruiter-hub/recruiterHubRoutes.js",
++    "method": "use",
++    "line": 19,
++    "args": ["'/candidates'", "candidateRoutes"]
++  },
++  {
++    "mount": "/api/recruiter-hub",
++    "file": "backend/src/routes/recruiter-hub/recruiterHubRoutes.js",
++    "method": "use",
++    "line": 20,
++    "args": ["'/jobs'", "recruiterJobRoutes"]
++  },
++  {
++    "mount": "/api/recruiter-hub",
++    "file": "backend/src/routes/recruiter-hub/recruiterHubRoutes.js",
++    "method": "use",
++    "line": 21,
++    "args": ["'/matches'", "matchRoutes"]
++  },
++  {
++    "mount": "/api/recruiter-hub",
++    "file": "backend/src/routes/recruiter-hub/recruiterHubRoutes.js",
++    "method": "use",
++    "line": 22,
++    "args": ["'/shortlists'", "shortlistRoutes"]
++  },
++  {
++    "mount": "/api/recruiter-hub",
++    "file": "backend/src/routes/recruiter-hub/recruiterHubRoutes.js",
++    "method": "use",
++    "line": 23,
++    "args": ["'/analytics'", "analyticsRoutes"]
++  },
++  {
++    "mount": "/api/recruiter-hub",
++    "file": "backend/src/routes/recruiter-hub/recruiterHubRoutes.js",
++    "method": "use",
++    "line": 24,
++    "args": ["'/activity'", "activityRoutes"]
++  },
++  {
++    "mount": "/api/recruiter-hub",
++    "file": "backend/src/routes/recruiter-hub/recruiterHubRoutes.js",
++    "method": "post",
++    "line": 25,
++    "args": ["'/comparison'", "compare"]
++  },
++  {
++    "mount": "/api/recruiter-hub",
++    "file": "backend/src/routes/recruiter-hub/recruiterHubRoutes.js",
++    "method": "get",
++    "line": 26,
++    "args": ["'/profile'", "getProfile"]
++  },
++  {
++    "mount": "/api/recruiter-hub",
++    "file": "backend/src/routes/recruiter-hub/recruiterHubRoutes.js",
++    "method": "patch",
++    "line": 27,
++    "args": ["'/profile'", "patchProfile"]
++  },
++  {
++    "mount": "/api/admin",
++    "file": "backend/src/routes/admin.routes.js",
++    "method": "use",
++    "line": 23,
++    "args": ["protect", "authorizeRoles('admin')", "requireOrganizationContext(['admin'])"]
++  },
++  {
++    "mount": "/api/admin",
++    "file": "backend/src/routes/admin.routes.js",
++    "method": "get",
++    "line": 25,
++    "args": ["'/overview'", "getOrganizationOverview"]
++  },
++  {
++    "mount": "/api/admin",
++    "file": "backend/src/routes/admin.routes.js",
++    "method": "get",
++    "line": 26,
++    "args": ["'/recruiters'", "getRecruiters"]
++  },
++  {
++    "mount": "/api/admin",
++    "file": "backend/src/routes/admin.routes.js",
++    "method": "post",
++    "line": 27,
++    "args": ["'/invite-recruiter'", "inviteRecruiter"]
++  },
++  {
++    "mount": "/api/admin",
++    "file": "backend/src/routes/admin.routes.js",
++    "method": "post",
++    "line": 28,
++    "args": ["'/recruiter'", "inviteRecruiter"]
++  },
++  {
++    "mount": "/api/admin",
++    "file": "backend/src/routes/admin.routes.js",
++    "method": "post",
++    "line": 29,
++    "args": ["'/recruiters/direct'", "addRecruiterDirect"]
++  },
++  {
++    "mount": "/api/admin",
++    "file": "backend/src/routes/admin.routes.js",
++    "method": "put",
++    "line": 30,
++    "args": ["'/recruiters/:id'", "updateRecruiter"]
++  },
++  {
++    "mount": "/api/admin",
++    "file": "backend/src/routes/admin.routes.js",
++    "method": "patch",
++    "line": 31,
++    "args": ["'/recruiters/:id/active'", "setRecruiterActive"]
++  },
++  {
++    "mount": "/api/admin",
++    "file": "backend/src/routes/admin.routes.js",
++    "method": "patch",
++    "line": 32,
++    "args": ["'/recruiters/:id/revoke'", "revokeRecruiterAccess"]
++  },
++  {
++    "mount": "/api/admin",
++    "file": "backend/src/routes/admin.routes.js",
++    "method": "delete",
++    "line": 33,
++    "args": ["'/recruiters/:id'", "deleteRecruiter"]
++  },
++  {
++    "mount": "/api/admin",
++    "file": "backend/src/routes/admin.routes.js",
++    "method": "get",
++    "line": 34,
++    "args": ["'/invitations/pending'", "getPendingInvitations"]
++  },
++  {
++    "mount": "/api/admin",
++    "file": "backend/src/routes/admin.routes.js",
++    "method": "post",
++    "line": 35,
++    "args": ["'/invitations/:id/resend'", "resendInvitation"]
++  },
++  {
++    "mount": "/api/admin",
++    "file": "backend/src/routes/admin.routes.js",
++    "method": "patch",
++    "line": 36,
++    "args": ["'/invitations/:id/revoke'", "revokeInvitation"]
++  },
++  {
++    "mount": "/api/admin",
++    "file": "backend/src/routes/admin.routes.js",
++    "method": "patch",
++    "line": 37,
++    "args": ["'/invitations/:id/expire'", "expireInvitation"]
++  },
++  {
++    "mount": "/api/admin",
++    "file": "backend/src/routes/admin.routes.js",
++    "method": "delete",
++    "line": 38,
++    "args": ["'/invitations/:id'", "deleteInvitation"]
++  },
++  {
++    "mount": "/api/admin",
++    "file": "backend/src/routes/admin.routes.js",
++    "method": "get",
++    "line": 39,
++    "args": ["'/developers'", "getDevelopers"]
++  },
++  {
++    "mount": "/api/admin",
++    "file": "backend/src/routes/admin.routes.js",
++    "method": "get",
++    "line": 40,
++    "args": ["'/jobs'", "getAdminJobs"]
++  },
++  {
++    "mount": "/api/admin",
++    "file": "backend/src/routes/admin.routes.js",
++    "method": "post",
++    "line": 41,
++    "args": ["'/jobs'", "createAdminJob"]
++  },
++  {
++    "mount": "/api/admin",
++    "file": "backend/src/routes/admin.routes.js",
++    "method": "put",
++    "line": 42,
++    "args": ["'/jobs/:id'", "updateAdminJob"]
++  },
++  {
++    "mount": "/api/admin",
++    "file": "backend/src/routes/admin.routes.js",
++    "method": "patch",
++    "line": 43,
++    "args": ["'/jobs/:id/close'", "closeAdminJob"]
++  },
++  {
++    "mount": "/api/admin",
++    "file": "backend/src/routes/admin.routes.js",
++    "method": "delete",
++    "line": 44,
++    "args": ["'/jobs/:id'", "deleteAdminJob"]
++  },
++  {
++    "mount": "/api/admin",
++    "file": "backend/src/routes/admin.routes.js",
++    "method": "post",
++    "line": 45,
++    "args": ["'/ai-rank'", "aiRankCandidates"]
++  },
++  {
++    "mount": "/api/admin-console",
++    "file": "backend/src/routes/adminConsole.routes.js",
++    "method": "use",
++    "line": 29,
++    "args": ["protect", "authorizeRoles('admin')", "requireOrganizationContext(['admin'])"]
++  },
++  {
++    "mount": "/api/admin-console",
++    "file": "backend/src/routes/adminConsole.routes.js",
++    "method": "get",
++    "line": 31,
++    "args": ["'/overview'", "getConsoleOverview"]
++  },
++  {
++    "mount": "/api/admin-console",
++    "file": "backend/src/routes/adminConsole.routes.js",
++    "method": "get",
++    "line": 32,
++    "args": ["'/analytics'", "getConsoleAnalytics"]
++  },
++  {
++    "mount": "/api/admin-console",
++    "file": "backend/src/routes/adminConsole.routes.js",
++    "method": "get",
++    "line": 33,
++    "args": ["'/activity'", "getConsoleActivity"]
++  },
++  {
++    "mount": "/api/admin-console",
++    "file": "backend/src/routes/adminConsole.routes.js",
++    "method": "get",
++    "line": 34,
++    "args": ["'/performance'", "getConsolePerformance"]
++  },
++  {
++    "mount": "/api/admin-console",
++    "file": "backend/src/routes/adminConsole.routes.js",
++    "method": "get",
++    "line": 35,
++    "args": ["'/teams'", "getConsoleTeams"]
++  },
++  {
++    "mount": "/api/admin-console",
++    "file": "backend/src/routes/adminConsole.routes.js",
++    "method": "post",
++    "line": 36,
++    "args": ["'/teams'", "createConsoleTeam"]
++  },
++  {
++    "mount": "/api/admin-console",
++    "file": "backend/src/routes/adminConsole.routes.js",
++    "method": "patch",
++    "line": 37,
++    "args": ["'/teams/:id'", "updateConsoleTeam"]
++  },
++  {
++    "mount": "/api/admin-console",
++    "file": "backend/src/routes/adminConsole.routes.js",
++    "method": "patch",
++    "line": 38,
++    "args": ["'/teams/:id/active'", "toggleConsoleTeamActive"]
++  },
++  {
++    "mount": "/api/admin-console",
++    "file": "backend/src/routes/adminConsole.routes.js",
++    "method": "delete",
++    "line": 39,
++    "args": ["'/teams/:id'", "deleteConsoleTeam"]
++  },
++  {
++    "mount": "/api/admin-console",
++    "file": "backend/src/routes/adminConsole.routes.js",
++    "method": "post",
++    "line": 40,
++    "args": ["'/teams/:id/recruiters'", "assignRecruiterToConsoleTeam"]
++  },
++  {
++    "mount": "/api/admin-console",
++    "file": "backend/src/routes/adminConsole.routes.js",
++    "method": "delete",
++    "line": 41,
++    "args": ["'/teams/:id/recruiters/:recruiterId'", "removeRecruiterFromConsoleTeam"]
++  },
++  {
++    "mount": "/api/admin-console",
++    "file": "backend/src/routes/adminConsole.routes.js",
++    "method": "get",
++    "line": 42,
++    "args": ["'/preferences'", "getConsolePreferences"]
++  },
++  {
++    "mount": "/api/admin-console",
++    "file": "backend/src/routes/adminConsole.routes.js",
++    "method": "patch",
++    "line": 43,
++    "args": ["'/preferences'", "updateConsolePreferences"]
++  },
++  {
++    "mount": "/api/weekly-reports",
++    "file": "backend/src/routes/weeklyReport.routes.js",
++    "method": "post",
++    "line": 10,
++    "args": ["'/generate'", "protect", "generateReport"]
++  },
++  {
++    "mount": "/api/weekly-reports",
++    "file": "backend/src/routes/weeklyReport.routes.js",
++    "method": "get",
++    "line": 11,
++    "args": ["'/latest'", "protect", "getLatestReport"]
++  },
++  {
++    "mount": "/api/weekly-reports",
++    "file": "backend/src/routes/weeklyReport.routes.js",
++    "method": "get",
++    "line": 12,
++    "args": ["'/history'", "protect", "getReportHistory"]
++  },
++  {
++    "mount": "/api/interview-prep",
++    "file": "backend/src/routes/interviewPrep.routes.js",
++    "method": "use",
++    "line": 42,
++    "args": [
++      "protect",
++      "(req, res, next) => { const input = req.method === 'GET' ? req.query : req.body || {}; const fields = [ 'skill', 'topic', 'stack', 'technology', 'language', 'framework', 'difficulty', 'category', 'source', 'block', 'top', 'lookupOnly', 'q', 'query', 'question', 'tags', 'careerStack', 'experienceLevel' ]; for (const field of fields) { if ( input[field] !== undefined && (typeof input[field] !== 'string' || input[field].length > (['q', 'query', 'question', 'tags'].includes(field) ? 500 : 100)) ) { return res.status(400).json({ message: `Invalid ${field}.` }); } } for (const field of ['page', 'limit', 'target']) { if ( input[field] !== undefined && (!['string', 'number'].includes(typeof input[field]) || !Number.isFinite(Number(input[field])) || Number(input[field]) < 1) ) { return res.status(400).json({ message: `Invalid ${field}.` }); } } if (input.difficulty && !['easy', 'medium', 'hard', 'senior'].includes(input.difficulty)) return res.status(400).json({ message: 'Invalid difficulty.' }); next(); }"
++    ]
++  },
++  {
++    "mount": "/api/interview-prep",
++    "file": "backend/src/routes/interviewPrep.routes.js",
++    "method": "get",
++    "line": 88,
++    "args": ["'/questions'", "getInterviewPrepQuestions"]
++  },
++  {
++    "mount": "/api/interview-prep",
++    "file": "backend/src/routes/interviewPrep.routes.js",
++    "method": "get",
++    "line": 89,
++    "args": ["'/search'", "searchRateLimiter", "searchInterviewPrepQuestions"]
++  },
++  {
++    "mount": "/api/interview-prep",
++    "file": "backend/src/routes/interviewPrep.routes.js",
++    "method": "post",
++    "line": 90,
++    "args": ["'/generate'", "generateRateLimiter", "generateInterviewPrepQuestions"]
++  },
++  {
++    "mount": "/api/interview-prep",
++    "file": "backend/src/routes/interviewPrep.routes.js",
++    "method": "post",
++    "line": 91,
++    "args": ["'/ask-question'", "customQuestionRateLimiter", "askInterviewPrepQuestion"]
++  },
++  {
++    "mount": "/api/interview-prep",
++    "file": "backend/src/routes/interviewPrep.routes.js",
++    "method": "post",
++    "line": 92,
++    "args": ["'/'", "generateRateLimiter", "generateInterviewPrepSession"]
++  },
++  {
++    "mount": "/api/interview-prep",
++    "file": "backend/src/routes/interviewPrep.routes.js",
++    "method": "get",
++    "line": 93,
++    "args": ["'/history'", "getInterviewPrepHistory"]
++  },
++  {
++    "mount": "/api/career-sprints",
++    "file": "backend/src/routes/careerSprint.routes.js",
++    "method": "get",
++    "line": 22,
++    "args": ["'/current'", "protect", "getCurrentCareerSprint"]
++  },
++  {
++    "mount": "/api/career-sprints",
++    "file": "backend/src/routes/careerSprint.routes.js",
++    "method": "get",
++    "line": 23,
++    "args": ["'/preferences'", "protect", "preferenceController.read"]
++  },
++  {
++    "mount": "/api/career-sprints",
++    "file": "backend/src/routes/careerSprint.routes.js",
++    "method": "put",
++    "line": 24,
++    "args": ["'/preferences'", "protect", "preferenceController.update"]
++  },
++  {
++    "mount": "/api/career-sprints",
++    "file": "backend/src/routes/careerSprint.routes.js",
++    "method": "post",
++    "line": 25,
++    "args": ["'/'", "protect", "createCareerSprint"]
++  },
++  {
++    "mount": "/api/career-sprints",
++    "file": "backend/src/routes/careerSprint.routes.js",
++    "method": "post",
++    "line": 26,
++    "args": ["'/generate-plan'", "protect", "generateAiTasks"]
++  },
++  {
++    "mount": "/api/career-sprints",
++    "file": "backend/src/routes/careerSprint.routes.js",
++    "method": "post",
++    "line": 27,
++    "args": ["'/generate-ai-tasks'", "protect", "generateAiTasks"]
++  },
++  {
++    "mount": "/api/career-sprints",
++    "file": "backend/src/routes/careerSprint.routes.js",
++    "method": "post",
++    "line": 28,
++    "args": ["'/generate-ai-plan'", "protect", "generateTrueAiTasks"]
++  },
++  {
++    "mount": "/api/career-sprints",
++    "file": "backend/src/routes/careerSprint.routes.js",
++    "method": "post",
++    "line": 29,
++    "args": ["'/:id/ai-plans'", "protect", "saveAiPlanController"]
++  },
++  {
++    "mount": "/api/career-sprints",
++    "file": "backend/src/routes/careerSprint.routes.js",
++    "method": "post",
++    "line": 30,
++    "args": ["'/:id/import-scenario'", "protect", "importScenarioPlanController"]
++  },
++  {
++    "mount": "/api/career-sprints",
++    "file": "backend/src/routes/careerSprint.routes.js",
++    "method": "post",
++    "line": 31,
++    "args": ["'/:id/tasks'", "protect", "addCareerSprintTask"]
++  },
++  {
++    "mount": "/api/career-sprints",
++    "file": "backend/src/routes/careerSprint.routes.js",
++    "method": "put",
++    "line": 32,
++    "args": ["'/:id/tasks/:taskId'", "protect", "updateCareerSprintTask"]
++  },
++  {
++    "mount": "/api/career-sprints",
++    "file": "backend/src/routes/careerSprint.routes.js",
++    "method": "delete",
++    "line": 33,
++    "args": ["'/:id/tasks/:taskId'", "protect", "deleteCareerSprintTask"]
++  },
++  {
++    "mount": "/api/career-sprints",
++    "file": "backend/src/routes/careerSprint.routes.js",
++    "method": "delete",
++    "line": 34,
++    "args": ["'/:id/ai-plans/:planId'", "protect", "deleteAiPlanController"]
++  },
++  {
++    "mount": "/api/career-sprints",
++    "file": "backend/src/routes/careerSprint.routes.js",
++    "method": "post",
++    "line": 35,
++    "args": ["'/:id/ai-plans/:planId/tasks'", "protect", "addDraftTasksController"]
++  },
++  {
++    "mount": "/api/career-sprints",
++    "file": "backend/src/routes/careerSprint.routes.js",
++    "method": "put",
++    "line": 36,
++    "args": ["'/:id/dates'", "protect", "updateSprintDatesController"]
++  },
++  {
++    "mount": "/api/career-sprints",
++    "file": "backend/src/routes/careerSprint.routes.js",
++    "method": "get",
++    "line": 37,
++    "args": ["'/history'", "protect", "getCareerSprintHistory"]
++  },
++  {
++    "mount": "/api/career-sprints",
++    "file": "backend/src/routes/careerSprint.routes.js",
++    "method": "post",
++    "line": 38,
++    "args": ["'/:id/restore-streak'", "protect", "restoreCareerStreakController"]
++  },
++  {
++    "mount": "/api/news",
++    "file": "backend/src/routes/newsRoutes.js",
++    "method": "use",
++    "line": 13,
++    "args": ["protect"]
++  },
++  {
++    "mount": "/api/news",
++    "file": "backend/src/routes/newsRoutes.js",
++    "method": "use",
++    "line": 14,
++    "args": ["(_req, res, next) => { res.set('Cache-Control', 'private, no-store'); next(); }"]
++  },
++  {
++    "mount": "/api/news",
++    "file": "backend/src/routes/newsRoutes.js",
++    "method": "get",
++    "line": 19,
++    "args": ["'/'", "feedLimit", "validateFeed", "getNews"]
++  },
++  {
++    "mount": "/api/news",
++    "file": "backend/src/routes/newsRoutes.js",
++    "method": "get",
++    "line": 20,
++    "args": ["'/saved'", "feedLimit", "getSavedNews"]
++  },
++  {
++    "mount": "/api/news",
++    "file": "backend/src/routes/newsRoutes.js",
++    "method": "post",
++    "line": 21,
++    "args": ["'/save'", "mutationLimit", "saveNews"]
++  },
++  {
++    "mount": "/api/news",
++    "file": "backend/src/routes/newsRoutes.js",
++    "method": "delete",
++    "line": 22,
++    "args": ["'/save/:id'", "mutationLimit", "removeSavedNews"]
++  },
++  {
++    "mount": "/api/news",
++    "file": "backend/src/routes/newsRoutes.js",
++    "method": "patch",
++    "line": 23,
++    "args": ["'/save/:id/read'", "mutationLimit", "markSavedNewsAsRead"]
++  },
++  {
++    "mount": "/api/support",
++    "file": "backend/src/routes/support.routes.js",
++    "method": "post",
++    "line": 7,
++    "args": ["'/tickets'", "protect", "supportController.createTicket"]
++  },
++  {
++    "mount": "/api/support",
++    "file": "backend/src/routes/support.routes.js",
++    "method": "get",
++    "line": 8,
++    "args": ["'/my-tickets'", "protect", "supportController.getMyTickets"]
++  },
++  {
++    "mount": "/api/support",
++    "file": "backend/src/routes/support.routes.js",
++    "method": "get",
++    "line": 9,
++    "args": ["'/tickets/:id'", "protect", "supportController.getTicketById"]
++  },
++  {
++    "mount": "/api/support",
++    "file": "backend/src/routes/support.routes.js",
++    "method": "delete",
++    "line": 10,
++    "args": ["'/tickets/:id'", "protect", "supportController.deleteTicket"]
++  },
++  {
++    "mount": "/api/support",
++    "file": "backend/src/routes/support.routes.js",
++    "method": "get",
++    "line": 13,
++    "args": [
++      "'/admin/tickets'",
++      "protect",
++      "authorizeRoles('admin', 'super_admin')",
++      "supportController.getAdminTickets"
++    ]
++  },
++  {
++    "mount": "/api/support",
++    "file": "backend/src/routes/support.routes.js",
++    "method": "put",
++    "line": 14,
++    "args": [
++      "'/admin/tickets/:id/status'",
++      "protect",
++      "authorizeRoles('admin', 'super_admin')",
++      "supportController.updateTicketStatus"
++    ]
++  },
++  {
++    "mount": "/api/preview",
++    "file": "backend/src/routes/preview.routes.js",
++    "method": "post",
++    "line": 53,
++    "args": [
++      "'/resume/parse-text'",
++      "require('../middleware/publicPortfolioRateLimit').uploadLimit",
++      "previewResumePdfMiddleware",
++      "parsePreviewResume"
++    ]
++  },
++  {
++    "mount": "/api/recruiter-hub/candidates",
++    "file": "backend/src/routes/recruiter-hub/candidateRoutes.js",
++    "method": "get",
++    "line": 6,
++    "args": ["'/'", "listCandidates"]
++  },
++  {
++    "mount": "/api/recruiter-hub/candidates",
++    "file": "backend/src/routes/recruiter-hub/candidateRoutes.js",
++    "method": "get",
++    "line": 7,
++    "args": ["'/:id'", "getCandidateDetails"]
++  },
++  {
++    "mount": "/api/recruiter-hub/candidates",
++    "file": "backend/src/routes/recruiter-hub/candidateRoutes.js",
++    "method": "post",
++    "line": 8,
++    "args": ["'/:id/analyze'", "analyzeCandidate"]
++  },
++  {
++    "mount": "/api/recruiter-hub/jobs",
++    "file": "backend/src/routes/recruiter-hub/recruiterJobRoutes.js",
++    "method": "get",
++    "line": 13,
++    "args": ["'/'", "listJobs"]
++  },
++  {
++    "mount": "/api/recruiter-hub/jobs",
++    "file": "backend/src/routes/recruiter-hub/recruiterJobRoutes.js",
++    "method": "post",
++    "line": 14,
++    "args": ["'/'", "createJob"]
++  },
++  {
++    "mount": "/api/recruiter-hub/jobs",
++    "file": "backend/src/routes/recruiter-hub/recruiterJobRoutes.js",
++    "method": "get",
++    "line": 15,
++    "args": ["'/:id'", "getJobDetails"]
++  },
++  {
++    "mount": "/api/recruiter-hub/jobs",
++    "file": "backend/src/routes/recruiter-hub/recruiterJobRoutes.js",
++    "method": "patch",
++    "line": 16,
++    "args": ["'/:id'", "updateJob"]
++  },
++  {
++    "mount": "/api/recruiter-hub/jobs",
++    "file": "backend/src/routes/recruiter-hub/recruiterJobRoutes.js",
++    "method": "post",
++    "line": 17,
++    "args": ["'/:id/archive'", "archiveJob"]
++  },
++  {
++    "mount": "/api/recruiter-hub/jobs",
++    "file": "backend/src/routes/recruiter-hub/recruiterJobRoutes.js",
++    "method": "delete",
++    "line": 18,
++    "args": ["'/:id'", "deleteJob"]
++  },
++  {
++    "mount": "/api/recruiter-hub/matches",
++    "file": "backend/src/routes/recruiter-hub/matchRoutes.js",
++    "method": "get",
++    "line": 11,
++    "args": ["'/'", "listMatches"]
++  },
++  {
++    "mount": "/api/recruiter-hub/matches",
++    "file": "backend/src/routes/recruiter-hub/matchRoutes.js",
++    "method": "post",
++    "line": 12,
++    "args": ["'/generate'", "generateMatches"]
++  },
++  {
++    "mount": "/api/recruiter-hub/matches",
++    "file": "backend/src/routes/recruiter-hub/matchRoutes.js",
++    "method": "get",
++    "line": 13,
++    "args": ["'/:id'", "getMatchDetails"]
++  },
++  {
++    "mount": "/api/recruiter-hub/matches",
++    "file": "backend/src/routes/recruiter-hub/matchRoutes.js",
++    "method": "patch",
++    "line": 14,
++    "args": ["'/:id/status'", "patchMatchStatus"]
++  },
++  {
++    "mount": "/api/recruiter-hub/shortlists",
++    "file": "backend/src/routes/recruiter-hub/shortlistRoutes.js",
++    "method": "get",
++    "line": 11,
++    "args": ["'/'", "getShortlists"]
++  },
++  {
++    "mount": "/api/recruiter-hub/shortlists",
++    "file": "backend/src/routes/recruiter-hub/shortlistRoutes.js",
++    "method": "post",
++    "line": 12,
++    "args": ["'/'", "createShortlist"]
++  },
++  {
++    "mount": "/api/recruiter-hub/shortlists",
++    "file": "backend/src/routes/recruiter-hub/shortlistRoutes.js",
++    "method": "patch",
++    "line": 13,
++    "args": ["'/:id'", "patchShortlist"]
++  },
++  {
++    "mount": "/api/recruiter-hub/shortlists",
++    "file": "backend/src/routes/recruiter-hub/shortlistRoutes.js",
++    "method": "delete",
++    "line": 14,
++    "args": ["'/:id'", "deleteShortlist"]
++  },
++  {
++    "mount": "/api/recruiter-hub/analytics",
++    "file": "backend/src/routes/recruiter-hub/analyticsRoutes.js",
++    "method": "get",
++    "line": 7,
++    "args": ["'/dashboard'", "getDashboard"]
++  },
++  {
++    "mount": "/api/recruiter-hub/analytics",
++    "file": "backend/src/routes/recruiter-hub/analyticsRoutes.js",
++    "method": "get",
++    "line": 8,
++    "args": ["'/'", "getAnalytics"]
++  },
++  {
++    "mount": "/api/recruiter-hub/activity",
++    "file": "backend/src/routes/recruiter-hub/activityRoutes.js",
++    "method": "get",
++    "line": 6,
++    "args": ["'/'", "getActivity"]
++  }
++]
+diff --git a/backend/verification/architecture/request-flow-governance-results.json b/backend/verification/architecture/request-flow-governance-results.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..548702bf20ecc606ecf2fce275a4b9486c0690f4
+--- /dev/null
++++ b/backend/verification/architecture/request-flow-governance-results.json
+@@ -0,0 +1,36 @@
++{
++  "baseline": "c612ae80c466f47ab7def651da6537d8cf330b0a",
++  "checks": [
++    "redis-toggle-and-logical-expiry",
++    "two-process-concurrency-and-restart",
++    "forwarded-header-spoofing-rejected",
++    "authenticated-avatar-portfolio-resume-real-admission",
++    "mongo-failure-before-parsing-storage-mail",
++    "upload-and-contact-no-bypass",
++    "disconnect-recovery-retains-budget"
++  ],
++  "indexes": [
++    {
++      "v": 2,
++      "key": {
++        "_id": 1
++      },
++      "name": "_id_"
++    },
++    {
++      "v": 2,
++      "key": {
++        "expiresAt": 1
++      },
++      "name": "governance_expiry",
++      "expireAfterSeconds": 0
++    }
++  ],
++  "cleanup": {
++    "mongoStopped": true,
++    "temporaryFilesRemoved": 95,
++    "productionDataUsed": false
++  },
++  "admissionMs": [6.98, 7.29, 14.08, 14.53, 15.33, 15.4, 15.56, 15.62, 15.64, 16.1, 16.48, 16.59],
++  "completed": 7
++}
+diff --git a/backend/verification/profile/PROFILE-SETTINGS-DEVELOPMENT-HANDOFF.md b/backend/verification/profile/PROFILE-SETTINGS-DEVELOPMENT-HANDOFF.md
+index a0483eac8c4bfd82be232e9ef8356c512cdb698e..6743262e1f886e565ad78e7ed695f8dddf647a54 100644
+--- a/backend/verification/profile/PROFILE-SETTINGS-DEVELOPMENT-HANDOFF.md
++++ b/backend/verification/profile/PROFILE-SETTINGS-DEVELOPMENT-HANDOFF.md
+@@ -1,5 +1,7 @@
+ # Profile & Settings — development handoff
+ 
++**30 October 2026 governance update:** The Redis admission contract and Redis recovery gate below describe the retained baseline and are superseded for the changed Profile/Portfolio routes by [REQUEST-FLOW-GOVERNANCE-FINAL.md](../architecture/REQUEST-FLOW-GOVERNANCE-FINAL.md). MongoDB is the only request admission authority; unavailable Redis no longer blocks those uploads/contact requests. Mongo admission failure remains 503, exhaustion 429. Coordinated handover, production topology/index/latency and all existing B2/security gates remain pending. This does not freeze or deploy the module.
++
+ **DEVELOPMENT COMPLETE — STABLE CANDIDATE — PRODUCTION GATES PENDING**
+ 
+ Recorded 29 October 2026. Branch: `task/profile`. Reference implementation: commit **`77a7e18877b8f9a35d651251768081eab04cba4f`**. Integration/PR target: not applicable. Working tree/index were clean before this documentation-only handoff. All eight security-hardening source hashes match the retained verification manifest.

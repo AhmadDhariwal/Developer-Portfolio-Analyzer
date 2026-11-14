@@ -1,8 +1,60 @@
 const STACK_KEYWORDS = {
-  'Full Stack': ['full stack', 'fullstack', 'mern', 'mean', 'node', 'express', 'react', 'angular', 'vue', 'next', 'typescript'],
-  Frontend: ['frontend', 'front-end', 'react', 'angular', 'vue', 'html', 'css', 'ui', 'ux', 'javascript', 'typescript', 'next.js'],
-  Backend: ['backend', 'back-end', 'node', 'express', 'server', 'api', 'python', 'django', 'flask', 'java', 'spring', 'golang', 'php', 'laravel'],
-  'AI/ML': ['machine learning', 'deep learning', 'ai', 'ml', 'tensorflow', 'pytorch', 'data science', 'nlp', 'computer vision', 'llm', 'generative ai']
+  'Full Stack': [
+    'full stack',
+    'fullstack',
+    'mern',
+    'mean',
+    'node',
+    'express',
+    'react',
+    'angular',
+    'vue',
+    'next',
+    'typescript'
+  ],
+  Frontend: [
+    'frontend',
+    'front-end',
+    'react',
+    'angular',
+    'vue',
+    'html',
+    'css',
+    'ui',
+    'ux',
+    'javascript',
+    'typescript',
+    'next.js'
+  ],
+  Backend: [
+    'backend',
+    'back-end',
+    'node',
+    'express',
+    'server',
+    'api',
+    'python',
+    'django',
+    'flask',
+    'java',
+    'spring',
+    'golang',
+    'php',
+    'laravel'
+  ],
+  'AI/ML': [
+    'machine learning',
+    'deep learning',
+    'ai',
+    'ml',
+    'tensorflow',
+    'pytorch',
+    'data science',
+    'nlp',
+    'computer vision',
+    'llm',
+    'generative ai'
+  ]
 };
 
 const EXPERIENCE_INDEX = {
@@ -65,15 +117,17 @@ const skillEquals = (left, right) => normalizeSkill(left) === normalizeSkill(rig
 const skillAppearsInText = (text, skill) => {
   const normalizedSkill = normalizeSkill(skill);
   if (!normalizedSkill) return false;
-  const variants = uniqueStrings([
-    normalizedSkill,
-    ...Object.keys(SKILL_ALIASES).filter((alias) => SKILL_ALIASES[alias] === normalizedSkill)
-  ], 8);
+  const variants = uniqueStrings(
+    [
+      normalizedSkill,
+      ...Object.keys(SKILL_ALIASES).filter((alias) => SKILL_ALIASES[alias] === normalizedSkill)
+    ],
+    8
+  );
   const haystack = toText(text).toLowerCase();
-  return variants.some((variant) => new RegExp(
-    `(^|[^a-z0-9])${escapeRegExp(variant)}(?=$|[^a-z0-9])`,
-    'i'
-  ).test(haystack));
+  return variants.some((variant) =>
+    new RegExp(`(^|[^a-z0-9])${escapeRegExp(variant)}(?=$|[^a-z0-9])`, 'i').test(haystack)
+  );
 };
 
 function normalizeExpIndex(level) {
@@ -81,10 +135,11 @@ function normalizeExpIndex(level) {
 }
 
 function computeStackMatch(job, careerStack) {
-  const keywords = STACK_KEYWORDS[careerStack] || STACK_KEYWORDS['Full Stack'];
-  const haystack = `${job.title} ${(job.skills || []).join(' ')} ${job.description || ''}`.toLowerCase();
+  const keywords = STACK_KEYWORDS[careerStack] || [];
+  const haystack =
+    `${job.title} ${(job.skills || []).join(' ')} ${job.description || ''}`.toLowerCase();
   const hits = keywords.filter((keyword) => skillAppearsInText(haystack, keyword));
-  return clamp(Math.round((hits.length / Math.max(keywords.length * 0.28, 1)) * 100));
+  return clamp(Math.round((hits.length / Math.max(keywords.length, 1)) * 100));
 }
 
 function computeSkillMatch(job, userSkills) {
@@ -100,18 +155,23 @@ function computeSkillMatch(job, userSkills) {
     };
   }
 
-  const matchedSkills = safeUserSkills.filter((userSkill) =>
-    jobSkills.some((jobSkill) => skillEquals(jobSkill, userSkill))
-    || skillAppearsInText(haystack, userSkill)
+  const matchedSkills = safeUserSkills.filter(
+    (userSkill) =>
+      jobSkills.some((jobSkill) => skillEquals(jobSkill, userSkill)) ||
+      skillAppearsInText(haystack, userSkill)
   );
-  const missingSkills = jobSkills.filter((jobSkill) =>
-    !safeUserSkills.some((userSkill) =>
-      skillEquals(jobSkill, userSkill)
-      || skillAppearsInText(jobSkill, userSkill)
-    )
+  const missingSkills = jobSkills.filter(
+    (jobSkill) =>
+      !safeUserSkills.some(
+        (userSkill) => skillEquals(jobSkill, userSkill) || skillAppearsInText(jobSkill, userSkill)
+      )
   );
 
-  const score = clamp(Math.round((matchedSkills.length / Math.max(jobSkills.length || safeUserSkills.length, 1)) * 100));
+  const score = clamp(
+    Math.round(
+      (matchedSkills.length / Math.max(jobSkills.length || safeUserSkills.length, 1)) * 100
+    )
+  );
 
   return {
     score: score || (matchedSkills.length ? 45 : 25),
@@ -131,9 +191,9 @@ function computeExperienceMatch(job, userExperience) {
   return 28;
 }
 
-function computeRecentness(postedDate) {
+function computeRecentness(postedDate, now) {
   if (!postedDate) return 35;
-  const daysAgo = (Date.now() - new Date(postedDate).getTime()) / 86400000;
+  const daysAgo = (now - new Date(postedDate).getTime()) / 86400000;
   if (daysAgo <= 3) return 100;
   if (daysAgo <= 7) return 84;
   if (daysAgo <= 14) return 66;
@@ -149,7 +209,10 @@ function buildWhyMatched({ job, careerStack, matchedSkills, experienceMatch, sta
   if (stackMatch >= 70) {
     reasons.push(`Aligned with your ${careerStack} target stack`);
   }
-  if (experienceMatch >= 75) {
+  if (
+    experienceMatch >= 75 &&
+    EXPERIENCE_INDEX[toText(job.experienceLevel).toLowerCase()] !== undefined
+  ) {
     reasons.push(`Close fit for your current experience level`);
   }
   if (!reasons.length) {
@@ -163,31 +226,28 @@ function rankJobs(
   {
     careerStack = 'Full Stack',
     experienceLevel = 'Student',
-    skillGaps = [],
     knownSkills = [],
     resumeSkills = [],
     githubSkills = []
   } = {}
 ) {
-  const userSkills = uniqueStrings([
-    ...(knownSkills || []),
-    ...(skillGaps || []),
-    ...(resumeSkills || []),
-    ...(githubSkills || [])
-  ], 30);
+  const now = Date.now();
+  const userSkills = uniqueStrings(
+    [...(knownSkills || []), ...(resumeSkills || []), ...(githubSkills || [])],
+    30
+  );
 
   return (Array.isArray(jobs) ? jobs : [])
     .map((job) => {
       const stackMatch = computeStackMatch(job, careerStack);
       const skillSignal = computeSkillMatch(job, userSkills);
       const experienceMatch = computeExperienceMatch(job, experienceLevel);
-      const recentness = computeRecentness(job.postedDate);
-      const matchScore = clamp(Math.round(
-        (stackMatch * 0.28)
-        + (skillSignal.score * 0.42)
-        + (experienceMatch * 0.2)
-        + (recentness * 0.1)
-      ));
+      const recentness = computeRecentness(job.postedDate, now);
+      const matchScore = clamp(
+        Math.round(
+          stackMatch * 0.28 + skillSignal.score * 0.42 + experienceMatch * 0.2 + recentness * 0.1
+        )
+      );
 
       return {
         ...job,
@@ -205,7 +265,12 @@ function rankJobs(
         })
       };
     })
-    .sort((left, right) => Number(right.matchScore || 0) - Number(left.matchScore || 0));
+    .sort((left, right) => {
+      const score = Number(right.matchScore || 0) - Number(left.matchScore || 0);
+      const leftId = String(left.id || '');
+      const rightId = String(right.id || '');
+      return score || (leftId < rightId ? -1 : leftId > rightId ? 1 : 0);
+    });
 }
 
 module.exports = { rankJobs };

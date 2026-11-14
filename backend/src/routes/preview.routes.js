@@ -4,6 +4,19 @@ const multer = require('multer');
 const path = require('node:path');
 const fs = require('node:fs');
 const { parsePreviewResume } = require('../controllers/resumecontoller');
+const { optionalProtect } = require('../middleware/authmiddleware');
+
+// A public multipart preview may still have an authenticated owner. Resolve it
+// before writing bytes so its temporary reference has the same scope as analysis.
+const authenticatePreviewOwner = (req, res, next) => {
+  if (!req.headers.authorization) return next();
+  const originalBody = req.body;
+  req.body = { isTemporary: true };
+  return optionalProtect(req, res, () => {
+    req.body = originalBody;
+    next();
+  });
+};
 
 const previewUploadDir = path.resolve(process.cwd(), 'uploads', 'preview');
 if (!fs.existsSync(previewUploadDir)) {
@@ -15,7 +28,10 @@ const previewStorage = multer.diskStorage({
     cb(null, previewUploadDir);
   },
   filename: (req, file, cb) => {
-    cb(null, `preview-${Date.now()}-${Math.random().toString(36).slice(2)}${path.extname(file.originalname)}`);
+    cb(
+      null,
+      `preview-${Date.now()}-${Math.random().toString(36).slice(2)}${path.extname(file.originalname)}`
+    );
   }
 });
 
@@ -26,7 +42,10 @@ const previewUpload = multer({
     fileSize: 5 * 1024 * 1024 // Size limit <= 5MB
   },
   fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'application/pdf' && path.extname(file.originalname).toLowerCase() === '.pdf') {
+    if (
+      file.mimetype === 'application/pdf' &&
+      path.extname(file.originalname).toLowerCase() === '.pdf'
+    ) {
       cb(null, true);
     } else {
       cb(new Error('Only PDF files are allowed'), false);
@@ -44,6 +63,12 @@ const previewResumePdfMiddleware = (req, res, next) => {
   });
 };
 
-router.post('/resume/parse-text', previewResumePdfMiddleware, parsePreviewResume);
+router.post(
+  '/resume/parse-text',
+  require('../middleware/publicPortfolioRateLimit').uploadLimit,
+  authenticatePreviewOwner,
+  previewResumePdfMiddleware,
+  parsePreviewResume
+);
 
 module.exports = router;
