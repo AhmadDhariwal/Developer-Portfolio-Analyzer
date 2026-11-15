@@ -120,6 +120,7 @@ const buildQuestionFilter = ({
   difficulty = '',
   tags = '',
   source = '',
+  category = '',
   query = '',
   excludeGenericSeeds = false
 } = {}) => {
@@ -149,6 +150,7 @@ const buildQuestionFilter = ({
   if (normalizedTopicType) {
     filter.topicType = normalizedTopicType;
   }
+  if (category) filter.category = sanitizeCategory(category);
   if (source === 'ai') filter.sourceType = { $in: ['ai', 'ai_generated', 'user_asked'] };
   else if (source === 'seed') filter.sourceType = { $in: ['verified_seed', 'prebuilt'] };
   else if (source && source !== 'database') filter.sourceType = source;
@@ -475,11 +477,12 @@ const findAllQuestionsPage = async ({
   const [rows, total] = await Promise.all([
     InterviewQuestionBank.find(filter)
       .sort({ qualityScore: -1, rankScore: -1, createdAt: -1, _id: 1 })
+      .hint('topic_stable_page')
       .skip(skip)
       .limit(pageSize)
       .maxTimeMS(2000)
       .lean(),
-    InterviewQuestionBank.countDocuments(filter).maxTimeMS(2000)
+    InterviewQuestionBank.countDocuments(filter).hint('topic_stable_page').maxTimeMS(2000)
   ]);
 
   return { questions: rows, total };
@@ -603,6 +606,7 @@ const findExactReusableQuestion = async ({
   identity = null,
   difficulty = '',
   category = '',
+  source = '',
   minConfidence = 0.55
 } = {}) => {
   const normalizedTopicKey = String(topicKey || '')
@@ -625,6 +629,7 @@ const findExactReusableQuestion = async ({
   };
   if (difficulty) filter.difficulty = sanitizeDifficulty(difficulty);
   if (category) filter.category = sanitizeCategory(category);
+  if (source === 'seed') filter.sourceType = { $in: ['verified_seed', 'prebuilt'] };
 
   const result = await InterviewQuestionBank.findOne(filter)
     .select(
@@ -647,6 +652,7 @@ const findSearchCandidates = async ({
   category = '',
   tags = [],
   searchableTokens = [],
+  source = '',
   limit = SEARCH_CANDIDATE_LIMIT,
   minConfidence = 0.75
 } = {}) => {
@@ -658,6 +664,7 @@ const findSearchCandidates = async ({
   };
   if (difficulty) filter.difficulty = sanitizeDifficulty(difficulty);
   if (category) filter.category = sanitizeCategory(category);
+  if (source === 'seed') filter.sourceType = { $in: ['verified_seed', 'prebuilt'] };
   const safeTags = sanitizeTags(Array.isArray(tags) ? tags : String(tags).split(','));
   if (safeTags.length) filter.tags = { $in: safeTags };
   const safeTokens = sanitizeTags(searchableTokens).slice(0, 24);

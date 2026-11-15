@@ -44,4 +44,27 @@ describe('Interview question presentation', () => {
     expect(fixture.nativeElement.textContent).toContain('<img');
     fixture.destroy();
   });
+  it('renders a long system-design answer with educational scope and preserved code lines', () => {
+    const fixture = TestBed.createComponent(InterviewQuestionCardComponent);
+    fixture.componentRef.setInput('question', {
+      ...question,
+      sourceType: 'ai_generated',
+      answerSections: {
+        scopeNote: 'Illustrative educational architecture, not verified Netflix internals.',
+        systemDesign: {
+          highLevelArchitecture: 'Clients use edge caches. '.repeat(100),
+          security: 'Authorize playback with short-lived signed tokens.',
+        },
+        example: 'const token = await authorize();\nawait play(token);',
+      },
+    });
+    fixture.detectChanges();
+    fixture.nativeElement.querySelector('.answer-toggle').click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('AI-generated answer · Unverified');
+    expect(fixture.nativeElement.textContent).toContain('High-level architecture');
+    expect(fixture.nativeElement.textContent).toContain('Security');
+    expect(fixture.nativeElement.querySelector('code').textContent).toContain('\nawait play');
+    fixture.destroy();
+  });
 });

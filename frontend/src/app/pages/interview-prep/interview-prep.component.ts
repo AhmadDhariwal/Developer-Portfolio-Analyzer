@@ -75,6 +75,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
   askError = '';
   askNotice = '';
   practiceFocus = '';
+  private loadedPracticeFilters = '';
   practiceDifficulty = 'medium';
   practiceCount = 5;
   practiceQuestions: InterviewQuestion[] = [];
@@ -443,7 +444,11 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
             ? answer.duplicate
               ? 'Reused an answer from your private history.'
               : 'Answer saved to your private history.'
-            : 'Using an existing answer. Its source is shown below.';
+            : ['ai', 'ai_generated', 'user_asked'].includes(
+                  answer.originalSourceType || answer.sourceType || '',
+                )
+              ? 'AI-generated answer ready. It remains unverified.'
+              : 'Using an existing answer. Its source is shown below.';
           this.historyLoaded = false;
           this.asking = false;
           if (!this.destroyed) this.cdr.detectChanges();
@@ -459,6 +464,24 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
           }
         },
       });
+  }
+  deleteSession(session: InterviewSession): void {
+    this.prep.deleteSession(session._id).subscribe({
+      next: () => {
+        this.sessions = this.sessions.filter((item) => item._id !== session._id);
+        if (this.selectedSession?._id === session._id) this.selectedSession = null;
+        if (this.activePracticeSession?._id === session._id) this.clearPracticeDrill();
+        if (this.customResult?.sessionId === session._id) this.customResult = null;
+        this.recentQuestions = this.recentQuestions.filter(
+          (item) => item.sessionId !== session._id,
+        );
+        if (!this.destroyed) this.cdr.detectChanges();
+      },
+      error: (error) => {
+        this.historyError = this.errorText(error, 'Could not delete this private session. Retry.');
+        if (!this.destroyed) this.cdr.detectChanges();
+      },
+    });
   }
   cancelPractice(): void {
     this.savedRequestKey = '';
@@ -488,6 +511,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     this.practiceIndex = 0;
     this.practiceOrigin = null;
     this.selfChecks.clear();
+    this.loadedPracticeFilters = '';
   }
   changePracticeDifficulty(value: string): void {
     this.cancelPractice();
@@ -514,24 +538,36 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
       .split(',')
       .map((tag) => tag.trim().toLowerCase())
       .filter(Boolean);
-    const incompatible = this.practiceQuestions.some(
-      (question) =>
-        (this.practiceDifficulty && question.difficulty !== this.practiceDifficulty) ||
-        (question.topicKey &&
-          question.topicKey.replaceAll('_', '-') !== skill.replaceAll('_', '-')) ||
-        (this.category && question.category !== this.category) ||
-        (this.source &&
-          this.source !== 'database' &&
-          !(
-            this.source === 'seed'
-              ? ['verified_seed', 'prebuilt']
-              : this.source === 'ai'
-                ? ['ai', 'ai_generated', 'user_asked']
-                : [this.source]
-          ).includes(question.sourceType || question.source || '')) ||
-        (requestedTags.length && !requestedTags.some((tag) => question.tags?.includes(tag))),
-    );
+    const requestFilters = JSON.stringify([
+      skill,
+      this.practiceDifficulty,
+      this.practiceFocus.trim(),
+      this.category,
+      this.source,
+      requestedTags,
+      this.practiceCount,
+    ]);
+    const incompatible =
+      (this.loadedPracticeFilters && this.loadedPracticeFilters !== requestFilters) ||
+      this.practiceQuestions.some(
+        (question) =>
+          (this.practiceDifficulty && question.difficulty !== this.practiceDifficulty) ||
+          (question.topicKey &&
+            question.topicKey.replaceAll('_', '-') !== skill.replaceAll('_', '-')) ||
+          (this.category && question.category !== this.category) ||
+          (this.source &&
+            this.source !== 'database' &&
+            !(
+              this.source === 'seed'
+                ? ['verified_seed', 'prebuilt']
+                : this.source === 'ai'
+                  ? ['ai', 'ai_generated', 'user_asked']
+                  : [this.source]
+            ).includes(question.sourceType || question.source || '')) ||
+          (requestedTags.length && !requestedTags.some((tag) => question.tags?.includes(tag))),
+      );
     if (incompatible) this.clearPracticeDrill();
+    const requestedCount = this.practiceCount;
     const requestedDifficulty = this.practiceDifficulty.trim().toLowerCase();
     const requestedCategory = this.category;
     const requestedSource = this.source;
@@ -603,7 +639,13 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
             if (!this.destroyed) this.cdr.detectChanges();
             return;
           }
-          if (!response.questions?.length) {
+          if (
+            !response.questions?.length ||
+            response.questions.length !== requestedCount ||
+            response.partial
+          ) {
+            this.clearPracticeDrill();
+            this.practiceNotice = '';
             this.practiceError = `Insufficient matching ${requestedDifficulty || 'practice'} questions. Adjust the filters or retry generation.`;
             this.generating = false;
             if (!this.destroyed) this.cdr.detectChanges();
@@ -616,6 +658,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
                 ? 'generated'
                 : 'library';
           this.practiceQuestions = response.questions;
+          this.loadedPracticeFilters = requestFilters;
           this.progressSub?.unsubscribe();
           this.savingProgress = false;
           this.activePracticeSession = response.sessionId
@@ -638,7 +681,13 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
             : response.aiGeneratedCount
               ? 'AI practice set ready. Generated answers are unverified.'
               : 'Using existing questions. Their source and verification are shown below.';
-          if (response.partial) this.practiceNotice += ' A partial set was returned.';
+          const verifiedCount = response.questions.filter(
+            (item) =>
+              item.verificationStatus === 'verified' ||
+              (!item.verificationStatus &&
+                ['verified_seed', 'prebuilt'].includes(item.sourceType || '')),
+          ).length;
+          this.practiceNotice += ` ${verifiedCount} verified · ${response.questions.length - verifiedCount} unverified.`;
           if (response.personalization?.limitation)
             this.practiceNotice += ` ${response.personalization.limitation}`;
           if (saved) this.historyLoaded = false;

@@ -10,10 +10,18 @@ const {
   getQuestionBank,
   searchQuestionBank,
   listInterviewPrepHistory,
+  deleteInterviewPrepSession,
   sanitizeSkill
 } = require('../services/interviewPrepService');
 
 const MAX_QUERY_LENGTH = 500;
+const failureMetadata = (error) => ({
+  ...(error.code ? { code: error.code } : {}),
+  ...(error.generationStatus ? { generationStatus: error.generationStatus, retryable: error.retryable } : {}),
+  ...(error.requestedCount
+    ? { requestedCount: error.requestedCount, availableCount: error.availableCount }
+    : {})
+});
 const cancellationSignal = (req, res) => {
   const controller = new AbortController();
   if (req.aborted || res.destroyed) controller.abort();
@@ -108,9 +116,10 @@ const generateInterviewPrepSession = async (req, res) => {
     res.json(generated);
   } catch (error) {
     console.error('Interview prep generate error:', error.message);
-    res
-      .status(error.statusCode || 500)
-      .json({ message: error.statusCode ? error.message : 'Failed to generate interview prep.' });
+    res.status(error.statusCode || 500).json({
+      message: error.statusCode ? error.message : 'Failed to generate interview prep.',
+      ...failureMetadata(error)
+    });
   }
 };
 
@@ -268,11 +277,8 @@ const generateInterviewPrepQuestions = async (req, res) => {
   } catch (error) {
     console.error('Generate questions error:', error.message);
     return res.status(error.statusCode || 500).json({
-      message: error.statusCode
-        ? error.statusCode === 503
-          ? 'Insufficient matching questions. Adjust the filters or retry generation.'
-          : error.message
-        : 'Failed to generate interview questions.'
+      message: error.statusCode ? error.message : 'Failed to generate interview questions.',
+      ...failureMetadata(error)
     });
   }
 };
@@ -305,7 +311,8 @@ const askInterviewPrepQuestion = async (req, res) => {
   } catch (error) {
     console.error('Interview prep ask-question error:', error.message);
     return res.status(error.statusCode || 500).json({
-      message: error.statusCode ? error.message : 'Failed to answer interview question.'
+      message: error.statusCode ? error.message : 'Failed to answer interview question.',
+      ...failureMetadata(error)
     });
   }
 };
@@ -323,6 +330,15 @@ const getInterviewPrepHistory = async (req, res) => {
 };
 
 module.exports = {
+  deleteInterviewSession: async (req, res) => {
+    try {
+      res.json(await deleteInterviewPrepSession(req.user._id, req.params.id));
+    } catch (error) {
+      res
+        .status(error.statusCode || 500)
+        .json({ message: error.statusCode ? error.message : 'Could not delete session.' });
+    }
+  },
   getInterviewSession: async (req, res) => {
     try {
       res.json(await interviewSessions.getOwned(req.user._id, req.params.id));

@@ -111,10 +111,12 @@ export class Signup {
 
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
+    this.cdr.detectChanges();
   }
 
   toggleConfirmPasswordVisibility(): void {
     this.showConfirmPassword = !this.showConfirmPassword;
+    this.cdr.detectChanges();
   }
 
   selectOtpType(type: OtpType): void {

@@ -106,6 +106,7 @@ export class Login implements OnInit {
 
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
+    this.cdr.detectChanges();
   }
 
   validateEmail(): void {

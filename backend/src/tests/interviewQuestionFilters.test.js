@@ -115,6 +115,10 @@ test('Mongo all-bank query applies category, difficulty, source and tags before 
     sort() {
       return this;
     },
+    hint(value) {
+      assert.equal(value, 'topic_stable_page');
+      return this;
+    },
     skip(value) {
       operations.push(['skip', value]);
       return this;
@@ -134,7 +138,12 @@ test('Mongo all-bank query applies category, difficulty, source and tags before 
     captured = filter;
     return cursor;
   });
-  t.mock.method(Model, 'countDocuments', () => ({ maxTimeMS: async () => 0 }));
+  t.mock.method(Model, 'countDocuments', () => ({
+    hint: (name) => {
+      assert.equal(name, 'topic_stable_page');
+      return { maxTimeMS: async () => 0 };
+    }
+  }));
   await repository.findAllQuestionsPage({
     topicKey: 'system_design',
     difficulty: 'easy',

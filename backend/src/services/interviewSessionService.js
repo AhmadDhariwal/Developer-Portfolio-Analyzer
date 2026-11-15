@@ -14,12 +14,15 @@ const snapshotQuestions = (questions, topicKey) => {
       return true;
     })
     .map((item) => ({
-      ...item,
+      ...structuredClone(item),
+      topicKey: item.topicKey || topicKey,
       normalizedQuestionHash: hash(normalizeComparableText(item.question)),
-      questionId: item.questionId || String(item._id || hash(`${topicKey}:${normalizeComparableText(item.question)}`)),
+      questionId:
+        item.questionId || String(item._id || hash(`${topicKey}:${normalizeComparableText(item.question)}`)),
       contentVersion: hash(JSON.stringify([item.question, item.answer, item.answerSections || {}])),
       verificationStatus:
-        item.verificationStatus || (['verified_seed', 'prebuilt'].includes(item.sourceType) ? 'verified' : 'unverified')
+        item.verificationStatus ||
+        (['verified_seed', 'prebuilt'].includes(item.sourceType) ? 'verified' : 'unverified')
     }));
 };
 
@@ -45,8 +48,16 @@ const getOwned = async (userId, id) => {
   if (!session) throw error(404, 'Session not found.');
   return session;
 };
-const updateProgress = async ({ userId, id, expectedVersion, questionIndex, selfCheck, complete = false }) => {
-  if (!Number.isInteger(expectedVersion) || expectedVersion < 0) throw error(400, 'Invalid progress version.');
+const updateProgress = async ({
+  userId,
+  id,
+  expectedVersion,
+  questionIndex,
+  selfCheck,
+  complete = false
+}) => {
+  if (!Number.isInteger(expectedVersion) || expectedVersion < 0)
+    throw error(400, 'Invalid progress version.');
   const session = await getOwned(userId, id);
   const progress = session.progress || {};
   if (
@@ -61,7 +72,10 @@ const updateProgress = async ({ userId, id, expectedVersion, questionIndex, self
   if (complete && session.status === 'completed') return session;
   if (!complete && progress[String(questionIndex)] === selfCheck) return session;
   if (session.status === 'completed') throw error(409, 'Completed sessions cannot be changed.');
-  if (complete && (!session.questions.length || session.questions.some((_, index) => !progress[String(index)])))
+  if (
+    complete &&
+    (!session.questions.length || session.questions.some((_, index) => !progress[String(index)]))
+  )
     throw error(409, 'Review each question before completing this session.');
   const updated = await Session.findOneAndUpdate(
     {
@@ -73,7 +87,9 @@ const updateProgress = async ({ userId, id, expectedVersion, questionIndex, self
         : { progressVersion: expectedVersion })
     },
     {
-      $set: complete ? { status: 'completed', completedAt: new Date() } : { [`progress.${questionIndex}`]: selfCheck },
+      $set: complete
+        ? { status: 'completed', completedAt: new Date() }
+        : { [`progress.${questionIndex}`]: selfCheck },
       $inc: { progressVersion: 1 }
     },
     { returnDocument: 'after', runValidators: true }

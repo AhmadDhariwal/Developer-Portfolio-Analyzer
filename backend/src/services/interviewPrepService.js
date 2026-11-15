@@ -1,5 +1,11 @@
 const { normalizeFilters, matchesFilters } = require('./interviewQuestionFilters');
 const logger = require('../utils/logger');
+const {
+  validateGeneratedQuestion,
+  hasValidAnswerSchema,
+  hasValidSystemDesign,
+  isSystemDesignQuestion
+} = require('./interviewAIValidation');
 const InterviewPrepSession = require('../models/interviewPrepSession');
 const interviewSessions = require('./interviewSessionService');
 const { hash: hashRequest } = require('./interviewCoordinationService');
@@ -7,6 +13,7 @@ const {
   getCacheJson,
   getCacheJsonWithMeta,
   setCacheJson,
+  deleteCacheKey,
   invalidateInterviewPrepCache,
   resolveInterviewCacheKey
 } = require('./redisCacheService');
@@ -262,7 +269,7 @@ const makeSearchCacheKey = ({
 };
 
 const makeCustomQuestionCacheKey = ({ question, topicKey, userId }) =>
-  `interview:custom:v5:topic=${topicKey}:user=${questionRepository.toQuestionHash(String(userId || ''))}:question=${questionRepository.toQuestionHash(question)}`;
+  `interview:custom:v6:topic=${topicKey}:user=${questionRepository.toQuestionHash(String(userId || ''))}:question=${questionRepository.toQuestionHash(question)}`;
 
 const validateRecordForApproval = ({
   record,
@@ -362,25 +369,28 @@ const selectVerifiedFallback = ({ topicInput, question }) => {
     fromCache: false
   };
 };
-const buildAiFailurePayload = ({ topicInput, question }) => {
-  const fallback = selectVerifiedFallback({ topicInput, question });
-  if (fallback) {
-    logInterviewAiReason('fallback_found');
-    return fallback;
-  }
-  logInterviewAiReason('fallback_missing');
-  return {
-    question,
-    answer: 'No verified answer available.',
-    answerSections: {},
-    topicKey: topicInput.topicKey,
-    topicType: topicInput.topicType,
-    sourceType: 'no_verified_answer',
-    sourceLabel: 'No Verified Answer',
-    stored: false,
-    duplicate: false,
-    fromCache: false
-  };
+const buildAiFailurePayload = ({ reasonCode = 'provider_unavailable' } = {}) => {
+  if (reasonCode === 'no_answer')
+    return Object.assign(
+      new Error('No reliable answer could be produced. Add technical context or rephrase the question.'),
+      { statusCode: 422, code: 'no_answer', generationStatus: 'no_answer', retryable: false }
+    );
+  const invalid = ['schema_rejected', 'semantic_rejected', 'quality_rejected', 'invalid_json'].includes(
+    reasonCode
+  );
+  return Object.assign(
+    new Error(
+      invalid
+        ? 'AI returned an incomplete or invalid answer. Please retry.'
+        : 'AI providers are temporarily unavailable. Please retry.'
+    ),
+    {
+      statusCode: 503,
+      code: invalid ? 'invalid_ai_answer' : 'ai_unavailable',
+      generationStatus: invalid ? 'invalid_response' : 'provider_unavailable',
+      retryable: true
+    }
+  );
 };
 
 const toStructuredAnswerText = (sections = {}) =>
@@ -1166,10 +1176,12 @@ const searchQuestionBank = async ({
         identity,
         difficulty: expectedDifficulty,
         category: normalizedCategory,
-        minConfidence: 0.75
+        minConfidence: 0.75,
+        source: 'seed'
       })
     );
 
+    if (reusable && !['verified_seed', 'prebuilt'].includes(reusable.sourceType)) reusable = null;
     if (reusable) {
       const approval = await trace.time('validationMs', null, () =>
         Promise.resolve(
@@ -1193,7 +1205,8 @@ const searchQuestionBank = async ({
           tags: normalizedTags,
           searchableTokens: identity.searchableTokens,
           limit: 60,
-          minConfidence: 0.75
+          minConfidence: 0.75,
+          source: 'seed'
         })
       );
       const match = candidates.find(
@@ -1511,455 +1524,149 @@ const generateHybridInterviewQuestions = async ({
   };
 };
 
-const fallbackToQuestionBankForGeneration = async ({
-  topicInput,
-  skill = '',
-  topic = '',
-  stack = '',
-  technology = '',
-  language = '',
-  framework = '',
-  difficulty = '',
-  category = '',
-  tags = '',
-  source = '',
-  query = '',
-  page = 1,
-  limit = DEFAULT_PAGE_LIMIT,
-  reason = 'unknown',
-  error = null
-} = {}) => {
-  const normalizedLimit = normalizePagination({ page, limit }).limit;
-  const filters = normalizeFilters({
-    skill: topicInput?.topicKey || skill,
-    difficulty,
-    category,
-    tags,
-    source,
-    query
-  });
-  const targetTopicKey =
-    topicInput?.topicKey ||
-    sanitizeSkill(skill || topic || language || framework || technology || stack) ||
-    'javascript';
-
-  console.warn(`AI generation fallback engaged for topic: ${targetTopicKey}. Reason: ${reason}`);
-  logger.warn('interview-prep generate fallback to bank', {
-    topicKey: targetTopicKey,
-    reason,
-    message: error?.message || ''
-  });
-
-  try {
-    const topPayload = await (query
-      ? searchQuestionBank({
-          q: query,
-          skill: targetTopicKey,
-          difficulty,
-          category,
-          tags,
-          source,
-          page: 1,
-          limit: normalizedLimit,
-          allowEnrichment: false
-        })
-      : getQuestionBank({
-          skill: targetTopicKey,
-          difficulty: difficulty ? sanitizeDifficulty(difficulty) : '',
-          page: 1,
-          limit: normalizedLimit,
-          category,
-          tags,
-          source,
-          block: 'top'
-        }));
-
-    if (Array.isArray(topPayload?.questions) && topPayload.questions.length >= normalizedLimit) {
-      return topPayload;
-    }
-
-    const allPayload = await (query
-      ? searchQuestionBank({
-          q: query,
-          skill: targetTopicKey,
-          difficulty,
-          category,
-          tags,
-          source,
-          page: 1,
-          limit: normalizedLimit,
-          allowEnrichment: false
-        })
-      : getQuestionBank({
-          skill: targetTopicKey,
-          difficulty: difficulty ? sanitizeDifficulty(difficulty) : '',
-          page: 1,
-          limit: normalizedLimit,
-          category,
-          tags,
-          source,
-          block: 'all'
-        }));
-
-    if (Array.isArray(allPayload?.questions) && allPayload.questions.length > 0) {
-      return { ...allPayload, partial: allPayload.questions.length < normalizedLimit };
-    }
-  } catch (fallbackError) {
-    console.error('Fallback question bank lookup failed:', fallbackError);
-    logger.warn('interview-prep fallback bank lookup failed', {
-      topicKey: targetTopicKey,
-      message: fallbackError.message
-    });
-  }
-
-  const memoryFallbackTopic = getImportantTopicByKey(targetTopicKey);
-  const memoryFallbackQuestions = memoryFallbackTopic
-    ? buildSeedRecordsForTopic(memoryFallbackTopic)
-        .filter((record) => record.isTopQuestion && matchesFilters(record, filters))
-        .slice(0, normalizedLimit)
-    : [];
-
-  if (memoryFallbackQuestions.length > 0) {
-    console.warn(`Using in-memory verified seed fallback for topic: ${memoryFallbackTopic.key}`);
-    return makeQuestionPayload({
-      questions: memoryFallbackQuestions,
-      total: memoryFallbackQuestions.length,
-      page: 1,
-      limit: normalizedLimit,
-      source: 'db',
-      topicInput: normalizeTopicInput({ topic: memoryFallbackTopic.key }),
-      aiGeneratedCount: 0,
-      scrapedGeneratedCount: 0,
-      enrichedCount: 0,
-      sourceMix: { verified_seed: memoryFallbackQuestions.length },
-      partial: memoryFallbackQuestions.length < normalizedLimit
-    });
-  }
-
-  const unavailableError = new Error(
-    `Unable to provide requested interview questions for topic '${targetTopicKey}' from the verified bank.`
-  );
-  unavailableError.statusCode = 503;
-  throw unavailableError;
-};
-
-const generateFreshInterviewQuestions = async ({
-  skill,
-  topic = '',
-  stack = '',
-  technology = '',
-  language = '',
-  framework = '',
-  query = '',
-  difficulty = '',
-  category = '',
-  tags = '',
-  source = '',
-  page = 1,
-  limit = DEFAULT_PAGE_LIMIT
-} = {}) => {
-  const filters = normalizeFilters({
-    skill,
-    topic,
-    stack,
-    technology,
-    language,
-    framework,
-    query,
-    difficulty,
-    category,
-    tags,
-    source
-  });
-  ({ difficulty, category, source } = filters);
+const generateFreshInterviewQuestions = async (input = {}) => {
+  const filters = normalizeFilters(input);
+  const topicInput = normalizeTopicInput(input);
+  const targetCount = normalizePagination({ limit: input.limit }).limit;
   const accept = (rows) => rows.filter((item) => matchesFilters(item, filters));
-  const topicInput = normalizeTopicInput({ skill, topic, stack, technology, language, framework });
-  const normalizedSkill = sanitizeSkill(topicInput.topicKey);
-  const normalizedLimit = normalizePagination({ page, limit }).limit;
-  const targetCount = Math.max(1, normalizedLimit);
-  const focusQuery = String(query || topic || topicInput.topicKey || '')
-    .replace(/\s+/g, ' ')
-    .trim();
-  const focusTopic = focusQuery.toLowerCase();
-  let existing = [];
-  const fallbackToBank = async (reason, error = null) => {
-    const payload = await fallbackToQuestionBankForGeneration({
-      topicInput,
-      skill: normalizedSkill || skill,
-      topic,
-      stack,
-      technology,
-      language,
-      framework,
-      difficulty,
-      category,
-      tags,
-      source,
-      query,
-      page,
-      limit: targetCount,
-      reason,
-      error
-    });
-
-    if (Array.isArray(payload?.questions) && payload.questions.length > 0) {
-      const questions = dedupeQuestions({ questions: accept([...existing, ...payload.questions]) }).slice(
-        0,
-        targetCount
-      );
-      return {
-        ...payload,
-        questions,
-        total: questions.length,
-        totalAvailable: questions.length,
-        limit: targetCount,
-        totalPages: 1,
-        insufficientResults: questions.length < targetCount,
-        requestedCount: targetCount,
-        partial: questions.length < targetCount
-      };
-    }
-
-    console.warn(
-      `Fallback question bank returned empty for topic: ${topicInput.topicKey || normalizedSkill || 'javascript'}`
-    );
-    return {
-      ...payload,
-      questions: [],
-      total: 0,
-      totalAvailable: 0,
-      page: 1,
-      limit: targetCount,
-      totalPages: 1,
-      fromCache: false,
-      source: 'db',
-      aiGeneratedCount: 0,
-      scrapedGeneratedCount: 0,
-      enrichedCount: 0,
-      sourceMix: payload?.sourceMix || {},
-      partial: true,
-      topicKey: payload?.topicKey || topicInput.topicKey,
-      topicType: payload?.topicType || topicInput.topicType,
-      metrics: metricSnapshot()
-    };
-  };
-
-  if (!normalizedSkill) {
-    return fallbackToBank('missing_skill');
-  }
-
-  const bank = await (query
-    ? searchQuestionBank({
-        skill: normalizedSkill,
-        q: query,
-        difficulty,
-        category,
-        tags,
-        source,
-        page: 1,
-        limit: targetCount,
-        allowEnrichment: false
-      })
-    : getQuestionBank({
-        skill: normalizedSkill,
-        difficulty,
-        category,
-        tags,
-        source,
+  const permitsAI = !filters.source || ['ai', 'ai_generated', 'database'].includes(filters.source);
+  const aiOnly = ['ai', 'ai_generated'].includes(filters.source);
+  const requestKey = `generate:v2:${JSON.stringify([filters, targetCount, input.reuseAI !== false])}`;
+  return runSingleFlight(requestKey, async () => {
+    let questions = [];
+    let generatedCount = 0;
+    let failureReason = 'insufficient_results';
+    if (!aiOnly) {
+      const bankInput = {
+        skill: filters.topicKey,
+        difficulty: filters.difficulty,
+        category: filters.category,
+        tags: filters.tags,
+        source: !filters.source || filters.source === 'database' ? 'seed' : filters.source,
         page: 1,
         limit: targetCount,
         block: 'all'
-      }));
-  existing = accept(bank.questions || []).slice(0, targetCount);
-  if (existing.length >= targetCount)
-    return {
-      ...bank,
-      questions: existing,
-      total: existing.length,
-      totalAvailable: existing.length,
-      limit: targetCount,
-      page: 1,
-      totalPages: 1,
-      partial: false
-    };
-  if (source && !['ai', 'ai_generated', 'database'].includes(source))
-    return fallbackToBank('source_filter_excludes_ai');
-  existing = dedupeQuestions({
-    questions: [
-      ...existing,
-      ...accept(
-        await questionRepository.findAiGeneratedByTopic({
-          topicKey: topicInput.topicKey,
-          topic: focusTopic,
-          difficulty,
-          category,
-          tags: filters.tags,
-          source,
-          limit: targetCount
-        })
-      )
-    ]
-  });
-
-  if (existing.length >= targetCount) {
-    interviewEngineMetrics.aiReuseHits += targetCount;
-    const questions = existing.slice(0, targetCount);
-    if (!questions || questions.length === 0) {
-      return fallbackToBank('existing_ai_reuse_empty');
+      };
+      const bank = filters.query
+        ? await searchQuestionBank({ ...bankInput, q: filters.query, allowEnrichment: false })
+        : await getQuestionBank(bankInput);
+      questions = dedupeQuestions({ questions: accept(bank.questions || []) }).slice(0, targetCount);
+      // The shipped curated catalog is also an authoritative source when Mongo
+      // contains only a partial seed import. Apply every filter before limiting.
+      if (questions.length < targetCount) {
+        questions = dedupeQuestions({
+          questions: [...questions, ...accept(getTopicSeedItems(filters.topicKey))]
+        }).slice(0, targetCount);
+      }
     }
+    if (permitsAI && input.reuseAI !== false && questions.length < targetCount) {
+      const reusable = await questionRepository.findAiGeneratedByTopic({
+        topicKey: filters.topicKey,
+        topic: filters.query,
+        difficulty: filters.difficulty,
+        category: filters.category,
+        tags: filters.tags,
+        source: aiOnly ? filters.source : 'ai',
+        limit: targetCount
+      });
+      questions = dedupeQuestions({
+        questions: [
+          ...questions,
+          ...accept(reusable.filter((item) => validateGeneratedQuestion(item, filters)))
+        ]
+      }).slice(0, targetCount);
+    }
+    if (permitsAI && questions.length < targetCount) {
+      try {
+        const comparable = await questionRepository.fetchComparableQuestionsByTopic(filters.topicKey, 600);
+        const generated = await withAiDeadline(() =>
+          aiProvider.generateStructuredQuestionSet({
+            skill: filters.topicKey,
+            topic: filters.query,
+            difficulty: filters.difficulty,
+            category: filters.category,
+            tags: filters.tags,
+            count: targetCount - questions.length,
+            excludeQuestions: questions.map((item) => item.question).concat(comparable.slice(0, 50))
+          })
+        );
+        const valid = (Array.isArray(generated) ? generated : []).filter(
+          (item) =>
+            validateGeneratedQuestion(item, filters) &&
+            matchesFilters({ ...item, sourceType: 'ai_generated' }, filters)
+        );
+        const unique = dedupeQuestions({
+          questions: valid,
+          existingComparableQuestions: [
+            ...comparable,
+            ...questions.map((item) => normalizeComparableText(item.question))
+          ]
+        }).slice(0, targetCount - questions.length);
+        const records = unique
+          .map((item) =>
+            withApprovalFields({
+              record: enrichmentOrchestrator.toStorableRecord({
+                item: { ...item, answerFormat: 'structured', isEnriched: true },
+                topic: topicInput,
+                sourceType: 'ai_generated',
+                sourceMeta: {
+                  mode: 'practice-set',
+                  topic: filters.query,
+                  query: filters.query,
+                  expectedDifficulty: filters.difficulty,
+                  verificationStatus: 'unverified',
+                  generatedAt: new Date().toISOString()
+                }
+              }),
+              topicInput,
+              expectedDifficulty: filters.difficulty
+            })
+          )
+          .filter((item) => item.isApproved);
+        if (records.length) {
+          await questionRepository.upsertQuestions(records);
+          await invalidateInterviewPrepCache(filters.topicKey);
+          generatedCount = records.length;
+          questions = dedupeQuestions({ questions: [...questions, ...records] }).slice(0, targetCount);
+        }
+        failureReason = 'invalid_or_insufficient_ai_results';
+      } catch (error) {
+        failureReason = error.reasonCode || 'provider_unavailable';
+        logger.warn('interview-prep generation unavailable', {
+          topicKey: filters.topicKey,
+          reasonCode: failureReason
+        });
+      }
+    }
+    if (questions.length !== targetCount) {
+      throw Object.assign(
+        new Error(
+          `Insufficient matching questions: ${questions.length} of ${targetCount} available. ${permitsAI ? 'AI could not complete this set. Retry or adjust the filters.' : 'This source excludes AI fallback. Adjust the filters or choose all sources.'}`
+        ),
+        {
+          statusCode: 503,
+          code: 'insufficient_results',
+          reasonCode: failureReason,
+          requestedCount: targetCount,
+          availableCount: questions.length
+        }
+      );
+    }
+    const sourceMix = questions.reduce((counts, item) => {
+      const source = item.sourceType || item.source;
+      counts[source] = (counts[source] || 0) + 1;
+      return counts;
+    }, {});
     return makeQuestionPayload({
       questions,
-      total: questions.length,
-      page: 1,
+      total: targetCount,
       limit: targetCount,
-      source: 'db',
       topicInput,
-      aiGeneratedCount: 0,
-      enrichedCount: 0
+      source: generatedCount ? 'ai_generated' : 'db',
+      aiGeneratedCount: generatedCount,
+      sourceMix
     });
-  }
-
-  const gap = Math.max(0, targetCount - existing.length);
-  try {
-    const generated = await withAiDeadline(() =>
-      aiProvider.generateStructuredQuestionSet({
-        skill: normalizedSkill,
-        topic: focusQuery,
-        category,
-        tags: filters.tags,
-        difficulty,
-        count: gap
-      })
-    );
-    const existingComparableQuestions = await questionRepository.fetchComparableQuestionsByTopic(
-      topicInput.topicKey,
-      600
-    );
-    const normalized = normalizeQuestions(generated)
-      .map((item) => ({
-        ...item,
-        answerSections: item.answerSections,
-        category: item.category || 'core-concepts',
-        qualityScore: item.qualityScore || 80,
-        confidenceScore: item.confidenceScore,
-        answerFormat: 'structured',
-        isEnriched: true,
-        tags: sanitizeTags([
-          ...(item.tags || []),
-          topicInput.topicKey,
-          focusTopic,
-          ...focusTopic.split(/\s+/).filter(Boolean),
-          'ai_generated'
-        ])
-      }))
-      .filter(
-        (item) =>
-          matchesFilters(
-            { ...item, topicKey: item.topicKey || topicInput.topicKey, sourceType: 'ai_generated' },
-            filters
-          ) && isQualityQuestionAnswer({ ...item, topicKey: topicInput.topicKey })
-      );
-    const deduped = dedupeQuestions({ questions: normalized, existingComparableQuestions });
-    const records = deduped
-      .map((item) =>
-        withApprovalFields({
-          record: enrichmentOrchestrator.toStorableRecord({
-            item,
-            topic: topicInput,
-            sourceType: 'ai_generated',
-            sourceMeta: {
-              topic: focusTopic,
-              query: focusQuery,
-              mode: 'practice-set',
-              generatedAt: new Date().toISOString(),
-              expectedDifficulty: difficulty ? sanitizeDifficulty(difficulty) : ''
-            },
-            popularity: 14
-          }),
-          topicInput,
-          expectedDifficulty: difficulty ? sanitizeDifficulty(difficulty) : '',
-          minimumScore: 0.78
-        })
-      )
-      .filter((record) => record.isApproved);
-
-    if (!records || records.length === 0) {
-      console.warn('AI generation failed validation, using fallback questions');
-      return fallbackToBank('validated_questions_empty');
-    }
-
-    if (records.length > 0) {
-      await questionRepository.upsertQuestions(records);
-      await invalidateInterviewPrepCache(topicInput.topicKey);
-    }
-
-    const fullSet = await questionRepository.findAiGeneratedByTopic({
-      topicKey: topicInput.topicKey,
-      topic: focusTopic,
-      difficulty,
-      category,
-      tags: filters.tags,
-      source,
-      limit: targetCount
-    });
-    const questions = dedupeQuestions({ questions: [...existing, ...accept(fullSet)] }).slice(0, targetCount);
-    if (questions.length >= targetCount) {
-      return {
-        questions: questions.slice(0, targetCount),
-        total: targetCount,
-        totalAvailable: targetCount,
-        page: 1,
-        limit: targetCount,
-        totalPages: 1,
-        fromCache: false,
-        source: records.length ? 'ai_generated' : 'db',
-        aiGeneratedCount: records.length,
-        scrapedGeneratedCount: 0,
-        enrichedCount: records.length,
-        sourceMix: {},
-        partial: false,
-        topicKey: topicInput.topicKey,
-        topicType: topicInput.topicType,
-        metrics: metricSnapshot()
-      };
-    }
-
-    console.warn(
-      `Generated ${questions.length} of ${targetCount} requested questions; completing from the verified bank`
-    );
-    const fallbackPayload = await fallbackToBank('generated_set_incomplete');
-    const completedQuestions = dedupeQuestions({
-      questions: accept([...questions, ...(fallbackPayload.questions || [])])
-    }).slice(0, targetCount);
-
-    if (completedQuestions.length >= targetCount) {
-      return {
-        ...fallbackPayload,
-        questions: completedQuestions,
-        total: targetCount,
-        totalAvailable: targetCount,
-        limit: targetCount,
-        source: records.length ? 'ai_generated+verified_seed' : fallbackPayload.source,
-        aiGeneratedCount: records.length,
-        enrichedCount: records.length,
-        partial: false,
-        topicKey: topicInput.topicKey,
-        topicType: topicInput.topicType,
-        metrics: metricSnapshot()
-      };
-    }
-
-    const error = new Error(`Unable to generate the requested ${targetCount} distinct interview questions.`);
-    error.statusCode = 503;
-    throw error;
-  } catch (error) {
-    console.error('Generate fresh interview questions error:', error);
-    logger.warn('interview-prep explicit generation failed; using saved bank', {
-      topicKey: topicInput.topicKey,
-      message: error.message
-    });
-    return fallbackToBank('generation_exception', error);
-  }
+  });
 };
 
 const answerCustomInterviewQuestion = async ({
@@ -1979,6 +1686,8 @@ const answerCustomInterviewQuestion = async ({
     error.statusCode = 400;
     throw error;
   }
+
+  if (!userId) throw Object.assign(new Error('Authentication required.'), { statusCode: 401 });
 
   const topicInput = normalizeTopicInput({ skill, topic, stack, technology, language, framework });
   const detectedTopics = detectTopicsInText(normalizedQuestion);
@@ -2027,9 +1736,11 @@ const answerCustomInterviewQuestion = async ({
         topicKey: topicInput.topicKey,
         question: normalizedQuestion,
         identity,
-        minConfidence: 0.75
+        minConfidence: 0.75,
+        source: 'seed'
       })
     );
+    if (reusable && !['verified_seed', 'prebuilt'].includes(reusable.sourceType)) reusable = null;
     if (reusable) {
       const approval = await trace.time('validationMs', null, () =>
         Promise.resolve(
@@ -2049,7 +1760,8 @@ const answerCustomInterviewQuestion = async ({
           topicKey: topicInput.topicKey,
           searchableTokens: identity.searchableTokens,
           limit: 60,
-          minConfidence: 0.75
+          minConfidence: 0.75,
+          source: 'seed'
         })
       );
       const match = candidates.find(
@@ -2168,7 +1880,8 @@ const answerCustomInterviewQuestion = async ({
         ...ownedAnswer,
         topicKey: topicInput.topicKey,
         topicType: topicInput.topicType,
-        sourceLabel: 'AI Generated',
+        sourceLabel: 'AI-generated answer · Unverified',
+        generationStatus: 'reused',
         verificationStatus: 'unverified',
         stored: true,
         duplicate: true,
@@ -2187,6 +1900,7 @@ const answerCustomInterviewQuestion = async ({
             skill: topicInput.skill,
             topicKey: topicInput.topicKey,
             question: normalizedQuestion,
+            userId,
             verifiedContext: buildVerifiedPromptContext(topicInput.topicKey, normalizedQuestion)
           })
         )
@@ -2197,7 +1911,15 @@ const answerCustomInterviewQuestion = async ({
       logInterviewAiReason(
         INTERVIEW_AI_REASON_CODES.has(error?.reasonCode) ? error.reasonCode : 'provider_error'
       );
-      return trace.finish(buildAiFailurePayload({ topicInput, question: normalizedQuestion }));
+      throw buildAiFailurePayload({ reasonCode: error.reasonCode });
+    }
+
+    if (
+      !hasValidAnswerSchema(generated) ||
+      (isSystemDesignQuestion(normalizedQuestion, topicInput.topicKey) &&
+        !hasValidSystemDesign(generated.answerSections))
+    ) {
+      throw buildAiFailurePayload({ reasonCode: 'schema_rejected' });
     }
 
     const record = enrichmentOrchestrator.toStorableRecord({
@@ -2214,7 +1936,11 @@ const answerCustomInterviewQuestion = async ({
       },
       topic: topicInput,
       sourceType: 'ai_generated',
-      sourceMeta: { mode: 'custom-question', verificationStatus: 'unverified' },
+      sourceMeta: {
+        mode: 'custom-question',
+        verificationStatus: 'unverified',
+        generatedAt: new Date().toISOString()
+      },
       popularity: 18
     });
     const approvedRecord = await trace.time('validationMs', null, () =>
@@ -2233,7 +1959,7 @@ const answerCustomInterviewQuestion = async ({
           approvedRecord.rejectedReason || ''
         );
       logInterviewAiReason(semanticReasons ? 'semantic_rejected' : 'quality_rejected');
-      return trace.finish(buildAiFailurePayload({ topicInput, question: normalizedQuestion }));
+      throw buildAiFailurePayload({ reasonCode: semanticReasons ? 'semantic_rejected' : 'quality_rejected' });
     }
 
     assertActiveRequest(signal);
@@ -2243,7 +1969,9 @@ const answerCustomInterviewQuestion = async ({
         careerStack: '',
         experienceLevel: '',
         kind: 'custom',
-        requestKey: `custom:${topicInput.topicKey}:${identity.normalizedQuestionHash}`,
+        // A rejected legacy answer must not make a newly validated answer point
+        // at the old immutable snapshot through the unique request-key index.
+        requestKey: `custom:${topicInput.topicKey}:${identity.normalizedQuestionHash}:${hashRequest(JSON.stringify([approvedRecord.answer, approvedRecord.answerSections]))}`,
         topicKey: topicInput.topicKey,
         questions: interviewSessions.snapshotQuestions(
           [
@@ -2261,12 +1989,15 @@ const answerCustomInterviewQuestion = async ({
       question: approvedRecord.question,
       answer: approvedRecord.answer,
       answerSections: approvedRecord.answerSections || {},
+      sourceMeta: approvedRecord.sourceMeta,
       difficulty: approvedRecord.difficulty,
       tags: approvedRecord.tags,
       topicKey: topicInput.topicKey,
       topicType: topicInput.topicType,
       sourceType: 'ai_generated',
-      sourceLabel: 'AI Generated',
+      sourceLabel: 'AI-generated answer · Unverified',
+      generationStatus: 'generated',
+      generatedAt: approvedRecord.sourceMeta.generatedAt,
       confidenceScore: approvedRecord.confidenceScore,
       relevanceScore: approvedRecord.relevanceScore,
       category: approvedRecord.category,
@@ -2330,7 +2061,7 @@ const generateInterviewPrepSessionFromBank = async ({
       questions: prior.questions,
       total: prior.questions.length,
       page: 1,
-      limit: DEFAULT_PAGE_LIMIT,
+      limit: prior.questions.length,
       totalPages: 1,
       personalization: prior.personalization,
       session: prior,
@@ -2372,6 +2103,26 @@ const generateInterviewPrepSessionFromBank = async ({
 const listInterviewPrepHistory = async (userId, limit = 5) => {
   const boundedLimit = Math.min(50, Math.max(1, Math.floor(Number(limit) || 5)));
   return InterviewPrepSession.find({ userId }).sort({ createdAt: -1, _id: -1 }).limit(boundedLimit).lean();
+};
+
+const deleteInterviewPrepSession = async (userId, id) => {
+  const session = await interviewSessions.getOwned(userId, id);
+  // Evict the exact owner's custom cache before deleting its retained snapshot.
+  if (session.kind === 'custom') {
+    for (const question of session.questions) {
+      const key = await resolveInterviewCacheKey(
+        makeCustomQuestionCacheKey({
+          userId,
+          topicKey: session.topicKey,
+          question: question.question
+        }),
+        session.topicKey
+      );
+      await deleteCacheKey(key);
+    }
+  }
+  await InterviewPrepSession.deleteOne({ _id: id, userId });
+  return { deleted: true };
 };
 
 const maintainInterviewQuestionPools = async ({
@@ -2480,6 +2231,7 @@ module.exports = {
   generateInterviewPrepSessionFromBank,
   generateInterviewPrep,
   listInterviewPrepHistory,
+  deleteInterviewPrepSession,
   maintainInterviewQuestionPools: (options = {}) =>
     require('./interviewJobService').runInterviewJob(({ shouldContinue }) =>
       maintainInterviewQuestionPools({ ...options, shouldContinue })

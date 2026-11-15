@@ -71,7 +71,8 @@ test('five identical custom requests share one AI call and one persistence opera
       ],
       explanation:
         'The browser runs one task, then performs a microtask checkpoint that drains promise callbacks and queueMicrotask work. Only after that checkpoint can rendering occur and the event loop select another task. This ordering makes microtasks useful for deterministic follow-up work but also creates starvation risk.',
-      example: 'setTimeout(() => console.log("task")); Promise.resolve().then(() => console.log("microtask"));',
+      example:
+        'setTimeout(() => console.log("task")); Promise.resolve().then(() => console.log("microtask"));',
       realWorldUseCase:
         'Framework schedulers use this ordering for batched state updates while yielding tasks for rendering and input.',
       commonMistakes: [
@@ -150,7 +151,8 @@ test('controlled AI faults are rejected without persistence, cache contamination
       'generic-boilerplate',
       async ({ question }) => ({
         question,
-        answer: 'Define the concept. Explain the relevant behavior. Provide an example and discuss tradeoffs.',
+        answer:
+          'Define the concept. Explain the relevant behavior. Provide an example and discuss tradeoffs.',
         answerSections: {
           shortAnswer: 'Define the concept and describe what it does.',
           keyPoints: ['Explain the relevant behavior', 'Provide an example', 'Discuss common tradeoffs'],
@@ -190,12 +192,12 @@ test('controlled AI faults are rejected without persistence, cache contamination
         question: `How would JavaScript schedule isolated deterministic browser work for ${name} handling?`
       };
       for (let attempt = 0; attempt < 2; attempt += 1) {
-        const result = await interviewPrepService.answerCustomInterviewQuestion(input);
-        assert.equal(result.sourceType, 'no_verified_answer');
-        assert.equal(result.answer, 'No verified answer available.');
-        assert.equal(result.stored, false);
-        assert.equal(result.fromCache, false);
-        assert.doesNotMatch(JSON.stringify(result), /secret-provider|token=|quota account|account-id/i);
+        await assert.rejects(interviewPrepService.answerCustomInterviewQuestion(input), (error) => {
+          assert.equal(error.statusCode, 503);
+          assert.equal(error.retryable, true);
+          assert.doesNotMatch(error.message, /secret-provider|token=|quota account|account-id/i);
+          return true;
+        });
       }
       assert.equal(aiCalls, 2, 'a rejected result must not be cached');
       assert.equal(persistenceCalls, 0, 'a rejected result must not be persisted');
@@ -205,7 +207,8 @@ test('controlled AI faults are rejected without persistence, cache contamination
 test('provider accepts a complete structured AI answer and reports typed failures', async (t) => {
   t.mock.method(coordination, 'runAI', async (_prompt, operation) => operation(new AbortController().signal));
   const complete = {
-    shortAnswer: 'An index accelerates data lookup, while a transaction groups operations into one atomic unit.',
+    shortAnswer:
+      'An index accelerates data lookup, while a transaction groups operations into one atomic unit.',
     keyPoints: [
       'Indexes optimize reads through an auxiliary structure',
       'Transactions guarantee atomicity and isolation',
@@ -213,9 +216,14 @@ test('provider accepts a complete structured AI answer and reports typed failure
     ],
     explanation:
       'A database index stores searchable keys so the engine can avoid scanning every row. A transaction defines a boundary in which writes commit together or roll back together; it also provides isolation from concurrent work. They solve different problems and can be used together.',
-    example: 'CREATE INDEX idx_email ON users(email); BEGIN; UPDATE accounts SET balance = balance - 10; COMMIT;',
-    realWorldUseCase: 'Use an index for frequent email lookups and a transaction for a multi-step funds transfer.',
-    commonMistakes: ['Assuming an index guarantees atomicity', 'Adding indexes without accounting for write overhead'],
+    example:
+      'CREATE INDEX idx_email ON users(email); BEGIN; UPDATE accounts SET balance = balance - 10; COMMIT;',
+    realWorldUseCase:
+      'Use an index for frequent email lookups and a transaction for a multi-step funds transfer.',
+    commonMistakes: [
+      'Assuming an index guarantees atomicity',
+      'Adding indexes without accounting for write overhead'
+    ],
     interviewTip: 'Contrast query access speed with correctness of a unit of work.',
     difficulty: 'medium',
     technology: 'mysql',
@@ -272,7 +280,7 @@ test('provider accepts a complete structured AI answer and reports typed failure
 });
 
 test('verified fallback selection reports useful content or an honest missing result', () => {
-  const found = interviewPrepService.buildAiFailurePayload({
+  const found = interviewPrepService.selectVerifiedFallback({
     topicInput: { topicKey: 'oop', topicType: 'technology' },
     question: 'What is the difference between polymorphism and inheritance?'
   });
@@ -284,13 +292,17 @@ test('verified fallback selection reports useful content or an honest missing re
     topicInput: { topicKey: 'mysql', topicType: 'technology' },
     question: 'How does a completely novel imaginary database mechanism behave?'
   });
-  assert.equal(missing.sourceType, 'no_verified_answer');
-  assert.equal(missing.answer, 'No verified answer available.');
+  assert.equal(missing.statusCode, 503);
+  assert.equal(missing.code, 'ai_unavailable');
+  assert.equal(missing.retryable, true);
 });
 
 test('practice provider rejects failed and malformed structured output', async (t) => {
   t.mock.method(coordination, 'runAI', async (_prompt, operation) => operation(new AbortController().signal));
-  aiService.runAIAnalysis = async () => ({ ok: false, value: { questions: [{ question: 'Fabricated fallback' }] } });
+  aiService.runAIAnalysis = async () => ({
+    ok: false,
+    value: { questions: [{ question: 'Fabricated fallback' }] }
+  });
   await assert.rejects(
     () => aiProvider.generateStructuredQuestionSet({ skill: 'javascript', count: 5 }),
     /unavailable/
@@ -299,7 +311,10 @@ test('practice provider rejects failed and malformed structured output', async (
     ok: true,
     value: [{ question: 'What is JavaScript?', answer: 'Placeholder answer' }]
   });
-  await assert.rejects(aiProvider.generateStructuredQuestionSet({ skill: 'javascript', count: 5 }), /invalid/);
+  await assert.rejects(
+    aiProvider.generateStructuredQuestionSet({ skill: 'javascript', count: 5 }),
+    /invalid/
+  );
 });
 
 test('scraper preserves the healthy source and retains only safe provenance URLs', async (t) => {
@@ -318,7 +333,8 @@ test('scraper preserves the healthy source and retains only safe provenance URLs
         },
         {
           title: 'How does JavaScript schedule timers?',
-          description: 'Timers schedule callbacks after the current task and its microtask checkpoint complete.',
+          description:
+            'Timers schedule callbacks after the current task and its microtask checkpoint complete.',
           url: 'http://127.0.0.1/private'
         }
       ]

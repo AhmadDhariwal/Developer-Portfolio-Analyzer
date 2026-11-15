@@ -123,12 +123,12 @@
   align-items: center;
   gap: 0.4rem;
   min-height: 44px;
-  padding: 0 0.9375rem;
-  border-radius: 0.6875rem;
+  padding: 0 0.85rem;
+  border-radius: 0.5rem;
   border: 1px solid var(--auth-home-border);
   background: var(--auth-home-bg);
   color: var(--auth-ink);
-  font-size: 0.85rem;
+  font-size: 0.84rem;
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
@@ -136,6 +136,10 @@
     background-color 0.16s ease,
     border-color 0.16s ease,
     color 0.16s ease;
+
+  @media (min-width: 1024px) {
+    min-height: 38px;
+  }
 
   svg {
     width: 15px;

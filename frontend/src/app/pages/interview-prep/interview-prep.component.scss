@@ -1232,6 +1232,8 @@ select,
   gap: 8px;
 
   label {
+    flex-shrink: 0;
+    white-space: nowrap;
     font-size: 13px;
     font-weight: 600;
     color: var(--text-secondary, #475569);
@@ -1251,6 +1253,7 @@ select,
   background: var(--surface-card, #ffffff);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   display: grid;
+  align-content: start;
   gap: 14px;
 }
 

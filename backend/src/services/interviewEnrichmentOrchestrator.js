@@ -1,4 +1,5 @@
 const logger = require('../utils/logger');
+const { SYSTEM_DESIGN_FIELDS } = require('./interviewAIValidation');
 const {
   dedupeQuestions,
   isQualityQuestionAnswer,
@@ -78,8 +79,12 @@ const normalizeStructuredSections = (sections = {}, answer = '') => {
       .map((point) => normalizeAnswerText(point))
       .filter(Boolean)
       .slice(0, 6),
-    example: String(incoming.example || incoming.codeExample || incoming.Example || extracted.Example || '').trim(),
-    codeExample: String(incoming.example || incoming.codeExample || incoming.Example || extracted.Example || '').trim(),
+    example: String(
+      incoming.example || incoming.codeExample || incoming.Example || extracted.Example || ''
+    ).trim(),
+    codeExample: String(
+      incoming.example || incoming.codeExample || incoming.Example || extracted.Example || ''
+    ).trim(),
     realWorldUseCase: normalizeAnswerText(
       incoming.realWorldUseCase ||
         incoming.realWorldContext ||
@@ -95,7 +100,10 @@ const normalizeStructuredSections = (sections = {}, answer = '') => {
         ''
     ),
     commonMistakes,
-    interviewTip: normalizeAnswerText(incoming.interviewTip || '')
+    interviewTip: normalizeAnswerText(incoming.interviewTip || ''),
+    ...(incoming.systemDesign
+      ? { systemDesign: { ...incoming.systemDesign }, scopeNote: incoming.scopeNote }
+      : {})
   };
 };
 
@@ -112,7 +120,11 @@ const toStructuredText = (sections = {}) =>
       Array.isArray(sections.commonMistakes) && sections.commonMistakes.length
         ? `Common mistakes:\n${sections.commonMistakes.map((point) => `- ${point}`).join('\n')}`
         : '',
-      sections.interviewTip ? `Interview tip: ${sections.interviewTip}` : ''
+      sections.interviewTip ? `Interview tip: ${sections.interviewTip}` : '',
+      sections.scopeNote || '',
+      ...Object.entries(sections.systemDesign || {}).map(
+        ([key, text]) => `${SYSTEM_DESIGN_FIELDS[key]}: ${text}`
+      )
     ]
       .filter(Boolean)
       .join('\n\n')
@@ -134,7 +146,14 @@ const extractAnswerSections = (answer = '') => {
   return sections;
 };
 
-const toStorableRecord = ({ item, topic, sourceType, sourceMeta = {}, popularity = 10, qualityState = 'approved' }) => {
+const toStorableRecord = ({
+  item,
+  topic,
+  sourceType,
+  sourceMeta = {},
+  popularity = 10,
+  qualityState = 'approved'
+}) => {
   const question = normalizeQuestionText(item.question);
   const answerSections = normalizeStructuredSections(item.answerSections, item.answer);
   const answer = normalizeAnswerText(
@@ -337,7 +356,8 @@ const createInterviewEnrichmentOrchestrator = ({ aiProvider, scraperProvider, qu
         })
       )
     ].filter(
-      (record) => record.qualityStatus === 'pending' || (record.isApproved && record.qualityStatus === 'approved')
+      (record) =>
+        record.qualityStatus === 'pending' || (record.isApproved && record.qualityStatus === 'approved')
     );
 
     if (storable.length === 0) {

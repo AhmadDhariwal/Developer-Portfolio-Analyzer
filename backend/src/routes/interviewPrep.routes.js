@@ -10,6 +10,7 @@ const {
   askInterviewPrepQuestion,
   generateInterviewPrepSession,
   getInterviewSession,
+  deleteInterviewSession,
   updateInterviewSession,
   getInterviewPrepHistory
 } = require('../controllers/interviewPrepController');
@@ -86,6 +87,7 @@ router.post('/ask-question', customQuestionRateLimiter, askInterviewPrepQuestion
 router.post('/', generateRateLimiter, generateInterviewPrepSession);
 router.get('/history', getInterviewPrepHistory);
 router.get('/sessions/:id', getInterviewSession);
+router.delete('/sessions/:id', deleteInterviewSession);
 router.patch('/sessions/:id/progress', updateInterviewSession);
 router.post('/sessions/:id/complete', updateInterviewSession);
 

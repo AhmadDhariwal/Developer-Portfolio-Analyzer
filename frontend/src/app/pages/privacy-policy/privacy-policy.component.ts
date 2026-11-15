@@ -68,7 +68,7 @@ export class PrivacyPolicyComponent {
       id: 'privacy-security',
       num: '04',
       title: 'Security safeguards and retention',
-      body: 'We enforce protected password hashing, signed JWT sessions, and server-side integration credential handling, retaining account data only as needed for active workspaces and legal obligations.',
+      body: 'We enforce protected password hashing, authenticated session validation, and server-side integration credential handling, retaining account data only as needed for active workspaces and legal obligations.',
       bullets: [
         'Encrypted transport and credential revision enforcement',
         'Server-side storage for OAuth and third-party API credentials',

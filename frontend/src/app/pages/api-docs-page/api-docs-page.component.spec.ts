@@ -18,7 +18,7 @@ describe('ApiDocsPageComponent', () => {
     fixture.detectChanges();
   });
 
-  it('switches API domain tabs and displays payload conventions', () => {
+  it('switches domain overview tabs without exposing internal schemas', () => {
     expect(component.activeDomain().id).toBe('auth');
     component.selectDomain('intelligence');
     fixture.detectChanges();
@@ -26,7 +26,8 @@ describe('ApiDocsPageComponent', () => {
     expect(component.activeDomain().id).toBe('intelligence');
     const el: HTMLElement = fixture.nativeElement;
     expect(el.textContent).toContain('Developer Intelligence');
-    expect(el.textContent).toContain('skillGap');
+    expect(el.textContent).toContain('Skill Benchmarks');
+    expect(el.textContent).not.toContain('requiresVerification');
+    expect(el.textContent).not.toContain('recoveryHandle');
   });
 });
-

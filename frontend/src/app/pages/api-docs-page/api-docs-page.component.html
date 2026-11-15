@@ -1,22 +1,22 @@
 <app-public-subpage-shell
-  eyebrow="Developer Hub"
-  title="Platform API Architecture"
-  subtitle="Overview of the DevInsight AI API model across authentication, portfolio intelligence, recruiter workflows, and organization-scoped access."
-  metaLabel="Updated for current workspace architecture · May 24, 2026"
+  eyebrow="Platform Architecture"
+  title="Integration &amp; Platform Overview"
+  subtitle="High-level summary of DevInsight AI workspace domains, access safeguards, and organization isolation principles."
+  metaLabel="Security-reviewed public overview · May 24, 2026"
 >
   <div class="pub-stack">
-    <section class="pub-split-feature" aria-label="API architecture overview">
+    <section class="pub-split-feature" aria-label="Platform architecture overview">
       <article class="pub-card">
-        <span class="pub-tag">INTERNAL JSON INTERFACE</span>
-        <h2>Designed for secure, role-scoped workflows</h2>
+        <span class="pub-tag">PROTECTED ARCHITECTURE</span>
+        <h2>Designed for authenticated, isolated workspaces</h2>
         <p>
-          DevInsight AI exposes authenticated JSON APIs consumed by the Angular workspace. Every
-          endpoint domain pairs JWT session validation with role-based access control (RBAC) and
-          tenant boundaries across developer, recruiter, and admin views.
+          DevInsight AI serves its web workspace over private authenticated interfaces with active
+          permission verification and strict organization-level data boundaries across developer and
+          hiring workflows.
         </p>
         <div class="pub-alert-note">
-          Internal route paths and private operational schemas are omitted from this public
-          documentation page.
+          To protect platform security, internal endpoints, request parameters, authentication
+          internals, and internal schemas are intentionally omitted from public documentation.
         </div>
       </article>
 
@@ -31,15 +31,15 @@
       </div>
     </section>
 
-    <section class="pub-card pub-card--subtle" aria-label="API domain explorer">
+    <section class="pub-card pub-card--subtle" aria-label="Workspace capability explorer">
       <div class="pub-card-head">
         <div>
-          <span class="pub-tag">DOMAIN ARCHITECTURE</span>
-          <h2 class="explorer-heading">Inspect payload conventions by domain</h2>
+          <span class="pub-tag">WORKSPACE DOMAINS</span>
+          <h2 class="explorer-heading">Explore high-level capabilities by domain</h2>
         </div>
       </div>
 
-      <div class="pub-filter-bar" role="tablist" aria-label="API domains">
+      <div class="pub-filter-bar" role="tablist" aria-label="Workspace domains">
         @for (group of apiGroups; track group.id) {
           <button
             type="button"
@@ -61,16 +61,16 @@
           <p>{{ activeDomain().description }}</p>
 
           <div class="payload-keys">
-            <span class="payload-keys-label">Common named response keys</span>
+            <span class="payload-keys-label">Included platform capabilities</span>
             <div class="payload-key-chips">
-              @for (field of activeDomain().keyFields; track field) {
-                <code>{{ field }}</code>
+              @for (capability of activeDomain().capabilities; track capability) {
+                <code>{{ capability }}</code>
               }
             </div>
           </div>
         </article>
 
-        <div class="pub-terminal" role="region" aria-label="Sample response structure">
+        <div class="pub-terminal" role="region" aria-label="Conceptual domain summary">
           <div class="pub-terminal-head">
             <div class="pub-terminal-dots">
               <span class="dot dot--rose"></span>
@@ -82,42 +82,41 @@
               type="button"
               class="copy-terminal-btn"
               (click)="copySampleJson()"
-              [attr.aria-label]="copiedSample() ? 'JSON sample copied' : 'Copy JSON sample'"
+              [attr.aria-label]="copiedSample() ? 'Summary copied' : 'Copy summary'"
             >
-              {{ copiedSample() ? 'Copied' : 'Copy JSON' }}
+              {{ copiedSample() ? 'Copied' : 'Copy Summary' }}
             </button>
           </div>
-          <pre class="pub-terminal-body"><code>{{ activeDomain().sampleJson }}</code></pre>
+          <pre class="pub-terminal-body"><code>{{ activeDomain().sampleSummary }}</code></pre>
         </div>
       </div>
     </section>
 
-    <section class="pub-grid-3" aria-label="API architecture conventions">
+    <section class="pub-grid-3" aria-label="Security and access principles">
       <article class="pub-card">
-        <span class="pub-tag pub-tag--neutral">01 / AUTH MODEL</span>
-        <h3>Session &amp; OAuth boundaries</h3>
+        <span class="pub-tag pub-tag--neutral">01 / BOUNDARIES</span>
+        <h3>Least-privilege access</h3>
         <p>
-          Authenticated requests validate JWT credentials and active organization context so
-          recruiter and admin actions never cross tenant boundaries.
+          Every workspace action verifies authenticated session state and active organization
+          context so teams can only view data authorized for their account.
         </p>
       </article>
 
       <article class="pub-card">
-        <span class="pub-tag pub-tag--neutral">02 / ENVELOPES</span>
-        <h3>Named response contracts</h3>
+        <span class="pub-tag pub-tag--neutral">02 / SPECIFICATION</span>
+        <h3>Private technical specs</h3>
         <p>
-          Responses expose clear domain keys such as <code>profile</code>, <code>dashboard</code>,
-          <code>analytics</code>, <code>recruiters</code>, <code>jobs</code>, or
-          <code>message</code> alongside structured <code>errors</code> on validation failures.
+          Internal routes, validation rules, credential mechanisms, and exact payload schemas remain
+          strictly private and are never exposed on unauthenticated pages.
         </p>
       </article>
 
       <article class="pub-card pub-card--highlight">
         <span class="pub-tag">SUPPORT</span>
-        <h3>Need API clarification?</h3>
+        <h3>Need integration guidance?</h3>
         <p>
-          Contact the DevInsight AI team for onboarding context around payload expectations or
-          organization integration workflows.
+          Contact the DevInsight AI team for general onboarding guidance or approved organization
+          workspace inquiries.
         </p>
         <div class="pub-actions card-cta-spacer">
           <a routerLink="/contact" class="pub-btn pub-btn--primary">Contact the Team</a>

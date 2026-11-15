@@ -20,13 +20,63 @@ const LEGACY_CATEGORY_MAP = {
   behavioral: 'behavioral-technical',
   database: 'core-concepts'
 };
-const STOP_WORDS = new Set(['the', 'a', 'an', 'in', 'on', 'at', 'to', 'for', 'of', 'and', 'or', 'is', 'are', 'was', 'were', 'what', 'why', 'how', 'when', 'where']);
+const STOP_WORDS = new Set([
+  'the',
+  'a',
+  'an',
+  'in',
+  'on',
+  'at',
+  'to',
+  'for',
+  'of',
+  'and',
+  'or',
+  'is',
+  'are',
+  'was',
+  'were',
+  'what',
+  'why',
+  'how',
+  'when',
+  'where'
+]);
 const CANONICAL_STOP_WORDS = new Set([
   ...STOP_WORDS,
-  'tell', 'me', 'about', 'explain', 'describe', 'define', 'can', 'you', 'please',
-  'discuss', 'elaborate', 'briefly', 'detail', 'overview', 'could', 'would',
-  'do', 'does', 'its', 'it', 'us', 'give', 'talk', 'walk', 'through',
-  'know', 'think', 'mean', 'means', 'say', 'said', 'work', 'works'
+  'tell',
+  'me',
+  'about',
+  'explain',
+  'describe',
+  'define',
+  'can',
+  'you',
+  'please',
+  'discuss',
+  'elaborate',
+  'briefly',
+  'detail',
+  'overview',
+  'could',
+  'would',
+  'do',
+  'does',
+  'its',
+  'it',
+  'us',
+  'give',
+  'talk',
+  'walk',
+  'through',
+  'know',
+  'think',
+  'mean',
+  'means',
+  'say',
+  'said',
+  'work',
+  'works'
 ]);
 const FILLER_PHRASE_PATTERNS = [
   /^can you (tell me|explain|describe|discuss|elaborate on|walk me through)\s+/i,
@@ -37,15 +87,49 @@ const FILLER_PHRASE_PATTERNS = [
   /^(could you|would you|please)\s+(explain|describe|tell me|discuss)\s+/i
 ];
 const INTENT_PATTERNS = [
-  { intent: 'comparison', patterns: [/\b(difference|differences)\s+(between|of)\b/i, /\bvs\.?\b/i, /\bcompare\b/i, /\bcompared\s+to\b/i, /\bversus\b/i] },
-  { intent: 'use_case', patterns: [/\b(when\s+to\s+use|why\s+use|how\s+to\s+use|use\s+case|when\s+should)\b/i, /\bpurpose\s+of\b/i] },
-  { intent: 'lifecycle', patterns: [/\blifecycle\b/i, /\bhow\s+.+\s+works?\b/i, /\bflow\s+of\b/i, /\bprocess\s+of\b/i] },
-  { intent: 'debugging', patterns: [/\bdebug(ging)?\b/i, /\bfix(ing)?\b/i, /\btroubleshoot(ing)?\b/i, /\berror\s+handling\b/i] },
-  { intent: 'design', patterns: [/\bdesign(ing)?\b/i, /\barchitect(ure)?\b/i, /\bstructure\b/i, /\bpattern\b/i] },
+  {
+    intent: 'comparison',
+    patterns: [
+      /\b(difference|differences)\s+(between|of)\b/i,
+      /\bvs\.?\b/i,
+      /\bcompare\b/i,
+      /\bcompared\s+to\b/i,
+      /\bversus\b/i
+    ]
+  },
+  {
+    intent: 'use_case',
+    patterns: [
+      /\b(when\s+to\s+use|why\s+use|how\s+to\s+use|use\s+case|when\s+should)\b/i,
+      /\bpurpose\s+of\b/i
+    ]
+  },
+  {
+    intent: 'lifecycle',
+    patterns: [/\blifecycle\b/i, /\bhow\s+.+\s+works?\b/i, /\bflow\s+of\b/i, /\bprocess\s+of\b/i]
+  },
+  {
+    intent: 'debugging',
+    patterns: [/\bdebug(ging)?\b/i, /\bfix(ing)?\b/i, /\btroubleshoot(ing)?\b/i, /\berror\s+handling\b/i]
+  },
+  {
+    intent: 'design',
+    patterns: [/\bdesign(ing)?\b/i, /\barchitect(ure)?\b/i, /\bstructure\b/i, /\bpattern\b/i]
+  },
   { intent: 'definition', patterns: [/^(what|explain|describe|define|tell)/i, /\bmeaning\s+of\b/i] }
 ];
 const TOPIC_TOKEN_ALIASES = {
-  javascript: ['javascript', 'js', 'ecmascript', 'promise', 'closure', 'prototype', 'event', 'async', 'await'],
+  javascript: [
+    'javascript',
+    'js',
+    'ecmascript',
+    'promise',
+    'closure',
+    'prototype',
+    'event',
+    'async',
+    'await'
+  ],
   typescript: ['typescript', 'ts', 'type', 'interface', 'generic', 'enum'],
   python: ['python', 'py', 'list', 'dict', 'tuple', 'decorator', 'generator'],
   java: ['java', 'jvm', 'spring', 'class', 'interface'],
@@ -128,7 +212,10 @@ const DIFFICULTY_KEYWORDS = {
   hard: ['internals', 'performance', 'architecture', 'scaling', 'edge case', 'distributed', 'optimize']
 };
 
-const normalizeWhitespace = (value = '') => String(value || '').replaceAll(/\s+/g, ' ').trim();
+const normalizeWhitespace = (value = '') =>
+  String(value || '')
+    .replaceAll(/\s+/g, ' ')
+    .trim();
 
 const normalizeQuestionText = (value = '') => {
   const normalized = normalizeWhitespace(value);
@@ -154,8 +241,10 @@ const sanitizeCategory = (value = '') => {
 
 const isSupportedCategory = (value = '') => {
   const normalized = normalizeWhitespace(value).toLowerCase().replace(/\s+/g, '-');
-  return INTERVIEW_CATEGORY_SET.has(normalized)
-    || Boolean(LEGACY_CATEGORY_MAP[normalized] || LEGACY_CATEGORY_MAP[normalized.replace(/-/g, '_')]);
+  return (
+    INTERVIEW_CATEGORY_SET.has(normalized) ||
+    Boolean(LEGACY_CATEGORY_MAP[normalized] || LEGACY_CATEGORY_MAP[normalized.replace(/-/g, '_')])
+  );
 };
 
 const normalizeQualityScore = (value = 80) => {
@@ -169,9 +258,7 @@ const normalizeQualityScore = (value = 80) => {
 
 const sanitizeTags = (tags = []) => {
   if (!Array.isArray(tags)) return [];
-  return [...new Set(tags
-    .map((tag) => normalizeWhitespace(tag).toLowerCase())
-    .filter(Boolean))];
+  return [...new Set(tags.map((tag) => normalizeWhitespace(tag).toLowerCase()).filter(Boolean))];
 };
 
 const normalizeComparableText = (value = '') => {
@@ -209,7 +296,10 @@ const canonicalizeQuestion = (text = '') => {
     cleaned = cleaned.replace(pattern, '').trim();
   }
   // Remove non-alphanumeric (keep spaces)
-  cleaned = cleaned.replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  cleaned = cleaned
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
   // Remove canonical stop words and sort
   const tokens = cleaned
     .split(' ')
@@ -225,7 +315,9 @@ const canonicalizeQuestion = (text = '') => {
 const buildCanonicalQuestionKey = (text = '', topicKey = '') => {
   const intent = detectQuestionIntent(text);
   const core = canonicalizeQuestion(text);
-  const normalizedTopicKey = String(topicKey || '').trim().toLowerCase();
+  const normalizedTopicKey = String(topicKey || '')
+    .trim()
+    .toLowerCase();
   if (!core) return '';
   return `${normalizedTopicKey || 'general'}:${intent}:${core}`;
 };
@@ -261,10 +353,16 @@ const computeJaccardSimilarity = (a = '', b = '') => {
 
 const extractComparisonConcepts = (question = '') => {
   const normalized = normalizeComparableText(question)
-    .replace(/\bwhat is\b|\bwhat are\b|\bthe difference between\b|\bdifference between\b|\bcompare\b|\bcontrast\b/g, ' ')
+    .replace(
+      /\bwhat is\b|\bwhat are\b|\bthe difference between\b|\bdifference between\b|\bcompare\b|\bcontrast\b/g,
+      ' '
+    )
     .replace(/\s+/g, ' ')
     .trim();
-  const parts = normalized.split(/\s+(?:and|versus|vs)\s+/).map((part) => tokenize(part)).filter((part) => part.length);
+  const parts = normalized
+    .split(/\s+(?:and|versus|vs)\s+/)
+    .map((part) => tokenize(part))
+    .filter((part) => part.length);
   return parts.length >= 2 ? [parts[0], parts[1]] : [];
 };
 
@@ -272,20 +370,42 @@ const comparisonAnswerCompleteness = ({ question = '', answer = '', answerSectio
   if (detectQuestionIntent(question) !== 'comparison') return { valid: true, reasons: [] };
   const concepts = extractComparisonConcepts(question);
   const combined = normalizeComparableText(`${answer} ${JSON.stringify(answerSections || {})}`);
-  const coversBoth = concepts.length === 2 && concepts.every((tokens) => tokens.some((token) => combined.includes(token)));
+  const coversBoth =
+    concepts.length === 2 && concepts.every((tokens) => tokens.some((token) => combined.includes(token)));
   const checks = [
     [coversBoth, 'comparison_missing_main_concept'],
-    [/\b(?:whereas|while|unlike|difference|in contrast|but)\b/i.test(combined), 'comparison_missing_difference'],
-    [Boolean(answerSections?.example || answerSections?.codeExample) || /\bexample\b/i.test(combined), 'comparison_missing_example'],
-    [Boolean(answerSections?.realWorldUseCase || answerSections?.realWorldContext) || /\buse case\b|\bwhen to use\b|\bin practice\b/i.test(combined), 'comparison_missing_use_case'],
-    [/\btradeoffs?\b|\bcost\b|\blimitation\b|\bprefer\b|\badvantage\b|\bdisadvantage\b|\b(?:static|dynamic)\s+typing\b|\bcompile(?:-time)?\b|\bruntime\b|\bperformance\b|\boverhead\b|\bcoupling\b|\bflexibility\b|\bmaintainability\b|\blatency\b|\bthroughput\b|\bmemory\b/i.test(combined), 'comparison_missing_tradeoff']
+    [
+      /\b(?:whereas|while|unlike|difference|in contrast|but)\b/i.test(combined),
+      'comparison_missing_difference'
+    ],
+    [
+      Boolean(answerSections?.example || answerSections?.codeExample) || /\bexample\b/i.test(combined),
+      'comparison_missing_example'
+    ],
+    [
+      Boolean(answerSections?.realWorldUseCase || answerSections?.realWorldContext) ||
+        /\buse case\b|\bwhen to use\b|\bin practice\b/i.test(combined),
+      'comparison_missing_use_case'
+    ],
+    [
+      /\btradeoffs?\b|\bcost\b|\blimitation\b|\bprefer\b|\badvantage\b|\bdisadvantage\b|\b(?:static|dynamic)\s+typing\b|\bcompile(?:-time)?\b|\bruntime\b|\bperformance\b|\boverhead\b|\bcoupling\b|\bflexibility\b|\bmaintainability\b|\blatency\b|\bthroughput\b|\bmemory\b/i.test(
+        combined
+      ),
+      'comparison_missing_tradeoff'
+    ]
   ];
   const reasons = checks.filter(([valid]) => !valid).map(([, reason]) => reason);
   return { valid: reasons.length === 0, reasons };
 };
 const getTopicTokens = (topicKey = '') => {
-  const normalizedTopic = String(topicKey || '').trim().toLowerCase();
-  return [...new Set(TOPIC_TOKEN_ALIASES[normalizedTopic] || tokenize(normalizedTopic))];
+  const normalizedTopic = String(topicKey || '')
+    .trim()
+    .toLowerCase();
+  return [
+    ...new Set(
+      [normalizedTopic, ...(TOPIC_TOKEN_ALIASES[normalizedTopic] || [])].flatMap((alias) => tokenize(alias))
+    )
+  ];
 };
 
 const containsTopicSignal = ({ topicKey = '', question = '', answer = '', tags = [] } = {}) => {
@@ -297,8 +417,22 @@ const containsTopicSignal = ({ topicKey = '', question = '', answer = '', tags =
 
 const answerAddressesQuestionConcepts = ({ question = '', answer = '', topicKey = '' } = {}) => {
   const topicTokens = new Set(getTopicTokens(topicKey));
-  const genericTokens = new Set(['difference', 'compare', 'comparison', 'concept', 'behavior', 'relevant', 'explain', 'define', 'example', 'use', 'case']);
-  const required = [...new Set(tokenize(question).filter((token) => !topicTokens.has(token) && !genericTokens.has(token)))];
+  const genericTokens = new Set([
+    'difference',
+    'compare',
+    'comparison',
+    'concept',
+    'behavior',
+    'relevant',
+    'explain',
+    'define',
+    'example',
+    'use',
+    'case'
+  ]);
+  const required = [
+    ...new Set(tokenize(question).filter((token) => !topicTokens.has(token) && !genericTokens.has(token)))
+  ];
   if (!required.length) return true;
   const answerTokens = new Set(tokenize(answer));
   const matched = required.filter((token) => answerTokens.has(token)).length;
@@ -310,7 +444,8 @@ const hasTopicContradiction = ({ topicKey = '', question = '', answer = '' } = {
   const q = normalizeWhitespace(question).toLowerCase();
   if (topicKey === 'java' && /\bjavascript\b/.test(text) && !/\bjavascript\b/.test(q)) return true;
   if (topicKey === 'react' && /\breact native\b/.test(text) && !/\breact native\b/.test(q)) return true;
-  if (topicKey === 'nodejs' && /\bnext(?:\.js|js)?\b/.test(text) && !/\bnext(?:\.js|js)?\b/.test(q)) return true;
+  if (topicKey === 'nodejs' && /\bnext(?:\.js|js)?\b/.test(text) && !/\bnext(?:\.js|js)?\b/.test(q))
+    return true;
   if (topicKey === 'cpp' && /\bc#|c sharp\b/.test(text) && !/\bc#|c sharp\b/.test(q)) return true;
   return false;
 };
@@ -318,7 +453,10 @@ const inferDifficultyFromContent = ({ question = '', answer = '' } = {}) => {
   const text = normalizeComparableText(`${question} ${answer}`);
   const scores = Object.entries(DIFFICULTY_KEYWORDS).map(([difficulty, keywords]) => ({
     difficulty,
-    score: keywords.reduce((total, keyword) => total + (text.includes(normalizeComparableText(keyword)) ? 1 : 0), 0)
+    score: keywords.reduce(
+      (total, keyword) => total + (text.includes(normalizeComparableText(keyword)) ? 1 : 0),
+      0
+    )
   }));
   scores.sort((left, right) => right.score - left.score);
   return scores[0]?.score > 0 ? scores[0].difficulty : '';
@@ -329,17 +467,17 @@ const containsUnsafeContent = (text = '') => {
   return /(weapon build|malware|exploit code|hate speech|self harm|suicide method)/.test(lower);
 };
 
-const containsNoisySourceContent = (text = '') => (
-  NOISY_SOURCE_PATTERNS.some((pattern) => pattern.test(String(text || '')))
-);
+const containsNoisySourceContent = (text = '') =>
+  NOISY_SOURCE_PATTERNS.some((pattern) => pattern.test(String(text || '')));
 
-const containsWeakOrPlaceholderContent = (text = '') => (
-  WEAK_OR_PLACEHOLDER_PATTERNS.some((pattern) => pattern.test(String(text || '')))
-);
+const containsWeakOrPlaceholderContent = (text = '') =>
+  WEAK_OR_PLACEHOLDER_PATTERNS.some((pattern) => pattern.test(String(text || '')));
 
 const isInterviewQuestionLike = (question = '') => {
   const normalized = normalizeWhitespace(question).toLowerCase();
-  return /^(what|how|why|when|where|which|explain|describe|compare|contrast|design|implement|debug|optimize|walk me through|tell me about)\b/.test(normalized);
+  return /^(what|how|why|when|where|which|explain|describe|compare|contrast|design|implement|debug|optimize|walk me through|tell me about|can you|could you|please)\b/.test(
+    normalized
+  );
 };
 
 const computeConfidenceScore = ({ sourceType = 'ai', answer = '', question = '' } = {}) => {
@@ -374,7 +512,7 @@ const isQualityQuestionAnswer = ({ question = '', answer = '', topicKey = '' } =
   if (containsWeakOrPlaceholderContent(`${normalizedQuestion} ${normalizedAnswer}`)) return false;
   if (/^start with the definition\b/i.test(normalizedAnswer)) return false;
   if (topicKey) {
-    const topicTokens = TOPIC_TOKEN_ALIASES[topicKey] || tokenize(topicKey);
+    const topicTokens = getTopicTokens(topicKey);
     const combinedTokens = new Set(tokenize(`${normalizedQuestion} ${normalizedAnswer}`));
     if (topicTokens.length && !topicTokens.some((token) => combinedTokens.has(token))) return false;
   }
@@ -398,7 +536,9 @@ const validateInterviewQuestionQuality = ({
 } = {}) => {
   const normalizedQuestion = normalizeQuestionText(question);
   const normalizedAnswer = normalizeAnswerText(answer);
-  const normalizedTopicKey = String(topicKey || technology || '').trim().toLowerCase();
+  const normalizedTopicKey = String(topicKey || technology || '')
+    .trim()
+    .toLowerCase();
   const normalizedDifficulty = sanitizeDifficulty(difficulty);
   const reasons = [];
   let score = 1;
@@ -433,24 +573,40 @@ const validateInterviewQuestionQuality = ({
     score -= 0.2;
   }
 
-  if (['scraped', 'ai', 'ai_generated'].includes(String(sourceType || '').toLowerCase()) && !isInterviewQuestionLike(normalizedQuestion)) {
+  if (
+    ['scraped', 'ai', 'ai_generated'].includes(String(sourceType || '').toLowerCase()) &&
+    !isInterviewQuestionLike(normalizedQuestion)
+  ) {
     reasons.push('not_an_interview_question');
     score -= 0.24;
   }
 
   const safeTags = sanitizeTags(tags);
-  if (!containsTopicSignal({ topicKey: normalizedTopicKey, question: normalizedQuestion, answer: normalizedAnswer, tags: safeTags })) {
+  if (
+    !containsTopicSignal({
+      topicKey: normalizedTopicKey,
+      question: normalizedQuestion,
+      answer: normalizedAnswer,
+      tags: safeTags
+    })
+  ) {
     reasons.push('topic_mismatch');
     score -= 0.38;
   }
 
-  if (normalizedTopicKey && safeTags.length && !containsTopicSignal({ topicKey: normalizedTopicKey, tags: safeTags })) {
+  if (
+    normalizedTopicKey &&
+    safeTags.length &&
+    !containsTopicSignal({ topicKey: normalizedTopicKey, tags: safeTags })
+  ) {
     reasons.push('tags_do_not_match_topic');
     score -= 0.12;
   }
 
-  const hasStructuredAnswer = answerSections && typeof answerSections === 'object'
-    && Boolean(answerSections.summary || answerSections.explanation || answerSections.shortAnswer);
+  const hasStructuredAnswer =
+    answerSections &&
+    typeof answerSections === 'object' &&
+    Boolean(answerSections.summary || answerSections.explanation || answerSections.shortAnswer);
   const questionAnswerOverlap = computeJaccardSimilarity(normalizedQuestion, normalizedAnswer);
   const questionTokens = tokenize(normalizedQuestion);
   // A structured answer can address a question without repeating its wording.
@@ -467,17 +623,34 @@ const validateInterviewQuestionQuality = ({
     score -= 0.16;
   }
 
-  if (!hasStructuredAnswer && !answerAddressesQuestionConcepts({ question: normalizedQuestion, answer: normalizedAnswer, topicKey: normalizedTopicKey })) {
+  if (
+    !hasStructuredAnswer &&
+    !answerAddressesQuestionConcepts({
+      question: normalizedQuestion,
+      answer: normalizedAnswer,
+      topicKey: normalizedTopicKey
+    })
+  ) {
     reasons.push('answer_missing_question_concepts');
     score -= 0.32;
   }
 
-  if (hasTopicContradiction({ topicKey: normalizedTopicKey, question: normalizedQuestion, answer: normalizedAnswer })) {
+  if (
+    hasTopicContradiction({
+      topicKey: normalizedTopicKey,
+      question: normalizedQuestion,
+      answer: normalizedAnswer
+    })
+  ) {
     reasons.push('answer_topic_contradiction');
     score -= 0.5;
   }
 
-  const comparison = comparisonAnswerCompleteness({ question: normalizedQuestion, answer: normalizedAnswer, answerSections });
+  const comparison = comparisonAnswerCompleteness({
+    question: normalizedQuestion,
+    answer: normalizedAnswer,
+    answerSections
+  });
   if (!comparison.valid) {
     reasons.push(...comparison.reasons);
     score -= Math.min(0.55, comparison.reasons.length * 0.12);
@@ -501,9 +674,18 @@ const validateInterviewQuestionQuality = ({
     score -= 0.12;
   }
 
-  const requestedDifficulty = String(expectedDifficulty || '').trim().toLowerCase();
-  const inferredDifficulty = inferDifficultyFromContent({ question: normalizedQuestion, answer: normalizedAnswer });
-  if (requestedDifficulty && DIFFICULTY_SET.has(requestedDifficulty) && normalizedDifficulty !== requestedDifficulty) {
+  const requestedDifficulty = String(expectedDifficulty || '')
+    .trim()
+    .toLowerCase();
+  const inferredDifficulty = inferDifficultyFromContent({
+    question: normalizedQuestion,
+    answer: normalizedAnswer
+  });
+  if (
+    requestedDifficulty &&
+    DIFFICULTY_SET.has(requestedDifficulty) &&
+    normalizedDifficulty !== requestedDifficulty
+  ) {
     reasons.push('difficulty_mismatch');
     score -= 0.16;
   } else if (requestedDifficulty && inferredDifficulty && inferredDifficulty !== requestedDifficulty) {

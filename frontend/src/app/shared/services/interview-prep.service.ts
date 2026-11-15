@@ -157,6 +157,9 @@ export class InterviewPrepService implements OnDestroy {
   getSession(id: string): Observable<InterviewSession> {
     return this.once('session-read', { id }, () => this.api.getInterviewSession(id));
   }
+  deleteSession(id: string): Observable<{ deleted: boolean }> {
+    return this.once('session-delete', { id }, () => this.api.deleteInterviewSession(id));
+  }
   saveProgress(
     id: string,
     expectedVersion: number,

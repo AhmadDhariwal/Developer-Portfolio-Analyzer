@@ -41,6 +41,30 @@ export class InterviewQuestionCardComponent implements OnChanges {
       { title: 'Short answer', text: answer.shortAnswer || answer.summary },
       { title: 'Key points', items: answer.keyPoints || answer.bulletPoints },
       { title: 'Explanation', text: answer.explanation },
+      { title: 'Design scope', text: answer.scopeNote },
+      ...Object.entries(answer.systemDesign || {}).map(([key, text]) => ({
+        title:
+          (
+            {
+              problemDefinition: 'Problem definition',
+              functionalRequirements: 'Functional requirements',
+              nonFunctionalRequirements: 'Non-functional requirements',
+              highLevelArchitecture: 'High-level architecture',
+              components: 'Components and responsibilities',
+              databaseDesign: 'Database design',
+              apiDesign: 'API design',
+              dataFlow: 'Data flow',
+              caching: 'Caching',
+              scalability: 'Scalability',
+              loadBalancing: 'Load balancing',
+              reliability: 'Reliability',
+              security: 'Security',
+              tradeOffs: 'Trade-offs',
+              bottlenecks: 'Potential bottlenecks',
+            } as Record<string, string>
+          )[key] || key,
+        text,
+      })),
       { title: 'Code & example', text: answer.example || answer.codeExample, code: true },
       { title: 'In practice', text: answer.realWorldUseCase || answer.realWorldContext },
       { title: 'Common mistakes', items: answer.commonMistakes },
@@ -67,7 +91,7 @@ export class InterviewQuestionCardComponent implements OnChanges {
     const source =
       this.question.originalSourceType || this.question.sourceType || this.question.source || '';
     if (['ai', 'ai_generated', 'user_asked'].includes(source))
-      return this.verified ? 'AI generated · reviewed' : 'AI generated · unverified';
+      return this.verified ? 'AI generated · reviewed' : 'AI-generated answer · Unverified';
     if (['scraped', 'scrape'].includes(source))
       return this.verified ? 'Reviewed external source' : 'External source · unverified';
     return this.verified ? 'Verified library' : 'Unverified content';

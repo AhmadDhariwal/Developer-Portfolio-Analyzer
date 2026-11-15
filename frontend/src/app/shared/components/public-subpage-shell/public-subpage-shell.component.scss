@@ -11,7 +11,7 @@
 .pub-nav-inner {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0.875rem clamp(1.25rem, 4vw, 3rem);
+  padding: 0.75rem clamp(1.25rem, 4vw, 3rem);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -132,6 +132,13 @@
 }
 
 .pub-nav-auth {
+  @media (min-width: 1024px) {
+    min-height: 38px;
+    padding: 0.45rem 0.925rem;
+    font-size: 0.84rem;
+    border-radius: 0.5rem;
+  }
+
   @media (max-width: 767px) {
     display: none !important;
   }
@@ -141,7 +148,7 @@
   display: none;
   width: 44px;
   height: 44px;
-  border-radius: 0.6875rem;
+  border-radius: 0.5rem;
   border: 1px solid var(--lp-card-border);
   background: var(--lp-surface-solid);
   color: var(--lp-ink);
@@ -400,4 +407,3 @@
     }
   }
 }
-

@@ -3,14 +3,14 @@ import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/c
 import { RouterLink } from '@angular/router';
 import { PublicSubpageShellComponent } from '../../shared/components/public-subpage-shell/public-subpage-shell.component';
 
-interface ApiDomainSpec {
+interface PlatformDomainOverview {
   id: 'auth' | 'intelligence' | 'recruiter' | 'admin';
   label: string;
   tag: string;
   description: string;
-  keyFields: readonly string[];
+  capabilities: readonly string[];
   sampleTitle: string;
-  sampleJson: string;
+  sampleSummary: string;
 }
 
 @Component({
@@ -25,101 +25,113 @@ export class ApiDocsPageComponent {
   readonly featureCards = [
     {
       tag: 'SECURITY',
-      value: 'JWT Auth',
-      label: 'Authenticated session-based access across developer, recruiter, and admin views.',
-    },
-    {
-      tag: 'FORMAT',
-      value: 'JSON APIs',
-      label: 'Predictable named payload envelopes built for the Angular web workspace.',
+      value: 'Authenticated',
+      label: 'All workspace operations require active verified session credentials.',
     },
     {
       tag: 'ISOLATION',
-      value: 'RBAC Safe',
-      label: 'Role-checked and organization-scoped boundaries enforced on every response.',
+      value: 'Tenant Isolated',
+      label: 'Organization workspaces enforce strict access and visibility boundaries.',
+    },
+    {
+      tag: 'PRIVACY',
+      value: 'Scoped Access',
+      label: 'Public developer profiles stay separate from private account and hiring workflows.',
     },
   ] as const;
 
-  readonly apiGroups: readonly ApiDomainSpec[] = [
+  readonly apiGroups: readonly PlatformDomainOverview[] = [
     {
       id: 'auth',
-      label: 'Authentication',
-      tag: 'SESSION / OAUTH',
+      label: 'Account Access & Sessions',
+      tag: 'IDENTITY BOUNDARY',
       description:
-        'Session bootstrap, OTP verification, password recovery, and Google / GitHub OAuth sign-in handshakes.',
-      keyFields: ['user', 'token', 'requiresVerification', 'recoveryHandle', 'message'],
-      sampleTitle: 'dpa://conventions/auth-session',
-      sampleJson: `{
-  "user": {
-    "id": "usr_active_session",
-    "role": "developer",
-    "isVerified": true
-  },
-  "message": "Authenticated session active"
+        'Account registration, verification safeguards, password recovery, and Google or GitHub sign-in flows.',
+      capabilities: [
+        'Account Onboarding',
+        'Verification Checks',
+        'OAuth Sign-In',
+        'Access Recovery',
+      ],
+      sampleTitle: 'overview://workspace/identity-boundary',
+      sampleSummary: `{
+  "area": "Account Access & Sessions",
+  "access": "Authenticated users only",
+  "providers": ["Email", "Google", "GitHub"],
+  "specification": "Private implementation details are non-public."
 }`,
     },
     {
       id: 'intelligence',
       label: 'Developer Intelligence',
-      tag: 'ANALYSIS',
+      tag: 'DEVELOPER WORKSPACE',
       description:
-        'Portfolio readiness scoring, GitHub repository diagnostics, resume parsing, skill gaps, and interview prep.',
-      keyFields: ['profile', 'dashboard', 'analytics', 'skillGap', 'careerSprint'],
-      sampleTitle: 'dpa://conventions/developer-intelligence',
-      sampleJson: `{
-  "dashboard": {
-    "readinessScore": 81,
-    "codeQuality": 86,
-    "skillCoverage": 79
-  },
-  "analytics": {
-    "primaryStack": ["TypeScript", "Angular", "Node.js"]
-  }
+        'Portfolio readiness analysis, public GitHub project review, resume insights, learning paths, and interview practice.',
+      capabilities: [
+        'Repository Sync',
+        'Resume Review',
+        'Skill Benchmarks',
+        'Learning Plans',
+        'Interview Practice',
+      ],
+      sampleTitle: 'overview://workspace/portfolio-intelligence',
+      sampleSummary: `{
+  "area": "Developer Portfolio Intelligence",
+  "access": "Owner workspace",
+  "capabilities": ["Project evaluation", "Skill growth planning"],
+  "visibility": "Controlled by account privacy preferences"
 }`,
     },
     {
       id: 'recruiter',
       label: 'Recruiter Hub',
-      tag: 'HIRING WORKFLOWS',
+      tag: 'HIRING WORKSPACE',
       description:
-        'Dashboard metrics, public developer discovery, job requirements, AI candidate ranking, and recruiter shortlists.',
-      keyFields: ['jobs', 'candidates', 'rankings', 'analytics', 'shortlist'],
-      sampleTitle: 'dpa://conventions/recruiter-matching',
-      sampleJson: `{
-  "jobs": [{ "id": "job_role_spec", "title": "Full-Stack Engineer" }],
-  "analytics": {
-    "scopedVisibility": "organization",
-    "aiAdvisoryOnly": true
-  }
+        'Public talent discovery, role criteria matching, team shortlist coordination, and advisory candidate evaluation.',
+      capabilities: [
+        'Public Profile Discovery',
+        'Role Matching',
+        'Shortlist Review',
+        'Hiring Coordination',
+      ],
+      sampleTitle: 'overview://workspace/hiring-workflows',
+      sampleSummary: `{
+  "area": "Recruiter & Hiring Workflows",
+  "access": "Authorized organization members",
+  "aiGuidance": "Advisory assistance paired with human review",
+  "specification": "Internal hiring workflows remain organization-scoped."
 }`,
     },
     {
       id: 'admin',
-      label: 'Admin & Organization',
-      tag: 'TENANT RBAC',
+      label: 'Organization Governance',
+      tag: 'WORKSPACE CONTROLS',
       description:
-        'Recruiter provisioning, organization teams, invitation workflows, and tenant-scoped governance visibility.',
-      keyFields: ['recruiters', 'organization', 'teams', 'invitations', 'auditSummary'],
-      sampleTitle: 'dpa://conventions/organization-rbac',
-      sampleJson: `{
-  "organization": {
-    "scope": "tenant-isolated",
-    "roles": ["admin", "recruiter", "developer"]
-  },
-  "recruiters": [],
-  "message": "Organization scope verified"
+        'Workspace team onboarding, member management, invitation controls, and organization-level access boundaries.',
+      capabilities: [
+        'Team Onboarding',
+        'Member Access',
+        'Invitation Controls',
+        'Workspace Boundaries',
+      ],
+      sampleTitle: 'overview://workspace/organization-governance',
+      sampleSummary: `{
+  "area": "Organization Governance",
+  "access": "Authorized workspace administrators",
+  "isolation": "Strict separation across customer organizations",
+  "specification": "Operational interfaces are private to the application."
 }`,
     },
   ] as const;
 
-  readonly selectedDomainId = signal<ApiDomainSpec['id']>('auth');
+  readonly selectedDomainId = signal<PlatformDomainOverview['id']>('auth');
   readonly copiedSample = signal(false);
 
-  readonly activeDomain = computed<ApiDomainSpec>(
+  readonly activeDomain = computed<PlatformDomainOverview>(
     () => this.apiGroups.find((item) => item.id === this.selectedDomainId()) ?? this.apiGroups[0],
   );
 
-  selectDomain(id: ApiDomainSpec['id']): void {
+  selectDomain(id: PlatformDomainOverview['id']): void {
     this.selectedDomainId.set(id);
     this.copiedSample.set(false);
   }
@@ -128,7 +140,7 @@ export class ApiDocsPageComponent {
     if (typeof navigator === 'undefined' || !navigator.clipboard) {
       return;
     }
-    navigator.clipboard.writeText(this.activeDomain().sampleJson).then(
+    navigator.clipboard.writeText(this.activeDomain().sampleSummary).then(
       () => {
         this.copiedSample.set(true);
       },

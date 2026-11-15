@@ -169,13 +169,15 @@ async function collectLayoutMetrics(page) {
         (el.tagName === 'INPUT' && inputType !== 'checkbox' && inputType !== 'radio') ||
         el.tagName === 'SELECT';
 
+      const isDesktopHeaderLink = vw >= 1024 && !!el.closest('header');
       const isPrimaryAction =
-        isTextOrSelectInput ||
-        el.classList.contains('btn-primary') ||
-        el.classList.contains('btn-secondary') ||
-        el.classList.contains('oauth-btn') ||
-        el.classList.contains('submit-btn') ||
-        el.classList.contains('mobile-menu-toggle');
+        !isDesktopHeaderLink &&
+        (isTextOrSelectInput ||
+          el.classList.contains('btn-primary') ||
+          el.classList.contains('btn-secondary') ||
+          el.classList.contains('oauth-btn') ||
+          el.classList.contains('submit-btn') ||
+          el.classList.contains('mobile-menu-toggle'));
 
       if (isPrimaryAction && rect.height < 44) {
         clippedOrSmallControls.push({

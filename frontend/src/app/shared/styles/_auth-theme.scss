@@ -451,10 +451,10 @@
 
 .auth-themed .submit-btn {
   width: 100%;
-  min-height: 46px;
-  padding: 0.75rem 1.25rem;
+  min-height: 44px;
+  padding: 0.7rem 1.2rem;
   border: none;
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   background: var(--landing-button-primary);
   color: var(--landing-button-text);
   font-size: 0.9375rem;
@@ -495,10 +495,10 @@
 
 .auth-themed .secondary-btn {
   width: 100%;
-  min-height: 46px;
-  padding: 0.75rem 1.25rem;
+  min-height: 44px;
+  padding: 0.7rem 1.2rem;
   border: 1px solid var(--auth-input-border);
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   background: var(--auth-btn-secondary-bg);
   color: var(--auth-ink);
   font-size: 0.9375rem;
@@ -561,9 +561,9 @@
 
 .auth-themed .oauth-btn {
   width: 100%;
-  min-height: 46px;
-  padding: 0.625rem 0.875rem;
-  border-radius: 0.75rem;
+  min-height: 44px;
+  padding: 0.6rem 0.875rem;
+  border-radius: 0.5rem;
   border: 1px solid var(--auth-input-border);
   background: var(--auth-btn-secondary-bg);
   color: var(--auth-ink);

@@ -59,7 +59,7 @@
           >
             <polyline points="20 6 9 17 4 12" />
           </svg>
-          <span>Verified Question Bank</span>
+          <span>Verified library · AI practice</span>
         </span>
       </div>
     </div>
@@ -631,6 +631,7 @@
                   <option value="easy">Easy · fundamentals</option>
                   <option value="medium">Medium · application</option>
                   <option value="hard">Hard · advanced</option>
+                  <option value="senior">Senior · architecture and decisions</option>
                 </select>
               </div>
             </div>
@@ -651,6 +652,47 @@
             </div>
           </div>
 
+          <div class="form-group">
+            <label for="practice-source">Source</label>
+            <select
+              id="practice-source"
+              name="practiceSource"
+              class="text-input"
+              [(ngModel)]="source"
+              (ngModelChange)="cancelPractice()"
+            >
+              <option value="">All sources · verified first, AI fills gaps</option>
+              <option value="seed">Verified library only</option>
+              <option value="ai">AI-generated · unverified</option>
+              <option value="scraped">Reviewed external sources</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="practice-category">Category</label>
+            <select
+              id="practice-category"
+              name="practiceCategory"
+              class="text-input"
+              [(ngModel)]="category"
+              (ngModelChange)="cancelPractice()"
+            >
+              <option value="">All categories</option>
+              <option *ngFor="let value of categories" [value]="value">{{ label(value) }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="practice-tags"
+              >Tags <span class="muted">(optional, comma separated)</span></label
+            >
+            <input
+              id="practice-tags"
+              name="practiceTags"
+              class="text-input"
+              [(ngModel)]="tags"
+              (ngModelChange)="cancelPractice()"
+              maxlength="500"
+            />
+          </div>
           <button class="button primary submit-drill-btn" type="submit" [disabled]="generating">
             <span *ngIf="generating" class="spinner" aria-hidden="true"></span>
             <span>{{ generating ? 'Generating questions…' : 'Generate Questions' }}</span>
@@ -994,8 +1036,15 @@
               {{ session.careerStack }} · {{ session.experienceLevel }} ·
               {{ session.questions.length }} questions in this set
             </p>
+            <p class="muted small">
+              Private sessions are kept until you delete them. Deletion removes the saved questions
+              and progress.
+            </p>
           </div>
           <div class="detail-header-actions">
+            <button type="button" class="text-button" (click)="deleteSession(session)">
+              Delete this private session
+            </button>
             <button
               type="button"
               class="button primary"

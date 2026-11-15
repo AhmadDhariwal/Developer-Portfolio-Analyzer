@@ -41,6 +41,7 @@ describe('Interview Prep workspace', () => {
     getSession: vi.fn(),
     saveProgress: vi.fn(),
     completeSession: vi.fn(),
+    deleteSession: vi.fn(),
   };
   let component: InterviewPrepComponent;
   let fixture: ReturnType<typeof TestBed.createComponent<InterviewPrepComponent>>;
@@ -186,14 +187,21 @@ describe('Interview Prep workspace', () => {
     expect(submit.disabled).toBe(true);
   });
 
-  it('keeps fallback and partial practice honest and preserves sets on retry failure', () => {
-    api.generateQuestions.mockReturnValue(of({ ...result(), aiGeneratedCount: 0, partial: true }));
+  it('rejects incomplete sets and preserves a compatible completed set on retry failure', () => {
+    api.generateQuestions.mockReturnValue(
+      of({ ...result(), questions: [question(1)], partial: true }),
+    );
+    component.generatePractice();
+    expect(component.practiceError).toContain('Insufficient');
+    expect(component.practiceQuestions).toHaveLength(0);
+    api.generateQuestions.mockReturnValue(
+      of({ ...result(), questions: result().questions.slice(0, 5) }),
+    );
     component.generatePractice();
     expect(component.practiceNotice).toContain('Using existing questions');
-    expect(component.practiceNotice).toContain('partial');
     api.generateQuestions.mockReturnValue(throwError(() => new Error('failure')));
     component.generatePractice();
-    expect(component.practiceQuestions.length).toBe(30);
+    expect(component.practiceQuestions.length).toBe(5);
     expect(component.practiceError).toContain('previous set');
     component.selfCheck('review');
     expect(component.currentCheck).toBe('review');
@@ -209,7 +217,9 @@ describe('Interview Prep workspace', () => {
     expect(component.currentPractice).toBeNull();
   });
   it('sends the selected generation filters and count without dropping library constraints', () => {
-    api.generateQuestions.mockReturnValue(of(result()));
+    api.generateQuestions.mockReturnValue(
+      of({ ...result(), questions: result().questions.slice(0, 5) }),
+    );
     component.practiceDifficulty = 'easy';
     component.practiceFocus = 'hooks';
     component.practiceCount = 5;
@@ -231,7 +241,9 @@ describe('Interview Prep workspace', () => {
     );
   });
   it('clears a Medium library drill immediately when Easy is selected', () => {
-    api.generateQuestions.mockReturnValue(of(result()));
+    api.generateQuestions.mockReturnValue(
+      of({ ...result(), questions: result().questions.slice(0, 5) }),
+    );
     component.generatePractice();
     expect(component.practiceSetDescription).toContain('Existing library');
     component.changePracticeDifficulty('easy');
@@ -243,7 +255,14 @@ describe('Interview Prep workspace', () => {
     component.changePracticeDifficulty('easy');
     const easy = { ...question(1), difficulty: 'easy' };
     api.generateQuestions.mockReturnValue(
-      of({ ...result(), questions: [easy], aiGeneratedCount: 1 }),
+      of({
+        ...result(),
+        questions: Array.from({ length: 5 }, (_, index) => ({
+          ...easy,
+          question: `Easy question ${index}`,
+        })),
+        aiGeneratedCount: 5,
+      }),
     );
     component.generatePractice();
     expect(component.currentPractice?.difficulty).toBe('easy');
@@ -288,6 +307,7 @@ describe('Interview Prep workspace', () => {
       of({
         ...result(),
         sessionId: 'saved',
+        questions: result().questions.slice(0, 5),
         personalization: { limitation: 'Missing evidence does not establish inability.' },
       }),
     );
@@ -393,5 +413,73 @@ describe('Interview Prep workspace', () => {
     expect(api.getTopQuestions).toHaveBeenLastCalledWith(
       expect.objectContaining({ skill: 'python' }),
     );
+  });
+  it.each(['easy', 'medium', 'hard', 'senior'])(
+    'sends and displays actual %s generation difficulty',
+    (difficulty) => {
+      component.practiceDifficulty = difficulty;
+      api.generateQuestions.mockReturnValue(
+        of({
+          ...result(),
+          questions: Array.from({ length: 5 }, (_, i) => ({ ...question(i), difficulty })),
+        }),
+      );
+      component.generatePractice();
+      expect(component.practiceQuestions).toHaveLength(5);
+      expect(component.currentPractice?.difficulty).toBe(difficulty);
+      expect(api.generateQuestions).toHaveBeenCalledWith(expect.objectContaining({ difficulty }));
+    },
+  );
+  it.each(['', 'seed', 'ai', 'scraped'])(
+    'preserves source %s in submitted generation filters',
+    (source) => {
+      component.source = source;
+      api.generateQuestions.mockReturnValue(of({ ...result(), questions: [] }));
+      component.generatePractice();
+      expect(api.generateQuestions).toHaveBeenCalledWith(expect.objectContaining({ source }));
+      expect(component.currentPractice).toBeNull();
+    },
+  );
+  it('clears an incompatible focus on failure and preserves custom input through retry', () => {
+    api.generateQuestions.mockReturnValue(
+      of({ ...result(), questions: result().questions.slice(0, 5) }),
+    );
+    component.generatePractice();
+    component.practiceFocus = 'new focus';
+    api.generateQuestions.mockReturnValue(
+      throwError(() => ({ error: { message: 'Provider unavailable' } })),
+    );
+    component.generatePractice();
+    expect(component.currentPractice).toBeNull();
+    component.customQuestion = 'Can you explain React state updates?';
+    api.askQuestion.mockReturnValue(
+      throwError(() => ({
+        error: { message: 'AI providers are temporarily unavailable. Please retry.' },
+      })),
+    );
+    component.askCustomQuestion();
+    expect(component.customQuestion).toBe('Can you explain React state updates?');
+    api.askQuestion.mockReturnValue(
+      of({
+        ...question(1),
+        question: component.customQuestion,
+        sourceType: 'ai_generated',
+        verificationStatus: 'unverified',
+      }),
+    );
+    component.askCustomQuestion();
+    expect(component.customResult?.verificationStatus).toBe('unverified');
+    expect(api.askQuestion).toHaveBeenCalledTimes(2);
+  });
+  it('deletes only an acknowledged private session and clears its visible retained answer', () => {
+    const session = { _id: 'owned', kind: 'custom' as const, questions: [question(1)] };
+    component.sessions = [session];
+    component.selectedSession = session;
+    component.customResult = { ...question(1), sessionId: 'owned' };
+    api.deleteSession.mockReturnValue(of({ deleted: true }));
+    component.deleteSession(session);
+    expect(api.deleteSession).toHaveBeenCalledWith('owned');
+    expect(component.sessions).toHaveLength(0);
+    expect(component.customResult).toBeNull();
   });
 });

@@ -75,7 +75,7 @@
 .nav-container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0.875rem clamp(1.25rem, 4vw, 3rem);
+  padding: 0.75rem clamp(1.25rem, 4vw, 3rem);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -185,6 +185,13 @@
 }
 
 .nav-auth-link {
+  @media (min-width: 1024px) {
+    min-height: 38px;
+    padding: 0.45rem 0.925rem;
+    font-size: 0.84rem;
+    border-radius: 0.5rem;
+  }
+
   @media (max-width: 767px) {
     display: none !important;
   }
@@ -194,7 +201,7 @@
   display: none;
   width: 44px;
   height: 44px;
-  border-radius: 0.6875rem;
+  border-radius: 0.5rem;
   border: 1px solid var(--lp-card-border);
   background: var(--lp-surface-solid);
   color: var(--lp-ink);
@@ -294,9 +301,9 @@
   justify-content: center;
   gap: 0.5rem;
   min-height: 44px;
-  padding: 0.625rem 1.125rem;
-  border-radius: 0.75rem;
-  font-size: 0.9rem;
+  padding: 0.575rem 1.05rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
   font-weight: 600;
   font-family: inherit;
   text-decoration: none;
@@ -322,9 +329,10 @@
 }
 
 .btn-lg {
-  min-height: 48px;
-  padding: 0.75rem 1.375rem;
-  font-size: 0.95rem;
+  min-height: 46px;
+  padding: 0.7rem 1.3rem;
+  border-radius: 0.5625rem;
+  font-size: 0.925rem;
 }
 
 .btn-primary {

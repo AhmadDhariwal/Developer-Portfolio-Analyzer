@@ -504,16 +504,15 @@ async function runTests() {
         assert.equal(await page.locator('html').getAttribute('data-theme'), 'light');
 
         await page.getByRole('tab', { name: 'Developer Intelligence' }).click();
-        assert.match(
-          (await page.locator('.pub-terminal-body').textContent()) || '',
-          /skillCoverage/,
-        );
+        await page
+          .locator('.pub-terminal-body', { hasText: /Skill growth planning/ })
+          .waitFor({ state: 'visible', timeout: 5000 });
 
         // Blog filter
         await page.locator('.pub-nav-links a[href="/blog"]').click();
         await page.waitForURL('**/blog');
         await page.getByRole('button', { name: 'Recruiting' }).click();
-        assert.equal(await page.locator('.blog-card').count(), 1);
+        await page.waitForFunction(() => document.querySelectorAll('.blog-card').length === 1);
 
         // Contact, Privacy & Terms navigation
         await page.locator('.pub-nav-links a[href="/contact"]').click();
