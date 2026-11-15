@@ -61,17 +61,23 @@ const rateLimit = (scope, defaultLimit) => async (req, res, next) => {
 // The identity includes the full provider prompt and content/schema version.
 // Completed values are short-lived transport results, never public bank rows
 // or user/session identifiers. All callers still validate before persistence.
-const runAI = async (prompt, operation) => {
+const runAI = async (prompt, operation, { timeoutMs = 6200, signal } = {}) => {
+  const assertActive = () => {
+    if (signal?.aborted) throw Object.assign(new Error('Request cancelled.'), { statusCode: 499 });
+  };
+  assertActive();
+  timeoutMs = Math.min(30000, Math.max(1, timeoutMs));
   const key = `ai:v1:${hash(prompt)}`;
-  const deadline = Date.now() + 6300;
+  const deadline = Date.now() + timeoutMs + 100;
   const token = randomUUID();
   while (Date.now() < deadline) {
+    assertActive();
     const existing = await query(State.findOne({ _id: key, expiresAt: { $gt: new Date() } })).lean();
     if (existing?.value) {
       if (existing.value.failed) throw unavailable();
       return existing.value.result;
     }
-    const lease = await acquire(key, token, 15000);
+    const lease = await acquire(key, token, Math.max(15000, timeoutMs + 2000));
     if (!lease) {
       await new Promise((resolve) => setTimeout(resolve, 50));
       continue;
@@ -81,16 +87,23 @@ const runAI = async (prompt, operation) => {
       const slots = boundedSetting('INTERVIEW_AI_MAX_CONCURRENCY', 4, 32);
       for (let index = 0; index < slots; index++) {
         const candidate = `ai-slot:${index}`;
-        if (await acquire(candidate, token, 15000)) {
+        if (await acquire(candidate, token, Math.max(15000, timeoutMs + 2000))) {
           slot = candidate;
           break;
         }
       }
-      if (!slot || !(await reserve('ai-quota', boundedSetting('INTERVIEW_AI_MAX_PER_MINUTE', 60, 10000), 60000))) {
+      if (
+        !slot ||
+        !(await reserve('ai-quota', boundedSetting('INTERVIEW_AI_MAX_PER_MINUTE', 60, 10000), 60000))
+      ) {
         throw unavailable();
       }
+      assertActive();
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 6200);
+      const abort = () => controller.abort();
+      signal?.addEventListener('abort', abort, { once: true });
+      if (signal?.aborted) controller.abort();
+      const timeout = setTimeout(() => controller.abort(), timeoutMs);
       let result;
       try {
         result = await Promise.race([
@@ -101,7 +114,9 @@ const runAI = async (prompt, operation) => {
         ]);
       } finally {
         clearTimeout(timeout);
+        signal?.removeEventListener('abort', abort);
       }
+      assertActive();
       const published = await query(
         State.updateOne(
           { _id: key, token, expiresAt: { $gt: new Date() } },

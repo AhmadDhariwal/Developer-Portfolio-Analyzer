@@ -13,7 +13,8 @@ const {
   buildCanonicalQuestionKey,
   canonicalizeQuestion,
   tokenize,
-  INTERVIEW_CATEGORY_SET
+  INTERVIEW_CATEGORY_SET,
+  DIFFICULTY_SET
 } = require('../services/interviewQuestionQualityService');
 
 const DEFAULT_SORT = {
@@ -113,6 +114,40 @@ const approvedQualityCriteria = (
   }
 ];
 
+const canonicalTopic = (value) =>
+  String(value || '').trim() ? normalizeTopicInput({ skill: value }).topicKey : '';
+const applySourceFilter = (filter, source) => {
+  if (source === 'ai') filter.sourceType = { $in: ['ai', 'ai_generated', 'user_asked'] };
+  else if (source === 'seed') filter.sourceType = { $in: ['verified_seed', 'prebuilt'] };
+  else if (source && source !== 'database') filter.sourceType = source;
+};
+
+const canonicalDifficulty = (value = '') => {
+  const difficulty = String(value).trim().toLowerCase();
+  if (difficulty && !DIFFICULTY_SET.has(difficulty))
+    throw Object.assign(new Error('Invalid difficulty.'), { statusCode: 400 });
+  return difficulty;
+};
+const publicEligibilityRules = () => {
+  const names = [
+    'private_context',
+    'review_status',
+    'external_review',
+    'quality_state',
+    'quality_status',
+    'approval',
+    'confidence',
+    'quality_score',
+    'question_noise',
+    'answer_noise',
+    'relevance'
+  ];
+  return [
+    ...approvedQualityCriteria().map((query, index) => ({ reason: names[index], query })),
+    { reason: 'legacy_v2_seed', query: { 'sourceMeta.seedVersion': { $ne: 'v2' } } }
+  ];
+};
+
 const buildQuestionFilter = ({
   topicKey = '',
   skill = '',
@@ -127,9 +162,7 @@ const buildQuestionFilter = ({
   const filter = {
     $and: approvedQualityCriteria()
   };
-  const normalizedTopicKey = String(topicKey || '')
-    .trim()
-    .toLowerCase();
+  const normalizedTopicKey = canonicalTopic(topicKey);
   const normalizedSkill = String(skill || '')
     .trim()
     .toLowerCase();
@@ -151,13 +184,9 @@ const buildQuestionFilter = ({
     filter.topicType = normalizedTopicType;
   }
   if (category) filter.category = sanitizeCategory(category);
-  if (source === 'ai') filter.sourceType = { $in: ['ai', 'ai_generated', 'user_asked'] };
-  else if (source === 'seed') filter.sourceType = { $in: ['verified_seed', 'prebuilt'] };
-  else if (source && source !== 'database') filter.sourceType = source;
+  applySourceFilter(filter, source);
 
-  const normalizedDifficulty = String(difficulty || '')
-    .trim()
-    .toLowerCase();
+  const normalizedDifficulty = canonicalDifficulty(difficulty);
   if (normalizedDifficulty) {
     filter.difficulty = normalizedDifficulty;
   }
@@ -428,9 +457,7 @@ const findApprovedQuestionsByNormalizedQuestions = async ({
   topicKey = '',
   normalizedQuestions = []
 } = {}) => {
-  const normalizedTopicKey = String(topicKey || '')
-    .trim()
-    .toLowerCase();
+  const normalizedTopicKey = canonicalTopic(topicKey);
   const safeQuestions = Array.isArray(normalizedQuestions)
     ? normalizedQuestions
         .map((value) =>
@@ -519,9 +546,7 @@ const findAiGeneratedByTopic = async ({
   limit = 10
 } = {}) => {
   if (source && !['ai', 'ai_generated', 'database'].includes(source)) return [];
-  const normalizedTopicKey = String(topicKey || '')
-    .trim()
-    .toLowerCase();
+  const normalizedTopicKey = canonicalTopic(topicKey);
   const normalizedTopic = String(topic || '')
     .trim()
     .toLowerCase();
@@ -530,7 +555,7 @@ const findAiGeneratedByTopic = async ({
     sourceType: { $in: ['ai', 'ai_generated', 'user_asked'] },
     $and: approvedQualityCriteria()
   };
-  if (difficulty) filter.difficulty = sanitizeDifficulty(difficulty);
+  if (difficulty) filter.difficulty = canonicalDifficulty(difficulty);
   if (category) filter.category = sanitizeCategory(category);
   const tagList = Array.isArray(tags)
     ? tags
@@ -556,9 +581,7 @@ const findAiGeneratedByTopic = async ({
 };
 
 const countAiGeneratedByTopic = async ({ topicKey = '', topic = '' } = {}) => {
-  const normalizedTopicKey = String(topicKey || '')
-    .trim()
-    .toLowerCase();
+  const normalizedTopicKey = canonicalTopic(topicKey);
   const normalizedTopic = String(topic || '')
     .trim()
     .toLowerCase();
@@ -609,9 +632,7 @@ const findExactReusableQuestion = async ({
   source = '',
   minConfidence = 0.55
 } = {}) => {
-  const normalizedTopicKey = String(topicKey || '')
-    .trim()
-    .toLowerCase();
+  const normalizedTopicKey = canonicalTopic(topicKey);
   const questionIdentity = identity || buildQuestionIdentity({ question, topicKey: normalizedTopicKey });
   const { normalizedQuestion, normalizedQuestionHash, canonicalQuestionKey: canonicalKey } = questionIdentity;
   if (!normalizedQuestion) return null;
@@ -627,9 +648,9 @@ const findExactReusableQuestion = async ({
     $and: approvedQualityCriteria(minConfidence, MIN_APPROVED_RELEVANCE),
     $or: matchClauses
   };
-  if (difficulty) filter.difficulty = sanitizeDifficulty(difficulty);
+  if (difficulty) filter.difficulty = canonicalDifficulty(difficulty);
   if (category) filter.category = sanitizeCategory(category);
-  if (source === 'seed') filter.sourceType = { $in: ['verified_seed', 'prebuilt'] };
+  applySourceFilter(filter, source);
 
   const result = await InterviewQuestionBank.findOne(filter)
     .select(
@@ -657,14 +678,12 @@ const findSearchCandidates = async ({
   minConfidence = 0.75
 } = {}) => {
   const filter = {
-    topicKey: String(topicKey || '')
-      .trim()
-      .toLowerCase(),
+    topicKey: canonicalTopic(topicKey),
     $and: approvedQualityCriteria(minConfidence, MIN_APPROVED_RELEVANCE)
   };
-  if (difficulty) filter.difficulty = sanitizeDifficulty(difficulty);
+  if (difficulty) filter.difficulty = canonicalDifficulty(difficulty);
   if (category) filter.category = sanitizeCategory(category);
-  if (source === 'seed') filter.sourceType = { $in: ['verified_seed', 'prebuilt'] };
+  applySourceFilter(filter, source);
   const safeTags = sanitizeTags(Array.isArray(tags) ? tags : String(tags).split(','));
   if (safeTags.length) filter.tags = { $in: safeTags };
   const safeTokens = sanitizeTags(searchableTokens).slice(0, 24);
@@ -690,9 +709,7 @@ const findQuestionById = async (id) => {
 
 const findSemanticCandidates = async ({ topicKey = '', tags = [], limit = 40, minConfidence = 0.6 } = {}) => {
   const filter = {
-    topicKey: String(topicKey || '')
-      .trim()
-      .toLowerCase(),
+    topicKey: canonicalTopic(topicKey),
     $and: approvedQualityCriteria(minConfidence, MIN_APPROVED_RELEVANCE)
   };
   const safeTags = sanitizeTags(tags);
@@ -732,7 +749,11 @@ const incrementQuestionUsage = async (id) => {
 
 const fetchComparableQuestionsByTopic = async (topicKey = '', limit = 500) => {
   if (!topicKey) return [];
-  const rows = await InterviewQuestionBank.find({ topicKey: String(topicKey).toLowerCase() })
+  const rows = await InterviewQuestionBank.find({
+    topicKey: normalizeTopicInput({ skill: topicKey }).topicKey,
+    'sourceMeta.userId': { $exists: false },
+    'sourceMeta.mode': { $ne: 'custom-question' }
+  })
     .select('normalizedQuestion question')
     .limit(limit)
     .lean();
@@ -804,6 +825,7 @@ const countQuestionsByTopicAndSeedVersion = async (topicKey = '', seedVersion = 
 };
 
 module.exports = {
+  publicEligibilityRules,
   buildQuestionFilter,
   findQuestionsPage,
   findTopQuestions,

@@ -1,0 +1,88 @@
+{
+  "at": "2026-11-15T11:40:52.306025+00:00",
+  "userAuthorizedRestart": true,
+  "originalPid": 16064,
+  "currentPid": 22280,
+  "port": 5000,
+  "launchModePreserved": true,
+  "backendLeftRunning": true,
+  "applicationSourceFilesChanged": [],
+  "existingUnstagedFilesPreserved": [
+    "backend/src/controllers/interviewPrepController.js",
+    "backend/src/repositories/interviewQuestionRepository.js",
+    "backend/src/scripts/auditInterviewCoverage.js",
+    "backend/src/scripts/fillInterviewQuestionCoverage.js",
+    "backend/src/services/aiProviderManager.js",
+    "backend/src/services/aiservice.js",
+    "backend/src/services/interviewCoordinationService.js",
+    "backend/src/services/interviewCoverageService.js",
+    "backend/src/services/interviewPrepService.js",
+    "backend/src/services/interviewQuestionFilters.js",
+    "backend/src/services/providers/interviewAIProvider.js",
+    "backend/src/tests/interviewQuestionFilters.test.js",
+    "frontend/src/app/pages/interview-prep/interview-prep.component.html",
+    "frontend/src/app/pages/interview-prep/interview-prep.component.spec.ts",
+    "frontend/src/app/pages/interview-prep/interview-prep.component.ts",
+    "frontend/src/app/shared/services/interview-prep.service.spec.ts",
+    "frontend/src/app/shared/services/interview-prep.service.ts"
+  ],
+  "stagedEntriesPreserved": 53,
+  "gitChecks": {
+    "workingWhitespace": {
+      "exitCode": 0
+    },
+    "stagedWhitespace": {
+      "exitCode": 0
+    }
+  },
+  "browserAcceptance": {
+    "passed": true,
+    "backendOrigin": "http://localhost:5000",
+    "defaultSourceCount": 5,
+    "canonicalDifficulty": "easy",
+    "firstNewGenerationCount": 0,
+    "refreshNewGenerationCount": 0,
+    "verifiedOnlyStatus": 503,
+    "mobileLayout": {
+      "viewport": 390,
+      "pageRight": 376,
+      "cardRight": 376,
+      "scrollWidth": 390
+    },
+    "evidence": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\live-acceptance.json"
+  },
+  "changedDocumentation": [
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\report.md"
+  ],
+  "retainedPriorEvidenceMoves": [
+    {
+      "from": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\live-acceptance.json",
+      "to": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\port5007-retained\\live-acceptance.json",
+      "reason": "Preserve prior port-5007 evidence before verifying the approved port-5000 restart."
+    },
+    {
+      "from": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\live-mern-easy-desktop.png",
+      "to": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\port5007-retained\\live-mern-easy-desktop.png",
+      "reason": "Preserve prior port-5007 evidence before verifying the approved port-5000 restart."
+    },
+    {
+      "from": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\live-mern-easy-mobile.png",
+      "to": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\port5007-retained\\live-mern-easy-mobile.png",
+      "reason": "Preserve prior port-5007 evidence before verifying the approved port-5000 restart."
+    }
+  ],
+  "deletedFiles": [],
+  "activeOperationalLogsRetained": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-port5000-restart-20261115",
+  "formatting": {
+    "reportWriteAndCheckPassed": true
+  },
+  "typecheckBuildAndFullSuites": "No application source changed; prior validated build/full-suite results retained. Actual rebuilt-browser/runtime acceptance repeated on port 5000.",
+  "regressionTests": {
+    "command": "node --test backend/src/tests/interviewCoverageCorrection.test.js",
+    "passed": 13,
+    "failed": 0,
+    "skipped": 0,
+    "evidence": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\port5000-regressions.txt"
+  },
+  "listenerVerifiedBeforeHandoff": true
+}

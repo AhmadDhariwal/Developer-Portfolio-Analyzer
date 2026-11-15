@@ -17,6 +17,7 @@
 .interview-prep-page,
 .interview-workspace {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--dev-section-gap, 24px);
   width: 100%;
   min-width: 0;
@@ -362,12 +363,17 @@ h1 {
    ══════════════════════════════════════════════ */
 .library-view-container {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 20px;
+  min-width: 0;
+  width: 100%;
 }
 
 .command-hub {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
+  min-width: 0;
   padding: 18px 20px;
   background: var(--surface-card, #ffffff);
   border: 1px solid var(--border-color, rgba(148, 163, 184, 0.2));
@@ -859,7 +865,10 @@ select,
    ══════════════════════════════════════════════ */
 .library-content {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
+  min-width: 0;
+  width: 100%;
   position: relative;
 }
 
@@ -956,8 +965,10 @@ select,
 /* ── Main Question Cards List ── */
 .question-list {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
   width: 100%;
+  min-width: 0;
 }
 
 /* ── Skeletons Loader ── */
@@ -1021,7 +1032,10 @@ select,
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 12px;
+  min-width: 0;
+  max-width: 100%;
   padding: 12px 18px;
   border-radius: 8px;
   font-size: 13px;
@@ -1198,7 +1212,10 @@ select,
    ══════════════════════════════════════════════ */
 .studio-section {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 24px;
+  width: 100%;
+  min-width: 0;
 }
 
 .section-intro {
@@ -1242,17 +1259,22 @@ select,
 
 .studio-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
   gap: 20px;
+  width: 100%;
+  min-width: 0;
 }
 
 .studio-panel {
+  min-width: 0;
+  max-width: 100%;
   padding: 24px;
   border-radius: 12px;
   border: 1px solid var(--border-color, rgba(148, 163, 184, 0.2));
   background: var(--surface-card, #ffffff);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   align-content: start;
   gap: 14px;
 }
@@ -1412,9 +1434,13 @@ select,
 }
 
 /* ── Active Practice Stepper Deck ── */
-.practice-result {
+.practice-result,
+.custom-result-section {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
+  width: 100%;
+  min-width: 0;
 }
 
 .practice-stepper-header {
@@ -1525,7 +1551,10 @@ select,
 
 .recent-section {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
+  width: 100%;
+  min-width: 0;
 
   h3 {
     margin: 0;
@@ -1538,12 +1567,15 @@ select,
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  min-width: 0;
 }
 
 .recent-chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  max-width: 100%;
+  min-width: 0;
   min-height: 38px;
   padding: 6px 14px;
   border-radius: 8px;
@@ -1556,6 +1588,15 @@ select,
   cursor: pointer;
   text-align: left;
   transition: all 0.15s ease;
+
+  .recent-title {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .recent-arrow {
+    flex-shrink: 0;
+  }
 
   &:hover {
     border-color: var(--color-primary, #6366f1);
@@ -1575,17 +1616,21 @@ select,
    ══════════════════════════════════════════════ */
 .history-section {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 20px;
+  width: 100%;
+  min-width: 0;
 }
 
 .history-layout {
   display: grid;
-  grid-template-columns: 340px 1fr;
+  grid-template-columns: 340px minmax(0, 1fr);
   gap: 20px;
   align-items: start;
+  min-width: 0;
 
   @media (max-width: 900px) {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -1840,8 +1885,10 @@ select,
 /* ── Session Detail ── */
 .session-detail {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
   min-width: 0;
+  width: 100%;
 }
 
 .session-detail-header {
@@ -1876,7 +1923,9 @@ select,
 
 .session-question-block {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 8px;
+  min-width: 0;
 }
 
 .question-block-header {

@@ -193,13 +193,16 @@ test('saved Sessions fingerprint the filters and retain owner-scoped immutable s
     requests.push(args);
     return result.session;
   });
-  await service.generateInterviewPrepSessionFromBank({
-    userId: 'owner',
-    skill: 'javascript',
-    difficulty: 'hard',
-    limit: 1,
-    idempotencyKey: 'request'
-  });
+  await assert.rejects(
+    service.generateInterviewPrepSessionFromBank({
+      userId: 'owner',
+      skill: 'javascript',
+      difficulty: 'hard',
+      limit: 1,
+      idempotencyKey: 'request'
+    }),
+    { statusCode: 409 }
+  );
   assert.notEqual(requests[1][2], first);
   assert.equal(requests[1][0], 'owner');
 });

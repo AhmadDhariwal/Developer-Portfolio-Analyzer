@@ -1,0 +1,46 @@
+[
+  {
+    "scope": "AIProviderManager",
+    "event": "provider_missing_key",
+    "provider": "xai"
+  },
+  {
+    "scope": "AIProviderManager",
+    "event": "provider_error",
+    "provider": "gemini",
+    "model": "gemini-3.1-flash-lite",
+    "reason": "cancelled",
+    "attempt": 0,
+    "failover": false
+  },
+  {
+    "scope": "AIService",
+    "event": "fallback_all_providers_failed",
+    "reason": "cancelled",
+    "durationMs": 6217
+  },
+  {
+    "scope": "AIProviderManager",
+    "event": "providers_ready"
+  },
+  {
+    "scope": "AIService",
+    "event": "prompt_size"
+  },
+  {
+    "scope": "AIService",
+    "event": "prompt_cache_miss"
+  },
+  {
+    "scope": "AIProviderManager",
+    "event": "provider_selected",
+    "provider": "gemini",
+    "model": "gemini-3.1-flash-lite",
+    "attempt": 0
+  },
+  {
+    "ts": "2026-11-15T11:49:06.021Z",
+    "message": "interview-prep-ai",
+    "reasonCode": "provider_error"
+  }
+]

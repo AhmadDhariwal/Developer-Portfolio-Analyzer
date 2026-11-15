@@ -757,7 +757,12 @@
     </div>
 
     <!-- Practice Notices & Errors -->
-    <div *ngIf="practiceError" class="notice error" role="alert">
+    <div
+      *ngIf="practiceError"
+      class="notice error"
+      role="alert"
+      [attr.data-state]="practiceErrorKind"
+    >
       <span>{{ practiceError }}</span>
       <button type="button" class="text-button" (click)="retryPractice()" [disabled]="generating">
         Retry practice / reload progress

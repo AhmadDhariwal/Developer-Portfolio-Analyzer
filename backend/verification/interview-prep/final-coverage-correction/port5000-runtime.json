@@ -1,0 +1,10 @@
+{
+  "port": 5000,
+  "userAuthorized": true,
+  "command": "node index.js",
+  "mode": "Existing normal local backend mode; background services preserved",
+  "logs": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-port5000-restart-20261115",
+  "oldPid": 16064,
+  "pid": 22280,
+  "at": "2026-11-15T11:38:25.8483170+00:00"
+}

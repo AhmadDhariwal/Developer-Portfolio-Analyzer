@@ -75,6 +75,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
   askError = '';
   askNotice = '';
   practiceFocus = '';
+  practiceErrorKind = '';
   private loadedPracticeFilters = '';
   practiceDifficulty = 'medium';
   practiceCount = 5;
@@ -532,6 +533,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     const version = ++this.practiceVersion;
     this.generating = true;
     this.practiceError = '';
+    this.practiceErrorKind = '';
     if (!this.destroyed) this.cdr.detectChanges();
     const skill = this.selectedSkill;
     const requestedTags = this.tags
@@ -634,6 +636,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
           ) {
             this.clearPracticeDrill();
             this.practiceNotice = '';
+            this.practiceErrorKind = 'invalid_response';
             this.practiceError = `No matching ${requestedDifficulty || 'requested'} set is available. The returned questions did not match the submitted filters and were not displayed. Retry or adjust the filters.`;
             this.generating = false;
             if (!this.destroyed) this.cdr.detectChanges();
@@ -646,6 +649,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
           ) {
             this.clearPracticeDrill();
             this.practiceNotice = '';
+            this.practiceErrorKind = 'insufficient_results';
             this.practiceError = `Insufficient matching ${requestedDifficulty || 'practice'} questions. Adjust the filters or retry generation.`;
             this.generating = false;
             if (!this.destroyed) this.cdr.detectChanges();
@@ -696,6 +700,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           if (version === this.practiceVersion) {
+            this.practiceErrorKind = error?.error?.generationStatus || 'request_failed';
             this.practiceError = this.errorText(
               error,
               'Could not generate a practice set. Your previous set is still available.',

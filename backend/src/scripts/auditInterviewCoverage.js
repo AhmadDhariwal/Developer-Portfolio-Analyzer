@@ -9,8 +9,13 @@ const { summarizeCoverage, coverageTarget } = require('../services/interviewCove
 const repository = require('../repositories/interviewQuestionRepository');
 const Bank = require('../models/interviewQuestionBank');
 const Session = require('../models/interviewPrepSession');
+const {
+  groupCoverageExclusions,
+  nearDuplicateCoverage,
+  coveragePlan
+} = require('../services/interviewCoverageAudit');
 
-const run = async () => {
+const run = async ({ outputPath } = {}) => {
   const seeds = listImportantTopics().flatMap(buildSeedRecordsForTopic);
   const report = {
     generatedAt: new Date().toISOString(),
@@ -44,11 +49,25 @@ const run = async () => {
       isTopQuestion: 1,
       isApproved: 1,
       confidenceScore: 1,
-      qualityScore: 1
+      qualityScore: 1,
+      relevanceScore: 1,
+      qualityState: 1,
+      qualityStatus: 1,
+      normalizedQuestionHash: 1,
+      searchableTokens: 1,
+      answerSections: 1
     };
     const rows = await Bank.collection.find({}, { projection, maxTimeMS: 10000 }).toArray();
     const eligible = repository.buildQuestionFilter({ excludeGenericSeeds: true });
     const accessible = await Bank.collection.find(eligible, { projection, maxTimeMS: 10000 }).toArray();
+    const eligibleIds = new Set(accessible.map((row) => String(row._id)));
+    const failures = new Map(rows.map((row) => [String(row._id), []]));
+    for (const { reason, query } of repository.publicEligibilityRules()) {
+      for (const row of await Bank.collection
+        .find({ $nor: [query] }, { projection: { _id: 1 }, maxTimeMS: 10000 })
+        .toArray())
+        failures.get(String(row._id)).push(reason);
+    }
     const sessions = await Session.collection
       .aggregate(
         [
@@ -73,6 +92,9 @@ const run = async () => {
       collections: { catalog: Bank.collection.collectionName, sessions: Session.collection.collectionName },
       catalogIndexes: (await Bank.collection.indexes()).map(({ name, key }) => ({ name, key })),
       allRecords: summarizeCoverage(rows),
+      exclusionGroups: groupCoverageExclusions(rows, eligibleIds, failures),
+      nearDuplicates: nearDuplicateCoverage(rows),
+      coveragePlan: coveragePlan(summarizeCoverage(accessible).matrix),
       bySource: Object.fromEntries(
         [...new Set(rows.map((row) => row.sourceType || row.source || 'unknown'))].map((source) => [
           source,
@@ -122,7 +144,8 @@ const run = async () => {
   } finally {
     await mongoose.disconnect();
   }
-  const output = path.resolve(__dirname, '../../verification/interview-prep/complete-ai-coverage.json');
+  const output =
+    outputPath || path.resolve(__dirname, '../../verification/interview-prep/complete-ai-coverage.json');
   fs.writeFileSync(output, `${JSON.stringify(report, null, 2)}\n`);
   console.log(
     JSON.stringify({
@@ -134,7 +157,11 @@ const run = async () => {
   );
 };
 if (require.main === module)
-  run().catch(() => {
+  run({
+    outputPath: process.argv.includes('--output')
+      ? path.resolve(process.argv[process.argv.indexOf('--output') + 1])
+      : undefined
+  }).catch(() => {
     console.error('Interview coverage audit failed.');
     process.exitCode = 1;
   });

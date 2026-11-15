@@ -1,0 +1,1223 @@
+{
+  "at": "2026-11-15T11:38:56.172Z",
+  "synthetic": false,
+  "liveProvider": true,
+  "backendOrigin": "http://localhost:5000",
+  "requests": [
+    {
+      "label": "real-provider-generation",
+      "request": {
+        "skill": "mern",
+        "query": "",
+        "difficulty": "easy",
+        "category": "",
+        "source": "database",
+        "tags": "",
+        "target": 5,
+        "limit": 5
+      },
+      "status": 200,
+      "response": {
+        "questions": [
+          {
+            "_id": "6af98dff1029a54235cb18c8",
+            "topicKey": "mern",
+            "topicType": "stack",
+            "skill": "mern",
+            "seedId": "",
+            "normalizedQuestion": "what is the primary purpose of expressjs in a mern stack application",
+            "normalizedQuestionHash": "96becc05d29427a01728b353aa35aa3d8d3586c4694a4669825663068da92023",
+            "canonicalQuestionKey": "mern:use_case:application express js mern primary purpose stack",
+            "canonicalQuestion": "application express js mern primary purpose stack",
+            "searchableTokens": [
+              "primary",
+              "purpose",
+              "expressj",
+              "mern",
+              "stack",
+              "application"
+            ],
+            "difficulty": "easy",
+            "tags": [
+              "expressjs",
+              "backend",
+              "api",
+              "mern",
+              "stack"
+            ],
+            "sourceMeta": {
+              "mode": "practice-set",
+              "topic": "",
+              "query": "",
+              "expectedDifficulty": "easy",
+              "verificationStatus": "unverified",
+              "generatedAt": "2026-11-15T10:48:31.055Z",
+              "provider": "gemini",
+              "model": "gemini-2.5-flash"
+            },
+            "confidenceScore": 0.83,
+            "relevanceScore": 0.88,
+            "category": "core-concepts",
+            "expectedSignals": [],
+            "badAnswerSignals": [],
+            "reviewStatus": "approved",
+            "version": "9500635b501aeb8dfa0f48f30db46cc504ba25ee2a75fba3d7772eb1b93b89c0",
+            "answerFormat": "structured",
+            "isEnriched": true,
+            "qualityState": "approved",
+            "isApproved": true,
+            "qualityStatus": "approved",
+            "rejectedReason": "",
+            "popularity": 10,
+            "topicDimensions": {
+              "stack": [
+                "mern"
+              ],
+              "technology": [],
+              "language": [],
+              "framework": []
+            },
+            "question": "What is the primary purpose of Express.js in a MERN stack application?",
+            "answer": "Short answer: Express.js serves as the backend web application framework, handling API routes, middleware, and server-side logic. Key points: - Handles HTTP requests and responses. - Defines API endpoints. - Manages middleware for tasks like authentication or logging. Explanation: In a MERN application, Express.js is crucial for building the server-side. It allows developers to create RESTful APIs that the React frontend can interact with. It simplifies the process of handling different HTTP methods (GET, POST, PUT, DELETE) and managing server-side operations. Example: const express = require('express'); const app = express(); app.get('/api/hello', (req, res) => { res.send('Hello from Express!'); }); app.listen(3000, () => { console.log('Server listening on port 3000'); }); Real-world use case: An e-commerce MERN application uses Express.js to create API endpoints for fetching product listings, adding items to a shopping cart, and processing orders. Common mistakes: - Confusing Express.js with a frontend framework. - Not properly handling asynchronous operations within Express routes. Interview tip: Clearly articulate Express.js's role as the 'E' in MERN and its function in handling server-side logic and API creation.",
+            "answerSections": {
+              "shortAnswer": "Express.js serves as the backend web application framework, handling API routes, middleware, and server-side logic.",
+              "summary": "Express.js serves as the backend web application framework, handling API routes, middleware, and server-side logic.",
+              "explanation": "In a MERN application, Express.js is crucial for building the server-side. It allows developers to create RESTful APIs that the React frontend can interact with. It simplifies the process of handling different HTTP methods (GET, POST, PUT, DELETE) and managing server-side operations.",
+              "keyPoints": [
+                "Handles HTTP requests and responses.",
+                "Defines API endpoints.",
+                "Manages middleware for tasks like authentication or logging."
+              ],
+              "bulletPoints": [
+                "Handles HTTP requests and responses.",
+                "Defines API endpoints.",
+                "Manages middleware for tasks like authentication or logging."
+              ],
+              "example": "const express = require('express');\nconst app = express();\n\napp.get('/api/hello', (req, res) => {\n  res.send('Hello from Express!');\n});\n\napp.listen(3000, () => {\n  console.log('Server listening on port 3000');\n});",
+              "codeExample": "const express = require('express');\nconst app = express();\n\napp.get('/api/hello', (req, res) => {\n  res.send('Hello from Express!');\n});\n\napp.listen(3000, () => {\n  console.log('Server listening on port 3000');\n});",
+              "realWorldUseCase": "An e-commerce MERN application uses Express.js to create API endpoints for fetching product listings, adding items to a shopping cart, and processing orders.",
+              "realWorldContext": "An e-commerce MERN application uses Express.js to create API endpoints for fetching product listings, adding items to a shopping cart, and processing orders.",
+              "commonMistakes": [
+                "Confusing Express.js with a frontend framework.",
+                "Not properly handling asynchronous operations within Express routes."
+              ],
+              "interviewTip": "Clearly articulate Express.js's role as the 'E' in MERN and its function in handling server-side logic and API creation."
+            },
+            "source": "ai_generated",
+            "sourceType": "ai_generated",
+            "qualityScore": 80,
+            "rank": 0,
+            "rankScore": 0,
+            "isTopQuestion": false,
+            "usageCount": 0,
+            "lastUsedAt": null,
+            "createdAt": "2026-11-15T10:48:31.067Z",
+            "questionId": "mern:96becc05d29427a01728b353aa35aa3d8d3586c4694a4669825663068da92023",
+            "contentVersion": "9500635b501aeb8dfa0f48f30db46cc504ba25ee2a75fba3d7772eb1b93b89c0",
+            "verificationStatus": "unverified"
+          },
+          {
+            "_id": "6af98ccc1029a54235cb18c2",
+            "topicKey": "mern",
+            "topicType": "stack",
+            "skill": "mern",
+            "seedId": "",
+            "normalizedQuestion": "what is the role of packagejson in a mern project",
+            "normalizedQuestionHash": "13c79e87e1ca2153aef0af71d6757b1a2c89401080dadcf5ba392a849f14f058",
+            "canonicalQuestionKey": "mern:definition:json mern package project role",
+            "canonicalQuestion": "json mern package project role",
+            "searchableTokens": [
+              "role",
+              "packagejson",
+              "mern",
+              "project"
+            ],
+            "difficulty": "easy",
+            "tags": [
+              "npm",
+              "package.json",
+              "dependency-management",
+              "mern",
+              "stack"
+            ],
+            "sourceMeta": {
+              "mode": "practice-set",
+              "topic": "",
+              "query": "",
+              "expectedDifficulty": "easy",
+              "verificationStatus": "unverified",
+              "generatedAt": "2026-11-15T10:43:23.853Z",
+              "provider": "groq",
+              "model": "openai/gpt-oss-120b"
+            },
+            "confidenceScore": 0.83,
+            "relevanceScore": 0.88,
+            "category": "core-concepts",
+            "expectedSignals": [],
+            "badAnswerSignals": [],
+            "reviewStatus": "approved",
+            "version": "6a44dcca6313d0ab31198cd9c68adb6c5f87a32fbf0900772657d51cf555e10f",
+            "answerFormat": "structured",
+            "isEnriched": true,
+            "qualityState": "approved",
+            "isApproved": true,
+            "qualityStatus": "approved",
+            "rejectedReason": "",
+            "popularity": 10,
+            "topicDimensions": {
+              "stack": [
+                "mern"
+              ],
+              "technology": [],
+              "language": [],
+              "framework": []
+            },
+            "question": "What is the role of 'package.json' in a MERN project?",
+            "answer": "Short answer: It lists dependencies, scripts, and metadata for the Node.js part of the stack. Key points: - dependencies and devDependencies - npm scripts - version and entry point Explanation: package.json is the manifest file used by npm or yarn. It declares which libraries the server (Express) and client (React) need, defines start/build scripts, and stores version information. The file enables reproducible installs with npm install. Example: { \"name\": \"my-mern-app\", \"version\": \"1.0.0\", \"scripts\": { \"start\": \"node server.js\", \"client\": \"npm start --prefix client\" }, \"dependencies\": { \"express\": \"^4.18.2\", \"mongoose\": \"^7.5.0\" } } Real-world use case: Running \"npm run client\" to launch the React development server while the Express API runs separately. Common mistakes: - checking package.json into source control without locking versions - using ^ for major version changes that break the build Interview tip: Mention that scripts can be scoped to subfolders, useful for monorepo‑style MERN setups.",
+            "answerSections": {
+              "shortAnswer": "It lists dependencies, scripts, and metadata for the Node.js part of the stack.",
+              "summary": "It lists dependencies, scripts, and metadata for the Node.js part of the stack.",
+              "explanation": "package.json is the manifest file used by npm or yarn. It declares which libraries the server (Express) and client (React) need, defines start/build scripts, and stores version information. The file enables reproducible installs with npm install.",
+              "keyPoints": [
+                "dependencies and devDependencies",
+                "npm scripts",
+                "version and entry point"
+              ],
+              "bulletPoints": [
+                "dependencies and devDependencies",
+                "npm scripts",
+                "version and entry point"
+              ],
+              "example": "{ \"name\": \"my-mern-app\", \"version\": \"1.0.0\", \"scripts\": { \"start\": \"node server.js\", \"client\": \"npm start --prefix client\" }, \"dependencies\": { \"express\": \"^4.18.2\", \"mongoose\": \"^7.5.0\" } }",
+              "codeExample": "{ \"name\": \"my-mern-app\", \"version\": \"1.0.0\", \"scripts\": { \"start\": \"node server.js\", \"client\": \"npm start --prefix client\" }, \"dependencies\": { \"express\": \"^4.18.2\", \"mongoose\": \"^7.5.0\" } }",
+              "realWorldUseCase": "Running \"npm run client\" to launch the React development server while the Express API runs separately.",
+              "realWorldContext": "Running \"npm run client\" to launch the React development server while the Express API runs separately.",
+              "commonMistakes": [
+                "checking package.json into source control without locking versions",
+                "using ^ for major version changes that break the build"
+              ],
+              "interviewTip": "Mention that scripts can be scoped to subfolders, useful for monorepo‑style MERN setups."
+            },
+            "source": "ai_generated",
+            "sourceType": "ai_generated",
+            "qualityScore": 80,
+            "rank": 0,
+            "rankScore": 0,
+            "isTopQuestion": false,
+            "usageCount": 0,
+            "lastUsedAt": null,
+            "createdAt": "2026-11-15T10:43:23.883Z",
+            "questionId": "mern:13c79e87e1ca2153aef0af71d6757b1a2c89401080dadcf5ba392a849f14f058",
+            "contentVersion": "6a44dcca6313d0ab31198cd9c68adb6c5f87a32fbf0900772657d51cf555e10f",
+            "verificationStatus": "unverified"
+          },
+          {
+            "_id": "6af98ccc1029a54235cb18c0",
+            "topicKey": "mern",
+            "topicType": "stack",
+            "skill": "mern",
+            "seedId": "",
+            "normalizedQuestion": "how do you define a simple get route in express that returns all users from mongodb using mongoose",
+            "normalizedQuestionHash": "65006589d83cfbe7f523368d70a364bd265fe407694c4c5ebb8b1c494b9810b8",
+            "canonicalQuestionKey": "mern:general:all express from get mongodb mongoose returns route simple that users using",
+            "canonicalQuestion": "all express from get mongodb mongoose returns route simple that users using",
+            "searchableTokens": [
+              "do",
+              "you",
+              "define",
+              "simple",
+              "get",
+              "route",
+              "expres",
+              "that",
+              "return",
+              "all",
+              "user",
+              "from",
+              "mongodb",
+              "using",
+              "mongoose"
+            ],
+            "difficulty": "easy",
+            "tags": [
+              "express",
+              "route",
+              "mongoose",
+              "mern",
+              "stack"
+            ],
+            "sourceMeta": {
+              "mode": "practice-set",
+              "topic": "",
+              "query": "",
+              "expectedDifficulty": "easy",
+              "verificationStatus": "unverified",
+              "generatedAt": "2026-11-15T10:43:23.853Z",
+              "provider": "groq",
+              "model": "openai/gpt-oss-120b"
+            },
+            "confidenceScore": 0.83,
+            "relevanceScore": 0.88,
+            "category": "core-concepts",
+            "expectedSignals": [],
+            "badAnswerSignals": [],
+            "reviewStatus": "approved",
+            "version": "f12fa9468d0b2ad672ec6f6733510dac9f713eb9a9c30d20e2cfcb96f455bbd7",
+            "answerFormat": "structured",
+            "isEnriched": true,
+            "qualityState": "approved",
+            "isApproved": true,
+            "qualityStatus": "approved",
+            "rejectedReason": "",
+            "popularity": 10,
+            "topicDimensions": {
+              "stack": [
+                "mern"
+              ],
+              "technology": [],
+              "language": [],
+              "framework": []
+            },
+            "question": "How do you define a simple GET route in Express that returns all users from MongoDB using Mongoose?",
+            "answer": "Short answer: Create an app.get handler that calls User.find() and sends the result as JSON. Key points: - app.get('/users', handler) - User model from Mongoose - res.json(data) Explanation: In Express you register a GET endpoint with app.get. Inside the handler you use the Mongoose model's find method to retrieve documents, then respond with res.json. Errors should be caught and sent with a proper status. Example: app.get('/users', async (req, res) => { try { const users = await User.find(); res.json(users); } catch (e) { res.status(500).json({error: 'Server error'}); } }); Real-world use case: Providing a REST endpoint for the front‑end to display a user directory. Common mistakes: - forgetting async/await causing a promise to be sent - not handling errors leading to hanging requests Interview tip: Highlight the async nature and that Mongoose returns a promise.",
+            "answerSections": {
+              "shortAnswer": "Create an app.get handler that calls User.find() and sends the result as JSON.",
+              "summary": "Create an app.get handler that calls User.find() and sends the result as JSON.",
+              "explanation": "In Express you register a GET endpoint with app.get. Inside the handler you use the Mongoose model's find method to retrieve documents, then respond with res.json. Errors should be caught and sent with a proper status.",
+              "keyPoints": [
+                "app.get('/users', handler)",
+                "User model from Mongoose",
+                "res.json(data)"
+              ],
+              "bulletPoints": [
+                "app.get('/users', handler)",
+                "User model from Mongoose",
+                "res.json(data)"
+              ],
+              "example": "app.get('/users', async (req, res) => { try { const users = await User.find(); res.json(users); } catch (e) { res.status(500).json({error: 'Server error'}); } });",
+              "codeExample": "app.get('/users', async (req, res) => { try { const users = await User.find(); res.json(users); } catch (e) { res.status(500).json({error: 'Server error'}); } });",
+              "realWorldUseCase": "Providing a REST endpoint for the front‑end to display a user directory.",
+              "realWorldContext": "Providing a REST endpoint for the front‑end to display a user directory.",
+              "commonMistakes": [
+                "forgetting async/await causing a promise to be sent",
+                "not handling errors leading to hanging requests"
+              ],
+              "interviewTip": "Highlight the async nature and that Mongoose returns a promise."
+            },
+            "source": "ai_generated",
+            "sourceType": "ai_generated",
+            "qualityScore": 80,
+            "rank": 0,
+            "rankScore": 0,
+            "isTopQuestion": false,
+            "usageCount": 0,
+            "lastUsedAt": null,
+            "createdAt": "2026-11-15T10:43:23.882Z",
+            "questionId": "mern:65006589d83cfbe7f523368d70a364bd265fe407694c4c5ebb8b1c494b9810b8",
+            "contentVersion": "f12fa9468d0b2ad672ec6f6733510dac9f713eb9a9c30d20e2cfcb96f455bbd7",
+            "verificationStatus": "unverified"
+          },
+          {
+            "_id": "6af98ccc1029a54235cb18c1",
+            "topicKey": "mern",
+            "topicType": "stack",
+            "skill": "mern",
+            "seedId": "",
+            "normalizedQuestion": "how do you add a simple cors header to an express server for a mern app",
+            "normalizedQuestionHash": "74d5fa2b8cc4daede6983e3edacabbbfc5b838d53f4711d5622d7d4cee17093b",
+            "canonicalQuestionKey": "mern:general:add app cors express header mern server simple",
+            "canonicalQuestion": "add app cors express header mern server simple",
+            "searchableTokens": [
+              "do",
+              "you",
+              "add",
+              "simple",
+              "cors",
+              "header",
+              "expres",
+              "server",
+              "mern",
+              "app"
+            ],
+            "difficulty": "easy",
+            "tags": [
+              "express",
+              "cors",
+              "middleware",
+              "mern",
+              "stack"
+            ],
+            "sourceMeta": {
+              "mode": "practice-set",
+              "topic": "",
+              "query": "",
+              "expectedDifficulty": "easy",
+              "verificationStatus": "unverified",
+              "generatedAt": "2026-11-15T10:43:23.853Z",
+              "provider": "groq",
+              "model": "openai/gpt-oss-120b"
+            },
+            "confidenceScore": 0.83,
+            "relevanceScore": 0.88,
+            "category": "core-concepts",
+            "expectedSignals": [],
+            "badAnswerSignals": [],
+            "reviewStatus": "approved",
+            "version": "93d8859a8911d1accf7982bb893c92bcd5377f0b4dc5dbf41f764814eb4abc55",
+            "answerFormat": "structured",
+            "isEnriched": true,
+            "qualityState": "approved",
+            "isApproved": true,
+            "qualityStatus": "approved",
+            "rejectedReason": "",
+            "popularity": 10,
+            "topicDimensions": {
+              "stack": [
+                "mern"
+              ],
+              "technology": [],
+              "language": [],
+              "framework": []
+            },
+            "question": "How do you add a simple CORS header to an Express server for a MERN app?",
+            "answer": "Short answer: Use the cors middleware or set Access-Control-Allow-Origin header manually. Key points: - install cors package - app.use(cors()) - or res.setHeader('Access-Control-Allow-Origin', '*') Explanation: Browsers block cross‑origin requests unless the server includes CORS headers. The popular cors npm package adds the required headers automatically for all routes when you call app.use(cors()). Example: const cors = require('cors'); app.use(cors({ origin: 'http://localhost:3000' })); Real-world use case: Allowing a React front‑end running on localhost:3000 to call API endpoints on localhost:5000 during development. Common mistakes: - setting '*' in production exposing APIs - forgetting to enable CORS after adding a new route Interview tip: Explain that CORS is a browser security feature, not a server‑side restriction.",
+            "answerSections": {
+              "shortAnswer": "Use the cors middleware or set Access-Control-Allow-Origin header manually.",
+              "summary": "Use the cors middleware or set Access-Control-Allow-Origin header manually.",
+              "explanation": "Browsers block cross‑origin requests unless the server includes CORS headers. The popular cors npm package adds the required headers automatically for all routes when you call app.use(cors()).",
+              "keyPoints": [
+                "install cors package",
+                "app.use(cors())",
+                "or res.setHeader('Access-Control-Allow-Origin', '*')"
+              ],
+              "bulletPoints": [
+                "install cors package",
+                "app.use(cors())",
+                "or res.setHeader('Access-Control-Allow-Origin', '*')"
+              ],
+              "example": "const cors = require('cors'); app.use(cors({ origin: 'http://localhost:3000' }));",
+              "codeExample": "const cors = require('cors'); app.use(cors({ origin: 'http://localhost:3000' }));",
+              "realWorldUseCase": "Allowing a React front‑end running on localhost:3000 to call API endpoints on localhost:5000 during development.",
+              "realWorldContext": "Allowing a React front‑end running on localhost:3000 to call API endpoints on localhost:5000 during development.",
+              "commonMistakes": [
+                "setting '*' in production exposing APIs",
+                "forgetting to enable CORS after adding a new route"
+              ],
+              "interviewTip": "Explain that CORS is a browser security feature, not a server‑side restriction."
+            },
+            "source": "ai_generated",
+            "sourceType": "ai_generated",
+            "qualityScore": 80,
+            "rank": 0,
+            "rankScore": 0,
+            "isTopQuestion": false,
+            "usageCount": 0,
+            "lastUsedAt": null,
+            "createdAt": "2026-11-15T10:43:23.882Z",
+            "questionId": "mern:74d5fa2b8cc4daede6983e3edacabbbfc5b838d53f4711d5622d7d4cee17093b",
+            "contentVersion": "93d8859a8911d1accf7982bb893c92bcd5377f0b4dc5dbf41f764814eb4abc55",
+            "verificationStatus": "unverified"
+          },
+          {
+            "_id": "6af98ccb1029a54235cb18bf",
+            "topicKey": "mern",
+            "topicType": "stack",
+            "skill": "mern",
+            "seedId": "",
+            "normalizedQuestion": "what does the useeffect hook do in a react component within a mern app",
+            "normalizedQuestionHash": "c715b694131d5fef32d6c323e075efd20a16875122f77eb2967514da7ffd11a3",
+            "canonicalQuestionKey": "mern:definition:app component hook mern react useeffect within",
+            "canonicalQuestion": "app component hook mern react useeffect within",
+            "searchableTokens": [
+              "does",
+              "useeffect",
+              "hook",
+              "do",
+              "react",
+              "component",
+              "within",
+              "mern",
+              "app"
+            ],
+            "difficulty": "easy",
+            "tags": [
+              "react",
+              "hooks",
+              "useeffect",
+              "mern",
+              "stack"
+            ],
+            "sourceMeta": {
+              "mode": "practice-set",
+              "topic": "",
+              "query": "",
+              "expectedDifficulty": "easy",
+              "verificationStatus": "unverified",
+              "generatedAt": "2026-11-15T10:43:23.853Z",
+              "provider": "groq",
+              "model": "openai/gpt-oss-120b"
+            },
+            "confidenceScore": 0.83,
+            "relevanceScore": 0.88,
+            "category": "core-concepts",
+            "expectedSignals": [],
+            "badAnswerSignals": [],
+            "reviewStatus": "approved",
+            "version": "c77fc2788743a330353445c285d3d391927d929040ff436de9fc9e3120792bd5",
+            "answerFormat": "structured",
+            "isEnriched": true,
+            "qualityState": "approved",
+            "isApproved": true,
+            "qualityStatus": "approved",
+            "rejectedReason": "",
+            "popularity": 10,
+            "topicDimensions": {
+              "stack": [
+                "mern"
+              ],
+              "technology": [],
+              "language": [],
+              "framework": []
+            },
+            "question": "What does the useEffect hook do in a React component within a MERN app?",
+            "answer": "Short answer: It runs side‑effects after rendering and can clean up when dependencies change. Key points: - runs after render - dependency array controls when it runs - optional cleanup function Explanation: useEffect lets you perform operations like data fetching or subscriptions after the component has rendered. The effect runs after the DOM update, and you can return a cleanup function to run before the next effect or when the component unmounts. Example: useEffect(() => { fetch('/api/items').then(r => r.json()).then(setItems); return () => abortController.abort(); }, []); Real-world use case: Fetching a list of products from an Express API when a product page loads. Common mistakes: - omitting the dependency array causing infinite loops - placing heavy calculations inside the effect without cleanup Interview tip: Mention that the empty [] runs the effect only once, similar to componentDidMount.",
+            "answerSections": {
+              "shortAnswer": "It runs side‑effects after rendering and can clean up when dependencies change.",
+              "summary": "It runs side‑effects after rendering and can clean up when dependencies change.",
+              "explanation": "useEffect lets you perform operations like data fetching or subscriptions after the component has rendered. The effect runs after the DOM update, and you can return a cleanup function to run before the next effect or when the component unmounts.",
+              "keyPoints": [
+                "runs after render",
+                "dependency array controls when it runs",
+                "optional cleanup function"
+              ],
+              "bulletPoints": [
+                "runs after render",
+                "dependency array controls when it runs",
+                "optional cleanup function"
+              ],
+              "example": "useEffect(() => { fetch('/api/items').then(r => r.json()).then(setItems); return () => abortController.abort(); }, []);",
+              "codeExample": "useEffect(() => { fetch('/api/items').then(r => r.json()).then(setItems); return () => abortController.abort(); }, []);",
+              "realWorldUseCase": "Fetching a list of products from an Express API when a product page loads.",
+              "realWorldContext": "Fetching a list of products from an Express API when a product page loads.",
+              "commonMistakes": [
+                "omitting the dependency array causing infinite loops",
+                "placing heavy calculations inside the effect without cleanup"
+              ],
+              "interviewTip": "Mention that the empty [] runs the effect only once, similar to componentDidMount."
+            },
+            "source": "ai_generated",
+            "sourceType": "ai_generated",
+            "qualityScore": 80,
+            "rank": 0,
+            "rankScore": 0,
+            "isTopQuestion": false,
+            "usageCount": 0,
+            "lastUsedAt": null,
+            "createdAt": "2026-11-15T10:43:23.881Z",
+            "questionId": "mern:c715b694131d5fef32d6c323e075efd20a16875122f77eb2967514da7ffd11a3",
+            "contentVersion": "c77fc2788743a330353445c285d3d391927d929040ff436de9fc9e3120792bd5",
+            "verificationStatus": "unverified"
+          }
+        ],
+        "total": 5,
+        "totalAvailable": 5,
+        "page": 1,
+        "limit": 5,
+        "totalPages": 1,
+        "fromCache": false,
+        "source": "db",
+        "aiGeneratedCount": 0,
+        "scrapedGeneratedCount": 0,
+        "enrichedCount": 0,
+        "sourceMix": {
+          "ai_generated": 5
+        },
+        "partial": false,
+        "topicKey": "mern",
+        "topicType": "stack",
+        "metrics": {
+          "totalRequests": 3,
+          "cacheHits": 1,
+          "dbReads": 2,
+          "enrichmentRuns": 0,
+          "aiFallbackRuns": 0,
+          "scrapeFallbackRuns": 0,
+          "aiReuseHits": 0,
+          "aiNewGenerations": 0,
+          "dbHitRatio": 0.667,
+          "cacheHitRatio": 0.333,
+          "aiReuseRate": 0
+        }
+      }
+    },
+    {
+      "label": "refresh-and-reuse",
+      "request": {
+        "skill": "mern",
+        "query": "",
+        "difficulty": "easy",
+        "category": "",
+        "source": "database",
+        "tags": "",
+        "target": 5,
+        "limit": 5
+      },
+      "status": 200,
+      "response": {
+        "questions": [
+          {
+            "_id": "6af98dff1029a54235cb18c8",
+            "topicKey": "mern",
+            "topicType": "stack",
+            "skill": "mern",
+            "seedId": "",
+            "normalizedQuestion": "what is the primary purpose of expressjs in a mern stack application",
+            "normalizedQuestionHash": "96becc05d29427a01728b353aa35aa3d8d3586c4694a4669825663068da92023",
+            "canonicalQuestionKey": "mern:use_case:application express js mern primary purpose stack",
+            "canonicalQuestion": "application express js mern primary purpose stack",
+            "searchableTokens": [
+              "primary",
+              "purpose",
+              "expressj",
+              "mern",
+              "stack",
+              "application"
+            ],
+            "difficulty": "easy",
+            "tags": [
+              "expressjs",
+              "backend",
+              "api",
+              "mern",
+              "stack"
+            ],
+            "sourceMeta": {
+              "mode": "practice-set",
+              "topic": "",
+              "query": "",
+              "expectedDifficulty": "easy",
+              "verificationStatus": "unverified",
+              "generatedAt": "2026-11-15T10:48:31.055Z",
+              "provider": "gemini",
+              "model": "gemini-2.5-flash"
+            },
+            "confidenceScore": 0.83,
+            "relevanceScore": 0.88,
+            "category": "core-concepts",
+            "expectedSignals": [],
+            "badAnswerSignals": [],
+            "reviewStatus": "approved",
+            "version": "9500635b501aeb8dfa0f48f30db46cc504ba25ee2a75fba3d7772eb1b93b89c0",
+            "answerFormat": "structured",
+            "isEnriched": true,
+            "qualityState": "approved",
+            "isApproved": true,
+            "qualityStatus": "approved",
+            "rejectedReason": "",
+            "popularity": 10,
+            "topicDimensions": {
+              "stack": [
+                "mern"
+              ],
+              "technology": [],
+              "language": [],
+              "framework": []
+            },
+            "question": "What is the primary purpose of Express.js in a MERN stack application?",
+            "answer": "Short answer: Express.js serves as the backend web application framework, handling API routes, middleware, and server-side logic. Key points: - Handles HTTP requests and responses. - Defines API endpoints. - Manages middleware for tasks like authentication or logging. Explanation: In a MERN application, Express.js is crucial for building the server-side. It allows developers to create RESTful APIs that the React frontend can interact with. It simplifies the process of handling different HTTP methods (GET, POST, PUT, DELETE) and managing server-side operations. Example: const express = require('express'); const app = express(); app.get('/api/hello', (req, res) => { res.send('Hello from Express!'); }); app.listen(3000, () => { console.log('Server listening on port 3000'); }); Real-world use case: An e-commerce MERN application uses Express.js to create API endpoints for fetching product listings, adding items to a shopping cart, and processing orders. Common mistakes: - Confusing Express.js with a frontend framework. - Not properly handling asynchronous operations within Express routes. Interview tip: Clearly articulate Express.js's role as the 'E' in MERN and its function in handling server-side logic and API creation.",
+            "answerSections": {
+              "shortAnswer": "Express.js serves as the backend web application framework, handling API routes, middleware, and server-side logic.",
+              "summary": "Express.js serves as the backend web application framework, handling API routes, middleware, and server-side logic.",
+              "explanation": "In a MERN application, Express.js is crucial for building the server-side. It allows developers to create RESTful APIs that the React frontend can interact with. It simplifies the process of handling different HTTP methods (GET, POST, PUT, DELETE) and managing server-side operations.",
+              "keyPoints": [
+                "Handles HTTP requests and responses.",
+                "Defines API endpoints.",
+                "Manages middleware for tasks like authentication or logging."
+              ],
+              "bulletPoints": [
+                "Handles HTTP requests and responses.",
+                "Defines API endpoints.",
+                "Manages middleware for tasks like authentication or logging."
+              ],
+              "example": "const express = require('express');\nconst app = express();\n\napp.get('/api/hello', (req, res) => {\n  res.send('Hello from Express!');\n});\n\napp.listen(3000, () => {\n  console.log('Server listening on port 3000');\n});",
+              "codeExample": "const express = require('express');\nconst app = express();\n\napp.get('/api/hello', (req, res) => {\n  res.send('Hello from Express!');\n});\n\napp.listen(3000, () => {\n  console.log('Server listening on port 3000');\n});",
+              "realWorldUseCase": "An e-commerce MERN application uses Express.js to create API endpoints for fetching product listings, adding items to a shopping cart, and processing orders.",
+              "realWorldContext": "An e-commerce MERN application uses Express.js to create API endpoints for fetching product listings, adding items to a shopping cart, and processing orders.",
+              "commonMistakes": [
+                "Confusing Express.js with a frontend framework.",
+                "Not properly handling asynchronous operations within Express routes."
+              ],
+              "interviewTip": "Clearly articulate Express.js's role as the 'E' in MERN and its function in handling server-side logic and API creation."
+            },
+            "source": "ai_generated",
+            "sourceType": "ai_generated",
+            "qualityScore": 80,
+            "rank": 0,
+            "rankScore": 0,
+            "isTopQuestion": false,
+            "usageCount": 0,
+            "lastUsedAt": null,
+            "createdAt": "2026-11-15T10:48:31.067Z",
+            "questionId": "mern:96becc05d29427a01728b353aa35aa3d8d3586c4694a4669825663068da92023",
+            "contentVersion": "9500635b501aeb8dfa0f48f30db46cc504ba25ee2a75fba3d7772eb1b93b89c0",
+            "verificationStatus": "unverified"
+          },
+          {
+            "_id": "6af98ccc1029a54235cb18c2",
+            "topicKey": "mern",
+            "topicType": "stack",
+            "skill": "mern",
+            "seedId": "",
+            "normalizedQuestion": "what is the role of packagejson in a mern project",
+            "normalizedQuestionHash": "13c79e87e1ca2153aef0af71d6757b1a2c89401080dadcf5ba392a849f14f058",
+            "canonicalQuestionKey": "mern:definition:json mern package project role",
+            "canonicalQuestion": "json mern package project role",
+            "searchableTokens": [
+              "role",
+              "packagejson",
+              "mern",
+              "project"
+            ],
+            "difficulty": "easy",
+            "tags": [
+              "npm",
+              "package.json",
+              "dependency-management",
+              "mern",
+              "stack"
+            ],
+            "sourceMeta": {
+              "mode": "practice-set",
+              "topic": "",
+              "query": "",
+              "expectedDifficulty": "easy",
+              "verificationStatus": "unverified",
+              "generatedAt": "2026-11-15T10:43:23.853Z",
+              "provider": "groq",
+              "model": "openai/gpt-oss-120b"
+            },
+            "confidenceScore": 0.83,
+            "relevanceScore": 0.88,
+            "category": "core-concepts",
+            "expectedSignals": [],
+            "badAnswerSignals": [],
+            "reviewStatus": "approved",
+            "version": "6a44dcca6313d0ab31198cd9c68adb6c5f87a32fbf0900772657d51cf555e10f",
+            "answerFormat": "structured",
+            "isEnriched": true,
+            "qualityState": "approved",
+            "isApproved": true,
+            "qualityStatus": "approved",
+            "rejectedReason": "",
+            "popularity": 10,
+            "topicDimensions": {
+              "stack": [
+                "mern"
+              ],
+              "technology": [],
+              "language": [],
+              "framework": []
+            },
+            "question": "What is the role of 'package.json' in a MERN project?",
+            "answer": "Short answer: It lists dependencies, scripts, and metadata for the Node.js part of the stack. Key points: - dependencies and devDependencies - npm scripts - version and entry point Explanation: package.json is the manifest file used by npm or yarn. It declares which libraries the server (Express) and client (React) need, defines start/build scripts, and stores version information. The file enables reproducible installs with npm install. Example: { \"name\": \"my-mern-app\", \"version\": \"1.0.0\", \"scripts\": { \"start\": \"node server.js\", \"client\": \"npm start --prefix client\" }, \"dependencies\": { \"express\": \"^4.18.2\", \"mongoose\": \"^7.5.0\" } } Real-world use case: Running \"npm run client\" to launch the React development server while the Express API runs separately. Common mistakes: - checking package.json into source control without locking versions - using ^ for major version changes that break the build Interview tip: Mention that scripts can be scoped to subfolders, useful for monorepo‑style MERN setups.",
+            "answerSections": {
+              "shortAnswer": "It lists dependencies, scripts, and metadata for the Node.js part of the stack.",
+              "summary": "It lists dependencies, scripts, and metadata for the Node.js part of the stack.",
+              "explanation": "package.json is the manifest file used by npm or yarn. It declares which libraries the server (Express) and client (React) need, defines start/build scripts, and stores version information. The file enables reproducible installs with npm install.",
+              "keyPoints": [
+                "dependencies and devDependencies",
+                "npm scripts",
+                "version and entry point"
+              ],
+              "bulletPoints": [
+                "dependencies and devDependencies",
+                "npm scripts",
+                "version and entry point"
+              ],
+              "example": "{ \"name\": \"my-mern-app\", \"version\": \"1.0.0\", \"scripts\": { \"start\": \"node server.js\", \"client\": \"npm start --prefix client\" }, \"dependencies\": { \"express\": \"^4.18.2\", \"mongoose\": \"^7.5.0\" } }",
+              "codeExample": "{ \"name\": \"my-mern-app\", \"version\": \"1.0.0\", \"scripts\": { \"start\": \"node server.js\", \"client\": \"npm start --prefix client\" }, \"dependencies\": { \"express\": \"^4.18.2\", \"mongoose\": \"^7.5.0\" } }",
+              "realWorldUseCase": "Running \"npm run client\" to launch the React development server while the Express API runs separately.",
+              "realWorldContext": "Running \"npm run client\" to launch the React development server while the Express API runs separately.",
+              "commonMistakes": [
+                "checking package.json into source control without locking versions",
+                "using ^ for major version changes that break the build"
+              ],
+              "interviewTip": "Mention that scripts can be scoped to subfolders, useful for monorepo‑style MERN setups."
+            },
+            "source": "ai_generated",
+            "sourceType": "ai_generated",
+            "qualityScore": 80,
+            "rank": 0,
+            "rankScore": 0,
+            "isTopQuestion": false,
+            "usageCount": 0,
+            "lastUsedAt": null,
+            "createdAt": "2026-11-15T10:43:23.883Z",
+            "questionId": "mern:13c79e87e1ca2153aef0af71d6757b1a2c89401080dadcf5ba392a849f14f058",
+            "contentVersion": "6a44dcca6313d0ab31198cd9c68adb6c5f87a32fbf0900772657d51cf555e10f",
+            "verificationStatus": "unverified"
+          },
+          {
+            "_id": "6af98ccc1029a54235cb18c0",
+            "topicKey": "mern",
+            "topicType": "stack",
+            "skill": "mern",
+            "seedId": "",
+            "normalizedQuestion": "how do you define a simple get route in express that returns all users from mongodb using mongoose",
+            "normalizedQuestionHash": "65006589d83cfbe7f523368d70a364bd265fe407694c4c5ebb8b1c494b9810b8",
+            "canonicalQuestionKey": "mern:general:all express from get mongodb mongoose returns route simple that users using",
+            "canonicalQuestion": "all express from get mongodb mongoose returns route simple that users using",
+            "searchableTokens": [
+              "do",
+              "you",
+              "define",
+              "simple",
+              "get",
+              "route",
+              "expres",
+              "that",
+              "return",
+              "all",
+              "user",
+              "from",
+              "mongodb",
+              "using",
+              "mongoose"
+            ],
+            "difficulty": "easy",
+            "tags": [
+              "express",
+              "route",
+              "mongoose",
+              "mern",
+              "stack"
+            ],
+            "sourceMeta": {
+              "mode": "practice-set",
+              "topic": "",
+              "query": "",
+              "expectedDifficulty": "easy",
+              "verificationStatus": "unverified",
+              "generatedAt": "2026-11-15T10:43:23.853Z",
+              "provider": "groq",
+              "model": "openai/gpt-oss-120b"
+            },
+            "confidenceScore": 0.83,
+            "relevanceScore": 0.88,
+            "category": "core-concepts",
+            "expectedSignals": [],
+            "badAnswerSignals": [],
+            "reviewStatus": "approved",
+            "version": "f12fa9468d0b2ad672ec6f6733510dac9f713eb9a9c30d20e2cfcb96f455bbd7",
+            "answerFormat": "structured",
+            "isEnriched": true,
+            "qualityState": "approved",
+            "isApproved": true,
+            "qualityStatus": "approved",
+            "rejectedReason": "",
+            "popularity": 10,
+            "topicDimensions": {
+              "stack": [
+                "mern"
+              ],
+              "technology": [],
+              "language": [],
+              "framework": []
+            },
+            "question": "How do you define a simple GET route in Express that returns all users from MongoDB using Mongoose?",
+            "answer": "Short answer: Create an app.get handler that calls User.find() and sends the result as JSON. Key points: - app.get('/users', handler) - User model from Mongoose - res.json(data) Explanation: In Express you register a GET endpoint with app.get. Inside the handler you use the Mongoose model's find method to retrieve documents, then respond with res.json. Errors should be caught and sent with a proper status. Example: app.get('/users', async (req, res) => { try { const users = await User.find(); res.json(users); } catch (e) { res.status(500).json({error: 'Server error'}); } }); Real-world use case: Providing a REST endpoint for the front‑end to display a user directory. Common mistakes: - forgetting async/await causing a promise to be sent - not handling errors leading to hanging requests Interview tip: Highlight the async nature and that Mongoose returns a promise.",
+            "answerSections": {
+              "shortAnswer": "Create an app.get handler that calls User.find() and sends the result as JSON.",
+              "summary": "Create an app.get handler that calls User.find() and sends the result as JSON.",
+              "explanation": "In Express you register a GET endpoint with app.get. Inside the handler you use the Mongoose model's find method to retrieve documents, then respond with res.json. Errors should be caught and sent with a proper status.",
+              "keyPoints": [
+                "app.get('/users', handler)",
+                "User model from Mongoose",
+                "res.json(data)"
+              ],
+              "bulletPoints": [
+                "app.get('/users', handler)",
+                "User model from Mongoose",
+                "res.json(data)"
+              ],
+              "example": "app.get('/users', async (req, res) => { try { const users = await User.find(); res.json(users); } catch (e) { res.status(500).json({error: 'Server error'}); } });",
+              "codeExample": "app.get('/users', async (req, res) => { try { const users = await User.find(); res.json(users); } catch (e) { res.status(500).json({error: 'Server error'}); } });",
+              "realWorldUseCase": "Providing a REST endpoint for the front‑end to display a user directory.",
+              "realWorldContext": "Providing a REST endpoint for the front‑end to display a user directory.",
+              "commonMistakes": [
+                "forgetting async/await causing a promise to be sent",
+                "not handling errors leading to hanging requests"
+              ],
+              "interviewTip": "Highlight the async nature and that Mongoose returns a promise."
+            },
+            "source": "ai_generated",
+            "sourceType": "ai_generated",
+            "qualityScore": 80,
+            "rank": 0,
+            "rankScore": 0,
+            "isTopQuestion": false,
+            "usageCount": 0,
+            "lastUsedAt": null,
+            "createdAt": "2026-11-15T10:43:23.882Z",
+            "questionId": "mern:65006589d83cfbe7f523368d70a364bd265fe407694c4c5ebb8b1c494b9810b8",
+            "contentVersion": "f12fa9468d0b2ad672ec6f6733510dac9f713eb9a9c30d20e2cfcb96f455bbd7",
+            "verificationStatus": "unverified"
+          },
+          {
+            "_id": "6af98ccc1029a54235cb18c1",
+            "topicKey": "mern",
+            "topicType": "stack",
+            "skill": "mern",
+            "seedId": "",
+            "normalizedQuestion": "how do you add a simple cors header to an express server for a mern app",
+            "normalizedQuestionHash": "74d5fa2b8cc4daede6983e3edacabbbfc5b838d53f4711d5622d7d4cee17093b",
+            "canonicalQuestionKey": "mern:general:add app cors express header mern server simple",
+            "canonicalQuestion": "add app cors express header mern server simple",
+            "searchableTokens": [
+              "do",
+              "you",
+              "add",
+              "simple",
+              "cors",
+              "header",
+              "expres",
+              "server",
+              "mern",
+              "app"
+            ],
+            "difficulty": "easy",
+            "tags": [
+              "express",
+              "cors",
+              "middleware",
+              "mern",
+              "stack"
+            ],
+            "sourceMeta": {
+              "mode": "practice-set",
+              "topic": "",
+              "query": "",
+              "expectedDifficulty": "easy",
+              "verificationStatus": "unverified",
+              "generatedAt": "2026-11-15T10:43:23.853Z",
+              "provider": "groq",
+              "model": "openai/gpt-oss-120b"
+            },
+            "confidenceScore": 0.83,
+            "relevanceScore": 0.88,
+            "category": "core-concepts",
+            "expectedSignals": [],
+            "badAnswerSignals": [],
+            "reviewStatus": "approved",
+            "version": "93d8859a8911d1accf7982bb893c92bcd5377f0b4dc5dbf41f764814eb4abc55",
+            "answerFormat": "structured",
+            "isEnriched": true,
+            "qualityState": "approved",
+            "isApproved": true,
+            "qualityStatus": "approved",
+            "rejectedReason": "",
+            "popularity": 10,
+            "topicDimensions": {
+              "stack": [
+                "mern"
+              ],
+              "technology": [],
+              "language": [],
+              "framework": []
+            },
+            "question": "How do you add a simple CORS header to an Express server for a MERN app?",
+            "answer": "Short answer: Use the cors middleware or set Access-Control-Allow-Origin header manually. Key points: - install cors package - app.use(cors()) - or res.setHeader('Access-Control-Allow-Origin', '*') Explanation: Browsers block cross‑origin requests unless the server includes CORS headers. The popular cors npm package adds the required headers automatically for all routes when you call app.use(cors()). Example: const cors = require('cors'); app.use(cors({ origin: 'http://localhost:3000' })); Real-world use case: Allowing a React front‑end running on localhost:3000 to call API endpoints on localhost:5000 during development. Common mistakes: - setting '*' in production exposing APIs - forgetting to enable CORS after adding a new route Interview tip: Explain that CORS is a browser security feature, not a server‑side restriction.",
+            "answerSections": {
+              "shortAnswer": "Use the cors middleware or set Access-Control-Allow-Origin header manually.",
+              "summary": "Use the cors middleware or set Access-Control-Allow-Origin header manually.",
+              "explanation": "Browsers block cross‑origin requests unless the server includes CORS headers. The popular cors npm package adds the required headers automatically for all routes when you call app.use(cors()).",
+              "keyPoints": [
+                "install cors package",
+                "app.use(cors())",
+                "or res.setHeader('Access-Control-Allow-Origin', '*')"
+              ],
+              "bulletPoints": [
+                "install cors package",
+                "app.use(cors())",
+                "or res.setHeader('Access-Control-Allow-Origin', '*')"
+              ],
+              "example": "const cors = require('cors'); app.use(cors({ origin: 'http://localhost:3000' }));",
+              "codeExample": "const cors = require('cors'); app.use(cors({ origin: 'http://localhost:3000' }));",
+              "realWorldUseCase": "Allowing a React front‑end running on localhost:3000 to call API endpoints on localhost:5000 during development.",
+              "realWorldContext": "Allowing a React front‑end running on localhost:3000 to call API endpoints on localhost:5000 during development.",
+              "commonMistakes": [
+                "setting '*' in production exposing APIs",
+                "forgetting to enable CORS after adding a new route"
+              ],
+              "interviewTip": "Explain that CORS is a browser security feature, not a server‑side restriction."
+            },
+            "source": "ai_generated",
+            "sourceType": "ai_generated",
+            "qualityScore": 80,
+            "rank": 0,
+            "rankScore": 0,
+            "isTopQuestion": false,
+            "usageCount": 0,
+            "lastUsedAt": null,
+            "createdAt": "2026-11-15T10:43:23.882Z",
+            "questionId": "mern:74d5fa2b8cc4daede6983e3edacabbbfc5b838d53f4711d5622d7d4cee17093b",
+            "contentVersion": "93d8859a8911d1accf7982bb893c92bcd5377f0b4dc5dbf41f764814eb4abc55",
+            "verificationStatus": "unverified"
+          },
+          {
+            "_id": "6af98ccb1029a54235cb18bf",
+            "topicKey": "mern",
+            "topicType": "stack",
+            "skill": "mern",
+            "seedId": "",
+            "normalizedQuestion": "what does the useeffect hook do in a react component within a mern app",
+            "normalizedQuestionHash": "c715b694131d5fef32d6c323e075efd20a16875122f77eb2967514da7ffd11a3",
+            "canonicalQuestionKey": "mern:definition:app component hook mern react useeffect within",
+            "canonicalQuestion": "app component hook mern react useeffect within",
+            "searchableTokens": [
+              "does",
+              "useeffect",
+              "hook",
+              "do",
+              "react",
+              "component",
+              "within",
+              "mern",
+              "app"
+            ],
+            "difficulty": "easy",
+            "tags": [
+              "react",
+              "hooks",
+              "useeffect",
+              "mern",
+              "stack"
+            ],
+            "sourceMeta": {
+              "mode": "practice-set",
+              "topic": "",
+              "query": "",
+              "expectedDifficulty": "easy",
+              "verificationStatus": "unverified",
+              "generatedAt": "2026-11-15T10:43:23.853Z",
+              "provider": "groq",
+              "model": "openai/gpt-oss-120b"
+            },
+            "confidenceScore": 0.83,
+            "relevanceScore": 0.88,
+            "category": "core-concepts",
+            "expectedSignals": [],
+            "badAnswerSignals": [],
+            "reviewStatus": "approved",
+            "version": "c77fc2788743a330353445c285d3d391927d929040ff436de9fc9e3120792bd5",
+            "answerFormat": "structured",
+            "isEnriched": true,
+            "qualityState": "approved",
+            "isApproved": true,
+            "qualityStatus": "approved",
+            "rejectedReason": "",
+            "popularity": 10,
+            "topicDimensions": {
+              "stack": [
+                "mern"
+              ],
+              "technology": [],
+              "language": [],
+              "framework": []
+            },
+            "question": "What does the useEffect hook do in a React component within a MERN app?",
+            "answer": "Short answer: It runs side‑effects after rendering and can clean up when dependencies change. Key points: - runs after render - dependency array controls when it runs - optional cleanup function Explanation: useEffect lets you perform operations like data fetching or subscriptions after the component has rendered. The effect runs after the DOM update, and you can return a cleanup function to run before the next effect or when the component unmounts. Example: useEffect(() => { fetch('/api/items').then(r => r.json()).then(setItems); return () => abortController.abort(); }, []); Real-world use case: Fetching a list of products from an Express API when a product page loads. Common mistakes: - omitting the dependency array causing infinite loops - placing heavy calculations inside the effect without cleanup Interview tip: Mention that the empty [] runs the effect only once, similar to componentDidMount.",
+            "answerSections": {
+              "shortAnswer": "It runs side‑effects after rendering and can clean up when dependencies change.",
+              "summary": "It runs side‑effects after rendering and can clean up when dependencies change.",
+              "explanation": "useEffect lets you perform operations like data fetching or subscriptions after the component has rendered. The effect runs after the DOM update, and you can return a cleanup function to run before the next effect or when the component unmounts.",
+              "keyPoints": [
+                "runs after render",
+                "dependency array controls when it runs",
+                "optional cleanup function"
+              ],
+              "bulletPoints": [
+                "runs after render",
+                "dependency array controls when it runs",
+                "optional cleanup function"
+              ],
+              "example": "useEffect(() => { fetch('/api/items').then(r => r.json()).then(setItems); return () => abortController.abort(); }, []);",
+              "codeExample": "useEffect(() => { fetch('/api/items').then(r => r.json()).then(setItems); return () => abortController.abort(); }, []);",
+              "realWorldUseCase": "Fetching a list of products from an Express API when a product page loads.",
+              "realWorldContext": "Fetching a list of products from an Express API when a product page loads.",
+              "commonMistakes": [
+                "omitting the dependency array causing infinite loops",
+                "placing heavy calculations inside the effect without cleanup"
+              ],
+              "interviewTip": "Mention that the empty [] runs the effect only once, similar to componentDidMount."
+            },
+            "source": "ai_generated",
+            "sourceType": "ai_generated",
+            "qualityScore": 80,
+            "rank": 0,
+            "rankScore": 0,
+            "isTopQuestion": false,
+            "usageCount": 0,
+            "lastUsedAt": null,
+            "createdAt": "2026-11-15T10:43:23.881Z",
+            "questionId": "mern:c715b694131d5fef32d6c323e075efd20a16875122f77eb2967514da7ffd11a3",
+            "contentVersion": "c77fc2788743a330353445c285d3d391927d929040ff436de9fc9e3120792bd5",
+            "verificationStatus": "unverified"
+          }
+        ],
+        "total": 5,
+        "totalAvailable": 5,
+        "page": 1,
+        "limit": 5,
+        "totalPages": 1,
+        "fromCache": false,
+        "source": "db",
+        "aiGeneratedCount": 0,
+        "scrapedGeneratedCount": 0,
+        "enrichedCount": 0,
+        "sourceMix": {
+          "ai_generated": 5
+        },
+        "partial": false,
+        "topicKey": "mern",
+        "topicType": "stack",
+        "metrics": {
+          "totalRequests": 6,
+          "cacheHits": 4,
+          "dbReads": 2,
+          "enrichmentRuns": 0,
+          "aiFallbackRuns": 0,
+          "scrapeFallbackRuns": 0,
+          "aiReuseHits": 0,
+          "aiNewGenerations": 0,
+          "dbHitRatio": 0.333,
+          "cacheHitRatio": 0.667,
+          "aiReuseRate": 0
+        }
+      }
+    },
+    {
+      "label": "verified-only-insufficiency",
+      "request": {
+        "skill": "mern",
+        "query": "",
+        "difficulty": "easy",
+        "category": "",
+        "source": "seed",
+        "tags": "",
+        "target": 5,
+        "limit": 5
+      },
+      "status": 503,
+      "response": {
+        "message": "Insufficient matching questions: 0 of 5 available. This source excludes AI fallback. Adjust the filters or choose all sources.",
+        "code": "insufficient_results",
+        "generationStatus": "insufficient_results",
+        "retryable": false,
+        "requestedCount": 5,
+        "availableCount": 0
+      }
+    }
+  ],
+  "checks": [
+    "Actual browser payload requests exactly five Easy MERN questions with explicit all-source policy.",
+    "All five real response questions exist in MongoDB with Easy canonical difficulty and unverified AI provenance.",
+    "Refresh and regeneration reuse eligible saved AI questions without generating another set.",
+    "Verified-only mode returns explicit insufficiency and clears the incompatible AI drill."
+  ],
+  "screenshots": [
+    "live-mern-easy-desktop.png",
+    "live-mern-easy-mobile.png"
+  ],
+  "ownerIdentity": "Existing developer; credentials and personal profile omitted.",
+  "sourceFingerprint": "655b775afb45acda51b756ba4498ba224d2a01c65a6fcb77b202eace6ddfb541",
+  "persistence": [
+    {
+      "id": "6af98ccc1029a54235cb18c2",
+      "difficulty": "easy",
+      "sourceType": "ai_generated",
+      "verificationStatus": "unverified",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "generatedAt": "2026-11-15T10:43:23.853Z",
+      "identity": "13c79e87e1ca2153aef0af71d6757b1a2c89401080dadcf5ba392a849f14f058"
+    },
+    {
+      "id": "6af98ccc1029a54235cb18c0",
+      "difficulty": "easy",
+      "sourceType": "ai_generated",
+      "verificationStatus": "unverified",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "generatedAt": "2026-11-15T10:43:23.853Z",
+      "identity": "65006589d83cfbe7f523368d70a364bd265fe407694c4c5ebb8b1c494b9810b8"
+    },
+    {
+      "id": "6af98ccc1029a54235cb18c1",
+      "difficulty": "easy",
+      "sourceType": "ai_generated",
+      "verificationStatus": "unverified",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "generatedAt": "2026-11-15T10:43:23.853Z",
+      "identity": "74d5fa2b8cc4daede6983e3edacabbbfc5b838d53f4711d5622d7d4cee17093b"
+    },
+    {
+      "id": "6af98dff1029a54235cb18c8",
+      "difficulty": "easy",
+      "sourceType": "ai_generated",
+      "verificationStatus": "unverified",
+      "provider": "gemini",
+      "model": "gemini-2.5-flash",
+      "generatedAt": "2026-11-15T10:48:31.055Z",
+      "identity": "96becc05d29427a01728b353aa35aa3d8d3586c4694a4669825663068da92023"
+    },
+    {
+      "id": "6af98ccb1029a54235cb18bf",
+      "difficulty": "easy",
+      "sourceType": "ai_generated",
+      "verificationStatus": "unverified",
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "generatedAt": "2026-11-15T10:43:23.853Z",
+      "identity": "c715b694131d5fef32d6c323e075efd20a16875122f77eb2967514da7ffd11a3"
+    }
+  ],
+  "renderedQuestions": [
+    {
+      "index": 1,
+      "question": "What is the primary purpose of Express.js in a MERN stack application?",
+      "difficulty": "Easy"
+    },
+    {
+      "index": 2,
+      "question": "What is the role of 'package.json' in a MERN project?",
+      "difficulty": "Easy"
+    },
+    {
+      "index": 3,
+      "question": "How do you define a simple GET route in Express that returns all users from MongoDB using Mongoose?",
+      "difficulty": "Easy"
+    },
+    {
+      "index": 4,
+      "question": "How do you add a simple CORS header to an Express server for a MERN app?",
+      "difficulty": "Easy"
+    },
+    {
+      "index": 5,
+      "question": "What does the useEffect hook do in a React component within a MERN app?",
+      "difficulty": "Easy"
+    }
+  ],
+  "mobileLayout": {
+    "viewport": 390,
+    "pageRight": 376,
+    "cardRight": 376,
+    "scrollWidth": 390
+  },
+  "firstGenerationCount": 0,
+  "providerInvoked": false,
+  "pageErrors": [],
+  "passed": true
+}

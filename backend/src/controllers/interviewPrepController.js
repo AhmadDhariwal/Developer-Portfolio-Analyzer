@@ -270,6 +270,7 @@ const generateInterviewPrepQuestions = async (req, res) => {
       tags: req.body.tags,
       source: req.body.source,
       page,
+      signal: cancellationSignal(req, res),
       limit: target || limit
     });
 

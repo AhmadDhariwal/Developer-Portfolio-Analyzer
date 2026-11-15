@@ -482,4 +482,21 @@ describe('Interview Prep workspace', () => {
     expect(component.sessions).toHaveLength(0);
     expect(component.customResult).toBeNull();
   });
+  it.each(['provider_unavailable', 'invalid_response', 'insufficient_results'])(
+    'keeps generation failure state %s distinct without displaying incompatible questions',
+    (generationStatus) => {
+      component.changeTab('practice');
+      api.generateQuestions.mockReturnValue(
+        throwError(() => ({
+          error: { generationStatus, message: `Generation ${generationStatus}` },
+        })),
+      );
+      component.generatePractice();
+      fixture.detectChanges();
+      expect(component.practiceErrorKind).toBe(generationStatus);
+      expect(fixture.nativeElement.querySelector('.notice.error').getAttribute('data-state')).toBe(
+        generationStatus,
+      );
+    },
+  );
 });

@@ -1,0 +1,80 @@
+{
+  "reason": "Full-suite tests rewrote tracked historical verification reports. Baseline had no unstaged changes; original index bytes restored without Git reset or checkout.",
+  "files": [
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\architecture\\request-flow-governance-results.json",
+      "testGeneratedHash": "51827280c817154d6c880c461193b96c7eff4bd114c685f1cb97b981bd8baf81",
+      "restoredIndexHash": "43e9e8d2f5546c1db5bd79c9444eb79c92dd7fb3e0983fa0ad1fd411aba46bb6"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\acquisition-2026-11-06\\cleanup.json",
+      "testGeneratedHash": "824cc0642099cfb174b0cd479826b2f2422f88616c0c0d7ff25445b5ae66712b",
+      "restoredIndexHash": "67f7f4bd0bc2557539bf5eb61afe6bc354a94beac0a7a10b7fe055b6ff1e8088"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\acquisition-2026-11-06\\coverage.json",
+      "testGeneratedHash": "2707d5336246dfbe0923f97d6f961bc3dbf55cbd74c456c404f264ee276af2fe",
+      "restoredIndexHash": "2c9ec5d52fa4e81129cfcec1bbd5baa3eefae38dc0d9245708c3f1a88fa55068"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\defects-2026-11-05\\shared-catalog.json",
+      "testGeneratedHash": "e4d34e0d25cc1079a32d38a1d3512534499179a6af7a00534832e36add1235ed",
+      "restoredIndexHash": "403f91c448321e444d56fb6f285e1ce64887f1a502de3e708009e576901cd92e"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\relevance-2026-11-06\\after.json",
+      "testGeneratedHash": "c354acd90aad9f366069fbbbfdd12df7d493b1039f1248d6d70867836d853143",
+      "restoredIndexHash": "22b5989494c204ecbecb1b3ad8c2abce15d0469cb609d92aae82892c254741e3"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\courses\\view-separation-2026-11-06\\mongo-jwt.json",
+      "testGeneratedHash": "683d24f40fc0d34ec9fa7865713518bbecaf2897e4a12b9c8d1d4ba4bf1904c1",
+      "restoredIndexHash": "bd8907c568d05994aaf62495dc2628907207142d8b0ce628d8bede73331e924b"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\integrations\\cleanup.json",
+      "testGeneratedHash": "f4f03017fcb15c88e38ae13fd83f3b14d51a19093204ccd3ac82ba1181fb094d",
+      "restoredIndexHash": "4a300de525823f31ba9dc5cadad87aa17efe589c59593f372253e4b72f3cf5a4"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\integrations\\final-scalability-acceptance.json",
+      "testGeneratedHash": "0d4cc5bcc4ee7a6d350dbbcb8511d238e13e65669e48169400411b77c34f942d",
+      "restoredIndexHash": "c9dbad0bd099cb700ae823e3d4fb36c76461681ad545227a67029c84be6f0dc5"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\integrations\\local-acceptance\\api-results.json",
+      "testGeneratedHash": "cd8a825fdfd328b79132e2f1b54410b861992d984d124dce95650741effd9012",
+      "restoredIndexHash": "25d7af4fc359d0cd4207d594f04a7d1cd7a83e84f944f22a2c03dcd864e8dd72"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\integrations\\query-plans.json",
+      "testGeneratedHash": "feb001e55d2d799214031a6ec5047c78fbb1f20887795ffc5e12880011ac4c07",
+      "restoredIndexHash": "e915836768d4c0006d74b976f11722ac18066d746039adc0b02c3c9ae35bf08f"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\integrations\\repeated-requests-cache-audit.json",
+      "testGeneratedHash": "cc2fae62a8e2843827fe083649ba5428b2e3aa75a267862351e00d9c656cf3d3",
+      "restoredIndexHash": "4fd9b0396ab5df1a89d799a4683d0a5999cb4c86a26d3c9f63ecb6c9b4195227"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\integrations\\scalability-governance-regression.json",
+      "testGeneratedHash": "f28c619f36755290f95cc92a0d7fa6c062b430fad07465d2a7e988dcb3149fc1",
+      "restoredIndexHash": "bb2e087c6a9625b2e5e68e4fc89df5fb061ee66dbde9539abd6deb1dd8771f5a"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\notifications\\integration-results.json",
+      "testGeneratedHash": "92d8872b21c20f3ae63e34fabeea24b4e869faf833958e344130e26041641406",
+      "restoredIndexHash": "8414600e09f18d306300cba6ff8c9df3733db9ffcb977844f9f3ce0fbee92ad7"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\notifications\\retention-results.json",
+      "testGeneratedHash": "8eeb1c21e066f66bc5512fd8e10ab3f0affcddcf3297b8c471e1c279fdc533f3",
+      "restoredIndexHash": "684cfdb326c2421d4614a6ba1aaf5d2c597e8c563b62194087676a58c293256c"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\skillgap\\production-results.json",
+      "testGeneratedHash": "1e99420dce76415b5e02ac091945d44e8e9bc12420bb0aa7372abae0ffaf6457",
+      "restoredIndexHash": "14ac0445db82036049cd6e65e0179382b2bde608b2f886cc60a8dba99f2eee4e"
+    }
+  ]
+}

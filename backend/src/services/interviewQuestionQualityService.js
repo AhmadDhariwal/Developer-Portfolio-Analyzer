@@ -475,8 +475,13 @@ const containsWeakOrPlaceholderContent = (text = '') =>
 
 const isInterviewQuestionLike = (question = '') => {
   const normalized = normalizeWhitespace(question).toLowerCase();
-  return /^(what|how|why|when|where|which|explain|describe|compare|contrast|design|implement|debug|optimize|walk me through|tell me about|can you|could you|please)\b/.test(
-    normalized
+  return (
+    /^(what|how|why|when|where|which|explain|describe|compare|contrast|design|implement|debug|optimize|walk me through|tell me about|can you|could you|please)\b/.test(
+      normalized
+    ) ||
+    // A named design task is valid without an opening verb, e.g. the user's
+    // "system design of Netflix". Bare labels still fail the question guard.
+    /^system\s+design\s+(?:of|for)\s+[\p{L}\p{N}][^?]{2,}/u.test(normalized)
   );
 };
 

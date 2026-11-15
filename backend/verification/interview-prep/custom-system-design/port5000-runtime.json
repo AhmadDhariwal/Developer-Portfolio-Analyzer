@@ -1,0 +1,10 @@
+{
+  "command": "node index.js",
+  "restartAuthorization": "Existing explicit user approval to restart port 5000 after fixes",
+  "logs": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-custom-port5000-20261115",
+  "oldPid": 22280,
+  "port": 5000,
+  "startedAt": "2026-11-15T12:13:39.9687402+00:00",
+  "pid": 37160,
+  "mode": "original normal local mode"
+}

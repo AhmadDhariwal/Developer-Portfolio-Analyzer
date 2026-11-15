@@ -1,0 +1,286 @@
+[
+  {
+    "log": "runtime-attempt-2.raw.err",
+    "scope": "AIProviderManager",
+    "event": "provider_missing_key",
+    "provider": "xai"
+  },
+  {
+    "log": "runtime-attempt-2.raw.err",
+    "scope": "AIProviderManager",
+    "event": "provider_error",
+    "provider": "gemini",
+    "model": "gemini-2.5-flash",
+    "reason": "incomplete_output",
+    "attempt": 0,
+    "failover": true
+  },
+  {
+    "log": "runtime-attempt-2.raw.err",
+    "scope": "AIProviderManager",
+    "event": "provider_switched",
+    "provider": "openai",
+    "reason": "incomplete_output"
+  },
+  {
+    "log": "runtime-attempt-2.raw.err",
+    "scope": "AIProviderManager",
+    "event": "provider_error",
+    "provider": "openai",
+    "model": "gpt-6-luna",
+    "reason": "timeout",
+    "attempt": 0,
+    "failover": true
+  },
+  {
+    "log": "runtime-attempt-2.raw.err",
+    "scope": "AIProviderManager",
+    "event": "provider_switched",
+    "provider": "groq",
+    "reason": "timeout"
+  },
+  {
+    "log": "runtime-attempt-2.raw.err",
+    "scope": "AIProviderManager",
+    "event": "provider_error",
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b",
+    "reason": "incomplete_output",
+    "attempt": 0,
+    "failover": true
+  },
+  {
+    "log": "runtime-attempt-2.raw.err",
+    "scope": "AIService",
+    "event": "fallback_all_providers_failed",
+    "reason": "incomplete_output",
+    "durationMs": 26004
+  },
+  {
+    "log": "runtime-attempt-2.raw.log",
+    "scope": "AIProviderManager",
+    "event": "providers_ready"
+  },
+  {
+    "log": "runtime-attempt-2.raw.log",
+    "scope": "AIService",
+    "event": "prompt_size"
+  },
+  {
+    "log": "runtime-attempt-2.raw.log",
+    "scope": "AIService",
+    "event": "prompt_cache_miss"
+  },
+  {
+    "log": "runtime-attempt-2.raw.log",
+    "scope": "AIProviderManager",
+    "event": "provider_selected",
+    "provider": "gemini",
+    "model": "gemini-2.5-flash",
+    "attempt": 0
+  },
+  {
+    "log": "runtime-attempt-2.raw.log",
+    "scope": "AIProviderManager",
+    "event": "provider_response",
+    "provider": "gemini",
+    "model": "gemini-2.5-flash"
+  },
+  {
+    "log": "runtime-attempt-2.raw.log",
+    "scope": "AIProviderManager",
+    "event": "provider_selected",
+    "provider": "openai",
+    "model": "gpt-6-luna",
+    "attempt": 0
+  },
+  {
+    "log": "runtime-attempt-2.raw.log",
+    "scope": "AIProviderManager",
+    "event": "provider_selected",
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b",
+    "attempt": 0
+  },
+  {
+    "log": "runtime-attempt-2.raw.log",
+    "scope": "AIProviderManager",
+    "event": "provider_response",
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b"
+  },
+  {
+    "log": "runtime-attempt-2.raw.log",
+    "ts": "2026-11-15T12:06:48.463Z",
+    "message": "interview-prep-ai",
+    "reasonCode": "schema_rejected"
+  },
+  {
+    "log": "runtime-attempt-3.raw.err",
+    "scope": "AIProviderManager",
+    "event": "provider_missing_key",
+    "provider": "xai"
+  },
+  {
+    "log": "runtime-attempt-3.raw.log",
+    "scope": "AIProviderManager",
+    "event": "providers_ready"
+  },
+  {
+    "log": "runtime-attempt-3.raw.log",
+    "scope": "AIService",
+    "event": "prompt_size"
+  },
+  {
+    "log": "runtime-attempt-3.raw.log",
+    "scope": "AIService",
+    "event": "prompt_cache_miss"
+  },
+  {
+    "log": "runtime-attempt-3.raw.log",
+    "scope": "AIProviderManager",
+    "event": "provider_selected",
+    "provider": "gemini",
+    "model": "gemini-2.5-flash",
+    "attempt": 0
+  },
+  {
+    "log": "runtime-attempt-3.raw.log",
+    "scope": "AIProviderManager",
+    "event": "provider_response",
+    "provider": "gemini",
+    "model": "gemini-2.5-flash"
+  },
+  {
+    "log": "runtime-attempt-3.raw.log",
+    "scope": "AIProviderManager",
+    "event": "provider_success",
+    "provider": "gemini",
+    "model": "gemini-2.5-flash",
+    "attempt": 0,
+    "latencyMs": 9023
+  },
+  {
+    "log": "runtime-attempt-3.raw.log",
+    "scope": "AIService",
+    "event": "ai_request_complete",
+    "provider": "gemini",
+    "model": "gemini-2.5-flash",
+    "durationMs": 9062
+  },
+  {
+    "log": "runtime-attempt-3.raw.log",
+    "ts": "2026-11-15T12:09:07.458Z",
+    "message": "interview-prep-ai",
+    "reasonCode": "provider_success"
+  },
+  {
+    "log": "runtime.raw.err",
+    "scope": "AIProviderManager",
+    "event": "provider_missing_key",
+    "provider": "xai"
+  },
+  {
+    "log": "runtime.raw.err",
+    "scope": "AIProviderManager",
+    "event": "provider_error",
+    "provider": "gemini",
+    "model": "gemini-2.5-flash",
+    "reason": "timeout",
+    "attempt": 0,
+    "failover": true
+  },
+  {
+    "log": "runtime.raw.err",
+    "scope": "AIProviderManager",
+    "event": "provider_switched",
+    "provider": "openai",
+    "reason": "timeout"
+  },
+  {
+    "log": "runtime.raw.err",
+    "scope": "AIProviderManager",
+    "event": "provider_error",
+    "provider": "openai",
+    "model": "gpt-6-luna",
+    "reason": "timeout",
+    "attempt": 0,
+    "failover": true
+  },
+  {
+    "log": "runtime.raw.err",
+    "scope": "AIProviderManager",
+    "event": "provider_switched",
+    "provider": "groq",
+    "reason": "timeout"
+  },
+  {
+    "log": "runtime.raw.err",
+    "scope": "AIProviderManager",
+    "event": "provider_error",
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b",
+    "reason": "incomplete_output",
+    "attempt": 0,
+    "failover": true
+  },
+  {
+    "log": "runtime.raw.err",
+    "scope": "AIService",
+    "event": "fallback_all_providers_failed",
+    "reason": "attempt_budget",
+    "durationMs": 18503
+  },
+  {
+    "log": "runtime.raw.log",
+    "scope": "AIProviderManager",
+    "event": "providers_ready"
+  },
+  {
+    "log": "runtime.raw.log",
+    "scope": "AIService",
+    "event": "prompt_size"
+  },
+  {
+    "log": "runtime.raw.log",
+    "scope": "AIService",
+    "event": "prompt_cache_miss"
+  },
+  {
+    "log": "runtime.raw.log",
+    "scope": "AIProviderManager",
+    "event": "provider_selected",
+    "provider": "gemini",
+    "model": "gemini-2.5-flash",
+    "attempt": 0
+  },
+  {
+    "log": "runtime.raw.log",
+    "scope": "AIProviderManager",
+    "event": "provider_selected",
+    "provider": "openai",
+    "model": "gpt-6-luna",
+    "attempt": 0
+  },
+  {
+    "log": "runtime.raw.log",
+    "scope": "AIProviderManager",
+    "event": "provider_selected",
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b",
+    "attempt": 0
+  },
+  {
+    "log": "runtime.raw.log",
+    "scope": "AIProviderManager",
+    "event": "provider_response",
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b"
+  },
+  {
+    "log": "runtime.raw.log",
+    "ts": "2026-11-15T12:02:57.514Z",
+    "message": "interview-prep-ai",
+    "reasonCode": "provider_error"
+  }
+]

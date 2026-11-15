@@ -42,7 +42,9 @@ const matchesFilters = (item, filters) => {
         : [filters.source];
   const text = lower(`${item.question || ''} ${item.answer || ''}`);
   return (
-    (!item.topicKey || normalizeTopicInput({ skill: item.topicKey }).topicKey === filters.topicKey) &&
+    Boolean(item.topicKey || item.technology || item.skill) &&
+    normalizeTopicInput({ skill: item.topicKey || item.technology || item.skill }).topicKey ===
+      filters.topicKey &&
     (!filters.difficulty || lower(item.difficulty) === filters.difficulty) &&
     (!filters.category || lower(item.category) === filters.category) &&
     (!filters.source || filters.source === 'database' || allowed.includes(source)) &&
@@ -50,4 +52,10 @@ const matchesFilters = (item, filters) => {
     (!filters.query || filters.query.split(/\s+/).some((term) => text.includes(term)))
   );
 };
-module.exports = { normalizeFilters, matchesFilters };
+const generationSourcePolicy = (source = '') => ({
+  verifiedSource: !source || source === 'database' ? 'seed' : source,
+  verified: !['ai', 'ai_generated'].includes(source),
+  reusableAI: !source || ['database', 'ai', 'ai_generated'].includes(source),
+  generateAI: !source || ['database', 'ai', 'ai_generated'].includes(source)
+});
+module.exports = { normalizeFilters, matchesFilters, generationSourcePolicy };

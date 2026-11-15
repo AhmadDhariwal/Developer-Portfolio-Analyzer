@@ -61,7 +61,7 @@ export class InterviewPrepService implements OnDestroy {
     const epoch = this.epoch;
     let guarded: Observable<T>;
     const shared = defer(load).pipe(
-      timeout(kind === 'ask' || kind === 'generate' || kind === 'session' ? 20000 : 12000),
+      timeout(['generate', 'session', 'ask'].includes(kind) ? 40000 : 12000),
       takeUntil(this.cancel),
       finalize(() => {
         if (this.inflight.get(key) === guarded) this.inflight.delete(key);
@@ -126,7 +126,8 @@ export class InterviewPrepService implements OnDestroy {
     tags?: string[];
     source?: string;
   }): Observable<InterviewQuestionListResponse> {
-    return this.once('generate', payload, () => this.api.generateInterviewPrepQuestions(payload));
+    const request = { ...payload, source: payload.source || 'database' };
+    return this.once('generate', request, () => this.api.generateInterviewPrepQuestions(request));
   }
   askQuestion(payload: {
     question: string;
@@ -151,7 +152,13 @@ export class InterviewPrepService implements OnDestroy {
       limit?: number;
     } = {},
   ): Observable<InterviewQuestionListResponse> {
-    const payload = { skill, skillGaps: [], idempotencyKey, ...filters };
+    const payload = {
+      skill,
+      skillGaps: [],
+      idempotencyKey,
+      ...filters,
+      source: filters.source || 'database',
+    };
     return this.once('session', payload, () => this.api.generateInterviewPrep(payload));
   }
   getSession(id: string): Observable<InterviewSession> {

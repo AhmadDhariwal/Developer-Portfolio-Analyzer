@@ -1,0 +1,18 @@
+{
+  "at": "2026-11-15T12:02:37.980Z",
+  "synthetic": false,
+  "backendOrigin": "http://localhost:5008",
+  "request": {
+    "skill": "system-design",
+    "question": "system design of netflix"
+  },
+  "status": 503,
+  "durationMs": 19348,
+  "response": {
+    "message": "AI providers are temporarily unavailable. Please retry.",
+    "code": "ai_unavailable",
+    "generationStatus": "provider_unavailable",
+    "retryable": true
+  },
+  "passed": false
+}

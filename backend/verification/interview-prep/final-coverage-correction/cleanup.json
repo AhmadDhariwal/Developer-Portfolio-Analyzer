@@ -1,0 +1,2986 @@
+{
+  "deletedTemporaryFiles": [
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\latest-runtime.raw.log",
+      "bytes": 1779,
+      "sha256": "284cdcd166b268e18470538dfa45b5dc9ad85bc894aaa8ab26c5292591dec56b",
+      "reason": "Task-created raw runtime log; safe provider events retained."
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\latest-runtime.raw.err",
+      "bytes": 1208,
+      "sha256": "96497d7daaf0f460210a6710c69c2e7e18ced0764bc2ca0cb5d31f3fb42a4d6d",
+      "reason": "Task-created raw runtime log; safe provider events retained."
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\latest-runtime-attempt-2.raw.log",
+      "bytes": 1506,
+      "sha256": "779bf30ee211589981bddb2d23a9df546eeb361569f953688dbd235e4fda4a9f",
+      "reason": "Task-created raw runtime log; safe provider events retained."
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\latest-runtime-attempt-2.raw.err",
+      "bytes": 1045,
+      "sha256": "6f1976e500fcf3fbdf71f48d1ff623b75ed07bab83b1aab996d2caba0f91afe5",
+      "reason": "Task-created raw runtime log; safe provider events retained."
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\latest-runtime-final.raw.log",
+      "bytes": 723,
+      "sha256": "9e0f56ae4dd555db7866c6954c3fe10ef23f0e47ab14378a3848ad1dcd7d4aff",
+      "reason": "Task-created raw runtime log; safe provider events retained."
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\latest-runtime-final.raw.err",
+      "bytes": 987,
+      "sha256": "53f391a1bd3463db2300ea7f7e90a3f834f791d1b141dee99384bf411b66bc3c",
+      "reason": "Task-created raw runtime log; safe provider events retained."
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\runtime-final-source.raw.log",
+      "bytes": 723,
+      "sha256": "f3914d1b0f789f9acfe4c70319efab62ea72cffeeebb5adad78479357dfe14da",
+      "reason": "Task-created raw runtime log; safe provider events retained."
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\runtime-final-source.raw.err",
+      "bytes": 414,
+      "sha256": "40013533c1bddf840ad81f3328f4cf1f9c2fbc8cb2276f74bc79c42e74b024a5",
+      "reason": "Task-created raw runtime log; safe provider events retained."
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\typescript.txt",
+      "bytes": 0,
+      "reason": "Empty command output; successful result retained in validation/finalization records."
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\typescript-final.txt",
+      "bytes": 0,
+      "reason": "Empty command output; successful result retained in validation/finalization records."
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\git-staged-check.txt",
+      "bytes": 0,
+      "reason": "Empty command output; successful result retained in validation/finalization records."
+    }
+  ],
+  "movedEvidence": [
+    {
+      "from": "frontend/verification/interview-prep/complete-ai/final-coverage-focused-tests.txt",
+      "to": "backend\\verification\\interview-prep\\final-coverage-correction\\frontend-focused-initial.txt"
+    },
+    {
+      "from": "frontend/verification/interview-prep/complete-ai/final-coverage-build.txt",
+      "to": "backend\\verification\\interview-prep\\final-coverage-correction\\production-build-initial.txt"
+    },
+    {
+      "from": "backend\\verification\\interview-prep\\final-coverage-correction\\live-acceptance.json",
+      "to": "backend\\verification\\interview-prep\\final-coverage-correction\\live-provider-acceptance.json",
+      "note": "Provider-generation acceptance retained; later final-build reuse acceptance uses the original name."
+    },
+    {
+      "from": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\live-acceptance.json",
+      "to": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\live-acceptance-attempt-1.json",
+      "note": "First live attempt retained before the successful retry"
+    },
+    {
+      "from": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\latest-runtime.json",
+      "to": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\runtime-attempt-1.json",
+      "note": "First task-owned runtime metadata"
+    },
+    {
+      "from": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\latest-runtime.json",
+      "to": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\runtime-attempt-2.json",
+      "note": "Second task-owned runtime metadata"
+    },
+    {
+      "from": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\latest-runtime.json",
+      "to": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\runtime-final-build.json",
+      "note": "Final-build runtime metadata before final source refresh"
+    }
+  ],
+  "sourceDeletions": [],
+  "recursiveDirectoryDeletion": false,
+  "disposableMongoFiles": [
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\_mdb_catalog.wt",
+      "bytes": 184320
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-0144eaa5-df92-4385-8f7a-5535acab152d.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-03d62ab8-9006-4334-89d6-7b9606093394.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-0539f2b8-0a90-47d6-8f17-b1fcbd14c33c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-05c8af7e-0e80-4bb7-8d36-dec06f17678c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-09fd356f-2466-4d29-9a6c-ed486a01f3fb.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-0c45d7f0-ac02-4046-8d6e-0151aced7888.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-10988595-4ad5-4627-9590-fcab3ab66e4b.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-122aa9ba-e321-46c7-9b26-f0c75d702989.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-1302158d-66d1-402a-8863-9b8e38325ff1.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-1388b766-a2e1-40e8-b77d-dd2d861e3533.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-1760380c-dd68-46b2-8e44-37eac26d3730.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-18cdc58c-790b-4c06-bff2-9d7354f4c6ca.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-1ab9ae07-4c02-4764-8cc0-61e194875d5c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-1c620586-5c63-4b09-a91c-5b3d9223d254.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-1dd0e809-4d5f-4ef6-94c4-cba9e3bea34b.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-1ea1ed33-fd05-4a8f-ad27-f6a2063f6dc1.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-1edfa94e-4170-41ad-ad76-34bad8e40f1d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-1fa7b3c7-3426-43be-96ec-d9d608bb2410.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-2148025c-6c9b-48ac-bad5-29e744630bc7.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-219121ad-2c32-4beb-a662-f6b1bd594a63.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-21eaed82-c170-4f84-a44a-ee0ba03828b2.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-2426d510-56f0-4e3e-ab85-fba6ea27d905.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-2641dc2d-bb45-4c1c-8ece-379267b9d7ad.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-26ce71af-a302-4eee-9ca4-8c2d8cee9548.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-26e596b5-12f5-4bf6-b2d6-9fbb9e2a0050.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-27555d93-893e-4692-967c-be463b09f258.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-295fe0ff-11b4-444e-bf7f-ec3534d9ab1c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-318f85ca-8c41-438f-ad90-067ba4b63aa3.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-31e5965c-a68a-47de-a51c-87d37f42a79a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-33990a8f-318a-400e-9d56-948c93f52497.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-33e1418c-59f1-4229-af1f-016c603caf99.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-347f2067-0d38-4149-bf87-475755f4fdb2.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-34d3c51d-1a95-44f2-a0ee-fedda8e0a1a1.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-35cb3ca1-a7bd-4c1b-8661-4a9dfcce91b8.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-365a02b7-73d8-4400-87dc-cd230b3b4bf4.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-36b7ac16-c61e-4de4-aa53-e6fff05cabae.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-373fc166-fddf-4b67-a12a-90df2bd21596.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-3a95e3da-88f9-4220-a665-ffaed92588c8.wt",
+      "bytes": 3751936
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-3c4b0105-b8f1-435a-aee3-ce7b07c1d094.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-3c727538-e814-410d-920c-bdb42c3e9298.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-3d667965-06f1-4806-8363-034694476bd0.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-3e00610d-49f6-46c3-bb4f-3b6032cd6138.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-3eddd191-8ef9-4113-b68a-1ed77a2bbaf1.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-428fe9ae-0058-4118-90e4-b600cc0c0428.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-42e5b871-7e3c-4279-9c68-385af90939eb.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-452b884e-87d0-4c12-be7e-8c25efc50d6e.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-458d90b0-6dc1-4329-a017-52c79d38da88.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-489a5f48-945e-4ba9-854f-1bb5bda13766.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-48f12f8f-2ae6-4d53-8865-c37cc783c9bf.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-494a590b-bd38-4453-868a-0eb384a71276.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-4b59e0f4-9138-4385-90b5-ca46fc8a8226.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-4e32b4b0-5a67-46e1-917f-569fd879e2ad.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-503690f3-4cea-4e8b-ae57-8ab6efd6f95c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-50b2181e-c148-4ceb-a6fe-f20617350bb0.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-50e6206b-fac3-4254-8353-5cf1855a54a5.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-51e20108-d857-4b04-96dc-d473626c5d40.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-57a3a556-6c62-40b7-8b27-ba093892704a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-57a6f7b7-50b2-460e-a759-fe3e1ee2dbb7.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-584f56eb-70b0-478b-85da-4e3fa4e00768.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-59376b22-63ef-4021-85d7-c0645d00c933.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-5ca0e765-9144-46de-ba07-0997e1fdd827.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-5dde5f68-8f78-41ac-a718-efb34c8f35ac.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-5e06c5fc-8f69-4b9a-94b3-6e47b090d921.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-6034af56-391e-496c-9a9e-382fc4031c83.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-62d2ee88-19bb-4338-9757-d4569a969cb5.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-62fc113f-b4f0-4cba-8f6c-b00ed895bdbb.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-63a9bbcb-4ad5-45b4-afd6-1e66c2a3f5f7.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-63da54d1-7832-4dbf-856e-d9e875929abd.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-642b38ff-e399-4709-b903-25525bd96c02.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-6755b67e-6995-4f7b-8767-b279dc0f4b28.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-68fd7dd9-5c46-4995-b731-bafce4c7bd58.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-6a2f0ab9-3618-4c28-88f9-7207adf466ec.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-6a7cee37-d81c-45e0-9b3c-ec5803cc6b29.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-6de46239-93e4-4f93-b6ba-f03d371a5e47.wt",
+      "bytes": 3743744
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-75002b60-f68f-4f19-a103-eb027bf742cb.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-7636265b-bbd5-4885-a942-a4682e3c268f.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-79a27750-168a-4c3b-8e7c-65bb494b42f7.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-7cb47aa1-aedb-4b7d-8683-8d6df5eb11b2.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-7f3c5411-5653-4469-8020-ad97f38810a2.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-83683c29-b5ef-477d-a458-8573baa8d135.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-83d6238d-cfb2-40db-88be-17f6277ee017.wt",
+      "bytes": 90112
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-85c6b235-05ac-4ad9-acd3-6d492d93cad5.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-886b510b-d686-489e-bdaa-4fb835b344f2.wt",
+      "bytes": 77824
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-8aca3ed5-07a0-4670-8a4d-11d6c2a9bf98.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-8e1e65f6-d739-43ea-97f9-f0aa39023d79.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-8e1f2632-5f4c-4399-a626-31b4e949bd32.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-8f2bd11f-5ce5-45db-bb13-17835bb14680.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-908b34ac-294a-4283-b92b-e0248b27ba2f.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-91bd2d07-6404-4ee2-bfc6-5c650a75df91.wt",
+      "bytes": 90112
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-94f18343-ee8d-4da5-bc1e-b8712d494aeb.wt",
+      "bytes": 90112
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-96d8676e-29f0-4a4a-a64d-2da2b379fa0f.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-9973dd81-5130-4152-a5f3-30c93a4be70e.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-9a6b0fed-ffd1-4448-ad0f-e694d790fcf6.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-9b0deddf-0d14-4231-a5dd-58b6d34beb63.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-9ccd0aa3-bbd2-4dbc-80c6-2fa3a0da2db3.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-a05bd7fd-f20a-4035-8913-b50fe75d1445.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-a1b7a01d-b4fe-4fc9-a691-a296d94aab44.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-a1e2ca2a-1ffa-4276-abf0-a5bbeb117613.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-a1f2d10d-d1fe-44a2-a1b0-ff78ce160a10.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-a270c516-e54e-4ec8-87e4-8f1398d332bd.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-a3d454cc-2590-47bd-843f-43fc4242e543.wt",
+      "bytes": 90112
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-a40f3c6a-c42c-4edb-b593-84414ec28a90.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-a5dac7b4-4501-427d-86c3-c5e78a2584df.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-a6025285-91ec-43b6-adf4-d58b66036deb.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-a6a5b470-c479-411c-98a2-cbf0a588c3a9.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-a6abcaf0-0a1b-4cf0-a021-051f3c8b75be.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-a6f6a08c-0c79-4c86-9a30-4a7020844e1b.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-a752ce2e-abf9-45ab-a193-db6e6a163c3d.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-a87e8ebc-c35c-40d9-b7df-60016f8907fd.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-a93231ec-b7d9-4094-aaf1-592e6b932ef4.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-a9a7ec1e-97f8-427c-8e7b-7dc2a3a4754a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-ace45960-5d1d-4bfd-a12d-51f10c769040.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-aefecf70-6e3d-4c0e-8fbe-030823630617.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-b232bc31-1cb6-43ee-80df-f6ee43bfb38f.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-b42d5e4d-8c6c-4042-973a-422599259fb7.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-b582ba5a-e60b-40fc-8a78-46bfb8f68149.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-b69da35a-640d-467a-a332-1181e258e87f.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-bc756772-69ed-4932-a0f5-5fae0bbb31fa.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-bc9e9d9b-506a-4f25-ae2f-ae0da82ad1f3.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-be31ad99-ee7b-41e4-bb04-48dd2bf10c36.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-bea418e8-a65d-4fac-9e94-fdd205ed1fc5.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-c2369780-9059-4ad6-9d74-412eb4aec8bf.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-c3e5c22b-bc01-4d2c-9d13-0455c282d166.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-c569c395-dc9c-4486-bbe6-bdf81b5a7125.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-c76c7a59-11a3-49f9-8cbd-57b48601ffb2.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-c92eed94-2c5c-49d6-b590-fa562a629a8d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-c9ad99bd-e5b7-42f8-a2e1-1cbed1bc1c7b.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-cbd36e2c-9e28-40be-a664-d3d162e12b67.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-ccd9dce2-4a0f-4a3c-a833-ec140dd29c01.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-cd9cc0f1-71ba-4750-af01-c5b27d2a4cb5.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-cd9eed0e-456f-4f58-9fd9-41427cb8b79e.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-d0bcafe3-2dd4-442a-8366-1259acedbf0a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-d5b59d9a-fcd6-442e-8cab-9f5f2ec2b5e5.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-d66b71dc-ab32-4993-97d7-e0d3b0bc1363.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-d68b909e-426f-4bbe-b833-9bb7b80c8635.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-d99e90ba-6e9f-4619-8af2-9b69c7bdca3d.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-db08e1f8-bce3-4ed3-b6f4-a782fed223f7.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-e197aaae-437c-44c2-ba9b-460281e49fb0.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-e2957271-8bfd-49a5-8c95-42c25f71123f.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-e2d229f1-e4b7-4445-8531-7ac806f6136f.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-e431810f-e5b5-40cb-8fe2-91f8d547dc58.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-e4fc1037-01c7-43d6-b3f8-771949695d52.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-eaa0371d-8e3e-43ec-bf10-e6f58f01de24.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-ebdf2729-06b2-4e6a-b15b-5f31e35086a9.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-ecc8a772-5d40-41b1-aaa3-67ab427ed56e.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-edcae5d0-753c-45f6-b143-e34b4c9d8bd5.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-eec741c7-70dc-42bf-9f96-5612e1011b5c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-ef65c7fc-098e-44ff-a7f0-a60e53c35bc1.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-efe862ea-b6f0-4502-acb6-c3c57d1eac07.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-f49f659c-c996-4a04-802a-c2bdea72f2ab.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-f4bc1d81-8803-42ad-8555-37ba41b9a40b.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-f4c39826-ef99-499b-971c-e7b68c5431e1.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-f8652112-78bd-421a-beb0-777f97984a56.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-f8a8d901-7d3c-4360-afe6-426aafe0feaa.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\collection-fa172dd2-4cca-4687-8633-6eee873681db.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-0033cfd8-f621-4b08-98e7-37dd192274a2.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-0113c0cb-f306-403b-8958-f8fa79f0bfa0.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-01966f29-8074-4e1b-896a-8b7ce29905d4.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-02ab3976-b126-4059-ac8b-41f2038d448e.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-032480e6-a2db-4a45-94f7-7f2670a53cb7.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-0358c56c-4846-4e2b-beef-023d4220f683.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-037ceb29-b4a5-4bcc-94c1-f058aca58bb6.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-0479e331-ed4a-4dfd-82ba-6a3f81ef276b.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-04df06a4-f45c-45c1-9045-1480716633c2.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-04ebf725-48d3-452f-a83c-53faf604bc35.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-05076057-ac6e-44c1-a7e4-cce5c9cdc586.wt",
+      "bytes": 180224
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-050cbcd7-8ac0-4ef1-9cb5-f0dcb9d2d74a.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-059b90d3-0772-45e7-b252-6cf8c31a2ac7.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-05a4b446-4ffd-447e-b8ee-303a558fec93.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-05c1477d-360b-496d-bd03-1be1ae846eaa.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-0622b997-fc4a-4c52-a8b7-5e60ff4db78e.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-06a7299d-3621-4112-bf1d-24f834358e12.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-07b8b4b4-5685-4536-bbcf-85a96e1d3e47.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-086c46aa-507d-437b-aca8-f845e32733e8.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-08820b68-1c62-4c1f-b108-f2c0f790d681.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-08dc6b8a-b5f6-4dfb-9e05-46549bfe9457.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-0968751e-20b4-43e6-8e43-655fa34bbd93.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-09f58d5e-cdce-4eee-a2e1-c4a8b629e0b8.wt",
+      "bytes": 253952
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-0a0eb1cb-af1b-4238-8970-27e9865f471e.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-0aaba342-a9b1-4810-adfb-e57e5aa72243.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-0b546d1a-f4e5-4211-a6bc-584f0f8438cf.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-0bef1b29-dcff-4869-a607-b13c2413904b.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-0cbe497b-c33b-453f-a167-00fb812ffdfc.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-0d12ddd4-c260-4246-93e9-5be3500ce564.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-0db00f6e-3b87-46a1-9827-f25dd39a37d6.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-0de6b759-0ee4-44d5-b358-93f13c42f88e.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-0fe5f290-f91e-4304-ba07-a977ae64ecb1.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-10b2a9ce-90ec-4b93-97ef-cb22ad7635b0.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-118e3631-d49c-490c-ab5a-e98a68f3d2e1.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-11b5cf00-44bd-4ce4-874e-8cad76c2c132.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-11c689e4-daf7-4771-9112-a5cffd55f975.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-1303b74d-c9ea-4386-add4-b3ee80c2db24.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-13c654d2-d1ba-4c3a-8fc8-6a0570d9a517.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-13cd7090-5a37-4af4-bd0a-85c464e4141b.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-14a89bb3-8eae-4161-93d9-94d2af52090b.wt",
+      "bytes": 28672
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-14cc5f26-10e3-43c2-b8c7-40b7985aee7d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-14d10860-da47-44ab-9217-8fb4b7ce80a7.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-14ece774-14c3-4c91-9443-81e57640065e.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-150406f4-f3db-42e0-b9e6-dc9d2ad86218.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-15384ad4-c7a3-4532-b155-be5cb0d82a4c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-15b7e620-29c9-474e-affa-ff4686567518.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-15bf814d-abce-4c9d-b4fc-aaa4208bc59e.wt",
+      "bytes": 49152
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-162d436a-9eea-44d5-89c5-e6981839ef24.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-17040c46-10ff-4389-b758-ab3c26525826.wt",
+      "bytes": 49152
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-184d59b1-e92e-49aa-a12d-7f44885a6cdf.wt",
+      "bytes": 65536
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-18c91f3e-5679-4f0f-9c37-c6444d508e2c.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-18feb5e5-269f-4023-879f-c1bef6b36ad5.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-19713422-d598-4b7e-a2db-de547051fa8b.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-1993be93-551a-4ed9-94ef-286cc14267bf.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-19f66a06-d30a-49cc-a9c1-26272f9d1ecc.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-1a1cd98f-2923-4cf1-8dfd-2972d5efcd17.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-1a2d7dff-b48e-4bf0-8732-0d4ff29ca36e.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-1a4c20ee-2b12-4221-9388-cdedb411560e.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-1b052f75-a89e-47dd-a6a1-8bcf1996a9b3.wt",
+      "bytes": 188416
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-1c730c14-149f-4abb-9697-280998384e77.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-1d305297-b48d-4e89-9021-ec74cb8e4138.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-1d6d5f2a-b36f-4e6b-918b-0878a27a7ca1.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-1de5f903-4841-4552-80d0-8201130914a2.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-1dec295d-29de-4cb0-99d5-61db7327c572.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-1ea68ae5-b5e7-4ed4-92e2-28e90d8cc89a.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-1ec46274-9b72-4b2a-b3d5-19d05fc57a0a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-1ef54fef-00f4-46f3-937d-3111ff16fda7.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-1fd90ca8-7183-409c-acba-38a3eb49ab8e.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-1ff8d9e7-d331-478b-a009-7a93a8fd95ca.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-203660a5-249a-4fee-8c8d-6ffc2daf094a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-20c7f3b2-312b-4737-8f30-f29355f694d3.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-20e5f108-c7cd-41bc-9e80-fb614fbff152.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-21ba8570-e47c-4bcd-a16b-3a226a730110.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-2243656f-2094-4047-9973-4befaa86474e.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-22855869-4541-45c7-842b-16eed53a6bc9.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-22a4ff0b-b9ed-4d5f-b2bb-c03a4053fbee.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-232605e7-5889-4def-ae82-3e657ca104c3.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-233d059e-5e8a-47ab-9eb6-b282b0565b02.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-2433d636-c2d6-45be-866d-f48664a482f4.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-24393e88-84fb-4223-8995-ef7d7d2dba07.wt",
+      "bytes": 57344
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-24423b59-da25-4c30-b9d6-8c954184de30.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-25fae385-e3a6-4da7-9a3a-0ac4a571c996.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-262f98e6-d38d-40f6-b172-15dd3507280a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-26c759a8-7345-43dd-b740-0c7bb85d6ac5.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-26f0e7a6-1e94-475c-a904-28d4c4c93140.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-275bc522-fe41-4319-a563-e85c9a3bf187.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-27f2a8ba-7eb8-46db-bc28-9844fbacffa5.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-28fed32c-5c40-480f-a588-6a851e103bae.wt",
+      "bytes": 65536
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-2968b455-9efd-46ec-afcc-254c4872534b.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-2a0b82cd-f8f6-4345-80f1-39af51ba9c96.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-2a1a24f1-35c4-4d0d-889c-727acae677ee.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-2b2ee56a-cd23-4c96-868e-90afe3b95fce.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-2b483eae-9133-4646-bd97-047c3303f4f6.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-2bc94c01-7bee-4dae-91b0-bd91f1731d85.wt",
+      "bytes": 282624
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-2bd3dd36-b6c5-431b-89c3-353a11d53b6e.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-2c541f32-9b70-4d79-9811-888b94a4b942.wt",
+      "bytes": 81920
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-2ca3b41c-f942-4267-9c42-3a2b63bc232e.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-2d48b5af-ad7e-4aad-8f9c-06ae91669d3f.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-2d512417-a912-4575-bf62-3a82acdd632f.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-2d8cfe1f-4c49-42de-90dc-f94955170044.wt",
+      "bytes": 49152
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-2e336103-e4ff-4be4-83a4-41bced1f0f9f.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-2f1706ad-fad2-4065-8e22-31198d154a2f.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-31f356c5-ab31-4d14-845d-4baf71cae52b.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-32347a4f-2a3d-4e5a-b199-f4a4aefa72f9.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-32c4dd85-c20d-4957-ac65-4852996edd18.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-32ea41b9-6cc2-4b13-818a-725fbbf72fb9.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-33ad8cb9-05cb-4725-9248-038e60ef965f.wt",
+      "bytes": 274432
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-344d5ae9-a000-497d-9d33-0a1e0e1c1615.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-34af883e-9286-4c02-9f8d-9f335521e062.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-3537b2e4-d6ab-46f4-b213-ba5c795092a9.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-35394840-01f9-4d38-8a9e-99cd45c14218.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-35e818bd-2960-4e86-89c4-68f78d028ccf.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-3609d5cd-1e9c-44be-ac59-39487e65b1a9.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-36a775e3-ab68-4bed-bd03-f3a87ce05f1b.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-38005130-4d1e-4cf2-93df-ce21060b13f9.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-3803451a-e693-42aa-9190-c112563d62a3.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-38c02fb7-7691-48b2-9924-d425713463be.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-396b6774-4fd2-4f8b-b051-05ccaf103c08.wt",
+      "bytes": 28672
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-39c123f5-3350-49a4-891e-62abe8e2ca93.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-3a7a3e21-78a4-4cd8-bbed-fbaedc751240.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-3abd5773-f42c-4d2a-8651-c73dfe02e39f.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-3b2fc57c-9223-424a-bdd4-d8cf63e37ede.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-3b8bfc37-7585-46b2-a60d-6cf727db9c50.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-3d532fbe-504c-4165-8140-27e6485dd4a4.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-3d990b66-ed97-4b66-8974-d3ddc01a25f6.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-3e14af3a-fe6b-4895-a485-452c92f3282b.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-3ea9246d-6f00-4914-a82b-1a89b3d3cd14.wt",
+      "bytes": 28672
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-401c8dd4-b694-4223-939a-7fb78150df6d.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-414a2834-e56a-4324-bd76-634b5eedba3d.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-416289ff-7493-4b5f-b0b9-5dcd33b66fad.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-41cb6b63-036b-4669-8776-69093a6e6e02.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-4254e855-fea2-406e-b181-b2e14550d162.wt",
+      "bytes": 28672
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-4299a49f-f348-4520-9861-099c69e7f678.wt",
+      "bytes": 65536
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-42b9ad92-ea4d-400a-bd73-616f36f81cee.wt",
+      "bytes": 28672
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-432fa4c4-1853-487e-b581-0fe287de5ee4.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-43a295e2-c4f3-4232-bf56-05fcf97b1e66.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-4487f271-1452-4943-8c3d-6d298b0b0a2b.wt",
+      "bytes": 65536
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-460567ee-c27f-457c-bb4c-6874feb92ded.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-4670b454-d3c0-4c83-b9c0-e7ac90968a08.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-46fd9210-e4e8-46df-848f-464407bdae08.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-47b5ec4a-76d2-4648-9d7f-12fff7531821.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-48cef0ec-891f-49d9-8b39-5587fe6cffc7.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-48f69ce4-851c-48e3-ade2-ed15e78dbb40.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-491c40b4-dec0-4d47-baac-c606e41f8e43.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-4975c97b-c462-4034-a58d-e48170434ca8.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-4aeb44bd-33ed-4354-94e5-f464982e1a00.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-4ba4ea76-e905-4695-9877-8deb4a93d8ee.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-4cff4811-2d41-4f6e-96c8-5af32a1e64ed.wt",
+      "bytes": 65536
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-4d3b6264-0b8d-43eb-99b0-93bca65042af.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-4d72d335-30c0-41ef-91be-c76fb026cfdf.wt",
+      "bytes": 3092480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-4df68bdb-3078-41db-9fac-fe88a9f973b9.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-4e44078d-3c74-4a71-9d1f-e6ab262afbab.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-4eb82562-e0b0-42ca-b6ca-9663ba3e8be6.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-4eed36f0-94dc-4e39-9f78-69090f7b7bb5.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-501ca0b0-0a04-48ec-a415-21ea3a99c676.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-506af6f6-7a5f-495e-ac81-8ba034e6ef5d.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-5085d7f9-3b5a-4f84-bef8-fbf18ea6a559.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-50a82f81-4cdf-48b9-a06d-463a2543e895.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-518f8e9b-84c4-4381-9b99-03b812d754dc.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-5240d6e5-9671-4788-991a-3b3103806e30.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-52435841-4868-4751-9aaa-82a12ca1ada6.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-52f7ea9f-428b-4289-9525-131b25fe6e67.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-5412f2ae-4acb-4ef6-924e-7dd89683e206.wt",
+      "bytes": 8192
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-54264eae-1f87-47b6-b186-22728ae7b3e9.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-5448bd9f-4499-4108-bafa-18746fd3f6ed.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-5472d70c-2f35-499c-8a3e-7960b5b57368.wt",
+      "bytes": 45056
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-54a0d215-79f7-4920-806a-1149c91ac5cb.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-54e5b687-02cb-4355-b8f2-2fb2f180990f.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-5567570a-a555-4b47-8503-f5b5dc5d0847.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-56250e09-2bd5-4deb-bc77-56d70b343a97.wt",
+      "bytes": 28672
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-57226359-0e34-4834-ac98-054508f41b9d.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-57404bd9-36e8-41cd-a1c5-b046eb489310.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-5794bab9-3b39-4533-a68a-74407be58aad.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-5825bdde-de98-48a0-8d2d-92634191bb8e.wt",
+      "bytes": 53248
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-582be953-2487-4afa-a0ac-c25b179ffcd7.wt",
+      "bytes": 8192
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-58842504-8f64-4fff-b431-94861f771b37.wt",
+      "bytes": 49152
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-588a90d1-793e-4edc-bd10-bf2f71348385.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-588bcd2f-97de-48ea-adf5-261ddae54b91.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-58ca41fd-15e2-4972-9f34-d6db0e837d50.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-58e9c572-eb18-43d4-85b6-f5666291d6aa.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-58efa5b4-ceae-4d24-92e3-4d700a782646.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-592ce3f0-d5ba-48c4-aa66-a2f65e0e63df.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-5962e02b-efbf-471b-b820-e2dace7d28ee.wt",
+      "bytes": 106496
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-59d4825d-f7e7-40e5-8b04-968b603ed440.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-59e3d77c-71b9-4074-a87d-e0e208ccb281.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-5a91c241-4683-4f0e-95ac-d90d50152f07.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-5ab2c33c-4d24-44d4-8465-1d655e17af0c.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-5b40c5ea-3d5d-4836-814d-5fe29115ebd3.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-5c406524-eb99-4d23-9aa7-795ca7a7805a.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-5c4fc027-4882-43c6-b134-42287a6cc6b5.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-5c6906d3-a5f1-469c-a55b-c64fe5e7ceca.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-5ca2b1b0-733d-4e2b-b0b4-280e4edefde2.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-5d2ee84b-a2f9-45b9-8f93-0cbd4b59b573.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-5d4f27dd-1391-4ab0-9531-3cac017c5439.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-5d521894-5d1c-45c1-a546-d44c7cff06cb.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-5d76f4a1-314d-4af7-a8b4-9286717210a7.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-5dac994c-113b-4c6a-b31f-2e6035ab77ba.wt",
+      "bytes": 8192
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-5e2fb248-04cf-4745-82ea-38e5268848ff.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-6064cde5-9a3f-45fa-a046-ab8d86daf01a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-6066da53-8527-4162-9720-06be145f3c5f.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-61b71ea0-09b3-44e0-87b1-cee493b49276.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-61d3eac5-9eeb-4f93-bd9c-8dd6ca336e1c.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-642897ec-4ddf-4092-af4c-a75f7e0871d7.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-648d2c1e-669a-428a-9552-9936f2cadf7f.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-648d3009-773f-4ce3-ba85-be0a7cd6d2c2.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-64a92a65-3b84-49cc-b0ea-83dbc9d02eb5.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-65c131a4-68f1-4031-998a-5240dc7cd3ea.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-668bf1aa-fc81-4a24-aff3-e4283379c402.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-6694f21b-a598-4a9b-aad5-22d7f86626a8.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-678c7e96-d0b1-4588-8890-57a200bc9a28.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-67b1c765-4346-4e6b-962c-f0ea31939a99.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-67c842db-a4c1-42d4-a11e-b5384ad8f721.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-67d890ee-7e0f-43c4-8c60-a5c91689e966.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-67f53b68-f9ab-430b-9de1-e776ce42be14.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-68bdbd24-85f4-413c-88ca-3a3f5893b706.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-68f7f3df-f00d-4132-846b-17d010cde31e.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-69794625-03e3-4dcb-9ab0-938b632d17c4.wt",
+      "bytes": 3072000
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-6a0d8816-c3d7-4b72-ad85-d02e06366b2d.wt",
+      "bytes": 53248
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-6a1f1883-cbb1-4eaa-8afb-5ea3065eda4b.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-6a41a0ab-f740-4669-9e1b-e79b17ff9e40.wt",
+      "bytes": 49152
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-6a8ff29d-cc9b-4e35-a6b1-30e7a1f01f79.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-6a944917-93f6-482a-9c8f-9d0541e03b7c.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-6ae0eb87-05ed-46d3-8328-22017e895fad.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-6ae91dd2-c490-4910-b975-46e2b3885574.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-6b3442a0-cda0-4f2b-a5eb-3453458a2d55.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-6be9d559-c9f9-407b-9b6b-d2a5e4637079.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-6c0eb8bd-5404-459c-8f0d-58e67b47183a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-6cd2e1e5-0144-4c2e-a8ba-cdc719f7e156.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-6cd4b119-b680-4ec2-805a-6ca659c4280b.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-6dbb14d4-16c0-4579-91c3-fdba8e3786b7.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-6dc769f5-cbc8-4250-8076-7be33c0ec82d.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-6e6dcfff-c333-41d1-80c3-55a7b1eb4fd4.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-6e8629fb-e52a-493a-9df4-d4d15df1b134.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-6ebe0221-a30c-459d-b6e5-df20d5684280.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-6ee70ad2-2b8d-4e5e-aa39-9837745707af.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-6f6c53bb-ac12-4729-a648-501dd3b9ce0b.wt",
+      "bytes": 28672
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-70217f0b-e679-4ede-b09b-7081c8d6cd54.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-7028a980-013d-4bd8-9c44-671ff84ac96d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-70637526-5efe-4f1c-9c7a-b221103bfad4.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-706fe80e-909f-4eee-bb34-c70449e3ffc3.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-71140a3a-8e13-43de-995f-f031fc4fae0f.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-719179d7-9e02-4f71-a708-fa46741101ed.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-719d9db2-be51-4f9d-b5e2-9d64be69b550.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-71c0ed71-24c8-45c4-b659-1a107923ceab.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-71fbad1c-a71b-48f0-9833-80c3ac469887.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-7231e9ba-b6cf-4e50-95f5-e02916cc0d2f.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-725fc354-08fb-4644-a927-e6199d7511a8.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-731fcd91-27bd-4c8b-83a7-4ea683684965.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-733f3dbf-4a0b-42b2-a7e6-d304af7dcf58.wt",
+      "bytes": 28672
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-739531c9-955f-444d-9c53-cd2270d586fc.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-73bd06bd-43f7-4cd4-b4ef-827df5f46dc8.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-74400e20-07ff-4a82-a3a4-5e8d856ab00b.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-744fe36f-bbbf-46e2-ada0-6d003570b455.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-74652f59-f440-4a43-b7bc-a7dce946e965.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-748bc86a-4d4b-4459-bb49-e069a1daeb40.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-74d32b77-2688-48e6-bec7-0fb5c052d4a0.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-752bbdf8-3ac1-4231-a681-21efb625c424.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-7647899f-5db8-4131-a877-c0e24886fe4e.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-77119e22-efe2-4625-8ab8-44322c1dd5b7.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-7756a38a-1cfc-4d4d-9bc2-b436c2230243.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-79563464-ac75-4bf0-891c-0514187ce775.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-79627d93-ffa6-4025-a629-8404fa5311d5.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-7975ed2e-b481-462a-9d1b-d64db2beb225.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-7a4873bc-6dd8-402f-849b-47ad2cbc6f0f.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-7ad12e42-adb4-4430-ab5c-c6f9326a6a4a.wt",
+      "bytes": 28672
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-7be39eef-1e43-4d39-b85d-d17b82f0ad15.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-7c14c7b5-b87f-4b63-a64f-9401ae37defc.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-7cc959fb-f800-428c-962d-c04376ccd346.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-7cd1d8af-adae-47c4-b7c3-b479746ab09e.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-7d4c4e2b-42f6-4f4b-91fd-290574ebdf2f.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-7e105189-a843-449d-9bc8-52b2b424ce29.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-7e7ffad2-bf80-4465-867c-9a5eda6ccec9.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-7eed27fc-4652-4d61-bca7-8c42ea36a44f.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-7fdac3c0-4d3f-4aae-8384-265e0115257d.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-808a6090-efd3-43ac-aa46-bd23c0cb856f.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-80a800fe-0439-4f00-a0e8-5842121db11f.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-81039a76-f4ab-4396-b4d7-d658cb0cb7df.wt",
+      "bytes": 49152
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-8196996c-e513-4857-8c0c-4c04d435c5ec.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-82d9fb92-e227-4d25-9cfa-7f6973c3d282.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-83b401db-cb8b-4081-ba12-f24e4e387dec.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-84a1d3f9-a71a-40bd-a77a-19a25201a4c0.wt",
+      "bytes": 45056
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-84cf7dce-68b1-4cac-863a-6332b2e38a81.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-855df34d-4e0f-41de-9d2d-08c49e2d58e8.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-858129b1-0cbc-47c3-bc6b-4fbeb2f6b43b.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-859f5ba4-264a-4a7f-8e11-b95e817391c8.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-869dd93a-f859-49c7-9650-4a467003d78b.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-876ac683-262f-4053-baf6-cd20250675ac.wt",
+      "bytes": 28672
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-887e3e95-6488-45f0-9875-7e37fee33e8a.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-88f76018-2fca-4d5b-a4bc-d0bf588f2d19.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-892a36ef-baca-4f91-95da-1b4f4175c8af.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-89b54faa-bb2e-4362-b606-3968c77cee9c.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-8b582032-a454-4778-b15e-f7340dc6e9b9.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-8c5c40f1-9c29-4e55-adaa-31086199ac7d.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-8c62b234-43bc-417c-8aba-35ba5d3f828e.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-8c84b62b-3bec-4ee2-b936-c151817098a1.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-8cd3a0f6-e5ee-4fb8-bd11-82f8c5d45067.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-8f8c2bf5-7f7f-45f2-b9fb-7719dabe341e.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-8fd8f45c-93bd-485c-947a-ab843a60d831.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-9000ed39-8edb-42bd-bada-886e47c1a222.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-9008ae47-44a1-4f66-8ccd-cfdc13c2175a.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-9095762f-8c04-4db7-8ef8-be973d6bf044.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-90a67ca9-0276-4580-8225-442cd73e3bdc.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-91c9c1ad-2f91-41be-b80e-4783c4e6c70e.wt",
+      "bytes": 49152
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-92510f8e-fd49-4e69-bffe-37377ae67449.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-925d461d-a2ff-4746-b278-3995f8325dec.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-938beac1-0148-4ba4-be1d-a7edd0e041be.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-948c44b5-93ce-44f2-bb5a-2a3096469ffe.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-956b6beb-89f3-4f40-af86-9fdcadfc5388.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-95dd1603-db03-48e1-8f95-755b92866870.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-9650e430-c7fe-4d22-a0bc-a82224847763.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-96f46beb-2f73-4529-9f2e-9a3e998e5740.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-974348a7-ee13-4944-8f11-02ab276a30bb.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-97d45a54-7ea0-4886-a131-54d254cb7e21.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-97e8b329-eeb2-43a0-9548-6df31f296a12.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-97fd8d89-3491-4b4e-a70d-92a8301c270d.wt",
+      "bytes": 73728
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-9806e8ff-fdf2-41ee-b596-cfb8ad053f10.wt",
+      "bytes": 28672
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-9998665d-08dc-457e-9511-a2f279897ae9.wt",
+      "bytes": 262144
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-9a5a928c-fd20-4242-a362-19b48bf04936.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-9b1d18fb-9697-446f-a028-ca0f4b2b1fc2.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-9ba4e83d-ffbc-47c0-8de3-422d32263d79.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-9be76364-6642-4823-be4d-38d843d46649.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-9c16a5d3-e427-4641-8535-4855d1e3ba3a.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-9c6c977d-d815-4b22-91f0-de730a7541d3.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-9d3ea270-e423-4445-817c-97916b00f9f4.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-9d45f1cd-730c-4d6f-b5db-714953eb9277.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-9d4b74a9-b41e-490b-a60b-94ab9d679ff7.wt",
+      "bytes": 659456
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-9d79f06e-3f41-4c84-953e-89c8a6959657.wt",
+      "bytes": 40960
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-9d9953c0-8ba2-485a-8dab-a9f98addb0a8.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-9e4f9bc5-9950-403b-b364-81a67c7887a8.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-9e6428fc-a2af-4e6a-8773-fd461af00024.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-9e8c3a52-26fa-4c92-bc9d-a69db969f6a5.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-a0ab4df0-a131-42fa-8193-34af8fababd1.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-a324756c-cb65-4f30-901a-3054667b4271.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-a33f3c11-aed3-47c0-96a1-6356d39b71a7.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-a4013dab-9f52-4691-9eb2-3874dfc3146a.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-a41dfe62-72e6-410c-90f5-1d6f52052916.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-a47721bd-98f1-48a4-8e15-2449a84e32bf.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-a4c4bb24-24ab-4401-9b27-94c11ca14493.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-a51d52e3-47c2-45a4-94ce-70e6b9e711ac.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-a533b258-ffc1-46a5-a0c5-5cabb661fd84.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-a562b08d-2403-454b-93af-ae47976cb0b6.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-a60b986f-357a-4273-af27-006d7f1a4c4f.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-a61e803b-697a-4782-9d89-30cbb72d02ea.wt",
+      "bytes": 28672
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-a6a7171f-0fbf-485b-9be9-aafb4dee7bf8.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-a71f386c-8171-44d6-a593-03a7bc90af8a.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-a786ba5f-11e8-419f-8126-c0642b2d5781.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-a87bd6a6-8d11-4751-908b-6f164dc63d10.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-a9467675-9581-4d93-a4ff-780e30065eb2.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-aa36f838-b4d6-4a14-9c57-263e549b7ecc.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-aa88540f-5f5c-4702-bb92-2cfc363e23dd.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-aa9b6735-ed6d-4cf5-a339-d87045212a9d.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-aab85f7b-9e0f-43c6-802f-678524a35041.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ab21c93f-d7bc-482e-8232-a2426cb9296a.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ab8bb720-1771-466a-8a2b-9371d9d919d4.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ab9c5c8f-a364-42e8-8dcc-139270eb83d1.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ace7d0a7-56ce-4358-a295-a4f1543c5154.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ad3d7750-aedf-447c-8d9e-56d02d492cc5.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ada089b5-21f5-43ed-bee9-2aa12808e8bb.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ae07416e-3f1a-4c76-9f23-d246cc62dfee.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ae1a3889-ded5-46ce-9a8b-f23c2f273167.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-aeda9b64-8ee4-4a1e-b418-0cf39055ce84.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-af5edf3e-4395-49c9-8506-e806224ce47f.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-afc890cb-1ecd-4d15-8e1e-9f6e8138e59a.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-afff0bae-6dd1-4ff4-b513-8a2ea79571a8.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-b008534b-3e76-46c9-802d-66b58afacc2d.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-b0dcf67e-bea9-46d5-a9d2-1f28eff41f5c.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-b2d10e15-d9ca-47cf-bb2d-c17e86481df3.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-b372b0aa-e1f3-4b0a-977f-4f3207c1ec3d.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-b3762672-c82c-426a-ac7e-ba3682bbbfec.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-b3d70124-7082-4b27-a943-01b3a4469b3e.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-b40d66af-50a1-41f1-a72e-703290b3ba02.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-b411028b-a48b-45d3-9e16-f3eb4d4521f7.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-b458572b-97aa-4cd9-ac28-87fcd042fd79.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-b4ea22cd-3018-4f81-8f2a-5a3689b1107f.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-b549a109-9561-46c6-9d71-5e908ecf4f0c.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-b567aae3-ef4e-4513-8f34-c286c45fee8d.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-b6444fee-37ce-49c2-ac5f-99e43869a76a.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-b7cf3fc0-6c33-40e4-856a-1f8b338478cd.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-b9087d70-53c8-416e-8090-35e6f7073cc2.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ba076594-888a-4e60-822f-61bb50bd9376.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ba513f35-10af-4b05-9e45-5f6e9a137496.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-baf1d70b-0d67-42b4-a106-a70d37a9ad68.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-bb6824a9-c052-46f6-930d-b0ecb7cc78f2.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-bb6dd2d8-c493-463b-89c2-55057a9c4c46.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-bc5970f4-77b0-49bf-93e0-bd205dd35a89.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-bc6340b2-a876-4c19-8e93-78a714cf13c6.wt",
+      "bytes": 28672
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-bcf70ce2-e368-4445-bad7-c3a1702153be.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-bd3de696-3fc2-46de-8e9e-59d5fd9b20db.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-bd8b1617-879d-4a92-b6b4-003bdec70244.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-bde1d963-87d6-4ce9-8a30-8b280d81c3e8.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-be58482a-3e7b-415c-9eb2-ea351cc4fcb0.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-be9ce8db-7bac-44bc-8291-d5294c959447.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-bebf9001-8b60-45c3-aa58-b42cb6a52df1.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-bec83a64-16f1-44c6-a80b-efb52981cc88.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-bf6de874-7373-4779-aa59-130fc2534ae7.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-c11fd3db-8632-4035-b8a4-021407e7955c.wt",
+      "bytes": 180224
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-c31c09b9-6551-416d-b541-00194f044a64.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-c359f2bd-af93-4ef2-a27e-bb18b84f7771.wt",
+      "bytes": 233472
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-c3acfb9d-1ff1-4828-810d-72529d434321.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-c4006a1c-076c-4909-8212-6989adebc792.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-c43fb748-5d2a-4ccd-9727-44fb2cb62a14.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-c44c98bf-4671-4bee-9707-8aaee4fedac0.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-c4964b0a-352f-421f-ac3c-a603fe7e2069.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-c61dc32a-d31b-40d9-a17a-969563313aea.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-c62bebdf-0703-4b29-bfe7-db444b475af2.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-c772d1db-5fcc-4633-9e13-65ab39b1caa0.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-c78bab84-3178-42d7-99bd-04a9d86a21f0.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-c7ac1e24-c623-4660-8f58-64e8b6258aa9.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-c8438186-fd2c-4cfe-90fa-1bd203f26a0c.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-c85fad04-c2c2-4392-973b-d2861ae17ef5.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-c970ddf2-cd2e-4639-8abc-7d13c5875675.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-c98d5159-019b-471b-b7d1-e30ad79b19c0.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-c9ef2355-8281-4cf7-a8a9-46d7e3b8a84c.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ca321f78-2735-41b5-a144-85499926f4ce.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-cb2be028-8d62-4543-94e8-4c68d165bc50.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-cc3323f8-39b6-41bc-910d-bad524a9fad7.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ccb70d66-4570-4c55-8dc3-369a3573b5c2.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ccec35f9-eeb0-4ad0-95c0-6beb229e48dd.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-cd029569-1e96-46be-8fa7-d448617b2644.wt",
+      "bytes": 53248
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-cd505e2e-8f99-44fd-af74-346292f5e4b3.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ce134f42-43a6-4df3-8950-82ed3434791b.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ce3f0a97-c388-43b4-9d56-93b94efd1190.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ce56e582-5a03-4586-bc56-5f616d1f0db0.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ceec80e0-81d4-47e9-b4f4-ee954bf630ea.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-cf306fb6-6d4c-4746-a9b8-07ccef7e6e19.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-cf631d8e-f8ab-4be0-a695-55c5591845e8.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-d0782b3f-0a04-49e2-9ca6-1692d5695a17.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-d0db851c-182b-40b4-bfe9-528223e7db68.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-d0eb2230-8ec7-46d3-9155-d9459dfe3bed.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-d1ea727f-33ea-4f66-9099-864bdde09e7b.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-d1f07d6a-51c7-4610-bfea-dcfc125b0c0f.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-d225a444-0ee9-4af1-a404-914eb0197d62.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-d22ef702-f938-4d89-ad44-4f99cf942c61.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-d2ee03a5-b3ab-4fe5-8a1c-8281362ac509.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-d2f37ad9-e94c-4e1c-96d9-0839962726fc.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-d302a58e-49c6-4442-b376-b94001b6cb2b.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-d37db16a-65d4-4b74-907c-aaf20a885438.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-d3d7a1b8-6b53-496e-8552-0255a2bc50c0.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-d43a637b-c0d9-4e03-aeef-2b88db3f3e07.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-d449dabc-e121-4b61-968c-a1d48678a93d.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-d46dddbe-4df6-4736-9ce0-d0d1aab2b357.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-d47b7e38-cd55-4988-adcd-31305827c801.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-d49e92af-2ec7-48d1-877c-6c32248461a4.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-d569f7ea-69fd-46ea-b024-f61b1b3cb96e.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-d5d32fbf-0662-4c61-91d4-5a8e93f0f3f5.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-d6496d0d-26de-48a5-b0f1-4b58a9a01b3b.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-d72a8100-2119-4045-a12d-955009dad69d.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-d7cc6193-f1d2-44da-af12-b6d316755fb2.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-d7db024d-d9ac-4fc5-8d2d-313da5d463ab.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-d8de30dd-ed2d-4db6-a24f-8aff81cda846.wt",
+      "bytes": 28672
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-d9377e93-7fc0-472f-b8b7-127fa3e67b1b.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-d93acc0d-44e6-4f35-b36a-52df3c2595a6.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-db305c53-8415-4f35-be90-1d001b62d920.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-dbac1a83-ecab-4d35-967e-51d95ca9bcea.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-dbbf689e-c3d6-49be-8372-f4cffefe8e8c.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-dbe92506-721c-4fc6-882a-a6c9415d78e6.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-dc6381c0-f1e2-4f6d-b411-253afc800be9.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-dcb51fd6-7bef-4807-9026-eccdb8ea2c65.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-dcb75904-d6cd-4a4a-9c13-1dc0d0612d20.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-dcefa7e2-ea6e-46b5-b8da-1c06d24dcb93.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-dd2a57db-0ba1-4e18-88d4-84d7f1c0b287.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-dd9a580d-8332-4ddd-bf11-5162256ceb85.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ddc10c84-74dd-451b-8646-e3d8a4658b25.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-dea90792-84ea-491a-8899-1994d86c2707.wt",
+      "bytes": 49152
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-df04a14e-bcb8-4e3e-ae5c-1268139cfacc.wt",
+      "bytes": 49152
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-df7fa1d9-eac1-4bcf-bebe-4aa968181492.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-dfa43145-d4f6-4a3c-972e-11604eff0f95.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-e0166bab-c820-4055-92ef-7dd32e3fe9ce.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-e0e81759-492b-4467-8d10-6c602936288e.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-e14d628a-6776-40fa-b529-281b83978264.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-e1541dcd-cef5-4675-94f9-fae5eb3aa7db.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-e15f04c6-412e-4f27-aff3-2c1c22929010.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-e1f65565-44db-404a-9142-0c6bd801c600.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-e3cca729-133a-41e2-8d7d-d926c40af8d6.wt",
+      "bytes": 57344
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-e415b89c-e4d1-420a-b389-6ced835c537c.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-e42bb699-d9db-4125-99d9-3ebeede16877.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-e4504783-1e46-453c-8d7f-ba61b1b170b3.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-e4be65bd-e585-42c3-99e6-591219776229.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-e4d9ab63-6374-463a-be06-68ee3522d67e.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-e4e6b3fd-2ae2-4c9b-b818-cc7b7ddb7a87.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-e4f27654-92cd-4d48-8550-2621f037b24b.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-e5a23a74-0d05-4e27-8a10-315bff739493.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-e6774282-23f4-4b71-a38a-d5ae133d6395.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-e699b661-57d9-45be-8631-fd5b0f79be69.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-e6bb1ade-e7ed-4b89-b975-cb65cc1eec80.wt",
+      "bytes": 28672
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-e6c5f768-f1a4-4fa5-b0be-63a634e43308.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-e73cae88-9b1d-481e-8efa-b4c5e21bcd18.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-e75c869f-63ae-43cc-b96a-31449a738e1d.wt",
+      "bytes": 8192
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-e86f214e-a193-480c-a916-ff13bc8f5d34.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-e9affc38-c608-451a-8129-dc5483767009.wt",
+      "bytes": 200704
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-e9e5627a-30c6-4b4d-8b9a-df08dd9f5fb2.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-eaa60a12-af64-45fc-a765-edd5f76c4a92.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-eb21e8c3-8823-44f2-b2f1-cce16baed1cc.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ebd3f337-e51f-453b-8305-84dab81fb04f.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ebd63c32-0a81-4ce0-8168-25b38cd1c1de.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ecfd0ff1-b36e-4766-911a-71b38cb4cbe4.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ed2e50b6-3f07-4a84-9594-6d518a8353fa.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-eddc1d41-5694-424f-b8ce-9abb8a0cac82.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ee04d8cd-7d11-46a3-88cd-4286491eac3e.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ee5925d2-cf09-4c34-886f-38e880f8876e.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ee838b9d-d73d-4ab7-8c90-2cfc37039912.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ef5fb812-840a-42b5-855a-6daf45ce7f18.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ef8f2631-2736-47cc-9733-8922ed3c8216.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-efa940eb-96d9-4d87-b33d-e6f0110423a7.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-f090372d-6c18-46ea-b4fb-24334e86c2d6.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-f0a37b3e-08fe-4357-9687-e9c2d8890bf3.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-f108ca2b-ea6d-4d74-9b23-e0d60cc66e50.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-f169ee41-e0f8-4d1c-94b9-6021cad5871c.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-f19ef900-b3b1-46d2-90f0-2d2292f5b3de.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-f1ee71b3-58b2-4486-b837-85fbbf926d95.wt",
+      "bytes": 208896
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-f206b189-3639-4821-8109-05b44c290baf.wt",
+      "bytes": 278528
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-f217f0e7-2be0-46f6-9576-28249992ac26.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-f2d1a16c-c197-475e-9bce-f70c65ffd5dc.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-f357ad9d-7aea-49d4-80a0-7ce8f9b90b0b.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-f3b14720-6c17-48c8-bdde-5080fce2a3c4.wt",
+      "bytes": 667648
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-f3dd2966-13b1-4156-994d-818b3911aec4.wt",
+      "bytes": 32768
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-f40ce675-67ea-4dac-bb4c-a4e01f9d983d.wt",
+      "bytes": 106496
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-f424cb6f-9133-4a09-9aea-4f76dc8724c2.wt",
+      "bytes": 155648
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-f44cce68-b008-450c-bbf6-3955e7ff399f.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-f4ebe4a4-ce79-468e-b6d4-44aac84fa830.wt",
+      "bytes": 12288
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-f5189788-06c7-4904-a286-5416143a694e.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-f577ea1e-a197-40f6-a657-4e2bd31020bd.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-f5bc567e-3229-4af5-af26-d143963873e0.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-f5e29a0c-59af-47e2-af91-75294ff15f15.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-f626ea8a-9489-433e-a3f7-ed069b6d64aa.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-f7a2edb3-bbde-43c2-8b9e-42c747cf4eb0.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-f7a9ddb9-0af3-4dec-b075-acdb29880115.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-f889b2d2-e1b8-4078-bc3a-43f93a761cec.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-f9117ddf-f190-455a-b50a-6781effed487.wt",
+      "bytes": 28672
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-f96bb67d-541f-48d3-9d47-67520ca47cf5.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-fae3dceb-4396-4cfa-8f9e-bfc8e896d561.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-faf48ea0-676b-4295-aafb-8a2dc30b2998.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-fbb165b4-1b88-452b-b437-5c9510d0ff2f.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-fbda6d3e-d11d-4823-9ea4-16e955c85e26.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-fbe5cb4d-f8ac-496a-89aa-12dd8e2150e4.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-fc2d7009-654c-43ab-b28d-253ddc5eda1c.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-fc33a9fc-8e22-4100-ae61-57e6893eceb7.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-fc50b1bf-a242-4151-bc8e-4ff666d8a1f1.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-fcaa3f23-de1a-4f67-9e82-48eda26eb7df.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-fccc39c4-35c4-4997-bed2-554095738970.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-fceedda3-0685-4541-a25f-225cbdf7a95f.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-fec46669-c79e-4073-8612-50a99049cf04.wt",
+      "bytes": 24576
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ff995fdf-db83-4607-b2de-4d8a29401334.wt",
+      "bytes": 49152
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ffaa462b-ab7d-4229-a9b6-9dc7b24b5559.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\index-ffc37789-7a30-4257-8c21-729631147ee9.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\mongod.lock",
+      "bytes": 6
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\mongod.log",
+      "bytes": 1426364
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\sizeStorer.wt",
+      "bytes": 36864
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\storage.bson",
+      "bytes": 114
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\WiredTiger",
+      "bytes": 50
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\WiredTiger.lock",
+      "bytes": 21
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\WiredTiger.turtle",
+      "bytes": 1479
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\WiredTiger.wt",
+      "bytes": 2891776
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\WiredTigerHS.wt",
+      "bytes": 4096
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\diagnostic.data\\metrics.2026-11-15T10-57-25Z-00000",
+      "bytes": 26400
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\diagnostic.data\\metrics.interim",
+      "bytes": 25080
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\journal\\WiredTigerLog.0000000001",
+      "bytes": 104857600
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\journal\\WiredTigerPreplog.0000000001",
+      "bytes": 104857600
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\_tmp\\spilldb\\WiredTiger",
+      "bytes": 50
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\_tmp\\spilldb\\WiredTiger.lock",
+      "bytes": 21
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\_tmp\\spilldb\\WiredTiger.turtle",
+      "bytes": 1474
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\_tmp\\spilldb\\WiredTiger.wt",
+      "bytes": 20480
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\node_modules\\.cache\\interview-coverage-mongo-20261115\\_tmp\\spilldb\\WiredTigerHS.wt",
+      "bytes": 4096
+    }
+  ],
+  "stoppedMongoPid": 16568,
+  "completedBrowserVerificationProcessesStopped": [
+    null
+  ]
+}

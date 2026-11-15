@@ -80,8 +80,7 @@ class AIService {
 
   memorySet(key, value, ttlSeconds) {
     this.memoryCache.delete(key);
-    while (this.memoryCache.size >= 256)
-      this.memoryCache.delete(this.memoryCache.keys().next().value);
+    while (this.memoryCache.size >= 256) this.memoryCache.delete(this.memoryCache.keys().next().value);
     this.memoryCache.set(key, {
       value,
       expiresAt: ttlSeconds ? Date.now() + ttlSeconds * 1000 : 0
@@ -115,12 +114,7 @@ class AIService {
     return null;
   }
 
-  async setSharedCache(
-    key,
-    value,
-    ttlSeconds = AI_RESPONSE_CACHE_TTL_SECONDS,
-    namespace = 'ai:response'
-  ) {
+  async setSharedCache(key, value, ttlSeconds = AI_RESPONSE_CACHE_TTL_SECONDS, namespace = 'ai:response') {
     const cacheKey = `${namespace}:${key}`;
     if (isRedisCacheEnabled()) {
       const redisStartedAt = Date.now();
@@ -235,8 +229,7 @@ class AIService {
     const totalCacheLookups = this.metrics.cacheHits + this.metrics.cacheMisses;
     const averagePromptTokens = this.metrics.promptTokens.length
       ? Math.round(
-          this.metrics.promptTokens.reduce((sum, value) => sum + value, 0) /
-            this.metrics.promptTokens.length
+          this.metrics.promptTokens.reduce((sum, value) => sum + value, 0) / this.metrics.promptTokens.length
         )
       : 0;
     return {
@@ -249,8 +242,7 @@ class AIService {
         : 0,
       averageAiLatencyMs: this.metrics.aiLatencyMs.length
         ? Math.round(
-            this.metrics.aiLatencyMs.reduce((sum, value) => sum + value, 0) /
-              this.metrics.aiLatencyMs.length
+            this.metrics.aiLatencyMs.reduce((sum, value) => sum + value, 0) / this.metrics.aiLatencyMs.length
           )
         : 0,
       averageRedisLatencyMs: this.metrics.redisLatencyMs.length
@@ -268,9 +260,7 @@ class AIService {
         redisHits: this.metrics.redisHits,
         redisMisses: this.metrics.redisMisses,
         redisErrors: this.metrics.redisErrors,
-        hitRatio: totalCacheLookups
-          ? Number((this.metrics.cacheHits / totalCacheLookups).toFixed(3))
-          : 0
+        hitRatio: totalCacheLookups ? Number((this.metrics.cacheHits / totalCacheLookups).toFixed(3)) : 0
       },
       deterministicSkipRatio:
         this.metrics.requests + this.metrics.deterministicSkips
@@ -329,8 +319,7 @@ class AIService {
       Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : Infinity
     );
     const deadline = startedAt + totalMs;
-    if (signal?.aborted)
-      return returnMeta ? { ok: false, value: fallback, reason: 'cancelled' } : fallback;
+    if (signal?.aborted) return returnMeta ? { ok: false, value: fallback, reason: 'cancelled' } : fallback;
     this.metrics.requests += 1;
 
     const promptStats = this.estimatePrompt(prompt);
@@ -355,8 +344,7 @@ class AIService {
           })
         : prompt
     );
-    const cachedValue =
-      requestPolicy?.cacheResponse === false ? null : await this.getSharedCache(cacheKey);
+    const cachedValue = requestPolicy?.cacheResponse === false ? null : await this.getSharedCache(cacheKey);
     if (cachedValue !== null) {
       this.metrics.cacheHits += 1;
       this.metrics.totalLatencyMs += Date.now() - startedAt;
@@ -364,8 +352,7 @@ class AIService {
         cacheKey: cacheKey.slice(0, 12),
         durationMs: Date.now() - startedAt
       });
-      if (signal?.aborted)
-        return returnMeta ? { ok: false, value: fallback, reason: 'cancelled' } : fallback;
+      if (signal?.aborted) return returnMeta ? { ok: false, value: fallback, reason: 'cancelled' } : fallback;
       const envelope = cachedValue?.__aiCacheV === 1 ? cachedValue : { value: cachedValue };
       return returnMeta
         ? {
@@ -381,8 +368,7 @@ class AIService {
     this.metrics.cacheMisses += 1;
     this.log('prompt_cache_miss', { cacheKey: cacheKey.slice(0, 12) });
 
-    if (signal?.aborted)
-      return returnMeta ? { ok: false, value: fallback, reason: 'cancelled' } : fallback;
+    if (signal?.aborted) return returnMeta ? { ok: false, value: fallback, reason: 'cancelled' } : fallback;
     const status = aiProviderManager.getStatus();
     if (!status.enabledProviders.length) {
       this.metrics.fallbacks += 1;
@@ -404,7 +390,12 @@ class AIService {
       preferredModel,
       signal,
       requestPolicy,
-      parseJson: (text) => this.extractJson(text)
+      parseJson: (text) => {
+        const value = this.extractJson(text);
+        if (requestPolicy?.validateResult && !requestPolicy.validateResult(value))
+          throw Object.assign(new Error('Structured output rejected.'), { aiReason: 'incomplete_output' });
+        return value;
+      }
     });
 
     if (result.ok && !signal?.aborted) {
@@ -446,9 +437,7 @@ class AIService {
       },
       'warn'
     );
-    return returnMeta
-      ? { ok: false, value: fallback, reason: result.reason || 'provider_error' }
-      : fallback;
+    return returnMeta ? { ok: false, value: fallback, reason: result.reason || 'provider_error' } : fallback;
   }
 }
 

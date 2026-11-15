@@ -1,0 +1,180 @@
+[
+  {
+    "runtimeLog": "latest-runtime.raw.log",
+    "scope": "AIProviderManager",
+    "event": "providers_ready"
+  },
+  {
+    "runtimeLog": "latest-runtime.raw.log",
+    "scope": "AIService",
+    "event": "prompt_size"
+  },
+  {
+    "runtimeLog": "latest-runtime.raw.log",
+    "scope": "AIService",
+    "event": "prompt_cache_miss"
+  },
+  {
+    "runtimeLog": "latest-runtime.raw.log",
+    "scope": "AIProviderManager",
+    "event": "provider_selected",
+    "provider": "gemini",
+    "model": "gemini-2.5-flash",
+    "attempt": 0
+  },
+  {
+    "runtimeLog": "latest-runtime.raw.log",
+    "scope": "AIProviderManager",
+    "event": "provider_selected",
+    "provider": "openai",
+    "model": "gpt-6-luna",
+    "attempt": 0
+  },
+  {
+    "runtimeLog": "latest-runtime.raw.log",
+    "scope": "AIProviderManager",
+    "event": "provider_selected",
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b",
+    "attempt": 0
+  },
+  {
+    "runtimeLog": "latest-runtime.raw.log",
+    "scope": "AIProviderManager",
+    "event": "provider_response",
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b"
+  },
+  {
+    "runtimeLog": "latest-runtime.raw.log",
+    "scope": "AIProviderManager",
+    "event": "provider_success",
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b",
+    "attempt": 0,
+    "latencyMs": 4368
+  },
+  {
+    "runtimeLog": "latest-runtime.raw.log",
+    "scope": "AIService",
+    "event": "ai_request_complete",
+    "provider": "groq",
+    "model": "openai/gpt-oss-120b",
+    "durationMs": 18701
+  },
+  {
+    "runtimeLog": "latest-runtime.raw.err",
+    "scope": "AIProviderManager",
+    "event": "provider_missing_key",
+    "provider": "xai"
+  },
+  {
+    "runtimeLog": "latest-runtime.raw.err",
+    "scope": "AIProviderManager",
+    "event": "provider_error",
+    "provider": "gemini",
+    "model": "gemini-2.5-flash",
+    "reason": "timeout",
+    "attempt": 0,
+    "failover": true
+  },
+  {
+    "runtimeLog": "latest-runtime.raw.err",
+    "scope": "AIProviderManager",
+    "event": "provider_switched",
+    "provider": "openai",
+    "reason": "timeout"
+  },
+  {
+    "runtimeLog": "latest-runtime.raw.err",
+    "scope": "AIProviderManager",
+    "event": "provider_error",
+    "provider": "openai",
+    "model": "gpt-6-luna",
+    "reason": "timeout",
+    "attempt": 0,
+    "failover": true
+  },
+  {
+    "runtimeLog": "latest-runtime.raw.err",
+    "scope": "AIProviderManager",
+    "event": "provider_switched",
+    "provider": "groq",
+    "reason": "timeout"
+  },
+  {
+    "runtimeLog": "latest-runtime-attempt-2.raw.log",
+    "scope": "AIProviderManager",
+    "event": "providers_ready"
+  },
+  {
+    "runtimeLog": "latest-runtime-attempt-2.raw.log",
+    "scope": "AIService",
+    "event": "prompt_size"
+  },
+  {
+    "runtimeLog": "latest-runtime-attempt-2.raw.log",
+    "scope": "AIService",
+    "event": "prompt_cache_miss"
+  },
+  {
+    "runtimeLog": "latest-runtime-attempt-2.raw.log",
+    "scope": "AIProviderManager",
+    "event": "provider_selected",
+    "provider": "gemini",
+    "model": "gemini-2.5-flash",
+    "attempt": 0
+  },
+  {
+    "runtimeLog": "latest-runtime-attempt-2.raw.log",
+    "scope": "AIProviderManager",
+    "event": "provider_response",
+    "provider": "gemini",
+    "model": "gemini-2.5-flash"
+  },
+  {
+    "runtimeLog": "latest-runtime-attempt-2.raw.log",
+    "scope": "AIProviderManager",
+    "event": "provider_success",
+    "provider": "gemini",
+    "model": "gemini-2.5-flash",
+    "attempt": 0,
+    "latencyMs": 3068
+  },
+  {
+    "runtimeLog": "latest-runtime-attempt-2.raw.log",
+    "scope": "AIService",
+    "event": "ai_request_complete",
+    "provider": "gemini",
+    "model": "gemini-2.5-flash",
+    "durationMs": 3114
+  },
+  {
+    "runtimeLog": "latest-runtime-attempt-2.raw.err",
+    "scope": "AIProviderManager",
+    "event": "provider_missing_key",
+    "provider": "xai"
+  },
+  {
+    "runtimeLog": "latest-runtime-final.raw.log",
+    "scope": "AIProviderManager",
+    "event": "providers_ready"
+  },
+  {
+    "runtimeLog": "latest-runtime-final.raw.err",
+    "scope": "AIProviderManager",
+    "event": "provider_missing_key",
+    "provider": "xai"
+  },
+  {
+    "runtimeLog": "runtime-final-source.raw.log",
+    "scope": "AIProviderManager",
+    "event": "providers_ready"
+  },
+  {
+    "runtimeLog": "runtime-final-source.raw.err",
+    "scope": "AIProviderManager",
+    "event": "provider_missing_key",
+    "provider": "xai"
+  }
+]

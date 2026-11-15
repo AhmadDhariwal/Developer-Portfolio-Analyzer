@@ -1,9 +1,54 @@
 const { listImportantTopics, normalizeTopicInput } = require('./interviewTopicNormalizer');
 const { normalizeComparableText, DIFFICULTY_SET } = require('./interviewQuestionQualityService');
 
-const coverageTarget = () => {
+const coverageTarget = (topicKey = '', difficulty = '') => {
   const value = Number(process.env.INTERVIEW_QUESTION_COVERAGE_TARGET);
-  return Number.isInteger(value) && value > 0 ? Math.min(100, value) : 30;
+  const fallback = Number.isInteger(value) && value > 0 ? Math.min(100, value) : 30;
+  const config = JSON.parse(process.env.INTERVIEW_QUESTION_COVERAGE_TARGETS || '{}');
+  if (!config || typeof config !== 'object' || Array.isArray(config))
+    throw new Error('Invalid interview coverage target configuration.');
+  const technologies = new Set(listImportantTopics().map((item) => item.key));
+  const valid = (target) => Number.isInteger(target) && target >= 0 && target <= 100;
+  if (
+    Object.keys(config).some((key) => !['default', 'difficulties', 'technologies'].includes(key)) ||
+    (config.default !== undefined && !valid(config.default)) ||
+    Object.entries(config.difficulties || {}).some(
+      ([key, target]) => !DIFFICULTY_SET.has(key) || !valid(target)
+    ) ||
+    Object.entries(config.technologies || {}).some(
+      ([key, cells]) =>
+        !technologies.has(key) ||
+        !cells ||
+        typeof cells !== 'object' ||
+        Object.entries(cells).some(([level, target]) => !DIFFICULTY_SET.has(level) || !valid(target))
+    )
+  )
+    throw new Error('Invalid interview coverage target configuration.');
+  const canonicalTopic = topicKey ? normalizeTopicInput({ skill: topicKey }).topicKey : '';
+  return (
+    config.technologies?.[canonicalTopic]?.[difficulty] ??
+    config.difficulties?.[difficulty] ??
+    config.default ??
+    fallback
+  );
+};
+const coveragePlan = (matrix) =>
+  listImportantTopics().flatMap(({ key }) =>
+    [...DIFFICULTY_SET].map((difficulty) => {
+      const target = coverageTarget(key, difficulty);
+      const available = matrix?.[key]?.[difficulty] || 0;
+      return { technology: key, difficulty, target, available, missing: Math.max(0, target - available) };
+    })
+  );
+// A stable run ID caps cumulative inserts across retries, including partial failures.
+const planCoverageBatch = ({ batch, alreadyGenerated, target, available }) => {
+  if (
+    ![batch, alreadyGenerated, target, available].every((value) => Number.isInteger(value) && value >= 0) ||
+    batch < 1 ||
+    batch > 10
+  )
+    throw new Error('Invalid bounded coverage batch.');
+  return Math.min(Math.max(0, batch - alreadyGenerated), Math.max(0, target - available));
 };
 const summarizeCoverage = (rows) => {
   const matrix = Object.fromEntries(
@@ -54,4 +99,4 @@ const summarizeCoverage = (rows) => {
   }
   return summary;
 };
-module.exports = { coverageTarget, summarizeCoverage };
+module.exports = { coverageTarget, coveragePlan, planCoverageBatch, summarizeCoverage };

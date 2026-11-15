@@ -1,10 +1,17 @@
 :host {
   display: block;
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
 }
 
 .question-card {
   position: relative;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
   background: var(--surface-card, #ffffff);
   border: 1px solid var(--border-color, rgba(148, 163, 184, 0.22));
   border-radius: 12px;
@@ -234,6 +241,8 @@
 
   .title-text {
     flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
     transition: color 0.15s ease;
   }
 
@@ -363,6 +372,8 @@
 
 /* ── Answer Expanded Section ── */
 .answer {
+  min-width: 0;
+  max-width: 100%;
   margin-top: 16px;
   padding-top: 18px;
   border-top: 1px dashed var(--border-color, rgba(148, 163, 184, 0.25));
@@ -384,6 +395,8 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
+  min-width: 0;
+  max-width: 100%;
   padding: 10px 14px;
   border-radius: 8px;
   background: #fffbeb;
@@ -399,10 +412,12 @@
   }
 
   .trust-note {
+    min-width: 0;
     margin: 0;
     font-size: 12px;
     line-height: 1.5;
     color: #92400e;
+    overflow-wrap: anywhere;
   }
 }
 
@@ -422,17 +437,24 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .answer-section {
+  min-width: 0;
+  max-width: 100%;
+
   .section-header {
     display: flex;
     align-items: center;
     gap: 8px;
+    min-width: 0;
     margin-bottom: 8px;
 
     .section-icon {
       display: inline-flex;
+      flex-shrink: 0;
       color: var(--color-primary, #6366f1);
       svg {
         width: 15px;
@@ -441,12 +463,14 @@
     }
 
     h4 {
+      min-width: 0;
       margin: 0;
       font-size: 13px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.04em;
       color: var(--text-primary, #1e293b);
+      overflow-wrap: anywhere;
     }
   }
 
@@ -455,6 +479,8 @@
     font-size: 14px;
     line-height: 1.65;
     color: var(--text-primary, #334155);
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   .bullet-list {
@@ -463,11 +489,14 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
+    min-width: 0;
 
     li {
       font-size: 14px;
       line-height: 1.6;
       color: var(--text-primary, #334155);
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
   }
 
@@ -541,6 +570,9 @@
 
 /* ── Code Snippet Container ── */
 .code-container {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   margin-top: 8px;
   background: #0f172a;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -566,7 +598,11 @@
   pre {
     margin: 0;
     padding: 14px 16px;
+    max-width: 100%;
     overflow-x: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
     font-family: var(--font-mono, 'JetBrains Mono', 'Fira Code', monospace);
     font-size: 13px;
     line-height: 1.6;
