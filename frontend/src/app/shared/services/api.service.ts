@@ -967,12 +967,21 @@ export class ApiService {
   /* ── Interview Prep ── */
   generateInterviewPrep(payload: {
     skill?: string;
+    query?: string;
+    difficulty?: string;
+    category?: string;
+    tags?: string[];
+    source?: string;
+    limit?: number;
     idempotencyKey?: string;
     skillGaps: string[];
     careerStack?: string;
     experienceLevel?: string;
   }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/interview-prep`, payload);
+    return this.http.post(`${this.baseUrl}/interview-prep`, {
+      ...payload,
+      tags: payload.tags?.join(','),
+    });
   }
 
   getInterviewPrepQuestions(params: {
@@ -1028,8 +1037,14 @@ export class ApiService {
     page?: number;
     limit?: number;
     target?: number;
+    category?: string;
+    tags?: string[];
+    source?: string;
   }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/interview-prep/generate`, payload);
+    return this.http.post(`${this.baseUrl}/interview-prep/generate`, {
+      ...payload,
+      tags: payload.tags?.join(','),
+    });
   }
 
   askInterviewPrepQuestion(payload: {

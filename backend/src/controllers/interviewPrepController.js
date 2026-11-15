@@ -1,3 +1,4 @@
+const { normalizeFilters } = require('../services/interviewQuestionFilters');
 const developerContext = require('../services/developerContextService');
 const interviewSessions = require('../services/interviewSessionService');
 const { resolveSkillSignals } = require('../services/coursePersonalizationService');
@@ -28,7 +29,16 @@ const cancellationSignal = (req, res) => {
   return controller.signal;
 };
 const VALID_DIFFICULTIES = new Set(['easy', 'medium', 'hard', 'senior', '']);
-const VALID_SOURCES = new Set(['seed', 'database', 'ai', 'scraped', 'ai_generated', 'verified_seed', 'prebuilt', '']);
+const VALID_SOURCES = new Set([
+  'seed',
+  'database',
+  'ai',
+  'scraped',
+  'ai_generated',
+  'verified_seed',
+  'prebuilt',
+  ''
+]);
 
 const clampInt = (value, min, max, fallback) => {
   const parsed = Number(value);
@@ -63,7 +73,11 @@ const generateInterviewPrepSession = async (req, res) => {
     const evidence = await resolveSkillSignals(req.user._id, careerStack, experienceLevel, null, req.user);
     const topicInput = readTopicInput(req.body || {});
     const explicitTopic =
-      topicInput.topic || topicInput.language || topicInput.framework || topicInput.technology || topicInput.stack;
+      topicInput.topic ||
+      topicInput.language ||
+      topicInput.framework ||
+      topicInput.technology ||
+      topicInput.stack;
     const inferredSkill =
       sanitizeSkill(explicitTopic || skill) ||
       sanitizeSkill(evidence.skillGaps[0]) ||
@@ -73,6 +87,11 @@ const generateInterviewPrepSession = async (req, res) => {
       userId: req.user._id,
       skill: inferredSkill,
       query,
+      difficulty: req.body.difficulty,
+      category: req.body.category,
+      tags: req.body.tags,
+      source: req.body.source,
+      limit: req.body.target || req.body.limit,
       ...topicInput,
       careerStack,
       experienceLevel,
@@ -151,7 +170,9 @@ const getInterviewPrepQuestions = async (req, res) => {
     return res.json(payload);
   } catch (error) {
     console.error('Interview prep question list error:', error.message);
-    return res.status(500).json({ message: 'Failed to load interview questions.' });
+    return res
+      .status(error.statusCode || 500)
+      .json({ message: error.statusCode ? error.message : 'Failed to load interview questions.' });
   }
 };
 
@@ -185,6 +206,7 @@ const searchInterviewPrepQuestions = async (req, res) => {
         .json({ message: `Invalid difficulty. Must be one of: easy, medium, hard, senior, or empty.` });
     }
 
+    normalizeFilters({ ...req.query });
     const payload = await searchQuestionBank({
       q: trimmedQuery,
       source,
@@ -200,7 +222,9 @@ const searchInterviewPrepQuestions = async (req, res) => {
     return res.json(payload);
   } catch (error) {
     console.error('Interview prep search error:', error.message);
-    return res.status(500).json({ message: 'Failed to search interview questions.' });
+    return res
+      .status(error.statusCode || 500)
+      .json({ message: error.statusCode ? error.message : 'Failed to search interview questions.' });
   }
 };
 
@@ -233,6 +257,9 @@ const generateInterviewPrepQuestions = async (req, res) => {
       ...topicInput,
       query,
       difficulty,
+      category: req.body.category,
+      tags: req.body.tags,
+      source: req.body.source,
       page,
       limit: target || limit
     });
@@ -242,7 +269,9 @@ const generateInterviewPrepQuestions = async (req, res) => {
     console.error('Generate questions error:', error.message);
     return res.status(error.statusCode || 500).json({
       message: error.statusCode
-        ? 'Unable to generate the requested interview questions.'
+        ? error.statusCode === 503
+          ? 'Insufficient matching questions. Adjust the filters or retry generation.'
+          : error.message
         : 'Failed to generate interview questions.'
     });
   }

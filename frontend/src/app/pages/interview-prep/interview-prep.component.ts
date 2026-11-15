@@ -475,13 +475,56 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     this.practiceError = '';
     if (!this.destroyed) this.cdr.detectChanges();
     const skill = this.selectedSkill;
+    const requestedTags = this.tags
+      .split(',')
+      .map((tag) => tag.trim().toLowerCase())
+      .filter(Boolean);
+    const incompatible = this.practiceQuestions.some(
+      (question) =>
+        (this.practiceDifficulty && question.difficulty !== this.practiceDifficulty) ||
+        (question.topicKey &&
+          question.topicKey.replaceAll('_', '-') !== skill.replaceAll('_', '-')) ||
+        (this.category && question.category !== this.category) ||
+        (this.source &&
+          this.source !== 'database' &&
+          !(
+            this.source === 'seed'
+              ? ['verified_seed', 'prebuilt']
+              : this.source === 'ai'
+                ? ['ai', 'ai_generated', 'user_asked']
+                : [this.source]
+          ).includes(question.sourceType || question.source || '')) ||
+        (requestedTags.length && !requestedTags.some((tag) => question.tags?.includes(tag))),
+    );
+    if (incompatible) {
+      this.practiceQuestions = [];
+      this.activePracticeSession = null;
+      this.practiceIndex = 0;
+      this.selfChecks.clear();
+    }
     if (saved && !this.savedRequestKey) this.savedRequestKey = crypto.randomUUID();
     const request = saved
-      ? this.prep.startSession(skill, this.savedRequestKey)
+      ? this.prep.startSession(skill, this.savedRequestKey, {
+          query: this.practiceFocus.trim(),
+          difficulty: this.practiceDifficulty,
+          category: this.category,
+          source: this.source,
+          tags: this.tags
+            .split(',')
+            .map((tag) => tag.trim())
+            .filter(Boolean),
+          limit: this.practiceCount,
+        })
       : this.prep.generateQuestions({
           skill,
           query: this.practiceFocus.trim(),
           difficulty: this.practiceDifficulty,
+          category: this.category,
+          source: this.source,
+          tags: this.tags
+            .split(',')
+            .map((tag) => tag.trim())
+            .filter(Boolean),
           target: this.practiceCount,
           limit: this.practiceCount,
         });
@@ -520,7 +563,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
           this.selfChecks.clear();
           if (response.session) this.applySession(response.session);
           this.savedRequestKey = '';
-          this.practiceSkill = skill;
+          this.practiceSkill = response.questions[0]?.topicKey || skill;
           this.practiceIndex = 0;
           this.practiceNotice = saved
             ? 'Saved session started using your current career context.'

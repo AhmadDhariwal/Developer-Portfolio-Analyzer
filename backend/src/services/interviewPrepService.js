@@ -1,3 +1,4 @@
+const { normalizeFilters, matchesFilters } = require('./interviewQuestionFilters');
 const logger = require('../utils/logger');
 const InterviewPrepSession = require('../models/interviewPrepSession');
 const interviewSessions = require('./interviewSessionService');
@@ -9,7 +10,11 @@ const {
   invalidateInterviewPrepCache,
   resolveInterviewCacheKey
 } = require('./redisCacheService');
-const { normalizeTopicInput, listImportantTopics, detectTopicsInText } = require('./interviewTopicNormalizer');
+const {
+  normalizeTopicInput,
+  listImportantTopics,
+  detectTopicsInText
+} = require('./interviewTopicNormalizer');
 const {
   SEED_VERSION,
   buildSeedRecordsForTopic,
@@ -135,7 +140,9 @@ const createPipelineTrace = () => {
       return {
         ...payload,
         performance: {
-          ...Object.fromEntries(Object.entries(timings).map(([key, value]) => [key, Number(value.toFixed(3))])),
+          ...Object.fromEntries(
+            Object.entries(timings).map(([key, value]) => [key, Number(value.toFixed(3))])
+          ),
           totalMs: Number((nowMs() - startedAt).toFixed(3)),
           counts: { ...counts }
         }
@@ -150,12 +157,16 @@ const cacheWithoutTrace = (key, payload, ttl) => {
 };
 const buildVerifiedPromptContext = (topicKey, question) =>
   getTopicSeedItems(topicKey)
-    .map((item) => ({ item, score: computeJaccardSimilarity(question, item.normalizedQuestion || item.question) }))
+    .map((item) => ({
+      item,
+      score: computeJaccardSimilarity(question, item.normalizedQuestion || item.question)
+    }))
     .filter(({ score }) => score > 0)
     .sort((left, right) => right.score - left.score)
     .slice(0, 1)
     .map(
-      ({ item }) => `${item.question}: ${item.answerSections?.shortAnswer || String(item.answer || '').slice(0, 320)}`
+      ({ item }) =>
+        `${item.question}: ${item.answerSections?.shortAnswer || String(item.answer || '').slice(0, 320)}`
     )
     .join('\n')
     .slice(0, 600);
@@ -175,10 +186,14 @@ const normalizeQuestions = (questions = []) => {
   const safe = Array.isArray(questions) ? questions : [];
   return safe
     .map((item, idx) => ({
+      ...item,
       question: normalizeQuestionText(item.question || item.title || `Interview question ${idx + 1}`),
       answer: normalizeAnswerText(
-        item.answer || item.sampleAnswer || 'Explain the concept and provide one practical implementation example.'
+        item.answer ||
+          item.sampleAnswer ||
+          'Explain the concept and provide one practical implementation example.'
       ),
+      topicKey: item.topicKey || item.technology || item.skill || '',
       difficulty: sanitizeDifficulty(item.difficulty),
       tags: sanitizeTags(item.tags)
     }))
@@ -225,7 +240,7 @@ const makeQuestionsCacheKey = ({
   category = '',
   source = ''
 }) => {
-  return `interview:questions:bank=v12:block=${cachePart(block)}:topic=${topicKey}:page=${page}:limit=${limit}:difficulty=${cachePart(difficulty)}:tags=${cachePart(tags)}:category=${cachePart(category)}:source=${cachePart(source)}`;
+  return `interview:questions:bank=v13:block=${cachePart(block)}:topic=${topicKey}:page=${page}:limit=${limit}:difficulty=${cachePart(difficulty)}:tags=${cachePart(tags)}:category=${cachePart(category)}:source=${cachePart(source)}`;
 };
 
 const makeSearchCacheKey = ({
@@ -239,7 +254,7 @@ const makeSearchCacheKey = ({
   tags = '',
   lookupOnly = false
 }) => {
-  return `interview:search:v7:mode=${lookupOnly ? 'lookup' : 'answer'}:q=${encodeURIComponent(
+  return `interview:search:filters=v2:v7:mode=${lookupOnly ? 'lookup' : 'answer'}:q=${encodeURIComponent(
     String(query || '')
       .trim()
       .toLowerCase()
@@ -280,7 +295,9 @@ const withApprovalFields = ({
   const sourceType = String(record?.sourceType || record?.source || '')
     .trim()
     .toLowerCase();
-  const qualityScore = normalizeQualityScore(record?.qualityScore || (sourceType === 'verified_seed' ? 90 : 80));
+  const qualityScore = normalizeQualityScore(
+    record?.qualityScore || (sourceType === 'verified_seed' ? 90 : 80)
+  );
   return {
     ...record,
     category: sanitizeCategory(record?.category || 'core-concepts'),
@@ -313,7 +330,8 @@ const selectVerifiedFallback = ({ topicInput, question }) => {
     findSeedRecordByQuestion(topicInput.topicKey, question) ||
     getTopicSeedItems(topicInput.topicKey).find(
       (item) =>
-        computeJaccardSimilarity(question, item.normalizedQuestion || item.question) >= MIN_STRONG_SEARCH_RELEVANCE
+        computeJaccardSimilarity(question, item.normalizedQuestion || item.question) >=
+        MIN_STRONG_SEARCH_RELEVANCE
     ) ||
     null;
   if (!candidate) return null;
@@ -409,7 +427,10 @@ const enrichQuestionIfNeeded = async (item = {}) => {
         normalizeQualityScore(seedRecord.qualityScore || 90)
       ),
       category: seedRecord.category || sanitizeCategory(item.category || 'core-concepts'),
-      confidenceScore: Math.max(Number(item.confidenceScore || 0), Number(seedRecord.confidenceScore || 0.95)),
+      confidenceScore: Math.max(
+        Number(item.confidenceScore || 0),
+        Number(seedRecord.confidenceScore || 0.95)
+      ),
       source: seedRecord.source,
       sourceType: seedRecord.sourceType,
       sourceMeta: {
@@ -430,7 +451,10 @@ const enrichQuestionIfNeeded = async (item = {}) => {
           normalizeQualityScore(seedRecord.qualityScore || 90)
         ),
         category: seedRecord.category || sanitizeCategory(item.category || 'core-concepts'),
-        confidenceScore: Math.max(Number(item.confidenceScore || 0), Number(seedRecord.confidenceScore || 0.95)),
+        confidenceScore: Math.max(
+          Number(item.confidenceScore || 0),
+          Number(seedRecord.confidenceScore || 0.95)
+        ),
         source: seedRecord.source,
         sourceType: seedRecord.sourceType
       }
@@ -495,15 +519,21 @@ const makeQuestionPayload = ({
   sourceMix = {},
   partial = false
 }) => {
-  const totalPages = Math.max(1, Math.ceil(Number(total || 0) / Math.max(1, Number(limit || DEFAULT_PAGE_LIMIT))));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(Number(total || 0) / Math.max(1, Number(limit || DEFAULT_PAGE_LIMIT)))
+  );
   return {
     questions: questions.map((item) => ({
       ...item,
       questionId:
-        item.seedId || `${item.topicKey || topicInput?.topicKey}:${questionRepository.toQuestionHash(item.question)}`,
+        item.seedId ||
+        `${item.topicKey || topicInput?.topicKey}:${questionRepository.toQuestionHash(item.question)}`,
       contentVersion:
         item.version ||
-        questionRepository.toQuestionHash(JSON.stringify([item.question, item.answer, item.answerSections || {}])),
+        questionRepository.toQuestionHash(
+          JSON.stringify([item.question, item.answer, item.answerSections || {}])
+        ),
       verificationStatus:
         ['verified_seed', 'prebuilt'].includes(item.sourceType || item.source) ||
         item.sourceMeta?.verificationStatus === 'verified'
@@ -553,7 +583,11 @@ const getCachedSourceMix = async (topicKey) => {
   });
 };
 
-const formatSourceLabel = ({ prebuiltGeneratedCount = 0, aiGeneratedCount = 0, scrapedGeneratedCount = 0 }) => {
+const formatSourceLabel = ({
+  prebuiltGeneratedCount = 0,
+  aiGeneratedCount = 0,
+  scrapedGeneratedCount = 0
+}) => {
   const labels = ['db'];
   if (prebuiltGeneratedCount > 0) labels.push('verified_seed');
   if (aiGeneratedCount > 0) labels.push('ai');
@@ -561,7 +595,11 @@ const formatSourceLabel = ({ prebuiltGeneratedCount = 0, aiGeneratedCount = 0, s
   return labels.join('+');
 };
 
-const ensurePrebuiltTopicBaseline = async ({ topicKey, minimumCount = MIN_TOPIC_QUESTION_POOL, forceSync = false }) => {
+const ensurePrebuiltTopicBaseline = async ({
+  topicKey,
+  minimumCount = MIN_TOPIC_QUESTION_POOL,
+  forceSync = false
+}) => {
   const importantTopic = getImportantTopicByKey(topicKey);
   if (!importantTopic) {
     return { attempted: false, insertedCount: 0 };
@@ -808,6 +846,18 @@ const getQuestionBank = async ({
   category = '',
   source = ''
 } = {}) => {
+  ({ difficulty, category, source } = normalizeFilters({
+    skill,
+    topic,
+    stack,
+    technology,
+    language,
+    framework,
+    difficulty,
+    category,
+    source,
+    tags
+  }));
   const topicInput = normalizeTopicInput({ skill, topic, stack, technology, language, framework });
   const { page: normalizedPage, limit: normalizedLimit } = normalizePagination({ page, limit });
   const normalizedTags = toTagFilter(tags);
@@ -859,7 +909,7 @@ const getQuestionBank = async ({
           (item) =>
             (!difficulty || item.difficulty === difficulty) &&
             (!category || item.category === category) &&
-            (!source || ['seed', 'database', 'verified_seed', 'prebuilt'].includes(source)) &&
+            matchesFilters(item, normalizeFilters({ skill: topicInput.topicKey, source })) &&
             (!normalizedTags || normalizedTags.split(',').some((tag) => item.tags?.includes(tag)))
         );
         pageResult = {
@@ -868,7 +918,12 @@ const getQuestionBank = async ({
         };
       }
 
-      const questions = pageResult.questions || [];
+      const questions = (pageResult.questions || []).filter((item) =>
+        matchesFilters(
+          item,
+          normalizeFilters({ skill: topicInput.topicKey, difficulty, category, source, tags })
+        )
+      );
       const payload = makeQuestionPayload({
         questions,
         total: pageResult.total,
@@ -904,7 +959,7 @@ const getQuestionBank = async ({
             (record) =>
               record.isTopQuestion &&
               (!category || record.category === category) &&
-              (!source || ['seed', 'database', 'verified_seed', 'prebuilt'].includes(source)) &&
+              matchesFilters(record, normalizeFilters({ skill: topicInput.topicKey, source })) &&
               (!difficulty || record.difficulty === difficulty) &&
               (!normalizedTags || normalizedTags.split(',').some((tag) => record.tags?.includes(tag)))
           )
@@ -919,7 +974,15 @@ const getQuestionBank = async ({
         .slice(0, 30);
     }
 
-    const questions = rows.sort((left, right) => Number(left.rank || 999) - Number(right.rank || 999)).slice(0, 30);
+    const questions = rows
+      .filter((item) =>
+        matchesFilters(
+          item,
+          normalizeFilters({ skill: topicInput.topicKey, difficulty, category, source, tags })
+        )
+      )
+      .sort((left, right) => Number(left.rank || 999) - Number(right.rank || 999))
+      .slice(0, 30);
     const payload = makeQuestionPayload({
       questions,
       total: questions.length,
@@ -927,7 +990,9 @@ const getQuestionBank = async ({
       limit: 30,
       source: 'db',
       topicInput,
-      sourceMix: unavailable ? { verified_seed: questions.length } : await getCachedSourceMix(topicInput.topicKey)
+      sourceMix: unavailable
+        ? { verified_seed: questions.length }
+        : await getCachedSourceMix(topicInput.topicKey)
     });
     await setCacheJson(cacheKey, payload, unavailable ? 30 : CACHE_TTL_TOP);
     return payload;
@@ -969,8 +1034,42 @@ const searchQuestionBank = async ({
     });
   }
 
+  ({ difficulty, category, source } = normalizeFilters({
+    skill,
+    topic,
+    stack,
+    technology,
+    language,
+    framework,
+    difficulty,
+    category,
+    source,
+    tags,
+    q
+  }));
+  if (allowEnrichment && (difficulty || category || source || toTagFilter(tags))) {
+    return searchQuestionBank({
+      q,
+      skill,
+      topic,
+      stack,
+      technology,
+      language,
+      framework,
+      difficulty,
+      category,
+      source,
+      tags,
+      page,
+      limit,
+      allowEnrichment: false
+    });
+  }
   const topicInput = normalizeTopicInput({ skill, topic, stack, technology, language, framework });
-  const identity = questionRepository.buildQuestionIdentity({ question: query, topicKey: topicInput.topicKey });
+  const identity = questionRepository.buildQuestionIdentity({
+    question: query,
+    topicKey: topicInput.topicKey
+  });
   const { page: normalizedPage, limit: normalizedLimit } = normalizePagination({ page, limit });
   const normalizedTags = toTagFilter(tags);
   const normalizedCategory = category ? sanitizeCategory(category) : '';
@@ -1038,9 +1137,11 @@ const searchQuestionBank = async ({
           (item) =>
             (!expectedDifficulty || item.difficulty === expectedDifficulty) &&
             (!normalizedCategory || item.category === normalizedCategory) &&
-            (!source || ['seed', 'database', 'verified_seed', 'prebuilt'].includes(source)) &&
+            matchesFilters(item, normalizeFilters({ skill: topicInput.topicKey, source })) &&
             (!normalizedTags || normalizedTags.split(',').some((tag) => item.tags?.includes(tag))) &&
-            identity.searchableTokens.some((token) => `${item.question} ${item.answer}`.toLowerCase().includes(token))
+            identity.searchableTokens.some((token) =>
+              `${item.question} ${item.answer}`.toLowerCase().includes(token)
+            )
         );
         result = {
           total: seeds.length,
@@ -1101,7 +1202,9 @@ const searchQuestionBank = async ({
           MIN_STRONG_SEARCH_RELEVANCE
       );
       if (match) {
-        reusable = await trace.time('similarityMs', null, () => questionRepository.findQuestionById(match._id));
+        reusable = await trace.time('similarityMs', null, () =>
+          questionRepository.findQuestionById(match._id)
+        );
         const approval = reusable
           ? await trace.time('validationMs', null, () =>
               Promise.resolve(
@@ -1220,7 +1323,14 @@ const searchQuestionBank = async ({
       );
       if (!approvedRecord.isApproved || normalizeQualityScore(approvedRecord.qualityScore || 0) < 80) {
         return trace.finish(
-          makeQuestionPayload({ questions: [], total: 0, page: 1, limit: normalizedLimit, source: 'db', topicInput })
+          makeQuestionPayload({
+            questions: [],
+            total: 0,
+            page: 1,
+            limit: normalizedLimit,
+            source: 'db',
+            topicInput
+          })
         );
       }
 
@@ -1251,13 +1361,25 @@ const searchQuestionBank = async ({
         reason: 'provider_unavailable'
       });
       return trace.finish(
-        makeQuestionPayload({ questions: [], total: 0, page: 1, limit: normalizedLimit, source: 'db', topicInput })
+        makeQuestionPayload({
+          questions: [],
+          total: 0,
+          page: 1,
+          limit: normalizedLimit,
+          source: 'db',
+          topicInput
+        })
       );
     }
   });
 };
 
-const generateQuestionsFromAI = async ({ skill, query = '', difficulty = '', count = MIN_GENERATE_RESULTS }) => {
+const generateQuestionsFromAI = async ({
+  skill,
+  query = '',
+  difficulty = '',
+  count = MIN_GENERATE_RESULTS
+}) => {
   const topic = normalizeTopicInput({ skill });
   return aiProvider.generateQuestionsFromAI({
     topicKey: topic.topicKey,
@@ -1270,7 +1392,10 @@ const generateQuestionsFromAI = async ({ skill, query = '', difficulty = '', cou
 
 const saveUniqueQuestions = async ({ skill, questions, source = 'ai', popularity = 10 }) => {
   const topic = normalizeTopicInput({ skill });
-  const existingComparableQuestions = await questionRepository.fetchComparableQuestionsByTopic(topic.topicKey, 500);
+  const existingComparableQuestions = await questionRepository.fetchComparableQuestionsByTopic(
+    topic.topicKey,
+    500
+  );
 
   const normalized = normalizeQuestions(questions).filter((item) =>
     isQualityQuestionAnswer({ ...item, topicKey: topic.topicKey })
@@ -1395,12 +1520,24 @@ const fallbackToQuestionBankForGeneration = async ({
   language = '',
   framework = '',
   difficulty = '',
+  category = '',
+  tags = '',
+  source = '',
+  query = '',
   page = 1,
   limit = DEFAULT_PAGE_LIMIT,
   reason = 'unknown',
   error = null
 } = {}) => {
-  const normalizedLimit = Math.max(MIN_GENERATE_RESULTS, normalizePagination({ page, limit }).limit);
+  const normalizedLimit = normalizePagination({ page, limit }).limit;
+  const filters = normalizeFilters({
+    skill: topicInput?.topicKey || skill,
+    difficulty,
+    category,
+    tags,
+    source,
+    query
+  });
   const targetTopicKey =
     topicInput?.topicKey ||
     sanitizeSkill(skill || topic || language || framework || technology || stack) ||
@@ -1414,28 +1551,58 @@ const fallbackToQuestionBankForGeneration = async ({
   });
 
   try {
-    const topPayload = await getQuestionBank({
-      skill: targetTopicKey,
-      difficulty: difficulty ? sanitizeDifficulty(difficulty) : '',
-      page: 1,
-      limit: normalizedLimit,
-      block: 'top'
-    });
+    const topPayload = await (query
+      ? searchQuestionBank({
+          q: query,
+          skill: targetTopicKey,
+          difficulty,
+          category,
+          tags,
+          source,
+          page: 1,
+          limit: normalizedLimit,
+          allowEnrichment: false
+        })
+      : getQuestionBank({
+          skill: targetTopicKey,
+          difficulty: difficulty ? sanitizeDifficulty(difficulty) : '',
+          page: 1,
+          limit: normalizedLimit,
+          category,
+          tags,
+          source,
+          block: 'top'
+        }));
 
-    if (Array.isArray(topPayload?.questions) && topPayload.questions.length > 0) {
+    if (Array.isArray(topPayload?.questions) && topPayload.questions.length >= normalizedLimit) {
       return topPayload;
     }
 
-    const allPayload = await getQuestionBank({
-      skill: targetTopicKey,
-      difficulty: difficulty ? sanitizeDifficulty(difficulty) : '',
-      page: 1,
-      limit: normalizedLimit,
-      block: 'all'
-    });
+    const allPayload = await (query
+      ? searchQuestionBank({
+          q: query,
+          skill: targetTopicKey,
+          difficulty,
+          category,
+          tags,
+          source,
+          page: 1,
+          limit: normalizedLimit,
+          allowEnrichment: false
+        })
+      : getQuestionBank({
+          skill: targetTopicKey,
+          difficulty: difficulty ? sanitizeDifficulty(difficulty) : '',
+          page: 1,
+          limit: normalizedLimit,
+          category,
+          tags,
+          source,
+          block: 'all'
+        }));
 
     if (Array.isArray(allPayload?.questions) && allPayload.questions.length > 0) {
-      return allPayload;
+      return { ...allPayload, partial: allPayload.questions.length < normalizedLimit };
     }
   } catch (fallbackError) {
     console.error('Fallback question bank lookup failed:', fallbackError);
@@ -1448,7 +1615,7 @@ const fallbackToQuestionBankForGeneration = async ({
   const memoryFallbackTopic = getImportantTopicByKey(targetTopicKey);
   const memoryFallbackQuestions = memoryFallbackTopic
     ? buildSeedRecordsForTopic(memoryFallbackTopic)
-        .filter((record) => record.isTopQuestion)
+        .filter((record) => record.isTopQuestion && matchesFilters(record, filters))
         .slice(0, normalizedLimit)
     : [];
 
@@ -1465,7 +1632,7 @@ const fallbackToQuestionBankForGeneration = async ({
       scrapedGeneratedCount: 0,
       enrichedCount: 0,
       sourceMix: { verified_seed: memoryFallbackQuestions.length },
-      partial: false
+      partial: memoryFallbackQuestions.length < normalizedLimit
     });
   }
 
@@ -1485,9 +1652,27 @@ const generateFreshInterviewQuestions = async ({
   framework = '',
   query = '',
   difficulty = '',
+  category = '',
+  tags = '',
+  source = '',
   page = 1,
   limit = DEFAULT_PAGE_LIMIT
 } = {}) => {
+  const filters = normalizeFilters({
+    skill,
+    topic,
+    stack,
+    technology,
+    language,
+    framework,
+    query,
+    difficulty,
+    category,
+    tags,
+    source
+  });
+  ({ difficulty, category, source } = filters);
+  const accept = (rows) => rows.filter((item) => matchesFilters(item, filters));
   const topicInput = normalizeTopicInput({ skill, topic, stack, technology, language, framework });
   const normalizedSkill = sanitizeSkill(topicInput.topicKey);
   const normalizedLimit = normalizePagination({ page, limit }).limit;
@@ -1507,6 +1692,10 @@ const generateFreshInterviewQuestions = async ({
       language,
       framework,
       difficulty,
+      category,
+      tags,
+      source,
+      query,
       page,
       limit: targetCount,
       reason,
@@ -1514,7 +1703,10 @@ const generateFreshInterviewQuestions = async ({
     });
 
     if (Array.isArray(payload?.questions) && payload.questions.length > 0) {
-      const questions = dedupeQuestions({ questions: [...existing, ...payload.questions] }).slice(0, targetCount);
+      const questions = dedupeQuestions({ questions: accept([...existing, ...payload.questions]) }).slice(
+        0,
+        targetCount
+      );
       return {
         ...payload,
         questions,
@@ -1522,6 +1714,8 @@ const generateFreshInterviewQuestions = async ({
         totalAvailable: questions.length,
         limit: targetCount,
         totalPages: 1,
+        insufficientResults: questions.length < targetCount,
+        requestedCount: targetCount,
         partial: questions.length < targetCount
       };
     }
@@ -1543,7 +1737,7 @@ const generateFreshInterviewQuestions = async ({
       scrapedGeneratedCount: 0,
       enrichedCount: 0,
       sourceMix: payload?.sourceMix || {},
-      partial: false,
+      partial: true,
       topicKey: payload?.topicKey || topicInput.topicKey,
       topicType: payload?.topicType || topicInput.topicType,
       metrics: metricSnapshot()
@@ -1554,11 +1748,57 @@ const generateFreshInterviewQuestions = async ({
     return fallbackToBank('missing_skill');
   }
 
-  existing = await questionRepository.findAiGeneratedByTopic({
-    topicKey: topicInput.topicKey,
-    topic: focusTopic,
-    difficulty,
-    limit: targetCount
+  const bank = await (query
+    ? searchQuestionBank({
+        skill: normalizedSkill,
+        q: query,
+        difficulty,
+        category,
+        tags,
+        source,
+        page: 1,
+        limit: targetCount,
+        allowEnrichment: false
+      })
+    : getQuestionBank({
+        skill: normalizedSkill,
+        difficulty,
+        category,
+        tags,
+        source,
+        page: 1,
+        limit: targetCount,
+        block: 'all'
+      }));
+  existing = accept(bank.questions || []).slice(0, targetCount);
+  if (existing.length >= targetCount)
+    return {
+      ...bank,
+      questions: existing,
+      total: existing.length,
+      totalAvailable: existing.length,
+      limit: targetCount,
+      page: 1,
+      totalPages: 1,
+      partial: false
+    };
+  if (source && !['ai', 'ai_generated', 'database'].includes(source))
+    return fallbackToBank('source_filter_excludes_ai');
+  existing = dedupeQuestions({
+    questions: [
+      ...existing,
+      ...accept(
+        await questionRepository.findAiGeneratedByTopic({
+          topicKey: topicInput.topicKey,
+          topic: focusTopic,
+          difficulty,
+          category,
+          tags: filters.tags,
+          source,
+          limit: targetCount
+        })
+      )
+    ]
   });
 
   if (existing.length >= targetCount) {
@@ -1585,6 +1825,8 @@ const generateFreshInterviewQuestions = async ({
       aiProvider.generateStructuredQuestionSet({
         skill: normalizedSkill,
         topic: focusQuery,
+        category,
+        tags: filters.tags,
         difficulty,
         count: gap
       })
@@ -1594,12 +1836,12 @@ const generateFreshInterviewQuestions = async ({
       600
     );
     const normalized = normalizeQuestions(generated)
-      .map((item, index) => ({
+      .map((item) => ({
         ...item,
-        answerSections: generated[index]?.answerSections || item.answerSections,
-        category: generated[index]?.category || item.category || 'core-concepts',
-        qualityScore: generated[index]?.qualityScore || 80,
-        confidenceScore: generated[index]?.confidenceScore,
+        answerSections: item.answerSections,
+        category: item.category || 'core-concepts',
+        qualityScore: item.qualityScore || 80,
+        confidenceScore: item.confidenceScore,
         answerFormat: 'structured',
         isEnriched: true,
         tags: sanitizeTags([
@@ -1610,7 +1852,13 @@ const generateFreshInterviewQuestions = async ({
           'ai_generated'
         ])
       }))
-      .filter((item) => isQualityQuestionAnswer({ ...item, topicKey: topicInput.topicKey }));
+      .filter(
+        (item) =>
+          matchesFilters(
+            { ...item, topicKey: item.topicKey || topicInput.topicKey, sourceType: 'ai_generated' },
+            filters
+          ) && isQualityQuestionAnswer({ ...item, topicKey: topicInput.topicKey })
+      );
     const deduped = dedupeQuestions({ questions: normalized, existingComparableQuestions });
     const records = deduped
       .map((item) =>
@@ -1649,9 +1897,12 @@ const generateFreshInterviewQuestions = async ({
       topicKey: topicInput.topicKey,
       topic: focusTopic,
       difficulty,
+      category,
+      tags: filters.tags,
+      source,
       limit: targetCount
     });
-    const questions = fullSet.slice(0, targetCount);
+    const questions = dedupeQuestions({ questions: [...existing, ...accept(fullSet)] }).slice(0, targetCount);
     if (questions.length >= targetCount) {
       return {
         questions: questions.slice(0, targetCount),
@@ -1678,7 +1929,7 @@ const generateFreshInterviewQuestions = async ({
     );
     const fallbackPayload = await fallbackToBank('generated_set_incomplete');
     const completedQuestions = dedupeQuestions({
-      questions: [...questions, ...(fallbackPayload.questions || [])]
+      questions: accept([...questions, ...(fallbackPayload.questions || [])])
     }).slice(0, targetCount);
 
     if (completedQuestions.length >= targetCount) {
@@ -1746,7 +1997,11 @@ const answerCustomInterviewQuestion = async ({
   const trace = createPipelineTrace();
   const cacheKey = await trace.time('redisMs', null, () =>
     resolveInterviewCacheKey(
-      makeCustomQuestionCacheKey({ question: identity.normalizedQuestion, topicKey: topicInput.topicKey, userId }),
+      makeCustomQuestionCacheKey({
+        question: identity.normalizedQuestion,
+        topicKey: topicInput.topicKey,
+        userId
+      }),
       topicInput.topicKey
     )
   );
@@ -1756,7 +2011,8 @@ const answerCustomInterviewQuestion = async ({
     trace.applyCache(cacheResult);
     if (cacheResult.value) {
       interviewEngineMetrics.cacheHits += 1;
-      if (cacheResult.value._id) questionRepository.incrementQuestionUsage(cacheResult.value._id).catch(() => {});
+      if (cacheResult.value._id)
+        questionRepository.incrementQuestionUsage(cacheResult.value._id).catch(() => {});
       return trace.finish({
         ...cacheResult.value,
         sourceLabel: `Cache / ${cacheResult.value.sourceLabel || 'DB'}`,
@@ -1777,7 +2033,11 @@ const answerCustomInterviewQuestion = async ({
     if (reusable) {
       const approval = await trace.time('validationMs', null, () =>
         Promise.resolve(
-          validateRecordForApproval({ record: reusable, topicInput, minimumScore: MIN_STRONG_SEARCH_RELEVANCE })
+          validateRecordForApproval({
+            record: reusable,
+            topicInput,
+            minimumScore: MIN_STRONG_SEARCH_RELEVANCE
+          })
         )
       );
       if (!approval.isApproved) reusable = null;
@@ -1798,11 +2058,17 @@ const answerCustomInterviewQuestion = async ({
           MIN_STRONG_SEARCH_RELEVANCE
       );
       if (match) {
-        reusable = await trace.time('similarityMs', null, () => questionRepository.findQuestionById(match._id));
+        reusable = await trace.time('similarityMs', null, () =>
+          questionRepository.findQuestionById(match._id)
+        );
         const approval = reusable
           ? await trace.time('validationMs', null, () =>
               Promise.resolve(
-                validateRecordForApproval({ record: reusable, topicInput, minimumScore: MIN_STRONG_SEARCH_RELEVANCE })
+                validateRecordForApproval({
+                  record: reusable,
+                  topicInput,
+                  minimumScore: MIN_STRONG_SEARCH_RELEVANCE
+                })
               )
             )
           : { isApproved: false };
@@ -1816,7 +2082,9 @@ const answerCustomInterviewQuestion = async ({
         ...reusable,
         sourceType: 'db',
         originalSourceType: reusable.sourceType,
-        verificationStatus: ['verified_seed', 'prebuilt'].includes(reusable.sourceType) ? 'verified' : 'unverified',
+        verificationStatus: ['verified_seed', 'prebuilt'].includes(reusable.sourceType)
+          ? 'verified'
+          : 'unverified',
         sourceLabel: ['verified_seed', 'prebuilt'].includes(reusable.sourceType) ? 'Verified Seed' : 'DB',
         stored: true,
         duplicate: true,
@@ -1831,8 +2099,10 @@ const answerCustomInterviewQuestion = async ({
         findSeedRecordByQuestion(topicInput.topicKey, normalizedQuestion) ||
           getTopicSeedItems(topicInput.topicKey).find(
             (candidate) =>
-              computeJaccardSimilarity(normalizedQuestion, candidate.normalizedQuestion || candidate.question) >=
-              MIN_STRONG_SEARCH_RELEVANCE
+              computeJaccardSimilarity(
+                normalizedQuestion,
+                candidate.normalizedQuestion || candidate.question
+              ) >= MIN_STRONG_SEARCH_RELEVANCE
           ) ||
           null
       )
@@ -1840,7 +2110,11 @@ const answerCustomInterviewQuestion = async ({
     if (seedMatch) {
       const approval = await trace.time('validationMs', null, () =>
         Promise.resolve(
-          validateRecordForApproval({ record: seedMatch, topicInput, minimumScore: MIN_STRONG_SEARCH_RELEVANCE })
+          validateRecordForApproval({
+            record: seedMatch,
+            topicInput,
+            minimumScore: MIN_STRONG_SEARCH_RELEVANCE
+          })
         )
       );
       if (approval.isApproved) {
@@ -1920,7 +2194,9 @@ const answerCustomInterviewQuestion = async ({
       interviewEngineMetrics.aiFallbackRuns += 1;
       logInterviewAiReason('provider_success');
     } catch (error) {
-      logInterviewAiReason(INTERVIEW_AI_REASON_CODES.has(error?.reasonCode) ? error.reasonCode : 'provider_error');
+      logInterviewAiReason(
+        INTERVIEW_AI_REASON_CODES.has(error?.reasonCode) ? error.reasonCode : 'provider_error'
+      );
       return trace.finish(buildAiFailurePayload({ topicInput, question: normalizedQuestion }));
     }
 
@@ -1952,9 +2228,10 @@ const answerCustomInterviewQuestion = async ({
       )
     );
     if (!approvedRecord.isApproved) {
-      const semanticReasons = /topic|concept|comparison|contradiction|generic|placeholder|directly_address/.test(
-        approvedRecord.rejectedReason || ''
-      );
+      const semanticReasons =
+        /topic|concept|comparison|contradiction|generic|placeholder|directly_address/.test(
+          approvedRecord.rejectedReason || ''
+        );
       logInterviewAiReason(semanticReasons ? 'semantic_rejected' : 'quality_rejected');
       return trace.finish(buildAiFailurePayload({ topicInput, question: normalizedQuestion }));
     }
@@ -2029,6 +2306,11 @@ const generateInterviewPrepSessionFromBank = async ({
   userId,
   skill,
   query = '',
+  difficulty = '',
+  category = '',
+  tags = '',
+  source = '',
+  limit = DEFAULT_PAGE_LIMIT,
   careerStack = '',
   experienceLevel = '',
   skillGaps = [],
@@ -2036,8 +2318,12 @@ const generateInterviewPrepSessionFromBank = async ({
   signal,
   idempotencyKey = ''
 }) => {
+  const filters = normalizeFilters({ skill, query, difficulty, category, tags, source });
+  skill = filters.topicKey;
   const requestKey = idempotencyKey ? `practice:${idempotencyKey}` : undefined;
-  const requestFingerprint = hashRequest(JSON.stringify([skill, query, careerStack, experienceLevel, skillGaps]));
+  const requestFingerprint = hashRequest(
+    JSON.stringify([filters, limit, careerStack, experienceLevel, skillGaps])
+  );
   const prior = await interviewSessions.findRequest(userId, requestKey, requestFingerprint);
   if (prior)
     return {
@@ -2050,7 +2336,16 @@ const generateInterviewPrepSessionFromBank = async ({
       session: prior,
       sessionId: prior._id
     };
-  const generated = await generateHybridInterviewQuestions({ skill, query, page: 1, limit: DEFAULT_PAGE_LIMIT });
+  const generated = await generateFreshInterviewQuestions({
+    skill,
+    query,
+    difficulty,
+    category,
+    tags,
+    source,
+    page: 1,
+    limit
+  });
 
   assertActiveRequest(signal);
   const session = await interviewSessions.create({
@@ -2114,7 +2409,10 @@ const maintainInterviewQuestionPools = async ({
       continue;
     }
 
-    const existingComparableQuestions = await questionRepository.fetchComparableQuestionsByTopic(topic.key, 600);
+    const existingComparableQuestions = await questionRepository.fetchComparableQuestionsByTopic(
+      topic.key,
+      600
+    );
     const result = await enrichmentOrchestrator.enrichTopicQuestionPool({
       topic: normalizeTopicInput({ topic: topic.key }),
       query: '',
@@ -2138,7 +2436,10 @@ const maintainInterviewQuestionPools = async ({
         await enrichQuestionIfNeeded(item.toObject ? item.toObject() : item);
         await invalidateInterviewPrepCache(item.topicKey);
       } catch (error) {
-        logger.warn('interview-prep scheduled answer enrichment failed', { id: item._id, message: error.message });
+        logger.warn('interview-prep scheduled answer enrichment failed', {
+          id: item._id,
+          message: error.message
+        });
       }
     }
   }

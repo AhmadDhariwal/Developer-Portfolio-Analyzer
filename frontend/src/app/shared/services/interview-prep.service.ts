@@ -122,6 +122,9 @@ export class InterviewPrepService implements OnDestroy {
     page?: number;
     limit?: number;
     target?: number;
+    category?: string;
+    tags?: string[];
+    source?: string;
   }): Observable<InterviewQuestionListResponse> {
     return this.once('generate', payload, () => this.api.generateInterviewPrepQuestions(payload));
   }
@@ -139,8 +142,16 @@ export class InterviewPrepService implements OnDestroy {
   startSession(
     skill: string,
     idempotencyKey: string = crypto.randomUUID(),
+    filters: {
+      query?: string;
+      difficulty?: string;
+      category?: string;
+      tags?: string[];
+      source?: string;
+      limit?: number;
+    } = {},
   ): Observable<InterviewQuestionListResponse> {
-    const payload = { skill, skillGaps: [], idempotencyKey };
+    const payload = { skill, skillGaps: [], idempotencyKey, ...filters };
     return this.once('session', payload, () => this.api.generateInterviewPrep(payload));
   }
   getSession(id: string): Observable<InterviewSession> {

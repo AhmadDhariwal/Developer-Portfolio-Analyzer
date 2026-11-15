@@ -1,3 +1,4 @@
+const { normalizeTopicInput } = require('../interviewTopicNormalizer');
 const aiService = require('../aiservice');
 const coordination = require('../interviewCoordinationService');
 const {
@@ -54,9 +55,13 @@ const hasValidAnswerSchema = (result = {}) => {
         Array.isArray(answer[field]) &&
         answer[field].length >= (field === 'keyPoints' ? 3 : 2) &&
         answer[field].length <= 10 &&
-        answer[field].every((item) => typeof item === 'string' && item.trim().length > 0 && item.length <= 2000)
+        answer[field].every(
+          (item) => typeof item === 'string' && item.trim().length > 0 && item.length <= 2000
+        )
       );
-    return typeof answer[field] === 'string' && answer[field].trim().length > 0 && answer[field].length <= 12000;
+    return (
+      typeof answer[field] === 'string' && answer[field].trim().length > 0 && answer[field].length <= 12000
+    );
   });
 };
 
@@ -120,7 +125,9 @@ const structuredAnswerToText = (answer = {}) => {
   return normalizeAnswerText(
     [
       structured.shortAnswer ? `Short answer: ${structured.shortAnswer}` : '',
-      structured.keyPoints.length ? `Key points:\n${structured.keyPoints.map((point) => `- ${point}`).join('\n')}` : '',
+      structured.keyPoints.length
+        ? `Key points:\n${structured.keyPoints.map((point) => `- ${point}`).join('\n')}`
+        : '',
       structured.explanation ? `Explanation: ${structured.explanation}` : '',
       structured.example ? `Example:\n${structured.example}` : '',
       structured.realWorldUseCase ? `Real-world use case: ${structured.realWorldUseCase}` : '',
@@ -143,10 +150,13 @@ const normalizeArray = (questions = []) => {
   return safe
     .map((item, idx) => {
       const question = normalizeQuestionText(item.question || item.title || `Interview question ${idx + 1}`);
-      const answerSections = normalizeStructuredAnswer(item.answerSections || item.answer || item.sampleAnswer || item);
+      const answerSections = normalizeStructuredAnswer(
+        item.answerSections || item.answer || item.sampleAnswer || item
+      );
       const answer = structuredAnswerToText(answerSections);
       return {
         question,
+        topicKey: item.topicKey || item.technology || '',
         answer,
         answerSections,
         category: sanitizeCategory(item.category),
@@ -278,7 +288,9 @@ const generateQuestionsFromAI = async ({ topicKey, topicType, query = '', diffic
           typeof item.question === 'string' &&
           item.question.length <= 500 &&
           hasValidAnswerSchema(item.answerSections || item) &&
-          (!item.topicKey || item.topicKey === topicKey)
+          (!(item.topicKey || item.technology) ||
+            normalizeTopicInput({ skill: item.topicKey || item.technology }).topicKey ===
+              normalizeTopicInput({ skill: topicKey }).topicKey)
       )
     );
   });
@@ -292,7 +304,9 @@ const generateQuestionsFromAI = async ({ topicKey, topicType, query = '', diffic
         item &&
         typeof item.question === 'string' &&
         hasValidAnswerSchema(item.answerSections || item) &&
-        (!item.topicKey || String(item.topicKey).toLowerCase() === topicKey)
+        (!(item.topicKey || item.technology) ||
+          normalizeTopicInput({ skill: item.topicKey || item.technology }).topicKey ===
+            normalizeTopicInput({ skill: topicKey }).topicKey)
     );
   return normalizeArray(valid);
 };
@@ -331,7 +345,8 @@ const answerCustomQuestionFromAI = async ({ topicKey, topicType, question, verif
 const enrichAnswerToStructured = async ({ question, currentAnswer, topicKey = '' }) => {
   const prompt = buildEnrichmentPrompt({ question, currentAnswer, topicKey });
   const outcome = await analyze(prompt, hasValidAnswerSchema);
-  if (!outcome.ok || !hasValidAnswerSchema(outcome.value)) throw new Error('Structured interview answer unavailable.');
+  if (!outcome.ok || !hasValidAnswerSchema(outcome.value))
+    throw new Error('Structured interview answer unavailable.');
   return normalizeStructuredAnswer(outcome.value);
 };
 
@@ -344,11 +359,24 @@ const answerSearchFallback = async ({ skill, topicKey, question, verifiedContext
   });
 };
 
-const generateStructuredQuestionSet = async ({ skill, topic = '', difficulty = '', count = 10 }) =>
+const generateStructuredQuestionSet = async ({
+  skill,
+  topic = '',
+  difficulty = '',
+  category = '',
+  tags = [],
+  count = 10
+}) =>
   generateQuestionsFromAI({
     topicKey: skill,
     topicType: 'technology',
-    query: topic,
+    query: [
+      topic,
+      category ? `Category must be ${category}.` : '',
+      tags.length ? `Cover at least one requested tag: ${tags.join(', ')}.` : ''
+    ]
+      .filter(Boolean)
+      .join(' '),
     difficulty,
     count
   });

@@ -198,6 +198,38 @@ describe('Interview Prep workspace', () => {
     component.selfCheck('review');
     expect(component.currentCheck).toBe('review');
   });
+  it('does not leave an incompatible Hard set visible after an Easy generation failure', () => {
+    component.practiceQuestions = [{ ...question(1), difficulty: 'hard' }];
+    component.practiceDifficulty = 'easy';
+    api.generateQuestions.mockReturnValue(
+      throwError(() => new Error('Insufficient matching questions')),
+    );
+    component.generatePractice();
+    expect(component.practiceQuestions).toEqual([]);
+    expect(component.currentPractice).toBeNull();
+  });
+  it('sends the selected generation filters and count without dropping library constraints', () => {
+    api.generateQuestions.mockReturnValue(of(result()));
+    component.practiceDifficulty = 'easy';
+    component.practiceFocus = 'hooks';
+    component.practiceCount = 5;
+    component.category = 'core-concepts';
+    component.source = 'seed';
+    component.tags = 'react, hooks';
+    component.generatePractice();
+    expect(api.generateQuestions).toHaveBeenCalledWith(
+      expect.objectContaining({
+        skill: 'react',
+        difficulty: 'easy',
+        query: 'hooks',
+        category: 'core-concepts',
+        source: 'seed',
+        tags: ['react', 'hooks'],
+        target: 5,
+        limit: 5,
+      }),
+    );
+  });
   it('starts saved sessions through the canonical backend endpoint', () => {
     api.startSession.mockReturnValue(
       of({
@@ -207,7 +239,14 @@ describe('Interview Prep workspace', () => {
       }),
     );
     component.generatePractice(true);
-    expect(api.startSession).toHaveBeenCalledWith('react', expect.any(String));
+    expect(api.startSession).toHaveBeenCalledWith(
+      'react',
+      expect.any(String),
+      expect.objectContaining({
+        difficulty: component.practiceDifficulty,
+        limit: component.practiceCount,
+      }),
+    );
     expect(component.practiceNotice).toContain('Missing evidence');
     expect(component.historyLoaded).toBe(false);
   });
