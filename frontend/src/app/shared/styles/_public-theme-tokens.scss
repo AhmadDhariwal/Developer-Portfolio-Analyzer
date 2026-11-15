@@ -1,293 +1,274 @@
-// Public theme tokens for Dark, Light, and Premium themes.
+// Public & Auth theme tokens aligned with the DevInsight AI Workspace design system
+// (Light: #f6f8fb / #ffffff / #e2e8f0 / #4f46e5 | Dark: #0b0f17 / #151d2a / #1e293b / #6366f1)
 
 @mixin landing-theme-dark {
-  /* T-18 — Dark (Default) */
-  --lp-bg: #0b0f19;
-  --lp-bg-deep: #090b14;
-  --lp-surface: rgba(17, 24, 39, 0.7);
-  --lp-surface-solid: #111827;
-  --lp-card-border: rgba(148, 163, 184, 0.14);
-  --lp-primary: #8b5cf6;
-  --lp-primary-light: #a78bfa;
-  --lp-primary-dark: #6d28d9;
+  color-scheme: dark;
+
+  --lp-font-sans: 'Manrope', 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  --lp-font-heading: 'Manrope', 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  --lp-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --lp-bg: #0b0f17;
+  --lp-bg-deep: #070a10;
+  --lp-bg-elevated: #101622;
+  --lp-surface: rgba(21, 29, 42, 0.92);
+  --lp-surface-solid: #151d2a;
+  --lp-surface-muted: #192231;
+  --lp-card-border: #1e293b;
+  --lp-card-border-strong: #334155;
+
+  --lp-primary: #6366f1;
+  --lp-primary-hover: #4f46e5;
+  --lp-primary-light: #a5b4fc;
+  --lp-primary-dark: #4338ca;
+  --lp-primary-soft: rgba(99, 102, 241, 0.18);
   --lp-accent-2: #38bdf8;
-  --lp-accent-3: #22d3ee;
+  --lp-accent-3: #34d399;
+
   --lp-ink: #f8fafc;
+  --lp-ink-secondary: #e2e8f0;
   --lp-muted: #94a3b8;
-  --lp-soft: #cbd5f5;
+  --lp-soft: #cbd5e1;
   --lp-on-primary: #ffffff;
   --lp-bright: #ffffff;
   --lp-logo-fg: #ffffff;
-  --lp-nav-bg: rgba(11, 15, 25, 0.85);
-  --lp-nav-border: rgba(255, 255, 255, 0.06);
-  --lp-nav-link: #94a3b8;
-  --lp-nav-link-hover: #f8fafc;
-  --lp-text-gradient: linear-gradient(120deg, #e2e8f0 0%, #a78bfa 45%, #38bdf8 100%);
-  --lp-aurora-1: rgba(139, 92, 246, 0.18);
-  --lp-aurora-2: rgba(56, 189, 248, 0.14);
-  --lp-aurora-opacity: 0.9;
-  --lp-particle-1: rgba(148, 163, 184, 0.18);
-  --lp-particle-2: rgba(56, 189, 248, 0.12);
-  --lp-particle-opacity: 0.12;
-  --lp-glass-bg: rgba(17, 24, 39, 0.7);
-  --lp-glass-border: rgba(148, 163, 184, 0.14);
-  --lp-glass-shadow: 0 24px 50px -35px rgba(7, 12, 25, 0.9);
-  --lp-glass-color: #f8fafc;
-  --lp-card-shadow: 0 24px 50px -35px rgba(7, 12, 25, 0.9);
-  --lp-card-hover-border: rgba(139, 92, 246, 0.5);
-  --lp-card-hover-shadow: 0 30px 60px -40px rgba(15, 23, 42, 0.9);
-  --lp-glow: rgba(139, 92, 246, 0.4);
-  --lp-success: #22c55e;
-  --lp-warning: #f59e0b;
-  --lp-chart-fill: #141e33;
-  --lp-mock-header: #161b22;
-  --lp-mock-body: #0d1117;
-  --lp-mock-ink: #f8fafc;
-  --lp-mock-muted: #8b949e;
-  --lp-code-keyword: #ff7b72;
-  --lp-code-func: #d2a8ff;
-  --lp-code-string: #a5d6ff;
-  --lp-code-comment: #8b949e;
-  --lp-cta-bg: linear-gradient(180deg, rgba(30, 41, 59, 0.88) 0%, rgba(15, 23, 42, 0.95) 100%);
-  --lp-cta-border: rgba(139, 92, 246, 0.35);
 
-  --landing-button-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
-  --landing-button-primary-hover: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #9333ea 100%);
+  --lp-nav-bg: rgba(11, 15, 23, 0.88);
+  --lp-nav-border: #1e293b;
+  --lp-nav-link: #cbd5e1;
+  --lp-nav-link-hover: #f8fafc;
+
+  --lp-grid-line: rgba(148, 163, 184, 0.045);
+  --lp-text-gradient: linear-gradient(125deg, #f8fafc 0%, #a5b4fc 55%, #38bdf8 100%);
+  --lp-aurora-1: rgba(99, 102, 241, 0.08);
+  --lp-aurora-2: rgba(56, 189, 248, 0.05);
+  --lp-aurora-opacity: 0.7;
+
+  --lp-terminal-bg: #101622;
+  --lp-terminal-surface: #151d2a;
+  --lp-terminal-border: #1e293b;
+  --lp-terminal-rail: #0b0f17;
+
+  --lp-glass-bg: #151d2a;
+  --lp-glass-border: #1e293b;
+  --lp-glass-shadow: 0 12px 32px -12px rgba(2, 6, 23, 0.65), 0 1px 2px rgba(0, 0, 0, 0.35);
+  --lp-glass-color: #f8fafc;
+  --lp-card-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
+  --lp-card-hover-border: rgba(99, 102, 241, 0.45);
+  --lp-card-hover-shadow: 0 12px 26px rgba(0, 0, 0, 0.42);
+  --lp-glow: rgba(99, 102, 241, 0.25);
+  --lp-focus-ring: rgba(99, 102, 241, 0.35);
+
+  --lp-success: #34d399;
+  --lp-success-bg: rgba(16, 185, 129, 0.14);
+  --lp-success-border: rgba(16, 185, 129, 0.3);
+  --lp-warning: #fbbf24;
+  --lp-warning-bg: rgba(245, 158, 11, 0.14);
+  --lp-warning-border: rgba(245, 158, 11, 0.3);
+  --lp-danger: #f87171;
+  --lp-danger-bg: rgba(239, 68, 68, 0.14);
+  --lp-danger-border: rgba(239, 68, 68, 0.3);
+  --lp-info: #a5b4fc;
+  --lp-info-bg: rgba(99, 102, 241, 0.16);
+  --lp-info-border: rgba(99, 102, 241, 0.35);
+
+  --lp-chart-fill: #192231;
+  --lp-mock-header: #192231;
+  --lp-mock-body: #101622;
+  --lp-mock-ink: #f8fafc;
+  --lp-mock-muted: #94a3b8;
+  --lp-code-keyword: #a5b4fc;
+  --lp-code-func: #38bdf8;
+  --lp-code-string: #34d399;
+  --lp-code-comment: #64748b;
+  --lp-cta-bg: #111827;
+  --lp-cta-border: #1e293b;
+
+  /* Shared button tokens (used by UiButtonComponent on public/auth routes) */
+  --landing-button-primary: #4f46e5;
+  --landing-button-primary-hover: #4338ca;
   --landing-button-text: #ffffff;
-  --landing-button-primary-shadow:
-    0 4px 16px -2px rgba(139, 92, 246, 0.45), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
-  --landing-button-primary-shadow-hover:
-    0 10px 28px -4px rgba(139, 92, 246, 0.65), 0 0 20px rgba(168, 85, 247, 0.35);
-  --landing-button-primary-shadow-active: 0 2px 8px -1px rgba(139, 92, 246, 0.4);
-  --landing-button-secondary: rgba(30, 41, 59, 0.65);
+  --landing-button-primary-shadow: 0 2px 10px -2px rgba(79, 70, 229, 0.48);
+  --landing-button-primary-shadow-hover: 0 6px 18px -4px rgba(99, 102, 241, 0.55);
+  --landing-button-primary-shadow-active: 0 1px 4px rgba(79, 70, 229, 0.4);
+  --landing-button-secondary: #151d2a;
   --landing-button-secondary-text: #f8fafc;
-  --landing-button-secondary-border: rgba(255, 255, 255, 0.12);
-  --landing-button-secondary-hover: rgba(51, 65, 85, 0.85);
-  --landing-button-secondary-border-hover: rgba(167, 139, 250, 0.45);
+  --landing-button-secondary-border: #2a384f;
+  --landing-button-secondary-hover: #1e293b;
+  --landing-button-secondary-border-hover: #475569;
   --landing-button-secondary-text-hover: #ffffff;
-  --landing-button-secondary-shadow: 0 4px 14px -4px rgba(0, 0, 0, 0.4);
-  --landing-button-secondary-shadow-hover:
-    0 8px 24px -4px rgba(139, 92, 246, 0.25), 0 0 16px rgba(139, 92, 246, 0.15);
-  --landing-button-secondary-active: rgba(30, 41, 59, 0.9);
-  --landing-accent: #8b5cf6;
-  --landing-accent-strong: #a78bfa;
-  --landing-ghost-color: #c084fc;
-  --landing-ghost-hover-bg: rgba(139, 92, 246, 0.1);
-  --landing-ghost-hover-border: rgba(139, 92, 246, 0.25);
-  --landing-ghost-hover-color: #e9d5ff;
-  --landing-button-shimmer: rgba(255, 255, 255, 0.28);
-  --landing-spinner-track: rgba(255, 255, 255, 0.3);
+  --landing-button-secondary-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  --landing-button-secondary-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --landing-button-secondary-active: #192231;
+  --landing-accent: #6366f1;
+  --landing-accent-strong: #818cf8;
+  --landing-ghost-color: #cbd5e1;
+  --landing-ghost-hover-bg: rgba(99, 102, 241, 0.14);
+  --landing-ghost-hover-border: rgba(99, 102, 241, 0.3);
+  --landing-ghost-hover-color: #ffffff;
+  --landing-button-shimmer: rgba(255, 255, 255, 0.18);
+  --landing-spinner-track: rgba(255, 255, 255, 0.28);
   --landing-spinner-top: #ffffff;
 
-  /* Auth page mappings */
-  --auth-bg: #0b0f19;
-  --auth-card-bg: rgba(17, 24, 39, 0.92);
-  --auth-card-border: rgba(148, 163, 184, 0.14);
+  /* Auth workspace mappings */
+  --auth-bg: #0b0f17;
+  --auth-card-bg: #151d2a;
+  --auth-card-border: #1e293b;
   --auth-ink: #f8fafc;
   --auth-muted: #94a3b8;
-  --auth-input-bg: rgba(15, 23, 42, 0.85);
-  --auth-input-border: rgba(148, 163, 184, 0.22);
-  --auth-input-border-focus: rgba(167, 139, 250, 0.65);
-  --auth-home-border: rgba(255, 255, 255, 0.1);
-  --auth-home-bg: rgba(255, 255, 255, 0.05);
-  --auth-home-hover-bg: rgba(255, 255, 255, 0.1);
-  --auth-home-hover-color: #ffffff;
-  --auth-brand: #c4b5fd;
-  --auth-brand-accent: linear-gradient(135deg, #a78bfa 0%, #38bdf8 100%);
+  --auth-input-bg: #101622;
+  --auth-input-border: #2e3c51;
+  --auth-input-border-focus: #6366f1;
+  --auth-btn-secondary-bg: #192231;
+  --auth-btn-secondary-hover: #1e293b;
+  --auth-badge-bg: rgba(99, 102, 241, 0.16);
+  --auth-badge-border: rgba(99, 102, 241, 0.35);
+  --auth-badge-text: #c7d2fe;
+  --auth-home-border: #2a384f;
+  --auth-home-bg: #151d2a;
+  --auth-home-hover-bg: #1e293b;
+  --auth-home-hover-color: #f8fafc;
+  --auth-brand: #f8fafc;
+  --auth-brand-accent: #818cf8;
   --auth-tagline: #94a3b8;
-  --auth-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+  --auth-shadow: 0 10px 26px -10px rgba(0, 0, 0, 0.52), 0 1px 3px rgba(0, 0, 0, 0.32);
+  --auth-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
 }
 
 @mixin landing-theme-light {
-  /* DevInsight Production Light Theme — Clean Slate & Brand Indigo */
-  --lp-bg: #f8fafc;
-  --lp-bg-deep: #f1f5f9;
-  --lp-surface: rgba(255, 255, 255, 0.94);
+  color-scheme: light;
+
+  --lp-font-sans: 'Manrope', 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  --lp-font-heading: 'Manrope', 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  --lp-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --lp-bg: #f6f8fb;
+  --lp-bg-deep: #eef2f6;
+  --lp-bg-elevated: #ffffff;
+  --lp-surface: #ffffff;
   --lp-surface-solid: #ffffff;
+  --lp-surface-muted: #f1f5f9;
   --lp-card-border: #e2e8f0;
+  --lp-card-border-strong: #cbd5e1;
+
   --lp-primary: #4f46e5;
+  --lp-primary-hover: #4338ca;
   --lp-primary-light: #6366f1;
-  --lp-primary-dark: #4338ca;
-  --lp-accent-2: #0ea5e9;
+  --lp-primary-dark: #3730a3;
+  --lp-primary-soft: #eef2ff;
+  --lp-accent-2: #0284c7;
   --lp-accent-3: #10b981;
+
   --lp-ink: #0f172a;
+  --lp-ink-secondary: #1e293b;
   --lp-muted: #475569;
-  --lp-soft: #64748b;
+  --lp-soft: #526075;
   --lp-on-primary: #ffffff;
   --lp-bright: #0f172a;
   --lp-logo-fg: #0f172a;
-  --lp-nav-bg: rgba(248, 250, 252, 0.9);
+
+  --lp-nav-bg: rgba(246, 248, 251, 0.92);
   --lp-nav-border: #e2e8f0;
   --lp-nav-link: #475569;
   --lp-nav-link-hover: #0f172a;
-  --lp-text-gradient: linear-gradient(120deg, #0f172a 0%, #4f46e5 50%, #7c3aed 100%);
-  --lp-aurora-1: rgba(79, 70, 229, 0.08);
-  --lp-aurora-2: rgba(14, 165, 233, 0.06);
-  --lp-aurora-opacity: 0.85;
-  --lp-particle-1: rgba(79, 70, 229, 0.1);
-  --lp-particle-2: rgba(14, 165, 233, 0.08);
-  --lp-particle-opacity: 0.16;
-  --lp-glass-bg: rgba(255, 255, 255, 0.88);
+
+  --lp-grid-line: rgba(15, 23, 42, 0.036);
+  --lp-text-gradient: linear-gradient(125deg, #4f46e5 0%, #4338ca 100%);
+  --lp-aurora-1: rgba(79, 70, 229, 0.045);
+  --lp-aurora-2: rgba(16, 185, 129, 0.03);
+  --lp-aurora-opacity: 0.7;
+
+  /* Branded dark workspace preview/telemetry panels matching DPA sidebar (#111827) */
+  --lp-terminal-bg: #111827;
+  --lp-terminal-surface: #1f2937;
+  --lp-terminal-border: rgba(255, 255, 255, 0.1);
+  --lp-terminal-rail: #0b0f17;
+
+  --lp-glass-bg: #ffffff;
   --lp-glass-border: #e2e8f0;
-  --lp-glass-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+  --lp-glass-shadow: 0 10px 26px -10px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.04);
   --lp-glass-color: #0f172a;
-  --lp-card-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
-  --lp-card-hover-border: rgba(99, 102, 241, 0.4);
-  --lp-card-hover-shadow: 0 20px 40px -12px rgba(79, 70, 229, 0.15);
-  --lp-glow: rgba(79, 70, 229, 0.2);
-  --lp-success: #10b981;
-  --lp-warning: #f59e0b;
+  --lp-card-shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02);
+  --lp-card-hover-border: #c7d2fe;
+  --lp-card-hover-shadow:
+    0 10px 24px -6px rgba(15, 23, 42, 0.08), 0 4px 10px -4px rgba(15, 23, 42, 0.04);
+  --lp-glow: rgba(79, 70, 229, 0.14);
+  --lp-focus-ring: rgba(79, 70, 229, 0.22);
+
+  --lp-success: #047857;
+  --lp-success-bg: #ecfdf5;
+  --lp-success-border: #a7f3d0;
+  --lp-warning: #92400e;
+  --lp-warning-bg: #fef3c7;
+  --lp-warning-border: #fde68a;
+  --lp-danger: #991b1b;
+  --lp-danger-bg: #fef2f2;
+  --lp-danger-border: #fecaca;
+  --lp-info: #4338ca;
+  --lp-info-bg: #eef2ff;
+  --lp-info-border: #c7d2fe;
+
   --lp-chart-fill: #f1f5f9;
   --lp-mock-header: #f8fafc;
   --lp-mock-body: #ffffff;
   --lp-mock-ink: #0f172a;
-  --lp-mock-muted: #64748b;
+  --lp-mock-muted: #526075;
   --lp-code-keyword: #4f46e5;
-  --lp-code-func: #7c3aed;
+  --lp-code-func: #0284c7;
   --lp-code-string: #059669;
-  --lp-code-comment: #94a3b8;
-  --lp-cta-bg: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
-  --lp-cta-border: #e2e8f0;
+  --lp-code-comment: #64748b;
+  --lp-cta-bg: #111827;
+  --lp-cta-border: #1e293b;
 
-  --landing-button-primary: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
-  --landing-button-primary-hover: linear-gradient(135deg, #4338ca 0%, #4f46e5 100%);
+  --landing-button-primary: #4f46e5;
+  --landing-button-primary-hover: #4338ca;
   --landing-button-text: #ffffff;
-  --landing-button-primary-shadow:
-    0 4px 14px -2px rgba(79, 70, 229, 0.35), 0 2px 4px -1px rgba(0, 0, 0, 0.08);
-  --landing-button-primary-shadow-hover:
-    0 8px 24px -4px rgba(79, 70, 229, 0.45), 0 0 16px rgba(99, 102, 241, 0.25);
-  --landing-button-primary-shadow-active: 0 2px 8px -1px rgba(79, 70, 229, 0.35);
+  --landing-button-primary-shadow: 0 1px 3px rgba(79, 70, 229, 0.35);
+  --landing-button-primary-shadow-hover: 0 6px 16px -4px rgba(79, 70, 229, 0.38);
+  --landing-button-primary-shadow-active: 0 1px 3px rgba(79, 70, 229, 0.3);
   --landing-button-secondary: #ffffff;
   --landing-button-secondary-text: #0f172a;
-  --landing-button-secondary-border: #e2e8f0;
+  --landing-button-secondary-border: #cbd5e1;
   --landing-button-secondary-hover: #f8fafc;
-  --landing-button-secondary-border-hover: rgba(99, 102, 241, 0.4);
-  --landing-button-secondary-text-hover: #4f46e5;
-  --landing-button-secondary-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  --landing-button-secondary-shadow-hover: 0 4px 12px rgba(15, 23, 42, 0.06);
+  --landing-button-secondary-border-hover: #94a3b8;
+  --landing-button-secondary-text-hover: #4338ca;
+  --landing-button-secondary-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --landing-button-secondary-shadow-hover: 0 4px 10px rgba(15, 23, 42, 0.06);
   --landing-button-secondary-active: #f1f5f9;
   --landing-accent: #4f46e5;
-  --landing-accent-strong: #6366f1;
+  --landing-accent-strong: #4338ca;
   --landing-ghost-color: #4f46e5;
-  --landing-ghost-hover-bg: rgba(79, 70, 229, 0.08);
-  --landing-ghost-hover-border: rgba(79, 70, 229, 0.2);
-  --landing-ghost-hover-color: #4338ca;
-  --landing-button-shimmer: rgba(255, 255, 255, 0.35);
-  --landing-spinner-track: rgba(15, 23, 42, 0.15);
+  --landing-ghost-hover-bg: #eef2ff;
+  --landing-ghost-hover-border: #c7d2fe;
+  --landing-ghost-hover-color: #3730a3;
+  --landing-button-shimmer: rgba(255, 255, 255, 0.25);
+  --landing-spinner-track: rgba(15, 23, 42, 0.14);
   --landing-spinner-top: #4f46e5;
 
-  /* Auth page mappings */
-  --auth-bg: #f8fafc;
+  --auth-bg: #f6f8fb;
   --auth-card-bg: #ffffff;
   --auth-card-border: #e2e8f0;
   --auth-ink: #0f172a;
   --auth-muted: #475569;
-  --auth-input-bg: #f8fafc;
+  --auth-input-bg: #ffffff;
   --auth-input-border: #cbd5e1;
   --auth-input-border-focus: #4f46e5;
-  --auth-home-border: #e2e8f0;
+  --auth-btn-secondary-bg: #ffffff;
+  --auth-btn-secondary-hover: #f8fafc;
+  --auth-badge-bg: #eef2ff;
+  --auth-badge-border: #c7d2fe;
+  --auth-badge-text: #4338ca;
+  --auth-home-border: #cbd5e1;
   --auth-home-bg: #ffffff;
-  --auth-home-hover-bg: #f1f5f9;
+  --auth-home-hover-bg: #f8fafc;
   --auth-home-hover-color: #0f172a;
   --auth-brand: #0f172a;
-  --auth-brand-accent: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-  --auth-tagline: #64748b;
-  --auth-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+  --auth-brand-accent: #4f46e5;
+  --auth-tagline: #526075;
+  --auth-shadow: 0 10px 24px -8px rgba(15, 23, 42, 0.07), 0 1px 3px rgba(15, 23, 42, 0.04);
+  --auth-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 @mixin landing-theme-premium {
-  /* T-20 — Premium */
-  --lp-bg: #080c14;
-  --lp-bg-deep: #0b101d;
-  --lp-surface: #141e33;
-  --lp-surface-solid: #141e33;
-  --lp-card-border: rgba(212, 175, 55, 0.22);
-  --lp-primary: #d4af37;
-  --lp-primary-light: #f0d375;
-  --lp-primary-dark: #a37f1d;
-  --lp-accent-2: #e5c158;
-  --lp-accent-3: #e5c158;
-  --lp-ink: #f8fafc;
-  --lp-muted: #94a3b8;
-  --lp-soft: #64748b;
-  --lp-on-primary: #080c14;
-  --lp-bright: #ffffff;
-  --lp-logo-fg: #080c14;
-  --lp-nav-bg: rgba(8, 12, 20, 0.88);
-  --lp-nav-border: rgba(212, 175, 55, 0.2);
-  --lp-nav-link: #cbd5e1;
-  --lp-nav-link-hover: #f0d375;
-  --lp-text-gradient: linear-gradient(120deg, #ffffff 0%, #f0d375 50%, #d4af37 100%);
-  --lp-aurora-1: rgba(212, 175, 55, 0.1);
-  --lp-aurora-2: rgba(20, 30, 51, 0.3);
-  --lp-aurora-opacity: 0.95;
-  --lp-particle-1: rgba(212, 175, 55, 0.12);
-  --lp-particle-2: rgba(20, 30, 51, 0.2);
-  --lp-particle-opacity: 0.25;
-  --lp-glass-bg: #141e33;
-  --lp-glass-border: rgba(212, 175, 55, 0.22);
-  --lp-glass-shadow: 0 24px 50px -25px rgba(0, 0, 0, 0.7);
-  --lp-glass-color: #f8fafc;
-  --lp-card-shadow: 0 24px 50px -25px rgba(0, 0, 0, 0.7);
-  --lp-card-hover-border: rgba(212, 175, 55, 0.5);
-  --lp-card-hover-shadow: 0 30px 60px -40px rgba(0, 0, 0, 0.85);
-  --lp-glow: rgba(212, 175, 55, 0.4);
-  --lp-success: #22c55e;
-  --lp-warning: #f59e0b;
-  --lp-chart-fill: #141e33;
-  --lp-mock-header: #0f172a;
-  --lp-mock-body: #0b101d;
-  --lp-mock-ink: #f8fafc;
-  --lp-mock-muted: #94a3b8;
-  --lp-code-keyword: #f0d375;
-  --lp-code-func: #e5c158;
-  --lp-code-string: #a4c28d;
-  --lp-code-comment: #64748b;
-  --lp-cta-bg: linear-gradient(145deg, #141e33 0%, #0b101d 100%);
-  --lp-cta-border: rgba(212, 175, 55, 0.35);
-
-  --landing-button-primary: linear-gradient(135deg, #f0d375 0%, #d4af37 50%, #b89228 100%);
-  --landing-button-primary-hover: linear-gradient(135deg, #fff099 0%, #e5c158 50%, #c5a059 100%);
-  --landing-button-text: #080c14;
-  --landing-button-primary-shadow:
-    0 4px 18px -2px rgba(212, 175, 55, 0.45), 0 2px 4px -1px rgba(0, 0, 0, 0.4);
-  --landing-button-primary-shadow-hover:
-    0 10px 28px -4px rgba(212, 175, 55, 0.65), 0 0 20px rgba(240, 211, 117, 0.4);
-  --landing-button-primary-shadow-active: 0 2px 8px -1px rgba(212, 175, 55, 0.4);
-  --landing-button-secondary: #141e33;
-  --landing-button-secondary-text: #f8fafc;
-  --landing-button-secondary-border: rgba(212, 175, 55, 0.35);
-  --landing-button-secondary-hover: #1e293b;
-  --landing-button-secondary-border-hover: rgba(212, 175, 55, 0.7);
-  --landing-button-secondary-text-hover: #ffffff;
-  --landing-button-secondary-shadow: 0 4px 14px -4px rgba(0, 0, 0, 0.4);
-  --landing-button-secondary-shadow-hover:
-    0 8px 24px -4px rgba(212, 175, 55, 0.3), 0 0 16px rgba(212, 175, 55, 0.2);
-  --landing-button-secondary-active: #0f172a;
-  --landing-accent: #d4af37;
-  --landing-accent-strong: #f0d375;
-  --landing-ghost-color: #d4af37;
-  --landing-ghost-hover-bg: rgba(212, 175, 55, 0.12);
-  --landing-ghost-hover-border: rgba(212, 175, 55, 0.3);
-  --landing-ghost-hover-color: #f0d375;
-  --landing-button-shimmer: rgba(255, 255, 255, 0.35);
-  --landing-spinner-track: rgba(8, 12, 20, 0.3);
-  --landing-spinner-top: #080c14;
-
-  --auth-bg: #080c14;
-  --auth-card-bg: #141e33;
-  --auth-card-border: rgba(212, 175, 55, 0.22);
-  --auth-ink: #f8fafc;
-  --auth-muted: #94a3b8;
-  --auth-input-bg: rgba(11, 16, 29, 0.9);
-  --auth-input-border: rgba(212, 175, 55, 0.22);
-  --auth-input-border-focus: rgba(240, 211, 117, 0.65);
-  --auth-home-border: rgba(212, 175, 55, 0.25);
-  --auth-home-bg: rgba(20, 30, 51, 0.7);
-  --auth-home-hover-bg: rgba(30, 41, 59, 0.9);
-  --auth-home-hover-color: #f0d375;
-  --auth-brand: #f8fafc;
-  --auth-brand-accent: linear-gradient(135deg, #f0d375 0%, #d4af37 100%);
-  --auth-tagline: #94a3b8;
-  --auth-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  @include landing-theme-dark;
 }

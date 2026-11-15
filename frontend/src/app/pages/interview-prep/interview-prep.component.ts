@@ -81,6 +81,7 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
   practiceIndex = 0;
   practiceSkill = '';
   practiceNotice = '';
+  practiceOrigin: 'library' | 'generated' | 'saved' | null = null;
   practiceError = '';
   generating = false;
   activePracticeSession: InterviewSession | null = null;
@@ -466,6 +467,40 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     this.generating = false;
     this.practiceError = '';
   }
+  get practiceSetDescription(): string {
+    if (!this.practiceQuestions.length) return '';
+    const levels = [
+      ...new Set(this.practiceQuestions.map((question) => question.difficulty || 'Unspecified')),
+    ].join(', ');
+    const origin =
+      this.practiceOrigin === 'saved'
+        ? 'Saved practice session'
+        : this.practiceOrigin === 'generated'
+          ? 'New AI-generated set'
+          : 'Existing library question set';
+    return `${origin} · Recorded difficulty: ${levels}. Generator settings apply to the next requested set.`;
+  }
+  private clearPracticeDrill(): void {
+    this.progressSub?.unsubscribe();
+    this.savingProgress = false;
+    this.practiceQuestions = [];
+    this.activePracticeSession = null;
+    this.practiceIndex = 0;
+    this.practiceOrigin = null;
+    this.selfChecks.clear();
+  }
+  changePracticeDifficulty(value: string): void {
+    this.cancelPractice();
+    this.practiceDifficulty = value;
+    if (
+      this.practiceQuestions.some(
+        (question) => question.difficulty.toLowerCase() !== value.toLowerCase(),
+      )
+    ) {
+      this.clearPracticeDrill();
+      this.practiceNotice = `Previous drill cleared. Generate a ${value} set to load matching questions.`;
+    }
+  }
   generatePractice(saved = false): void {
     if (this.generating) return;
     this.retrySavedPractice = saved;
@@ -496,12 +531,25 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
           ).includes(question.sourceType || question.source || '')) ||
         (requestedTags.length && !requestedTags.some((tag) => question.tags?.includes(tag))),
     );
-    if (incompatible) {
-      this.practiceQuestions = [];
-      this.activePracticeSession = null;
-      this.practiceIndex = 0;
-      this.selfChecks.clear();
-    }
+    if (incompatible) this.clearPracticeDrill();
+    const requestedDifficulty = this.practiceDifficulty.trim().toLowerCase();
+    const requestedCategory = this.category;
+    const requestedSource = this.source;
+    const acceptsQuestion = (question: InterviewQuestion) =>
+      !!question &&
+      (!requestedDifficulty || question.difficulty?.trim().toLowerCase() === requestedDifficulty) &&
+      (!question.topicKey ||
+        question.topicKey.replaceAll('_', '-') === skill.replaceAll('_', '-')) &&
+      (!requestedCategory || question.category === requestedCategory) &&
+      (!requestedTags.length || requestedTags.some((tag) => question.tags?.includes(tag))) &&
+      (!requestedSource ||
+        requestedSource === 'database' ||
+        (requestedSource === 'seed'
+          ? ['verified_seed', 'prebuilt']
+          : requestedSource === 'ai'
+            ? ['ai', 'ai_generated', 'user_asked']
+            : [requestedSource]
+        ).includes(question.sourceType || question.source || ''));
     if (saved && !this.savedRequestKey) this.savedRequestKey = crypto.randomUUID();
     const request = saved
       ? this.prep.startSession(skill, this.savedRequestKey, {
@@ -540,13 +588,33 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response) => {
           if (version !== this.practiceVersion) return;
-          if (!response.questions?.length) {
-            this.practiceError =
-              'No practice questions were returned. Adjust the focus and try again.';
+          if (
+            (response.questions &&
+              (!Array.isArray(response.questions) ||
+                response.questions.some((question) => !acceptsQuestion(question)))) ||
+            (response.session &&
+              (!Array.isArray(response.session.questions) ||
+                response.session.questions.some((question) => !acceptsQuestion(question))))
+          ) {
+            this.clearPracticeDrill();
+            this.practiceNotice = '';
+            this.practiceError = `No matching ${requestedDifficulty || 'requested'} set is available. The returned questions did not match the submitted filters and were not displayed. Retry or adjust the filters.`;
             this.generating = false;
             if (!this.destroyed) this.cdr.detectChanges();
             return;
           }
+          if (!response.questions?.length) {
+            this.practiceError = `Insufficient matching ${requestedDifficulty || 'practice'} questions. Adjust the filters or retry generation.`;
+            this.generating = false;
+            if (!this.destroyed) this.cdr.detectChanges();
+            return;
+          }
+          this.practiceOrigin =
+            saved || response.sessionId
+              ? 'saved'
+              : response.aiGeneratedCount
+                ? 'generated'
+                : 'library';
           this.practiceQuestions = response.questions;
           this.progressSub?.unsubscribe();
           this.savingProgress = false;
@@ -661,6 +729,10 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
   }
   private applySession(session: InterviewSession): void {
     this.activePracticeSession = session;
+    this.practiceOrigin = 'saved';
+    this.practiceQuestions = session.questions;
+    this.practiceSkill = session.topicKey || session.questions[0]?.topicKey || '';
+    this.practiceIndex = Math.min(this.practiceIndex, Math.max(0, session.questions.length - 1));
     this.selfChecks.clear();
     session.questions.forEach((question, index) => {
       const value = session.progress?.[String(index)];

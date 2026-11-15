@@ -625,8 +625,8 @@
                 <select
                   id="practice-level"
                   name="level"
-                  [(ngModel)]="practiceDifficulty"
-                  (ngModelChange)="cancelPractice()"
+                  [ngModel]="practiceDifficulty"
+                  (ngModelChange)="changePracticeDifficulty($event)"
                 >
                   <option value="easy">Easy · fundamentals</option>
                   <option value="medium">Medium · application</option>
@@ -667,7 +667,8 @@
             Start a saved personalized session →
           </button>
           <p class="field-hint">
-            Saved sessions use career context; focus, difficulty and count apply to AI sets.
+            Focus, difficulty and count apply to new sets and new saved sessions. Reopened sessions
+            keep their recorded questions.
           </p>
         </div>
       </section>
@@ -723,6 +724,12 @@
     <div *ngIf="practiceNotice && !practiceError" class="notice" role="status">
       {{ practiceNotice }}
     </div>
+
+    <p class="notice" role="status" *ngIf="practiceSetDescription">{{ practiceSetDescription }}</p>
+    <p class="muted small">
+      Generator settings apply when you request a new set. Saved sessions retain their recorded
+      questions and difficulty.
+    </p>
 
     <!-- Active Practice Question Runner Deck -->
     <section

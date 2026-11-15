@@ -1,65 +1,79 @@
-import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { PublicSubpageShellComponent } from '../../shared/components/public-subpage-shell/public-subpage-shell.component';
 
 @Component({
   selector: 'app-terms-of-service',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, PublicSubpageShellComponent],
   templateUrl: './terms-of-service.component.html',
   styleUrl: './terms-of-service.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TermsOfServiceComponent {
-  readonly pageLinks = [
-    { label: 'Privacy', route: '/privacy' },
-    { label: 'Terms', route: '/terms' },
-    { label: 'API Docs', route: '/api-docs' },
-    { label: 'Blog', route: '/blog' },
-    { label: 'Contact', route: '/contact' },
-  ];
-
   readonly highlights = [
-    { value: 'Account Based', label: 'Access depends on authenticated membership', accent: 'purple' },
-    { value: 'RBAC Aware', label: 'Admins, recruiters, and developers have scoped permissions', accent: 'blue' },
-    { value: 'Human Review', label: 'AI output supports decisions, not replaces them', accent: 'amber' },
-  ];
+    {
+      tag: 'MEMBERSHIP',
+      value: 'Account Scoped',
+      label: 'Platform access follows authenticated identity and verified session state.',
+    },
+    {
+      tag: 'GOVERNANCE',
+      value: 'RBAC Aware',
+      label: 'Admins, recruiters, and developers operate within role-bounded workflows.',
+    },
+    {
+      tag: 'ASSISTIVE AI',
+      value: 'Human Review',
+      label: 'AI scores inform career and hiring decisions rather than automating them.',
+    },
+  ] as const;
 
   readonly sections = [
     {
+      id: 'terms-usage',
+      num: '01',
       title: 'Using DevInsight AI',
-      body: 'You may use the platform to analyze portfolios, manage recruiter workflows, collaborate inside organizations, and operate within the permissions tied to your account role.',
+      body: 'You may use the platform to evaluate developer portfolios, track career sprints, practice interviews, and coordinate recruiter workflows inside permissions granted to your verified role.',
       bullets: [
-        'Provide accurate signup and account information',
-        'Use the platform only for lawful and authorized workflows',
-        'Respect organization, candidate, and teammate boundaries',
+        'Provide accurate account registration and profile metadata',
+        'Operate solely within lawful and authorized organizational workflows',
+        'Respect teammate, candidate, and tenant confidentiality boundaries',
       ],
     },
     {
+      id: 'terms-account',
+      num: '02',
       title: 'Account responsibilities',
-      body: 'Users are responsible for maintaining credential security and for actions taken through their account, including recruiter, admin, and organization-scoped activity.',
+      body: 'Users remain responsible for safeguarding credentials, connected OAuth providers, and actions initiated within developer, recruiter, or organization admin sessions.',
       bullets: [
-        'Keep passwords and connected accounts secure',
-        'Review results before making hiring or profile decisions',
-        'Notify the platform if you suspect unauthorized access',
+        'Protect account passwords and OAuth-linked credentials',
+        'Verify analytical results before taking hiring or career actions',
+        'Notify support immediately if unauthorized account access is suspected',
       ],
     },
     {
+      id: 'terms-ai',
+      num: '03',
       title: 'AI-assisted outputs',
-      body: 'Scores, match results, and recommendations are decision-support outputs. Hiring decisions, professional evaluations, and organizational actions should still include human judgment.',
+      body: 'Readiness benchmarks, match scores, skill gap priorities, and interview prompts are advisory signals designed to assist evaluation alongside independent human judgment.',
       bullets: [
-        'AI may highlight patterns, not guarantees',
-        'Recruiter rankings should be reviewed before acting',
-        'Career recommendations should be interpreted in context',
+        'AI models surface observable patterns rather than hiring guarantees',
+        'Recruiter rankings require human review before shortlist actions',
+        'Career recommendations should be weighted with real role goals',
       ],
     },
     {
+      id: 'terms-restrictions',
+      num: '04',
       title: 'Restrictions and suspension',
-      body: 'We may limit or suspend access for misuse, abuse, fraud concerns, or behavior that violates organizational trust, platform policy, or security expectations.',
+      body: 'DevInsight AI may throttle, restrict, or suspend accounts involved in abusive automation, unauthorized scraping, tenant boundary bypass attempts, or policy violations.',
       bullets: [
-        'Misuse of shared or organization data',
-        'Automation abuse or scraping beyond intended use',
-        'Security violations or fraudulent activity',
+        'No unauthorized access to cross-organization records or private routes',
+        'No automated scraping or excessive load against platform APIs',
+        'Immediate mitigation for credential compromise or fraud concerns',
       ],
     },
-  ];
+  ] as const;
 }

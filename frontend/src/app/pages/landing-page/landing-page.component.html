@@ -1,935 +1,663 @@
-<div class="landing-page" [ngClass]="'theme--' + selectedTheme">
-  <!-- Navigation -->
-  <nav class="landing-nav">
-    <div class="logo-container">
-      <div class="logo-icon">
-        <svg viewBox="0 0 24 24" fill="none" class="w-6 h-6">
-          <path
-            d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
-      </div>
-      <h1 class="logo">DevInsight AI</h1>
-    </div>
+<div class="landing-page" [ngClass]="themeClass">
+  <div class="aurora-backdrop" aria-hidden="true"></div>
 
-    <div class="nav-links desktop-only">
-      <a href="#features" class="nav-link">Features</a>
-      <a href="#recruiters" class="nav-link">Recruiters</a>
-      <a href="#growth" class="nav-link">Growth</a>
-      <a href="#live-analysis" class="nav-link">Live AI</a>
-      <a href="#stacks" class="nav-link">Stacks</a>
-      <a href="#testimonials" class="nav-link">Testimonials</a>
-    </div>
+  <!-- Top Navigation -->
+  <header class="landing-nav">
+    <div class="nav-container">
+      <a class="nav-brand" routerLink="/" aria-label="Developer Portfolio Analyzer Home">
+        <span class="brand-badge" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 3l2.2 4.6 5.1.7-3.7 3.6.9 5.1-4.5-2.4-4.5 2.4.9-5.1-3.7-3.6 5.1-.7L12 3z"
+            />
+          </svg>
+        </span>
+        <span class="brand-text">
+          <span class="brand-title">DevInsight <span>AI</span></span>
+          <span class="brand-subtitle">Developer Portfolio Analyzer</span>
+        </span>
+      </a>
 
-    <div class="nav-actions">
-      <div class="theme-dropdown" (click)="$event.stopPropagation()">
+      <nav class="nav-links" aria-label="Primary navigation">
+        @for (link of navLinks; track link.href) {
+          <a [href]="link.href" class="nav-link">{{ link.label }}</a>
+        }
+      </nav>
+
+      <div class="nav-actions">
+        <app-theme-menu [compactMobileLabel]="true" />
+
+        <a routerLink="/auth/login" class="btn btn-secondary nav-auth-link">Sign In</a>
+        <a routerLink="/auth/signup" class="btn btn-primary nav-auth-link">Get Started</a>
+
         <button
           type="button"
-          class="theme-dropdown__trigger"
-          [attr.aria-expanded]="themeMenuOpen"
-          aria-haspopup="listbox"
-          aria-label="Theme"
-          (click)="toggleThemeMenu($event)"
+          class="mobile-menu-toggle"
+          [attr.aria-expanded]="mobileMenuOpen"
+          aria-controls="mobile-nav-drawer"
+          [attr.aria-label]="mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'"
+          (click)="toggleMobileMenu()"
         >
-          <span>Theme</span>
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-          >
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
+          @if (mobileMenuOpen) {
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          } @else {
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          }
         </button>
-        <div
-          class="theme-dropdown__menu"
-          *ngIf="themeMenuOpen"
-          role="listbox"
-          aria-label="Theme options"
-        >
-          <button
-            *ngFor="let theme of themes"
-            type="button"
-            class="theme-dropdown__option"
-            role="option"
-            [class.is-active]="selectedTheme === theme.id"
-            [attr.aria-selected]="selectedTheme === theme.id"
-            (click)="setTheme(theme.id)"
-          >
-            <span>{{ theme.label }}</span>
-            <small>{{ theme.description }}</small>
-          </button>
-        </div>
       </div>
-      <a routerLink="/auth/login" class="nav-link">Sign In</a>
-      <a routerLink="/auth/signup" class="btn-link">
-        <app-ui-button variant="primary" size="sm">Get Started</app-ui-button>
-      </a>
     </div>
-  </nav>
 
-  <!-- Hero Section -->
-  <section class="hero">
-    <div class="hero-grid">
-      <div class="hero-content reveal">
-        <div class="hero-badge">
-          <span class="pulse-dot"></span>
-          AI-POWERED DEVELOPER CAREER INTELLIGENCE
+    @if (mobileMenuOpen) {
+      <div class="mobile-backdrop" aria-hidden="true" (click)="closeMobileMenu()"></div>
+      <div
+        id="mobile-nav-drawer"
+        class="mobile-drawer"
+        role="dialog"
+        aria-label="Mobile navigation"
+      >
+        <nav class="mobile-nav-links" aria-label="Mobile sections">
+          @for (link of navLinks; track link.href) {
+            <a [href]="link.href" class="mobile-nav-link" (click)="closeMobileMenu()">
+              {{ link.label }}
+            </a>
+          }
+        </nav>
+
+        <div class="mobile-theme-row">
+          <span class="mobile-theme-title">Appearance</span>
+          <app-theme-menu [compactMobileLabel]="false" [fullWidth]="true" [inlineMenu]="true" />
         </div>
 
-        <h2 class="hero-title">
-          Analyze. Improve. Accelerate Your
-          <span class="text-gradient">Developer Career</span>.
-        </h2>
-
-        <p class="hero-subtitle">
-          Connect GitHub, upload your resume, and let DevInsight AI uncover your strengths, detect
-          gaps, and build a personalized growth roadmap.
-        </p>
-
-        <div class="hero-buttons">
-          <a routerLink="/auth/signup" class="btn-link">
-            <app-ui-button variant="primary" size="lg">
-              <svg
-                class="btn-icon-left"
-                viewBox="0 0 24 24"
-                width="18"
-                height="18"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
-                <polyline points="13 2 13 9 20 9"></polyline>
-              </svg>
-              Analyze My Profile
-            </app-ui-button>
+        <div class="mobile-cta-stack">
+          <a routerLink="/auth/login" class="btn btn-secondary" (click)="closeMobileMenu()">
+            Sign In
           </a>
-          <a href="#how-it-works" class="btn-link">
-            <app-ui-button variant="secondary" size="lg">
-              See How It Works
-              <svg
-                class="btn-icon-right"
-                viewBox="0 0 24 24"
-                width="18"
-                height="18"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-                <polyline points="12 5 19 12 12 19"></polyline>
-              </svg>
-            </app-ui-button>
+          <a routerLink="/auth/signup" class="btn btn-primary" (click)="closeMobileMenu()">
+            Get Started
           </a>
-        </div>
-
-        <div class="hero-trust">
-          <div class="trust-item">
-            <svg
-              viewBox="0 0 24 24"
-              width="16"
-              height="16"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-              <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
-            <span>No credit card required</span>
-          </div>
-          <div class="trust-item">
-            <svg
-              viewBox="0 0 24 24"
-              width="16"
-              height="16"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-              <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
-            <span>GitHub OAuth secure</span>
-          </div>
-          <div class="trust-item">
-            <svg
-              viewBox="0 0 24 24"
-              width="16"
-              height="16"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-              <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
-            <span>Privacy first</span>
-          </div>
         </div>
       </div>
+    }
+  </header>
 
-      <div class="hero-visual reveal">
-        <div class="hero-preview-container">
-          <!-- Ambient Glow Backdrop -->
-          <div class="ambient-glow"></div>
+  <main>
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="section-inner hero-grid">
+        <div class="hero-copy">
+          <div class="hero-eyebrow">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            <span>Developer Portfolio Analyzer</span>
+          </div>
 
-          <!-- Glass Window Header Bar -->
-          <div class="preview-header">
-            <div class="header-dots">
-              <span class="dot red"></span>
-              <span class="dot yellow"></span>
-              <span class="dot green"></span>
-            </div>
-            <div class="header-title">
+          <h1 class="hero-title">
+            Measure your code, close skill gaps, and advance your
+            <span class="hero-title-accent">engineering career.</span>
+          </h1>
+
+          <p class="hero-description">
+            Connect your GitHub profile and upload your resume in one workspace. DevInsight AI
+            evaluates portfolio readiness, surfaces priority skill gaps, builds structured career
+            sprints, and tailors interview preparation to your target stack.
+          </p>
+
+          <div class="hero-actions">
+            <a routerLink="/auth/signup" class="btn btn-primary btn-lg">
+              <span>Create Free Account</span>
               <svg
                 viewBox="0 0 24 24"
-                width="13"
-                height="13"
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
+                aria-hidden="true"
               >
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M5 12h14m0 0l-6-6m6 6l-6 6"
+                />
               </svg>
-              <span>devinsight-ai // career_analysis.ts</span>
-            </div>
-            <div class="header-badge">
-              <span class="status-live"></span>
-              LIVE STREAM
-            </div>
+            </a>
+            <a href="#features" class="btn btn-secondary btn-lg">Explore Features</a>
+            <a routerLink="/auth/login" class="btn btn-ghost btn-lg">Sign In</a>
           </div>
 
-          <!-- Glass Body with Live Metrics & Code Visual -->
-          <div class="preview-body">
-            <div class="preview-metric-row">
-              <div class="metric-block">
-                <span class="metric-label">Career Score</span>
-                <div class="metric-val">92<span class="metric-unit">/100</span></div>
-                <span class="metric-tag green">Top 5% Tier</span>
+          <ul class="hero-trust-list" aria-label="Platform highlights">
+            <li>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>Google &amp; GitHub OAuth sign-in</span>
+            </li>
+            <li>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>Privacy-controlled public profile</span>
+            </li>
+            <li>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>Real repository &amp; resume diagnostics</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Product Dashboard Preview -->
+        <div class="hero-preview" id="preview">
+          <div
+            class="dashboard-preview-card"
+            role="region"
+            aria-label="Workspace dashboard preview"
+          >
+            <div class="preview-topbar">
+              <div class="preview-window-dots" aria-hidden="true">
+                <span class="dot dot--rose"></span>
+                <span class="dot dot--amber"></span>
+                <span class="dot dot--emerald"></span>
               </div>
-              <div class="metric-block">
-                <span class="metric-label">Role Alignment</span>
-                <div class="metric-val">85%</div>
-                <div class="mini-progress-bar">
-                  <div class="progress-fill" style="width: 85%"></div>
+              <span class="preview-title">dpa://workspace/dashboard</span>
+              <span class="preview-status-pill">Workspace Preview</span>
+            </div>
+
+            <div class="preview-workspace-shell">
+              <div class="preview-mini-rail" aria-hidden="true">
+                <span class="rail-brand">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M12 3l2.2 4.6 5.1.7-3.7 3.6.9 5.1-4.5-2.4-4.5 2.4.9-5.1-3.7-3.6 5.1-.7L12 3z"
+                    />
+                  </svg>
+                </span>
+                <span class="rail-dot is-active" title="Dashboard Overview"></span>
+                <span class="rail-dot" title="GitHub Analyzer"></span>
+                <span class="rail-dot" title="Resume Analyzer"></span>
+                <span class="rail-dot" title="Skill Gap"></span>
+                <span class="rail-dot" title="Career Sprint"></span>
+                <span class="rail-dot" title="Interview Prep"></span>
+              </div>
+
+              <div class="preview-body">
+                <div class="preview-score-banner">
+                  <div class="score-ring-block">
+                    <div class="score-ring" aria-hidden="true">
+                      <svg viewBox="0 0 64 64">
+                        <circle class="ring-track" cx="32" cy="32" r="26" />
+                        <circle
+                          class="ring-fill"
+                          cx="32"
+                          cy="32"
+                          r="26"
+                          stroke-dasharray="163.36"
+                          stroke-dashoffset="31.04"
+                        />
+                      </svg>
+                      <span class="ring-val">81</span>
+                    </div>
+                    <div class="score-summary">
+                      <span class="score-label">Developer Readiness</span>
+                      <div class="score-value-row">
+                        <strong>81</strong>
+                        <span>/ 100</span>
+                      </div>
+                      <span class="score-meta">Target: Full-Stack Engineer</span>
+                    </div>
+                  </div>
+                  <div class="score-badges">
+                    <span class="mini-pill">GitHub Connected</span>
+                    <span class="mini-pill is-accent">Resume Parsed</span>
+                  </div>
+                </div>
+
+                <div class="readiness-grid">
+                  @for (axis of readinessAxes; track axis.label) {
+                    <div class="readiness-card">
+                      <div class="readiness-card-head">
+                        <span class="axis-label">{{ axis.label }}</span>
+                        <span class="axis-score">{{ axis.score }}%</span>
+                      </div>
+                      <div class="axis-bar" aria-hidden="true">
+                        <span [style.width.%]="axis.score"></span>
+                      </div>
+                      <span class="axis-detail">{{ axis.detail }}</span>
+                    </div>
+                  }
+                </div>
+
+                <div class="preview-next-box">
+                  <div class="next-box-copy">
+                    <span class="next-box-kicker">Active Sprint Milestone</span>
+                    <strong>Integration Testing &amp; System Design Prep</strong>
+                  </div>
+                  <a routerLink="/auth/signup" class="preview-action-link">Start Analysis</a>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-            <div class="preview-code-block">
-              <div class="code-line">
-                <span class="c-keyword">const</span> profile =
-                <span class="c-keyword">await</span> devInsight.<span class="c-func">analyze</span
-                >(&#123; github, resume &#125;);
-              </div>
-              <div class="code-line">
-                <span class="c-comment">// Executive AI Career Summary</span>
-              </div>
-              <div class="code-line tag-line">
-                <span class="c-tag green">✓ Strong System Architecture</span>
-              </div>
-              <div class="code-line tag-line">
-                <span class="c-tag cyan">✓ Verified Full-Stack Expertise</span>
-              </div>
-              <div class="code-line tag-line">
-                <span class="c-tag purple">⚡ Target: Cloud & DevOps Depth</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Floating Micro Badges -->
-          <div class="floating-badge badge-top">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-            >
-              <path d="M20 6L9 17l-5-5"></path>
-            </svg>
-            <span>GitHub Sync Active</span>
-          </div>
-          <div class="floating-badge badge-bottom">
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <circle cx="12" cy="12" r="10"></circle>
-              <polyline points="12 6 12 12 16 14"></polyline>
-            </svg>
-            <span>Roadmap Updated Live</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Trusted Logos -->
-  <section class="trusted">
-    <p class="trusted-title reveal">Trusted by developers from</p>
-    <div class="trusted-logos reveal">
-      <span *ngFor="let logo of trustedLogos">{{ logo }}</span>
-    </div>
-  </section>
-
-  <!-- Executive Stats Section -->
-  <section class="stats-section">
-    <div class="stats-grid">
-      <div class="stat-card reveal">
-        <div class="stat-icon-wrapper">
-          <svg
-            viewBox="0 0 24 24"
-            width="20"
-            height="20"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-            <circle cx="9" cy="7" r="4"></circle>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-          </svg>
-        </div>
-        <h3 class="stat-value">50K+</h3>
-        <p class="stat-label">Developers Analyzed</p>
-        <span class="stat-sub">Profiles benchmarked across GitHub codebases and resumes.</span>
-      </div>
-      <div class="stat-card reveal">
-        <div class="stat-icon-wrapper">
-          <svg
-            viewBox="0 0 24 24"
-            width="20"
-            height="20"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
-            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
-            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
-          </svg>
-        </div>
-        <h3 class="stat-value">2.4M+</h3>
-        <p class="stat-label">Skills Extracted</p>
-        <span class="stat-sub">Granular skills mapped and ranked against market benchmarks.</span>
-      </div>
-      <div class="stat-card reveal">
-        <div class="stat-icon-wrapper">
-          <svg
-            viewBox="0 0 24 24"
-            width="20"
-            height="20"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-            <polyline points="17 6 23 6 23 12"></polyline>
-          </svg>
-        </div>
-        <h3 class="stat-value">+34%</h3>
-        <p class="stat-label">Avg Salary Lift</p>
-        <span class="stat-sub"
-          >Projected compensation increase following targeted growth sprints.</span
-        >
-      </div>
-      <div class="stat-card reveal">
-        <div class="stat-icon-wrapper">
-          <svg
-            viewBox="0 0 24 24"
-            width="20"
-            height="20"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-            <polyline points="22 4 12 14.01 9 11.01"></polyline>
-          </svg>
-        </div>
-        <h3 class="stat-value">98.4%</h3>
-        <p class="stat-label">Match Accuracy</p>
-        <span class="stat-sub">Signal-rich recruiter recommendations and hiring alignment.</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- Insights Preview -->
-  <section id="insights" class="insights-section">
-    <div class="insights-grid">
-      <div class="insights-content reveal">
-        <div class="section-badge">
-          <svg
-            viewBox="0 0 24 24"
-            width="14"
-            height="14"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path
-              d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-            ></path>
-          </svg>
-          Real-time AI Analysis
-        </div>
-        <h2>
-          <span class="text-highlight-white">Deep insights. </span>
-          <span class="text-gradient">Actionable recommendations.</span>
-        </h2>
-        <p>
-          Our AI reviews your repos, resumes, and signals to highlight strengths and the fastest
-          path to growth.
-        </p>
-        <ul class="insights-list">
-          <li *ngFor="let insight of insightBullets">
-            <span class="insight-dot"></span>
-            <span>{{ insight }}</span>
-          </li>
-        </ul>
-        <div class="insights-actions">
-          <a routerLink="/auth/signup" class="btn-link">
-            <app-ui-button variant="secondary" size="md">Explore AI Insights</app-ui-button>
-          </a>
-        </div>
-      </div>
-      <div class="insights-visual reveal">
-        <div class="mockup-glow"></div>
-        <div class="editor-mockup">
-          <div class="editor-header">
-            <div class="window-controls">
-              <span class="control close"></span>
-              <span class="control minimize"></span>
-              <span class="control maximize"></span>
-            </div>
-            <div class="editor-tabs">
-              <div class="tab active">
-                <span class="file-icon cs-icon">C#</span>
-                <span class="file-name">VisualTemperature.cs</span>
-              </div>
-            </div>
-          </div>
-          <div class="editor-body">
-            <div class="line-numbers">
-              <span
-                *ngFor="
-                  let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
-                "
-              ></span>
-            </div>
-            <div class="code-content">
-              <pre><code [innerHTML]="codeSnippetHtml"></code></pre>
-            </div>
-          </div>
-        </div>
-        <div class="ai-suggestion-card">
-          <div class="ai-suggestion-header">
-            <span class="ai-dot"></span>
-            AI Suggestion
-          </div>
+    <!-- Core Capabilities -->
+    <section id="features" class="content-section">
+      <div class="section-inner">
+        <div class="section-heading">
+          <span class="section-kicker">Core Capabilities</span>
+          <h2>Everything you need to audit and level up your developer profile</h2>
           <p>
-            Extract temperature calculation logic into a separate service for better testability.
+            Every module in Developer Portfolio Analyzer connects your actual repositories, resume,
+            learning plan, and interview readiness into a single measurable workflow.
           </p>
-          <div class="ai-meta">
-            <div>
-              <span>Impact</span>
-              <strong>High</strong>
-            </div>
-            <div>
-              <span>Confidence</span>
-              <strong>92%</strong>
-            </div>
-          </div>
         </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- Recruiters Section -->
-  <section id="recruiters" class="recruiters">
-    <div class="section-header reveal">
-      <div class="section-badge">
-        <svg
-          viewBox="0 0 24 24"
-          width="14"
-          height="14"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6l8-4z"></path>
-          <polyline points="9 12 11 14 15 10"></polyline>
-        </svg>
-        Recruiter Signal
-      </div>
-      <h2>
-        <span class="text-highlight-white">Why Recruiters Love </span>
-        <span class="text-gradient">DevInsight AI</span>
-      </h2>
-      <p>Give hiring teams signal-rich profiles with verified skills and AI-ranked potential.</p>
-    </div>
-    <div class="recruiter-grid">
-      <div *ngFor="let item of recruiterHighlights" class="recruiter-card reveal">
-        <div class="recruiter-icon" [innerHTML]="iconHtml[item.icon]"></div>
-        <h4>{{ item.title }}</h4>
-        <p>{{ item.description }}</p>
-      </div>
-    </div>
-  </section>
+        <div class="capabilities-grid">
+          @for (cap of capabilities; track cap.id) {
+            <article class="capability-card">
+              <div class="capability-card-top">
+                <span class="capability-icon" aria-hidden="true">
+                  @switch (cap.icon) {
+                    @case ('github') {
+                      <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                          fill-rule="evenodd"
+                          clip-rule="evenodd"
+                          d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+                        />
+                      </svg>
+                    }
+                    @case ('resume') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"
+                        />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M14 2v6h6M8 13h8M8 17h5"
+                        />
+                      </svg>
+                    }
+                    @case ('skills') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="9" />
+                        <circle cx="12" cy="12" r="5" />
+                        <circle cx="12" cy="12" r="1" />
+                      </svg>
+                    }
+                    @case ('sprint') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" />
+                        <path stroke-linecap="round" d="M16 2v4M8 2v4M3 10h18M9 15l2 2 4-4" />
+                      </svg>
+                    }
+                    @case ('interview') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"
+                        />
+                      </svg>
+                    }
+                    @default {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"
+                        />
+                        <circle cx="9" cy="7" r="4" />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"
+                        />
+                      </svg>
+                    }
+                  }
+                </span>
+                <span class="capability-tag">{{ cap.tag }}</span>
+              </div>
 
-  <!-- Career Growth Visualization -->
-  <section id="growth" class="growth">
-    <div class="growth-grid">
-      <div class="growth-content reveal">
-        <div class="section-badge green">
-          <svg
-            viewBox="0 0 24 24"
-            width="14"
-            height="14"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <polyline points="3 17 9 11 13 15 21 7"></polyline>
-            <polyline points="21 14 21 7 14 7"></polyline>
-          </svg>
-          Career Growth
-        </div>
-        <h2>
-          <span class="text-highlight-white">Career growth </span>
-          <span class="text-gradient">visualization</span>
-        </h2>
-        <p>
-          Track hiring readiness, salary impact, and skill progression as your roadmap advances.
-        </p>
-        <div class="growth-metrics">
-          <div class="growth-metric" *ngFor="let metric of growthMetrics">
-            <span class="metric-label">{{ metric.label }}</span>
-            <span class="metric-value">{{ metric.value }}</span>
-            <span class="metric-detail">{{ metric.detail }}</span>
-          </div>
+              <h3>{{ cap.title }}</h3>
+              <p>{{ cap.description }}</p>
+
+              <ul class="capability-points">
+                @for (point of cap.highlights; track point) {
+                  <li>
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      aria-hidden="true"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>{{ point }}</span>
+                  </li>
+                }
+              </ul>
+            </article>
+          }
         </div>
       </div>
-      <div class="growth-chart reveal">
-        <div class="chart-card">
-          <div class="chart-header">
-            <span class="chart-title">Hiring Score Growth</span>
-            <span class="chart-badge">Last 12 weeks</span>
-          </div>
-          <svg class="chart-svg" viewBox="0 0 520 220" role="img" aria-label="Hiring score chart">
-            <defs>
-              <linearGradient id="growthLine" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stop-color="var(--lp-primary-light)"></stop>
-                <stop offset="50%" stop-color="var(--lp-primary)"></stop>
-                <stop offset="100%" stop-color="var(--lp-primary-dark)"></stop>
-              </linearGradient>
-              <linearGradient id="areaFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="rgba(212, 175, 55, 0.35)"></stop>
-                <stop offset="100%" stop-color="rgba(20, 30, 51, 0.02)"></stop>
-              </linearGradient>
-              <filter id="glow">
-                <feGaussianBlur stdDeviation="6" result="coloredBlur"></feGaussianBlur>
-                <feMerge>
-                  <feMergeNode in="coloredBlur"></feMergeNode>
-                  <feMergeNode in="SourceGraphic"></feMergeNode>
-                </feMerge>
-              </filter>
-            </defs>
-            <path
-              class="chart-area"
-              d="M20 180 L120 150 L210 120 L300 90 L400 80 L500 60 L500 190 L20 190 Z"
-            ></path>
-            <polyline
-              class="chart-line"
-              points="20,180 120,150 210,120 300,90 400,80 500,60"
-            ></polyline>
-            <circle class="chart-point p1" cx="20" cy="180" r="4"></circle>
-            <circle class="chart-point p2" cx="120" cy="150" r="4"></circle>
-            <circle class="chart-point p3" cx="210" cy="120" r="4"></circle>
-            <circle class="chart-point p4" cx="300" cy="90" r="4"></circle>
-            <circle class="chart-point p5" cx="400" cy="80" r="4"></circle>
-            <circle class="chart-point p6 active-node" cx="500" cy="60" r="6"></circle>
-            <!-- Floating Peak Tooltip Callout -->
-            <g class="chart-tooltip">
-              <rect
-                x="410"
-                y="10"
-                width="105"
-                height="32"
-                rx="8"
-                fill="var(--lp-chart-fill)"
-                stroke="color-mix(in srgb, var(--lp-primary) 50%, transparent)"
-                stroke-width="1.5"
-              />
-              <text
-                x="462"
-                y="30"
-                fill="var(--lp-primary-light)"
-                font-size="11"
-                font-weight="700"
-                text-anchor="middle"
+    </section>
+
+    <!-- GitHub & Resume Analysis Section -->
+    <section id="analysis" class="content-section surface-band">
+      <div class="section-inner analysis-grid">
+        <div class="analysis-copy">
+          <span class="section-kicker">GitHub &amp; Resume Presentation</span>
+          <h2>Inspect how code signals and resume history align</h2>
+          <p>
+            Instead of grading your portfolio in isolation, DPA cross-references your public GitHub
+            repositories with your uploaded resume so gaps between shipped code and documented
+            experience are easy to fix.
+          </p>
+
+          <div class="signal-tabs" role="tablist" aria-label="Analysis preview mode">
+            @for (tab of signalTabs; track tab.id) {
+              <button
+                type="button"
+                role="tab"
+                class="signal-tab-btn"
+                [class.is-active]="activeSignalTab === tab.id"
+                [attr.aria-selected]="activeSignalTab === tab.id"
+                (click)="selectSignalTab(tab.id)"
               >
-                +34% Score: 92
-              </text>
-            </g>
-          </svg>
-          <div class="chart-legend">
-            <div class="legend-item">
-              <span class="legend-dot"></span>
-              Skill progression
+                {{ tab.label }}
+              </button>
+            }
+          </div>
+
+          <div class="analysis-cta-row">
+            <a routerLink="/auth/signup" class="btn btn-primary">Analyze Your Portfolio</a>
+            <a routerLink="/auth/login" class="btn btn-secondary">Open Existing Account</a>
+          </div>
+        </div>
+
+        <div class="analysis-panel" role="tabpanel">
+          <div class="analysis-panel-head">
+            <div class="analysis-panel-top">
+              <span class="analysis-panel-pill">{{ currentSignal.label }}</span>
+              <span class="analysis-panel-uri">{{ currentSignal.uri }}</span>
             </div>
-            <div class="legend-item">
-              <span class="legend-dot alt"></span>
-              Salary impact
+            <h3>{{ currentSignal.heading }}</h3>
+            <p>{{ currentSignal.summary }}</p>
+          </div>
+
+          <div class="analysis-terminal" aria-hidden="true">
+            @for (line of currentSignal.snippetLines; track line.text) {
+              <div class="terminal-line" [attr.data-tone]="line.tone">
+                <span class="line-prefix">{{ line.prefix }}</span>
+                <span class="line-text">{{ line.text }}</span>
+              </div>
+            }
+          </div>
+
+          <div class="analysis-metrics">
+            @for (metric of currentSignal.metrics; track metric.label) {
+              <div class="analysis-metric-row">
+                <span class="metric-key">{{ metric.label }}</span>
+                <span class="metric-val">{{ metric.value }}</span>
+              </div>
+            }
+          </div>
+
+          <ul class="analysis-checks">
+            @for (check of currentSignal.checks; track check) {
+              <li>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  aria-hidden="true"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                <span>{{ check }}</span>
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Skill Gap, Career Growth & Interview Prep -->
+    <section id="growth" class="content-section">
+      <div class="section-inner">
+        <div class="section-heading">
+          <span class="section-kicker">Growth &amp; Interview Readiness</span>
+          <h2>Close skill gaps and prepare for technical interviews</h2>
+          <p>
+            Every insight feeds directly into concrete next steps across learning resources, career
+            sprints, and interview preparation.
+          </p>
+        </div>
+
+        <div class="growth-grid">
+          <article class="growth-card">
+            <span class="growth-badge">Skill Gap &amp; Courses</span>
+            <h3>Targeted learning recommendations</h3>
+            <p>
+              See which skills hold back your target role match and browse structured learning
+              tracks inside the Courses and Recommendations modules.
+            </p>
+            <div class="growth-preview-list">
+              <div class="growth-preview-item">
+                <span>Role Alignment Check</span>
+                <strong>Backend · Frontend · Full-Stack</strong>
+              </div>
+              <div class="growth-preview-item">
+                <span>Curated Resources</span>
+                <strong>Docs, Guides &amp; Skill Paths</strong>
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+          </article>
 
-  <!-- Live AI Analysis -->
-  <section id="live-analysis" class="live-analysis">
-    <div class="analysis-grid">
-      <div class="analysis-content reveal">
-        <div class="section-badge">
-          <svg
-            viewBox="0 0 24 24"
-            width="14"
-            height="14"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M12 2v4"></path>
-            <path d="M12 18v4"></path>
-            <path d="M4.93 4.93l2.83 2.83"></path>
-            <path d="M16.24 16.24l2.83 2.83"></path>
-            <path d="M2 12h4"></path>
-            <path d="M18 12h4"></path>
-            <path d="M4.93 19.07l2.83-2.83"></path>
-            <path d="M16.24 7.76l2.83-2.83"></path>
-            <circle cx="12" cy="12" r="3"></circle>
-          </svg>
-          Live AI Analysis
-        </div>
-        <h2>
-          <span class="text-highlight-white">See the AI </span>
-          <span class="text-gradient">in action.</span>
-        </h2>
-        <p>
-          Follow the real-time workflow as DevInsight AI scans your GitHub, extracts skills, and
-          generates a growth roadmap.
-        </p>
-        <div class="analysis-tags">
-          <span class="tag">GitHub scanned</span>
-          <span class="tag">Skills extracted</span>
-          <span class="tag">Gap detection</span>
-          <span class="tag">Roadmap generated</span>
-        </div>
-      </div>
-      <div class="analysis-terminal reveal">
-        <div class="terminal-header">
-          <div class="terminal-controls">
-            <span class="control close"></span>
-            <span class="control minimize"></span>
-            <span class="control maximize"></span>
-          </div>
-          <span class="terminal-title">devinsight-ai / live-analysis</span>
-        </div>
-        <div class="terminal-body">
-          <div class="terminal-line" *ngFor="let step of analysisSteps">
-            <span class="status-pill" [ngClass]="step.status">{{ step.status }}</span>
-            <div class="terminal-text">
-              <strong>{{ step.title }}</strong>
-              <span>{{ step.detail }}</span>
+          <article class="growth-card">
+            <span class="growth-badge">Career Sprint</span>
+            <h3>Milestone-driven execution</h3>
+            <p>
+              Organize gap-closing work into manageable sprint tasks with clear status tracking so
+              portfolio improvements never stall after initial analysis.
+            </p>
+            <div class="growth-preview-list">
+              <div class="growth-preview-item">
+                <span>Sprint Planning</span>
+                <strong>Focused Weekly Goals</strong>
+              </div>
+              <div class="growth-preview-item">
+                <span>Progress Tracking</span>
+                <strong>Milestones &amp; Completion Status</strong>
+              </div>
             </div>
-          </div>
-          <div class="terminal-progress">
-            <span class="progress-label">AI processing</span>
-            <div class="progress-track">
-              <span class="progress-fill"></span>
+          </article>
+
+          <article class="growth-card">
+            <span class="growth-badge">Interview Prep</span>
+            <h3>Curated &amp; AI-generated practice</h3>
+            <p>
+              Prepare using stack-specific technical and behavioral questions tailored to your
+              experience level and identified readiness areas.
+            </p>
+            <div class="growth-preview-list">
+              <div class="growth-preview-item">
+                <span>Question Modes</span>
+                <strong>Curated Sets + AI Prompts</strong>
+              </div>
+              <div class="growth-preview-item">
+                <span>Stack Calibration</span>
+                <strong>Matched to Active Profile</strong>
+              </div>
             </div>
-          </div>
-          <div class="terminal-footer">
-            <span class="terminal-prompt">devinsight-ai</span>
-            <span class="terminal-cursor"></span>
-          </div>
+          </article>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Features Section -->
-  <section id="features" class="features">
-    <div class="section-header reveal">
-      <div class="section-badge">
-        <svg
-          viewBox="0 0 24 24"
-          width="14"
-          height="14"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path
-            d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-          ></path>
-        </svg>
-        Core Features
-      </div>
-      <h2>
-        <span class="text-highlight-white">Everything You Need </span>
-        <span class="text-gradient">to Level Up</span>
-      </h2>
-      <p>Comprehensive tools for developer career analysis and growth planning.</p>
-    </div>
-
-    <div class="features-grid">
-      <div *ngFor="let feature of features" class="feature-card reveal">
-        <div class="feature-icon" [innerHTML]="iconHtml[feature.icon]"></div>
-        <h4>{{ feature.title }}</h4>
-        <p>{{ feature.description }}</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Supported Career Stacks -->
-  <section id="stacks" class="stacks">
-    <div class="section-header reveal">
-      <div class="section-badge">
-        <svg
-          viewBox="0 0 24 24"
-          width="14"
-          height="14"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path d="M12 2l9 4.5-9 4.5-9-4.5L12 2z"></path>
-          <path d="M3 12l9 4.5 9-4.5"></path>
-          <path d="M3 17l9 4.5 9-4.5"></path>
-        </svg>
-        Supported Career Stacks
-      </div>
-      <h2>
-        <span class="text-highlight-white">Built for every </span>
-        <span class="text-gradient">modern developer path</span>
-      </h2>
-      <p>Curated signals and benchmarks for the stacks hiring teams need most.</p>
-    </div>
-    <div class="stacks-grid">
-      <div *ngFor="let stack of careerStacks" class="stack-card reveal">
-        <div class="stack-icon" [innerHTML]="iconHtml[stack.icon]"></div>
-        <h4>{{ stack.title }}</h4>
-        <p>{{ stack.description }}</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- How it Works Section -->
-  <section id="how-it-works" class="how-it-works">
-    <div class="section-header reveal">
-      <div class="section-badge green">
-        <svg
-          viewBox="0 0 24 24"
-          width="14"
-          height="14"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-        </svg>
-        Simple Process
-      </div>
-      <h2>
-        <span class="text-highlight-white">How It </span> <span class="text-gradient">Works</span>
-      </h2>
-      <p>Get your developer insights in 3 simple steps</p>
-    </div>
-
-    <div class="steps-grid">
-      <div *ngFor="let step of steps" class="step-card reveal">
-        <div class="step-header">
-          <div
-            class="step-icon"
-            [innerHTML]="
-              iconHtml[
-                step.number === '01' ? 'github' : step.number === '02' ? 'file' : 'lightbulb'
-              ]
-            "
-          ></div>
-          <span class="step-number">{{ step.number }}</span>
+    <!-- How It Works & Trust -->
+    <section id="workflow" class="content-section surface-band">
+      <div class="section-inner">
+        <div class="section-heading">
+          <span class="section-kicker">Workflow &amp; Trust</span>
+          <h2>From sign-up to verified readiness in three clear steps</h2>
+          <p>
+            Designed for developers who want transparent diagnostics, privacy control, and practical
+            next steps without hype.
+          </p>
         </div>
-        <h4>{{ step.title }}</h4>
-        <p>{{ step.description }}</p>
-      </div>
-    </div>
-  </section>
 
-  <!-- Testimonials Section -->
-  <section id="testimonials" class="testimonials">
-    <div class="section-header reveal">
-      <h2>
-        <span class="text-highlight-white">Loved by </span>
-        <span class="text-gradient">Developers</span>
-      </h2>
-      <p>Join thousands of developers who leveled up their career with DevInsight AI</p>
-    </div>
-
-    <div class="testimonials-grid">
-      <div *ngFor="let testimonial of testimonials" class="testimonial-card reveal">
-        <div class="stars">
-          <svg
-            *ngFor="let i of [1, 2, 3, 4, 5]"
-            viewBox="0 0 24 24"
-            width="16"
-            height="16"
-            fill="var(--lp-warning)"
-            stroke="var(--lp-warning)"
-            stroke-width="1"
-          >
-            <path
-              d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-            ></path>
-          </svg>
+        <div class="workflow-grid">
+          @for (item of workflowSteps; track item.step) {
+            <article class="workflow-card">
+              <span class="workflow-step">{{ item.step }}</span>
+              <h3>{{ item.title }}</h3>
+              <p>{{ item.description }}</p>
+            </article>
+          }
         </div>
-        <p class="quote">{{ quoted(testimonial.quote) }}</p>
-        <div class="author-info">
-          <div class="avatar" [ngStyle]="getAvatarStyle(testimonial.color)">
-            {{ testimonial.initials }}
+      </div>
+    </section>
+
+    <!-- Final Conversion CTA -->
+    <section class="cta-section">
+      <div class="section-inner">
+        <div class="cta-banner">
+          <div class="cta-copy">
+            <span class="section-kicker">Get Started Today</span>
+            <h2>Ready to benchmark your developer portfolio?</h2>
+            <p>
+              Create your Developer Portfolio Analyzer account in minutes or sign in with Google or
+              GitHub to continue your workspace progress.
+            </p>
           </div>
-          <div class="author-details">
-            <h5 class="author-name">{{ testimonial.author }}</h5>
-            <span class="author-role">{{ testimonial.role }}</span>
+
+          <div class="cta-actions">
+            <a routerLink="/auth/signup" class="btn btn-primary btn-lg">Create Free Account</a>
+            <a routerLink="/auth/login" class="btn btn-secondary btn-lg">Sign In</a>
           </div>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- CTA Section -->
-  <section class="cta">
-    <div class="cta-card reveal">
-      <div class="cta-icon">
-        <svg
-          viewBox="0 0 24 24"
-          width="32"
-          height="32"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-        </svg>
-      </div>
-      <h2>
-        <span class="text-highlight-white">Ready to </span>
-        <span class="text-gradient">Supercharge Your Career?</span>
-      </h2>
-      <p>
-        Join the world's finest developers who use DevInsight AI to refine their trajectory and
-        unlock elite opportunities.
-      </p>
-      <a routerLink="/auth/signup" class="btn-link">
-        <app-ui-button variant="primary" size="lg"> INITIATE PARTNERSHIP </app-ui-button>
-      </a>
-    </div>
-  </section>
+    </section>
+  </main>
 
   <!-- Footer -->
   <footer class="landing-footer">
-    <div class="footer-content">
+    <div class="section-inner footer-grid">
       <div class="footer-brand">
-        <div class="logo-container">
-          <div class="logo-icon small">
-            <svg viewBox="0 0 24 24" fill="none" class="w-5 h-5">
+        <a class="nav-brand" routerLink="/">
+          <span class="brand-badge" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path
-                d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                stroke="currentColor"
-                stroke-width="2"
                 stroke-linecap="round"
                 stroke-linejoin="round"
+                d="M12 3l2.2 4.6 5.1.7-3.7 3.6.9 5.1-4.5-2.4-4.5 2.4.9-5.1-3.7-3.6 5.1-.7L12 3z"
               />
             </svg>
-          </div>
-          <span class="logo-text">DevInsight <span class="text-primary">AI</span></span>
-        </div>
+          </span>
+          <span class="brand-text">
+            <span class="brand-title">DevInsight <span>AI</span></span>
+            <span class="brand-subtitle">Developer Portfolio Analyzer</span>
+          </span>
+        </a>
+        <p>
+          GitHub analysis, resume intelligence, skill gap detection, career sprints, and interview
+          preparation built for modern developers.
+        </p>
       </div>
 
-      <div class="footer-links-row">
-        <a routerLink="/privacy">Privacy</a>
-        <a routerLink="/terms">Terms</a>
-        <a routerLink="/api-docs">API Docs</a>
-        <a routerLink="/blog">Blog</a>
-        <a routerLink="/contact">Contact</a>
+      <div class="footer-col">
+        <h3>Product</h3>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#analysis">GitHub &amp; Resume</a></li>
+          <li><a href="#growth">Growth &amp; Prep</a></li>
+          <li><a routerLink="/api-docs">API Documentation</a></li>
+        </ul>
       </div>
 
-      <div class="social-links">
-        <a href="#" class="social-icon" title="Follow us on Twitter" aria-label="Twitter">
-          <svg
-            viewBox="0 0 24 24"
-            width="18"
-            height="18"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path
-              d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"
-            ></path>
-          </svg>
-        </a>
-        <a href="#" class="social-icon" title="Visit our GitHub" aria-label="GitHub">
-          <svg
-            viewBox="0 0 24 24"
-            width="18"
-            height="18"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path
-              d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"
-            ></path>
-          </svg>
-        </a>
-        <a href="#" class="social-icon" title="Connect on LinkedIn" aria-label="LinkedIn">
-          <svg
-            viewBox="0 0 24 24"
-            width="18"
-            height="18"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path
-              d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"
-            ></path>
-            <rect x="2" y="9" width="4" height="12"></rect>
-            <circle cx="4" cy="4" r="2"></circle>
-          </svg>
-        </a>
+      <div class="footer-col">
+        <h3>Account</h3>
+        <ul>
+          <li><a routerLink="/auth/signup">Create Account</a></li>
+          <li><a routerLink="/auth/login">Sign In</a></li>
+          <li><a routerLink="/auth/forgot-password">Reset Password</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h3>Company &amp; Legal</h3>
+        <ul>
+          <li><a routerLink="/blog">Engineering Blog</a></li>
+          <li><a routerLink="/contact">Contact</a></li>
+          <li><a routerLink="/privacy">Privacy Policy</a></li>
+          <li><a routerLink="/terms">Terms of Service</a></li>
+        </ul>
       </div>
     </div>
-    <div class="footer-bottom">
-      <p>&copy; 2024 DevInsight AI. Built for developers, by developers.</p>
+
+    <div class="section-inner footer-bottom">
+      <span>&copy; {{ currentYear }} DevInsight AI · Developer Portfolio Analyzer.</span>
+      <div class="footer-bottom-links">
+        <a routerLink="/privacy">Privacy</a>
+        <a routerLink="/terms">Terms</a>
+      </div>
     </div>
   </footer>
 </div>

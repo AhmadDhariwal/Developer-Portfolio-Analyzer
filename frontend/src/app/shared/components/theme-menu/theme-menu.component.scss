@@ -1,0 +1,223 @@
+.theme-menu {
+  position: relative;
+  display: inline-block;
+
+  &.is-full-width {
+    display: block;
+    width: 100%;
+
+    .theme-menu-trigger {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .theme-trigger-label {
+      flex: 1;
+      text-align: left;
+    }
+  }
+}
+
+.theme-menu-trigger {
+  min-height: 44px;
+  padding: 0 0.75rem;
+  border-radius: 0.625rem;
+  border: 1px solid var(--lp-card-border);
+  background: var(--lp-surface-solid);
+  color: var(--lp-ink);
+  font-family: var(--lp-font-sans, inherit);
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: var(--auth-shadow-sm, none);
+  transition:
+    background-color 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease;
+
+  &:hover {
+    background: var(--lp-surface-muted);
+    border-color: var(--lp-card-hover-border);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--lp-primary);
+    outline-offset: 2px;
+  }
+
+  .theme-menu.is-open & {
+    border-color: var(--lp-primary);
+  }
+}
+
+.theme-trigger-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--lp-primary);
+  flex-shrink: 0;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.theme-trigger-label {
+  line-height: 1;
+}
+
+.theme-trigger-chevron {
+  width: 14px;
+  height: 14px;
+  color: var(--lp-muted);
+  flex-shrink: 0;
+  transition: transform 0.16s ease;
+
+  .theme-menu.is-open & {
+    transform: rotate(180deg);
+  }
+}
+
+.has-compact-mobile-label:not(.is-full-width) {
+  @media (max-width: 520px) {
+    .theme-menu-trigger {
+      padding: 0 0.625rem;
+      gap: 0.3rem;
+    }
+
+    .theme-trigger-label {
+      display: none;
+    }
+  }
+}
+
+.theme-menu-popover {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 90;
+  min-width: 228px;
+  max-width: calc(100vw - 1.5rem);
+  padding: 0.4rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--lp-card-border);
+  background: var(--lp-surface-solid);
+  box-shadow: var(--lp-card-hover-shadow, 0 14px 32px -12px rgba(15, 23, 42, 0.25));
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+
+  .theme-menu.is-inline-menu & {
+    position: static;
+    margin-top: 0.5rem;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    box-shadow: none;
+  }
+}
+
+.theme-menu-header {
+  padding: 0.35rem 0.6rem 0.25rem;
+  font-family: var(--lp-font-mono, monospace);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--lp-muted);
+}
+
+.theme-menu-item {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid transparent;
+  border-radius: 0.55rem;
+  background: transparent;
+  color: var(--lp-ink);
+  font-family: var(--lp-font-sans, inherit);
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 0.14s ease,
+    border-color 0.14s ease;
+
+  &:hover {
+    background: var(--lp-surface-muted);
+  }
+
+  &.is-active {
+    background: var(--auth-badge-bg);
+    border-color: var(--auth-badge-border);
+
+    .theme-item-icon {
+      background: var(--lp-primary);
+      color: #ffffff;
+      border-color: var(--lp-primary);
+    }
+
+    .theme-item-title {
+      color: var(--auth-badge-text);
+    }
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--lp-primary);
+    outline-offset: 1px;
+  }
+}
+
+.theme-item-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: var(--lp-surface-muted);
+  border: 1px solid var(--lp-card-border);
+  color: var(--lp-ink-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  svg {
+    width: 15px;
+    height: 15px;
+  }
+}
+
+.theme-item-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.theme-item-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--lp-ink);
+}
+
+.theme-item-desc {
+  font-size: 0.72rem;
+  line-height: 1.3;
+  color: var(--lp-muted);
+}
+
+.theme-item-check {
+  width: 16px;
+  height: 16px;
+  color: var(--lp-primary);
+  flex-shrink: 0;
+}
+

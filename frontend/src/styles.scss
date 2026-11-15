@@ -6,6 +6,8 @@
 @use './app/shared/styles/fonts';
 @use './app/shared/styles/developer-ui' as developer;
 @use './app/shared/styles/layout-helpers' as *;
+@use './app/shared/styles/auth-theme';
+@use './app/shared/styles/public-subpage';
 
 // Remote font styles are already linked in index.html. An @import here makes
 // loading the production stylesheet depend on that remote request succeeding,

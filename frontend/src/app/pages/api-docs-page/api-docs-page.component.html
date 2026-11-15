@@ -1,88 +1,128 @@
-<section class="docs-page">
-  <div class="docs-shell">
-    <header class="page-hero">
-      <div class="page-topbar">
-        <a routerLink="/" class="back-home">Back to Home</a>
+<app-public-subpage-shell
+  eyebrow="Developer Hub"
+  title="Platform API Architecture"
+  subtitle="Overview of the DevInsight AI API model across authentication, portfolio intelligence, recruiter workflows, and organization-scoped access."
+  metaLabel="Updated for current workspace architecture · May 24, 2026"
+>
+  <div class="pub-stack">
+    <section class="pub-split-feature" aria-label="API architecture overview">
+      <article class="pub-card">
+        <span class="pub-tag">INTERNAL JSON INTERFACE</span>
+        <h2>Designed for secure, role-scoped workflows</h2>
+        <p>
+          DevInsight AI exposes authenticated JSON APIs consumed by the Angular workspace. Every
+          endpoint domain pairs JWT session validation with role-based access control (RBAC) and
+          tenant boundaries across developer, recruiter, and admin views.
+        </p>
+        <div class="pub-alert-note">
+          Internal route paths and private operational schemas are omitted from this public
+          documentation page.
+        </div>
+      </article>
 
-        <nav class="page-nav" aria-label="Public pages">
-          <a
-            *ngFor="let item of pageLinks"
-            [routerLink]="item.route"
-            routerLinkActive="page-nav__link--active"
-            class="page-nav__link"
+      <div class="pub-kpi-grid is-stacked-kpis">
+        @for (item of featureCards; track item.value) {
+          <article class="pub-kpi-card">
+            <span class="pub-tag">{{ item.tag }}</span>
+            <strong>{{ item.value }}</strong>
+            <span>{{ item.label }}</span>
+          </article>
+        }
+      </div>
+    </section>
+
+    <section class="pub-card pub-card--subtle" aria-label="API domain explorer">
+      <div class="pub-card-head">
+        <div>
+          <span class="pub-tag">DOMAIN ARCHITECTURE</span>
+          <h2 class="explorer-heading">Inspect payload conventions by domain</h2>
+        </div>
+      </div>
+
+      <div class="pub-filter-bar" role="tablist" aria-label="API domains">
+        @for (group of apiGroups; track group.id) {
+          <button
+            type="button"
+            role="tab"
+            class="pub-filter-pill"
+            [class.is-active]="selectedDomainId() === group.id"
+            [attr.aria-selected]="selectedDomainId() === group.id"
+            (click)="selectDomain(group.id)"
           >
-            {{ item.label }}
-          </a>
-        </nav>
+            {{ group.label }}
+          </button>
+        }
       </div>
 
-      <span class="eyebrow">Developer Hub</span>
-      <h1>API Docs</h1>
-      <p class="subtitle">
-        A realistic overview of the DevInsight AI API surface across auth, developer analysis,
-        recruiter operations, admin tooling, and organization-aware workflows.
-      </p>
-      <p class="updated">Updated for current app structure: May 24, 2026</p>
-    </header>
+      <div class="pub-grid-2 domain-detail-grid">
+        <article class="pub-card">
+          <span class="pub-tag">{{ activeDomain().tag }}</span>
+          <h3>{{ activeDomain().label }}</h3>
+          <p>{{ activeDomain().description }}</p>
 
-    <section class="hero-grid">
-      <article class="intro-card">
-        <h2>Platform API overview</h2>
-        <p>
-          DevInsight AI primarily exposes JSON APIs consumed by the Angular frontend. The platform
-          combines JWT-authenticated requests, role-based access checks, and scoped organization
-          data responses across its major product areas.
-        </p>
-        <p class="private-note">
-          Endpoint paths are internal and not listed publicly.
-        </p>
-      </article>
-
-      <div class="feature-grid">
-        <article
-          *ngFor="let item of featureCards"
-          class="feature-card"
-          [ngClass]="'feature-card--' + item.accent"
-        >
-          <strong>{{ item.value }}</strong>
-          <span>{{ item.label }}</span>
+          <div class="payload-keys">
+            <span class="payload-keys-label">Common named response keys</span>
+            <div class="payload-key-chips">
+              @for (field of activeDomain().keyFields; track field) {
+                <code>{{ field }}</code>
+              }
+            </div>
+          </div>
         </article>
+
+        <div class="pub-terminal" role="region" aria-label="Sample response structure">
+          <div class="pub-terminal-head">
+            <div class="pub-terminal-dots">
+              <span class="dot dot--rose"></span>
+              <span class="dot dot--amber"></span>
+              <span class="dot dot--emerald"></span>
+              <span class="uri">{{ activeDomain().sampleTitle }}</span>
+            </div>
+            <button
+              type="button"
+              class="copy-terminal-btn"
+              (click)="copySampleJson()"
+              [attr.aria-label]="copiedSample() ? 'JSON sample copied' : 'Copy JSON sample'"
+            >
+              {{ copiedSample() ? 'Copied' : 'Copy JSON' }}
+            </button>
+          </div>
+          <pre class="pub-terminal-body"><code>{{ activeDomain().sampleJson }}</code></pre>
+        </div>
       </div>
     </section>
 
-    <section class="groups-grid">
-      <article class="group-card" *ngFor="let group of apiGroups">
-        <h3>{{ group.title }}</h3>
-        <p>{{ group.description }}</p>
-      </article>
-    </section>
-
-    <section class="reference-grid">
-      <article class="reference-card">
-        <h3>Authentication model</h3>
+    <section class="pub-grid-3" aria-label="API architecture conventions">
+      <article class="pub-card">
+        <span class="pub-tag pub-tag--neutral">01 / AUTH MODEL</span>
+        <h3>Session &amp; OAuth boundaries</h3>
         <p>
-          The app relies on authenticated JWT sessions and role-specific organization context,
-          especially in recruiter and admin workflows where tenant isolation matters.
+          Authenticated requests validate JWT credentials and active organization context so
+          recruiter and admin actions never cross tenant boundaries.
         </p>
       </article>
 
-      <article class="reference-card">
-        <h3>Response shape conventions</h3>
+      <article class="pub-card">
+        <span class="pub-tag pub-tag--neutral">02 / ENVELOPES</span>
+        <h3>Named response contracts</h3>
         <p>
-          APIs generally return named payloads such as <code>profile</code>, <code>dashboard</code>,
-          <code>analytics</code>, <code>recruiters</code>, <code>jobs</code>, or <code>message</code>
-          plus optional <code>errors</code> for validation feedback.
+          Responses expose clear domain keys such as <code>profile</code>, <code>dashboard</code>,
+          <code>analytics</code>, <code>recruiters</code>, <code>jobs</code>, or
+          <code>message</code> alongside structured <code>errors</code> on validation failures.
         </p>
       </article>
 
-      <article class="reference-card reference-card--cta">
+      <article class="pub-card pub-card--highlight">
+        <span class="pub-tag">SUPPORT</span>
         <h3>Need API clarification?</h3>
         <p>
-          Use the contact page if you need help understanding current endpoint domains, payloads, or
-          integration expectations for internal tooling.
+          Contact the DevInsight AI team for onboarding context around payload expectations or
+          organization integration workflows.
         </p>
-        <a routerLink="/contact" class="primary-action">Contact the Team</a>
+        <div class="pub-actions card-cta-spacer">
+          <a routerLink="/contact" class="pub-btn pub-btn--primary">Contact the Team</a>
+        </div>
       </article>
     </section>
   </div>
-</section>
+</app-public-subpage-shell>

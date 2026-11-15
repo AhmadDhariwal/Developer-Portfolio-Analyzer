@@ -1,65 +1,79 @@
-import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { PublicSubpageShellComponent } from '../../shared/components/public-subpage-shell/public-subpage-shell.component';
 
 @Component({
   selector: 'app-privacy-policy',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterLink, PublicSubpageShellComponent],
   templateUrl: './privacy-policy.component.html',
   styleUrl: './privacy-policy.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PrivacyPolicyComponent {
-  readonly pageLinks = [
-    { label: 'Privacy', route: '/privacy' },
-    { label: 'Terms', route: '/terms' },
-    { label: 'API Docs', route: '/api-docs' },
-    { label: 'Blog', route: '/blog' },
-    { label: 'Contact', route: '/contact' },
-  ];
-
   readonly highlights = [
-    { value: 'Scoped RBAC', label: 'Organization-safe access boundaries', accent: 'cyan' },
-    { value: 'OAuth Secure', label: 'GitHub and LinkedIn credentials stay server-side', accent: 'purple' },
-    { value: 'Minimal Data', label: 'We retain only what the platform needs', accent: 'green' },
-  ];
+    {
+      tag: 'ISOLATION',
+      value: 'Scoped RBAC',
+      label: 'Role-checked and organization-bounded access across views.',
+    },
+    {
+      tag: 'SECURITY',
+      value: 'OAuth Safe',
+      label: 'Google and GitHub sign-in secrets and tokens stay server-side.',
+    },
+    {
+      tag: 'RETENTION',
+      value: 'Minimal Data',
+      label: 'Retains only the signals needed to operate workspace workflows.',
+    },
+  ] as const;
 
   readonly sections = [
     {
+      id: 'privacy-collect',
+      num: '01',
       title: 'Information we collect',
-      body: 'DevInsight AI collects account identity, recruiter and developer profile details, GitHub-derived signals, resume analysis inputs, and organization membership data required for collaboration and hiring workflows.',
+      body: 'DevInsight AI collects account identity details, developer and recruiter profile inputs, GitHub-derived repository signals, resume analysis records, and organization membership metadata required for platform workflows.',
       bullets: [
-        'Name, email, account role, and profile metadata',
-        'Portfolio, resume, and GitHub analysis signals',
-        'Recruiter workflow preferences, jobs, and shortlist activity',
+        'Name, email address, account role, and authentication metadata',
+        'Portfolio readiness scores, resume diagnostics, and GitHub signals',
+        'Recruiter preferences, job specifications, and shortlist activity',
       ],
     },
     {
+      id: 'privacy-use',
+      num: '02',
       title: 'How we use data',
-      body: 'Your data powers analysis, recommendations, recruiter discovery, AI ranking, notifications, and admin or organization-level visibility inside the correct RBAC scope.',
+      body: 'Collected data powers readiness scoring, skill gap detection, career sprint planning, interview preparation, recruiter discovery, and organization-scoped analytics inside authorized RBAC boundaries.',
       bullets: [
-        'Generate career and hiring insights',
-        'Support recruiter matching, comparison, and outreach workflows',
-        'Improve platform performance, security, and user experience',
+        'Generate developer portfolio benchmarks and learning paths',
+        'Support recruiter candidate matching, review, and coordination',
+        'Maintain platform security, session integrity, and reliability',
       ],
     },
     {
-      title: 'Access and sharing',
-      body: 'We do not sell personal information. Data is only surfaced to users with the correct role and organization access, and third-party services are used only where required for platform functionality.',
+      id: 'privacy-sharing',
+      num: '03',
+      title: 'Access boundaries and sharing',
+      body: 'We never sell personal information. Data is visible only to authenticated accounts with matching role and organization permissions, and public profiles stay separated from private tenant operations.',
       bullets: [
-        'Role-based and organization-scoped visibility',
-        'No cross-organization data sharing by design',
-        'No resale of personal information',
+        'Role-based and organization-scoped tenant isolation',
+        'No cross-organization disclosure of internal recruiter notes',
+        'Privacy-controlled public developer portfolio visibility',
       ],
     },
     {
-      title: 'Security and retention',
-      body: 'We apply reasonable safeguards for authentication, API access, and integration secrets, and we keep data only for as long as it supports platform operations, user accounts, and organization workflows.',
+      id: 'privacy-security',
+      num: '04',
+      title: 'Security safeguards and retention',
+      body: 'We enforce protected password hashing, signed JWT sessions, and server-side integration credential handling, retaining account data only as needed for active workspaces and legal obligations.',
       bullets: [
-        'Protected authentication and session handling',
-        'Server-side storage of integration credentials',
-        'Retention aligned to account and organization lifecycle',
+        'Encrypted transport and credential revision enforcement',
+        'Server-side storage for OAuth and third-party API credentials',
+        'Retention aligned with active user and organization lifecycle',
       ],
     },
-  ];
+  ] as const;
 }

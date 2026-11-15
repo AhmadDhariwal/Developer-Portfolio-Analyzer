@@ -1,83 +1,125 @@
-<section class="terms-page">
-  <div class="terms-shell">
-    <header class="page-hero">
-      <div class="page-topbar">
-        <a routerLink="/" class="back-home">Back to Home</a>
-
-        <nav class="page-nav" aria-label="Public pages">
-          <a
-            *ngFor="let item of pageLinks"
-            [routerLink]="item.route"
-            routerLinkActive="page-nav__link--active"
-            class="page-nav__link"
-          >
-            {{ item.label }}
-          </a>
-        </nav>
-      </div>
-
-      <span class="eyebrow">Legal</span>
-      <h1>Terms of Service</h1>
-      <p class="subtitle">
-        The usage framework for DevInsight AI across developer intelligence, recruiter workflows,
-        and organization-scoped access.
-      </p>
-      <p class="updated">Last updated: May 24, 2026</p>
-    </header>
-
-    <section class="hero-grid">
-      <article class="intro-card">
-        <h2>Use the platform responsibly</h2>
-        <p>
-          These terms explain how DevInsight AI should be used, what responsibilities belong to the
-          user, and why AI-assisted insights still require human review in real recruiting and
-          career decisions.
-        </p>
-      </article>
-
-      <div class="highlight-grid">
-        <article
-          *ngFor="let item of highlights"
-          class="highlight-card"
-          [ngClass]="'highlight-card--' + item.accent"
-        >
+<app-public-subpage-shell
+  eyebrow="Legal Framework"
+  title="Terms of Service"
+  subtitle="Usage expectations and responsibilities across DevInsight AI developer intelligence, recruiter hubs, and organization workspaces."
+  metaLabel="Last updated · May 24, 2026"
+>
+  <div class="pub-stack">
+    <section class="pub-kpi-grid" aria-label="Terms highlights">
+      @for (item of highlights; track item.value) {
+        <article class="pub-kpi-card">
+          <span class="pub-tag">{{ item.tag }}</span>
           <strong>{{ item.value }}</strong>
           <span>{{ item.label }}</span>
         </article>
-      </div>
+      }
     </section>
 
-    <div class="content-grid">
-      <div class="section-stack">
-        <article class="content-card" *ngFor="let section of sections">
-          <h3>{{ section.title }}</h3>
-          <p>{{ section.body }}</p>
-          <ul>
-            <li *ngFor="let bullet of section.bullets">{{ bullet }}</li>
-          </ul>
+    <div class="pub-doc-layout">
+      <div class="pub-doc-content">
+        <article class="pub-card">
+          <span class="pub-tag">SUMMARY</span>
+          <h2>Use the platform responsibly</h2>
+          <p>
+            These terms outline authorized usage across DevInsight AI, account security obligations,
+            tenant confidentiality expectations, and why AI-assisted insights must remain paired
+            with human review in recruiting and career evaluation.
+          </p>
         </article>
+
+        @for (section of sections; track section.id) {
+          <article class="pub-card pub-doc-anchor" [id]="section.id">
+            <span class="pub-tag pub-tag--neutral">{{ section.num }} / TERMS</span>
+            <h3>{{ section.title }}</h3>
+            <p>{{ section.body }}</p>
+            <ul class="pub-bullets">
+              @for (bullet of section.bullets; track bullet) {
+                <li>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    aria-hidden="true"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>{{ bullet }}</span>
+                </li>
+              }
+            </ul>
+          </article>
+        }
       </div>
 
-      <aside class="side-panel">
-        <article class="side-card">
+      <aside class="pub-doc-sidebar" aria-label="Terms navigation and reminders">
+        <article class="pub-card pub-card--subtle">
+          <span class="pub-tag pub-tag--neutral">QUICK NAVIGATION</span>
+          <h3>Terms sections</h3>
+          <nav class="pub-toc-list" aria-label="Terms sections">
+            @for (section of sections; track section.id) {
+              <a class="pub-toc-link" href="/terms#{{ section.id }}">
+                <span>{{ section.title }}</span>
+                <span class="pub-toc-num">{{ section.num }}</span>
+              </a>
+            }
+          </nav>
+        </article>
+
+        <article class="pub-card">
           <h3>Important reminders</h3>
-          <ul>
-            <li>AI outputs should support human judgment, not replace it.</li>
-            <li>Organization and recruiter data must stay inside permitted workflows.</li>
-            <li>Misuse of platform data, automation, or access can lead to suspension.</li>
-            <li>Users are responsible for protecting connected accounts and credentials.</li>
+          <ul class="pub-bullets">
+            <li>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>AI diagnostics support decisions and never replace human review.</span>
+            </li>
+            <li>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>Organization and recruiter views stay restricted to permitted tenants.</span>
+            </li>
+            <li>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>Protected routes enforce strict token and role validation.</span>
+            </li>
           </ul>
         </article>
 
-        <article class="side-card side-card--cta">
+        <article class="pub-card pub-card--highlight">
+          <span class="pub-tag">QUESTIONS</span>
           <h3>Need policy clarification?</h3>
           <p>
-            Reach out if your team needs help understanding how these terms apply to admins,
-            recruiters, or developer-facing workflows.
+            Contact the team if your organization needs guidance around how these terms apply to
+            admin or recruiter workflows.
           </p>
-          <a routerLink="/contact" class="primary-action">Ask the Team</a>
+          <div class="pub-actions">
+            <a routerLink="/contact" class="pub-btn pub-btn--primary">Ask the Team</a>
+          </div>
         </article>
       </aside>
     </div>
   </div>
-</section>
+</app-public-subpage-shell>

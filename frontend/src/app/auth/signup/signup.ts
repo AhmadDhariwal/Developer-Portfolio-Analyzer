@@ -1,52 +1,129 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService, OtpType } from '../../shared/services/auth.service';
-import { UiButtonComponent } from '../../shared/components/ui-button/ui-button.component';
 import { UiCardComponent } from '../../shared/components/ui-card/ui-card.component';
 import { CountryCodeDropdownComponent } from '../../features/auth/components/country-code-dropdown/country-code-dropdown.component';
-import { LandingThemeId, LandingThemeService } from '../../shared/services/landing-theme.service';
+import {
+  AuthShellComponent,
+  AuthShowcaseItem,
+} from '../../features/auth/components/auth-shell/auth-shell.component';
 
 @Component({
   selector: 'app-signup',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, UiButtonComponent, UiCardComponent, CountryCodeDropdownComponent],
+  imports: [
+    CommonModule,
+    RouterLink,
+    FormsModule,
+    UiCardComponent,
+    CountryCodeDropdownComponent,
+    AuthShellComponent,
+  ],
   templateUrl: './signup.html',
   styleUrl: './signup.scss',
 })
 export class Signup {
-  name: string = '';
-  email: string = '';
-  githubUsername: string = '';
-  password: string = '';
-  confirmPassword: string = '';
+  name = '';
+  email = '';
+  githubUsername = '';
+  password = '';
+  confirmPassword = '';
   otpType: OtpType = 'email';
   countryCode = '+92';
   phoneNumber = '';
-  agreeToTerms: boolean = false;
-  isPublic: boolean = false;
-  isLoading: boolean = false;
-  error: string = '';
+  agreeToTerms = false;
+  isPublic = false;
+  isLoading = false;
+  error = '';
 
-  // Per-field errors for real-time feedback
+  showPassword = false;
+  showConfirmPassword = false;
+
+  // Per-field validation messages
   fieldErrors: Record<string, string> = {};
 
   // OAuth provider currently loading — null means no OAuth in progress
   oauthLoading: 'google' | 'github' | null = null;
 
-  get selectedTheme(): LandingThemeId {
-    return this.themeService.selectedTheme;
-  }
+  readonly showcaseItems: AuthShowcaseItem[] = [
+    {
+      icon: 'github',
+      title: 'GitHub Analysis',
+      description: 'Turn your repositories and code history into verified insights.',
+    },
+    {
+      icon: 'chart',
+      title: 'Portfolio Readiness',
+      description: 'Measure and improve your target-role career readiness.',
+    },
+    {
+      icon: 'award',
+      title: 'Interview Preparation',
+      description: 'Practice with curated and AI-generated technical questions.',
+    },
+  ];
 
   constructor(
     private readonly authService: AuthService,
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef,
-    private readonly themeService: LandingThemeService
   ) {}
 
-  // ── Real-time validators ──────────────────────────────────────────────────
+  @HostListener('window:pageshow')
+  onPageShow(): void {
+    if (this.oauthLoading) {
+      this.oauthLoading = null;
+      this.cdr.detectChanges();
+    }
+  }
+
+  get hasMinBackendLength(): boolean {
+    return this.password.length >= 6;
+  }
+
+  get hasRecommendedLength(): boolean {
+    return this.password.length >= 8;
+  }
+
+  get hasUppercase(): boolean {
+    return /[A-Z]/.test(this.password);
+  }
+
+  get hasLowercase(): boolean {
+    return /[a-z]/.test(this.password);
+  }
+
+  get hasNumber(): boolean {
+    return /[0-9]/.test(this.password);
+  }
+
+  get passwordScore(): number {
+    if (!this.password) return 0;
+    let score = 0;
+    if (this.hasMinBackendLength) score++;
+    if (this.hasRecommendedLength) score++;
+    if (this.hasUppercase && this.hasLowercase) score++;
+    if (this.hasNumber) score++;
+    return score;
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  toggleConfirmPasswordVisibility(): void {
+    this.showConfirmPassword = !this.showConfirmPassword;
+  }
+
+  selectOtpType(type: OtpType): void {
+    if (this.isLoading || this.oauthLoading) return;
+    this.otpType = type;
+    if (type === 'email') {
+      this.fieldErrors['phoneNumber'] = '';
+    }
+  }
 
   validateName(): void {
     this.fieldErrors['name'] = this.name.trim() ? '' : 'Full name is required.';
@@ -54,16 +131,18 @@ export class Signup {
 
   validateEmail(): void {
     if (!this.email.trim()) {
-      this.fieldErrors['email'] = 'Email is required.';
+      this.fieldErrors['email'] = 'Email address is required.';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email.trim())) {
-      this.fieldErrors['email'] = 'Enter a valid email address.';
+      this.fieldErrors['email'] = 'Please enter a valid email address.';
     } else {
       this.fieldErrors['email'] = '';
     }
   }
 
   validateGithubUsername(): void {
-    this.fieldErrors['githubUsername'] = this.githubUsername.trim() ? '' : 'GitHub username is required.';
+    this.fieldErrors['githubUsername'] = this.githubUsername.trim()
+      ? ''
+      : 'GitHub username is required.';
   }
 
   validatePassword(): void {
@@ -74,7 +153,6 @@ export class Signup {
     } else {
       this.fieldErrors['password'] = '';
     }
-    // Re-validate confirm password whenever password changes
     if (this.confirmPassword) {
       this.validateConfirmPassword();
     }
@@ -92,50 +170,63 @@ export class Signup {
 
   validatePhoneNumber(): void {
     if (this.otpType === 'phone') {
-      this.fieldErrors['phoneNumber'] = this.phoneNumber.trim() ? '' : 'Phone number is required.';
+      this.fieldErrors['phoneNumber'] = this.phoneNumber.trim()
+        ? ''
+        : 'Phone number is required for SMS OTP.';
     } else {
       this.fieldErrors['phoneNumber'] = '';
     }
   }
 
-  onOtpTypeChange(): void {
-    // Clear phone error when switching back to email
-    if (this.otpType === 'email') {
-      this.fieldErrors['phoneNumber'] = '';
-    }
+  validateTerms(): void {
+    this.fieldErrors['agreeToTerms'] = this.agreeToTerms
+      ? ''
+      : 'Please accept the Terms of Service and Privacy Policy to continue.';
   }
 
-  // ── Form submission ───────────────────────────────────────────────────────
+  private runAllValidations(): boolean {
+    this.validateName();
+    this.validateEmail();
+    this.validateGithubUsername();
+    this.validatePhoneNumber();
+    this.validatePassword();
+    this.validateConfirmPassword();
+    this.validateTerms();
 
-  private getValidationError(): string | null {
-    if (!this.name.trim()) return 'Full name is required.';
-    if (!this.email.trim()) return 'Email is required.';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email.trim())) return 'Enter a valid email address.';
-    if (!this.githubUsername.trim()) return 'GitHub username is required.';
-    if (!this.password) return 'Password is required.';
-    if (this.password.length < 6) return 'Password must be at least 6 characters.';
-    if (this.password !== this.confirmPassword) return 'Passwords do not match.';
-    if (this.otpType === 'phone' && !this.phoneNumber.trim()) return 'Phone number is required for phone OTP.';
-    if (!this.agreeToTerms) return 'Please agree to the Terms of Service and Privacy Policy.';
-    return null;
+    return !(
+      this.fieldErrors['name'] ||
+      this.fieldErrors['email'] ||
+      this.fieldErrors['githubUsername'] ||
+      this.fieldErrors['phoneNumber'] ||
+      this.fieldErrors['password'] ||
+      this.fieldErrors['confirmPassword'] ||
+      this.fieldErrors['agreeToTerms']
+    );
   }
 
-  onSubmit() {
-    const validationError = this.getValidationError();
-    if (validationError) {
-      this.error = validationError;
+  onSubmit(): void {
+    if (this.isLoading || this.oauthLoading) return;
+
+    if (!this.runAllValidations()) {
+      this.error = 'Please review the highlighted fields before continuing.';
       this.cdr.detectChanges();
       return;
     }
-
-    if (this.isLoading || this.oauthLoading) return;
 
     this.isLoading = true;
     this.error = '';
     this.cdr.detectChanges();
 
-    // Only send phone fields when the user actually chose phone OTP
-    const payload: any = {
+    // Only send phone fields when the user selected phone OTP
+    const payload: {
+      name: string;
+      email: string;
+      password: string;
+      githubUsername: string;
+      isPublic: boolean;
+      phoneNumber?: string;
+      countryCode?: string;
+    } = {
       name: this.name.trim(),
       email: this.email.trim(),
       password: this.password,
@@ -150,7 +241,6 @@ export class Signup {
 
     this.authService.register(payload).subscribe({
       next: (res) => {
-        // Backend now returns pendingId (no user created yet — awaiting OTP)
         const pendingId = String(res?.pendingId || '');
         const type = this.otpType;
         this.isLoading = false;
@@ -162,16 +252,15 @@ export class Signup {
             email: this.email.trim(),
             phoneNumber: this.otpType === 'phone' ? this.phoneNumber.trim() : '',
             countryCode: this.otpType === 'phone' ? this.countryCode : '',
-            expiresAt: res.expiresAt
-          }
+            expiresAt: res.expiresAt,
+          },
         });
       },
       error: (err) => {
         this.isLoading = false;
-        // Show backend message only — never expose raw stack traces
         this.error = err?.error?.message || 'Signup failed. Please try again.';
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 

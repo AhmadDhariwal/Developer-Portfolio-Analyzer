@@ -1,39 +1,40 @@
-import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { PublicSubpageShellComponent } from '../../shared/components/public-subpage-shell/public-subpage-shell.component';
 
 @Component({
   selector: 'app-contact-page',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, PublicSubpageShellComponent],
   templateUrl: './contact-page.component.html',
   styleUrl: './contact-page.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ContactPageComponent {
-  readonly pageLinks = [
-    { label: 'Privacy', route: '/privacy' },
-    { label: 'Terms', route: '/terms' },
-    { label: 'API Docs', route: '/api-docs' },
-    { label: 'Blog', route: '/blog' },
-    { label: 'Contact', route: '/contact' },
-  ];
-
   readonly primaryContact = 'devinsight.ai.help@gmail.com';
   readonly backupPhone = '+92 300 123 4567';
+  readonly copiedChannel = signal<'email' | 'phone' | null>(null);
+
   readonly supportChannels = [
     {
+      tag: 'ONBOARDING',
       title: 'Product support',
-      detail: 'Account access, onboarding, recruiter hub questions, and workflow help.',
+      detail:
+        'Account access, workspace onboarding, recruiter hub workflows, and portfolio troubleshooting.',
     },
     {
-      title: 'Admin setup',
-      detail: 'Organization setup, recruiter visibility, and RBAC-related guidance.',
+      tag: 'RBAC',
+      title: 'Admin & organization setup',
+      detail:
+        'Organization provisioning, recruiter permissions, invitation links, and tenant isolation guidance.',
     },
     {
-      title: 'API and integration',
-      detail: 'Questions around internal integration, endpoint usage, and product capabilities.',
+      tag: 'PLATFORM',
+      title: 'API & integration inquiries',
+      detail:
+        'Payload conventions, GitHub/Google OAuth sign-in support, and technical clarification.',
     },
-  ];
+  ] as const;
 
   openPrimaryContact(): void {
     this.openContact(this.primaryContact);
@@ -41,6 +42,21 @@ export class ContactPageComponent {
 
   openBackupPhone(): void {
     this.openContact(this.backupPhone);
+  }
+
+  copyValue(type: 'email' | 'phone'): void {
+    const value = type === 'email' ? this.primaryContact : this.backupPhone;
+    if (typeof navigator === 'undefined' || !navigator.clipboard) {
+      return;
+    }
+    navigator.clipboard.writeText(value).then(
+      () => {
+        this.copiedChannel.set(type);
+      },
+      () => {
+        this.copiedChannel.set(null);
+      },
+    );
   }
 
   private openContact(value: string): void {

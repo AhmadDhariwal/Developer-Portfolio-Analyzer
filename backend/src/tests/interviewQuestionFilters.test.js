@@ -85,6 +85,9 @@ test('Easy generation never returns Hard from Mongo reuse, verified fallback or 
   assert.equal(writes.mock.callCount(), 0);
   const easyResult = await service.getQuestionBank({ skill: 'javascript', difficulty: 'easy' });
   const hardResult = await service.getQuestionBank({ skill: 'javascript', difficulty: 'hard' });
+  const mediumResult = await service.getQuestionBank({ skill: 'javascript', difficulty: 'medium' });
+  assert.ok(mediumResult.questions.length > 0);
+  assert.ok(mediumResult.questions.every((item) => item.difficulty === 'medium'));
   assert.ok(easyResult.questions.every((item) => item.difficulty === 'easy'));
   assert.ok(hardResult.questions.every((item) => item.difficulty === 'hard'));
   const empty = await service.getQuestionBank({ skill: 'javascript', difficulty: 'easy', source: 'ai' });
@@ -190,4 +193,32 @@ test('saved Sessions fingerprint the filters and retain owner-scoped immutable s
   });
   assert.notEqual(requests[1][2], first);
   assert.equal(requests[1][0], 'owner');
+});
+
+test('Easy generation rejects Medium, Hard and Senior AI responses when no matching bank rows exist', async (t) => {
+  const topic = listImportantTopics().find((item) => item.key === 'javascript');
+  const example = buildSeedRecordsForTopic(topic)[0];
+  t.mock.method(repository, 'findAllQuestionsPage', async () => ({ questions: [], total: 0 }));
+  t.mock.method(repository, 'findTopQuestions', async () => []);
+  t.mock.method(repository, 'getSourceMixByTopic', async () => ({}));
+  t.mock.method(repository, 'findAiGeneratedByTopic', async () => []);
+  t.mock.method(repository, 'fetchComparableQuestionsByTopic', async () => []);
+  let level = 'medium';
+  t.mock.method(provider, 'generateStructuredQuestionSet', async () => [
+    { ...example, sourceType: 'ai_generated', difficulty: level }
+  ]);
+  const writes = t.mock.method(repository, 'upsertQuestions', async () => ({}));
+  for (level of ['medium', 'hard', 'senior']) {
+    await redis.invalidateInterviewPrepCache('javascript');
+    await assert.rejects(
+      service.generateFreshInterviewQuestions({
+        skill: 'javascript',
+        difficulty: 'easy',
+        source: 'ai',
+        limit: 1
+      }),
+      { statusCode: 503 }
+    );
+  }
+  assert.equal(writes.mock.callCount(), 0);
 });

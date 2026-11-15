@@ -1,77 +1,128 @@
-<section class="blog-page">
-  <div class="blog-shell">
-    <header class="page-hero">
-      <div class="page-topbar">
-        <a routerLink="/" class="back-home">Back to Home</a>
-
-        <nav class="page-nav" aria-label="Public pages">
-          <a
-            *ngFor="let item of pageLinks"
-            [routerLink]="item.route"
-            routerLinkActive="page-nav__link--active"
-            class="page-nav__link"
-          >
-            {{ item.label }}
-          </a>
-        </nav>
-      </div>
-
-      <span class="eyebrow">Insights</span>
-      <h1>DevInsight Blog</h1>
-      <p class="subtitle">
-        Editorial content around recruiter systems, developer growth, AI-assisted evaluation, and
-        building safer analytics products for modern teams.
-      </p>
-      <p class="updated">Editorial overview updated: May 24, 2026</p>
-    </header>
-
-    <section class="intro-grid">
-      <article class="intro-card">
+<app-public-subpage-shell
+  eyebrow="Engineering Blog"
+  title="DevInsight Engineering & Product Notes"
+  subtitle="Practical writing on developer portfolio diagnostics, hiring intelligence, AI-assisted evaluation, and secure multi-tenant engineering."
+  metaLabel="Editorial overview updated · May 24, 2026"
+>
+  <div class="pub-stack">
+    <section class="pub-grid-2" aria-label="Editorial focus">
+      <article class="pub-card">
+        <span class="pub-tag">EDITORIAL SCOPE</span>
         <h2>What we publish</h2>
         <p>
-          The DevInsight Blog focuses on practical, product-aware topics: how recruiters review
-          technical candidates, how developers present meaningful portfolio signals, and how AI can
-          be used responsibly inside hiring and growth workflows.
+          The DevInsight Engineering Blog focuses on practical product workflows: how hiring teams
+          evaluate portfolio evidence responsibly, how developers quantify stack gaps, and how
+          tenant-safe analytics are engineered in production.
         </p>
       </article>
 
-      <article class="intro-card intro-card--accent">
-        <h2>Editorial tracks</h2>
-        <ul>
-          <li *ngFor="let note of editorialNotes">{{ note }}</li>
+      <article class="pub-card pub-card--subtle">
+        <span class="pub-tag pub-tag--neutral">CORE TRACKS</span>
+        <h2>Engineering themes</h2>
+        <ul class="pub-bullets">
+          @for (note of editorialNotes; track note) {
+            <li>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>{{ note }}</span>
+            </li>
+          }
         </ul>
       </article>
     </section>
 
-    <section class="posts-grid">
-      <article class="post-card" *ngFor="let post of featuredPosts">
-        <span class="post-category">{{ post.category }}</span>
-        <h3>{{ post.title }}</h3>
-        <p>{{ post.excerpt }}</p>
-        <div class="post-footer">
-          <span>{{ post.readTime }}</span>
-          <a routerLink="/contact">Request more</a>
+    <section class="pub-stack blog-feed-wrap" aria-label="Featured articles">
+      <div class="blog-toolbar">
+        <div class="pub-filter-bar" role="group" aria-label="Filter articles by category">
+          @for (category of categories; track category) {
+            <button
+              type="button"
+              class="pub-filter-pill"
+              [class.is-active]="selectedCategory() === category"
+              [attr.aria-pressed]="selectedCategory() === category"
+              (click)="selectCategory(category)"
+            >
+              {{ category }}
+            </button>
+          }
+        </div>
+        <span class="blog-count">{{ filteredPosts().length }} articles</span>
+      </div>
+
+      <div class="pub-grid-3">
+        @for (post of filteredPosts(); track post.id) {
+          <article class="pub-card is-interactive blog-card">
+            <div class="pub-card-head">
+              <span class="pub-tag">{{ post.category }}</span>
+              <span class="read-time">{{ post.readTime }}</span>
+            </div>
+
+            <h3>{{ post.title }}</h3>
+            <p>{{ post.excerpt }}</p>
+
+            @if (expandedPostId() === post.id) {
+              <ul class="pub-bullets blog-takeaways">
+                @for (point of post.takeaways; track point) {
+                  <li>
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      aria-hidden="true"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>{{ point }}</span>
+                  </li>
+                }
+              </ul>
+            }
+
+            <div class="blog-card-footer">
+              <button
+                type="button"
+                class="pub-btn pub-btn--secondary blog-expand-btn"
+                [attr.aria-expanded]="expandedPostId() === post.id"
+                (click)="togglePostTakeaways(post.id)"
+              >
+                {{ expandedPostId() === post.id ? 'Hide takeaways' : 'Read takeaways' }}
+              </button>
+            </div>
+          </article>
+        }
+      </div>
+    </section>
+
+    <section class="pub-grid-2" aria-label="Audience and contact">
+      <article class="pub-card">
+        <span class="pub-tag pub-tag--neutral">AUDIENCE</span>
+        <h3>Built for developers &amp; engineering teams</h3>
+        <p>
+          Designed for engineers leveling up portfolio readiness as well as recruiters and admins
+          operating structured, auditable hiring workflows.
+        </p>
+      </article>
+
+      <article class="pub-card pub-card--dark">
+        <span class="pub-tag">DISCUSS A TOPIC</span>
+        <h3>Want tailored engineering guidance?</h3>
+        <p>
+          Reach out if your team wants deeper product walkthroughs or architecture context around a
+          specific DevInsight AI workflow.
+        </p>
+        <div class="pub-actions blog-cta-spacer">
+          <a routerLink="/contact" class="pub-btn pub-btn--primary">Contact the Team</a>
+          <a routerLink="/auth/signup" class="pub-btn pub-btn--surface-dark">Create Account</a>
         </div>
       </article>
     </section>
-
-    <section class="bottom-grid">
-      <article class="bottom-card">
-        <h3>Who this is for</h3>
-        <p>
-          Recruiters, admins, developers, and product teams that need clearer thinking around
-          growth signals, matching logic, analytics UX, and organization-safe hiring tooling.
-        </p>
-      </article>
-
-      <article class="bottom-card bottom-card--cta">
-        <h3>Want tailored advice?</h3>
-        <p>
-          If you want content or guidance around a specific workflow, reach out and we can point
-          you to the right product or implementation context.
-        </p>
-        <a routerLink="/contact" class="primary-action">Contact the Team</a>
-      </article>
-    </section>
   </div>
-</section>
+</app-public-subpage-shell>

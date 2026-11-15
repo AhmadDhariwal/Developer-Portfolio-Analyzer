@@ -1,82 +1,140 @@
-<section class="contact-page">
-  <div class="contact-shell">
-    <header class="page-hero">
-      <div class="page-topbar">
-        <a routerLink="/" class="back-home">Back to Home</a>
-
-        <nav class="page-nav" aria-label="Public pages">
-          <a
-            *ngFor="let item of pageLinks"
-            [routerLink]="item.route"
-            routerLinkActive="page-nav__link--active"
-            class="page-nav__link"
-          >
-            {{ item.label }}
-          </a>
-        </nav>
-      </div>
-
-      <span class="eyebrow">Support</span>
-      <h1>Contact DevInsight AI</h1>
-      <p class="subtitle">
-        Reach the team for onboarding, recruiter workflows, admin setup, product questions, or API
-        clarification.
-      </p>
-      <p class="updated">Available for support and onboarding guidance</p>
-    </header>
-
-    <section class="hero-grid">
-      <article class="hero-card">
-        <h2>Direct support channels</h2>
+<app-public-subpage-shell
+  eyebrow="Support"
+  title="Contact DevInsight AI"
+  subtitle="Reach our team for workspace onboarding, account access recovery, organization RBAC setup, or technical clarification."
+  metaLabel="Available for developer & organization support"
+>
+  <div class="pub-stack">
+    <section class="pub-split-feature" aria-label="Direct contact channels">
+      <article class="pub-card">
+        <span class="pub-tag">DIRECT SUPPORT</span>
+        <h2>Connect with the workspace team</h2>
         <p>
-          The primary contact is configured as a Gmail address, so clicking the main action opens
-          Gmail compose directly. If the contact value is switched to a phone number later, the same
-          logic automatically falls back to the dial pad.
+          Reach out via email for detailed technical diagnostics, organization onboarding, or
+          account access assistance. For urgent coordination, our backup support phone line is
+          available directly.
         </p>
 
-        <div class="action-row">
-          <button type="button" class="primary-action" (click)="openPrimaryContact()">
-            Open Gmail
+        <div class="pub-actions contact-actions-spacer">
+          <button type="button" class="pub-btn pub-btn--primary" (click)="openPrimaryContact()">
+            Send Email
           </button>
-          <button type="button" class="secondary-action" (click)="openBackupPhone()">
+          <button type="button" class="pub-btn pub-btn--secondary" (click)="openBackupPhone()">
             Call Support
           </button>
         </div>
       </article>
 
-      <article class="contact-card">
-        <span class="contact-label">Primary Email</span>
-        <strong>{{ primaryContact }}</strong>
-        <span class="contact-label">Backup Phone</span>
-        <strong>{{ backupPhone }}</strong>
+      <article class="pub-card pub-card--dark" aria-label="Contact details">
+        <span class="pub-tag">CHANNELS</span>
+
+        <div class="contact-entry">
+          <div class="contact-entry-meta">
+            <span class="contact-entry-label">Primary Email</span>
+            <strong class="contact-entry-value">{{ primaryContact }}</strong>
+          </div>
+          <button
+            type="button"
+            class="pub-btn pub-btn--surface-dark contact-copy-btn"
+            (click)="copyValue('email')"
+            [attr.aria-label]="copiedChannel() === 'email' ? 'Email copied' : 'Copy email address'"
+          >
+            {{ copiedChannel() === 'email' ? 'Copied' : 'Copy' }}
+          </button>
+        </div>
+
+        <div class="contact-entry">
+          <div class="contact-entry-meta">
+            <span class="contact-entry-label">Support Phone</span>
+            <strong class="contact-entry-value">{{ backupPhone }}</strong>
+          </div>
+          <button
+            type="button"
+            class="pub-btn pub-btn--surface-dark contact-copy-btn"
+            (click)="copyValue('phone')"
+            [attr.aria-label]="copiedChannel() === 'phone' ? 'Phone copied' : 'Copy phone number'"
+          >
+            {{ copiedChannel() === 'phone' ? 'Copied' : 'Copy' }}
+          </button>
+        </div>
       </article>
     </section>
 
-    <section class="channels-grid">
-      <article class="channel-card" *ngFor="let item of supportChannels">
-        <h3>{{ item.title }}</h3>
-        <p>{{ item.detail }}</p>
-      </article>
+    <section class="pub-grid-3" aria-label="Support categories">
+      @for (item of supportChannels; track item.title) {
+        <article class="pub-card is-interactive">
+          <span class="pub-tag">{{ item.tag }}</span>
+          <h3>{{ item.title }}</h3>
+          <p>{{ item.detail }}</p>
+        </article>
+      }
     </section>
 
-    <section class="bottom-grid">
-      <article class="bottom-card">
-        <h3>Suggested use cases</h3>
-        <ul>
-          <li>Recruiter dashboard, jobs, matching, and shortlist help</li>
-          <li>Admin-side recruiter visibility and organization setup</li>
-          <li>Questions about APIs, workflows, or product behavior</li>
-          <li>Onboarding support for new teams using DevInsight AI</li>
+    <section class="pub-grid-2" aria-label="Support guidance">
+      <article class="pub-card">
+        <span class="pub-tag pub-tag--neutral">COMMON TOPICS</span>
+        <h3>Suggested support requests</h3>
+        <ul class="pub-bullets">
+          <li>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            <span>Recruiter dashboard, candidate matching, and job shortlist workflows</span>
+          </li>
+          <li>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            <span>Admin-side recruiter permissions and organization setup</span>
+          </li>
+          <li>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            <span>Questions about internal payload expectations or OAuth account linking</span>
+          </li>
+          <li>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            <span>Workspace onboarding support for new developer and hiring teams</span>
+          </li>
         </ul>
       </article>
 
-      <article class="bottom-card bottom-card--note">
-        <h3>Response expectations</h3>
+      <article class="pub-card pub-card--subtle">
+        <span class="pub-tag pub-tag--neutral">EXPECTATIONS</span>
+        <h3>How to get the fastest resolution</h3>
         <p>
-          Email is best for detailed questions, account access issues, and product clarification.
-          Phone is a fallback route when a faster support touchpoint is needed.
+          Email is best for detailed account diagnostics, role-permission questions, or privacy
+          inquiries. Include your workspace role and a brief description of what you expected vs
+          observed so the team can route your request accurately.
         </p>
       </article>
     </section>
   </div>
-</section>
+</app-public-subpage-shell>

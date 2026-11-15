@@ -230,6 +230,59 @@ describe('Interview Prep workspace', () => {
       }),
     );
   });
+  it('clears a Medium library drill immediately when Easy is selected', () => {
+    api.generateQuestions.mockReturnValue(of(result()));
+    component.generatePractice();
+    expect(component.practiceSetDescription).toContain('Existing library');
+    component.changePracticeDifficulty('easy');
+    expect(component.currentPractice).toBeNull();
+    expect(component.practiceNotice).toContain('Previous drill cleared');
+    expect(api.generateQuestions).toHaveBeenCalledTimes(1);
+  });
+  it('displays only validated Easy results and rejects Medium responses without relabeling them', () => {
+    component.changePracticeDifficulty('easy');
+    const easy = { ...question(1), difficulty: 'easy' };
+    api.generateQuestions.mockReturnValue(
+      of({ ...result(), questions: [easy], aiGeneratedCount: 1 }),
+    );
+    component.generatePractice();
+    expect(component.currentPractice?.difficulty).toBe('easy');
+    expect(component.practiceSetDescription).toContain('New AI-generated');
+    const medium = question(2);
+    api.generateQuestions.mockReturnValue(of({ ...result(), questions: [medium] }));
+    component.generatePractice();
+    expect(component.currentPractice).toBeNull();
+    expect(component.practiceError).toContain('not displayed');
+    expect(medium.difficulty).toBe('medium');
+  });
+  it('keeps saved Medium sessions distinct and rejects a mismatching nested generated snapshot', () => {
+    const saved = { _id: 'medium-session', questions: [question(1)], topicKey: 'react' };
+    api.getSession.mockReturnValue(of({ ...saved, questions: [question(2)] }));
+    component.changePracticeDifficulty('easy');
+    component.resumeSession(saved);
+    expect(component.practiceSetDescription).toContain('Saved practice session');
+    expect(component.practiceSetDescription).toContain('medium');
+    expect(component.currentPractice?.question).toBe('Question 2');
+    api.startSession.mockReturnValue(
+      of({ ...result(), questions: [{ ...question(3), difficulty: 'easy' }], session: saved }),
+    );
+    component.generatePractice(true);
+    expect(component.currentPractice).toBeNull();
+    expect(component.practiceError).toContain('not displayed');
+  });
+  it('shows explicit insufficiency and never restores Medium after a failed Easy request', () => {
+    component.practiceQuestions = [question(1)];
+    component.changePracticeDifficulty('easy');
+    api.generateQuestions.mockReturnValue(of({ ...result(), questions: [] }));
+    component.generatePractice();
+    expect(component.practiceError).toContain('Insufficient');
+    expect(component.currentPractice).toBeNull();
+    api.generateQuestions.mockReturnValue(
+      throwError(() => new Error('Insufficient Easy questions')),
+    );
+    component.generatePractice();
+    expect(component.currentPractice).toBeNull();
+  });
   it('starts saved sessions through the canonical backend endpoint', () => {
     api.startSession.mockReturnValue(
       of({

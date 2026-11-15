@@ -1,84 +1,126 @@
-<section class="info-page">
-  <div class="info-shell">
-    <header class="page-hero">
-      <div class="page-topbar">
-        <a routerLink="/" class="back-home">Back to Home</a>
-
-        <nav class="page-nav" aria-label="Public pages">
-          <a
-            *ngFor="let item of pageLinks"
-            [routerLink]="item.route"
-            routerLinkActive="page-nav__link--active"
-            class="page-nav__link"
-          >
-            {{ item.label }}
-          </a>
-        </nav>
-      </div>
-
-      <span class="eyebrow">Trust Center</span>
-      <h1>Privacy Policy</h1>
-      <p class="subtitle">
-        How DevInsight AI handles recruiter, developer, and organization data while preserving
-        secure, role-aware access across the platform.
-      </p>
-      <p class="updated">Last updated: May 24, 2026</p>
-    </header>
-
-    <section class="hero-grid">
-      <article class="intro-card">
-        <h2>Privacy built around real product workflows</h2>
-        <p>
-          DevInsight AI processes portfolio intelligence, recruiter operations, and organization
-          membership data only to support platform features such as analysis, matching, reporting,
-          and secure collaboration. Data visibility remains scoped through role and organization
-          boundaries.
-        </p>
-      </article>
-
-      <div class="highlight-grid">
-        <article
-          *ngFor="let item of highlights"
-          class="highlight-card"
-          [ngClass]="'highlight-card--' + item.accent"
-        >
+<app-public-subpage-shell
+  eyebrow="Trust Center"
+  title="Privacy Policy"
+  subtitle="How DevInsight AI handles developer, recruiter, and organization data while preserving strict role-aware access boundaries."
+  metaLabel="Last updated · May 24, 2026"
+>
+  <div class="pub-stack">
+    <section class="pub-kpi-grid" aria-label="Privacy principles">
+      @for (item of highlights; track item.value) {
+        <article class="pub-kpi-card">
+          <span class="pub-tag">{{ item.tag }}</span>
           <strong>{{ item.value }}</strong>
           <span>{{ item.label }}</span>
         </article>
-      </div>
+      }
     </section>
 
-    <div class="content-grid">
-      <div class="section-stack">
-        <article class="content-card" *ngFor="let section of sections">
-          <h3>{{ section.title }}</h3>
-          <p>{{ section.body }}</p>
-          <ul>
-            <li *ngFor="let bullet of section.bullets">{{ bullet }}</li>
-          </ul>
+    <div class="pub-doc-layout">
+      <div class="pub-doc-content">
+        <article class="pub-card">
+          <span class="pub-tag">OVERVIEW</span>
+          <h2>Privacy built around scoped product workflows</h2>
+          <p>
+            DevInsight AI processes portfolio intelligence, recruiter collaboration, and
+            organization membership records solely to deliver readiness analysis, hiring matching,
+            and secure workspace operations. Visibility remains bounded by verified account roles
+            and tenant isolation.
+          </p>
         </article>
+
+        @for (section of sections; track section.id) {
+          <article class="pub-card pub-doc-anchor" [id]="section.id">
+            <span class="pub-tag pub-tag--neutral">{{ section.num }} / POLICY</span>
+            <h3>{{ section.title }}</h3>
+            <p>{{ section.body }}</p>
+            <ul class="pub-bullets">
+              @for (bullet of section.bullets; track bullet) {
+                <li>
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    aria-hidden="true"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>{{ bullet }}</span>
+                </li>
+              }
+            </ul>
+          </article>
+        }
       </div>
 
-      <aside class="side-panel">
-        <article class="side-card">
+      <aside class="pub-doc-sidebar" aria-label="Privacy navigation and summary">
+        <article class="pub-card pub-card--subtle">
+          <span class="pub-tag pub-tag--neutral">QUICK NAVIGATION</span>
+          <h3>Policy sections</h3>
+          <nav class="pub-toc-list" aria-label="Privacy sections">
+            @for (section of sections; track section.id) {
+              <a class="pub-toc-link" href="/privacy#{{ section.id }}">
+                <span>{{ section.title }}</span>
+                <span class="pub-toc-num">{{ section.num }}</span>
+              </a>
+            }
+          </nav>
+        </article>
+
+        <article class="pub-card">
           <h3>What this means in practice</h3>
-          <ul>
-            <li>Admins see only organization-scoped recruiter and member information.</li>
-            <li>Recruiters access candidate and workflow data through permitted hub actions.</li>
-            <li>Public portfolio data stays separate from private organization workflows.</li>
-            <li>OAuth secrets and service credentials remain on the server.</li>
+          <ul class="pub-bullets">
+            <li>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>Admins see only organization-scoped recruiter and member records.</span>
+            </li>
+            <li>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>Public portfolio URLs remain separate from private tenant workflows.</span>
+            </li>
+            <li>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>OAuth secrets and integration tokens remain stored on the server.</span>
+            </li>
           </ul>
         </article>
 
-        <article class="side-card side-card--cta">
-          <h3>Need more detail?</h3>
+        <article class="pub-card pub-card--highlight">
+          <span class="pub-tag">INQUIRIES</span>
+          <h3>Questions about data handling?</h3>
           <p>
-            If your organization needs clarity around data use, access controls, or deletion
-            requests, use the contact page to reach the team.
+            Reach our support team if your organization needs details on access controls or data
+            removal requests.
           </p>
-          <a routerLink="/contact" class="primary-action">Contact Support</a>
+          <div class="pub-actions">
+            <a routerLink="/contact" class="pub-btn pub-btn--primary">Contact Support</a>
+          </div>
         </article>
       </aside>
     </div>
   </div>
-</section>
+</app-public-subpage-shell>

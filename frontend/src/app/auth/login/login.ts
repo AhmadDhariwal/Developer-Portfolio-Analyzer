@@ -1,57 +1,73 @@
-import { Component, ChangeDetectorRef, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../shared/services/auth.service';
-import { UiButtonComponent } from '../../shared/components/ui-button/ui-button.component';
 import { UiCardComponent } from '../../shared/components/ui-card/ui-card.component';
-import { LandingThemeId, LandingThemeService } from '../../shared/services/landing-theme.service';
+import {
+  AuthShellComponent,
+  AuthShowcaseItem,
+} from '../../features/auth/components/auth-shell/auth-shell.component';
 
 @Component({
-    selector: 'app-login',
-    standalone: true,
-    imports: [CommonModule, RouterLink, FormsModule, UiButtonComponent, UiCardComponent],
-    templateUrl: './login.html',
-    styleUrl: './login.scss',
+  selector: 'app-login',
+  standalone: true,
+  imports: [CommonModule, RouterLink, FormsModule, UiCardComponent, AuthShellComponent],
+  templateUrl: './login.html',
+  styleUrl: './login.scss',
 })
 export class Login implements OnInit {
-  email: string = '';
-  password: string = '';
-  isLoading: boolean = false;
-  error: string = '';
+  email = '';
+  password = '';
+  showPassword = false;
+  isLoading = false;
+  error = '';
+  infoMessage = '';
 
-  // Per-field real-time errors
+  // Per-field validation feedback
   fieldErrors: Record<string, string> = {};
 
   // OAuth provider currently loading — null means no OAuth in progress
   oauthLoading: 'google' | 'github' | null = null;
 
-  get selectedTheme(): LandingThemeId {
-    return this.themeService.selectedTheme;
-  }
+  readonly showcaseItems: AuthShowcaseItem[] = [
+    {
+      icon: 'chart',
+      title: 'Portfolio Analysis',
+      description: 'Turn your code and projects into career insights.',
+    },
+    {
+      icon: 'calendar',
+      title: 'Career Sprint',
+      description: 'Plan, track and build the right engineering skills.',
+    },
+    {
+      icon: 'layers',
+      title: 'Interview Prep',
+      description: 'Practice with curated and AI-powered questions.',
+    },
+  ];
 
   constructor(
     private readonly authService: AuthService,
     private readonly router: Router,
     private readonly route: ActivatedRoute,
     private readonly cdr: ChangeDetectorRef,
-    private readonly themeService: LandingThemeService
   ) {}
 
   ngOnInit(): void {
-    // --- OAuth hash-based callback (existing behavior, unchanged) ---
+    // --- OAuth hash-based callback (existing backend redirect contract) ---
     const oauthPayload = window.location.hash.startsWith('#oauth=')
       ? window.location.hash.slice('#oauth='.length)
       : '';
 
     if (oauthPayload) {
       // Remove credentials from the address bar before decoding or storing them.
-      // SECURITY: token is never sent to server via fragment; stripped immediately.
       window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
       try {
         const normalized = oauthPayload.replace(/-/g, '+').replace(/_/g, '/');
         const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
-        const bytes = Uint8Array.from(atob(padded), character => character.charCodeAt(0));
+        const bytes = Uint8Array.from(atob(padded), (character) => character.charCodeAt(0));
         const payload = JSON.parse(new TextDecoder().decode(bytes));
 
         if (!payload?.token || !payload?._id) throw new Error('Invalid OAuth payload');
@@ -63,16 +79,40 @@ export class Login implements OnInit {
       }
     }
 
-    if (this.route.snapshot.queryParamMap.has('oauthError')) {
+    const query = this.route.snapshot.queryParamMap;
+    if (query.get('error') === 'access_denied' || query.get('oauthError') === 'oauth_cancelled') {
+      this.error =
+        'Social sign-in was cancelled before completion. You can sign in below or try again.';
+    } else if (query.get('oauthError') === 'account_unavailable') {
+      this.error =
+        'Your linked social account is currently unavailable or deactivated. Contact support or sign in with email.';
+    } else if (query.has('oauthError')) {
       this.error = 'Social sign-in could not be completed. Please try again.';
     }
+
+    if (query.get('expired') === 'true' || query.get('sessionExpired') === 'true') {
+      this.infoMessage = 'Your session expired. Sign in again to return to your workspace.';
+    }
+  }
+
+  @HostListener('window:pageshow')
+  onPageShow(): void {
+    // Reset external redirect loading indicator if navigating back from provider page
+    if (this.oauthLoading) {
+      this.oauthLoading = null;
+      this.cdr.detectChanges();
+    }
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
   }
 
   validateEmail(): void {
     if (!this.email.trim()) {
-      this.fieldErrors['email'] = 'Email is required.';
+      this.fieldErrors['email'] = 'Email address is required.';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email.trim())) {
-      this.fieldErrors['email'] = 'Enter a valid email address.';
+      this.fieldErrors['email'] = 'Please enter a valid email address.';
     } else {
       this.fieldErrors['email'] = '';
     }
@@ -82,12 +122,13 @@ export class Login implements OnInit {
     this.fieldErrors['password'] = this.password ? '' : 'Password is required.';
   }
 
-  onSubmit() {
-    // Run all validators first
+  onSubmit(): void {
+    if (this.isLoading || this.oauthLoading) return;
+
     this.validateEmail();
     this.validatePassword();
 
-    if (!this.email.trim() || !this.password) {
+    if (this.fieldErrors['email'] || this.fieldErrors['password']) {
       this.error = '';
       this.cdr.detectChanges();
       return;
@@ -95,6 +136,7 @@ export class Login implements OnInit {
 
     this.isLoading = true;
     this.error = '';
+    this.infoMessage = '';
     this.cdr.detectChanges();
 
     this.authService.login({ email: this.email.trim(), password: this.password }).subscribe({
@@ -109,10 +151,9 @@ export class Login implements OnInit {
       },
       error: (err) => {
         this.isLoading = false;
-        // Show backend message only — never expose raw stack traces
         this.error = err?.error?.message || 'Invalid email or password.';
         this.cdr.detectChanges();
-      }
+      },
     });
   }
 
@@ -122,7 +163,6 @@ export class Login implements OnInit {
     this.oauthLoading = 'google';
     this.error = '';
     this.cdr.detectChanges();
-    // startExternalLogin does window.location.assign — page navigates away immediately
     this.authService.startExternalLogin('google');
   }
 
