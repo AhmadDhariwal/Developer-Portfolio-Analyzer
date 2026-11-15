@@ -499,4 +499,51 @@ describe('Interview Prep workspace', () => {
       );
     },
   );
+  it('displays custom Q&A questions clearly in stacked session cards and hides empty metadata or redundant TOC', () => {
+    const customSession = {
+      _id: 'custom-1',
+      kind: 'custom' as const,
+      topicKey: 'system-design',
+      careerStack: '',
+      experienceLevel: '',
+      createdAt: '2026-11-15T10:00:00.000Z',
+      questions: [
+        {
+          ...question(101),
+          topicKey: 'system-design',
+          question: 'Can you tell me how system design of Instagram works?',
+        },
+      ],
+    };
+    const practiceSession = {
+      _id: 'practice-1',
+      kind: 'practice' as const,
+      topicKey: 'system-design',
+      careerStack: 'Full Stack',
+      experienceLevel: 'Mid-level',
+      createdAt: '2026-11-14T10:00:00.000Z',
+      questions: [question(1), question(2)],
+    };
+    api.getSessions.mockReturnValue(of([customSession, practiceSession]));
+
+    component.changeTab('sessions');
+    fixture.detectChanges();
+
+    const host: HTMLElement = fixture.nativeElement;
+    const rows = Array.from(host.querySelectorAll('.session-row'));
+    expect(rows).toHaveLength(2);
+    expect(rows[0].textContent).toContain('Can you tell me how system design of Instagram works?');
+    expect(host.querySelectorAll('.detail-header-actions button')).toHaveLength(2);
+    expect(host.querySelector('.session-toc')).toBeNull();
+    expect(host.querySelector('.detail-sub')?.textContent?.trim()).toBe('1 question in this set');
+
+    (rows[1] as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(component.selectedSession?._id).toBe('practice-1');
+    expect(host.querySelectorAll('.session-toc .toc-item')).toHaveLength(2);
+    expect(host.querySelector('.detail-sub')?.textContent).toContain(
+      'Full Stack · Mid-level · 2 questions in this set',
+    );
+  });
 });

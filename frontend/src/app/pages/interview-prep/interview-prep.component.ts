@@ -470,7 +470,9 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
     this.prep.deleteSession(session._id).subscribe({
       next: () => {
         this.sessions = this.sessions.filter((item) => item._id !== session._id);
-        if (this.selectedSession?._id === session._id) this.selectedSession = null;
+        if (this.selectedSession?._id === session._id) {
+          this.selectedSession = this.sessions[0] ?? null;
+        }
         if (this.activePracticeSession?._id === session._id) this.clearPracticeDrill();
         if (this.customResult?.sessionId === session._id) this.customResult = null;
         this.recentQuestions = this.recentQuestions.filter(
@@ -819,9 +821,10 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
           if (version === this.historyVersion) {
             this.sessions = sessions;
             this.historyLoaded = true;
-            if (!this.selectedSession && sessions.length) {
-              this.selectedSession = sessions[0];
-            }
+            const matching = this.selectedSession
+              ? sessions.find((item) => item._id === this.selectedSession?._id) || null
+              : null;
+            this.selectedSession = matching || sessions[0] || null;
             this.historyLoading = false;
             if (!this.destroyed) this.cdr.detectChanges();
           }
@@ -837,6 +840,14 @@ export class InterviewPrepComponent implements OnInit, OnDestroy {
   }
   openSession(session: InterviewSession): void {
     this.selectedSession = session;
+  }
+  sessionMetaLabel(session: InterviewSession): string {
+    const countLabel = `${session.questions.length} ${
+      session.questions.length === 1 ? 'question' : 'questions'
+    } in this set`;
+    return [session.careerStack, session.experienceLevel, countLabel]
+      .filter((part) => typeof part === 'string' && part.trim().length > 0)
+      .join(' · ');
   }
   scrollToQuestion(index: number): void {
     const el = document.getElementById(`session-q-${index}`);
