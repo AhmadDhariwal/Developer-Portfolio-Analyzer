@@ -17,6 +17,7 @@ const {
   sanitizeCategory,
   sanitizeDifficulty,
   sanitizeTags,
+  validateInterviewQuestionQuality,
   normalizeQualityScore: normalizeSharedQualityScore
 } = require('../interviewQuestionQualityService');
 
@@ -31,19 +32,14 @@ const generationTimeoutMs = () =>
     Math.min(30000, aiConfig.setting('AI_REQUEST_TIMEOUT_MS'))
   );
 
-// Architecture answers contain all fifteen design sections. Give the shared
-// manager time to fail over; ordinary short answers keep their existing bound.
-const customAnswerTimeoutMs = (topicKey, question) =>
-  isSystemDesignQuestion(question, normalizeTopicInput({ skill: topicKey }).topicKey)
-    ? Math.min(30000, aiConfig.setting('AI_REQUEST_TIMEOUT_MS'))
-    : INTERVIEW_AI_TIMEOUT_MS;
+const customAnswerTimeoutMs = () => aiConfig.customQAPolicy().timeoutMs;
 
 const analyze = async (prompt, validate, preferredModel = '', privacyKey = '', options = {}) => {
-  const budget = options.attemptBudget || { remaining: 3 };
+  const budget = options.attemptBudget || { remaining: options.policy?.maxAttempts || 3 };
   const before = budget.remaining;
   const timeoutMs = options.timeoutMs || INTERVIEW_AI_TIMEOUT_MS;
   const outcome = await coordination.runAI(
-    JSON.stringify({ schema: 3, preferredModel, prompt, privacyKey }),
+    JSON.stringify({ schema: 4, preferredModel, prompt, privacyKey, policy: options.policy }),
     async (signal) => {
       const result = await aiService.runAIAnalysis(prompt, null, 0, {
         timeoutMs,
@@ -51,6 +47,8 @@ const analyze = async (prompt, validate, preferredModel = '', privacyKey = '', o
         signal,
         preferredModel,
         requestPolicy: {
+          ...options.policy,
+          ...(options.deadlineAt ? { deadlineAt: options.deadlineAt } : {}),
           maxAttempts: before,
           attemptBudget: budget,
           maxOutputTokens: 8000,
@@ -61,14 +59,17 @@ const analyze = async (prompt, validate, preferredModel = '', privacyKey = '', o
       });
       if (!result.ok || !validate(result.value)) {
         const error = new Error('Interview provider result unavailable or invalid.');
-        error.reasonCode =
-          result.ok || result.reason === 'incomplete_output'
-            ? 'schema_rejected'
-            : result.reason === 'timeout'
-              ? 'provider_timeout'
-              : result.reason === 'invalid_json'
-                ? 'invalid_json'
-                : 'provider_error';
+        error.reasonCode = result.ok
+          ? 'schema_rejected'
+          : {
+              incomplete_output: 'schema_rejected',
+              invalid_json: 'invalid_json',
+              timeout: 'ai_provider_timeout',
+              transient: 'ai_provider_unavailable',
+              rate_limited: 'ai_provider_rate_limited',
+              billing: 'ai_provider_billing_error',
+              configuration: 'ai_provider_configuration_error'
+            }[result.reason] || 'ai_provider_unavailable';
         throw error;
       }
       return { ...result, attemptsUsed: Math.max(1, before - budget.remaining) };
@@ -459,8 +460,11 @@ const answerCustomQuestionFromAI = async ({
   question,
   verifiedContext = '',
   userId = '',
+  deadlineAt,
   signal
 }) => {
+  if (deadlineAt && deadlineAt - Date.now() <= 2000)
+    throw Object.assign(new Error('Custom Q&A deadline exceeded.'), { reasonCode: 'ai_provider_timeout' });
   const prompt = buildCustomAnswerPrompt({ topicKey, topicType, question, verifiedContext });
 
   const outcome = await analyze(
@@ -470,6 +474,13 @@ const answerCustomQuestionFromAI = async ({
         typeof value.reason === 'string' &&
         value.reason.length <= 500) ||
       (hasValidAnswerSchema(value) &&
+        validateInterviewQuestionQuality({
+          ...normalizeGeneratedResult({ result: { ...value, question } }),
+          topicKey,
+          sourceType: 'ai_generated',
+          minimumScore: 0.78,
+          questionMode: 'custom'
+        }).isValid &&
         [value.topicKey, value.technology]
           .filter(Boolean)
           .every(
@@ -482,8 +493,15 @@ const answerCustomQuestionFromAI = async ({
     '',
     userId ? coordination.hash(String(userId)) : 'anonymous',
     {
-      timeoutMs: customAnswerTimeoutMs(topicKey, question),
-      ...(isSystemDesignQuestion(question, topicKey) ? { providerTimeoutMs: 12000 } : {}),
+      timeoutMs: Math.max(
+        1,
+        Math.min(
+          customAnswerTimeoutMs(topicKey, question),
+          deadlineAt ? deadlineAt - Date.now() - 2000 : Infinity
+        )
+      ),
+      policy: aiConfig.customQAPolicy(),
+      deadlineAt: deadlineAt ? deadlineAt - 2000 : Date.now() + customAnswerTimeoutMs(),
       signal
     }
   );
@@ -533,6 +551,7 @@ const answerSearchFallback = async ({
   question,
   verifiedContext = '',
   userId = '',
+  deadlineAt,
   signal
 }) => {
   return answerCustomQuestionFromAI({
@@ -541,6 +560,7 @@ const answerSearchFallback = async ({
     question,
     verifiedContext,
     userId,
+    deadlineAt,
     signal
   });
 };

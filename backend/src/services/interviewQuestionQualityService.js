@@ -537,7 +537,8 @@ const validateInterviewQuestionQuality = ({
   sourceType = 'ai_generated',
   confidenceScore = 0,
   qualityScore = 0,
-  minimumScore = 0.75
+  minimumScore = 0.75,
+  questionMode = 'generated'
 } = {}) => {
   const normalizedQuestion = normalizeQuestionText(question);
   const normalizedAnswer = normalizeAnswerText(answer);
@@ -579,6 +580,7 @@ const validateInterviewQuestionQuality = ({
   }
 
   if (
+    questionMode !== 'custom' &&
     ['scraped', 'ai', 'ai_generated'].includes(String(sourceType || '').toLowerCase()) &&
     !isInterviewQuestionLike(normalizedQuestion)
   ) {

@@ -1,0 +1,175 @@
+{
+  "request": {
+    "skill": "rag",
+    "question": "tell me the full flow of the rag like how tha rag works and what is its purpose"
+  },
+  "synthetic": false,
+  "first": {
+    "status": 200,
+    "durationMs": 6978,
+    "response": {
+      "question": "tell me the full flow of the rag like how tha rag works and what is its purpose?",
+      "answer": "Short answer: RAG combines a retriever that fetches relevant documents with a generator that synthesizes answers, enabling up‑to‑date, knowledge‑grounded responses. Key points: - Retriever indexes and searches a vector store of text chunks using similarity to the query. - Generator (LLM) receives the retrieved chunks as context and produces a natural‑language answer. - Citation layer can map generated statements back to specific chunks for traceability. Explanation: In a Retrieval‑Augmented Generation (RAG) pipeline, a user query first triggers a dense retrieval step that selects the most relevant pre‑chunked documents from a vector database. Those chunks are concatenated (or formatted) and fed to a large language model, which generates an answer while optionally emitting references to the source chunks. This design lets the system leverage the LLM's language abilities while grounding outputs in factual, up‑datable external data. Example: {\\n \"query\": \"What are the benefits of using Docker?\",\\n \"retrieved_chunks\": [\\n \"Docker isolates applications in containers, providing lightweight virtualization.\",\\n \"Containers start faster than VMs and use fewer resources.\",\\n \"Docker enables consistent environments across development and production.\"\\n ],\\n \"generated_answer\": \"Docker offers lightweight isolation, rapid startup, and environment consistency, which together improve deployment speed and resource efficiency.\",\\n \"citations\": [0,1,2]\\n} Real-world use case: Customer‑support chatbots that pull the latest policy documents from a knowledge base to answer user queries with up‑to‑date, verifiable information. Common mistakes: - Using overly large chunks that exceed the LLM's context window, causing truncation of relevant content. - Skipping the citation step, which makes the output untraceable and harder to audit. Interview tip: Explain the trade‑off between chunk size (retrieval relevance) and context length (generation quality), and mention how hybrid retrieval (BM25 + vector) can improve recall.",
+      "answerSections": {
+        "shortAnswer": "RAG combines a retriever that fetches relevant documents with a generator that synthesizes answers, enabling up‑to‑date, knowledge‑grounded responses.",
+        "summary": "RAG combines a retriever that fetches relevant documents with a generator that synthesizes answers, enabling up‑to‑date, knowledge‑grounded responses.",
+        "explanation": "In a Retrieval‑Augmented Generation (RAG) pipeline, a user query first triggers a dense retrieval step that selects the most relevant pre‑chunked documents from a vector database. Those chunks are concatenated (or formatted) and fed to a large language model, which generates an answer while optionally emitting references to the source chunks. This design lets the system leverage the LLM's language abilities while grounding outputs in factual, up‑datable external data.",
+        "keyPoints": [
+          "Retriever indexes and searches a vector store of text chunks using similarity to the query.",
+          "Generator (LLM) receives the retrieved chunks as context and produces a natural‑language answer.",
+          "Citation layer can map generated statements back to specific chunks for traceability."
+        ],
+        "bulletPoints": [
+          "Retriever indexes and searches a vector store of text chunks using similarity to the query.",
+          "Generator (LLM) receives the retrieved chunks as context and produces a natural‑language answer.",
+          "Citation layer can map generated statements back to specific chunks for traceability."
+        ],
+        "example": "{\\n  \"query\": \"What are the benefits of using Docker?\",\\n  \"retrieved_chunks\": [\\n    \"Docker isolates applications in containers, providing lightweight virtualization.\",\\n    \"Containers start faster than VMs and use fewer resources.\",\\n    \"Docker enables consistent environments across development and production.\"\\n  ],\\n  \"generated_answer\": \"Docker offers lightweight isolation, rapid startup, and environment consistency, which together improve deployment speed and resource efficiency.\",\\n  \"citations\": [0,1,2]\\n}",
+        "codeExample": "{\\n  \"query\": \"What are the benefits of using Docker?\",\\n  \"retrieved_chunks\": [\\n    \"Docker isolates applications in containers, providing lightweight virtualization.\",\\n    \"Containers start faster than VMs and use fewer resources.\",\\n    \"Docker enables consistent environments across development and production.\"\\n  ],\\n  \"generated_answer\": \"Docker offers lightweight isolation, rapid startup, and environment consistency, which together improve deployment speed and resource efficiency.\",\\n  \"citations\": [0,1,2]\\n}",
+        "realWorldUseCase": "Customer‑support chatbots that pull the latest policy documents from a knowledge base to answer user queries with up‑to‑date, verifiable information.",
+        "realWorldContext": "Customer‑support chatbots that pull the latest policy documents from a knowledge base to answer user queries with up‑to‑date, verifiable information.",
+        "commonMistakes": [
+          "Using overly large chunks that exceed the LLM's context window, causing truncation of relevant content.",
+          "Skipping the citation step, which makes the output untraceable and harder to audit."
+        ],
+        "interviewTip": "Explain the trade‑off between chunk size (retrieval relevance) and context length (generation quality), and mention how hybrid retrieval (BM25 + vector) can improve recall."
+      },
+      "sourceMeta": {
+        "mode": "custom-question",
+        "verificationStatus": "unverified",
+        "generatedAt": "2026-11-15T21:24:04.068Z",
+        "provider": "groq",
+        "model": "openai/gpt-oss-120b"
+      },
+      "difficulty": "medium",
+      "tags": [
+        "rag",
+        "user_asked",
+        "technology"
+      ],
+      "topicKey": "rag",
+      "topicType": "technology",
+      "sourceType": "ai_generated",
+      "sourceLabel": "AI-generated answer · Unverified",
+      "generationStatus": "generated",
+      "generatedAt": "2026-11-15T21:24:04.068Z",
+      "confidenceScore": 0.83,
+      "relevanceScore": 0.81,
+      "category": "core-concepts",
+      "qualityScore": 80,
+      "answerFormat": "structured",
+      "isEnriched": true,
+      "_id": null,
+      "sessionId": "6afa22f42fa2b7efb149e897",
+      "stored": true,
+      "verificationStatus": "unverified",
+      "duplicate": false,
+      "fromCache": false,
+      "performance": {
+        "memoryCacheMs": 0.054,
+        "redisMs": 5.106,
+        "mongoExactMs": 40.2,
+        "similarityMs": 45.434,
+        "seedMs": 258.731,
+        "aiMs": 4634.654,
+        "validationMs": 3.847,
+        "persistenceMs": 122.772,
+        "totalMs": 5201.487,
+        "counts": {
+          "memory": 0,
+          "redis": 0,
+          "mongo": 1,
+          "similarity": 1,
+          "seed": 1,
+          "ai": 1,
+          "persistence": 1
+        }
+      }
+    }
+  },
+  "refresh": {
+    "status": 200,
+    "durationMs": 103,
+    "response": {
+      "question": "tell me the full flow of the rag like how tha rag works and what is its purpose?",
+      "answer": "Short answer: RAG combines a retriever that fetches relevant documents with a generator that synthesizes answers, enabling up‑to‑date, knowledge‑grounded responses. Key points: - Retriever indexes and searches a vector store of text chunks using similarity to the query. - Generator (LLM) receives the retrieved chunks as context and produces a natural‑language answer. - Citation layer can map generated statements back to specific chunks for traceability. Explanation: In a Retrieval‑Augmented Generation (RAG) pipeline, a user query first triggers a dense retrieval step that selects the most relevant pre‑chunked documents from a vector database. Those chunks are concatenated (or formatted) and fed to a large language model, which generates an answer while optionally emitting references to the source chunks. This design lets the system leverage the LLM's language abilities while grounding outputs in factual, up‑datable external data. Example: {\\n \"query\": \"What are the benefits of using Docker?\",\\n \"retrieved_chunks\": [\\n \"Docker isolates applications in containers, providing lightweight virtualization.\",\\n \"Containers start faster than VMs and use fewer resources.\",\\n \"Docker enables consistent environments across development and production.\"\\n ],\\n \"generated_answer\": \"Docker offers lightweight isolation, rapid startup, and environment consistency, which together improve deployment speed and resource efficiency.\",\\n \"citations\": [0,1,2]\\n} Real-world use case: Customer‑support chatbots that pull the latest policy documents from a knowledge base to answer user queries with up‑to‑date, verifiable information. Common mistakes: - Using overly large chunks that exceed the LLM's context window, causing truncation of relevant content. - Skipping the citation step, which makes the output untraceable and harder to audit. Interview tip: Explain the trade‑off between chunk size (retrieval relevance) and context length (generation quality), and mention how hybrid retrieval (BM25 + vector) can improve recall.",
+      "answerSections": {
+        "shortAnswer": "RAG combines a retriever that fetches relevant documents with a generator that synthesizes answers, enabling up‑to‑date, knowledge‑grounded responses.",
+        "summary": "RAG combines a retriever that fetches relevant documents with a generator that synthesizes answers, enabling up‑to‑date, knowledge‑grounded responses.",
+        "explanation": "In a Retrieval‑Augmented Generation (RAG) pipeline, a user query first triggers a dense retrieval step that selects the most relevant pre‑chunked documents from a vector database. Those chunks are concatenated (or formatted) and fed to a large language model, which generates an answer while optionally emitting references to the source chunks. This design lets the system leverage the LLM's language abilities while grounding outputs in factual, up‑datable external data.",
+        "keyPoints": [
+          "Retriever indexes and searches a vector store of text chunks using similarity to the query.",
+          "Generator (LLM) receives the retrieved chunks as context and produces a natural‑language answer.",
+          "Citation layer can map generated statements back to specific chunks for traceability."
+        ],
+        "bulletPoints": [
+          "Retriever indexes and searches a vector store of text chunks using similarity to the query.",
+          "Generator (LLM) receives the retrieved chunks as context and produces a natural‑language answer.",
+          "Citation layer can map generated statements back to specific chunks for traceability."
+        ],
+        "example": "{\\n  \"query\": \"What are the benefits of using Docker?\",\\n  \"retrieved_chunks\": [\\n    \"Docker isolates applications in containers, providing lightweight virtualization.\",\\n    \"Containers start faster than VMs and use fewer resources.\",\\n    \"Docker enables consistent environments across development and production.\"\\n  ],\\n  \"generated_answer\": \"Docker offers lightweight isolation, rapid startup, and environment consistency, which together improve deployment speed and resource efficiency.\",\\n  \"citations\": [0,1,2]\\n}",
+        "codeExample": "{\\n  \"query\": \"What are the benefits of using Docker?\",\\n  \"retrieved_chunks\": [\\n    \"Docker isolates applications in containers, providing lightweight virtualization.\",\\n    \"Containers start faster than VMs and use fewer resources.\",\\n    \"Docker enables consistent environments across development and production.\"\\n  ],\\n  \"generated_answer\": \"Docker offers lightweight isolation, rapid startup, and environment consistency, which together improve deployment speed and resource efficiency.\",\\n  \"citations\": [0,1,2]\\n}",
+        "realWorldUseCase": "Customer‑support chatbots that pull the latest policy documents from a knowledge base to answer user queries with up‑to‑date, verifiable information.",
+        "realWorldContext": "Customer‑support chatbots that pull the latest policy documents from a knowledge base to answer user queries with up‑to‑date, verifiable information.",
+        "commonMistakes": [
+          "Using overly large chunks that exceed the LLM's context window, causing truncation of relevant content.",
+          "Skipping the citation step, which makes the output untraceable and harder to audit."
+        ],
+        "interviewTip": "Explain the trade‑off between chunk size (retrieval relevance) and context length (generation quality), and mention how hybrid retrieval (BM25 + vector) can improve recall."
+      },
+      "sourceMeta": {
+        "mode": "custom-question",
+        "verificationStatus": "unverified",
+        "generatedAt": "2026-11-15T21:24:04.068Z",
+        "provider": "groq",
+        "model": "openai/gpt-oss-120b"
+      },
+      "difficulty": "medium",
+      "tags": [
+        "rag",
+        "user_asked",
+        "technology"
+      ],
+      "topicKey": "rag",
+      "topicType": "technology",
+      "sourceType": "ai_generated",
+      "sourceLabel": "Cache / AI-generated answer · Unverified",
+      "generationStatus": "generated",
+      "generatedAt": "2026-11-15T21:24:04.068Z",
+      "confidenceScore": 0.83,
+      "relevanceScore": 0.81,
+      "category": "core-concepts",
+      "qualityScore": 80,
+      "answerFormat": "structured",
+      "isEnriched": true,
+      "_id": null,
+      "sessionId": "6afa22f42fa2b7efb149e897",
+      "stored": true,
+      "verificationStatus": "unverified",
+      "duplicate": false,
+      "fromCache": true,
+      "cacheLayer": "memory",
+      "performance": {
+        "memoryCacheMs": 0.021,
+        "redisMs": 1.392,
+        "mongoExactMs": 0,
+        "similarityMs": 0,
+        "seedMs": 0,
+        "aiMs": 0,
+        "validationMs": 0,
+        "persistenceMs": 0,
+        "totalMs": 1.878,
+        "counts": {
+          "memory": 1,
+          "redis": 0,
+          "mongo": 0,
+          "similarity": 0,
+          "seed": 0,
+          "ai": 0,
+          "persistence": 0
+        }
+      }
+    }
+  },
+  "passed": true
+}

@@ -97,3 +97,26 @@ module.exports = {
   ENV_DEFAULTS,
   setting
 };
+
+// Operation policy does not change unrelated production ordering.
+const customQAPolicy = () => {
+  const configured = String(
+    process.env.INTERVIEW_CUSTOM_PROVIDER_PRIORITY || 'groq,gemini,openai,anthropic,xai'
+  )
+    .split(',')
+    .map((value) => value.trim().toLowerCase());
+  const providerPriority = [...new Set(configured.filter((value) => PRODUCTION_ORDER.includes(value)))];
+  const totalMs = Math.min(
+    setting('AI_REQUEST_TIMEOUT_MS'),
+    integer('INTERVIEW_CUSTOM_TOTAL_TIMEOUT_MS', 20000, 20000)
+  );
+  return {
+    operation: 'interview-custom-qa',
+    providerPriority,
+    totalMs,
+    timeoutMs: Math.max(1, totalMs - 2000),
+    providerTimeoutMs: integer('INTERVIEW_CUSTOM_PROVIDER_TIMEOUT_MS', 5000, 6000),
+    maxAttempts: integer('INTERVIEW_CUSTOM_MAX_ATTEMPTS', 4, 4)
+  };
+};
+module.exports.customQAPolicy = customQAPolicy;

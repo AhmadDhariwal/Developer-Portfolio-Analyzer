@@ -1,5 +1,6 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const axios = require('axios');
+const { randomUUID } = require('node:crypto');
 const { getAiSnapshotSync } = require('./platformSettingsService');
 const aiConfig = require('../config/aiProviders');
 const admission = require('./aiProviderAdmissionService');
@@ -399,6 +400,15 @@ class AIProviderManager {
       (status === '403' && /invalid_api_key|authentication_error|permission_denied/.test(code))
     )
       return 'configuration';
+    if (
+      status === '400' &&
+      /insufficient.{0,30}(credit|balance)|credit balance|purchase credits|payment required|billing.{0,20}(disabled|quota|payment)/i.test(
+        `${code} ${error?.response?.data?.error?.message || message}`
+      )
+    )
+      return 'billing';
+    if (status === '429') return 'rate_limited';
+    if (status === '403') return 'configuration';
     if (PERMANENT_STATUS.has(status) || ['405', '415', '422'].includes(status)) return 'invalid_request';
     if (
       status === 'timeout' ||
@@ -411,6 +421,7 @@ class AIProviderManager {
       error instanceof SyntaxError
     )
       return 'invalid_json';
+    if (/network|fetch failed|socket hang up|timed out/i.test(message)) return 'transient';
     return 'provider_error';
   }
 
@@ -626,24 +637,41 @@ class AIProviderManager {
       preferredModel && this.isCompatibleModel(provider, preferredModel) ? preferredModel : state.models[0];
     const identity = admission.fingerprint(provider, state.apiKey, modelName);
     const deadline = budget.deadline || Date.now() + timeoutMs;
-    if (!(await admission.circuit(identity, deadline)))
+    if (!(await admission.circuit(identity, deadline))) {
+      this.log('provider_skipped', {
+        ...budget.context,
+        provider,
+        model: modelName,
+        reason: 'circuit_open',
+        circuitState: 'open'
+      });
       return { ok: false, failover: true, reason: 'circuit_open' };
+    }
     const attempts = budget.allowRetry ? Math.min(1, Math.max(0, retries)) + 1 : 1;
     for (let attempt = 0; attempt < attempts; attempt++) {
       if (signal?.aborted) return { ok: false, failover: false, reason: 'cancelled' };
       if (budget.remaining <= 0) return { ok: false, failover: false, reason: 'attempt_budget' };
-      budget.remaining--;
       let lease;
       const started = Date.now();
       try {
         lease = await admission.enter(provider, deadline, Math.max(1000, deadline - Date.now() + 2000));
         const remaining = deadline - Date.now();
         if (remaining < 1) throw providerError('timeout');
+        budget.remaining--;
+        budget.used = (budget.used || 0) + 1;
         const attemptTimeoutMs = Math.min(
           budget.providerTimeoutMs || aiConfig.descriptor(provider).timeoutMs,
           remaining
         );
-        this.log('provider_selected', { provider, model: modelName, attempt });
+        this.log('provider_selected', {
+          ...budget.context,
+          provider,
+          model: modelName,
+          attempt: budget.used,
+          configuredTimeoutMs: attemptTimeoutMs,
+          remainingMs: remaining,
+          circuitState: 'closed'
+        });
         const parsed = await bounded(
           (attemptSignal) =>
             this.runProviderRequest({
@@ -663,7 +691,15 @@ class AIProviderManager {
         if (!parsed || typeof parsed !== 'object') throw providerError('invalid_json');
         const latencyMs = Date.now() - started;
         this.recordSuccess(provider, latencyMs);
-        this.log('provider_success', { provider, model: modelName, attempt, latencyMs });
+        this.log('provider_success', {
+          ...budget.context,
+          provider,
+          model: modelName,
+          attempt: budget.used,
+          latencyMs,
+          remainingMs: Math.max(0, deadline - Date.now()),
+          outcome: 'success'
+        });
         await admission.record(identity, true, {}, deadline);
         return { ok: true, provider, model: modelName, parsed, latencyMs };
       } catch (error) {
@@ -679,7 +715,7 @@ class AIProviderManager {
             identity,
             false,
             {
-              configuration: reason === 'configuration',
+              configuration: ['configuration', 'billing'].includes(reason),
               rateLimited: status === '429',
               cooldownMs: Math.min(86400000, Math.max(this.cooldownMs[provider], retryMs))
             },
@@ -689,13 +725,29 @@ class AIProviderManager {
         const failover = [
           'transient',
           'configuration',
+          'billing',
+          'rate_limited',
           'invalid_json',
           'incomplete_output',
           'local_quota',
           'concurrency_limit',
           'timeout'
         ].includes(reason);
-        this.log('provider_error', { provider, model: modelName, attempt, reason, failover }, 'warn');
+        this.log(
+          'provider_error',
+          {
+            ...budget.context,
+            provider,
+            model: modelName,
+            attempt: budget.used,
+            reason,
+            failover,
+            httpStatus: status || null,
+            durationMs: Date.now() - started,
+            remainingMs: Math.max(0, deadline - Date.now())
+          },
+          'warn'
+        );
         const retryable = reason === 'transient' && status !== '429';
         if (!retryable || attempt + 1 >= attempts || budget.remaining < 1)
           return { ok: false, failover, reason };
@@ -722,14 +774,33 @@ class AIProviderManager {
       aiConfig.setting('AI_REQUEST_TIMEOUT_MS'),
       Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : Infinity
     );
-    const deadline = Date.now() + totalMs;
+    const started = Date.now();
+    const deadline = Math.min(
+      started + totalMs,
+      Number.isFinite(requestPolicy?.deadlineAt) ? requestPolicy.deadlineAt : Infinity
+    );
+    const context = {
+      requestId: requestPolicy?.requestId || randomUUID(),
+      operation: requestPolicy?.operation || 'ai-analysis'
+    };
     try {
-      return await bounded(
+      const outcome = await bounded(
         async (requestSignal) => {
           const { settings, states } = this.getProviderState();
           if (!settings.enabled) return { ok: false, reason: 'ai_disabled' };
           const allowed = requestPolicy?.allowedProviders;
-          const priority = this.providerPriority().filter(
+          const requestedOrder = requestPolicy?.providerPriority;
+          const order = Array.isArray(requestedOrder)
+            ? [...new Set(requestedOrder)].filter((name) => PROVIDER_ORDER.includes(name))
+            : this.providerPriority();
+          for (const name of order)
+            if (!states[name]?.enabled)
+              this.log('provider_skipped', {
+                ...context,
+                provider: name,
+                reason: states[name]?.disabledReason || 'missing_configuration'
+              });
+          const priority = order.filter(
             (provider) => states[provider]?.enabled && (!Array.isArray(allowed) || allowed.includes(provider))
           );
           if (!priority.length) return { ok: false, reason: 'no_provider' };
@@ -744,7 +815,8 @@ class AIProviderManager {
               ? Math.max(1, Math.min(12000, requestPolicy.providerTimeoutMs, totalMs))
               : undefined,
             deadline,
-            allowRetry: priority.length === 1
+            context,
+            allowRetry: !requestPolicy?.operation && priority.length === 1
           };
           if (requestPolicy?.attemptBudget)
             budget.remaining = Math.min(budget.remaining, Math.max(0, requestPolicy.attemptBudget.remaining));
@@ -752,10 +824,13 @@ class AIProviderManager {
           try {
             lease = await admission.enter('global', deadline, totalMs + 2000);
             let lastReason = 'no_provider';
+            const failureReasons = new Set();
+            const finalReason = () => (failureReasons.size > 1 ? 'mixed_provider_failure' : lastReason);
             for (const provider of priority) {
+              if (Date.now() >= deadline) return { ok: false, reason: 'timeout' };
               if (requestSignal.aborted) return { ok: false, reason: 'cancelled' };
               if (budget.remaining < 1)
-                return { ok: false, reason: lastReason === 'no_provider' ? 'attempt_budget' : lastReason };
+                return { ok: false, reason: lastReason === 'no_provider' ? 'attempt_budget' : finalReason() };
               if (lastReason !== 'no_provider')
                 this.log('provider_switched', { provider, reason: lastReason }, 'warn');
               const result = await this.tryProvider(
@@ -769,9 +844,17 @@ class AIProviderManager {
                 budget
               );
               if (result.ok || !result.failover) return result;
-              lastReason = result.reason;
+              if (result.reason !== 'circuit_open') failureReasons.add(result.reason);
+              if (result.reason !== 'circuit_open' || lastReason === 'no_provider')
+                lastReason = result.reason;
             }
-            return { ok: false, reason: lastReason };
+            this.log('provider_chain_complete', {
+              ...context,
+              reason: lastReason,
+              actualAttempts: budget.used || 0,
+              outcome: 'failed'
+            });
+            return { ok: false, reason: finalReason() };
           } finally {
             if (requestPolicy?.attemptBudget) requestPolicy.attemptBudget.remaining = budget.remaining;
             await admission.release(lease);
@@ -780,8 +863,22 @@ class AIProviderManager {
         totalMs,
         signal
       );
+      this.log('provider_chain_outcome', {
+        ...context,
+        outcome: outcome.ok ? 'success' : 'failed',
+        reason: outcome.reason,
+        durationMs: Date.now() - started
+      });
+      return outcome;
     } catch (error) {
-      return { ok: false, reason: signal?.aborted ? 'cancelled' : error.aiReason || 'provider_error' };
+      const reason = signal?.aborted ? 'cancelled' : error.aiReason || 'provider_error';
+      this.log('provider_chain_outcome', {
+        ...context,
+        outcome: 'failed',
+        reason,
+        durationMs: Date.now() - started
+      });
+      return { ok: false, reason };
     }
   }
 }

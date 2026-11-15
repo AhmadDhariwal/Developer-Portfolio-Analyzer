@@ -226,7 +226,7 @@ test('provider integration gives existing orchestration a bounded fallback budge
   });
   t.mock.method(aiService, 'runAIAnalysis', async (_prompt, _fallback, retries, options) => {
     assert.equal(retries, 0);
-    assert.equal(options.requestPolicy.maxAttempts, 3);
+    assert.equal(options.requestPolicy.maxAttempts, 4);
     assert.equal(options.requestPolicy.cacheResponse, false);
     assert.equal(options.requestPolicy.maxOutputTokens, 8000);
     return { ok: true, value: row('react').answerSections };

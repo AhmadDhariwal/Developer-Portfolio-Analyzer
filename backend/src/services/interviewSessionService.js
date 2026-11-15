@@ -34,8 +34,15 @@ const findRequest = async (userId, requestKey, requestFingerprint) => {
   return existing;
 };
 
-const create = async (record) => {
+const create = async (record, { deadlineAt } = {}) => {
   try {
+    if (deadlineAt) {
+      const remaining = deadlineAt - Date.now();
+      if (remaining <= 0) throw error(503, 'Custom answer persistence deadline expired. Please retry.');
+      // insertMany retains schema validation/timestamps and forwards the driver's
+      // absolute-operation timeout; this schema has no save hooks.
+      return (await Session.insertMany([record], { ordered: true, timeoutMS: remaining }))[0];
+    }
     return await Session.create(record);
   } catch (failure) {
     if (failure.code !== 11000 || !record.requestKey) throw failure;

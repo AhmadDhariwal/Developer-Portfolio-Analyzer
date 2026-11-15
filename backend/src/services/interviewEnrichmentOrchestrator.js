@@ -171,6 +171,7 @@ const toStorableRecord = ({
     sourceType,
     confidenceScore,
     qualityScore: item.qualityScore,
+    questionMode: sourceMeta.mode === 'custom-question' ? 'custom' : 'generated',
     minimumScore: sourceType === 'scraped' ? 0.8 : 0.75
   });
   const needsReview = sourceType === 'scraped' && sourceMeta.verificationStatus !== 'verified';

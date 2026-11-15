@@ -33,7 +33,8 @@ const isolate = (t, providers = config.PRODUCTION_ORDER) => {
   t.mock.method(manager, 'recordFailure', () => {});
   t.mock.method(manager, 'recordSuccess', () => {});
   t.mock.method(admission, 'enter', async () => {
-    if (controls.admissionFails) throw Object.assign(new Error('fixture'), { aiReason: 'coordination_unavailable' });
+    if (controls.admissionFails)
+      throw Object.assign(new Error('fixture'), { aiReason: 'coordination_unavailable' });
     return {};
   });
   t.mock.method(admission, 'release', async () => {});
@@ -100,7 +101,8 @@ test('transient failures visit Gemini, OpenAI, Groq, Claude then xAI exactly onc
   const calls = [];
   t.mock.method(manager, 'runProviderRequest', async ({ provider }) => {
     calls.push(provider);
-    if (provider !== 'xai') throw Object.assign(new Error('synthetic unavailable'), { response: { status: 503 } });
+    if (provider !== 'xai')
+      throw Object.assign(new Error('synthetic unavailable'), { response: { status: 503 } });
     return { ok: true };
   });
   const result = await manager.execute('Synthetic fixture', { timeoutMs: 1000 });
@@ -113,7 +115,7 @@ test('invalid requests and safety refusals are terminal across every adapter', a
     manager.classify({ response: { status: 429, data: { error: { code: 'content_blocked' } } } }),
     'safety_refusal'
   );
-  for (const status of [400, 403, 413, 422])
+  for (const status of [400, 413, 422])
     await t.test(String(status), async (subtest) => {
       isolate(subtest);
       let calls = 0;
@@ -148,7 +150,9 @@ test('invalid requests and safety refusals are terminal across every adapter', a
 });
 test('authentication, 429 and malformed JSON fail over without same-provider retry', async (t) => {
   assert.equal(
-    manager.classify(Object.assign(new Error('API key not valid. Please pass a valid API key.'), { status: 400 })),
+    manager.classify(
+      Object.assign(new Error('API key not valid. Please pass a valid API key.'), { status: 400 })
+    ),
     'configuration'
   );
   for (const scenario of ['401', '429', 'malformed'])
@@ -248,7 +252,8 @@ test('adapters normalize JSON and preserve provider token caps', async (t) => {
         provider,
         prompt: 'fixture',
         apiKey: 'synthetic',
-        modelName: provider === 'openai' ? 'gpt-6-fixture' : provider === 'groq' ? 'openai/gpt-oss-120b' : 'fixture',
+        modelName:
+          provider === 'openai' ? 'gpt-6-fixture' : provider === 'groq' ? 'openai/gpt-oss-120b' : 'fixture',
         parseJson: JSON.parse,
         timeoutMs: 500,
         maxOutputTokens: 600

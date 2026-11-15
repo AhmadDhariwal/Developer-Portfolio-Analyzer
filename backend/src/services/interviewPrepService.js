@@ -283,6 +283,7 @@ const validateRecordForApproval = ({
 } = {}) => {
   const quality = validateInterviewQuestionQuality({
     ...record,
+    questionMode: record?.sourceMeta?.mode === 'custom-question' ? 'custom' : 'generated',
     topicKey: topicInput?.topicKey || record?.topicKey,
     expectedDifficulty,
     minimumScore
@@ -322,6 +323,13 @@ const withApprovalFields = ({
 };
 
 const INTERVIEW_AI_REASON_CODES = new Set([
+  'ai_provider_timeout',
+  'ai_provider_rate_limited',
+  'ai_provider_billing_error',
+  'ai_provider_configuration_error',
+  'ai_provider_unavailable',
+  'ai_invalid_response',
+  'no_answer',
   'provider_success',
   'provider_timeout',
   'provider_error',
@@ -374,11 +382,25 @@ const selectVerifiedFallback = ({ topicInput, question }) => {
   };
 };
 const buildAiFailurePayload = ({ reasonCode = 'provider_unavailable' } = {}) => {
+  reasonCode =
+    {
+      provider_timeout: 'ai_provider_timeout',
+      provider_error: 'ai_provider_unavailable',
+      provider_unavailable: 'ai_provider_unavailable'
+    }[reasonCode] || reasonCode;
   if (reasonCode === 'no_answer')
     return Object.assign(
       new Error('No reliable answer could be produced. Add technical context or rephrase the question.'),
       { statusCode: 422, code: 'no_answer', generationStatus: 'no_answer', retryable: false }
     );
+  const messages = {
+    ai_provider_timeout: 'AI providers took too long to answer. Please retry.',
+    ai_provider_rate_limited: 'AI providers are temporarily rate limited. Please retry later.',
+    ai_provider_billing_error: 'AI generation is temporarily unavailable due to provider configuration.',
+    ai_provider_configuration_error:
+      'AI generation is temporarily unavailable due to provider configuration.',
+    ai_provider_unavailable: 'No provider could complete this answer. Please retry.'
+  };
   const invalid = ['schema_rejected', 'semantic_rejected', 'quality_rejected', 'invalid_json'].includes(
     reasonCode
   );
@@ -386,10 +408,11 @@ const buildAiFailurePayload = ({ reasonCode = 'provider_unavailable' } = {}) => 
     new Error(
       invalid
         ? 'AI returned an incomplete or invalid answer. Please retry.'
-        : 'AI providers are temporarily unavailable. Please retry.'
+        : messages[reasonCode] || 'AI providers are temporarily unavailable. Please retry.'
     ),
     {
       statusCode: 503,
+      reasonCode: invalid ? 'ai_invalid_response' : reasonCode,
       code: invalid ? 'invalid_ai_answer' : 'ai_unavailable',
       generationStatus: invalid ? 'invalid_response' : 'provider_unavailable',
       retryable: true
@@ -1775,6 +1798,7 @@ const answerCustomInterviewQuestion = async ({
   return generationFlight(
     cacheKey,
     async (signal) => {
+      const deadlineAt = Date.now() + require('../config/aiProviders').customQAPolicy().totalMs;
       assertActiveRequest(signal);
       const cacheResult = await getCacheJsonWithMeta(cacheKey);
       trace.applyCache(cacheResult);
@@ -1965,9 +1989,10 @@ const answerCustomInterviewQuestion = async ({
                 question: normalizedQuestion,
                 userId,
                 signal,
+                deadlineAt,
                 verifiedContext: buildVerifiedPromptContext(topicInput.topicKey, normalizedQuestion)
               }),
-            aiProvider.customAnswerTimeoutMs(topicInput.topicKey, normalizedQuestion) + 300
+            Math.max(1, deadlineAt - Date.now() - 1000)
           )
         );
         interviewEngineMetrics.aiFallbackRuns += 1;
@@ -2033,27 +2058,31 @@ const answerCustomInterviewQuestion = async ({
       }
 
       assertActiveRequest(signal);
+      if (Date.now() >= deadlineAt) throw buildAiFailurePayload({ reasonCode: 'ai_provider_timeout' });
       const session = await trace.time('persistenceMs', 'persistence', () =>
-        interviewSessions.create({
-          userId,
-          careerStack: '',
-          experienceLevel: '',
-          kind: 'custom',
-          // A rejected legacy answer must not make a newly validated answer point
-          // at the old immutable snapshot through the unique request-key index.
-          requestKey: `custom:${topicInput.topicKey}:${identity.normalizedQuestionHash}:${hashRequest(JSON.stringify([approvedRecord.answer, approvedRecord.answerSections]))}`,
-          topicKey: topicInput.topicKey,
-          questions: interviewSessions.snapshotQuestions(
-            [
-              {
-                ...approvedRecord,
-                normalizedQuestionHash: identity.normalizedQuestionHash,
-                verificationStatus: 'unverified'
-              }
-            ],
-            topicInput.topicKey
-          )
-        })
+        interviewSessions.create(
+          {
+            userId,
+            careerStack: '',
+            experienceLevel: '',
+            kind: 'custom',
+            // A rejected legacy answer must not make a newly validated answer point
+            // at the old immutable snapshot through the unique request-key index.
+            requestKey: `custom:${topicInput.topicKey}:${identity.normalizedQuestionHash}:${hashRequest(JSON.stringify([approvedRecord.answer, approvedRecord.answerSections]))}`,
+            topicKey: topicInput.topicKey,
+            questions: interviewSessions.snapshotQuestions(
+              [
+                {
+                  ...approvedRecord,
+                  normalizedQuestionHash: identity.normalizedQuestionHash,
+                  verificationStatus: 'unverified'
+                }
+              ],
+              topicInput.topicKey
+            )
+          },
+          { deadlineAt }
+        )
       );
       const payload = {
         question: approvedRecord.question,

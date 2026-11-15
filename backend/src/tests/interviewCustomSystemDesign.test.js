@@ -95,20 +95,20 @@ const isolatePrivate = (t) => {
   return writes;
 };
 
-test('system design uses the shared global fallback deadline while ordinary custom Q&A keeps its short deadline', () => {
+test('Custom Q&A reserves persistence time within its configurable total deadline', () => {
   const previous = process.env.AI_REQUEST_TIMEOUT_MS;
   try {
     process.env.AI_REQUEST_TIMEOUT_MS = '30000';
-    assert.equal(provider.customAnswerTimeoutMs('system-design', question), 30000);
+    assert.equal(provider.customAnswerTimeoutMs('system-design', question), 18000);
     assert.equal(
       provider.customAnswerTimeoutMs('react', 'How would you design a distributed React service?'),
-      30000
+      18000
     );
-    assert.ok(provider.customAnswerTimeoutMs('react', 'How does React receive props?') <= 6200);
+    assert.ok(provider.customAnswerTimeoutMs('react', 'How does React receive props?') === 18000);
     process.env.AI_REQUEST_TIMEOUT_MS = '9000';
-    assert.equal(provider.customAnswerTimeoutMs('system design', question), 9000);
+    assert.equal(provider.customAnswerTimeoutMs('system design', question), 7000);
     process.env.AI_REQUEST_TIMEOUT_MS = '60000';
-    assert.equal(provider.customAnswerTimeoutMs('system-design', question), 30000);
+    assert.equal(provider.customAnswerTimeoutMs('system-design', question), 18000);
   } finally {
     if (previous === undefined) delete process.env.AI_REQUEST_TIMEOUT_MS;
     else process.env.AI_REQUEST_TIMEOUT_MS = previous;
@@ -170,7 +170,7 @@ for (const firstFailure of ['timeout', 'incomplete-design', 'invalid-example', '
       manager,
       'runProviderRequest',
       async ({ provider: name, modelName, parseJson, timeoutMs, prompt }) => {
-        assert.equal(timeoutMs, 12000);
+        assert.equal(timeoutMs, 5000);
         assert.ok(prompt.includes('"technology":"system-design"'));
         assert.ok(prompt.includes('"topicKey":"system-design"'));
         attempts.push({ provider: name, model: modelName });

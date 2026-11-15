@@ -17,10 +17,12 @@ const original = {
   incrementQuestionUsage: repository.incrementQuestionUsage,
   upsertQuestions: repository.upsertQuestions,
   findSession: Session.findOne,
-  createSession: Session.create
+  createSession: Session.create,
+  insertMany: Session.insertMany
 };
 
 const isolatePipeline = () => {
+  Session.insertMany = async (records) => [await Session.create(records[0])];
   Session.findOne = () => ({ sort: () => ({ lean: async () => null }) });
   repository.findExactReusableQuestion = async () => null;
   repository.findSearchCandidates = async () => [];
@@ -31,6 +33,7 @@ const isolatePipeline = () => {
 test.afterEach(() => {
   Session.findOne = original.findSession;
   Session.create = original.createSession;
+  Session.insertMany = original.insertMany;
   Object.assign(aiProvider, { answerSearchFallback: original.answerSearchFallback });
   aiService.runAIAnalysis = original.runAIAnalysis;
   Object.assign(repository, {
@@ -266,7 +269,7 @@ test('provider accepts a complete structured AI answer and reports typed failure
         topicKey: 'mysql',
         question: 'What is the difference between an index and a transaction?'
       }),
-    (error) => error.reasonCode === 'provider_timeout'
+    (error) => error.reasonCode === 'ai_provider_timeout'
   );
   aiService.runAIAnalysis = async () => ({ ok: false, reason: '429' });
   await assert.rejects(
@@ -275,7 +278,7 @@ test('provider accepts a complete structured AI answer and reports typed failure
         topicKey: 'mysql',
         question: 'What is the difference between an index and a transaction?'
       }),
-    (error) => error.reasonCode === 'provider_error'
+    (error) => error.reasonCode === 'ai_provider_unavailable'
   );
 });
 
