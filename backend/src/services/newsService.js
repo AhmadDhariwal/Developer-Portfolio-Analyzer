@@ -821,6 +821,7 @@ const getNewsFeed = async ({ user, query = {} }) => {
 };
 const refreshNewsPool = () =>
   pool.refreshPool(() => fetchAllSources(new Date(Date.now() - 30 * 86400000)));
+discovery.registerBroadRefresh?.(refreshNewsPool);
 let scheduler;
 const startNewsIngestionScheduler = () => {
   if (scheduler || process.env.NEWS_INGESTION_ENABLED === 'false') return;

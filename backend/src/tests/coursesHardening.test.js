@@ -15,8 +15,8 @@ const controllerSource =
 const serviceSource = read('backend', 'src', 'services', 'courseService.js');
 const routesSource = read('backend', 'src', 'routes', 'courseRoutes.js');
 const promptSource = read('backend', 'src', 'prompts', 'coursePrompt.js');
-const componentSource = read('frontend', 'src', 'app', 'pages', 'courses', 'courses.component.ts');
-const componentHtml = read('frontend', 'src', 'app', 'pages', 'courses', 'courses.component.html');
+const componentSource = read('frontend', 'src', 'app', 'features', 'developer', 'pages', 'courses', 'courses.component.ts');
+const componentHtml = read('frontend', 'src', 'app', 'features', 'developer', 'pages', 'courses', 'courses.component.html');
 const clientSource = read('frontend', 'src', 'app', 'shared', 'services', 'course.service.ts');
 
 const {

@@ -5,7 +5,7 @@ const Receipt = require('../models/notificationReceipt');
 const User = require('../models/user');
 const Membership = require('../models/membership');
 const Team = require('../models/team');
-const persistence = require('./notificationPersistenceService');
+const persistence = require('./notificationTransactionService');
 const metrics = require('./notificationMetrics');
 const { getSettingsSnapshotSync } = require('./platformSettingsService');
 

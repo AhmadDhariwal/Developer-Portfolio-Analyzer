@@ -1,3 +1,5 @@
+const { projectContext } = require('./interviewProjectContext');
+const answerCoverage = require('./interviewAnswerCoverage');
 const { normalizeFilters, matchesFilters, generationSourcePolicy } = require('./interviewQuestionFilters');
 const { generationFlight } = require('./interviewGenerationFlight');
 const logger = require('../utils/logger');
@@ -273,7 +275,7 @@ const makeSearchCacheKey = ({
 };
 
 const makeCustomQuestionCacheKey = ({ question, topicKey, userId }) =>
-  `interview:custom:v6:topic=${topicKey}:user=${questionRepository.toQuestionHash(String(userId || ''))}:question=${questionRepository.toQuestionHash(question)}`;
+  `interview:custom:v7:coverage=1:topic=${topicKey}:user=${questionRepository.toQuestionHash(String(userId || ''))}:question=${questionRepository.toQuestionHash(question)}`;
 
 const validateRecordForApproval = ({
   record,
@@ -401,13 +403,19 @@ const buildAiFailurePayload = ({ reasonCode = 'provider_unavailable' } = {}) => 
       'AI generation is temporarily unavailable due to provider configuration.',
     ai_provider_unavailable: 'No provider could complete this answer. Please retry.'
   };
-  const invalid = ['schema_rejected', 'semantic_rejected', 'quality_rejected', 'invalid_json'].includes(
-    reasonCode
-  );
+  const invalid = [
+    'answer_incomplete',
+    'schema_rejected',
+    'semantic_rejected',
+    'quality_rejected',
+    'invalid_json'
+  ].includes(reasonCode);
   return Object.assign(
     new Error(
       invalid
-        ? 'AI returned an incomplete or invalid answer. Please retry.'
+        ? reasonCode === 'answer_incomplete'
+          ? 'The answer could not cover every part of your request. Please retry or narrow the question.'
+          : 'AI returned an incomplete or invalid answer. Please retry.'
         : messages[reasonCode] || 'AI providers are temporarily unavailable. Please retry.'
     ),
     {
@@ -1708,9 +1716,12 @@ const generateFreshInterviewQuestions = async (input = {}) => {
       }
       assertActiveRequest(signal);
       if (questions.length !== targetCount) {
-        const invalid = ['schema_rejected', 'invalid_json', 'invalid_or_insufficient_ai_results'].includes(
-          failureReason
-        );
+        const invalid = [
+          'answer_incomplete',
+          'schema_rejected',
+          'invalid_json',
+          'invalid_or_insufficient_ai_results'
+        ].includes(failureReason);
         const unavailable = permitsAI && !invalid;
         throw Object.assign(
           new Error(
@@ -1780,6 +1791,11 @@ const answerCustomInterviewQuestion = async ({
     throw error;
   }
 
+  const answerPlan = answerCoverage.analyzeQuestion({
+    question: normalizedQuestion,
+    topicKey: topicInput.topicKey,
+    context: projectContext(topicInput.topicKey)
+  });
   const identity = questionRepository.buildQuestionIdentity({
     question: normalizedQuestion,
     topicKey: topicInput.topicKey
@@ -1799,10 +1815,37 @@ const answerCustomInterviewQuestion = async ({
     cacheKey,
     async (signal) => {
       const deadlineAt = Date.now() + require('../config/aiProviders').customQAPolicy().totalMs;
+      const attemptBudget = { remaining: require('../config/aiProviders').customQAPolicy().maxAttempts };
+      let legacyEvaluations = 0;
+      const covered = async (item) => {
+        if (answerCoverage.reusable(answerPlan, item)) return true;
+        if (
+          !answerCoverage.structuralCoverage(answerPlan, item).complete ||
+          legacyEvaluations++ >= 1 ||
+          attemptBudget.remaining < 3
+        )
+          return false;
+        try {
+          const assessment = await aiProvider.assessCustomAnswer({
+            plan: answerPlan,
+            answer: item,
+            userId,
+            deadlineAt,
+            signal,
+            budget: attemptBudget
+          });
+          if (!assessment.complete) return false;
+          item.sourceMeta = { ...item.sourceMeta, answerQuality: assessment.quality };
+          return true;
+        } catch {
+          assertActiveRequest(signal);
+          return false;
+        }
+      };
       assertActiveRequest(signal);
       const cacheResult = await getCacheJsonWithMeta(cacheKey);
       trace.applyCache(cacheResult);
-      if (cacheResult.value) {
+      if (cacheResult.value && answerCoverage.reusable(answerPlan, cacheResult.value)) {
         interviewEngineMetrics.cacheHits += 1;
         if (cacheResult.value._id)
           questionRepository.incrementQuestionUsage(cacheResult.value._id).catch(() => {});
@@ -1814,6 +1857,7 @@ const answerCustomInterviewQuestion = async ({
         });
       }
 
+      if (cacheResult.value) await deleteCacheKey(cacheKey);
       interviewEngineMetrics.dbReads += 1;
       let reusable = await trace.time('mongoExactMs', 'mongo', () =>
         questionRepository.findExactReusableQuestion({
@@ -1835,7 +1879,7 @@ const answerCustomInterviewQuestion = async ({
             })
           )
         );
-        if (!approval.isApproved) reusable = null;
+        if (!approval.isApproved || !(await covered(reusable))) reusable = null;
       }
 
       if (!reusable) {
@@ -1870,7 +1914,7 @@ const answerCustomInterviewQuestion = async ({
                 )
               )
             : { isApproved: false };
-          if (!approval.isApproved) reusable = null;
+          if (!approval.isApproved || !(await covered(reusable))) reusable = null;
         }
       }
 
@@ -1892,17 +1936,19 @@ const answerCustomInterviewQuestion = async ({
         return trace.finish(payload);
       }
 
-      const seedMatch = await trace.time('seedMs', 'seed', () =>
-        Promise.resolve(
-          findSeedRecordByQuestion(topicInput.topicKey, normalizedQuestion) ||
-            getTopicSeedItems(topicInput.topicKey).find(
-              (candidate) =>
-                computeJaccardSimilarity(
-                  normalizedQuestion,
-                  candidate.normalizedQuestion || candidate.question
-                ) >= MIN_STRONG_SEARCH_RELEVANCE
-            ) ||
-            null
+      const seedMatch = structuredClone(
+        await trace.time('seedMs', 'seed', () =>
+          Promise.resolve(
+            findSeedRecordByQuestion(topicInput.topicKey, normalizedQuestion) ||
+              getTopicSeedItems(topicInput.topicKey).find(
+                (candidate) =>
+                  computeJaccardSimilarity(
+                    normalizedQuestion,
+                    candidate.normalizedQuestion || candidate.question
+                  ) >= MIN_STRONG_SEARCH_RELEVANCE
+              ) ||
+              null
+          )
         )
       );
       if (seedMatch) {
@@ -1915,8 +1961,9 @@ const answerCustomInterviewQuestion = async ({
             })
           )
         );
-        if (approval.isApproved) {
+        if (approval.isApproved && (await covered(seedMatch))) {
           const payload = {
+            sourceMeta: seedMatch.sourceMeta,
             question: seedMatch.question,
             answer: seedMatch.answer,
             answerSections: seedMatch.answerSections || {},
@@ -1951,8 +1998,9 @@ const answerCustomInterviewQuestion = async ({
         .sort({ createdAt: -1, _id: -1 })
         .lean()
         .catch(() => null);
-      const ownedAnswer = prior?.questions?.find(
-        (item) => item.normalizedQuestionHash === identity.normalizedQuestionHash
+      const ownedAnswer = structuredClone(
+        prior?.questions?.find((item) => item.normalizedQuestionHash === identity.normalizedQuestionHash) ||
+          null
       );
       if (
         ownedAnswer &&
@@ -1960,7 +2008,8 @@ const answerCustomInterviewQuestion = async ({
           record: { ...ownedAnswer, topicKey: topicInput.topicKey },
           topicInput,
           minimumScore: MIN_STRONG_SEARCH_RELEVANCE
-        }).isApproved
+        }).isApproved &&
+        (await covered(ownedAnswer))
       ) {
         const payload = {
           ...ownedAnswer,
@@ -1990,6 +2039,8 @@ const answerCustomInterviewQuestion = async ({
                 userId,
                 signal,
                 deadlineAt,
+                answerPlan,
+                attemptBudget,
                 verifiedContext: buildVerifiedPromptContext(topicInput.topicKey, normalizedQuestion)
               }),
             Math.max(1, deadlineAt - Date.now() - 1000)
@@ -2013,6 +2064,8 @@ const answerCustomInterviewQuestion = async ({
         throw buildAiFailurePayload({ reasonCode: 'schema_rejected' });
       }
 
+      if (!answerCoverage.reusable(answerPlan, generated))
+        throw buildAiFailurePayload({ reasonCode: 'answer_incomplete' });
       const record = enrichmentOrchestrator.toStorableRecord({
         item: {
           question: normalizedQuestion,
@@ -2029,6 +2082,7 @@ const answerCustomInterviewQuestion = async ({
         sourceType: 'ai_generated',
         sourceMeta: {
           mode: 'custom-question',
+          answerQuality: generated.answerQuality,
           verificationStatus: 'unverified',
           generatedAt: generated.generationMeta?.generatedAt || new Date().toISOString(),
           provider: generated.generationMeta?.provider,
@@ -2068,7 +2122,7 @@ const answerCustomInterviewQuestion = async ({
             kind: 'custom',
             // A rejected legacy answer must not make a newly validated answer point
             // at the old immutable snapshot through the unique request-key index.
-            requestKey: `custom:${topicInput.topicKey}:${identity.normalizedQuestionHash}:${hashRequest(JSON.stringify([approvedRecord.answer, approvedRecord.answerSections]))}`,
+            requestKey: `custom:coverage=${answerCoverage.QUALITY_VERSION}:${topicInput.topicKey}:${identity.normalizedQuestionHash}:${hashRequest(JSON.stringify([approvedRecord.answer, approvedRecord.answerSections]))}`,
             topicKey: topicInput.topicKey,
             questions: interviewSessions.snapshotQuestions(
               [

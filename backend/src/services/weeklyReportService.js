@@ -1611,6 +1611,7 @@ const sendWeeklyReportEmail = (report, user, options = {}) => {
   emailInflight.set(reportId, pending);
   return pending;
 };
+require('./weeklyReportDeliveryService').registerSendReportEmail?.(sendWeeklyReportEmail);
 const positiveEnvInt = (value, fallback, max) => {
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) && parsed > 0 ? Math.min(parsed, max) : fallback;

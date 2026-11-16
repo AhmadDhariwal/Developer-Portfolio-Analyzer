@@ -1,3 +1,4 @@
+const { certified, judgeResult } = require('./fixtures/interviewCoverageFixture');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const service = require('../services/interviewPrepService');
@@ -45,6 +46,12 @@ const row = (
     sourceType: 'ai_generated'
   };
 };
+const propsSections = () => ({
+  ...row('react').answerSections,
+  shortAnswer: 'React components receive read-only props from a parent component.',
+  explanation:
+    'A parent passes props as JSX attributes when rendering a child component. The child reads these values from its props argument. Updating parent state can produce new props and rerender the child; the child should not mutate the input.'
+});
 const isolate = (t) => {
   cache.clearMemoryCache();
   t.mock.method(repository, 'findAllQuestionsPage', async () => ({ questions: [], total: 0 }));
@@ -195,9 +202,9 @@ test('Custom Q&A answers polite system-design questions with complete private un
   );
   answer.answerSections.scopeNote =
     'An educational design using public architectural concepts, not verified Netflix internals.';
-  t.mock.method(provider, 'answerSearchFallback', async ({ userId }) => {
-    assert.ok(userId);
-    return answer;
+  t.mock.method(provider, 'answerSearchFallback', async (input) => {
+    assert.ok(input.userId);
+    return certified(input, answer);
   });
   t.mock.method(repository, 'upsertQuestions', () =>
     assert.fail('Private custom answers cannot enter catalog')
@@ -229,7 +236,7 @@ test('provider integration gives existing orchestration a bounded fallback budge
     assert.equal(options.requestPolicy.maxAttempts, 4);
     assert.equal(options.requestPolicy.cacheResponse, false);
     assert.equal(options.requestPolicy.maxOutputTokens, 8000);
-    return { ok: true, value: row('react').answerSections };
+    return { ok: true, value: propsSections() };
   });
   const input = {
     topicKey: 'react',
@@ -260,7 +267,7 @@ test('primary provider failure falls through the shared manager to a configured 
       budget.remaining--;
       return name === 'gemini'
         ? { ok: false, failover: true, reason: 'provider_error' }
-        : { ok: true, parsed: row('react').answerSections, provider: name };
+        : { ok: true, parsed: propsSections(), provider: name };
     }
   );
   const result = await provider.answerCustomQuestionFromAI({
@@ -341,7 +348,7 @@ test('regenerating a rejected legacy private answer creates a distinct immutable
       })
     })
   }));
-  t.mock.method(provider, 'answerSearchFallback', async () => row('react', 'hard'));
+  t.mock.method(provider, 'answerSearchFallback', async (input) => certified(input, row('react', 'hard')));
   t.mock.method(sessions, 'create', async (record) => {
     assert.notEqual(record.requestKey, legacyKey);
     assert.ok(record.questions[0].answerSections.explanation);

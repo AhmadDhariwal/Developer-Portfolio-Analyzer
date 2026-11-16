@@ -1262,3 +1262,4 @@ module.exports = {
   SPRINT_REDIS_BUDGET_MS,
   STAGE_TIMINGS_ENABLED,
 };
+require('./scenarioSprintExportService').registerSprintCreator?.(createSprint);

@@ -1,0 +1,801 @@
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import {
+  Observable,
+  Subject,
+  Subscription,
+  combineLatest,
+  distinctUntilChanged,
+  map,
+  takeUntil,
+} from 'rxjs';
+import { CareerProfileService } from '../../../../shared/services/career-profile.service';
+import { buildCareerProfileSignature } from '../../../../shared/models/career-profile.model';
+import { AuthService } from '../../../../shared/services/auth.service';
+import { NewsService } from '../../../../shared/services/news.service';
+import { NEWS_SKILL_EVIDENCE_LABELS } from '../../../../shared/utils/news-presentation';
+import { NewsCardComponent } from '../../../../shared/components/news-card/news-card';
+import { NewsFiltersComponent } from '../../../../shared/components/news-filters/news-filters';
+import {
+  DEFAULT_NEWS_FILTERS,
+  NewsFilters,
+  NewsHubView,
+  NewsItem,
+  NewsProviderDiagnostic,
+  NewsResponse,
+  NewsSavedType,
+  PersonalizedNewsContext,
+  SavedNewsItem,
+  normalizeNewsFilters,
+} from '../../../../shared/models/news.model';
+
+@Component({
+  selector: 'app-news',
+  standalone: true,
+  imports: [CommonModule, NewsCardComponent, NewsFiltersComponent],
+  templateUrl: './news.component.html',
+  styleUrl: './news.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class NewsComponent implements OnInit, OnDestroy {
+  readonly evidenceLabels = NEWS_SKILL_EVIDENCE_LABELS;
+  readonly viewTabs: { value: NewsHubView; label: string }[] = [
+    { value: 'for-you', label: 'For You' },
+    { value: 'explore', label: 'Explore' },
+    { value: 'trending', label: 'Trending' },
+    { value: 'latest', label: 'Latest' },
+    { value: 'bookmarks', label: 'Bookmarks' },
+    { value: 'read_later', label: 'Read Later' },
+  ];
+  readonly skeletonCards = [0, 1, 2, 3, 4, 5];
+  selectedView: NewsHubView = 'for-you';
+  filters: NewsFilters = { ...DEFAULT_NEWS_FILTERS };
+  items: NewsItem[] = [];
+  context: PersonalizedNewsContext | null = null;
+  telemetry: NewsResponse['telemetry'];
+  coverage: NewsResponse['coverage'];
+  enrichment: NewsResponse['enrichment'];
+  discoveryChecks = 0;
+  private discoveryTimer?: ReturnType<typeof setTimeout>;
+  trendingTopics: string[] = [];
+  page = 1;
+  pageSize = 12;
+  total = 0;
+  totalPages = 1;
+  isLoading = false;
+  errorMessage = '';
+  savedError = '';
+  toast = '';
+  offline = typeof navigator !== 'undefined' && !navigator.onLine;
+  filtersExpanded = false;
+  historyFilter: 'all' | 'unread' | 'read' = 'all';
+  readonly pending = new Set<string>();
+  readonly library: Record<NewsSavedType, Map<string, SavedNewsItem>> = {
+    bookmark: new Map(),
+    read_later: new Map(),
+  };
+  readonly savedTotal: Record<NewsSavedType, number> = { bookmark: 0, read_later: 0 };
+  readonly savedPage: Record<NewsSavedType, number> = { bookmark: 1, read_later: 1 };
+  readonly savedHasMore: Record<NewsSavedType, boolean> = { bookmark: false, read_later: false };
+  readonly savedKnown = new Set<NewsSavedType>();
+  readonly savedLoading = new Set<NewsSavedType>();
+  private readonly subscriptions = new Subscription();
+  private readonly scopeChanged = new Subject<void>();
+  private readonly savedRequests: Partial<Record<NewsSavedType, Subscription>> = {};
+  private activeRequest?: Subscription;
+  private generation = 0;
+  private feedNonce = 0;
+  private scope = '';
+  private lastValidated = 0;
+  private attemptedPage = 1;
+  private failedRefresh = false;
+  private toastTimer?: ReturnType<typeof setTimeout>;
+  private clock?: ReturnType<typeof setInterval>;
+  now = Date.now();
+  private serverOffsetMs = 0;
+
+  constructor(
+    private readonly news: NewsService,
+    private readonly career: CareerProfileService,
+    private readonly auth: AuthService,
+    private readonly cdr: ChangeDetectorRef,
+  ) {}
+
+  ngOnInit(): void {
+    this.subscriptions.add(
+      combineLatest([this.auth.currentUser$, this.career.careerProfile$])
+        .pipe(
+          map(([user, profile]) =>
+            user?._id
+              ? JSON.stringify([
+                  user._id,
+                  user.activeGithubUsername,
+                  user['activeResumeFileId'],
+                  user.activeCareerStack,
+                  buildCareerProfileSignature(profile),
+                ])
+              : '',
+          ),
+          distinctUntilChanged(),
+        )
+        .subscribe((scope) => this.resetScope(scope)),
+    );
+    this.subscriptions.add(this.news.invalidated$.subscribe(() => this.resetScope(this.scope)));
+    window.addEventListener('focus', this.onFocus);
+    window.addEventListener('online', this.onOnline);
+    window.addEventListener('offline', this.onOffline);
+    document.addEventListener('visibilitychange', this.onFocus);
+  }
+
+  ngOnDestroy(): void {
+    clearTimeout(this.discoveryTimer);
+    this.scopeChanged.next();
+    this.scopeChanged.complete();
+    this.activeRequest?.unsubscribe();
+    Object.values(this.savedRequests).forEach((request) => request?.unsubscribe());
+    this.subscriptions.unsubscribe();
+    clearTimeout(this.toastTimer);
+    clearInterval(this.clock);
+    window.removeEventListener('focus', this.onFocus);
+    window.removeEventListener('online', this.onOnline);
+    window.removeEventListener('offline', this.onOffline);
+    document.removeEventListener('visibilitychange', this.onFocus);
+  }
+
+  get isFeedView(): boolean {
+    return ['for-you', 'explore', 'trending', 'latest'].includes(this.selectedView);
+  }
+  get discoveryPending(): boolean {
+    return ['queued', 'searching', 'processing'].includes(this.enrichment?.status || '');
+  }
+  get discoveryPollingStopped(): boolean {
+    return (
+      this.discoveryPending &&
+      (this.discoveryChecks >= 4 ||
+        this.page !== 1 ||
+        this.offline ||
+        document.visibilityState === 'hidden')
+    );
+  }
+  get discoveryLoading(): boolean {
+    return this.discoveryPending && !this.discoveryPollingStopped && !this.errorMessage;
+  }
+  get discoveryRecoverable(): boolean {
+    return (
+      this.enrichment?.status === 'unavailable' &&
+      ['quota_store_unavailable', 'queue_full'].includes(this.enrichment.reason)
+    );
+  }
+  get discoveryTitle(): string {
+    switch (this.enrichment?.status) {
+      case 'waiting':
+        return 'Waiting for source eligibility';
+      case 'processing':
+        return 'Processing and saving articles';
+      case 'no_newer':
+        return 'No newer articles found';
+      case 'queued':
+        return 'Background discovery queued';
+      case 'searching':
+        return 'Searching additional sources';
+      case 'ready':
+        return 'Search results cached';
+      case 'exhausted':
+        return 'No usable articles found in the last search';
+      case 'quota_limited':
+        return 'Discovery budget or cooldown reached';
+      case 'disabled':
+        return 'Background discovery is disabled';
+      case 'source_unavailable':
+        return 'Search sources are unavailable';
+      case 'worker_unavailable':
+        return 'Background search worker is offline';
+      case 'unavailable':
+        return 'Background discovery is temporarily unavailable';
+      default:
+        return this.total ? 'Cached matches available' : 'No cached matches';
+    }
+  }
+  get discoveryMessage(): string {
+    if (this.coverage?.suggestion)
+      return `Did you mean ${this.coverage.suggestion.label}? Your original search is unchanged. Choose the suggestion to search; no discovery job was requested for this spelling.`;
+    if (
+      ['waiting', 'quota_limited'].includes(this.enrichment?.status || '') &&
+      this.enrichment?.nextEligibleAt &&
+      Date.parse(this.enrichment.nextEligibleAt) <= this.serverNow
+    )
+      return 'The previous limit has elapsed. Check for New Articles will revalidate eligibility; Refresh Results reads stored articles. No source request has been retried automatically.';
+    if (this.enrichment?.status === 'no_newer')
+      return `Last successful check: ${this.enrichment.lastSuccessfulCheckAt ? new Date(this.enrichment.lastSuccessfulCheckAt).toLocaleString() : 'unavailable'}. Existing articles remain available.`;
+    if (['waiting', 'quota_limited'].includes(this.enrichment?.status || ''))
+      return `${this.enrichment?.reason?.startsWith('user_') ? 'Account limit' : this.enrichment?.reason === 'discovery_daily_budget' ? 'Discovery job limit' : 'Source limit'}: ${(this.enrichment?.reason || 'unavailable').replace(/_/g, ' ')}.${this.enrichment?.nextEligibleAt ? ' Next check: ' + new Date(this.enrichment.nextEligibleAt).toLocaleString() + '.' : ''}`;
+    if (this.discoveryPending)
+      return this.discoveryPollingStopped
+        ? `Showing ${this.items.length} available articles. Automatic checks have finished or paused. Discovery may still be running; use Refresh Results to read the latest stored articles. More articles are not guaranteed.`
+        : `Showing ${this.items.length} available articles. ${this.enrichment?.status === 'queued' ? 'An approved-source search is queued' : this.enrichment?.status === 'processing' ? 'Saving accepted articles' : 'Searching approved sources'}${this.filters.search ? ' for more ' + this.filters.search + ' news' : ''}. Available cards stay visible while we check for stored updates; more articles are not guaranteed.`;
+    if (this.coverage?.dateExcludedMatches)
+      return `${this.coverage.dateExcludedMatches} cached matches fall outside the selected date range. Choose This Month to include older articles; your filters stay unchanged until you choose.`;
+    switch (this.coverage?.status) {
+      case 'unsupported_query':
+        return 'Use a short technology phrase without URLs, private identifiers or search operators.';
+      case 'restrictive_filters':
+        return 'These filters may limit coverage. Try a broader date range, all sources or all popularity levels; filters have not been changed.';
+      case 'source_exhausted':
+        return 'The selected source returned no articles in its last ingestion check. This is not a search of its entire archive.';
+    }
+    switch (this.enrichment?.status) {
+      case 'ready':
+        return 'The last source search cached results. Your selected filters still apply.';
+      case 'exhausted':
+        return 'The last bounded source search found no matching articles. Broaden your filters or check later.';
+      case 'quota_limited':
+        return 'Cached results remain available. The backend controls when another search may be admitted.';
+      case 'worker_unavailable':
+        return 'The query is queued, but no recent worker heartbeat is available. Check cached results after the worker recovers.';
+      case 'source_unavailable':
+        return 'Approved sources could not complete the search. Cached matches remain available; this is not a completed empty search.';
+      case 'disabled':
+        return 'Only available cached articles are searched. No additional sources are being requested.';
+      case 'unavailable':
+        return this.items.length
+          ? 'Available cached matches are shown. Background search is temporarily unavailable; check cached results again shortly.'
+          : 'No cached articles match these filters yet. Background search is temporarily unavailable; check cached results again shortly.';
+      default:
+        if (this.coverage?.status === 'coverage_gap' && !this.total)
+          return 'No stored articles match this search yet. This catalog-only read did not request sources. Submit a changed search or use Check for New Articles to request a governed search when eligible.';
+        return this.selectedView === 'explore'
+          ? 'Search available technology news independently of your skills. Source coverage is bounded.'
+          : 'Matching and totals come from the current cached news pool.';
+    }
+  }
+  get savedType(): NewsSavedType {
+    return this.selectedView === 'bookmarks' ? 'bookmark' : 'read_later';
+  }
+  get savedItems(): SavedNewsItem[] {
+    return [...this.library[this.savedType].values()].filter(
+      (item) =>
+        this.savedType !== 'read_later' ||
+        this.historyFilter === 'all' ||
+        (this.historyFilter === 'read'
+          ? !!(item.firstReadAt || item.lastReadAt || item.readAt || item.readCount)
+          : !item.readAt),
+    );
+  }
+  get sourceDiagnostics(): NewsProviderDiagnostic[] {
+    return this.telemetry?.providerDiagnostics || [];
+  }
+  get pageNumbers(): (number | null)[] {
+    const current = Math.min(this.page, this.totalPages);
+    const pages = new Set([1, this.totalPages]);
+    for (
+      let value = Math.max(1, current - 1);
+      value <= Math.min(this.totalPages, current + 1);
+      value++
+    )
+      pages.add(value);
+    const result: (number | null)[] = [];
+    for (const value of [...pages].sort((a, b) => a - b)) {
+      const previous = result[result.length - 1];
+      if (previous && value - previous > 1) result.push(null);
+      result.push(value);
+    }
+    return result;
+  }
+  get freshnessLabel(): string {
+    if (this.offline) return 'Offline';
+    if (this.telemetry?.queryFreshness === 'missing') return 'Query not checked';
+    if (this.telemetry?.queryFreshness === 'empty') return 'Query checked: no matches';
+    if (this.telemetry?.freshness === 'warming') return 'Warming up';
+    if (this.telemetry?.freshness === 'stale' || this.telemetry?.staleFallback)
+      return 'Stale snapshot';
+    return this.telemetry?.freshness === 'fresh' ? 'Fresh snapshot' : 'Freshness unavailable';
+  }
+  get sourceMessage(): string {
+    if (this.offline)
+      return 'You are offline. Previously loaded articles remain available; saved changes need a connection.';
+    if (this.telemetry?.queryFreshness === 'missing')
+      return 'This query has no stored source check. Its search status appears below.';
+    if (this.telemetry?.queryFreshness === 'empty')
+      return 'The last successful check found no matching articles for this query.';
+    if (this.telemetry?.freshness === 'warming')
+      return 'Sources are warming up. Check again shortly; articles appear after the next background update.';
+    if (this.telemetry?.providerFailureCount)
+      return 'Some sources are temporarily unavailable. Available and retained articles are shown below.';
+    if (this.telemetry?.freshness === 'stale')
+      return 'Showing retained articles while sources recover. Publication dates and the last update remain unchanged.';
+    return this.selectedView === 'explore'
+      ? 'A shared technology news snapshot, independent of your developer skills.'
+      : 'A shared news snapshot, ranked for your current developer context.';
+  }
+  get updatedAt(): string | null {
+    return this.telemetry?.lastUpdated || this.context?.lastUpdated || null;
+  }
+  get retrySeconds(): number {
+    return Math.max(
+      0,
+      Math.ceil(
+        (Math.max(
+          this.news.retryAt('feed'),
+          this.failedRefresh && this.isFeedView ? this.news.retryAt('refresh') : 0,
+        ) -
+          this.now) /
+          1000,
+      ),
+    );
+  }
+  get refreshSeconds(): number {
+    return Math.max(
+      this.retrySeconds,
+      Math.max(0, Math.ceil((this.news.retryAt('refresh') - this.now) / 1000)),
+      Math.max(
+        0,
+        Math.ceil((Date.parse(this.enrichment?.nextEligibleAt || '') - this.serverNow) / 1000),
+      ) || 0,
+    );
+  }
+  private get serverNow(): number {
+    return this.now + this.serverOffsetMs;
+  }
+  get refreshExplanation(): string {
+    if (this.offline) return 'Connect to the internet before requesting a source check.';
+    if (this.discoveryPending)
+      return 'A background discovery job is active. Refresh Results only reads stored articles.';
+    if (this.isLoading)
+      return 'Reading the catalog. This does not indicate an external source request.';
+    if (this.refreshSeconds) {
+      if (Math.max(this.news.retryAt('refresh'), this.news.retryAt('feed')) > this.now)
+        return 'The server requested a pause for news requests (Retry-After). The timer does not promise new articles.';
+      const reason = this.enrichment?.reason || 'source eligibility';
+      const budgetDescription: Record<string, string> = {
+        discovery_daily_budget: 'The shared daily discovery-job allowance has been reached',
+        user_discovery_budget: 'Your account discovery allowance for this minute has been reached',
+        user_discovery_daily_budget: 'Your account daily discovery-job allowance has been reached',
+      };
+      const description =
+        budgetDescription[reason] ||
+        (this.enrichment?.eligibilityReason === 'query_freshness'
+          ? 'Recent query results are within the backend freshness window'
+          : this.enrichment?.eligibilityReason === 'provider_admission'
+            ? 'Approved sources are waiting for their configured quota or interval'
+            : this.enrichment?.eligibilityReason === 'manual_refresh_interval'
+              ? 'Minimum interval after the last successful source check'
+              : ['articles_cached', 'no_newer_articles'].includes(reason)
+                ? 'Backend source-check eligibility after the last result'
+                : reason.replace(/_/g, ' '));
+      return `${description}. The server controls eligibility; the countdown is not a fetch or a promise of new articles. Refresh Results reads the catalog separately.`;
+    }
+    return '';
+  }
+  get mutationBlocked(): boolean {
+    return this.offline || this.news.retryAt('mutation') > this.now;
+  }
+  get hasFilters(): boolean {
+    return (
+      JSON.stringify(this.filters) !==
+      JSON.stringify({ ...DEFAULT_NEWS_FILTERS, tab: this.filters.tab, mode: this.filters.mode })
+    );
+  }
+
+  selectView(view: NewsHubView): void {
+    if (view === this.selectedView) return;
+    this.cancelFeed();
+    this.resetDiscovery();
+    this.selectedView = view;
+    this.errorMessage = '';
+    this.savedError = '';
+    if (this.isFeedView) {
+      this.filters = {
+        ...this.filters,
+        mode: view === 'explore' ? 'explore' : 'personalized',
+        tab: view === 'explore' ? 'latest' : (view as NewsFilters['tab']),
+        search: view === 'for-you' ? '' : this.filters.search,
+        category: view === 'for-you' ? 'All' : this.filters.category,
+      };
+      this.items = [];
+      this.context = null;
+      this.telemetry = undefined;
+      this.page = 1;
+      this.total = 0;
+      this.totalPages = 1;
+      this.fetch(1);
+    } else {
+      this.loadLibrary(this.savedType, 1, true);
+    }
+  }
+
+  onFiltersChange(filters: NewsFilters): void {
+    const normalized = normalizeNewsFilters(filters);
+    if (normalized.mode !== 'explore' && normalized.tab === 'for-you') {
+      normalized.search = '';
+      normalized.category = 'All';
+    }
+    if (JSON.stringify(normalized) === JSON.stringify(this.filters)) return;
+    const searchChanged = normalized.search !== this.filters.search;
+    this.filters = normalized;
+    this.resetDiscovery();
+    this.items = [];
+    this.context = null;
+    this.telemetry = undefined;
+    this.page = 1;
+    this.total = 0;
+    this.totalPages = 1;
+    this.fetch(1, false, searchChanged && !!normalized.search);
+  }
+  resetFilters(): void {
+    this.onFiltersChange({
+      ...DEFAULT_NEWS_FILTERS,
+      tab: this.filters.tab,
+      mode: this.filters.mode,
+    });
+  }
+  broadenDate(): void {
+    if (this.coverage?.suggestedDate)
+      this.onFiltersChange({ ...this.filters, date: this.coverage.suggestedDate });
+  }
+  broadenFilters(): void {
+    this.onFiltersChange({ ...this.filters, category: 'All', source: 'All', popularity: 'all' });
+  }
+  searchTopic(topic: string): void {
+    this.onFiltersChange({ ...this.filters, search: topic });
+  }
+  selectPage(page: number): void {
+    if (
+      !this.isFeedView ||
+      !Number.isInteger(page) ||
+      page < 1 ||
+      page > this.totalPages ||
+      page === this.page ||
+      this.isLoading ||
+      this.offline ||
+      this.retrySeconds
+    )
+      return;
+    this.fetch(page);
+  }
+  refreshResults(): void {
+    if (!this.offline && !this.isLoading && !this.retrySeconds) this.fetch(this.page);
+  }
+  forceRefresh(): void {
+    if (!this.offline && !this.refreshSeconds && !this.isLoading && !this.discoveryPending) {
+      this.discoveryChecks = 0;
+      this.fetch(1, true);
+    }
+  }
+  retry(): void {
+    if (this.isFeedView) this.fetch(this.attemptedPage);
+    else this.loadLibrary(this.savedType, this.savedPage[this.savedType], true);
+  }
+  loadMoreSaved(): void {
+    if (!this.savedLoading.has(this.savedType) && this.savedHasMore[this.savedType])
+      this.loadLibrary(this.savedType, this.savedPage[this.savedType] + 1);
+  }
+
+  isSaved(article: NewsItem, type: NewsSavedType): boolean {
+    return !!this.findSaved(article, type);
+  }
+  articlePending(article: NewsItem, type: NewsSavedType): boolean {
+    return (
+      this.pending.has(`${type}:${article.url}`) ||
+      this.mutationBlocked ||
+      this.savedLoading.has(type)
+    );
+  }
+  itemPending(item: SavedNewsItem): boolean {
+    return this.pending.has(`${item.type}:${item.url}`) || this.mutationBlocked;
+  }
+
+  toggleSave(article: NewsItem, type: NewsSavedType): void {
+    if (this.articlePending(article, type)) return;
+    const existing = this.findSaved(article, type);
+    if (existing) {
+      this.removeSavedItem(existing);
+      return;
+    }
+    this.runAction(`${type}:${article.url}`, this.news.saveNews(article, type), (item) => {
+      this.library[type].set(item.id, item);
+      this.showToast(type === 'bookmark' ? 'Bookmark saved.' : 'Added to Read Later.');
+      this.loadLibrary(type, 1, true);
+    });
+  }
+  removeSavedItem(item: SavedNewsItem): void {
+    if (this.itemPending(item)) return;
+    this.runAction(`${item.type}:${item.url}`, this.news.removeSavedNews(item.id), () => {
+      this.library[item.type].delete(item.id);
+      this.showToast('Saved article removed.');
+      this.loadLibrary(item.type, 1, true);
+    });
+  }
+  markSavedItemAsRead(item: SavedNewsItem, read = true): void {
+    if (item.type !== 'read_later' || !!item.readAt === read || this.itemPending(item)) return;
+    this.runAction(
+      `${item.type}:${item.url}`,
+      this.news.markSavedNewsAsRead(item.id, read),
+      (updated) => {
+        this.library.read_later.set(updated.id, updated);
+        this.showToast(read ? 'Marked as read.' : 'Marked as unread. Reading history preserved.');
+      },
+    );
+  }
+  bookmarkSaved(item: SavedNewsItem): void {
+    if (this.itemPending(item) || this.pending.has(`bookmark:${item.url}`)) return;
+    this.runAction(
+      `bookmark:${item.url}`,
+      this.news.saveNews(
+        { ...item, id: item.articleId, publishedAt: item.publishedAt || '' },
+        'bookmark',
+      ),
+      (saved) => {
+        this.library.bookmark.set(saved.id, saved);
+        this.showToast('Bookmarked. Your reading history is preserved.');
+        this.loadLibrary('bookmark', 1, true);
+      },
+    );
+  }
+  trackId(_: number, item: { id: string }): string {
+    return item.id;
+  }
+
+  private fetch(page: number, refresh = false, discover = false): void {
+    if (!this.scope || this.offline || (!refresh && this.retrySeconds)) return;
+    this.cancelFeed();
+    const nonce = this.feedNonce;
+    const generation = this.generation;
+    this.attemptedPage = page;
+    this.failedRefresh = refresh;
+    this.isLoading = true;
+    this.errorMessage = '';
+    this.activeRequest = this.news
+      .getNews(this.filters, page, this.pageSize, {
+        refresh,
+        revalidate: true,
+        catalogOnly: !refresh && !discover,
+        discover,
+      })
+      .subscribe({
+        next: (response) => {
+          if (generation !== this.generation || nonce !== this.feedNonce || !this.isFeedView)
+            return;
+          const incoming = response.items || [];
+          this.items = incoming;
+          this.page = response.page;
+          this.pageSize = response.limit || this.pageSize;
+          this.total = response.total;
+          this.totalPages = response.totalPages;
+          this.context = response.recommendedBasedOn || null;
+          this.telemetry = response.telemetry;
+          this.coverage = response.coverage;
+          this.enrichment = response.enrichment;
+          const serverTime = Date.parse(response.serverTime || '');
+          this.serverOffsetMs = Number.isFinite(serverTime) ? serverTime - Date.now() : 0;
+          this.now = Date.now();
+          this.trendingTopics = response.trendingTopics;
+          this.isLoading = false;
+          this.lastValidated = Date.now();
+          if (this.enrichment?.nextEligibleAt) this.startClock();
+          this.scheduleDiscoveryCheck();
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          if (nonce !== this.feedNonce || generation !== this.generation) return;
+          this.errorMessage = this.errorText(error.status);
+          this.isLoading = false;
+          this.startClock();
+          this.cdr.markForCheck();
+        },
+      });
+    this.cdr.markForCheck();
+  }
+
+  private loadLibrary(type: NewsSavedType, page = 1, force = false): void {
+    if (!this.scope || this.offline) return;
+    this.savedRequests[type]?.unsubscribe();
+    const generation = this.generation;
+    this.savedLoading.add(type);
+    this.savedRequests[type] = this.news.getSavedNewsByType(type, page, force).subscribe({
+      next: (response) => {
+        if (generation !== this.generation) return;
+        if (page === 1) this.library[type].clear();
+        response.items.forEach((item) => this.library[type].set(item.id, item));
+        this.savedKnown.add(type);
+        this.savedTotal[type] = response.total;
+        this.savedPage[type] = response.page;
+        this.savedHasMore[type] = response.hasMore;
+        this.savedError = '';
+        this.savedLoading.delete(type);
+        this.cdr.markForCheck();
+      },
+      error: (error) => {
+        if (generation !== this.generation) return;
+        this.savedError = this.errorText(error.status);
+        this.savedLoading.delete(type);
+        this.startClock();
+        this.cdr.markForCheck();
+      },
+      complete: () => {
+        this.savedLoading.delete(type);
+        this.cdr.markForCheck();
+      },
+    });
+    this.cdr.markForCheck();
+  }
+
+  private runAction<T>(
+    key: string,
+    request: Observable<T>,
+    acknowledged: (value: T) => void,
+  ): void {
+    if (this.pending.has(key) || this.mutationBlocked) return;
+    const generation = this.generation;
+    this.pending.add(key);
+    // Cancel list reads so an older snapshot cannot undo a confirmed mutation.
+    Object.values(this.savedRequests).forEach((subscription) => subscription?.unsubscribe());
+    this.savedLoading.clear();
+    this.subscriptions.add(
+      request.pipe(takeUntil(this.scopeChanged)).subscribe({
+        next: (value) => {
+          if (generation === this.generation) {
+            acknowledged(value);
+            this.cdr.markForCheck();
+          }
+        },
+        error: (error) => {
+          if (generation !== this.generation) return;
+          this.pending.delete(key);
+          this.showToast(this.errorText(error.status));
+          this.startClock();
+          // The server may have accepted a write before a transport failure.
+          this.loadLibrary('bookmark', 1, true);
+          this.loadLibrary('read_later', 1, true);
+        },
+        complete: () => {
+          this.pending.delete(key);
+          this.cdr.markForCheck();
+        },
+      }),
+    );
+    this.cdr.markForCheck();
+  }
+
+  private resetScope(scope: string): void {
+    this.resetDiscovery();
+    this.scope = scope;
+    this.generation++;
+    this.scopeChanged.next();
+    this.cancelFeed();
+    this.news.clearCache();
+    Object.values(this.savedRequests).forEach((subscription) => subscription?.unsubscribe());
+    this.library.bookmark.clear();
+    this.library.read_later.clear();
+    this.pending.clear();
+    this.savedLoading.clear();
+    this.savedKnown.clear();
+    this.savedTotal.bookmark = 0;
+    this.savedTotal.read_later = 0;
+    this.items = [];
+    this.context = null;
+    this.telemetry = undefined;
+    this.trendingTopics = [];
+    this.total = 0;
+    this.page = 1;
+    this.totalPages = 1;
+    this.errorMessage = '';
+    this.savedError = '';
+    this.toast = '';
+    this.historyFilter = 'all';
+    if (scope) {
+      this.loadLibrary('bookmark', 1, true);
+      this.loadLibrary('read_later', 1, true);
+      if (this.isFeedView) this.fetch(1);
+    }
+    this.cdr.markForCheck();
+  }
+  private cancelFeed(): void {
+    clearTimeout(this.discoveryTimer);
+    this.feedNonce++;
+    this.activeRequest?.unsubscribe();
+    this.isLoading = false;
+  }
+  private resetDiscovery(): void {
+    clearTimeout(this.discoveryTimer);
+    this.discoveryChecks = 0;
+    this.coverage = undefined;
+    this.enrichment = undefined;
+  }
+  private scheduleDiscoveryCheck(): void {
+    clearTimeout(this.discoveryTimer);
+    if (
+      (!this.discoveryPending && !this.discoveryRecoverable) ||
+      this.discoveryChecks >= 4 ||
+      this.page !== 1 ||
+      !this.isFeedView ||
+      this.offline ||
+      document.visibilityState === 'hidden'
+    )
+      return;
+    const eligibleAt = Date.parse(this.enrichment?.nextEligibleAt || '');
+    // Retry only brief admission outages, at the server's next eligible time.
+    // Source failures and provider quota cooldowns never start this retry loop.
+    const delay =
+      this.discoveryRecoverable && Number.isFinite(eligibleAt)
+        ? Math.max(20000, eligibleAt - this.serverNow)
+        : 20000;
+    if (delay > 120000) return;
+    const nonce = this.feedNonce;
+    this.discoveryTimer = setTimeout(() => {
+      if (
+        nonce !== this.feedNonce ||
+        this.offline ||
+        document.visibilityState === 'hidden' ||
+        this.retrySeconds ||
+        this.isLoading
+      )
+        return;
+      this.discoveryChecks++;
+      // Ordinary cache revalidation only: never request provider refresh.
+      this.fetch(1);
+    }, delay);
+  }
+  private findSaved(article: NewsItem, type: NewsSavedType): SavedNewsItem | undefined {
+    return [...this.library[type].values()].find(
+      (item) => item.articleId === article.id || item.url === article.url,
+    );
+  }
+  private errorText(status: number): string {
+    if (status === 400)
+      return 'Use a technology phrase of at most 80 characters and six words, without URLs or search operators.';
+    if (status === 429) return 'Too many requests. Wait for the retry timer before trying again.';
+    if (status === 503)
+      return 'News is temporarily unavailable. Your loaded articles are still here.';
+    if (status === 0) return 'Connection interrupted. Check your connection and try again.';
+    if ([401, 403].includes(status)) return 'Your session cannot access this news. Sign in again.';
+    return 'The server could not confirm this request. Please try again.';
+  }
+  private showToast(message: string): void {
+    clearTimeout(this.toastTimer);
+    this.toast = message;
+    this.toastTimer = setTimeout(() => {
+      this.toast = '';
+      this.cdr.markForCheck();
+    }, 5000);
+    this.cdr.markForCheck();
+  }
+  private startClock(): void {
+    this.now = Date.now();
+    if (this.clock) return;
+    this.clock = setInterval(() => {
+      this.now = Date.now();
+      this.cdr.markForCheck();
+      if (!this.retrySeconds && !this.refreshSeconds && !this.mutationBlocked) {
+        clearInterval(this.clock);
+        this.clock = undefined;
+      }
+    }, 1000);
+  }
+  private revalidate(): void {
+    if (!this.scope || this.offline || this.pending.size) return;
+    this.loadLibrary('bookmark', 1, true);
+    this.loadLibrary('read_later', 1, true);
+    if (this.isFeedView && !this.isLoading) this.fetch(this.page);
+    this.lastValidated = Date.now();
+  }
+  private readonly onFocus = () => {
+    if (document.visibilityState === 'visible' && Date.now() - this.lastValidated > 30000)
+      this.revalidate();
+  };
+  private readonly onOnline = () => {
+    this.offline = false;
+    this.revalidate();
+    this.cdr.markForCheck();
+  };
+  private readonly onOffline = () => {
+    clearTimeout(this.discoveryTimer);
+    this.offline = true;
+    this.cdr.markForCheck();
+  };
+}

@@ -164,7 +164,12 @@ async function deliver(report, user, send, { resend = false, expectedHash } = {}
   }
 }
 
-async function processDue() {
+let sendReportEmailHandler = null;
+const registerSendReportEmail = (fn) => {
+  sendReportEmailHandler = typeof fn === 'function' ? fn : null;
+};
+
+async function processDue(sendEmail = sendReportEmailHandler) {
   if (running) return;
   running = true;
   try {
@@ -228,7 +233,8 @@ async function processDue() {
       .lean();
     for (const report of reports) {
       try {
-        await require('./weeklyReportService').sendWeeklyReportEmail(report, null);
+        if (!sendEmail) throw new Error('Weekly report email sender is not registered.');
+        await sendEmail(report, null);
       } catch {
         /* Durable state and the originating failure notice retain the outcome. */
       }
@@ -237,4 +243,4 @@ async function processDue() {
     running = false;
   }
 }
-module.exports = { deliver, processDue };
+module.exports = { deliver, processDue, registerSendReportEmail };

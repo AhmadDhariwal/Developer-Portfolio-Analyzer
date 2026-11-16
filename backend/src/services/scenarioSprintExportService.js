@@ -1,9 +1,14 @@
 'use strict';
+const mongoose = require('mongoose');
 const Sprint = require('../models/careerSprint');
 const { digest } = require('../utils/scenarioIdentity');
 const { buildProposal, VERSION } = require('./scenarioSprintAdapter');
 const legacyPolicy = require('./sprintLegacyPolicy');
 const fail = (statusCode, message) => Object.assign(new Error(message), { statusCode });
+let sprintCreator = null;
+const registerSprintCreator = (fn) => {
+  sprintCreator = typeof fn === 'function' ? fn : null;
+};
 const inFlightExports = new Map();
 const MAX_IN_FLIGHT_EXPORTS = 256;
 // Mutation target lookup must not execute overview analytics or inactivity writes.
@@ -30,12 +35,14 @@ const resolveCurrentSprintId = async (userId) => {
       .sort({ updatedAt: -1, _id: -1 })
       .maxTimeMS(2000)
       .lean();
-  if (!sprint) sprint = await require('./careerSprintService').createSprint({ userId });
+  if (!sprint) {
+    if (!sprintCreator) throw fail(500, 'Sprint creator is not registered.');
+    sprint = await sprintCreator({ userId });
+  }
   return sprint._id;
 };
 const performExport = async (userId, sprintId, scenario, mode, { scenarioHash, key }) => {
-  const owner = require('./careerSprintService');
-  owner.assertObjectId(sprintId, 'Sprint');
+  if (!mongoose.Types.ObjectId.isValid(sprintId)) throw fail(400, 'Invalid Sprint ID.');
   if (!['draft', 'active-tasks'].includes(mode)) throw fail(400, 'Unsupported export mode.');
   for (let attempt = 0; attempt < 5; attempt++) {
     const sprint = await Sprint.findOne({ _id: sprintId, userId }).maxTimeMS(2000);
@@ -173,4 +180,4 @@ const exportScenario = async (userId, sprintId, scenario, mode = 'draft') => {
     if (inFlightExports.get(requestKey) === operation) inFlightExports.delete(requestKey);
   }
 };
-module.exports = { exportScenario, resolveCurrentSprintId };
+module.exports = { exportScenario, resolveCurrentSprintId, registerSprintCreator };

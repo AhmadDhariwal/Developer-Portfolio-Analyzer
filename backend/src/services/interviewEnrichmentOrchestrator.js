@@ -40,7 +40,7 @@ const sectionTitles = [
   'Interview tip'
 ];
 
-const normalizeStructuredSections = (sections = {}, answer = '') => {
+const normalizeStructuredSections = (sections = {}, answer = '', preserveFormatting = false) => {
   const incoming = sections && typeof sections === 'object' ? sections : {};
   const extracted = extractAnswerSections(answer);
   const shortAnswer =
@@ -70,7 +70,7 @@ const normalizeStructuredSections = (sections = {}, answer = '') => {
   return {
     shortAnswer: normalizeAnswerText(shortAnswer),
     summary: normalizeAnswerText(shortAnswer),
-    explanation: normalizeAnswerText(explanation),
+    explanation: preserveFormatting ? String(explanation).trim() : normalizeAnswerText(explanation),
     keyPoints: bulletPoints
       .map((point) => normalizeAnswerText(point))
       .filter(Boolean)
@@ -155,7 +155,11 @@ const toStorableRecord = ({
   qualityState = 'approved'
 }) => {
   const question = normalizeQuestionText(item.question);
-  const answerSections = normalizeStructuredSections(item.answerSections, item.answer);
+  const answerSections = normalizeStructuredSections(
+    item.answerSections,
+    item.answer,
+    sourceMeta.mode === 'custom-question'
+  );
   const answer = normalizeAnswerText(
     item.answerFormat === 'structured' || item.answerSections ? toStructuredText(answerSections) : item.answer
   );

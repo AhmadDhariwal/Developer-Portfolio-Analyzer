@@ -5,6 +5,10 @@ const { digest, canonicalCourseKey } = require('../utils/courseIdentity');
 const shared = require('./sharedCourseCatalogService');
 const taxonomy = require('./courseCatalogTaxonomy');
 const { acquirePoolLease, releasePoolLease } = require('./courseGovernanceService');
+let courseServiceHelpers = null;
+const registerCourseServiceHelpers = (helpers) => {
+  courseServiceHelpers = helpers || null;
+};
 
 const MAX_GAPS = 64;
 const KNOWN_TOPICS = [...new Set([...taxonomy.technologies, ...shared.STACKS])];
@@ -48,14 +52,17 @@ const matchScore = (course, topic) => {
 };
 
 async function ensureInventory() {
-  if (!reviewedInventory)
+  if (!reviewedInventory) {
+    if (!courseServiceHelpers?.buildFallbackPool)
+      throw Error('Course service helpers are not registered.');
     reviewedInventory = {
-      courses: require('./courseService').buildFallbackPool('All', 200),
+      courses: courseServiceHelpers.buildFallbackPool('All', 200),
       version: digest([
         ...require('../data/courseCatalog'),
         ...require('../data/openLearningCatalog'),
       ]),
     };
+  }
   return shared.getCurated(reviewedInventory.courses, reviewedInventory.version, {
     returnCourses: false,
   });
@@ -247,7 +254,9 @@ async function load(filters) {
     // unrelated siblings in the same coverage document from becoming false matches.
     const rows = await collection().aggregate(pipeline(topic), { maxTimeMS: 5000 }).toArray();
     if (rows.length > MAX_RESULTS) throw busy();
-    const service = require('./courseService');
+    if (!courseServiceHelpers?.normaliseCourse)
+      throw Error('Course service helpers are not registered.');
+    const service = courseServiceHelpers;
     const unique = new Map();
     let sourceDeadline = Infinity;
     let stale = false;
@@ -333,7 +342,11 @@ async function load(filters) {
 }
 
 async function processDiscoveryQueue({
-  fetchProvider = require('./courseService').fetchYouTubeCourses,
+  fetchProvider = (...args) => {
+    if (!courseServiceHelpers?.fetchYouTubeCourses)
+      throw Error('Course service helpers are not registered.');
+    return courseServiceHelpers.fetchYouTubeCourses(...args);
+  },
 } = {}) {
   if (mongoose.connection.readyState !== 1 || !process.env.YOUTUBE_API_KEY) return;
   const lease = await acquirePoolLease('catalog-gap-worker', 60_000);
@@ -377,7 +390,9 @@ async function processDiscoveryQueue({
         topic: entry.topic,
         admittedTopic: true,
         background: true,
-        fingerprint: require('./courseService').providerConfigurationFingerprint(),
+        fingerprint: courseServiceHelpers?.providerConfigurationFingerprint
+          ? courseServiceHelpers.providerConfigurationFingerprint()
+          : digest(process.env.YOUTUBE_API_KEY || ''),
         fetchProvider,
       });
       providerResult = result;
@@ -451,6 +466,7 @@ module.exports = {
   },
   recordGap,
   processDiscoveryQueue,
+  registerCourseServiceHelpers,
   canonicalQuery,
   pipeline,
   MAX_GAPS,
@@ -465,3 +481,7 @@ module.exports = {
   },
   metrics: () => ({ entries: cache.size, bytes: cachedBytes, pending: pending.size }),
 };
+require('./courseCatalogCoverageService').registerCoverageDependencies?.({
+  pipeline,
+  maxResults: MAX_RESULTS,
+});

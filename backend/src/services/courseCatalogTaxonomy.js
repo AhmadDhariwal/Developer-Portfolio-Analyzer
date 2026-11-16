@@ -3,7 +3,7 @@
 const identity = require('../utils/courseIdentity');
 const requirements = require('./skillGapRequirements');
 const { INDUSTRY_SKILLS } = require('../utils/skilldetector');
-const shared = require('./sharedCourseCatalogService');
+const shared = require('./courseCatalogConstants');
 const technologies = [
   ...new Set([
     ...shared.TOPICS,
@@ -17,6 +17,7 @@ const technologies = [
   ]),
 ].sort();
 if (technologies.length > 128) throw Error('Review the bounded course technology registry.');
+const KNOWN_TOPICS = [...new Set([...technologies, ...shared.STACKS])];
 
 function canonical(value) {
   const text = String(value || '')
@@ -111,6 +112,7 @@ function matches(course, topic) {
 }
 module.exports = {
   technologies,
+  KNOWN_TOPICS,
   canonical,
   aliases,
   matches,

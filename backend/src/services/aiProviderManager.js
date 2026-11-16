@@ -820,6 +820,8 @@ class AIProviderManager {
           };
           if (requestPolicy?.attemptBudget)
             budget.remaining = Math.min(budget.remaining, Math.max(0, requestPolicy.attemptBudget.remaining));
+          const sharedBudgetStart = requestPolicy?.attemptBudget?.remaining;
+          const localBudgetStart = budget.remaining;
           let lease;
           try {
             lease = await admission.enter('global', deadline, totalMs + 2000);
@@ -856,7 +858,11 @@ class AIProviderManager {
             });
             return { ok: false, reason: finalReason() };
           } finally {
-            if (requestPolicy?.attemptBudget) requestPolicy.attemptBudget.remaining = budget.remaining;
+            if (requestPolicy?.attemptBudget)
+              requestPolicy.attemptBudget.remaining = Math.max(
+                0,
+                sharedBudgetStart - (localBudgetStart - budget.remaining)
+              );
             await admission.release(lease);
           }
         },

@@ -1,3 +1,5 @@
+const coverage = require('../interviewAnswerCoverage');
+const { projectContext } = require('../interviewProjectContext');
 const { normalizeTopicInput } = require('../interviewTopicNormalizer');
 const aiService = require('../aiservice');
 const coordination = require('../interviewCoordinationService');
@@ -49,7 +51,7 @@ const analyze = async (prompt, validate, preferredModel = '', privacyKey = '', o
         requestPolicy: {
           ...options.policy,
           ...(options.deadlineAt ? { deadlineAt: options.deadlineAt } : {}),
-          maxAttempts: before,
+          maxAttempts: Math.min(before, options.maxAttempts || before),
           attemptBudget: budget,
           maxOutputTokens: 8000,
           ...(options.providerTimeoutMs ? { providerTimeoutMs: options.providerTimeoutMs } : {}),
@@ -333,8 +335,15 @@ const buildEnrichmentPrompt = ({ question = '', currentAnswer = '', topicKey = '
     'No markdown. No extra text. JSON only.'
   ].join('\n');
 
-const normalizeGeneratedResult = ({ result = {}, fallbackQuestion = '', fallbackTags = [] }) => {
-  const answerSections = normalizeStructuredAnswer(result.answerSections || result.answer || result);
+const normalizeGeneratedResult = ({
+  result = {},
+  fallbackQuestion = '',
+  fallbackTags = [],
+  preserveFormatting = false
+}) => {
+  const rawSections = result.answerSections || result.answer || result;
+  const answerSections = normalizeStructuredAnswer(rawSections);
+  if (preserveFormatting) answerSections.explanation = String(rawSections.explanation || '').trim();
   return {
     question: normalizeQuestionText(result.question || fallbackQuestion),
     answer: structuredAnswerToText(answerSections),
@@ -454,87 +463,142 @@ const generateQuestionsFromAI = async ({
   return accepted;
 };
 
+const coverageFailure = () =>
+  Object.assign(
+    new Error('The answer could not cover every requested requirement within the bounded budget.'),
+    { reasonCode: 'answer_incomplete' }
+  );
+const assessCustomAnswer = async ({
+  plan,
+  answer,
+  userId = '',
+  deadlineAt,
+  signal,
+  budget = { remaining: 4 }
+}) => {
+  if (!coverage.structuralCoverage(plan, answer).complete)
+    return { complete: false, missing: coverage.structuralCoverage(plan, answer).missing };
+  if (!plan.complex) return { complete: true, quality: coverage.attest(plan, answer) };
+  if (budget.remaining < 1 || deadlineAt - Date.now() <= 2000) throw coverageFailure();
+  const base = aiConfig.customQAPolicy();
+  const outcome = await analyze(
+    coverage.evaluationPrompt(plan, answer),
+    (value) => coverage.validateAssessment(plan, answer, value),
+    '',
+    userId ? coordination.hash(String(userId)) : 'anonymous',
+    {
+      timeoutMs: Math.max(1, deadlineAt - Date.now() - 2000),
+      deadlineAt: deadlineAt - 2000,
+      signal,
+      attemptBudget: budget,
+      maxAttempts: Math.min(2, budget.remaining),
+      policy: {
+        ...base,
+        operation: 'interview-custom-coverage'
+      }
+    }
+  );
+  const complete = coverage.assessmentComplete(plan, answer, outcome.value);
+  return {
+    complete,
+    missing: outcome.value.requirements.filter((item) => !item.satisfied).map((item) => item.id),
+    quality: complete
+      ? coverage.attest(plan, answer, { provider: outcome.provider, model: outcome.model })
+      : undefined
+  };
+};
+
 const answerCustomQuestionFromAI = async ({
   topicKey,
   topicType,
   question,
   verifiedContext = '',
   userId = '',
-  deadlineAt,
-  signal
+  deadlineAt = Date.now() + aiConfig.customQAPolicy().totalMs,
+  signal,
+  answerPlan,
+  attemptBudget
 }) => {
-  if (deadlineAt && deadlineAt - Date.now() <= 2000)
-    throw Object.assign(new Error('Custom Q&A deadline exceeded.'), { reasonCode: 'ai_provider_timeout' });
-  const prompt = buildCustomAnswerPrompt({ topicKey, topicType, question, verifiedContext });
-
-  const outcome = await analyze(
-    prompt,
-    (value) =>
-      (value?.answerStatus === 'no_answer' &&
-        typeof value.reason === 'string' &&
-        value.reason.length <= 500) ||
-      (hasValidAnswerSchema(value) &&
-        validateInterviewQuestionQuality({
-          ...normalizeGeneratedResult({ result: { ...value, question } }),
-          topicKey,
-          sourceType: 'ai_generated',
-          minimumScore: 0.78,
-          questionMode: 'custom'
-        }).isValid &&
-        [value.topicKey, value.technology]
-          .filter(Boolean)
-          .every(
-            (topic) =>
-              normalizeTopicInput({ skill: topic }).topicKey ===
-              normalizeTopicInput({ skill: topicKey }).topicKey
-          ) &&
-        (!isSystemDesignQuestion(question, topicKey) ||
-          hasValidSystemDesign(value.answerSections || value.answer || value))),
-    '',
-    userId ? coordination.hash(String(userId)) : 'anonymous',
-    {
-      timeoutMs: Math.max(
-        1,
-        Math.min(
-          customAnswerTimeoutMs(topicKey, question),
-          deadlineAt ? deadlineAt - Date.now() - 2000 : Infinity
-        )
-      ),
-      policy: aiConfig.customQAPolicy(),
-      deadlineAt: deadlineAt ? deadlineAt - 2000 : Date.now() + customAnswerTimeoutMs(),
-      signal
-    }
-  );
-  if (!outcome.ok) {
-    const error = new Error('Interview AI unavailable.');
-    error.reasonCode =
-      outcome.reason === 'timeout'
-        ? 'provider_timeout'
-        : outcome.reason === 'invalid_json'
-          ? 'invalid_json'
-          : 'provider_error';
-    throw error;
+  const context = projectContext(topicKey);
+  const plan = answerPlan || coverage.analyzeQuestion({ topicKey, question, context });
+  const budget = attemptBudget || { remaining: aiConfig.customQAPolicy().maxAttempts };
+  let missing = [];
+  for (let round = 0; round < 2; round++) {
+    if (signal?.aborted) throw Object.assign(new Error('Request cancelled.'), { statusCode: 499 });
+    if (deadlineAt - Date.now() <= 2000 || budget.remaining < (plan.complex ? 2 : 1)) throw coverageFailure();
+    const prompt = [
+      buildCustomAnswerPrompt({ topicKey, topicType, question, verifiedContext }),
+      `Answer plan (internal): ${JSON.stringify(plan)}`,
+      `Verified nonsecret project context: ${JSON.stringify(context)}`,
+      plan.depth === 'concise'
+        ? 'Keep the answer concise: 2-4 explanatory sentences, brief points and a small example. Do not add installation/deployment instructions unless requested.'
+        : 'Use ordered steps, clear headings and fenced code/command blocks inside the existing explanation and example strings. Include prerequisites, expected observations and diagnostic fixes where required. Cover every user clause and every requirement substantively.',
+      missing.length
+        ? `Repair the previous coverage failure. Missing requirements: ${JSON.stringify(missing)}. Generate a complete replacement; do not merely add headings.`
+        : ''
+    ]
+      .filter(Boolean)
+      .join('\n');
+    const outcome = await analyze(
+      prompt,
+      (value) =>
+        (value?.answerStatus === 'no_answer' &&
+          typeof value.reason === 'string' &&
+          value.reason.length <= 500) ||
+        (hasValidAnswerSchema(value) &&
+          validateInterviewQuestionQuality({
+            ...normalizeGeneratedResult({ result: { ...value, question }, preserveFormatting: true }),
+            topicKey,
+            sourceType: 'ai_generated',
+            minimumScore: 0.78,
+            questionMode: 'custom'
+          }).isValid &&
+          [value.topicKey, value.technology]
+            .filter(Boolean)
+            .every(
+              (topic) =>
+                normalizeTopicInput({ skill: topic }).topicKey ===
+                normalizeTopicInput({ skill: topicKey }).topicKey
+            ) &&
+          (!isSystemDesignQuestion(question, topicKey) ||
+            hasValidSystemDesign(value.answerSections || value.answer || value))),
+      '',
+      userId ? coordination.hash(String(userId)) : 'anonymous',
+      {
+        timeoutMs: Math.max(1, deadlineAt - Date.now() - 2000),
+        deadlineAt: deadlineAt - 2000,
+        policy: aiConfig.customQAPolicy(),
+        signal,
+        attemptBudget: budget,
+        maxAttempts: plan.complex ? Math.max(1, Math.min(2, budget.remaining - 1)) : budget.remaining
+      }
+    );
+    if (outcome.value.answerStatus === 'no_answer')
+      throw Object.assign(new Error('No reliable technical answer.'), { reasonCode: 'no_answer' });
+    const answer = {
+      ...normalizeGeneratedResult({
+        result: { ...outcome.value, question },
+        fallbackQuestion: question,
+        preserveFormatting: true
+      }),
+      generationMeta: {
+        provider: outcome.provider,
+        model: outcome.model,
+        generatedAt: new Date().toISOString()
+      }
+    };
+    const assessment = await assessCustomAnswer({
+      plan,
+      answer,
+      userId,
+      deadlineAt,
+      signal,
+      budget
+    });
+    if (assessment.complete) return { ...answer, answerQuality: assessment.quality };
+    missing = assessment.missing;
   }
-  const result = outcome.value;
-  if (result.answerStatus === 'no_answer')
-    throw Object.assign(new Error('No reliable technical answer.'), { reasonCode: 'no_answer' });
-  if (!hasValidAnswerSchema(result)) {
-    const error = new Error('Interview AI schema rejected.');
-    error.reasonCode = 'schema_rejected';
-    throw error;
-  }
-  return {
-    ...normalizeGeneratedResult({
-      result: { ...result, question },
-      fallbackQuestion: question,
-      fallbackTags: []
-    }),
-    generationMeta: {
-      provider: outcome.provider,
-      model: outcome.model,
-      generatedAt: new Date().toISOString()
-    }
-  };
+  throw coverageFailure();
 };
 
 const enrichAnswerToStructured = async ({ question, currentAnswer, topicKey = '' }) => {
@@ -552,6 +616,8 @@ const answerSearchFallback = async ({
   verifiedContext = '',
   userId = '',
   deadlineAt,
+  answerPlan,
+  attemptBudget,
   signal
 }) => {
   return answerCustomQuestionFromAI({
@@ -561,6 +627,8 @@ const answerSearchFallback = async ({
     verifiedContext,
     userId,
     deadlineAt,
+    answerPlan,
+    attemptBudget,
     signal
   });
 };
@@ -596,6 +664,7 @@ const normalizeCategory = (value) => sanitizeCategory(value);
 const normalizeQualityScore = (value) => sanitizeQualityScore(value);
 
 module.exports = {
+  assessCustomAnswer,
   customAnswerTimeoutMs,
   generationTimeoutMs,
   generateQuestionsFromAI,

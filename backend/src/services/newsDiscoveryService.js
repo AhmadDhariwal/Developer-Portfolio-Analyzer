@@ -523,7 +523,9 @@ async function processQueue() {
     )
       return { skipped: true, reason: 'lease_lost' };
     if (topic === '__broad__') {
-      const result = await require('./newsService').refreshNewsPool();
+      const result = broadRefreshHandler
+        ? await broadRefreshHandler()
+        : { skipped: true, reason: 'broad_refresh_unregistered' };
       const value = status(
         result?.skipped
           ? 'waiting'
@@ -771,6 +773,11 @@ async function prewarm() {
   });
 }
 
+let broadRefreshHandler = null;
+const registerBroadRefresh = (fn) => {
+  broadRefreshHandler = typeof fn === 'function' ? fn : null;
+};
+
 module.exports = {
   startWorker,
   stopWorker,
@@ -783,6 +790,7 @@ module.exports = {
   processQueue,
   prewarm,
   buildSnapshot,
+  registerBroadRefresh,
   MINIMUM,
   RETENTION,
   QUEUE,

@@ -5,7 +5,7 @@ import {
   portfolioImage,
   portfolioLink,
 } from './public-profile.utils';
-import { portfolioFixture } from '../../pages/public-portfolio/testing/portfolio.fixture';
+import { portfolioFixture } from '../../features/public/pages/public-portfolio/testing/portfolio.fixture';
 
 describe('Portfolio presentation privacy and safe links', () => {
   it('excludes private preview fields and all hidden collections without mutating the response', () => {

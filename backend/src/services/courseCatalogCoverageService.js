@@ -12,6 +12,12 @@ const CHECK_MS = 15 * 60_000;
 const db = () => mongoose.connection.db.collection('course_catalog_coverage');
 let initializedDb;
 let initialization;
+let normaliseCourseHandler = null;
+let searchPipelineHandler = null;
+const registerCoverageDependencies = ({ normaliseCourse, pipeline, maxResults } = {}) => {
+  if (typeof normaliseCourse === 'function') normaliseCourseHandler = normaliseCourse;
+  if (typeof pipeline === 'function') searchPipelineHandler = { pipeline, maxResults };
+};
 
 async function initialize() {
   const current = mongoose.connection.db;
@@ -115,7 +121,7 @@ async function observe(
     );
     const valid = new Map();
     for (const raw of matching) {
-      const course = require('./courseService').normaliseCourse(raw);
+      const course = normaliseCourseHandler ? normaliseCourseHandler(raw) : raw;
       const identity = course && canonicalCourseKey(course);
       if (identity) valid.set(identity, course);
     }
@@ -293,11 +299,12 @@ async function recordOutcome(provider, topic, result, error, { lease, session, r
 
 async function inventory() {
   await shared.initialize();
+  if (!searchPipelineHandler) throw Error('Course catalog pipeline is not registered.');
   const rows = await mongoose.connection.db
     .collection('shared_course_catalog')
-    .aggregate(require('./courseCatalogSearchService').pipeline(''), { maxTimeMS: 5000 })
+    .aggregate(searchPipelineHandler.pipeline(''), { maxTimeMS: 5000 })
     .toArray();
-  if (rows.length > require('./courseCatalogSearchService').MAX_RESULTS)
+  if (rows.length > searchPipelineHandler.maxResults)
     throw Error('Catalog bound exceeded.');
   return rows;
 }
@@ -346,6 +353,7 @@ module.exports = {
   inventory,
   report,
   capability,
+  registerCoverageDependencies,
   MIN_RESULTS,
   VERSION,
 };

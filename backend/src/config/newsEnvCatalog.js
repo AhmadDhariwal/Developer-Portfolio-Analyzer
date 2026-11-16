@@ -1,4 +1,4 @@
-const { NEWS_PROVIDER_KEYS } = require('./newsConfig');
+const { NEWS_PROVIDER_KEYS } = require('./newsProviderKeys');
 
 // Operator documentation and .env organization use this catalog. Runtime parsing
 // remains in newsConfig; no credential values are stored here.

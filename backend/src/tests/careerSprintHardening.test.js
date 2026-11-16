@@ -13,11 +13,13 @@ const serviceSource = read('backend', 'src', 'services', 'careerSprintService.js
 const aiServiceSource = read('backend', 'src', 'services', 'aiTaskService.js');
 const routesSource = read('backend', 'src', 'routes', 'careerSprint.routes.js');
 const promptSource = read('backend', 'src', 'prompts', 'careerSprintPrompt.js');
-const componentSource = read('frontend', 'src', 'app', 'pages', 'career-sprint', 'career-sprint.component.ts');
+const componentSource = read('frontend', 'src', 'app', 'features', 'developer', 'pages', 'career-sprint', 'career-sprint.component.ts');
 const plannerSource = read(
   'frontend',
   'src',
   'app',
+  'features',
+  'developer',
   'pages',
   'career-sprint',
   'components',

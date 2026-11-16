@@ -35,6 +35,8 @@ export interface InterviewQuestion {
   originalSourceType?: string;
   sourceLabel?: string;
   sourceMeta?: {
+    mode?: string;
+    answerQuality?: { version?: number };
     url?: string;
     verificationStatus?: string;
     seedVersion?: string;

@@ -6,59 +6,11 @@ const { randomUUID } = require('node:crypto');
 const { setTimeout: delay } = require('node:timers/promises');
 const { skills } = require('../utils/courseIdentity');
 const governance = require('./courseGovernanceService');
-
-const VERSION = 'shared-courses-v1';
-const TOPICS = [
-  'JavaScript',
-  'TypeScript',
-  'Python',
-  'React',
-  'Angular',
-  'Vue',
-  'Node.js',
-  'Express',
-  'MongoDB',
-  'SQL',
-  'PostgreSQL',
-  'Docker',
-  'Kubernetes',
-  'AWS',
-  'GCP',
-  'Azure',
-  'Git',
-  'HTML',
-  'CSS',
-  'Redux',
-  'GraphQL',
-  'REST',
-  'API',
-  'Testing',
-  'CI/CD',
-  'Linux',
-  'System Design',
-  'Data Structures',
-  'Algorithms',
-  'Machine Learning',
-  'AI',
-  'Java',
-  'C#',
-  '.NET',
-  'PHP',
-  'Django',
-  'FastAPI',
-  'Spring',
-  'Next.js',
-  'Tailwind CSS',
-  'Flutter',
-  'Accessibility',
-  'Data Science',
-  'Statistics',
-  'C++',
-  'Generative AI',
-  'LLM',
-  'RAG',
-];
-const STACKS = ['Frontend', 'Backend', 'Full Stack', 'AI/ML'];
+const { VERSION, TOPICS, STACKS } = require('./courseCatalogConstants');
+let courseNormalizer = null;
+const registerCourseNormalizer = (fn) => {
+  courseNormalizer = fn || null;
+};
 const FRESH_MS = 6 * 60 * 60 * 1000;
 const STALE_MS = 7 * 24 * 60 * 60 * 1000;
 const NEGATIVE_MS = 10 * 60 * 1000;
@@ -247,10 +199,10 @@ async function build(key, topic, fingerprint, fetchProvider) {
     const completedAt = new Date();
     const prior = valid(locked, fingerprint) ? locked.courses : [];
     const courses = successful
-      ? require('./courseService').dedupeCourses(
+      ? (courseNormalizer ? courseNormalizer.dedupeCourses : (items) => items)(
           fetched.courses
             .slice(0, 40)
-            .map((course) => require('./courseService').normaliseCourse(course))
+            .map((course) => (courseNormalizer ? courseNormalizer.normaliseCourse(course) : course))
             .filter(Boolean),
         )
       : prior;
@@ -325,7 +277,7 @@ async function getYouTube({
 }) {
   await initialize();
   const canonical = admittedTopic
-    ? require('./courseCatalogSearchService').canonicalQuery(topic)
+    ? require('./courseCatalogTaxonomy').canonical(topic)
     : canonicalTopic(topic, careerStack);
   const key = `youtube:${canonical}`;
   const cached = memory.get(key);
@@ -461,6 +413,7 @@ module.exports = {
   findCourse: storageBoundary(findCourse),
   ingestCurated,
   initialize,
+  registerCourseNormalizer,
   canonicalTopic,
   TOPICS,
   STACKS,

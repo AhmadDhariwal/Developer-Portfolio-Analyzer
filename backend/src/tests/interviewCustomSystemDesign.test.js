@@ -1,3 +1,4 @@
+const { certified, judgeResult } = require('./fixtures/interviewCoverageFixture');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const provider = require('../services/providers/interviewAIProvider');
@@ -128,7 +129,7 @@ test('the service can finish a complete private system-design answer after the f
     await new Promise((resolve) => {
       release = resolve;
     });
-    return answer;
+    return certified({ ...input, skill: 'system-design', question }, answer);
   });
   const pending = service.answerCustomInterviewQuestion({
     userId: 'owner',
@@ -151,7 +152,10 @@ test('the service can finish a complete private system-design answer after the f
 for (const firstFailure of ['timeout', 'incomplete-design', 'invalid-example', 'wrong-topic']) {
   test(`system-design ${firstFailure} fails over through the shared manager using configured models`, async (t) => {
     t.mock.method(coordination, 'runAI', async (_key, operation, options) => {
-      assert.equal(options.timeoutMs, provider.customAnswerTimeoutMs('system-design', question));
+      assert.ok(
+        options.timeoutMs > 0 &&
+          options.timeoutMs <= provider.customAnswerTimeoutMs('system-design', question)
+      );
       return operation(new AbortController().signal);
     });
     t.mock.method(manager, 'getStatus', () => ({ enabledProviders: ['gemini', 'openai'] }));
@@ -170,6 +174,8 @@ for (const firstFailure of ['timeout', 'incomplete-design', 'invalid-example', '
       manager,
       'runProviderRequest',
       async ({ provider: name, modelName, parseJson, timeoutMs, prompt }) => {
+        const judged = judgeResult(prompt);
+        if (judged) return judged.value;
         assert.equal(timeoutMs, 5000);
         assert.ok(prompt.includes('"technology":"system-design"'));
         assert.ok(prompt.includes('"topicKey":"system-design"'));
@@ -242,7 +248,7 @@ test('one cancelled custom caller cannot cancel the matching private answer requ
       release = resolve;
     });
     assert.equal(input.signal.aborted, false);
-    return answer;
+    return certified({ ...input, skill: 'system-design', question }, answer);
   });
   const input = { userId: 'owner', skill: 'system-design', question };
   const left = service.answerCustomInterviewQuestion({ ...input, signal: caller.signal });

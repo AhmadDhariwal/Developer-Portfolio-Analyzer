@@ -1,19 +1,6 @@
 const { z } = require('zod');
+const { NEWS_PROVIDER_KEYS } = require('./newsProviderKeys');
 
-const NEWS_PROVIDER_KEYS = [
-  'newsapi',
-  'gnews',
-  'hackernews',
-  'devto',
-  'reddit',
-  'hackernewssearch',
-  'githubreleases',
-  'githubadvisories',
-  'lobsters',
-  'devtosearch',
-  'kubernetesblog',
-  'cloudflarechangelog'
-];
 const flag = z.enum(['true', 'false']).optional();
 const integer = (min, max) => z.coerce.number().int().min(min).max(max).optional();
 const newsEnvShape = {

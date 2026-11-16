@@ -3,6 +3,7 @@
 const mongoose = require('mongoose');
 const { digest, COURSE_PROVIDERS } = require('../utils/courseIdentity');
 const coverage = require('./courseCatalogCoverageService');
+const { KNOWN_TOPICS } = require('./courseCatalogTaxonomy');
 const workersEnabled = () =>
   process.env.COURSES_MAINTENANCE_ENABLED !== 'false' &&
   process.env.COURSES_GAP_DISCOVERY_ENABLED !== 'false';
@@ -58,7 +59,7 @@ async function describeUncached({
       : !course.provenance?.metadataVerifiedAt ||
         new Date(course.provenance.metadataVerifiedAt).getTime() + 7 * 86400_000 <= Date.now(),
   );
-  const known = require('./courseCatalogSearchService').KNOWN_TOPICS.includes(topic);
+  const known = KNOWN_TOPICS.includes(topic);
   const needsAdmission = topic && (insufficient || (!known && selectedStale));
   let admission;
   if (needsAdmission)

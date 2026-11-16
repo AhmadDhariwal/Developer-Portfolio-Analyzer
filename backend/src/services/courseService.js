@@ -982,3 +982,11 @@ module.exports = {
   fetchYouTubeCourses,
   clearYouTubeCache,
 };
+sharedCatalog.registerCourseNormalizer?.({ normaliseCourse, dedupeCourses });
+require('./courseCatalogCoverageService').registerCoverageDependencies?.({ normaliseCourse });
+require('./courseCatalogSearchService').registerCourseServiceHelpers?.({
+  buildFallbackPool,
+  normaliseCourse,
+  fetchYouTubeCourses,
+  providerConfigurationFingerprint: () => digest(process.env.YOUTUBE_API_KEY || ''),
+});

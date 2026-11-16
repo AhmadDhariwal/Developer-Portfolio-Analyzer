@@ -9,7 +9,7 @@ import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.
 import { CourseService } from './course.service';
 import { RecommendationsService } from './recommendations.service';
 import { AuthService } from './auth.service';
-import { sprintFixture } from '../../pages/career-sprint/testing/sprint.fixture';
+import { sprintFixture } from '../../features/developer/pages/career-sprint/testing/sprint.fixture';
 
 describe('Career Sprint HTTP contracts and handoff invalidation', () => {
   let service: CareerSprintService;

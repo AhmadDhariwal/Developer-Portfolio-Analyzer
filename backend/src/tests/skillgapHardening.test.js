@@ -626,7 +626,7 @@ test("saved previews are owner-scoped, deduplicated, raw-text-free, and load wit
   assert.equal(SavedPreview.schema.path("resumeText"), undefined);
   assert.equal(SavedPreview.schema.path("userId").options.required, true);
   const component = fs.readFileSync(
-    path.resolve(__dirname, "../../../frontend/src/app/pages/skill-gap/skill-gap.component.ts"),
+    path.resolve(__dirname, "../../../frontend/src/app/features/developer/pages/skill-gap/skill-gap.component.ts"),
     "utf8"
   );
   const load = component.slice(
@@ -860,7 +860,7 @@ test("prompt is narrative-only and schema-bound", () => {
 
 test("failed refresh preserves previous valid result in the frontend component", () => {
   const component = fs.readFileSync(
-    path.resolve(__dirname, "../../../frontend/src/app/pages/skill-gap/skill-gap.component.ts"),
+    path.resolve(__dirname, "../../../frontend/src/app/features/developer/pages/skill-gap/skill-gap.component.ts"),
     "utf8"
   );
   assert.match(component, /const previousResult = this\.result/);

@@ -1,3 +1,4 @@
+const { judgeResult } = require('./fixtures/interviewCoverageFixture');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const interviewPrepService = require('../services/interviewPrepService');
@@ -235,7 +236,8 @@ test('provider accepts a complete structured AI answer and reports typed failure
     confidenceScore: 0.94,
     qualityScore: 94
   };
-  aiService.runAIAnalysis = async () => ({ ok: true, value: complete, provider: 'mock', latencyMs: 10 });
+  aiService.runAIAnalysis = async (prompt) =>
+    judgeResult(prompt) || { ok: true, value: complete, provider: 'mock', latencyMs: 10 };
   const accepted = await aiProvider.answerSearchFallback({
     topicKey: 'mysql',
     question: 'What is the difference between an index and a transaction?'
