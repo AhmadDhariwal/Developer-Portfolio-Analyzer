@@ -85,7 +85,7 @@ const migrateRecommendationIndexes = async (AnalysisCache) => {
 
 if (require.main === module) {
   const mongoose = require('mongoose');
-  const AnalysisCache = require('../models/analysisCache');
+  const AnalysisCache = require('../modules/skill-gap/models/analysisCache');
   (async () => {
     await mongoose.connect(process.env.MONGO_URI || process.env.MONGODB_URI);
     const result = await migrateRecommendationIndexes(AnalysisCache);

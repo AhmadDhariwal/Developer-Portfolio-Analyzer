@@ -18,15 +18,21 @@ async function readAndParsePdf(filePath) {
   }
 }
 const pdfService = require(
-  path.resolve(__dirname, '../../backend/src/services/weeklyReportPdfService'),
+  path.resolve(
+    __dirname,
+    '../../backend/src/modules/weekly-reports/services/weeklyReportPdfService',
+  ),
 );
 const presentation = require(
-  path.resolve(__dirname, '../../backend/src/services/weeklyReportPresentation'),
+  path.resolve(
+    __dirname,
+    '../../backend/src/modules/weekly-reports/services/weeklyReportPresentation',
+  ),
 );
 
 process.env.WEEKLY_REPORT_TIMEZONE = 'Asia/Karachi';
 const weeklyCalendar = require(
-  path.resolve(__dirname, '../../backend/src/services/weeklyReportCalendar'),
+  path.resolve(__dirname, '../../backend/src/modules/weekly-reports/services/weeklyReportCalendar'),
 );
 const root = path.resolve(__dirname, '..');
 const output = path.resolve(

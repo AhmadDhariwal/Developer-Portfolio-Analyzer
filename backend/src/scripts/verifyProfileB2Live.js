@@ -12,7 +12,7 @@ const {
   GetObjectCommand,
   ListObjectVersionsCommand
 } = require('@aws-sdk/client-s3');
-const b2 = require('../services/b2ObjectStorageService');
+const b2 = require('../core/storage/b2ObjectStorageService');
 
 async function main() {
   const uri = process.env.PROFILE_B2_LIVE_MONGO;
@@ -43,11 +43,11 @@ async function main() {
   const check = (name) => report.checks.push(name);
   const adapterGetter = b2.getAdapter;
   b2.getAdapter = () => adapter;
-  const assets = require('../services/storedAssetService');
-  const Asset = require('../models/storedAsset');
-  const User = require('../models/user');
-  const Profile = require('../models/publicProfile');
-  const Resume = require('../models/resumeFile');
+  const assets = require('../core/storage/storedAssetService');
+  const Asset = require('../core/storage/models/storedAsset');
+  const User = require('../modules/auth/models/user');
+  const Profile = require('../modules/public-portfolio/models/publicProfile');
+  const Resume = require('../modules/resume/models/resumeFile');
   const created = [];
   let connected = false;
   let stage = 'configuration';

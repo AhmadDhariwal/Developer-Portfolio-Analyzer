@@ -69,19 +69,19 @@ async function main() {
     if (process.env.INTEGRATION_TEST_MONGOD)
       childEnv.INTEGRATION_TEST_MONGOD = process.env.INTEGRATION_TEST_MONGOD;
     const suites = [
-      "requestFlowGovernance",
-      "publicPortfolioHardening",
-      "profileAccountSecurity",
-      "profileSettingsProduction",
-      "b2Storage",
-      "resumePipelineFinalization",
-      "developerContextService",
-      "careerSprintPlanningFinalization",
-      "newsHubHardening",
-      "newsFlow",
-      "integrationsGovernance",
-      "integrationsLifecycle",
-      "integrationMongoGovernance",
+      "core/requestFlowGovernance",
+      "public-portfolio/publicPortfolioHardening",
+      "profile/profileAccountSecurity",
+      "profile/profileSettingsProduction",
+      "core/b2Storage",
+      "resume/resumePipelineFinalization",
+      "core/developerContextService",
+      "career-sprint/careerSprintPlanningFinalization",
+      "news/newsHubHardening",
+      "news/newsFlow",
+      "integrations/integrationsGovernance",
+      "integrations/integrationsLifecycle",
+      "integrations/integrationMongoGovernance",
     ];
     const child = spawn(
       process.execPath,

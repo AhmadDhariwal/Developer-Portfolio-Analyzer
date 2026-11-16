@@ -4,9 +4,9 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../.env'), quiet: t
 const mongoose = require('mongoose');
 const fs = require('node:fs');
 const { randomUUID } = require('node:crypto');
-const { listImportantTopics } = require('../services/interviewTopicNormalizer');
-const { DIFFICULTY_SET } = require('../services/interviewQuestionQualityService');
-const { coverageTarget, planCoverageBatch } = require('../services/interviewCoverageService');
+const { listImportantTopics } = require('../modules/interview-prep/services/interviewTopicNormalizer');
+const { DIFFICULTY_SET } = require('../modules/interview-prep/services/interviewQuestionQualityService');
+const { coverageTarget, planCoverageBatch } = require('../modules/interview-prep/services/interviewCoverageService');
 
 const run = async () => {
   const args = process.argv.slice(2);
@@ -28,9 +28,9 @@ const run = async () => {
     autoCreate: false,
     serverSelectionTimeoutMS: 5000
   });
-  const repository = require('../repositories/interviewQuestionRepository');
-  const Bank = require('../models/interviewQuestionBank');
-  const coordination = require('../services/interviewCoordinationService');
+  const repository = require('../modules/interview-prep/repositories/interviewQuestionRepository');
+  const Bank = require('../modules/interview-prep/models/interviewQuestionBank');
+  const coordination = require('../modules/interview-prep/services/interviewCoordinationService');
   const runId = args.includes('--run-id') ? value('--run-id') : `coverage-${randomUUID()}`;
   if (!/^[a-zA-Z0-9_-]{8,100}$/.test(runId)) throw new Error('Invalid coverage run ID.');
   const target = coverageTarget(topic, difficulty);
@@ -40,8 +40,8 @@ const run = async () => {
   const output = path.resolve(__dirname, `../../verification/interview-prep/coverage-fill-${runId}.json`);
   let acquired = false;
   try {
-    const { generateFreshInterviewQuestions } = require('../services/interviewPrepService');
-    const { generationTimeoutMs } = require('../services/providers/interviewAIProvider');
+    const { generateFreshInterviewQuestions } = require('../modules/interview-prep/services/interviewPrepService');
+    const { generationTimeoutMs } = require('../modules/interview-prep/providers/interviewAIProvider');
     acquired = Boolean(await coordination.acquire(leaseKey, token, generationTimeoutMs() + 10000));
     if (!acquired)
       throw Object.assign(
@@ -103,6 +103,6 @@ if (require.main === module)
       process.exitCode = 1;
     })
     .finally(async () => {
-      await require('../services/redisCacheService').closeRedisCache();
+      await require('../core/cache/redisCacheService').closeRedisCache();
       await mongoose.disconnect();
     });

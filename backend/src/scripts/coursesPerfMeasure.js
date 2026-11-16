@@ -189,7 +189,7 @@ const createHarness = ({ mongoDelayMs = 25, youtubeDelayMs = 80, redisDelayMs = 
       delete require.cache[entry];
     }
   });
-  const controller = require('../controllers/courseController');
+  const controller = require('../modules/courses/courseController');
   controller.clearCourseMemoryCache();
   return { controller, counters, shared, mongo };
 };

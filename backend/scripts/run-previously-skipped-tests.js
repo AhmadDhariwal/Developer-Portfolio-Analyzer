@@ -138,7 +138,7 @@ async function run() {
     const started = Date.now();
     const testResult = await execFilePromise(
       process.execPath,
-      ["--test", path.join(__dirname, "../src/tests/b2Storage.test.js")],
+      ["--test", path.join(__dirname, "../src/tests/core/b2Storage.test.js")],
       {
         env: {
           ...process.env,
@@ -193,7 +193,7 @@ async function run() {
       process.execPath,
       [
         "--test",
-        path.join(__dirname, "../src/tests/storageSecurityFinal.test.js"),
+        path.join(__dirname, "../src/tests/core/storageSecurityFinal.test.js"),
       ],
       {
         env: {

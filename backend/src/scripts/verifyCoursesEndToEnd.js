@@ -22,22 +22,22 @@ process.env.REDIS_URL = '';
 process.env.UPSTASH_REDIS_TOKEN = '';
 const liveYoutubeKey = process.env.YOUTUBE_API_KEY;
 process.env.YOUTUBE_API_KEY = '';
-const User = require('../models/user');
-const ResumeFile = require('../models/resumeFile');
-const ResumeAnalysis = require('../models/resumeAnalysis');
-const GitHubCache = require('../models/githubAnalysisCache');
-const AnalysisCache = require('../models/analysisCache');
-const Progress = require('../models/userCourseProgress');
-const CareerSprint = require('../models/careerSprint');
-const PublicProfile = require('../models/publicProfile');
-const IntegrationGovernanceState = require('../models/integrationGovernanceState');
-const signals = require('../services/developerSignalService');
-const engine = require('../services/recommendationEngineService');
-const { ANALYSIS_VERSION } = require('../services/skillGapCacheContract');
-const { EVIDENCE_POLICY_VERSION } = require('../services/skillGapEvidenceService');
-const { TAXONOMY_VERSION, MATRIX_VERSION } = require('../services/skillGapRequirements');
-const ai = require('../services/aiservice');
-const CATALOG_SIZE = require('../services/courseService').buildFallbackPool('All', 200).length;
+const User = require('../modules/auth/models/user');
+const ResumeFile = require('../modules/resume/models/resumeFile');
+const ResumeAnalysis = require('../modules/resume/models/resumeAnalysis');
+const GitHubCache = require('../modules/github/models/githubAnalysisCache');
+const AnalysisCache = require('../modules/skill-gap/models/analysisCache');
+const Progress = require('../modules/courses/models/userCourseProgress');
+const CareerSprint = require('../modules/career-sprint/models/careerSprint');
+const PublicProfile = require('../modules/public-portfolio/models/publicProfile');
+const IntegrationGovernanceState = require('../modules/integrations/models/integrationGovernanceState');
+const signals = require('../core/developer-context/developerSignalService');
+const engine = require('../modules/recommendations/services/recommendationEngineService');
+const { ANALYSIS_VERSION } = require('../modules/skill-gap/services/skillGapCacheContract');
+const { EVIDENCE_POLICY_VERSION } = require('../modules/skill-gap/services/skillGapEvidenceService');
+const { TAXONOMY_VERSION, MATRIX_VERSION } = require('../modules/skill-gap/services/skillGapRequirements');
+const ai = require('../core/ai/aiservice');
+const CATALOG_SIZE = require('../modules/courses/services/courseService').buildFallbackPool('All', 200).length;
 let aiCalls = 0;
 const originalAI = ai.runAIAnalysis;
 ai.runAIAnalysis = async () => {
@@ -225,9 +225,9 @@ async function capture(page, name) {
   });
   const app = express();
   app.use(express.json({ limit: '16kb' }));
-  app.use('/api/courses', require('../routes/courseRoutes'));
-  app.use('/api/career-sprints', require('../routes/careerSprint.routes'));
-  app.use('/api/profile', require('../routes/profile.routes'));
+  app.use('/api/courses', require('../modules/courses/courseRoutes'));
+  app.use('/api/career-sprints', require('../modules/career-sprint/careerSprint.routes'));
+  app.use('/api/profile', require('../modules/profile/profile.routes'));
   app.use('/api', (_req, res) =>
     res.status(404).json({ message: 'Background endpoint outside verification harness' }),
   );
@@ -622,7 +622,7 @@ async function capture(page, name) {
       };
       await mongoose.disconnect();
     }
-    await require('../services/redisCacheService').closeRedisCache();
+    await require('../core/cache/redisCacheService').closeRedisCache();
     ai.runAIAnalysis = originalAI;
     if (liveYoutubeKey === undefined) delete process.env.YOUTUBE_API_KEY;
     else process.env.YOUTUBE_API_KEY = liveYoutubeKey;

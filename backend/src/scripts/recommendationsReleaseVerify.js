@@ -5,8 +5,8 @@ const path = require('path');
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
-const User = require('../models/user');
-const AnalysisCache = require('../models/analysisCache');
+const User = require('../modules/auth/models/user');
+const AnalysisCache = require('../modules/skill-gap/models/analysisCache');
 const { migrateRecommendationIndexes } = require('./migrateRecommendationIndexes');
 
 const API = String(process.env.RELEASE_API_BASE || 'http://127.0.0.1:5000/api').replace(/\/$/, '');

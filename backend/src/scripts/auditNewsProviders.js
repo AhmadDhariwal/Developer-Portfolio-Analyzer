@@ -6,12 +6,12 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const root = path.resolve(__dirname, '../..');
 dotenv.config({ path: path.join(root, '.env'), quiet: true });
-const cache = require('../services/redisCacheService');
-const governor = require('../services/newsGovernanceService');
-const catalog = require('../services/newsCatalogService');
-const Article = require('../models/newsArticle');
-const Pool = require('../models/news');
-const { newsEnvShape, auditNewsConfiguration, validateNewsRelationships } = require('../config/newsConfig');
+const cache = require('../core/cache/redisCacheService');
+const governor = require('../modules/news/services/newsGovernanceService');
+const catalog = require('../modules/news/services/newsCatalogService');
+const Article = require('../modules/news/models/newsArticle');
+const Pool = require('../modules/news/models/news');
+const { newsEnvShape, auditNewsConfiguration, validateNewsRelationships } = require('../modules/news/config/newsConfig');
 const { z } = require('zod');
 const phase = process.argv.includes('--after') ? 'after' : 'before';
 const live = process.argv.includes('--live');
@@ -32,10 +32,10 @@ async function main() {
     sha256: createHash('sha256').update(text).digest('hex')
   });
   await mongoose.connect(process.env.MONGODB_URI, { autoIndex: false, serverSelectionTimeoutMS: 5000 });
-  const platform = await require('../models/platformSettings').findOne({ scope: 'global' }).lean();
+  const platform = await require('../modules/super-admin/models/platformSettings').findOne({ scope: 'global' }).lean();
   if (live) {
     if (!platform) throw new Error('Persisted platform settings required for live checks');
-    await require('../services/platformSettingsService').getSettings();
+    await require('../modules/super-admin/services/platformSettingsService').getSettings();
   }
   await cache.initRedisCache({ silent: true, probeOnly: true });
   const redis = cache.getRedisCacheClient({ commandTimeoutMs: 1500 });
@@ -117,7 +117,7 @@ async function main() {
     // No restricted/paid API, broad scheduler, quota reset, discovery job or persistence.
     // Reserve against the application's real counters; exhausted sources must remain blocked.
     process.env.NEWS_DISCOVERY_RESULTS_PER_PROVIDER = '5';
-    const adapters = require('../services/newsDiscoveryProviders');
+    const adapters = require('../modules/news/services/newsDiscoveryProviders');
     result.live = [];
     for (const key of [
       'hackernewssearch',
@@ -139,7 +139,7 @@ async function main() {
       const response = await adapters.search(key, 'kubernetes');
       result.live.push({
         provider: key,
-        ...require('../utils/newsProviderErrors').publicFields(response),
+        ...require('../modules/news/utils/newsProviderErrors').publicFields(response),
         normalizedArticles: response.items.length,
         catalogEligibleArticles: response.items.filter((item) => catalog.prepare(item)).length
       });

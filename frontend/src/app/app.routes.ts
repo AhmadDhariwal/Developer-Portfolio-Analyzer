@@ -23,7 +23,7 @@ import { ApiDocsPageComponent } from './features/public/pages/api-docs-page/api-
 import { PublicBlogPageComponent } from './features/public/pages/public-blog-page/public-blog-page.component';
 import { ContactPageComponent } from './features/public/pages/contact-page/contact-page.component';
 import { SettingsPageComponent } from './features/super-admin/pages/platform-settings/settings-page.component';
-import { NotificationsComponent } from './features/developer/pages/notifications/notifications.component';
+import { NotificationsComponent } from './features/notifications/notifications.component';
 import { PublicPortfolioComponent } from './features/public/pages/public-portfolio/public-portfolio.component';
 import { PortfolioSettingsComponent } from './features/developer/pages/portfolio-settings/portfolio-settings.component';
 import { WeeklyReportsComponent } from './features/developer/pages/weekly-reports/weekly-reports.component';

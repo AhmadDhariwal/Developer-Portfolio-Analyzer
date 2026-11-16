@@ -9,7 +9,7 @@ const path = require('node:path');
 const assert = require('node:assert/strict');
 const origin = 'http://127.0.0.1:4316';
 const output = path.resolve(__dirname, '../verification/interview-prep/complete-ai');
-const { SYSTEM_DESIGN_FIELDS } = require('../../backend/src/services/interviewAIValidation');
+const { SYSTEM_DESIGN_FIELDS } = require('../../backend/src/modules/interview-prep/services/interviewAIValidation');
 const report = {
   synthetic: true,
   productionBundle: true,

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const { env, fixture } = require('./b2Fixture');
-const b2 = require('../../services/b2ObjectStorageService');
+const b2 = require('../../core/storage/b2ObjectStorageService');
 process.once('message', async ({ uri, dbName, objects, reference, owner }) => {
   try {
     if (
@@ -20,8 +20,8 @@ process.once('message', async ({ uri, dbName, objects, reference, owner }) => {
       );
     const adapter = b2.createAdapter({ env, clientFactory: fake.clientFactory });
     b2.getAdapter = () => adapter;
-    const bytes = await require('../../services/storedAssetService').read(reference, owner);
-    await require('../../services/storedAssetService').retryCleanup();
+    const bytes = await require('../../core/storage/storedAssetService').read(reference, owner);
+    await require('../../core/storage/storedAssetService').retryCleanup();
     await mongoose.disconnect();
     process.send({
       size: bytes.length,

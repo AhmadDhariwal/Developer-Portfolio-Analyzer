@@ -11,7 +11,7 @@ import { ComparisonComponent } from './pages/comparison/comparison.component';
 import { RecruiterAnalyticsComponent } from './pages/recruiter-analytics/recruiter-analytics.component';
 import { RecruiterActivityLogsComponent } from './pages/activity-logs/activity-logs.component';
 import { RecruiterProfileComponent } from './pages/recruiter-profile/recruiter-profile.component';
-import { NotificationsComponent } from '../developer/pages/notifications/notifications.component';
+import { NotificationsComponent } from '../notifications/notifications.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },

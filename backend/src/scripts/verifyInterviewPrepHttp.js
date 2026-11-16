@@ -1,8 +1,8 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
-const connectDB = require('../config/db');
-const User = require('../models/user');
+const connectDB = require('../core/config/db');
+const User = require('../modules/auth/models/user');
 
 const percentile = (values, p) => {
   const sorted = [...values].sort((a, b) => a - b);

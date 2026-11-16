@@ -78,7 +78,11 @@ const report = {
     report.ownerIdentity = 'Existing developer; credentials and personal profile omitted.';
     report.sourceFingerprint = crypto
       .createHash('sha256')
-      .update(fs.readFileSync(path.join(backend, 'src/services/interviewPrepService.js')))
+      .update(
+        fs.readFileSync(
+          path.join(backend, 'src/modules/interview-prep/services/interviewPrepService.js'),
+        ),
+      )
       .digest('hex');
     server = http.createServer(async (req, res) => {
       const url = new URL(req.url, 'http://127.0.0.1:4319');
@@ -138,7 +142,8 @@ const report = {
     page.on('pageerror', (error) => pageErrors.push(error.message));
     const question = 'system design of netflix';
     const fields = Object.keys(
-      require(path.join(backend, 'src/services/interviewAIValidation')).SYSTEM_DESIGN_FIELDS,
+      require(path.join(backend, 'src/modules/interview-prep/services/interviewAIValidation'))
+        .SYSTEM_DESIGN_FIELDS,
     );
     const bankBefore = await mongoose.connection
       .collection('interviewquestionbanks')
@@ -222,7 +227,8 @@ const report = {
     await card.getByText(first.answerSections.scopeNote, { exact: true }).waitFor();
     const rendered = await card.textContent();
     for (const title of Object.values(
-      require(path.join(backend, 'src/services/interviewAIValidation')).SYSTEM_DESIGN_FIELDS,
+      require(path.join(backend, 'src/modules/interview-prep/services/interviewAIValidation'))
+        .SYSTEM_DESIGN_FIELDS,
     ))
       assert.ok(rendered.includes(title), `Design heading not rendered: ${title}`);
     await page.screenshot({

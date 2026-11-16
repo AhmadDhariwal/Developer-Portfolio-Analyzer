@@ -3,17 +3,17 @@ const fs = require('node:fs');
 const path = require('node:path');
 const mongoose = require('mongoose');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env'), quiet: true });
-const { listImportantTopics } = require('../services/interviewTopicNormalizer');
-const { buildSeedRecordsForTopic } = require('../services/interviewQuestionSeedCatalog');
-const { summarizeCoverage, coverageTarget } = require('../services/interviewCoverageService');
-const repository = require('../repositories/interviewQuestionRepository');
-const Bank = require('../models/interviewQuestionBank');
-const Session = require('../models/interviewPrepSession');
+const { listImportantTopics } = require('../modules/interview-prep/services/interviewTopicNormalizer');
+const { buildSeedRecordsForTopic } = require('../modules/interview-prep/services/interviewQuestionSeedCatalog');
+const { summarizeCoverage, coverageTarget } = require('../modules/interview-prep/services/interviewCoverageService');
+const repository = require('../modules/interview-prep/repositories/interviewQuestionRepository');
+const Bank = require('../modules/interview-prep/models/interviewQuestionBank');
+const Session = require('../modules/interview-prep/models/interviewPrepSession');
 const {
   groupCoverageExclusions,
   nearDuplicateCoverage,
   coveragePlan
-} = require('../services/interviewCoverageAudit');
+} = require('../modules/interview-prep/services/interviewCoverageAudit');
 
 const run = async ({ outputPath } = {}) => {
   const seeds = listImportantTopics().flatMap(buildSeedRecordsForTopic);

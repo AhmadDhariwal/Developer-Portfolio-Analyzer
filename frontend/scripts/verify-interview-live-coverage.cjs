@@ -65,7 +65,11 @@ const report = {
     report.ownerIdentity = 'Existing developer; credentials and personal profile omitted.';
     report.sourceFingerprint = crypto
       .createHash('sha256')
-      .update(fs.readFileSync(path.join(backend, 'src/services/interviewPrepService.js')))
+      .update(
+        fs.readFileSync(
+          path.join(backend, 'src/modules/interview-prep/services/interviewPrepService.js'),
+        ),
+      )
       .digest('hex');
     server = http.createServer(async (req, res) => {
       const url = new URL(req.url, 'http://127.0.0.1:4318');

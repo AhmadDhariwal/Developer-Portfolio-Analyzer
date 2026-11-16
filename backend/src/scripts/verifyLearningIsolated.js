@@ -15,17 +15,28 @@ async function main() {
   fs.mkdirSync(reportDir, { recursive: true });
   try {
     const mode = process.argv[2] || 'courses';
+    const testRoot = path.join(root, 'src/tests');
+    const walkTests = (dir, prefix = '') => {
+      const out = [];
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        if (entry.isDirectory()) {
+          if (entry.name === 'fixtures') continue;
+          out.push(...walkTests(path.join(dir, entry.name), prefix ? `${prefix}/${entry.name}` : entry.name));
+        } else if (entry.name.endsWith('.test.js')) {
+          out.push(prefix ? `${prefix}/${entry.name}` : entry.name);
+        }
+      }
+      return out;
+    };
+    const allTests = walkTests(testRoot);
     const files =
       mode === 'full'
-        ? fs.readdirSync(path.join(root, 'src/tests')).filter((file) => file.endsWith('.test.js'))
-        : fs
-            .readdirSync(path.join(root, 'src/tests'))
-            .filter(
-              (file) =>
-                /^(courses|sharedCourseCatalog|skillGapMongo|careerSprintHardening|weeklyReportScheduler)/.test(
-                  file,
-                ) && file.endsWith('.test.js'),
-            );
+        ? allTests
+        : allTests.filter((file) =>
+            /^(courses|sharedCourseCatalog|skillGapMongo|careerSprintHardening|weeklyReportScheduler)/.test(
+              path.basename(file),
+            ),
+          );
     const args =
       mode === 'browser' || mode === 'audit'
         ? [

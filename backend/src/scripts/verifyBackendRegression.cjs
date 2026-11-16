@@ -118,8 +118,8 @@ async function main() {
         await execute(`${label}-pdf-fixtures-after`, cwd, [
           '--test',
           '--test-reporter=tap',
-          'backend/src/tests/resumeProduction.test.js',
-          'backend/src/tests/resumeProductionMongo.test.js'
+          'backend/src/tests/resume/resumeProduction.test.js',
+          'backend/src/tests/resume/resumeProductionMongo.test.js'
         ]);
       }
     }

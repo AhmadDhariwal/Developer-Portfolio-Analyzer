@@ -4,7 +4,7 @@ require('dotenv').config({ path: require('path').join(__dirname, '../../.env') }
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
-const User = require('../models/user');
+const User = require('../modules/auth/models/user');
 
 const API = String(process.env.RELEASE_API_BASE || 'http://localhost:5000/api').replace(/\/$/, '');
 const WEB = String(process.env.RELEASE_WEB_ORIGIN || 'http://localhost:4200').replace(/\/$/, '');

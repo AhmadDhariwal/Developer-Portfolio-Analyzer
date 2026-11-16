@@ -1,7 +1,7 @@
 // Read-only audit. Never prints credentials, bucket identities, tokens or raw errors.
 const fs = require('node:fs/promises');
 const path = require('node:path');
-const { configuration } = require('../services/b2ObjectStorageService');
+const { configuration } = require('../core/storage/b2ObjectStorageService');
 async function audit({ live = false } = {}) {
   const env = require('dotenv').parse(await fs.readFile(path.resolve(__dirname, '../../.env')));
   const config = configuration(env);

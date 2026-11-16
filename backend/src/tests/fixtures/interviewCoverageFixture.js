@@ -1,9 +1,9 @@
 // Deterministic stand-ins for the validated provider/evaluator boundary in
 // ownership/concurrency regressions. Coverage decisions have separate tests.
-const coverage = require('../../services/interviewAnswerCoverage');
-const { projectContext } = require('../../services/interviewProjectContext');
-const { normalizeTopicInput } = require('../../services/interviewTopicNormalizer');
-const { normalizeQuestionText } = require('../../services/interviewQuestionQualityService');
+const coverage = require('../../modules/interview-prep/services/interviewAnswerCoverage');
+const { projectContext } = require('../../modules/interview-prep/services/interviewProjectContext');
+const { normalizeTopicInput } = require('../../modules/interview-prep/services/interviewTopicNormalizer');
+const { normalizeQuestionText } = require('../../modules/interview-prep/services/interviewQuestionQualityService');
 const certified = (input, answer) => {
   const topicKey = normalizeTopicInput(input).topicKey;
   const plan = coverage.analyzeQuestion({

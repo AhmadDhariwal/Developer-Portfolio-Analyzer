@@ -4,7 +4,7 @@
 const path = require('node:path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env'), quiet: true });
 const mongoose = require('mongoose');
-const CareerSprint = require('../models/careerSprint');
+const CareerSprint = require('../modules/career-sprint/models/careerSprint');
 
 const auditCareerSprintData = async () => {
   const now = new Date();

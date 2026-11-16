@@ -81,8 +81,8 @@ const migrateSavedPreviewIndexes = async (SavedPreview) => {
 
 const run = async () => {
   const mongoose = require('mongoose');
-  const connectDB = require('../config/db');
-  const SavedPreview = require('../models/savedPreview');
+  const connectDB = require('../core/config/db');
+  const SavedPreview = require('../core/ai/models/savedPreview');
   await connectDB();
   try {
     const result = await migrateSavedPreviewIndexes(SavedPreview);

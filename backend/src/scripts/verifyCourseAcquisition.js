@@ -7,14 +7,14 @@ const fs = require('node:fs');
 const path = require('node:path');
 const axios = require('axios');
 const { startMongo } = require('../tests/fixtures/disposableRequestMongo');
-const service = require('../services/courseService');
-const shared = require('../services/sharedCourseCatalogService');
-const coverage = require('../services/courseCatalogCoverageService');
-const taxonomy = require('../services/courseCatalogTaxonomy');
-const acquisition = require('../services/courseCatalogAcquisitionService');
-const maintenance = require('../services/courseCatalogMaintenanceService');
-const { digest, COURSE_PROVIDERS } = require('../utils/courseIdentity');
-const seed = require('../data/courseAcquisitionCatalog');
+const service = require('../modules/courses/services/courseService');
+const shared = require('../modules/courses/services/sharedCourseCatalogService');
+const coverage = require('../modules/courses/services/courseCatalogCoverageService');
+const taxonomy = require('../modules/courses/services/courseCatalogTaxonomy');
+const acquisition = require('../modules/courses/services/courseCatalogAcquisitionService');
+const maintenance = require('../modules/courses/services/courseCatalogMaintenanceService');
+const { digest, COURSE_PROVIDERS } = require('../modules/courses/utils/courseIdentity');
+const seed = require('../modules/courses/data/courseAcquisitionCatalog');
 const output = path.resolve(__dirname, '../../verification/courses/acquisition-2026-11-06');
 const summarize = (courses) => ({
   total: courses.length,
@@ -62,7 +62,7 @@ const summarize = (courses) => ({
     const before = summarize(await coverage.inventory());
     await shared.getCurated(
       expanded,
-      digest([...require('../data/courseCatalog'), ...require('../data/openLearningCatalog')]),
+      digest([...require('../modules/courses/data/courseCatalog'), ...require('../modules/courses/data/openLearningCatalog')]),
     );
     const seeded = summarize(expanded);
     let refresh = { status: 'not-requested' };

@@ -1,9 +1,9 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
-const connectDB = require('../config/db');
-const service = require('../services/interviewPrepService');
-const seedCatalog = require('../services/interviewQuestionSeedCatalog');
-const cache = require('../services/redisCacheService');
+const connectDB = require('../core/config/db');
+const service = require('../modules/interview-prep/services/interviewPrepService');
+const seedCatalog = require('../modules/interview-prep/services/interviewQuestionSeedCatalog');
+const cache = require('../core/cache/redisCacheService');
 
 const percentile = (values, p) => {
   const sorted = values.filter(Number.isFinite).sort((a, b) => a - b);

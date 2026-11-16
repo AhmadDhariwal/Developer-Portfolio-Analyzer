@@ -1,5 +1,5 @@
 // Both operational entry points use the same bounded, durable cleanup batch.
-require('../services/storageCleanupWorkerService')
+require('../core/storage/storageCleanupWorkerService')
   .runCli()
   .catch(() => {
     console.error('Storage cleanup incomplete; durable receipts retained.');

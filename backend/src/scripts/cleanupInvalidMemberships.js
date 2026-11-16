@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const Membership = require('../models/membership');
+const Membership = require('../modules/admin/models/membership');
 require('dotenv').config();
 
 const cleanupInvalidMemberships = async () => {

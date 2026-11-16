@@ -11,8 +11,8 @@ const { performance } = require('node:perf_hooks');
 const crypto = require('node:crypto');
 const Module = require('node:module');
 
-const servicePath = require.resolve('../services/resumeservice');
-const redisPath = require.resolve('../services/redisCacheService');
+const servicePath = require.resolve('../modules/resume/services/resumeservice');
+const redisPath = require.resolve('../core/cache/redisCacheService');
 
 const SAMPLE = [
   'Jane Developer',
