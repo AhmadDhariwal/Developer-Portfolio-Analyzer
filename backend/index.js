@@ -1,6 +1,6 @@
 const path = require('node:path');
 require('dotenv').config({ path: path.resolve(__dirname, '.env'), quiet: true });
-const { validateEnv } = require('./src/config/env');
+const { validateEnv } = require('./src/core/config/env');
 const env = validateEnv();
 const localApiOnly = process.argv.includes('--api-only');
 if (localApiOnly && env.NODE_ENV !== 'development') {
@@ -10,60 +10,60 @@ if (localApiOnly && env.NODE_ENV !== 'development') {
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-const connectDB = require('./src/config/db');
-const logger = require('./src/utils/logger');
-const requestLogPath = require('./src/utils/requestLogPath');
-const authroute = require('./src/routes/auth.routes');
-const githubroute = require('./src/routes/github.routes');
-const resumroute = require('./src/routes/resume.routes');
-const analysisroute = require('./src/routes/analysis.routes');
-const dashboardroute = require('./src/routes/dashboard.routes');
-const skillgaproute = require('./src/routes/skillgap.routes');
-const recommendationsroute = require('./src/routes/recommendations.routes');
-const profileroute = require('./src/routes/profile.routes');
-const courseroute = require('./src/routes/courseRoutes');
-const jobroute = require('./src/routes/jobRoutes');
-const notificationroute = require('./src/routes/notification.routes');
-const auditroute = require('./src/routes/audit.routes');
-const workflowroute = require('./src/routes/workflow.routes');
-const aiversionsroute = require('./src/routes/aiversions.routes');
-const tenantroute = require('./src/routes/tenant.routes');
-const skillgraphroute = require('./src/routes/skillgraph.routes');
-const integrationsroute = require('./src/routes/integrations.routes');
-const scenarioroute = require('./src/routes/scenarioSimulator.routes');
-const publicProfileroute = require('./src/routes/publicProfile.routes');
-const recruiterroute = require('./src/routes/recruiter.routes');
-const recruiterHubRoute = require('./src/routes/recruiter-hub/recruiterHubRoutes');
-const adminroute = require('./src/routes/admin.routes');
-const adminConsoleroute = require('./src/routes/adminConsole.routes');
-const weeklyReportroute = require('./src/routes/weeklyReport.routes');
-const interviewPreproute = require('./src/routes/interviewPrep.routes');
-const careerSprintroute = require('./src/routes/careerSprint.routes');
-const newsroute = require('./src/routes/newsRoutes');
+const connectDB = require('./src/core/config/db');
+const logger = require('./src/core/observability/logger');
+const requestLogPath = require('./src/core/observability/requestLogPath');
+const authroute = require('./src/modules/auth/auth.routes');
+const githubroute = require('./src/modules/github/github.routes');
+const resumroute = require('./src/modules/resume/resume.routes');
+const analysisroute = require('./src/modules/workflows/analysis.routes');
+const dashboardroute = require('./src/modules/dashboard/dashboard.routes');
+const skillgaproute = require('./src/modules/skill-gap/skillgap.routes');
+const recommendationsroute = require('./src/modules/recommendations/recommendations.routes');
+const profileroute = require('./src/modules/profile/profile.routes');
+const courseroute = require('./src/modules/courses/courseRoutes');
+const jobroute = require('./src/modules/jobs/jobRoutes');
+const notificationroute = require('./src/modules/notifications/notification.routes');
+const auditroute = require('./src/modules/admin/routes/audit.routes');
+const workflowroute = require('./src/modules/workflows/workflow.routes');
+const aiversionsroute = require('./src/modules/super-admin/routes/aiversions.routes');
+const tenantroute = require('./src/modules/admin/routes/tenant.routes');
+const skillgraphroute = require('./src/modules/skill-gap/skillgraph.routes');
+const integrationsroute = require('./src/modules/integrations/integrations.routes');
+const scenarioroute = require('./src/modules/scenario-simulator/scenarioSimulator.routes');
+const publicProfileroute = require('./src/modules/public-portfolio/publicProfile.routes');
+const recruiterroute = require('./src/modules/recruiter/routes/recruiter.routes');
+const recruiterHubRoute = require('./src/modules/recruiter/routes/hub/recruiterHubRoutes');
+const adminroute = require('./src/modules/admin/routes/admin.routes');
+const adminConsoleroute = require('./src/modules/admin/routes/adminConsole.routes');
+const weeklyReportroute = require('./src/modules/weekly-reports/weeklyReport.routes');
+const interviewPreproute = require('./src/modules/interview-prep/interviewPrep.routes');
+const careerSprintroute = require('./src/modules/career-sprint/careerSprint.routes');
+const newsroute = require('./src/modules/news/newsRoutes');
 const {
   startNewsIngestionScheduler,
   stopNewsIngestionScheduler,
-} = require('./src/services/newsService');
-const supportroute = require('./src/routes/support.routes');
-const previewroute = require('./src/routes/preview.routes');
-const { auditLogMiddleware } = require('./src/middleware/auditLogMiddleware');
-const { requestContextMiddleware } = require('./src/middleware/requestContextMiddleware');
-const { globalRateLimiter } = require('./src/middleware/securityMiddleware');
-const { metricsMiddleware, metricsHandler } = require('./src/services/metricsService');
-const { initTracing, shutdownTracing } = require('./src/services/tracingService');
-const superAdminRoutes = require('./src/routes/super-admin.routes');
-const { startEmailRetryWorker } = require('./src/services/emailRetryQueueService');
-const { startIntegrationSyncWorker } = require('./src/services/integrationSyncService');
-const { startJobSourceSyncWorker } = require('./src/services/jobSourceSyncService');
-const { startWeeklyReportScheduler } = require('./src/services/weeklyReportService');
-const { initRedisCache, closeRedisCache } = require('./src/services/redisCacheService');
+} = require('./src/modules/news/services/newsService');
+const supportroute = require('./src/modules/support/support.routes');
+const previewroute = require('./src/modules/workflows/preview.routes');
+const { auditLogMiddleware } = require('./src/core/middleware/auditLogMiddleware');
+const { requestContextMiddleware } = require('./src/core/middleware/requestContextMiddleware');
+const { globalRateLimiter } = require('./src/core/middleware/securityMiddleware');
+const { metricsMiddleware, metricsHandler } = require('./src/core/observability/metricsService');
+const { initTracing, shutdownTracing } = require('./src/core/observability/tracingService');
+const superAdminRoutes = require('./src/modules/super-admin/routes/super-admin.routes');
+const { startEmailRetryWorker } = require('./src/core/messaging/emailRetryQueueService');
+const { startIntegrationSyncWorker } = require('./src/modules/integrations/services/integrationSyncService');
+const { startJobSourceSyncWorker } = require('./src/modules/jobs/services/jobSourceSyncService');
+const { startWeeklyReportScheduler } = require('./src/modules/weekly-reports/services/weeklyReportService');
+const { initRedisCache, closeRedisCache } = require('./src/core/cache/redisCacheService');
 const {
   startInterviewQuestionIngestionScheduler,
-} = require('./src/services/interviewQuestionIngestionService');
+} = require('./src/modules/interview-prep/services/interviewQuestionIngestionService');
 const {
   startInterviewQuestionMaintenanceScheduler,
-} = require('./src/services/interviewQuestionMaintenanceService');
-const { getSettingsSnapshotSync, getSettings } = require('./src/services/platformSettingsService');
+} = require('./src/modules/interview-prep/services/interviewQuestionMaintenanceService');
+const { getSettingsSnapshotSync, getSettings } = require('./src/modules/super-admin/services/platformSettingsService');
 
 const app = express();
 const shouldLogRequests = String(process.env.LOG_REQUESTS || '').toLowerCase() === 'true';
@@ -123,7 +123,7 @@ app.use(cors());
 app.use(globalRateLimiter);
 app.use(requestContextMiddleware);
 app.use(
-  express.json({ limit: '100kb', verify: require('./src/middleware/integrationWebhookBody') }),
+  express.json({ limit: '100kb', verify: require('./src/modules/integrations/middleware/integrationWebhookBody') }),
 );
 app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 
@@ -146,13 +146,13 @@ app.use((req, res, next) => {
     return next();
   }
 });
-require('./src/services/b2ObjectStorageService').configuration();
+require('./src/core/storage/b2ObjectStorageService').configuration();
 // Serve uploads with cache control to prevent stale avatar issues
 app.use(
   '/uploads',
-  require('./src/middleware/storedImageMiddleware').storedImage,
-  require('./src/middleware/publicUploadAccess'),
-  express.static(require('./src/services/publicImageStorageService').root()),
+  require('./src/core/middleware/storedImageMiddleware').storedImage,
+  require('./src/core/middleware/publicUploadAccess'),
+  express.static(require('./src/core/storage/publicImageStorageService').root()),
 );
 app.use(metricsMiddleware);
 if (shouldLogRequests) {
@@ -248,12 +248,12 @@ const startServer = async () => {
       logger.info('development API-only mode: loopback listener; background workers disabled.');
       return;
     }
-    require('./src/services/notificationRetentionService').start();
+    require('./src/modules/notifications/services/notificationRetentionService').start();
     startEmailRetryWorker();
     startIntegrationSyncWorker();
     startJobSourceSyncWorker();
     startNewsIngestionScheduler();
-    require('./src/services/courseCatalogMaintenanceService').start();
+    require('./src/modules/courses/services/courseCatalogMaintenanceService').start();
     initTracing();
     if (process.env.WEEKLY_REPORT_PROCESS_ROLE !== 'api') startWeeklyReportScheduler();
     startInterviewQuestionIngestionScheduler();
@@ -268,7 +268,7 @@ const startServer = async () => {
       logger.info('GitHub token detected; using authenticated API quota.');
     }
     // Jobs Hub source startup validation
-    const { getIntegrationSecretsSync } = require('./src/services/platformSettingsService');
+    const { getIntegrationSecretsSync } = require('./src/modules/super-admin/services/platformSettingsService');
     const integrations = getIntegrationSecretsSync();
     const rapidApiKey = String(process.env.RAPIDAPI_KEY || integrations?.jobsApiKey || '').trim();
 
@@ -281,7 +281,7 @@ const startServer = async () => {
       String(process.env.ADZUNA_APP_KEY || '').trim(),
     );
     // Jobs Hub cache health startup check
-    const { getCacheHealth } = require('./src/services/jobService');
+    const { getCacheHealth } = require('./src/modules/jobs/services/jobService');
     getCacheHealth()
       .then((health) => {
         console.log(
@@ -303,12 +303,12 @@ startServer().catch((error) => {
 });
 
 const shutdown = () => {
-  require('./src/services/notificationRetentionService').stop();
-  require('./src/services/notificationStreamService')
+  require('./src/modules/notifications/services/notificationRetentionService').stop();
+  require('./src/modules/notifications/services/notificationStreamService')
     .stop()
     .catch(() => {});
   stopNewsIngestionScheduler();
-  require('./src/services/courseCatalogMaintenanceService').stop();
+  require('./src/modules/courses/services/courseCatalogMaintenanceService').stop();
   Promise.allSettled([closeRedisCache(), shutdownTracing()]);
 };
 

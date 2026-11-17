@@ -17,7 +17,7 @@ fs.mkdirSync(outputDir, { recursive: true });
 const {
   buildSeedRecordsForTopic,
   getImportantTopicByKey,
-} = require('../../backend/src/services/interviewQuestionSeedCatalog');
+} = require('../../backend/src/modules/interview-prep/services/interviewQuestionSeedCatalog');
 
 const profile = { careerStack: 'Frontend', experienceLevel: 'Student', isConfigured: true };
 const user = {

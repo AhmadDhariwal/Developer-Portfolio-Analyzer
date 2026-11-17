@@ -1,8 +1,8 @@
 'use strict';
 
 const mongoose = require('mongoose');
-const acquisition = require('../../services/courseCatalogAcquisitionService');
-const seed = require('../../data/courseAcquisitionCatalog');
+const acquisition = require('../../modules/courses/services/courseCatalogAcquisitionService');
+const seed = require('../../modules/courses/data/courseAcquisitionCatalog');
 const uri = process.env.COURSE_ACQUISITION_TEST_MONGO;
 if (!/^mongodb:\/\/127\.0\.0\.1:\d+\/integration_live_acceptance\?/.test(uri || ''))
   throw Error('Only the owned disposable Mongo fixture is allowed.');

@@ -1,16 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CountryCodeDropdownComponent } from '../../components/country-code-dropdown/country-code-dropdown.component';
+import { AuthShellComponent } from '../../components/auth-shell/auth-shell.component';
 import { AuthService, OtpType } from '../../../../shared/services/auth.service';
-import { UiButtonComponent } from '../../../../shared/components/ui-button/ui-button.component';
 import { UiCardComponent } from '../../../../shared/components/ui-card/ui-card.component';
-
-import {
-  LandingThemeId,
-  LandingThemeService,
-} from '../../../../shared/services/landing-theme.service';
 
 @Component({
   selector: 'app-forgot-password',
@@ -20,7 +15,7 @@ import {
     FormsModule,
     RouterLink,
     CountryCodeDropdownComponent,
-    UiButtonComponent,
+    AuthShellComponent,
     UiCardComponent,
   ],
   templateUrl: './forgot-password.component.html',
@@ -33,33 +28,63 @@ export class ForgotPasswordComponent {
   countryCode = '+92';
   isLoading = false;
   error = '';
-
-  get selectedTheme(): LandingThemeId {
-    return this.themeService.selectedTheme;
-  }
+  fieldError = '';
 
   constructor(
     private readonly authService: AuthService,
     private readonly router: Router,
-    private readonly themeService: LandingThemeService,
+    private readonly cdr: ChangeDetectorRef,
   ) {}
 
-  submit(): void {
-    if (this.type === 'email' && !this.email) {
-      this.error = 'Please enter your email.';
-      return;
+  selectMethod(method: OtpType): void {
+    if (this.isLoading) return;
+    this.type = method;
+    this.error = '';
+    this.fieldError = '';
+  }
+
+  validateInput(): boolean {
+    if (this.type === 'email') {
+      const value = this.email.trim();
+      if (!value) {
+        this.fieldError = 'Email address is required.';
+        return false;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        this.fieldError = 'Please enter a valid email address.';
+        return false;
+      }
+      this.fieldError = '';
+      return true;
     }
-    if (this.type === 'phone' && !this.phoneNumber) {
-      this.error = 'Please enter your phone number.';
+
+    if (!this.phoneNumber.trim()) {
+      this.fieldError = 'Phone number is required.';
+      return false;
+    }
+    this.fieldError = '';
+    return true;
+  }
+
+  submit(): void {
+    if (this.isLoading) return;
+    if (!this.validateInput()) {
+      this.error = '';
+      this.cdr.detectChanges();
       return;
     }
 
     this.isLoading = true;
     this.error = '';
+    this.cdr.detectChanges();
+
+    const trimmedEmail = this.email.trim();
+    const trimmedPhone = this.phoneNumber.trim();
+
     this.authService
       .forgotPassword({
-        email: this.type === 'email' ? this.email : '',
-        phoneNumber: this.type === 'phone' ? this.phoneNumber : '',
+        email: this.type === 'email' ? trimmedEmail : '',
+        phoneNumber: this.type === 'phone' ? trimmedPhone : '',
         countryCode: this.type === 'phone' ? this.countryCode : '',
         type: this.type,
       })
@@ -71,8 +96,8 @@ export class ForgotPasswordComponent {
               userId: res.userId,
               type: this.type,
               purpose: 'forgot-password',
-              email: this.email,
-              phoneNumber: this.phoneNumber,
+              email: trimmedEmail,
+              phoneNumber: trimmedPhone,
               countryCode: this.countryCode,
               expiresAt: res.expiresAt,
             },
@@ -80,7 +105,8 @@ export class ForgotPasswordComponent {
         },
         error: (err) => {
           this.isLoading = false;
-          this.error = err?.error?.message || 'Failed to send OTP.';
+          this.error = err?.error?.message || 'Unable to send verification code. Please try again.';
+          this.cdr.detectChanges();
         },
       });
   }

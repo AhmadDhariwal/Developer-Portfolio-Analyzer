@@ -1,0 +1,39 @@
+{
+  "formattedExplicitPaths": [
+    "backend/src/services/providers/interviewAIProvider.js",
+    "backend/src/services/interviewPrepService.js",
+    "backend/src/services/interviewQuestionQualityService.js",
+    "backend/src/services/aiProviderManager.js",
+    "backend/src/tests/interviewCustomSystemDesign.test.js",
+    "frontend/src/app/shared/services/interview-prep.service.ts",
+    "frontend/src/app/shared/services/interview-prep.service.spec.ts",
+    "frontend/scripts/verify-interview-custom-system-design.cjs"
+  ],
+  "writeAndCheckPassed": true,
+  "javascriptSyntaxChecks": [
+    {
+      "path": "backend/src/services/providers/interviewAIProvider.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/services/interviewPrepService.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/services/interviewQuestionQualityService.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/services/aiProviderManager.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/tests/interviewCustomSystemDesign.test.js",
+      "exitCode": 0
+    },
+    {
+      "path": "frontend/scripts/verify-interview-custom-system-design.cjs",
+      "exitCode": 0
+    }
+  ]
+}

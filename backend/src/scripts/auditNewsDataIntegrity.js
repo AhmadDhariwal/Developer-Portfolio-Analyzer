@@ -7,11 +7,11 @@ require("dotenv").config({
   quiet: true,
 });
 
-const Article = require("../models/newsArticle");
-const SavedItem = require("../models/newsSavedItem");
-const TopicCache = require("../models/newsTopicCache");
-const Pool = require("../models/news");
-const catalog = require("../services/newsCatalogService");
+const Article = require("../modules/news/models/newsArticle");
+const SavedItem = require("../modules/news/models/newsSavedItem");
+const TopicCache = require("../modules/news/models/newsTopicCache");
+const Pool = require("../modules/news/models/news");
+const catalog = require("../modules/news/services/newsCatalogService");
 
 async function main() {
   await mongoose.connect(process.env.MONGODB_URI, {

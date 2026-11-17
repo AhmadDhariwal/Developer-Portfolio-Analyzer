@@ -83,8 +83,8 @@ async function main() {
       [
         '--test',
         '--test-reporter=tap',
-        'backend/src/tests/b2Storage.test.js',
-        'backend/src/tests/storageSecurityFinal.test.js'
+        'backend/src/tests/core/b2Storage.test.js',
+        'backend/src/tests/core/storageSecurityFinal.test.js'
       ],
       {
         B2_ACCEPTANCE_MONGO: '',
@@ -170,7 +170,7 @@ async function main() {
     if (!queryOnly || indexFollowup)
       await run(
         'portfolio-integration',
-        ['--test', '--test-reporter=tap', 'backend/src/tests/publicPortfolio.integration.test.js'],
+        ['--test', '--test-reporter=tap', 'backend/src/tests/public-portfolio/publicPortfolio.integration.test.js'],
         env
       );
     if (integrationOnly || queryOnly)
@@ -185,7 +185,7 @@ async function main() {
     if (indexFollowup)
       await run(
         'index-hardening',
-        ['--test', '--test-reporter=tap', 'backend/src/tests/publicPortfolioHardening.test.js'],
+        ['--test', '--test-reporter=tap', 'backend/src/tests/public-portfolio/publicPortfolioHardening.test.js'],
         env
       );
     if (!integrationOnly && !queryOnly)
@@ -194,9 +194,9 @@ async function main() {
         [
           '--test',
           '--test-reporter=tap',
-          'backend/src/tests/publicPortfolioHardening.test.js',
-          'backend/src/tests/skillGapConsumerContracts.test.js',
-          'backend/src/tests/developerContextService.test.js'
+          'backend/src/tests/public-portfolio/publicPortfolioHardening.test.js',
+          'backend/src/tests/skill-gap/skillGapConsumerContracts.test.js',
+          'backend/src/tests/core/developerContextService.test.js'
         ],
         env
       );

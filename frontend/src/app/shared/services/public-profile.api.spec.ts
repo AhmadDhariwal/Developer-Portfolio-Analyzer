@@ -11,7 +11,7 @@ import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.
 import { MaintenanceModeService } from './maintenance-mode.service';
 import { ProfileService } from './profile.service';
 import { CareerProfileService } from './career-profile.service';
-import { authInterceptor } from '../../interceptors/auth.interceptor';
+import { authInterceptor } from '../../core/interceptors/auth.interceptor';
 
 describe('Portfolio HTTP contracts', () => {
   let http: HttpTestingController;

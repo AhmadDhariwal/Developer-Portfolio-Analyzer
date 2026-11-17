@@ -30,7 +30,9 @@ const result = {
   errors: [],
   checks: [],
 };
-const auditCache = flowAudit ? require(path.join(backend, 'src/services/redisCacheService')) : null;
+const auditCache = flowAudit
+  ? require(path.join(backend, 'src/core/cache/redisCacheService'))
+  : null;
 async function admissionCounters() {
   const redis = auditCache?.getRedisCacheClient({ commandTimeoutMs: 1500 });
   if (!redis) return null;
@@ -56,7 +58,7 @@ async function main() {
     autoIndex: false,
     serverSelectionTimeoutMS: 5000,
   });
-  const User = require(path.join(backend, 'src/models/user'));
+  const User = require(path.join(backend, 'src/modules/auth/models/user'));
   const user = await User.findOne({ role: 'developer', isActive: { $ne: false } }).lean();
   assert(user, 'An active local developer account is required');
   const token = jwt.sign({ id: String(user._id) }, process.env.JWT_SECRET, {

@@ -19,6 +19,42 @@ describe('ApiService getOrganizations request deduplication and caching', () => 
     service = new ApiService(http, {} as any, cacheInvalidation);
   });
 
+  it('serializes Interview Prep tags to the existing string wire contract for generation and Sessions', () => {
+    http.post.mockReturnValue(of({ questions: [] }));
+    service
+      .generateInterviewPrepQuestions({
+        skill: 'react',
+        difficulty: 'easy',
+        tags: ['hooks', 'state'],
+        category: 'core-concepts',
+        source: 'seed',
+        target: 5,
+      })
+      .subscribe();
+    expect(http.post).toHaveBeenLastCalledWith(
+      expect.stringContaining('/interview-prep/generate'),
+      expect.objectContaining({
+        difficulty: 'easy',
+        tags: 'hooks,state',
+        category: 'core-concepts',
+        source: 'seed',
+        target: 5,
+      }),
+    );
+    service
+      .generateInterviewPrep({
+        skill: 'react',
+        skillGaps: [],
+        difficulty: 'easy',
+        tags: ['hooks'],
+        limit: 5,
+      })
+      .subscribe();
+    expect(http.post).toHaveBeenLastCalledWith(
+      expect.stringMatching(/interview-prep$/),
+      expect.objectContaining({ tags: 'hooks', difficulty: 'easy', limit: 5 }),
+    );
+  });
   it('shares concurrent calls so only one HTTP GET request is made', () => {
     const orgs = { organizations: [{ _id: 'org1', name: 'Acme Corp' }] };
     http.get.mockReturnValue(of(orgs));

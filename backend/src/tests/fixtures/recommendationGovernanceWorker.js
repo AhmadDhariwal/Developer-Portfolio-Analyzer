@@ -5,7 +5,7 @@ process.once('message', async ({ uri, owner, ip }) => {
     if (!/^mongodb:\/\/127\.0\.0\.1:\d+\/integration_live_acceptance\?replicaSet=/.test(uri))
       throw Error('Disposable loopback database required.');
     await mongoose.connect(uri);
-    const controls = require('../../services/recommendationGovernanceService');
+    const controls = require('../../modules/recommendations/services/recommendationGovernanceService');
     const statuses = [];
     for (let index = 0; index < 2; index++) {
       try {

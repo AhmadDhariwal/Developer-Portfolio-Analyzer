@@ -11,7 +11,7 @@ const fs = require('fs');
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
-const User = require('../models/user');
+const User = require('../modules/auth/models/user');
 const { ensureCareerSprintIndexes } = require('./ensureCareerSprintIndexes');
 
 const API = String(process.env.RELEASE_API_BASE || 'http://127.0.0.1:5000/api').replace(/\/$/, '');

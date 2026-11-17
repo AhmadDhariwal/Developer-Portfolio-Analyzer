@@ -18,7 +18,7 @@ const screenshotsDir = path.join(outputDir, phase);
 fs.mkdirSync(screenshotsDir, { recursive: true });
 
 const root = path.resolve(__dirname, '../..');
-const engine = require(path.join(root, 'backend/src/services/scoring/scenarioPlanningScore'));
+const engine = require(path.join(root, 'backend/src/core/scoring/scenarioPlanningScore'));
 
 const profile = {
   careerStack: 'Frontend',
@@ -64,9 +64,7 @@ const contextFixture = {
     sprintFocus: [],
     connectedProviders: ['github'],
     portfolioProjects: [],
-    portfolioCandidates: [
-      { name: 'Typed E-Commerce App', skills: ['TypeScript', 'Next.js'] },
-    ],
+    portfolioCandidates: [{ name: 'Typed E-Commerce App', skills: ['TypeScript', 'Next.js'] }],
     completedPortfolioProjects: [],
     topDemandedSkills: ['Angular', 'Docker', 'AWS'],
   },
@@ -77,11 +75,10 @@ const contextFixture = {
     baselineJobMatch: 48,
     durationWeeks: 6,
     skills: ['TypeScript', 'GraphQL'],
-    projects: [
-      { name: 'Typed E-Commerce App', impact: 75, complexity: 'medium', weeks: 3 },
-    ],
+    projects: [{ name: 'Typed E-Commerce App', impact: 75, complexity: 'medium', weeks: 3 }],
   },
-  summary: 'Live profile indicates solid Frontend foundations with growth opportunities in TypeScript and full-stack frameworks.',
+  summary:
+    'Live profile indicates solid Frontend foundations with growth opportunities in TypeScript and full-stack frameworks.',
 };
 
 const baseInput = {
@@ -111,9 +108,7 @@ const savedScenarioFixture2 = {
   experienceLevel: 'mid',
   durationWeeks: 8,
   skills: ['Node.js', 'PostgreSQL', 'Docker'],
-  projects: [
-    { name: 'Microservices API Gateway', impact: 85, complexity: 'high', weeks: 4 },
-  ],
+  projects: [{ name: 'Microservices API Gateway', impact: 85, complexity: 'high', weeks: 4 }],
   baselineHiringScore: 50,
   baselineJobMatch: 45,
   baselineConfirmed: true,
@@ -135,9 +130,7 @@ const savedScenarioFixture2 = {
     experienceLevel: 'mid',
     durationWeeks: 8,
     skills: ['Node.js', 'PostgreSQL', 'Docker'],
-    projects: [
-      { name: 'Microservices API Gateway', impact: 85, complexity: 'high', weeks: 4 },
-    ],
+    projects: [{ name: 'Microservices API Gateway', impact: 85, complexity: 'high', weeks: 4 }],
     baselineHiringScore: 50,
     baselineJobMatch: 45,
     baselineConfirmed: true,
@@ -257,7 +250,10 @@ function attachRoutes(page, overrides = {}) {
         json: { user: { _id: 'user-fixture', name: 'Fixture Developer', role: 'developer' } },
       });
     }
-    if (url.pathname.includes('/profile/career') || (url.pathname.includes('/profile') && !url.pathname.includes('/profile/me'))) {
+    if (
+      url.pathname.includes('/profile/career') ||
+      (url.pathname.includes('/profile') && !url.pathname.includes('/profile/me'))
+    ) {
       return route.fulfill({
         json: {
           ...profile,
@@ -272,7 +268,10 @@ function attachRoutes(page, overrides = {}) {
 
     if (url.pathname.includes('/simulator/context')) {
       if (overrides.contextError) {
-        return route.fulfill({ status: 500, json: { message: 'Failed to load scenario workspace data.' } });
+        return route.fulfill({
+          status: 500,
+          json: { message: 'Failed to load scenario workspace data.' },
+        });
       }
       return route.fulfill({
         json: {
@@ -385,7 +384,7 @@ async function measureOverflow(page) {
 async function auditTouchTargets(page) {
   return page.evaluate(() => {
     const interactiveElements = document.querySelectorAll(
-      'button, a, input, select, textarea, [role="button"], [tabindex]:not([tabindex="-1"])'
+      'button, a, input, select, textarea, [role="button"], [tabindex]:not([tabindex="-1"])',
     );
     const issues = [];
     const minTargetSize = 32; // strict accessibility threshold (32px minimum, 44px recommended for touch)
@@ -502,7 +501,9 @@ async function run() {
             draft: draftOverflow,
             result: resultOverflow,
           });
-          console.log(`FAILED (Overflow: draft ${draftOverflow.scrollWidth}px vs ${draftOverflow.clientWidth}px, result ${resultOverflow.scrollWidth}px vs ${resultOverflow.clientWidth}px)`);
+          console.log(
+            `FAILED (Overflow: draft ${draftOverflow.scrollWidth}px vs ${draftOverflow.clientWidth}px, result ${resultOverflow.scrollWidth}px vs ${resultOverflow.clientWidth}px)`,
+          );
         } else {
           console.log(`PASSED (0 overflow)`);
         }
@@ -534,7 +535,11 @@ async function run() {
 
     console.log(`\n--- PHASE 2: TABS & PERSPECTIVE VIEWS AUDIT ---`);
     for (const testWidth of [375, 768, 1440]) {
-      const context = await initPageContext(browser, { width: testWidth, height: 900, theme: 'dark' });
+      const context = await initPageContext(browser, {
+        width: testWidth,
+        height: 900,
+        theme: 'dark',
+      });
       const page = await context.newPage();
       await attachRoutes(page);
       await page.goto(baseUrl, { waitUntil: 'networkidle' });
@@ -577,7 +582,11 @@ async function run() {
 
     console.log(`\n--- PHASE 3: SCENARIO TEMPLATE CONFIGURATOR MODAL AUDIT ---`);
     for (const testWidth of [320, 375, 768, 1440]) {
-      const context = await initPageContext(browser, { width: testWidth, height: 800, theme: 'dark' });
+      const context = await initPageContext(browser, {
+        width: testWidth,
+        height: 800,
+        theme: 'dark',
+      });
       const page = await context.newPage();
       await attachRoutes(page);
       await page.goto(baseUrl, { waitUntil: 'networkidle' });
@@ -618,7 +627,11 @@ async function run() {
 
     console.log(`\n--- PHASE 4: SCENARIO COMPARISON MATRIX AUDIT ---`);
     for (const testWidth of [320, 375, 768, 1440]) {
-      const context = await initPageContext(browser, { width: testWidth, height: 900, theme: 'dark' });
+      const context = await initPageContext(browser, {
+        width: testWidth,
+        height: 900,
+        theme: 'dark',
+      });
       const page = await context.newPage();
       await attachRoutes(page);
       await page.goto(baseUrl, { waitUntil: 'networkidle' });
@@ -710,7 +723,6 @@ async function run() {
     console.log(`\nAudit complete! Report written to ${jsonPath}`);
     console.log(`Total overflow defects discovered: ${auditReport.overflowDefects.length}`);
     console.log(`Total touch target defect groups: ${auditReport.touchTargetDefects.length}`);
-
   } finally {
     await browser.close();
     await new Promise((resolve) => server.close(resolve));

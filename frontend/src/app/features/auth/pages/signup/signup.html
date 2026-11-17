@@ -1,0 +1,585 @@
+<app-auth-shell
+  mode="split"
+  badge="Build · Analyze · Grow"
+  showcaseTitle="Showcase your skills,"
+  showcaseHighlight="grow your career."
+  showcaseSubtitle="A complete developer portfolio platform to analyze your GitHub, resume, skills and readiness — and prepare for your next opportunity."
+  [highlights]="showcaseItems"
+  topPrompt="Already have an account?"
+  topCtaLabel="Log in"
+  topCtaLink="/auth/login"
+>
+  <app-ui-card class="auth-card" [noHeader]="true" [hoverEffect]="false">
+    <div class="auth-step-header">
+      <div class="auth-step-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"
+          />
+          <circle cx="8.5" cy="7" r="4" />
+          <path stroke-linecap="round" d="M20 8v6M17 11h6" />
+        </svg>
+      </div>
+      <span class="auth-step-badge auth-step-badge--primary">Register / Account</span>
+    </div>
+
+    <div class="auth-card-header">
+      <h1>Create your account</h1>
+      <p>Get started with your developer portfolio workspace in minutes.</p>
+    </div>
+
+    <div class="oauth-grid">
+      <button
+        type="button"
+        class="oauth-btn"
+        (click)="signupWithGoogle()"
+        [disabled]="isLoading || !!oauthLoading"
+        [attr.aria-busy]="oauthLoading === 'google'"
+      >
+        @if (oauthLoading === 'google') {
+          <span class="btn-spinner" aria-hidden="true"></span>
+          <span>Google...</span>
+        } @else {
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              fill="#4285F4"
+              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+            />
+            <path
+              fill="#34A853"
+              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+            />
+            <path
+              fill="#FBBC05"
+              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+            />
+            <path
+              fill="#EA4335"
+              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+            />
+          </svg>
+          <span>Continue with Google</span>
+        }
+      </button>
+
+      <button
+        type="button"
+        class="oauth-btn"
+        (click)="signupWithGithub()"
+        [disabled]="isLoading || !!oauthLoading"
+        [attr.aria-busy]="oauthLoading === 'github'"
+      >
+        @if (oauthLoading === 'github') {
+          <span class="btn-spinner" aria-hidden="true"></span>
+          <span>GitHub...</span>
+        } @else {
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+            />
+          </svg>
+          <span>Continue with GitHub</span>
+        }
+      </button>
+    </div>
+
+    <div class="oauth-divider">
+      <span>or register with email</span>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="auth-form" novalidate>
+      @if (error) {
+        <div class="auth-alert auth-alert--error" role="alert">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path stroke-linecap="round" d="M12 8v4M12 16h.01" />
+          </svg>
+          <span>{{ error }}</span>
+        </div>
+      }
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label for="signup-name">Full name</label>
+          <div class="input-shell has-leading" [class.is-invalid]="!!fieldErrors['name']">
+            <svg
+              class="input-leading-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"
+              />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            <input
+              type="text"
+              id="signup-name"
+              name="name"
+              [(ngModel)]="name"
+              (blur)="validateName()"
+              (ngModelChange)="fieldErrors['name'] && validateName()"
+              placeholder="Enter your full name"
+              autocomplete="name"
+              required
+              [disabled]="isLoading || !!oauthLoading"
+              [attr.aria-invalid]="!!fieldErrors['name']"
+              [attr.aria-describedby]="fieldErrors['name'] ? 'signup-name-error' : null"
+            />
+          </div>
+          @if (fieldErrors['name']) {
+            <span class="field-error" id="signup-name-error" role="alert">{{
+              fieldErrors['name']
+            }}</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label for="signup-github">GitHub username</label>
+          <div class="input-shell has-leading" [class.is-invalid]="!!fieldErrors['githubUsername']">
+            <svg
+              class="input-leading-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            <input
+              type="text"
+              id="signup-github"
+              name="githubUsername"
+              [(ngModel)]="githubUsername"
+              (blur)="validateGithubUsername()"
+              (ngModelChange)="fieldErrors['githubUsername'] && validateGithubUsername()"
+              placeholder="octocat"
+              autocomplete="username"
+              required
+              [disabled]="isLoading || !!oauthLoading"
+              [attr.aria-invalid]="!!fieldErrors['githubUsername']"
+              [attr.aria-describedby]="fieldErrors['githubUsername'] ? 'signup-github-error' : null"
+            />
+          </div>
+          @if (fieldErrors['githubUsername']) {
+            <span class="field-error" id="signup-github-error" role="alert">
+              {{ fieldErrors['githubUsername'] }}
+            </span>
+          }
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="signup-email">Email address</label>
+        <div class="input-shell has-leading" [class.is-invalid]="!!fieldErrors['email']">
+          <svg
+            class="input-leading-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <rect x="3" y="5" width="18" height="14" rx="2" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 7l9 6 9-6" />
+          </svg>
+          <input
+            type="email"
+            id="signup-email"
+            name="email"
+            [(ngModel)]="email"
+            (blur)="validateEmail()"
+            (ngModelChange)="fieldErrors['email'] && validateEmail()"
+            placeholder="you@example.com"
+            autocomplete="email"
+            required
+            [disabled]="isLoading || !!oauthLoading"
+            [attr.aria-invalid]="!!fieldErrors['email']"
+            [attr.aria-describedby]="fieldErrors['email'] ? 'signup-email-error' : null"
+          />
+        </div>
+        @if (fieldErrors['email']) {
+          <span class="field-error" id="signup-email-error" role="alert">{{
+            fieldErrors['email']
+          }}</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <span class="field-label-text">Verification code delivery</span>
+        <div class="otp-method-toggle" role="group" aria-label="OTP verification method">
+          <button
+            type="button"
+            class="otp-method-btn"
+            [class.is-selected]="otpType === 'email'"
+            [attr.aria-pressed]="otpType === 'email'"
+            (click)="selectOtpType('email')"
+            [disabled]="isLoading || !!oauthLoading"
+          >
+            Email OTP
+          </button>
+          <button
+            type="button"
+            class="otp-method-btn"
+            [class.is-selected]="otpType === 'phone'"
+            [attr.aria-pressed]="otpType === 'phone'"
+            (click)="selectOtpType('phone')"
+            [disabled]="isLoading || !!oauthLoading"
+          >
+            SMS Phone OTP
+          </button>
+        </div>
+      </div>
+
+      @if (otpType === 'phone') {
+        <div class="form-group">
+          <label for="signup-phone">Phone number</label>
+          <div class="phone-row">
+            <app-country-code-dropdown
+              [(ngModel)]="countryCode"
+              name="countryCode"
+              [disabled]="isLoading || !!oauthLoading"
+            ></app-country-code-dropdown>
+            <div class="input-shell" [class.is-invalid]="!!fieldErrors['phoneNumber']">
+              <input
+                type="tel"
+                id="signup-phone"
+                name="phoneNumber"
+                [(ngModel)]="phoneNumber"
+                (blur)="validatePhoneNumber()"
+                (ngModelChange)="fieldErrors['phoneNumber'] && validatePhoneNumber()"
+                placeholder="300 1234567"
+                autocomplete="tel-national"
+                [disabled]="isLoading || !!oauthLoading"
+                [attr.aria-invalid]="!!fieldErrors['phoneNumber']"
+              />
+            </div>
+          </div>
+          @if (fieldErrors['phoneNumber']) {
+            <span class="field-error" role="alert">{{ fieldErrors['phoneNumber'] }}</span>
+          }
+        </div>
+      }
+
+      <div class="form-group">
+        <label for="signup-password">Password</label>
+        <div
+          class="input-shell has-leading has-trailing"
+          [class.is-invalid]="!!fieldErrors['password']"
+        >
+          <svg
+            class="input-leading-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <rect x="4" y="11" width="16" height="10" rx="2" />
+            <path stroke-linecap="round" d="M8 11V7a4 4 0 118 0v4" />
+          </svg>
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            id="signup-password"
+            name="password"
+            [(ngModel)]="password"
+            (blur)="validatePassword()"
+            (ngModelChange)="validatePassword()"
+            placeholder="Create a strong password"
+            autocomplete="new-password"
+            required
+            [disabled]="isLoading || !!oauthLoading"
+            [attr.aria-invalid]="!!fieldErrors['password']"
+            [attr.aria-describedby]="fieldErrors['password'] ? 'signup-password-error' : null"
+          />
+          <button
+            type="button"
+            class="password-toggle-btn"
+            (click)="togglePasswordVisibility()"
+            [attr.aria-pressed]="showPassword"
+            [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+            [disabled]="isLoading || !!oauthLoading"
+          >
+            @if (showPassword) {
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"
+                />
+                <path stroke-linecap="round" d="M1 1l22 22" />
+              </svg>
+            } @else {
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            }
+          </button>
+        </div>
+
+        <div class="password-strength" aria-live="polite">
+          @if (password.length > 0) {
+            <div class="strength-meter" aria-hidden="true">
+              <span
+                class="strength-bar"
+                [class.is-weak]="passwordScore === 1"
+                [class.is-fair]="passwordScore === 2"
+                [class.is-good]="passwordScore === 3"
+                [class.is-strong]="passwordScore >= 4"
+              ></span>
+              <span
+                class="strength-bar"
+                [class.is-fair]="passwordScore === 2"
+                [class.is-good]="passwordScore === 3"
+                [class.is-strong]="passwordScore >= 4"
+              ></span>
+              <span
+                class="strength-bar"
+                [class.is-good]="passwordScore === 3"
+                [class.is-strong]="passwordScore >= 4"
+              ></span>
+              <span class="strength-bar" [class.is-strong]="passwordScore >= 4"></span>
+            </div>
+          }
+          <ul class="strength-rules">
+            <li [class.is-met]="hasMinBackendLength">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="9" />
+                @if (hasMinBackendLength) {
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" />
+                }
+              </svg>
+              <span>6+ characters (minimum)</span>
+            </li>
+            <li [class.is-met]="hasRecommendedLength">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="9" />
+                @if (hasRecommendedLength) {
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" />
+                }
+              </svg>
+              <span>8+ characters recommended</span>
+            </li>
+            <li [class.is-met]="hasUppercase">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="9" />
+                @if (hasUppercase) {
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" />
+                }
+              </svg>
+              <span>One uppercase (A–Z)</span>
+            </li>
+            <li [class.is-met]="hasNumber">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="9" />
+                @if (hasNumber) {
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" />
+                }
+              </svg>
+              <span>One number (0–9)</span>
+            </li>
+          </ul>
+        </div>
+
+        @if (fieldErrors['password']) {
+          <span class="field-error" id="signup-password-error" role="alert">
+            {{ fieldErrors['password'] }}
+          </span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label for="signup-confirm-password">Confirm password</label>
+        <div
+          class="input-shell has-leading has-trailing"
+          [class.is-invalid]="!!fieldErrors['confirmPassword']"
+        >
+          <svg
+            class="input-leading-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <rect x="4" y="11" width="16" height="10" rx="2" />
+            <path stroke-linecap="round" d="M8 11V7a4 4 0 118 0v4" />
+          </svg>
+          <input
+            [type]="showConfirmPassword ? 'text' : 'password'"
+            id="signup-confirm-password"
+            name="confirmPassword"
+            [(ngModel)]="confirmPassword"
+            (blur)="validateConfirmPassword()"
+            (ngModelChange)="fieldErrors['confirmPassword'] && validateConfirmPassword()"
+            placeholder="Re-enter your password"
+            autocomplete="new-password"
+            required
+            [disabled]="isLoading || !!oauthLoading"
+            [attr.aria-invalid]="!!fieldErrors['confirmPassword']"
+          />
+          <button
+            type="button"
+            class="password-toggle-btn"
+            (click)="toggleConfirmPasswordVisibility()"
+            [attr.aria-pressed]="showConfirmPassword"
+            [attr.aria-label]="
+              showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'
+            "
+            [disabled]="isLoading || !!oauthLoading"
+          >
+            @if (showConfirmPassword) {
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"
+                />
+                <path stroke-linecap="round" d="M1 1l22 22" />
+              </svg>
+            } @else {
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+            }
+          </button>
+        </div>
+        @if (fieldErrors['confirmPassword']) {
+          <span class="field-error" role="alert">{{ fieldErrors['confirmPassword'] }}</span>
+        }
+      </div>
+
+      <label class="visibility-box" for="signup-public">
+        <input
+          type="checkbox"
+          id="signup-public"
+          name="isPublic"
+          [(ngModel)]="isPublic"
+          [disabled]="isLoading || !!oauthLoading"
+        />
+        <span class="visibility-copy">
+          <strong>Enable recruiter profile discovery</strong>
+          <span
+            >Allow recruiters to view your public Developer Portfolio Analyzer profile when
+            ready.</span
+          >
+        </span>
+      </label>
+
+      <div class="form-group">
+        <label class="terms-row" for="signup-terms">
+          <input
+            type="checkbox"
+            id="signup-terms"
+            name="agreeToTerms"
+            [(ngModel)]="agreeToTerms"
+            (ngModelChange)="fieldErrors['agreeToTerms'] && validateTerms()"
+            [disabled]="isLoading || !!oauthLoading"
+          />
+          <span>
+            I agree to the
+            <a routerLink="/terms" class="inline-policy-link">Terms of Service</a> and
+            <a routerLink="/privacy" class="inline-policy-link">Privacy Policy</a>.
+          </span>
+        </label>
+        @if (fieldErrors['agreeToTerms']) {
+          <span class="field-error" role="alert">{{ fieldErrors['agreeToTerms'] }}</span>
+        }
+      </div>
+
+      <button type="submit" class="submit-btn" [disabled]="isLoading || !!oauthLoading">
+        @if (isLoading) {
+          <span class="btn-spinner" aria-hidden="true"></span>
+          <span>Creating account...</span>
+        } @else {
+          <span>Create account</span>
+        }
+      </button>
+    </form>
+
+    <div class="auth-card-footer">
+      <a routerLink="/auth/forgot-password" class="auth-link">Forgot password?</a>
+      <span class="footer-sep" aria-hidden="true">·</span>
+      <span>Already have an account?</span>
+      <a routerLink="/auth/login" class="auth-link">Log in</a>
+    </div>
+  </app-ui-card>
+</app-auth-shell>

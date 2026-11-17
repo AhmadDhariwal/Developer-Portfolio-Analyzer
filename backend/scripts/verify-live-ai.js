@@ -3,12 +3,12 @@ require(path.join(__dirname, "../node_modules/dotenv")).config({
   path: path.join(__dirname, "../.env"),
 });
 
-const aiService = require(path.join(__dirname, "../src/services/aiservice"));
+const aiService = require(path.join(__dirname, "../src/core/ai/aiservice"));
 const aiProviderManager = require(
-  path.join(__dirname, "../src/services/aiProviderManager"),
+  path.join(__dirname, "../src/core/ai/aiProviderManager"),
 );
 const resumeService = require(
-  path.join(__dirname, "../src/services/resumeservice"),
+  path.join(__dirname, "../src/modules/resume/services/resumeservice"),
 );
 
 async function verifyAI() {

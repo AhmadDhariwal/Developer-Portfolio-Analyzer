@@ -6,7 +6,7 @@ const path = require('node:path');
 const {
   buildSeedRecordsForTopic,
   getImportantTopicByKey,
-} = require('../../backend/src/services/interviewQuestionSeedCatalog');
+} = require('../../backend/src/modules/interview-prep/services/interviewQuestionSeedCatalog');
 const profile = { careerStack: 'Frontend', experienceLevel: 'Student', isConfigured: true };
 const user = {
   _id: 'interview-ui-fixture',
@@ -68,6 +68,7 @@ const server = http.createServer(async (req, res) => {
         method: req.method,
         path: url.pathname,
         params: Object.fromEntries(url.searchParams),
+        ...(url.pathname.includes('/interview-prep') ? { body } : {}),
       });
       if (url.pathname === '/api/auth/login') {
         const payload = Buffer.from(
@@ -170,7 +171,18 @@ const server = http.createServer(async (req, res) => {
             { message: 'Fixture generation unavailable. Your previous set is preserved.' },
             503,
           );
-        const questions = records.slice(0, Number(body.target || body.limit || 10));
+        const questions = records
+          .filter((question) => !body.difficulty || question.difficulty === body.difficulty)
+          .slice(0, Number(body.target || body.limit || 10));
+        if (!questions.length)
+          return json(
+            res,
+            {
+              message:
+                'Insufficient matching fixture questions. No alternative difficulty was substituted.',
+            },
+            503,
+          );
         const sessionId =
           url.pathname === '/api/interview-prep' ? `fixture-session-${sessions.length}` : undefined;
         if (sessionId)
@@ -243,6 +255,6 @@ const server = http.createServer(async (req, res) => {
     json(res, { message: error.message }, 500);
   }
 });
-server.listen(4316, '127.0.0.1', () =>
+server.listen(Number(process.env.INTERVIEW_PREVIEW_PORT || 4316), '127.0.0.1', () =>
   console.log('Isolated Interview Prep preview: http://127.0.0.1:4316/__interview_preview'),
 );

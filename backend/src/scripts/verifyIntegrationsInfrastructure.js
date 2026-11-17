@@ -8,8 +8,8 @@ const envPath = path.join(__dirname, '../../.env');
 const file = fs.readFileSync(envPath, 'utf8');
 const disk = dotenv.parse(file);
 dotenv.config({ path: envPath, quiet: true });
-const tokens = require('../services/integrationTokenService');
-const redis = require('../services/redisCacheService');
+const tokens = require('../modules/integrations/services/integrationTokenService');
+const redis = require('../core/cache/redisCacheService');
 async function main() {
   const report = {
     at: new Date().toISOString(),

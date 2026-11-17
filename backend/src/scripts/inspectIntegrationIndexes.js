@@ -30,7 +30,7 @@ async function inspect(db, { apply = false } = {}) {
         .explain('executionStats'),
     polling: () =>
       connections
-        .find(require('../services/integrationSyncService').buildDueConnectionFilter(now))
+        .find(require('../modules/integrations/services/integrationSyncService').buildDueConnectionFilter(now))
         .sort({ nextSyncAt: 1 })
         .limit(10)
         .explain('executionStats'),

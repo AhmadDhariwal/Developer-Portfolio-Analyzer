@@ -1,0 +1,225 @@
+{
+  "checks": [
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--check",
+        "--print-width",
+        "110",
+        "--single-quote",
+        "--trailing-comma",
+        "none",
+        "backend/src/services/aiProviderManager.js",
+        "backend/src/services/interviewAnswerCoverage.js",
+        "backend/src/services/interviewEnrichmentOrchestrator.js",
+        "backend/src/services/interviewPrepService.js",
+        "backend/src/services/interviewProjectContext.js",
+        "backend/src/services/providers/interviewAIProvider.js",
+        "backend/src/tests/fixtures/interviewCoverageFixture.js",
+        "backend/src/tests/interviewAnswerCoverage.test.js",
+        "backend/src/tests/interviewCompleteAI.test.js",
+        "backend/src/tests/interviewCustomSystemDesign.test.js",
+        "backend/src/tests/interviewPrepPerformance.test.js"
+      ],
+      "exitCode": 0,
+      "stdout": "Checking formatting...\nAll matched files use Prettier code style!\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "frontend/node_modules/prettier/bin/prettier.cjs",
+        "--check",
+        "--config",
+        "frontend/.prettierrc",
+        "frontend/scripts/interview-prep-preview.cjs",
+        "frontend/scripts/verify-interview-answer-coverage.cjs",
+        "frontend/src/app/features/developer/pages/interview-prep/components/interview-answer-content.component.ts",
+        "frontend/src/app/features/developer/pages/interview-prep/components/interview-answer-content.component.spec.ts",
+        "frontend/src/app/features/developer/pages/interview-prep/components/interview-question-card.component.ts",
+        "frontend/src/app/features/developer/pages/interview-prep/components/interview-question-card.component.html",
+        "frontend/src/app/features/developer/pages/interview-prep/components/interview-question-card.component.spec.ts",
+        "frontend/src/app/features/developer/pages/interview-prep/interview-prep.component.html",
+        "frontend/src/app/shared/models/interview-prep.model.ts"
+      ],
+      "exitCode": 0,
+      "stdout": "Checking formatting...\nAll matched files use Prettier code style!\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/services/aiProviderManager.js"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/services/interviewAnswerCoverage.js"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/services/interviewEnrichmentOrchestrator.js"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/services/interviewPrepService.js"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/services/interviewProjectContext.js"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/services/providers/interviewAIProvider.js"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/tests/fixtures/interviewCoverageFixture.js"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/tests/interviewAnswerCoverage.test.js"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/tests/interviewCompleteAI.test.js"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/tests/interviewCustomSystemDesign.test.js"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "backend/src/tests/interviewPrepPerformance.test.js"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "frontend/scripts/interview-prep-preview.cjs"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "node",
+        "--check",
+        "frontend/scripts/verify-interview-answer-coverage.cjs"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "warning: in the working copy of 'backend/src/services/interviewAnswerCoverage.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/services/interviewProjectContext.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/services/providers/interviewAIProvider.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'backend/src/tests/interviewAnswerCoverage.test.js', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/scripts/interview-prep-preview.cjs', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/core/guards/no-admin-tabs.guard.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/core/guards/public.guard.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/core/guards/recruiter-role.guard.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/core/guards/super-admin.guard.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/admin/pages/activity-logs/admin-activity-logs.component.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/admin/pages/admin-console/admin-console.component.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/admin/pages/admin-teams/admin-teams.component.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/admin/services/admin-hiring.service.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/auth/pages/login/login.spec.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/auth/pages/login/login.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/auth/pages/signup/signup.spec.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/auth/pages/signup/signup.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/developer/pages/interview-prep/components/interview-question-card.component.spec.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/developer/pages/interview-prep/components/interview-question-card.component.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/developer/pages/interview-prep/interview-prep.component.scss', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/developer/pages/interview-prep/interview-prep.component.spec.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/developer/pages/interview-prep/interview-prep.component.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/public/pages/api-docs-page/api-docs-page.component.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/public/pages/contact-page/contact-page.component.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/public/pages/landing-page/landing-page.component.scss', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/public/pages/landing-page/landing-page.component.spec.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/public/pages/landing-page/landing-page.component.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/public/pages/privacy-policy/privacy-policy.component.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/public/pages/public-blog-page/public-blog-page.component.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/public/pages/terms-of-service/terms-of-service.component.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/recruiter-hub/recruiter-hub-routing.module.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/super-admin/admins/sa-admins.component.scss', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/super-admin/developers/sa-developers.component.scss', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/super-admin/organizations/sa-organizations.component.scss', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/super-admin/pages/activity-logs/activity-logs.component.ts', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/super-admin/settings/super-admin-settings.component.scss', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'frontend/src/app/features/super-admin/user-details/sa-user-details.component.scss', LF will be replaced by CRLF the next time Git touches it\n"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--cached",
+        "--check"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "sourceHashes": {
+    "backend/src/services/aiProviderManager.js": "aff70e58c1eb4f5060b0346417305580daf702526015fbc31332f642356fc7ed",
+    "backend/src/services/interviewAnswerCoverage.js": "ff3739211891db8504f8514b23b3daf2efb2577bf9859ae066a2683f016dddb3",
+    "backend/src/services/interviewEnrichmentOrchestrator.js": "3ce815cd225ec53b6a3980e94dddcca8aa49f6e4e53997d130fb9f6978b11365",
+    "backend/src/services/interviewPrepService.js": "e8321a8c29618b4e4f56de138f8ac238243fcf890906698f4c803b33c9a57444",
+    "backend/src/services/interviewProjectContext.js": "1619da10515c1280dc859393a6b9d6d63457ecff7d1a67af2ed92faa4aae3ec8",
+    "backend/src/services/providers/interviewAIProvider.js": "a0e6ac053214243a828de9fb1b4f7ef702bca6f7cede76231604797831682ab4",
+    "backend/src/tests/fixtures/interviewCoverageFixture.js": "2f810cd6764f7fd34f061be7e1297f7fe8d6a345a6561428593ed8a3b36bc233",
+    "backend/src/tests/interviewAnswerCoverage.test.js": "b59217875437a1f05bc86987bc2f0cea7e860fcc12c0880897eeaf65fa87b47c",
+    "backend/src/tests/interviewCompleteAI.test.js": "bc8ae5cccb47712ae9efafd00a563dcda30b2aef2aade21e3410ed7662e4d7f9",
+    "backend/src/tests/interviewCustomSystemDesign.test.js": "1e5342f9c8efb7ed1891ddaff9f744256bba863be8f6c0b363e78ca2247e3c42",
+    "backend/src/tests/interviewPrepPerformance.test.js": "7de1cb2b14e4016d12a4a94da5e649f85a3fb6fed48655ed6912dd5a81bec69b",
+    "frontend/scripts/interview-prep-preview.cjs": "6b43c708da23f6d5db7d8b76b1a9bcde124be329b161c74f31108d209e692f9f",
+    "frontend/scripts/verify-interview-answer-coverage.cjs": "40383b90d71c7c1f05bfc04ddb567890ec2ad644c4da748e6221c6d1ea783b8e",
+    "frontend/src/app/features/developer/pages/interview-prep/components/interview-answer-content.component.ts": "c3215e9741b3c6475ed6dcb31300732989ce263fdde9ce7755476ea17600b150",
+    "frontend/src/app/features/developer/pages/interview-prep/components/interview-answer-content.component.spec.ts": "283bfb71f7be34302d3c9960f0c1545e4973b080e79d3f5504f37ac3fea22977",
+    "frontend/src/app/features/developer/pages/interview-prep/components/interview-question-card.component.ts": "f1c66aaad219ad7928d9e2a4b8546793bd53b2dfe9f0ae2678b583f23c6f227c",
+    "frontend/src/app/features/developer/pages/interview-prep/components/interview-question-card.component.html": "06c2ffa2f2948632779d07f3c295acc9a0696bea723e9fbbd468ce71abaf4faf",
+    "frontend/src/app/features/developer/pages/interview-prep/components/interview-question-card.component.spec.ts": "699da4a6e70ef6dc5002f3cc41cdf4c46a8495b4839f66eb059d6755efd1c5d6",
+    "frontend/src/app/features/developer/pages/interview-prep/interview-prep.component.html": "2d7442bd1fd8ca702351f1406da3cc5525d20a49831653e954b5b05ad5eb57c1",
+    "frontend/src/app/shared/models/interview-prep.model.ts": "1a6412ef6e16d75c3e25a168f95cf73d945ed10621fc82ae95f7304a8a7a41fe"
+  },
+  "cleanup": "No disposable task-owned temporary files identified; retained scripts, diagnostic logs, reports, screenshots and active runtime logs. No files deleted; concurrent external changes/index preserved."
+}

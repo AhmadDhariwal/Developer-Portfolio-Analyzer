@@ -1,0 +1,266 @@
+{
+  "sourceBranch": "fix/bug-01",
+  "targetBranch": "not applicable",
+  "initialTrackedTreeClean": true,
+  "initialIndexClean": true,
+  "sourceFiles": [
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\controllers\\interviewPrepController.js",
+      "relativePath": "backend/src/controllers/interviewPrepController.js",
+      "change": "modified"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\models\\interviewPrepSession.js",
+      "relativePath": "backend/src/models/interviewPrepSession.js",
+      "change": "modified"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\repositories\\interviewQuestionRepository.js",
+      "relativePath": "backend/src/repositories/interviewQuestionRepository.js",
+      "change": "modified"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\routes\\interviewPrep.routes.js",
+      "relativePath": "backend/src/routes/interviewPrep.routes.js",
+      "change": "modified"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\services\\interviewEnrichmentOrchestrator.js",
+      "relativePath": "backend/src/services/interviewEnrichmentOrchestrator.js",
+      "change": "modified"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\services\\interviewPrepService.js",
+      "relativePath": "backend/src/services/interviewPrepService.js",
+      "change": "modified"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\services\\interviewQuestionQualityService.js",
+      "relativePath": "backend/src/services/interviewQuestionQualityService.js",
+      "change": "modified"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\services\\interviewSessionService.js",
+      "relativePath": "backend/src/services/interviewSessionService.js",
+      "change": "modified"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\services\\providers\\interviewAIProvider.js",
+      "relativePath": "backend/src/services/providers/interviewAIProvider.js",
+      "change": "modified"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\services\\interviewAIValidation.js",
+      "relativePath": "backend/src/services/interviewAIValidation.js",
+      "change": "added"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\services\\interviewCoverageService.js",
+      "relativePath": "backend/src/services/interviewCoverageService.js",
+      "change": "added"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\scripts\\auditInterviewCoverage.js",
+      "relativePath": "backend/src/scripts/auditInterviewCoverage.js",
+      "change": "added"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\scripts\\fillInterviewQuestionCoverage.js",
+      "relativePath": "backend/src/scripts/fillInterviewQuestionCoverage.js",
+      "change": "added"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\interviewCompleteAI.test.js",
+      "relativePath": "backend/src/tests/interviewCompleteAI.test.js",
+      "change": "added"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\interviewCompleteAI.integration.test.js",
+      "relativePath": "backend/src/tests/interviewCompleteAI.integration.test.js",
+      "change": "added"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\interviewPrepPerformance.test.js",
+      "relativePath": "backend/src/tests/interviewPrepPerformance.test.js",
+      "change": "modified"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\interviewPrepFinalization.integration.test.js",
+      "relativePath": "backend/src/tests/interviewPrepFinalization.integration.test.js",
+      "change": "modified"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\interviewProduction.integration.test.js",
+      "relativePath": "backend/src/tests/interviewProduction.integration.test.js",
+      "change": "modified"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\services\\api.service.ts",
+      "relativePath": "frontend/src/app/shared/services/api.service.ts",
+      "change": "modified"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\services\\interview-prep.service.ts",
+      "relativePath": "frontend/src/app/shared/services/interview-prep.service.ts",
+      "change": "modified"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\models\\interview-prep.model.ts",
+      "relativePath": "frontend/src/app/shared/models/interview-prep.model.ts",
+      "change": "modified"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\pages\\interview-prep\\interview-prep.component.ts",
+      "relativePath": "frontend/src/app/pages/interview-prep/interview-prep.component.ts",
+      "change": "modified"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\pages\\interview-prep\\interview-prep.component.html",
+      "relativePath": "frontend/src/app/pages/interview-prep/interview-prep.component.html",
+      "change": "modified"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\pages\\interview-prep\\interview-prep.component.spec.ts",
+      "relativePath": "frontend/src/app/pages/interview-prep/interview-prep.component.spec.ts",
+      "change": "modified"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\pages\\interview-prep\\components\\interview-question-card.component.ts",
+      "relativePath": "frontend/src/app/pages/interview-prep/components/interview-question-card.component.ts",
+      "change": "modified"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\pages\\interview-prep\\components\\interview-question-card.component.spec.ts",
+      "relativePath": "frontend/src/app/pages/interview-prep/components/interview-question-card.component.spec.ts",
+      "change": "modified"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\frontend\\scripts\\verify-interview-complete-ai.cjs",
+      "relativePath": "frontend/scripts/verify-interview-complete-ai.cjs",
+      "change": "added"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\pages\\interview-prep\\interview-prep.component.scss",
+      "relativePath": "frontend/src/app/pages/interview-prep/interview-prep.component.scss",
+      "change": "modified"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\interviewQuestionFilters.test.js",
+      "relativePath": "backend/src/tests/interviewQuestionFilters.test.js",
+      "change": "modified"
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\frontend\\scripts\\interview-verification.vitest.config.mjs",
+      "relativePath": "frontend/scripts/interview-verification.vitest.config.mjs",
+      "change": "added"
+    }
+  ],
+  "evidenceFiles": [
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\complete-ai-backend.tap",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\complete-ai-cleanup.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\complete-ai-coverage.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\complete-ai-files.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\complete-ai-final-integration.tap",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\complete-ai-post-cleanup.tap",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\complete-ai-question-architecture.md",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\complete-ai-runtime.json",
+    "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\complete-ai-validation.json",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\interview-prep\\complete-ai\\desktop-dark.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\interview-prep\\complete-ai\\desktop-light.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\interview-prep\\complete-ai\\desktop-system.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\interview-prep\\complete-ai\\final-build.txt",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\interview-prep\\complete-ai\\final-frontend-tests.txt",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\interview-prep\\complete-ai\\laptop-dark.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\interview-prep\\complete-ai\\laptop-light.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\interview-prep\\complete-ai\\laptop-system.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\interview-prep\\complete-ai\\mobile-dark.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\interview-prep\\complete-ai\\mobile-light.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\interview-prep\\complete-ai\\mobile-system.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\interview-prep\\complete-ai\\results.json",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\interview-prep\\complete-ai\\tablet-dark.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\interview-prep\\complete-ai\\tablet-light.png",
+    "D:\\Developer-Portfolio-Analyzer\\frontend\\verification\\interview-prep\\complete-ai\\tablet-system.png"
+  ],
+  "movedFiles": [],
+  "deletedSourceFiles": [],
+  "temporaryDeletedFiles": "complete-ai-cleanup.json",
+  "preservedConcurrentPaths": [
+    "frontend/scripts/audit-public-auth-responsive.cjs",
+    "frontend/scripts/verify-public-auth-e2e.cjs",
+    "frontend/src/app/auth/login/login.ts",
+    "frontend/src/app/auth/signup/signup.ts",
+    "frontend/src/app/features/auth/components/auth-shell/auth-shell.component.scss",
+    "frontend/src/app/pages/api-docs-page/api-docs-page.component.html",
+    "frontend/src/app/pages/api-docs-page/api-docs-page.component.spec.ts",
+    "frontend/src/app/pages/api-docs-page/api-docs-page.component.ts",
+    "frontend/src/app/pages/landing-page/landing-page.component.scss",
+    "frontend/src/app/pages/privacy-policy/privacy-policy.component.ts",
+    "frontend/src/app/shared/components/public-subpage-shell/public-subpage-shell.component.scss",
+    "frontend/src/app/shared/components/theme-menu/theme-menu.component.scss",
+    "frontend/src/app/shared/styles/_auth-theme.scss",
+    "frontend/src/app/shared/styles/_public-subpage.scss",
+    "frontend/verification/public-auth/after/report.json",
+    "frontend/verification/public-auth/e2e-report.json",
+    "frontend/verification/public-auth/after/api-docs__desktop-1440__dark.png",
+    "frontend/verification/public-auth/after/api-docs__desktop-1440__light.png",
+    "frontend/verification/public-auth/after/api-docs__mobile-320__light.png",
+    "frontend/verification/public-auth/after/api-docs__mobile-375__dark.png",
+    "frontend/verification/public-auth/after/api-docs__mobile-375__light.png",
+    "frontend/verification/public-auth/after/blog__desktop-1440__dark.png",
+    "frontend/verification/public-auth/after/blog__desktop-1440__light.png",
+    "frontend/verification/public-auth/after/blog__mobile-320__light.png",
+    "frontend/verification/public-auth/after/blog__mobile-375__dark.png",
+    "frontend/verification/public-auth/after/blog__mobile-375__light.png",
+    "frontend/verification/public-auth/after/contact__desktop-1440__dark.png",
+    "frontend/verification/public-auth/after/contact__desktop-1440__light.png",
+    "frontend/verification/public-auth/after/contact__mobile-320__light.png",
+    "frontend/verification/public-auth/after/contact__mobile-375__dark.png",
+    "frontend/verification/public-auth/after/contact__mobile-375__light.png",
+    "frontend/verification/public-auth/after/forgot-password__desktop-1440__dark.png",
+    "frontend/verification/public-auth/after/forgot-password__desktop-1440__light.png",
+    "frontend/verification/public-auth/after/forgot-password__mobile-320__light.png",
+    "frontend/verification/public-auth/after/forgot-password__mobile-375__dark.png",
+    "frontend/verification/public-auth/after/forgot-password__mobile-375__light.png",
+    "frontend/verification/public-auth/after/landing__desktop-1440__dark.png",
+    "frontend/verification/public-auth/after/landing__desktop-1440__light.png",
+    "frontend/verification/public-auth/after/landing__mobile-320__light.png",
+    "frontend/verification/public-auth/after/landing__mobile-375__dark.png",
+    "frontend/verification/public-auth/after/landing__mobile-375__light.png",
+    "frontend/verification/public-auth/after/landing__ultrawide-2560__dark.png",
+    "frontend/verification/public-auth/after/login__desktop-1440__dark.png",
+    "frontend/verification/public-auth/after/login__desktop-1440__light.png",
+    "frontend/verification/public-auth/after/login__mobile-320__light.png",
+    "frontend/verification/public-auth/after/login__mobile-375__dark.png",
+    "frontend/verification/public-auth/after/login__mobile-375__light.png",
+    "frontend/verification/public-auth/after/oauth-callback__desktop-1440__dark.png",
+    "frontend/verification/public-auth/after/oauth-callback__desktop-1440__light.png",
+    "frontend/verification/public-auth/after/oauth-callback__mobile-320__light.png",
+    "frontend/verification/public-auth/after/oauth-callback__mobile-375__dark.png",
+    "frontend/verification/public-auth/after/oauth-callback__mobile-375__light.png",
+    "frontend/verification/public-auth/after/otp-verification__desktop-1440__dark.png",
+    "frontend/verification/public-auth/after/otp-verification__desktop-1440__light.png",
+    "frontend/verification/public-auth/after/otp-verification__mobile-320__light.png",
+    "frontend/verification/public-auth/after/otp-verification__mobile-375__dark.png",
+    "frontend/verification/public-auth/after/otp-verification__mobile-375__light.png",
+    "frontend/verification/public-auth/after/privacy__desktop-1440__dark.png",
+    "frontend/verification/public-auth/after/privacy__desktop-1440__light.png",
+    "frontend/verification/public-auth/after/privacy__mobile-320__light.png",
+    "frontend/verification/public-auth/after/privacy__mobile-375__dark.png",
+    "frontend/verification/public-auth/after/privacy__mobile-375__light.png",
+    "frontend/verification/public-auth/after/reset-password__desktop-1440__dark.png",
+    "frontend/verification/public-auth/after/reset-password__desktop-1440__light.png",
+    "frontend/verification/public-auth/after/reset-password__mobile-320__light.png",
+    "frontend/verification/public-auth/after/reset-password__mobile-375__dark.png",
+    "frontend/verification/public-auth/after/reset-password__mobile-375__light.png",
+    "frontend/verification/public-auth/after/signup__desktop-1440__dark.png",
+    "frontend/verification/public-auth/after/signup__desktop-1440__light.png",
+    "frontend/verification/public-auth/after/signup__mobile-320__light.png",
+    "frontend/verification/public-auth/after/signup__mobile-375__dark.png",
+    "frontend/verification/public-auth/after/signup__mobile-375__light.png",
+    "frontend/verification/public-auth/after/terms__desktop-1440__dark.png",
+    "frontend/verification/public-auth/after/terms__desktop-1440__light.png",
+    "frontend/verification/public-auth/after/terms__mobile-320__light.png",
+    "frontend/verification/public-auth/after/terms__mobile-375__dark.png",
+    "frontend/verification/public-auth/after/terms__mobile-375__light.png"
+  ]
+}

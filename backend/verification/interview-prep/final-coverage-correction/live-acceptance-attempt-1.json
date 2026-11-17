@@ -1,0 +1,36 @@
+{
+  "at": "2026-11-15T10:42:59.254Z",
+  "synthetic": false,
+  "liveProvider": true,
+  "backendOrigin": "http://localhost:5007",
+  "requests": [
+    {
+      "label": "real-provider-generation",
+      "request": {
+        "skill": "mern",
+        "query": "",
+        "difficulty": "easy",
+        "category": "",
+        "source": "database",
+        "tags": "",
+        "target": 5,
+        "limit": 5
+      },
+      "status": 503,
+      "response": {
+        "message": "Insufficient matching questions: 4 of 5 available. AI returned invalid or duplicate questions and could not complete this set. Retry generation.",
+        "code": "invalid_ai_response",
+        "generationStatus": "invalid_response",
+        "retryable": true,
+        "requestedCount": 5,
+        "availableCount": 4
+      }
+    }
+  ],
+  "checks": [],
+  "screenshots": [],
+  "ownerIdentity": "Existing developer; credentials and personal profile omitted.",
+  "sourceFingerprint": "b7e154d31d8f8e20edae3a44d4d7bf4c0427f2962f41ba4314cd3246b94a5a0f",
+  "passed": false,
+  "failure": "Live generation failed: invalid_ai_response\n\n503 !== 200\n"
+}

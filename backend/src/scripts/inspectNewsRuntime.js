@@ -1,9 +1,9 @@
 const path = require('node:path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env'), quiet: true });
 const { z } = require('zod');
-const { newsEnvShape, validateNewsRelationships } = require('../config/newsConfig');
-const cache = require('../services/redisCacheService');
-const governance = require('../services/newsGovernanceService');
+const { newsEnvShape, validateNewsRelationships } = require('../modules/news/config/newsConfig');
+const cache = require('../core/cache/redisCacheService');
+const governance = require('../modules/news/services/newsGovernanceService');
 
 async function inspect(query) {
   const parsed = z.object(newsEnvShape).safeParse(process.env);
@@ -28,8 +28,8 @@ async function inspect(query) {
     providers: await governance.health()
   };
   if (query) {
-    const discovery = require('../services/newsDiscoveryService');
-    const { queryFor } = require('../utils/newsQuery');
+    const discovery = require('../modules/news/services/newsDiscoveryService');
+    const { queryFor } = require('../modules/news/utils/newsQuery');
     if (!queryFor(query)) throw new Error('Use a valid public technology query');
     const value = redis && (await redis.get(discovery.topicKey(query)));
     const snapshot = value ? JSON.parse(value) : null;

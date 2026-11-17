@@ -1,0 +1,17 @@
+[
+  {
+    "from": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\live-acceptance.json",
+    "to": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\port5007-retained\\live-acceptance.json",
+    "reason": "Preserve prior port-5007 evidence before verifying the approved port-5000 restart."
+  },
+  {
+    "from": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\live-mern-easy-desktop.png",
+    "to": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\port5007-retained\\live-mern-easy-desktop.png",
+    "reason": "Preserve prior port-5007 evidence before verifying the approved port-5000 restart."
+  },
+  {
+    "from": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\live-mern-easy-mobile.png",
+    "to": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\port5007-retained\\live-mern-easy-mobile.png",
+    "reason": "Preserve prior port-5007 evidence before verifying the approved port-5000 restart."
+  }
+]

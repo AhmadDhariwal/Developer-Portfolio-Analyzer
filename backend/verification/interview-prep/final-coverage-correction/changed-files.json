@@ -1,0 +1,88 @@
+{
+  "root": "D:\\Developer-Portfolio-Analyzer",
+  "branch": "fix/bug-01",
+  "target": "not applicable",
+  "modifiedOrAddedSourceFiles": [
+    "backend/src/controllers/interviewPrepController.js",
+    "backend/src/repositories/interviewQuestionRepository.js",
+    "backend/src/scripts/auditInterviewCoverage.js",
+    "backend/src/scripts/fillInterviewQuestionCoverage.js",
+    "backend/src/services/aiProviderManager.js",
+    "backend/src/services/aiservice.js",
+    "backend/src/services/interviewCoordinationService.js",
+    "backend/src/services/interviewCoverageService.js",
+    "backend/src/services/interviewPrepService.js",
+    "backend/src/services/interviewQuestionFilters.js",
+    "backend/src/services/providers/interviewAIProvider.js",
+    "backend/src/tests/interviewQuestionFilters.test.js",
+    "frontend/src/app/pages/interview-prep/interview-prep.component.html",
+    "frontend/src/app/pages/interview-prep/interview-prep.component.spec.ts",
+    "frontend/src/app/pages/interview-prep/interview-prep.component.ts",
+    "frontend/src/app/shared/services/interview-prep.service.spec.ts",
+    "frontend/src/app/shared/services/interview-prep.service.ts",
+    "backend/src/services/interviewCoverageAudit.js",
+    "backend/src/services/interviewGenerationFlight.js",
+    "backend/src/tests/interviewCoverageCorrection.test.js",
+    "frontend/scripts/verify-interview-live-coverage.cjs"
+  ],
+  "movedTaskEvidence": [
+    {
+      "from": "frontend/verification/interview-prep/complete-ai/final-coverage-focused-tests.txt",
+      "to": "backend\\verification\\interview-prep\\final-coverage-correction\\frontend-focused-initial.txt"
+    },
+    {
+      "from": "frontend/verification/interview-prep/complete-ai/final-coverage-build.txt",
+      "to": "backend\\verification\\interview-prep\\final-coverage-correction\\production-build-initial.txt"
+    },
+    {
+      "from": "backend\\verification\\interview-prep\\final-coverage-correction\\live-acceptance.json",
+      "to": "backend\\verification\\interview-prep\\final-coverage-correction\\live-provider-acceptance.json",
+      "note": "Provider-generation acceptance retained; later final-build reuse acceptance uses the original name."
+    },
+    {
+      "from": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\live-acceptance.json",
+      "to": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\live-acceptance-attempt-1.json",
+      "note": "First live attempt retained before the successful retry"
+    },
+    {
+      "from": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\latest-runtime.json",
+      "to": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\runtime-attempt-1.json",
+      "note": "First task-owned runtime metadata"
+    },
+    {
+      "from": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\latest-runtime.json",
+      "to": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\runtime-attempt-2.json",
+      "note": "Second task-owned runtime metadata"
+    },
+    {
+      "from": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\latest-runtime.json",
+      "to": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\final-coverage-correction\\runtime-final-build.json",
+      "note": "Final-build runtime metadata before final source refresh"
+    }
+  ],
+  "deletedSourceFiles": [],
+  "sourceHashes": {
+    "backend/src/controllers/interviewPrepController.js": "edb544261a796fdced535fc72ed670b72d1f42caf2b5bab46d4e1d73f6694810",
+    "backend/src/repositories/interviewQuestionRepository.js": "3d5192141fb571e7898ba4da6383050de7fbd3ab421bb964a5b5ccd36e3a9f1c",
+    "backend/src/scripts/auditInterviewCoverage.js": "8b90aeafbac246055f6376e3a364b137a0b7ded778ef883735974b22117360b5",
+    "backend/src/scripts/fillInterviewQuestionCoverage.js": "3b6b2495f2c5ce3e4f5c1cf629c548d364c57a5de1311370d2def9cd11bf33ce",
+    "backend/src/services/aiProviderManager.js": "f8cae818cfabb2cfc874b081a5d04542de9d85d8ce8d55203e348586674baf82",
+    "backend/src/services/aiservice.js": "a5e34437881b0f0e0b68fcedc852bc0907ecadf39df224749eb147d9ff672716",
+    "backend/src/services/interviewCoordinationService.js": "61f5b272ae0e4b6f745020a4001d5c2277058e447041eb4e6cd8a807214abc55",
+    "backend/src/services/interviewCoverageService.js": "9fd97ac0914a744acbab3253c937a88ce9e7f0a4d726fd5091340e1ad9d02ccb",
+    "backend/src/services/interviewPrepService.js": "655b775afb45acda51b756ba4498ba224d2a01c65a6fcb77b202eace6ddfb541",
+    "backend/src/services/interviewQuestionFilters.js": "eab80f806fb0fe91d427b2c952bf38c67ba6a69084478149fa8ec4d97e263e46",
+    "backend/src/services/providers/interviewAIProvider.js": "22902e816f1723883eee29c09538d37639650fbfc79df9f7b1e31716989161a8",
+    "backend/src/tests/interviewQuestionFilters.test.js": "835acc13d79adb0a5bf46a9c36e652e40b0311107987fb1f6cf96dcd9cb3bdc0",
+    "frontend/src/app/pages/interview-prep/interview-prep.component.html": "37cbecea4770161490a0202f4d84c6d414c48a0c21cb1c90a812efb20f4132ee",
+    "frontend/src/app/pages/interview-prep/interview-prep.component.spec.ts": "87e32d5e96e1968bdca6e0ba85bae12ff8e2f67e992d19538d634f488156249b",
+    "frontend/src/app/pages/interview-prep/interview-prep.component.ts": "68e4aae6207c1cc8946f3e79f10317bf4f15efc48904c670ca0403466b06ff73",
+    "frontend/src/app/shared/services/interview-prep.service.spec.ts": "be470a1360b4de94d144c06f9db565f5958d91071c3acd953cac07afe7b4b310",
+    "frontend/src/app/shared/services/interview-prep.service.ts": "534e066f315d14b9a796576b4796c25c4f402056f2347463587fb1097ac1030f",
+    "backend/src/services/interviewCoverageAudit.js": "ee44c573bdb20e1bd2953e12b919ccbce6ba4939e37533fdaed2a5ad4bfb58b0",
+    "backend/src/services/interviewGenerationFlight.js": "5aa0587d4260a6f99633fc4c46348a03d0ca67a0c60817a1973e2770c57ed54e",
+    "backend/src/tests/interviewCoverageCorrection.test.js": "9d6ad3685673349e3124abbe84869a60a08038748b30f91becfd6348d0186a91",
+    "frontend/scripts/verify-interview-live-coverage.cjs": "484c1a640ab04676a75d4e3d134849e7d51f93f4dcfac0479845e48c11abb4f3"
+  },
+  "stagedEntriesPreserved": true
+}

@@ -2,7 +2,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const dotenv = require('dotenv');
-const { ENV_DEFAULTS, PRODUCTION_ORDER, PROVIDERS } = require('../config/aiProviders');
+const { ENV_DEFAULTS, PRODUCTION_ORDER, PROVIDERS } = require('../core/config/aiProviders');
 
 function audit() {
   const backend = path.resolve(__dirname, '../..');

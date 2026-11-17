@@ -1,0 +1,70 @@
+{
+  "formattingWriteCompleted": true,
+  "formattingCheckPassed": true,
+  "syntaxChecks": [
+    {
+      "path": "backend/src/controllers/interviewPrepController.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/repositories/interviewQuestionRepository.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/scripts/auditInterviewCoverage.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/scripts/fillInterviewQuestionCoverage.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/services/aiProviderManager.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/services/aiservice.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/services/interviewCoordinationService.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/services/interviewCoverageService.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/services/interviewPrepService.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/services/interviewQuestionFilters.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/services/providers/interviewAIProvider.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/tests/interviewQuestionFilters.test.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/services/interviewCoverageAudit.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/services/interviewGenerationFlight.js",
+      "exitCode": 0
+    },
+    {
+      "path": "backend/src/tests/interviewCoverageCorrection.test.js",
+      "exitCode": 0
+    },
+    {
+      "path": "frontend/scripts/verify-interview-live-coverage.cjs",
+      "exitCode": 0
+    }
+  ]
+}

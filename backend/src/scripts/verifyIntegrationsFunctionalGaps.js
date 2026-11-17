@@ -9,16 +9,16 @@ const mongoose = require('mongoose');
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
-const cache = require('../services/redisCacheService');
-const governance = require('../services/integrationGovernanceService');
-const persistence = require('../services/integrationPersistenceService');
-const sync = require('../services/integrationSyncService');
-const { getAdapter } = require('../services/integrations');
-const User = require('../models/user');
-const Connection = require('../models/integrationConnection');
-const Insight = require('../models/integrationInsight');
-const Log = require('../models/integrationSyncLog');
-const Linked = require('../models/integrationLinkedProfile');
+const cache = require('../core/cache/redisCacheService');
+const governance = require('../modules/integrations/services/integrationGovernanceService');
+const persistence = require('../modules/integrations/services/integrationPersistenceService');
+const sync = require('../modules/integrations/services/integrationSyncService');
+const { getAdapter } = require('../modules/integrations/services/adapters');
+const User = require('../modules/auth/models/user');
+const Connection = require('../modules/integrations/models/integrationConnection');
+const Insight = require('../modules/integrations/models/integrationInsight');
+const Log = require('../modules/integrations/models/integrationSyncLog');
+const Linked = require('../modules/integrations/models/integrationLinkedProfile');
 const evidenceRoot = path.resolve(__dirname, '../../verification/integrations');
 const replay = process.argv.includes('--replay-devto');
 const outputOverride = process.argv.find((arg) => arg.startsWith('--output='))?.slice(9);
@@ -46,7 +46,7 @@ const blogs = getAdapter('devblogs');
 const originalKaggle = kaggle.ingestData;
 const originalBlogs = blogs.ingestData;
 const originalBlogGet = blogs.get;
-const kaggleResources = require('../services/integrations/kaggleResources');
+const kaggleResources = require('../modules/integrations/services/adapters/kaggleResources');
 const originalResourcePost = kaggleResources.post;
 let runtime,
   server,
@@ -126,7 +126,7 @@ async function main() {
       expiresIn: '10m'
     })
   );
-  require('../services/aiservice').runAIAnalysis = async (_prompt, fallback) => fallback;
+  require('../core/ai/aiservice').runAIAnalysis = async (_prompt, fallback) => fallback;
   const app = express();
   app.use(express.json());
   for (const [prefix, route] of [

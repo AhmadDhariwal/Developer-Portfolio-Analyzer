@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-const State = require('../../models/interviewCoordination');
-const coordination = require('../../services/interviewCoordinationService');
+const State = require('../../modules/interview-prep/models/interviewCoordination');
+const coordination = require('../../modules/interview-prep/services/interviewCoordinationService');
 
 (async () => {
   await mongoose.connect(process.env.INTERVIEW_TEST_MONGO_URI, { dbName: process.env.INTERVIEW_TEST_DATABASE });

@@ -1,5 +1,5 @@
 // Synthetic recommendation UI fixtures use the backend engine's actual card contract.
-const engine = require('../../backend/src/services/recommendationEngineService');
+const engine = require('../../backend/src/modules/recommendations/services/recommendationEngineService');
 const hash = 'a'.repeat(64);
 function fixture() {
   const result = engine.buildPlan({

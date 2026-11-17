@@ -19,7 +19,7 @@ if (
 }
 // Read-only closure introspection exists only in this verifier's module cache.
 // The application module on disk and its execution paths are unchanged.
-const filename = require.resolve('../services/scenarioContextService');
+const filename = require.resolve('../modules/scenario-simulator/services/scenarioContextService');
 const observed = new Module(filename, module);
 observed.filename = filename;
 observed.paths = Module._nodeModulePaths(path.dirname(filename));
@@ -30,7 +30,7 @@ observed._compile(
   filename,
 );
 observed.loaded = true;
-const contextService = require('../services/scenarioContextService');
+const contextService = require('../modules/scenario-simulator/services/scenarioContextService');
 let queueInspector;
 let clientInspector;
 let socketInspector;
@@ -59,11 +59,11 @@ if (process.env.SCENARIO_ACCEPTANCE_REDIS_INSPECT === '1') {
     'module.exports.acceptanceQueue = client => _RedisClient_queue.get(client); module.exports.acceptanceSocket = client => _RedisClient_socket.get(client);',
   );
   observeModule(
-    '../services/redisCacheService',
+    '../core/cache/redisCacheService',
     'module.exports.acceptanceRawClient = () => client;',
   );
 }
-const cache = require('../services/redisCacheService');
+const cache = require('../core/cache/redisCacheService');
 let pressureClient;
 const redisQueue = () => {
   const raw = pressureClient || cache.acceptanceRawClient?.();
@@ -71,8 +71,8 @@ const redisQueue = () => {
   const value = queueInspector.acceptanceLengths(clientInspector.acceptanceQueue(raw));
   return { ...value, total: value.toSend + value.waitingForReply };
 };
-const engine = require('../services/scoring/scenarioPlanningScore');
-const { registry } = require('../services/metricsService');
+const engine = require('../core/scoring/scenarioPlanningScore');
+const { registry } = require('../core/observability/metricsService');
 let server;
 let client;
 let profileSession;
@@ -240,7 +240,7 @@ async function main() {
   const app = express();
   if (quotaTrace) app.use(quotaTrace.middleware);
   app.use(express.json({ limit: '100kb' }));
-  app.use('/api/simulator', require('../routes/scenarioSimulator.routes'));
+  app.use('/api/simulator', require('../modules/scenario-simulator/scenarioSimulator.routes'));
   server = app.listen(0, '127.0.0.1');
   await new Promise((resolve) => server.once('listening', resolve));
   process.send({ ready: true, port: server.address().port, pid: process.pid });
@@ -332,12 +332,12 @@ process.on('message', async (message) => {
     } else if (message.action === 'context') {
       value = await contextService.getScenarioContext(message.owner);
     } else if (message.action === 'save') {
-      value = await require('../services/scenarioSimulatorService').saveScenarioForUser(
+      value = await require('../modules/scenario-simulator/services/scenarioSimulatorService').saveScenarioForUser(
         message.owner,
         message.payload,
       );
     } else if (message.action === 'export') {
-      const result = await require('../services/scenarioSprintExportService').exportScenario(
+      const result = await require('../modules/scenario-simulator/services/scenarioSprintExportService').exportScenario(
         message.owner,
         message.sprintId,
         message.scenario,

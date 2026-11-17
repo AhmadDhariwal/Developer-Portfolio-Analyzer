@@ -1,0 +1,125 @@
+{
+  "summary": [
+    "\u2139 tests 1042",
+    "\u2139 pass 998",
+    "\u2139 fail 21",
+    "\u2139 cancelled 0",
+    "\u2139 skipped 23",
+    "\u2139 todo 0",
+    "\u2139 duration_ms 964960.2335"
+  ],
+  "failures": [
+    {
+      "location": "test at src\\tests\\careerSprintLegacy.integration.test.js:14:1",
+      "name": "\u2716 isolated Mongo: legacy exceptions preserve history, enforce read-only access and reserve both overlaps (4.9682ms)",
+      "error": "AssertionError [ERR_ASSERTION]: An explicitly isolated loopback database is required."
+    },
+    {
+      "location": "test at src\\tests\\careerSprintPerformance.test.js:451:1",
+      "name": "\u2716 after metrics improve or hold targets versus measured before snapshot (590.0712ms)",
+      "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:"
+    },
+    {
+      "location": "test at src\\tests\\courseViewSeparation.integration.test.js:11:1",
+      "name": "\u2716 Discover/For You: owned current v9 evidence gates a 1781-course Mongo catalog (8984.9823ms)",
+      "error": "Error [MongoServerError]: available disk space of 391204864 bytes is less than required minimum of 524288000"
+    },
+    {
+      "location": "test at src\\tests\\coursesDiscovery.integration.test.js:13:1",
+      "name": "\u2716 global discovery and My Learning: real Mongo/JWT, background-only coverage and recovery (7073.8043ms)",
+      "error": "Error [MongoServerError]: available disk space of 28762112 bytes is less than required minimum of 524288000"
+    },
+    {
+      "location": "test at src\\tests\\coursesMongo.integration.test.js:319:11",
+      "name": "\u2716 filters, paging, forced refresh, invalid input and no-provider fallback remain accurate (1354.1464ms)",
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    },
+    {
+      "location": "test at src\\tests\\integrationResourceAnalytics.test.js:28:1",
+      "name": "\u2716 resource-only Kaggle observation cannot invent Dashboard scores or confidence (10019.6055ms)",
+      "error": "AssertionError [ERR_ASSERTION]: Unexpected status 500"
+    },
+    {
+      "location": "test at src\\tests\\integrationResourceAnalytics.test.js:34:1",
+      "name": "\u2716 historical scored Kaggle insight remains in analytics when a public resource observation exists (10016.6281ms)",
+      "error": "AssertionError [ERR_ASSERTION]: Unexpected status 500"
+    },
+    {
+      "location": "test at src\\tests\\interviewPrepFinalization.integration.test.js:253:13",
+      "name": "\u2716 authenticated API contracts, input rejection, practice fallback, and canonical personalization (1211.2009ms)",
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+    },
+    {
+      "location": "test at src\\tests\\notificationsProduction.test.js:647:13",
+      "name": "\u2716 weekly email claims prevent duplicate sends and retain ambiguous outcomes (185.8962ms)",
+      "error": "AssertionError [ERR_ASSERTION]: Missing expected rejection."
+    },
+    {
+      "location": "test at src\\tests\\resumeProduction.test.js:21:1",
+      "name": "\u2716 independent PDF field golds: standard, changed layout and columns (4.3458ms)",
+      "error": "Error: ENOENT: no such file or directory, open 'D:\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\fixtures\\resume\\standard.pdf'"
+    },
+    {
+      "location": "test at src\\tests\\resumeProduction.test.js:82:1",
+      "name": "\u2716 resource limits and scanned, encrypted, empty and corrupt PDF classification (1.119ms)",
+      "error": "Error: ENOENT: no such file or directory, open 'D:\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\fixtures\\resume\\empty.pdf'"
+    },
+    {
+      "location": "test at src\\tests\\resumeProduction.test.js:108:1",
+      "name": "\u2716 negative claims, common verbs, repeated aliases, all twelve domains and monthly overlaps (1.0514ms)",
+      "error": "Error: ENOENT: no such file or directory, open 'D:\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\fixtures\\resume\\standard.pdf'"
+    },
+    {
+      "location": "test at src\\tests\\resumeProduction.test.js:136:1",
+      "name": "\u2716 AI timeout aborts the provider signal and sends no resume PII; success does not abort (2.5447ms)",
+      "error": "Error: ENOENT: no such file or directory, open 'D:\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\fixtures\\resume\\standard.pdf'"
+    },
+    {
+      "location": "test at src\\tests\\resumeProduction.test.js:164:1",
+      "name": "\u2716 Redis timeout and rejection are optional; Mongo remains authoritative (2.5688ms)",
+      "error": "Error: ENOENT: no such file or directory, open 'D:\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\fixtures\\resume\\standard.pdf'"
+    },
+    {
+      "location": "test at src\\tests\\resumeProductionMongo.test.js:45:1",
+      "name": "\u2716 two workers: one logical analysis, owner isolation, Redis outage, quotas, lease recovery and exact index (3837.6251ms)",
+      "error": "Error: ENOENT: no such file or directory, stat 'D:\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\fixtures\\resume\\standard.pdf'"
+    },
+    {
+      "location": "test at src\\tests\\skillGapAcceptance.test.js:78:1",
+      "name": "\u2716 visual comparison refuses missing screenshots instead of passing zero comparisons (320.1748ms)",
+      "error": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:"
+    },
+    {
+      "location": "test at src\\tests\\skillgapPerformance.test.js:290:1",
+      "name": "\u2716 skill-gap memory/redis/cold/concurrency performance (5551.764ms)",
+      "error": "AssertionError [ERR_ASSERTION]: memory p95 79.55380000000059"
+    },
+    {
+      "location": "test at src\\tests\\sprintAiAdmission.integration.test.js:12:1",
+      "name": "\u2716 shared Sprint AI admission enforces approved quotas and concurrency with safe expiry/fallback (4.7818ms)",
+      "error": "AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^mongodb:\\/\\/127\\.0\\.0\\.1:\\d+\\/career_sprint_legacy_test_[a-z0-9_]+$/. Input:"
+    }
+  ],
+  "skippedTests": [
+    "\ufe63 disposable Mongo + fixture S3: existing upload APIs, privacy, replacement, cleanup, restart and legacy reads (0.4959ms) # SKIP",
+    "\ufe63 real Jobs HTTP contracts use disposable Mongo, real Redis and JWT owner isolation (0.9475ms) # SKIP",
+    "\ufe63 isolated adaptive demand selects a topic, reserves governed prewarm work and persists through the worker (1.7194ms) # SKIP",
+    "\ufe63 isolated catalog: scheduled ingestion, discovery, indexed history, shared tags, refresh and worker caches (1.2327ms) # SKIP",
+    "\ufe63 isolated Mongo read/unread contract persists history atomically (0.9292ms) # SKIP",
+    "\ufe63 isolated Mongo discovery persistence, source expiry and cold-worker fallback preserve the general pool (0.9779ms) # SKIP",
+    "\ufe63 isolated Redis/Upstash discovery queue is atomic, bounded, recoverable and fenced across workers (0.1631ms) # SKIP",
+    "\ufe63 atomic discovery accounting, reserved capacity, deduplication and expired quota revalidation (0.9051ms) # SKIP",
+    "\ufe63 isolated free-text HTTP search, Redis worker and Mongo publication round trip (1.8531ms) # SKIP",
+    "\ufe63 disposable Upstash: atomic quotas, cooldown, circuits, leases, shared cache and outage fallback (1.0535ms) # SKIP",
+    "\ufe63 isolated local Mongo: actual cache persistence, indexes, JWT ownership and idempotent saved actions (0.1876ms) # SKIP",
+    "\ufe63 approved live metadata search through an isolated governed worker and Mongo cache (0.8801ms) # SKIP",
+    "\ufe63 isolated scheduled provider pipeline: all sources persist with attribution, retention, shared pacing and cache invalidation (0.849ms) # SKIP",
+    "\ufe63 isolated refresh: exact EC2 interval, shared headroom, manual dedup, Mongo publication and cross-worker version visibility (0.9311ms) # SKIP",
+    "\ufe63 isolated upstream cooldown propagates precise reason and expiry without a retry (0.1365ms) # SKIP",
+    "\ufe63 isolated Mongo: indexed DevOps aliases, multi-tags, dates and totals update across warm worker caches (0.9687ms) # SKIP",
+    "\ufe63 disposable replica set: CRUD, ownership, concurrency, upload, deletion rollback and cleanup (0.648ms) # SKIP",
+    "\ufe63 disposable Mongo provisioning is additive/idempotent; retry batch respects backoff and preserves records (0.4047ms) # SKIP",
+    "\ufe63 saved snapshot operations: owner sources, stable refresh, revisions, PDF, resend quotas and uncertainty (2.5054ms) # SKIP",
+    "\ufe63 isolated Mongo: independent clients, lease takeover, fencing and uncertain email (1.2336ms) # SKIP"
+  ]
+}

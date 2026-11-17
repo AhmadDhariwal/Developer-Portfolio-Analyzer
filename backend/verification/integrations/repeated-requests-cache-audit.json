@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-05T14:21:57.242Z",
+  "checkedAt": "2026-11-17T09:22:11.938Z",
   "providerHttpRequests": 0,
   "checks": [
     "three identical fresh Connect clicks preserve connection/insight; two explicit Syncs still normalize and append history; one source fetch across accounts",
@@ -9,21 +9,21 @@
   "baselineConnect": {
     "commands": 48,
     "documentWrites": 21,
-    "ms": 190.03900000000067,
+    "ms": 282.21450000000004,
     "providerCalls": 0,
     "normalizations": 3
   },
   "improvedConnect": {
     "commands": 27,
     "documentWrites": 3,
-    "ms": 115.08109999999942,
+    "ms": 149.20629999999983,
     "providerCalls": 0,
     "normalizations": 0
   },
   "manualSync": {
     "commands": 42,
     "documentWrites": 22,
-    "ms": 161.51339999999982,
+    "ms": 255.34469999999965,
     "providerCalls": 0,
     "normalizations": 2
   },
@@ -32,15 +32,15 @@
       "payloadBytes": 615,
       "mongoOnlyMs": {
         "n": 12,
-        "p50": 1.2162000000007538,
-        "p95": 2.6838000000007014,
-        "p99": 2.6838000000007014
+        "p50": 1.9812000000001717,
+        "p95": 3.0964999999996508,
+        "p99": 3.0964999999996508
       },
       "readThroughMs": {
         "n": 12,
-        "p50": 1.983299999999872,
-        "p95": 4.075199999999313,
-        "p99": 4.075199999999313
+        "p50": 3.02599999999984,
+        "p95": 4.431500000000597,
+        "p99": 4.431500000000597
       },
       "mongoReads": 24,
       "redisGets": 12
@@ -49,15 +49,15 @@
       "payloadBytes": 30103,
       "mongoOnlyMs": {
         "n": 12,
-        "p50": 2.073100000001432,
-        "p95": 3.672499999998763,
-        "p99": 3.672499999998763
+        "p50": 2.1875,
+        "p95": 3.472200000000157,
+        "p99": 3.472200000000157
       },
       "readThroughMs": {
         "n": 12,
-        "p50": 3.2672999999995227,
-        "p95": 5.58889999999883,
-        "p99": 5.58889999999883
+        "p50": 3.111300000000483,
+        "p95": 4.061099999998987,
+        "p99": 4.061099999998987
       },
       "mongoReads": 24,
       "redisGets": 12
@@ -71,28 +71,28 @@
   "prototypeFailureModes": [
     {
       "mode": "quota",
-      "ms": 4.7541999999994005,
+      "ms": 4.33849999999984,
       "mongoReads": 2,
       "redisGets": 1,
       "redisSets": 1
     },
     {
       "mode": "timeout",
-      "ms": 153.48610000000008,
+      "ms": 158.8783999999996,
       "mongoReads": 2,
       "redisGets": 1,
       "redisSets": 1
     },
     {
       "mode": "unavailable",
-      "ms": 4.399900000000343,
+      "ms": 1.6938999999983935,
       "mongoReads": 1,
       "redisGets": 0,
       "redisSets": 0
     },
     {
       "mode": "recovered",
-      "ms": 3.0020000000004075,
+      "ms": 4.269200000000637,
       "mongoReads": 2,
       "redisGets": 1,
       "redisSets": 1
@@ -100,7 +100,7 @@
   ],
   "cleanup": {
     "mongoStopped": true,
-    "temporaryFilesRemoved": 128,
+    "temporaryFilesRemoved": 73,
     "productionDataUsed": false
   }
 }

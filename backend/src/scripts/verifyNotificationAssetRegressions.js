@@ -49,8 +49,8 @@ async function main() {
       [
         '--test',
         '--test-concurrency=1',
-        'backend/src/tests/profileSettingsProduction.test.js',
-        'backend/src/tests/b2Storage.test.js'
+        'backend/src/tests/profile/profileSettingsProduction.test.js',
+        'backend/src/tests/core/b2Storage.test.js'
       ],
       { cwd: path.resolve(__dirname, '../../..'), env, windowsHide: true, stdio: 'inherit' }
     );

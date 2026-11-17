@@ -141,7 +141,7 @@ async function run() {
 
   // SCENARIO D & E: Scoring edge cases (null vs 0)
   console.log("\n--- SCENARIO D & E: Null vs 0 Handling ---");
-  const evidenceEngine = require("../services/skillGapEvidenceService");
+  const evidenceEngine = require("../modules/skill-gap/services/skillGapEvidenceService");
   const zeroResult = evidenceEngine.calculate({
     requirements: {
       available: true,

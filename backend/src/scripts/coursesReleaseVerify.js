@@ -13,9 +13,9 @@ const https = require('https');
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
-const User = require('../models/user');
+const User = require('../modules/auth/models/user');
 const { migrateCourseIndexes } = require('./migrateCourseIndexes');
-const AnalysisCache = require('../models/analysisCache');
+const AnalysisCache = require('../modules/skill-gap/models/analysisCache');
 
 const API = String(process.env.RELEASE_API_BASE || 'http://127.0.0.1:5000/api').replace(/\/$/, '');
 const WEB = String(process.env.RELEASE_WEB_ORIGIN || process.env.FRONTEND_URL || 'http://127.0.0.1:4200').replace(/\/$/, '');

@@ -1,0 +1,22 @@
+{
+  "branch": "fix/bug-01",
+  "target": "not applicable",
+  "staged": ":100644 100644 ba75962a e076a421 M\tfrontend/src/app/pages/interview-prep/interview-prep.component.html\n:100644 100644 ba1e7a02 af929e4d M\tfrontend/src/app/pages/interview-prep/interview-prep.component.scss\n:100644 100644 f8748be5 84839083 M\tfrontend/src/app/pages/interview-prep/interview-prep.component.spec.ts\n:100644 100644 795fd359 c437feda M\tfrontend/src/app/pages/interview-prep/interview-prep.component.ts\n",
+  "existingHashes": {
+    "backend/src/config/aiProviders.js": "bd6db5ce8091cdc17f111b04bef095672771f62781b24884c1f91b1e8a5e42b2",
+    "backend/src/services/aiProviderManager.js": "e22f567224d24204c14504ff1cb9414f5a37feb9c72ea519b43924aefd76f273",
+    "backend/src/services/interviewPrepService.js": "87e165ea88ab45a4b4d11eee8b9bbaa52855a3c875e3926db1b12b19f47169b9",
+    "backend/src/services/interviewSessionService.js": "951941c3f5cd90b5895b4bd0f4152017333b3ca603f8ecf752934d1d9b52b7c1",
+    "backend/src/services/providers/interviewAIProvider.js": "bc0b98c1cad68e7df0df668a68d4fccdd6ab34344f1eaf517c7423e53da6bfcb",
+    "backend/src/tests/aiProviderPlatform.test.js": "c8622cff66d5a32abf5ce02f65ce169cd86ba27c353c2ea265d82f24e4424631",
+    "backend/src/tests/interviewCompleteAI.test.js": "f8f7b1570ee07d14cbc95ea8a37c414aba0e0a0fa6e9b57363fa65c6655df74e",
+    "backend/src/tests/interviewCustomSystemDesign.test.js": "2a52031f4fdb9640621ba7be0cadd1bd1003d9a2104c27ee83b9d8ee1c7aeec5",
+    "backend/src/tests/interviewPrepPerformance.test.js": "f4cb5f6a7956e24894e417aff99920a13879411e677cd7fa595b6974cae7cbce"
+  },
+  "plan": [
+    "Trace reported RAG failure",
+    "Scope user prompt form separately from generated bank question rules",
+    "Test exact wording with strict answer validation and live provider",
+    "Format, check and retain finalization evidence"
+  ]
+}

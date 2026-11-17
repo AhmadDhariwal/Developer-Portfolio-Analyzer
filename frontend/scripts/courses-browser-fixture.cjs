@@ -3,7 +3,7 @@ const {
   buildFallbackPool,
   scoreAndRank,
   applyCourseFilters,
-} = require('../../backend/src/services/courseService');
+} = require('../../backend/src/modules/courses/services/courseService');
 const { profile } = require('./skill-gap-browser-fixture.cjs');
 const targets = [{ name: 'SQL', requirement: 'REQUIRED', status: 'NOT_EVIDENCED' }];
 const catalog = scoreAndRank(

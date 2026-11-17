@@ -7,9 +7,9 @@ const readline = require('node:readline');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const { startMongo } = require('./verifyIntegrationsRealProviders');
-const User = require('../models/user');
-const Connection = require('../models/integrationConnection');
-const Insight = require('../models/integrationInsight');
+const User = require('../modules/auth/models/user');
+const Connection = require('../modules/integrations/models/integrationConnection');
+const Insight = require('../modules/integrations/models/integrationInsight');
 const root = path.resolve(__dirname, '../../verification/integrations');
 const outputName =
   process.argv.find((arg) => arg.startsWith('--output='))?.slice(9) ||

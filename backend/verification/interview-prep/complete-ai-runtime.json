@@ -1,0 +1,14 @@
+{
+  "providerKeyPresent": {
+    "GEMINI_API_KEY": true,
+    "OPENAI_API_KEY": true,
+    "GROQ_API_KEY": true,
+    "ANTHROPIC_API_KEY": true,
+    "XAI_API_KEY": false
+  },
+  "liveProviderTested": false,
+  "reason": "Provider responses mocked; no paid external generation requested during verification.",
+  "redisConfigured": true,
+  "redisReady": true,
+  "redisPing": true
+}

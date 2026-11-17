@@ -16,7 +16,7 @@ if (require.main === module) {
   (async () => {
     try {
       await mongoose.connect(process.env.MONGODB_URI || process.env.MONGO_URI);
-      console.log(await migrate(require('../models/recommendation')));
+      console.log(await migrate(require('../modules/recommendations/models/recommendation')));
     } finally {
       await mongoose.disconnect();
     }

@@ -29,7 +29,7 @@
   ],
   "cleanup": {
     "mongoStopped": true,
-    "temporaryFilesRemoved": 97,
+    "temporaryFilesRemoved": 96,
     "productionDataUsed": false
   }
 }

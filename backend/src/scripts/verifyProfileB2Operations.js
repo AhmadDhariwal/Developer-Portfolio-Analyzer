@@ -10,8 +10,8 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../.env'), quiet: t
 async function worker(subject, count) {
   assert.match(subject, /^[a-f0-9]{24}$/);
   assert.ok(count > 0 && count <= 6);
-  const cache = require('../services/redisCacheService');
-  const controls = require('../middleware/publicPortfolioRateLimit');
+  const cache = require('../core/cache/redisCacheService');
+  const controls = require('../modules/public-portfolio/middleware/publicPortfolioRateLimit');
   try {
     assert.ok(await cache.initRedisCache({ silent: true, probeOnly: true }));
     const result = [];
@@ -90,7 +90,7 @@ async function main() {
   const subject = crypto.randomBytes(12).toString('hex');
   const other = crypto.randomBytes(12).toString('hex');
   const windowStart = Math.floor(Date.now() / 3600000);
-  const cache = require('../services/redisCacheService');
+  const cache = require('../core/cache/redisCacheService');
   try {
     // Do not straddle a fixed limiter window; no sleeps or load test.
     assert.ok(Date.now() % 3600000 < 3500000);

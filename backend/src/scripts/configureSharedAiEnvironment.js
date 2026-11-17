@@ -1,7 +1,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const dotenv = require('dotenv');
-const { ENV_DEFAULTS, PRODUCTION_ORDER } = require('../config/aiProviders');
+const { ENV_DEFAULTS, PRODUCTION_ORDER } = require('../core/config/aiProviders');
 
 const updateText = (text) => {
   const before = dotenv.parse(text);

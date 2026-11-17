@@ -22,18 +22,18 @@ const mongoose = require('mongoose');
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const { chromium } = require('playwright');
-const User = require('../models/user');
-const ResumeFile = require('../models/resumeFile');
-const ResumeAnalysis = require('../models/resumeAnalysis');
-const GitHubAnalysisCache = require('../models/githubAnalysisCache');
-const AnalysisCache = require('../models/analysisCache');
-const Recommendation = require('../models/recommendation');
-const CareerSprint = require('../models/careerSprint');
-const engine = require('../services/recommendationEngineService');
-const signalService = require('../services/developerSignalService');
-const controller = require('../controllers/recommendationscontroller');
-const aiService = require('../services/aiservice');
-const redis = require('../services/redisCacheService');
+const User = require('../modules/auth/models/user');
+const ResumeFile = require('../modules/resume/models/resumeFile');
+const ResumeAnalysis = require('../modules/resume/models/resumeAnalysis');
+const GitHubAnalysisCache = require('../modules/github/models/githubAnalysisCache');
+const AnalysisCache = require('../modules/skill-gap/models/analysisCache');
+const Recommendation = require('../modules/recommendations/models/recommendation');
+const CareerSprint = require('../modules/career-sprint/models/careerSprint');
+const engine = require('../modules/recommendations/services/recommendationEngineService');
+const signalService = require('../core/developer-context/developerSignalService');
+const controller = require('../modules/recommendations/recommendationscontroller');
+const aiService = require('../core/ai/aiservice');
+const redis = require('../core/cache/redisCacheService');
 const output = path.resolve(__dirname, '../../../frontend/verification/recommendations');
 const webRoot = path.resolve(__dirname, '../../../frontend/dist/frontend/browser');
 const database = `devinsight_rec_e2e_${crypto.randomBytes(6).toString('hex')}`;
@@ -211,16 +211,16 @@ async function main() {
   const app = express();
   app.use(express.json());
   for (const [route, file] of [
-    ['recommendations', 'recommendations.routes'],
-    ['career-sprints', 'careerSprint.routes'],
-    ['profile', 'profile.routes'],
-    ['resume', 'resume.routes'],
-    ['github', 'github.routes'],
-    ['skillgap', 'skillgap.routes'],
-    ['courses', 'courseRoutes'],
-    ['notifications', 'notification.routes'],
+    ['recommendations', 'modules/recommendations/recommendations.routes'],
+    ['career-sprints', 'modules/career-sprint/careerSprint.routes'],
+    ['profile', 'modules/profile/profile.routes'],
+    ['resume', 'modules/resume/resume.routes'],
+    ['github', 'modules/github/github.routes'],
+    ['skillgap', 'modules/skill-gap/skillgap.routes'],
+    ['courses', 'modules/courses/courseRoutes'],
+    ['notifications', 'modules/notifications/notification.routes'],
   ])
-    app.use(`/api/${route}`, require(`../routes/${file}`));
+    app.use(`/api/${route}`, require(`../${file}`));
   app.use('/api', (_req, res) =>
     res.status(404).json({ message: 'Endpoint is outside the Recommendations verification host.' }),
   );

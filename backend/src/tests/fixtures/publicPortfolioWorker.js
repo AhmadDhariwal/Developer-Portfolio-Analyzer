@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const redisService = require('../../services/redisCacheService');
+const redisService = require('../../core/cache/redisCacheService');
 process.once('message', async ({ dbName, namespace, profile }) => {
   try {
     if (
@@ -26,7 +26,7 @@ process.once('message', async ({ dbName, namespace, profile }) => {
       set: (key, value, options) => native.set(scope(key), value, options),
       eval: (script, options) => native.eval(script, { ...options, keys: options.keys.map(scope) }),
     };
-    const { createPortfolioCache } = require('../../services/publicPortfolioCacheService');
+    const { createPortfolioCache } = require('../../modules/public-portfolio/services/publicPortfolioCacheService');
     const cache = createPortfolioCache({ redis: { getRedisCacheClient: () => redis } });
     let builds = 0;
     const payload = await cache.get(
