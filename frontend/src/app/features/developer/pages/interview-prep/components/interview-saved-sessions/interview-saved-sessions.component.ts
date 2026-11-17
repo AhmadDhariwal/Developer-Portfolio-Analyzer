@@ -5,7 +5,7 @@ import {
   InterviewSession,
 } from '../../../../../../shared/models/interview-prep.model';
 import { SKILL_LABELS } from '../../../../../../shared/constants/interview-prep.constants';
-import { InterviewQuestionCardComponent } from '../interview-question-card.component';
+import { InterviewQuestionCardComponent } from '../interview-question-card/interview-question-card.component';
 
 @Component({
   selector: 'app-interview-saved-sessions',
@@ -39,4 +39,3 @@ export class InterviewSavedSessionsComponent {
   trackQuestion = (_index: number, question: InterviewQuestion): string =>
     `${question.topicKey || ''}:${question._id || question.question}`;
 }
-

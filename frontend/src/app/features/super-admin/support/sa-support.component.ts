@@ -10,7 +10,7 @@ import {
   AdminTicketQuery,
 } from '../../../shared/services/support.service';
 import { SaPagerComponent } from '../shared/components/sa-pager/sa-pager.component';
-import { SaSupportDetailComponent } from './sa-support-detail.component';
+import { SaSupportDetailComponent } from './components/sa-support-detail/sa-support-detail.component';
 
 @Component({
   selector: 'app-sa-support',

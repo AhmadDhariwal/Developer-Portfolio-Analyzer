@@ -1,12 +1,12 @@
 import { Routes } from '@angular/router';
-import { MainLayout } from './core/layouts/main-layout/main-layout';
+import { MainLayout } from './core/layouts/main-layout/main-layout.component';
 import { DashboardComponent } from './features/developer/pages/dashboard/dashboard.component';
 import { GithubAnalyzerComponent } from './features/developer/pages/github-analyzer/github-analyzer.component';
 import { ResumeAnalyzerComponent } from './features/developer/pages/resume-analyzer/resume-analyzer.component';
 import { SkillGapComponent } from './features/developer/pages/skill-gap/skill-gap.component';
 import { RecommendationsComponent } from './features/developer/pages/recommendations/recommendations.component';
 import { ProfileComponent } from './features/developer/pages/profile/profile.component';
-import { SupportComponent } from './features/developer/pages/support/support';
+import { SupportComponent } from './features/developer/pages/support/support.component';
 import { CoursesComponent } from './features/developer/pages/courses/courses.component';
 import { JobsComponent } from './features/developer/pages/jobs/jobs.component';
 import { JobDetailsComponent } from './features/developer/pages/job-details/job-details.component';
@@ -31,8 +31,8 @@ import { InterviewPrepComponent } from './features/developer/pages/interview-pre
 import { CareerSprintComponent } from './features/developer/pages/career-sprint/career-sprint.component';
 import { InterviewsReportsComponent } from './features/developer/pages/interviews-reports/interviews-reports.component';
 import { NewsComponent } from './features/developer/pages/news/news.component';
-import { Login } from './features/auth/pages/login/login';
-import { Signup } from './features/auth/pages/signup/signup';
+import { Login } from './features/auth/pages/login/login.component';
+import { Signup } from './features/auth/pages/signup/signup.component';
 import { OtpVerificationComponent } from './features/auth/pages/otp-verification/otp-verification.component';
 import { ForgotPasswordComponent } from './features/auth/pages/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './features/auth/pages/reset-password/reset-password.component';

@@ -24,11 +24,11 @@ import {
   RecommendedBasedOn,
   normalizeCourseFilters,
 } from '../../../../shared/models/course.model';
-import { CourseCardComponent } from '../../../../shared/components/course-card/course-card';
-import { CourseFiltersComponent } from '../../../../shared/components/course-filters/course-filters';
+import { CourseCardComponent } from '../../../../shared/components/course-card/course-card.component';
+import { CourseFiltersComponent } from '../../../../shared/components/course-filters/course-filters.component';
 
 import { CourseLearningStore, learningError } from './services/course-learning.store';
-import { MyLearningComponent } from './components/my-learning.component';
+import { MyLearningComponent } from './components/my-learning/my-learning.component';
 
 const INITIAL_DISPLAY = 10;
 const PAGE_SIZE = 10;

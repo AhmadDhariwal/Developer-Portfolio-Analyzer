@@ -5,47 +5,47 @@
     {
       "name": "1. Landing -> Sign Up CTA, mobile drawer, tabs & theme toggle",
       "status": "PASS",
-      "durationMs": 3812
+      "durationMs": 3494
     },
     {
       "name": "2. Landing -> Login CTA & keyboard focus visibility",
       "status": "PASS",
-      "durationMs": 2502
+      "durationMs": 1813
     },
     {
       "name": "3. Unsuccessful & Successful Registration + OTP completion (Mocked Backend)",
       "status": "PASS",
-      "durationMs": 3102
+      "durationMs": 2833
     },
     {
       "name": "4. Unsuccessful & Successful Login + Password visibility toggle (Mocked Backend)",
       "status": "PASS",
-      "durationMs": 2520
+      "durationMs": 2290
     },
     {
       "name": "5 & 6. Forgot Password -> OTP -> Reset Password -> Success view (Mocked Backend)",
       "status": "PASS",
-      "durationMs": 2421
+      "durationMs": 2904
     },
     {
       "name": "7. Invalid & Expired Reset Token states",
       "status": "PASS",
-      "durationMs": 4391
+      "durationMs": 3740
     },
     {
       "name": "8 & 9. Google & GitHub OAuth initiation, callback success, cancellation & errors (Mocked Callback)",
       "status": "PASS",
-      "durationMs": 7459
+      "durationMs": 6312
     },
     {
       "name": "10, 11 & 12. Direct navigation, publicGuard for signed-in user & returnUrl preservation",
       "status": "PASS",
-      "durationMs": 1685
+      "durationMs": 1889
     },
     {
       "name": "13. Public subpages (/api-docs, /blog, /contact, /privacy, /terms) navigation, theme menu & interactions",
       "status": "PASS",
-      "durationMs": 3042
+      "durationMs": 2376
     }
   ]
 }

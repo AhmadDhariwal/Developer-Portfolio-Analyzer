@@ -21,8 +21,8 @@ import {
   SprintTaskInput,
 } from '../../../../shared/services/career-sprint.service';
 import { ProfileService } from '../../../../shared/services/profile.service';
-import { SprintTaskEditorComponent } from './components/sprint-task-editor.component';
-import { SprintPlannerComponent } from './components/sprint-planner.component';
+import { SprintTaskEditorComponent } from './components/sprint-task-editor/sprint-task-editor.component';
+import { SprintPlannerComponent } from './components/sprint-planner/sprint-planner.component';
 import {
   calendarKey,
   formatSprintDate,

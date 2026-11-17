@@ -1,6 +1,6 @@
-import { RecommendationResourcesComponent } from './components/recommendation-resources.component';
+import { RecommendationResourcesComponent } from './components/recommendation-resources/recommendation-resources.component';
 import { recommendationCategoryLabel } from './utils/recommendation-presentation';
-import { RecommendationRowComponent } from './components/recommendation-row.component';
+import { RecommendationRowComponent } from './components/recommendation-row/recommendation-row.component';
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

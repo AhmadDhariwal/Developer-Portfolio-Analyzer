@@ -11,8 +11,8 @@ import {
   SavedNewsItem,
   NewsSkillEvidenceStatus,
 } from '../../../../shared/models/news.model';
-import { NewsCardComponent } from '../../../../shared/components/news-card/news-card';
-import { NewsFiltersComponent } from '../../../../shared/components/news-filters/news-filters';
+import { NewsCardComponent } from '../../../../shared/components/news-card/news-card.component';
+import { NewsFiltersComponent } from '../../../../shared/components/news-filters/news-filters.component';
 const article: NewsItem = {
   id: 'one',
   title: 'React engineering update',

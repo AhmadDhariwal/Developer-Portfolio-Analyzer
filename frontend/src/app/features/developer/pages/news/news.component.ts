@@ -20,8 +20,8 @@ import { buildCareerProfileSignature } from '../../../../shared/models/career-pr
 import { AuthService } from '../../../../shared/services/auth.service';
 import { NewsService } from '../../../../shared/services/news.service';
 import { NEWS_SKILL_EVIDENCE_LABELS } from '../../../../shared/utils/news-presentation';
-import { NewsCardComponent } from '../../../../shared/components/news-card/news-card';
-import { NewsFiltersComponent } from '../../../../shared/components/news-filters/news-filters';
+import { NewsCardComponent } from '../../../../shared/components/news-card/news-card.component';
+import { NewsFiltersComponent } from '../../../../shared/components/news-filters/news-filters.component';
 import {
   DEFAULT_NEWS_FILTERS,
   NewsFilters,

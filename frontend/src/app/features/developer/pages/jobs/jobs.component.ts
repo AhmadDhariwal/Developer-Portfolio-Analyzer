@@ -36,8 +36,8 @@ import {
   JobsResponse,
   normalizeJobFilters,
 } from '../../../../shared/models/job.model';
-import { JobCardComponent } from '../../../../shared/components/job-card/job-card';
-import { JobFiltersComponent } from '../../../../shared/components/job-filters/job-filters';
+import { JobCardComponent } from '../../../../shared/components/job-card/job-card.component';
+import { JobFiltersComponent } from '../../../../shared/components/job-filters/job-filters.component';
 import { jobDate, jobRequestError } from '../../../../shared/utils/job-presentation';
 import { JobsHiddenAccessService } from '../../../../shared/services/jobs-hidden-access.service';
 type View = 'discover' | 'saved' | 'applied' | 'hidden';

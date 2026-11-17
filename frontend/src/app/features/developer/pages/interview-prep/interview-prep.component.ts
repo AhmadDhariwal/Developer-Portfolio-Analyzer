@@ -21,7 +21,7 @@ import {
   INTERVIEW_SKILLS,
   SKILL_LABELS,
 } from '../../../../shared/constants/interview-prep.constants';
-import { InterviewQuestionCardComponent } from './components/interview-question-card.component';
+import { InterviewQuestionCardComponent } from './components/interview-question-card/interview-question-card.component';
 import { InterviewSavedSessionsComponent } from './components/interview-saved-sessions/interview-saved-sessions.component';
 
 type Workspace = 'library' | 'practice' | 'sessions';

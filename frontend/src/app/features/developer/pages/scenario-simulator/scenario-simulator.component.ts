@@ -40,7 +40,7 @@ import {
   ScenarioTemplateDefinition,
   ScenarioTemplateDraft,
 } from '../../../../shared/models/scenario-template.model';
-import { ScenarioTemplateConfiguratorComponent } from './scenario-template-configurator/scenario-template-configurator.component';
+import { ScenarioTemplateConfiguratorComponent } from './components/scenario-template-configurator/scenario-template-configurator.component';
 
 @Component({
   selector: 'app-scenario-simulator',
