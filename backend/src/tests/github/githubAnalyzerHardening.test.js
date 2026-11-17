@@ -285,7 +285,7 @@ const createHarness = () => {
       const previous = state.cache.get(key);
       const snapshots = [
         ...(previous?.snapshots || []),
-        ...copy(update.$push.snapshots.$each)
+        ...copy(update.$push?.snapshots.$each || [])
       ].slice(-12);
       const row = {
         ...(previous || {}),
@@ -337,6 +337,9 @@ const createHarness = () => {
       state.counters.persistence.analysisFinds += 1;
       const row = state.analyses.get(String(query.userId)) || null;
       return {
+        sort() {
+          return this;
+        },
         select() {
           return Promise.resolve(row);
         }
@@ -454,7 +457,9 @@ const createHarness = () => {
       if (Object.prototype.hasOwnProperty.call(mocks, request)) return mocks[request];
       if (req.startsWith('.')) {
         const base = path.basename(req, '.js');
-        const key = Object.keys(mocks).find((k) => k.startsWith('.') && path.basename(k, '.js') === base);
+        const key = Object.keys(mocks).find(
+          (k) => k.startsWith('.') && path.basename(k, '.js') === base
+        );
         if (key) return mocks[key];
       }
       return originalLoad.call(this, request, parent, isMain);
@@ -497,7 +502,13 @@ const createHarness = () => {
 
 const invoke = async (
   handler,
-  { username = 'octocat', userId = 'user-1', savedUsername = username, forceRefresh = false } = {}
+  {
+    username = 'octocat',
+    userId = 'user-1',
+    savedUsername = username,
+    forceRefresh = false,
+    savedOnly = false
+  } = {}
 ) => {
   const response = {
     statusCode: 200,
@@ -512,7 +523,7 @@ const invoke = async (
     }
   };
   const req = {
-    body: { username, ...(forceRefresh ? { forceRefresh: true } : {}) },
+    body: { username, savedOnly, ...(forceRefresh ? { forceRefresh: true } : {}) },
     query: {},
     user: {
       _id: userId,
@@ -1293,4 +1304,36 @@ test('a successful save cannot refresh old-profile monthly activity from reposit
   assert.equal(record.githubSignals.username.toLowerCase(), 'alpha');
   assert.deepEqual(record.contributionActivity, []);
   assert.equal(Object.hasOwn(next.body, 'monthlyCommitActivity'), false);
+});
+
+test('saved reads preserve ownership and never trigger provider or persistence work', async () => {
+  const h = createHarness();
+  const { controller } = h.loadInstance();
+  const missing = await invoke(controller.analyzeAndSaveGitHubProfile, { savedOnly: true });
+  assert.equal(missing.statusCode, 404);
+  assert.equal(h.state.counters.github.profile, 0);
+  assert.equal(h.state.counters.ai, 0);
+  await invoke(controller.analyzeAndSaveGitHubProfile);
+  const before = copy(h.state.counters);
+  const result = await invoke(controller.analyzeAndSaveGitHubProfile, { savedOnly: true });
+  assert.equal(result.statusCode, 200);
+  assert.equal(result.body.githubSignals.username, 'octocat');
+  assert.equal(h.state.counters.github.profile, before.github.profile);
+  assert.equal(h.state.counters.ai, before.ai);
+  assert.equal(h.state.counters.persistence.analysisSaves, before.persistence.analysisSaves);
+  assert.equal(
+    (await invoke(controller.analyzeAndSaveGitHubProfile, { savedOnly: true, userId: 'other' }))
+      .statusCode,
+    404
+  );
+});
+
+test('repeated cached saves do not append assessments or invalidate dependents', async () => {
+  const h = createHarness();
+  const { controller } = h.loadInstance();
+  await invoke(controller.analyzeAndSaveGitHubProfile);
+  const before = copy(h.state.counters);
+  await invoke(controller.analyzeAndSaveGitHubProfile);
+  assert.equal(h.state.counters.persistence.analysisSaves, before.persistence.analysisSaves);
+  assert.equal(h.state.counters.invalidations, before.invalidations);
 });

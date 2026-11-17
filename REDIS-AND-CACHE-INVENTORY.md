@@ -139,3 +139,10 @@
 | `Navbar.cachedRepos` | Component array per GitHub handle | Navbar lifetime | User logout (`user === null`) or handle change |
 | `AdminConsolePageComponent.tabStates` | Component `loaded` map per tab | Component lifetime | `refreshActiveTab()`, org switch, in-page mutations |
 | Inflight-only deduplicators | `CourseService`, `InterviewPrepService`, `PublicProfileService`, `SkillGapService`, `ApiService` (`scenario*Inflight`), `DashboardComponent.activeRequests` | Active HTTP request duration only | Completion/error, `cancel`/`clearCache` |
+
+
+## Implementation addendum — 2026-11-17
+
+redisCacheService.getCacheJsonWithMeta now uses one atomic GET/PTTL Lua snapshot for every namespace. Missing, expired, and no-expiry payloads are misses; memory expiry is bounded by remaining source TTL and the existing memory cap. Redis lock release now compares the token and deletes atomically. Existing TTL configuration is unchanged.
+
+The original audit above is historical source evidence. Current implementation and acceptance limits are recorded in [DEVELOPER-DATA-FRESHNESS-FINAL.md](DEVELOPER-DATA-FRESHNESS-FINAL.md) and [DEVELOPER-MODULE-REFRESH-TEST-MATRIX.md](DEVELOPER-MODULE-REFRESH-TEST-MATRIX.md).

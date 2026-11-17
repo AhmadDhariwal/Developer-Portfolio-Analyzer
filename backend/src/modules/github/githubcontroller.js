@@ -8,6 +8,7 @@ const crypto = require('node:crypto');
 const {
     ANALYSIS_VERSION,
     analyzeGitHubProfile,
+    getCachedGitHubAnalysis,
     isRateLimitError,
     parseGitHubUsername,
     invalidateSkillGapCachesForGitHub
@@ -20,6 +21,27 @@ const {
 const { invalidateDashboardSummaryCache } = require('../dashboard/dashboardcontroller');
 
 const saveJobs = new Map();
+
+// Read the user's accepted revision, never promote a shared preview into owned data.
+const readSavedGitHubAnalysis = async (userId, username) => {
+    const analysis = await Analysis.findOne({ userId })
+        .sort({ updatedAt: -1, _id: -1 })
+        .select('githubSignals');
+    const signals = analysis?.githubSignals;
+    if (String(signals?.username || '').toLowerCase() !== username.toLowerCase()) return null;
+    const saved = signals.acceptedResult;
+    if (saved) {
+        const expiry = Date.parse(saved.cache?.expiresAt);
+        const stale = !Number.isFinite(expiry) || expiry <= Date.now();
+        return {
+            ...saved,
+            cache: { ...saved.cache, hit: true, source: stale ? 'stale-cache' : 'cache', stale }
+        };
+    }
+    // Legacy records can borrow presentation fields only from the exact accepted revision.
+    const cached = await getCachedGitHubAnalysis(username);
+    return cached.data?.githubSignals?.analyzedAt === signals?.analyzedAt ? cached.data : null;
+};
 const SAVE_LOCK_TTL_SECONDS = 30;
 const SAVE_LOCK_WAIT_MS = 2500;
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -159,10 +181,10 @@ const buildHistorySnapshot = (data = {}) => ({
         .map((tech) => tech.name || tech.technology || tech)
 });
 
-const replaceRepositoriesSafely = async (userId, repositories = []) => {
+const replaceRepositoriesSafely = async (userId, repositories = [], session) => {
     const rows = Array.isArray(repositories) ? repositories : [];
     if (!rows.length) {
-        await Repository.deleteMany({ ownerId: userId });
+        await Repository.deleteMany({ ownerId: userId }, { session });
         return;
     }
 
@@ -197,13 +219,16 @@ const replaceRepositoriesSafely = async (userId, repositories = []) => {
                 upsert: true
             }
         })),
-        { ordered: true }
+        { ordered: true, session }
     );
 
-    await Repository.deleteMany({
-        ownerId: userId,
-        repoName: { $nin: repoNames }
-    });
+    await Repository.deleteMany(
+        {
+            ownerId: userId,
+            repoName: { $nin: repoNames }
+        },
+        { session }
+    );
 };
 
 const persistGitHubAnalysis = async (user, githubUsername, forceRefresh) => {
@@ -233,11 +258,22 @@ const persistGitHubAnalysis = async (user, githubUsername, forceRefresh) => {
             return data;
         }
 
-        await replaceRepositoriesSafely(user._id, data.repositories);
-
         let analysis = await Analysis.findOne({ userId: user._id }).select(
             'userId githubScore githubStats githubAnalysisVersion githubSignals languageDistribution contributionActivity githubAnalysisHistory'
         );
+        if (
+            analysis?.githubSignals?.acceptedResult &&
+            Date.parse(analysis.githubSignals.analyzedAt) >
+                Date.parse(data.githubSignals?.analyzedAt)
+        ) {
+            return analysis.githubSignals.acceptedResult;
+        }
+        if (
+            analysis?.githubSignals?.analyzedAt === data.githubSignals?.analyzedAt &&
+            String(analysis?.githubSignals?.username || '').toLowerCase() ===
+                githubUsername.toLowerCase()
+        )
+            return data;
         if (!analysis) analysis = new Analysis({ userId: user._id });
 
         analysis.githubScore = Number(data.githubHealthScore || data.activityScore || 0);
@@ -248,7 +284,7 @@ const persistGitHubAnalysis = async (user, githubUsername, forceRefresh) => {
             followers: Number(data.followers || 0)
         };
         analysis.githubAnalysisVersion = data.analysisVersion || ANALYSIS_VERSION;
-        analysis.githubSignals = data.githubSignals || {};
+        analysis.githubSignals = { ...data.githubSignals, acceptedResult: data };
         analysis.languageDistribution = buildLanguageMap(
             data.mainLanguageDistribution?.length
                 ? data.mainLanguageDistribution
@@ -264,9 +300,30 @@ const persistGitHubAnalysis = async (user, githubUsername, forceRefresh) => {
             buildHistorySnapshot(data)
         ].slice(-12);
         analysis.updatedAt = new Date();
+        const isNewAnalysis = analysis.isNew;
         await notificationPersistence.commit(
             user._id,
             async (session) => {
+                const currentOwner = await User.findById(user._id).select(
+                    'githubUsername activeGithubUsername'
+                );
+                if (
+                    currentOwner &&
+                    String(
+                        developerContext.resolveGithubUsername(currentOwner) || ''
+                    ).toLowerCase() !== githubUsername.toLowerCase()
+                ) {
+                    throw Object.assign(
+                        new Error(
+                            'GitHub profile changed during synchronization. Please retry from the current profile.'
+                        ),
+                        { status: 409 }
+                    );
+                }
+                await replaceRepositoriesSafely(user._id, data.repositories, session);
+                // Mongo may retry this callback after a transient transaction abort.
+                // The first insert must remain an insert on each retry.
+                if (isNewAnalysis) analysis.isNew = true;
                 await analysis.save({ session });
                 await User.findByIdAndUpdate(
                     user._id,
@@ -286,7 +343,7 @@ const persistGitHubAnalysis = async (user, githubUsername, forceRefresh) => {
                 meta: { username: githubUsername.trim() }
             }
         );
-        await invalidateSkillGapCachesForGitHub(githubUsername);
+        await invalidateSkillGapCachesForGitHub(githubUsername, user._id);
         invalidateDashboardSummaryCache(user._id);
         return data;
     } finally {
@@ -365,6 +422,15 @@ const analyzeAndSaveGitHubProfile = async (req, res) => {
                 });
             }
             githubUsername = parsedDefault;
+        }
+
+        if (req.body?.savedOnly === true) {
+            const saved = await readSavedGitHubAnalysis(req.user._id, githubUsername);
+            if (!saved)
+                return res.status(404).json({
+                    message: 'No saved GitHub analysis is available. Use Sync GitHub to create one.'
+                });
+            return res.json(saved);
         }
 
         job = saveJobs.get(saveKey);

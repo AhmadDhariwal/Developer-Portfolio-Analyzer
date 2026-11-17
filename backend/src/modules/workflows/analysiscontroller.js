@@ -5,7 +5,10 @@ const aiService = require('../../core/ai/aiservice');
 const { getPortfolioScorePrompt } = require('../public-portfolio/prompts/portfolioScorePrompt');
 const AnalysisCache = require('../skill-gap/models/analysisCache');
 const crypto = require('node:crypto');
-const { createVersion, createPortfolioVersion } = require('../super-admin/services/aiVersionService');
+const {
+  createVersion,
+  createPortfolioVersion,
+} = require('../super-admin/services/aiVersionService');
 const { fingerprint } = require('../dashboard/services/dashboardConsistencyService');
 const {
   calculateTransparentScore,
@@ -96,11 +99,25 @@ const getPortfolioReadiness = async (req, res) => {
       ]),
     ]);
 
+    // Resolve persisted GitHub evidence before testing score reuse. A username alone
+    // cannot establish that the evidence behind a cached assessment still matches.
+    if (!githubAnalysis) {
+      const { analyzeGitHubProfile } = require('../github/services/githubservice');
+      githubAnalysis = await analyzeGitHubProfile(username.trim(), { cacheOnly: profileMode });
+    }
+    const portfolioInputRevision = fingerprint({
+      github: githubAnalysis?.githubSignals || githubAnalysis,
+      resume: selectedResume || resumeAnalysis || cleanResume,
+      careerStack,
+      experienceLevel,
+    });
+
     // Try cache first
     const cached = await AnalysisCache.findOne(cacheKey);
     if (
       cached?.analysisData?.portfolioScore &&
-      cached.analysisData.portfolioIntegrationRevision === integrationRevision
+      cached.analysisData.portfolioIntegrationRevision === integrationRevision &&
+      cached.analysisData.portfolioInputRevision === portfolioInputRevision
     ) {
       const cachedResult = {
         ...normalizeTransparentScorePayload(cached.analysisData.portfolioScore),
@@ -131,7 +148,9 @@ const getPortfolioReadiness = async (req, res) => {
 
     if (profileMode) resumeAnalysis = selectedResume || { present: false };
     if (!resumeAnalysis && req.user) {
-      const analysisDoc = await require('../skill-gap/models/analysis').findOne({ userId: req.user._id });
+      const analysisDoc = await require('../skill-gap/models/analysis').findOne({
+        userId: req.user._id,
+      });
       resumeAnalysis = analysisDoc
         ? {
             skills: Array.from(analysisDoc.languageDistribution?.keys() || []),
@@ -233,6 +252,7 @@ const getPortfolioReadiness = async (req, res) => {
           $set: {
             'analysisData.portfolioScore': scoredResult,
             'analysisData.portfolioIntegrationRevision': integrationRevision,
+            'analysisData.portfolioInputRevision': portfolioInputRevision,
             ...(provenance ? { 'analysisData.portfolioProvenance': provenance } : {}),
             userId: req.user._id,
           },

@@ -132,9 +132,10 @@ const createHarness = ({ redisDelayMs = 0, mongoDelayMs = 0 } = {}) => {
       const row = {
         ...(previous || {}),
         ...copy(update.$set),
-        snapshots: [...(previous?.snapshots || []), ...copy(update.$push.snapshots.$each)].slice(
-          -12
-        ),
+        snapshots: [
+          ...(previous?.snapshots || []),
+          ...copy(update.$push?.snapshots.$each || [])
+        ].slice(-12),
         updatedAt: new Date(),
         createdAt: previous?.createdAt || new Date()
       };
@@ -216,7 +217,9 @@ const createHarness = ({ redisDelayMs = 0, mongoDelayMs = 0 } = {}) => {
       if (Object.prototype.hasOwnProperty.call(mocks, request)) return mocks[request];
       if (req.startsWith('.')) {
         const base = path.basename(req, '.js');
-        const key = Object.keys(mocks).find((k) => k.startsWith('.') && path.basename(k, '.js') === base);
+        const key = Object.keys(mocks).find(
+          (k) => k.startsWith('.') && path.basename(k, '.js') === base
+        );
         if (key) return mocks[key];
       }
       return originalLoad.call(this, request, parent, isMain);

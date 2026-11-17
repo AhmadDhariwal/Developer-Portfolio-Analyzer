@@ -26,6 +26,7 @@ export class ApiService {
   private readonly scenarioHistoryInflight = new Map<string, Observable<any>>();
   private readonly scenarioInvalidated$ = new Subject<void>();
   private scenarioGeneration = 0;
+  private readonly organizationsInvalidated = new Subject<void>();
 
   constructor(
     private readonly http: HttpClient,
@@ -33,6 +34,7 @@ export class ApiService {
     private readonly cacheInvalidation: FrontendCacheInvalidationService,
   ) {
     this.cacheInvalidation.register('scenario', () => this.clearScenarioCaches());
+    this.cacheInvalidation.register('organizations', () => this.clearOrganizationsCache());
     globalThis.addEventListener?.('devinsight:profile-personalization-changed', () => {
       this.invalidateScenarioContextCache();
     });
@@ -357,13 +359,15 @@ export class ApiService {
     slug?: string;
     description?: string;
   }): Observable<any> {
-    this.clearOrganizationsCache();
-    return this.http.post(`${this.baseUrl}/tenant/organizations`, payload);
+    return this.http
+      .post(`${this.baseUrl}/tenant/organizations`, payload)
+      .pipe(tap(() => this.clearOrganizationsCache()));
   }
 
   getOrganizations(forceRefresh = false): Observable<any> {
     if (forceRefresh || !this.organizationsCache$) {
       this.organizationsCache$ = this.http.get(`${this.baseUrl}/tenant/organizations`).pipe(
+        takeUntil(this.organizationsInvalidated),
         shareReplay({ bufferSize: 1, refCount: false }),
         catchError((err) => {
           this.organizationsCache$ = null;
@@ -375,6 +379,7 @@ export class ApiService {
   }
 
   clearOrganizationsCache(): void {
+    this.organizationsInvalidated.next();
     this.organizationsCache$ = null;
   }
 

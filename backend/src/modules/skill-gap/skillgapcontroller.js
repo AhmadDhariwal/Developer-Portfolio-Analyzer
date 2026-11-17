@@ -973,7 +973,7 @@ const getGitHubData = async (
       return cached.data;
     }
 
-    const shouldRefresh = forceRefresh || cached.status !== "fresh";
+    const shouldRefresh = forceRefresh;
     let refreshState = { queued: false, running: false, reason: "fresh" };
 
     if (shouldRefresh) {
@@ -2568,14 +2568,14 @@ const analyzeSkillGap = async (req, res) => {
 
     ensureActive();
     let aiAdmitted = true;
-    if (!skipAI && governed) {
+    if (!skipAI && governed && (forceRefresh || isTemporaryMode)) {
       try {
         await skillGapControls.consume(governed.owner, req.ip, ["ai"]);
       } catch {
         aiAdmitted = false;
       } // Qualitative enrichment is optional; deterministic work remains available.
     }
-    if (!skipAI && aiAdmitted) {
+    if (!skipAI && aiAdmitted && (forceRefresh || isTemporaryMode)) {
       const fallback = deterministicNarrative;
       const prompt = await timer.time("promptGenerationMs", () => {
         const compactContext = skillGapCompatibility.promptContext(

@@ -30,8 +30,6 @@ export class RecommendationsService {
   private cacheRevision = 0;
   private savedPreviewRevision = 0;
   private savedPreviewRequestOwner = '';
-  private profileCache: { value: RecommendationsResult; cachedAt: number } | null = null;
-  private profileCacheKey = '';
   private savedPreviewCache: { userId: string; previews: SavedPreview[]; cachedAt: number } | null =
     null;
   private savedPreviewListRequest?: Observable<{ previews: SavedPreview[] }>;
@@ -56,30 +54,9 @@ export class RecommendationsService {
     this.cacheInvalidation.register('saved-previews', () => this.clearSavedPreviewCache());
   }
 
-  private getProfileCacheKey(
-    username: string,
-    careerStack: string,
-    experienceLevel: string,
-  ): string {
-    const userId = this.auth.getCurrentUser()?._id || 'anonymous';
-    const cleanUsername = String(username || '')
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9_.+-]+/g, '-');
-    const cleanStack = String(careerStack || '')
-      .trim()
-      .toLowerCase();
-    const cleanLevel = String(experienceLevel || '')
-      .trim()
-      .toLowerCase();
-    return `recommendations:profile:${userId}:${cleanUsername}:${cleanStack}:${cleanLevel}`;
-  }
-
   clearCache(): void {
     this.cacheRevision += 1;
     this.inflight.clear();
-    this.profileCache = null;
-    this.profileCacheKey = '';
   }
 
   savePreview(payload: {
@@ -205,14 +182,8 @@ export class RecommendationsService {
   ): Observable<RecommendationsResult> {
     const revision = this.cacheRevision;
     const ownerId = this.auth.getCurrentUser()?._id || 'anonymous';
-    const cacheKey = this.getProfileCacheKey(username, careerStack, experienceLevel);
-    const ttlMs = 15 * 60 * 1000; // 15 minutes TTL
-    if (!isTemporary && !forceRefresh && this.profileCache && this.profileCacheKey === cacheKey) {
-      const age = Date.now() - this.profileCache.cachedAt;
-      if (age < ttlMs) {
-        return of(this.profileCache.value);
-      }
-    }
+    // Browser age cannot establish that persisted source revisions still match.
+    // Share pending reads below; let the server validate every completed read.
 
     const key = JSON.stringify([
       ownerId,
@@ -264,9 +235,6 @@ export class RecommendationsService {
         ),
         tap((result) => {
           if (!isTemporary) {
-            this.profileCache = { value: result, cachedAt: Date.now() };
-            this.profileCacheKey = cacheKey;
-
             this.cacheInvalidation.clearScenarioCaches();
             this.cacheInvalidation.clearNewsCaches();
             this.cacheInvalidation.clearJobsCaches();

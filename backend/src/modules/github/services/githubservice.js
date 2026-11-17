@@ -36,7 +36,7 @@ let swrIndexChecked = false;
 const MAX_ACTIVITY_REPOS = 5;
 const MAX_LANGUAGE_REPOS = 8;
 const MAX_SIGNAL_REPOS = 2;
-const SKILL_GAP_ANALYSIS_VERSION = 'v6-skill-intelligence';
+const SKILL_GAP_ANALYSIS_VERSION = 'v9-skill-evidence-governance';
 const SUPPORT_LANGUAGES = new Set([
   'HTML',
   'CSS',
@@ -1448,6 +1448,33 @@ const composeCacheArtifacts = (username, fresh, previousEntry = null) => {
 };
 
 const saveCacheResult = async (username, fresh, previousEntry = null, timing = null) => {
+  const evidenceIdentity = (value) =>
+    JSON.stringify({
+      dataVersion: value?.dataVersion,
+      scores: value?.scores,
+      availability: value?.dataAvailability,
+      followers: value?.followers,
+      repositories: [...(value?.repositories || [])].sort((a, b) => a.name.localeCompare(b.name)),
+      languageBytes: value?.rawLanguageBytes,
+      technologies: value?.technologies
+    });
+  if (previousEntry?.result && evidenceIdentity(previousEntry.result) === evidenceIdentity(fresh)) {
+    const expiresAt = new Date(Date.now() + CACHE_TTL_MS);
+    const updated = await GitHubAnalysisCache.findOneAndUpdate(
+      { normalizedUsername: normalizeUsername(username), analysisVersion: ANALYSIS_VERSION },
+      { $set: { expiresAt } },
+      { new: true, timestamps: false }
+    ).lean();
+    if (updated) {
+      writeMemoryAnalysisCache(normalizeUsername(username), updated);
+      await setCacheJson(
+        buildRedisCacheKey(normalizeUsername(username)),
+        packRedisCacheEntry(updated),
+        CACHE_REDIS_TTL_SECONDS
+      );
+      return withCacheMetadata(updated.result, updated, 'cache');
+    }
+  }
   const { resultWithComparison, entry } = composeCacheArtifacts(username, fresh, previousEntry);
   const normalizedUsername = entry.normalizedUsername;
   await ensureSWRCacheIndex();
@@ -1953,6 +1980,16 @@ const analyzeGitHubProfile = async (username, options = {}) => {
     : parseGitHubUsername(username);
 
   const forceRefresh = Boolean(options.forceRefresh);
+  if (options.cacheOnly) {
+    const cached = await getCachedGitHubAnalysis(trimmedUsername);
+    return (
+      cached.data || {
+        repositories: [],
+        languageDistribution: [],
+        cache: { source: 'unavailable', stale: true }
+      }
+    );
+  }
   let cacheEntry = null;
   if (!forceRefresh) {
     const resolved = await resolveTieredCacheEntry(trimmedUsername, timing);
@@ -1989,7 +2026,7 @@ const analyzeGitHubProfile = async (username, options = {}) => {
       const narrative = fresh._narrative;
       delete fresh._narrative;
       const saved = await saveCacheResult(trimmedUsername, fresh, cacheEntry, timing);
-      if (narrative) {
+      if (narrative && saved.cache?.source === 'fresh') {
         const explanation = await narrative();
         const { interviewTalkingPoints, ...qualitativeFields } = explanation;
         const narrativeFields = {
@@ -2145,15 +2182,17 @@ const getGitHubRefreshState = () => ({
   usernames: Array.from(refreshJobs.keys())
 });
 
-const invalidateSkillGapCachesForGitHub = async (username) => {
+const invalidateSkillGapCachesForGitHub = async (username, userId) => {
   const trimmedUsername = String(username || '')
     .trim()
     .replace(/^@/, '');
   if (!trimmedUsername) return;
   const deleted = await AnalysisCache.deleteMany({
     githubUsername: new RegExp(`^${escapeRegex(trimmedUsername)}$`, 'i'),
-    analysisVersion: SKILL_GAP_ANALYSIS_VERSION
+    analysisVersion: SKILL_GAP_ANALYSIS_VERSION,
+    ...(userId ? { userId } : {})
   });
+  if (userId) await aiService.invalidateCachePrefix(`skill_gap:result:${String(userId)}:`);
   // Current Skill Gap caches validate source revisions before lookup; new evidence
   // selects a new owner-scoped signal hash. Never flush unrelated accounts.
   console.log(

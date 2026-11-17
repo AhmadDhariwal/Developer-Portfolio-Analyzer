@@ -90,16 +90,24 @@ export class CourseService {
     const body: CourseProgressUpdate = { status: update.status };
     if (update.notes !== undefined) body.notes = update.notes;
     if (update.progressPercent !== undefined) body.progressPercent = update.progressPercent;
-    return this.http.put<UserCourseProgress>(
-      `${this.baseUrl}/courses/${encodeURIComponent(courseId)}/progress`,
-      body,
-    );
+    return this.http
+      .put<UserCourseProgress>(
+        `${this.baseUrl}/courses/${encodeURIComponent(courseId)}/progress`,
+        body,
+      )
+      .pipe(tap(() => this.invalidateProgressDependents()));
   }
 
   removeProgress(courseId: string): Observable<void> {
-    return this.http.delete<void>(
-      `${this.baseUrl}/courses/${encodeURIComponent(courseId)}/progress`,
-    );
+    return this.http
+      .delete<void>(`${this.baseUrl}/courses/${encodeURIComponent(courseId)}/progress`)
+      .pipe(tap(() => this.invalidateProgressDependents()));
+  }
+
+  private invalidateProgressDependents(): void {
+    this.clearCache();
+    this.cacheInvalidation.clearDashboardCaches();
+    this.cacheInvalidation.clearWeeklyReportCaches();
   }
 
   addToSprint(courseId: string): Observable<CourseSprintResponse> {

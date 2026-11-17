@@ -337,6 +337,15 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
   private languageSource = 'cached_snapshot';
   private readonly cacheVersion = 'dashboard-v5';
   private readonly requestCancelled = new Subject<void>();
+  private dataRefreshQueued = false;
+  private readonly onDeveloperDataChanged = (): void => {
+    if (this.destroyed || this.dataRefreshQueued) return;
+    this.dataRefreshQueued = true;
+    queueMicrotask(() => {
+      this.dataRefreshQueued = false;
+      if (!this.destroyed) this.loadDashboardData(true);
+    });
+  };
   private destroyed = false;
   private themeObserver: MutationObserver | null = null;
   private readonly activeRequests = new Map<string, Observable<any>>();
@@ -380,6 +389,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
   }
 
   ngOnInit(): void {
+    globalThis.addEventListener?.('devinsight:developer-data-changed', this.onDeveloperDataChanged);
     this.subscriptions.add(
       this.careerProfileService.careerProfile$
         .pipe(
@@ -866,6 +876,10 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
   }
 
   ngOnDestroy(): void {
+    globalThis.removeEventListener?.(
+      'devinsight:developer-data-changed',
+      this.onDeveloperDataChanged,
+    );
     this.destroyed = true;
     if (this.chartFrame !== null) cancelAnimationFrame(this.chartFrame);
     this.chartResizeObserver?.disconnect();

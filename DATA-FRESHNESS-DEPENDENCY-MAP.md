@@ -60,3 +60,10 @@ flowchart LR
    - `RecommendationsComponent` (`24h` `localStorage`) and `WeeklyReportService` (`10–15m` `localStorage`) can conceal server-side or scheduled updates across `F5` / `Ctrl+Shift+R`.
    - `CoursesComponent` progress completion and `InterviewPrepComponent` session completion do not invalidate `WeeklyReportService` `localStorage` cache (`10–15m`).
    - `ApiService.organizationsCache$` and `RecruiterHubService` (`dashboard$`/`analytics$`) are not registered with `FrontendCacheInvalidationService.clearAllUserCaches()`.
+
+
+## Implementation addendum — 2026-11-17
+
+GitHub invalidation now targets v9-skill-evidence-governance instead of legacy v6, scopes foreground invalidation by owner, and clears the actual skill_gap:result:<userId>: Redis prefix. Portfolio cache reuse requires a fingerprint of GitHub/resume/career inputs as well as its existing integration revision. Course progress and interview completion invalidate Dashboard/report browser caches. Dashboard listens to scoped same-tab/cross-tab revision events.
+
+The original audit above is historical source evidence. Current implementation and acceptance limits are recorded in [DEVELOPER-DATA-FRESHNESS-FINAL.md](DEVELOPER-DATA-FRESHNESS-FINAL.md) and [DEVELOPER-MODULE-REFRESH-TEST-MATRIX.md](DEVELOPER-MODULE-REFRESH-TEST-MATRIX.md).

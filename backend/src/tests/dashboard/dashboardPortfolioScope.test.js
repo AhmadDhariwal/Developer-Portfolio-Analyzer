@@ -39,7 +39,9 @@ mock('../../modules/skill-gap/services/skillGapCacheContract', {
 mock('../../core/ai/aiservice', {
   runAIAnalysis: async () => ({ overallScore: 99, summary: 'Narrative only' }),
 });
-mock('../../modules/public-portfolio/prompts/portfolioScorePrompt', { getPortfolioScorePrompt: () => 'Test prompt' });
+mock('../../modules/public-portfolio/prompts/portfolioScorePrompt', {
+  getPortfolioScorePrompt: () => 'Test prompt',
+});
 mock('../../modules/github/services/githubservice', { analyzeGitHubProfile: async () => github });
 mock('../../modules/integrations/services/integrationInsightService', {
   getIntegrationInsight: async () => ({ integrationScore: 0, providers: [] }),
@@ -111,6 +113,7 @@ test('cache hits retain the original assessment time/hash and never upgrade lega
       portfolioScore: assessment.outputJson,
       portfolioProvenance: assessment.provenance,
       portfolioIntegrationRevision: JSON.stringify([null, 0, []]),
+      portfolioInputRevision: writes.at(-1).update.$set['analysisData.portfolioInputRevision'],
     },
   };
   try {

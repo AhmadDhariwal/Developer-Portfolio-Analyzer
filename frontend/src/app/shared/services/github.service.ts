@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { defer, Observable, of } from 'rxjs';
-import { finalize, shareReplay, tap } from 'rxjs/operators';
+import { defer, Observable, of, Subject } from 'rxjs';
+import { finalize, shareReplay, tap, takeUntil, filter } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service';
 import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 
 export interface LanguageDistribution {
@@ -169,10 +168,10 @@ export class GithubService {
   >();
   private readonly inflight = new Map<string, Observable<GitHubAnalysisResult>>();
   private cacheGeneration = 0;
+  private readonly invalidated = new Subject<void>();
 
   constructor(
     private readonly http: HttpClient,
-    private readonly frontendCache: FrontendAnalysisCacheService,
     private readonly cacheInvalidation: FrontendCacheInvalidationService,
   ) {
     this.cacheInvalidation.register('github', () => this.clearCache());
@@ -180,6 +179,7 @@ export class GithubService {
 
   clearCache(): void {
     this.cacheGeneration += 1;
+    this.invalidated.next();
     this.memoryCache.clear();
     this.inflight.clear();
   }
@@ -201,7 +201,6 @@ export class GithubService {
 
   analyzeAndSave(username: string, forceRefresh = false): Observable<GitHubAnalysisResult> {
     return this.cachedRequest('save', username, forceRefresh, () => {
-      this.frontendCache.clearCurrentSignalHash();
       return this.http.post<GitHubAnalysisResult>(`${this.baseUrl}/github/analyze-save`, {
         username,
         forceRefresh,
@@ -211,6 +210,26 @@ export class GithubService {
 
   getActiveUsername(): Observable<ActiveUsername> {
     return this.http.get<ActiveUsername>(`${this.baseUrl}/github/active-username`);
+  }
+
+  getSavedAnalysis(username: string): Observable<GitHubAnalysisResult> {
+    const key = `saved:${this.cacheKey(username, 'save')}`;
+    const existing = this.inflight.get(key);
+    if (existing) return existing;
+    const request$ = this.http
+      .post<GitHubAnalysisResult>(`${this.baseUrl}/github/analyze-save`, {
+        username,
+        savedOnly: true,
+      })
+      .pipe(
+        takeUntil(this.invalidated),
+        finalize(() => {
+          if (this.inflight.get(key) === request$) this.inflight.delete(key);
+        }),
+        shareReplay({ bufferSize: 1, refCount: true }),
+      );
+    this.inflight.set(key, request$);
+    return request$;
   }
 
   private cachedRequest(
@@ -229,6 +248,7 @@ export class GithubService {
 
     const generation = this.cacheGeneration;
     const request$ = defer(requestFactory).pipe(
+      filter(() => generation === this.cacheGeneration),
       tap((result) => {
         if (
           generation !== this.cacheGeneration ||
@@ -240,8 +260,12 @@ export class GithubService {
           return;
         }
         if (mode === 'save') {
+          this.invalidated.next();
+          for (const pendingKey of this.inflight.keys()) {
+            if (pendingKey.startsWith('saved:')) this.inflight.delete(pendingKey);
+          }
           this.cacheInvalidation.clearDeveloperSignalCaches();
-          this.cacheInvalidation.clearGithubCaches();
+          this.memoryCache.delete(this.cacheKey(username, 'public'));
         }
         this.memoryCache.set(key, {
           result,

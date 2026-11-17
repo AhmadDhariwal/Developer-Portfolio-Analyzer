@@ -157,7 +157,7 @@ test(
           1
         );
         const counter = await State.findById('test:skillgap:ai-calls').lean();
-        assert.equal(counter.count, 1);
+        assert.equal(counter?.count || 0, 0, 'ordinary saved reads must not invoke narrative AI');
         assert.equal(
           results[0].body.cacheMetadata.signalHash,
           results[1].body.cacheMetadata.signalHash
@@ -178,7 +178,7 @@ test(
           assert.equal(result.body.fromCache, true);
           samples.push(result.ms);
         }
-        assert.equal((await State.findById('test:skillgap:ai-calls')).count, 1);
+        assert.equal((await State.findById('test:skillgap:ai-calls'))?.count || 0, 0);
         const foreign = await post(left, {}, tokenFor(other));
         assert.equal(foreign.status, 200);
         assert.equal(foreign.body.evidenceCompleteness.resumeAvailable, false);
@@ -285,13 +285,13 @@ test(
         );
         const current = await controls.acquire('crashed', 'same-snapshot');
         await assert.rejects(
-          require('../../modules/notifications/services/notificationPersistenceService').transaction((session) =>
-            controls.fence(stale, session)
+          require('../../modules/notifications/services/notificationPersistenceService').transaction(
+            (session) => controls.fence(stale, session)
           ),
           (error) => error.status === 503
         );
-        await require('../../modules/notifications/services/notificationPersistenceService').transaction((session) =>
-          controls.fence(current, session)
+        await require('../../modules/notifications/services/notificationPersistenceService').transaction(
+          (session) => controls.fence(current, session)
         );
         await controls.release(stale);
         const row = await State.findById(current.keys[2]).lean();

@@ -172,7 +172,7 @@ export class GithubAnalyzerComponent extends GithubPresentation implements OnIni
   private scheduleInitialAnalyze(): void {
     queueMicrotask(() => {
       if (this.username.trim()) {
-        this.analyze(false);
+        this.refreshSavedData();
       }
     });
   }
@@ -239,10 +239,31 @@ export class GithubAnalyzerComponent extends GithubPresentation implements OnIni
     this.analyze(true);
   }
 
+  refreshSavedData(): void {
+    if (!this.defaultUsername || this.isAnalyzing) return;
+    this.isAnalyzing = true;
+    this.errorMessage = '';
+    this.invalidUsername = false;
+    this.github
+      .getSavedAnalysis(this.defaultUsername)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (data) => {
+          this.isAnalyzing = false;
+          this.applyResult(data, this.defaultUsername, true);
+        },
+        error: (error) => {
+          this.isAnalyzing = false;
+          this.errorMessage = error.error?.message || 'Saved GitHub analysis could not be loaded.';
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
   returnToDefaultProfile(): void {
     if (!this.defaultUsername || this.isAnalyzing) return;
     this.username = this.defaultUsername;
-    this.analyze(false);
+    this.refreshSavedData();
   }
 
   toggleEvidenceDrawer(): void {

@@ -66,3 +66,10 @@ A critical architectural distinction:
 | **Weekly Reports** | `Monday 08:00` cron (`+ 60s` standalone worker catchup) | FE `localStorage` `15m` latest / `10m` history -> Weekly Mongo snapshot | New weekly cron report appears immediately for email/SSE, **but up to `15m` stale in browser if user already opened Weekly Reports within 15m** | **NOT MEASURED** |
 | **Interview Prep** | `6h` scraper ingest / `4h` seed maintenance | BE mem `30s` -> Redis `1h–24h` (revision-keyed) | Seed catalog / new questions invalidate topic cache immediately (`UUID` rotation); scraped articles stay pending review (`isApproved: false`) | **NOT MEASURED** |
 | **Notifications** | `15s` SSE heartbeat / `60m` opt-in retention | FE `15s` Map | Near real-time (`1s` coalesced push via Change Stream, max `15s` reconcile fallback, or `60s` polling if SSE disconnected) | **NOT MEASURED** |
+
+
+## Implementation addendum — 2026-11-17
+
+Interview question maintenance now uses the existing runInterviewJob Mongo lease shared with ingestion. The cron remains 30 */4 * * *. The other eleven schedule definitions and process-role startup gates have not been changed. Full lease renewal/fencing acceptance for all twelve loops is still outstanding.
+
+The original audit above is historical source evidence. Current implementation and acceptance limits are recorded in [DEVELOPER-DATA-FRESHNESS-FINAL.md](DEVELOPER-DATA-FRESHNESS-FINAL.md) and [DEVELOPER-MODULE-REFRESH-TEST-MATRIX.md](DEVELOPER-MODULE-REFRESH-TEST-MATRIX.md).

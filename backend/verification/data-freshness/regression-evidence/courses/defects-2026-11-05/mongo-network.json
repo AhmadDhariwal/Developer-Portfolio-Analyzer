@@ -1,0 +1,1720 @@
+{
+  "network": [
+    {
+      "route": "?view=discover&limit=20",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 503,
+      "durationMs": 2129.3891999999996,
+      "retryAfter": "5",
+      "code": "COURSE_ADMISSION_UNAVAILABLE",
+      "message": "Course admission is temporarily unavailable.",
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&limit=20",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 503,
+      "durationMs": 2018.0413999999982,
+      "retryAfter": "5",
+      "code": "COURSE_ADMISSION_UNAVAILABLE",
+      "message": "Course admission is temporarily unavailable.",
+      "admissionAttempt": 1
+    },
+    {
+      "route": "?view=discover&limit=20",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 503,
+      "durationMs": 2023.5233999999982,
+      "retryAfter": "5",
+      "code": "COURSE_ADMISSION_UNAVAILABLE",
+      "message": "Course admission is temporarily unavailable.",
+      "admissionAttempt": 2
+    },
+    {
+      "route": "?view=for-you&topic=Docker&skillGaps=Docker",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 503,
+      "durationMs": 2027.8633999999984,
+      "retryAfter": "5",
+      "code": "COURSE_ADMISSION_UNAVAILABLE",
+      "message": "Course admission is temporarily unavailable.",
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=for-you&topic=Docker&skillGaps=Docker",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 503,
+      "durationMs": 2082.2635999999984,
+      "retryAfter": "5",
+      "code": "COURSE_ADMISSION_UNAVAILABLE",
+      "message": "Course admission is temporarily unavailable.",
+      "admissionAttempt": 1
+    },
+    {
+      "route": "?view=for-you&topic=Docker&skillGaps=Docker",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 503,
+      "durationMs": 2245.5426000000007,
+      "retryAfter": "5",
+      "code": "COURSE_ADMISSION_UNAVAILABLE",
+      "message": "Course admission is temporarily unavailable.",
+      "admissionAttempt": 2
+    },
+    {
+      "route": "?view=discover&topic=GenAI",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 503,
+      "durationMs": 2026.2232999999978,
+      "retryAfter": "5",
+      "code": "COURSE_ADMISSION_UNAVAILABLE",
+      "message": "Course admission is temporarily unavailable.",
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=GenAI",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 1295.9824999999983,
+      "retryAfter": null,
+      "total": 4,
+      "admissionAttempt": 1
+    },
+    {
+      "route": "?view=discover&topic=Generative%20AI",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 121.08649999999761,
+      "retryAfter": null,
+      "total": 4,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=LLM",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 200.22939999999653,
+      "retryAfter": null,
+      "total": 4,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=large%20language%20models",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 124.12979999999516,
+      "retryAfter": null,
+      "total": 4,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=RAG",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 187.13499999999476,
+      "retryAfter": null,
+      "total": 2,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=retrieval%20augmented%20generation",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 122.74049999999988,
+      "retryAfter": null,
+      "total": 2,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=GenAI&refresh=true",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 164.5448000000033,
+      "retryAfter": null,
+      "total": 5,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "/my-learning",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 401,
+      "durationMs": 2.7652000000016415,
+      "retryAfter": null,
+      "message": "Not authorized, no token",
+      "admissionAttempt": 0
+    },
+    {
+      "route": "/fb_u1/progress",
+      "method": "PUT",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 148.31670000000304,
+      "retryAfter": null,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "/fb_u1/progress",
+      "method": "PUT",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 64.4398000000001,
+      "retryAfter": null,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "/my-learning",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 50.27390000000014,
+      "retryAfter": null,
+      "total": 1,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "/my-learning",
+      "method": "GET",
+      "owner": "foreign-fixture",
+      "status": 200,
+      "durationMs": 43.77699999999459,
+      "retryAfter": null,
+      "total": 0,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "/fb_u1/progress",
+      "method": "PUT",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 57.39800000000105,
+      "retryAfter": null,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "/my-learning?status=completed",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 56.2612999999983,
+      "retryAfter": null,
+      "total": 1,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "/my-learning",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 67.58870000000024,
+      "retryAfter": null,
+      "total": 2,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "/fb_u2/progress",
+      "method": "PUT",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 105.79270000000542,
+      "retryAfter": null,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "/my-learning",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 503,
+      "durationMs": 36.77980000000389,
+      "retryAfter": "5",
+      "message": "Learning progress is temporarily unavailable. Please retry.",
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 287.6678000000029,
+      "retryAfter": null,
+      "total": 122,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "/my-learning",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 46.901200000000244,
+      "retryAfter": null,
+      "total": 2,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover",
+      "method": "GET",
+      "owner": "foreign-fixture",
+      "status": 200,
+      "durationMs": 272.7112999999954,
+      "retryAfter": null,
+      "total": 122,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover",
+      "method": "GET",
+      "owner": "foreign-fixture",
+      "status": 429,
+      "durationMs": 45.54790000000503,
+      "retryAfter": "37",
+      "code": "COURSE_RATE_LIMITED",
+      "message": "Course request limit reached. Please retry shortly.",
+      "admissionAttempt": 0
+    },
+    {
+      "route": "/my-learning",
+      "method": "GET",
+      "owner": "foreign-fixture",
+      "status": 200,
+      "durationMs": 70.45080000000598,
+      "retryAfter": null,
+      "total": 0,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "/my-learning",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 503,
+      "durationMs": 29.589099999997416,
+      "retryAfter": "5",
+      "code": "AUTH_STORAGE_UNAVAILABLE",
+      "message": "Authentication is temporarily unavailable. Please retry.",
+      "admissionAttempt": 0
+    },
+    {
+      "route": "/my-learning",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 238.42689999999857,
+      "retryAfter": null,
+      "total": 2,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=Docker",
+      "method": "GET",
+      "owner": "foreign-fixture",
+      "status": 200,
+      "durationMs": 422.383600000001,
+      "retryAfter": null,
+      "total": 34,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=Docker",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 232.8877999999968,
+      "retryAfter": null,
+      "total": 34,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=Docker",
+      "method": "GET",
+      "owner": "foreign-fixture",
+      "status": 200,
+      "durationMs": 46.50940000000264,
+      "retryAfter": null,
+      "total": 34,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=Docker",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 49.81680000000051,
+      "retryAfter": null,
+      "total": 34,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=Docker",
+      "method": "GET",
+      "owner": "foreign-fixture",
+      "status": 200,
+      "durationMs": 34.025399999998626,
+      "retryAfter": null,
+      "total": 34,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=Docker",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 30.87329999999929,
+      "retryAfter": null,
+      "total": 34,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=Docker",
+      "method": "GET",
+      "owner": "foreign-fixture",
+      "status": 200,
+      "durationMs": 68.34850000000006,
+      "retryAfter": null,
+      "total": 34,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=Docker",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 99.92319999999745,
+      "retryAfter": null,
+      "total": 34,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=Docker",
+      "method": "GET",
+      "owner": "foreign-fixture",
+      "status": 200,
+      "durationMs": 52.8208999999988,
+      "retryAfter": null,
+      "total": 34,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=Docker",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 48.63039999999455,
+      "retryAfter": null,
+      "total": 34,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=Docker",
+      "method": "GET",
+      "owner": "foreign-fixture",
+      "status": 200,
+      "durationMs": 48.728000000002794,
+      "retryAfter": null,
+      "total": 34,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=Docker",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 37.72869999999966,
+      "retryAfter": null,
+      "total": 34,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=Docker",
+      "method": "GET",
+      "owner": "foreign-fixture",
+      "status": 200,
+      "durationMs": 43.58950000000186,
+      "retryAfter": null,
+      "total": 34,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=Docker",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 105.56880000000092,
+      "retryAfter": null,
+      "total": 34,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=Docker",
+      "method": "GET",
+      "owner": "foreign-fixture",
+      "status": 200,
+      "durationMs": 78.93830000000162,
+      "retryAfter": null,
+      "total": 34,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=Docker",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 49.567699999999604,
+      "retryAfter": null,
+      "total": 34,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=Docker",
+      "method": "GET",
+      "owner": "foreign-fixture",
+      "status": 200,
+      "durationMs": 56.29750000000058,
+      "retryAfter": null,
+      "total": 34,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=Docker",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 45.01400000000285,
+      "retryAfter": null,
+      "total": 34,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=Docker",
+      "method": "GET",
+      "owner": "foreign-fixture",
+      "status": 200,
+      "durationMs": 49.96609999999782,
+      "retryAfter": null,
+      "total": 34,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=Docker",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 48.59300000000076,
+      "retryAfter": null,
+      "total": 34,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=Docker",
+      "method": "GET",
+      "owner": "foreign-fixture",
+      "status": 200,
+      "durationMs": 32.30310000000463,
+      "retryAfter": null,
+      "total": 34,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=Docker",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 50.08329999999842,
+      "retryAfter": null,
+      "total": 34,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=Docker",
+      "method": "GET",
+      "owner": "foreign-fixture",
+      "status": 200,
+      "durationMs": 48.972900000000664,
+      "retryAfter": null,
+      "total": 34,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&topic=Docker",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 71.66049999999814,
+      "retryAfter": null,
+      "total": 34,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "?view=discover&refresh=true&limit=20",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 255.31360000000132,
+      "retryAfter": null,
+      "total": 362,
+      "admissionAttempt": 0
+    },
+    {
+      "route": "/my-learning",
+      "method": "GET",
+      "owner": "owner-fixture",
+      "status": 200,
+      "durationMs": 2148.9487999999983,
+      "retryAfter": null,
+      "total": 2,
+      "admissionAttempt": 0
+    }
+  ],
+  "externalCalls": 0,
+  "baselineRef": null,
+  "warmApi": {
+    "samples": 24,
+    "p50Ms": 49.924999999995634,
+    "p95Ms": 232.92379999999685
+  },
+  "warmService": {
+    "samples": 3000,
+    "concurrency": 100,
+    "p50Ms": 15.331000000005588,
+    "p95Ms": 55.80309999999736
+  },
+  "catalog": {
+    "entries": 1,
+    "bytes": 475833,
+    "pending": 0
+  },
+  "p50Ms": 99.92319999999745,
+  "p95Ms": 2082.2635999999984,
+  "explain": {
+    "explainVersion": "1",
+    "stages": [
+      {
+        "$cursor": {
+          "queryPlanner": {
+            "namespace": "integration_live_acceptance.shared_course_catalog",
+            "parsedQuery": {
+              "$and": [
+                {
+                  "$or": [
+                    {
+                      "$and": [
+                        {
+                          "version": {
+                            "$eq": "shared-courses-v1"
+                          }
+                        },
+                        {
+                          "staleUntil": {
+                            "$gt": "2026-11-17T14:10:29.303Z"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "_id": {
+                        "$eq": "curated"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "$text": {
+                    "$search": "Docker dockerfile",
+                    "$language": "none",
+                    "$caseSensitive": false,
+                    "$diacriticSensitive": false
+                  }
+                }
+              ]
+            },
+            "indexFilterSet": false,
+            "queryHash": "CDE38C87",
+            "planCacheShapeHash": "CDE38C87",
+            "planCacheKey": "8B8C8117",
+            "optimizationTimeMillis": 0,
+            "maxIndexedOrSolutionsReached": false,
+            "maxIndexedAndSolutionsReached": false,
+            "maxScansToExplodeReached": false,
+            "prunedSimilarIndexes": false,
+            "winningPlan": {
+              "isCached": false,
+              "stage": "PROJECTION_SIMPLE",
+              "transformBy": {
+                "_id": 1,
+                "audits": 1,
+                "courses": 1,
+                "freshUntil": 1,
+                "staleUntil": 1
+              },
+              "inputStage": {
+                "stage": "FETCH",
+                "filter": {
+                  "$or": [
+                    {
+                      "$and": [
+                        {
+                          "staleUntil": {
+                            "$gt": "2026-11-17T14:10:29.303Z"
+                          }
+                        },
+                        {
+                          "version": {
+                            "$eq": "shared-courses-v1"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "_id": {
+                        "$eq": "curated"
+                      }
+                    }
+                  ]
+                },
+                "inputStage": {
+                  "stage": "TEXT_MATCH",
+                  "indexPrefix": {},
+                  "indexName": "catalog_full_text",
+                  "parsedTextQuery": {
+                    "terms": [
+                      "docker",
+                      "dockerfile"
+                    ],
+                    "negatedTerms": [],
+                    "phrases": [],
+                    "negatedPhrases": []
+                  },
+                  "textIndexVersion": 3,
+                  "inputStage": {
+                    "stage": "FETCH",
+                    "inputStage": {
+                      "stage": "OR",
+                      "inputStages": [
+                        {
+                          "stage": "IXSCAN",
+                          "keyPattern": {
+                            "_fts": "text",
+                            "_ftsx": 1
+                          },
+                          "indexName": "catalog_full_text",
+                          "isMultiKey": true,
+                          "isUnique": false,
+                          "isSparse": false,
+                          "isPartial": false,
+                          "indexVersion": 2,
+                          "direction": "backward",
+                          "indexBounds": {}
+                        },
+                        {
+                          "stage": "IXSCAN",
+                          "keyPattern": {
+                            "_fts": "text",
+                            "_ftsx": 1
+                          },
+                          "indexName": "catalog_full_text",
+                          "isMultiKey": true,
+                          "isUnique": false,
+                          "isSparse": false,
+                          "isPartial": false,
+                          "indexVersion": 2,
+                          "direction": "backward",
+                          "indexBounds": {}
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "rejectedPlans": []
+          },
+          "executionStats": {
+            "executionSuccess": true,
+            "nReturned": 2,
+            "executionTimeMillis": 3,
+            "totalKeysExamined": 2,
+            "totalDocsExamined": 4,
+            "executionStages": {
+              "isCached": false,
+              "stage": "PROJECTION_SIMPLE",
+              "nReturned": 2,
+              "executionTimeMillisEstimate": 0,
+              "works": 4,
+              "advanced": 2,
+              "needTime": 1,
+              "needYield": 0,
+              "saveState": 2,
+              "restoreState": 1,
+              "isEOF": 1,
+              "transformBy": {
+                "_id": 1,
+                "audits": 1,
+                "courses": 1,
+                "freshUntil": 1,
+                "staleUntil": 1
+              },
+              "inputStage": {
+                "stage": "FETCH",
+                "filter": {
+                  "$or": [
+                    {
+                      "$and": [
+                        {
+                          "staleUntil": {
+                            "$gt": "2026-11-17T14:10:29.303Z"
+                          }
+                        },
+                        {
+                          "version": {
+                            "$eq": "shared-courses-v1"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "_id": {
+                        "$eq": "curated"
+                      }
+                    }
+                  ]
+                },
+                "nReturned": 2,
+                "executionTimeMillisEstimate": 0,
+                "works": 4,
+                "advanced": 2,
+                "needTime": 1,
+                "needYield": 0,
+                "saveState": 2,
+                "restoreState": 1,
+                "isEOF": 1,
+                "docsExamined": 2,
+                "alreadyHasObj": 2,
+                "inputStage": {
+                  "stage": "TEXT_MATCH",
+                  "nReturned": 2,
+                  "executionTimeMillisEstimate": 0,
+                  "works": 4,
+                  "advanced": 2,
+                  "needTime": 1,
+                  "needYield": 0,
+                  "saveState": 2,
+                  "restoreState": 1,
+                  "isEOF": 1,
+                  "indexPrefix": {},
+                  "indexName": "catalog_full_text",
+                  "parsedTextQuery": {
+                    "terms": [
+                      "docker",
+                      "dockerfile"
+                    ],
+                    "negatedTerms": [],
+                    "phrases": [],
+                    "negatedPhrases": []
+                  },
+                  "textIndexVersion": 3,
+                  "docsRejected": 0,
+                  "inputStage": {
+                    "stage": "FETCH",
+                    "nReturned": 2,
+                    "executionTimeMillisEstimate": 0,
+                    "works": 4,
+                    "advanced": 2,
+                    "needTime": 1,
+                    "needYield": 0,
+                    "saveState": 2,
+                    "restoreState": 1,
+                    "isEOF": 1,
+                    "docsExamined": 2,
+                    "alreadyHasObj": 0,
+                    "inputStage": {
+                      "stage": "OR",
+                      "nReturned": 2,
+                      "executionTimeMillisEstimate": 0,
+                      "works": 4,
+                      "advanced": 2,
+                      "needTime": 1,
+                      "needYield": 0,
+                      "saveState": 2,
+                      "restoreState": 1,
+                      "isEOF": 1,
+                      "dupsTested": 2,
+                      "dupsDropped": 0,
+                      "inputStages": [
+                        {
+                          "stage": "IXSCAN",
+                          "nReturned": 2,
+                          "executionTimeMillisEstimate": 0,
+                          "works": 3,
+                          "advanced": 2,
+                          "needTime": 0,
+                          "needYield": 0,
+                          "saveState": 2,
+                          "restoreState": 1,
+                          "isEOF": 1,
+                          "keyPattern": {
+                            "_fts": "text",
+                            "_ftsx": 1
+                          },
+                          "indexName": "catalog_full_text",
+                          "isMultiKey": true,
+                          "isUnique": false,
+                          "isSparse": false,
+                          "isPartial": false,
+                          "indexVersion": 2,
+                          "direction": "backward",
+                          "indexBounds": {},
+                          "keysExamined": 2,
+                          "seeks": 1,
+                          "dupsTested": 2,
+                          "dupsDropped": 0
+                        },
+                        {
+                          "stage": "IXSCAN",
+                          "nReturned": 0,
+                          "executionTimeMillisEstimate": 0,
+                          "works": 1,
+                          "advanced": 0,
+                          "needTime": 0,
+                          "needYield": 0,
+                          "saveState": 2,
+                          "restoreState": 1,
+                          "isEOF": 1,
+                          "keyPattern": {
+                            "_fts": "text",
+                            "_ftsx": 1
+                          },
+                          "indexName": "catalog_full_text",
+                          "isMultiKey": true,
+                          "isUnique": false,
+                          "isSparse": false,
+                          "isPartial": false,
+                          "indexVersion": 2,
+                          "direction": "backward",
+                          "indexBounds": {},
+                          "keysExamined": 0,
+                          "seeks": 1,
+                          "dupsTested": 0,
+                          "dupsDropped": 0
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "nReturned": 2,
+        "executionTimeMillisEstimate": 1
+      },
+      {
+        "$lookup": {
+          "from": "shared_course_catalog",
+          "as": "catalogAudit",
+          "let": {},
+          "pipeline": [
+            {
+              "$match": {
+                "_id": "curated"
+              }
+            },
+            {
+              "$project": {
+                "audits": 1
+              }
+            }
+          ]
+        },
+        "totalDocsExamined": 1,
+        "totalKeysExamined": 1,
+        "collectionScans": 0,
+        "indexesUsed": [
+          "_id_"
+        ],
+        "nReturned": 2,
+        "executionTimeMillisEstimate": 2
+      },
+      {
+        "$project": {
+          "_id": true,
+          "courses": true,
+          "catalogFreshUntil": "$freshUntil",
+          "catalogStaleUntil": "$staleUntil",
+          "archived": {
+            "$map": {
+              "input": {
+                "$filter": {
+                  "input": {
+                    "$objectToArray": [
+                      {
+                        "$mergeObjects": [
+                          {
+                            "$ifNull": [
+                              "$audits",
+                              {
+                                "$const": {}
+                              }
+                            ]
+                          },
+                          {
+                            "$ifNull": [
+                              {
+                                "$arrayElemAt": [
+                                  "$catalogAudit.audits",
+                                  {
+                                    "$const": 0
+                                  }
+                                ]
+                              },
+                              {
+                                "$const": {}
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "as": "audit",
+                  "cond": {
+                    "$eq": [
+                      "$$audit.v.archived",
+                      {
+                        "$const": true
+                      }
+                    ]
+                  }
+                }
+              },
+              "as": "audit",
+              "in": "$$audit.k"
+            }
+          }
+        },
+        "nReturned": 2,
+        "executionTimeMillisEstimate": 2
+      },
+      {
+        "$unwind": {
+          "path": "$courses"
+        },
+        "nReturned": 91,
+        "executionTimeMillisEstimate": 2
+      },
+      {
+        "$match": {
+          "$expr": {
+            "$not": [
+              {
+                "$in": [
+                  "$courses.id",
+                  "$archived"
+                ]
+              }
+            ]
+          }
+        },
+        "nReturned": 91,
+        "executionTimeMillisEstimate": 2
+      },
+      {
+        "$replaceRoot": {
+          "newRoot": {
+            "$mergeObjects": [
+              "$courses",
+              {
+                "catalogSourceFreshUntil": {
+                  "$ifNull": [
+                    "$courses.catalogMetadataFreshUntil",
+                    "$catalogFreshUntil"
+                  ]
+                },
+                "catalogSourceStaleUntil": "$catalogStaleUntil"
+              }
+            ]
+          }
+        },
+        "nReturned": 91,
+        "executionTimeMillisEstimate": 2
+      },
+      {
+        "$limit": 6041,
+        "nReturned": 91,
+        "executionTimeMillisEstimate": 2
+      }
+    ],
+    "queryShapeHash": "599F80D9C4B78B7EC3E0F9DF8448CB796154EC7BB97B95812A0E769B5B2AAFD9",
+    "serverInfo": {
+      "host": "ICOMM-AHMAD-HASS",
+      "port": 58746,
+      "version": "8.2.6",
+      "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
+    },
+    "serverParameters": {
+      "internalQueryFacetBufferSizeBytes": 104857600,
+      "internalQueryFacetMaxOutputDocSizeBytes": 104857600,
+      "internalLookupStageIntermediateDocumentMaxSizeBytes": 104857600,
+      "internalDocumentSourceGroupMaxMemoryBytes": 104857600,
+      "internalQueryMaxBlockingSortMemoryUsageBytes": 104857600,
+      "internalQueryProhibitBlockingMergeOnMongoS": 0,
+      "internalQueryMaxAddToSetBytes": 104857600,
+      "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": 104857600,
+      "internalQueryFrameworkControl": "trySbeRestricted",
+      "internalQueryPlannerIgnoreIndexWithCollationForRegex": 1
+    },
+    "command": {
+      "aggregate": "shared_course_catalog",
+      "pipeline": [
+        {
+          "$match": {
+            "$or": [
+              {
+                "_id": "curated"
+              },
+              {
+                "version": "shared-courses-v1",
+                "staleUntil": {
+                  "$gt": "2026-11-17T14:10:29.303Z"
+                }
+              }
+            ],
+            "$text": {
+              "$search": "Docker dockerfile"
+            }
+          }
+        },
+        {
+          "$lookup": {
+            "from": "shared_course_catalog",
+            "pipeline": [
+              {
+                "$match": {
+                  "_id": "curated"
+                }
+              },
+              {
+                "$project": {
+                  "audits": 1
+                }
+              }
+            ],
+            "as": "catalogAudit"
+          }
+        },
+        {
+          "$project": {
+            "courses": 1,
+            "catalogFreshUntil": "$freshUntil",
+            "catalogStaleUntil": "$staleUntil",
+            "archived": {
+              "$map": {
+                "input": {
+                  "$filter": {
+                    "input": {
+                      "$objectToArray": {
+                        "$mergeObjects": [
+                          {
+                            "$ifNull": [
+                              "$audits",
+                              {}
+                            ]
+                          },
+                          {
+                            "$ifNull": [
+                              {
+                                "$arrayElemAt": [
+                                  "$catalogAudit.audits",
+                                  0
+                                ]
+                              },
+                              {}
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    "as": "audit",
+                    "cond": {
+                      "$eq": [
+                        "$$audit.v.archived",
+                        true
+                      ]
+                    }
+                  }
+                },
+                "as": "audit",
+                "in": "$$audit.k"
+              }
+            }
+          }
+        },
+        {
+          "$unwind": "$courses"
+        },
+        {
+          "$match": {
+            "$expr": {
+              "$not": [
+                {
+                  "$in": [
+                    "$courses.id",
+                    "$archived"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "$replaceRoot": {
+            "newRoot": {
+              "$mergeObjects": [
+                "$courses",
+                {
+                  "catalogSourceFreshUntil": {
+                    "$ifNull": [
+                      "$courses.catalogMetadataFreshUntil",
+                      "$catalogFreshUntil"
+                    ]
+                  },
+                  "catalogSourceStaleUntil": "$catalogStaleUntil"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "$limit": 6041
+        }
+      ],
+      "cursor": {},
+      "$db": "integration_live_acceptance"
+    },
+    "ok": 1,
+    "$clusterTime": {
+      "clusterTime": {
+        "$timestamp": "7709142580339933190"
+      },
+      "signature": {
+        "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "keyId": 0
+      }
+    },
+    "operationTime": {
+      "$timestamp": "7709142580339933190"
+    }
+  },
+  "userExplain": {
+    "explainVersion": "1",
+    "queryPlanner": {
+      "namespace": "integration_live_acceptance.usercourseprogresses",
+      "parsedQuery": {
+        "userId": {
+          "$eq": "6afc601ffb5a71b69548ab8c"
+        }
+      },
+      "indexFilterSet": false,
+      "queryHash": "05A70696",
+      "planCacheShapeHash": "05A70696",
+      "planCacheKey": "F5CC1857",
+      "optimizationTimeMillis": 0,
+      "maxIndexedOrSolutionsReached": false,
+      "maxIndexedAndSolutionsReached": false,
+      "maxScansToExplodeReached": false,
+      "prunedSimilarIndexes": false,
+      "winningPlan": {
+        "isCached": false,
+        "stage": "FETCH",
+        "inputStage": {
+          "stage": "IXSCAN",
+          "keyPattern": {
+            "userId": 1,
+            "updatedAt": -1,
+            "_id": -1
+          },
+          "indexName": "user_course_recent",
+          "isMultiKey": false,
+          "multiKeyPaths": {
+            "userId": [],
+            "updatedAt": [],
+            "_id": []
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "userId": [
+              "[ObjectId('6afc601ffb5a71b69548ab8c'), ObjectId('6afc601ffb5a71b69548ab8c')]"
+            ],
+            "updatedAt": [
+              "[MaxKey, MinKey]"
+            ],
+            "_id": [
+              "[MaxKey, MinKey]"
+            ]
+          }
+        }
+      },
+      "rejectedPlans": [
+        {
+          "isCached": false,
+          "stage": "FETCH",
+          "inputStage": {
+            "stage": "SORT",
+            "sortPattern": {
+              "updatedAt": -1,
+              "_id": -1
+            },
+            "memLimit": 104857600,
+            "type": "default",
+            "inputStage": {
+              "stage": "IXSCAN",
+              "keyPattern": {
+                "userId": 1,
+                "status": 1,
+                "updatedAt": -1,
+                "_id": -1
+              },
+              "indexName": "user_course_status",
+              "isMultiKey": false,
+              "multiKeyPaths": {
+                "userId": [],
+                "status": [],
+                "updatedAt": [],
+                "_id": []
+              },
+              "isUnique": false,
+              "isSparse": false,
+              "isPartial": false,
+              "indexVersion": 2,
+              "direction": "forward",
+              "indexBounds": {
+                "userId": [
+                  "[ObjectId('6afc601ffb5a71b69548ab8c'), ObjectId('6afc601ffb5a71b69548ab8c')]"
+                ],
+                "status": [
+                  "[MinKey, MaxKey]"
+                ],
+                "updatedAt": [
+                  "[MaxKey, MinKey]"
+                ],
+                "_id": [
+                  "[MaxKey, MinKey]"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "isCached": false,
+          "stage": "SORT",
+          "sortPattern": {
+            "updatedAt": -1,
+            "_id": -1
+          },
+          "memLimit": 104857600,
+          "type": "simple",
+          "inputStage": {
+            "stage": "FETCH",
+            "inputStage": {
+              "stage": "IXSCAN",
+              "keyPattern": {
+                "userId": 1,
+                "courseId": 1
+              },
+              "indexName": "user_course_identity",
+              "isMultiKey": false,
+              "multiKeyPaths": {
+                "userId": [],
+                "courseId": []
+              },
+              "isUnique": true,
+              "isSparse": false,
+              "isPartial": false,
+              "indexVersion": 2,
+              "direction": "forward",
+              "indexBounds": {
+                "userId": [
+                  "[ObjectId('6afc601ffb5a71b69548ab8c'), ObjectId('6afc601ffb5a71b69548ab8c')]"
+                ],
+                "courseId": [
+                  "[MinKey, MaxKey]"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "executionStats": {
+      "executionSuccess": true,
+      "nReturned": 2,
+      "executionTimeMillis": 1,
+      "totalKeysExamined": 2,
+      "totalDocsExamined": 2,
+      "executionStages": {
+        "isCached": false,
+        "stage": "FETCH",
+        "nReturned": 2,
+        "executionTimeMillisEstimate": 0,
+        "works": 4,
+        "advanced": 2,
+        "needTime": 0,
+        "needYield": 0,
+        "saveState": 0,
+        "restoreState": 0,
+        "isEOF": 1,
+        "docsExamined": 2,
+        "alreadyHasObj": 0,
+        "inputStage": {
+          "stage": "IXSCAN",
+          "nReturned": 2,
+          "executionTimeMillisEstimate": 0,
+          "works": 3,
+          "advanced": 2,
+          "needTime": 0,
+          "needYield": 0,
+          "saveState": 0,
+          "restoreState": 0,
+          "isEOF": 1,
+          "keyPattern": {
+            "userId": 1,
+            "updatedAt": -1,
+            "_id": -1
+          },
+          "indexName": "user_course_recent",
+          "isMultiKey": false,
+          "multiKeyPaths": {
+            "userId": [],
+            "updatedAt": [],
+            "_id": []
+          },
+          "isUnique": false,
+          "isSparse": false,
+          "isPartial": false,
+          "indexVersion": 2,
+          "direction": "forward",
+          "indexBounds": {
+            "userId": [
+              "[ObjectId('6afc601ffb5a71b69548ab8c'), ObjectId('6afc601ffb5a71b69548ab8c')]"
+            ],
+            "updatedAt": [
+              "[MaxKey, MinKey]"
+            ],
+            "_id": [
+              "[MaxKey, MinKey]"
+            ]
+          },
+          "keysExamined": 2,
+          "seeks": 1,
+          "dupsTested": 0,
+          "dupsDropped": 0
+        }
+      },
+      "allPlansExecution": [
+        {
+          "nReturned": 2,
+          "executionTimeMillisEstimate": 0,
+          "totalKeysExamined": 2,
+          "totalDocsExamined": 2,
+          "score": 2.6668666666666665,
+          "executionStages": {
+            "isCached": false,
+            "stage": "FETCH",
+            "nReturned": 2,
+            "executionTimeMillisEstimate": 0,
+            "works": 3,
+            "advanced": 2,
+            "needTime": 0,
+            "needYield": 0,
+            "saveState": 0,
+            "restoreState": 0,
+            "isEOF": 1,
+            "docsExamined": 2,
+            "alreadyHasObj": 0,
+            "inputStage": {
+              "stage": "IXSCAN",
+              "nReturned": 2,
+              "executionTimeMillisEstimate": 0,
+              "works": 3,
+              "advanced": 2,
+              "needTime": 0,
+              "needYield": 0,
+              "saveState": 0,
+              "restoreState": 0,
+              "isEOF": 1,
+              "keyPattern": {
+                "userId": 1,
+                "updatedAt": -1,
+                "_id": -1
+              },
+              "indexName": "user_course_recent",
+              "isMultiKey": false,
+              "multiKeyPaths": {
+                "userId": [],
+                "updatedAt": [],
+                "_id": []
+              },
+              "isUnique": false,
+              "isSparse": false,
+              "isPartial": false,
+              "indexVersion": 2,
+              "direction": "forward",
+              "indexBounds": {
+                "userId": [
+                  "[ObjectId('6afc601ffb5a71b69548ab8c'), ObjectId('6afc601ffb5a71b69548ab8c')]"
+                ],
+                "updatedAt": [
+                  "[MaxKey, MinKey]"
+                ],
+                "_id": [
+                  "[MaxKey, MinKey]"
+                ]
+              },
+              "keysExamined": 2,
+              "seeks": 1,
+              "dupsTested": 0,
+              "dupsDropped": 0
+            }
+          }
+        },
+        {
+          "nReturned": 0,
+          "executionTimeMillisEstimate": 0,
+          "totalKeysExamined": 2,
+          "totalDocsExamined": 0,
+          "score": 1.0001,
+          "executionStages": {
+            "isCached": false,
+            "stage": "FETCH",
+            "nReturned": 0,
+            "executionTimeMillisEstimate": 0,
+            "works": 3,
+            "advanced": 0,
+            "needTime": 3,
+            "needYield": 0,
+            "saveState": 1,
+            "restoreState": 0,
+            "isEOF": 0,
+            "docsExamined": 0,
+            "alreadyHasObj": 0,
+            "inputStage": {
+              "stage": "SORT",
+              "nReturned": 0,
+              "executionTimeMillisEstimate": 0,
+              "works": 3,
+              "advanced": 0,
+              "needTime": 3,
+              "needYield": 0,
+              "saveState": 1,
+              "restoreState": 0,
+              "isEOF": 0,
+              "sortPattern": {
+                "updatedAt": -1,
+                "_id": -1
+              },
+              "memLimit": 104857600,
+              "type": "default",
+              "totalDataSizeSorted": 358,
+              "usedDisk": false,
+              "spills": 0,
+              "spilledRecords": 0,
+              "spilledBytes": 0,
+              "spilledDataStorageSize": 0,
+              "inputStage": {
+                "stage": "IXSCAN",
+                "nReturned": 2,
+                "executionTimeMillisEstimate": 0,
+                "works": 3,
+                "advanced": 2,
+                "needTime": 0,
+                "needYield": 0,
+                "saveState": 1,
+                "restoreState": 0,
+                "isEOF": 1,
+                "keyPattern": {
+                  "userId": 1,
+                  "status": 1,
+                  "updatedAt": -1,
+                  "_id": -1
+                },
+                "indexName": "user_course_status",
+                "isMultiKey": false,
+                "multiKeyPaths": {
+                  "userId": [],
+                  "status": [],
+                  "updatedAt": [],
+                  "_id": []
+                },
+                "isUnique": false,
+                "isSparse": false,
+                "isPartial": false,
+                "indexVersion": 2,
+                "direction": "forward",
+                "indexBounds": {
+                  "userId": [
+                    "[ObjectId('6afc601ffb5a71b69548ab8c'), ObjectId('6afc601ffb5a71b69548ab8c')]"
+                  ],
+                  "status": [
+                    "[MinKey, MaxKey]"
+                  ],
+                  "updatedAt": [
+                    "[MaxKey, MinKey]"
+                  ],
+                  "_id": [
+                    "[MaxKey, MinKey]"
+                  ]
+                },
+                "keysExamined": 2,
+                "seeks": 1,
+                "dupsTested": 0,
+                "dupsDropped": 0
+              }
+            }
+          }
+        },
+        {
+          "nReturned": 0,
+          "executionTimeMillisEstimate": 0,
+          "totalKeysExamined": 2,
+          "totalDocsExamined": 2,
+          "score": 1.0001,
+          "executionStages": {
+            "isCached": false,
+            "stage": "SORT",
+            "nReturned": 0,
+            "executionTimeMillisEstimate": 0,
+            "works": 3,
+            "advanced": 0,
+            "needTime": 3,
+            "needYield": 0,
+            "saveState": 1,
+            "restoreState": 0,
+            "isEOF": 0,
+            "sortPattern": {
+              "updatedAt": -1,
+              "_id": -1
+            },
+            "memLimit": 104857600,
+            "type": "simple",
+            "totalDataSizeSorted": 1042,
+            "usedDisk": false,
+            "spills": 0,
+            "spilledRecords": 0,
+            "spilledBytes": 0,
+            "spilledDataStorageSize": 0,
+            "inputStage": {
+              "stage": "FETCH",
+              "nReturned": 2,
+              "executionTimeMillisEstimate": 0,
+              "works": 3,
+              "advanced": 2,
+              "needTime": 0,
+              "needYield": 0,
+              "saveState": 1,
+              "restoreState": 0,
+              "isEOF": 1,
+              "docsExamined": 2,
+              "alreadyHasObj": 0,
+              "inputStage": {
+                "stage": "IXSCAN",
+                "nReturned": 2,
+                "executionTimeMillisEstimate": 0,
+                "works": 3,
+                "advanced": 2,
+                "needTime": 0,
+                "needYield": 0,
+                "saveState": 1,
+                "restoreState": 0,
+                "isEOF": 1,
+                "keyPattern": {
+                  "userId": 1,
+                  "courseId": 1
+                },
+                "indexName": "user_course_identity",
+                "isMultiKey": false,
+                "multiKeyPaths": {
+                  "userId": [],
+                  "courseId": []
+                },
+                "isUnique": true,
+                "isSparse": false,
+                "isPartial": false,
+                "indexVersion": 2,
+                "direction": "forward",
+                "indexBounds": {
+                  "userId": [
+                    "[ObjectId('6afc601ffb5a71b69548ab8c'), ObjectId('6afc601ffb5a71b69548ab8c')]"
+                  ],
+                  "courseId": [
+                    "[MinKey, MaxKey]"
+                  ]
+                },
+                "keysExamined": 2,
+                "seeks": 1,
+                "dupsTested": 0,
+                "dupsDropped": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    "queryShapeHash": "043822A1E2A2619D1FB49D7096F9C56A9F25B8B214FED3AAC5F9702F3F5CD060",
+    "command": {
+      "find": "usercourseprogresses",
+      "filter": {
+        "userId": "6afc601ffb5a71b69548ab8c"
+      },
+      "sort": {
+        "updatedAt": -1,
+        "_id": -1
+      },
+      "$db": "integration_live_acceptance"
+    },
+    "serverInfo": {
+      "host": "ICOMM-AHMAD-HASS",
+      "port": 58746,
+      "version": "8.2.6",
+      "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
+    },
+    "serverParameters": {
+      "internalQueryFacetBufferSizeBytes": 104857600,
+      "internalQueryFacetMaxOutputDocSizeBytes": 104857600,
+      "internalLookupStageIntermediateDocumentMaxSizeBytes": 104857600,
+      "internalDocumentSourceGroupMaxMemoryBytes": 104857600,
+      "internalQueryMaxBlockingSortMemoryUsageBytes": 104857600,
+      "internalQueryProhibitBlockingMergeOnMongoS": 0,
+      "internalQueryMaxAddToSetBytes": 104857600,
+      "internalDocumentSourceSetWindowFieldsMaxMemoryBytes": 104857600,
+      "internalQueryFrameworkControl": "trySbeRestricted",
+      "internalQueryPlannerIgnoreIndexWithCollationForRegex": 1
+    },
+    "ok": 1,
+    "$clusterTime": {
+      "clusterTime": {
+        "$timestamp": "7709142580339933190"
+      },
+      "signature": {
+        "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "keyId": 0
+      }
+    },
+    "operationTime": {
+      "$timestamp": "7709142580339933190"
+    }
+  }
+}

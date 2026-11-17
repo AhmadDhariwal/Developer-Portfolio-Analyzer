@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { FrontendAnalysisCacheService } from './frontend-analysis-cache.service';
 
 type CacheOwner =
@@ -18,13 +18,42 @@ type CacheOwner =
   | 'interview-prep'
   | 'notifications'
   | 'support'
-  | 'saved-previews';
+  | 'saved-previews'
+  | 'organizations';
 
 @Injectable({ providedIn: 'root' })
-export class FrontendCacheInvalidationService {
+export class FrontendCacheInvalidationService implements OnDestroy {
   private readonly clearCallbacks = new Map<CacheOwner, () => void>();
+  private readonly revisionKey = 'devinsight_developer_revision';
+  private readonly onStorage = (event: StorageEvent): void => {
+    if (event.key !== this.revisionKey || !event.newValue) return;
+    try {
+      const revision = JSON.parse(event.newValue);
+      if (revision.owner && revision.owner === this.currentOwner())
+        this.clearDeveloperSignalCaches(false);
+    } catch {
+      /* Invalid storage events cannot invalidate another account. */
+    }
+  };
 
-  constructor(private readonly frontendCache: FrontendAnalysisCacheService) {}
+  constructor(private readonly frontendCache: FrontendAnalysisCacheService) {
+    globalThis.addEventListener?.('storage', this.onStorage);
+  }
+
+  ngOnDestroy(): void {
+    globalThis.removeEventListener?.('storage', this.onStorage);
+  }
+
+  private currentOwner(): string {
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || 'null');
+      return user?._id
+        ? `${user._id}:${localStorage.getItem('devinsight_tenant_context') || ''}`
+        : '';
+    } catch {
+      return '';
+    }
+  }
 
   register(owner: CacheOwner, clear: () => void): void {
     this.clearCallbacks.set(owner, clear);
@@ -56,13 +85,14 @@ export class FrontendCacheInvalidationService {
     this.run('career-profile');
     this.run('support');
     this.run('saved-previews');
+    this.run('organizations');
   }
 
   clearProfileCache(): void {
     this.run('profile');
   }
 
-  clearDeveloperSignalCaches(): void {
+  clearDeveloperSignalCaches(broadcast = true): void {
     this.frontendCache.clearCurrentSignalHash();
     this.frontendCache.clearModule('developer-signals');
     this.clearSkillGapCaches();
@@ -71,7 +101,7 @@ export class FrontendCacheInvalidationService {
     this.clearNewsCaches();
     this.clearJobsCaches();
     this.clearCoursesCaches();
-    this.clearDashboardCaches();
+    this.clearDashboardCaches(broadcast);
     this.clearWeeklyReportCaches();
     this.clearCareerSprintCaches();
     this.run('interview-prep');
@@ -84,7 +114,7 @@ export class FrontendCacheInvalidationService {
     this.run('resume');
   }
 
-  clearDashboardCaches(): void {
+  clearDashboardCaches(broadcast = true): void {
     [
       'dashboardSummary',
       'dashboardContributions',
@@ -93,6 +123,18 @@ export class FrontendCacheInvalidationService {
       'dashboardRecommendations',
       'dashboardIntegrationAnalytics',
     ].forEach((module) => this.frontendCache.clearModule(module));
+    const owner = this.currentOwner();
+    if (broadcast && owner) {
+      try {
+        localStorage.setItem(
+          this.revisionKey,
+          JSON.stringify({ owner, revision: crypto.randomUUID() }),
+        );
+      } catch {
+        /* Same-tab invalidation remains available when storage is denied. */
+      }
+    }
+    globalThis.dispatchEvent?.(new CustomEvent('devinsight:developer-data-changed'));
   }
 
   clearSkillGapCaches(): void {

@@ -299,7 +299,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
       const cachedResultSignalHash = this.extractSignalHash(cached);
       if (cached && (!currentSignalHash || cachedResultSignalHash === currentSignalHash)) {
         this.applyResult(cached, user, careerStack, experienceLevel, isTemporary, 'cache-hit');
-        return;
+        // Keep the last saved view visible while the server validates source revisions.
       }
       if (
         cached &&

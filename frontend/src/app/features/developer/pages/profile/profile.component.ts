@@ -185,7 +185,7 @@ export class ProfileComponent implements OnInit {
       this.authService.clearAvatarPreview();
       this.releaseAvatarPreviewUrl();
     });
-    this.loadProfile();
+    this.loadProfile(true);
 
     this.authService.currentUser$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user) => {
       const nextAvatar = this.profileService.resolveAvatarUrl(String(user?.avatar || ''));

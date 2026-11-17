@@ -8,12 +8,41 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '../../../..');
 const read = (...parts) => fs.readFileSync(path.join(root, ...parts), 'utf8');
 
-const controllerSource = read('backend', 'src', 'modules', 'career-sprint', 'careerSprintController.js');
-const serviceSource = read('backend', 'src', 'modules', 'career-sprint', 'services', 'careerSprintService.js');
+const controllerSource = read(
+  'backend',
+  'src',
+  'modules',
+  'career-sprint',
+  'careerSprintController.js'
+);
+const serviceSource = read(
+  'backend',
+  'src',
+  'modules',
+  'career-sprint',
+  'services',
+  'careerSprintService.js'
+);
 const aiServiceSource = read('backend', 'src', 'core', 'ai', 'aiTaskService.js');
 const routesSource = read('backend', 'src', 'modules', 'career-sprint', 'careerSprint.routes.js');
-const promptSource = read('backend', 'src', 'modules', 'career-sprint', 'prompts', 'careerSprintPrompt.js');
-const componentSource = read('frontend', 'src', 'app', 'features', 'developer', 'pages', 'career-sprint', 'career-sprint.component.ts');
+const promptSource = read(
+  'backend',
+  'src',
+  'modules',
+  'career-sprint',
+  'prompts',
+  'careerSprintPrompt.js'
+);
+const componentSource = read(
+  'frontend',
+  'src',
+  'app',
+  'features',
+  'developer',
+  'pages',
+  'career-sprint',
+  'career-sprint.component.ts'
+);
 const plannerSource = read(
   'frontend',
   'src',
@@ -23,9 +52,17 @@ const plannerSource = read(
   'pages',
   'career-sprint',
   'components',
+  'sprint-planner',
   'sprint-planner.component.ts'
 );
-const clientSource = read('frontend', 'src', 'app', 'shared', 'services', 'career-sprint.service.ts');
+const clientSource = read(
+  'frontend',
+  'src',
+  'app',
+  'shared',
+  'services',
+  'career-sprint.service.ts'
+);
 
 const {
   calcWeightedProgress,
@@ -68,12 +105,14 @@ const groundedTasks = [
   },
   {
     title: 'Improve GitHub README',
-    description: 'Rewrite the React repo README so recruiters can understand the Frontend proof quickly.',
+    description:
+      'Rewrite the React repo README so recruiters can understand the Frontend proof quickly.',
     category: 'practice'
   },
   {
     title: 'Build React form validation',
-    description: 'Implement accessible form validation in a React feature for Intern interview readiness.',
+    description:
+      'Implement accessible form validation in a React feature for Intern interview readiness.',
     category: 'project'
   }
 ];
@@ -89,7 +128,10 @@ test('controller sanitizes client errors and never leaks internals', () => {
   assert.match(controllerSource, /INTERNAL_ERROR_PATTERN/);
   assert.match(controllerSource, /Authentication required\./);
   assert.match(controllerSource, /isCompleted must be a boolean/);
-  assert.doesNotMatch(controllerSource, /res\.status\([^\)]*\)\.json\(\{\s*message:\s*error\.message/);
+  assert.doesNotMatch(
+    controllerSource,
+    /res\.status\([^\)]*\)\.json\(\{\s*message:\s*error\.message/
+  );
   assert.doesNotMatch(controllerSource, /stack:\s*error\.stack|error\.stack/);
   assert.doesNotMatch(controllerSource, /YOUTUBE_API_KEY|OPENAI|GEMINI_API|apiKey/);
 });
@@ -110,7 +152,10 @@ test('invalid ObjectIds are rejected as 404 before mongoose cast', () => {
 
 test('oversized text inputs return 413 and empty titles are not invented', () => {
   assert.throws(
-    () => sanitizeBoundedText('x'.repeat(LIMITS.title + 1), LIMITS.title, 'Task title', { required: true }),
+    () =>
+      sanitizeBoundedText('x'.repeat(LIMITS.title + 1), LIMITS.title, 'Task title', {
+        required: true
+      }),
     (error) => error.statusCode === 413
   );
   assert.throws(
@@ -123,13 +168,23 @@ test('oversized text inputs return 413 and empty titles are not invented', () =>
 
 test('ownership is enforced on every sprint and scenario mutation query', () => {
   assert.match(serviceSource, /findOne\(\{\s*_id:\s*sprintId,\s*userId\s*\}\)/);
-  assert.match(serviceSource, /ScenarioSimulation\.findOne\(\{\s*_id:\s*scenarioId,\s*userId\s*\}\)/);
+  assert.match(
+    serviceSource,
+    /ScenarioSimulation\.findOne\(\{\s*_id:\s*scenarioId,\s*userId\s*\}\)/
+  );
   assert.match(serviceSource, /CareerSprint\.find\(\{\s*userId\s*\}/);
   assert.match(serviceSource, /sort\(\{\s*updatedAt:\s*-1,\s*_id:\s*-1\s*\}\)/);
 });
 
 test('overview reads fail closed and immutable cache keys depend on fresh database snapshots', () => {
-  const cacheSource = read('backend', 'src', 'modules', 'career-sprint', 'services', 'sprintOverviewCacheService.js');
+  const cacheSource = read(
+    'backend',
+    'src',
+    'modules',
+    'career-sprint',
+    'services',
+    'sprintOverviewCacheService.js'
+  );
   assert.doesNotMatch(serviceSource, /previousValid/);
   assert.match(serviceSource, /loadCurrentSprint/);
   assert.match(cacheSource, /identity\(sprint, previous/);
@@ -153,7 +208,10 @@ test('AI fact pollution and low-quality tasks are rejected', () => {
 
   assert.equal(isUsableTaskText('As an AI I cannot help with this'), false);
   assert.equal(isUsableTaskText('todo placeholder task'), false);
-  assert.equal(isUsableTaskText('Ship a React portfolio proof page with measurable outcomes'), true);
+  assert.equal(
+    isUsableTaskText('Ship a React portfolio proof page with measurable outcomes'),
+    true
+  );
 
   const polluted = validateAiTaskPlan(
     {
@@ -236,7 +294,9 @@ test('AI fact pollution and low-quality tasks are rejected', () => {
   assert.equal(valid.tasks.length >= 6, true);
   assert.ok(valid.tasks.every((task) => Number.isFinite(task.points)));
   assert.deepEqual(
-    assignDeterministicScoring([{ category: 'project' }, { category: 'learning' }]).map((task) => task.priority),
+    assignDeterministicScoring([{ category: 'project' }, { category: 'learning' }]).map(
+      (task) => task.priority
+    ),
     ['high', 'high']
   );
 });
@@ -245,7 +305,10 @@ test('LLM path uses returnMeta, schema validation, and safe deterministic fallba
   assert.match(aiServiceSource, /returnMeta:\s*true/);
   assert.match(aiServiceSource, /validateAiTaskPlan/);
   assert.match(aiServiceSource, /generationMode: usedFallback \? 'deterministic' : 'llm'/);
-  assert.match(aiServiceSource, /providerLabel: usedFallback \? 'Deterministic Plan' : 'AI-Assisted Plan'/);
+  assert.match(
+    aiServiceSource,
+    /providerLabel: usedFallback \? 'Deterministic Plan' : 'AI-Assisted Plan'/
+  );
   assert.doesNotMatch(aiServiceSource, /LLM Planner|Rules Engine Fallback|Gemini|OpenAI/);
 });
 
