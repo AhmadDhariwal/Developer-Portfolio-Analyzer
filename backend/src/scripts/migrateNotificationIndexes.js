@@ -6,13 +6,13 @@ if (require.main === module) {
   mongoose.set('autoIndex', false);
 }
 const models = [
-  require('../models/notification'),
-  require('../models/notificationState'),
-  require('../models/notificationReceipt'),
-  require('../models/supportTicket'),
-  require('../models/supportTicketQuota'),
-  require('../models/supportTicketDedupe'),
-  require('../models/weeklyReport')
+  require('../modules/notifications/models/notification'),
+  require('../modules/notifications/models/notificationState'),
+  require('../modules/notifications/models/notificationReceipt'),
+  require('../modules/support/models/supportTicket'),
+  require('../modules/support/models/supportTicketQuota'),
+  require('../modules/support/models/supportTicketDedupe'),
+  require('../modules/weekly-reports/models/weeklyReport')
 ];
 
 async function migrate({ apply = false } = {}) {

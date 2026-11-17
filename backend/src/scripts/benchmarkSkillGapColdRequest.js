@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
-const User = require('../models/user');
+const User = require('../modules/auth/models/user');
 
 const PORT = Number.parseInt(process.env.SKILL_GAP_BENCH_PORT || '5056', 10);
 const REQUEST_TIMEOUT_MS = Number.parseInt(process.env.SKILL_GAP_BENCH_TIMEOUT_MS || '180000', 10);
@@ -79,7 +79,7 @@ const flattenWinningPlan = (plan) => {
 };
 
 const explainCacheLookup = async ({ userId, username, careerStack, experienceLevel }) => {
-  const AnalysisCache = require('../models/analysisCache');
+  const AnalysisCache = require('../modules/skill-gap/models/analysisCache');
   await mongoose.connect(process.env.MONGODB_URI);
   await AnalysisCache.syncIndexes();
   const query = {

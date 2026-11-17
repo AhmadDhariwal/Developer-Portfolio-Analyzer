@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const dotenv = require('dotenv');
 const assert = require('node:assert/strict');
-const { entries, renderNewsEnv } = require('../config/newsEnvCatalog');
+const { entries, renderNewsEnv } = require('../modules/news/config/newsEnvCatalog');
 
 // Explicit backend paths only. Preserve raw assignments (including quoted secrets)
 // and verify every existing parsed value before writing either configuration.

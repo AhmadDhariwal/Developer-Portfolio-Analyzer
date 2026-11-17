@@ -5,15 +5,15 @@ const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const { startMongo } = require('./verifyIntegrationsRealProviders');
 const mongoose = require('mongoose');
-const cache = require('../services/redisCacheService');
-const governance = require('../services/integrationGovernanceService');
-const persistence = require('../services/integrationPersistenceService');
-const sync = require('../services/integrationSyncService');
-const { getAdapter } = require('../services/integrations');
-const User = require('../models/user');
-const Connection = require('../models/integrationConnection');
-const Insight = require('../models/integrationInsight');
-const Log = require('../models/integrationSyncLog');
+const cache = require('../core/cache/redisCacheService');
+const governance = require('../modules/integrations/services/integrationGovernanceService');
+const persistence = require('../modules/integrations/services/integrationPersistenceService');
+const sync = require('../modules/integrations/services/integrationSyncService');
+const { getAdapter } = require('../modules/integrations/services/adapters');
+const User = require('../modules/auth/models/user');
+const Connection = require('../modules/integrations/models/integrationConnection');
+const Insight = require('../modules/integrations/models/integrationInsight');
+const Log = require('../modules/integrations/models/integrationSyncLog');
 const root = path.resolve(__dirname, '../../verification/integrations');
 const marketplaceOnly = process.argv.includes('--marketplace-only');
 const outputOverride = process.argv.find((arg) => arg.startsWith('--output='))?.slice(9);
@@ -66,7 +66,7 @@ async function verifyMarketplace(owner) {
   const source = JSON.parse(
     fs.readFileSync(path.join(root, 'kaggle-attribution-diagnostic-2026-10-27.json'))
   );
-  const snapshot = require('../services/kaggleResourceObservationService').normalize({
+  const snapshot = require('../modules/integrations/services/kaggleResourceObservationService').normalize({
     provider: 'kaggle',
     resourceOnly: true,
     profile: { username: 'dansbecker' },
@@ -89,7 +89,7 @@ async function verifyMarketplace(owner) {
   );
   const app = express();
   app.use(express.json());
-  app.use('/api/integrations', require('../routes/integrations.routes'));
+  app.use('/api/integrations', require('../modules/integrations/integrations.routes'));
   server = app.listen(0, '127.0.0.1');
   await new Promise((resolve) => server.once('listening', resolve));
   const origin = 'http://127.0.0.1:' + server.address().port + '/api/integrations';

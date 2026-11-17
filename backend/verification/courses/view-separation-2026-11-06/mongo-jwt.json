@@ -251,7 +251,7 @@
   "externalCalls": 0,
   "cleanup": {
     "mongoStopped": true,
-    "temporaryFilesRemoved": 245,
+    "temporaryFilesRemoved": 227,
     "productionDataUsed": false
   }
 }

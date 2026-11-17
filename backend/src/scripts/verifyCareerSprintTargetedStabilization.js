@@ -66,7 +66,7 @@ const files = (directory) =>
 async function main() {
   await run('sprint', [
     '--test-name-pattern=^database-validated memory serialization stays under 50ms p95 and skips optional signals$',
-    'src/tests/careerSprintPerformance.test.js'
+    'src/tests/career-sprint/careerSprintPerformance.test.js'
   ]);
   const temporaryRoot = path.join(output, 'runtime');
   fs.mkdirSync(temporaryRoot, { recursive: true });
@@ -79,7 +79,7 @@ async function main() {
       [
         '--test-name-pattern=^Learning Hub real Mongo/JWT:',
         '--test-skip-pattern=^(current version and|memory, Redis and|legacy, temporary,|selected unanalyzed resume,|progress CRUD is|JWT HTTP endpoints)',
-        'src/tests/coursesMongo.integration.test.js'
+        'src/tests/courses/coursesMongo.integration.test.js'
       ],
       { MONGODB_URI: runtime.uri, MONGO_URI: runtime.uri }
     );

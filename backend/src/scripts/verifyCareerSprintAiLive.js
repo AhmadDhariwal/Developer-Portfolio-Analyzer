@@ -14,13 +14,13 @@ process.env.MONGO_URI = uri;
 process.env.REDIS_URL = '';
 process.env.UPSTASH_REDIS_TOKEN = '';
 const mongoose = require('mongoose');
-const User = require('../models/user');
-const Sprint = require('../models/careerSprint');
-const planner = require('../services/aiTaskService');
-const manager = require('../services/aiProviderManager');
-const selection = require('../services/sprintAiSelectionService');
-const aiService = require('../services/aiservice');
-const { sprintWindow } = require('../utils/sprintCalendar');
+const User = require('../modules/auth/models/user');
+const Sprint = require('../modules/career-sprint/models/careerSprint');
+const planner = require('../core/ai/aiTaskService');
+const manager = require('../core/ai/aiProviderManager');
+const selection = require('../modules/career-sprint/services/sprintAiSelectionService');
+const aiService = require('../core/ai/aiservice');
+const { sprintWindow } = require('../modules/career-sprint/utils/sprintCalendar');
 const output = path.resolve(__dirname, '../../verification/career-sprint/lock-verification/ai-live.json');
 const report = { live: true, verifiedAt: new Date().toISOString(), providers: [], plans: [], responses: [] };
 const owners = [];
@@ -47,8 +47,8 @@ async function main() {
     title: `Implement Docker exercise ${index + 1}`,
     category: 'practice'
   }));
-  for (const provider of require('../config/aiProviders').PRODUCTION_ORDER) {
-    const key = require('../config/aiProviders').descriptor(provider).envKey;
+  for (const provider of require('../core/config/aiProviders').PRODUCTION_ORDER) {
+    const key = require('../core/config/aiProviders').descriptor(provider).envKey;
     if (!process.env[key]) {
       report.providers.push({ provider, status: 'NOT_CONFIGURED' });
       continue;

@@ -8,13 +8,13 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
 const { startMongo } = require('./verifyIntegrationsRealProviders');
-const cache = require('../services/redisCacheService');
-const { getAdapter } = require('../services/integrations');
-const candidate = require('../services/integrations/kaggleResourceExtractor');
-const User = require('../models/user');
-const Connection = require('../models/integrationConnection');
-const Insight = require('../models/integrationInsight');
-const Log = require('../models/integrationSyncLog');
+const cache = require('../core/cache/redisCacheService');
+const { getAdapter } = require('../modules/integrations/services/adapters');
+const candidate = require('../modules/integrations/services/adapters/kaggleResourceExtractor');
+const User = require('../modules/auth/models/user');
+const Connection = require('../modules/integrations/models/integrationConnection');
+const Insight = require('../modules/integrations/models/integrationInsight');
+const Log = require('../modules/integrations/models/integrationSyncLog');
 
 async function main() {
   const output = path.resolve(
@@ -105,7 +105,7 @@ async function main() {
     });
     const app = express();
     app.use(express.json());
-    app.use('/api/integrations', require('../routes/integrations.routes'));
+    app.use('/api/integrations', require('../modules/integrations/integrations.routes'));
     server = app.listen(0, '127.0.0.1');
     await new Promise((resolve) => server.once('listening', resolve));
     const origin = `http://127.0.0.1:${server.address().port}/api/integrations`;
@@ -152,7 +152,7 @@ async function main() {
       market.integrations.find((row) => row.provider === 'kaggle').resourceSummary.datasets,
       snapshot.activity.datasets.resources.length
     );
-    const signals = await require('../services/developerSignalService').summarizeIntegrationSignal(
+    const signals = await require('../core/developer-context/developerSignalService').summarizeIntegrationSignal(
       owner
     );
     assert.equal(signals.publicResources.length, 1);

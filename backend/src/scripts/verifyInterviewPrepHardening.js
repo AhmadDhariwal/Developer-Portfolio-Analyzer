@@ -15,14 +15,14 @@ const {
   sanitizeDifficulty,
   sanitizeCategory,
   computeJaccardSimilarity
-} = require('../services/interviewQuestionQualityService');
+} = require('../modules/interview-prep/services/interviewQuestionQualityService');
 
 const {
   findSeedRecordByQuestion,
   getImportantTopicByKey,
   findSeedRecordByCanonicalKey,
   validateInterviewSeedCatalog
-} = require('../services/interviewQuestionSeedCatalog');
+} = require('../modules/interview-prep/services/interviewQuestionSeedCatalog');
 
 let passed = 0;
 let failed = 0;

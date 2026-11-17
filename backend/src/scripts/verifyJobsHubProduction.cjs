@@ -106,12 +106,12 @@ async function main() {
   const unitArgs = [
     '--test',
     '--test-reporter=tap',
-    'backend/src/tests/jobsHubHardening.test.js',
-    'backend/src/tests/jobsHiddenAccess.test.js',
-    'backend/src/tests/jobsHubRanking.test.js',
-    'backend/src/tests/developerContextService.test.js',
-    'backend/src/tests/skillGapConsumerContracts.test.js',
-    'backend/src/tests/coursesHardening.test.js'
+    'backend/src/tests/jobs/jobsHubHardening.test.js',
+    'backend/src/tests/jobs/jobsHiddenAccess.test.js',
+    'backend/src/tests/jobs/jobsHubRanking.test.js',
+    'backend/src/tests/core/developerContextService.test.js',
+    'backend/src/tests/skill-gap/skillGapConsumerContracts.test.js',
+    'backend/src/tests/courses/coursesHardening.test.js'
   ];
   if (!httpOnly && !frontendOnly && (await run('backend-focused', unitArgs))) {
     process.exitCode = 1;
@@ -164,10 +164,10 @@ async function main() {
           '--test-concurrency=1',
           '--test-reporter=tap',
           ...(httpOnly
-            ? ['backend/src/tests/jobsHubHttp.integration.test.js']
+            ? ['backend/src/tests/jobs/jobsHubHttp.integration.test.js']
             : [
-                'backend/src/tests/jobsHubLocal.integration.test.js',
-                'backend/src/tests/jobsHubUpstash.integration.test.js'
+                'backend/src/tests/jobs/jobsHubLocal.integration.test.js',
+                'backend/src/tests/jobs/jobsHubUpstash.integration.test.js'
               ])
         ],
         { JOBS_TEST_MONGODB_URI: mongo.uri, JOBS_TEST_REDIS_URL: `redis://127.0.0.1:${redisPort}` }

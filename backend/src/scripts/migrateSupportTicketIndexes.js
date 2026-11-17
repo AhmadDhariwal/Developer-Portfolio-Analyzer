@@ -1,8 +1,8 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
-const SupportTicket = require('../models/supportTicket');
-const SupportTicketDedupe = require('../models/supportTicketDedupe');
-const SupportTicketQuota = require('../models/supportTicketQuota');
+const SupportTicket = require('../modules/support/models/supportTicket');
+const SupportTicketDedupe = require('../modules/support/models/supportTicketDedupe');
+const SupportTicketQuota = require('../modules/support/models/supportTicketQuota');
 
 const INDEXES = [
   { collection: SupportTicket.collection, name: 'support_ticket_user_created_at', keys: { userId: 1, createdAt: -1 } },

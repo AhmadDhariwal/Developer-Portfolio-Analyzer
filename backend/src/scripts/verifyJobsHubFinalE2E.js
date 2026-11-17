@@ -250,10 +250,10 @@ const main = async () => {
   console.log(`Connecting to isolated MongoDB database: ${testDbName}`);
 
   await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 5000 });
-  const User = require("../models/user");
-  const JobCache = require("../models/jobCache");
-  const UserJobAction = require("../models/userJobAction");
-  const redisCacheService = require("../services/redisCacheService");
+  const User = require("../modules/auth/models/user");
+  const JobCache = require("../modules/jobs/models/jobCache");
+  const UserJobAction = require("../modules/jobs/models/userJobAction");
+  const redisCacheService = require("../core/cache/redisCacheService");
 
   // Verify and build indexes
   await Promise.all([
@@ -332,7 +332,7 @@ const main = async () => {
 
   const app = express();
   app.use(express.json());
-  app.use("/api/jobs", require("../routes/jobRoutes"));
+  app.use("/api/jobs", require("../modules/jobs/jobRoutes"));
 
   // Serve static built frontend with dynamic API origin replacement
   const staticRoot = path.resolve(

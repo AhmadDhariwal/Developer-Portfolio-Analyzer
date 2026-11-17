@@ -9,7 +9,7 @@ let governance;
     diagnostic: () => {}
   });
   const worker = await setup.worker();
-  governance = load('../services/jobGovernanceService.js', { './redisCacheService': worker.cache });
+  governance = load('../modules/jobs/services/jobGovernanceService.js', { './redisCacheService': worker.cache });
   process.send({ ready: true });
   process.once('message', async () => {
     try {

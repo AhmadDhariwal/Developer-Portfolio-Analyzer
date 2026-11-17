@@ -6,9 +6,9 @@ if (
   )
 )
   throw Error('Disposable Mongo governance endpoint required.');
-const governance = require('../../services/integrationGovernanceService');
-const store = require('../../services/integrationMongoGovernanceService');
-const cache = require('../../services/redisCacheService');
+const governance = require('../../modules/integrations/services/integrationGovernanceService');
+const store = require('../../modules/integrations/services/integrationMongoGovernanceService');
+const cache = require('../../core/cache/redisCacheService');
 cache.getRedisCacheClient = () => {
   throw Error('Mongo governance must never access Redis.');
 };
@@ -49,12 +49,12 @@ process.on('message', async (message) => {
         });
         break;
       case 'cache': {
-        const snapshot = await require('../../models/integrationInsight')
+        const snapshot = await require('../../modules/integrations/models/integrationInsight')
           .findOne({ userId: message.owner })
           .lean();
         const sprint = { _id: 'mongo-governance-fixture', userId: message.owner, tasks: [] };
         const counters = { memoryHits: 0, redisHits: 0, redisWrites: 0, pipelineExecutions: 0 };
-        const result = await require('../../services/sprintOverviewCacheService').load(
+        const result = await require('../../modules/career-sprint/services/sprintOverviewCacheService').load(
           sprint,
           null,
           async () => ({ ...sprint, revision: snapshot?.updatedAt?.toISOString() || null }),

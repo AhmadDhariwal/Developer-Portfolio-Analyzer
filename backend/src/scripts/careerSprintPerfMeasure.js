@@ -143,7 +143,7 @@ const createHarness = () => {
     }
   });
 
-  mock('models/careerSprint.js', {
+  mock('modules/career-sprint/models/careerSprint.js', {
     findOne: (query) =>
       createQuery(async () => {
         counters.mongoReads += 1;
@@ -205,7 +205,7 @@ const createHarness = () => {
         };
       })
   });
-  mock('models/scenarioSimulation.js', { findOne: () => createQuery(async () => null) });
+  mock('modules/scenario-simulator/models/scenarioSimulation.js', { findOne: () => createQuery(async () => null) });
 
   Object.keys(require.cache).forEach((entry) => {
     if (
@@ -217,8 +217,8 @@ const createHarness = () => {
     }
   });
 
-  const sprintService = require('../services/careerSprintService');
-  const aiTaskService = require('../services/aiTaskService');
+  const sprintService = require('../modules/career-sprint/services/careerSprintService');
+  const aiTaskService = require('../core/ai/aiTaskService');
   sprintService.clearCareerSprintMemoryCache();
   sprintService.resetCareerSprintRuntimeCounters();
   aiTaskService.clearCareerSprintPlanCaches();

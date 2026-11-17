@@ -2,8 +2,8 @@
 const mongoose = require('mongoose');
 if (!/^mongodb:\/\/127\.0\.0\.1:\d+\/scenario_acceptance$/.test(process.env.SCENARIO_TEST_URI || ''))
   throw Error('Only disposable loopback databases are allowed.');
-const service = require('../../services/scenarioSimulatorService');
-const { exportScenario } = require('../../services/scenarioSprintExportService');
+const service = require('../../modules/scenario-simulator/services/scenarioSimulatorService');
+const { exportScenario } = require('../../modules/scenario-simulator/services/scenarioSprintExportService');
 mongoose
   .connect(process.env.SCENARIO_TEST_URI)
   .then(() => process.send({ ready: true }))

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const admission = require('../../services/aiProviderAdmissionService');
+const admission = require('../../core/ai/aiProviderAdmissionService');
 (async () => {
   await mongoose.connect(process.env.AI_TEST_MONGO_URI, { dbName: process.env.AI_TEST_DATABASE });
   let lease;

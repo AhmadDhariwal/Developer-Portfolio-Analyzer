@@ -3,7 +3,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const pdf = require('../src/services/resumePdfExtraction');
+const pdf = require('../src/modules/resume/services/resumePdfExtraction');
 async function run() {
   const root = path.resolve(__dirname, '../src/tests/fixtures/resume');
   const observations = [];

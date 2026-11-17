@@ -15,8 +15,8 @@ async function main() {
   };
   try {
     await mongoose.connect(mongo.uri, { dbName: 'release_index_audit' });
-    const AI = require('../models/aiProviderAdmission');
-    const Governance = require('../models/integrationGovernanceState');
+    const AI = require('../core/ai/models/aiProviderAdmission');
+    const Governance = require('../modules/integrations/models/integrationGovernanceState');
     const expiresAt = new Date(Date.now() + 600000);
     for (const model of [AI, Governance]) {
       await model.createIndexes();

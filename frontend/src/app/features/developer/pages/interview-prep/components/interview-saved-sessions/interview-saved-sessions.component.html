@@ -1,0 +1,160 @@
+<!-- Sessions Stacked Layout -->
+<div class="history-layout" *ngIf="sessions.length">
+  <!-- Top Panel: Saved Sessions Selector -->
+  <section class="surface sessions-browser" aria-label="Saved workspace sessions">
+    <div class="sessions-browser-header">
+      <div class="sessions-browser-heading">
+        <span class="panel-kicker">SAVED WORKSPACE</span>
+        <h3 class="sidebar-title">Saved sessions</h3>
+      </div>
+      <span class="sidebar-badge">{{ sessions.length }} saved</span>
+    </div>
+
+    <div class="session-list" role="tablist" aria-label="Saved sessions">
+      <button
+        type="button"
+        *ngFor="let session of sessions"
+        class="surface session-row"
+        [class.selected]="selectedSession?._id === session._id"
+        (click)="selectSession.emit(session)"
+        role="tab"
+        [attr.aria-selected]="selectedSession?._id === session._id"
+      >
+        <div class="session-kicker-row">
+          <span class="session-type-pill" [class.custom]="session.kind === 'custom'">
+            {{ session.kind === 'custom' ? 'Custom answer' : 'Practice set' }}
+          </span>
+          <span class="session-date">{{
+            session.createdAt ? (session.createdAt | date: 'mediumDate') : 'Date unavailable'
+          }}</span>
+        </div>
+        <strong class="session-title">{{
+          session.kind === 'custom'
+            ? session.questions[0]?.question ||
+              skillLabel(session.topicKey || session.questions[0]?.topicKey || '') ||
+              'Custom answer'
+            : skillLabel(session.topicKey || session.questions[0]?.topicKey || '') ||
+              session.careerStack ||
+              'Saved interview session'
+        }}</strong>
+        <div class="session-meta-row">
+          <span class="session-count">
+            <ng-container *ngIf="session.kind === 'custom'; else practiceCount">
+              {{
+                skillLabel(session.topicKey || session.questions[0]?.topicKey || '') || 'Custom Q&A'
+              }}
+            </ng-container>
+            <ng-template #practiceCount>
+              {{ session.questions.length }}
+              {{ session.questions.length === 1 ? 'question' : 'questions' }}
+            </ng-template>
+          </span>
+          <span class="session-arrow" aria-hidden="true">→</span>
+        </div>
+      </button>
+    </div>
+  </section>
+
+  <!-- Active Session Detail (Full Width) -->
+  <section class="session-detail" *ngIf="selectedSession as session">
+    <div class="session-detail-header surface">
+      <div class="detail-header-left">
+        <div class="detail-kicker-row">
+          <span class="panel-kicker">{{
+            session.kind === 'custom' ? 'CUSTOM Q&A' : 'PRACTICE SET'
+          }}</span>
+          <span class="detail-date">{{
+            session.createdAt ? (session.createdAt | date: 'mediumDate') : 'Date unavailable'
+          }}</span>
+        </div>
+        <h3 class="detail-title">
+          {{
+            skillLabel(session.topicKey || session.questions[0]?.topicKey || '') ||
+              session.careerStack ||
+              'Saved'
+          }}
+          {{ session.kind === 'custom' ? 'Custom Answer' : 'Saved Questions' }}
+        </h3>
+        <p class="muted small detail-sub">{{ sessionMetaLabel(session) }}</p>
+        <p class="muted small">
+          Private sessions are kept until you delete them. Deletion removes the saved questions and
+          progress.
+        </p>
+      </div>
+      <div class="detail-header-actions">
+        <button type="button" class="text-button" (click)="deleteSession.emit(session)">
+          Delete this private session
+        </button>
+        <button
+          type="button"
+          class="button primary"
+          (click)="resumeSession.emit(session)"
+          [disabled]="!session.questions.length"
+        >
+          Practice this session
+        </button>
+      </div>
+    </div>
+
+    <!-- Compact Question Jump Strip (multi-question sessions only) -->
+    <nav
+      class="session-toc surface"
+      *ngIf="session.questions.length > 1"
+      aria-label="Session question index"
+    >
+      <div class="toc-title-row">
+        <span class="toc-heading">Question index</span>
+        <span class="toc-count">{{ session.questions.length }} total</span>
+      </div>
+      <div class="toc-list">
+        <button
+          type="button"
+          *ngFor="let q of session.questions; let i = index"
+          class="toc-item"
+          (click)="scrollToQuestion.emit(i)"
+          [title]="q.question"
+        >
+          <span class="toc-num">{{ i + 1 < 10 ? '0' + (i + 1) : i + 1 }}</span>
+          <span class="toc-text">{{ q.question }}</span>
+          <span
+            class="toc-diff-dot"
+            [class]="q.difficulty || 'medium'"
+            [title]="q.difficulty || 'medium'"
+          ></span>
+        </button>
+      </div>
+    </nav>
+
+    <div class="question-list">
+      <div
+        *ngFor="let question of session.questions; let i = index; trackBy: trackQuestion"
+        [id]="'session-q-' + i"
+        class="session-question-block"
+      >
+        <div class="question-block-header" *ngIf="session.questions.length > 1">
+          <span class="question-block-badge">
+            Question {{ i + 1 }} of {{ session.questions.length }}
+          </span>
+          <button
+            type="button"
+            class="jump-top-btn"
+            (click)="scrollToQuestion.emit(0)"
+            title="Scroll back to top"
+          >
+            ↑ Top
+          </button>
+        </div>
+        <app-interview-question-card
+          [question]="question"
+          [customContext]="session.kind === 'custom'"
+        />
+      </div>
+    </div>
+  </section>
+
+  <div class="surface empty-state choose-session-empty" *ngIf="!selectedSession">
+    <h3>Choose a session</h3>
+    <p>Open a saved session above to review its questions and answers.</p>
+  </div>
+</div>
+

@@ -1,14 +1,14 @@
 require('dotenv').config();
-const connectDB = require('../config/db');
-const InterviewQuestionBank = require('../models/interviewQuestionBank');
-const { normalizeTopicInput } = require('../services/interviewTopicNormalizer');
+const connectDB = require('../core/config/db');
+const InterviewQuestionBank = require('../modules/interview-prep/models/interviewQuestionBank');
+const { normalizeTopicInput } = require('../modules/interview-prep/services/interviewTopicNormalizer');
 const {
   normalizeComparableText,
   normalizeQuestionText,
   normalizeAnswerText,
   sanitizeDifficulty,
   sanitizeTags
-} = require('../services/interviewQuestionQualityService');
+} = require('../modules/interview-prep/services/interviewQuestionQualityService');
 
 const BATCH_SIZE = 200;
 

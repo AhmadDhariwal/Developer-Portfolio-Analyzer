@@ -1,0 +1,376 @@
+const { normalizeFilters } = require('./services/interviewQuestionFilters');
+const developerContext = require('../../core/developer-context/developerContextService');
+const interviewSessions = require('./services/interviewSessionService');
+const { resolveSkillSignals } = require('../courses/services/coursePersonalizationService');
+const {
+  DEFAULT_PAGE_LIMIT,
+  generateInterviewPrepSessionFromBank,
+  generateFreshInterviewQuestions,
+  answerCustomInterviewQuestion,
+  getQuestionBank,
+  searchQuestionBank,
+  listInterviewPrepHistory,
+  deleteInterviewPrepSession,
+  sanitizeSkill
+} = require('./services/interviewPrepService');
+
+const MAX_QUERY_LENGTH = 500;
+const failureMetadata = (error) => ({
+  ...(error.code ? { code: error.code } : {}),
+  ...(error.generationStatus ? { generationStatus: error.generationStatus, retryable: error.retryable } : {}),
+  ...(error.requestedCount
+    ? { requestedCount: error.requestedCount, availableCount: error.availableCount }
+    : {})
+});
+const cancellationSignal = (req, res) => {
+  const controller = new AbortController();
+  if (req.aborted || res.destroyed) controller.abort();
+  const cancel = () => {
+    if (!res.writableEnded) controller.abort();
+  };
+  req.once('aborted', cancel);
+  res.once('close', cancel);
+  res.once('finish', () => {
+    req.removeListener('aborted', cancel);
+    res.removeListener('close', cancel);
+  });
+  return controller.signal;
+};
+const VALID_DIFFICULTIES = new Set(['easy', 'medium', 'hard', 'senior', '']);
+const VALID_SOURCES = new Set([
+  'seed',
+  'database',
+  'ai',
+  'scraped',
+  'ai_generated',
+  'verified_seed',
+  'prebuilt',
+  ''
+]);
+
+const clampInt = (value, min, max, fallback) => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(max, Math.max(min, Math.floor(parsed)));
+};
+
+const mapCareerStackToSkill = (careerStack = '') => {
+  const normalized = String(careerStack || '')
+    .trim()
+    .toLowerCase();
+  if (normalized.includes('frontend') || normalized.includes('react')) return 'react';
+  if (normalized.includes('backend') || normalized.includes('node')) return 'nodejs';
+  if (normalized.includes('ai/ml')) return 'python';
+  return 'mern';
+};
+
+const readTopicInput = (payload = {}) => ({
+  topic: payload.topic || '',
+  stack: payload.stack || '',
+  technology: payload.technology || '',
+  language: payload.language || '',
+  framework: payload.framework || ''
+});
+
+// POST /api/interview-prep
+const generateInterviewPrepSession = async (req, res) => {
+  try {
+    const { skill = '', query = '' } = req.body || {};
+    const careerStack = developerContext.resolveCareerStack(req.user) || 'Full Stack';
+    const experienceLevel = developerContext.resolveExperienceLevel(req.user) || 'Student';
+    const evidence = await resolveSkillSignals(req.user._id, careerStack, experienceLevel, null, req.user);
+    const topicInput = readTopicInput(req.body || {});
+    const explicitTopic =
+      topicInput.topic ||
+      topicInput.language ||
+      topicInput.framework ||
+      topicInput.technology ||
+      topicInput.stack;
+    const inferredSkill =
+      sanitizeSkill(explicitTopic || skill) ||
+      sanitizeSkill(evidence.skillGaps[0]) ||
+      mapCareerStackToSkill(careerStack);
+
+    const generated = await generateInterviewPrepSessionFromBank({
+      userId: req.user._id,
+      skill: inferredSkill,
+      query,
+      difficulty: req.body.difficulty,
+      category: req.body.category,
+      tags: req.body.tags,
+      source: req.body.source,
+      limit: req.body.target || req.body.limit,
+      ...topicInput,
+      careerStack,
+      experienceLevel,
+      skillGaps: evidence.skillGaps,
+      personalization: {
+        ...evidence.personalization,
+        limitation:
+          `${evidence.personalization?.limitation || ''} Interview practice and completion do not establish verified ability or change readiness scores.`.trim()
+      },
+      signal: cancellationSignal(req, res),
+      idempotencyKey: req.get('Idempotency-Key') || req.body.idempotencyKey || ''
+    });
+
+    res.json(generated);
+  } catch (error) {
+    console.error('Interview prep generate error:', error.message);
+    res.status(error.statusCode || 500).json({
+      message: error.statusCode ? error.message : 'Failed to generate interview prep.',
+      ...failureMetadata(error)
+    });
+  }
+};
+
+// GET /api/interview-prep/questions
+const getInterviewPrepQuestions = async (req, res) => {
+  try {
+    const {
+      skill = '',
+      page = 1,
+      limit = DEFAULT_PAGE_LIMIT,
+      difficulty = '',
+      tags = '',
+      block = 'top',
+      top = '',
+      category = '',
+      source = ''
+    } = req.query;
+    const topicInput = readTopicInput(req.query || {});
+    const normalizedSkill = sanitizeSkill(
+      skill ||
+        topicInput.topic ||
+        topicInput.language ||
+        topicInput.framework ||
+        topicInput.technology ||
+        topicInput.stack
+    );
+    if (!normalizedSkill && !topicInput.topic) {
+      return res.status(400).json({ message: 'Query parameter skill or topic is required.' });
+    }
+    const safeDifficulty = String(difficulty || '')
+      .trim()
+      .toLowerCase();
+    if (!VALID_DIFFICULTIES.has(safeDifficulty)) {
+      return res
+        .status(400)
+        .json({ message: `Invalid difficulty. Must be one of: easy, medium, hard, senior, or empty.` });
+    }
+    const safeSource = String(source || '')
+      .trim()
+      .toLowerCase();
+    if (!VALID_SOURCES.has(safeSource)) {
+      return res.status(400).json({ message: `Invalid source filter.` });
+    }
+
+    const payload = await getQuestionBank({
+      skill: normalizedSkill,
+      ...topicInput,
+      page: clampInt(page, 1, 1000, 1),
+      limit: clampInt(limit, 1, 50, DEFAULT_PAGE_LIMIT),
+      difficulty: safeDifficulty,
+      category,
+      tags,
+      block: String(top).toLowerCase() === 'true' ? 'top' : block,
+      source: safeSource
+    });
+
+    return res.json(payload);
+  } catch (error) {
+    console.error('Interview prep question list error:', error.message);
+    return res
+      .status(error.statusCode || 500)
+      .json({ message: error.statusCode ? error.message : 'Failed to load interview questions.' });
+  }
+};
+
+// GET /api/interview-prep/search
+const searchInterviewPrepQuestions = async (req, res) => {
+  try {
+    const {
+      q = '',
+      skill = '',
+      source = '',
+      difficulty = '',
+      category = '',
+      tags = '',
+      page = 1,
+      limit = DEFAULT_PAGE_LIMIT
+    } = req.query;
+    const topicInput = readTopicInput(req.query || {});
+    const trimmedQuery = String(q || '').trim();
+    if (!trimmedQuery) {
+      return res.status(400).json({ message: 'Query parameter q is required.' });
+    }
+    if (trimmedQuery.length > MAX_QUERY_LENGTH) {
+      return res.status(400).json({ message: `Query must be at most ${MAX_QUERY_LENGTH} characters.` });
+    }
+    const safeDifficulty = String(difficulty || '')
+      .trim()
+      .toLowerCase();
+    if (!VALID_DIFFICULTIES.has(safeDifficulty)) {
+      return res
+        .status(400)
+        .json({ message: `Invalid difficulty. Must be one of: easy, medium, hard, senior, or empty.` });
+    }
+
+    normalizeFilters({ ...req.query });
+    const payload = await searchQuestionBank({
+      q: trimmedQuery,
+      source,
+      skill,
+      difficulty: safeDifficulty,
+      category,
+      tags,
+      page: clampInt(page, 1, 1000, 1),
+      limit: clampInt(limit, 1, 50, DEFAULT_PAGE_LIMIT),
+      ...topicInput,
+      allowEnrichment: false
+    });
+    return res.json(payload);
+  } catch (error) {
+    console.error('Interview prep search error:', error.message);
+    return res
+      .status(error.statusCode || 500)
+      .json({ message: error.statusCode ? error.message : 'Failed to search interview questions.' });
+  }
+};
+
+// POST /api/interview-prep/generate
+const generateInterviewPrepQuestions = async (req, res) => {
+  try {
+    const {
+      skill = '',
+      query = '',
+      difficulty = '',
+      page = 1,
+      limit = DEFAULT_PAGE_LIMIT,
+      target = ''
+    } = req.body || {};
+    const topicInput = readTopicInput(req.body || {});
+    const normalizedSkill = sanitizeSkill(
+      skill ||
+        topicInput.topic ||
+        topicInput.language ||
+        topicInput.framework ||
+        topicInput.technology ||
+        topicInput.stack
+    );
+    if (!normalizedSkill && !topicInput.topic) {
+      return res.status(400).json({ message: 'Body parameter skill or topic is required.' });
+    }
+
+    const payload = await generateFreshInterviewQuestions({
+      skill: normalizedSkill,
+      ...topicInput,
+      query,
+      difficulty,
+      category: req.body.category,
+      tags: req.body.tags,
+      source: req.body.source,
+      page,
+      signal: cancellationSignal(req, res),
+      limit: target || limit
+    });
+
+    return res.json(payload);
+  } catch (error) {
+    console.error('Generate questions error:', error.message);
+    return res.status(error.statusCode || 500).json({
+      message: error.statusCode ? error.message : 'Failed to generate interview questions.',
+      ...failureMetadata(error)
+    });
+  }
+};
+
+// POST /api/interview-prep/ask-question
+const askInterviewPrepQuestion = async (req, res) => {
+  try {
+    const { question = '', skill = '' } = req.body || {};
+    const topicInput = readTopicInput(req.body || {});
+    const cleanQuestion = String(question || '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!cleanQuestion) {
+      return res.status(400).json({ message: 'Body parameter question is required.' });
+    }
+    if (cleanQuestion.length < 12 || cleanQuestion.length > 500) {
+      return res.status(400).json({ message: 'Question must be between 12 and 500 characters.' });
+    }
+
+    const payload = await answerCustomInterviewQuestion({
+      userId: req.user._id,
+      signal: cancellationSignal(req, res),
+      question: cleanQuestion,
+      skill,
+      ...topicInput
+    });
+
+    return res.json(payload);
+  } catch (error) {
+    console.error('Interview prep ask-question error:', error.message);
+    return res.status(error.statusCode || 500).json({
+      message: error.statusCode ? error.message : 'Failed to answer interview question.',
+      ...failureMetadata(error)
+    });
+  }
+};
+
+// GET /api/interview-prep/history
+const getInterviewPrepHistory = async (req, res) => {
+  try {
+    const limit = Number(req.query.limit || 5);
+    const sessions = await listInterviewPrepHistory(req.user._id, limit);
+    res.json({ sessions });
+  } catch (error) {
+    console.error('Interview prep history error:', error.message);
+    res.status(500).json({ message: 'Failed to load interview prep history.' });
+  }
+};
+
+module.exports = {
+  deleteInterviewSession: async (req, res) => {
+    try {
+      res.json(await deleteInterviewPrepSession(req.user._id, req.params.id));
+    } catch (error) {
+      res
+        .status(error.statusCode || 500)
+        .json({ message: error.statusCode ? error.message : 'Could not delete session.' });
+    }
+  },
+  getInterviewSession: async (req, res) => {
+    try {
+      res.json(await interviewSessions.getOwned(req.user._id, req.params.id));
+    } catch (error) {
+      res
+        .status(error.statusCode || 500)
+        .json({ message: error.statusCode ? error.message : 'Could not load session.' });
+    }
+  },
+  updateInterviewSession: async (req, res) => {
+    try {
+      res.json(
+        await interviewSessions.updateProgress({
+          userId: req.user._id,
+          id: req.params.id,
+          expectedVersion: req.body.expectedVersion,
+          questionIndex: req.body.questionIndex,
+          selfCheck: req.body.selfCheck,
+          complete: req.path.endsWith('/complete')
+        })
+      );
+    } catch (error) {
+      res
+        .status(error.statusCode || 500)
+        .json({ message: error.statusCode ? error.message : 'Could not save session progress.' });
+    }
+  },
+  getInterviewPrepQuestions,
+  searchInterviewPrepQuestions,
+  generateInterviewPrepQuestions,
+  askInterviewPrepQuestion,
+  generateInterviewPrepSession,
+  getInterviewPrepHistory
+};

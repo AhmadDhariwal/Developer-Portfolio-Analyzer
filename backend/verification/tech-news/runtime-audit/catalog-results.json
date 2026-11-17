@@ -39,7 +39,7 @@
             },
             {
               "expiresAt": {
-                "$gt": "2026-10-23T20:50:47.242Z"
+                "$gt": "2026-11-17T08:57:20.002Z"
               }
             }
           ]
@@ -54,7 +54,9 @@
           "indexName": "technologies_1_publishedAt_-1_canonicalId_1",
           "isMultiKey": true,
           "multiKeyPaths": {
-            "technologies": ["technologies"],
+            "technologies": [
+              "technologies"
+            ],
             "publishedAt": [],
             "canonicalId": []
           },
@@ -64,11 +66,15 @@
           "indexVersion": 2,
           "direction": "forward",
           "indexBounds": {
-            "technologies": ["[\"rust\", \"rust\"]"],
-            "publishedAt": [
-              "[new Date(1792788947242), new Date(1790196647242)]"
+            "technologies": [
+              "[\"rust\", \"rust\"]"
             ],
-            "canonicalId": ["[MinKey, MaxKey]"]
+            "publishedAt": [
+              "[new Date(1794906140002), new Date(1792313840002)]"
+            ],
+            "canonicalId": [
+              "[MinKey, MaxKey]"
+            ]
           }
         }
       }
@@ -98,7 +104,7 @@
             },
             {
               "expiresAt": {
-                "$gt": "2026-10-23T20:50:47.253Z"
+                "$gt": "2026-11-17T08:57:20.010Z"
               }
             }
           ]
@@ -113,7 +119,9 @@
           "indexName": "searchTerms_1_publishedAt_-1_canonicalId_1",
           "isMultiKey": true,
           "multiKeyPaths": {
-            "searchTerms": ["searchTerms"],
+            "searchTerms": [
+              "searchTerms"
+            ],
             "publishedAt": [],
             "canonicalId": []
           },
@@ -123,11 +131,15 @@
           "indexVersion": 2,
           "direction": "forward",
           "indexBounds": {
-            "searchTerms": ["[\"compiler\", \"compiler\"]"],
-            "publishedAt": [
-              "[new Date(1792788947253), new Date(1790196647253)]"
+            "searchTerms": [
+              "[\"compiler\", \"compiler\"]"
             ],
-            "canonicalId": ["[MinKey, MaxKey]"]
+            "publishedAt": [
+              "[new Date(1794906140010), new Date(1792313840010)]"
+            ],
+            "canonicalId": [
+              "[MinKey, MaxKey]"
+            ]
           }
         }
       }
@@ -143,7 +155,7 @@
         "stage": "FETCH",
         "filter": {
           "expiresAt": {
-            "$gt": "2026-10-23T20:50:47.262Z"
+            "$gt": "2026-11-17T08:57:20.018Z"
           }
         },
         "inputStage": {
@@ -166,11 +178,15 @@
           "indexVersion": 2,
           "direction": "forward",
           "indexBounds": {
-            "source": ["[\"Hacker News\", \"Hacker News\"]"],
-            "publishedAt": [
-              "[new Date(1792788947262), new Date(1790196647262)]"
+            "source": [
+              "[\"Hacker News\", \"Hacker News\"]"
             ],
-            "canonicalId": ["[MinKey, MaxKey]"]
+            "publishedAt": [
+              "[new Date(1794906140018), new Date(1792313840018)]"
+            ],
+            "canonicalId": [
+              "[MinKey, MaxKey]"
+            ]
           }
         }
       }
@@ -202,7 +218,7 @@
             },
             {
               "expiresAt": {
-                "$gt": "2026-10-23T20:50:47.269Z"
+                "$gt": "2026-11-17T08:57:20.023Z"
               }
             }
           ]
@@ -227,11 +243,15 @@
           "indexVersion": 2,
           "direction": "forward",
           "indexBounds": {
-            "category": ["[\"Frontend\", \"Frontend\"]"],
-            "publishedAt": [
-              "[new Date(1792788947269), new Date(1790196647269)]"
+            "category": [
+              "[\"Frontend\", \"Frontend\"]"
             ],
-            "canonicalId": ["[MinKey, MaxKey]"]
+            "publishedAt": [
+              "[new Date(1794906140023), new Date(1792313840023)]"
+            ],
+            "canonicalId": [
+              "[MinKey, MaxKey]"
+            ]
           }
         }
       }
@@ -261,7 +281,7 @@
             },
             {
               "expiresAt": {
-                "$gt": "2026-10-23T20:50:47.275Z"
+                "$gt": "2026-11-17T08:57:20.029Z"
               }
             }
           ]
@@ -285,9 +305,11 @@
           "direction": "forward",
           "indexBounds": {
             "publishedAt": [
-              "[new Date(1792788947275), new Date(1790196647275)]"
+              "[new Date(1794906140029), new Date(1792313840029)]"
             ],
-            "canonicalId": ["[MinKey, MaxKey]"]
+            "canonicalId": [
+              "[MinKey, MaxKey]"
+            ]
           }
         }
       }

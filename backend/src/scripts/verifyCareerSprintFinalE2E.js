@@ -19,9 +19,9 @@ process.env.JWT_SECRET = crypto.randomBytes(32).toString('hex');
 const output = path.resolve(
   process.env.SPRINT_E2E_OUTPUT || path.resolve(__dirname, '../../verification/career-sprint/final-e2e')
 );
-const Sprint = require('../models/careerSprint');
-const User = require('../models/user');
-const Progress = require('../models/userCourseProgress');
+const Sprint = require('../modules/career-sprint/models/careerSprint');
+const User = require('../modules/auth/models/user');
+const Progress = require('../modules/courses/models/userCourseProgress');
 const hash = (value) => crypto.createHash('sha256').update(BSON.EJSON.stringify(value)).digest('hex');
 const report = { startedAt: new Date().toISOString(), checks: [], limitations: [] };
 const port = Number(process.env.CAREER_SPRINT_FINAL_E2E_PORT || 4327);
@@ -43,23 +43,23 @@ const main = async () => {
   await Sprint.init();
   // AI failure is injected only at the external provider boundary; all application,
   // calendar, cache, signal, controller, auth and persistence code remains real.
-  require('../services/aiservice').runAIAnalysis = async () => ({
+  require('../core/ai/aiservice').runAIAnalysis = async () => ({
     ok: false,
     error: 'isolated-provider-unavailable'
   });
   const app = express();
   app.use(express.json());
-  app.use('/api/career-sprints', require('../routes/careerSprint.routes'));
-  app.use('/api/courses', require('../routes/courseRoutes'));
-  app.use('/api/profile', require('../routes/profile.routes'));
-  app.use('/api/simulator', require('../routes/scenarioSimulator.routes'));
-  app.use('/api/recommendations', require('../routes/recommendations.routes'));
-  app.use('/api/weekly-reports', require('../routes/weeklyReport.routes'));
-  const { protect } = require('../middleware/authmiddleware');
+  app.use('/api/career-sprints', require('../modules/career-sprint/careerSprint.routes'));
+  app.use('/api/courses', require('../modules/courses/courseRoutes'));
+  app.use('/api/profile', require('../modules/profile/profile.routes'));
+  app.use('/api/simulator', require('../modules/scenario-simulator/scenarioSimulator.routes'));
+  app.use('/api/recommendations', require('../modules/recommendations/recommendations.routes'));
+  app.use('/api/weekly-reports', require('../modules/weekly-reports/weeklyReport.routes'));
+  const { protect } = require('../core/middleware/authmiddleware');
   app.get(
     '/api/dashboard/summary',
     protect,
-    require('../controllers/dashboardcontroller').getDashboardSummary
+    require('../modules/dashboard/dashboardcontroller').getDashboardSummary
   );
   const root = path.resolve(__dirname, '../../../frontend/dist/frontend/browser');
   app.use(express.static(root));
@@ -258,7 +258,7 @@ const main = async () => {
           assert.equal(visible.legacyAccess.timeZone, null);
           // These actual windows are historical, so /current correctly creates a new
           // current-week Sprint. Inspect each preserved record's real serializer instead.
-          const current = await require('../services/careerSprintService').serializeSprint(record);
+          const current = await require('../modules/career-sprint/services/careerSprintService').serializeSprint(record);
           assert.equal(current.analytics.consistencyScore, null);
           assert.equal(current.analytics.activeWindowDays, null);
           assert.equal(current.analytics.completedInLastSevenDays, null);

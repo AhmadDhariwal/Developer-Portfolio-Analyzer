@@ -18,7 +18,7 @@ const github = {
   dataAvailability: { repositories: 'complete', repositorySignals: 'complete' },
   cache: { cachedAt: at, expiresAt: '2026-11-03T00:00:00.000Z', source: 'fixture' }
 };
-mock('services/githubservice.js', {
+mock('modules/github/services/githubservice.js', {
   parseGitHubUsername(raw) {
     if (typeof raw !== 'string' || !/^[a-z\d](?:[a-z\d-]{0,37}[a-z\d])?$/i.test(raw))
       throw Object.assign(Error('Invalid username'), { status: 400 });
@@ -28,7 +28,7 @@ mock('services/githubservice.js', {
   refreshGitHubAnalysisInBackground: () => ({ queued: false, running: false })
 });
 const shared = new Map();
-mock('services/aiservice.js', {
+mock('core/ai/aiservice.js', {
   getSharedCache: async (key, namespace) => shared.get(namespace + key) || null,
   setSharedCache: async (key, value, _ttl, namespace) => {
     shared.set(namespace + key, value);
@@ -56,8 +56,8 @@ const emptySignals = {
   jobsDemandSignal: { present: false, sampledJobs: 0, topSkills: [] }
 };
 // Keep producer/consumer cache identity real; only upstream observations are synthetic.
-const { buildResumeCacheIdentity } = require('../../services/developerSignalService');
-mock('services/developerSignalService.js', {
+const { buildResumeCacheIdentity } = require('../../core/developer-context/developerSignalService');
+mock('core/developer-context/developerSignalService.js', {
   getDeveloperSignals: async () => emptySignals,
   getPublicJobMarketSignal: async () => emptySignals.jobsDemandSignal,
   buildSignalHash: () => 'fixture',
@@ -80,9 +80,9 @@ mock('services/developerSignalService.js', {
     serverSelectionTimeoutMS: 2000
   });
   const app = express();
-  app.get('/metrics', require('../../services/metricsService').metricsHandler);
+  app.get('/metrics', require('../../core/observability/metricsService').metricsHandler);
   app.use(express.json({ limit: '32kb' }));
-  app.use('/api/skillgap', require('../../routes/skillgap.routes'));
+  app.use('/api/skillgap', require('../../modules/skill-gap/skillgap.routes'));
   const server = app.listen(0, '127.0.0.1', () => process.send({ port: server.address().port }));
   process.on('message', async (message) => {
     if (message === 'stop') {

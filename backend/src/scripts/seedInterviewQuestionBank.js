@@ -1,14 +1,14 @@
 require('dotenv').config();
-const connectDB = require('../config/db');
-const InterviewQuestionBank = require('../models/interviewQuestionBank');
-const { listImportantTopics } = require('../services/interviewTopicNormalizer');
-const { upsertQuestions } = require('../repositories/interviewQuestionRepository');
+const connectDB = require('../core/config/db');
+const InterviewQuestionBank = require('../modules/interview-prep/models/interviewQuestionBank');
+const { listImportantTopics } = require('../modules/interview-prep/services/interviewTopicNormalizer');
+const { upsertQuestions } = require('../modules/interview-prep/repositories/interviewQuestionRepository');
 const {
   buildSeedRecordsForTopic,
   getSeedCatalogValidationReport,
   validateInterviewSeedCatalog,
   verifiedSeedCatalog
-} = require('../services/interviewQuestionSeedCatalog');
+} = require('../modules/interview-prep/services/interviewQuestionSeedCatalog');
 
 const isDryRun = process.argv.includes('--dry-run')
   || process.env.npm_config_dry_run === 'true'

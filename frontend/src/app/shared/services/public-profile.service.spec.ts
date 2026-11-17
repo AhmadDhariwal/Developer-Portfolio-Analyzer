@@ -5,7 +5,7 @@ import { PublicProfileService, PublicProfilePayload } from './public-profile.ser
 import { AuthService } from './auth.service';
 import { ApiService } from './api.service';
 import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
-import { portfolioFixture } from '../../pages/public-portfolio/testing/portfolio.fixture';
+import { portfolioFixture } from '../../features/public/pages/public-portfolio/testing/portfolio.fixture';
 
 describe('Public portfolio request boundaries', () => {
   let service: PublicProfileService;

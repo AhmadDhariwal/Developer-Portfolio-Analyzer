@@ -6,7 +6,7 @@ const path = require('node:path');
 const {
   buildSeedRecordsForTopic,
   getImportantTopicByKey,
-} = require('../../backend/src/services/interviewQuestionSeedCatalog');
+} = require('../../backend/src/modules/interview-prep/services/interviewQuestionSeedCatalog');
 const profile = { careerStack: 'Frontend', experienceLevel: 'Student', isConfigured: true };
 const user = {
   _id: 'interview-ui-fixture',
@@ -255,6 +255,6 @@ const server = http.createServer(async (req, res) => {
     json(res, { message: error.message }, 500);
   }
 });
-server.listen(4316, '127.0.0.1', () =>
+server.listen(Number(process.env.INTERVIEW_PREVIEW_PORT || 4316), '127.0.0.1', () =>
   console.log('Isolated Interview Prep preview: http://127.0.0.1:4316/__interview_preview'),
 );

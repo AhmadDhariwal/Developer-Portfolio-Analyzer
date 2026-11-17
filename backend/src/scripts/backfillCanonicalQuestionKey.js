@@ -8,9 +8,9 @@
  * Safe to run multiple times. Only updates records missing canonicalQuestionKey.
  */
 require('dotenv').config();
-const connectDB = require('../config/db');
-const InterviewQuestionBank = require('../models/interviewQuestionBank');
-const { buildCanonicalQuestionKey } = require('../services/interviewQuestionQualityService');
+const connectDB = require('../core/config/db');
+const InterviewQuestionBank = require('../modules/interview-prep/models/interviewQuestionBank');
+const { buildCanonicalQuestionKey } = require('../modules/interview-prep/services/interviewQuestionQualityService');
 
 const isDryRun = process.argv.includes('--dry-run');
 const BATCH_SIZE = 200;

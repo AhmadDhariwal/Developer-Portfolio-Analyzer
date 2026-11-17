@@ -13,7 +13,7 @@ async function start() {
   });
   const app = express();
   app.use(express.json());
-  app.use('/api/notifications', require('../../routes/notification.routes'));
+  app.use('/api/notifications', require('../../modules/notifications/notification.routes'));
   server = app.listen(0, '127.0.0.1', () =>
     process.send({ ready: true, port: server.address().port })
   );
@@ -23,17 +23,17 @@ process.on('message', async (message) => {
     if (message.action === 'retention') {
       process.send({
         id: message.id,
-        result: await require('../../services/notificationRetentionService').runOnce()
+        result: await require('../../modules/notifications/services/notificationRetentionService').runOnce()
       });
     }
     if (message.action === 'create') {
-      const result = await require('../../services/notificationService').createNotification(
+      const result = await require('../../modules/notifications/services/notificationService').createNotification(
         message.payload
       );
       process.send({ id: message.id, result: result?._id || null });
     }
     if (message.action === 'stop') {
-      await require('../../services/notificationStreamService').stop();
+      await require('../../modules/notifications/services/notificationStreamService').stop();
       server?.closeAllConnections();
       server?.close();
       await mongoose.disconnect();
@@ -41,7 +41,7 @@ process.on('message', async (message) => {
     }
     if (message.action === 'disconnect') {
       await mongoose.disconnect();
-      await require('../../services/notificationStreamService').reconcile();
+      await require('../../modules/notifications/services/notificationStreamService').reconcile();
       process.send({ id: message.id, result: true });
     }
     if (message.action === 'recover') {
@@ -52,7 +52,7 @@ process.on('message', async (message) => {
       process.send({ id: message.id, result: true });
     }
     if (message.action === 'reconcile') {
-      await require('../../services/notificationStreamService').reconcile();
+      await require('../../modules/notifications/services/notificationStreamService').reconcile();
       process.send({ id: message.id, result: true });
     }
   } catch (error) {

@@ -126,7 +126,7 @@ module.exports = {
 if (require.main === module) {
   (async () => {
     const mongoose = require('mongoose');
-    const AnalysisCache = require('../models/analysisCache');
+    const AnalysisCache = require('../modules/skill-gap/models/analysisCache');
     const uri = process.env.MONGO_URI || process.env.MONGODB_URI;
     if (!uri) {
       console.error('MONGO_URI is required');
@@ -136,7 +136,7 @@ if (require.main === module) {
     await mongoose.connect(uri);
     const report = await migrateCourseIndexes(
       AnalysisCache,
-      require('../models/userCourseProgress'),
+      require('../modules/courses/models/userCourseProgress'),
     );
     console.log(JSON.stringify(report, null, 2));
     await mongoose.disconnect();

@@ -2,8 +2,8 @@ require('dotenv').config();
 const assert = require('node:assert/strict');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
-const connectDB = require('../config/db');
-const User = require('../models/user');
+const connectDB = require('../core/config/db');
+const User = require('../modules/auth/models/user');
 
 const cases = [
   ['mysql', 'What is the difference between an index and a transaction?'],
