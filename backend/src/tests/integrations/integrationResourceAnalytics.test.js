@@ -15,6 +15,7 @@ function fixture(t, providers) {
     lean: async () => ({ providers, integrationScore: 0, mergedSkills: [] })
   }));
   t.mock.method(Log, 'find', () => ({ sort: () => ({ lean: async () => [] }) }));
+  t.mock.method(Log, 'aggregate', () => ({ option: async () => [] }));
   return {
     json(body) {
       this.body = body;

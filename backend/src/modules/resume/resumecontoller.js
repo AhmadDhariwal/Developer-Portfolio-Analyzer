@@ -222,6 +222,7 @@ const uploadResume = async (req, res) => {
       await notificationPersistence.commit(
         req.user._id,
         async (session) => {
+          resumeFile.isNew = true;
           await resumeFile.save({ session });
           await User.findByIdAndUpdate(
             req.user._id,
@@ -385,7 +386,10 @@ const runAnalyzeResumePipeline = async (req, { fileId, forceRefresh, timings, ad
         const started = process.hrtime.bigint();
         await notificationPersistence.commit(
           req.user._id,
-          (session) => deterministicRecord.save({ session }),
+          (session) => {
+            deterministicRecord.isNew = true;
+            return deterministicRecord.save({ session });
+          },
           {
             type: 'resume_upload',
             title: 'Resume Analysis Completed',
@@ -422,7 +426,10 @@ const runAnalyzeResumePipeline = async (req, { fileId, forceRefresh, timings, ad
     const analysisWriteStartedAt = process.hrtime.bigint();
     await notificationPersistence.commit(
       req.user._id,
-      (session) => resumeAnalysis.save({ session }),
+      (session) => {
+        resumeAnalysis.isNew = true;
+        return resumeAnalysis.save({ session });
+      },
       {
         type: 'resume_upload',
         title: 'Resume Analysis Completed',

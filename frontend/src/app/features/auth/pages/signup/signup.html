@@ -108,44 +108,85 @@
         </div>
       }
 
-      <div class="form-group">
-        <label for="signup-name">Full name</label>
-        <div class="input-shell has-leading" [class.is-invalid]="!!fieldErrors['name']">
-          <svg
-            class="input-leading-icon"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            aria-hidden="true"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"
+      <div class="form-row-2">
+        <div class="form-group">
+          <label for="signup-name">Full name</label>
+          <div class="input-shell has-leading" [class.is-invalid]="!!fieldErrors['name']">
+            <svg
+              class="input-leading-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"
+              />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+            <input
+              type="text"
+              id="signup-name"
+              name="name"
+              [(ngModel)]="name"
+              (blur)="validateName()"
+              (ngModelChange)="fieldErrors['name'] && validateName()"
+              placeholder="Enter your full name"
+              autocomplete="name"
+              required
+              [disabled]="isLoading || !!oauthLoading"
+              [attr.aria-invalid]="!!fieldErrors['name']"
+              [attr.aria-describedby]="fieldErrors['name'] ? 'signup-name-error' : null"
             />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-          <input
-            type="text"
-            id="signup-name"
-            name="name"
-            [(ngModel)]="name"
-            (blur)="validateName()"
-            (ngModelChange)="fieldErrors['name'] && validateName()"
-            placeholder="Enter your full name"
-            autocomplete="name"
-            required
-            [disabled]="isLoading || !!oauthLoading"
-            [attr.aria-invalid]="!!fieldErrors['name']"
-            [attr.aria-describedby]="fieldErrors['name'] ? 'signup-name-error' : null"
-          />
+          </div>
+          @if (fieldErrors['name']) {
+            <span class="field-error" id="signup-name-error" role="alert">{{
+              fieldErrors['name']
+            }}</span>
+          }
         </div>
-        @if (fieldErrors['name']) {
-          <span class="field-error" id="signup-name-error" role="alert">{{
-            fieldErrors['name']
-          }}</span>
-        }
+
+        <div class="form-group">
+          <label for="signup-github">GitHub username</label>
+          <div class="input-shell has-leading" [class.is-invalid]="!!fieldErrors['githubUsername']">
+            <svg
+              class="input-leading-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            <input
+              type="text"
+              id="signup-github"
+              name="githubUsername"
+              [(ngModel)]="githubUsername"
+              (blur)="validateGithubUsername()"
+              (ngModelChange)="fieldErrors['githubUsername'] && validateGithubUsername()"
+              placeholder="octocat"
+              autocomplete="username"
+              required
+              [disabled]="isLoading || !!oauthLoading"
+              [attr.aria-invalid]="!!fieldErrors['githubUsername']"
+              [attr.aria-describedby]="fieldErrors['githubUsername'] ? 'signup-github-error' : null"
+            />
+          </div>
+          @if (fieldErrors['githubUsername']) {
+            <span class="field-error" id="signup-github-error" role="alert">
+              {{ fieldErrors['githubUsername'] }}
+            </span>
+          }
+        </div>
       </div>
 
       <div class="form-group">
@@ -181,45 +222,6 @@
           <span class="field-error" id="signup-email-error" role="alert">{{
             fieldErrors['email']
           }}</span>
-        }
-      </div>
-
-      <div class="form-group">
-        <label for="signup-github">GitHub username</label>
-        <div class="input-shell has-leading" [class.is-invalid]="!!fieldErrors['githubUsername']">
-          <svg
-            class="input-leading-icon"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            aria-hidden="true"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-            />
-          </svg>
-          <input
-            type="text"
-            id="signup-github"
-            name="githubUsername"
-            [(ngModel)]="githubUsername"
-            (blur)="validateGithubUsername()"
-            (ngModelChange)="fieldErrors['githubUsername'] && validateGithubUsername()"
-            placeholder="octocat"
-            autocomplete="username"
-            required
-            [disabled]="isLoading || !!oauthLoading"
-            [attr.aria-invalid]="!!fieldErrors['githubUsername']"
-            [attr.aria-describedby]="fieldErrors['githubUsername'] ? 'signup-github-error' : null"
-          />
-        </div>
-        @if (fieldErrors['githubUsername']) {
-          <span class="field-error" id="signup-github-error" role="alert">
-            {{ fieldErrors['githubUsername'] }}
-          </span>
         }
       </div>
 

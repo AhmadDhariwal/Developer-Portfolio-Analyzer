@@ -6,22 +6,12 @@
         "topic": "Quantum Computing",
         "limit": "20"
       },
-      "status": 503,
-      "admissionAttempt": 0,
-      "code": "COURSE_ADMISSION_UNAVAILABLE"
-    },
-    {
-      "query": {
-        "view": "discover",
-        "topic": "Quantum Computing",
-        "limit": "20"
-      },
       "status": 200,
-      "admissionAttempt": 1,
+      "admissionAttempt": 0,
       "total": 0,
       "discovery": {
         "status": "pending",
-        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794841991686",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794907270413",
         "insufficient": true,
         "reason": "missing-courses",
         "pollAfterMs": 5000,
@@ -41,7 +31,7 @@
       "total": 57,
       "discovery": {
         "status": "ready",
-        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794841991686",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794907270413",
         "insufficient": false,
         "reason": null,
         "pollAfterMs": null,
@@ -103,7 +93,7 @@
       "total": 0,
       "discovery": {
         "status": "pending",
-        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794841991686",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794907270413",
         "insufficient": true,
         "reason": "missing-courses",
         "pollAfterMs": 5000,
@@ -123,7 +113,7 @@
       "total": 0,
       "discovery": {
         "status": "pending",
-        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794841991686",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794907270413",
         "insufficient": true,
         "reason": "missing-courses",
         "pollAfterMs": 5000,
@@ -143,7 +133,7 @@
       "total": 1,
       "discovery": {
         "status": "cooldown",
-        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794842012043",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794907275977",
         "insufficient": true,
         "reason": "missing-courses",
         "pollAfterMs": null,
@@ -167,7 +157,7 @@
       "total": 1,
       "discovery": {
         "status": "cooldown",
-        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794842012043",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794907275977",
         "insufficient": true,
         "reason": "missing-courses",
         "pollAfterMs": null,
@@ -191,7 +181,7 @@
       "total": 3,
       "discovery": {
         "status": "ready",
-        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794842012538",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794907276412",
         "insufficient": false,
         "reason": null,
         "pollAfterMs": null,
@@ -222,7 +212,7 @@
       "total": 3,
       "discovery": {
         "status": "ready",
-        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794842012538",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794907276412",
         "insufficient": false,
         "reason": null,
         "pollAfterMs": null,
@@ -247,7 +237,7 @@
       "total": 0,
       "discovery": {
         "status": "unavailable",
-        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794842012538",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794907276412",
         "insufficient": true,
         "reason": "missing-verified-metadata",
         "pollAfterMs": null,
@@ -268,7 +258,7 @@
       "total": 0,
       "discovery": {
         "status": "unavailable",
-        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794842012538",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794907276412",
         "insufficient": true,
         "reason": "missing-verified-metadata",
         "pollAfterMs": null,
@@ -289,7 +279,7 @@
       "total": 0,
       "discovery": {
         "status": "unavailable",
-        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794842012538",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794907276412",
         "insufficient": true,
         "reason": "missing-courses",
         "pollAfterMs": null,
@@ -322,7 +312,7 @@
       "total": 1,
       "discovery": {
         "status": "pending",
-        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794842013524",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794907277278",
         "insufficient": true,
         "reason": "missing-courses",
         "pollAfterMs": 5000,
@@ -347,7 +337,7 @@
       "total": 1,
       "discovery": {
         "status": "pending",
-        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794842013524",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794907277278",
         "insufficient": true,
         "reason": "missing-courses",
         "pollAfterMs": 5000,
@@ -372,7 +362,7 @@
       "total": 1,
       "discovery": {
         "status": "pending",
-        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794842013524",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794907277278",
         "insufficient": true,
         "reason": "missing-courses",
         "pollAfterMs": 5000,
@@ -397,7 +387,7 @@
       "total": 0,
       "discovery": {
         "status": "pending",
-        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794842013524",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794907277278",
         "insufficient": true,
         "reason": "missing-courses",
         "pollAfterMs": 5000,
@@ -417,7 +407,7 @@
       "total": 3,
       "discovery": {
         "status": "pending",
-        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794842013524",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794907277278",
         "insufficient": false,
         "reason": "stale-coverage",
         "pollAfterMs": 5000,
@@ -445,7 +435,7 @@
       "total": 4,
       "discovery": {
         "status": "pending",
-        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794842013524",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794907277278",
         "insufficient": false,
         "reason": "stale-coverage",
         "pollAfterMs": 5000,
@@ -475,7 +465,7 @@
       "total": 2,
       "discovery": {
         "status": "pending",
-        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794842013524",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794907277278",
         "insufficient": true,
         "reason": "missing-courses",
         "pollAfterMs": 5000,
@@ -501,7 +491,7 @@
       "total": 4,
       "discovery": {
         "status": "pending",
-        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794842013524",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794907277278",
         "insufficient": false,
         "reason": "stale-coverage",
         "pollAfterMs": 5000,
@@ -531,7 +521,7 @@
       "total": 4,
       "discovery": {
         "status": "pending",
-        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794842013524",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794907277278",
         "insufficient": false,
         "reason": "stale-coverage",
         "pollAfterMs": 5000,
@@ -561,7 +551,7 @@
       "total": 4,
       "discovery": {
         "status": "pending",
-        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794842013524",
+        "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794907277278",
         "insufficient": false,
         "reason": "stale-coverage",
         "pollAfterMs": 5000,
@@ -588,7 +578,7 @@
     "titles": [],
     "discovery": {
       "status": "pending",
-      "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794841991686",
+      "revision": "course-topic-eligibility-v2:shared-courses-v1:6641da2555a9eaedbe9128026de85304b3d66feb7e632a00dc0d2db877a81a3c:initial:1794907270413",
       "insufficient": true,
       "reason": "missing-courses",
       "pollAfterMs": 5000,
@@ -620,7 +610,7 @@
                         },
                         {
                           "staleUntil": {
-                            "$gt": "2026-11-16T15:13:35.364Z"
+                            "$gt": "2026-11-17T09:21:19.316Z"
                           }
                         }
                       ]
@@ -669,7 +659,7 @@
                       "$and": [
                         {
                           "staleUntil": {
-                            "$gt": "2026-11-16T15:13:35.364Z"
+                            "$gt": "2026-11-17T09:21:19.316Z"
                           }
                         },
                         {
@@ -794,7 +784,7 @@
           "executionStats": {
             "executionSuccess": true,
             "nReturned": 6,
-            "executionTimeMillis": 4,
+            "executionTimeMillis": 3,
             "totalKeysExamined": 8,
             "totalDocsExamined": 12,
             "executionStages": {
@@ -824,7 +814,7 @@
                       "$and": [
                         {
                           "staleUntil": {
-                            "$gt": "2026-11-16T15:13:35.364Z"
+                            "$gt": "2026-11-17T09:21:19.316Z"
                           }
                         },
                         {
@@ -1185,18 +1175,18 @@
           }
         },
         "nReturned": 122,
-        "executionTimeMillisEstimate": 2
+        "executionTimeMillisEstimate": 1
       },
       {
         "$limit": 6041,
         "nReturned": 122,
-        "executionTimeMillisEstimate": 2
+        "executionTimeMillisEstimate": 1
       }
     ],
     "queryShapeHash": "599F80D9C4B78B7EC3E0F9DF8448CB796154EC7BB97B95812A0E769B5B2AAFD9",
     "serverInfo": {
       "host": "ICOMM-AHMAD-HASS",
-      "port": 58746,
+      "port": 65344,
       "version": "8.2.6",
       "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
     },
@@ -1224,7 +1214,7 @@
               {
                 "version": "shared-courses-v1",
                 "staleUntil": {
-                  "$gt": "2026-11-16T15:13:35.364Z"
+                  "$gt": "2026-11-17T09:21:19.316Z"
                 }
               }
             ],
@@ -1343,7 +1333,7 @@
     "ok": 1,
     "$clusterTime": {
       "clusterTime": {
-        "$timestamp": "7708787755911741474"
+        "$timestamp": "7709068062657347599"
       },
       "signature": {
         "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -1351,7 +1341,7 @@
       }
     },
     "operationTime": {
-      "$timestamp": "7708787755911741474"
+      "$timestamp": "7709068062657347599"
     }
   },
   "cleanup": {

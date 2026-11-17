@@ -225,7 +225,7 @@ test(
       "integrationLinkedProfile",
       "accountDeletionCleanup",
     ]))
-      await require("../models/" + name).createCollection();
+      await deletion.resolveOwnedModel(name).createCollection();
     await Asset.createIndexes();
     await Profile.createIndexes();
     const user = await User.create({

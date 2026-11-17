@@ -674,6 +674,7 @@ test(
           { _id: report._id },
           {
             $set: {
+              'meta.reportHash': 'different-hash',
               'emailDelivery.status': 'pending',
               'emailDelivery.contentHash': 'different-hash',
               'emailDelivery.nextAttemptAt': new Date()

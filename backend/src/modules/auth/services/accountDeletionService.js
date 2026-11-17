@@ -68,6 +68,18 @@ const MODEL_LOADERS = {
   sprintSchedule: () => require('../../career-sprint/models/sprintSchedule'),
   RecruiterMatch: () => require('../../recruiter/models/RecruiterMatch'),
   RecruiterShortlist: () => require('../../recruiter/models/RecruiterShortlist'),
+  storedAsset: () => require('../../../core/storage/models/storedAsset'),
+  user: () => User,
+  organization: () => require('../../admin/models/organization'),
+  publicProfile: () => require('../../public-portfolio/models/publicProfile'),
+  Candidate: () => require('../../recruiter/models/Candidate'),
+  repository: () => require('../../github/models/repository'),
+  Job: () => require('../../recruiter/models/Job'),
+  integrationConnection: () => require('../../integrations/models/integrationConnection'),
+  integrationInsight: () => require('../../integrations/models/integrationInsight'),
+  integrationSyncLog: () => require('../../integrations/models/integrationSyncLog'),
+  integrationLinkedProfile: () => require('../../integrations/models/integrationLinkedProfile'),
+  accountDeletionCleanup: () => require('../models/accountDeletionCleanup')
 };
 const resolveOwnedModel = (name) => {
   const loadModel = MODEL_LOADERS[name];

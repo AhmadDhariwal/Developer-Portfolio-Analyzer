@@ -5,7 +5,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 4276.927299999999,
+      "durationMs": 2689.9741000000013,
       "retryAfter": null,
       "total": 121,
       "admissionAttempt": 0
@@ -15,7 +15,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 155.6999999999971,
+      "durationMs": 107.8786,
       "retryAfter": null,
       "total": 121,
       "admissionAttempt": 0
@@ -25,7 +25,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 142.8748999999989,
+      "durationMs": 69.42089999999735,
       "retryAfter": null,
       "total": 121,
       "admissionAttempt": 0
@@ -35,7 +35,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 98.33419999999751,
+      "durationMs": 136.01919999999882,
       "retryAfter": null,
       "total": 121,
       "admissionAttempt": 0
@@ -45,7 +45,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 191.01370000000315,
+      "durationMs": 206.03120000000126,
       "retryAfter": null,
       "total": 121,
       "admissionAttempt": 0
@@ -55,7 +55,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 226.84430000000066,
+      "durationMs": 90.08370000000286,
       "retryAfter": null,
       "total": 121,
       "admissionAttempt": 0
@@ -65,7 +65,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 116.85180000000037,
+      "durationMs": 123.72429999999804,
       "retryAfter": null,
       "total": 121,
       "admissionAttempt": 0
@@ -75,7 +75,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 120.1684000000023,
+      "durationMs": 94.62149999999747,
       "retryAfter": null,
       "total": 121,
       "admissionAttempt": 0
@@ -85,7 +85,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 444.4314999999988,
+      "durationMs": 426.95320000000356,
       "retryAfter": null,
       "total": 30,
       "admissionAttempt": 0
@@ -95,7 +95,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 187.76900000000023,
+      "durationMs": 166.66930000000139,
       "retryAfter": null,
       "total": 34,
       "admissionAttempt": 0
@@ -105,7 +105,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 63.893599999999424,
+      "durationMs": 44.803899999998976,
       "retryAfter": null,
       "total": 0,
       "admissionAttempt": 0
@@ -115,7 +115,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 201.8869999999988,
+      "durationMs": 152.3109000000004,
       "retryAfter": null,
       "total": 4,
       "admissionAttempt": 0
@@ -125,7 +125,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 99.79899999999907,
+      "durationMs": 259.7439000000013,
       "retryAfter": null,
       "total": 4,
       "admissionAttempt": 0
@@ -135,7 +135,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 173.01929999999993,
+      "durationMs": 317.9841000000015,
       "retryAfter": null,
       "total": 4,
       "admissionAttempt": 0
@@ -145,7 +145,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 116.03190000000177,
+      "durationMs": 118.16499999999724,
       "retryAfter": null,
       "total": 4,
       "admissionAttempt": 0
@@ -155,7 +155,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 195.11969999999928,
+      "durationMs": 201.07589999999982,
       "retryAfter": null,
       "total": 2,
       "admissionAttempt": 0
@@ -165,7 +165,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 115.10050000000047,
+      "durationMs": 126.68130000000019,
       "retryAfter": null,
       "total": 2,
       "admissionAttempt": 0
@@ -175,7 +175,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 173.14270000000033,
+      "durationMs": 159.84749999999985,
       "retryAfter": null,
       "total": 5,
       "admissionAttempt": 0
@@ -185,7 +185,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 401,
-      "durationMs": 3.989900000000489,
+      "durationMs": 14.194999999999709,
       "retryAfter": null,
       "message": "Not authorized, no token",
       "admissionAttempt": 0
@@ -195,7 +195,7 @@
       "method": "PUT",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 132.3322999999982,
+      "durationMs": 112.54290000000037,
       "retryAfter": null,
       "admissionAttempt": 0
     },
@@ -204,7 +204,7 @@
       "method": "PUT",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 63.72129999999743,
+      "durationMs": 45.889500000001135,
       "retryAfter": null,
       "admissionAttempt": 0
     },
@@ -213,7 +213,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 51.670600000001286,
+      "durationMs": 52.687699999998586,
       "retryAfter": null,
       "total": 1,
       "admissionAttempt": 0
@@ -223,7 +223,7 @@
       "method": "GET",
       "owner": "foreign-fixture",
       "status": 200,
-      "durationMs": 47.056799999998475,
+      "durationMs": 46.061900000000605,
       "retryAfter": null,
       "total": 0,
       "admissionAttempt": 0
@@ -233,7 +233,7 @@
       "method": "PUT",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 57.81659999999829,
+      "durationMs": 63.35699999999997,
       "retryAfter": null,
       "admissionAttempt": 0
     },
@@ -242,7 +242,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 34.57900000000154,
+      "durationMs": 32.381100000002334,
       "retryAfter": null,
       "total": 1,
       "admissionAttempt": 0
@@ -252,7 +252,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 51.795099999999366,
+      "durationMs": 727.7873,
       "retryAfter": null,
       "total": 2,
       "admissionAttempt": 0
@@ -262,7 +262,7 @@
       "method": "PUT",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 58.75660000000062,
+      "durationMs": 43.36040000000139,
       "retryAfter": null,
       "admissionAttempt": 0
     },
@@ -271,7 +271,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 503,
-      "durationMs": 43.957900000001246,
+      "durationMs": 30.511099999999715,
       "retryAfter": "5",
       "message": "Learning progress is temporarily unavailable. Please retry.",
       "admissionAttempt": 0
@@ -281,7 +281,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 151.96140000000014,
+      "durationMs": 140.39329999999973,
       "retryAfter": null,
       "total": 122,
       "admissionAttempt": 0
@@ -291,7 +291,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 40.684000000001106,
+      "durationMs": 48.12879999999859,
       "retryAfter": null,
       "total": 2,
       "admissionAttempt": 0
@@ -301,7 +301,7 @@
       "method": "GET",
       "owner": "foreign-fixture",
       "status": 200,
-      "durationMs": 158.38320000000022,
+      "durationMs": 113.25150000000212,
       "retryAfter": null,
       "total": 122,
       "admissionAttempt": 0
@@ -311,8 +311,8 @@
       "method": "GET",
       "owner": "foreign-fixture",
       "status": 429,
-      "durationMs": 28.222499999999854,
-      "retryAfter": "5",
+      "durationMs": 27.546299999998155,
+      "retryAfter": "22",
       "code": "COURSE_RATE_LIMITED",
       "message": "Course request limit reached. Please retry shortly.",
       "admissionAttempt": 0
@@ -322,7 +322,7 @@
       "method": "GET",
       "owner": "foreign-fixture",
       "status": 200,
-      "durationMs": 48.77510000000257,
+      "durationMs": 49.099300000001676,
       "retryAfter": null,
       "total": 0,
       "admissionAttempt": 0
@@ -332,7 +332,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 503,
-      "durationMs": 3.8836000000010245,
+      "durationMs": 3.8398999999990338,
       "retryAfter": "5",
       "code": "AUTH_STORAGE_UNAVAILABLE",
       "message": "Authentication is temporarily unavailable. Please retry.",
@@ -343,7 +343,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 42.95899999999892,
+      "durationMs": 42.15929999999935,
       "retryAfter": null,
       "total": 2,
       "admissionAttempt": 0
@@ -353,7 +353,7 @@
       "method": "GET",
       "owner": "foreign-fixture",
       "status": 200,
-      "durationMs": 152.77909999999974,
+      "durationMs": 172.6141000000025,
       "retryAfter": null,
       "total": 34,
       "admissionAttempt": 0
@@ -363,7 +363,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 121.08989999999903,
+      "durationMs": 123.98459999999977,
       "retryAfter": null,
       "total": 34,
       "admissionAttempt": 0
@@ -373,7 +373,7 @@
       "method": "GET",
       "owner": "foreign-fixture",
       "status": 200,
-      "durationMs": 48.01850000000195,
+      "durationMs": 20.420999999998457,
       "retryAfter": null,
       "total": 34,
       "admissionAttempt": 0
@@ -383,7 +383,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 29.27260000000024,
+      "durationMs": 42.18089999999938,
       "retryAfter": null,
       "total": 34,
       "admissionAttempt": 0
@@ -393,7 +393,7 @@
       "method": "GET",
       "owner": "foreign-fixture",
       "status": 200,
-      "durationMs": 48.25379999999859,
+      "durationMs": 47.99959999999919,
       "retryAfter": null,
       "total": 34,
       "admissionAttempt": 0
@@ -403,7 +403,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 46.3708000000006,
+      "durationMs": 46.21419999999853,
       "retryAfter": null,
       "total": 34,
       "admissionAttempt": 0
@@ -413,7 +413,7 @@
       "method": "GET",
       "owner": "foreign-fixture",
       "status": 200,
-      "durationMs": 45.00240000000122,
+      "durationMs": 31.469700000001467,
       "retryAfter": null,
       "total": 34,
       "admissionAttempt": 0
@@ -423,7 +423,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 48.038800000002084,
+      "durationMs": 46.4307000000008,
       "retryAfter": null,
       "total": 34,
       "admissionAttempt": 0
@@ -433,7 +433,7 @@
       "method": "GET",
       "owner": "foreign-fixture",
       "status": 200,
-      "durationMs": 46.088700000000244,
+      "durationMs": 55.747299999999086,
       "retryAfter": null,
       "total": 34,
       "admissionAttempt": 0
@@ -443,7 +443,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 46.51339999999982,
+      "durationMs": 39.34120000000257,
       "retryAfter": null,
       "total": 34,
       "admissionAttempt": 0
@@ -453,7 +453,7 @@
       "method": "GET",
       "owner": "foreign-fixture",
       "status": 200,
-      "durationMs": 31.50470000000132,
+      "durationMs": 34.91670000000158,
       "retryAfter": null,
       "total": 34,
       "admissionAttempt": 0
@@ -463,7 +463,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 46.24369999999908,
+      "durationMs": 44.129399999997986,
       "retryAfter": null,
       "total": 34,
       "admissionAttempt": 0
@@ -473,7 +473,7 @@
       "method": "GET",
       "owner": "foreign-fixture",
       "status": 200,
-      "durationMs": 58.05709999999817,
+      "durationMs": 31.011399999999412,
       "retryAfter": null,
       "total": 34,
       "admissionAttempt": 0
@@ -483,7 +483,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 53.073599999999715,
+      "durationMs": 47.0570000000007,
       "retryAfter": null,
       "total": 34,
       "admissionAttempt": 0
@@ -493,7 +493,7 @@
       "method": "GET",
       "owner": "foreign-fixture",
       "status": 200,
-      "durationMs": 30.111399999997957,
+      "durationMs": 49.36650000000009,
       "retryAfter": null,
       "total": 34,
       "admissionAttempt": 0
@@ -503,7 +503,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 45.94540000000052,
+      "durationMs": 48.78519999999844,
       "retryAfter": null,
       "total": 34,
       "admissionAttempt": 0
@@ -513,7 +513,7 @@
       "method": "GET",
       "owner": "foreign-fixture",
       "status": 200,
-      "durationMs": 31.861299999996845,
+      "durationMs": 46.36330000000089,
       "retryAfter": null,
       "total": 34,
       "admissionAttempt": 0
@@ -523,7 +523,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 31.073499999998603,
+      "durationMs": 45.21180000000095,
       "retryAfter": null,
       "total": 34,
       "admissionAttempt": 0
@@ -533,7 +533,7 @@
       "method": "GET",
       "owner": "foreign-fixture",
       "status": 200,
-      "durationMs": 46.64490000000296,
+      "durationMs": 47.66619999999966,
       "retryAfter": null,
       "total": 34,
       "admissionAttempt": 0
@@ -543,7 +543,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 62.96379999999772,
+      "durationMs": 45.37259999999878,
       "retryAfter": null,
       "total": 34,
       "admissionAttempt": 0
@@ -553,7 +553,7 @@
       "method": "GET",
       "owner": "foreign-fixture",
       "status": 200,
-      "durationMs": 47.35089999999764,
+      "durationMs": 47.33050000000003,
       "retryAfter": null,
       "total": 34,
       "admissionAttempt": 0
@@ -563,7 +563,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 46.80319999999847,
+      "durationMs": 48.138700000003155,
       "retryAfter": null,
       "total": 34,
       "admissionAttempt": 0
@@ -573,7 +573,7 @@
       "method": "GET",
       "owner": "foreign-fixture",
       "status": 200,
-      "durationMs": 44.52570000000196,
+      "durationMs": 31.352200000001176,
       "retryAfter": null,
       "total": 34,
       "admissionAttempt": 0
@@ -583,7 +583,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 46.254000000000815,
+      "durationMs": 46.68890000000101,
       "retryAfter": null,
       "total": 34,
       "admissionAttempt": 0
@@ -593,7 +593,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 135.79159999999683,
+      "durationMs": 168.07600000000093,
       "retryAfter": null,
       "total": 362,
       "admissionAttempt": 0
@@ -603,7 +603,7 @@
       "method": "GET",
       "owner": "owner-fixture",
       "status": 200,
-      "durationMs": 2070.1613999999972,
+      "durationMs": 2087.804899999999,
       "retryAfter": null,
       "total": 2,
       "admissionAttempt": 0
@@ -613,22 +613,22 @@
   "baselineRef": null,
   "warmApi": {
     "samples": 24,
-    "p50Ms": 46.54559999999765,
-    "p95Ms": 121.1234000000004
+    "p50Ms": 46.45349999999962,
+    "p95Ms": 124.01900000000023
   },
   "warmService": {
     "samples": 3000,
     "concurrency": 100,
-    "p50Ms": 9.83770000000004,
-    "p95Ms": 33.12800000000061
+    "p50Ms": 8.000999999996566,
+    "p95Ms": 27.09030000000348
   },
   "catalog": {
     "entries": 1,
     "bytes": 475833,
     "pending": 0
   },
-  "p50Ms": 63.893599999999424,
-  "p95Ms": 226.84430000000066,
+  "p50Ms": 55.747299999999086,
+  "p95Ms": 317.9841000000015,
   "explain": {
     "explainVersion": "1",
     "stages": [
@@ -649,7 +649,7 @@
                         },
                         {
                           "staleUntil": {
-                            "$gt": "2026-11-16T15:14:00.421Z"
+                            "$gt": "2026-11-17T09:21:42.593Z"
                           }
                         }
                       ]
@@ -698,7 +698,7 @@
                       "$and": [
                         {
                           "staleUntil": {
-                            "$gt": "2026-11-16T15:14:00.421Z"
+                            "$gt": "2026-11-17T09:21:42.593Z"
                           }
                         },
                         {
@@ -775,7 +775,7 @@
           "executionStats": {
             "executionSuccess": true,
             "nReturned": 2,
-            "executionTimeMillis": 3,
+            "executionTimeMillis": 5,
             "totalKeysExamined": 2,
             "totalDocsExamined": 4,
             "executionStages": {
@@ -805,7 +805,7 @@
                       "$and": [
                         {
                           "staleUntil": {
-                            "$gt": "2026-11-16T15:14:00.421Z"
+                            "$gt": "2026-11-17T09:21:42.593Z"
                           }
                         },
                         {
@@ -949,7 +949,7 @@
           }
         },
         "nReturned": 2,
-        "executionTimeMillisEstimate": 1
+        "executionTimeMillisEstimate": 2
       },
       {
         "$lookup": {
@@ -976,7 +976,7 @@
           "_id_"
         ],
         "nReturned": 2,
-        "executionTimeMillisEstimate": 1
+        "executionTimeMillisEstimate": 2
       },
       {
         "$project": {
@@ -1036,14 +1036,14 @@
           }
         },
         "nReturned": 2,
-        "executionTimeMillisEstimate": 1
+        "executionTimeMillisEstimate": 2
       },
       {
         "$unwind": {
           "path": "$courses"
         },
         "nReturned": 91,
-        "executionTimeMillisEstimate": 1
+        "executionTimeMillisEstimate": 2
       },
       {
         "$match": {
@@ -1059,7 +1059,7 @@
           }
         },
         "nReturned": 91,
-        "executionTimeMillisEstimate": 1
+        "executionTimeMillisEstimate": 2
       },
       {
         "$replaceRoot": {
@@ -1079,18 +1079,18 @@
           }
         },
         "nReturned": 91,
-        "executionTimeMillisEstimate": 1
+        "executionTimeMillisEstimate": 2
       },
       {
         "$limit": 6041,
         "nReturned": 91,
-        "executionTimeMillisEstimate": 1
+        "executionTimeMillisEstimate": 2
       }
     ],
     "queryShapeHash": "599F80D9C4B78B7EC3E0F9DF8448CB796154EC7BB97B95812A0E769B5B2AAFD9",
     "serverInfo": {
       "host": "ICOMM-AHMAD-HASS",
-      "port": 56093,
+      "port": 51349,
       "version": "8.2.6",
       "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
     },
@@ -1118,7 +1118,7 @@
               {
                 "version": "shared-courses-v1",
                 "staleUntil": {
-                  "$gt": "2026-11-16T15:14:00.421Z"
+                  "$gt": "2026-11-17T09:21:42.593Z"
                 }
               }
             ],
@@ -1237,7 +1237,7 @@
     "ok": 1,
     "$clusterTime": {
       "clusterTime": {
-        "$timestamp": "7708787863285923846"
+        "$timestamp": "7709068161441595398"
       },
       "signature": {
         "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -1245,7 +1245,7 @@
       }
     },
     "operationTime": {
-      "$timestamp": "7708787863285923846"
+      "$timestamp": "7709068161441595398"
     }
   },
   "userExplain": {
@@ -1254,14 +1254,14 @@
       "namespace": "integration_live_acceptance.usercourseprogresses",
       "parsedQuery": {
         "userId": {
-          "$eq": "6afb1da5fe7d0d663cf40198"
+          "$eq": "6afc1c95514d1782e2061b0a"
         }
       },
       "indexFilterSet": false,
       "queryHash": "05A70696",
       "planCacheShapeHash": "05A70696",
       "planCacheKey": "F5CC1857",
-      "optimizationTimeMillis": 0,
+      "optimizationTimeMillis": 1,
       "maxIndexedOrSolutionsReached": false,
       "maxIndexedAndSolutionsReached": false,
       "maxScansToExplodeReached": false,
@@ -1290,7 +1290,7 @@
           "direction": "forward",
           "indexBounds": {
             "userId": [
-              "[ObjectId('6afb1da5fe7d0d663cf40198'), ObjectId('6afb1da5fe7d0d663cf40198')]"
+              "[ObjectId('6afc1c95514d1782e2061b0a'), ObjectId('6afc1c95514d1782e2061b0a')]"
             ],
             "updatedAt": [
               "[MaxKey, MinKey]"
@@ -1336,7 +1336,7 @@
               "direction": "forward",
               "indexBounds": {
                 "userId": [
-                  "[ObjectId('6afb1da5fe7d0d663cf40198'), ObjectId('6afb1da5fe7d0d663cf40198')]"
+                  "[ObjectId('6afc1c95514d1782e2061b0a'), ObjectId('6afc1c95514d1782e2061b0a')]"
                 ],
                 "status": [
                   "[MinKey, MaxKey]"
@@ -1381,7 +1381,7 @@
               "direction": "forward",
               "indexBounds": {
                 "userId": [
-                  "[ObjectId('6afb1da5fe7d0d663cf40198'), ObjectId('6afb1da5fe7d0d663cf40198')]"
+                  "[ObjectId('6afc1c95514d1782e2061b0a'), ObjectId('6afc1c95514d1782e2061b0a')]"
                 ],
                 "courseId": [
                   "[MinKey, MaxKey]"
@@ -1442,7 +1442,7 @@
           "direction": "forward",
           "indexBounds": {
             "userId": [
-              "[ObjectId('6afb1da5fe7d0d663cf40198'), ObjectId('6afb1da5fe7d0d663cf40198')]"
+              "[ObjectId('6afc1c95514d1782e2061b0a'), ObjectId('6afc1c95514d1782e2061b0a')]"
             ],
             "updatedAt": [
               "[MaxKey, MinKey]"
@@ -1508,7 +1508,7 @@
               "direction": "forward",
               "indexBounds": {
                 "userId": [
-                  "[ObjectId('6afb1da5fe7d0d663cf40198'), ObjectId('6afb1da5fe7d0d663cf40198')]"
+                  "[ObjectId('6afc1c95514d1782e2061b0a'), ObjectId('6afc1c95514d1782e2061b0a')]"
                 ],
                 "updatedAt": [
                   "[MaxKey, MinKey]"
@@ -1599,7 +1599,7 @@
                 "direction": "forward",
                 "indexBounds": {
                   "userId": [
-                    "[ObjectId('6afb1da5fe7d0d663cf40198'), ObjectId('6afb1da5fe7d0d663cf40198')]"
+                    "[ObjectId('6afc1c95514d1782e2061b0a'), ObjectId('6afc1c95514d1782e2061b0a')]"
                   ],
                   "status": [
                     "[MinKey, MaxKey]"
@@ -1690,7 +1690,7 @@
                 "direction": "forward",
                 "indexBounds": {
                   "userId": [
-                    "[ObjectId('6afb1da5fe7d0d663cf40198'), ObjectId('6afb1da5fe7d0d663cf40198')]"
+                    "[ObjectId('6afc1c95514d1782e2061b0a'), ObjectId('6afc1c95514d1782e2061b0a')]"
                   ],
                   "courseId": [
                     "[MinKey, MaxKey]"
@@ -1710,7 +1710,7 @@
     "command": {
       "find": "usercourseprogresses",
       "filter": {
-        "userId": "6afb1da5fe7d0d663cf40198"
+        "userId": "6afc1c95514d1782e2061b0a"
       },
       "sort": {
         "updatedAt": -1,
@@ -1720,7 +1720,7 @@
     },
     "serverInfo": {
       "host": "ICOMM-AHMAD-HASS",
-      "port": 56093,
+      "port": 51349,
       "version": "8.2.6",
       "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
     },
@@ -1739,7 +1739,7 @@
     "ok": 1,
     "$clusterTime": {
       "clusterTime": {
-        "$timestamp": "7708787863285923846"
+        "$timestamp": "7709068161441595398"
       },
       "signature": {
         "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -1747,7 +1747,7 @@
       }
     },
     "operationTime": {
-      "$timestamp": "7708787863285923846"
+      "$timestamp": "7709068161441595398"
     }
   }
 }
