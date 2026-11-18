@@ -2410,7 +2410,22 @@ const analyzeSkillGap = async (req, res) => {
           .lean()
       );
     }
-    if (historical?.analysisData && !historical.analysisData.ruleVersion) {
+    const githubSourceAt = Date.parse(
+      githubData?.githubSignals?.analyzedAt || githubData?.fetchedAt || ""
+    );
+    const resumeSourceAt = Date.parse(
+      latestResumeAnalysis?.analyzedAt || latestResumeAnalysis?.createdAt || ""
+    );
+    const historicalAt = Date.parse(historical?.updatedAt || historical?.createdAt || "");
+    const historicalSuperseded = Boolean(
+      historical &&
+        ((historical.resumeAnalysisId &&
+          String(historical.resumeAnalysisId) !== String(resumeCacheIdentity.resumeAnalysisId)) ||
+          (Number.isFinite(historicalAt) &&
+            ((Number.isFinite(githubSourceAt) && githubSourceAt > historicalAt) ||
+              (Number.isFinite(resumeSourceAt) && resumeSourceAt > historicalAt))))
+    );
+    if (historical?.analysisData && !historical.analysisData.ruleVersion && !historicalSuperseded) {
       const cachedDeterministicConfidence = historical.analysisData.deterministicConfidence || 0;
       const cachedResult = {
         ...historical.analysisData,

@@ -456,11 +456,17 @@
 
       <div
         class="overview-notices"
-        *ngIf="legacy || stale || data.cacheMetadata?.partial || !allCards.length"
+        *ngIf="
+          legacy || stale || aiRefreshRecommended || data.cacheMetadata?.partial || !allCards.length
+        "
       >
         <p class="notice warning-notice" *ngIf="legacy">
           Historical or legacy result. Evidence, ranking and freshness may be incomplete. Refresh to
           use current profile recommendations.
+        </p>
+        <p class="notice stale-notice" *ngIf="aiRefreshRecommended">
+          AI recommendations are outdated for your current evidence.
+          <strong>Refresh Recommended</strong> to regenerate AI suggestions.
         </p>
         <p class="notice stale-notice" *ngIf="stale">
           Some evidence is stale. Refresh the relevant analyzer before treating an older observation
@@ -797,11 +803,13 @@
             <p class="ai-status">
               AI enrichment:
               <strong>{{
-                data.aiUsed === true
-                  ? 'Included'
-                  : data.aiUsed === false
-                    ? 'Not in use'
-                    : 'Not reported in this result'
+                aiRefreshRecommended
+                  ? 'Refresh Recommended'
+                  : data.aiUsed === true
+                    ? 'Included'
+                    : data.aiUsed === false
+                      ? 'Not in use'
+                      : 'Not reported in this result'
               }}</strong>
             </p>
           </div>

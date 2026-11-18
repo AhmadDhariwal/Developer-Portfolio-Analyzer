@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-17T09:22:01.870Z",
+  "checkedAt": "2026-11-18T11:07:25.441Z",
   "providerHttpRequests": 0,
   "checks": [
     "strict public fields; no raw/token/ownership/user score; private providers bypass; detached account copies",
@@ -21,25 +21,18 @@
     "conflicts": 0,
     "commands": 41,
     "durations": [
-      77,
+      31,
       1,
-      37,
-      92,
-      1,
+      27,
       44,
-      2,
-      2,
-      12,
-      107,
       1,
+      30,
       2,
-      10,
-      2,
-      2,
-      9,
-      15,
       1,
-      2,
+      5,
+      47,
+      1,
+      1,
       12,
       2,
       2,
@@ -47,28 +40,35 @@
       15,
       1,
       2,
-      12,
-      2,
-      2,
-      10,
+      14,
+      1,
+      1,
+      11,
       15,
       2,
       1,
+      14,
+      1,
+      2,
+      14,
+      13,
+      1,
+      2,
       12,
-      2,
-      2,
+      1,
+      1,
       10,
-      16,
+      14,
+      2,
       1,
-      1,
-      12
+      13
     ],
     "memory": {
-      "rss": 134832128,
+      "rss": 130404352,
       "heapTotal": 104165376,
-      "heapUsed": 42195696,
-      "external": 22569463,
-      "arrayBuffers": 18571902
+      "heapUsed": 28576528,
+      "external": 22536099,
+      "arrayBuffers": 18538538
     }
   },
   "shared500": {
@@ -80,8 +80,8 @@
     "sameUsername": 500,
     "concurrency": 8,
     "workers": 2,
-    "elapsedMs": 6257.127199999999,
-    "throughputPerSecond": 159.817751507433,
+    "elapsedMs": 3496.553,
+    "throughputPerSecond": 285.9959508693276,
     "statusCounts": {
       "200": 559,
       "429": 441
@@ -91,35 +91,35 @@
     "successfulHitRate": 0.8926654740608229,
     "latencyMs": {
       "n": 1000,
-      "p50": 27.809800000000905,
-      "p95": 93.04530000000068,
-      "p99": 205.80359999999928,
-      "max": 264.65000000000055
+      "p50": 13.89050000000043,
+      "p95": 49.3082000000004,
+      "p99": 65.36949999999979,
+      "max": 130.73779999999988
     },
     "mongoCommandMs": {
-      "n": 4710,
-      "p50": 4,
-      "p95": 15,
-      "p99": 17,
-      "max": 93
+      "n": 4758,
+      "p50": 2,
+      "p95": 6,
+      "p99": 11,
+      "max": 47
     },
-    "transactionConflicts": 271,
+    "transactionConflicts": 320,
     "redisCommands": 0,
-    "mongoCommands": 5252,
+    "mongoCommands": 5398,
     "memory": [
       {
-        "rss": 163692544,
-        "heapTotal": 105738240,
-        "heapUsed": 38805480,
-        "external": 25188649,
-        "arrayBuffers": 21191048
+        "rss": 152920064,
+        "heapTotal": 106000384,
+        "heapUsed": 54721536,
+        "external": 23268378,
+        "arrayBuffers": 19270777
       },
       {
-        "rss": 161480704,
-        "heapTotal": 106524672,
-        "heapUsed": 47409096,
-        "external": 25096837,
-        "arrayBuffers": 21099236
+        "rss": 154693632,
+        "heapTotal": 107048960,
+        "heapUsed": 53568696,
+        "external": 25324041,
+        "arrayBuffers": 21326440
       }
     ],
     "snapshotStorage": {

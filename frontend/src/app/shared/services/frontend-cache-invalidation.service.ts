@@ -75,6 +75,10 @@ export class FrontendCacheInvalidationService implements OnDestroy {
       'resume_analysis_cache:',
       'skill_gap_cache:',
       'skill_gap_cache_index:',
+      'frontend_analysis_cache:',
+      'frontend_analysis_cache_index:',
+      'frontend_analysis_cache_signal_index:',
+      'frontend_analysis_current_signal:',
       // Account-scoped Jobs activity must survive logout until explicit migration.
     ]);
     this.clearGithubCaches();

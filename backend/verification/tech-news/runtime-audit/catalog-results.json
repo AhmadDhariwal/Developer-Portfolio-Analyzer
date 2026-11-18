@@ -39,7 +39,7 @@
             },
             {
               "expiresAt": {
-                "$gt": "2026-11-17T08:57:20.002Z"
+                "$gt": "2026-11-18T11:11:26.837Z"
               }
             }
           ]
@@ -70,7 +70,7 @@
               "[\"rust\", \"rust\"]"
             ],
             "publishedAt": [
-              "[new Date(1794906140002), new Date(1792313840002)]"
+              "[new Date(1795000586837), new Date(1792408286837)]"
             ],
             "canonicalId": [
               "[MinKey, MaxKey]"
@@ -104,7 +104,7 @@
             },
             {
               "expiresAt": {
-                "$gt": "2026-11-17T08:57:20.010Z"
+                "$gt": "2026-11-18T11:11:26.843Z"
               }
             }
           ]
@@ -135,7 +135,7 @@
               "[\"compiler\", \"compiler\"]"
             ],
             "publishedAt": [
-              "[new Date(1794906140010), new Date(1792313840010)]"
+              "[new Date(1795000586843), new Date(1792408286843)]"
             ],
             "canonicalId": [
               "[MinKey, MaxKey]"
@@ -155,7 +155,7 @@
         "stage": "FETCH",
         "filter": {
           "expiresAt": {
-            "$gt": "2026-11-17T08:57:20.018Z"
+            "$gt": "2026-11-18T11:11:26.847Z"
           }
         },
         "inputStage": {
@@ -182,7 +182,7 @@
               "[\"Hacker News\", \"Hacker News\"]"
             ],
             "publishedAt": [
-              "[new Date(1794906140018), new Date(1792313840018)]"
+              "[new Date(1795000586847), new Date(1792408286847)]"
             ],
             "canonicalId": [
               "[MinKey, MaxKey]"
@@ -218,7 +218,7 @@
             },
             {
               "expiresAt": {
-                "$gt": "2026-11-17T08:57:20.023Z"
+                "$gt": "2026-11-18T11:11:26.850Z"
               }
             }
           ]
@@ -247,7 +247,7 @@
               "[\"Frontend\", \"Frontend\"]"
             ],
             "publishedAt": [
-              "[new Date(1794906140023), new Date(1792313840023)]"
+              "[new Date(1795000586850), new Date(1792408286850)]"
             ],
             "canonicalId": [
               "[MinKey, MaxKey]"
@@ -281,7 +281,7 @@
             },
             {
               "expiresAt": {
-                "$gt": "2026-11-17T08:57:20.029Z"
+                "$gt": "2026-11-18T11:11:26.854Z"
               }
             }
           ]
@@ -305,7 +305,7 @@
           "direction": "forward",
           "indexBounds": {
             "publishedAt": [
-              "[new Date(1794906140029), new Date(1792313840029)]"
+              "[new Date(1795000586854), new Date(1792408286854)]"
             ],
             "canonicalId": [
               "[MinKey, MaxKey]"

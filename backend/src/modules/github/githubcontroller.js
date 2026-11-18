@@ -297,8 +297,24 @@ const persistGitHubAnalysis = async (user, githubUsername, forceRefresh) => {
             analysis?.githubSignals?.analyzedAt === data.githubSignals?.analyzedAt &&
             String(analysis?.githubSignals?.username || '').toLowerCase() ===
                 githubUsername.toLowerCase()
-        )
+        ) {
+            if (
+                analysis.githubSignals.acceptedResult &&
+                data.cache?.expiresAt &&
+                analysis.githubSignals.acceptedResult.cache?.expiresAt !== data.cache.expiresAt
+            ) {
+                await Analysis.updateOne(
+                    { _id: analysis._id },
+                    {
+                        $set: {
+                            'githubSignals.acceptedResult.cache': data.cache,
+                            updatedAt: new Date()
+                        }
+                    }
+                ).catch(() => {});
+            }
             return data;
+        }
         if (!analysis) analysis = new Analysis({ userId: user._id });
 
         analysis.githubScore = Number(data.githubHealthScore || data.activityScore || 0);

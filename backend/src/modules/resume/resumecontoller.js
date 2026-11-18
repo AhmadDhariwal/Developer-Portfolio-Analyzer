@@ -363,7 +363,7 @@ const runAnalyzeResumePipeline = async (req, { fileId, forceRefresh, timings, ad
       userId: req.user._id,
       fileId: resumeFile._id
     })
-      .sort({ analyzedAt: -1, _id: -1 })
+      .sort({ analyzedAt: -1, createdAt: -1, _id: -1 })
       .select(
         'atsScore keywordDensity formatScore contentQuality technologyCategories qualityScores analyzedAt createdAt analysisVersion'
       )
@@ -415,7 +415,7 @@ const runAnalyzeResumePipeline = async (req, { fileId, forceRefresh, timings, ad
       resumeHash: analysis.resumeHash,
       analysisVersion: analysis.analysisVersion || ANALYSIS_VERSION
     })
-      .sort({ analyzedAt: -1 })
+      .sort({ analyzedAt: -1, createdAt: -1, _id: -1 })
       .select('analyzedAt');
   }
 
@@ -658,7 +658,7 @@ const getResumeAnalysis = async (req, res) => {
     if (requestedFileId) {
       parseResumeFileId(requestedFileId);
       analysis = await ResumeAnalysis.findOne({ userId: req.user._id, fileId: requestedFileId })
-        .sort({ analyzedAt: -1 })
+        .sort({ analyzedAt: -1, createdAt: -1, _id: -1 })
         .lean();
       if (!analysis) {
         return res.status(404).json({ message: 'No analysis found' });
@@ -755,7 +755,9 @@ const downloadResumeGuide = async (req, res) => {
 const getResumeFiles = async (req, res) => {
   try {
     const user = await ensureResumeContext(req.user._id);
-    const files = await ResumeFile.find({ userId: req.user._id }).sort({ uploadDate: -1 }).lean();
+    const files = await ResumeFile.find({ userId: req.user._id })
+      .sort({ uploadDate: -1, createdAt: -1, _id: -1 })
+      .lean();
     const active = await developerContext.resolveResumeFile(req.user._id, user, { ResumeFile });
 
     res.json({

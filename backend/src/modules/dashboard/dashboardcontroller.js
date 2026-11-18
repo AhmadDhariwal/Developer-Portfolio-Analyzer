@@ -1,3 +1,4 @@
+const { languagePresentation } = require('../github/services/githubLanguagePresentation');
 const { normalizeDashboardActivity } = require('./utils/dashboardActivity');
 const portfolioScoring = require('../../core/scoring/portfolioScore');
 const {
@@ -64,7 +65,7 @@ const freshnessEntry = ({
     : stale
       ? 'stale'
       : toFreshness(updatedAt, maxAgeMs);
-  const status = available || connected || updatedAt ? baseStatus : 'missing';
+  const status = available ? baseStatus : 'missing';
   return {
     connected: Boolean(connected || available),
     available: Boolean(available),
@@ -77,48 +78,15 @@ const freshnessEntry = ({
   };
 };
 
-const toLanguageMap = (languageDistribution = {}) => {
-  if (languageDistribution instanceof Map) return Object.fromEntries(languageDistribution);
-  if (Array.isArray(languageDistribution)) {
-    return languageDistribution.reduce((acc, item) => {
-      if (item?.language) acc[item.language] = Number(item.percentage || 0);
-      return acc;
-    }, {});
-  }
-  return languageDistribution && typeof languageDistribution === 'object'
-    ? languageDistribution
-    : {};
-};
+const normalizeLanguageMap = (fallback, rawBytes) =>
+  Object.fromEntries(
+    languagePresentation(rawBytes, fallback).mainLanguageDistribution.map(
+      ({ language, percentage }) => [language, percentage],
+    ),
+  );
 
-const normalizeLanguageMap = (languageDistribution = {}) => {
-  const rawMap = toLanguageMap(languageDistribution);
-  const safeEntries = Object.entries(rawMap)
-    .map(([language, value]) => [String(language || '').trim(), Number(value || 0)])
-    .filter(
-      ([language, value]) =>
-        Boolean(language) &&
-        language.toLowerCase() !== 'null' &&
-        language.toLowerCase() !== 'undefined' &&
-        Number.isFinite(value) &&
-        value > 0,
-    );
-
-  const total = safeEntries.reduce((sum, [, value]) => sum + value, 0);
-  if (!total) return {};
-
-  let remaining = 100;
-  return safeEntries
-    .sort((left, right) => right[1] - left[1])
-    .reduce((acc, [language, value], index, list) => {
-      const normalized =
-        index === list.length - 1
-          ? remaining
-          : Math.max(0, Math.min(remaining, Math.round((value / total) * 100)));
-      acc[language] = normalized;
-      remaining -= normalized;
-      return acc;
-    }, {});
-};
+const recordedGithubAt = (analysis) =>
+  safeDate(analysis?.githubSignals?.analyzedAt) || analysis?.createdAt || analysis?.updatedAt || null;
 
 const safeGetIntegrationInsight = async (userId) => {
   try {
@@ -354,7 +322,7 @@ const buildSummaryMeta = ({
   noUsername,
   staleFlags = {},
 }) => {
-  const githubFreshness = toFreshness(analysis?.updatedAt || analysis?.createdAt);
+  const githubFreshness = toFreshness(recordedGithubAt(analysis));
   const resumeFreshness = toFreshness(latestResume?.analyzedAt);
   const skillGapFreshness = staleFlags.skillGap
     ? 'stale'
@@ -402,7 +370,11 @@ const buildSummaryMeta = ({
     sourcesUsed: {
       github: {
         connected: !noUsername,
-        available: Boolean(analysis?.updatedAt || analysis?.createdAt),
+        maxAgeMs: safeDate(analysis?.githubSignals?.acceptedResult?.cache?.expiresAt)
+          ? Number.POSITIVE_INFINITY
+          : DASHBOARD_FRESH_MS,
+        policy: 'github-cache-expiry',
+        available: Boolean(recordedGithubAt(analysis)),
         status: githubFreshness,
       },
       resume: {
@@ -475,7 +447,7 @@ const maybeSendNotModified = (req, res, payload) => {
 const ensureAnalysis = async (userId, githubUsername) => {
   const analysis = await Analysis.findOne({ userId })
     .select(
-      'githubScore readinessScore githubStats githubSignals.username githubSignals.scoring languageDistribution contributionActivity updatedAt createdAt',
+      'githubScore readinessScore githubStats githubSignals.username githubSignals.scoring githubSignals.analyzedAt githubSignals.languages.rawBytes githubSignals.languages.normalized githubSignals.acceptedResult.cache.expiresAt languageDistribution contributionActivity updatedAt createdAt',
     )
     .sort({ updatedAt: -1, createdAt: -1, _id: -1 })
     .lean();
@@ -489,7 +461,9 @@ const ensureAnalysis = async (userId, githubUsername) => {
       analysis,
       rateLimited: false,
       noUsername: !githubUsername,
-      githubStatus: toFreshness(analysis.updatedAt || analysis.createdAt),
+      githubStatus: safeDate(analysis.githubSignals?.acceptedResult?.cache?.expiresAt)
+        ? (safeDate(analysis.githubSignals.acceptedResult.cache.expiresAt) > new Date() ? 'fresh' : 'stale')
+        : toFreshness(recordedGithubAt(analysis)),
       languageSource: 'cached_snapshot',
     };
   }
@@ -751,7 +725,7 @@ const getDashboardSummary = async (req, res) => {
         latestPortfolioCache &&
         isCacheOlderThan(
           latestPortfolioCache,
-          analysis?.updatedAt || analysis?.createdAt,
+          recordedGithubAt(analysis),
           latestResume?.analyzedAt,
           latestSkillGapCache?.updatedAt,
           integrationInsight?.updatedAt,
@@ -761,7 +735,7 @@ const getDashboardSummary = async (req, res) => {
         latestSkillGapCache &&
         isCacheOlderThan(
           latestSkillGapCache,
-          analysis?.updatedAt || analysis?.createdAt,
+          recordedGithubAt(analysis),
           latestResume?.analyzedAt,
           integrationInsight?.updatedAt,
         ),
@@ -770,7 +744,7 @@ const getDashboardSummary = async (req, res) => {
         latestRecommendationCache &&
         isCacheOlderThan(
           latestRecommendationCache,
-          analysis?.updatedAt || analysis?.createdAt,
+          recordedGithubAt(analysis),
           latestResume?.analyzedAt,
           latestSkillGapCache?.updatedAt,
           integrationInsight?.updatedAt,
@@ -853,9 +827,9 @@ const getDashboardSummary = async (req, res) => {
 
     const sourceFreshness = {
       github: freshnessEntry({
-        updatedAt: analysis?.updatedAt || analysis?.createdAt || null,
+        updatedAt: recordedGithubAt(analysis) || null,
         connected: !noUsername,
-        available: Boolean(analysis?.updatedAt || analysis?.createdAt),
+        available: Boolean(recordedGithubAt(analysis)),
         stale: githubStatus === 'stale' || rateLimited,
         reason: analysis?.updatedAt
           ? ''
@@ -1018,8 +992,8 @@ const getDashboardSummary = async (req, res) => {
         available: normalizeDashboardActivity(analysis?.contributionActivity).length > 0,
       },
       languageSnapshot: {
-        data: normalizeLanguageMap(analysis?.languageDistribution),
-        available: Object.keys(normalizeLanguageMap(analysis?.languageDistribution)).length > 0,
+        data: normalizeLanguageMap(analysis?.githubSignals?.languages?.normalized || analysis?.languageDistribution, analysis?.githubSignals?.languages?.rawBytes),
+        available: Object.keys(normalizeLanguageMap(analysis?.githubSignals?.languages?.normalized || analysis?.languageDistribution, analysis?.githubSignals?.languages?.rawBytes)).length > 0,
       },
       progress: buildDashboardProgress(
         {
@@ -1098,8 +1072,8 @@ const getDashboardContributions = async (req, res) => {
       data,
       syncStatus: rateLimited
         ? 'rate_limited'
-        : toFreshness(analysis?.updatedAt || analysis?.createdAt),
-      updatedAt: analysis?.updatedAt || analysis?.createdAt || null,
+        : toFreshness(recordedGithubAt(analysis)),
+      updatedAt: recordedGithubAt(analysis) || null,
     });
   } catch (error) {
     console.error('Dashboard contributions error:', error);
@@ -1119,11 +1093,11 @@ const getDashboardLanguages = async (req, res) => {
     );
 
     res.json({
-      data: normalizeLanguageMap(analysis?.languageDistribution),
+      data: normalizeLanguageMap(analysis?.githubSignals?.languages?.normalized || analysis?.languageDistribution, analysis?.githubSignals?.languages?.rawBytes),
       syncStatus: rateLimited
         ? 'rate_limited'
-        : toFreshness(analysis?.updatedAt || analysis?.createdAt),
-      updatedAt: analysis?.updatedAt || analysis?.createdAt || null,
+        : toFreshness(recordedGithubAt(analysis)),
+      updatedAt: recordedGithubAt(analysis) || null,
       source: languageSource,
     });
   } catch (error) {
@@ -1157,7 +1131,7 @@ const getDashboardSkills = async (req, res) => {
       ),
     ]);
 
-    const languageMap = normalizeLanguageMap(analysis?.languageDistribution);
+    const languageMap = normalizeLanguageMap(analysis?.githubSignals?.languages?.normalized || analysis?.languageDistribution, analysis?.githubSignals?.languages?.rawBytes);
     const derivedTopSkills = Object.keys(languageMap)
       .filter((key) => Number(languageMap[key] || 0) > 0)
       .concat(integrationInsight.mergedSkills || []);

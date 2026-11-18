@@ -42,14 +42,20 @@ const enqueueInvitationRetry = async ({ invitationId, to, payload, maxAttempts =
   ).lean();
 };
 
+const STALE_PROCESSING_MS = 120 * 1000;
+
 const markJobInProgress = async (jobId) => {
+  const staleCutoff = new Date(Date.now() - STALE_PROCESSING_MS);
   const updated = await EmailDeliveryJob.findOneAndUpdate(
     {
       _id: jobId,
-      status: { $in: ['pending', 'retrying'] }
+      $or: [
+        { status: { $in: ['pending', 'retrying'] } },
+        { status: 'processing', updatedAt: { $lte: staleCutoff } }
+      ]
     },
     {
-      $set: { status: 'processing' }
+      $set: { status: 'processing', updatedAt: new Date() }
     },
     { returnDocument: 'after' }
   ).lean();
@@ -106,9 +112,13 @@ const processDueJobs = async () => {
   isRunning = true;
 
   try {
+    const now = new Date();
+    const staleCutoff = new Date(now.getTime() - STALE_PROCESSING_MS);
     const jobs = await EmailDeliveryJob.find({
-      status: { $in: ['pending', 'retrying'] },
-      nextAttemptAt: { $lte: new Date() }
+      $or: [
+        { status: { $in: ['pending', 'retrying'] }, nextAttemptAt: { $lte: now } },
+        { status: 'processing', updatedAt: { $lte: staleCutoff } }
+      ]
     })
       .sort({ nextAttemptAt: 1 })
       .limit(5)
@@ -145,5 +155,7 @@ const startEmailRetryWorker = () => {
 
 module.exports = {
   enqueueInvitationRetry,
+  markJobInProgress,
+  processDueJobs,
   startEmailRetryWorker
 };

@@ -629,6 +629,13 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   get stale(): boolean {
     return this.loadingState === 'stale' || this.sourceEntries.some((s) => s.freshness === 'STALE');
   }
+  get aiRefreshRecommended(): boolean {
+    return Boolean(
+      this.result?.aiRefreshRecommended ||
+      this.result?.cacheMetadata?.aiRefreshRecommended ||
+      ((this.legacy || this.stale) && this.result?.aiUsed),
+    );
+  }
   get lastUpdated(): string | null {
     return (
       this.result?.cacheMetadata?.cachedAt || this.result?.analysisBasedOn?.lastAnalyzedAt || null

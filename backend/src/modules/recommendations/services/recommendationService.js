@@ -1554,6 +1554,18 @@ const runRecommendationPipeline = async ({
         fallback
       );
       result.aiUsed = result.aiSuggestions.length > 0;
+      const previousAiOutdated = Boolean(
+        previousRecommendation?.analysisData?.aiUsed ||
+          previousRecommendation?.analysisData?.aiRefreshRecommended
+      );
+      result.aiRefreshRecommended = !result.aiUsed && previousAiOutdated;
+      result.aiStatus = result.aiUsed
+        ? 'included'
+        : result.aiRefreshRecommended
+          ? 'Refresh Recommended'
+          : 'not_in_use';
+      result.cacheMetadata.aiRefreshRecommended = result.aiRefreshRecommended;
+      result.cacheMetadata.aiStatus = result.aiStatus;
 
       if (req.recommendationGovernance?.signal.aborted) throw recommendationGovernance.failure();
 

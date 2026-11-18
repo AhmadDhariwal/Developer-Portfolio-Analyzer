@@ -38,23 +38,7 @@ const MAX_ACTIVITY_REPOS = 5;
 const MAX_LANGUAGE_REPOS = 8;
 const MAX_SIGNAL_REPOS = 2;
 const SKILL_GAP_ANALYSIS_VERSION = 'v9-skill-evidence-governance';
-const SUPPORT_LANGUAGES = new Set([
-  'HTML',
-  'CSS',
-  'SCSS',
-  'Sass',
-  'Less',
-  'JSON',
-  'Markdown',
-  'MDX',
-  'YAML',
-  'XML',
-  'Dockerfile',
-  'Shell',
-  'Makefile',
-  'Procfile',
-  'Jupyter Notebook'
-]);
+const { SUPPORT_LANGUAGES, languagePresentation } = require('./githubLanguagePresentation');
 
 const isPerfTimingEnabled = () =>
   String(process.env.GITHUB_TIMING || '') === '1' || process.env.NODE_ENV === 'test';
@@ -1370,6 +1354,10 @@ const withCacheMetadata = (result, cacheEntry, source = 'cache') => {
   const snapshots = Array.isArray(cacheEntry?.snapshots) ? cacheEntry.snapshots : [];
   return {
     ...result,
+    ...languagePresentation(result.rawLanguageBytes,
+      result.languageDistribution?.length ? result.languageDistribution : [
+        ...(result.mainLanguageDistribution || []), ...(result.supportLanguageDistribution || [])
+      ]),
     analysisVersion: ANALYSIS_VERSION,
     cache: {
       source,
