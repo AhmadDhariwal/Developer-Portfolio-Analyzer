@@ -124,6 +124,7 @@ export class ApiService {
   setActiveResume(fileId: string, setAsDefault = false): Observable<any> {
     return this.http.put(`${this.baseUrl}/resume/active`, { fileId, setAsDefault }).pipe(
       tap(() => {
+        if (setAsDefault) this.cacheInvalidation.clearProfileCache();
         this.invalidateDeveloperSignalState();
         this.cacheInvalidation.clearResumeCaches();
       }),

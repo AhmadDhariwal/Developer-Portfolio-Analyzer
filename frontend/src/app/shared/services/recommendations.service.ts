@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { filter, finalize, shareReplay, tap } from 'rxjs/operators';
+import { Observable, of, throwError } from 'rxjs';
+import { catchError, filter, finalize, shareReplay, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { FrontendCacheInvalidationService } from './frontend-cache-invalidation.service';
 import { AuthService } from './auth.service';
@@ -219,20 +219,21 @@ export class RecommendationsService {
           resumeHash,
         }
       : { username, careerStack, experienceLevel, forceRefresh };
+    const isCurrent = () =>
+      revision === this.cacheRevision &&
+      (this.auth.getCurrentUser()?._id || 'anonymous') === ownerId;
+    const profileUrl = `${this.baseUrl}/recommendations`;
     let request$!: Observable<RecommendationsResult>;
     request$ = this.http
-      .post<RecommendationsResult>(
-        isTemporary
-          ? `${this.baseUrl}/recommendations/generate`
-          : `${this.baseUrl}/recommendations`,
-        payload,
-      )
+      .post<RecommendationsResult>(isTemporary ? `${profileUrl}/generate` : profileUrl, payload)
       .pipe(
-        filter(
-          () =>
-            revision === this.cacheRevision &&
-            (this.auth.getCurrentUser()?._id || 'anonymous') === ownerId,
-        ),
+        catchError((error) => {
+          if (!isCurrent()) return of();
+          if (isTemporary || error.status !== 409) return throwError(() => error);
+          // A second conflict is surfaced. Recovery only requests current deterministic evidence.
+          return this.http.post<RecommendationsResult>(profileUrl, { forceRefresh: false });
+        }),
+        filter(isCurrent),
         tap((result) => {
           if (!isTemporary) {
             this.cacheInvalidation.clearScenarioCaches();

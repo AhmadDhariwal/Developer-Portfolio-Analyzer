@@ -147,7 +147,7 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
       },
     })),
   );
-  await User.updateOne({ _id: owner }, { activeResumeFileId: files[0]._id });
+  await User.updateOne({ _id: owner }, { defaultResumeFileId: files[0]._id });
   const github = {
     repoCount: 1,
     repositories: [{ name: 'api', hasReadme: false, hasTests: true }],
@@ -197,6 +197,7 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
       .MATRIX_VERSION,
     coverage: 0,
     calculatedAt: analyzedAt.toISOString(),
+    missingSkills: [{ name: 'SQL', status: 'CLAIMED_ONLY' }],
     requiredSkills: [
       {
         name: 'SQL',
@@ -272,11 +273,11 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
     redisFailure = false;
   });
   await t.test(
-    'active resume switch and unanalyzed selection never borrow another analysis',
+    'default resume switch and unanalyzed selection never borrow another analysis',
     async () => {
       const previous = await call('getRecommendations');
       const staleUser = await User.findById(owner).lean();
-      await User.updateOne({ _id: owner }, { activeResumeFileId: files[1]._id });
+      await User.updateOne({ _id: owner }, { defaultResumeFileId: files[1]._id });
       let staleStatus = 200;
       const staleResponse = {
         status(code) {
@@ -298,11 +299,11 @@ test('Recommendations Mongo: canonical context, invalidation, history, ownership
       assert.equal(next.body.sourceScores.resumeOverall, 0);
       assert.equal(next.body.sourceScores.skillEvidenceCoverage, null);
       assert.notEqual(next.body.cacheMetadata.signalHash, previous.body.cacheMetadata.signalHash);
-      await User.updateOne({ _id: owner }, { activeResumeFileId: files[2]._id });
+      await User.updateOne({ _id: owner }, { defaultResumeFileId: files[2]._id });
       const missing = await call('getRecommendations');
       assert.equal(missing.body.resumeInsights.analyzed, false);
       assert.equal(missing.body.resumeRecommendations.length, 0);
-      await User.updateOne({ _id: owner }, { activeResumeFileId: files[0]._id });
+      await User.updateOne({ _id: owner }, { defaultResumeFileId: files[0]._id });
     },
   );
   await t.test('resume-only persistence, historical rows and saved preview ownership', async () => {

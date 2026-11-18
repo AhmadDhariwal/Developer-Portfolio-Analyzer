@@ -288,8 +288,8 @@ const persistGitHubAnalysis = async (user, githubUsername, forceRefresh) => {
             analysis?.githubSignals?.acceptedResult &&
             String(analysis.githubSignals.username || '').toLowerCase() ===
                 githubUsername.toLowerCase() &&
-            Date.parse(analysis.githubSignals.analyzedAt) >
-                Date.parse(data.githubSignals?.analyzedAt)
+            new Date(analysis.githubSignals.analyzedAt).getTime() >
+                new Date(data.githubSignals?.analyzedAt).getTime()
         ) {
             return analysis.githubSignals.acceptedResult;
         }
@@ -298,20 +298,25 @@ const persistGitHubAnalysis = async (user, githubUsername, forceRefresh) => {
             String(analysis?.githubSignals?.username || '').toLowerCase() ===
                 githubUsername.toLowerCase()
         ) {
-            if (
-                analysis.githubSignals.acceptedResult &&
-                data.cache?.expiresAt &&
-                analysis.githubSignals.acceptedResult.cache?.expiresAt !== data.cache.expiresAt
-            ) {
+            const priorExpiry = new Date(
+                analysis.githubSignals.acceptedResult?.cache?.expiresAt
+            ).getTime();
+            const nextExpiry = new Date(data.cache?.expiresAt || 0).getTime();
+            if (analysis.githubSignals.acceptedResult && nextExpiry > (priorExpiry || 0)) {
                 await Analysis.updateOne(
-                    { _id: analysis._id },
+                    {
+                        _id: analysis._id,
+                        'githubSignals.username': analysis.githubSignals.username,
+                        'githubSignals.analyzedAt': data.githubSignals.analyzedAt,
+                        'githubSignals.acceptedResult.cache.expiresAt':
+                            analysis.githubSignals.acceptedResult.cache?.expiresAt ?? null
+                    },
                     {
                         $set: {
-                            'githubSignals.acceptedResult.cache': data.cache,
-                            updatedAt: new Date()
+                            'githubSignals.acceptedResult.cache.expiresAt': data.cache.expiresAt
                         }
                     }
-                ).catch(() => {});
+                );
             }
             return data;
         }

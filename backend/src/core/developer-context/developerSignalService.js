@@ -14,8 +14,12 @@ const Recommendation = require('../../modules/recommendations/models/recommendat
 const ScenarioSimulation = require('../../modules/scenario-simulator/models/scenarioSimulation');
 const User = require('../../modules/auth/models/user');
 const JobCache = require('../../modules/jobs/models/jobCache');
-const { buildPublicProfilePayload } = require('../../modules/public-portfolio/services/publicProfileService');
-const { getIntegrationInsight } = require('../../modules/integrations/services/integrationInsightService');
+const {
+  buildPublicProfilePayload,
+} = require('../../modules/public-portfolio/services/publicProfileService');
+const {
+  getIntegrationInsight,
+} = require('../../modules/integrations/services/integrationInsightService');
 const publicResources = require('../../modules/integrations/services/kaggleResourceObservationService');
 const { extractSkillsFromText, canonicalizeSkillName } = require('../utils/skilldetector');
 
@@ -313,7 +317,11 @@ const buildResumeAnalysisSignals = (analysis, fallbackExperienceLevel = '') => {
   };
 };
 
-const buildResumeCacheIdentity = ({ resumeText = '', resumeAnalysis = null } = {}) => {
+const buildResumeCacheIdentity = ({
+  resumeText = '',
+  resumeAnalysis = null,
+  defaultResumeFileId = null,
+} = {}) => {
   const cleanResume = String(resumeText || '').trim();
   if (cleanResume) {
     return {
@@ -346,7 +354,12 @@ const buildResumeCacheIdentity = ({ resumeText = '', resumeAnalysis = null } = {
   }
 
   return {
-    resumeHash: 'no-resume',
+    resumeHash: defaultResumeFileId
+      ? crypto
+          .createHash('sha256')
+          .update('unanalyzed-default:' + String(defaultResumeFileId))
+          .digest('hex')
+      : 'no-resume',
     resumeAnalysisId: 'no-resume',
   };
 };
@@ -919,7 +932,11 @@ const summarizeGithubSignal = async (userId, source = {}) => {
 };
 
 const loadDefaultResumeAnalysis = (userId) =>
-  developerContext.resolveResumeAnalysis(userId, undefined, { User, ResumeAnalysis });
+  developerContext.resolveResumeAnalysis(userId, undefined, {
+    User,
+    ResumeAnalysis,
+    defaultOnly: true,
+  });
 
 const summarizeResumeSignal = async (userId, sourceAnalysis) => {
   const latestResume =
@@ -938,12 +955,18 @@ const normalizeSkillItems = (values = [], limit = 16) =>
 const summarizeSkillGapSignal = async (userId) => {
   const context = userId ? await developerContext.loadUser(userId, { User }) : null;
   const selected = context
-    ? await developerContext.resolveResumeAnalysis(userId, context, { ResumeAnalysis })
+    ? await developerContext.resolveResumeAnalysis(userId, context, {
+        ResumeAnalysis,
+        defaultOnly: true,
+      })
     : null;
   const identity = skillGapContract.buildScope({
     userId,
     user: context,
-    resumeIdentity: buildResumeCacheIdentity({ resumeAnalysis: selected }),
+    resumeIdentity: buildResumeCacheIdentity({
+      resumeAnalysis: selected,
+      defaultResumeFileId: developerContext.resolveDefaultResumeFileId(context),
+    }),
   });
   const cache = userId
     ? await AnalysisCache.findOne({

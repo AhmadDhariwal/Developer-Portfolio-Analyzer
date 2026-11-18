@@ -1,3 +1,4 @@
+import { languagePercentageLabels } from '../../../../shared/utils/language-percentage';
 import {
   DashboardProgress,
   DashboardIntegrationConnectivity,
@@ -57,6 +58,7 @@ export interface RecommendationItem {
 export interface LanguageLegendItem {
   label: string;
   percentage: number;
+  displayPercentage?: string;
   color: string;
 }
 
@@ -689,8 +691,18 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
     }
   }
 
+  recommendationNotice = '';
+
+  get skillGapEmptyMessage(): string {
+    return (
+      this.sourceFreshnessRows.find((source) => source.key === 'skillGap')?.reason ||
+      'Open Skill Gap to check the selected profile and run an evidence assessment.'
+    );
+  }
+
   private applyRecommendationsSnapshot(payload: any): void {
     if (!payload) return;
+    this.recommendationNotice = String(payload?.message || '');
     const items = Array.isArray(payload?.items) ? payload.items : [];
     this.recommendations = items.slice(0, 4).map((item: any) => ({
       title: String(item?.title || 'Recommendation'),
@@ -916,6 +928,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
     const gridStroke = this.chartGridColor();
     const labelColor = this.chartColor('--text-secondary');
 
+    const complete = Object.values(breakdown).every((value) => value !== null);
     this.radarInstance = new Chart(this.skillRadar.nativeElement, {
       type: 'radar',
       data: {
@@ -934,7 +947,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
               breakdown.industryReadiness,
               breakdown.projectImpact,
             ],
-            spanGaps: true,
+            spanGaps: false,
+            showLine: complete,
+            fill: complete,
             borderColor: '#4F46E5',
             backgroundColor: 'rgba(99, 102, 241, 0.16)',
             borderWidth: 2.25,
@@ -1258,6 +1273,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
     const colors = ['#4F46E5', '#8B5CF6', '#10B981', '#0EA5E9', '#64748B'];
     this.hasLanguageData = values.length > 0 && total > 0;
 
+    const shares = values.map((value) => (total ? (value / total) * 100 : 0));
+    const percentages = languagePercentageLabels(shares);
+
     this.languageInstance = new Chart(this.languageChart.nativeElement, {
       type: 'doughnut',
       data: {
@@ -1281,13 +1299,19 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
         cutout: '72%',
         plugins: {
           legend: { display: false },
-          tooltip: this.buildChartTooltipOptions(),
+          tooltip: {
+            ...this.buildChartTooltipOptions(),
+            callbacks: {
+              label: (context) => `${context.label}: ${percentages[context.dataIndex]}`,
+            },
+          },
         },
       },
     });
     this.languageLegend = labels.map((label, index) => ({
       label,
-      percentage: total > 0 ? Math.round((values[index] / total) * 100) : 0,
+      percentage: shares[index],
+      displayPercentage: percentages[index],
       color: colors[index],
     }));
   }

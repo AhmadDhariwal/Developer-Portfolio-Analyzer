@@ -127,6 +127,7 @@ mock('../../modules/integrations/models/integrationSyncLog', {
   }),
 });
 mock('../../core/developer-context/developerContextService', {
+  resolveDefaultResumeFileId: (user) => user?.defaultResumeFileId || null,
   resolveGithubUsername: (row) => row?.activeGithubUsername || row?.githubUsername,
   resolveCareerStack: (row) => row?.careerStack,
   resolveExperienceLevel: (row) => row?.experienceLevel,
@@ -322,7 +323,7 @@ test('integration failure degrades explicitly; required evidence storage failure
       contributions: 'Analysis',
       languages: 'Analysis',
       skills: 'Analysis',
-      recommendations: 'recommendation',
+      recommendations: 'AnalysisCache',
       'integration-analytics': 'integrationSyncLog',
     }[endpoint];
     assert.equal((await request(endpoint)).status, 500, endpoint);
@@ -340,11 +341,52 @@ test('language percentages remain finite, nonnegative and total 100 for tiny buc
     bad: Infinity,
     ...Object.fromEntries(Array.from({ length: 201 }, (_, index) => ['L' + index, 1])),
   });
-  assert.equal(
-    Object.values(result).reduce((sum, value) => sum + value, 0),
-    100,
+  assert.ok(Math.abs(Object.values(result).reduce((sum, value) => sum + value, 0) - 100) < 1e-10);
+  assert.equal(Object.keys(result).length, 201);
+  assert.ok(Object.values(result).every((value) => Number.isFinite(value) && value > 0));
+});
+
+test('GitHub Analyzer and Dashboard use the same byte denominator for positive code languages', () => {
+  const {
+    languagePresentation,
+  } = require('../../modules/github/services/githubLanguagePresentation');
+  const bytes = {
+    JavaScript: 11706615,
+    TypeScript: 6728422,
+    HTML: 4349801,
+    SCSS: 3753679,
+    Python: 4911,
+    Batchfile: 237,
+  };
+  const oldPercentages = {
+    JavaScript: 44,
+    TypeScript: 25,
+    HTML: 16,
+    SCSS: 14,
+    Python: 0,
+    Batchfile: 1,
+  };
+  const { mainLanguageDistribution, supportLanguageDistribution } = languagePresentation(
+    bytes,
+    oldPercentages,
   );
-  assert.ok(Object.values(result).every((value) => Number.isFinite(value) && value >= 0));
+  const dashboard = controller.__test.normalizeLanguageMap(oldPercentages, bytes);
+  assert.deepEqual(
+    dashboard,
+    Object.fromEntries(
+      mainLanguageDistribution.map(({ language, percentage }) => [language, percentage]),
+    ),
+  );
+  assert.ok(Math.abs(dashboard.JavaScript - (bytes.JavaScript / 18440185) * 100) < 1e-10);
+  assert.ok(dashboard.Python > 0.026 && dashboard.Python < 0.027);
+  assert.ok(dashboard.Batchfile > 0 && dashboard.Batchfile < 0.01);
+  assert.deepEqual(
+    supportLanguageDistribution.map(({ language }) => language),
+    ['HTML', 'SCSS'],
+  );
+  assert.ok(
+    Math.abs(supportLanguageDistribution[0].percentage - (bytes.HTML / 26543665) * 100) < 1e-10,
+  );
 });
 
 test('concurrent fixture HTTP summaries remain isolated and deterministic (not a real-database SLO test)', async () => {

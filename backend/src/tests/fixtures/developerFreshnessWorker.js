@@ -6,6 +6,8 @@ const axios = require('axios');
 
 async function boot() {
   const aiCalls = { count: 0 };
+  let aiUnavailable = false;
+  let aiDelayMs = 0;
   const githubCalls = { count: 0 };
   let githubScenario = {
     version: 1,
@@ -60,13 +62,17 @@ async function boot() {
         return { data: githubScenario.repos };
       }
       if (clean.includes('/languages')) {
-        return { data: { TypeScript: 12000, JavaScript: 3000 } };
+        return {
+          data: { TypeScript: 12000, JavaScript: 3000, HTML: 2500, Python: 3, Batchfile: 1 }
+        };
       }
       if (clean.includes('/contributors')) {
         return { data: [{ login: 'fixture', contributions: 25 }] };
       }
       if (clean.includes('/commits')) {
-        return { data: [{ sha: 'abc123', commit: { author: { date: new Date().toISOString() } } }] };
+        return {
+          data: [{ sha: 'abc123', commit: { author: { date: new Date().toISOString() } } }]
+        };
       }
       return { data: [] };
     }
@@ -86,6 +92,8 @@ async function boot() {
   const originalRunAi = aiService.runAIAnalysis;
   aiService.runAIAnalysis = async (prompt, fallback, retries, opts = {}) => {
     aiCalls.count += 1;
+    if (aiDelayMs) await new Promise((resolve) => setTimeout(resolve, aiDelayMs));
+    if (aiUnavailable) return { ok: false };
     const text = String(prompt || '');
     const isRecommendations = /recommendation/i.test(text) || /learningActions/i.test(text);
     const value = isRecommendations
@@ -123,6 +131,8 @@ async function boot() {
   app.use('/api/profile', require('../../modules/profile/profile.routes'));
 
   app.post('/__control/state', async (req, res) => {
+    if (typeof req.body?.aiDelayMs === 'number') aiDelayMs = req.body.aiDelayMs;
+    if (typeof req.body?.aiUnavailable === 'boolean') aiUnavailable = req.body.aiUnavailable;
     if (req.body?.githubScenario) {
       githubScenario = { ...githubScenario, ...req.body.githubScenario };
     }
@@ -169,4 +179,3 @@ boot().catch((error) => {
   process.send?.({ error: error.message });
   process.exit(1);
 });
-

@@ -92,7 +92,7 @@ test(
       analyzedAt: new Date(),
       resumeSignals: { skills: ['Node.js', 'SQL', 'Docker'] }
     });
-    owner.activeResumeFileId = file._id;
+    owner.defaultResumeFileId = file._id;
     await owner.save();
     const secret = randomBytes(32).toString('hex');
     const startWorker = () =>

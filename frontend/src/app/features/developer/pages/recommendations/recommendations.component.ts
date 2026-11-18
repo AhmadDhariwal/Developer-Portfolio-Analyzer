@@ -67,6 +67,13 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   private readonly subscriptions = new Subscription();
   private lastProfileKey = '';
   private activeRequest?: Subscription;
+  private readonly onDeveloperDataChanged = (event: Event): void => {
+    if ((event as CustomEvent<{ scope?: string }>).detail?.scope !== 'sources') return;
+    this.profileResultBackup = null;
+    if (this.isPreviewMode || !this.isAuthenticated) return;
+    this.result = null;
+    this.analyze(false, true);
+  };
 
   constructor(
     private readonly recService: RecommendationsService,
@@ -79,6 +86,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    globalThis.addEventListener?.('devinsight:developer-data-changed', this.onDeveloperDataChanged);
     this.lastProfileKey = buildCareerProfileSignature(this.careerProfileService.snapshot);
     this.subscriptions.add(
       this.careerProfileService.careerProfile$
@@ -142,6 +150,10 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    globalThis.removeEventListener?.(
+      'devinsight:developer-data-changed',
+      this.onDeveloperDataChanged,
+    );
     this.activeRequest?.unsubscribe();
     this.subscriptions.unsubscribe();
   }

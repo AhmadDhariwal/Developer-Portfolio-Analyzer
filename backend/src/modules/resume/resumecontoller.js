@@ -224,9 +224,9 @@ const uploadResume = async (req, res) => {
         async (session) => {
           resumeFile.isNew = true;
           await resumeFile.save({ session });
-          await User.findByIdAndUpdate(
-            req.user._id,
-            { activeResumeFileId: resumeFile._id },
+          await User.updateOne(
+            { _id: req.user._id, defaultResumeFileId: null },
+            { $set: { activeResumeFileId: resumeFile._id } },
             { session }
           );
         },

@@ -1,3 +1,7 @@
+import {
+  formatLanguagePercentage,
+  languagePercentageLabels,
+} from '../../../../../../shared/utils/language-percentage';
 import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
@@ -32,6 +36,12 @@ export class GithubChartsComponent
   extends GithubPresentation
   implements AfterViewInit, OnChanges, OnDestroy
 {
+  readonly formatLanguagePercentage = formatLanguagePercentage;
+
+  get codePercentageLabels(): string[] {
+    return languagePercentageLabels(this.displayLanguages.map((row) => row.percentage));
+  }
+
   @Input({ required: true }) hasLanguageData!: boolean;
   @Input({ required: true }) hasActivityData!: boolean;
   @Input({ required: true }) result!: GitHubAnalysisResult;
@@ -86,6 +96,7 @@ export class GithubChartsComponent
 
       const style = getComputedStyle(canvas);
       const chartFont = style.fontFamily;
+      const percentages = this.codePercentageLabels;
 
       const cfg: ChartConfiguration<'doughnut'> = {
         type: 'doughnut',
@@ -111,7 +122,7 @@ export class GithubChartsComponent
               titleFont: { family: chartFont, size: 12, weight: 600 },
               bodyFont: { family: chartFont, size: 12 },
               callbacks: {
-                label: (c) => ` ${c.label}: ${c.parsed}%`,
+                label: (c) => ` ${c.label}: ${percentages[c.dataIndex]}`,
               },
             },
           },

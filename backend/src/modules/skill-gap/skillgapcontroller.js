@@ -939,6 +939,7 @@ const queueAIVersionSnapshot = (payload) => {
 
 const loadResumeAnalysis = (userId, userContext) =>
   developerContext.resolveResumeAnalysis(userId, userContext, {
+    defaultOnly: true,
     ResumeAnalysis
   });
 
@@ -1148,7 +1149,7 @@ const buildSkillGapCacheSignalHash = ({
         roadmapVersion: "skill-gap-roadmap-v2",
         evidenceRuleVersion: skillGapEvidence.RULE_VERSION,
         evidencePolicyVersion: skillGapEvidence.EVIDENCE_POLICY_VERSION,
-        selectedResume: developerContext.resolveSelectedResumeFileId(user),
+        selectedResume: developerContext.resolveDefaultResumeFileId(user),
         supportingEvidence: {
           integration: developerSignals.integrationSignal,
           sprint: developerSignals.careerSprintSignal,
@@ -1994,7 +1995,7 @@ const analyzeSkillGap = async (req, res) => {
               ? crypto.createHash("sha256").update(cleanResume).digest("hex")
               : "no-resume")
         )
-      : `${developerContext.resolveSelectedResumeFileId(req.user) || "profile-active"}:${req.user?.updatedAt || ""}`;
+      : `${developerContext.resolveDefaultResumeFileId(req.user) || "profile-active"}:${req.user?.updatedAt || ""}`;
     inflightKey = buildInflightRequestKey({
       userId: req.user?._id || null,
       username,
@@ -2083,7 +2084,8 @@ const analyzeSkillGap = async (req, res) => {
         numeric(latestResumeAnalysis?.atsScore) ??
         numeric(latestResumeAnalysis?.resumeSignals?.scores?.atsScore);
       resumeCacheIdentity = buildResumeCacheIdentity({
-        resumeAnalysis: latestResumeAnalysis
+        resumeAnalysis: latestResumeAnalysis,
+        defaultResumeFileId: developerContext.resolveDefaultResumeFileId(userContext)
       });
     }
 
@@ -2419,11 +2421,11 @@ const analyzeSkillGap = async (req, res) => {
     const historicalAt = Date.parse(historical?.updatedAt || historical?.createdAt || "");
     const historicalSuperseded = Boolean(
       historical &&
-        ((historical.resumeAnalysisId &&
-          String(historical.resumeAnalysisId) !== String(resumeCacheIdentity.resumeAnalysisId)) ||
-          (Number.isFinite(historicalAt) &&
-            ((Number.isFinite(githubSourceAt) && githubSourceAt > historicalAt) ||
-              (Number.isFinite(resumeSourceAt) && resumeSourceAt > historicalAt))))
+      ((historical.resumeAnalysisId &&
+        String(historical.resumeAnalysisId) !== String(resumeCacheIdentity.resumeAnalysisId)) ||
+        (Number.isFinite(historicalAt) &&
+          ((Number.isFinite(githubSourceAt) && githubSourceAt > historicalAt) ||
+            (Number.isFinite(resumeSourceAt) && resumeSourceAt > historicalAt))))
     );
     if (historical?.analysisData && !historical.analysisData.ruleVersion && !historicalSuperseded) {
       const cachedDeterministicConfidence = historical.analysisData.deterministicConfidence || 0;
@@ -3017,30 +3019,27 @@ const analyzeSkillGap = async (req, res) => {
             if (reservation) {
               await skillGapControls.fence(reservation, session, governed.signal);
               const User = require("../auth/models/user");
-              if (
-                req.user.updatedAt &&
-                !(await User.collection.findOne(
-                  { _id: req.user._id, updatedAt: req.user.updatedAt },
-                  { session, projection: { _id: 1 } }
-                ))
-              ) {
+              const defaultResumeFileId = developerContext.resolveDefaultResumeFileId(userContext);
+              const latestUser = await User.collection.findOne(
+                {
+                  _id: req.user._id,
+                  defaultResumeFileId,
+                  ...(userContext.updatedAt ? { updatedAt: userContext.updatedAt } : {})
+                },
+                { session, projection: { _id: 1 } }
+              );
+              if (!latestUser) {
                 throw Object.assign(
                   new Error("Career context changed; reanalyze current evidence."),
                   { status: 409 }
                 );
               }
-              if (
-                latestResumeAnalysis?._id &&
-                latestResumeAnalysis.updatedAt &&
-                !(await ResumeAnalysis.collection.findOne(
-                  {
-                    _id: latestResumeAnalysis._id,
-                    userId: req.user._id,
-                    updatedAt: latestResumeAnalysis.updatedAt
-                  },
-                  { session, projection: { _id: 1 } }
-                ))
-              ) {
+              const currentResume = await developerContext.resolveResumeAnalysis(
+                req.user._id,
+                userContext,
+                { ResumeAnalysis, defaultOnly: true, select: "_id", session }
+              );
+              if (String(currentResume?._id || "") !== String(latestResumeAnalysis?._id || "")) {
                 throw Object.assign(
                   new Error("Resume evidence changed; reanalyze current evidence."),
                   { status: 409 }

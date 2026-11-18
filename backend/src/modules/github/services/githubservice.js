@@ -1354,10 +1354,15 @@ const withCacheMetadata = (result, cacheEntry, source = 'cache') => {
   const snapshots = Array.isArray(cacheEntry?.snapshots) ? cacheEntry.snapshots : [];
   return {
     ...result,
-    ...languagePresentation(result.rawLanguageBytes,
-      result.languageDistribution?.length ? result.languageDistribution : [
-        ...(result.mainLanguageDistribution || []), ...(result.supportLanguageDistribution || [])
-      ]),
+    ...languagePresentation(
+      result.rawLanguageBytes,
+      result.languageDistribution?.length
+        ? result.languageDistribution
+        : [
+            ...(result.mainLanguageDistribution || []),
+            ...(result.supportLanguageDistribution || [])
+          ]
+    ),
     analysisVersion: ANALYSIS_VERSION,
     cache: {
       source,
@@ -1505,7 +1510,8 @@ const saveCacheResult = async (username, fresh, previousEntry = null, timing = n
     const updated = await GitHubAnalysisCache.findOneAndUpdate(
       {
         normalizedUsername: normalizeUsername(username),
-        analysisVersion: ANALYSIS_VERSION
+        analysisVersion: ANALYSIS_VERSION,
+        'result.githubSignals.analyzedAt': previousEntry.result.githubSignals?.analyzedAt
       },
       { $set: { expiresAt } },
       { new: true, timestamps: false }
@@ -1519,6 +1525,9 @@ const saveCacheResult = async (username, fresh, previousEntry = null, timing = n
       );
       return withCacheMetadata(updated.result, updated, 'cache');
     }
+    // Another worker replaced the assessment while the provider call was active.
+    const current = await getCacheEntry(username);
+    if (current?.result) return withCacheMetadata(current.result, current, 'cache');
   }
   const { resultWithComparison, entry } = composeCacheArtifacts(username, fresh, previousEntry);
   const normalizedUsername = entry.normalizedUsername;

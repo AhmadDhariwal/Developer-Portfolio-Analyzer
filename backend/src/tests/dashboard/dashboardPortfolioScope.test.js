@@ -23,6 +23,7 @@ const github = {
   scores: { codeQuality: 80, projectImpact: 10, consistency: 20, contribution: 30 },
 };
 mock('../../core/developer-context/developerContextService', {
+  resolveDefaultResumeFileId: (user) => user?.defaultResumeFileId || null,
   resolveGithubUsername: () => 'dev',
   resolveCareerStack: () => 'Backend',
   resolveExperienceLevel: () => 'Student',

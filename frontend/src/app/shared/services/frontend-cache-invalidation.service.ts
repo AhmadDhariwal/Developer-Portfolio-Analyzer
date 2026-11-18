@@ -142,7 +142,9 @@ export class FrontendCacheInvalidationService implements OnDestroy {
         /* Same-tab invalidation remains available when storage is denied. */
       }
     }
-    globalThis.dispatchEvent?.(new CustomEvent('devinsight:developer-data-changed'));
+    globalThis.dispatchEvent?.(
+      new CustomEvent('devinsight:developer-data-changed', { detail: { scope } }),
+    );
   }
 
   clearSkillGapCaches(): void {

@@ -390,7 +390,7 @@
     <div class="card-head">
       <div class="head-text">
         <h3>Language Distribution</h3>
-        <p>Across analyzed repositories</p>
+        <p>Share of code languages in saved GitHub evidence</p>
       </div>
       <span class="bento-pill pill-indigo" *ngIf="hasLanguageData">Top Stack</span>
     </div>
@@ -410,7 +410,7 @@
           <span class="legend-dot" [style.background]="lang.color"></span>
           <span class="legend-name">{{ lang.label }}</span>
         </div>
-        <span class="legend-pct">{{ lang.percentage }}%</span>
+        <span class="legend-pct">{{ lang.displayPercentage || lang.percentage + '%' }}</span>
       </div>
     </div>
   </div>
@@ -471,7 +471,8 @@
         *ngIf="!isLoading && topSkills.length === 0 && missingSkills.length === 0"
         class="empty-state"
       >
-        <p>No skill data available. Please ensure your GitHub profile is analyzed.</p>
+        <p>{{ skillGapEmptyMessage }}</p>
+        <a [routerLink]="['/app/skill-gap']">Open Skill Gap</a>
       </div>
 
       <div *ngIf="!isLoading && (topSkills.length > 0 || missingSkills.length > 0)">
@@ -554,7 +555,7 @@
   <div class="card recommendations-section">
     <div class="rec-section-head">
       <div class="head-text">
-        <h3>AI Recommendations</h3>
+        <h3>Recommendations</h3>
         <p>Personalized priorities to improve portfolio strength</p>
       </div>
       <a class="view-all-link" [routerLink]="['/app/recommendations']">
@@ -575,6 +576,7 @@
     <p class="empty-state" *ngIf="!isLoading && recommendations.length === 0">
       No saved recommendations for your active profile. Open Recommendations to get started.
     </p>
+    <p *ngIf="recommendationNotice" class="empty-state">{{ recommendationNotice }}</p>
     <div class="rec-grid">
       <div class="rec-card" *ngFor="let rec of recommendations">
         <div class="rec-row-main">

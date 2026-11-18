@@ -3,7 +3,10 @@ const assert = require("node:assert/strict");
 const path = require("node:path");
 const fs = require("node:fs");
 const detector = require("../../core/utils/skilldetector");
-const { buildSkillGraph, generateWeeklyLearningRoadmap } = require("../../modules/skill-gap/services/skillGraphService");
+const {
+  buildSkillGraph,
+  generateWeeklyLearningRoadmap
+} = require("../../modules/skill-gap/services/skillGraphService");
 
 const root = path.resolve(__dirname, "../..");
 const resolve = (relative) => require.resolve(path.join(root, relative));
@@ -428,7 +431,7 @@ test("memory and shared caches invalidate when GitHub evidence changes without a
     activeGithubUsername: "revision",
     activeCareerStack: "Backend",
     activeExperienceLevel: "Student",
-    activeResumeFileId: "default"
+    defaultResumeFileId: "default"
   };
   const first = await h.call({}, user);
   const hit = await h.call({}, user);
@@ -455,7 +458,7 @@ test("resume reanalysis, active selection and career context invalidate cached r
     activeGithubUsername: "revision",
     activeCareerStack: "Frontend",
     activeExperienceLevel: "Intern",
-    activeResumeFileId: "default"
+    defaultResumeFileId: "default"
   };
   let previous = await h.call({}, user);
   for (const mutate of [
@@ -466,7 +469,7 @@ test("resume reanalysis, active selection and career context invalidate cached r
       options.resumeAnalysis.atsScore = 0;
     },
     () => {
-      user.activeResumeFileId = "another";
+      user.defaultResumeFileId = "another";
     },
     () => {
       user.activeCareerStack = "Backend";
@@ -497,7 +500,7 @@ test("stale GitHub evidence bypasses result caches and is not persisted", async 
     activeGithubUsername: "stale",
     activeCareerStack: "Backend",
     activeExperienceLevel: "Student",
-    activeResumeFileId: "default"
+    defaultResumeFileId: "default"
   };
   await h.call({}, user);
   const writes = h.calls.mongoWrites;
@@ -519,7 +522,7 @@ test("integration and public demand availability changes invalidate profile cach
     activeGithubUsername: "optional",
     activeCareerStack: "Backend",
     activeExperienceLevel: "Student",
-    activeResumeFileId: "default"
+    defaultResumeFileId: "default"
   };
   const first = await h.call({}, user);
   options.integrationPresent = false;
@@ -539,7 +542,7 @@ test("thrown AI failure preserves deterministic scores, evidence and rule metada
     activeGithubUsername: "ai-throw",
     activeCareerStack: "Frontend",
     activeExperienceLevel: "Intern",
-    activeResumeFileId: "default"
+    defaultResumeFileId: "default"
   };
   const good = await harness().call({ forceRefresh: true }, user);
   const failed = await harness({ aiMode: "throw" }).call({ forceRefresh: true }, user);
@@ -560,7 +563,7 @@ test("adversarial AI cannot replace statuses, requirements, confidence, rules or
     activeGithubUsername: "facts",
     activeCareerStack: "Frontend",
     activeExperienceLevel: "Student",
-    activeResumeFileId: "default"
+    defaultResumeFileId: "default"
   };
   const result = await harness({ aiMode: "evidence-polluted" }).call({}, user);
   assert.equal(result.status, 200);
@@ -581,7 +584,7 @@ test("resume-only profile and total source absence have correct zero/null covera
     _id: "resume-only",
     activeCareerStack: "Frontend",
     activeExperienceLevel: "Student",
-    activeResumeFileId: "default"
+    defaultResumeFileId: "default"
   };
   const h = harness({ aiMode: "fail" });
   const result = await h.call({}, user);
@@ -605,7 +608,7 @@ test("absent career requirements return null and exact missing entries without i
     {
       _id: "missing-career",
       activeGithubUsername: "missing-career",
-      activeResumeFileId: "default"
+      defaultResumeFileId: "default"
     }
   );
   assert.equal(result.status, 200);
@@ -626,7 +629,10 @@ test("saved previews are owner-scoped, deduplicated, raw-text-free, and load wit
   assert.equal(SavedPreview.schema.path("resumeText"), undefined);
   assert.equal(SavedPreview.schema.path("userId").options.required, true);
   const component = fs.readFileSync(
-    path.resolve(__dirname, "../../../../frontend/src/app/features/developer/pages/skill-gap/skill-gap.component.ts"),
+    path.resolve(
+      __dirname,
+      "../../../../frontend/src/app/features/developer/pages/skill-gap/skill-gap.component.ts"
+    ),
     "utf8"
   );
   const load = component.slice(
@@ -860,7 +866,10 @@ test("prompt is narrative-only and schema-bound", () => {
 
 test("failed refresh preserves previous valid result in the frontend component", () => {
   const component = fs.readFileSync(
-    path.resolve(__dirname, "../../../../frontend/src/app/features/developer/pages/skill-gap/skill-gap.component.ts"),
+    path.resolve(
+      __dirname,
+      "../../../../frontend/src/app/features/developer/pages/skill-gap/skill-gap.component.ts"
+    ),
     "utf8"
   );
   assert.match(component, /const previousResult = this\.result/);

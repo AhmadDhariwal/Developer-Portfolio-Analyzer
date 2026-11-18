@@ -25,7 +25,12 @@ function entriesFor(source) {
   for (const [name, value] of rows) {
     const language = String(name ?? '').trim();
     const weight = Number(value);
-    if (!language || /^(null|undefined)$/i.test(language) || !Number.isFinite(weight) || weight <= 0)
+    if (
+      !language ||
+      /^(null|undefined)$/i.test(language) ||
+      !Number.isFinite(weight) ||
+      weight <= 0
+    )
       continue;
     weights.set(language, (weights.get(language) || 0) + weight);
   }
@@ -37,7 +42,10 @@ function proportions(rows) {
   if (!(total > 0) || !Number.isFinite(total)) return [];
   // Preserve the full numeric shares for chart geometry. The largest bucket absorbs
   // floating-point residue rather than hiding real usage in a small bucket.
-  const values = rows.map(([language, weight]) => ({ language, percentage: (weight / total) * 100 }));
+  const values = rows.map(([language, weight]) => ({
+    language,
+    percentage: (weight / total) * 100
+  }));
   const sum = values.reduce((acc, row) => acc + row.percentage, 0);
   values[0].percentage += 100 - sum;
   return values;
@@ -48,7 +56,9 @@ function languagePresentation(rawBytes, fallback) {
   const rows = measured.length ? measured : entriesFor(fallback);
   return {
     mainLanguageDistribution: proportions(rows.filter(([name]) => !SUPPORT_LANGUAGES.has(name))),
-    supportLanguageDistribution: proportions(rows).filter(({ language }) => SUPPORT_LANGUAGES.has(language))
+    supportLanguageDistribution: proportions(rows).filter(({ language }) =>
+      SUPPORT_LANGUAGES.has(language)
+    )
   };
 }
 

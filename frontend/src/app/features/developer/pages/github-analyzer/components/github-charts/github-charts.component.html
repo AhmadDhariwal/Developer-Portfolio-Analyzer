@@ -1,26 +1,26 @@
 <!-- 4. Languages & Sampled Activity (Side-by-Side 2-Column Grid on Desktop, Fluid Single Column on Mobile) -->
 <section
   class="charts-section"
-  *ngIf="hasLanguageData || hasActivityData"
+  *ngIf="hasLanguageData || supportLanguages.length || hasActivityData"
   aria-label="Languages and Activity"
 >
   <div class="charts-grid" [class.charts-grid--single]="!hasLanguageData || !hasActivityData">
     <!-- Languages Card -->
-    <div class="chart-panel" *ngIf="hasLanguageData">
+    <div class="chart-panel" *ngIf="hasLanguageData || supportLanguages.length">
       <div class="panel-header-row">
         <div>
           <h2 class="panel-title">Language Distribution</h2>
           <p class="panel-subtitle">
-            Which languages constitute your codebase? ({{
+            Share of code languages ({{
               result.languageDistributionSource === 'language_bytes'
-                ? 'From byte counts'
-                : 'Primary languages'
+                ? 'sampled bytes'
+                : 'primary-language estimate'
             }})
           </p>
         </div>
       </div>
 
-      <div class="chart-body donut-chart-layout">
+      <div class="chart-body donut-chart-layout" *ngIf="hasLanguageData">
         <div class="donut-canvas-wrap">
           <canvas
             #donutCanvas
@@ -32,16 +32,16 @@
           <li *ngFor="let lang of displayLanguages; let i = index" class="legend-row">
             <span class="legend-color-dot" [style.background]="getLangColour(i)"></span>
             <span class="legend-lang-name">{{ lang.language }}</span>
-            <span class="legend-lang-pct">{{ lang.percentage }}%</span>
+            <span class="legend-lang-pct">{{ codePercentageLabels[i] }}</span>
           </li>
         </ul>
       </div>
 
       <div class="support-lang-footer" *ngIf="supportLanguages.length">
-        <span class="support-lang-label">Support & Config Files:</span>
+        <span class="support-lang-label">Support & config (share of all languages):</span>
         <div class="support-chips-wrap">
           <span class="support-chip" *ngFor="let lang of supportLanguages.slice(0, 6)">
-            {{ lang.language }} {{ lang.percentage }}%
+            {{ lang.language }} {{ formatLanguagePercentage(lang.percentage) }}
           </span>
         </div>
       </div>

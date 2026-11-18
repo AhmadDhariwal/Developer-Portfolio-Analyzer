@@ -90,6 +90,33 @@ describe('Recommendations Sprint contract', () => {
     http.expectOne(`${environment.apiBaseUrl}/recommendations`).flush({ username: 'fresh' });
   });
 
+  it('retries a profile 409 once using current deterministic inputs', () => {
+    const error = vi.fn();
+    const endpoint = `${environment.apiBaseUrl}/recommendations`;
+    service
+      .getRecommendations('dev', 'Backend', 'Intern', [], [], false, true)
+      .subscribe({ error });
+    const explicitRefresh = http.expectOne(endpoint);
+    expect(explicitRefresh.request.body.forceRefresh).toBe(true);
+    explicitRefresh.flush({}, { status: 409, statusText: 'Conflict' });
+    const recovery = http.expectOne(endpoint);
+    expect(recovery.request.body).toEqual({ forceRefresh: false });
+    recovery.flush({}, { status: 409, statusText: 'Conflict' });
+    expect(error).toHaveBeenCalledOnce();
+    http.expectNone(endpoint);
+  });
+
+  it('does not retry an old account response in the new session', () => {
+    const next = vi.fn();
+    const endpoint = `${environment.apiBaseUrl}/recommendations`;
+    service.getRecommendations('dev', 'Backend', 'Intern').subscribe(next);
+    const request = http.expectOne(endpoint);
+    owner = 'second';
+    request.flush({}, { status: 409, statusText: 'Conflict' });
+    expect(next).not.toHaveBeenCalled();
+    http.expectNone(endpoint);
+  });
+
   it('keeps temporary resume handles distinct even when the supplied hash matches', () => {
     service
       .getRecommendations(

@@ -508,8 +508,9 @@ export class GithubAnalyzerComponent extends GithubPresentation implements OnIni
   // ── Languages & Technologies ───────────────────────────────────
 
   get displayLanguages(): LanguageDistribution[] {
-    const main = this.result?.mainLanguageDistribution || [];
-    return this.sortedLanguages(main.length ? main : this.result?.languageDistribution || []);
+    return this.sortedLanguages(
+      this.result?.mainLanguageDistribution ?? this.result?.languageDistribution ?? [],
+    );
   }
 
   get supportLanguages(): LanguageDistribution[] {

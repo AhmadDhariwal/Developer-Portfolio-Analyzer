@@ -59,10 +59,13 @@ const getPortfolioReadiness = async (req, res) => {
       username.toLowerCase() ===
         String(developerContext.resolveGithubUsername(req.user) || '').toLowerCase();
     const selectedResume = profileMode
-      ? await developerContext.resolveResumeAnalysis(req.user._id, req.user)
+      ? await developerContext.resolveResumeAnalysis(req.user._id, req.user, { defaultOnly: true })
       : null;
     const resumeIdentity = profileMode
-      ? buildResumeCacheIdentity({ resumeAnalysis: selectedResume })
+      ? buildResumeCacheIdentity({
+          resumeAnalysis: selectedResume,
+          defaultResumeFileId: developerContext.resolveDefaultResumeFileId(req.user),
+        })
       : {
           resumeHash: crypto.createHash('sha256').update(cleanResume).digest('hex'),
         };

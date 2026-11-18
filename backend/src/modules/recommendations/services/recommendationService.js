@@ -13,6 +13,7 @@ const {
 } = require('../utils/recommendationUtilities');
 const developerContext = require('../../../core/developer-context/developerContextService');
 const engine = require('./recommendationEngineService');
+const skillGapContract = require('../../skill-gap/services/skillGapCacheContract');
 const generation = require('./recommendationGenerationService');
 const crypto = require('node:crypto');
 const aiService = require('../../../core/ai/aiservice');
@@ -417,7 +418,7 @@ const queueAIVersionSnapshot = (options) => {
   });
 };
 
-const loadResumeAnalysis = async (userId, expectedUser) => {
+const loadResumeAnalysis = (userId, user) => {
   const resumeSelect = {
     fileId: 1,
     fileName: 1,
@@ -445,36 +446,11 @@ const loadResumeAnalysis = async (userId, expectedUser) => {
     strengths: 1,
     statusMessage: 1
   };
-  const contextUser = await developerContext.loadUser(userId, { User });
-  if (expectedUser && contextUser) {
-    const current = developerContext.resolveIdentity(contextUser);
-    const expected = developerContext.resolveIdentity(expectedUser);
-    const changed =
-      ['githubUsername', 'careerStack', 'experienceLevel'].some(
-        (key) =>
-          current[key] &&
-          expected[key] &&
-          String(current[key]).toLowerCase() !== String(expected[key]).toLowerCase()
-      ) ||
-      String(developerContext.resolveSelectedResumeFileId(contextUser) || '') !==
-        String(developerContext.resolveSelectedResumeFileId(expectedUser) || '');
-    if (changed) {
-      const error = new Error('Your active developer context changed. Reload and try again.');
-      error.status = 409;
-      throw error;
-    }
-  }
-  const resumeFile = await developerContext.resolveResumeFile(userId, contextUser);
-  if (!resumeFile) return null;
-  return developerContext.resolveResumeAnalysis(
-    userId,
-    { ...contextUser, activeResumeFileId: resumeFile._id },
-    {
-      User,
-      ResumeAnalysis,
-      select: resumeSelect
-    }
-  );
+  return developerContext.resolveResumeAnalysis(userId, user, {
+    ResumeAnalysis,
+    select: resumeSelect,
+    defaultOnly: true
+  });
 };
 
 const getGitHubData = async (
@@ -532,6 +508,78 @@ const getGitHubData = async (
       unavailable: true
     };
   }
+};
+
+const sourceConflict = () =>
+  Object.assign(Error('Recommendation sources changed. Refresh and try again.'), { status: 409 });
+
+const loadProfileSources = async (req, { userId, username, careerStack, experienceLevel }) => {
+  const gapScope = skillGapContract.buildScope({ userId, user: req.user });
+  const loadGap = (resumeIdentity) =>
+    AnalysisCache.findOne({ ...gapScope, ...resumeIdentity, careerStack, experienceLevel })
+      .sort({ updatedAt: -1, _id: -1 })
+      .lean();
+  const [user, resumeAnalysis, githubData, candidate] = await Promise.all([
+    developerContext.loadUser(userId, { User }),
+    loadResumeAnalysis(userId, req.user),
+    getGitHubData(username, { userId }),
+    loadGap()
+  ]);
+  if (
+    !user ||
+    user.isActive === false ||
+    Number(user.sessionRevision || 0) !== Number(req.user?.sessionRevision || 0)
+  ) {
+    throw sourceConflict();
+  }
+  const profileFingerprint = developerContext.buildProfileHash(user, { defaultOnly: true });
+  if (profileFingerprint !== developerContext.buildProfileHash(req.user, { defaultOnly: true })) {
+    throw sourceConflict();
+  }
+  const defaultResumeFileId = developerContext.resolveDefaultResumeFileId(user);
+  const resumeInsights = engine.resumeSignals(
+    resumeAnalysis,
+    buildResumeAnalysisSignals(resumeAnalysis, experienceLevel)
+  );
+  const resumeCacheIdentity = buildResumeCacheIdentity({ resumeAnalysis, defaultResumeFileId });
+  const sourceMetadata = engine.sourceMetadata({
+    username,
+    githubData,
+    resumeAnalysis,
+    resumeInsights
+  });
+  // A candidate from the broader scope is reusable only when it also wins the exact
+  // scope under the same total ordering. Otherwise, look up the exact resume key.
+  const cache =
+    candidate &&
+    (candidate.resumeHash !== resumeCacheIdentity.resumeHash ||
+      candidate.resumeAnalysisId !== resumeCacheIdentity.resumeAnalysisId)
+      ? await loadGap(resumeCacheIdentity)
+      : candidate;
+  const skillGap = engine.compatibleSkillGap(cache, {
+    userId,
+    username,
+    careerStack,
+    experienceLevel,
+    ...resumeCacheIdentity,
+    profileRevision: user.updatedAt || null,
+    sources: sourceMetadata
+  });
+  const fingerprint = engine.sourceFingerprint({
+    githubData,
+    resumeInsights,
+    skillGap,
+    profileFingerprint
+  });
+  return {
+    resumeAnalysis,
+    resumeInsights,
+    resumeCacheIdentity,
+    githubData,
+    sourceMetadata,
+    skillGap,
+    fingerprint
+  };
 };
 
 const buildGithubInsights = (githubData = {}) => ({
@@ -857,12 +905,14 @@ const runRecommendationPipeline = async ({
   const providedMissingSkills = uniqueStrings(missingSkills || [], 20);
   stageTimer.mark('validation', validationStarted);
 
+  const readProfileSources = () =>
+    loadProfileSources(req, { userId, username, careerStack, experienceLevel });
   const inflightKey = JSON.stringify({
     userId: String(cacheOwner),
     username: normalizedGithubUsername,
     careerStack,
     experienceLevel,
-    activeResumeFileId: String(developerContext.resolveSelectedResumeFileId(req.user) || ''),
+    defaultResumeFileId: String(developerContext.resolveDefaultResumeFileId(req.user) || ''),
     profileRevision: req.user?.updatedAt || null,
     forceRefresh: Boolean(forceRefresh),
     saveResult: Boolean(saveResult),
@@ -881,57 +931,8 @@ const runRecommendationPipeline = async ({
     try {
       const shared = await existingInflight;
       if (!isTemporaryMode) {
-        const [currentResume, currentGithub, currentSnapshot] = await Promise.all([
-          loadResumeAnalysis(userId, req.user),
-          getGitHubData(username, { userId }),
-          AnalysisCache.findOne({
-            userId,
-            githubUsername: {
-              $regex: '^' + normalizedGithubUsername + '$',
-              $options: 'i'
-            },
-            careerStack,
-            experienceLevel,
-            resumeHash: shared.cacheMetadata.cacheKey.resumeHash,
-            resumeAnalysisId: shared.cacheMetadata.cacheKey.resumeAnalysisId,
-            'analysisData.ruleVersion': engine.SKILL_RULE,
-            'analysisData.evidencePolicyVersion':
-              require('../../skill-gap/services/skillGapEvidenceService').EVIDENCE_POLICY_VERSION,
-            'analysisData.taxonomyVersion': require('../../skill-gap/services/skillGapRequirements')
-              .TAXONOMY_VERSION,
-            'analysisData.requirementMatrixVersion':
-              require('../../skill-gap/services/skillGapRequirements').MATRIX_VERSION,
-            analysisVersion: require('../../skill-gap/services/skillGapCacheContract')
-              .ANALYSIS_VERSION
-          })
-            .sort({ updatedAt: -1 })
-            .lean()
-        ]);
-        const currentInsights = engine.resumeSignals(
-          currentResume,
-          buildResumeAnalysisSignals(currentResume, experienceLevel)
-        );
-        const currentSkillGap = engine.compatibleSkillGap(currentSnapshot, {
-          profileRevision: req.user?.updatedAt || null,
-          userId,
-          username,
-          careerStack,
-          experienceLevel,
-          ...buildResumeCacheIdentity({ resumeAnalysis: currentResume }),
-          sources: engine.sourceMetadata({
-            username,
-            githubData: currentGithub,
-            resumeAnalysis: currentResume,
-            resumeInsights: currentInsights
-          })
-        });
-        if (
-          engine.sourceFingerprint({
-            githubData: currentGithub,
-            resumeInsights: currentInsights,
-            skillGap: currentSkillGap
-          }) !== shared.sourceFingerprint
-        ) {
+        const current = await readProfileSources();
+        if (current.fingerprint !== shared.sourceFingerprint) {
           return await runRecommendationPipeline({
             req,
             res,
@@ -1005,7 +1006,9 @@ const runRecommendationPipeline = async ({
     let storedResumeInsights;
     let resumeCacheIdentity;
     let githubData;
-    let skillGapCandidate;
+    let skillGap = null;
+    let sourceMetadata;
+    let sourceFingerprint;
 
     if (isTemporaryMode) {
       const [previewResume, rawGithub] = await stageTimer.measure('Mongo', () =>
@@ -1027,104 +1030,29 @@ const runRecommendationPipeline = async ({
       storedResumeInsights = previewResume.resumeInsights;
       resumeCacheIdentity = previewResume.resumeCacheIdentity;
       githubData = rawGithub;
-      skillGapCandidate = null;
-    } else {
-      const [loadedResume, rawGithub, loadedSkillGap] = await stageTimer.measure('Mongo', () =>
-        Promise.all([
-          loadResumeAnalysis(userId, req.user),
-          getGitHubData(username, { forceRefresh, isTemporaryMode, userId }),
-          allowSignals && userId
-            ? AnalysisCache.findOne({
-                userId,
-                githubUsername: {
-                  $regex: '^' + normalizedGithubUsername + '$',
-                  $options: 'i'
-                },
-                careerStack,
-                experienceLevel,
-                'analysisData.ruleVersion': engine.SKILL_RULE,
-                'analysisData.evidencePolicyVersion':
-                  require('../../skill-gap/services/skillGapEvidenceService')
-                    .EVIDENCE_POLICY_VERSION,
-                'analysisData.taxonomyVersion':
-                  require('../../skill-gap/services/skillGapRequirements').TAXONOMY_VERSION,
-                'analysisData.requirementMatrixVersion':
-                  require('../../skill-gap/services/skillGapRequirements').MATRIX_VERSION,
-                analysisVersion: require('../../skill-gap/services/skillGapCacheContract')
-                  .ANALYSIS_VERSION
-              })
-                .sort({ updatedAt: -1 })
-                .lean()
-            : Promise.resolve(null)
-        ])
-      );
-      latestResumeAnalysis = loadedResume;
-      storedResumeInsights = engine.resumeSignals(
-        latestResumeAnalysis,
-        buildResumeAnalysisSignals(latestResumeAnalysis, experienceLevel)
-      );
-      resumeCacheIdentity = buildResumeCacheIdentity({
-        resumeAnalysis: latestResumeAnalysis
+      sourceMetadata = engine.sourceMetadata({
+        username,
+        githubData,
+        resumeInsights: storedResumeInsights
       });
-      githubData = rawGithub;
-      skillGapCandidate = loadedSkillGap;
+      sourceFingerprint = engine.sourceFingerprint({
+        githubData,
+        resumeInsights: storedResumeInsights,
+        skillGap
+      });
+    } else {
+      ({
+        resumeAnalysis: latestResumeAnalysis,
+        resumeInsights: storedResumeInsights,
+        resumeCacheIdentity,
+        githubData,
+        sourceMetadata,
+        skillGap,
+        fingerprint: sourceFingerprint
+      } = await stageTimer.measure('Mongo', readProfileSources));
     }
 
     const resumeIdentity = `${resumeCacheIdentity.resumeAnalysisId || 'no-resume'}:${resumeCacheIdentity.resumeHash || 'no-resume'}`;
-    let skillGapCache = skillGapCandidate;
-    if (
-      !isTemporaryMode &&
-      skillGapCandidate &&
-      (skillGapCandidate.resumeHash !== resumeCacheIdentity.resumeHash ||
-        skillGapCandidate.resumeAnalysisId !== resumeCacheIdentity.resumeAnalysisId)
-    ) {
-      skillGapCache = await stageTimer.measure('Mongo', () =>
-        AnalysisCache.findOne({
-          userId,
-          githubUsername: {
-            $regex: '^' + normalizedGithubUsername + '$',
-            $options: 'i'
-          },
-          careerStack,
-          experienceLevel,
-          resumeHash: resumeCacheIdentity.resumeHash,
-          resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId,
-          'analysisData.ruleVersion': engine.SKILL_RULE,
-          'analysisData.evidencePolicyVersion':
-            require('../../skill-gap/services/skillGapEvidenceService').EVIDENCE_POLICY_VERSION,
-          'analysisData.taxonomyVersion': require('../../skill-gap/services/skillGapRequirements')
-            .TAXONOMY_VERSION,
-          'analysisData.requirementMatrixVersion':
-            require('../../skill-gap/services/skillGapRequirements').MATRIX_VERSION,
-          analysisVersion: require('../../skill-gap/services/skillGapCacheContract')
-            .ANALYSIS_VERSION
-        })
-          .sort({ updatedAt: -1 })
-          .lean()
-      );
-    }
-
-    const sourceMetadata = engine.sourceMetadata({
-      username,
-      githubData,
-      resumeAnalysis: latestResumeAnalysis,
-      resumeInsights: storedResumeInsights
-    });
-    const snapshotContext = {
-      profileRevision: req.user?.updatedAt || null,
-      userId,
-      username,
-      careerStack,
-      experienceLevel,
-      ...resumeCacheIdentity,
-      sources: sourceMetadata
-    };
-    const skillGap = engine.compatibleSkillGap(skillGapCache, snapshotContext);
-    const sourceFingerprint = engine.sourceFingerprint({
-      githubData,
-      resumeInsights: storedResumeInsights,
-      skillGap
-    });
     const sourceMemoryKey = buildRecommendationSourceMemoryKey({
       userId: cacheOwner,
       username: normalizedGithubUsername,
@@ -1213,11 +1141,7 @@ const runRecommendationPipeline = async ({
             username: normalizedGithubUsername,
             careerStack,
             experienceLevel,
-            activeResumeFileId: String(
-              developerContext.resolveSelectedResumeFileId(req.user) ||
-                latestResumeAnalysis?.fileId ||
-                ''
-            ),
+            sourceFingerprint,
             sources: sourceMetadata,
             skillGap,
             supportingSignals: preliminarySignals.developerSignals,
@@ -1431,6 +1355,12 @@ const runRecommendationPipeline = async ({
         knownSkills: preliminarySignals.developerSignals.skillGapSignals.knownSkills,
         missingSkills: preliminarySignals.developerSignals.skillGapSignals.missingSkills
       };
+      const currentRecommendation =
+        forceRefresh && scopedCacheKey
+          ? await stageTimer.measure('Mongo', () =>
+              AnalysisCache.findOne(scopedCacheKey).select(ANALYSIS_CACHE_RESULT_FIELDS).lean()
+            )
+          : null;
       const previousRecommendation = scopedCacheKey
         ? await stageTimer.measure('Mongo', () =>
             AnalysisCache.findOne({
@@ -1530,11 +1460,7 @@ const runRecommendationPipeline = async ({
         })
       );
       result.cacheMetadata.temporary = !saveResult;
-      result.sourceFingerprint = engine.sourceFingerprint({
-        githubData,
-        resumeInsights,
-        skillGap
-      });
+      result.sourceFingerprint = sourceFingerprint;
       for (const card of result.recommendations) {
         card.navigation.careerSprint.api = {
           method: 'POST',
@@ -1555,8 +1481,9 @@ const runRecommendationPipeline = async ({
       );
       result.aiUsed = result.aiSuggestions.length > 0;
       const previousAiOutdated = Boolean(
+        currentRecommendation?.analysisData?.aiRefreshRecommended ||
         previousRecommendation?.analysisData?.aiUsed ||
-          previousRecommendation?.analysisData?.aiRefreshRecommended
+        previousRecommendation?.analysisData?.aiRefreshRecommended
       );
       result.aiRefreshRecommended = !result.aiUsed && previousAiOutdated;
       result.aiStatus = result.aiUsed
@@ -1571,54 +1498,26 @@ const runRecommendationPipeline = async ({
 
       // Provider latency must not allow an obsolete source revision to become current.
       if (saveResult && userId) {
-        const [currentResume, currentGithub] = await Promise.all([
-          loadResumeAnalysis(userId, req.user),
-          getGitHubData(username, { userId })
-        ]);
-        const currentInsights = engine.resumeSignals(
-          currentResume,
-          buildResumeAnalysisSignals(currentResume, experienceLevel)
-        );
-        const currentGapCache = await AnalysisCache.findOne({
-          userId,
-          githubUsername: {
-            $regex: '^' + normalizedGithubUsername + '$',
-            $options: 'i'
-          },
-          careerStack,
-          experienceLevel,
-          ...buildResumeCacheIdentity({ resumeAnalysis: currentResume }),
-          'analysisData.ruleVersion': engine.SKILL_RULE,
-          'analysisData.evidencePolicyVersion':
-            require('../../skill-gap/services/skillGapEvidenceService').EVIDENCE_POLICY_VERSION,
-          'analysisData.taxonomyVersion': require('../../skill-gap/services/skillGapRequirements')
-            .TAXONOMY_VERSION,
-          'analysisData.requirementMatrixVersion':
-            require('../../skill-gap/services/skillGapRequirements').MATRIX_VERSION,
-          analysisVersion: require('../../skill-gap/services/skillGapCacheContract')
-            .ANALYSIS_VERSION
-        })
-          .sort({ updatedAt: -1 })
-          .lean();
-        const currentFingerprint = engine.sourceFingerprint({
-          githubData: currentGithub,
-          resumeInsights: currentInsights,
-          skillGap: engine.compatibleSkillGap(currentGapCache, {
-            ...snapshotContext,
-            ...buildResumeCacheIdentity({ resumeAnalysis: currentResume }),
-            sources: engine.sourceMetadata({
-              username,
-              githubData: currentGithub,
-              resumeAnalysis: currentResume,
-              resumeInsights: currentInsights
-            })
-          })
+        const current = await stageTimer.measure('Mongo', readProfileSources);
+        if (current.fingerprint !== sourceFingerprint) throw sourceConflict();
+      }
+
+      if (
+        !result.aiUsed &&
+        currentRecommendation?.analysisData?.aiUsed &&
+        currentRecommendation.analysisData.sourceFingerprint === result.sourceFingerprint &&
+        isPersistableRecommendationResult(currentRecommendation.analysisData)
+      ) {
+        return normalizeRecommendationResponse({
+          ...currentRecommendation.analysisData,
+          fromCache: true,
+          cacheMetadata: {
+            ...currentRecommendation.analysisData.cacheMetadata,
+            loadedFromCache: true,
+            cacheLayer: 'mongo',
+            cachedAt: currentRecommendation.updatedAt || currentRecommendation.createdAt
+          }
         });
-        if (currentFingerprint !== result.sourceFingerprint) {
-          throw Object.assign(Error('Recommendation sources changed. Refresh and try again.'), {
-            status: 409
-          });
-        }
       }
 
       if (!isPersistableRecommendationResult(result)) {

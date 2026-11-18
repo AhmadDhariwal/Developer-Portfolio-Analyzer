@@ -43,8 +43,14 @@ async function start(mode = 'healthy') {
           pending = pending.subarray(parsed.bytes);
           const [command, key, value, ...options] = parsed.parts;
           const name = command.toUpperCase();
-          commands.push(name);
-          if (mode === 'timeout' && !['CLIENT', 'PING'].includes(name)) continue;
+          // Keep the cache-only script distinct from unsupported admission scripts.
+          const readWithTtl =
+            name === 'EVAL' &&
+            value === '1' &&
+            key ===
+              "local value = redis.call('GET', KEYS[1]); if not value then return {false, -2} end; return {value, redis.call('PTTL', KEYS[1])}";
+          commands.push(readWithTtl ? 'EVAL_GET_PTTL' : name);
+          if (mode === 'timeout' && !['CLIENT', 'PING', 'QUIT'].includes(name)) continue;
           if (mode === 'quota' && ['SET', 'DEL'].includes(name)) {
             socket.write('-ERR max requests limit exceeded\r\n');
             continue;
@@ -74,6 +80,21 @@ async function start(mode = 'healthy') {
                 entry && entry.expiresAt > Date.now()
                   ? `$${Buffer.byteLength(entry.value)}\r\n${entry.value}\r\n`
                   : '$-1\r\n'
+              );
+              break;
+            }
+            case 'EVAL': {
+              const redisKey = options[0];
+              if (!readWithTtl) {
+                socket.write('-ERR unsupported fixture script\r\n');
+                break;
+              }
+              const entry = values.get(redisKey);
+              const ttl = entry ? entry.expiresAt - Date.now() : -2;
+              socket.write(
+                ttl > 0
+                  ? `*2\r\n$${Buffer.byteLength(entry.value)}\r\n${entry.value}\r\n:${ttl}\r\n`
+                  : '*2\r\n$-1\r\n:-2\r\n'
               );
               break;
             }

@@ -51,6 +51,10 @@ export class DashboardProgressComponent {
     }));
   }
 
+  get hasDatedSprintCompletions(): boolean {
+    return this.data?.sprint.velocity.some((day) => day.completed > 0) ?? false;
+  }
+
   get maxVelocity(): number {
     return Math.max(1, ...(this.data?.sprint.velocity || []).map((day) => day.points));
   }

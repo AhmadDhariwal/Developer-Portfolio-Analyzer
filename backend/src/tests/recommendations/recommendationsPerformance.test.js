@@ -202,7 +202,12 @@ const createHarness = ({
       select() {
         return this;
       },
-      lean: async () => ({ defaultResumeFileId: 'default' }),
+      lean: async () => ({
+        activeGithubUsername: 'backend-dev',
+        careerStack: 'Backend',
+        experienceLevel: 'Intern',
+        defaultResumeFileId: 'default',
+      }),
     }),
   });
   mock('core/ai/models/savedPreview.js', {

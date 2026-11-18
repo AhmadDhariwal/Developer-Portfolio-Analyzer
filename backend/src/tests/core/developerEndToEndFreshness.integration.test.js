@@ -8,6 +8,7 @@ const { fork } = require('node:child_process');
 const { randomBytes } = require('node:crypto');
 const mongoose = require('mongoose');
 const { createClient } = require('redis');
+const { textPDF } = require('../fixtures/b2Fixture');
 const { startMongo } = require('../fixtures/disposableRequestMongo');
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -43,7 +44,7 @@ async function startWorker({ mongoUri, redisUrl, jwtSecret }) {
     const timer = setTimeout(() => {
       child.kill();
       reject(new Error('Worker boot timeout: ' + logs));
-    }, 30000);
+    }, 60000);
     child.once('message', (msg) => {
       clearTimeout(timer);
       if (msg.error) reject(new Error(msg.error));
@@ -70,7 +71,7 @@ test(
         process.env.INTEGRATION_TEST_MONGOD ||
           'C:\\Program Files\\MongoDB\\Server\\8.2\\bin\\mongod.exe'
       ) || !process.env.DPA_TEST_REDIS_URL,
-    timeout: 120000
+    timeout: 240000
   },
   async (t) => {
     const redisTarget = new URL(process.env.DPA_TEST_REDIS_URL);
@@ -174,13 +175,14 @@ test(
     workers.push(workerA, workerB);
 
     const api = async (worker, method, route, body, token = ownerToken) => {
+      const multipart = body instanceof FormData;
       const response = await fetch(`${worker.base}${route}`, {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          ...(!multipart ? { 'Content-Type': 'application/json' } : {}),
           ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
-        ...(body !== undefined ? { body: JSON.stringify(body) } : {})
+        ...(body !== undefined ? { body: multipart ? body : JSON.stringify(body) } : {})
       });
       const text = await response.text();
       let json = null;
@@ -249,6 +251,18 @@ test(
     const dash1 = await api(workerB, 'GET', '/api/dashboard/summary');
     assert.equal(dash1.status, 200);
     assert.equal(dash1.body.repositories, 1);
+    assert.deepEqual(
+      dash1.body.languageSnapshot.data,
+      Object.fromEntries(
+        sync1.body.mainLanguageDistribution.map(({ language, percentage }) => [
+          language,
+          percentage
+        ])
+      )
+    );
+    assert.ok(dash1.body.languageSnapshot.data.Batchfile > 0);
+    assert.ok(dash1.body.languageSnapshot.data.Batchfile < 0.01);
+    assert.equal(dash1.body.languageSnapshot.data.HTML, undefined);
 
     // 5. Failed external provider sync on Worker A must preserve previously accepted GitHub data (returns stale fallback, never overwrites accepted).
     await api(workerA, 'POST', '/__control/state', { githubScenario: { fail: true } }, null);
@@ -258,7 +272,9 @@ test(
     assert.equal(failedSync.status, 200);
     assert.equal(failedSync.body.cache?.stale, true);
     assert.equal(failedSync.body.repoCount, 1);
-    const preservedRead = await api(workerB, 'POST', '/api/github/analyze-save', { savedOnly: true });
+    const preservedRead = await api(workerB, 'POST', '/api/github/analyze-save', {
+      savedOnly: true
+    });
     assert.equal(preservedRead.status, 200);
     assert.equal(preservedRead.body.repoCount, 1);
 
@@ -318,7 +334,10 @@ test(
     assert.equal(dashAfterSync.status, 200);
     assert.equal(dashAfterSync.body.repositories, 2);
     assert.equal(dashAfterSync.body.recommendationSnapshot.stale, true);
-    assert.equal(dashAfterSync.body.signalMetadata.sourceFreshness.skillGap.refreshRecommended, true);
+    assert.equal(
+      dashAfterSync.body.signalMetadata.sourceFreshness.skillGap.refreshRecommended,
+      true
+    );
     assert.ok(dashAfterSync.body.signalMetadata.staleSources.includes('recommendations'));
     assert.ok(dashAfterSync.body.signalMetadata.staleSources.includes('portfolio'));
 
@@ -358,15 +377,17 @@ test(
     );
     const staleSaved = await api(workerB, 'POST', '/api/github/analyze-save', { savedOnly: true });
     assert.equal(staleSaved.body.cache.stale, true);
-    const renewSync = await api(workerA, 'POST', '/api/github/analyze-save', { forceRefresh: true });
+    const renewSync = await api(workerA, 'POST', '/api/github/analyze-save', {
+      forceRefresh: true
+    });
     assert.equal(renewSync.status, 200);
     const afterRenew = await api(workerB, 'POST', '/api/github/analyze-save', { savedOnly: true });
     assert.equal(afterRenew.status, 200);
     assert.equal(afterRenew.body.cache.stale, false);
-    assert.equal(
-      (await Analysis.findOne({ userId: owner._id }).lean()).githubAnalysisHistory.length,
-      historyLen
-    );
+    const renewedRecord = await Analysis.findOne({ userId: owner._id }).lean();
+    assert.equal(renewedRecord.githubAnalysisHistory.length, historyLen);
+    assert.deepEqual(renewedRecord.updatedAt, beforeExpire.updatedAt);
+    assert.deepEqual(renewedRecord.githubSignals.analyzedAt, beforeExpire.githubSignals.analyzedAt);
 
     // 8. Owner isolation: other user cannot access owner's saved GitHub data even with same githubUsername.
     const otherSaved = await api(
@@ -405,6 +426,30 @@ test(
     });
     assert.equal(recAfterRecover.status, 200);
 
+    const currentDashboard = await api(workerA, 'GET', '/api/dashboard/summary');
+    assert.equal(currentDashboard.status, 200);
+    assert.equal(currentDashboard.body.skillsSnapshot.coveragePercentage, gap2.body.coverage);
+    assert.equal(currentDashboard.body.recommendationSnapshot.stale, false);
+    assert.match(currentDashboard.body.recommendationSnapshot.message, /AI Refresh Recommended/);
+
+    await api(workerB, 'POST', '/__control/state', { aiUnavailable: true }, null);
+    const failedAi = await api(workerB, 'POST', '/api/recommendations', { forceRefresh: true });
+    assert.equal(failedAi.status, 200);
+    assert.equal(failedAi.body.aiRefreshRecommended, true);
+    await api(workerB, 'POST', '/__control/state', { aiUnavailable: false }, null);
+    const regenerated = await api(workerB, 'POST', '/api/recommendations', { forceRefresh: true });
+    assert.equal(regenerated.status, 200);
+    assert.equal(regenerated.body.aiUsed, true);
+    assert.equal(regenerated.body.aiRefreshRecommended, false);
+    await api(workerB, 'POST', '/__control/state', { aiUnavailable: true }, null);
+    const preservedAi = await api(workerB, 'POST', '/api/recommendations', { forceRefresh: true });
+    assert.equal(preservedAi.status, 200);
+    assert.equal(preservedAi.body.aiUsed, true);
+    assert.equal(preservedAi.body.aiRefreshRecommended, false);
+    const dashAfterAi = await api(workerA, 'GET', '/api/dashboard/summary');
+    assert.equal(dashAfterAi.status, 200);
+    assert.equal(dashAfterAi.body.recommendationSnapshot.message, '');
+
     // 10. Resume files deterministic ordering & EmailRetryJob stale processing recovery.
     const sameUploadDate = new Date('2026-11-10T10:00:00.000Z');
     const rFile1 = await ResumeFile.create({
@@ -428,7 +473,10 @@ test(
     assert.equal(String(filesRes.body.files[0].fileId), String(rFile2._id));
     assert.equal(String(filesRes.body.files[1].fileId), String(rFile1._id));
 
-    const { markJobInProgress } = require('../../core/messaging/emailRetryQueueService');
+    const {
+      markJobInProgress,
+      processDueJobs
+    } = require('../../core/messaging/emailRetryQueueService');
     const stuckJob = await EmailDeliveryJob.create({
       invitationId: new mongoose.Types.ObjectId(),
       to: 'stuck@example.invalid',
@@ -441,11 +489,196 @@ test(
       { $set: { updatedAt: new Date(Date.now() - 180_000) } },
       { timestamps: false }
     );
-    const reclaimed = await markJobInProgress(stuckJob._id);
-    assert.equal(reclaimed.status, 'processing');
-    assert.ok(new Date(reclaimed.updatedAt).getTime() > Date.now() - 10_000);
-    // An active lease (< 120s) must not be stolen prematurely.
     assert.equal(await markJobInProgress(stuckJob._id), null);
-    void ResumeAnalysis;
+    const pending = await EmailDeliveryJob.create({
+      invitationId: new mongoose.Types.ObjectId(),
+      to: 'pending@example.invalid',
+      payload: { email: 'pending@example.invalid' }
+    });
+    const claims = await Promise.all([
+      markJobInProgress(pending._id),
+      markJobInProgress(pending._id)
+    ]);
+    assert.equal(claims.filter(Boolean).length, 1);
+    await processDueJobs();
+    const expiredJob = await EmailDeliveryJob.findById(stuckJob._id).lean();
+    assert.equal(expiredJob.status, 'failed');
+    assert.equal(expiredJob.attempts, 0);
+    assert.match(expiredJob.lastError, /Delivery outcome unknown/);
+    assert.equal((await EmailDeliveryJob.findById(pending._id).lean()).status, 'processing');
+    await api(workerB, 'POST', '/__control/state', { aiUnavailable: false, aiDelayMs: 0 }, null);
+    const upload = async (name) => {
+      const pdf = new FormData();
+      pdf.append(
+        'file',
+        new Blob(
+          [
+            textPDF(
+              'Experienced backend developer using Node.js, Docker, TypeScript, SQL and automated testing to deliver measurable project results.'
+            )
+          ],
+          { type: 'application/pdf' }
+        ),
+        name
+      );
+      const uploaded = await api(workerA, 'POST', '/api/resume/upload', pdf, otherToken);
+      assert.equal(uploaded.status, 200, JSON.stringify(uploaded.body));
+      const file = await ResumeFile.findOne({
+        _id: uploaded.body.fileId,
+        userId: other._id
+      }).lean();
+      const uploadDir = path.resolve(__dirname, '../../../uploads');
+      const ownedPath = path.resolve(file.fileUrl);
+      assert.equal(path.dirname(ownedPath), uploadDir);
+      assert.ok(path.basename(ownedPath).startsWith(String(other._id) + '-'));
+      t.after(async () => {
+        const entry = await fs.promises.lstat(ownedPath);
+        assert.equal(entry.isFile(), true);
+        await fs.promises.unlink(ownedPath);
+      });
+      return String(file._id);
+    };
+    const setDefault = (fileId) =>
+      api(workerA, 'PUT', '/api/resume/active', { fileId, setAsDefault: true }, otherToken);
+    const recommend = (worker, forceRefresh = false) =>
+      api(worker, 'POST', '/api/recommendations', { forceRefresh }, otherToken);
+    const saveAnalysis = (fileId, analyzedAt) =>
+      ResumeAnalysis.create({
+        userId: other._id,
+        fileId,
+        fileName: 'fixture.pdf',
+        fileSize: 30,
+        analyzedAt,
+        scoring: { score: 81, ruleVersion: 'resume-overall-score-v1' },
+        resumeSignals: { skills: ['Node.js', 'SQL', 'Docker'] }
+      });
+
+    const firstFile = await upload('default-first.pdf');
+    assert.equal((await setDefault(firstFile)).status, 200);
+    const firstAnalysis = await saveAnalysis(firstFile, new Date());
+    const newFile = await upload('default-next.pdf');
+    await api(workerA, 'POST', '/api/github/analyze-save', { forceRefresh: true }, otherToken);
+    const context = await api(workerB, 'GET', '/api/resume/active', undefined, otherToken);
+    assert.equal(context.body.defaultResume.fileId, firstFile);
+    assert.equal(context.body.activeResume.fileId, firstFile);
+    assert.equal(
+      (await recommend(workerB)).body.resumeInsights.analysisId,
+      String(firstAnalysis._id)
+    );
+
+    const firstEnrichment = await recommend(workerA, true);
+    assert.equal(firstEnrichment.status, 200, JSON.stringify(firstEnrichment.body));
+    assert.equal(firstEnrichment.body.aiUsed, true);
+    assert.equal((await setDefault(newFile)).status, 200);
+    const missing = await recommend(workerB);
+    assert.equal(missing.status, 200);
+    assert.equal(missing.body.cacheMetadata.cacheKey.resumeAnalysisId, 'no-resume');
+    assert.equal(missing.body.sourceMetadata.resume.available, false);
+    assert.equal(missing.body.aiRefreshRecommended, true);
+
+    const holdAi = (worker) =>
+      api(worker, 'POST', '/__control/state', { aiDelayMs: 1200, resetCounters: true }, null);
+    const waitForAi = async (worker) => {
+      for (let attempt = 0; attempt < 100; attempt++) {
+        if ((await counters(worker)).aiCalls) return;
+        await delay(20);
+      }
+      assert.fail('The fixture provider was never reached');
+    };
+    await holdAi(workerA);
+    const duringAnalysis = recommend(workerA, true);
+    await waitForAi(workerA);
+    const accepted = await saveAnalysis(newFile, new Date());
+    const lateHistorical = await saveAnalysis(newFile, new Date('2024-01-01T00:00:00.000Z'));
+    assert.notEqual(String(accepted._id), String(lateHistorical._id));
+    const conflict = await duringAnalysis;
+    assert.equal(conflict.status, 409);
+    assert.match(conflict.body.message, /Recommendation sources changed/);
+    const aiBeforeRecovery = (await counters(workerA)).aiCalls + (await counters(workerB)).aiCalls;
+    const recovered = await recommend(workerB);
+    assert.equal(recovered.status, 200, JSON.stringify(recovered.body));
+    assert.equal(recovered.body.resumeInsights.analysisId, String(accepted._id));
+    assert.equal(recovered.body.resumeInsights.fileId, newFile);
+    assert.equal(recovered.body.aiRefreshRecommended, true);
+    assert.equal(
+      (await counters(workerA)).aiCalls + (await counters(workerB)).aiCalls,
+      aiBeforeRecovery
+    );
+    const gapWithResume = await api(
+      workerB,
+      'POST',
+      '/api/skillgap/skill-gap',
+      { forceRefresh: false },
+      otherToken
+    );
+    assert.equal(gapWithResume.status, 200, JSON.stringify(gapWithResume.body));
+    assert.equal(gapWithResume.body.cacheMetadata.cacheKey.resumeAnalysisId, String(accepted._id));
+    const portfolioWithResume = await api(
+      workerB,
+      'POST',
+      '/api/analysis/portfolio-score',
+      {},
+      otherToken
+    );
+    assert.equal(portfolioWithResume.status, 200);
+    assert.ok(
+      await AnalysisCache.exists({
+        userId: other._id,
+        analysisVersion: 'portfolio-score-v1',
+        resumeAnalysisId: String(accepted._id)
+      })
+    );
+    const dashWithResume = await api(
+      workerA,
+      'GET',
+      '/api/dashboard/summary',
+      undefined,
+      otherToken
+    );
+    assert.equal(dashWithResume.body.consistency.identity.resumeAnalysisId, String(accepted._id));
+    assert.equal(
+      dashWithResume.body.skillsSnapshot.coveragePercentage,
+      gapWithResume.body.coverage
+    );
+
+    await holdAi(workerA);
+    await api(workerB, 'POST', '/__control/state', { resetCounters: true }, null);
+    const refresh = recommend(workerA, true);
+    await waitForAi(workerA);
+    const overlappingRefresh = recommend(workerB, true);
+    const [enriched, joined] = await Promise.all([refresh, overlappingRefresh]);
+    assert.equal(enriched.status, 200);
+    assert.equal(joined.status, 200);
+    assert.equal(enriched.body.aiUsed, true);
+    assert.equal(enriched.body.aiRefreshRecommended, false);
+    assert.equal(joined.body.aiRefreshRecommended, false);
+    assert.equal((await counters(workerA)).aiCalls + (await counters(workerB)).aiCalls, 1);
+    assert.equal((await recommend(workerB)).body.aiRefreshRecommended, false);
+    await t.test(
+      'Resume Analyzer default switch refreshes Recommendations in another tab',
+      { skip: !process.env.DPA_PLAYWRIGHT_MODULE },
+      async () => {
+        await require('../fixtures/defaultResumeBrowser').verifyDefaultResumeTabs({
+          workers,
+          user: {
+            _id: String(other._id),
+            name: other.name,
+            role: 'developer',
+            activeGithubUsername: other.activeGithubUsername,
+            activeCareerStack: other.activeCareerStack,
+            activeExperienceLevel: other.activeExperienceLevel
+          },
+          token: otherToken,
+          initialAnalysis: String(accepted._id),
+          fileId: firstFile,
+          analysisId: String(firstAnalysis._id)
+        });
+      }
+    );
+    assert.equal(
+      (await api(workerB, 'PUT', '/api/resume/active', { fileId: newFile, setAsDefault: true }))
+        .status,
+      404
+    );
   }
 );

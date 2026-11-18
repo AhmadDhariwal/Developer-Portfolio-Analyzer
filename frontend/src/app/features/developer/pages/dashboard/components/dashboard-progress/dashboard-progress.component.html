@@ -101,9 +101,13 @@
         <span class="status-chip" *ngIf="progress.sprint.available">7-Day UTC</span>
       </div>
 
-      <p *ngIf="!progress.sprint.available" class="empty-msg">No saved sprint is available.</p>
+      <p *ngIf="!progress.sprint.available" class="empty-msg">No active sprint is available.</p>
       <ng-container *ngIf="progress.sprint.available">
+        <p *ngIf="!hasDatedSprintCompletions" class="empty-msg">
+          No dated task completions from the active sprint in the last seven UTC days.
+        </p>
         <div
+          *ngIf="hasDatedSprintCompletions"
           class="velocity"
           role="img"
           aria-label="Completed task points per day over seven UTC days; exact values in the table below"
@@ -120,7 +124,7 @@
           {{ progress.sprint.undatedCompletions }} completions have no recorded date and are
           excluded.
         </p>
-        <details>
+        <details *ngIf="hasDatedSprintCompletions">
           <summary>Daily completion data</summary>
           <div class="table-scroll">
             <table>

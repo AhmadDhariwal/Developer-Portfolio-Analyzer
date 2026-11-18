@@ -80,13 +80,13 @@ test('active career stack and experience level win, with legacy compatibility', 
   assert.equal(context.resolveCareerStack({ careerStack: 'Frontend' }), 'Frontend');
   assert.equal(context.resolveExperienceLevel({ experienceLevel: 'Student' }), 'Student');
 });
-test('active resume wins over default and newer historical resume', async () => {
+test('default resume wins over active and newer historical resume', async () => {
   const f = fixture();
   assert.equal(
     (await context.resolveCurrentContext('u', f.user, f.models)).resumeFileId,
-    'active'
+    'default'
   );
-  assert.equal((await context.resolveResumeAnalysis('u', f.user, f.models)).fileId, 'active');
+  assert.equal((await context.resolveResumeAnalysis('u', f.user, f.models)).fileId, 'default');
 });
 test('default resume wins when active is absent', async () => {
   const f = fixture();
@@ -118,7 +118,7 @@ test('no resume yields clean null context, even with orphan analyses', async () 
 });
 test('an unanalyzed selection never borrows historical analysis', async () => {
   const f = fixture();
-  f.user.activeResumeFileId = 'unanalyzed';
+  f.user.defaultResumeFileId = 'unanalyzed';
   assert.equal(await context.resolveResumeAnalysis('u', f.user, f.models), null);
 });
 test('Dashboard, Simulator, Weekly Reports read the same active resume; switching preserves history', async (t) => {
@@ -128,18 +128,21 @@ test('Dashboard, Simulator, Weekly Reports read the same active resume; switchin
   t.mock.method(ResumeAnalysis, 'findOne', f.models.ResumeAnalysis.findOne);
   const loaders = [
     require('../../modules/dashboard/dashboardcontroller').__test.loadDefaultResumeAnalysis,
-    require('../../modules/scenario-simulator/services/scenarioSimulatorService').__test.loadCurrentResumeAnalysis,
-    require('../../modules/weekly-reports/services/weeklyReportService').__test.loadDefaultResumeAnalysis
+    require('../../modules/scenario-simulator/services/scenarioSimulatorService').__test
+      .loadCurrentResumeAnalysis,
+    require('../../modules/weekly-reports/services/weeklyReportService').__test
+      .loadDefaultResumeAnalysis
   ];
   const originalHistory = JSON.stringify({ files: f.files, analyses: f.analyses });
   const originalUser = JSON.stringify(f.user);
-  for (const load of loaders) assert.equal((await load('u')).fileId, 'active');
+  for (const load of loaders) assert.equal((await load('u')).fileId, 'default');
   assert.equal(JSON.stringify(f.user), originalUser, 'reads must not update context');
   f.user.activeResumeFileId = 'default';
   for (const load of loaders) assert.equal((await load('u')).fileId, 'default');
   delete f.user.activeResumeFileId;
   delete f.user.defaultResumeFileId;
-  for (const load of loaders) assert.equal((await load('u')).fileId, 'latest');
+  assert.equal(await loaders[0]('u'), null);
+  for (const load of loaders.slice(1)) assert.equal((await load('u')).fileId, 'latest');
   assert.equal(JSON.stringify({ files: f.files, analyses: f.analyses }), originalHistory);
 });
 
@@ -234,15 +237,15 @@ test('selecting an active resume updates only selection and retains all historic
   );
   assert.equal(response.fileId, nextId);
   assert.equal(f.user.defaultResumeFileId, 'default');
-  assert.equal((await context.resolveResumeAnalysis('u', f.user, f.models)).fileId, nextId);
+  assert.equal((await context.resolveResumeAnalysis('u', f.user, f.models)).fileId, 'default');
   assert.equal(JSON.stringify({ files: f.files, analyses: f.analyses }), before);
 });
 
 test('selected resume analyses require a surviving owned file, including orphan and foreign references', async () => {
   const f = fixture();
-  f.user.activeResumeFileId = 'deleted';
+  f.user.defaultResumeFileId = 'deleted';
   assert.equal(await context.resolveResumeAnalysis('u', f.user, f.models), null);
-  f.user.activeResumeFileId = 'foreign';
+  f.user.defaultResumeFileId = 'foreign';
   f.analyses.push({ fileId: 'foreign', userId: 'u', analyzedAt: 10 });
   assert.equal(await context.resolveResumeAnalysis('u', f.user, f.models), null);
 });
@@ -316,9 +319,6 @@ test('context resolution does not cause circular dependencies across consumers',
   ];
   for (const mod of modules) {
     const loaded = require(mod);
-    assert.ok(
-      loaded,
-      `Module ${mod} should load successfully without circular dependency issues`
-    );
+    assert.ok(loaded, `Module ${mod} should load successfully without circular dependency issues`);
   }
 });

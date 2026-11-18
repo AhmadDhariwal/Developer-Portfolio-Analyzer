@@ -14,12 +14,15 @@ function buildCachePipeline(userId, careerStack, experienceLevel, cachePredicate
       'analysisData.coverage': 1,
       'analysisData.ruleVersion': 1,
       'analysisData.provenSkills': 1,
+      'analysisData.sourceReferences': 1,
       'analysisData.claimedButNotProvenSkills': 1,
     },
     {
       'analysisData.recommendationSignals': 1,
       'analysisData.structuredRecommendations': 1,
       'analysisData.projects': 1,
+      'analysisData.sourceMetadata': 1,
+      'analysisData.aiRefreshRecommended': 1,
       'analysisData.recommendationScores': 1,
     },
   ];

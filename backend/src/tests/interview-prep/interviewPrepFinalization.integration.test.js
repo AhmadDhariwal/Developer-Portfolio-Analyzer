@@ -5,6 +5,7 @@ const { randomUUID } = require('node:crypto');
 const Bank = require('../../modules/interview-prep/models/interviewQuestionBank');
 const Session = require('../../modules/interview-prep/models/interviewPrepSession');
 const Lease = require('../../modules/interview-prep/models/interviewJobLease');
+const Coordination = require('../../modules/interview-prep/models/interviewCoordination');
 const repository = require('../../modules/interview-prep/repositories/interviewQuestionRepository');
 const service = require('../../modules/interview-prep/services/interviewPrepService');
 const ai = require('../../modules/interview-prep/providers/interviewAIProvider');
@@ -26,130 +27,165 @@ test(
       serverSelectionTimeoutMS: 5000
     });
     t.after(async () => {
-      assert.equal(mongoose.connection.name, database, 'Tests must remain inside the isolated database');
+      assert.equal(
+        mongoose.connection.name,
+        database,
+        'Tests must remain inside the isolated database'
+      );
       // The task-owned ephemeral server owns these files; never drop a database
       // from a test connection supplied by the environment.
       await mongoose.disconnect();
       cache.clearMemoryCache();
     });
-    await Promise.all([Bank.createIndexes(), Session.createIndexes(), Lease.createIndexes()]);
+    await Promise.all([Bank, Session, Lease, Coordination].map((model) => model.createIndexes()));
 
-    await t.test('real unique indexes and atomic trust protection survive competing workers', async () => {
-      const seed = buildSeedRecordsForTopic(getImportantTopicByKey('javascript'))[0];
-      const generated = {
-        ...seed,
-        sourceType: 'ai_generated',
-        source: 'ai_generated',
-        answer: 'Unverified competing answer.',
-        sourceMeta: {},
-        seedId: ''
-      };
-      await Promise.all([repository.upsertQuestions([generated]), repository.upsertQuestions([seed])]);
-      await repository.upsertQuestions([generated]);
-      const saved = await Bank.findOne({
-        topicKey: 'javascript',
-        normalizedQuestionHash: repository.toQuestionHash(seed.question)
-      }).lean();
-      assert.equal(saved.answer, seed.answer);
-      assert.equal(saved.sourceType, 'verified_seed');
-      assert.equal(saved.isApproved, true);
-      const concurrent = {
-        ...generated,
-        question: 'How does JavaScript isolate a bounded worker message queue?',
-        seedId: '',
-        normalizedQuestion: '',
-        normalizedQuestionHash: '',
-        canonicalQuestionKey: ''
-      };
-      await Promise.all(Array.from({ length: 4 }, () => repository.upsertQuestions([concurrent])));
-      assert.equal(await Bank.countDocuments({ question: concurrent.question }), 1);
-    });
+    await t.test(
+      'real unique indexes and atomic trust protection survive competing workers',
+      async () => {
+        const seed = buildSeedRecordsForTopic(getImportantTopicByKey('javascript'))[0];
+        const generated = {
+          ...seed,
+          sourceType: 'ai_generated',
+          source: 'ai_generated',
+          answer: 'Unverified competing answer.',
+          sourceMeta: {},
+          seedId: ''
+        };
+        await Promise.all([
+          repository.upsertQuestions([generated]),
+          repository.upsertQuestions([seed])
+        ]);
+        await repository.upsertQuestions([generated]);
+        const saved = await Bank.findOne({
+          topicKey: 'javascript',
+          normalizedQuestionHash: repository.toQuestionHash(seed.question)
+        }).lean();
+        assert.equal(saved.answer, seed.answer);
+        assert.equal(saved.sourceType, 'verified_seed');
+        assert.equal(saved.isApproved, true);
+        const concurrent = {
+          ...generated,
+          question: 'How does JavaScript isolate a bounded worker message queue?',
+          seedId: '',
+          normalizedQuestion: '',
+          normalizedQuestionHash: '',
+          canonicalQuestionKey: ''
+        };
+        await Promise.all(
+          Array.from({ length: 4 }, () => repository.upsertQuestions([concurrent]))
+        );
+        assert.equal(await Bank.countDocuments({ question: concurrent.question }), 1);
+      }
+    );
 
-    await t.test('All Questions paginates past 500 records with stable nonoverlapping pages', async () => {
-      await Bank.insertMany(
-        Array.from({ length: 620 }, (_, index) => ({
+    await t.test(
+      'All Questions paginates past 500 records with stable nonoverlapping pages',
+      async () => {
+        await Bank.insertMany(
+          Array.from({ length: 620 }, (_, index) => ({
+            topicKey: 'qa-pagination',
+            skill: 'qa-pagination',
+            question: `Fixture question ${index}?`,
+            normalizedQuestion: `fixture ${index}`,
+            answer: 'Test fixture answer.',
+            qualityScore: 90,
+            confidenceScore: 0.9,
+            relevanceScore: 0.9,
+            createdAt: new Date('2026-01-01')
+          }))
+        );
+        const first = await repository.findAllQuestionsPage({
           topicKey: 'qa-pagination',
-          skill: 'qa-pagination',
-          question: `Fixture question ${index}?`,
-          normalizedQuestion: `fixture ${index}`,
-          answer: 'Test fixture answer.',
-          qualityScore: 90,
-          confidenceScore: 0.9,
-          relevanceScore: 0.9,
-          createdAt: new Date('2026-01-01')
-        }))
-      );
-      const first = await repository.findAllQuestionsPage({ topicKey: 'qa-pagination', page: 60, limit: 10 });
-      const next = await repository.findAllQuestionsPage({ topicKey: 'qa-pagination', page: 61, limit: 10 });
-      assert.equal(first.total, 620);
-      assert.equal(first.questions.length, 10);
-      assert.equal(next.questions.length, 10);
-      assert.equal(new Set([...first.questions, ...next.questions].map((row) => String(row._id))).size, 20);
-      await repository.incrementUsageStats(first.questions.map((row) => row._id));
-      const repeated = await repository.findAllQuestionsPage({
-        topicKey: 'qa-pagination',
-        page: 60,
-        limit: 10
-      });
-      assert.deepEqual(
-        repeated.questions.map((row) => String(row._id)),
-        first.questions.map((row) => String(row._id))
-      );
-    });
-
-    await t.test('scraped and legacy private content cannot enter public approved results', async () => {
-      const seed = buildSeedRecordsForTopic(getImportantTopicByKey('react'))[0];
-      await repository.upsertQuestions([
-        { ...seed, sourceType: 'scraped', source: 'scraped', sourceMeta: {}, seedId: '' }
-      ]);
-      const stored = await Bank.findOne({ topicKey: 'react' }).lean();
-      assert.equal(stored.isApproved, false);
-      assert.equal(stored.reviewStatus, 'pending');
-      assert.equal((await repository.findAllQuestionsPage({ topicKey: 'react' })).total, 0);
-      await Bank.updateOne(
-        { _id: stored._id },
-        {
-          $set: {
-            sourceType: 'ai_generated',
-            isApproved: true,
-            qualityStatus: 'approved',
-            reviewStatus: 'approved',
-            qualityState: 'approved',
-            sourceMeta: { userId: 'historical-owner' }
-          }
-        }
-      );
-      assert.equal((await repository.findAllQuestionsPage({ topicKey: 'react' })).total, 0);
-      assert.ok(await Bank.findById(stored._id), 'Historical data is retained');
-    });
-
-    await t.test('Mongo lease excludes overlapping workers, releases on failure, and retries', async () => {
-      let release;
-      let started;
-      const gate = new Promise((resolve) => {
-        started = resolve;
-      });
-      const running = runInterviewJob(async () => {
-        started();
-        await new Promise((resolve) => {
-          release = resolve;
+          page: 60,
+          limit: 10
         });
-        return 'finished';
-      });
-      await gate;
-      assert.deepEqual(await runInterviewJob(async () => assert.fail('Overlapping job executed')), {
-        skipped: true
-      });
-      release();
-      assert.equal(await running, 'finished');
-      await assert.rejects(
-        runInterviewJob(async () => {
-          throw new Error('retry fixture');
-        }),
-        /retry fixture/
-      );
-      assert.equal(await runInterviewJob(async () => 'retried'), 'retried');
-    });
+        const next = await repository.findAllQuestionsPage({
+          topicKey: 'qa-pagination',
+          page: 61,
+          limit: 10
+        });
+        assert.equal(first.total, 620);
+        assert.equal(first.questions.length, 10);
+        assert.equal(next.questions.length, 10);
+        assert.equal(
+          new Set([...first.questions, ...next.questions].map((row) => String(row._id))).size,
+          20
+        );
+        await repository.incrementUsageStats(first.questions.map((row) => row._id));
+        const repeated = await repository.findAllQuestionsPage({
+          topicKey: 'qa-pagination',
+          page: 60,
+          limit: 10
+        });
+        assert.deepEqual(
+          repeated.questions.map((row) => String(row._id)),
+          first.questions.map((row) => String(row._id))
+        );
+      }
+    );
+
+    await t.test(
+      'scraped and legacy private content cannot enter public approved results',
+      async () => {
+        const seed = buildSeedRecordsForTopic(getImportantTopicByKey('react'))[0];
+        await repository.upsertQuestions([
+          { ...seed, sourceType: 'scraped', source: 'scraped', sourceMeta: {}, seedId: '' }
+        ]);
+        const stored = await Bank.findOne({ topicKey: 'react' }).lean();
+        assert.equal(stored.isApproved, false);
+        assert.equal(stored.reviewStatus, 'pending');
+        assert.equal((await repository.findAllQuestionsPage({ topicKey: 'react' })).total, 0);
+        await Bank.updateOne(
+          { _id: stored._id },
+          {
+            $set: {
+              sourceType: 'ai_generated',
+              isApproved: true,
+              qualityStatus: 'approved',
+              reviewStatus: 'approved',
+              qualityState: 'approved',
+              sourceMeta: { userId: 'historical-owner' }
+            }
+          }
+        );
+        assert.equal((await repository.findAllQuestionsPage({ topicKey: 'react' })).total, 0);
+        assert.ok(await Bank.findById(stored._id), 'Historical data is retained');
+      }
+    );
+
+    await t.test(
+      'Mongo lease excludes overlapping workers, releases on failure, and retries',
+      async () => {
+        let release;
+        let started;
+        const gate = new Promise((resolve) => {
+          started = resolve;
+        });
+        const running = runInterviewJob(async () => {
+          started();
+          await new Promise((resolve) => {
+            release = resolve;
+          });
+          return 'finished';
+        });
+        await gate;
+        assert.deepEqual(
+          await runInterviewJob(async () => assert.fail('Overlapping job executed')),
+          {
+            skipped: true
+          }
+        );
+        release();
+        assert.equal(await running, 'finished');
+        await assert.rejects(
+          runInterviewJob(async () => {
+            throw new Error('retry fixture');
+          }),
+          /retry fixture/
+        );
+        assert.equal(await runInterviewJob(async () => 'retried'), 'retried');
+      }
+    );
 
     await t.test('owned history remains bounded and isolated', async () => {
       const owner = new mongoose.Types.ObjectId();
@@ -218,7 +254,8 @@ test(
             'Treating promises as timer callbacks',
             'Recursively scheduling microtasks without yielding'
           ],
-          interviewTip: 'Explain stack completion, the microtask checkpoint, rendering, and the next task.'
+          interviewTip:
+            'Explain stack completion, the microtask checkpoint, rendering, and the next task.'
         };
         const provider = subtest.mock.method(ai, 'answerSearchFallback', async () => ({
           answer: Object.values(sections).flat().join(' '),
@@ -277,7 +314,10 @@ test(
         });
         const app = express();
         app.use(express.json());
-        app.use('/api/interview-prep', require('../../modules/interview-prep/interviewPrep.routes'));
+        app.use(
+          '/api/interview-prep',
+          require('../../modules/interview-prep/interviewPrep.routes')
+        );
         const server = app.listen(0, '127.0.0.1');
         await new Promise((resolve) => server.once('listening', resolve));
         subtest.after(() => new Promise((resolve) => server.close(resolve)));
@@ -342,7 +382,10 @@ test(
           ).status,
           409
         );
-        assert.equal((await request(`${sessionPath}/complete`, { expectedVersion: 1 })).status, 409);
+        assert.equal(
+          (await request(`${sessionPath}/complete`, { expectedVersion: 1 })).status,
+          409
+        );
         assert.equal((await request('/sessions/not-an-id')).status, 400);
         assert.equal((await request('/questions?topic=javascript&category=unknown')).status, 400);
         assert.match(session.body.personalization.limitation, /evidence|ability|scores/i);
@@ -350,26 +393,38 @@ test(
       }
     );
 
-    await t.test('explicit custom generation honors the existing 6500ms AI deadline', async (subtest) => {
-      subtest.mock.method(ai, 'answerSearchFallback', () => new Promise(() => {}));
-      const started = performance.now();
-      await assert.rejects(
-        service.answerCustomInterviewQuestion({
-          userId: new mongoose.Types.ObjectId(),
-          topic: 'javascript',
-          question:
-            'How should JavaScript coordinate MessageChannel backpressure for isolated worker scheduling?'
-        }),
-        { statusCode: 503, retryable: true }
-      );
-      const elapsed = performance.now() - started;
-      assert.ok(
-        elapsed >= 6400 && elapsed < 8000,
-        `6500ms deadline plus local database overhead: ${elapsed}ms`
-      );
-      subtest.diagnostic(
-        `AI timeout fallback completed in ${elapsed.toFixed(1)}ms (existing AI budget: 6500ms).`
-      );
-    });
+    await t.test(
+      'explicit custom generation honors the configured total AI deadline',
+      async (subtest) => {
+        const timeoutVariable = 'INTERVIEW_CUSTOM_TOTAL_TIMEOUT_MS';
+        const previousTimeout = process.env[timeoutVariable];
+        process.env[timeoutVariable] = '7500';
+        subtest.after(() => {
+          if (previousTimeout === undefined) delete process.env[timeoutVariable];
+          else process.env[timeoutVariable] = previousTimeout;
+        });
+        const { totalMs } = require('../../core/config/aiProviders').customQAPolicy();
+        assert.equal(totalMs, 7500);
+        subtest.mock.method(ai, 'answerSearchFallback', () => new Promise(() => {}));
+        const started = performance.now();
+        await assert.rejects(
+          service.answerCustomInterviewQuestion({
+            userId: new mongoose.Types.ObjectId(),
+            topic: 'javascript',
+            question:
+              'How should JavaScript coordinate MessageChannel backpressure for isolated worker scheduling?'
+          }),
+          { statusCode: 503, retryable: true }
+        );
+        const elapsed = performance.now() - started;
+        assert.ok(
+          elapsed >= totalMs - 1250 && elapsed <= totalMs + 1000,
+          `Configured request budget of ${totalMs}ms with persistence reserve: ${elapsed}ms`
+        );
+        subtest.diagnostic(
+          `AI timeout fallback completed in ${elapsed.toFixed(1)}ms (configured budget: ${totalMs}ms).`
+        );
+      }
+    );
   }
 );

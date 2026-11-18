@@ -42,54 +42,88 @@ const enqueueInvitationRetry = async ({ invitationId, to, payload, maxAttempts =
   ).lean();
 };
 
-const STALE_PROCESSING_MS = 120 * 1000;
+const PROCESSING_LEASE_MS = 120 * 1000;
+const UNCERTAIN_DELIVERY = 'Delivery outcome unknown. Automatic resend skipped.';
+const staleProcessing = (now) => ({
+  status: 'processing',
+  nextAttemptAt: { $lte: now },
+  updatedAt: { $lte: new Date(now.getTime() - PROCESSING_LEASE_MS) }
+});
 
 const markJobInProgress = async (jobId) => {
-  const staleCutoff = new Date(Date.now() - STALE_PROCESSING_MS);
-  const updated = await EmailDeliveryJob.findOneAndUpdate(
+  const now = new Date();
+  return EmailDeliveryJob.findOneAndUpdate(
+    { _id: jobId, status: { $in: ['pending', 'retrying'] }, nextAttemptAt: { $lte: now } },
     {
-      _id: jobId,
-      $or: [
-        { status: { $in: ['pending', 'retrying'] } },
-        { status: 'processing', updatedAt: { $lte: staleCutoff } }
-      ]
+      $set: {
+        status: 'processing',
+        updatedAt: now,
+        nextAttemptAt: new Date(now.getTime() + PROCESSING_LEASE_MS)
+      }
     },
-    {
-      $set: { status: 'processing', updatedAt: new Date() }
-    },
-    { returnDocument: 'after' }
+    { returnDocument: 'after', timestamps: false }
   ).lean();
+};
 
-  return updated;
+const expireUncertainJob = (jobId, now) =>
+  EmailDeliveryJob.updateOne(
+    { _id: jobId, ...staleProcessing(now) },
+    { $set: { status: 'failed', lastError: UNCERTAIN_DELIVERY } }
+  );
+
+const sendWithLease = async (locked, ownership) => {
+  let heartbeat;
+  const interval = setInterval(() => {
+    if (heartbeat) return;
+    const now = new Date();
+    heartbeat = EmailDeliveryJob.updateOne(
+      { ...ownership, nextAttemptAt: { $gt: now } },
+      { $set: { nextAttemptAt: new Date(now.getTime() + PROCESSING_LEASE_MS) } },
+      { timestamps: false }
+    )
+      .catch(() => {})
+      .finally(() => {
+        heartbeat = null;
+      });
+  }, PROCESSING_LEASE_MS / 4);
+  interval.unref();
+
+  try {
+    return await sendInvitationEmail(locked.payload);
+  } finally {
+    clearInterval(interval);
+    await heartbeat;
+  }
 };
 
 const handleSingleJob = async (job) => {
+  if (job.status === 'processing') {
+    // A disconnected worker may already have delivered the message.
+    await expireUncertainJob(job._id, new Date());
+    return;
+  }
+
   const locked = await markJobInProgress(job._id);
   if (!locked) return;
 
-  const result = await sendInvitationEmail(locked.payload);
+  const ownership = { _id: locked._id, status: 'processing', updatedAt: locked.updatedAt };
+  const result = await sendWithLease(locked, ownership);
   const nextAttempts = locked.attempts + 1;
+  const exhausted = nextAttempts >= locked.maxAttempts;
+  const state = result.sent
+    ? { status: 'sent', sentAt: new Date(), lastError: null }
+    : {
+        status: result.deliveryUncertain || exhausted ? 'failed' : 'retrying',
+        nextAttemptAt: new Date(Date.now() + calcBackoff(nextAttempts)),
+        lastError: result.deliveryUncertain
+          ? UNCERTAIN_DELIVERY
+          : result.reason || 'Email delivery failed.'
+      };
 
-  if (result.sent) {
-    await EmailDeliveryJob.findByIdAndUpdate(locked._id, {
-      status: 'sent',
-      attempts: nextAttempts,
-      sentAt: new Date(),
-      lastProvider: result.provider || null,
-      lastError: null
-    });
-  } else {
-    const exhausted = nextAttempts >= locked.maxAttempts;
-    const nextAttemptAt = new Date(Date.now() + calcBackoff(nextAttempts));
-
-    await EmailDeliveryJob.findByIdAndUpdate(locked._id, {
-      status: exhausted ? 'failed' : 'retrying',
-      attempts: nextAttempts,
-      nextAttemptAt,
-      lastProvider: result.provider || null,
-      lastError: result.reason || 'Email delivery failed.'
-    });
-  }
+  const saved = await EmailDeliveryJob.updateOne(ownership, {
+    $set: { ...state, attempts: nextAttempts, lastProvider: result.provider || null }
+  });
+  if (!saved.matchedCount) return;
 
   await logEmailDeliveryAudit({
     actor: locked.payload.actorId || null,
@@ -113,11 +147,10 @@ const processDueJobs = async () => {
 
   try {
     const now = new Date();
-    const staleCutoff = new Date(now.getTime() - STALE_PROCESSING_MS);
     const jobs = await EmailDeliveryJob.find({
       $or: [
         { status: { $in: ['pending', 'retrying'] }, nextAttemptAt: { $lte: now } },
-        { status: 'processing', updatedAt: { $lte: staleCutoff } }
+        staleProcessing(now)
       ]
     })
       .sort({ nextAttemptAt: 1 })

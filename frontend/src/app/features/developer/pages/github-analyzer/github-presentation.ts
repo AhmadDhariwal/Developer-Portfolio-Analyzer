@@ -60,7 +60,12 @@ export class GithubPresentation {
 
   protected sortedLanguages(languages: LanguageDistribution[]): LanguageDistribution[] {
     return [...languages]
-      .filter((item) => Boolean(item?.language) && Number.isFinite(Number(item.percentage)))
+      .filter(
+        (item) =>
+          Boolean(item?.language) &&
+          Number.isFinite(Number(item.percentage)) &&
+          item.percentage > 0,
+      )
       .sort(
         (a, b) =>
           Number(b.percentage) - Number(a.percentage) || a.language.localeCompare(b.language),
