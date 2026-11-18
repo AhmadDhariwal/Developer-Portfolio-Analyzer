@@ -912,7 +912,10 @@ const saveAIVersionSnapshot = async ({ req, source, output, metadata = {} }) => 
         },
         aiUsed: Boolean(output.aiUsed)
       },
-      metadata: { analysisVersion: ANALYSIS_VERSION, fromCache: Boolean(metadata.fromCache) }
+      metadata: {
+        analysisVersion: ANALYSIS_VERSION,
+        fromCache: Boolean(metadata.fromCache)
+      }
     });
   } catch (error) {
     console.error("Skill gap AI snapshot error:", error.message);
@@ -973,7 +976,7 @@ const getGitHubData = async (
       return cached.data;
     }
 
-    const shouldRefresh = forceRefresh;
+    const shouldRefresh = forceRefresh && !cachedPeek?.owned;
     let refreshState = { queued: false, running: false, reason: "fresh" };
 
     if (shouldRefresh) {
@@ -2056,8 +2059,18 @@ const analyzeSkillGap = async (req, res) => {
       timer.time("githubPeekMs", () =>
         normalizedGithubUsername
           ? getCachedGitHubAnalysis(normalizedGithubUsername, {
-              allowStale: true
-            }).catch(() => ({ status: "unavailable", data: null }))
+              allowStale: true,
+              userId: isTemporaryMode ? undefined : req.user?._id
+            })
+              .then((result) => ({
+                ...result,
+                owned: !isTemporaryMode && Boolean(req.user?._id)
+              }))
+              .catch(() => ({
+                status: "unavailable",
+                data: null,
+                owned: !isTemporaryMode && Boolean(req.user?._id)
+              }))
           : Promise.resolve({ status: "miss", data: null })
       )
     ]);

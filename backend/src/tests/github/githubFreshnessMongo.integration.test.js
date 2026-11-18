@@ -15,7 +15,7 @@ test(
       process.env.INTEGRATION_TEST_MONGOD ||
         'C:\\Program Files\\MongoDB\\Server\\8.2\\bin\\mongod.exe'
     ),
-    timeout: 60000
+    timeout: 120000
   },
   async (t) => {
     const runtime = await startMongo({ replicaSet: 'github-freshness' });
@@ -32,14 +32,17 @@ test(
     await mongoose.connect(runtime.uri);
     const User = require('../../modules/auth/models/user');
     const Analysis = require('../../modules/skill-gap/models/analysis');
+    const SaveLock = require('../../modules/github/models/githubSaveLock');
     const Repository = require('../../modules/github/models/repository');
     const service = require('../../modules/github/services/githubservice');
     let syncs = 0;
     let fail = false;
     let switchIdentity = false;
+    let duringProvider = async () => {};
     let revision = '2026-11-17T00:00:00.000Z';
     service.analyzeGitHubProfile = async (username) => {
       syncs++;
+      await duringProvider();
       if (switchIdentity)
         await User.updateOne({ _id: user._id }, { $set: { activeGithubUsername: 'changed' } });
       if (fail) throw Error('Provider unavailable');
@@ -55,7 +58,10 @@ test(
         repositoryActivity: [],
         repositories: [{ name: 'owned', language: 'JavaScript', stars: 2, forks: 0 }],
         githubSignals: { username, analyzedAt: revision },
-        cache: { source: 'fresh', expiresAt: new Date(Date.now() + 86400000).toISOString() }
+        cache: {
+          source: 'fresh',
+          expiresAt: new Date(Date.now() + 86400000).toISOString()
+        }
       };
     };
     const user = await User.create({
@@ -81,7 +87,10 @@ test(
     const request = async (body, owner = user) =>
       fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${sign(owner)}` },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${sign(owner)}`
+        },
         body: JSON.stringify({ username: 'fixture', ...body })
       });
     assert.equal((await fetch(url, { method: 'POST' })).status, 401);
@@ -113,6 +122,43 @@ test(
         .analyzedAt,
       revision
     );
+    const providerCallsBeforeAnalyze = syncs;
+    const cachedAnalyze = await request({});
+    assert.equal(cachedAnalyze.status, 200);
+    assert.equal((await cachedAnalyze.json()).githubSignals.analyzedAt, revision);
+    assert.equal(syncs, providerCallsBeforeAnalyze);
+
+    const lockKey = `github-save:${user._id}`;
+    if (process.env.DPA_TEST_LONG_GITHUB_SYNC === 'true') {
+      duringProvider = async () => {
+        await new Promise((resolve) => setTimeout(resolve, 31000));
+        const lease = await SaveLock.findById(lockKey).lean();
+        assert.ok(lease.expiresAt > new Date(), 'the original holder renewed beyond 30 seconds');
+        assert.equal(
+          await SaveLock.countDocuments({
+            _id: lockKey,
+            expiresAt: { $lte: new Date() }
+          }),
+          0
+        );
+      };
+      const longSync = await request({ forceRefresh: true });
+      assert.equal(longSync.status, 200);
+    }
+    duringProvider = async () => {
+      await SaveLock.updateOne({ _id: lockKey }, { $set: { ownerToken: 'successor' } });
+    };
+    revision = '2026-11-17T01:30:00.000Z';
+    assert.equal((await request({ forceRefresh: true })).status, 409);
+    assert.equal((await SaveLock.findById(lockKey)).ownerToken, 'successor');
+    const lastAccepted = await Analysis.findOne({ userId: user._id }).lean();
+    assert.equal(lastAccepted.githubSignals.analyzedAt, '2026-11-17T01:00:00.000Z');
+    await SaveLock.updateOne(
+      { _id: lockKey, ownerToken: 'successor' },
+      { $set: { expiresAt: new Date(0) } }
+    );
+    duringProvider = async () => {};
+    revision = lastAccepted.githubSignals.analyzedAt;
     t.diagnostic(
       `Provider stub sync calls=${syncs}; saved reads=7; MongoDB and HTTP real; Redis not exercised.`
     );

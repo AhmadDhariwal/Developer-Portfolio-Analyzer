@@ -239,7 +239,7 @@ test('failed refresh preserves previous valid result in the frontend component',
   assert.match(component, /const previousResult = this\.result/);
   assert.match(component, /preservePrevious/);
   assert.match(component, /if \(preservePrevious && previousResult\)/);
-  assert.match(component, /this\.loadingState = forceRefresh \? 'stale' : 'error'/);
+  assert.match(component, /this\.result = previousResult;\s*this\.loadingState = 'stale'/);
   assert.equal(
     component.includes(
       'this.result = null;\n        this.cdr.detectChanges();\n      }\n    });\n  }'

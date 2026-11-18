@@ -380,7 +380,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
           this.isLoading = false;
           if (preservePrevious && previousResult) {
             this.result = previousResult;
-            this.loadingState = forceRefresh ? 'stale' : 'error';
+            this.loadingState = 'stale';
           } else {
             this.result = null;
             this.loadingState = 'error';

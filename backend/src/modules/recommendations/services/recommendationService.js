@@ -477,10 +477,18 @@ const loadResumeAnalysis = async (userId, expectedUser) => {
   );
 };
 
-const getGitHubData = async (username, { forceRefresh = false, isTemporaryMode = false } = {}) => {
+const getGitHubData = async (
+  username,
+  { forceRefresh = false, isTemporaryMode = false, userId } = {}
+) => {
   if (!username) return { repositories: [], scores: {}, unavailable: true };
   const { analyzeGitHubProfile } = require('../../github/services/githubservice');
   try {
+    if (userId && !isTemporaryMode) {
+      const { getCachedGitHubAnalysis } = require('../../github/services/githubservice');
+      const accepted = await getCachedGitHubAnalysis(username, { userId });
+      return accepted.data || { repositories: [], scores: {}, unavailable: true };
+    }
     const normalizedUsername = String(username || '')
       .trim()
       .toLowerCase();
@@ -875,7 +883,7 @@ const runRecommendationPipeline = async ({
       if (!isTemporaryMode) {
         const [currentResume, currentGithub, currentSnapshot] = await Promise.all([
           loadResumeAnalysis(userId, req.user),
-          getGitHubData(username),
+          getGitHubData(username, { userId }),
           AnalysisCache.findOne({
             userId,
             githubUsername: {
@@ -887,12 +895,14 @@ const runRecommendationPipeline = async ({
             resumeHash: shared.cacheMetadata.cacheKey.resumeHash,
             resumeAnalysisId: shared.cacheMetadata.cacheKey.resumeAnalysisId,
             'analysisData.ruleVersion': engine.SKILL_RULE,
-            'analysisData.evidencePolicyVersion': require('../../skill-gap/services/skillGapEvidenceService')
-              .EVIDENCE_POLICY_VERSION,
-            'analysisData.taxonomyVersion': require('../../skill-gap/services/skillGapRequirements').TAXONOMY_VERSION,
+            'analysisData.evidencePolicyVersion':
+              require('../../skill-gap/services/skillGapEvidenceService').EVIDENCE_POLICY_VERSION,
+            'analysisData.taxonomyVersion': require('../../skill-gap/services/skillGapRequirements')
+              .TAXONOMY_VERSION,
             'analysisData.requirementMatrixVersion':
               require('../../skill-gap/services/skillGapRequirements').MATRIX_VERSION,
-            analysisVersion: require('../../skill-gap/services/skillGapCacheContract').ANALYSIS_VERSION
+            analysisVersion: require('../../skill-gap/services/skillGapCacheContract')
+              .ANALYSIS_VERSION
           })
             .sort({ updatedAt: -1 })
             .lean()
@@ -1022,7 +1032,7 @@ const runRecommendationPipeline = async ({
       const [loadedResume, rawGithub, loadedSkillGap] = await stageTimer.measure('Mongo', () =>
         Promise.all([
           loadResumeAnalysis(userId, req.user),
-          getGitHubData(username, { forceRefresh, isTemporaryMode }),
+          getGitHubData(username, { forceRefresh, isTemporaryMode, userId }),
           allowSignals && userId
             ? AnalysisCache.findOne({
                 userId,
@@ -1033,12 +1043,15 @@ const runRecommendationPipeline = async ({
                 careerStack,
                 experienceLevel,
                 'analysisData.ruleVersion': engine.SKILL_RULE,
-                'analysisData.evidencePolicyVersion': require('../../skill-gap/services/skillGapEvidenceService')
-                  .EVIDENCE_POLICY_VERSION,
-                'analysisData.taxonomyVersion': require('../../skill-gap/services/skillGapRequirements').TAXONOMY_VERSION,
+                'analysisData.evidencePolicyVersion':
+                  require('../../skill-gap/services/skillGapEvidenceService')
+                    .EVIDENCE_POLICY_VERSION,
+                'analysisData.taxonomyVersion':
+                  require('../../skill-gap/services/skillGapRequirements').TAXONOMY_VERSION,
                 'analysisData.requirementMatrixVersion':
                   require('../../skill-gap/services/skillGapRequirements').MATRIX_VERSION,
-                analysisVersion: require('../../skill-gap/services/skillGapCacheContract').ANALYSIS_VERSION
+                analysisVersion: require('../../skill-gap/services/skillGapCacheContract')
+                  .ANALYSIS_VERSION
               })
                 .sort({ updatedAt: -1 })
                 .lean()
@@ -1077,11 +1090,14 @@ const runRecommendationPipeline = async ({
           resumeHash: resumeCacheIdentity.resumeHash,
           resumeAnalysisId: resumeCacheIdentity.resumeAnalysisId,
           'analysisData.ruleVersion': engine.SKILL_RULE,
-          'analysisData.evidencePolicyVersion': require('../../skill-gap/services/skillGapEvidenceService')
-            .EVIDENCE_POLICY_VERSION,
-          'analysisData.taxonomyVersion': require('../../skill-gap/services/skillGapRequirements').TAXONOMY_VERSION,
-          'analysisData.requirementMatrixVersion': require('../../skill-gap/services/skillGapRequirements').MATRIX_VERSION,
-          analysisVersion: require('../../skill-gap/services/skillGapCacheContract').ANALYSIS_VERSION
+          'analysisData.evidencePolicyVersion':
+            require('../../skill-gap/services/skillGapEvidenceService').EVIDENCE_POLICY_VERSION,
+          'analysisData.taxonomyVersion': require('../../skill-gap/services/skillGapRequirements')
+            .TAXONOMY_VERSION,
+          'analysisData.requirementMatrixVersion':
+            require('../../skill-gap/services/skillGapRequirements').MATRIX_VERSION,
+          analysisVersion: require('../../skill-gap/services/skillGapCacheContract')
+            .ANALYSIS_VERSION
         })
           .sort({ updatedAt: -1 })
           .lean()
@@ -1545,7 +1561,7 @@ const runRecommendationPipeline = async ({
       if (saveResult && userId) {
         const [currentResume, currentGithub] = await Promise.all([
           loadResumeAnalysis(userId, req.user),
-          getGitHubData(username)
+          getGitHubData(username, { userId })
         ]);
         const currentInsights = engine.resumeSignals(
           currentResume,
@@ -1553,16 +1569,22 @@ const runRecommendationPipeline = async ({
         );
         const currentGapCache = await AnalysisCache.findOne({
           userId,
-          githubUsername: { $regex: '^' + normalizedGithubUsername + '$', $options: 'i' },
+          githubUsername: {
+            $regex: '^' + normalizedGithubUsername + '$',
+            $options: 'i'
+          },
           careerStack,
           experienceLevel,
           ...buildResumeCacheIdentity({ resumeAnalysis: currentResume }),
           'analysisData.ruleVersion': engine.SKILL_RULE,
-          'analysisData.evidencePolicyVersion': require('../../skill-gap/services/skillGapEvidenceService')
-            .EVIDENCE_POLICY_VERSION,
-          'analysisData.taxonomyVersion': require('../../skill-gap/services/skillGapRequirements').TAXONOMY_VERSION,
-          'analysisData.requirementMatrixVersion': require('../../skill-gap/services/skillGapRequirements').MATRIX_VERSION,
-          analysisVersion: require('../../skill-gap/services/skillGapCacheContract').ANALYSIS_VERSION
+          'analysisData.evidencePolicyVersion':
+            require('../../skill-gap/services/skillGapEvidenceService').EVIDENCE_POLICY_VERSION,
+          'analysisData.taxonomyVersion': require('../../skill-gap/services/skillGapRequirements')
+            .TAXONOMY_VERSION,
+          'analysisData.requirementMatrixVersion':
+            require('../../skill-gap/services/skillGapRequirements').MATRIX_VERSION,
+          analysisVersion: require('../../skill-gap/services/skillGapCacheContract')
+            .ANALYSIS_VERSION
         })
           .sort({ updatedAt: -1 })
           .lean();

@@ -2,6 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const writes = [];
 const archives = [];
+const reads = [];
 let selectedReads = 0;
 let cached = null;
 const mock = (path, value) => {
@@ -17,6 +18,7 @@ const resume = {
   skills: {},
 };
 const github = {
+  fetchedAt: '2026-11-17T00:00:00.000Z',
   repoCount: 1,
   scores: { codeQuality: 80, projectImpact: 10, consistency: 20, contribution: 30 },
 };
@@ -51,11 +53,17 @@ mock('../../modules/super-admin/services/aiVersionService', {
   createPortfolioVersion: async (value) => archives.push({ ...value, trustedWriter: true }),
 });
 mock('../../modules/skill-gap/models/analysisCache', {
-  findOne: (filter) => ({
-    then: (resolve) => Promise.resolve(cached).then(resolve),
-    lean: async () =>
-      filter.analysisVersion === 'skill-gap' ? { analysisData: { coverage: 0 } } : null,
-  }),
+  findOne: (filter) => {
+    reads.push(filter);
+    return {
+      then: (resolve) => Promise.resolve(cached).then(resolve),
+      sort() {
+        return this;
+      },
+      lean: async () =>
+        filter.analysisVersion === 'skill-gap' ? { analysisData: { coverage: 0 } } : null,
+    };
+  },
   findOneAndUpdate: async (key, update) => {
     writes.push({ key, update });
   },
@@ -85,6 +93,11 @@ test('profile portfolio scoring shares Dashboard selected-resume identity and ca
   assert.equal(writes.at(-1).key.analysisVersion, 'portfolio-score-v1');
   assert.equal(result.overallScore, 32);
   assert.equal(result.breakdown.skillCoverage, 0);
+  assert.deepEqual(
+    reads.findLast((key) => key.analysisVersion === 'skill-gap')['analysisData.sourceReferences']
+      .$all[0].$elemMatch,
+    { type: 'github', available: true, timestamp: github.fetchedAt },
+  );
   assert.equal(result.breakdown.industryReadiness, 0);
   assert.equal(archives.at(-1).trustedWriter, true);
   assert.equal(archives.at(-1).provenance.resumeAnalysisId, resume._id);

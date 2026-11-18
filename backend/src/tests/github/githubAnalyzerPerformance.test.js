@@ -32,7 +32,13 @@ const createHarness = ({ redisDelayMs = 0, mongoDelayMs = 0 } = {}) => {
     mongo: new Map(),
     redis: new Map(),
     memorySeeded: false,
-    delays: { github: 3, ai: 3, persistence: 3, mongo: mongoDelayMs, redis: redisDelayMs }
+    delays: {
+      github: 3,
+      ai: 3,
+      persistence: 3,
+      mongo: mongoDelayMs,
+      redis: redisDelayMs
+    }
   };
 
   const repos = Array.from({ length: 8 }, (_, index) => ({
@@ -73,7 +79,10 @@ const createHarness = ({ redisDelayMs = 0, mongoDelayMs = 0 } = {}) => {
       if (url.includes('/contributors')) return { data: [{ contributions: 5 }], headers: {} };
       if (url.includes('/contents/')) {
         return {
-          data: { encoding: 'base64', content: Buffer.from('# readme').toString('base64') },
+          data: {
+            encoding: 'base64',
+            content: Buffer.from('# readme').toString('base64')
+          },
           headers: {}
         };
       }
@@ -89,8 +98,19 @@ const createHarness = ({ redisDelayMs = 0, mongoDelayMs = 0 } = {}) => {
       state.counters.redisGets += 1;
       await delay(state.delays.redis);
       const raw = redisStore.get(key);
-      if (!raw) return { value: null, layer: 'miss', memoryMs: 0, redisMs: state.delays.redis };
-      return { value: copy(raw), layer: 'redis', memoryMs: 0, redisMs: state.delays.redis };
+      if (!raw)
+        return {
+          value: null,
+          layer: 'miss',
+          memoryMs: 0,
+          redisMs: state.delays.redis
+        };
+      return {
+        value: copy(raw),
+        layer: 'redis',
+        memoryMs: 0,
+        redisMs: state.delays.redis
+      };
     },
     async setCacheJson(key, payload) {
       state.counters.redisSets += 1;
@@ -167,7 +187,9 @@ const createHarness = ({ redisDelayMs = 0, mongoDelayMs = 0 } = {}) => {
       async invalidateCachePrefix() {}
     },
     '../prompts/githubPrompt': { getGitHubPrompt: () => 'prompt' },
-    './platformSettingsService': { getIntegrationSecretsSync: () => ({ githubEnabled: true }) },
+    './platformSettingsService': {
+      getIntegrationSecretsSync: () => ({ githubEnabled: true })
+    },
     './redisCacheService': redisService,
     '../services/redisCacheService': redisService,
     '../models/githubAnalysisCache': GitHubAnalysisCache,
@@ -185,24 +207,40 @@ const createHarness = ({ redisDelayMs = 0, mongoDelayMs = 0 } = {}) => {
     },
     '../models/analysis': class Analysis {
       constructor(data) {
-        Object.assign(this, data, { githubAnalysisHistory: [], contributionActivity: [] });
+        Object.assign(this, data, {
+          githubAnalysisHistory: [],
+          contributionActivity: []
+        });
       }
       static findOne() {
-        return Promise.resolve(null);
+        return {
+          sort() {
+            return this;
+          },
+          select: async () => null
+        };
       }
       async save() {
         state.counters.persistence.analysisSaves += 1;
         await delay(state.delays.persistence);
       }
     },
-    '../models/user': { async findByIdAndUpdate() {} },
+    '../models/user': {
+      findById: () => ({ select: async () => null }),
+      async findByIdAndUpdate() {}
+    },
     '../models/githubSaveLock': {
+      async updateOne() {
+        return { matchedCount: 1 };
+      },
       findOneAndUpdate() {
         return thenable({ _id: 'lock' });
       },
       async deleteOne() {}
     },
-    '../services/notificationPersistenceService': { commit: async (_owner, work) => work(null) },
+    '../services/notificationPersistenceService': {
+      commit: async (_owner, work) => work(null)
+    },
     './dashboardcontroller': { invalidateDashboardSummaryCache() {} }
   };
 

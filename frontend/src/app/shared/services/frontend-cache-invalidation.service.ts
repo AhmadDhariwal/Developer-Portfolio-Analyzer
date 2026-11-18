@@ -29,8 +29,12 @@ export class FrontendCacheInvalidationService implements OnDestroy {
     if (event.key !== this.revisionKey || !event.newValue) return;
     try {
       const revision = JSON.parse(event.newValue);
-      if (revision.owner && revision.owner === this.currentOwner())
-        this.clearDeveloperSignalCaches(false);
+      if (!revision.owner || revision.owner !== this.currentOwner()) return;
+      if (revision.scope === 'dashboard') {
+        this.clearDashboardCaches(false);
+        return;
+      }
+      this.clearDeveloperSignalCaches(false);
     } catch {
       /* Invalid storage events cannot invalidate another account. */
     }
@@ -101,7 +105,7 @@ export class FrontendCacheInvalidationService implements OnDestroy {
     this.clearNewsCaches();
     this.clearJobsCaches();
     this.clearCoursesCaches();
-    this.clearDashboardCaches(broadcast);
+    this.clearDashboardCaches(broadcast, 'sources');
     this.clearWeeklyReportCaches();
     this.clearCareerSprintCaches();
     this.run('interview-prep');
@@ -114,7 +118,7 @@ export class FrontendCacheInvalidationService implements OnDestroy {
     this.run('resume');
   }
 
-  clearDashboardCaches(broadcast = true): void {
+  clearDashboardCaches(broadcast = true, scope: 'dashboard' | 'sources' = 'dashboard'): void {
     [
       'dashboardSummary',
       'dashboardContributions',
@@ -128,7 +132,7 @@ export class FrontendCacheInvalidationService implements OnDestroy {
       try {
         localStorage.setItem(
           this.revisionKey,
-          JSON.stringify({ owner, revision: crypto.randomUUID() }),
+          JSON.stringify({ owner, scope, revision: crypto.randomUUID() }),
         );
       } catch {
         /* Same-tab invalidation remains available when storage is denied. */

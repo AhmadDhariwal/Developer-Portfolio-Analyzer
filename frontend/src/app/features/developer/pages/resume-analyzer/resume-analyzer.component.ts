@@ -189,6 +189,7 @@ export class ResumeAnalyzerComponent implements OnInit {
   hiringReadiness = '';
 
   private contextEpoch = 0;
+  private libraryRequest = 0;
   private readonly uploadSubject$ = new Subject<File>();
 
   ngOnInit(): void {
@@ -346,9 +347,13 @@ export class ResumeAnalyzerComponent implements OnInit {
   }
 
   refreshResumeFiles(): void {
+    const request = ++this.libraryRequest;
     this.apiService
       .getResumeFiles()
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(
+        filter(() => request === this.libraryRequest),
+        takeUntilDestroyed(this.destroyRef),
+      )
       .subscribe({
         next: (res) => {
           this.resumeFiles = Array.isArray(res?.files) ? res.files : [];
@@ -395,6 +400,7 @@ export class ResumeAnalyzerComponent implements OnInit {
       return;
     }
 
+    const epoch = ++this.contextEpoch;
     this.isLoadingAnalysis = true;
     this.analysisComplete = false;
     this.analysis = null;
@@ -409,6 +415,7 @@ export class ResumeAnalyzerComponent implements OnInit {
         .pipe(
           switchMap(() => this.apiService.getResumeAnalysis(file.fileId)),
           catchError((err) => {
+            if (epoch !== this.contextEpoch) return of(null);
             if (err?.status === 404) {
               this.isUnanalyzedSelected = true;
               this.analysisComplete = false;
@@ -420,6 +427,7 @@ export class ResumeAnalyzerComponent implements OnInit {
         )
         .subscribe({
           next: (analysis) => {
+            if (epoch !== this.contextEpoch) return;
             this.isLoadingAnalysis = false;
             this.defaultResumeFileId = file.fileId;
             this.activeResumeFileId = file.fileId;
@@ -430,6 +438,7 @@ export class ResumeAnalyzerComponent implements OnInit {
             this.cdr.detectChanges();
           },
           error: (err) => {
+            if (epoch !== this.contextEpoch) return;
             this.isLoadingAnalysis = false;
             this.errorMessage = err?.error?.message || 'Could not set active resume.';
             this.cdr.detectChanges();
@@ -443,6 +452,7 @@ export class ResumeAnalyzerComponent implements OnInit {
       .getResumeAnalysis(file.fileId)
       .pipe(
         catchError((err) => {
+          if (epoch !== this.contextEpoch) return of(null);
           if (err?.status === 404) {
             this.isUnanalyzedSelected = true;
             this.analysisComplete = false;
@@ -455,6 +465,7 @@ export class ResumeAnalyzerComponent implements OnInit {
       )
       .subscribe({
         next: (analysis) => {
+          if (epoch !== this.contextEpoch) return;
           this.isLoadingAnalysis = false;
           if (analysis) {
             this.applyAnalysis(analysis, 'idle');
@@ -462,6 +473,7 @@ export class ResumeAnalyzerComponent implements OnInit {
           this.cdr.detectChanges();
         },
         error: (err) => {
+          if (epoch !== this.contextEpoch) return;
           this.isLoadingAnalysis = false;
           this.errorMessage = err?.error?.message || 'Failed to load analysis for selected resume.';
           this.cdr.detectChanges();

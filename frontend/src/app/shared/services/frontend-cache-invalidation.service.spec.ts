@@ -32,6 +32,18 @@ describe('Developer data revision propagation', () => {
       globalThis.removeEventListener('devinsight:developer-data-changed', changed);
     }
   });
+  it('revalidates the Dashboard without invalidating unrelated caches on dashboard-only events', () => {
+    const clearRecommendations = vi.fn();
+    service.register('recommendations', clearRecommendations);
+    globalThis.dispatchEvent(
+      new StorageEvent('storage', {
+        key: 'devinsight_developer_revision',
+        newValue: JSON.stringify({ owner: 'owner:', scope: 'dashboard', revision: 'test' }),
+      }),
+    );
+    expect(clearModule).toHaveBeenCalledWith('dashboardSummary');
+    expect(clearRecommendations).not.toHaveBeenCalled();
+  });
   it('invalidates matching cross-tab revisions once without rebroadcasting or accepting another owner', () => {
     const clearRecommendations = vi.fn();
     service.register('recommendations', clearRecommendations);

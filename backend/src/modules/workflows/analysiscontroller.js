@@ -63,7 +63,9 @@ const getPortfolioReadiness = async (req, res) => {
       : null;
     const resumeIdentity = profileMode
       ? buildResumeCacheIdentity({ resumeAnalysis: selectedResume })
-      : { resumeHash: crypto.createHash('sha256').update(cleanResume).digest('hex') };
+      : {
+          resumeHash: crypto.createHash('sha256').update(cleanResume).digest('hex'),
+        };
     const resumeHash = resumeIdentity.resumeHash;
     const identity = {
       githubUsername: username.toLowerCase(),
@@ -103,13 +105,50 @@ const getPortfolioReadiness = async (req, res) => {
     // cannot establish that the evidence behind a cached assessment still matches.
     if (!githubAnalysis) {
       const { analyzeGitHubProfile } = require('../github/services/githubservice');
-      githubAnalysis = await analyzeGitHubProfile(username.trim(), { cacheOnly: profileMode });
+      githubAnalysis = await analyzeGitHubProfile(username.trim(), {
+        cacheOnly: profileMode,
+        userId: profileMode ? req.user._id : undefined,
+      });
     }
+    const sourceTime = (value) => {
+      const ms = value == null ? NaN : new Date(value).getTime();
+      return Number.isFinite(ms) ? new Date(ms).toISOString() : null;
+    };
+    const githubTime = sourceTime(
+      githubAnalysis?.githubSignals?.analyzedAt || githubAnalysis?.fetchedAt,
+    );
+    const resumeTime = sourceTime(selectedResume?.analyzedAt || selectedResume?.createdAt);
+    const scopedSkillGap = profileMode
+      ? await AnalysisCache.findOne({
+          ...skillGapContract.buildScope({ userId: req.user._id, user: req.user, resumeIdentity }),
+          'analysisData.sourceReferences': {
+            $all: [
+              {
+                $elemMatch: {
+                  type: 'github',
+                  available: Boolean(githubTime),
+                  timestamp: githubTime,
+                },
+              },
+              {
+                $elemMatch: {
+                  type: 'resume',
+                  available: Boolean(selectedResume),
+                  timestamp: resumeTime,
+                },
+              },
+            ],
+          },
+        })
+          .sort({ updatedAt: -1, _id: -1 })
+          .lean()
+      : null;
     const portfolioInputRevision = fingerprint({
       github: githubAnalysis?.githubSignals || githubAnalysis,
       resume: selectedResume || resumeAnalysis || cleanResume,
       careerStack,
       experienceLevel,
+      skillGap: scopedSkillGap?.analysisData || null,
     });
 
     // Try cache first
@@ -140,12 +179,6 @@ const getPortfolioReadiness = async (req, res) => {
       return res.json(cachedResult);
     }
 
-    // Fetch missing analysis data if not provided by client
-    if (!githubAnalysis) {
-      const { analyzeGitHubProfile } = require('../github/services/githubservice');
-      githubAnalysis = await analyzeGitHubProfile(username.trim());
-    }
-
     if (profileMode) resumeAnalysis = selectedResume || { present: false };
     if (!resumeAnalysis && req.user) {
       const analysisDoc = await require('../skill-gap/models/analysis').findOne({
@@ -159,7 +192,11 @@ const getPortfolioReadiness = async (req, res) => {
           }
         : { skills: [], strengths: [], weaknesses: [] };
     }
-    resumeAnalysis = resumeAnalysis || { skills: [], strengths: [], weaknesses: [] };
+    resumeAnalysis = resumeAnalysis || {
+      skills: [],
+      strengths: [],
+      weaknesses: [],
+    };
 
     // AI narrative generation; deterministic scoring owns all numeric fields.
     const prompt = getPortfolioScorePrompt(
@@ -170,21 +207,17 @@ const getPortfolioReadiness = async (req, res) => {
     );
     const fallback = {
       overallScore: 70,
-      breakdown: { codeQuality: 70, skillCoverage: 70, industryReadiness: 70, projectImpact: 70 },
+      breakdown: {
+        codeQuality: 70,
+        skillCoverage: 70,
+        industryReadiness: 70,
+        projectImpact: 70,
+      },
       summary: 'Solid portfolio with room for improvement in niche areas.',
     };
 
     const aiResult = await aiService.runAIAnalysis(prompt, fallback);
 
-    const scopedSkillGap = profileMode
-      ? await AnalysisCache.findOne(
-          skillGapContract.buildScope({
-            userId: req.user._id,
-            user: req.user,
-            resumeIdentity,
-          }),
-        ).lean()
-      : null;
     const transparentResult = calculateTransparentScore(
       {
         githubAnalysis,

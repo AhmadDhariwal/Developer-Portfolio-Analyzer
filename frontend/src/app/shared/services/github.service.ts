@@ -239,7 +239,7 @@ export class GithubService {
     requestFactory: () => Observable<GitHubAnalysisResult>,
   ): Observable<GitHubAnalysisResult> {
     const key = this.cacheKey(username, mode);
-    const cached = !forceRefresh ? this.memoryCache.get(key) : null;
+    const cached = mode === 'public' && !forceRefresh ? this.memoryCache.get(key) : null;
     if (cached && cached.expiresAt > Date.now())
       return of(this.withFrontendCacheStatus(cached.result));
 

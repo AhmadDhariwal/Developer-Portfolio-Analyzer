@@ -13,6 +13,7 @@ const {
 } = require('../../../core/cache/redisCacheService');
 const GitHubAnalysisCache = require('../models/githubAnalysisCache');
 const AnalysisCache = require('../../skill-gap/models/analysisCache');
+const Analysis = require('../../skill-gap/models/analysis');
 const { escapeRegex } = require('../../../core/utils/validation');
 
 const ANALYSIS_VERSION = 'github-v2';
@@ -1385,8 +1386,61 @@ const withCacheMetadata = (result, cacheEntry, source = 'cache') => {
   };
 };
 
-const getCachedGitHubAnalysis = async (username, { allowStale = true } = {}) => {
-  const { entry: cacheEntry } = await resolveTieredCacheEntry(username);
+const getOwnedCacheEntry = async (username, userId) => {
+  const analysis = await Analysis.findOne({ userId })
+    .sort({ updatedAt: -1, _id: -1 })
+    .select('githubSignals githubAnalysisHistory');
+  const signals = analysis?.githubSignals;
+  if (!signals?.analyzedAt || normalizeUsername(signals.username) !== normalizeUsername(username))
+    return null;
+  const saved = signals.acceptedResult;
+  if (!saved) {
+    const { entry } = await resolveTieredCacheEntry(username);
+    if (entry?.result?.githubSignals?.analyzedAt === signals.analyzedAt) return entry;
+    if (!Number.isFinite(signals.stats?.repos) || !Array.isArray(signals.repositories)) return null;
+
+    // Older accepted records contain evidence and scores, but not the whole response.
+    // Keep the recorded fields and expose the result as stale without borrowing preview data.
+    return {
+      result: {
+        fetchedAt: signals.analyzedAt,
+        repoCount: signals.stats.repos,
+        totalStars: signals.stats.stars ?? null,
+        totalForks: signals.stats.forks ?? null,
+        followers: signals.stats.followers ?? null,
+        githubHealthScore: signals.healthScore ?? null,
+        activityScore: signals.healthScore ?? null,
+        scoring: signals.scoring,
+        developerLevel: signals.developerLevel,
+        languageDistribution: signals.languages?.normalized || [],
+        mainLanguageDistribution: signals.languages?.main || [],
+        supportLanguageDistribution: signals.languages?.support || [],
+        rawLanguageBytes: signals.languages?.rawBytes,
+        technologies: signals.technologies,
+        technologyCategories: signals.technologyCategories,
+        repositories: signals.repositories,
+        repositoryQuality: signals.repositories,
+        repositoryActivity: [],
+        recruiterInsights: signals.recruiterInsights,
+        githubSignals: signals
+      },
+      updatedAt: signals.analyzedAt,
+      snapshots: analysis.githubAnalysisHistory
+    };
+  }
+
+  return {
+    result: saved,
+    expiresAt: saved.cache?.expiresAt,
+    updatedAt: saved.cache?.cachedAt || signals.analyzedAt,
+    snapshots: saved.analysisHistory || analysis.githubAnalysisHistory
+  };
+};
+
+const getCachedGitHubAnalysis = async (username, { allowStale = true, userId } = {}) => {
+  const cacheEntry = userId
+    ? await getOwnedCacheEntry(username, userId)
+    : (await resolveTieredCacheEntry(username)).entry;
   const now = Date.now();
   const expiresAtMs = cacheEntry?.expiresAt ? new Date(cacheEntry.expiresAt).getTime() : 0;
   const isFresh = Boolean(cacheEntry?.result && expiresAtMs > now);
@@ -1461,7 +1515,10 @@ const saveCacheResult = async (username, fresh, previousEntry = null, timing = n
   if (previousEntry?.result && evidenceIdentity(previousEntry.result) === evidenceIdentity(fresh)) {
     const expiresAt = new Date(Date.now() + CACHE_TTL_MS);
     const updated = await GitHubAnalysisCache.findOneAndUpdate(
-      { normalizedUsername: normalizeUsername(username), analysisVersion: ANALYSIS_VERSION },
+      {
+        normalizedUsername: normalizeUsername(username),
+        analysisVersion: ANALYSIS_VERSION
+      },
       { $set: { expiresAt } },
       { new: true, timestamps: false }
     ).lean();
@@ -1981,7 +2038,9 @@ const analyzeGitHubProfile = async (username, options = {}) => {
 
   const forceRefresh = Boolean(options.forceRefresh);
   if (options.cacheOnly) {
-    const cached = await getCachedGitHubAnalysis(trimmedUsername);
+    const cached = await getCachedGitHubAnalysis(trimmedUsername, {
+      userId: options.userId
+    });
     return (
       cached.data || {
         repositories: [],

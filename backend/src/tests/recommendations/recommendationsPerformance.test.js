@@ -85,6 +85,7 @@ const createHarness = ({
 
   mock('modules/github/services/githubservice.js', {
     parseGitHubUsername,
+    getCachedGitHubAnalysis: async () => ({ data: githubPayload }),
     analyzeGitHubProfile: async () => {
       counters.github += 1;
       await delay(githubDelayMs);
@@ -192,7 +193,9 @@ const createHarness = ({
       );
     },
   });
-  mock('modules/resume/models/resumeFile.js', { findOne: () => chain({ _id: 'default', userId: 'u-perf-1' }) });
+  mock('modules/resume/models/resumeFile.js', {
+    findOne: () => chain({ _id: 'default', userId: 'u-perf-1' }),
+  });
   mock('modules/github/models/githubAnalysisCache.js', { findOne: () => chain(null, 2) });
   mock('modules/auth/models/user.js', {
     findById: () => ({
@@ -225,7 +228,9 @@ const createHarness = ({
       return result;
     },
   });
-  mock('modules/recommendations/prompts/recommendationPrompt.js', { getRecommendationPrompt: () => 'prompt' });
+  mock('modules/recommendations/prompts/recommendationPrompt.js', {
+    getRecommendationPrompt: () => 'prompt',
+  });
   mock('core/developer-context/developerSignalService.js', {
     getDeveloperSignals: async () => {
       counters.signals += 1;
@@ -448,7 +453,7 @@ test('recommendations cache hierarchy and concurrency meet production targets', 
     signals: h.counters.signals - before.signals,
     persistence: h.counters.persistence - before.persistence,
   };
-  assert.equal(delta.github, 1);
+  assert.equal(delta.github, 0);
   assert.equal(delta.ai, 1);
   assert.equal(delta.signals, 1);
   assert.ok(delta.persistence <= 2);

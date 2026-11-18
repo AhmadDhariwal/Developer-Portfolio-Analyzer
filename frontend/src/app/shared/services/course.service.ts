@@ -105,7 +105,6 @@ export class CourseService {
   }
 
   private invalidateProgressDependents(): void {
-    this.clearCache();
     this.cacheInvalidation.clearDashboardCaches();
     this.cacheInvalidation.clearWeeklyReportCaches();
   }

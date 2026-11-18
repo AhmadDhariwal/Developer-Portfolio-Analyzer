@@ -400,7 +400,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
         )
         .subscribe(() => {
           this.clearDashboardCache();
-          this.loadDashboardData();
+          this.onDeveloperDataChanged();
         }),
     );
 
