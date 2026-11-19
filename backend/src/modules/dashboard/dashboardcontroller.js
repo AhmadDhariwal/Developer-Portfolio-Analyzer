@@ -501,7 +501,7 @@ const maybeSendNotModified = (req, res, payload) => {
 const ensureAnalysis = async (userId, githubUsername) => {
   const analysis = await Analysis.findOne({ userId })
     .select(
-      'githubScore readinessScore githubStats githubSignals.username githubSignals.scoring githubSignals.analyzedAt githubSignals.languages.rawBytes githubSignals.languages.normalized githubSignals.acceptedResult.cache.expiresAt languageDistribution contributionActivity updatedAt createdAt',
+      'githubScore readinessScore githubStats githubSignals.username githubSignals.scoring githubSignals.analyzedAt githubSignals.languages.rawBytes githubSignals.languages.normalized githubSignals.repositories.name githubSignals.repositories.commits githubSignals.repositories.pushedAt githubSignals.acceptedResult.cache.expiresAt languageDistribution contributionActivity updatedAt createdAt',
     )
     .sort({ updatedAt: -1, createdAt: -1, _id: -1 })
     .lean();
@@ -538,8 +538,9 @@ const buildRecommendationPreview = (recommendationData = {}) => {
   if (Array.isArray(signalItems) && signalItems.length) {
     return signalItems.slice(0, 4).map((item) => ({
       title: String(item.title || 'Recommendation').trim(),
-      priority: item.priority || 'High',
-      priorityType: String(item.priority || 'high').toLowerCase(),
+      description: item.description || item.action || null,
+      priority: item.priority || null,
+      priorityType: String(item.priority || '').toLowerCase(),
       category: item.category || 'Career Action',
       confidenceScore: Number(item.confidenceScore || 0),
       estimatedImpact: Number(item.estimatedImpact || 0),
@@ -551,8 +552,9 @@ const buildRecommendationPreview = (recommendationData = {}) => {
   if (structured.length) {
     return structured.slice(0, 4).map((item) => ({
       title: String(item.title || 'Recommendation').trim(),
-      priority: item.priority || 'High',
-      priorityType: String(item.priority || 'high').toLowerCase(),
+      description: item.description || item.action || null,
+      priority: item.priority || null,
+      priorityType: String(item.priority || '').toLowerCase(),
       category: item.category || 'Career Action',
       confidenceScore: Number(item.confidenceScore || 0),
       estimatedImpact: Number(item.estimatedImpact || 0),
@@ -563,8 +565,9 @@ const buildRecommendationPreview = (recommendationData = {}) => {
   const projects = Array.isArray(recommendationData.projects) ? recommendationData.projects : [];
   return projects.slice(0, 4).map((project) => ({
     title: String(project.title || 'Recommendation').trim(),
-    priority: 'High',
-    priorityType: 'high',
+    description: project.description || null,
+    priority: project.priority || null,
+    priorityType: String(project.priority || '').toLowerCase(),
     category:
       Array.isArray(project.tech) && project.tech.length
         ? project.tech.slice(0, 2).join(', ')
@@ -956,6 +959,9 @@ const getDashboardSummary = async (req, res) => {
     const recommendationItems = buildRecommendationPreview(latestRecommendationCache?.analysisData);
     const recommendationSnapshot = {
       items: recommendationItems,
+      generatedAt:
+        safeDate(latestRecommendationCache?.analysisData?.recommendationSignals?.generatedAt) ||
+        null,
       stale: staleFlags.recommendations,
       status: staleFlags.recommendations
         ? 'stale'
@@ -1176,6 +1182,27 @@ const getDashboardSummary = async (req, res) => {
       skillsSnapshot,
       learningSnapshot,
       readinessCenter,
+      portfolioAssessment:
+        currentPortfolioScore === null
+          ? null
+          : {
+              assessedAt:
+                currentPortfolioCache?.analysisData?.portfolioScore?.scoring?.calculatedAt || null,
+              ruleVersion:
+                currentPortfolioCache?.analysisData?.portfolioScore?.scoring?.ruleVersion || null,
+              components: Object.entries(
+                currentPortfolioCache?.analysisData?.portfolioScore?.scoring?.breakdown || {},
+              ).flatMap(([key, component]) => {
+                const value = numeric(component?.value);
+                const label = {
+                  codeQuality: 'Code Quality',
+                  industryReadiness: 'Industry Readiness',
+                  skillCoverage: 'Skill Coverage',
+                  projectImpact: 'Project Impact',
+                }[key];
+                return label && value !== null ? [{ label, value }] : [];
+              }),
+            },
       commandCenter,
       sourceFreshness,
       activitySnapshot: {

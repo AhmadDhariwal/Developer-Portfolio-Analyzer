@@ -36,6 +36,21 @@ function buildDashboardProgress(
     : [];
   const sources = Object.entries(sourceFreshness).filter(([key]) => key !== 'weekly');
   const skillData = latestSkillGapCache?.analysisData;
+  const activity = normalizeDashboardActivity(analysis?.contributionActivity);
+  const repositoryCount = analysis?.githubSignals?.username
+    ? numeric(analysis.githubStats?.repos)
+    : null;
+  const repositories = analysis?.githubSignals?.repositories || [];
+  const repositoryEvidence = repositories
+    .flatMap((repo) => {
+      if (!repo?.name) return [];
+      const commits = Number.isSafeInteger(repo.commits) && repo.commits >= 0 ? repo.commits : null;
+      const pushedAt = new Date(repo.pushedAt || NaN);
+      const date =
+        Number.isFinite(pushedAt.getTime()) && pushedAt <= now ? pushedAt.toISOString() : null;
+      return commits !== null || date ? [{ name: repo.name, commits, pushedAt: date }] : [];
+    })
+    .sort((a, b) => (b.pushedAt || '').localeCompare(a.pushedAt || ''));
   return {
     history,
     sprint: {
@@ -64,9 +79,14 @@ function buildDashboardProgress(
     },
     github: {
       available: Boolean(analysis?.updatedAt),
-      historyStatus:
-        'Legacy repository snapshots do not record username or scoring-rule identity; trends are not inferred.',
-      activity: normalizeDashboardActivity(analysis?.contributionActivity),
+      historyStatus: activity.length
+        ? 'Dated authored commits available for sampled repositories.'
+        : repositoryCount !== null || repositoryEvidence.length
+          ? 'Partial history. Saved repository evidence is available.'
+          : 'No saved repository history.',
+      activity,
+      repositoryCount,
+      repositoryEvidence: repositoryEvidence.slice(0, 4),
     },
     completedCourses: (learningProgress || [])
       .filter((row) => row.status === 'completed')

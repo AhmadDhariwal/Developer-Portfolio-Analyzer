@@ -1,0 +1,13 @@
+{
+  "suite": "integration",
+  "code": 0,
+  "results": [
+    "ℹ tests 2",
+    "ℹ pass 2",
+    "ℹ fail 0",
+    "ℹ cancelled 0",
+    "ℹ skipped 0",
+    "ℹ duration_ms 87823.9734"
+  ],
+  "diagnostics": []
+}

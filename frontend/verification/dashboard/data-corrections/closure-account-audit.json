@@ -1,0 +1,25 @@
+{
+  "indexNames": [
+    "_id_",
+    "userId_1",
+    "userId_1_createdAt_-1",
+    "scenarioHash_1",
+    "userId_1_role_1_experienceLevel_1",
+    "userId_1_scenarioHash_1",
+    "scenario_history_cursor"
+  ],
+  "commands": {
+    "find": 4,
+    "listIndexes": 1
+  },
+  "githubAt": "2026-11-18T14:19:36.649Z",
+  "resumeAt": "2026-11-18T15:07:54.751Z",
+  "datedRows": 0,
+  "repositoryRows": 14,
+  "coverage": null,
+  "skillGithubAt": "2026-11-18T14:19:36.649Z",
+  "recommendationGithubAt": "2026-11-18T14:19:36.649Z",
+  "recommendationResumeAt": "2026-11-18T15:07:54.751Z",
+  "recommendationFingerprintSaved": true,
+  "portfolioAt": "2026-11-19T13:37:42.696Z"
+}

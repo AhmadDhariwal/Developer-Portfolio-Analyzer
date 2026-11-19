@@ -62,3 +62,63 @@ The focused Dashboard suite passed 35 tests. The full Angular suite passed 715 t
 Playwright passed eight checks, including an explicit portfolio assessment that updated the score to the fixture value while the saved language chart stayed populated. The browser recorded exactly one assessment request and zero AI requests. [Browser results](browser-followup/results.json) · [Assessment screenshot](browser-followup/portfolio-assessment.png)
 
 Prettier ran in write and check modes. The follow-up moved and deleted no repository source files. The duplicate fixture captures `dashboard-language-radar.png`, `dashboard-skill-gap-recommendations.png`, `dashboard-sprint-velocity.png` and `github-language-evidence.png` were removed from `browser-followup` after the run. The original evidence remains under `browser`. Both disposable test trees and their generated PDF fixtures were cleaned up.
+
+## Final data-accuracy closure
+
+| Requirement | Evidence and resulting behavior |
+| --- | --- |
+| Recommendations | The preview now carries the saved description, priority and generation time when recorded. A later dependency revision preserves cards for the same owner, profile and Default Resume, with **Refresh Recommended** visible. The existing AI-only notice applies to current deterministic cards with outdated enrichment. |
+| Contribution Activity | The accepted account snapshot has 14 repository rows and zero dated contribution buckets. The fallback now shows repository counts, recent recorded pushes and available repository-wide commit totals. A complete sampled monthly series takes precedence. Pagination follows GitHub's next-page header and rejects a conflicting author identity. |
+| Portfolio Readiness | A current score has its own meter. Its detail panel shows available numeric scoring components, timestamp and scoring-rule version. History deduplicates by verified source revision even if the archive contains multiple assessment IDs. |
+| Skill Gap and source identity | The authorized account's accepted GitHub revision, Skill Gap GitHub reference and Recommendation GitHub reference match. The Recommendation Resume reference matches the selected Default Resume. The saved coverage remains null. The native query confirmed a persisted portfolio assessment and Recommendation fingerprint. |
+| Index audit | The follow-up audit observed four finds and one index listing, with zero `createIndexes` commands. The five index names previously attempted are present. The current inventory cannot attribute their creation to the earlier commands. |
+
+[Native account audit](closure-account-audit.json) · [Before activity](after-activity.png) · [Before readiness](browser-followup/portfolio-assessment.png) · [Before recommendations](browser/dashboard-skill-gap-recommendations.png)
+
+The fixture captures show [repository evidence](browser-closure/dashboard-language-radar.png), [saved recommendations](browser-closure/saved-recommendations.png) and [portfolio score and provenance](browser-closure/portfolio-assessment.png). These captures use controlled data. Playwright verified the fallback, trend and meter states, then reloaded the assessment without issuing a second assessment or an AI request. [Browser assertions](browser-closure/results.json)
+
+### Closure verification and regression triage
+
+| Gate | Status | Evidence |
+| --- | --- | --- |
+| Saved recommendations, source transitions, explicit regeneration and stale recovery | PASS in fixtures | Two-worker HTTP tests exercised source changes, failed generation, recovery and refreshed snapshots on disposable MongoDB and Redis. Playwright verified that saved content and priority remain visible with the stale notice. |
+| Passive Dashboard reads | PASS in fixtures | Playwright recorded zero AI requests and one explicitly initiated GitHub sync. External provider traffic was blocked. |
+| Dated activity and repository fallback | PASS in fixtures | Focused endpoint tests distinguished saved repository metrics from authored monthly counts. Browser coverage exercised both states. |
+| Current score, trend and reload | PASS in fixtures | Source-revision deduplication passed the provenance tests. The assessment button, score meter, provenance display and reload passed Playwright. |
+| Skill Gap and selected Default Resume propagation | PASS in fixtures | The two-worker test exercised selected-resume changes and saved data propagation. The native audit confirmed compatible account source timestamps and null coverage. |
+| Frontend regression, TypeScript and production build | PASS | 715 tests passed across 120 files. After the final styling edits, all 20 Dashboard Angular tests and all eight Playwright workflows passed. The TypeScript and production builds passed with existing budget warnings. |
+| Previous backend failures | PARTIAL | The profile and resume tests now assert the Default Resume contract. The isolated preview worker resolves dependencies through the harness's `NODE_PATH`. All 20 resume and preview rerun tests passed. The historical Skill Gap case and resume upload cancellation cleared. The Interview Prep API test passed in one serial run and returned 503 in subsequent serial and full runs. |
+| Full backend regression | FAIL | The final complete run recorded 1,105 passes, four failures, zero cancellations and 23 skips. The four failures include the Course Catalog and Interview Prep parent suites. The failing child cases were scheduled archival and authenticated Interview Prep API contracts. |
+
+[Two-worker integration](integration-closure-regression.json) · [Unchanged baseline failures](baseline-closure-regression.json) · [First full closure run](backend-closure-regression.json) · [Final full run](final-backend-closure-regression.json) · [Final targeted rerun](final-recheck-closure-regression.json)
+
+Course Catalog passed the serial follow-up. The remaining Interview Prep failure occurs at the authenticated JavaScript search request. It returns `503 Interview service is temporarily busy. Please retry.` before the test reaches the practice and session assertions. The response comes from Interview Prep coordination. The underlying reservation error is unavailable because the service maps it to the generic 503. The Dashboard closure leaves admission behavior in place. [Serial failures rerun](serial-failures-closure-regression.json) · [Interview diagnostic](interview-diagnostic-closure-regression.json)
+
+### Closure source inventory
+
+- `backend/src/modules/dashboard/dashboardcontroller.js`
+- `backend/src/modules/dashboard/services/dashboardHistoryService.js`
+- `backend/src/modules/dashboard/services/dashboardProgressService.js`
+- `backend/src/modules/github/services/githubservice.js`
+- `backend/src/tests/dashboard/dashboardEndpoints.test.js`
+- `backend/src/tests/dashboard/dashboardProvenance.test.js`
+- `backend/src/tests/interview-prep/interviewPrepFinalization.integration.test.js`
+- `backend/src/tests/profile/profileSettingsProduction.test.js`
+- `backend/src/tests/resume/resumePipelineFinalization.test.js`
+- `backend/src/tests/skill-gap/skillGapAcceptance.test.js`
+- `frontend/scripts/verify-developer-evidence.cjs`
+- `frontend/src/app/features/developer/pages/dashboard/components/dashboard-progress/dashboard-progress.component.html`
+- `frontend/src/app/features/developer/pages/dashboard/components/dashboard-progress/dashboard-progress.component.scss`
+- `frontend/src/app/features/developer/pages/dashboard/components/dashboard-progress/dashboard-progress.component.ts`
+- `frontend/src/app/features/developer/pages/dashboard/dashboard.component.html`
+- `frontend/src/app/features/developer/pages/dashboard/dashboard.component.scss`
+- `frontend/src/app/features/developer/pages/dashboard/dashboard.component.ts`
+- `frontend/src/app/shared/models/dashboard.model.ts`
+
+No source files were moved or deleted. The duplicate captures `browser-closure/dashboard-sprint-velocity.png` and `browser-closure/github-language-evidence.png` were removed. Their prior equivalents remain in the verification history.
+
+The closure also added this report section and a summary in `DEVELOPER-END-TO-END-ACCEPTANCE.md`. Prettier write and check, JavaScript syntax checks and Git whitespace checks passed.
+
+### Real-account browser gate
+
+**BLOCKED** for live mutation and authenticated browser acceptance. No live assessment, GitHub sync, Skill Gap reassessment or Recommendations regeneration was performed during this closure. To complete the manual gate, sign in on the authorized account and confirm the saved cards and matching source timestamps. Explicitly sync GitHub, verify the dated series or the repository evidence fallback, assess the saved portfolio, and reload. Reassess Skill Gap and verify React and TypeScript against the accepted GitHub revision and Default Resume. Explicitly refresh Recommendations, verify the stale label clears when generation succeeds, and check that F5 and a second tab retain the same values.

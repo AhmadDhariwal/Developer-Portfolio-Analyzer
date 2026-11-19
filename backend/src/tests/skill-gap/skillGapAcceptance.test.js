@@ -11,7 +11,7 @@ test(
   { timeout: 30000 },
   async (t) => {
     const env = Object.fromEntries(
-      ['PATH', 'Path', 'SystemRoot', 'WINDIR', 'TEMP', 'TMP', 'USERPROFILE']
+      ['PATH', 'Path', 'SystemRoot', 'WINDIR', 'TEMP', 'TMP', 'USERPROFILE', 'NODE_PATH']
         .filter((key) => process.env[key])
         .map((key) => [key, process.env[key]])
     );

@@ -1,0 +1,20 @@
+{
+  "suite": "serial-failures",
+  "code": 1,
+  "results": [
+    "✖ Interview Prep isolated Mongo critical paths (17551.9105ms)",
+    "ℹ tests 25",
+    "ℹ pass 23",
+    "ℹ fail 2",
+    "ℹ cancelled 0",
+    "ℹ skipped 0",
+    "ℹ duration_ms 42795.5983",
+    "✖ failing tests:",
+    "✖ authenticated API contracts, input rejection, practice fallback, and canonical personalization (4353.813ms)"
+  ],
+  "diagnostics": [
+    "  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:",
+    "    actual: 503,",
+    "    expected: 200,"
+  ]
+}

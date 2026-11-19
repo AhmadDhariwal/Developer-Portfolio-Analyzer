@@ -467,3 +467,12 @@ test('a newer Skill Gap assessment preserves scoped saved recommendations with s
   assert.equal(recommendations.syncStatus, 'stale');
   assert.deepEqual(recommendations.items, recommendationSnapshot.items);
 });
+
+test('partial repository evidence comes from the accepted profile without inferred monthly counts', async () => {
+  hasAnalysis = true;
+  savedActivity = [];
+  const result = await (await request('summary')).json();
+  assert.deepEqual(result.activitySnapshot.data, []);
+  assert.equal(result.progress.github.repositoryCount, 3);
+  assert.match(result.progress.github.historyStatus, /Partial history/);
+});

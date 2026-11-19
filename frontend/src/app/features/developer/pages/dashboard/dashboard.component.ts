@@ -1,6 +1,7 @@
 import { languagePercentageLabels } from '../../../../shared/utils/language-percentage';
 import {
   DashboardProgress,
+  DashboardPortfolioAssessment,
   DashboardIntegrationConnectivity,
 } from '../../../../shared/models/dashboard.model';
 import { DashboardProgressComponent } from './components/dashboard-progress/dashboard-progress.component';
@@ -48,6 +49,7 @@ export interface StatCard {
 }
 
 export interface RecommendationItem {
+  description?: string;
   title: string;
   priority: 'High' | 'Medium' | 'Low';
   category: string;
@@ -604,6 +606,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
     this.learningSnapshot = data?.learningSnapshot || null;
     this.applySkillsSnapshot(data?.skillsSnapshot);
     this.applyRecommendationsSnapshot(data?.recommendationSnapshot);
+    this.portfolioAssessment = data?.portfolioAssessment ?? null;
 
     this.requestChartRender();
     this.isLoading = false;
@@ -721,6 +724,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
   }
 
   recommendationNotice = '';
+  recommendationsStale = false;
+  recommendationsGeneratedAt: string | null = null;
+  portfolioAssessment: DashboardPortfolioAssessment | null = null;
 
   get skillGapEmptyMessage(): string {
     return (
@@ -730,12 +736,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
   }
 
   private applyRecommendationsSnapshot(payload: any): void {
-    if (!payload) return;
+    this.recommendationsStale = payload?.stale === true;
+    this.recommendationsGeneratedAt = payload?.generatedAt ?? null;
     this.recommendationNotice = String(payload?.message || '');
     const items = Array.isArray(payload?.items) ? payload.items : [];
     this.recommendations = items.slice(0, 4).map((item: any) => ({
       title: String(item?.title || 'Recommendation'),
-      priority: item?.priority === 'Low' || item?.priority === 'Medium' ? item.priority : 'High',
+      description: String(item?.description || ''),
+      priority: item?.priority || '',
       category: String(item?.category || 'Technology'),
       priorityType:
         item?.priorityType === 'low' || item?.priorityType === 'medium'

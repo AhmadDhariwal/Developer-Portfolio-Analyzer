@@ -57,12 +57,18 @@ test('generic public writer discards mass-assigned provenance; internal writer a
     return row;
   };
   try {
-    const { createVersion, createPortfolioVersion } = require('../../modules/super-admin/services/aiVersionService');
+    const {
+      createVersion,
+      createPortfolioVersion,
+    } = require('../../modules/super-admin/services/aiVersionService');
     await createVersion({ ...base, provenance, metadata: { provenance } });
     assert.equal(Object.hasOwn(saved.at(-1), 'provenance'), false);
     await createPortfolioVersion({ ...base, provenance });
     assert.deepEqual(saved.at(-1).provenance, provenance);
-    const { createAiVersion, rollbackVersion } = require('../../modules/super-admin/controllers/aiversioncontroller');
+    const {
+      createAiVersion,
+      rollbackVersion,
+    } = require('../../modules/super-admin/controllers/aiversioncontroller');
     const res = {
       status: (code) => {
         assert.ok(code < 400);
@@ -134,12 +140,18 @@ test('history excludes legacy, scope/rule mismatches and incomplete proof, and d
       [],
     );
   }
+  const sameSource = {
+    ...row,
+    provenance: { ...provenance, assessmentHash: 'e'.repeat(64) },
+  };
+  assert.equal(comparableHistory([row, sameSource], identity, provenance.ruleVersion).length, 1);
   const second = {
     ...row,
     _id: '2',
     provenance: {
       ...provenance,
       assessmentHash: 'c'.repeat(64),
+      sourceRevisionHash: 'd'.repeat(64),
       assessedAt: new Date('2026-11-13'),
     },
     outputJson: { ...outputJson, overallScore: 20 },

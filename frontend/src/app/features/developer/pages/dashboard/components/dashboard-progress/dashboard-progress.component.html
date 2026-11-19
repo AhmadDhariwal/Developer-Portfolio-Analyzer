@@ -41,6 +41,24 @@
       >
         Last comparable assessment: {{ latest.value }}/100 on {{ latest.at | date: 'mediumDate' }}
       </p>
+      <meter
+        *ngIf="currentPortfolioScore !== null"
+        min="0"
+        max="100"
+        [value]="currentPortfolioScore"
+        class="portfolio-score-meter"
+        aria-label="Current portfolio score"
+      ></meter>
+      <details *ngIf="currentPortfolioScore !== null && portfolioAssessment as assessment">
+        <summary>Current assessment evidence</summary>
+        <p *ngIf="assessment.assessedAt">Assessed {{ assessment.assessedAt | date: 'medium' }}</p>
+        <p *ngIf="assessment.ruleVersion">Scoring rule {{ assessment.ruleVersion }}</p>
+        <ul class="portfolio-assessment-components" *ngIf="assessment.components.length">
+          <li *ngFor="let component of assessment.components">
+            {{ component.label }} · {{ component.value }}/100
+          </li>
+        </ul>
+      </details>
       <button
         type="button"
         *ngIf="canAssessPortfolio"

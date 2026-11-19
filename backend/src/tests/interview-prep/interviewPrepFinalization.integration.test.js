@@ -346,14 +346,16 @@ test(
           throw new Error('provider unavailable fixture');
         });
         const practice = await request('/generate', { topic: 'javascript', limit: 5 });
-        assert.equal(practice.status, 200);
+        assert.equal(practice.status, 200, JSON.stringify(practice.body));
         assert.ok(practice.body.questions.length > 0);
         const session = await request('', {
+          topic: 'javascript',
+          limit: 5,
           careerStack: 'Untrusted request override',
           experienceLevel: 'Senior',
           skillGaps: ['invented inability']
         });
-        assert.equal(session.status, 200);
+        assert.equal(session.status, 200, JSON.stringify(session.body));
         const persisted = await Session.findById(session.body.sessionId).lean();
         assert.equal(persisted.careerStack, 'Frontend');
         assert.equal(persisted.experienceLevel, 'Student');

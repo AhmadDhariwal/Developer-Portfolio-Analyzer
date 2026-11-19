@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   DashboardProgress,
+  DashboardPortfolioAssessment,
   DashboardIntegrationConnectivity,
 } from '../../../../../../shared/models/dashboard.model';
 
@@ -14,6 +15,7 @@ import {
 })
 export class DashboardProgressComponent {
   @Input() data: DashboardProgress | null = null;
+  @Input() portfolioAssessment: DashboardPortfolioAssessment | null = null;
   @Input() currentPortfolioScore: number | null = null;
   @Input() canAssessPortfolio = false;
   @Input() assessingPortfolio = false;
