@@ -439,6 +439,28 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
       .subscribe();
   }
 
+  assessingPortfolio = false;
+  portfolioAssessmentError = '';
+
+  assessPortfolio(): void {
+    if (this.assessingPortfolio || this.destroyed) return;
+    this.assessingPortfolio = true;
+    this.portfolioAssessmentError = '';
+    this.apiService.assessSavedPortfolio().subscribe({
+      next: () => {
+        if (this.destroyed) return;
+        this.assessingPortfolio = false;
+        this.loadDashboardData(true);
+      },
+      error: () => {
+        if (this.destroyed) return;
+        this.assessingPortfolio = false;
+        this.portfolioAssessmentError = 'Portfolio assessment could not be saved. Try again.';
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
   reanalyze(): void {
     this.clearDashboardCache();
     this.loadDashboardData(true);

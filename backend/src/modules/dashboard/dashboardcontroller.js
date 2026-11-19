@@ -668,9 +668,10 @@ const buildCommandCenter = ({
   latestCareerSprint,
   latestJob,
   latestNews,
+  recommendationsStale,
 }) => {
   const skillData = latestSkillGapCache?.analysisData || {};
-  const missingSkills = Array.isArray(skillData.missingSkills) ? skillData.missingSkills : [];
+  const missingSkills = missingRequiredSkills(skillData.missingSkills);
   const highDemandSkills = Array.isArray(skillData.highDemandSkills)
     ? skillData.highDemandSkills
     : [];
@@ -698,13 +699,19 @@ const buildCommandCenter = ({
     {
       key: 'skillGap',
       label: 'Top Skill Gap',
-      value: firstString(missingSkills, 'No current Skill Gap evidence'),
+      value: firstString(
+        missingSkills,
+        latestSkillGapCache ? 'No confirmed missing skills' : 'No current Skill Gap evidence',
+      ),
       source: 'Skill Gap',
       route: '/app/skill-gap',
     },
     {
       key: 'project',
-      label: 'Top Recommended Project',
+      label:
+        recommendationsStale && projects.length
+          ? 'Last Saved Recommended Project'
+          : 'Top Recommended Project',
       value: String(projects[0]?.title || 'Generate recommendations to pick a project'),
       source: 'Recommendations',
       route: '/app/recommendations',
@@ -712,7 +719,10 @@ const buildCommandCenter = ({
     {
       key: 'sprint',
       label: 'Top Sprint Task',
-      value: String(sprintTask?.title || 'Start a career sprint task'),
+      value: String(
+        sprintTask?.title ||
+          (tasks.length ? 'All sprint tasks completed' : 'No sprint tasks saved'),
+      ),
       source: 'Career Sprint',
       route: '/app/career-sprint',
     },
@@ -943,17 +953,18 @@ const getDashboardSummary = async (req, res) => {
       integrationInsight?.updatedAt,
     );
 
+    const recommendationItems = buildRecommendationPreview(latestRecommendationCache?.analysisData);
     const recommendationSnapshot = {
-      items: currentRecommendationCache?.analysisData
-        ? buildRecommendationPreview(currentRecommendationCache.analysisData)
-        : [],
+      items: recommendationItems,
       stale: staleFlags.recommendations,
       status: staleFlags.recommendations
         ? 'stale'
         : toFreshness(latestRecommendationCache?.updatedAt),
       updatedAt: latestRecommendationCache?.updatedAt || null,
       message: staleFlags.recommendations
-        ? 'Inputs changed. Open Recommendations to refresh the evidence-based cards.'
+        ? recommendationItems.length
+          ? 'Showing the last saved recommendations for this profile. Open Recommendations to refresh them against the latest evidence.'
+          : 'Open Recommendations to generate cards from the latest evidence.'
         : currentRecommendationCache?.analysisData?.aiRefreshRecommended
           ? 'AI Refresh Recommended. Evidence-based recommendations reflect the saved inputs.'
           : '',
@@ -1097,7 +1108,8 @@ const getDashboardSummary = async (req, res) => {
 
     const commandCenter = buildCommandCenter({
       latestSkillGapCache: currentSkillGapCache,
-      latestRecommendationCache: currentRecommendationCache,
+      latestRecommendationCache,
+      recommendationsStale: staleFlags.recommendations,
       latestCareerSprint,
       latestJob,
       latestNews,
@@ -1351,7 +1363,7 @@ const getDashboardRecommendations = async (req, res) => {
     const resumeIdentity = selectedResumeIdentity(user, resume);
     const scope = skillGapContract.buildScope({ userId: req.user._id, user, resumeIdentity });
     const [{ analysis }, latestRecommendationCache, latestSkillGapCache] = await Promise.all([
-      ensureAnalysis(req.user._id, scope.githubUsername),
+      ensureAnalysis(req.user._id, developerContext.resolveGithubUsername(user)),
       latestCacheByPredicate(req.user._id, {
         githubUsername: scope.githubUsername,
         careerStack,
@@ -1368,10 +1380,9 @@ const getDashboardRecommendations = async (req, res) => {
       latestSkillGapCache,
       user,
     );
-    const items =
-      !stale && latestRecommendationCache?.analysisData
-        ? buildRecommendationPreview(latestRecommendationCache.analysisData)
-        : [];
+    const items = latestRecommendationCache?.analysisData
+      ? buildRecommendationPreview(latestRecommendationCache.analysisData)
+      : [];
 
     res.json({
       items,

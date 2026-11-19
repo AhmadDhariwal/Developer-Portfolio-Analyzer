@@ -31,3 +31,34 @@ The account screenshots are fresh captures of the before and after local builds 
 The account lookup checked the supplied email, Developer role, display name and GitHub username before inspecting dependent records. Application-model initialization during diagnosis issued five MongoDB `createIndexes` commands, crossing the requested read-only boundary. A disposable reproduction identified all five as Scenario Simulation schema indexes whose development-mode initialization overrides the global setting. The monitored run observed 28 finds, five aggregations and five index commands, with no record inserts, updates or deletes. Whether any index was newly created on the account database is unknown. Live application-handler runs stopped after discovery. The final independent comparison used native MongoDB finds only. The report does not certify read-only database access for the entire diagnosis.
 
 Mutation tests used disposable loopback MongoDB and Redis. The browser tests exercised fixture providers. A real GitHub commit sync and a recalculation on the authorized account were deliberately unexecuted. [Before handler fields](before.json) · [After handler fields](after.json) · [Isolated integration results](integration-regression.json)
+
+## Follow-up on the localhost screenshot
+
+The screenshot shows a newer, compatible Skill Gap assessment. The account's saved Recommendations and Skill Gap timestamps were 17:27:14.584 and 17:27:26.792 PKT on November 19. A native MongoDB find confirmed four saved cards. The Dashboard used the later Skill Gap save to flag Recommendations as stale and discarded their preview. It now shows the same-profile cards with a clear refresh notice. The separate Recommendations endpoint resolves the active GitHub username before checking its revision, and the Command Center identifies an older project as the last saved recommendation.
+
+| Widget | Expected result for this account after loading the updated code |
+| --- | --- |
+| Recommendations | Four last-saved cards stay visible alongside the fresh Skill Gap assessment. The refresh notice identifies their age relative to the latest evidence. |
+| Comparable Portfolio Readiness | The new **Assess saved portfolio** button calculates from saved profile evidence and updates the score on success. It runs only on explicit action and incurs no AI generation. Trend availability still requires distinct comparable records. |
+| Contribution Activity | The card links to GitHub Analyzer for an explicit sync. The accepted old snapshot still lacks a dated series. |
+| Skills Radar and Skill Gap | The three measured values remain visible. Target coverage stays unavailable while required evidence is unknown. The Command Center now distinguishes an assessment with no confirmed missing skills from a missing assessment. |
+| Interview Readiness | The saved recommendation record has no interview-readiness score. The widget stays unavailable. |
+| Sprint | The Command Center identifies a fully completed sprint instead of prompting the developer to start a task. |
+
+The focused Dashboard suite passed 35 tests. The full Angular suite passed 715 tests. TypeScript and the production build passed, with existing build-budget warnings. The two-worker MongoDB and Redis follow-up passed both checks. The earlier full backend run returned 1,100 passed, 7 failed, 1 cancelled and 23 skipped. The failures remain documented separately. [Isolated workflow](integration-followup.json) · [Full backend run](backend-regression.json)
+
+### Follow-up source changes
+
+- `backend/src/modules/dashboard/dashboardcontroller.js`
+- `backend/src/modules/workflows/analysiscontroller.js`
+- `backend/src/tests/dashboard/dashboardEndpoints.test.js`
+- `frontend/scripts/verify-developer-evidence.cjs`
+- `frontend/src/app/features/developer/pages/dashboard/components/dashboard-progress/dashboard-progress.component.html`
+- `frontend/src/app/features/developer/pages/dashboard/components/dashboard-progress/dashboard-progress.component.ts`
+- `frontend/src/app/features/developer/pages/dashboard/dashboard.component.html`
+- `frontend/src/app/features/developer/pages/dashboard/dashboard.component.ts`
+- `frontend/src/app/shared/services/api.service.ts`
+
+Playwright passed eight checks, including an explicit portfolio assessment that updated the score to the fixture value while the saved language chart stayed populated. The browser recorded exactly one assessment request and zero AI requests. [Browser results](browser-followup/results.json) · [Assessment screenshot](browser-followup/portfolio-assessment.png)
+
+Prettier ran in write and check modes. The follow-up moved and deleted no repository source files. The duplicate fixture captures `dashboard-language-radar.png`, `dashboard-skill-gap-recommendations.png`, `dashboard-sprint-velocity.png` and `github-language-evidence.png` were removed from `browser-followup` after the run. The original evidence remains under `browser`. Both disposable test trees and their generated PDF fixtures were cleaned up.

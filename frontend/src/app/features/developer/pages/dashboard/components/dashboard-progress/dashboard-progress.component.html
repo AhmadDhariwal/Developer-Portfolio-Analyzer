@@ -35,6 +35,21 @@
             : currentPortfolioScore + '/100'
         }}</strong>
       </p>
+      <p
+        class="article-sub"
+        *ngIf="currentPortfolioScore === null && progress.history.points.at(-1) as latest"
+      >
+        Last comparable assessment: {{ latest.value }}/100 on {{ latest.at | date: 'mediumDate' }}
+      </p>
+      <button
+        type="button"
+        *ngIf="canAssessPortfolio"
+        [disabled]="assessingPortfolio"
+        (click)="assessPortfolio.emit()"
+      >
+        {{ assessingPortfolio ? 'Assessing saved evidence…' : 'Assess saved portfolio' }}
+      </button>
+      <p *ngIf="portfolioAssessmentError" role="alert">{{ portfolioAssessmentError }}</p>
       <ng-container *ngIf="progress.history.status === 'available'">
         <div class="svg-frame">
           <svg

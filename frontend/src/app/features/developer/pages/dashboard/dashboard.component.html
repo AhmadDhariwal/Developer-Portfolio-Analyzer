@@ -371,6 +371,7 @@
     <p *ngIf="!isLoading && !activityAvailable" class="empty-state">
       The saved GitHub analysis has no complete dated commit series. Repository totals and last-push
       dates cannot establish monthly counts.
+      <a [routerLink]="['/app/github-analyzer']">Open GitHub Analyzer to sync dated activity</a>.
     </p>
     <details class="repository-history-note" *ngIf="progress">
       <summary>Repository history availability</summary>
@@ -592,7 +593,10 @@
       </a>
     </div>
 
-    <p class="empty-state" *ngIf="!isLoading && recommendations.length === 0">
+    <p
+      class="empty-state"
+      *ngIf="!isLoading && recommendations.length === 0 && !recommendationNotice"
+    >
       No saved recommendations for your active profile. Open Recommendations to get started.
     </p>
     <p *ngIf="recommendationNotice" class="empty-state">{{ recommendationNotice }}</p>
@@ -622,6 +626,10 @@
 <app-dashboard-progress
   [data]="progress"
   [currentPortfolioScore]="currentPortfolioScore"
+  [canAssessPortfolio]="!!githubHandle && !isLoading && currentPortfolioScore === null"
+  [assessingPortfolio]="assessingPortfolio"
+  [portfolioAssessmentError]="portfolioAssessmentError"
+  (assessPortfolio)="assessPortfolio()"
   [loading]="isLoading"
   [error]="loadError"
   [stale]="dashboardStale"

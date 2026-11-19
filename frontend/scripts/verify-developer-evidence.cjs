@@ -68,8 +68,15 @@ const tokenFor = (id) =>
     ).toString('base64url'),
     'fixture',
   ].join('.');
-const requests = { summary: { fixture: 0, alternate: 0 }, sync: 0, savedGithub: 0, ai: 0 };
+const requests = {
+  summary: { fixture: 0, alternate: 0 },
+  sync: 0,
+  savedGithub: 0,
+  ai: 0,
+  assessments: 0,
+};
 let revision = 1;
+let alternatePortfolioScore = null;
 let aiUsed = false;
 const skillsMissing =
   'No saved Skill Gap assessment for this profile. Open Skill Gap to assess the available evidence.';
@@ -107,7 +114,13 @@ function summary(owner) {
           available: true,
         }
       : { data: [], available: false },
-    readinessCenter: [{ key: 'portfolio', label: 'Portfolio Readiness', value: main ? 61 : null }],
+    readinessCenter: [
+      {
+        key: 'portfolio',
+        label: 'Portfolio Readiness',
+        value: main ? 61 : alternatePortfolioScore,
+      },
+    ],
     skillsSnapshot: updated
       ? {
           topSkills: ['React', 'TypeScript'],
@@ -215,6 +228,14 @@ async function run() {
       if (url.pathname === '/api/dashboard/summary') {
         requests.summary[id] += 1;
         return json(summary(id));
+      }
+      if (url.pathname === '/api/analysis/portfolio-score') {
+        assert.equal(id, 'alternate');
+        assert.equal(req.method(), 'POST');
+        assert.deepEqual(req.postDataJSON(), {});
+        requests.assessments += 1;
+        alternatePortfolioScore = 52;
+        return json({ overallScore: 52 });
       }
       if (url.pathname === '/api/dashboard/languages')
         return json({ data: summary(id).languageSnapshot.data });
@@ -396,6 +417,18 @@ async function run() {
     assert.equal(await otherTab.getByText('Python', { exact: true }).count(), 0);
     results.push(
       'A shared-browser account switch reloads Dashboard with only the new owner’s data',
+    );
+
+    assert.equal(requests.assessments, 0);
+    await otherTab.getByRole('button', { name: 'Assess saved portfolio' }).click();
+    const readiness = otherTab.locator('[aria-labelledby="readiness-history-title"]');
+    await readiness.getByText('52/100', { exact: true }).waitFor();
+    await assertValues(dashValues(otherTab), ['100%']);
+    assert.equal(requests.assessments, 1);
+    assert.equal(requests.ai, 0);
+    await readiness.screenshot({ path: path.join(output, 'portfolio-assessment.png') });
+    results.push(
+      'Explicit portfolio assessment refreshes the score and preserves the language widget',
     );
 
     const report = { results, requests, providerTraffic: 'Blocked outside the loopback fixture' };
