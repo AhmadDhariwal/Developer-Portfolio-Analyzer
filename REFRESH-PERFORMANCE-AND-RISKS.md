@@ -63,3 +63,10 @@
 
 ### 2.6 Missing Graceful Shutdown Cleanup (`backend/index.js:305-316`)
 - `emailRetryQueueService`, `integrationSyncService`, `jobSourceSyncService`, `weeklyReportService` cron, `interviewQuestionIngestionService`, and `interviewQuestionMaintenanceService` timers/cron tasks are not stopped inside `shutdown()`, whereas `notificationRetentionService`, `notificationStreamService`, `newsIngestionScheduler`, and `courseCatalogMaintenanceService` cleanly stop.
+
+
+## Implementation addendum — 2026-11-17
+
+The shared Redis promotion TTL defect and nonatomic lock release are corrected. Ordinary profile Skill Gap reads no longer queue GitHub SWR or consume optional narrative AI admission; explicit refresh/preview retain their workflows. Recommendation browser payload reuse cannot skip backend validation. This increment does not establish complete multi-instance, real Redis, provider, or browser acceptance. See the retained finalization report for test failures and unverified gates.
+
+The original audit above is historical source evidence. Current implementation and acceptance limits are recorded in [DEVELOPER-DATA-FRESHNESS-FINAL.md](DEVELOPER-DATA-FRESHNESS-FINAL.md) and [DEVELOPER-MODULE-REFRESH-TEST-MATRIX.md](DEVELOPER-MODULE-REFRESH-TEST-MATRIX.md).

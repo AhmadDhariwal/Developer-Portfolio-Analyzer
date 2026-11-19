@@ -912,7 +912,10 @@ const saveAIVersionSnapshot = async ({ req, source, output, metadata = {} }) => 
         },
         aiUsed: Boolean(output.aiUsed)
       },
-      metadata: { analysisVersion: ANALYSIS_VERSION, fromCache: Boolean(metadata.fromCache) }
+      metadata: {
+        analysisVersion: ANALYSIS_VERSION,
+        fromCache: Boolean(metadata.fromCache)
+      }
     });
   } catch (error) {
     console.error("Skill gap AI snapshot error:", error.message);
@@ -936,6 +939,7 @@ const queueAIVersionSnapshot = (payload) => {
 
 const loadResumeAnalysis = (userId, userContext) =>
   developerContext.resolveResumeAnalysis(userId, userContext, {
+    defaultOnly: true,
     ResumeAnalysis
   });
 
@@ -973,7 +977,7 @@ const getGitHubData = async (
       return cached.data;
     }
 
-    const shouldRefresh = forceRefresh || cached.status !== "fresh";
+    const shouldRefresh = forceRefresh && !cachedPeek?.owned;
     let refreshState = { queued: false, running: false, reason: "fresh" };
 
     if (shouldRefresh) {
@@ -1145,7 +1149,7 @@ const buildSkillGapCacheSignalHash = ({
         roadmapVersion: "skill-gap-roadmap-v2",
         evidenceRuleVersion: skillGapEvidence.RULE_VERSION,
         evidencePolicyVersion: skillGapEvidence.EVIDENCE_POLICY_VERSION,
-        selectedResume: developerContext.resolveSelectedResumeFileId(user),
+        selectedResume: developerContext.resolveDefaultResumeFileId(user),
         supportingEvidence: {
           integration: developerSignals.integrationSignal,
           sprint: developerSignals.careerSprintSignal,
@@ -1991,7 +1995,7 @@ const analyzeSkillGap = async (req, res) => {
               ? crypto.createHash("sha256").update(cleanResume).digest("hex")
               : "no-resume")
         )
-      : `${developerContext.resolveSelectedResumeFileId(req.user) || "profile-active"}:${req.user?.updatedAt || ""}`;
+      : `${developerContext.resolveDefaultResumeFileId(req.user) || "profile-active"}:${req.user?.updatedAt || ""}`;
     inflightKey = buildInflightRequestKey({
       userId: req.user?._id || null,
       username,
@@ -2056,8 +2060,18 @@ const analyzeSkillGap = async (req, res) => {
       timer.time("githubPeekMs", () =>
         normalizedGithubUsername
           ? getCachedGitHubAnalysis(normalizedGithubUsername, {
-              allowStale: true
-            }).catch(() => ({ status: "unavailable", data: null }))
+              allowStale: true,
+              userId: isTemporaryMode ? undefined : req.user?._id
+            })
+              .then((result) => ({
+                ...result,
+                owned: !isTemporaryMode && Boolean(req.user?._id)
+              }))
+              .catch(() => ({
+                status: "unavailable",
+                data: null,
+                owned: !isTemporaryMode && Boolean(req.user?._id)
+              }))
           : Promise.resolve({ status: "miss", data: null })
       )
     ]);
@@ -2070,7 +2084,8 @@ const analyzeSkillGap = async (req, res) => {
         numeric(latestResumeAnalysis?.atsScore) ??
         numeric(latestResumeAnalysis?.resumeSignals?.scores?.atsScore);
       resumeCacheIdentity = buildResumeCacheIdentity({
-        resumeAnalysis: latestResumeAnalysis
+        resumeAnalysis: latestResumeAnalysis,
+        defaultResumeFileId: developerContext.resolveDefaultResumeFileId(userContext)
       });
     }
 
@@ -2145,7 +2160,7 @@ const analyzeSkillGap = async (req, res) => {
       );
       if (memoryHit?.analysisData && memoryHit.signalHash === signalHash) {
         const cachedResult = {
-          ...memoryHit.analysisData,
+          ...skillGapCompatibility.currentGroups(memoryHit.analysisData),
           fromCache: true,
           cacheMetadata: {
             ...(memoryHit.analysisData.cacheMetadata || {}),
@@ -2180,7 +2195,7 @@ const analyzeSkillGap = async (req, res) => {
           signalHash
         });
         const cachedResult = {
-          ...previewCached.analysisData,
+          ...skillGapCompatibility.currentGroups(previewCached.analysisData),
           analysisBasedOn: buildAnalysisBasedOn({
             username,
             careerStack,
@@ -2252,7 +2267,7 @@ const analyzeSkillGap = async (req, res) => {
       });
       const cachedDeterministicConfidence = sharedCached.analysisData.deterministicConfidence || 0;
       const cachedResult = {
-        ...sharedCached.analysisData,
+        ...skillGapCompatibility.currentGroups(sharedCached.analysisData),
         analysisBasedOn: buildAnalysisBasedOn({
           username,
           careerStack,
@@ -2316,7 +2331,7 @@ const analyzeSkillGap = async (req, res) => {
       });
       const cachedDeterministicConfidence = cached.analysisData.deterministicConfidence || 0;
       const cachedResult = {
-        ...cached.analysisData,
+        ...skillGapCompatibility.currentGroups(cached.analysisData),
         analysisBasedOn: buildAnalysisBasedOn({
           username,
           careerStack,
@@ -2397,7 +2412,22 @@ const analyzeSkillGap = async (req, res) => {
           .lean()
       );
     }
-    if (historical?.analysisData && !historical.analysisData.ruleVersion) {
+    const githubSourceAt = Date.parse(
+      githubData?.githubSignals?.analyzedAt || githubData?.fetchedAt || ""
+    );
+    const resumeSourceAt = Date.parse(
+      latestResumeAnalysis?.analyzedAt || latestResumeAnalysis?.createdAt || ""
+    );
+    const historicalAt = Date.parse(historical?.updatedAt || historical?.createdAt || "");
+    const historicalSuperseded = Boolean(
+      historical &&
+      ((historical.resumeAnalysisId &&
+        String(historical.resumeAnalysisId) !== String(resumeCacheIdentity.resumeAnalysisId)) ||
+        (Number.isFinite(historicalAt) &&
+          ((Number.isFinite(githubSourceAt) && githubSourceAt > historicalAt) ||
+            (Number.isFinite(resumeSourceAt) && resumeSourceAt > historicalAt))))
+    );
+    if (historical?.analysisData && !historical.analysisData.ruleVersion && !historicalSuperseded) {
       const cachedDeterministicConfidence = historical.analysisData.deterministicConfidence || 0;
       const cachedResult = {
         ...historical.analysisData,
@@ -2568,14 +2598,14 @@ const analyzeSkillGap = async (req, res) => {
 
     ensureActive();
     let aiAdmitted = true;
-    if (!skipAI && governed) {
+    if (!skipAI && governed && (forceRefresh || isTemporaryMode)) {
       try {
         await skillGapControls.consume(governed.owner, req.ip, ["ai"]);
       } catch {
         aiAdmitted = false;
       } // Qualitative enrichment is optional; deterministic work remains available.
     }
-    if (!skipAI && aiAdmitted) {
+    if (!skipAI && aiAdmitted && (forceRefresh || isTemporaryMode)) {
       const fallback = deterministicNarrative;
       const prompt = await timer.time("promptGenerationMs", () => {
         const compactContext = skillGapCompatibility.promptContext(
@@ -2989,30 +3019,27 @@ const analyzeSkillGap = async (req, res) => {
             if (reservation) {
               await skillGapControls.fence(reservation, session, governed.signal);
               const User = require("../auth/models/user");
-              if (
-                req.user.updatedAt &&
-                !(await User.collection.findOne(
-                  { _id: req.user._id, updatedAt: req.user.updatedAt },
-                  { session, projection: { _id: 1 } }
-                ))
-              ) {
+              const defaultResumeFileId = developerContext.resolveDefaultResumeFileId(userContext);
+              const latestUser = await User.collection.findOne(
+                {
+                  _id: req.user._id,
+                  defaultResumeFileId,
+                  ...(userContext.updatedAt ? { updatedAt: userContext.updatedAt } : {})
+                },
+                { session, projection: { _id: 1 } }
+              );
+              if (!latestUser) {
                 throw Object.assign(
                   new Error("Career context changed; reanalyze current evidence."),
                   { status: 409 }
                 );
               }
-              if (
-                latestResumeAnalysis?._id &&
-                latestResumeAnalysis.updatedAt &&
-                !(await ResumeAnalysis.collection.findOne(
-                  {
-                    _id: latestResumeAnalysis._id,
-                    userId: req.user._id,
-                    updatedAt: latestResumeAnalysis.updatedAt
-                  },
-                  { session, projection: { _id: 1 } }
-                ))
-              ) {
+              const currentResume = await developerContext.resolveResumeAnalysis(
+                req.user._id,
+                userContext,
+                { ResumeAnalysis, defaultOnly: true, select: "_id", session }
+              );
+              if (String(currentResume?._id || "") !== String(latestResumeAnalysis?._id || "")) {
                 throw Object.assign(
                   new Error("Resume evidence changed; reanalyze current evidence."),
                   { status: 409 }

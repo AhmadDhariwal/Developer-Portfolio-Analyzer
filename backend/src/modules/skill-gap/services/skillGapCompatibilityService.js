@@ -2,6 +2,24 @@
 const dictionary = require("./skillGapRequirements");
 const { numeric } = require("../../../core/scoring/math");
 
+// Older saved assessments included detected skills in both display groups.
+const missingRequiredSkills = (skills) =>
+  (Array.isArray(skills) ? skills : []).filter(
+    (skill) => skill?.requirement === "REQUIRED" && skill.status === "NOT_EVIDENCED"
+  );
+
+const currentGroups = (result) => {
+  if (!Array.isArray(result?.skills)) return result;
+  const missingSkills = missingRequiredSkills(result.missingSkills);
+  return {
+    ...result,
+    missingSkills,
+    ...(result.coverageBreakdown && {
+      coverageBreakdown: { ...result.coverageBreakdown, missingSkillCount: missingSkills.length }
+    })
+  };
+};
+
 const project = (resolved, legacyGroups = {}) => {
   const legacy = new Map(
     [...(legacyGroups.yourSkills || []), ...(legacyGroups.missingSkills || [])].map((skill) => [
@@ -45,10 +63,7 @@ const project = (resolved, legacyGroups = {}) => {
     yourSkills: all.filter((skill) =>
       ["DEMONSTRATED", "PARTIAL", "CLAIMED_ONLY"].includes(skill.status)
     ),
-    missingSkills: all.filter(
-      (skill) =>
-        skill.requirement === "REQUIRED" && !["DEMONSTRATED", "UNKNOWN"].includes(skill.status)
-    ),
+    missingSkills: missingRequiredSkills(all),
     weakSkills: all.filter(
       (skill) =>
         skill.requirement === "REQUIRED" && ["PARTIAL", "CLAIMED_ONLY"].includes(skill.status)
@@ -95,4 +110,4 @@ const narrative = (resolved) => ({
     "Use the recorded evidence status to choose learning and proof-building actions. A skill not established by available analyzed sources does not imply inability."
 });
 
-module.exports = { project, promptContext, narrative };
+module.exports = { project, promptContext, narrative, missingRequiredSkills, currentGroups };

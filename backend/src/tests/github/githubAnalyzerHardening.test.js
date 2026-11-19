@@ -179,7 +179,11 @@ const createHarness = () => {
           headers: {}
         };
       }
-      if (url.includes('/commits')) return { data: [], headers: {} };
+      if (url.includes('/commits')) {
+        if (!state.datedCommits) throw new Error('Dated commit history unavailable');
+        assert.equal(config.params.author, 'alpha');
+        return { data: state.datedCommits, headers: {} };
+      }
       throw new Error(`Unexpected mocked GitHub URL: ${url}`);
     }
   };
@@ -285,7 +289,7 @@ const createHarness = () => {
       const previous = state.cache.get(key);
       const snapshots = [
         ...(previous?.snapshots || []),
-        ...copy(update.$push.snapshots.$each)
+        ...copy(update.$push?.snapshots.$each || [])
       ].slice(-12);
       const row = {
         ...(previous || {}),
@@ -337,6 +341,9 @@ const createHarness = () => {
       state.counters.persistence.analysisFinds += 1;
       const row = state.analyses.get(String(query.userId)) || null;
       return {
+        sort() {
+          return this;
+        },
         select() {
           return Promise.resolve(row);
         }
@@ -367,12 +374,20 @@ const createHarness = () => {
 
   const GitHubSaveLock = {
     findOneAndUpdate(query, update) {
+      if (state.saveLockError) throw state.saveLockError;
       state.counters.locks.mongoAcquire += 1;
       const key = query._id;
       const existing = state.mongoLocks.get(key);
       const available = !existing || new Date(existing.expiresAt).getTime() <= Date.now();
       if (available) state.mongoLocks.set(key, copy(update.$set));
       return thenable(available ? { _id: key, ...copy(update.$set) } : null);
+    },
+    async updateOne(query, update) {
+      const existing = state.mongoLocks.get(query._id);
+      if (existing?.ownerToken !== query.ownerToken || existing.expiresAt <= query.expiresAt.$gt)
+        return { matchedCount: 0 };
+      Object.assign(existing, update.$set);
+      return { matchedCount: 1 };
     },
     async deleteOne(query) {
       state.counters.locks.mongoRelease += 1;
@@ -454,7 +469,9 @@ const createHarness = () => {
       if (Object.prototype.hasOwnProperty.call(mocks, request)) return mocks[request];
       if (req.startsWith('.')) {
         const base = path.basename(req, '.js');
-        const key = Object.keys(mocks).find((k) => k.startsWith('.') && path.basename(k, '.js') === base);
+        const key = Object.keys(mocks).find(
+          (k) => k.startsWith('.') && path.basename(k, '.js') === base
+        );
         if (key) return mocks[key];
       }
       return originalLoad.call(this, request, parent, isMain);
@@ -497,7 +514,13 @@ const createHarness = () => {
 
 const invoke = async (
   handler,
-  { username = 'octocat', userId = 'user-1', savedUsername = username, forceRefresh = false } = {}
+  {
+    username = 'octocat',
+    userId = 'user-1',
+    savedUsername = username,
+    forceRefresh = false,
+    savedOnly = false
+  } = {}
 ) => {
   const response = {
     statusCode: 200,
@@ -512,7 +535,11 @@ const invoke = async (
     }
   };
   const req = {
-    body: { username, ...(forceRefresh ? { forceRefresh: true } : {}) },
+    body: {
+      username,
+      savedOnly,
+      ...(forceRefresh ? { forceRefresh: true } : {})
+    },
     query: {},
     user: {
       _id: userId,
@@ -632,21 +659,16 @@ const runCrossInstanceSave = async (redisHealthy) => {
       (response) => response.body.githubHealthScore === responses[0].body.githubHealthScore
     )
   );
-  if (redisHealthy) {
-    assert.ok(state.counters.locks.redisAcquire >= 2);
-    assert.equal(state.counters.locks.mongoAcquire, 0);
-  } else {
-    assert.ok(state.counters.locks.mongoAcquire >= 2);
-    assert.equal(state.counters.locks.redisAcquire, 0);
-  }
+  assert.ok(state.counters.locks.mongoAcquire >= 2);
+  assert.equal(state.counters.locks.redisAcquire, 0);
   return { counters: state.counters, repositoryCount: state.repositories.size };
 };
 
-test('two instances deduplicate analyze-save with Redis authority', async () => {
+test('two instances deduplicate analyze-save with Redis available', async () => {
   await runCrossInstanceSave(true);
 });
 
-test('two instances deduplicate analyze-save with Mongo fallback authority', async () => {
+test('two instances deduplicate analyze-save without Redis', async () => {
   await runCrossInstanceSave(false);
 });
 
@@ -1293,4 +1315,80 @@ test('a successful save cannot refresh old-profile monthly activity from reposit
   assert.equal(record.githubSignals.username.toLowerCase(), 'alpha');
   assert.deepEqual(record.contributionActivity, []);
   assert.equal(Object.hasOwn(next.body, 'monthlyCommitActivity'), false);
+});
+
+test('explicit sync persists dated authored commits once per SHA across sampled repositories', async () => {
+  const harness = createHarness();
+  const at = new Date(Date.now() - 60000).toISOString();
+  harness.state.datedCommits = [{ sha: 'commit-1', commit: { author: { date: at } } }];
+  const { controller } = harness.loadInstance();
+  const result = await invoke(controller.analyzeAndSaveGitHubProfile, {
+    username: 'alpha',
+    savedUsername: 'alpha'
+  });
+  assert.equal(result.statusCode, 200);
+  const activity = harness.state.analyses.get('user-1').contributionActivity;
+  assert.equal(activity.length, 6);
+  assert.equal(activity.find((row) => row.month === at.slice(0, 7)).count, 1);
+  assert.equal(
+    activity.reduce((sum, row) => sum + row.count, 0),
+    1
+  );
+});
+
+test('saved reads preserve ownership and never trigger provider or persistence work', async () => {
+  const h = createHarness();
+  const { controller } = h.loadInstance();
+  const missing = await invoke(controller.analyzeAndSaveGitHubProfile, {
+    savedOnly: true
+  });
+  assert.equal(missing.statusCode, 404);
+  assert.equal(h.state.counters.github.profile, 0);
+  assert.equal(h.state.counters.ai, 0);
+  await invoke(controller.analyzeAndSaveGitHubProfile);
+  const before = copy(h.state.counters);
+  const result = await invoke(controller.analyzeAndSaveGitHubProfile, {
+    savedOnly: true
+  });
+  assert.equal(result.statusCode, 200);
+  assert.equal(result.body.githubSignals.username, 'octocat');
+  assert.equal(h.state.counters.github.profile, before.github.profile);
+  assert.equal(h.state.counters.ai, before.ai);
+  assert.equal(h.state.counters.persistence.analysisSaves, before.persistence.analysisSaves);
+  assert.equal(
+    (
+      await invoke(controller.analyzeAndSaveGitHubProfile, {
+        savedOnly: true,
+        userId: 'other'
+      })
+    ).statusCode,
+    404
+  );
+});
+
+test('repeated cached saves do not append assessments or invalidate dependents', async () => {
+  const h = createHarness();
+  const { controller } = h.loadInstance();
+  await invoke(controller.analyzeAndSaveGitHubProfile);
+  const before = copy(h.state.counters);
+  await invoke(controller.analyzeAndSaveGitHubProfile);
+  assert.equal(h.state.counters.persistence.analysisSaves, before.persistence.analysisSaves);
+  assert.equal(h.state.counters.invalidations, before.invalidations);
+});
+
+test('legacy owned GitHub reads recover recorded evidence without mixing newer preview fields', async () => {
+  const { loadInstance, state } = createHarness();
+  const { controller } = loadInstance();
+  await invoke(controller.analyzeAndSaveGitHubProfile);
+  const owned = state.analyses.get('user-1');
+  const { acceptedResult, ...signals } = owned.githubSignals;
+  owned.githubSignals = { ...signals, analyzedAt: '2020-01-01T00:00:00.000Z' };
+  const before = copy(state.counters.github);
+  const result = await invoke(controller.analyzeAndSaveGitHubProfile, { savedOnly: true });
+  assert.equal(result.statusCode, 200);
+  assert.equal(result.body.cache.stale, true);
+  assert.equal(result.body.githubSignals.analyzedAt, owned.githubSignals.analyzedAt);
+  assert.equal(result.body.repoCount, acceptedResult.repoCount);
+  assert.equal(result.body.summary, undefined);
+  assert.deepEqual(state.counters.github, before);
 });

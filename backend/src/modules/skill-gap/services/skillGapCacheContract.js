@@ -12,12 +12,14 @@ const buildScope = ({ userId, user, resumeIdentity, now = Date.now() }) => {
     userId,
     githubUsername: {
       $regex: '^' + username.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$',
-      $options: 'i'
+      $options: 'i',
     },
     careerStack: context.resolveCareerStack(user),
     experienceLevel: context.resolveExperienceLevel(user),
-    resumeHash: resumeIdentity.resumeHash,
-    resumeAnalysisId: resumeIdentity.resumeAnalysisId,
+    ...(resumeIdentity && {
+      resumeHash: resumeIdentity.resumeHash,
+      resumeAnalysisId: resumeIdentity.resumeAnalysisId,
+    }),
     analysisVersion: ANALYSIS_VERSION,
     'analysisData.ruleVersion': evidence.RULE_VERSION,
     'analysisData.evidencePolicyVersion': evidence.EVIDENCE_POLICY_VERSION,
@@ -25,7 +27,7 @@ const buildScope = ({ userId, user, resumeIdentity, now = Date.now() }) => {
     'analysisData.requirementMatrixVersion': requirements.MATRIX_VERSION,
     'analysisData.cacheMetadata.temporary': { $ne: true },
     'analysisData.missingSkills': { $exists: true },
-    createdAt: { $gt: new Date(now - 7 * 86400000) }
+    createdAt: { $gt: new Date(now - 7 * 86400000) },
   };
 };
 const coverage = (value) => (numeric(value) === null ? null : clampScore(value));

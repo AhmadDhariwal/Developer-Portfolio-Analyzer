@@ -515,6 +515,23 @@ describe('ResumeAnalyzerComponent', () => {
     oldContext.complete();
   });
 
+  it('ignores a saved result for the previous file after upload changes the context', () => {
+    fixture.detectChanges();
+    const oldResult = new Subject<any>();
+    apiServiceMock.getResumeAnalysis.mockReturnValue(oldResult);
+    component.selectedResumeFileId = 'file-222';
+    component.useSelectedResume(false);
+    const input = fixture.nativeElement.querySelector('input[type=file]') as HTMLInputElement;
+    Object.defineProperty(input, 'files', {
+      value: [new File(['synthetic'], 'fresh.pdf', { type: 'application/pdf' })],
+    });
+    input.dispatchEvent(new Event('change'));
+    oldResult.error({ status: 404 });
+    expect(component.activeResumeFileId).toBe('file-333');
+    expect(component.analysisComplete).toBe(true);
+    expect(component.errorMessage).toBe('');
+  });
+
   it('forwards presentation actions once and retains the native upload label', () => {
     fixture.detectChanges();
     const input = fixture.nativeElement.querySelector('app-resume-upload input');

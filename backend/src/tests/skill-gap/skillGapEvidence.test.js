@@ -56,6 +56,33 @@ test("every approved evidence status has deterministic conservative classificati
   assert.equal(status(run([], { sources: [] })).status, "UNKNOWN");
   assert.equal(run([], { sources: [] }).coverage, null);
 });
+test("fresh and saved projections distinguish missing requirements from detected evidence", () => {
+  const {
+    project,
+    currentGroups
+  } = require("../../modules/skill-gap/services/skillGapCompatibilityService");
+  const resolved = run([observation("React.js", "CLAIM"), observation("TypeScript")], {
+    requirements: requirements(["React", "TypeScript", "Docker"])
+  });
+  const groups = project(resolved);
+  assert.deepEqual(
+    groups.missingSkills.map((skill) => skill.name),
+    ["Docker"]
+  );
+  assert.deepEqual(groups.weakSkills.map((skill) => skill.name).sort(), ["React", "TypeScript"]);
+  const previous = {
+    ...resolved,
+    ...groups,
+    missingSkills: [...groups.weakSkills, ...groups.missingSkills],
+    coverageBreakdown: { missingSkillCount: 3 }
+  };
+  const corrected = currentGroups(previous);
+  assert.deepEqual(corrected.missingSkills, groups.missingSkills);
+  assert.equal(corrected.coverageBreakdown.missingSkillCount, 1);
+  assert.equal(corrected.coverage, resolved.coverage);
+  assert.equal(previous.missingSkills.length, 3);
+});
+
 test("implementation requires inspected meaningful artifact evidence from a technical source", () => {
   for (const extra of [
     { inspected: false },

@@ -13,6 +13,7 @@ const {
 } = require('../../../core/cache/redisCacheService');
 const GitHubAnalysisCache = require('../models/githubAnalysisCache');
 const AnalysisCache = require('../../skill-gap/models/analysisCache');
+const Analysis = require('../../skill-gap/models/analysis');
 const { escapeRegex } = require('../../../core/utils/validation');
 
 const ANALYSIS_VERSION = 'github-v2';
@@ -36,24 +37,8 @@ let swrIndexChecked = false;
 const MAX_ACTIVITY_REPOS = 5;
 const MAX_LANGUAGE_REPOS = 8;
 const MAX_SIGNAL_REPOS = 2;
-const SKILL_GAP_ANALYSIS_VERSION = 'v6-skill-intelligence';
-const SUPPORT_LANGUAGES = new Set([
-  'HTML',
-  'CSS',
-  'SCSS',
-  'Sass',
-  'Less',
-  'JSON',
-  'Markdown',
-  'MDX',
-  'YAML',
-  'XML',
-  'Dockerfile',
-  'Shell',
-  'Makefile',
-  'Procfile',
-  'Jupyter Notebook'
-]);
+const SKILL_GAP_ANALYSIS_VERSION = 'v9-skill-evidence-governance';
+const { SUPPORT_LANGUAGES, languagePresentation } = require('./githubLanguagePresentation');
 
 const isPerfTimingEnabled = () =>
   String(process.env.GITHUB_TIMING || '') === '1' || process.env.NODE_ENV === 'test';
@@ -1369,6 +1354,15 @@ const withCacheMetadata = (result, cacheEntry, source = 'cache') => {
   const snapshots = Array.isArray(cacheEntry?.snapshots) ? cacheEntry.snapshots : [];
   return {
     ...result,
+    ...languagePresentation(
+      result.rawLanguageBytes ?? result.githubSignals?.languages?.rawBytes,
+      result.languageDistribution?.length
+        ? result.languageDistribution
+        : [
+            ...(result.mainLanguageDistribution || []),
+            ...(result.supportLanguageDistribution || [])
+          ]
+    ),
     analysisVersion: ANALYSIS_VERSION,
     cache: {
       source,
@@ -1385,8 +1379,61 @@ const withCacheMetadata = (result, cacheEntry, source = 'cache') => {
   };
 };
 
-const getCachedGitHubAnalysis = async (username, { allowStale = true } = {}) => {
-  const { entry: cacheEntry } = await resolveTieredCacheEntry(username);
+const getOwnedCacheEntry = async (username, userId) => {
+  const analysis = await Analysis.findOne({ userId })
+    .sort({ updatedAt: -1, _id: -1 })
+    .select('githubSignals githubAnalysisHistory');
+  const signals = analysis?.githubSignals;
+  if (!signals?.analyzedAt || normalizeUsername(signals.username) !== normalizeUsername(username))
+    return null;
+  const saved = signals.acceptedResult;
+  if (!saved) {
+    const { entry } = await resolveTieredCacheEntry(username);
+    if (entry?.result?.githubSignals?.analyzedAt === signals.analyzedAt) return entry;
+    if (!Number.isFinite(signals.stats?.repos) || !Array.isArray(signals.repositories)) return null;
+
+    // Older accepted records contain evidence and scores, but not the whole response.
+    // Keep the recorded fields and expose the result as stale without borrowing preview data.
+    return {
+      result: {
+        fetchedAt: signals.analyzedAt,
+        repoCount: signals.stats.repos,
+        totalStars: signals.stats.stars ?? null,
+        totalForks: signals.stats.forks ?? null,
+        followers: signals.stats.followers ?? null,
+        githubHealthScore: signals.healthScore ?? null,
+        activityScore: signals.healthScore ?? null,
+        scoring: signals.scoring,
+        developerLevel: signals.developerLevel,
+        languageDistribution: signals.languages?.normalized || [],
+        mainLanguageDistribution: signals.languages?.main || [],
+        supportLanguageDistribution: signals.languages?.support || [],
+        rawLanguageBytes: signals.languages?.rawBytes,
+        technologies: signals.technologies,
+        technologyCategories: signals.technologyCategories,
+        repositories: signals.repositories,
+        repositoryQuality: signals.repositories,
+        repositoryActivity: [],
+        recruiterInsights: signals.recruiterInsights,
+        githubSignals: signals
+      },
+      updatedAt: signals.analyzedAt,
+      snapshots: analysis.githubAnalysisHistory
+    };
+  }
+
+  return {
+    result: saved,
+    expiresAt: saved.cache?.expiresAt,
+    updatedAt: saved.cache?.cachedAt || signals.analyzedAt,
+    snapshots: saved.analysisHistory || analysis.githubAnalysisHistory
+  };
+};
+
+const getCachedGitHubAnalysis = async (username, { allowStale = true, userId } = {}) => {
+  const cacheEntry = userId
+    ? await getOwnedCacheEntry(username, userId)
+    : (await resolveTieredCacheEntry(username)).entry;
   const now = Date.now();
   const expiresAtMs = cacheEntry?.expiresAt ? new Date(cacheEntry.expiresAt).getTime() : 0;
   const isFresh = Boolean(cacheEntry?.result && expiresAtMs > now);
@@ -1448,6 +1495,40 @@ const composeCacheArtifacts = (username, fresh, previousEntry = null) => {
 };
 
 const saveCacheResult = async (username, fresh, previousEntry = null, timing = null) => {
+  const evidenceIdentity = (value) =>
+    JSON.stringify({
+      dataVersion: value?.dataVersion,
+      scores: value?.scores,
+      availability: value?.dataAvailability,
+      followers: value?.followers,
+      repositories: [...(value?.repositories || [])].sort((a, b) => a.name.localeCompare(b.name)),
+      languageBytes: value?.rawLanguageBytes,
+      technologies: value?.technologies
+    });
+  if (previousEntry?.result && evidenceIdentity(previousEntry.result) === evidenceIdentity(fresh)) {
+    const expiresAt = new Date(Date.now() + CACHE_TTL_MS);
+    const updated = await GitHubAnalysisCache.findOneAndUpdate(
+      {
+        normalizedUsername: normalizeUsername(username),
+        analysisVersion: ANALYSIS_VERSION,
+        'result.githubSignals.analyzedAt': previousEntry.result.githubSignals?.analyzedAt
+      },
+      { $set: { expiresAt } },
+      { new: true, timestamps: false }
+    ).lean();
+    if (updated) {
+      writeMemoryAnalysisCache(normalizeUsername(username), updated);
+      await setCacheJson(
+        buildRedisCacheKey(normalizeUsername(username)),
+        packRedisCacheEntry(updated),
+        CACHE_REDIS_TTL_SECONDS
+      );
+      return withCacheMetadata(updated.result, updated, 'cache');
+    }
+    // Another worker replaced the assessment while the provider call was active.
+    const current = await getCacheEntry(username);
+    if (current?.result) return withCacheMetadata(current.result, current, 'cache');
+  }
   const { resultWithComparison, entry } = composeCacheArtifacts(username, fresh, previousEntry);
   const normalizedUsername = entry.normalizedUsername;
   await ensureSWRCacheIndex();
@@ -1482,93 +1563,54 @@ const saveCacheResult = async (username, fresh, previousEntry = null, timing = n
   return withCacheMetadata(resultWithComparison, updated, 'fresh');
 };
 
-const fetchRepoCommitsByMonth = async (username, repoName, since, until) => {
-  const monthMap = {};
-  let page = 1;
-
-  while (page <= 4) {
-    try {
-      const response = await githubGet(
-        `https://api.github.com/repos/${encodeURIComponent(username)}/${encodeURIComponent(repoName)}/commits`,
-        {
-          timeout: 12000,
-          params: {
-            since: since.toISOString(),
-            until: until.toISOString(),
-            per_page: 100,
-            page
+// Count attributable default-branch commits in the analyzer's selected repositories.
+const fetchMonthlyCommitActivity = async (username, repos = [], now = new Date()) => {
+  if (!repos.length) return [];
+  const since = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 5, 1));
+  const months = new Map(
+    Array.from({ length: 6 }, (_, offset) => [
+      new Date(Date.UTC(since.getUTCFullYear(), since.getUTCMonth() + offset, 1))
+        .toISOString()
+        .slice(0, 7),
+      0
+    ])
+  );
+  const commits = new Map();
+  for (const repo of repos) {
+    for (let page = 1; page <= 4; page++) {
+      let response;
+      try {
+        response = await githubGet(
+          `https://api.github.com/repos/${encodeURIComponent(username)}/${encodeURIComponent(repo.name)}/commits`,
+          {
+            timeout: 8000,
+            params: {
+              author: username,
+              since: since.toISOString(),
+              until: now.toISOString(),
+              per_page: 100,
+              page
+            }
           }
-        }
-      );
-      const commits = Array.isArray(response.data) ? response.data : [];
-      if (!commits.length) break;
-      commits.forEach((commit) => {
-        const dateStr = commit.commit?.author?.date || commit.commit?.committer?.date;
-        if (!dateStr) return;
-        const date = new Date(dateStr);
-        const key = `${date.getFullYear()}-${date.getMonth()}`;
-        monthMap[key] = (monthMap[key] || 0) + 1;
-      });
-      if (commits.length < 100) break;
-      page += 1;
-    } catch {
-      break;
+        );
+      } catch (error) {
+        if (isRateLimitError(error)) throw error;
+        return [];
+      }
+      if (!Array.isArray(response.data)) return [];
+      for (const commit of response.data) {
+        const at = new Date(commit.commit?.committer?.date || commit.commit?.author?.date || NaN);
+        if (!commit.sha || !Number.isFinite(at.getTime())) return [];
+        if (commit.author?.login && commit.author.login.toLowerCase() !== username.toLowerCase())
+          return [];
+        if (at >= since && at <= now) commits.set(commit.sha, at.toISOString().slice(0, 7));
+      }
+      if (!/rel="next"/.test(response.headers?.link || '')) break;
+      if (page === 4) return []; // Pagination limit reached; the window may be incomplete.
     }
   }
-  return monthMap;
-};
-
-const fetchMonthlyCommitActivity = async (username, repos = []) => {
-  const monthNames = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec'
-  ];
-  const now = new Date();
-  const buckets = [];
-
-  for (let i = 5; i >= 0; i -= 1) {
-    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    buckets.push({
-      key: `${date.getFullYear()}-${date.getMonth()}`,
-      label: monthNames[date.getMonth()],
-      count: 0
-    });
-  }
-
-  const since = new Date(now.getFullYear(), now.getMonth() - 5, 1);
-  const activeRepos = (repos || [])
-    .filter((repo) => {
-      const pushedAt = repo.pushed_at || repo.pushedAt;
-      return pushedAt && new Date(pushedAt) >= since;
-    })
-    .slice(0, 12);
-
-  const maps = await Promise.all(
-    activeRepos.map((repo) =>
-      fetchRepoCommitsByMonth(username, repo.name || repo.repoName, since, now)
-    )
-  );
-  maps.forEach((monthMap) => {
-    Object.entries(monthMap).forEach(([key, count]) => {
-      const bucket = buckets.find((item) => item.key === key);
-      if (bucket) bucket.count += Number(count || 0);
-    });
-  });
-
-  return buckets.map((bucket) => ({
-    month: bucket.label,
-    count: bucket.count
-  }));
+  for (const month of commits.values()) months.set(month, months.get(month) + 1);
+  return Array.from(months, ([month, count]) => ({ month, count }));
 };
 
 const buildFreshAnalysis = async (username, timing = null) => {
@@ -1653,11 +1695,12 @@ const buildFreshAnalysis = async (username, timing = null) => {
   const topActivityRepos = rankedRepos
     .filter((repo) => !repo.fork && !repo.archived)
     .slice(0, MAX_ACTIVITY_REPOS);
-  const [commitCounts, languageData, repoSignals] = await runProvider(() =>
+  const [commitCounts, languageData, repoSignals, monthlyCommitActivity] = await runProvider(() =>
     Promise.all([
       Promise.all(topActivityRepos.map((repo) => fetchRepoCommitCount(username, repo.name))),
       buildLanguageDistribution(username, repos),
-      fetchRepoCheapSignals(username, rankedRepos)
+      fetchRepoCheapSignals(username, rankedRepos),
+      fetchMonthlyCommitActivity(username, topActivityRepos)
     ])
   );
 
@@ -1938,6 +1981,7 @@ const buildFreshAnalysis = async (username, timing = null) => {
     technologies: techResult.technologies,
     technologyCategories: techResult.technologyCategories,
     repositoryActivity,
+    ...(monthlyCommitActivity.length ? { monthlyCommitActivity } : {}),
     commitMap,
     repositories: enrichedRepos,
     repositoryQuality,
@@ -1953,6 +1997,18 @@ const analyzeGitHubProfile = async (username, options = {}) => {
     : parseGitHubUsername(username);
 
   const forceRefresh = Boolean(options.forceRefresh);
+  if (options.cacheOnly) {
+    const cached = await getCachedGitHubAnalysis(trimmedUsername, {
+      userId: options.userId
+    });
+    return (
+      cached.data || {
+        repositories: [],
+        languageDistribution: [],
+        cache: { source: 'unavailable', stale: true }
+      }
+    );
+  }
   let cacheEntry = null;
   if (!forceRefresh) {
     const resolved = await resolveTieredCacheEntry(trimmedUsername, timing);
@@ -1989,7 +2045,7 @@ const analyzeGitHubProfile = async (username, options = {}) => {
       const narrative = fresh._narrative;
       delete fresh._narrative;
       const saved = await saveCacheResult(trimmedUsername, fresh, cacheEntry, timing);
-      if (narrative) {
+      if (narrative && saved.cache?.source === 'fresh') {
         const explanation = await narrative();
         const { interviewTalkingPoints, ...qualitativeFields } = explanation;
         const narrativeFields = {
@@ -2145,15 +2201,17 @@ const getGitHubRefreshState = () => ({
   usernames: Array.from(refreshJobs.keys())
 });
 
-const invalidateSkillGapCachesForGitHub = async (username) => {
+const invalidateSkillGapCachesForGitHub = async (username, userId) => {
   const trimmedUsername = String(username || '')
     .trim()
     .replace(/^@/, '');
   if (!trimmedUsername) return;
   const deleted = await AnalysisCache.deleteMany({
     githubUsername: new RegExp(`^${escapeRegex(trimmedUsername)}$`, 'i'),
-    analysisVersion: SKILL_GAP_ANALYSIS_VERSION
+    analysisVersion: SKILL_GAP_ANALYSIS_VERSION,
+    ...(userId ? { userId } : {})
   });
+  if (userId) await aiService.invalidateCachePrefix(`skill_gap:result:${String(userId)}:`);
   // Current Skill Gap caches validate source revisions before lookup; new evidence
   // selects a new owner-scoped signal hash. Never flush unrelated accounts.
   console.log(

@@ -5,7 +5,10 @@ const aiService = require('../../core/ai/aiservice');
 const { getPortfolioScorePrompt } = require('../public-portfolio/prompts/portfolioScorePrompt');
 const AnalysisCache = require('../skill-gap/models/analysisCache');
 const crypto = require('node:crypto');
-const { createVersion, createPortfolioVersion } = require('../super-admin/services/aiVersionService');
+const {
+  createVersion,
+  createPortfolioVersion,
+} = require('../super-admin/services/aiVersionService');
 const { fingerprint } = require('../dashboard/services/dashboardConsistencyService');
 const {
   calculateTransparentScore,
@@ -25,6 +28,7 @@ const saveAIVersionSnapshot = async ({ req, source, output, metadata = {}, prove
       provenance,
     });
   } catch (error) {
+    if (provenance) throw error;
     console.error('Portfolio score AI snapshot error:', error.message);
   }
 };
@@ -56,11 +60,16 @@ const getPortfolioReadiness = async (req, res) => {
       username.toLowerCase() ===
         String(developerContext.resolveGithubUsername(req.user) || '').toLowerCase();
     const selectedResume = profileMode
-      ? await developerContext.resolveResumeAnalysis(req.user._id, req.user)
+      ? await developerContext.resolveResumeAnalysis(req.user._id, req.user, { defaultOnly: true })
       : null;
     const resumeIdentity = profileMode
-      ? buildResumeCacheIdentity({ resumeAnalysis: selectedResume })
-      : { resumeHash: crypto.createHash('sha256').update(cleanResume).digest('hex') };
+      ? buildResumeCacheIdentity({
+          resumeAnalysis: selectedResume,
+          defaultResumeFileId: developerContext.resolveDefaultResumeFileId(req.user),
+        })
+      : {
+          resumeHash: crypto.createHash('sha256').update(cleanResume).digest('hex'),
+        };
     const resumeHash = resumeIdentity.resumeHash;
     const identity = {
       githubUsername: username.toLowerCase(),
@@ -96,11 +105,62 @@ const getPortfolioReadiness = async (req, res) => {
       ]),
     ]);
 
+    // Resolve persisted GitHub evidence before testing score reuse. A username alone
+    // cannot establish that the evidence behind a cached assessment still matches.
+    if (!githubAnalysis) {
+      const { analyzeGitHubProfile } = require('../github/services/githubservice');
+      githubAnalysis = await analyzeGitHubProfile(username.trim(), {
+        cacheOnly: profileMode,
+        userId: profileMode ? req.user._id : undefined,
+      });
+    }
+    const sourceTime = (value) => {
+      const ms = value == null ? NaN : new Date(value).getTime();
+      return Number.isFinite(ms) ? new Date(ms).toISOString() : null;
+    };
+    const githubTime = sourceTime(
+      githubAnalysis?.githubSignals?.analyzedAt || githubAnalysis?.fetchedAt,
+    );
+    const resumeTime = sourceTime(selectedResume?.analyzedAt || selectedResume?.createdAt);
+    const scopedSkillGap = profileMode
+      ? await AnalysisCache.findOne({
+          ...skillGapContract.buildScope({ userId: req.user._id, user: req.user, resumeIdentity }),
+          'analysisData.sourceReferences': {
+            $all: [
+              {
+                $elemMatch: {
+                  type: 'github',
+                  available: Boolean(githubTime),
+                  timestamp: githubTime,
+                },
+              },
+              {
+                $elemMatch: {
+                  type: 'resume',
+                  available: Boolean(selectedResume),
+                  timestamp: resumeTime,
+                },
+              },
+            ],
+          },
+        })
+          .sort({ updatedAt: -1, _id: -1 })
+          .lean()
+      : null;
+    const portfolioInputRevision = fingerprint({
+      github: githubAnalysis?.githubSignals || githubAnalysis,
+      resume: selectedResume || resumeAnalysis || cleanResume,
+      careerStack,
+      experienceLevel,
+      skillGap: scopedSkillGap?.analysisData || null,
+    });
+
     // Try cache first
     const cached = await AnalysisCache.findOne(cacheKey);
     if (
       cached?.analysisData?.portfolioScore &&
-      cached.analysisData.portfolioIntegrationRevision === integrationRevision
+      cached.analysisData.portfolioIntegrationRevision === integrationRevision &&
+      cached.analysisData.portfolioInputRevision === portfolioInputRevision
     ) {
       const cachedResult = {
         ...normalizeTransparentScorePayload(cached.analysisData.portfolioScore),
@@ -123,15 +183,11 @@ const getPortfolioReadiness = async (req, res) => {
       return res.json(cachedResult);
     }
 
-    // Fetch missing analysis data if not provided by client
-    if (!githubAnalysis) {
-      const { analyzeGitHubProfile } = require('../github/services/githubservice');
-      githubAnalysis = await analyzeGitHubProfile(username.trim());
-    }
-
     if (profileMode) resumeAnalysis = selectedResume || { present: false };
     if (!resumeAnalysis && req.user) {
-      const analysisDoc = await require('../skill-gap/models/analysis').findOne({ userId: req.user._id });
+      const analysisDoc = await require('../skill-gap/models/analysis').findOne({
+        userId: req.user._id,
+      });
       resumeAnalysis = analysisDoc
         ? {
             skills: Array.from(analysisDoc.languageDistribution?.keys() || []),
@@ -140,7 +196,11 @@ const getPortfolioReadiness = async (req, res) => {
           }
         : { skills: [], strengths: [], weaknesses: [] };
     }
-    resumeAnalysis = resumeAnalysis || { skills: [], strengths: [], weaknesses: [] };
+    resumeAnalysis = resumeAnalysis || {
+      skills: [],
+      strengths: [],
+      weaknesses: [],
+    };
 
     // AI narrative generation; deterministic scoring owns all numeric fields.
     const prompt = getPortfolioScorePrompt(
@@ -151,21 +211,17 @@ const getPortfolioReadiness = async (req, res) => {
     );
     const fallback = {
       overallScore: 70,
-      breakdown: { codeQuality: 70, skillCoverage: 70, industryReadiness: 70, projectImpact: 70 },
+      breakdown: {
+        codeQuality: 70,
+        skillCoverage: 70,
+        industryReadiness: 70,
+        projectImpact: 70,
+      },
       summary: 'Solid portfolio with room for improvement in niche areas.',
     };
 
-    const aiResult = await aiService.runAIAnalysis(prompt, fallback);
+    const aiResult = profileMode ? null : await aiService.runAIAnalysis(prompt, fallback);
 
-    const scopedSkillGap = profileMode
-      ? await AnalysisCache.findOne(
-          skillGapContract.buildScope({
-            userId: req.user._id,
-            user: req.user,
-            resumeIdentity,
-          }),
-        ).lean()
-      : null;
     const transparentResult = calculateTransparentScore(
       {
         githubAnalysis,
@@ -233,6 +289,7 @@ const getPortfolioReadiness = async (req, res) => {
           $set: {
             'analysisData.portfolioScore': scoredResult,
             'analysisData.portfolioIntegrationRevision': integrationRevision,
+            'analysisData.portfolioInputRevision': portfolioInputRevision,
             ...(provenance ? { 'analysisData.portfolioProvenance': provenance } : {}),
             userId: req.user._id,
           },

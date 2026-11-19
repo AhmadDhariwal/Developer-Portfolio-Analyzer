@@ -23,10 +23,51 @@
           <p class="article-sub">{{ progress.history.reason }}</p>
         </div>
         <span class="status-chip" [class.is-success]="progress.history.status === 'available'">
-          {{ progress.history.status === 'available' ? 'Recorded' : 'Unavailable' }}
+          {{ progress.history.status === 'available' ? 'Trend recorded' : 'Trend unavailable' }}
         </span>
       </div>
 
+      <p class="article-sub">
+        Current portfolio score:
+        <strong>{{
+          currentPortfolioScore === null
+            ? 'No current verified assessment'
+            : currentPortfolioScore + '/100'
+        }}</strong>
+      </p>
+      <p
+        class="article-sub"
+        *ngIf="currentPortfolioScore === null && progress.history.points.at(-1) as latest"
+      >
+        Last comparable assessment: {{ latest.value }}/100 on {{ latest.at | date: 'mediumDate' }}
+      </p>
+      <meter
+        *ngIf="currentPortfolioScore !== null"
+        min="0"
+        max="100"
+        [value]="currentPortfolioScore"
+        class="portfolio-score-meter"
+        aria-label="Current portfolio score"
+      ></meter>
+      <details *ngIf="currentPortfolioScore !== null && portfolioAssessment as assessment">
+        <summary>Current assessment evidence</summary>
+        <p *ngIf="assessment.assessedAt">Assessed {{ assessment.assessedAt | date: 'medium' }}</p>
+        <p *ngIf="assessment.ruleVersion">Scoring rule {{ assessment.ruleVersion }}</p>
+        <ul class="portfolio-assessment-components" *ngIf="assessment.components.length">
+          <li *ngFor="let component of assessment.components">
+            {{ component.label }} · {{ component.value }}/100
+          </li>
+        </ul>
+      </details>
+      <button
+        type="button"
+        *ngIf="canAssessPortfolio"
+        [disabled]="assessingPortfolio"
+        (click)="assessPortfolio.emit()"
+      >
+        {{ assessingPortfolio ? 'Assessing saved evidence…' : 'Assess saved portfolio' }}
+      </button>
+      <p *ngIf="portfolioAssessmentError" role="alert">{{ portfolioAssessmentError }}</p>
       <ng-container *ngIf="progress.history.status === 'available'">
         <div class="svg-frame">
           <svg
@@ -83,7 +124,6 @@
       </ng-container>
 
       <div class="history-empty" *ngIf="progress.history.status !== 'available'">
-        <p class="empty-msg">{{ progress.history.reason }}</p>
         <p class="history-guidance">
           Readiness trends require at least two trusted assessments generated with matching scoring
           rules and profile identity. Run and save verified portfolio assessments to establish a
@@ -101,9 +141,13 @@
         <span class="status-chip" *ngIf="progress.sprint.available">7-Day UTC</span>
       </div>
 
-      <p *ngIf="!progress.sprint.available" class="empty-msg">No saved sprint is available.</p>
+      <p *ngIf="!progress.sprint.available" class="empty-msg">No active sprint is available.</p>
       <ng-container *ngIf="progress.sprint.available">
+        <p *ngIf="!hasDatedSprintCompletions" class="empty-msg">
+          No dated task completions from the active sprint in the last seven UTC days.
+        </p>
         <div
+          *ngIf="hasDatedSprintCompletions"
           class="velocity"
           role="img"
           aria-label="Completed task points per day over seven UTC days; exact values in the table below"
@@ -120,7 +164,7 @@
           {{ progress.sprint.undatedCompletions }} completions have no recorded date and are
           excluded.
         </p>
-        <details>
+        <details *ngIf="hasDatedSprintCompletions">
           <summary>Daily completion data</summary>
           <div class="table-scroll">
             <table>

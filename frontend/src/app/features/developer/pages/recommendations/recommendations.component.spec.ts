@@ -292,4 +292,66 @@ describe('Recommendations focus group disclosure', () => {
       Array.from(updatedDetails.querySelectorAll('li')).map((el) => el.textContent?.trim()),
     ).toEqual(['Action s2', 'Action s3']);
   });
+
+  it('displays Refresh Recommended when outdated AI enrichment needs explicit regeneration', () => {
+    const recService = {
+      getRecommendations: () =>
+        of({
+          username: 'fixture',
+          careerStack: 'Backend',
+          experienceLevel: 'Junior',
+          projects: [],
+          technologies: [],
+          careerPaths: [],
+          recommendations: [],
+          aiUsed: false,
+          aiRefreshRecommended: true,
+          aiStatus: 'Refresh Recommended',
+          cacheMetadata: { signalHash: 'b'.repeat(64), aiRefreshRecommended: true },
+        }),
+    };
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      imports: [RecommendationsComponent],
+      providers: [
+        provideRouter([]),
+        { provide: RecommendationsService, useValue: recService },
+        {
+          provide: GithubService,
+          useValue: { getActiveUsername: () => of({ username: 'fixture' }) },
+        },
+        {
+          provide: CareerProfileService,
+          useValue: {
+            snapshot: { careerStack: 'Backend', experienceLevel: 'Junior' },
+            careerProfile$: of({ careerStack: 'Backend', experienceLevel: 'Junior' }),
+          },
+        },
+        {
+          provide: FrontendAnalysisCacheService,
+          useValue: {
+            getLatestSignalHash: vi.fn().mockReturnValue(null),
+            getCurrentSignalHash: vi.fn().mockReturnValue(null),
+            get: vi.fn().mockReturnValue(null),
+            clear: vi.fn(),
+            setCurrentSignalHash: vi.fn(),
+            set: vi.fn(),
+          },
+        },
+        {
+          provide: AuthService,
+          useValue: {
+            getCurrentUser: () => ({ _id: 'fixture', activeGithubUsername: 'fixture' }),
+          },
+        },
+        { provide: ResumeService, useValue: {} },
+      ],
+    });
+
+    const fixture = TestBed.createComponent(RecommendationsComponent);
+    fixture.detectChanges();
+    const text = (fixture.nativeElement.textContent || '').replace(/\s+/g, ' ');
+    expect(text).toContain('Refresh Recommended');
+  });
 });

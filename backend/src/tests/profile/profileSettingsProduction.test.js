@@ -39,7 +39,8 @@ test('profile hash retains the signal contract and includes selected resume and 
     .digest('hex');
   assert.equal(context.buildProfileHash(user), expected);
   assert.equal(controller().__test.buildProfileHash(user), expected);
-  assert.notEqual(context.buildProfileHash({ ...user, activeResumeFileId: 'resume-b' }), expected);
+  assert.equal(context.buildProfileHash({ ...user, activeResumeFileId: 'resume-b' }), expected);
+  assert.notEqual(context.buildProfileHash({ ...user, defaultResumeFileId: 'resume-b' }), expected);
   assert.equal(context.buildProfileHash({ ...user, name: 'Renamed', avatar: 'new' }), expected);
 });
 test('OAuth profile edits work; long biography survives; notification writes stay independent', async () => {
@@ -459,7 +460,9 @@ test(
       if (['resumeFile'].includes(name)) continue;
       await Model.collection.insertMany([{ userId: owner._id }, { userId: other._id }]);
     }
-    await require('../../modules/admin/models/organization').collection.insertOne({ ownerId: owner._id });
+    await require('../../modules/admin/models/organization').collection.insertOne({
+      ownerId: owner._id
+    });
     assert.equal((await call('/me', 'DELETE')).status, 409);
     assert.ok(await User.exists({ _id: owner._id }));
     assert.ok(await Resume.exists({ _id: resume._id }));
@@ -493,7 +496,9 @@ test(
         providers: ['google']
       });
       await Promise.allSettled([
-        require('../../modules/public-portfolio/services/publicProfileService').getOrCreatePublicProfile(racing._id),
+        require('../../modules/public-portfolio/services/publicProfileService').getOrCreatePublicProfile(
+          racing._id
+        ),
         deletion.deleteAccount(racing._id)
       ]);
       assert.equal(await User.exists({ _id: racing._id }), null);

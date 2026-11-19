@@ -182,8 +182,8 @@ async function main() {
       githubSignals: { username: 'fixture-dev' },
       languageDistribution: { TypeScript: 70, JavaScript: 30 },
       contributionActivity: [
-        { month: 'Oct', count: 12 },
-        { month: 'Nov', count: 4 },
+        { month: '2026-10', count: 12 },
+        { month: '2026-11', count: 4 },
       ],
       updatedAt: now,
     });
@@ -194,7 +194,10 @@ async function main() {
       githubStats: { repos: 999 },
       updatedAt: now,
     });
-    const { ANALYSIS_VERSION, buildScope } = require('../modules/skill-gap/services/skillGapCacheContract');
+    const {
+      ANALYSIS_VERSION,
+      buildScope,
+    } = require('../modules/skill-gap/services/skillGapCacheContract');
     const scope = buildScope({
       userId: owner._id,
       user: owner,

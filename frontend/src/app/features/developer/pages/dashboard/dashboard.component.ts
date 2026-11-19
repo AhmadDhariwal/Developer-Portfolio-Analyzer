@@ -1,5 +1,7 @@
+import { languagePercentageLabels } from '../../../../shared/utils/language-percentage';
 import {
   DashboardProgress,
+  DashboardPortfolioAssessment,
   DashboardIntegrationConnectivity,
 } from '../../../../shared/models/dashboard.model';
 import { DashboardProgressComponent } from './components/dashboard-progress/dashboard-progress.component';
@@ -47,6 +49,7 @@ export interface StatCard {
 }
 
 export interface RecommendationItem {
+  description?: string;
   title: string;
   priority: 'High' | 'Medium' | 'Low';
   category: string;
@@ -57,6 +60,7 @@ export interface RecommendationItem {
 export interface LanguageLegendItem {
   label: string;
   percentage: number;
+  displayPercentage?: string;
   color: string;
 }
 
@@ -199,6 +203,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
   coveragePercentage: number | null = null;
   topSkills: string[] = [];
   missingSkills: string[] = [];
+  weakSkills: string[] = [];
+  coverageReason = '';
   languageLegend: LanguageLegendItem[] = [];
   hasLanguageData = false;
   recommendations: RecommendationItem[] = [];
@@ -238,6 +244,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
   private readonly dirtyCharts = new Set<'activity' | 'language' | 'radar'>();
   chartErrors = { activity: '', language: '', radar: '' };
 
+  get currentPortfolioScore(): number | null {
+    return this.readinessCenter.find((item) => item.key === 'portfolio')?.value ?? null;
+  }
+
+  get hasCompleteRadar(): boolean {
+    return Object.values(this.buildRadarBreakdown()).every((value) => value !== null);
+  }
+
   get hasRadarData(): boolean {
     return Object.values(this.buildRadarBreakdown()).some((value) => value !== null);
   }
@@ -272,7 +286,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
           this.hasLanguageData,
           () => this.initLanguageChart(this.pendingLanguageData || {}),
         ],
-        ['radar', this.skillRadar, this.hasRadarData, () => this.initRadarChart()],
+        ['radar', this.skillRadar, this.hasCompleteRadar, () => this.initRadarChart()],
       ] as const;
       for (const [key, ref, available, render] of entries) {
         if (!this.dirtyCharts.has(key)) continue;
@@ -337,6 +351,15 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
   private languageSource = 'cached_snapshot';
   private readonly cacheVersion = 'dashboard-v5';
   private readonly requestCancelled = new Subject<void>();
+  private dataRefreshQueued = false;
+  private readonly onDeveloperDataChanged = (): void => {
+    if (this.destroyed || this.dataRefreshQueued) return;
+    this.dataRefreshQueued = true;
+    queueMicrotask(() => {
+      this.dataRefreshQueued = false;
+      if (!this.destroyed) this.loadDashboardData(true);
+    });
+  };
   private destroyed = false;
   private themeObserver: MutationObserver | null = null;
   private readonly activeRequests = new Map<string, Observable<any>>();
@@ -380,6 +403,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
   }
 
   ngOnInit(): void {
+    globalThis.addEventListener?.('devinsight:developer-data-changed', this.onDeveloperDataChanged);
     this.subscriptions.add(
       this.careerProfileService.careerProfile$
         .pipe(
@@ -390,7 +414,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
         )
         .subscribe(() => {
           this.clearDashboardCache();
-          this.loadDashboardData();
+          this.onDeveloperDataChanged();
         }),
     );
 
@@ -415,6 +439,28 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
     this.careerProfileService
       .setActiveCareerProfile(this.careerProfileService.careerStack, level)
       .subscribe();
+  }
+
+  assessingPortfolio = false;
+  portfolioAssessmentError = '';
+
+  assessPortfolio(): void {
+    if (this.assessingPortfolio || this.destroyed) return;
+    this.assessingPortfolio = true;
+    this.portfolioAssessmentError = '';
+    this.apiService.assessSavedPortfolio().subscribe({
+      next: () => {
+        if (this.destroyed) return;
+        this.assessingPortfolio = false;
+        this.loadDashboardData(true);
+      },
+      error: () => {
+        if (this.destroyed) return;
+        this.assessingPortfolio = false;
+        this.portfolioAssessmentError = 'Portfolio assessment could not be saved. Try again.';
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   reanalyze(): void {
@@ -560,6 +606,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
     this.learningSnapshot = data?.learningSnapshot || null;
     this.applySkillsSnapshot(data?.skillsSnapshot);
     this.applyRecommendationsSnapshot(data?.recommendationSnapshot);
+    this.portfolioAssessment = data?.portfolioAssessment ?? null;
 
     this.requestChartRender();
     this.isLoading = false;
@@ -665,26 +712,38 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
   }
 
   private applySkillsSnapshot(payload: any): void {
-    if (!payload) return;
-    this.topSkills = Array.isArray(payload?.topSkills) ? payload.topSkills : this.topSkills;
-    this.missingSkills = Array.isArray(payload?.missingSkills)
-      ? payload.missingSkills
-      : this.missingSkills;
-    if (Object.hasOwn(payload, 'coveragePercentage')) {
-      this.coveragePercentage = this.normalizeCoverage(payload.coveragePercentage);
-    }
+    this.weakSkills = payload?.weakSkills || [];
+    this.coverageReason = payload?.coverageReason || '';
+    this.topSkills = Array.isArray(payload?.topSkills) ? payload.topSkills : [];
+    this.missingSkills = Array.isArray(payload?.missingSkills) ? payload.missingSkills : [];
+    this.coveragePercentage = this.normalizeCoverage(payload?.coveragePercentage);
     if (payload?.stale) {
       this.dashboardStale = true;
       this.dashboardRefreshMessage = 'Analysis refresh recommended';
     }
   }
 
+  recommendationNotice = '';
+  recommendationsStale = false;
+  recommendationsGeneratedAt: string | null = null;
+  portfolioAssessment: DashboardPortfolioAssessment | null = null;
+
+  get skillGapEmptyMessage(): string {
+    return (
+      this.sourceFreshnessRows.find((source) => source.key === 'skillGap')?.reason ||
+      'Open Skill Gap to check the selected profile and run an evidence assessment.'
+    );
+  }
+
   private applyRecommendationsSnapshot(payload: any): void {
-    if (!payload) return;
+    this.recommendationsStale = payload?.stale === true;
+    this.recommendationsGeneratedAt = payload?.generatedAt ?? null;
+    this.recommendationNotice = String(payload?.message || '');
     const items = Array.isArray(payload?.items) ? payload.items : [];
     this.recommendations = items.slice(0, 4).map((item: any) => ({
       title: String(item?.title || 'Recommendation'),
-      priority: item?.priority === 'Low' || item?.priority === 'Medium' ? item.priority : 'High',
+      description: String(item?.description || ''),
+      priority: item?.priority || '',
       category: String(item?.category || 'Technology'),
       priorityType:
         item?.priorityType === 'low' || item?.priorityType === 'medium'
@@ -866,6 +925,10 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
   }
 
   ngOnDestroy(): void {
+    globalThis.removeEventListener?.(
+      'devinsight:developer-data-changed',
+      this.onDeveloperDataChanged,
+    );
     this.destroyed = true;
     if (this.chartFrame !== null) cancelAnimationFrame(this.chartFrame);
     this.chartResizeObserver?.disconnect();
@@ -902,6 +965,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
     const gridStroke = this.chartGridColor();
     const labelColor = this.chartColor('--text-secondary');
 
+    const complete = Object.values(breakdown).every((value) => value !== null);
     this.radarInstance = new Chart(this.skillRadar.nativeElement, {
       type: 'radar',
       data: {
@@ -920,7 +984,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
               breakdown.industryReadiness,
               breakdown.projectImpact,
             ],
-            spanGaps: true,
+            spanGaps: false,
+            showLine: complete,
+            fill: complete,
             borderColor: '#4F46E5',
             backgroundColor: 'rgba(99, 102, 241, 0.16)',
             borderWidth: 2.25,
@@ -1140,11 +1206,15 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
     return (Array.isArray(value) ? value : []).filter(
       (item) =>
         typeof item?.month === 'string' &&
-        item.month.trim().length > 0 &&
+        /^\d{4}-(0[1-9]|1[0-2])$/.test(item.month.trim()) &&
         typeof item.count === 'number' &&
         Number.isSafeInteger(item.count) &&
         item.count >= 0,
     );
+  }
+
+  get activityDescription(): string {
+    return (this.pendingActivityData || []).map((row) => row.month + ': ' + row.count).join(', ');
   }
 
   initActivityChart(activityData: { month: string; count: number }[]): void {
@@ -1244,6 +1314,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
     const colors = ['#4F46E5', '#8B5CF6', '#10B981', '#0EA5E9', '#64748B'];
     this.hasLanguageData = values.length > 0 && total > 0;
 
+    const shares = values.map((value) => (total ? (value / total) * 100 : 0));
+    const percentages = languagePercentageLabels(shares);
+
     this.languageInstance = new Chart(this.languageChart.nativeElement, {
       type: 'doughnut',
       data: {
@@ -1267,13 +1340,19 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
         cutout: '72%',
         plugins: {
           legend: { display: false },
-          tooltip: this.buildChartTooltipOptions(),
+          tooltip: {
+            ...this.buildChartTooltipOptions(),
+            callbacks: {
+              label: (context) => `${context.label}: ${percentages[context.dataIndex]}`,
+            },
+          },
         },
       },
     });
     this.languageLegend = labels.map((label, index) => ({
       label,
-      percentage: total > 0 ? Math.round((values[index] / total) * 100) : 0,
+      percentage: shares[index],
+      displayPercentage: percentages[index],
       color: colors[index],
     }));
   }

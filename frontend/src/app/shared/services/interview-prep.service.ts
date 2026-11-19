@@ -10,6 +10,7 @@ import {
   shareReplay,
   takeUntil,
   timeout,
+  tap,
 } from 'rxjs';
 import { ApiService } from './api.service';
 import { AuthService } from './auth.service';
@@ -38,7 +39,7 @@ export class InterviewPrepService implements OnDestroy {
   constructor(
     private readonly api: ApiService,
     auth: AuthService,
-    invalidation: FrontendCacheInvalidationService,
+    private readonly invalidation: FrontendCacheInvalidationService,
   ) {
     this.owner$ = auth.currentUser$.pipe(
       map((user) => String(user?._id || '')),
@@ -181,6 +182,11 @@ export class InterviewPrepService implements OnDestroy {
   completeSession(id: string, expectedVersion: number): Observable<InterviewSession> {
     return this.once('complete', { id, expectedVersion }, () =>
       this.api.updateInterviewSession(id, { expectedVersion }, true),
+    ).pipe(
+      tap(() => {
+        this.invalidation.clearDashboardCaches();
+        this.invalidation.clearWeeklyReportCaches();
+      }),
     );
   }
   getSessions(limit = 10): Observable<InterviewSession[]> {

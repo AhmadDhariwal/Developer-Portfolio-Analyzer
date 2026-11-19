@@ -192,3 +192,10 @@ It is critical not to equate browser reloads with fresh source retrieval:
    - Bound `githubservice.memoryAnalysisCache`, `recommendationMemoryCache`, and `adminConsoleService.performanceCache` (and invalidate `performanceCache` on Admin writes or migrate to Redis).
    - Remove/align dead `v6-skill-intelligence` delete filter in `githubservice.js`, dead `ResumeService` `localStorage` helper (or wire carefully with hash checks), unwired `PlatformSettings.analytics` cache/refresh UI fields, and forward `forceRefresh` in `getScenarioSimulationHistory`.
    - Move `emailRetryQueueService`, `integrationSyncService`, `jobSourceSyncService`, `weeklyReportService`, and `interviewQuestion*` stop hooks into `backend/index.js` `shutdown()` for clean restarts.
+
+
+## Implementation addendum — 2026-11-17
+
+GitHub page entry now submits savedOnly:true to the existing authenticated POST /api/github/analyze-save route. It reads the owner accepted revision without invoking GitHub or AI. Explicit Sync GitHub retains the existing analysis/save workflow. Dashboard receives scoped invalidation events and remains a read-only aggregator.
+
+The original audit above is historical source evidence. Current implementation and acceptance limits are recorded in [DEVELOPER-DATA-FRESHNESS-FINAL.md](DEVELOPER-DATA-FRESHNESS-FINAL.md) and [DEVELOPER-MODULE-REFRESH-TEST-MATRIX.md](DEVELOPER-MODULE-REFRESH-TEST-MATRIX.md).

@@ -9,36 +9,58 @@ function buildDashboardProgress(
   const tasks = [];
   const seen = new Set();
   for (const task of latestCareerSprint?.tasks || []) {
-    if (!task._id || seen.has(String(task._id)) || (numeric(task.points) || 1) < 0) continue;
+    if (!task._id || seen.has(String(task._id)) || (numeric(task.points) ?? 1) < 0) continue;
     seen.add(String(task._id));
     tasks.push(task);
   }
-  const velocity = Array.from({ length: 7 }, (_, index) => {
-    const day = new Date(now.getTime() - (6 - index) * 86400000).toISOString().slice(0, 10);
-    const completed = tasks.filter(
-      (task) =>
-        task.isCompleted &&
-        task.completedAt &&
-        Number.isFinite(new Date(task.completedAt).getTime()) &&
-        new Date(task.completedAt).toISOString().slice(0, 10) === day,
-    );
-    return {
-      day,
-      completed: completed.length,
-      points: completed.reduce((sum, task) => sum + (numeric(task.points) || 1), 0),
-    };
+  const start = latestCareerSprint?.sprintStartDate || latestCareerSprint?.weekStartDate;
+  const end = latestCareerSprint?.sprintEndDate || latestCareerSprint?.weekEndDate;
+  const completions = tasks.filter((task) => task.isCompleted);
+  const dated = completions.flatMap((task) => {
+    if (!task.completedAt) return [];
+    const at = new Date(task.completedAt);
+    if (!Number.isFinite(at.getTime()) || at > now) return [];
+    if ((start && at < new Date(start)) || (end && at > new Date(end))) return [];
+    return [{ day: at.toISOString().slice(0, 10), points: numeric(task.points) ?? 1 }];
   });
+  const velocity = latestCareerSprint
+    ? Array.from({ length: 7 }, (_, index) => {
+        const day = new Date(now.getTime() - (6 - index) * 86400000).toISOString().slice(0, 10);
+        const completed = dated.filter((task) => task.day === day);
+        return {
+          day,
+          completed: completed.length,
+          points: completed.reduce((sum, task) => sum + task.points, 0),
+        };
+      })
+    : [];
   const sources = Object.entries(sourceFreshness).filter(([key]) => key !== 'weekly');
   const skillData = latestSkillGapCache?.analysisData;
+  const activity = normalizeDashboardActivity(analysis?.contributionActivity);
+  const repositoryCount = analysis?.githubSignals?.username
+    ? numeric(analysis.githubStats?.repos)
+    : null;
+  const repositories = analysis?.githubSignals?.repositories || [];
+  const repositoryEvidence = repositories
+    .flatMap((repo) => {
+      if (!repo?.name) return [];
+      const commits = Number.isSafeInteger(repo.commits) && repo.commits >= 0 ? repo.commits : null;
+      const pushedAt = new Date(repo.pushedAt || NaN);
+      const date =
+        Number.isFinite(pushedAt.getTime()) && pushedAt <= now ? pushedAt.toISOString() : null;
+      return commits !== null || date ? [{ name: repo.name, commits, pushedAt: date }] : [];
+    })
+    .sort((a, b) => (b.pushedAt || '').localeCompare(a.pushedAt || ''));
   return {
     history,
     sprint: {
       available: Boolean(latestCareerSprint),
       weightedCompletion: sprintScore.calculate(tasks).score,
       velocity,
-      undatedCompletions: tasks.filter((task) => task.isCompleted && !task.completedAt).length,
-      basis:
-        'Latest saved sprint only; completion dates use UTC. Undated completions are excluded from velocity.',
+      undatedCompletions: completions.filter(
+        (task) => !task.completedAt || !Number.isFinite(new Date(task.completedAt).getTime()),
+      ).length,
+      basis: 'Active sprint completions over the last seven UTC days.',
     },
     skills: {
       available: Boolean(latestSkillGapCache),
@@ -57,9 +79,14 @@ function buildDashboardProgress(
     },
     github: {
       available: Boolean(analysis?.updatedAt),
-      historyStatus:
-        'Legacy repository snapshots do not record username or scoring-rule identity; trends are not inferred.',
-      activity: normalizeDashboardActivity(analysis?.contributionActivity),
+      historyStatus: activity.length
+        ? 'Dated authored commits available for sampled repositories.'
+        : repositoryCount !== null || repositoryEvidence.length
+          ? 'Partial history. Saved repository evidence is available.'
+          : 'No saved repository history.',
+      activity,
+      repositoryCount,
+      repositoryEvidence: repositoryEvidence.slice(0, 4),
     },
     completedCourses: (learningProgress || [])
       .filter((row) => row.status === 'completed')

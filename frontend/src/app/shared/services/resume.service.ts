@@ -179,8 +179,6 @@ export class ResumeService {
   setDefaultResume(fileId: string): Observable<any> {
     return this.apiService.setActiveResume(fileId, true).pipe(
       tap(() => {
-        this.cacheInvalidation.clearProfileCache();
-        this.cacheInvalidation.clearDeveloperSignalCaches();
         this.clearResumeAnalysisCache();
         this.refresh();
       }),

@@ -117,7 +117,7 @@ export class WeeklyReportsComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
 
     this.reportService
-      .getDashboard(6)
+      .getDashboard(6, true)
       .pipe(
         takeUntil(this.destroyed),
         finalize(() => {

@@ -6,6 +6,14 @@
   >
     <div page-actions class="page-header-actions" *ngIf="analysisReady && result">
       <app-ui-button
+        *ngIf="!isTemporaryView"
+        variant="outline"
+        size="sm"
+        (clicked)="refreshSavedData()"
+        [disabled]="isAnalyzing"
+        >Refresh Data</app-ui-button
+      >
+      <app-ui-button
         *ngIf="isTemporaryView"
         variant="ghost"
         size="sm"
@@ -29,8 +37,17 @@
         [loading]="isAnalyzing"
         [disabled]="isAnalyzing"
       >
-        Refresh Analysis
+        Sync GitHub
       </app-ui-button>
+    </div>
+    <div page-actions *ngIf="!analysisReady && defaultUsername">
+      <app-ui-button
+        variant="secondary"
+        size="sm"
+        (clicked)="refreshAnalysis()"
+        [disabled]="isAnalyzing"
+        >Sync GitHub</app-ui-button
+      >
     </div>
   </app-ui-page-header>
 
@@ -57,7 +74,7 @@
     [title]="invalidUsername ? 'GitHub Profile Not Found' : 'Analysis Request Failed'"
     [message]="errorMessage"
     [retryable]="true"
-    (retry)="analyze(false)"
+    (retry)="refreshSavedData()"
   >
   </app-ui-error-state>
 

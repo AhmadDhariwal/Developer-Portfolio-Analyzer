@@ -1,0 +1,34 @@
+{
+  "suite": "final-backend",
+  "code": 1,
+  "results": [
+    "✖ global catalog: durable reuse, bounded load, negative caching, SWR, fencing, quotas and recovery (12954.9144ms)",
+    "✖ Interview Prep isolated Mongo critical paths (12907.387ms)",
+    "ℹ tests 1132",
+    "ℹ pass 1105",
+    "ℹ fail 4",
+    "ℹ cancelled 0",
+    "ℹ skipped 23",
+    "ℹ duration_ms 550070.1631",
+    "✖ failing tests:",
+    "✖ scheduled archival requires two audits, invalidates discovery and preserves saved progress (6545.6165ms)",
+    "✖ authenticated API contracts, input rejection, practice fallback, and canonical personalization (2657.1395ms)"
+  ],
+  "diagnostics": [
+    "GitHub Save Error: required repository upsert failed",
+    "GitHub Save Error: Failed to analyze and save GitHub profile.",
+    "GitHub Save Error: Failed to analyze and save GitHub profile.",
+    "GitHub Save Error: Failed to analyze and save GitHub profile.",
+    "GitHub Save Error: Failed to analyze and save GitHub profile.",
+    "GitHub Save Error: Failed to analyze and save GitHub profile.",
+    "GitHub Save Error: Provider unavailable",
+    "GitHub Save Error: GitHub synchronization lease expired. Please retry.",
+    "GitHub Save Error: GitHub profile changed during synchronization. Please retry from the current profile.",
+    "JsonWebTokenError: jwt audience invalid. expected: devinsight-web",
+    "Resume Upload Error: The PDF could not be parsed. Upload an uncorrupted, unencrypted text-based PDF.",
+    "  Error: Shared catalog temporarily unavailable.",
+    "  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:",
+    "    actual: 503,",
+    "    expected: 200,"
+  ]
+}

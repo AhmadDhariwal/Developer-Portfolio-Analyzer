@@ -9,7 +9,14 @@ const read = (...parts) => fs.readFileSync(path.join(root, ...parts), 'utf8');
 const controller =
   read('backend', 'src', 'modules', 'recommendations', 'recommendationscontroller.js') +
   read('backend', 'src', 'modules', 'recommendations', 'services', 'recommendationService.js') +
-  read('backend', 'src', 'modules', 'recommendations', 'services', 'recommendationNarrativeService.js');
+  read(
+    'backend',
+    'src',
+    'modules',
+    'recommendations',
+    'services',
+    'recommendationNarrativeService.js'
+  );
 const client = read('frontend', 'src', 'app', 'shared', 'services', 'recommendations.service.ts');
 const component = read(
   'frontend',
@@ -22,18 +29,40 @@ const component = read(
   'recommendations.component.ts'
 );
 const routes = read('backend', 'src', 'modules', 'recommendations', 'recommendations.routes.js');
-const promptSource = read('backend', 'src', 'modules', 'recommendations', 'prompts', 'recommendationPrompt.js');
-const generationSource = read('backend', 'src', 'modules', 'recommendations', 'services', 'recommendationGenerationService.js');
+const promptSource = read(
+  'backend',
+  'src',
+  'modules',
+  'recommendations',
+  'prompts',
+  'recommendationPrompt.js'
+);
+const generationSource = read(
+  'backend',
+  'src',
+  'modules',
+  'recommendations',
+  'services',
+  'recommendationGenerationService.js'
+);
 const { extractSkillsFromText, canonicalizeSkillName } = require('../../core/utils/skilldetector');
 const {
   resolveRecommendationEnrichment,
   mergeNarrativeEnrichment,
   isUsableRecommendationNarrative,
-  hasRecommendationFactPollution,
+  hasRecommendationFactPollution
 } = require('../../modules/recommendations/recommendationscontroller');
 
 const loadPreviewService = (cache) => {
-  const target = path.join(root, 'backend', 'src', 'modules', 'resume', 'services', 'previewResumeCacheService.js');
+  const target = path.join(
+    root,
+    'backend',
+    'src',
+    'modules',
+    'resume',
+    'services',
+    'previewResumeCacheService.js'
+  );
   delete require.cache[target];
   const original = Module._load;
   Module._load = function (request, parent, isMain) {
@@ -56,8 +85,8 @@ const sampleFallback = {
       description: 'Ship a scoped backend project that proves SQL.',
       whyThisProject: 'Addresses SQL proof gap for Backend stack.',
       tech: ['Node.js'],
-      newTech: ['SQL'],
-    },
+      newTech: ['SQL']
+    }
   ],
   technologies: [{ name: 'SQL', description: 'Priority gap for Backend roles.' }],
   careerPaths: [
@@ -65,13 +94,13 @@ const sampleFallback = {
       id: 'c_1',
       title: 'Backend Engineer',
       description: 'Primary Backend path.',
-      actionItems: ['Convert SQL into a shipped project'],
-    },
+      actionItems: ['Convert SQL into a shipped project']
+    }
   ],
   portfolioRecommendations: ['Add working live links for your strongest public projects'],
   resumeRecommendations: ['Add quantified impact bullets for your most relevant projects'],
   learningActions: ['Practice SQL inside a real repository rather than isolated notes only'],
-  interviewReadinessActions: ['Practice explaining one shipped project end-to-end'],
+  interviewReadinessActions: ['Practice explaining one shipped project end-to-end']
 };
 
 test('skill matching keeps language identities distinct', () => {
@@ -93,7 +122,7 @@ test('preview resumes require an unguessable id plus matching hash and never ret
     getSharedCache: async (key) => {
       calls.push(['get', key]);
       return store.get(key) || null;
-    },
+    }
   };
   const service = loadPreviewService(cache);
   const created = await service.createPreviewResume('Ada: TypeScript, Node.js');
@@ -102,7 +131,7 @@ test('preview resumes require an unguessable id plus matching hash and never ret
     (
       await service.resolvePreviewResume({
         previewResumeId: created.previewResumeId,
-        experienceLevel: 'Student',
+        experienceLevel: 'Student'
       })
     ).status,
     400
@@ -112,7 +141,7 @@ test('preview resumes require an unguessable id plus matching hash and never ret
       await service.resolvePreviewResume({
         previewResumeId: created.previewResumeId,
         resumeHash: '0'.repeat(64),
-        experienceLevel: 'Student',
+        experienceLevel: 'Student'
       })
     ).status,
     400
@@ -120,7 +149,7 @@ test('preview resumes require an unguessable id plus matching hash and never ret
   const resolved = await service.resolvePreviewResume({
     previewResumeId: created.previewResumeId,
     resumeHash: created.resumeHash,
-    experienceLevel: 'Student',
+    experienceLevel: 'Student'
   });
   assert.equal(resolved.resumeCacheIdentity.resumeHash, created.resumeHash);
   assert.equal(resolved.resumeInsights.resumeText, undefined);
@@ -130,12 +159,12 @@ test('preview resumes require an unguessable id plus matching hash and never ret
 test('oversized and expired previews return clean client errors', async () => {
   const service = loadPreviewService({
     setSharedCache: async () => {},
-    getSharedCache: async () => null,
+    getSharedCache: async () => null
   });
   assert.equal(
     (
       await service.resolvePreviewResume({
-        resumeText: 'x'.repeat(service.MAX_INLINE_PREVIEW_RESUME_CHARS + 1),
+        resumeText: 'x'.repeat(service.MAX_INLINE_PREVIEW_RESUME_CHARS + 1)
       })
     ).status,
     413
@@ -187,7 +216,7 @@ test('saved previews remain owner-scoped and summary-only', () => {
 test('frontend separates profile identities, inline resumes, and duplicate requests', () => {
   assert.match(
     client,
-    /recommendations:profile:\$\{userId\}:\$\{cleanUsername\}:\$\{cleanStack\}:\$\{cleanLevel\}/
+    /const key = JSON.stringify\(\[\s*ownerId,\s*username,\s*careerStack,\s*experienceLevel/
   );
   assert.match(client, /inlineResumeIdentity/);
   assert.match(client, /this\.inflight\.get\(key\)/);
@@ -210,7 +239,7 @@ test('failed refresh preserves previous valid result in the frontend component',
   assert.match(component, /const previousResult = this\.result/);
   assert.match(component, /preservePrevious/);
   assert.match(component, /if \(preservePrevious && previousResult\)/);
-  assert.match(component, /this\.loadingState = forceRefresh \? 'stale' : 'error'/);
+  assert.match(component, /this\.result = previousResult;\s*this\.loadingState = 'stale'/);
   assert.equal(
     component.includes(
       'this.result = null;\n        this.cdr.detectChanges();\n      }\n    });\n  }'
@@ -224,7 +253,7 @@ test('polluted low-quality and ungrounded AI enrichment is rejected', () => {
     aiOk: true,
     careerStack: 'Backend',
     experienceLevel: 'Intern',
-    anchors: ['SQL', 'Node.js', 'Backend SQL Builder'],
+    anchors: ['SQL', 'Node.js', 'Backend SQL Builder']
   };
 
   assert.equal(
@@ -235,7 +264,7 @@ test('polluted low-quality and ungrounded AI enrichment is rejected', () => {
     hasRecommendationFactPollution({
       analysisSummary: 'Backend SQL progress looks strong for Intern level.',
       projects: [{ title: 'Injected' }],
-      readinessScore: 99,
+      readinessScore: 99
     }),
     true
   );
@@ -245,7 +274,7 @@ test('polluted low-quality and ungrounded AI enrichment is rejected', () => {
       analysisSummary: 'As an AI I think you should learn quantum computing immediately.',
       projectNarratives: [{ id: 'p_1', description: 'placeholder', whyThisProject: 'todo' }],
       projects: [{ title: 'Fake Project', impact: 99 }],
-      recommendationScores: { overallRecommendationScore: 99 },
+      recommendationScores: { overallRecommendationScore: 99 }
     },
     {
       analysisSummary:
@@ -254,17 +283,17 @@ test('polluted low-quality and ungrounded AI enrichment is rejected', () => {
         {
           id: 'p_1',
           description: 'Generic filler without signal grounding at all.',
-          whyThisProject: 'Because growth mindset.',
-        },
-      ],
+          whyThisProject: 'Because growth mindset.'
+        }
+      ]
     },
     {
       analysisSummary:
         'Quantum entanglement mentoring will transform your brand narrative overnight without evidence.',
       technologyNarratives: [
-        { name: 'SQL', description: 'Quantum entanglement mentoring will transform your brand.' },
-      ],
-    },
+        { name: 'SQL', description: 'Quantum entanglement mentoring will transform your brand.' }
+      ]
+    }
   ]) {
     const enrichment = resolveRecommendationEnrichment(polluted, sampleFallback, context);
     assert.equal(enrichment.aiUsed, false);
@@ -281,27 +310,27 @@ test('polluted low-quality and ungrounded AI enrichment is rejected', () => {
           id: 'p_1',
           title: 'Should Not Override Title',
           description: 'Build a Backend SQL service that proves query design with Node.js.',
-          whyThisProject: 'This closes the SQL proof gap for a Backend Intern profile.',
-        },
+          whyThisProject: 'This closes the SQL proof gap for a Backend Intern profile.'
+        }
       ],
       technologyNarratives: [
         {
           name: 'SQL',
-          description: 'SQL remains the highest-value Backend gap for this Intern profile.',
-        },
+          description: 'SQL remains the highest-value Backend gap for this Intern profile.'
+        }
       ],
       careerPathNarratives: [
         {
           id: 'c_1',
           title: 'Should Not Override Path',
           description: 'Stay on the Backend Engineer path while converting SQL into shipped proof.',
-          actionItems: ['Ship one Backend SQL project this month'],
-        },
+          actionItems: ['Ship one Backend SQL project this month']
+        }
       ],
       portfolioRecommendations: ['Publish the Backend SQL project with a live demo link'],
       resumeRecommendations: ['Mention the Backend SQL project outcome with metrics'],
       learningActions: ['Practice SQL joins inside a Backend Node.js repository'],
-      interviewReadinessActions: ['Explain the Backend SQL tradeoffs from your shipped project'],
+      interviewReadinessActions: ['Explain the Backend SQL tradeoffs from your shipped project']
     },
     sampleFallback,
     context
@@ -324,21 +353,21 @@ test('AI timeout and fallback markers never mark aiUsed or override deterministi
     aiOk: false,
     careerStack: 'Backend',
     experienceLevel: 'Intern',
-    anchors: ['SQL'],
+    anchors: ['SQL']
   });
   assert.equal(failed.aiUsed, false);
 
   const marker = resolveRecommendationEnrichment(
     {
       __fallback: true,
-      analysisSummary: 'Backend SQL Intern summary with enough length for narrative checks.',
+      analysisSummary: 'Backend SQL Intern summary with enough length for narrative checks.'
     },
     sampleFallback,
     {
       aiOk: true,
       careerStack: 'Backend',
       experienceLevel: 'Intern',
-      anchors: ['SQL'],
+      anchors: ['SQL']
     }
   );
   assert.equal(marker.aiUsed, false);

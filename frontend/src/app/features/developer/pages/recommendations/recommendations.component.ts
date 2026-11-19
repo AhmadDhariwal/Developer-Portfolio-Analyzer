@@ -67,6 +67,13 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   private readonly subscriptions = new Subscription();
   private lastProfileKey = '';
   private activeRequest?: Subscription;
+  private readonly onDeveloperDataChanged = (event: Event): void => {
+    if ((event as CustomEvent<{ scope?: string }>).detail?.scope !== 'sources') return;
+    this.profileResultBackup = null;
+    if (this.isPreviewMode || !this.isAuthenticated) return;
+    this.result = null;
+    this.analyze(false, true);
+  };
 
   constructor(
     private readonly recService: RecommendationsService,
@@ -79,6 +86,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    globalThis.addEventListener?.('devinsight:developer-data-changed', this.onDeveloperDataChanged);
     this.lastProfileKey = buildCareerProfileSignature(this.careerProfileService.snapshot);
     this.subscriptions.add(
       this.careerProfileService.careerProfile$
@@ -142,6 +150,10 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    globalThis.removeEventListener?.(
+      'devinsight:developer-data-changed',
+      this.onDeveloperDataChanged,
+    );
     this.activeRequest?.unsubscribe();
     this.subscriptions.unsubscribe();
   }
@@ -299,7 +311,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
       const cachedResultSignalHash = this.extractSignalHash(cached);
       if (cached && (!currentSignalHash || cachedResultSignalHash === currentSignalHash)) {
         this.applyResult(cached, user, careerStack, experienceLevel, isTemporary, 'cache-hit');
-        return;
+        // Keep the last saved view visible while the server validates source revisions.
       }
       if (
         cached &&
@@ -380,7 +392,7 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
           this.isLoading = false;
           if (preservePrevious && previousResult) {
             this.result = previousResult;
-            this.loadingState = forceRefresh ? 'stale' : 'error';
+            this.loadingState = 'stale';
           } else {
             this.result = null;
             this.loadingState = 'error';
@@ -628,6 +640,13 @@ export class RecommendationsComponent implements OnInit, OnDestroy {
   }
   get stale(): boolean {
     return this.loadingState === 'stale' || this.sourceEntries.some((s) => s.freshness === 'STALE');
+  }
+  get aiRefreshRecommended(): boolean {
+    return Boolean(
+      this.result?.aiRefreshRecommended ||
+      this.result?.cacheMetadata?.aiRefreshRecommended ||
+      ((this.legacy || this.stale) && this.result?.aiUsed),
+    );
   }
   get lastUpdated(): string | null {
     return (

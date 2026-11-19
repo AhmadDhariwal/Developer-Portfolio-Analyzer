@@ -35,7 +35,7 @@ function comparableHistory(rows, identity, ruleVersion) {
         String(a._id).localeCompare(String(b._id)),
     )
     .filter((row) => {
-      const key = row.provenance.assessmentHash;
+      const key = row.provenance.sourceRevisionHash;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
@@ -54,15 +54,25 @@ async function loadReadinessHistory(userId, identity, ruleVersion, asOf) {
       reason: 'Current portfolio has no scoring-rule provenance.',
     };
   try {
-    // Existing (userId, source, version) index bounds work to 32 records per source.
-    // Filter scope in application only after this bound, never scan all durable history.
+    if (mongoose.connection.readyState !== 1) throw new Error('History storage unavailable');
     const owner = mongoose.isValidObjectId(userId)
       ? new mongoose.Types.ObjectId(String(userId))
       : userId;
     const rows = await AIVersion.aggregate([
-      { $match: { userId: owner, source: 'portfolio_score' } },
-      { $sort: { version: -1 } },
-      { $limit: 32 },
+      {
+        $match: {
+          userId: owner,
+          source: 'portfolio_score',
+          'provenance.producer': 'portfolio-score-v1',
+          'provenance.ruleVersion': ruleVersion,
+          'provenance.githubUsername': identity.githubUsername.toLowerCase(),
+          'provenance.careerStack': identity.careerStack,
+          'provenance.experienceLevel': identity.experienceLevel,
+          'provenance.resumeAnalysisId': identity.resumeAnalysisId,
+          'provenance.assessedAt': { $lte: asOf },
+          createdAt: { $lte: asOf },
+        },
+      },
       // Never transfer arbitrary user-authored archive output to Dashboard memory.
       {
         $project: {
@@ -95,6 +105,11 @@ async function loadReadinessHistory(userId, identity, ruleVersion, asOf) {
           },
         },
       },
+      { $sort: { 'provenance.assessedAt': 1, _id: 1 } },
+      { $group: { _id: '$provenance.sourceRevisionHash', assessment: { $first: '$$ROOT' } } },
+      { $replaceWith: '$assessment' },
+      { $sort: { 'provenance.assessedAt': -1, _id: -1 } },
+      { $limit: 32 },
     ]).option({ maxTimeMS: 1500, allowDiskUse: false });
     const points = comparableHistory(
       rows.filter(
@@ -108,7 +123,7 @@ async function loadReadinessHistory(userId, identity, ruleVersion, asOf) {
       points,
       reason:
         points.length >= 2
-          ? 'Trusted portfolio assessments with the same profile, selected resume and scoring rule; latest 32 versions per source, without the integration blend.'
+          ? 'Trusted portfolio assessments with the same profile, selected resume and scoring rule; latest 32 distinct assessments, without the integration blend.'
           : 'Fewer than two trusted, comparable portfolio assessments. Legacy or user-authored archives do not establish a readiness trend.',
     };
   } catch {

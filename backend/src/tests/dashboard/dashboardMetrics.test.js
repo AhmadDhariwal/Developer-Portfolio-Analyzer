@@ -1,10 +1,10 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { buildReadinessCenter } = require("../../modules/dashboard/services/dashboardMetricsService");
+const {
+  buildReadinessCenter,
+} = require("../../modules/dashboard/services/dashboardMetricsService");
 const values = (input = {}) =>
-  Object.fromEntries(
-    buildReadinessCenter(input).map((item) => [item.key, item.value]),
-  );
+  Object.fromEntries(buildReadinessCenter(input).map((item) => [item.key, item.value]));
 
 test("missing evidence stays unavailable instead of inventing interview or market readiness", () => {
   const result = values({
@@ -16,6 +16,17 @@ test("missing evidence stays unavailable instead of inventing interview or marke
   assert.equal(result.resume, null);
   assert.equal(result.portfolio, null);
   assert.equal(result.sprint, null);
+});
+
+test("an unavailable canonical portfolio score cannot become a measured legacy zero", () => {
+  assert.equal(
+    values({
+      latestPortfolioCache: {
+        analysisData: { portfolioScore: { overallScore: 0, scoring: { score: null } } },
+      },
+    }).portfolio,
+    null,
+  );
 });
 
 test("measured zero remains zero across source-owned readiness dimensions", () => {

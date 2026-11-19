@@ -160,8 +160,8 @@ test("Skill Gap Mongo: active selection, reanalysis, source revisions, history a
     activeGithubUsername: "fixture",
     activeCareerStack: "Frontend",
     activeExperienceLevel: "Student",
-    activeResumeFileId: files[0]._id,
-    defaultResumeFileId: files[1]._id
+    defaultResumeFileId: files[0]._id,
+    activeResumeFileId: files[1]._id
   };
   const call = async (body) => {
     let output,
@@ -198,7 +198,9 @@ test("Skill Gap Mongo: active selection, reanalysis, source revisions, history a
     result: github,
     expiresAt: new Date(Date.now() + 60_000)
   });
-  const { resolveSkillSignals } = require("../../modules/courses/services/coursePersonalizationService");
+  const {
+    resolveSkillSignals
+  } = require("../../modules/courses/services/coursePersonalizationService");
   const learningSignals = () => resolveSkillSignals(owner, "Frontend", "Student", null, user);
   const firstLearning = await learningSignals();
   assert.equal(firstLearning.personalization.status, "evidence-informed");
@@ -254,7 +256,7 @@ test("Skill Gap Mongo: active selection, reanalysis, source revisions, history a
   user.activeCareerStack = "Frontend";
   user.activeExperienceLevel = "Student";
 
-  user.activeResumeFileId = files[1]._id;
+  user.defaultResumeFileId = files[1]._id;
   assert.equal((await learningSignals()).personalization.status, "career-context-only");
   const switched = await call();
   assert.equal((await learningSignals()).personalization.status, "evidence-informed");
@@ -280,7 +282,7 @@ test("Skill Gap Mongo: active selection, reanalysis, source revisions, history a
     revisedGithub.scoring.coverage.evidence.inputs.weightedCredit >
       reanalyzed.scoring.coverage.evidence.inputs.weightedCredit
   );
-  user.activeResumeFileId = files[2]._id;
+  user.defaultResumeFileId = files[2]._id;
   assert.deepEqual((await call()).resumeSkills, []); // Never borrow an analyzed historical resume.
   const foreignFile = await ResumeFile.create({
     userId: foreign,
@@ -296,10 +298,10 @@ test("Skill Gap Mongo: active selection, reanalysis, source revisions, history a
     analyzedAt: now,
     resumeSignals: { skills: ["Kubernetes"] }
   });
-  user.activeResumeFileId = foreignFile._id;
+  user.defaultResumeFileId = foreignFile._id;
   assert.deepEqual((await call()).resumeSkills, []); // Active file ID never bypasses ownership.
 
-  user.activeResumeFileId = files[1]._id;
+  user.defaultResumeFileId = files[1]._id;
   user.activeCareerStack = "Backend";
   const backend = await call();
   assert.ok(backend.requiredSkills.some((skill) => skill.name === "Node.js"));
@@ -479,7 +481,7 @@ test("Skill Gap: historical 56 reload behavior, reanalysis contract, and persist
           activeGithubUsername: "testhistorical",
           activeCareerStack: "Full Stack",
           activeExperienceLevel: "2-3 years",
-          activeResumeFileId: fileId
+          defaultResumeFileId: fileId
         },
         body
       },

@@ -26,8 +26,13 @@ const {
   canManageRole,
   resolveOrganizationRole
 } = require('../services/tenantService');
-const { getOrganizationSettingsSync } = require('../../super-admin/services/platformSettingsService');
-const { validatePasswordAgainstPolicy, getSecurityPolicy } = require('../../auth/utils/passwordPolicy');
+const {
+  getOrganizationSettingsSync
+} = require('../../super-admin/services/platformSettingsService');
+const {
+  validatePasswordAgainstPolicy,
+  getSecurityPolicy
+} = require('../../auth/utils/passwordPolicy');
 
 const ORGANIZATION_ROLES = ['admin', 'manager', 'member'];
 const getTokenTtl = () => String(getSecurityPolicy().jwtExpiresIn || '20h');
@@ -91,9 +96,7 @@ const createOrganization = async (req, res) => {
     const name = req.body.name.trim();
     const slug = normalizeSlug(req.body.slug || name);
     if (!slug) {
-      return res
-        .status(400)
-        .json({ message: 'Unable to generate organization slug from name.' });
+      return res.status(400).json({ message: 'Unable to generate organization slug from name.' });
     }
 
     const existing = await Organization.findOne({ slug }).lean();
@@ -200,9 +203,7 @@ const createTeam = async (req, res) => {
 
     const existing = await Team.findOne({ organizationId, slug }).lean();
     if (existing) {
-      return res
-        .status(409)
-        .json({ message: 'Team slug already exists in this organization.' });
+      return res.status(409).json({ message: 'Team slug already exists in this organization.' });
     }
 
     const teamCount = await Team.countDocuments({ organizationId });
@@ -405,7 +406,7 @@ const inviteUser = async (req, res) => {
     });
 
     let retryQueued = false;
-    if (!emailResult.sent && emailResult.provider) {
+    if (!emailResult.sent && emailResult.provider && !emailResult.deliveryUncertain) {
       const queuedJob = await enqueueInvitationRetry({
         invitationId: invitation._id,
         to: email,
@@ -419,8 +420,9 @@ const inviteUser = async (req, res) => {
 
     if (!emailResult.sent) {
       return res.status(502).json({
-        message:
-          'Invitation created but email delivery failed. Configure SENDGRID or SMTP environment variables and retry.',
+        message: emailResult.deliveryUncertain
+          ? 'Invitation created. Confirm delivery before resending because the provider outcome is unknown.'
+          : 'Invitation created but email delivery failed. Configure SENDGRID or SMTP environment variables and retry.',
         invitation,
         emailDelivery: {
           sent: false,
@@ -478,10 +480,7 @@ const acceptInvitationOnboardValidators = [
     .trim()
     .isLength({ min: 2, max: 80 })
     .withMessage('name must be 2-80 characters long.'),
-  body('password')
-    .isString()
-    .isLength({ min: 1, max: 128 })
-    .withMessage('password is required.'),
+  body('password').isString().isLength({ min: 1, max: 128 }).withMessage('password is required.'),
   body('githubUsername')
     .optional()
     .isString()
@@ -766,9 +765,7 @@ const listOrganizationMembers = async (req, res) => {
   }
 };
 
-const listTeamMembersValidators = [
-  param('teamId').isMongoId().withMessage('teamId is invalid.')
-];
+const listTeamMembersValidators = [param('teamId').isMongoId().withMessage('teamId is invalid.')];
 
 const listTeamMembers = async (req, res) => {
   if (validate(req, res)) return;
@@ -810,9 +807,7 @@ const updateMembershipRole = async (req, res) => {
 
     const targetRole = String(req.body.role);
     if (!canManageRole(actorRole, targetRole)) {
-      return res
-        .status(403)
-        .json({ message: `Role ${actorRole} cannot assign ${targetRole}.` });
+      return res.status(403).json({ message: `Role ${actorRole} cannot assign ${targetRole}.` });
     }
 
     if (!canManageRole(actorRole, membership.role) && actorRole !== 'admin') {
@@ -965,10 +960,7 @@ const getTeamSharedDashboard = async (req, res) => {
         role: membership.role,
         githubScore: Number(analysis?.githubScore || 0),
         readinessScore: Number(
-          scoreMap.get(String(user._id)) ||
-            analysis?.readinessScore ||
-            analysis?.githubScore ||
-            0
+          scoreMap.get(String(user._id)) || analysis?.readinessScore || analysis?.githubScore || 0
         ),
         repositories: Number(analysis?.githubStats?.repos || 0),
         stars: Number(analysis?.githubStats?.stars || 0),
@@ -994,9 +986,7 @@ const getTeamSharedDashboard = async (req, res) => {
   }
 };
 
-const getTeamAnalyticsValidators = [
-  param('teamId').isMongoId().withMessage('teamId is invalid.')
-];
+const getTeamAnalyticsValidators = [param('teamId').isMongoId().withMessage('teamId is invalid.')];
 
 const getTeamAnalytics = async (req, res) => {
   if (validate(req, res)) return;
@@ -1041,9 +1031,7 @@ const getTeamAnalytics = async (req, res) => {
         readinessSum += readiness;
       }
 
-      const missingSkills = Array.isArray(analysis?.missingSkills)
-        ? analysis.missingSkills
-        : [];
+      const missingSkills = Array.isArray(analysis?.missingSkills) ? analysis.missingSkills : [];
       missingSkills.forEach((skill) => {
         const key = String(skill || '').trim();
         if (!key) return;
@@ -1071,8 +1059,7 @@ const getTeamAnalytics = async (req, res) => {
       Math.min(
         100,
         openJobs.length * 12 +
-          shortlists.filter((item) => ['contacted', 'interview'].includes(item.status)).length *
-            10
+          shortlists.filter((item) => ['contacted', 'interview'].includes(item.status)).length * 10
       )
     );
 

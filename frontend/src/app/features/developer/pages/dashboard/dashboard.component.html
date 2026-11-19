@@ -362,25 +362,40 @@
     <div class="card-head">
       <div class="head-text">
         <h3>Contribution Activity</h3>
-        <p>Saved monthly commit cadence</p>
+        <p>Monthly authored commits in sampled repositories</p>
       </div>
       <div class="activity-badge">
-        &lt;/&gt; {{ activityAvailable ? totalActivity + ' total' : 'Unavailable' }}
+        &lt;/&gt;
+        {{ activityAvailable ? totalActivity + ' authored commits' : 'Monthly counts unavailable' }}
       </div>
     </div>
     <p *ngIf="!isLoading && !activityAvailable" class="empty-state">
-      Monthly contribution activity is unavailable. The saved GitHub analysis contains no verified
-      monthly activity records.
+      The saved GitHub analysis has no complete dated commit series. Repository totals and last-push
+      dates cannot establish monthly counts.
+      <a [routerLink]="['/app/github-analyzer']">Open GitHub Analyzer to sync dated activity</a>.
     </p>
-    <details class="repository-history-note" *ngIf="progress">
-      <summary>Repository history availability</summary>
-      <p>{{ progress.github.historyStatus }}</p>
-    </details>
+    <div class="repository-history-note" *ngIf="!isLoading && progress?.github as github">
+      <p>{{ github.historyStatus }}</p>
+      <ng-container *ngIf="!activityAvailable">
+        <p *ngIf="github.repositoryCount != null">
+          {{ github.repositoryCount }} repositories analyzed
+        </p>
+        <ul *ngIf="github.repositoryEvidence?.length">
+          <li *ngFor="let repo of github.repositoryEvidence">
+            <strong>{{ repo.name }}</strong>
+            <span *ngIf="repo.commits !== null"> · {{ repo.commits }} repository commits</span>
+            <span *ngIf="repo.pushedAt">
+              · Last pushed {{ repo.pushedAt | date: 'mediumDate' : 'UTC' }} UTC</span
+            >
+          </li>
+        </ul>
+      </ng-container>
+    </div>
     <div class="chart-wrap activity-wrap" [hidden]="!activityAvailable">
       <canvas
         #activityChart
         role="img"
-        [attr.aria-label]="'Saved contribution activity: ' + totalActivity + ' total commits'"
+        [attr.aria-label]="'Saved monthly commit counts: ' + activityDescription"
       ></canvas>
     </div>
   </div>
@@ -390,7 +405,7 @@
     <div class="card-head">
       <div class="head-text">
         <h3>Language Distribution</h3>
-        <p>Across analyzed repositories</p>
+        <p>Share of code languages in saved GitHub evidence</p>
       </div>
       <span class="bento-pill pill-indigo" *ngIf="hasLanguageData">Top Stack</span>
     </div>
@@ -410,7 +425,7 @@
           <span class="legend-dot" [style.background]="lang.color"></span>
           <span class="legend-name">{{ lang.label }}</span>
         </div>
-        <span class="legend-pct">{{ lang.percentage }}%</span>
+        <span class="legend-pct">{{ lang.displayPercentage || lang.percentage + '%' }}</span>
       </div>
     </div>
   </div>
@@ -420,14 +435,27 @@
     <div class="card-head">
       <div class="head-text">
         <h3>Skills Radar</h3>
-        <p>Proficiency across 4 core dimensions</p>
+        <p>Readiness dimensions on a 0–100 scale</p>
       </div>
-      <span class="bento-pill pill-violet">4-Axis View</span>
+      <span *ngIf="hasCompleteRadar" class="bento-pill pill-violet">4-Axis View</span>
     </div>
     <p *ngIf="!isLoading && !hasRadarData" class="empty-state">
       Readiness dimensions are unavailable. Save verified analysis evidence to populate this chart.
     </p>
-    <div class="chart-wrap radar-wrap" [hidden]="!hasRadarData">
+    <div *ngIf="hasRadarData && !hasCompleteRadar" class="dimension-list">
+      <div *ngFor="let row of scoreBreakdownRows" class="dimension-row">
+        <span>{{ row.label }}</span
+        ><strong>{{ row.value === null ? 'Unavailable' : row.value + '%' }}</strong>
+        <meter
+          *ngIf="row.value !== null"
+          min="0"
+          max="100"
+          [value]="row.value"
+          [attr.aria-label]="row.label"
+        ></meter>
+      </div>
+    </div>
+    <div class="chart-wrap radar-wrap" [hidden]="!hasCompleteRadar">
       <canvas
         #skillRadar
         role="img"
@@ -471,7 +499,8 @@
         *ngIf="!isLoading && topSkills.length === 0 && missingSkills.length === 0"
         class="empty-state"
       >
-        <p>No skill data available. Please ensure your GitHub profile is analyzed.</p>
+        <p>{{ skillGapEmptyMessage }}</p>
+        <a [routerLink]="['/app/skill-gap']">Open Skill Gap</a>
       </div>
 
       <div *ngIf="!isLoading && (topSkills.length > 0 || missingSkills.length > 0)">
@@ -493,13 +522,13 @@
               coveragePercentage === null ? 'Unavailable' : coveragePercentage + '/100'
             }}</span>
           </div>
-          <div class="progress-track">
-            <div class="progress-fill" [style.width.%]="coveragePercentage ?? 0"></div>
+          <div class="progress-track" *ngIf="coveragePercentage !== null">
+            <div class="progress-fill" [style.width.%]="coveragePercentage"></div>
           </div>
           <div class="cov-footer">
             <span>{{
               coveragePercentage === null
-                ? 'Coverage unavailable'
+                ? coverageReason || skillGapEmptyMessage
                 : coveragePercentage + '% coverage against your target profile'
             }}</span>
           </div>
@@ -526,6 +555,12 @@
           </div>
         </div>
 
+        <div class="skills-group" *ngIf="weakSkills.length">
+          <div class="group-title">Detected skills needing stronger evidence</div>
+          <div class="tags-wrap">
+            <app-ui-badge *ngFor="let skill of weakSkills" size="sm">{{ skill }}</app-ui-badge>
+          </div>
+        </div>
         <div class="skills-group">
           <div class="group-title danger-title">
             <span class="group-dot danger"></span>
@@ -554,7 +589,7 @@
   <div class="card recommendations-section">
     <div class="rec-section-head">
       <div class="head-text">
-        <h3>AI Recommendations</h3>
+        <h3>Recommendations</h3>
         <p>Personalized priorities to improve portfolio strength</p>
       </div>
       <a class="view-all-link" [routerLink]="['/app/recommendations']">
@@ -572,9 +607,19 @@
       </a>
     </div>
 
-    <p class="empty-state" *ngIf="!isLoading && recommendations.length === 0">
+    <p
+      class="empty-state"
+      *ngIf="!isLoading && recommendations.length === 0 && !recommendationNotice"
+    >
       No saved recommendations for your active profile. Open Recommendations to get started.
     </p>
+    <p *ngIf="recommendations.length && (recommendationsStale || recommendationsGeneratedAt)">
+      <strong *ngIf="recommendationsStale">Refresh Recommended</strong>
+      <span *ngIf="recommendationsGeneratedAt" class="recommendation-generation-date">
+        Generated {{ recommendationsGeneratedAt | date: 'medium' }}</span
+      >
+    </p>
+    <p *ngIf="recommendationNotice" class="empty-state">{{ recommendationNotice }}</p>
     <div class="rec-grid">
       <div class="rec-card" *ngFor="let rec of recommendations">
         <div class="rec-row-main">
@@ -584,10 +629,13 @@
           ></div>
           <div class="rec-content">
             <div class="rec-meta">
-              <span [class]="'priority-badge ' + rec.priorityType">{{ rec.priority }}</span>
+              <span *ngIf="rec.priority" [class]="'priority-badge ' + rec.priorityType">{{
+                rec.priority
+              }}</span>
               <span [class]="'category-tag ' + rec.priorityType">{{ rec.category }}</span>
             </div>
             <p class="rec-title">{{ rec.title }}</p>
+            <p *ngIf="rec.description">{{ rec.description }}</p>
           </div>
         </div>
       </div>
@@ -600,6 +648,12 @@
      ════════════════════════════════════════════ -->
 <app-dashboard-progress
   [data]="progress"
+  [currentPortfolioScore]="currentPortfolioScore"
+  [portfolioAssessment]="portfolioAssessment"
+  [canAssessPortfolio]="!!githubHandle && !isLoading && currentPortfolioScore === null"
+  [assessingPortfolio]="assessingPortfolio"
+  [portfolioAssessmentError]="portfolioAssessmentError"
+  (assessPortfolio)="assessPortfolio()"
   [loading]="isLoading"
   [error]="loadError"
   [stale]="dashboardStale"

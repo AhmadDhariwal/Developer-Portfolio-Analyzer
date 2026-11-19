@@ -3,7 +3,14 @@
   width: 100%;
   min-width: 0;
   color: var(--text-primary);
-  --dash-font: var(--font-heading, 'Manrope', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif);
+  --dash-font: var(
+    --font-heading,
+    'Manrope',
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif
+  );
   --dash-card-bg: var(--bg-card, #ffffff);
   --dash-card-border: var(--border-color, #e2e8f0);
   --dash-well-bg: var(--bg-subtle, #f8fafc);
@@ -1626,4 +1633,23 @@
     transition: none;
     transform: none;
   }
+}
+.dimension-list {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.dimension-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.25rem;
+}
+.dimension-row meter {
+  grid-column: 1 / -1;
+  width: 100%;
+  accent-color: var(--primary);
+}
+
+.recommendation-generation-date {
+  margin-inline-start: 0.375rem;
 }

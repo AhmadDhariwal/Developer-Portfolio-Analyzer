@@ -3,7 +3,9 @@
 const crypto = require('node:crypto');
 const requirements = require('../../skill-gap/services/skillGapRequirements');
 const { EVIDENCE_POLICY_VERSION } = require('../../skill-gap/services/skillGapEvidenceService');
-const { ANALYSIS_VERSION: SKILL_ANALYSIS_VERSION } = require('../../skill-gap/services/skillGapCacheContract');
+const {
+  ANALYSIS_VERSION: SKILL_ANALYSIS_VERSION
+} = require('../../skill-gap/services/skillGapCacheContract');
 const { numeric } = require('../../../core/scoring/math');
 const RULE_VERSION = 'recommendations-evidence-v1';
 const SKILL_RULE = 'skill-evidence-coverage-v1';
@@ -605,7 +607,7 @@ const versionChanges = (current, previous) => {
   };
 };
 
-const sourceFingerprint = ({ githubData, resumeInsights, skillGap }) =>
+const sourceFingerprint = ({ githubData, resumeInsights, skillGap, profileFingerprint }) =>
   hash({
     github: {
       repositories: githubData.repositories || [],
@@ -614,7 +616,8 @@ const sourceFingerprint = ({ githubData, resumeInsights, skillGap }) =>
       stale: Boolean(githubData.cache?.stale)
     },
     resume: resumeInsights,
-    skillGap
+    skillGap,
+    profileFingerprint
   });
 
 module.exports = {

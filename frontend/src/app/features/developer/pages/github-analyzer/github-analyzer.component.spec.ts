@@ -13,6 +13,7 @@ describe('GithubAnalyzerComponent', () => {
     analyzeProfile: ReturnType<typeof vi.fn>;
     analyzeAndSave: ReturnType<typeof vi.fn>;
     getCachedAnalysis: ReturnType<typeof vi.fn>;
+    getSavedAnalysis: ReturnType<typeof vi.fn>;
   };
   let authServiceMock: {
     getCurrentUser: ReturnType<typeof vi.fn>;
@@ -165,6 +166,7 @@ describe('GithubAnalyzerComponent', () => {
       analyzeProfile: vi.fn().mockReturnValue(of(sampleResult)),
       analyzeAndSave: vi.fn().mockReturnValue(of(sampleResult)),
       getCachedAnalysis: vi.fn().mockReturnValue(null),
+      getSavedAnalysis: vi.fn().mockReturnValue(of(sampleResult)),
     };
 
     authServiceMock = {
@@ -370,10 +372,10 @@ describe('GithubAnalyzerComponent', () => {
     expect(component.isDefaultProfile).toBe(false);
     expect(component.isTemporaryView).toBe(true);
 
-    // Return to default profile resets username to octocat and triggers analyzeAndSave
+    // Returning reads the accepted saved result without synchronizing GitHub.
     component.returnToDefaultProfile();
     expect(component.username).toBe('octocat');
-    expect(githubServiceMock.analyzeAndSave).toHaveBeenCalledWith('octocat', false);
+    expect(githubServiceMock.getSavedAnalysis).toHaveBeenCalledWith('octocat');
   });
 
   it('should validate invalid username format before making HTTP call', () => {
@@ -541,7 +543,7 @@ describe('GithubAnalyzerComponent', () => {
     component.isInitLoading = false;
     fixture.detectChanges();
     const root = fixture.nativeElement as HTMLElement;
-    expect(root.querySelector('.actions-slot')?.textContent).toContain('Refresh Analysis');
+    expect(root.querySelector('.actions-slot')?.textContent).toContain('Sync GitHub');
     expect(root.querySelector('.actions-slot')?.textContent).toContain('Analysis Details & Audit');
     expect(root.querySelector('.activity-values')?.textContent).toContain('150 sampled commits');
     expect(root.querySelector('canvas')?.getAttribute('role')).toBe('img');

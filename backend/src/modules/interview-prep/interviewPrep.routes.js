@@ -29,6 +29,10 @@ router.use(protect, (req, res, next) => {
     return res.status(400).json({ message: 'Invalid idempotency key.' });
   }
   const input = req.method === 'GET' ? req.query : req.body || {};
+  // Express's simple query parser leaves bracketed parameters as literal keys.
+  if (req.method === 'GET' && Object.keys(input).some((key) => key.includes('['))) {
+    return res.status(400).json({ message: 'Invalid query parameters.' });
+  }
   const fields = [
     'skill',
     'topic',
@@ -74,7 +78,9 @@ router.use(protect, (req, res, next) => {
     return res.status(400).json({ message: 'Invalid category.' });
   if (
     input.source &&
-    !['seed', 'database', 'ai', 'scraped', 'ai_generated', 'verified_seed', 'prebuilt'].includes(input.source)
+    !['seed', 'database', 'ai', 'scraped', 'ai_generated', 'verified_seed', 'prebuilt'].includes(
+      input.source
+    )
   )
     return res.status(400).json({ message: 'Invalid source.' });
   next();

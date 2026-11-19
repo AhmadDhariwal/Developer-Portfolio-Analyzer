@@ -172,11 +172,13 @@ async function commitAvatar(owner, next, notification = null) {
           { session }
         );
       if (notification)
-        await require('../../modules/notifications/services/notificationService').createNotification({
-          ...notification,
-          userId: owner,
-          session
-        });
+        await require('../../modules/notifications/services/notificationService').createNotification(
+          {
+            ...notification,
+            userId: owner,
+            session
+          }
+        );
     },
     notification ? { timeoutMS: 5000 } : {}
   );
@@ -201,11 +203,13 @@ async function commitPortfolio(profile, previous, notification = null, sessionRe
             { session }
           );
       if (notification)
-        await require('../../modules/notifications/services/notificationService').createNotification({
-          ...notification,
-          userId: profile.userId,
-          session
-        });
+        await require('../../modules/notifications/services/notificationService').createNotification(
+          {
+            ...notification,
+            userId: profile.userId,
+            session
+          }
+        );
     },
     notification ? { timeoutMS: 5000 } : {}
   );
@@ -217,16 +221,18 @@ async function commitResume(file, notification = null) {
       await activate([file.fileUrl], file.userId, session);
       await file.save({ session });
       await User.updateOne(
-        { _id: file.userId },
+        { _id: file.userId, defaultResumeFileId: null },
         { $set: { activeResumeFileId: file._id } },
         { session }
       );
       if (notification)
-        await require('../../modules/notifications/services/notificationService').createNotification({
-          ...notification,
-          userId: file.userId,
-          session
-        });
+        await require('../../modules/notifications/services/notificationService').createNotification(
+          {
+            ...notification,
+            userId: file.userId,
+            session
+          }
+        );
     },
     notification ? { timeoutMS: 5000 } : {}
   );

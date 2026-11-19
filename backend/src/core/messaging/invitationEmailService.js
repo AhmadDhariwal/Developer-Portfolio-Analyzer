@@ -2,6 +2,7 @@ const nodemailer = require('nodemailer');
 const sendgrid = require('@sendgrid/mail');
 
 const FRONTEND_BASE_URL = String(process.env.FRONTEND_BASE_URL || '').replace(/\/$/, '');
+const TRANSPORT_TIMEOUT_MS = 30_000;
 const APP_NAME = String(process.env.APP_NAME || 'DevInsight AI');
 const APP_LOGO_URL = String(process.env.APP_LOGO_URL || '').trim();
 const APP_PRIMARY_COLOR = String(process.env.APP_PRIMARY_COLOR || '#0f766e').trim();
@@ -38,11 +39,15 @@ const getEmailProviderStatus = () => {
   return {
     configured: false,
     provider: null,
-    reason: 'No email provider configured. Set SENDGRID_API_KEY and SENDGRID_FROM_EMAIL, or SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and SMTP_FROM_EMAIL.'
+    reason:
+      'No email provider configured. Set SENDGRID_API_KEY and SENDGRID_FROM_EMAIL, or SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, and SMTP_FROM_EMAIL.'
   };
 };
 
-const toSafeText = (value) => String(value || '').replace(/[<>]/g, '').trim();
+const toSafeText = (value) =>
+  String(value || '')
+    .replace(/[<>]/g, '')
+    .trim();
 
 const buildInvitationPayload = ({
   to,
@@ -55,18 +60,28 @@ const buildInvitationPayload = ({
   teamId,
   actorId
 }) => ({
-  to: String(to || '').trim().toLowerCase(),
+  to: String(to || '')
+    .trim()
+    .toLowerCase(),
   token: String(token || '').trim(),
   organizationName: toSafeText(organizationName),
   teamName: toSafeText(teamName),
-  role: String(role || 'member').trim().toLowerCase(),
+  role: String(role || 'member')
+    .trim()
+    .toLowerCase(),
   inviterName: toSafeText(inviterName),
   organizationId: organizationId || null,
   teamId: teamId || null,
   actorId: actorId || null
 });
 
-const buildInviteEmailHtml = ({ organizationName, teamName, role, inviterName, invitationLink }) => {
+const buildInviteEmailHtml = ({
+  organizationName,
+  teamName,
+  role,
+  inviterName,
+  invitationLink
+}) => {
   const teamLine = teamName
     ? `<div style="padding:10px 12px;border-radius:10px;background:#ffffff;border:1px solid #e2e8f0;"><strong style="color:#334155;">Team</strong><div style="margin-top:4px;color:#0f172a;">${teamName}</div></div>`
     : '';
@@ -96,7 +111,13 @@ const buildInviteEmailHtml = ({ organizationName, teamName, role, inviterName, i
   </div>`;
 };
 
-const buildInviteEmailText = ({ organizationName, teamName, role, inviterName, invitationLink }) => {
+const buildInviteEmailText = ({
+  organizationName,
+  teamName,
+  role,
+  inviterName,
+  invitationLink
+}) => {
   const lines = [
     `You are invited to join ${organizationName}.`,
     `Role: ${role}`,
@@ -114,6 +135,7 @@ const buildInviteEmailText = ({ organizationName, teamName, role, inviterName, i
 
 const sendWithSendGrid = async ({ to, subject, html, text }) => {
   sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
+  sendgrid.setTimeout(TRANSPORT_TIMEOUT_MS);
   await sendgrid.send({
     to,
     from: process.env.SENDGRID_FROM_EMAIL,
@@ -128,6 +150,9 @@ const sendWithSmtp = async ({ to, subject, html, text }) => {
     host: process.env.SMTP_HOST,
     port: Number.parseInt(process.env.SMTP_PORT, 10) || 587,
     secure: String(process.env.SMTP_SECURE || 'false').toLowerCase() === 'true',
+    connectionTimeout: TRANSPORT_TIMEOUT_MS,
+    greetingTimeout: TRANSPORT_TIMEOUT_MS,
+    socketTimeout: TRANSPORT_TIMEOUT_MS,
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS
@@ -202,10 +227,16 @@ const sendInvitationEmail = async ({
       invitationLink
     };
   } catch (error) {
+    const httpStatus = Number(error.response?.statusCode || error.response?.status);
     return {
       sent: false,
       provider,
       invitationLink,
+      // A transport error after submission may have lost the delivery acknowledgment.
+      deliveryUncertain:
+        provider === 'sendgrid'
+          ? !httpStatus || httpStatus === 408 || httpStatus >= 500
+          : !error.responseCode && !['EAUTH', 'EENVELOPE', 'EDNS'].includes(error.code),
       reason: error.message || 'Email provider error.'
     };
   }

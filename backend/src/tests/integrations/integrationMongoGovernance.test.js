@@ -61,7 +61,10 @@ test(
     });
     const recorded = JSON.parse(
       fs.readFileSync(
-        path.resolve(__dirname, '../../../verification/integrations/real-provider-live-followup.json'),
+        path.resolve(
+          __dirname,
+          '../../../verification/integrations/real-provider-live-followup.json',
+        ),
       ),
     )
       .providers.find((row) => row.provider === 'leetcode')
@@ -633,6 +636,12 @@ test(
               );
               const commands = fixture?.commands || [];
               assert(!commands.some((command) => ['EVAL', 'INCR', 'ZADD'].includes(command)));
+              if (fixture) {
+                assert.ok(
+                  commands.includes('EVAL_GET_PTTL'),
+                  'Cache reads may use atomic GET + PTTL',
+                );
+              }
               evidence.redisStates.push({
                 mode,
                 cacheResult,

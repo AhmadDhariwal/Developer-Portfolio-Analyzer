@@ -208,12 +208,10 @@ const getCacheJsonWithMeta = async (key) => {
   const redisStartedAt = nowMs();
   try {
     const readStartedAt = Date.now();
-    const [raw, remainingMs] = isInterviewKey(key)
-      ? await redis.eval(
-          "local value = redis.call('GET', KEYS[1]); if not value then return {false, -2} end; return {value, redis.call('PTTL', KEYS[1])}",
-          { keys: [key], arguments: [] },
-        )
-      : [await redis.get(key), CACHE_TTL_SECONDS * 1000];
+    const [raw, remainingMs] = await redis.eval(
+      "local value = redis.call('GET', KEYS[1]); if not value then return {false, -2} end; return {value, redis.call('PTTL', KEYS[1])}",
+      { keys: [key], arguments: [] },
+    );
     const redisMs = nowMs() - redisStartedAt;
     if (!raw || Number(remainingMs) <= 0) return { value: null, layer: 'miss', memoryMs, redisMs };
     const value = JSON.parse(raw);
@@ -331,10 +329,10 @@ const releaseCacheLock = async (key, token) => {
   const redis = getRedisCacheClient();
   if (!redis) return;
   try {
-    const current = await redis.get(key);
-    if (current === token) {
-      await redis.del(key);
-    }
+    await redis.eval(
+      "if redis.call('GET', KEYS[1]) == ARGV[1] then return redis.call('DEL', KEYS[1]) else return 0 end",
+      { keys: [key], arguments: [token] },
+    );
   } catch {
     console.warn('[redis] cache lock release failed; continuing without Redis.');
   }
@@ -396,7 +394,7 @@ const closeRedisCache = async () => {
     return;
   }
   try {
-    await redisClient.quit();
+    await runWithCommandTimeout(() => redisClient.quit(), REDIS_CONNECT_TIMEOUT_MS);
   } catch {
     // QUIT can race a socket close. Consume asynchronous disconnect failures,
     // and never disconnect an SDK client which QUIT has already closed.

@@ -13,12 +13,13 @@ let insightFailure = false;
 let coverage = null;
 let portfolioScore = 0;
 let hasAnalysis = false;
-let savedActivity = [{ month: 'Nov', count: 4 }];
+let savedActivity = [{ month: '2026-11', count: 4 }];
 let savedLanguages = { TypeScript: 100 };
 let savedUsername = 'dev';
 let unstable = false;
 let legacy = false;
 let integrationTimeout = false;
+let savedRecommendations = null;
 const user = {
   _id: 'owner',
   name: 'Test Developer',
@@ -78,7 +79,7 @@ const cacheValue = (filter) =>
   filter['analysisData.portfolioScore.overallScore']
     ? { analysisData: { portfolioScore: { overallScore: portfolioScore } }, updatedAt: at }
     : filter['analysisData.projects']
-      ? null
+      ? savedRecommendations
       : { analysisData: { coverage, yourSkills: [], missingSkills: [] }, updatedAt: at };
 mock('../../modules/skill-gap/models/analysisCache', {
   findOne: (filter) => query('AnalysisCache', filter, cacheValue(filter)),
@@ -127,6 +128,7 @@ mock('../../modules/integrations/models/integrationSyncLog', {
   }),
 });
 mock('../../core/developer-context/developerContextService', {
+  resolveDefaultResumeFileId: (user) => user?.defaultResumeFileId || null,
   resolveGithubUsername: (row) => row?.activeGithubUsername || row?.githubUsername,
   resolveCareerStack: (row) => row?.careerStack,
   resolveExperienceLevel: (row) => row?.experienceLevel,
@@ -190,12 +192,13 @@ test.beforeEach((t) => {
   coverage = null;
   portfolioScore = 0;
   hasAnalysis = false;
-  savedActivity = [{ month: 'Nov', count: 4 }];
+  savedActivity = [{ month: '2026-11', count: 4 }];
   savedLanguages = { TypeScript: 100 };
   savedUsername = 'dev';
   unstable = false;
   legacy = false;
   integrationTimeout = false;
+  savedRecommendations = null;
 });
 const request = (endpoint, headers = {}) =>
   fetch(`${base}/${endpoint}`, { headers: { Authorization: `Bearer ${token}`, ...headers } });
@@ -322,7 +325,7 @@ test('integration failure degrades explicitly; required evidence storage failure
       contributions: 'Analysis',
       languages: 'Analysis',
       skills: 'Analysis',
-      recommendations: 'recommendation',
+      recommendations: 'AnalysisCache',
       'integration-analytics': 'integrationSyncLog',
     }[endpoint];
     assert.equal((await request(endpoint)).status, 500, endpoint);
@@ -340,11 +343,52 @@ test('language percentages remain finite, nonnegative and total 100 for tiny buc
     bad: Infinity,
     ...Object.fromEntries(Array.from({ length: 201 }, (_, index) => ['L' + index, 1])),
   });
-  assert.equal(
-    Object.values(result).reduce((sum, value) => sum + value, 0),
-    100,
+  assert.ok(Math.abs(Object.values(result).reduce((sum, value) => sum + value, 0) - 100) < 1e-10);
+  assert.equal(Object.keys(result).length, 201);
+  assert.ok(Object.values(result).every((value) => Number.isFinite(value) && value > 0));
+});
+
+test('GitHub Analyzer and Dashboard use the same byte denominator for positive code languages', () => {
+  const {
+    languagePresentation,
+  } = require('../../modules/github/services/githubLanguagePresentation');
+  const bytes = {
+    JavaScript: 11706615,
+    TypeScript: 6728422,
+    HTML: 4349801,
+    SCSS: 3753679,
+    Python: 4911,
+    Batchfile: 237,
+  };
+  const oldPercentages = {
+    JavaScript: 44,
+    TypeScript: 25,
+    HTML: 16,
+    SCSS: 14,
+    Python: 0,
+    Batchfile: 1,
+  };
+  const { mainLanguageDistribution, supportLanguageDistribution } = languagePresentation(
+    bytes,
+    oldPercentages,
   );
-  assert.ok(Object.values(result).every((value) => Number.isFinite(value) && value >= 0));
+  const dashboard = controller.__test.normalizeLanguageMap(oldPercentages, bytes);
+  assert.deepEqual(
+    dashboard,
+    Object.fromEntries(
+      mainLanguageDistribution.map(({ language, percentage }) => [language, percentage]),
+    ),
+  );
+  assert.ok(Math.abs(dashboard.JavaScript - (bytes.JavaScript / 18440185) * 100) < 1e-10);
+  assert.ok(dashboard.Python > 0.026 && dashboard.Python < 0.027);
+  assert.ok(dashboard.Batchfile > 0 && dashboard.Batchfile < 0.01);
+  assert.deepEqual(
+    supportLanguageDistribution.map(({ language }) => language),
+    ['HTML', 'SCSS'],
+  );
+  assert.ok(
+    Math.abs(supportLanguageDistribution[0].percentage - (bytes.HTML / 26543665) * 100) < 1e-10,
+  );
 });
 
 test('concurrent fixture HTTP summaries remain isolated and deterministic (not a real-database SLO test)', async () => {
@@ -391,13 +435,14 @@ test('chart availability follows usable data independently of timestamps and pre
   assert.equal(body.activitySnapshot.available, false);
   assert.equal(body.languageSnapshot.available, false);
   savedActivity = [
-    { month: 'Nov', count: 0 },
-    { month: 'Nov', count: null },
+    { month: '2026-11', count: 0 },
+    { month: '2026-11', count: null },
+    { month: 'Nov', count: 99 },
   ];
   savedLanguages = { TypeScript: 10 };
   body = await (await request('summary')).json();
   assert.equal(body.activitySnapshot.available, true);
-  assert.deepEqual(body.activitySnapshot.data, [{ month: 'Nov', count: 0 }]);
+  assert.deepEqual(body.activitySnapshot.data, [{ month: '2026-11', count: 0 }]);
   assert.equal(body.languageSnapshot.available, true);
   assert.deepEqual(
     (await (await request('contributions')).json()).data,
@@ -408,4 +453,26 @@ test('chart availability follows usable data independently of timestamps and pre
   assert.equal(body.activitySnapshot.available, false);
   assert.equal(body.languageSnapshot.available, false);
   assert.deepEqual((await (await request('languages')).json()).data, {});
+});
+
+test('a newer Skill Gap assessment preserves scoped saved recommendations with stale status', async () => {
+  savedRecommendations = {
+    updatedAt: '2026-11-09T12:00:00.000Z',
+    analysisData: { projects: [{ title: 'Build an API' }] },
+  };
+  const { recommendationSnapshot } = await (await request('summary')).json();
+  assert.equal(recommendationSnapshot.stale, true);
+  assert.equal(recommendationSnapshot.items[0].title, 'Build an API');
+  const recommendations = await (await request('recommendations')).json();
+  assert.equal(recommendations.syncStatus, 'stale');
+  assert.deepEqual(recommendations.items, recommendationSnapshot.items);
+});
+
+test('partial repository evidence comes from the accepted profile without inferred monthly counts', async () => {
+  hasAnalysis = true;
+  savedActivity = [];
+  const result = await (await request('summary')).json();
+  assert.deepEqual(result.activitySnapshot.data, []);
+  assert.equal(result.progress.github.repositoryCount, 3);
+  assert.match(result.progress.github.historyStatus, /Partial history/);
 });

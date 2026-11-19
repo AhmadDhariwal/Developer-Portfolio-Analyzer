@@ -8,18 +8,18 @@ const crypto = require('node:crypto');
 const {
     ANALYSIS_VERSION,
     analyzeGitHubProfile,
+    getCachedGitHubAnalysis,
     isRateLimitError,
     parseGitHubUsername,
     invalidateSkillGapCachesForGitHub
 } = require('./services/githubservice');
-const {
-    acquireCacheLock,
-    releaseCacheLock,
-    isRedisCacheEnabled
-} = require('../../core/cache/redisCacheService');
 const { invalidateDashboardSummaryCache } = require('../dashboard/dashboardcontroller');
 
 const saveJobs = new Map();
+
+const readSavedGitHubAnalysis = async (userId, username) =>
+    (await getCachedGitHubAnalysis(username, { userId })).data;
+
 const SAVE_LOCK_TTL_SECONDS = 30;
 const SAVE_LOCK_WAIT_MS = 2500;
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -38,7 +38,7 @@ const acquireMongoSaveLock = async (key, ownerToken) => {
                         expiresAt: new Date(Date.now() + SAVE_LOCK_TTL_SECONDS * 1000)
                     }
                 },
-                { upsert: true, new: true }
+                { upsert: true, returnDocument: 'after', maxTimeMS: 3000 }
             ).lean()
         );
     } catch (error) {
@@ -47,38 +47,66 @@ const acquireMongoSaveLock = async (key, ownerToken) => {
     }
 };
 
-const acquireSaveLock = async (userId, username) => {
-    const key = `github-save:${String(userId)}:${String(username).toLowerCase()}`;
+const acquireSaveLock = async (userId) => {
+    // A single durable authority prevents split ownership during a Redis outage.
+    const key = `github-save:${String(userId)}`;
     const ownerToken = crypto.randomUUID();
+    const deadline = Date.now() + SAVE_LOCK_WAIT_MS;
     let contended = false;
-    for (let waited = 0; waited <= SAVE_LOCK_WAIT_MS; waited += 100) {
-        const redisLocked = isRedisCacheEnabled()
-            ? await acquireCacheLock(key, ownerToken, SAVE_LOCK_TTL_SECONDS)
-            : null;
-        const acquired =
-            redisLocked === true ||
-            (redisLocked === null && (await acquireMongoSaveLock(key, ownerToken)));
-        if (acquired)
-            return {
-                key,
-                ownerToken,
-                source: redisLocked === true ? 'redis' : 'mongo',
-                contended
-            };
+    do {
+        if (await acquireMongoSaveLock(key, ownerToken)) return { key, ownerToken, contended };
         contended = true;
+        if (Date.now() >= deadline) break;
         await sleep(100);
-    }
+    } while (true);
     return null;
 };
 
-const releaseSaveLock = async (lock) => {
-    if (!lock) return;
-    if (lock.source === 'redis') return releaseCacheLock(lock.key, lock.ownerToken);
-    await GitHubSaveLock.deleteOne({
-        _id: lock.key,
-        ownerToken: lock.ownerToken
-    });
+const renewSaveLock = async (lock, session) => {
+    const now = new Date();
+    const result = await GitHubSaveLock.updateOne(
+        { _id: lock.key, ownerToken: lock.ownerToken, expiresAt: { $gt: now } },
+        {
+            $set: {
+                expiresAt: new Date(now.getTime() + SAVE_LOCK_TTL_SECONDS * 1000)
+            }
+        },
+        { session, maxTimeMS: 3000 }
+    );
+    if (!result.matchedCount) {
+        throw Object.assign(new Error('GitHub synchronization lease expired. Please retry.'), {
+            status: 409
+        });
+    }
 };
+
+const startSaveHeartbeat = (lock) => {
+    let renewal = Promise.resolve();
+    let lost = false;
+    const timer = setInterval(() => {
+        renewal = renewal
+            .then(async () => {
+                if (!lost) await renewSaveLock(lock);
+            })
+            .catch(() => {
+                lost = true;
+                clearInterval(timer);
+            });
+    }, 10000);
+    timer.unref();
+    return async () => {
+        clearInterval(timer);
+        await renewal;
+        if (lost) {
+            throw Object.assign(new Error('GitHub synchronization lease was lost. Please retry.'), {
+                status: 409
+            });
+        }
+    };
+};
+
+const releaseSaveLock = (lock) =>
+    GitHubSaveLock.deleteOne({ _id: lock.key, ownerToken: lock.ownerToken });
 
 const toForceRefresh = (req) =>
     String(req.body?.forceRefresh ?? req.query?.forceRefresh ?? '').toLowerCase() === 'true';
@@ -159,10 +187,10 @@ const buildHistorySnapshot = (data = {}) => ({
         .map((tech) => tech.name || tech.technology || tech)
 });
 
-const replaceRepositoriesSafely = async (userId, repositories = []) => {
+const replaceRepositoriesSafely = async (userId, repositories = [], session) => {
     const rows = Array.isArray(repositories) ? repositories : [];
     if (!rows.length) {
-        await Repository.deleteMany({ ownerId: userId });
+        await Repository.deleteMany({ ownerId: userId }, { session });
         return;
     }
 
@@ -197,31 +225,44 @@ const replaceRepositoriesSafely = async (userId, repositories = []) => {
                 upsert: true
             }
         })),
-        { ordered: true }
+        { ordered: true, session }
     );
 
-    await Repository.deleteMany({
-        ownerId: userId,
-        repoName: { $nin: repoNames }
-    });
+    await Repository.deleteMany(
+        {
+            ownerId: userId,
+            repoName: { $nin: repoNames }
+        },
+        { session }
+    );
 };
 
 const persistGitHubAnalysis = async (user, githubUsername, forceRefresh) => {
-    const lock = await acquireSaveLock(user._id, githubUsername);
+    const lock = await acquireSaveLock(user._id);
     if (!lock) {
         const error = new Error('GitHub analysis save is already in progress. Please retry.');
         error.status = 409;
         throw error;
     }
+    const stopHeartbeat = startSaveHeartbeat(lock);
     try {
-        // A different application instance completed this save while this request
-        // waited. Its analysis is now in the shared cache and its writes are
-        // durable, so returning that result avoids replaying persistence work.
-        if (lock.contended) return analyzeGitHubProfile(githubUsername);
+        if (lock.contended || !forceRefresh) {
+            const saved = await readSavedGitHubAnalysis(user._id, githubUsername);
+            if (saved) return saved;
+            if (lock.contended) {
+                throw Object.assign(
+                    new Error('No accepted GitHub result is available yet. Please retry.'),
+                    {
+                        status: 409
+                    }
+                );
+            }
+        }
 
         const data = await analyzeGitHubProfile(githubUsername, {
             forceRefresh
         });
+        await stopHeartbeat();
 
         // Never persist a fallback/stale refresh result — keep the previous valid profile.
         if (
@@ -230,14 +271,55 @@ const persistGitHubAnalysis = async (user, githubUsername, forceRefresh) => {
             data?.cache?.source === 'stale-cache' ||
             data?.warning
         ) {
-            return data;
+            const saved = await readSavedGitHubAnalysis(user._id, githubUsername);
+            if (!saved) return data;
+            return {
+                ...saved,
+                cache: { ...saved.cache, source: 'stale-cache', stale: true },
+                warning: data.warning,
+                rateLimited: data.rateLimited
+            };
         }
-
-        await replaceRepositoriesSafely(user._id, data.repositories);
 
         let analysis = await Analysis.findOne({ userId: user._id }).select(
             'userId githubScore githubStats githubAnalysisVersion githubSignals languageDistribution contributionActivity githubAnalysisHistory'
         );
+        if (
+            analysis?.githubSignals?.acceptedResult &&
+            String(analysis.githubSignals.username || '').toLowerCase() ===
+                githubUsername.toLowerCase() &&
+            new Date(analysis.githubSignals.analyzedAt).getTime() >
+                new Date(data.githubSignals?.analyzedAt).getTime()
+        ) {
+            return analysis.githubSignals.acceptedResult;
+        }
+        if (
+            analysis?.githubSignals?.analyzedAt === data.githubSignals?.analyzedAt &&
+            String(analysis?.githubSignals?.username || '').toLowerCase() ===
+                githubUsername.toLowerCase()
+        ) {
+            const priorExpiry = new Date(
+                analysis.githubSignals.acceptedResult?.cache?.expiresAt
+            ).getTime();
+            const nextExpiry = new Date(data.cache?.expiresAt || 0).getTime();
+            if (analysis.githubSignals.acceptedResult && nextExpiry > (priorExpiry || 0)) {
+                await Analysis.updateOne(
+                    {
+                        _id: analysis._id,
+                        'githubSignals.username': analysis.githubSignals.username,
+                        'githubSignals.analyzedAt': data.githubSignals.analyzedAt,
+                        'githubSignals.acceptedResult.cache.expiresAt':
+                            analysis.githubSignals.acceptedResult.cache?.expiresAt ?? null
+                    },
+                    {
+                        $set: {
+                            'githubSignals.acceptedResult.cache.expiresAt': data.cache.expiresAt
+                        }
+                    }
+                );
+            }
+            return data;
+        }
         if (!analysis) analysis = new Analysis({ userId: user._id });
 
         analysis.githubScore = Number(data.githubHealthScore || data.activityScore || 0);
@@ -248,15 +330,16 @@ const persistGitHubAnalysis = async (user, githubUsername, forceRefresh) => {
             followers: Number(data.followers || 0)
         };
         analysis.githubAnalysisVersion = data.analysisVersion || ANALYSIS_VERSION;
-        analysis.githubSignals = data.githubSignals || {};
+        analysis.githubSignals = {
+            ...data.githubSignals,
+            acceptedResult: data
+        };
         analysis.languageDistribution = buildLanguageMap(
             data.mainLanguageDistribution?.length
                 ? data.mainLanguageDistribution
                 : data.languageDistribution
         );
-        // The analyzer supplies repository totals, not dated monthly evidence.
-        // Never refresh or transfer a previous profile's monthly series with this save.
-        analysis.contributionActivity = [];
+        analysis.contributionActivity = data.monthlyCommitActivity || [];
         analysis.githubAnalysisHistory = [
             ...(Array.isArray(analysis.githubAnalysisHistory)
                 ? analysis.githubAnalysisHistory
@@ -264,9 +347,31 @@ const persistGitHubAnalysis = async (user, githubUsername, forceRefresh) => {
             buildHistorySnapshot(data)
         ].slice(-12);
         analysis.updatedAt = new Date();
+        const isNewAnalysis = analysis.isNew;
         await notificationPersistence.commit(
             user._id,
             async (session) => {
+                await renewSaveLock(lock, session);
+                const currentOwner = await User.findById(user._id).select(
+                    'githubUsername activeGithubUsername'
+                );
+                if (
+                    currentOwner &&
+                    String(
+                        developerContext.resolveGithubUsername(currentOwner) || ''
+                    ).toLowerCase() !== githubUsername.toLowerCase()
+                ) {
+                    throw Object.assign(
+                        new Error(
+                            'GitHub profile changed during synchronization. Please retry from the current profile.'
+                        ),
+                        { status: 409 }
+                    );
+                }
+                await replaceRepositoriesSafely(user._id, data.repositories, session);
+                // Mongo may retry this callback after a transient transaction abort.
+                // The first insert must remain an insert on each retry.
+                if (isNewAnalysis) analysis.isNew = true;
                 await analysis.save({ session });
                 await User.findByIdAndUpdate(
                     user._id,
@@ -286,10 +391,11 @@ const persistGitHubAnalysis = async (user, githubUsername, forceRefresh) => {
                 meta: { username: githubUsername.trim() }
             }
         );
-        await invalidateSkillGapCachesForGitHub(githubUsername);
+        await invalidateSkillGapCachesForGitHub(githubUsername, user._id);
         invalidateDashboardSummaryCache(user._id);
         return data;
     } finally {
+        await stopHeartbeat().catch(() => {});
         await releaseSaveLock(lock);
     }
 };
@@ -323,7 +429,7 @@ const analyzeGitHub = async (req, res) => {
 // @route   POST /api/github/analyze-save
 // @access  Private
 const analyzeAndSaveGitHubProfile = async (req, res) => {
-    const saveKey = String(req.user?._id || '');
+    let saveKey;
     let job = null;
     try {
         if (!req.user?._id) {
@@ -367,6 +473,16 @@ const analyzeAndSaveGitHubProfile = async (req, res) => {
             githubUsername = parsedDefault;
         }
 
+        if (req.body?.savedOnly === true) {
+            const saved = await readSavedGitHubAnalysis(req.user._id, githubUsername);
+            if (!saved)
+                return res.status(404).json({
+                    message: 'No saved GitHub analysis is available. Use Sync GitHub to create one.'
+                });
+            return res.json(saved);
+        }
+
+        saveKey = `${req.user._id}:${githubUsername.toLowerCase()}`;
         job = saveJobs.get(saveKey);
         if (!job) {
             job = persistGitHubAnalysis(req.user, githubUsername, toForceRefresh(req));

@@ -138,7 +138,7 @@ describe('Personal dashboard request lifecycle', () => {
   it('shows measured-zero fallback activity and clears visibility on missing evidence', () => {
     const { page, api } = create();
     api.getDashboardContributions.mockReturnValue(
-      of({ data: [{ month: 'Nov', count: 0 }] }) as never,
+      of({ data: [{ month: '2026-11', count: 0 }] }) as never,
     );
     page.loadActivityAndLanguage();
     expect(page.activityAvailable).toBe(true);
@@ -154,12 +154,12 @@ describe('Personal dashboard request lifecycle', () => {
     page.loadDashboardData();
     summary.next({
       ...payload,
-      activitySnapshot: { available: true, data: [{ month: 'Nov', count: 0 }] },
+      activitySnapshot: { available: true, data: [{ month: '2026-11', count: 0 }] },
     });
     expect(page.activityAvailable).toBe(true);
     summary.next({
       ...payload,
-      activitySnapshot: { available: true, data: [{ month: 'Nov', count: null }] },
+      activitySnapshot: { available: true, data: [{ month: '2026-11', count: null }] },
     });
     expect(page.activityAvailable).toBe(false);
     expect(page.totalActivity).toBe(0);
