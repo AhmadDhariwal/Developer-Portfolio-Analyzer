@@ -1106,9 +1106,12 @@ const runRecommendationPipeline = async ({
             ruleVersion: engine.SKILL_RULE,
             knownSkills: (skillGap.demonstratedSkills || []).map((skill) => skill.name),
             missingSkills: (skillGap.requiredSkills || skillGap.missingSkills || [])
-              .filter((skill) => skill.status !== 'DEMONSTRATED')
+              .filter((skill) => skill.status === 'NOT_EVIDENCED')
               .map((skill) => skill.name),
-            weakSkills: (skillGap.partialSkills || []).map((skill) => skill.name),
+            weakSkills: [
+              ...(skillGap.partialSkills || []),
+              ...(skillGap.claimedOnlySkills || [])
+            ].map((skill) => skill.name),
             sourceReferences: skillGap.sourceReferences,
             skills: skillGap.skills || []
           }

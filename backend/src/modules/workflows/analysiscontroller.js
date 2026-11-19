@@ -28,6 +28,7 @@ const saveAIVersionSnapshot = async ({ req, source, output, metadata = {}, prove
       provenance,
     });
   } catch (error) {
+    if (provenance) throw error;
     console.error('Portfolio score AI snapshot error:', error.message);
   }
 };

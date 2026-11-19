@@ -201,6 +201,8 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
   coveragePercentage: number | null = null;
   topSkills: string[] = [];
   missingSkills: string[] = [];
+  weakSkills: string[] = [];
+  coverageReason = '';
   languageLegend: LanguageLegendItem[] = [];
   hasLanguageData = false;
   recommendations: RecommendationItem[] = [];
@@ -240,6 +242,14 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
   private readonly dirtyCharts = new Set<'activity' | 'language' | 'radar'>();
   chartErrors = { activity: '', language: '', radar: '' };
 
+  get currentPortfolioScore(): number | null {
+    return this.readinessCenter.find((item) => item.key === 'portfolio')?.value ?? null;
+  }
+
+  get hasCompleteRadar(): boolean {
+    return Object.values(this.buildRadarBreakdown()).every((value) => value !== null);
+  }
+
   get hasRadarData(): boolean {
     return Object.values(this.buildRadarBreakdown()).some((value) => value !== null);
   }
@@ -274,7 +284,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
           this.hasLanguageData,
           () => this.initLanguageChart(this.pendingLanguageData || {}),
         ],
-        ['radar', this.skillRadar, this.hasRadarData, () => this.initRadarChart()],
+        ['radar', this.skillRadar, this.hasCompleteRadar, () => this.initRadarChart()],
       ] as const;
       for (const [key, ref, available, render] of entries) {
         if (!this.dirtyCharts.has(key)) continue;
@@ -677,14 +687,11 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
   }
 
   private applySkillsSnapshot(payload: any): void {
-    if (!payload) return;
-    this.topSkills = Array.isArray(payload?.topSkills) ? payload.topSkills : this.topSkills;
-    this.missingSkills = Array.isArray(payload?.missingSkills)
-      ? payload.missingSkills
-      : this.missingSkills;
-    if (Object.hasOwn(payload, 'coveragePercentage')) {
-      this.coveragePercentage = this.normalizeCoverage(payload.coveragePercentage);
-    }
+    this.weakSkills = payload?.weakSkills || [];
+    this.coverageReason = payload?.coverageReason || '';
+    this.topSkills = Array.isArray(payload?.topSkills) ? payload.topSkills : [];
+    this.missingSkills = Array.isArray(payload?.missingSkills) ? payload.missingSkills : [];
+    this.coveragePercentage = this.normalizeCoverage(payload?.coveragePercentage);
     if (payload?.stale) {
       this.dashboardStale = true;
       this.dashboardRefreshMessage = 'Analysis refresh recommended';
@@ -1169,11 +1176,15 @@ export class DashboardComponent implements OnInit, AfterViewInit, AfterViewCheck
     return (Array.isArray(value) ? value : []).filter(
       (item) =>
         typeof item?.month === 'string' &&
-        item.month.trim().length > 0 &&
+        /^\d{4}-(0[1-9]|1[0-2])$/.test(item.month.trim()) &&
         typeof item.count === 'number' &&
         Number.isSafeInteger(item.count) &&
         item.count >= 0,
     );
+  }
+
+  get activityDescription(): string {
+    return (this.pendingActivityData || []).map((row) => row.month + ': ' + row.count).join(', ');
   }
 
   initActivityChart(activityData: { month: string; count: number }[]): void {

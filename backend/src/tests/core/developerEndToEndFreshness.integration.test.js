@@ -264,6 +264,31 @@ test(
     assert.ok(dash1.body.languageSnapshot.data.Batchfile < 0.01);
     assert.equal(dash1.body.languageSnapshot.data.HTML, undefined);
 
+    const saved = await Analysis.findOne({ userId: owner._id }).lean();
+    assert.deepEqual(
+      dash1.body.activitySnapshot.data,
+      saved.contributionActivity.map(({ month, count }) => ({ month, count }))
+    );
+    assert.equal(
+      dash1.body.activitySnapshot.data.reduce((sum, item) => sum + item.count, 0),
+      1
+    );
+    assert.equal(
+      dash1.body.readinessCenter.find((item) => item.key === 'portfolio').value,
+      port1.body.overallScore
+    );
+    assert.deepEqual(
+      dash1.body.progress.history.points.map((point) => point.value),
+      [port1.body.overallScore]
+    );
+    assert.equal(dash1.body.skillsSnapshot.coveragePercentage, gap1.body.coverage);
+    assert.ok(gap1.body.missingSkills.every((skill) => skill.status === 'NOT_EVIDENCED'));
+    assert.ok(
+      dash1.body.skillsSnapshot.missingSkills.every(
+        (name) => !dash1.body.skillsSnapshot.topSkills.includes(name)
+      )
+    );
+
     // 5. Failed external provider sync on Worker A must preserve previously accepted GitHub data (returns stale fallback, never overwrites accepted).
     await api(workerA, 'POST', '/__control/state', { githubScenario: { fail: true } }, null);
     const failedSync = await api(workerA, 'POST', '/api/github/analyze-save', {
@@ -363,6 +388,13 @@ test(
     const port2 = await api(workerB, 'POST', '/api/analysis/portfolio-score', {});
     assert.equal(port2.status, 200);
     assert.notEqual(port2.body.fromCache, true);
+
+    const trend = await api(workerA, 'GET', '/api/dashboard/summary');
+    assert.equal(trend.body.progress.history.status, 'available');
+    assert.deepEqual(
+      trend.body.progress.history.points.map((point) => point.value),
+      [port1.body.overallScore, port2.body.overallScore]
+    );
 
     // 7. Unchanged-evidence Sync after expired TTL renews Analysis acceptedResult expiresAt without duplicating history.
     const beforeExpire = await Analysis.findOne({ userId: owner._id }).lean();

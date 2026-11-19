@@ -4,6 +4,16 @@ const skillGapContract = require('../../skill-gap/services/skillGapCacheContract
 
 const measuredScore = (value) => (numeric(value) === null ? null : clampScore(value));
 
+// Legacy responses include an overallScore of zero even when the scorer has no measurement.
+const portfolioMeasurement = (cache) => {
+  const result = cache?.analysisData?.portfolioScore;
+  return measuredScore(
+    result?.scoring && Object.hasOwn(result.scoring, 'score')
+      ? result.scoring.score
+      : result?.overallScore,
+  );
+};
+
 // Dashboard presents owner-module measurements. It does not infer interview
 // readiness from sprint completion or market demand from the existence of a job.
 const buildReadinessCenter = ({
@@ -40,7 +50,7 @@ const buildReadinessCenter = ({
     key: 'portfolio',
     label: 'Portfolio Readiness',
     tone: 'green',
-    value: measuredScore(latestPortfolioCache?.analysisData?.portfolioScore?.overallScore),
+    value: portfolioMeasurement(latestPortfolioCache),
   },
   {
     key: 'interview',
@@ -70,4 +80,4 @@ const buildReadinessCenter = ({
   },
 ];
 
-module.exports = { buildReadinessCenter };
+module.exports = { buildReadinessCenter, portfolioMeasurement };

@@ -13,7 +13,7 @@ let insightFailure = false;
 let coverage = null;
 let portfolioScore = 0;
 let hasAnalysis = false;
-let savedActivity = [{ month: 'Nov', count: 4 }];
+let savedActivity = [{ month: '2026-11', count: 4 }];
 let savedLanguages = { TypeScript: 100 };
 let savedUsername = 'dev';
 let unstable = false;
@@ -191,7 +191,7 @@ test.beforeEach((t) => {
   coverage = null;
   portfolioScore = 0;
   hasAnalysis = false;
-  savedActivity = [{ month: 'Nov', count: 4 }];
+  savedActivity = [{ month: '2026-11', count: 4 }];
   savedLanguages = { TypeScript: 100 };
   savedUsername = 'dev';
   unstable = false;
@@ -433,13 +433,14 @@ test('chart availability follows usable data independently of timestamps and pre
   assert.equal(body.activitySnapshot.available, false);
   assert.equal(body.languageSnapshot.available, false);
   savedActivity = [
-    { month: 'Nov', count: 0 },
-    { month: 'Nov', count: null },
+    { month: '2026-11', count: 0 },
+    { month: '2026-11', count: null },
+    { month: 'Nov', count: 99 },
   ];
   savedLanguages = { TypeScript: 10 };
   body = await (await request('summary')).json();
   assert.equal(body.activitySnapshot.available, true);
-  assert.deepEqual(body.activitySnapshot.data, [{ month: 'Nov', count: 0 }]);
+  assert.deepEqual(body.activitySnapshot.data, [{ month: '2026-11', count: 0 }]);
   assert.equal(body.languageSnapshot.available, true);
   assert.deepEqual(
     (await (await request('contributions')).json()).data,

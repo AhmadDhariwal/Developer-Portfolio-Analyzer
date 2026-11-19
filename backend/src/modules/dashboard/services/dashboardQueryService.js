@@ -9,6 +9,9 @@ function buildCachePipeline(userId, careerStack, experienceLevel, cachePredicate
     { 'analysisData.portfolioScore': 1 },
     {
       'analysisData.yourSkills': 1,
+      'analysisData.weakSkills': 1,
+      'analysisData.unknownSkills': 1,
+      'analysisData.coverageUnavailableReason': 1,
       'analysisData.missingSkills': 1,
       'analysisData.highDemandSkills': 1,
       'analysisData.coverage': 1,

@@ -1,5 +1,6 @@
 const { languagePresentation } = require('../github/services/githubLanguagePresentation');
 const { normalizeDashboardActivity } = require('./utils/dashboardActivity');
+const { missingRequiredSkills } = require('../skill-gap/services/skillGapCompatibilityService');
 const portfolioScoring = require('../../core/scoring/portfolioScore');
 const {
   buildCachePipeline,
@@ -9,7 +10,10 @@ const { readStableDashboard } = require('./services/dashboardConsistencyService'
 const { loadReadinessHistory } = require('./services/dashboardHistoryService');
 const { buildDashboardProgress } = require('./services/dashboardProgressService');
 const mongoose = require('mongoose');
-const { buildReadinessCenter } = require('./services/dashboardMetricsService');
+const {
+  buildReadinessCenter,
+  portfolioMeasurement,
+} = require('./services/dashboardMetricsService');
 const { clampScore: clamp, numeric, safeAverage } = require('../../core/scoring/math');
 const developerContext = require('../../core/developer-context/developerContextService');
 const skillGapContract = require('../skill-gap/services/skillGapCacheContract');
@@ -294,7 +298,7 @@ const deriveReadinessBreakdown = ({
     codeQuality: saved
       ? dimension('codeQuality')
       : analysis?.updatedAt
-        ? score(analysis.githubScore)
+        ? score(analysis.githubSignals?.scoring?.breakdown?.codeQuality?.value)
         : null,
     skillCoverage:
       saved && skillGapCache
@@ -623,6 +627,25 @@ const firstString = (values = [], fallback = '') => {
   return value || fallback;
 };
 
+const coverageExplanation = (data) => {
+  switch (data.coverageUnavailableReason) {
+    case 'required_evidence_unknown': {
+      const names = (data.unknownSkills || [])
+        .filter((skill) => skill.requirement === 'REQUIRED')
+        .map((skill) => skill.name);
+      return names.length
+        ? 'Required skills with insufficient source evidence: ' + names.join(', ') + '.'
+        : 'Evidence for one or more required skills is unknown.';
+    }
+    case 'career_requirements_unavailable':
+      return 'The selected career profile has no complete requirement matrix.';
+    case 'relevant_evidence_unavailable':
+      return 'Coverage requires relevant analyzed GitHub or selected resume evidence.';
+    default:
+      return '';
+  }
+};
+
 const skillNamesFromCache = (values = [], limit = 24) =>
   [
     ...new Set(
@@ -631,6 +654,13 @@ const skillNamesFromCache = (values = [], limit = 24) =>
         .filter(Boolean),
     ),
   ].slice(0, limit);
+
+const skillSnapshot = (data = {}) => ({
+  topSkills: skillNamesFromCache(data.yourSkills || [], 24),
+  missingSkills: skillNamesFromCache(missingRequiredSkills(data.missingSkills), 20),
+  weakSkills: skillNamesFromCache(data.weakSkills || [], 24),
+  coveragePercentage: skillGapContract.coverage(data.coverage),
+});
 
 const buildCommandCenter = ({
   latestSkillGapCache,
@@ -807,7 +837,8 @@ const getDashboardSummary = async (req, res) => {
     const history = await loadReadinessHistory(
       req.user._id,
       identity,
-      latestPortfolioCache?.analysisData?.portfolioScore?.scoring?.ruleVersion,
+      latestPortfolioCache?.analysisData?.portfolioScore?.scoring?.ruleVersion ||
+        portfolioScoring.RULE_VERSION,
       asOf,
     );
 
@@ -854,9 +885,9 @@ const getDashboardSummary = async (req, res) => {
       ? null
       : latestRecommendationCache;
 
+    const currentPortfolioScore = portfolioMeasurement(currentPortfolioCache);
     const baseReadiness =
-      numeric(currentPortfolioCache?.analysisData?.portfolioScore?.overallScore) ??
-      (analysis?.updatedAt ? numeric(analysis.githubScore) : null);
+      currentPortfolioScore ?? (analysis?.updatedAt ? numeric(analysis.githubScore) : null);
     const integrationScore = integrationInsight.providers?.length
       ? clamp(integrationInsight.integrationScore)
       : 0;
@@ -959,7 +990,14 @@ const getDashboardSummary = async (req, res) => {
         stale: staleFlags.skillGap,
         reason: latestSkillGapCache
           ? staleFlags.skillGap
-            ? 'Saved assessment uses older evidence. Open Skill Gap to reassess.'
+            ? sourceChanged(
+                latestSkillGapCache.analysisData?.sourceReferences?.find(
+                  (source) => source.type === 'github',
+                ),
+                recordedGithubAt(analysis),
+              )
+              ? 'The saved Skill Gap assessment uses a different GitHub analysis revision. Reassess the selected profile in Skill Gap.'
+              : 'Saved assessment uses older evidence. Open Skill Gap to reassess.'
             : ''
           : missingSkillGapReason,
       }),
@@ -1036,11 +1074,11 @@ const getDashboardSummary = async (req, res) => {
       };
     }
 
-    const scopedSkillGapData = currentSkillGapCache?.analysisData || {};
     const skillsSnapshot = {
-      topSkills: skillNamesFromCache(scopedSkillGapData.yourSkills || [], 24),
-      missingSkills: skillNamesFromCache(scopedSkillGapData.missingSkills || [], 20),
-      coveragePercentage: skillGapContract.coverage(scopedSkillGapData.coverage),
+      ...skillSnapshot(currentSkillGapCache?.analysisData),
+      coverageReason:
+        coverageExplanation(currentSkillGapCache?.analysisData || {}) ||
+        sourceFreshness.skillGap.reason,
       stale: staleFlags.skillGap,
       updatedAt: latestSkillGapCache?.updatedAt || null,
     };
@@ -1069,8 +1107,13 @@ const getDashboardSummary = async (req, res) => {
       score: analysis?.updatedAt ? numeric(analysis.githubScore) : null,
       readinessScore,
       readinessMeasurement: {
-        value: currentPortfolioCache || analysis?.updatedAt ? readinessScore : null,
-        basis: currentPortfolioCache ? 'portfolio' : analysis?.updatedAt ? 'github' : 'missing',
+        value: readinessScore,
+        basis:
+          currentPortfolioScore !== null
+            ? 'portfolio'
+            : baseReadiness !== null
+              ? 'github'
+              : 'missing',
       },
       readinessBreakdown,
       readinessModel: {
@@ -1275,44 +1318,10 @@ const getDashboardSkills = async (req, res) => {
       ),
     ]);
 
-    const languageMap = languagesFromAnalysis(analysis);
-    const derivedTopSkills = Object.keys(languageMap)
-      .filter((key) => Number(languageMap[key] || 0) > 0)
-      .concat(integrationInsight.mergedSkills || []);
-
-    let topSkills = [];
-    let missingSkills = [];
-    let coveragePercentage = null;
-
     const stale = skillGapIsStale(latestSkillGapCache, analysis, resume, integrationInsight, user);
-    if (!stale && latestSkillGapCache?.analysisData) {
-      topSkills = Array.isArray(latestSkillGapCache.analysisData.yourSkills)
-        ? latestSkillGapCache.analysisData.yourSkills
-            .map((skill) => (typeof skill === 'string' ? skill : skill?.name || skill?.skill))
-            .filter(Boolean)
-        : [];
-      missingSkills = Array.isArray(latestSkillGapCache.analysisData.missingSkills)
-        ? latestSkillGapCache.analysisData.missingSkills
-            .map((skill) => (typeof skill === 'string' ? skill : skill?.name || skill?.skill))
-            .filter(Boolean)
-        : [];
-      coveragePercentage = skillGapContract.coverage(latestSkillGapCache.analysisData.coverage);
-    } else {
-      topSkills = derivedTopSkills;
-      missingSkills = []; // Only Skill Gap owns canonical target-role gap detection.
-
-      // Metadata fallback cannot establish canonical evidence coverage.
-      coveragePercentage = null;
-    }
-
     res.json({
-      topSkills: [
-        ...new Set(topSkills.map((value) => String(value || '').trim()).filter(Boolean)),
-      ].slice(0, 12),
-      missingSkills: [
-        ...new Set(missingSkills.map((value) => String(value || '').trim()).filter(Boolean)),
-      ].slice(0, 8),
-      coveragePercentage,
+      ...skillSnapshot(stale ? undefined : latestSkillGapCache?.analysisData),
+      stale,
       syncStatus: rateLimited
         ? 'rate_limited'
         : latestSkillGapCache && !stale

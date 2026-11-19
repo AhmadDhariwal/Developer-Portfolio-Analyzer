@@ -1355,7 +1355,7 @@ const withCacheMetadata = (result, cacheEntry, source = 'cache') => {
   return {
     ...result,
     ...languagePresentation(
-      result.rawLanguageBytes,
+      result.rawLanguageBytes ?? result.githubSignals?.languages?.rawBytes,
       result.languageDistribution?.length
         ? result.languageDistribution
         : [
@@ -1563,93 +1563,52 @@ const saveCacheResult = async (username, fresh, previousEntry = null, timing = n
   return withCacheMetadata(resultWithComparison, updated, 'fresh');
 };
 
-const fetchRepoCommitsByMonth = async (username, repoName, since, until) => {
-  const monthMap = {};
-  let page = 1;
-
-  while (page <= 4) {
-    try {
-      const response = await githubGet(
-        `https://api.github.com/repos/${encodeURIComponent(username)}/${encodeURIComponent(repoName)}/commits`,
-        {
-          timeout: 12000,
-          params: {
-            since: since.toISOString(),
-            until: until.toISOString(),
-            per_page: 100,
-            page
+// Count attributable default-branch commits in the analyzer's selected repositories.
+const fetchMonthlyCommitActivity = async (username, repos = [], now = new Date()) => {
+  if (!repos.length) return [];
+  const since = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 5, 1));
+  const months = new Map(
+    Array.from({ length: 6 }, (_, offset) => [
+      new Date(Date.UTC(since.getUTCFullYear(), since.getUTCMonth() + offset, 1))
+        .toISOString()
+        .slice(0, 7),
+      0
+    ])
+  );
+  const commits = new Map();
+  for (const repo of repos) {
+    for (let page = 1; page <= 4; page++) {
+      let response;
+      try {
+        response = await githubGet(
+          `https://api.github.com/repos/${encodeURIComponent(username)}/${encodeURIComponent(repo.name)}/commits`,
+          {
+            timeout: 8000,
+            params: {
+              author: username,
+              since: since.toISOString(),
+              until: now.toISOString(),
+              per_page: 100,
+              page
+            }
           }
-        }
-      );
-      const commits = Array.isArray(response.data) ? response.data : [];
-      if (!commits.length) break;
-      commits.forEach((commit) => {
-        const dateStr = commit.commit?.author?.date || commit.commit?.committer?.date;
-        if (!dateStr) return;
-        const date = new Date(dateStr);
-        const key = `${date.getFullYear()}-${date.getMonth()}`;
-        monthMap[key] = (monthMap[key] || 0) + 1;
-      });
-      if (commits.length < 100) break;
-      page += 1;
-    } catch {
-      break;
+        );
+      } catch (error) {
+        if (isRateLimitError(error)) throw error;
+        return [];
+      }
+      if (!Array.isArray(response.data)) return [];
+      for (const commit of response.data) {
+        const at = new Date(commit.commit?.committer?.date || commit.commit?.author?.date || NaN);
+        if (!commit.sha || !Number.isFinite(at.getTime())) return [];
+        if (at >= since && at <= now) commits.set(commit.sha, at.toISOString().slice(0, 7));
+      }
+      if (response.data.length < 100 || !/rel="next"/.test(response.headers?.link || '')) break;
+      if (page === 4) return []; // Pagination limit reached; the window may be incomplete.
     }
   }
-  return monthMap;
-};
-
-const fetchMonthlyCommitActivity = async (username, repos = []) => {
-  const monthNames = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec'
-  ];
-  const now = new Date();
-  const buckets = [];
-
-  for (let i = 5; i >= 0; i -= 1) {
-    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    buckets.push({
-      key: `${date.getFullYear()}-${date.getMonth()}`,
-      label: monthNames[date.getMonth()],
-      count: 0
-    });
-  }
-
-  const since = new Date(now.getFullYear(), now.getMonth() - 5, 1);
-  const activeRepos = (repos || [])
-    .filter((repo) => {
-      const pushedAt = repo.pushed_at || repo.pushedAt;
-      return pushedAt && new Date(pushedAt) >= since;
-    })
-    .slice(0, 12);
-
-  const maps = await Promise.all(
-    activeRepos.map((repo) =>
-      fetchRepoCommitsByMonth(username, repo.name || repo.repoName, since, now)
-    )
-  );
-  maps.forEach((monthMap) => {
-    Object.entries(monthMap).forEach(([key, count]) => {
-      const bucket = buckets.find((item) => item.key === key);
-      if (bucket) bucket.count += Number(count || 0);
-    });
-  });
-
-  return buckets.map((bucket) => ({
-    month: bucket.label,
-    count: bucket.count
-  }));
+  for (const month of commits.values()) months.set(month, months.get(month) + 1);
+  return Array.from(months, ([month, count]) => ({ month, count }));
 };
 
 const buildFreshAnalysis = async (username, timing = null) => {
@@ -1734,11 +1693,12 @@ const buildFreshAnalysis = async (username, timing = null) => {
   const topActivityRepos = rankedRepos
     .filter((repo) => !repo.fork && !repo.archived)
     .slice(0, MAX_ACTIVITY_REPOS);
-  const [commitCounts, languageData, repoSignals] = await runProvider(() =>
+  const [commitCounts, languageData, repoSignals, monthlyCommitActivity] = await runProvider(() =>
     Promise.all([
       Promise.all(topActivityRepos.map((repo) => fetchRepoCommitCount(username, repo.name))),
       buildLanguageDistribution(username, repos),
-      fetchRepoCheapSignals(username, rankedRepos)
+      fetchRepoCheapSignals(username, rankedRepos),
+      fetchMonthlyCommitActivity(username, topActivityRepos)
     ])
   );
 
@@ -2019,6 +1979,7 @@ const buildFreshAnalysis = async (username, timing = null) => {
     technologies: techResult.technologies,
     technologyCategories: techResult.technologyCategories,
     repositoryActivity,
+    ...(monthlyCommitActivity.length ? { monthlyCommitActivity } : {}),
     commitMap,
     repositories: enrichedRepos,
     repositoryQuality,

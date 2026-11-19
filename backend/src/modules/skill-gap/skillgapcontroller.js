@@ -2160,7 +2160,7 @@ const analyzeSkillGap = async (req, res) => {
       );
       if (memoryHit?.analysisData && memoryHit.signalHash === signalHash) {
         const cachedResult = {
-          ...memoryHit.analysisData,
+          ...skillGapCompatibility.currentGroups(memoryHit.analysisData),
           fromCache: true,
           cacheMetadata: {
             ...(memoryHit.analysisData.cacheMetadata || {}),
@@ -2195,7 +2195,7 @@ const analyzeSkillGap = async (req, res) => {
           signalHash
         });
         const cachedResult = {
-          ...previewCached.analysisData,
+          ...skillGapCompatibility.currentGroups(previewCached.analysisData),
           analysisBasedOn: buildAnalysisBasedOn({
             username,
             careerStack,
@@ -2267,7 +2267,7 @@ const analyzeSkillGap = async (req, res) => {
       });
       const cachedDeterministicConfidence = sharedCached.analysisData.deterministicConfidence || 0;
       const cachedResult = {
-        ...sharedCached.analysisData,
+        ...skillGapCompatibility.currentGroups(sharedCached.analysisData),
         analysisBasedOn: buildAnalysisBasedOn({
           username,
           careerStack,
@@ -2331,7 +2331,7 @@ const analyzeSkillGap = async (req, res) => {
       });
       const cachedDeterministicConfidence = cached.analysisData.deterministicConfidence || 0;
       const cachedResult = {
-        ...cached.analysisData,
+        ...skillGapCompatibility.currentGroups(cached.analysisData),
         analysisBasedOn: buildAnalysisBasedOn({
           username,
           careerStack,

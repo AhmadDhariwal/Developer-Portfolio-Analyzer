@@ -14,6 +14,7 @@ import {
 })
 export class DashboardProgressComponent {
   @Input() data: DashboardProgress | null = null;
+  @Input() currentPortfolioScore: number | null = null;
   @Input() loading = false;
   @Input() error = '';
   @Input() stale = false;

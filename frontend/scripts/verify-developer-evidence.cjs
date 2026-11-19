@@ -76,6 +76,7 @@ const skillsMissing =
 
 function summary(owner) {
   const main = owner === 'fixture';
+  const updated = main && revision > 1;
   return {
     userName: main ? fixtureUser.name : otherUser.name,
     githubHandle: owner,
@@ -84,8 +85,8 @@ function summary(owner) {
     readinessScore: main ? 49 : 25,
     readinessMeasurement: { value: main ? 49 : 25, basis: 'github' },
     readinessBreakdown: {
-      codeQuality: 51,
-      skillCoverage: null,
+      codeQuality: 33,
+      skillCoverage: updated ? 50 : null,
       industryReadiness: 65,
       projectImpact: 47,
     },
@@ -97,8 +98,24 @@ function summary(owner) {
       contextVersion: 'fixture-' + revision,
     },
     languageSnapshot: { data: main ? codeMap : { Rust: 100 }, available: true },
-    activitySnapshot: { data: [], available: false },
-    skillsSnapshot: { topSkills: [], missingSkills: [], coveragePercentage: null },
+    activitySnapshot: updated
+      ? {
+          data: [
+            { month: '2026-10', count: 2 },
+            { month: '2026-11', count: 0 },
+          ],
+          available: true,
+        }
+      : { data: [], available: false },
+    readinessCenter: [{ key: 'portfolio', label: 'Portfolio Readiness', value: main ? 61 : null }],
+    skillsSnapshot: updated
+      ? {
+          topSkills: ['React', 'TypeScript'],
+          weakSkills: ['React', 'TypeScript'],
+          missingSkills: ['Docker'],
+          coveragePercentage: 50,
+        }
+      : { topSkills: [], missingSkills: [], coveragePercentage: null },
     recommendationSnapshot: {
       items: [
         {
@@ -132,11 +149,20 @@ function summary(owner) {
     integration: { providers: [], mergedSkills: [], score: 0 },
     resume: { analyzed: true, atsScore: 65 },
     progress: {
-      history: {
-        status: 'missing',
-        points: [],
-        reason: 'Current portfolio has no scoring-rule provenance.',
-      },
+      history: updated
+        ? {
+            status: 'available',
+            points: [
+              { at: '2026-10-01T00:00:00Z', value: 50 },
+              { at: '2026-11-01T00:00:00Z', value: 61 },
+            ],
+            reason: 'Two comparable test assessments.',
+          }
+        : {
+            status: 'missing',
+            points: [],
+            reason: 'Current portfolio has no scoring-rule provenance.',
+          },
       sprint: {
         available: true,
         weightedCompletion: null,
@@ -264,15 +290,19 @@ async function run() {
       await first.getByRole('link', { name: 'Open Skill Gap' }).getAttribute('href'),
       '/app/skill-gap',
     );
-    await first
-      .getByRole('img', { name: 'Readiness dimensions; values listed in Score Breakdown below' })
-      .waitFor();
+    const radar = first.locator('.radar-card');
+    await radar.locator('meter').first().waitFor();
+    assert.deepEqual(
+      await radar.locator('meter').evaluateAll((items) => items.map((item) => item.value)),
+      [33, 65, 47],
+    );
+    await radar.getByText('Unavailable', { exact: true }).waitFor();
     await first.locator('.gap-card').getByText(skillsMissing, { exact: true }).waitFor();
     assert.equal(await first.locator('.gap-card .cov-score').count(), 0);
-    await first.getByText(/no verified monthly/i).waitFor();
+    await first.getByText(/no complete dated commit series/i).waitFor();
     await first.getByText(/No dated task completions from the active sprint/i).waitFor();
     await first
-      .locator('.history-empty')
+      .locator('article[aria-labelledby="readiness-history-title"]')
       .getByText('Current portfolio has no scoring-rule provenance.')
       .waitFor();
     await first.getByText(/AI Refresh Recommended\. Evidence-based/).waitFor();
@@ -326,6 +356,25 @@ async function run() {
     assert.equal(requests.ai, 0);
     results.push('Explicit GitHub sync refreshes the other tab without an AI request');
 
+    const trend = otherTab.locator('article[aria-labelledby="readiness-history-title"]');
+    await trend.getByText('61/100', { exact: true }).waitFor();
+    await trend.locator('.history-line').waitFor();
+    assert.equal(await trend.locator('.history-line').getAttribute('points'), '10,60 290,49');
+    await otherTab
+      .getByRole('img', { name: 'Saved monthly commit counts: 2026-10: 2, 2026-11: 0' })
+      .waitFor();
+    await otherTab.locator('.radar-card canvas').waitFor();
+    await otherTab.locator('.gap-card').getByText('50/100', { exact: true }).waitFor();
+    assert.deepEqual(
+      (
+        await otherTab.locator('.skills-group:has(.danger-title) app-ui-badge').allTextContents()
+      ).map((t) => t.trim()),
+      ['Docker'],
+    );
+    assert.equal(await otherTab.locator('.dimension-list').count(), 0);
+    results.push(
+      'Updated tab renders the exact two-point trend, dated counts, full radar and disjoint skill groups',
+    );
     await first.goto(origin + '/app/recommendations');
     await first.getByText('Refresh Recommended', { exact: true }).first().waitFor();
     assert.equal(requests.ai, 0);

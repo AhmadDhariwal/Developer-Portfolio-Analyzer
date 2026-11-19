@@ -339,9 +339,7 @@ const persistGitHubAnalysis = async (user, githubUsername, forceRefresh) => {
                 ? data.mainLanguageDistribution
                 : data.languageDistribution
         );
-        // The analyzer supplies repository totals, not dated monthly evidence.
-        // Never refresh or transfer a previous profile's monthly series with this save.
-        analysis.contributionActivity = [];
+        analysis.contributionActivity = data.monthlyCommitActivity || [];
         analysis.githubAnalysisHistory = [
             ...(Array.isArray(analysis.githubAnalysisHistory)
                 ? analysis.githubAnalysisHistory

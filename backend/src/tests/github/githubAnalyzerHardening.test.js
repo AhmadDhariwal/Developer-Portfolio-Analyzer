@@ -179,7 +179,11 @@ const createHarness = () => {
           headers: {}
         };
       }
-      if (url.includes('/commits')) return { data: [], headers: {} };
+      if (url.includes('/commits')) {
+        if (!state.datedCommits) throw new Error('Dated commit history unavailable');
+        assert.equal(config.params.author, 'alpha');
+        return { data: state.datedCommits, headers: {} };
+      }
       throw new Error(`Unexpected mocked GitHub URL: ${url}`);
     }
   };
@@ -1311,6 +1315,25 @@ test('a successful save cannot refresh old-profile monthly activity from reposit
   assert.equal(record.githubSignals.username.toLowerCase(), 'alpha');
   assert.deepEqual(record.contributionActivity, []);
   assert.equal(Object.hasOwn(next.body, 'monthlyCommitActivity'), false);
+});
+
+test('explicit sync persists dated authored commits once per SHA across sampled repositories', async () => {
+  const harness = createHarness();
+  const at = new Date(Date.now() - 60000).toISOString();
+  harness.state.datedCommits = [{ sha: 'commit-1', commit: { author: { date: at } } }];
+  const { controller } = harness.loadInstance();
+  const result = await invoke(controller.analyzeAndSaveGitHubProfile, {
+    username: 'alpha',
+    savedUsername: 'alpha'
+  });
+  assert.equal(result.statusCode, 200);
+  const activity = harness.state.analyses.get('user-1').contributionActivity;
+  assert.equal(activity.length, 6);
+  assert.equal(activity.find((row) => row.month === at.slice(0, 7)).count, 1);
+  assert.equal(
+    activity.reduce((sum, row) => sum + row.count, 0),
+    1
+  );
 });
 
 test('saved reads preserve ownership and never trigger provider or persistence work', async () => {

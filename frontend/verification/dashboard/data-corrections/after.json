@@ -1,0 +1,170 @@
+{
+  "readinessMeasurement": {
+    "value": 49,
+    "basis": "github"
+  },
+  "readinessBreakdown": {
+    "codeQuality": 33,
+    "skillCoverage": null,
+    "industryReadiness": 65,
+    "projectImpact": 47
+  },
+  "readinessCenter": [
+    {
+      "key": "overall",
+      "label": "Overall Readiness",
+      "value": 49,
+      "tone": "primary"
+    },
+    {
+      "key": "resume",
+      "label": "Resume Readiness",
+      "tone": "blue",
+      "value": 65
+    },
+    {
+      "key": "portfolio",
+      "label": "Portfolio Readiness",
+      "tone": "green",
+      "value": null
+    },
+    {
+      "key": "interview",
+      "label": "Interview Readiness",
+      "tone": "amber",
+      "value": null
+    },
+    {
+      "key": "market",
+      "label": "Target Skill Coverage",
+      "tone": "cyan",
+      "value": null
+    },
+    {
+      "key": "integration",
+      "label": "Integration Readiness",
+      "value": 39,
+      "tone": "violet"
+    },
+    {
+      "key": "sprint",
+      "label": "Sprint Progress",
+      "tone": "green",
+      "value": 100
+    }
+  ],
+  "skillsSnapshot": {
+    "topSkills": [],
+    "missingSkills": [],
+    "weakSkills": [],
+    "coveragePercentage": null,
+    "coverageReason": "The saved Skill Gap assessment uses a different GitHub analysis revision. Reassess the selected profile in Skill Gap.",
+    "stale": true,
+    "updatedAt": "2026-11-18T15:08:21.788Z"
+  },
+  "activitySnapshot": {
+    "data": [],
+    "available": false
+  },
+  "languageSnapshot": {
+    "data": {
+      "JavaScript": 63.4842600548747,
+      "TypeScript": 36.48782265470764,
+      "Python": 0.02663205385412348,
+      "Batchfile": 0.0012852365635160385
+    },
+    "available": true
+  },
+  "progress": {
+    "history": {
+      "status": "missing",
+      "points": [],
+      "reason": "Fewer than two trusted, comparable portfolio assessments. Legacy or user-authored archives do not establish a readiness trend."
+    },
+    "sprint": {
+      "available": true,
+      "weightedCompletion": 100,
+      "velocity": [
+        {
+          "day": "2026-11-13",
+          "completed": 0,
+          "points": 0
+        },
+        {
+          "day": "2026-11-14",
+          "completed": 0,
+          "points": 0
+        },
+        {
+          "day": "2026-11-15",
+          "completed": 0,
+          "points": 0
+        },
+        {
+          "day": "2026-11-16",
+          "completed": 0,
+          "points": 0
+        },
+        {
+          "day": "2026-11-17",
+          "completed": 0,
+          "points": 0
+        },
+        {
+          "day": "2026-11-18",
+          "completed": 1,
+          "points": 3
+        },
+        {
+          "day": "2026-11-19",
+          "completed": 0,
+          "points": 0
+        }
+      ],
+      "undatedCompletions": 0,
+      "basis": "Active sprint completions over the last seven UTC days."
+    },
+    "skills": {
+      "available": false,
+      "proven": null,
+      "claimed": null,
+      "basis": "Skill Gap evidence classification; coverage is shown in Skill Gap Overview."
+    },
+    "evidence": {
+      "totalSources": 10,
+      "available": 10,
+      "fresh": 7,
+      "stale": 3,
+      "missing": 0
+    },
+    "github": {
+      "available": true,
+      "historyStatus": "Legacy repository snapshots do not record username or scoring-rule identity; trends are not inferred.",
+      "activity": []
+    },
+    "completedCourses": [
+      {
+        "title": "Google IT Automation with Python Professional Certificate",
+        "completedAt": "2026-11-05T15:01:02.633Z"
+      }
+    ]
+  },
+  "sourceFreshness": {
+    "skillGap": {
+      "connected": true,
+      "available": true,
+      "lastUpdated": "2026-11-18T15:08:21.788Z",
+      "status": "stale",
+      "policy": "age-and-dependencies",
+      "label": "Stale",
+      "refreshRecommended": true,
+      "reason": "The saved Skill Gap assessment uses a different GitHub analysis revision. Reassess the selected profile in Skill Gap."
+    }
+  },
+  "history": {
+    "status": "missing",
+    "points": [],
+    "reason": "Fewer than two trusted, comparable portfolio assessments. Legacy or user-authored archives do not establish a readiness trend."
+  },
+  "revision": "95b93aa4bcbfefa90c2dbd34c1725312b30095c4205202b608aee5c8ffabe9d5"
+}

@@ -23,10 +23,18 @@
           <p class="article-sub">{{ progress.history.reason }}</p>
         </div>
         <span class="status-chip" [class.is-success]="progress.history.status === 'available'">
-          {{ progress.history.status === 'available' ? 'Recorded' : 'Unavailable' }}
+          {{ progress.history.status === 'available' ? 'Trend recorded' : 'Trend unavailable' }}
         </span>
       </div>
 
+      <p class="article-sub">
+        Current portfolio score:
+        <strong>{{
+          currentPortfolioScore === null
+            ? 'No current verified assessment'
+            : currentPortfolioScore + '/100'
+        }}</strong>
+      </p>
       <ng-container *ngIf="progress.history.status === 'available'">
         <div class="svg-frame">
           <svg
@@ -83,7 +91,6 @@
       </ng-container>
 
       <div class="history-empty" *ngIf="progress.history.status !== 'available'">
-        <p class="empty-msg">{{ progress.history.reason }}</p>
         <p class="history-guidance">
           Readiness trends require at least two trusted assessments generated with matching scoring
           rules and profile identity. Run and save verified portfolio assessments to establish a

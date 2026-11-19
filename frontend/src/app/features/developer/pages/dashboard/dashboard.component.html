@@ -362,15 +362,15 @@
     <div class="card-head">
       <div class="head-text">
         <h3>Contribution Activity</h3>
-        <p>Saved monthly commit cadence</p>
+        <p>Monthly authored commits in sampled repositories</p>
       </div>
       <div class="activity-badge">
         &lt;/&gt; {{ activityAvailable ? totalActivity + ' total' : 'Unavailable' }}
       </div>
     </div>
     <p *ngIf="!isLoading && !activityAvailable" class="empty-state">
-      Monthly contribution activity is unavailable. The saved GitHub analysis contains no verified
-      monthly activity records.
+      The saved GitHub analysis has no complete dated commit series. Repository totals and last-push
+      dates cannot establish monthly counts.
     </p>
     <details class="repository-history-note" *ngIf="progress">
       <summary>Repository history availability</summary>
@@ -380,7 +380,7 @@
       <canvas
         #activityChart
         role="img"
-        [attr.aria-label]="'Saved contribution activity: ' + totalActivity + ' total commits'"
+        [attr.aria-label]="'Saved monthly commit counts: ' + activityDescription"
       ></canvas>
     </div>
   </div>
@@ -420,14 +420,27 @@
     <div class="card-head">
       <div class="head-text">
         <h3>Skills Radar</h3>
-        <p>Proficiency across 4 core dimensions</p>
+        <p>Readiness dimensions on a 0–100 scale</p>
       </div>
-      <span class="bento-pill pill-violet">4-Axis View</span>
+      <span *ngIf="hasCompleteRadar" class="bento-pill pill-violet">4-Axis View</span>
     </div>
     <p *ngIf="!isLoading && !hasRadarData" class="empty-state">
       Readiness dimensions are unavailable. Save verified analysis evidence to populate this chart.
     </p>
-    <div class="chart-wrap radar-wrap" [hidden]="!hasRadarData">
+    <div *ngIf="hasRadarData && !hasCompleteRadar" class="dimension-list">
+      <div *ngFor="let row of scoreBreakdownRows" class="dimension-row">
+        <span>{{ row.label }}</span
+        ><strong>{{ row.value === null ? 'Unavailable' : row.value + '%' }}</strong>
+        <meter
+          *ngIf="row.value !== null"
+          min="0"
+          max="100"
+          [value]="row.value"
+          [attr.aria-label]="row.label"
+        ></meter>
+      </div>
+    </div>
+    <div class="chart-wrap radar-wrap" [hidden]="!hasCompleteRadar">
       <canvas
         #skillRadar
         role="img"
@@ -494,13 +507,13 @@
               coveragePercentage === null ? 'Unavailable' : coveragePercentage + '/100'
             }}</span>
           </div>
-          <div class="progress-track">
-            <div class="progress-fill" [style.width.%]="coveragePercentage ?? 0"></div>
+          <div class="progress-track" *ngIf="coveragePercentage !== null">
+            <div class="progress-fill" [style.width.%]="coveragePercentage"></div>
           </div>
           <div class="cov-footer">
             <span>{{
               coveragePercentage === null
-                ? 'Coverage unavailable'
+                ? coverageReason || skillGapEmptyMessage
                 : coveragePercentage + '% coverage against your target profile'
             }}</span>
           </div>
@@ -527,6 +540,12 @@
           </div>
         </div>
 
+        <div class="skills-group" *ngIf="weakSkills.length">
+          <div class="group-title">Detected skills needing stronger evidence</div>
+          <div class="tags-wrap">
+            <app-ui-badge *ngFor="let skill of weakSkills" size="sm">{{ skill }}</app-ui-badge>
+          </div>
+        </div>
         <div class="skills-group">
           <div class="group-title danger-title">
             <span class="group-dot danger"></span>
@@ -602,6 +621,7 @@
      ════════════════════════════════════════════ -->
 <app-dashboard-progress
   [data]="progress"
+  [currentPortfolioScore]="currentPortfolioScore"
   [loading]="isLoading"
   [error]="loadError"
   [stale]="dashboardStale"
