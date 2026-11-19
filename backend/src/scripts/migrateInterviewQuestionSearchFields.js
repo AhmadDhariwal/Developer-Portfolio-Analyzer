@@ -1,8 +1,8 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
-const connectDB = require('../config/db');
-const InterviewQuestionBank = require('../models/interviewQuestionBank');
-const { buildQuestionIdentity } = require('../repositories/interviewQuestionRepository');
+const connectDB = require('../core/config/db');
+const InterviewQuestionBank = require('../modules/interview-prep/models/interviewQuestionBank');
+const { buildQuestionIdentity } = require('../modules/interview-prep/repositories/interviewQuestionRepository');
 
 const BATCH_SIZE = 250;
 

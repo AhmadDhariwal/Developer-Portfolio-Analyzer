@@ -1,0 +1,3 @@
+# Observed concurrent-load frontend run
+
+A post-cleanup run alongside the production build and backend regressions reported 709 passing tests and one failure across 120 test files. The failure was a 5000ms timeout in `src/app/features/developer/pages/career-sprint/career-sprint.component.spec.ts`, test `keeps calendar selection independent of planning and resets cancelled dates`. The timeout was not increased and the test was not skipped. A final full frontend run without the concurrent build was then started. Earlier full runs passed all 710 tests. See frontend-tests.txt for the final result. This note records the observed failed run; it is not a raw test log.

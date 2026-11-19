@@ -1,7 +1,7 @@
 'use strict';
 // Offline, restartable, compare-and-set migration. Never prints URIs or token values.
 const mongoose = require('mongoose');
-const tokens = require('../services/integrationTokenService');
+const tokens = require('../modules/integrations/services/integrationTokenService');
 async function migrate(collection, { apply = false, rotate = false } = {}) {
   tokens.keyring();
   const result = { scanned: 0, eligible: 0, changed: 0, conflicts: 0 };

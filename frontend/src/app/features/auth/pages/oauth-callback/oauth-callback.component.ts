@@ -1,93 +1,122 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../shared/services/auth.service';
+import { AuthShellComponent } from '../../components/auth-shell/auth-shell.component';
+import { UiCardComponent } from '../../../../shared/components/ui-card/ui-card.component';
 
 /**
  * OAuthCallbackComponent
  *
- * Handles the OAuth redirect landing at /auth/oauth/callback.
- * Registered WITHOUT publicGuard so that the callback can complete
- * even if a previous session cookie is technically present.
- *
- * Flow:
- *  1. Check window.location.hash for #oauth=<base64url-JSON>
- *  2. Check window.location.search for ?token=<jwt> (URL-param fallback)
- *  3. Immediately strip credentials from address bar via replaceState
- *  4. On success → completeExternalLogin() → navigate to home route
- *  5. On ?oauthError or decode failure → navigate to /auth/login?oauthError=1
- *  6. If nothing found → navigate to /auth/login
- *
- * SECURITY NOTES:
- *  - URL fragment (#oauth=…) is never sent to the server by the browser.
- *  - Token is stripped from the URL immediately before any other processing.
- *  - No OAuth secrets are stored or logged anywhere in this file.
+ * Handles external OAuth redirect landing at /auth/oauth/callback.
+ * Registered without publicGuard so callback completion succeeds regardless of prior client state.
  */
 @Component({
   selector: 'app-oauth-callback',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink, AuthShellComponent, UiCardComponent],
   templateUrl: './oauth-callback.component.html',
-  styleUrl: './oauth-callback.component.scss'
+  styleUrl: './oauth-callback.component.scss',
 })
-export class OAuthCallbackComponent implements OnInit {
-  status: 'processing' | 'error' = 'processing';
-  errorMessage = '';
+export class OAuthCallbackComponent implements OnInit, OnDestroy {
+  status: 'processing' | 'cancelled' | 'error' = 'processing';
+  errorTitle = 'Social sign-in could not be completed';
+  errorMessage = 'Please return to sign in and try again.';
+  private redirectTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private readonly authService: AuthService,
     private readonly router: Router,
     private readonly route: ActivatedRoute,
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
-    // Check for oauthError query param first
-    if (this.route.snapshot.queryParamMap.has('oauthError')) {
-      this.failWith('Social sign-in could not be completed. Please try again.');
+    const query = this.route.snapshot.queryParamMap;
+    const oauthError = query.get('oauthError');
+    const errorParam = query.get('error');
+
+    if (errorParam === 'access_denied' || oauthError === 'oauth_cancelled') {
+      this.failWith(
+        'Sign-in cancelled',
+        'You cancelled the authorization step before sign-in finished. You can sign in again whenever you are ready.',
+        'cancelled',
+        'oauth_cancelled',
+      );
       return;
     }
 
-    // --- Primary path: token in URL hash fragment (never sent to server) ---
+    if (oauthError === 'account_unavailable') {
+      this.failWith(
+        'Account unavailable',
+        'This social account is unavailable or deactivated. Contact support or sign in with another method.',
+        'error',
+        'account_unavailable',
+      );
+      return;
+    }
+
+    if (query.has('oauthError') || query.has('error')) {
+      this.failWith(
+        'Social sign-in could not be completed',
+        'We could not verify the provider callback or state token. Please try signing in again.',
+        'error',
+        'oauth_failed',
+      );
+      return;
+    }
+
+    // --- Primary path: credentials encoded in URL hash fragment ---
     const hash = window.location.hash;
     if (hash.startsWith('#oauth=')) {
       const encoded = hash.slice('#oauth='.length);
-
-      // SECURITY: strip credentials from address bar BEFORE decoding
-      window.history.replaceState(null, '', `${window.location.pathname}`);
+      window.history.replaceState(null, '', window.location.pathname);
 
       try {
         const payload = this.decodeBase64Payload(encoded);
         if (!payload?.token || !payload?._id) {
-          throw new Error('Incomplete OAuth payload — missing token or user');
+          throw new Error('Incomplete OAuth payload');
         }
         this.completeLogin(payload);
         return;
       } catch {
-        this.failWith('Social sign-in could not be completed. Please try again.');
+        this.failWith(
+          'Invalid sign-in response',
+          'The authentication callback could not be verified. Please return to sign in and try again.',
+          'error',
+          'oauth_failed',
+        );
         return;
       }
     }
 
-    // --- Fallback path: ?token= query param (less preferred; token briefly in URL) ---
-    const tokenParam = this.route.snapshot.queryParamMap.get('token');
+    // --- Fallback path: ?token= query param ---
+    const tokenParam = query.get('token');
     if (tokenParam) {
-      // SECURITY: strip token from URL immediately
-      window.history.replaceState(null, '', `${window.location.pathname}`);
-
-      // Build a minimal session object from the token
+      window.history.replaceState(null, '', window.location.pathname);
       try {
-        const payload = { token: tokenParam };
-        this.completeLogin(payload);
+        this.completeLogin({ token: tokenParam });
         return;
       } catch {
-        this.failWith('Social sign-in could not be completed. Please try again.');
+        this.failWith(
+          'Social sign-in failed',
+          'Your sign-in session could not be initialized. Please try again.',
+          'error',
+          'oauth_failed',
+        );
         return;
       }
     }
 
-    // No payload found at all — go back to login
+    // Nothing present in callback URL — return cleanly to login
     this.router.navigate(['/auth/login']);
+  }
+
+  ngOnDestroy(): void {
+    if (this.redirectTimer) {
+      clearTimeout(this.redirectTimer);
+      this.redirectTimer = null;
+    }
   }
 
   private decodeBase64Payload(encoded: string): any {
@@ -103,14 +132,19 @@ export class OAuthCallbackComponent implements OnInit {
     this.router.navigateByUrl(this.authService.getHomeRoute(user));
   }
 
-  private failWith(message: string): void {
-    this.status = 'error';
+  private failWith(
+    title: string,
+    message: string,
+    status: 'cancelled' | 'error',
+    queryReason: string,
+  ): void {
+    this.status = status;
+    this.errorTitle = title;
     this.errorMessage = message;
     this.cdr.detectChanges();
 
-    // Redirect to login with oauthError flag after a brief display
-    setTimeout(() => {
-      this.router.navigate(['/auth/login'], { queryParams: { oauthError: '1' } });
-    }, 1500);
+    this.redirectTimer = setTimeout(() => {
+      this.router.navigate(['/auth/login'], { queryParams: { oauthError: queryReason } });
+    }, 3500);
   }
 }

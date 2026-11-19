@@ -10,11 +10,11 @@ const mongoose = require('mongoose');
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const fixture = require('../tests/fixtures/scenarioMongo');
-const engine = require('../services/scoring/scenarioPlanningScore');
-const User = require('../models/user');
-const Scenario = require('../models/scenarioSimulation');
-const Sprint = require('../models/careerSprint');
-const { sprintWindow } = require('../utils/sprintCalendar');
+const engine = require('../core/scoring/scenarioPlanningScore');
+const User = require('../modules/auth/models/user');
+const Scenario = require('../modules/scenario-simulator/models/scenarioSimulation');
+const Sprint = require('../modules/career-sprint/models/careerSprint');
+const { sprintWindow } = require('../modules/career-sprint/utils/sprintCalendar');
 const output = path.resolve(__dirname, '../../verification/scenario-simulator');
 const input = {
   ruleVersion: engine.RULE_VERSION,
@@ -75,7 +75,7 @@ const main = async () => {
     );
     const saved = await Promise.all(
       users.map((user) =>
-        require('../services/scenarioSimulatorService').saveScenarioForUser(user._id, {
+        require('../modules/scenario-simulator/services/scenarioSimulatorService').saveScenarioForUser(user._id, {
           ...input,
           evaluation: engine.calculate(input).evaluation,
         }),
@@ -93,9 +93,9 @@ const main = async () => {
     );
     const app = express();
     app.use(express.json({ limit: '100kb' }));
-    app.use('/api/simulator', require('../routes/scenarioSimulator.routes'));
-    app.use('/api/profile', require('../routes/profile.routes'));
-    app.use('/api/career-sprints', require('../routes/careerSprint.routes'));
+    app.use('/api/simulator', require('../modules/scenario-simulator/scenarioSimulator.routes'));
+    app.use('/api/profile', require('../modules/profile/profile.routes'));
+    app.use('/api/career-sprints', require('../modules/career-sprint/careerSprint.routes'));
     const dist = path.resolve(__dirname, '../../../frontend/dist/frontend/browser');
     app.use(express.static(dist));
     app.get('/app/{*route}', (_req, res) => res.sendFile(path.join(dist, 'index.html')));
@@ -124,7 +124,7 @@ const main = async () => {
     report.checks.push(
       'JWT protection, foreign delete isolation, stale evaluation rejection and real eight-source context',
     );
-    const signals = await require('../services/developerSignalService').getDeveloperSignals(users[0]._id);
+    const signals = await require('../core/developer-context/developerSignalService').getDeveloperSignals(users[0]._id);
     assert.deepEqual(signals.careerSprintSignal.completedSkillSignals, []);
     assert.deepEqual(signals.careerSprintSignal.recordedActivitySkills, []);
     assert.equal(signals.scenarioSimulatorSignal.evidenceClass, 'planned-intent');

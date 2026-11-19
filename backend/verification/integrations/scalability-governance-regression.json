@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-05T14:20:54.466Z",
+  "checkedAt": "2026-11-18T11:19:06.151Z",
   "providerHttpRequests": 0,
   "checks": [
     "provider/user 429; denied requests do not consume other counters",
@@ -11,34 +11,9 @@
     "duplicate connection claim rejected; action 11 returns 429",
     "authenticated encryption/AAD isolation; Mongo 503 with zero outbound calls; reconnect recovery",
     "background polling admitted through Mongo; self-reported fixture persisted",
-    "HTTP 503 before provider work; immutable process store selection",
-    "five real cache-client states; Connect/Sync/downstream/disconnect; monotonically preserved Mongo counters; historical fixture snapshot/indexes unchanged",
-    "zero Redis governance calls; 12-admission bounded comparison"
+    "HTTP 503 before provider work; immutable process store selection"
   ],
-  "performance": {
-    "workload": "12 sequential admissions, release outside timing",
-    "n": 12,
-    "p50Ms": 6.182499999998981,
-    "p95Ms": 9.268099999999322,
-    "p99Ms": 9.268099999999322,
-    "samplesMs": [
-      5.18999999999869,
-      5.42870000000039,
-      5.994599999999991,
-      6.065300000000207,
-      6.096400000000358,
-      6.182499999998981,
-      7.090299999999843,
-      7.615699999998469,
-      8.007799999999406,
-      8.747199999999793,
-      8.869399999999587,
-      9.268099999999322
-    ],
-    "collectionReads": 12,
-    "collectionReplacements": 48,
-    "collectionWriteCommands": 12
-  },
+  "performance": {},
   "indexes": [
     {
       "v": 2,
@@ -56,82 +31,12 @@
       "expireAfterSeconds": 0
     }
   ],
-  "redisStates": [
-    {
-      "mode": "healthy",
-      "cacheResult": "redis",
-      "connect": 200,
-      "sync": 200,
-      "downstream": 200,
-      "before": 1,
-      "after": 1,
-      "cacheCommands": [
-        "CLIENT",
-        "CLIENT",
-        "SET",
-        "GET"
-      ]
-    },
-    {
-      "mode": "unavailable",
-      "cacheResult": "miss",
-      "connect": 200,
-      "sync": 200,
-      "downstream": 200,
-      "before": 1,
-      "after": 1,
-      "cacheCommands": []
-    },
-    {
-      "mode": "quota",
-      "cacheResult": "miss",
-      "connect": 200,
-      "sync": 200,
-      "downstream": 200,
-      "before": 1,
-      "after": 1,
-      "cacheCommands": [
-        "CLIENT",
-        "CLIENT",
-        "SET",
-        "GET"
-      ]
-    },
-    {
-      "mode": "timeout",
-      "cacheResult": "miss",
-      "connect": 200,
-      "sync": 200,
-      "downstream": 200,
-      "before": 1,
-      "after": 1,
-      "cacheCommands": [
-        "CLIENT",
-        "CLIENT",
-        "GET"
-      ]
-    },
-    {
-      "mode": "recovered",
-      "cacheResult": "redis",
-      "connect": 200,
-      "sync": 200,
-      "downstream": 200,
-      "before": 1,
-      "after": 1,
-      "cacheCommands": [
-        "CLIENT",
-        "CLIENT",
-        "SET",
-        "GET"
-      ]
-    }
-  ],
+  "redisStates": [],
   "redisGovernanceCalls": 0,
   "fixtureReplays": 3,
   "cleanup": {
     "mongoStopped": true,
-    "temporaryFilesRemoved": 128,
+    "temporaryFilesRemoved": 75,
     "productionDataUsed": false
   }
 }

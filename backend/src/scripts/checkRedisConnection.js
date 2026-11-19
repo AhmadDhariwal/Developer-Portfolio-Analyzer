@@ -5,7 +5,7 @@ const {
   initRedisCache,
   getRedisCacheClient,
   closeRedisCache
-} = require('../services/redisCacheService');
+} = require('../core/cache/redisCacheService');
 
 const CHECK_TIMEOUT_MS = 5000;
 

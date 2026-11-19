@@ -1,0 +1,3179 @@
+{
+  "generatedAt": "2026-11-15T07:30:43.550Z",
+  "synthetic": false,
+  "readOnly": true,
+  "targetPerTechnologyDifficulty": 30,
+  "sourceCatalog": {
+    "total": 1953,
+    "matrix": {
+      "javascript": {
+        "easy": 0,
+        "medium": 16,
+        "hard": 10,
+        "senior": 5
+      },
+      "typescript": {
+        "easy": 0,
+        "medium": 15,
+        "hard": 11,
+        "senior": 5
+      },
+      "python": {
+        "easy": 0,
+        "medium": 62,
+        "hard": 26,
+        "senior": 5
+      },
+      "java": {
+        "easy": 0,
+        "medium": 62,
+        "hard": 26,
+        "senior": 5
+      },
+      "cpp": {
+        "easy": 0,
+        "medium": 62,
+        "hard": 26,
+        "senior": 5
+      },
+      "csharp": {
+        "easy": 0,
+        "medium": 20,
+        "hard": 6,
+        "senior": 5
+      },
+      "dotnet": {
+        "easy": 0,
+        "medium": 20,
+        "hard": 6,
+        "senior": 5
+      },
+      "angular": {
+        "easy": 0,
+        "medium": 17,
+        "hard": 9,
+        "senior": 5
+      },
+      "react": {
+        "easy": 0,
+        "medium": 15,
+        "hard": 11,
+        "senior": 5
+      },
+      "react-native": {
+        "easy": 0,
+        "medium": 20,
+        "hard": 6,
+        "senior": 5
+      },
+      "nodejs": {
+        "easy": 0,
+        "medium": 14,
+        "hard": 12,
+        "senior": 5
+      },
+      "expressjs": {
+        "easy": 0,
+        "medium": 16,
+        "hard": 10,
+        "senior": 5
+      },
+      "nextjs": {
+        "easy": 0,
+        "medium": 62,
+        "hard": 26,
+        "senior": 5
+      },
+      "mongodb": {
+        "easy": 0,
+        "medium": 12,
+        "hard": 14,
+        "senior": 5
+      },
+      "mysql": {
+        "easy": 0,
+        "medium": 14,
+        "hard": 12,
+        "senior": 5
+      },
+      "postgresql": {
+        "easy": 0,
+        "medium": 13,
+        "hard": 13,
+        "senior": 5
+      },
+      "sql": {
+        "easy": 0,
+        "medium": 20,
+        "hard": 6,
+        "senior": 5
+      },
+      "redis": {
+        "easy": 0,
+        "medium": 62,
+        "hard": 26,
+        "senior": 5
+      },
+      "docker": {
+        "easy": 0,
+        "medium": 20,
+        "hard": 6,
+        "senior": 5
+      },
+      "kubernetes": {
+        "easy": 0,
+        "medium": 20,
+        "hard": 6,
+        "senior": 5
+      },
+      "rest-apis": {
+        "easy": 0,
+        "medium": 13,
+        "hard": 13,
+        "senior": 5
+      },
+      "graphql": {
+        "easy": 0,
+        "medium": 13,
+        "hard": 13,
+        "senior": 5
+      },
+      "html": {
+        "easy": 0,
+        "medium": 17,
+        "hard": 9,
+        "senior": 5
+      },
+      "css": {
+        "easy": 0,
+        "medium": 17,
+        "hard": 9,
+        "senior": 5
+      },
+      "git-github": {
+        "easy": 0,
+        "medium": 17,
+        "hard": 9,
+        "senior": 5
+      },
+      "oop": {
+        "easy": 0,
+        "medium": 17,
+        "hard": 9,
+        "senior": 5
+      },
+      "dsa": {
+        "easy": 0,
+        "medium": 17,
+        "hard": 9,
+        "senior": 5
+      },
+      "aws": {
+        "easy": 0,
+        "medium": 62,
+        "hard": 26,
+        "senior": 5
+      },
+      "generative-ai": {
+        "easy": 0,
+        "medium": 62,
+        "hard": 26,
+        "senior": 5
+      },
+      "ai-agents": {
+        "easy": 0,
+        "medium": 62,
+        "hard": 26,
+        "senior": 5
+      },
+      "llm": {
+        "easy": 0,
+        "medium": 62,
+        "hard": 26,
+        "senior": 5
+      },
+      "rag": {
+        "easy": 0,
+        "medium": 62,
+        "hard": 26,
+        "senior": 5
+      },
+      "langchain": {
+        "easy": 0,
+        "medium": 62,
+        "hard": 26,
+        "senior": 5
+      },
+      "system-design": {
+        "easy": 0,
+        "medium": 0,
+        "hard": 26,
+        "senior": 5
+      },
+      "mern": {
+        "easy": 0,
+        "medium": 14,
+        "hard": 12,
+        "senior": 5
+      },
+      "mean": {
+        "easy": 0,
+        "medium": 62,
+        "hard": 26,
+        "senior": 5
+      },
+      "full-stack-web-development": {
+        "easy": 0,
+        "medium": 62,
+        "hard": 26,
+        "senior": 5
+      }
+    },
+    "sources": {
+      "verified_seed": 1953
+    },
+    "missingAnswers": 0,
+    "duplicates": 0,
+    "canonicalDuplicates": 0,
+    "invalidDifficulties": 0,
+    "technologyAliases": 0,
+    "unknownTechnologies": 0,
+    "incorrectVerification": 0
+  },
+  "sourceTop30": {
+    "total": 1110,
+    "matrix": {
+      "javascript": {
+        "easy": 0,
+        "medium": 16,
+        "hard": 9,
+        "senior": 5
+      },
+      "typescript": {
+        "easy": 0,
+        "medium": 15,
+        "hard": 10,
+        "senior": 5
+      },
+      "python": {
+        "easy": 0,
+        "medium": 20,
+        "hard": 5,
+        "senior": 5
+      },
+      "java": {
+        "easy": 0,
+        "medium": 20,
+        "hard": 5,
+        "senior": 5
+      },
+      "cpp": {
+        "easy": 0,
+        "medium": 20,
+        "hard": 5,
+        "senior": 5
+      },
+      "csharp": {
+        "easy": 0,
+        "medium": 20,
+        "hard": 5,
+        "senior": 5
+      },
+      "dotnet": {
+        "easy": 0,
+        "medium": 20,
+        "hard": 5,
+        "senior": 5
+      },
+      "angular": {
+        "easy": 0,
+        "medium": 17,
+        "hard": 8,
+        "senior": 5
+      },
+      "react": {
+        "easy": 0,
+        "medium": 15,
+        "hard": 10,
+        "senior": 5
+      },
+      "react-native": {
+        "easy": 0,
+        "medium": 20,
+        "hard": 5,
+        "senior": 5
+      },
+      "nodejs": {
+        "easy": 0,
+        "medium": 14,
+        "hard": 11,
+        "senior": 5
+      },
+      "expressjs": {
+        "easy": 0,
+        "medium": 16,
+        "hard": 9,
+        "senior": 5
+      },
+      "nextjs": {
+        "easy": 0,
+        "medium": 20,
+        "hard": 5,
+        "senior": 5
+      },
+      "mongodb": {
+        "easy": 0,
+        "medium": 12,
+        "hard": 13,
+        "senior": 5
+      },
+      "mysql": {
+        "easy": 0,
+        "medium": 14,
+        "hard": 11,
+        "senior": 5
+      },
+      "postgresql": {
+        "easy": 0,
+        "medium": 13,
+        "hard": 12,
+        "senior": 5
+      },
+      "sql": {
+        "easy": 0,
+        "medium": 20,
+        "hard": 5,
+        "senior": 5
+      },
+      "redis": {
+        "easy": 0,
+        "medium": 20,
+        "hard": 5,
+        "senior": 5
+      },
+      "docker": {
+        "easy": 0,
+        "medium": 20,
+        "hard": 5,
+        "senior": 5
+      },
+      "kubernetes": {
+        "easy": 0,
+        "medium": 20,
+        "hard": 5,
+        "senior": 5
+      },
+      "rest-apis": {
+        "easy": 0,
+        "medium": 13,
+        "hard": 12,
+        "senior": 5
+      },
+      "graphql": {
+        "easy": 0,
+        "medium": 13,
+        "hard": 12,
+        "senior": 5
+      },
+      "html": {
+        "easy": 0,
+        "medium": 17,
+        "hard": 8,
+        "senior": 5
+      },
+      "css": {
+        "easy": 0,
+        "medium": 17,
+        "hard": 8,
+        "senior": 5
+      },
+      "git-github": {
+        "easy": 0,
+        "medium": 17,
+        "hard": 8,
+        "senior": 5
+      },
+      "oop": {
+        "easy": 0,
+        "medium": 16,
+        "hard": 9,
+        "senior": 5
+      },
+      "dsa": {
+        "easy": 0,
+        "medium": 17,
+        "hard": 8,
+        "senior": 5
+      },
+      "aws": {
+        "easy": 0,
+        "medium": 20,
+        "hard": 5,
+        "senior": 5
+      },
+      "generative-ai": {
+        "easy": 0,
+        "medium": 20,
+        "hard": 5,
+        "senior": 5
+      },
+      "ai-agents": {
+        "easy": 0,
+        "medium": 20,
+        "hard": 5,
+        "senior": 5
+      },
+      "llm": {
+        "easy": 0,
+        "medium": 20,
+        "hard": 5,
+        "senior": 5
+      },
+      "rag": {
+        "easy": 0,
+        "medium": 20,
+        "hard": 5,
+        "senior": 5
+      },
+      "langchain": {
+        "easy": 0,
+        "medium": 20,
+        "hard": 5,
+        "senior": 5
+      },
+      "system-design": {
+        "easy": 0,
+        "medium": 0,
+        "hard": 25,
+        "senior": 5
+      },
+      "mern": {
+        "easy": 0,
+        "medium": 14,
+        "hard": 11,
+        "senior": 5
+      },
+      "mean": {
+        "easy": 0,
+        "medium": 20,
+        "hard": 5,
+        "senior": 5
+      },
+      "full-stack-web-development": {
+        "easy": 0,
+        "medium": 20,
+        "hard": 5,
+        "senior": 5
+      }
+    },
+    "sources": {
+      "verified_seed": 1110
+    },
+    "missingAnswers": 0,
+    "duplicates": 0,
+    "canonicalDuplicates": 0,
+    "invalidDifficulties": 0,
+    "technologyAliases": 0,
+    "unknownTechnologies": 0,
+    "incorrectVerification": 0
+  },
+  "database": {
+    "available": true,
+    "collections": {
+      "catalog": "interviewquestionbanks",
+      "sessions": "interviewprepsessions"
+    },
+    "catalogIndexes": [
+      {
+        "name": "_id_",
+        "key": {
+          "_id": 1
+        }
+      },
+      {
+        "name": "skill_1",
+        "key": {
+          "skill": 1
+        }
+      },
+      {
+        "name": "question_text_answer_text_tags_text",
+        "key": {
+          "_fts": "text",
+          "_ftsx": 1
+        }
+      },
+      {
+        "name": "skill_1_question_1",
+        "key": {
+          "skill": 1,
+          "question": 1
+        }
+      },
+      {
+        "name": "topicKey_1",
+        "key": {
+          "topicKey": 1
+        }
+      },
+      {
+        "name": "topicType_1",
+        "key": {
+          "topicType": 1
+        }
+      },
+      {
+        "name": "sourceType_1",
+        "key": {
+          "sourceType": 1
+        }
+      },
+      {
+        "name": "topicKey_1_normalizedQuestion_1",
+        "key": {
+          "topicKey": 1,
+          "normalizedQuestion": 1
+        }
+      },
+      {
+        "name": "topicKey_1_popularity_-1_createdAt_-1",
+        "key": {
+          "topicKey": 1,
+          "popularity": -1,
+          "createdAt": -1
+        }
+      },
+      {
+        "name": "topicKey_1_sourceType_1",
+        "key": {
+          "topicKey": 1,
+          "sourceType": 1
+        }
+      },
+      {
+        "name": "normalizedQuestionHash_1",
+        "key": {
+          "normalizedQuestionHash": 1
+        }
+      },
+      {
+        "name": "topicKey_1_normalizedQuestionHash_1",
+        "key": {
+          "topicKey": 1,
+          "normalizedQuestionHash": 1
+        }
+      },
+      {
+        "name": "category_1",
+        "key": {
+          "category": 1
+        }
+      },
+      {
+        "name": "qualityScore_1",
+        "key": {
+          "qualityScore": 1
+        }
+      },
+      {
+        "name": "answerFormat_1",
+        "key": {
+          "answerFormat": 1
+        }
+      },
+      {
+        "name": "isEnriched_1",
+        "key": {
+          "isEnriched": 1
+        }
+      },
+      {
+        "name": "topicKey_1_category_1_qualityScore_-1_usageCount_-1",
+        "key": {
+          "topicKey": 1,
+          "category": 1,
+          "qualityScore": -1,
+          "usageCount": -1
+        }
+      },
+      {
+        "name": "topicKey_1_isEnriched_1_answerFormat_1",
+        "key": {
+          "topicKey": 1,
+          "isEnriched": 1,
+          "answerFormat": 1
+        }
+      },
+      {
+        "name": "isApproved_1",
+        "key": {
+          "isApproved": 1
+        }
+      },
+      {
+        "name": "qualityStatus_1",
+        "key": {
+          "qualityStatus": 1
+        }
+      },
+      {
+        "name": "relevanceScore_1",
+        "key": {
+          "relevanceScore": 1
+        }
+      },
+      {
+        "name": "topicKey_1_isApproved_1_qualityStatus_1_confidenceScore_-1_relevanceScore_-1",
+        "key": {
+          "topicKey": 1,
+          "isApproved": 1,
+          "qualityStatus": 1,
+          "confidenceScore": -1,
+          "relevanceScore": -1
+        }
+      },
+      {
+        "name": "rank_1",
+        "key": {
+          "rank": 1
+        }
+      },
+      {
+        "name": "rankScore_1",
+        "key": {
+          "rankScore": 1
+        }
+      },
+      {
+        "name": "isTopQuestion_1",
+        "key": {
+          "isTopQuestion": 1
+        }
+      },
+      {
+        "name": "reviewStatus_1",
+        "key": {
+          "reviewStatus": 1
+        }
+      },
+      {
+        "name": "topicKey_1_isTopQuestion_1_rank_1",
+        "key": {
+          "topicKey": 1,
+          "isTopQuestion": 1,
+          "rank": 1
+        }
+      },
+      {
+        "name": "topicKey_1_qualityScore_-1_rankScore_-1_usageCount_-1_createdAt_-1",
+        "key": {
+          "topicKey": 1,
+          "qualityScore": -1,
+          "rankScore": -1,
+          "usageCount": -1,
+          "createdAt": -1
+        }
+      },
+      {
+        "name": "seedId_1",
+        "key": {
+          "seedId": 1
+        }
+      },
+      {
+        "name": "topicKey_1_difficulty_1_category_1_sourceType_1",
+        "key": {
+          "topicKey": 1,
+          "difficulty": 1,
+          "category": 1,
+          "sourceType": 1
+        }
+      },
+      {
+        "name": "tags_1",
+        "key": {
+          "tags": 1
+        }
+      },
+      {
+        "name": "topic_canonical_exact",
+        "key": {
+          "topicKey": 1,
+          "canonicalQuestionKey": 1
+        }
+      },
+      {
+        "name": "topic_filtered_candidates",
+        "key": {
+          "topicKey": 1,
+          "difficulty": 1,
+          "category": 1,
+          "isApproved": 1,
+          "qualityStatus": 1,
+          "relevanceScore": -1,
+          "confidenceScore": -1
+        }
+      },
+      {
+        "name": "topic_searchable_tokens",
+        "key": {
+          "topicKey": 1,
+          "searchableTokens": 1,
+          "difficulty": 1,
+          "category": 1
+        }
+      },
+      {
+        "name": "topicKey_1_seedId_1",
+        "key": {
+          "topicKey": 1,
+          "seedId": 1
+        }
+      },
+      {
+        "name": "topic_stable_page",
+        "key": {
+          "topicKey": 1,
+          "qualityScore": -1,
+          "rankScore": -1,
+          "createdAt": -1,
+          "_id": 1
+        }
+      }
+    ],
+    "allRecords": {
+      "total": 6212,
+      "matrix": {
+        "javascript": {
+          "easy": 478,
+          "medium": 104,
+          "hard": 32,
+          "senior": 5
+        },
+        "typescript": {
+          "easy": 390,
+          "medium": 62,
+          "hard": 31,
+          "senior": 5
+        },
+        "python": {
+          "easy": 407,
+          "medium": 103,
+          "hard": 39,
+          "senior": 5
+        },
+        "java": {
+          "easy": 310,
+          "medium": 103,
+          "hard": 44,
+          "senior": 5
+        },
+        "cpp": {
+          "easy": 225,
+          "medium": 90,
+          "hard": 41,
+          "senior": 5
+        },
+        "csharp": {
+          "easy": 9,
+          "medium": 20,
+          "hard": 7,
+          "senior": 5
+        },
+        "dotnet": {
+          "easy": 9,
+          "medium": 20,
+          "hard": 6,
+          "senior": 5
+        },
+        "angular": {
+          "easy": 203,
+          "medium": 55,
+          "hard": 34,
+          "senior": 5
+        },
+        "react": {
+          "easy": 396,
+          "medium": 120,
+          "hard": 39,
+          "senior": 5
+        },
+        "react-native": {
+          "easy": 8,
+          "medium": 21,
+          "hard": 6,
+          "senior": 5
+        },
+        "nodejs": {
+          "easy": 19,
+          "medium": 23,
+          "hard": 17,
+          "senior": 5
+        },
+        "expressjs": {
+          "easy": 15,
+          "medium": 26,
+          "hard": 15,
+          "senior": 5
+        },
+        "nextjs": {
+          "easy": 361,
+          "medium": 111,
+          "hard": 56,
+          "senior": 5
+        },
+        "mongodb": {
+          "easy": 7,
+          "medium": 24,
+          "hard": 22,
+          "senior": 5
+        },
+        "mysql": {
+          "easy": 17,
+          "medium": 29,
+          "hard": 21,
+          "senior": 5
+        },
+        "postgresql": {
+          "easy": 9,
+          "medium": 29,
+          "hard": 18,
+          "senior": 5
+        },
+        "sql": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 6,
+          "senior": 5
+        },
+        "redis": {
+          "easy": 13,
+          "medium": 76,
+          "hard": 33,
+          "senior": 5
+        },
+        "docker": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 6,
+          "senior": 5
+        },
+        "kubernetes": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 5,
+          "senior": 5
+        },
+        "rest-apis": {
+          "easy": 12,
+          "medium": 27,
+          "hard": 18,
+          "senior": 5
+        },
+        "graphql": {
+          "easy": 10,
+          "medium": 25,
+          "hard": 18,
+          "senior": 5
+        },
+        "html": {
+          "easy": 0,
+          "medium": 17,
+          "hard": 9,
+          "senior": 5
+        },
+        "css": {
+          "easy": 0,
+          "medium": 17,
+          "hard": 9,
+          "senior": 5
+        },
+        "git-github": {
+          "easy": 6,
+          "medium": 28,
+          "hard": 10,
+          "senior": 5
+        },
+        "oop": {
+          "easy": 0,
+          "medium": 17,
+          "hard": 11,
+          "senior": 5
+        },
+        "dsa": {
+          "easy": 0,
+          "medium": 17,
+          "hard": 9,
+          "senior": 5
+        },
+        "aws": {
+          "easy": 6,
+          "medium": 92,
+          "hard": 40,
+          "senior": 5
+        },
+        "generative-ai": {
+          "easy": 0,
+          "medium": 92,
+          "hard": 42,
+          "senior": 5
+        },
+        "ai-agents": {
+          "easy": 3,
+          "medium": 80,
+          "hard": 51,
+          "senior": 5
+        },
+        "llm": {
+          "easy": 0,
+          "medium": 82,
+          "hard": 36,
+          "senior": 5
+        },
+        "rag": {
+          "easy": 0,
+          "medium": 82,
+          "hard": 36,
+          "senior": 5
+        },
+        "langchain": {
+          "easy": 0,
+          "medium": 144,
+          "hard": 67,
+          "senior": 5
+        },
+        "system-design": {
+          "easy": 15,
+          "medium": 3,
+          "hard": 35,
+          "senior": 5
+        },
+        "mern": {
+          "easy": 58,
+          "medium": 62,
+          "hard": 30,
+          "senior": 5
+        },
+        "mean": {
+          "easy": 12,
+          "medium": 94,
+          "hard": 42,
+          "senior": 5
+        },
+        "full-stack-web-development": {
+          "easy": 6,
+          "medium": 86,
+          "hard": 41,
+          "senior": 5
+        }
+      },
+      "sources": {
+        "prebuilt": 481,
+        "ai": 146,
+        "scraped": 3284,
+        "verified_seed": 2274,
+        "ai_generated": 27
+      },
+      "missingAnswers": 0,
+      "duplicates": 0,
+      "canonicalDuplicates": 0,
+      "invalidDifficulties": 0,
+      "technologyAliases": 0,
+      "unknownTechnologies": 0,
+      "incorrectVerification": 0
+    },
+    "bySource": {
+      "prebuilt": {
+        "total": 481,
+        "matrix": {
+          "javascript": {
+            "easy": 24,
+            "medium": 21,
+            "hard": 5,
+            "senior": 0
+          },
+          "typescript": {
+            "easy": 6,
+            "medium": 9,
+            "hard": 5,
+            "senior": 0
+          },
+          "python": {
+            "easy": 6,
+            "medium": 9,
+            "hard": 5,
+            "senior": 0
+          },
+          "java": {
+            "easy": 6,
+            "medium": 9,
+            "hard": 5,
+            "senior": 0
+          },
+          "cpp": {
+            "easy": 6,
+            "medium": 9,
+            "hard": 5,
+            "senior": 0
+          },
+          "csharp": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "dotnet": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "angular": {
+            "easy": 6,
+            "medium": 12,
+            "hard": 6,
+            "senior": 0
+          },
+          "react": {
+            "easy": 21,
+            "medium": 24,
+            "hard": 5,
+            "senior": 0
+          },
+          "react-native": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "nodejs": {
+            "easy": 6,
+            "medium": 9,
+            "hard": 5,
+            "senior": 0
+          },
+          "expressjs": {
+            "easy": 6,
+            "medium": 9,
+            "hard": 5,
+            "senior": 0
+          },
+          "nextjs": {
+            "easy": 6,
+            "medium": 9,
+            "hard": 5,
+            "senior": 0
+          },
+          "mongodb": {
+            "easy": 6,
+            "medium": 9,
+            "hard": 7,
+            "senior": 0
+          },
+          "mysql": {
+            "easy": 6,
+            "medium": 9,
+            "hard": 5,
+            "senior": 0
+          },
+          "postgresql": {
+            "easy": 6,
+            "medium": 9,
+            "hard": 5,
+            "senior": 0
+          },
+          "sql": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "redis": {
+            "easy": 6,
+            "medium": 11,
+            "hard": 6,
+            "senior": 0
+          },
+          "docker": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "kubernetes": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "rest-apis": {
+            "easy": 6,
+            "medium": 9,
+            "hard": 5,
+            "senior": 0
+          },
+          "graphql": {
+            "easy": 6,
+            "medium": 9,
+            "hard": 5,
+            "senior": 0
+          },
+          "html": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "css": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "git-github": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "oop": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "dsa": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "aws": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "generative-ai": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "ai-agents": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "llm": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "rag": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "langchain": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "system-design": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 2,
+            "senior": 0
+          },
+          "mern": {
+            "easy": 21,
+            "medium": 23,
+            "hard": 6,
+            "senior": 0
+          },
+          "mean": {
+            "easy": 6,
+            "medium": 9,
+            "hard": 5,
+            "senior": 0
+          },
+          "full-stack-web-development": {
+            "easy": 6,
+            "medium": 9,
+            "hard": 5,
+            "senior": 0
+          }
+        },
+        "sources": {
+          "prebuilt": 481
+        },
+        "missingAnswers": 0,
+        "duplicates": 0,
+        "canonicalDuplicates": 0,
+        "invalidDifficulties": 0,
+        "technologyAliases": 0,
+        "unknownTechnologies": 0,
+        "incorrectVerification": 0
+      },
+      "ai": {
+        "total": 146,
+        "matrix": {
+          "javascript": {
+            "easy": 0,
+            "medium": 3,
+            "hard": 0,
+            "senior": 0
+          },
+          "typescript": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "python": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "java": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "cpp": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "csharp": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "dotnet": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "angular": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "react": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "react-native": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "nodejs": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "expressjs": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "nextjs": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "mongodb": {
+            "easy": 1,
+            "medium": 3,
+            "hard": 1,
+            "senior": 0
+          },
+          "mysql": {
+            "easy": 11,
+            "medium": 5,
+            "hard": 4,
+            "senior": 0
+          },
+          "postgresql": {
+            "easy": 2,
+            "medium": 4,
+            "hard": 0,
+            "senior": 0
+          },
+          "sql": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "redis": {
+            "easy": 0,
+            "medium": 1,
+            "hard": 0,
+            "senior": 0
+          },
+          "docker": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "kubernetes": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "rest-apis": {
+            "easy": 2,
+            "medium": 3,
+            "hard": 0,
+            "senior": 0
+          },
+          "graphql": {
+            "easy": 0,
+            "medium": 1,
+            "hard": 0,
+            "senior": 0
+          },
+          "html": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "css": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "git-github": {
+            "easy": 6,
+            "medium": 11,
+            "hard": 1,
+            "senior": 0
+          },
+          "oop": {
+            "easy": 0,
+            "medium": 1,
+            "hard": 1,
+            "senior": 0
+          },
+          "dsa": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "aws": {
+            "easy": 6,
+            "medium": 10,
+            "hard": 4,
+            "senior": 0
+          },
+          "generative-ai": {
+            "easy": 0,
+            "medium": 9,
+            "hard": 0,
+            "senior": 0
+          },
+          "ai-agents": {
+            "easy": 3,
+            "medium": 9,
+            "hard": 15,
+            "senior": 0
+          },
+          "llm": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "rag": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "langchain": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "system-design": {
+            "easy": 2,
+            "medium": 3,
+            "hard": 2,
+            "senior": 0
+          },
+          "mern": {
+            "easy": 4,
+            "medium": 8,
+            "hard": 4,
+            "senior": 0
+          },
+          "mean": {
+            "easy": 1,
+            "medium": 3,
+            "hard": 1,
+            "senior": 0
+          },
+          "full-stack-web-development": {
+            "easy": 0,
+            "medium": 1,
+            "hard": 0,
+            "senior": 0
+          }
+        },
+        "sources": {
+          "ai": 146
+        },
+        "missingAnswers": 0,
+        "duplicates": 0,
+        "canonicalDuplicates": 0,
+        "invalidDifficulties": 0,
+        "technologyAliases": 0,
+        "unknownTechnologies": 0,
+        "incorrectVerification": 0
+      },
+      "scraped": {
+        "total": 3284,
+        "matrix": {
+          "javascript": {
+            "easy": 454,
+            "medium": 63,
+            "hard": 17,
+            "senior": 0
+          },
+          "typescript": {
+            "easy": 384,
+            "medium": 37,
+            "hard": 15,
+            "senior": 0
+          },
+          "python": {
+            "easy": 401,
+            "medium": 32,
+            "hard": 8,
+            "senior": 0
+          },
+          "java": {
+            "easy": 304,
+            "medium": 32,
+            "hard": 13,
+            "senior": 0
+          },
+          "cpp": {
+            "easy": 219,
+            "medium": 19,
+            "hard": 10,
+            "senior": 0
+          },
+          "csharp": {
+            "easy": 9,
+            "medium": 0,
+            "hard": 1,
+            "senior": 0
+          },
+          "dotnet": {
+            "easy": 9,
+            "medium": 0,
+            "hard": 1,
+            "senior": 0
+          },
+          "angular": {
+            "easy": 197,
+            "medium": 24,
+            "hard": 19,
+            "senior": 0
+          },
+          "react": {
+            "easy": 375,
+            "medium": 81,
+            "hard": 23,
+            "senior": 0
+          },
+          "react-native": {
+            "easy": 8,
+            "medium": 1,
+            "hard": 0,
+            "senior": 0
+          },
+          "nodejs": {
+            "easy": 13,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "expressjs": {
+            "easy": 9,
+            "medium": 1,
+            "hard": 0,
+            "senior": 0
+          },
+          "nextjs": {
+            "easy": 355,
+            "medium": 40,
+            "hard": 25,
+            "senior": 0
+          },
+          "mongodb": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "mysql": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "postgresql": {
+            "easy": 1,
+            "medium": 3,
+            "hard": 0,
+            "senior": 0
+          },
+          "sql": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "redis": {
+            "easy": 7,
+            "medium": 2,
+            "hard": 1,
+            "senior": 0
+          },
+          "docker": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "kubernetes": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "rest-apis": {
+            "easy": 4,
+            "medium": 2,
+            "hard": 0,
+            "senior": 0
+          },
+          "graphql": {
+            "easy": 4,
+            "medium": 2,
+            "hard": 0,
+            "senior": 0
+          },
+          "html": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "css": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "git-github": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "oop": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "dsa": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "aws": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "generative-ai": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "ai-agents": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "llm": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "rag": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "langchain": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "system-design": {
+            "easy": 13,
+            "medium": 0,
+            "hard": 5,
+            "senior": 0
+          },
+          "mern": {
+            "easy": 28,
+            "medium": 6,
+            "hard": 2,
+            "senior": 0
+          },
+          "mean": {
+            "easy": 5,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "full-stack-web-development": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          }
+        },
+        "sources": {
+          "scraped": 3284
+        },
+        "missingAnswers": 0,
+        "duplicates": 0,
+        "canonicalDuplicates": 0,
+        "invalidDifficulties": 0,
+        "technologyAliases": 0,
+        "unknownTechnologies": 0,
+        "incorrectVerification": 0
+      },
+      "verified_seed": {
+        "total": 2274,
+        "matrix": {
+          "javascript": {
+            "easy": 0,
+            "medium": 16,
+            "hard": 10,
+            "senior": 5
+          },
+          "typescript": {
+            "easy": 0,
+            "medium": 15,
+            "hard": 11,
+            "senior": 5
+          },
+          "python": {
+            "easy": 0,
+            "medium": 62,
+            "hard": 26,
+            "senior": 5
+          },
+          "java": {
+            "easy": 0,
+            "medium": 62,
+            "hard": 26,
+            "senior": 5
+          },
+          "cpp": {
+            "easy": 0,
+            "medium": 62,
+            "hard": 26,
+            "senior": 5
+          },
+          "csharp": {
+            "easy": 0,
+            "medium": 20,
+            "hard": 6,
+            "senior": 5
+          },
+          "dotnet": {
+            "easy": 0,
+            "medium": 20,
+            "hard": 5,
+            "senior": 5
+          },
+          "angular": {
+            "easy": 0,
+            "medium": 17,
+            "hard": 9,
+            "senior": 5
+          },
+          "react": {
+            "easy": 0,
+            "medium": 15,
+            "hard": 11,
+            "senior": 5
+          },
+          "react-native": {
+            "easy": 0,
+            "medium": 20,
+            "hard": 6,
+            "senior": 5
+          },
+          "nodejs": {
+            "easy": 0,
+            "medium": 14,
+            "hard": 12,
+            "senior": 5
+          },
+          "expressjs": {
+            "easy": 0,
+            "medium": 16,
+            "hard": 10,
+            "senior": 5
+          },
+          "nextjs": {
+            "easy": 0,
+            "medium": 62,
+            "hard": 26,
+            "senior": 5
+          },
+          "mongodb": {
+            "easy": 0,
+            "medium": 12,
+            "hard": 14,
+            "senior": 5
+          },
+          "mysql": {
+            "easy": 0,
+            "medium": 14,
+            "hard": 12,
+            "senior": 5
+          },
+          "postgresql": {
+            "easy": 0,
+            "medium": 13,
+            "hard": 13,
+            "senior": 5
+          },
+          "sql": {
+            "easy": 0,
+            "medium": 20,
+            "hard": 6,
+            "senior": 5
+          },
+          "redis": {
+            "easy": 0,
+            "medium": 62,
+            "hard": 26,
+            "senior": 5
+          },
+          "docker": {
+            "easy": 0,
+            "medium": 20,
+            "hard": 6,
+            "senior": 5
+          },
+          "kubernetes": {
+            "easy": 0,
+            "medium": 20,
+            "hard": 5,
+            "senior": 5
+          },
+          "rest-apis": {
+            "easy": 0,
+            "medium": 13,
+            "hard": 13,
+            "senior": 5
+          },
+          "graphql": {
+            "easy": 0,
+            "medium": 13,
+            "hard": 13,
+            "senior": 5
+          },
+          "html": {
+            "easy": 0,
+            "medium": 17,
+            "hard": 9,
+            "senior": 5
+          },
+          "css": {
+            "easy": 0,
+            "medium": 17,
+            "hard": 9,
+            "senior": 5
+          },
+          "git-github": {
+            "easy": 0,
+            "medium": 17,
+            "hard": 9,
+            "senior": 5
+          },
+          "oop": {
+            "easy": 0,
+            "medium": 16,
+            "hard": 10,
+            "senior": 5
+          },
+          "dsa": {
+            "easy": 0,
+            "medium": 17,
+            "hard": 9,
+            "senior": 5
+          },
+          "aws": {
+            "easy": 0,
+            "medium": 82,
+            "hard": 36,
+            "senior": 5
+          },
+          "generative-ai": {
+            "easy": 0,
+            "medium": 83,
+            "hard": 42,
+            "senior": 5
+          },
+          "ai-agents": {
+            "easy": 0,
+            "medium": 71,
+            "hard": 36,
+            "senior": 5
+          },
+          "llm": {
+            "easy": 0,
+            "medium": 82,
+            "hard": 36,
+            "senior": 5
+          },
+          "rag": {
+            "easy": 0,
+            "medium": 82,
+            "hard": 36,
+            "senior": 5
+          },
+          "langchain": {
+            "easy": 0,
+            "medium": 144,
+            "hard": 67,
+            "senior": 5
+          },
+          "system-design": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 26,
+            "senior": 5
+          },
+          "mern": {
+            "easy": 0,
+            "medium": 14,
+            "hard": 12,
+            "senior": 5
+          },
+          "mean": {
+            "easy": 0,
+            "medium": 82,
+            "hard": 36,
+            "senior": 5
+          },
+          "full-stack-web-development": {
+            "easy": 0,
+            "medium": 76,
+            "hard": 36,
+            "senior": 5
+          }
+        },
+        "sources": {
+          "verified_seed": 2274
+        },
+        "missingAnswers": 0,
+        "duplicates": 0,
+        "canonicalDuplicates": 0,
+        "invalidDifficulties": 0,
+        "technologyAliases": 0,
+        "unknownTechnologies": 0,
+        "incorrectVerification": 0
+      },
+      "ai_generated": {
+        "total": 27,
+        "matrix": {
+          "javascript": {
+            "easy": 0,
+            "medium": 1,
+            "hard": 0,
+            "senior": 0
+          },
+          "typescript": {
+            "easy": 0,
+            "medium": 1,
+            "hard": 0,
+            "senior": 0
+          },
+          "python": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "java": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "cpp": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "csharp": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "dotnet": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "angular": {
+            "easy": 0,
+            "medium": 2,
+            "hard": 0,
+            "senior": 0
+          },
+          "react": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "react-native": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "nodejs": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "expressjs": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "nextjs": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "mongodb": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "mysql": {
+            "easy": 0,
+            "medium": 1,
+            "hard": 0,
+            "senior": 0
+          },
+          "postgresql": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "sql": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "redis": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "docker": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "kubernetes": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "rest-apis": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "graphql": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "html": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "css": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "git-github": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "oop": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "dsa": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "aws": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "generative-ai": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "ai-agents": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "llm": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "rag": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "langchain": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "system-design": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "mern": {
+            "easy": 5,
+            "medium": 11,
+            "hard": 6,
+            "senior": 0
+          },
+          "mean": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          },
+          "full-stack-web-development": {
+            "easy": 0,
+            "medium": 0,
+            "hard": 0,
+            "senior": 0
+          }
+        },
+        "sources": {
+          "ai_generated": 27
+        },
+        "missingAnswers": 0,
+        "duplicates": 0,
+        "canonicalDuplicates": 0,
+        "invalidDifficulties": 0,
+        "technologyAliases": 0,
+        "unknownTechnologies": 0,
+        "incorrectVerification": 0
+      }
+    },
+    "exclusionIndicators": {
+      "legacyV2": 380,
+      "pendingOrRejectedReview": 11,
+      "notApproved": 11,
+      "lowConfidence": 546,
+      "lowQuality": 3163,
+      "privateLegacyRows": 9
+    },
+    "accessibleAllQuestions": {
+      "total": 1948,
+      "matrix": {
+        "javascript": {
+          "easy": 0,
+          "medium": 16,
+          "hard": 10,
+          "senior": 5
+        },
+        "typescript": {
+          "easy": 0,
+          "medium": 15,
+          "hard": 11,
+          "senior": 5
+        },
+        "python": {
+          "easy": 0,
+          "medium": 62,
+          "hard": 26,
+          "senior": 5
+        },
+        "java": {
+          "easy": 0,
+          "medium": 62,
+          "hard": 26,
+          "senior": 5
+        },
+        "cpp": {
+          "easy": 0,
+          "medium": 62,
+          "hard": 26,
+          "senior": 5
+        },
+        "csharp": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 6,
+          "senior": 5
+        },
+        "dotnet": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 5,
+          "senior": 5
+        },
+        "angular": {
+          "easy": 0,
+          "medium": 17,
+          "hard": 9,
+          "senior": 5
+        },
+        "react": {
+          "easy": 0,
+          "medium": 15,
+          "hard": 11,
+          "senior": 5
+        },
+        "react-native": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 6,
+          "senior": 5
+        },
+        "nodejs": {
+          "easy": 0,
+          "medium": 14,
+          "hard": 12,
+          "senior": 5
+        },
+        "expressjs": {
+          "easy": 0,
+          "medium": 16,
+          "hard": 10,
+          "senior": 5
+        },
+        "nextjs": {
+          "easy": 0,
+          "medium": 62,
+          "hard": 26,
+          "senior": 5
+        },
+        "mongodb": {
+          "easy": 0,
+          "medium": 12,
+          "hard": 14,
+          "senior": 5
+        },
+        "mysql": {
+          "easy": 0,
+          "medium": 14,
+          "hard": 12,
+          "senior": 5
+        },
+        "postgresql": {
+          "easy": 0,
+          "medium": 13,
+          "hard": 13,
+          "senior": 5
+        },
+        "sql": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 6,
+          "senior": 5
+        },
+        "redis": {
+          "easy": 0,
+          "medium": 62,
+          "hard": 26,
+          "senior": 5
+        },
+        "docker": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 6,
+          "senior": 5
+        },
+        "kubernetes": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 5,
+          "senior": 5
+        },
+        "rest-apis": {
+          "easy": 0,
+          "medium": 13,
+          "hard": 13,
+          "senior": 5
+        },
+        "graphql": {
+          "easy": 0,
+          "medium": 13,
+          "hard": 13,
+          "senior": 5
+        },
+        "html": {
+          "easy": 0,
+          "medium": 17,
+          "hard": 9,
+          "senior": 5
+        },
+        "css": {
+          "easy": 0,
+          "medium": 17,
+          "hard": 9,
+          "senior": 5
+        },
+        "git-github": {
+          "easy": 0,
+          "medium": 15,
+          "hard": 8,
+          "senior": 5
+        },
+        "oop": {
+          "easy": 0,
+          "medium": 16,
+          "hard": 10,
+          "senior": 5
+        },
+        "dsa": {
+          "easy": 0,
+          "medium": 17,
+          "hard": 9,
+          "senior": 5
+        },
+        "aws": {
+          "easy": 0,
+          "medium": 62,
+          "hard": 26,
+          "senior": 5
+        },
+        "generative-ai": {
+          "easy": 0,
+          "medium": 62,
+          "hard": 26,
+          "senior": 5
+        },
+        "ai-agents": {
+          "easy": 0,
+          "medium": 62,
+          "hard": 26,
+          "senior": 5
+        },
+        "llm": {
+          "easy": 0,
+          "medium": 62,
+          "hard": 26,
+          "senior": 5
+        },
+        "rag": {
+          "easy": 0,
+          "medium": 62,
+          "hard": 26,
+          "senior": 5
+        },
+        "langchain": {
+          "easy": 0,
+          "medium": 62,
+          "hard": 26,
+          "senior": 5
+        },
+        "system-design": {
+          "easy": 0,
+          "medium": 0,
+          "hard": 26,
+          "senior": 5
+        },
+        "mern": {
+          "easy": 0,
+          "medium": 14,
+          "hard": 12,
+          "senior": 5
+        },
+        "mean": {
+          "easy": 0,
+          "medium": 62,
+          "hard": 26,
+          "senior": 5
+        },
+        "full-stack-web-development": {
+          "easy": 0,
+          "medium": 62,
+          "hard": 26,
+          "senior": 5
+        }
+      },
+      "sources": {
+        "verified_seed": 1948
+      },
+      "missingAnswers": 0,
+      "duplicates": 0,
+      "canonicalDuplicates": 0,
+      "invalidDifficulties": 0,
+      "technologyAliases": 0,
+      "unknownTechnologies": 0,
+      "incorrectVerification": 0
+    },
+    "excludedFromAllQuestions": 4264,
+    "verifiedSeed": {
+      "total": 2755,
+      "matrix": {
+        "javascript": {
+          "easy": 24,
+          "medium": 37,
+          "hard": 15,
+          "senior": 5
+        },
+        "typescript": {
+          "easy": 6,
+          "medium": 24,
+          "hard": 16,
+          "senior": 5
+        },
+        "python": {
+          "easy": 6,
+          "medium": 71,
+          "hard": 31,
+          "senior": 5
+        },
+        "java": {
+          "easy": 6,
+          "medium": 71,
+          "hard": 31,
+          "senior": 5
+        },
+        "cpp": {
+          "easy": 6,
+          "medium": 71,
+          "hard": 31,
+          "senior": 5
+        },
+        "csharp": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 6,
+          "senior": 5
+        },
+        "dotnet": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 5,
+          "senior": 5
+        },
+        "angular": {
+          "easy": 6,
+          "medium": 29,
+          "hard": 15,
+          "senior": 5
+        },
+        "react": {
+          "easy": 21,
+          "medium": 39,
+          "hard": 16,
+          "senior": 5
+        },
+        "react-native": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 6,
+          "senior": 5
+        },
+        "nodejs": {
+          "easy": 6,
+          "medium": 23,
+          "hard": 17,
+          "senior": 5
+        },
+        "expressjs": {
+          "easy": 6,
+          "medium": 25,
+          "hard": 15,
+          "senior": 5
+        },
+        "nextjs": {
+          "easy": 6,
+          "medium": 71,
+          "hard": 31,
+          "senior": 5
+        },
+        "mongodb": {
+          "easy": 6,
+          "medium": 21,
+          "hard": 21,
+          "senior": 5
+        },
+        "mysql": {
+          "easy": 6,
+          "medium": 23,
+          "hard": 17,
+          "senior": 5
+        },
+        "postgresql": {
+          "easy": 6,
+          "medium": 22,
+          "hard": 18,
+          "senior": 5
+        },
+        "sql": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 6,
+          "senior": 5
+        },
+        "redis": {
+          "easy": 6,
+          "medium": 73,
+          "hard": 32,
+          "senior": 5
+        },
+        "docker": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 6,
+          "senior": 5
+        },
+        "kubernetes": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 5,
+          "senior": 5
+        },
+        "rest-apis": {
+          "easy": 6,
+          "medium": 22,
+          "hard": 18,
+          "senior": 5
+        },
+        "graphql": {
+          "easy": 6,
+          "medium": 22,
+          "hard": 18,
+          "senior": 5
+        },
+        "html": {
+          "easy": 0,
+          "medium": 17,
+          "hard": 9,
+          "senior": 5
+        },
+        "css": {
+          "easy": 0,
+          "medium": 17,
+          "hard": 9,
+          "senior": 5
+        },
+        "git-github": {
+          "easy": 0,
+          "medium": 17,
+          "hard": 9,
+          "senior": 5
+        },
+        "oop": {
+          "easy": 0,
+          "medium": 16,
+          "hard": 10,
+          "senior": 5
+        },
+        "dsa": {
+          "easy": 0,
+          "medium": 17,
+          "hard": 9,
+          "senior": 5
+        },
+        "aws": {
+          "easy": 0,
+          "medium": 82,
+          "hard": 36,
+          "senior": 5
+        },
+        "generative-ai": {
+          "easy": 0,
+          "medium": 83,
+          "hard": 42,
+          "senior": 5
+        },
+        "ai-agents": {
+          "easy": 0,
+          "medium": 71,
+          "hard": 36,
+          "senior": 5
+        },
+        "llm": {
+          "easy": 0,
+          "medium": 82,
+          "hard": 36,
+          "senior": 5
+        },
+        "rag": {
+          "easy": 0,
+          "medium": 82,
+          "hard": 36,
+          "senior": 5
+        },
+        "langchain": {
+          "easy": 0,
+          "medium": 144,
+          "hard": 67,
+          "senior": 5
+        },
+        "system-design": {
+          "easy": 0,
+          "medium": 0,
+          "hard": 28,
+          "senior": 5
+        },
+        "mern": {
+          "easy": 21,
+          "medium": 37,
+          "hard": 18,
+          "senior": 5
+        },
+        "mean": {
+          "easy": 6,
+          "medium": 91,
+          "hard": 41,
+          "senior": 5
+        },
+        "full-stack-web-development": {
+          "easy": 6,
+          "medium": 85,
+          "hard": 41,
+          "senior": 5
+        }
+      },
+      "sources": {
+        "prebuilt": 481,
+        "verified_seed": 2274
+      },
+      "missingAnswers": 0,
+      "duplicates": 0,
+      "canonicalDuplicates": 0,
+      "invalidDifficulties": 0,
+      "technologyAliases": 0,
+      "unknownTechnologies": 0,
+      "incorrectVerification": 0
+    },
+    "aiPool": {
+      "total": 173,
+      "matrix": {
+        "javascript": {
+          "easy": 0,
+          "medium": 4,
+          "hard": 0,
+          "senior": 0
+        },
+        "typescript": {
+          "easy": 0,
+          "medium": 1,
+          "hard": 0,
+          "senior": 0
+        },
+        "python": {
+          "easy": 0,
+          "medium": 0,
+          "hard": 0,
+          "senior": 0
+        },
+        "java": {
+          "easy": 0,
+          "medium": 0,
+          "hard": 0,
+          "senior": 0
+        },
+        "cpp": {
+          "easy": 0,
+          "medium": 0,
+          "hard": 0,
+          "senior": 0
+        },
+        "csharp": {
+          "easy": 0,
+          "medium": 0,
+          "hard": 0,
+          "senior": 0
+        },
+        "dotnet": {
+          "easy": 0,
+          "medium": 0,
+          "hard": 0,
+          "senior": 0
+        },
+        "angular": {
+          "easy": 0,
+          "medium": 2,
+          "hard": 0,
+          "senior": 0
+        },
+        "react": {
+          "easy": 0,
+          "medium": 0,
+          "hard": 0,
+          "senior": 0
+        },
+        "react-native": {
+          "easy": 0,
+          "medium": 0,
+          "hard": 0,
+          "senior": 0
+        },
+        "nodejs": {
+          "easy": 0,
+          "medium": 0,
+          "hard": 0,
+          "senior": 0
+        },
+        "expressjs": {
+          "easy": 0,
+          "medium": 0,
+          "hard": 0,
+          "senior": 0
+        },
+        "nextjs": {
+          "easy": 0,
+          "medium": 0,
+          "hard": 0,
+          "senior": 0
+        },
+        "mongodb": {
+          "easy": 1,
+          "medium": 3,
+          "hard": 1,
+          "senior": 0
+        },
+        "mysql": {
+          "easy": 11,
+          "medium": 6,
+          "hard": 4,
+          "senior": 0
+        },
+        "postgresql": {
+          "easy": 2,
+          "medium": 4,
+          "hard": 0,
+          "senior": 0
+        },
+        "sql": {
+          "easy": 0,
+          "medium": 0,
+          "hard": 0,
+          "senior": 0
+        },
+        "redis": {
+          "easy": 0,
+          "medium": 1,
+          "hard": 0,
+          "senior": 0
+        },
+        "docker": {
+          "easy": 0,
+          "medium": 0,
+          "hard": 0,
+          "senior": 0
+        },
+        "kubernetes": {
+          "easy": 0,
+          "medium": 0,
+          "hard": 0,
+          "senior": 0
+        },
+        "rest-apis": {
+          "easy": 2,
+          "medium": 3,
+          "hard": 0,
+          "senior": 0
+        },
+        "graphql": {
+          "easy": 0,
+          "medium": 1,
+          "hard": 0,
+          "senior": 0
+        },
+        "html": {
+          "easy": 0,
+          "medium": 0,
+          "hard": 0,
+          "senior": 0
+        },
+        "css": {
+          "easy": 0,
+          "medium": 0,
+          "hard": 0,
+          "senior": 0
+        },
+        "git-github": {
+          "easy": 6,
+          "medium": 11,
+          "hard": 1,
+          "senior": 0
+        },
+        "oop": {
+          "easy": 0,
+          "medium": 1,
+          "hard": 1,
+          "senior": 0
+        },
+        "dsa": {
+          "easy": 0,
+          "medium": 0,
+          "hard": 0,
+          "senior": 0
+        },
+        "aws": {
+          "easy": 6,
+          "medium": 10,
+          "hard": 4,
+          "senior": 0
+        },
+        "generative-ai": {
+          "easy": 0,
+          "medium": 9,
+          "hard": 0,
+          "senior": 0
+        },
+        "ai-agents": {
+          "easy": 3,
+          "medium": 9,
+          "hard": 15,
+          "senior": 0
+        },
+        "llm": {
+          "easy": 0,
+          "medium": 0,
+          "hard": 0,
+          "senior": 0
+        },
+        "rag": {
+          "easy": 0,
+          "medium": 0,
+          "hard": 0,
+          "senior": 0
+        },
+        "langchain": {
+          "easy": 0,
+          "medium": 0,
+          "hard": 0,
+          "senior": 0
+        },
+        "system-design": {
+          "easy": 2,
+          "medium": 3,
+          "hard": 2,
+          "senior": 0
+        },
+        "mern": {
+          "easy": 9,
+          "medium": 19,
+          "hard": 10,
+          "senior": 0
+        },
+        "mean": {
+          "easy": 1,
+          "medium": 3,
+          "hard": 1,
+          "senior": 0
+        },
+        "full-stack-web-development": {
+          "easy": 0,
+          "medium": 1,
+          "hard": 0,
+          "senior": 0
+        }
+      },
+      "sources": {
+        "ai": 146,
+        "ai_generated": 27
+      },
+      "missingAnswers": 0,
+      "duplicates": 0,
+      "canonicalDuplicates": 0,
+      "invalidDifficulties": 0,
+      "technologyAliases": 0,
+      "unknownTechnologies": 0,
+      "incorrectVerification": 0
+    },
+    "top30": {
+      "total": 1105,
+      "matrix": {
+        "javascript": {
+          "easy": 0,
+          "medium": 16,
+          "hard": 9,
+          "senior": 5
+        },
+        "typescript": {
+          "easy": 0,
+          "medium": 15,
+          "hard": 10,
+          "senior": 5
+        },
+        "python": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 5,
+          "senior": 5
+        },
+        "java": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 5,
+          "senior": 5
+        },
+        "cpp": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 5,
+          "senior": 5
+        },
+        "csharp": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 5,
+          "senior": 5
+        },
+        "dotnet": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 4,
+          "senior": 5
+        },
+        "angular": {
+          "easy": 0,
+          "medium": 17,
+          "hard": 8,
+          "senior": 5
+        },
+        "react": {
+          "easy": 0,
+          "medium": 15,
+          "hard": 10,
+          "senior": 5
+        },
+        "react-native": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 5,
+          "senior": 5
+        },
+        "nodejs": {
+          "easy": 0,
+          "medium": 14,
+          "hard": 11,
+          "senior": 5
+        },
+        "expressjs": {
+          "easy": 0,
+          "medium": 16,
+          "hard": 9,
+          "senior": 5
+        },
+        "nextjs": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 5,
+          "senior": 5
+        },
+        "mongodb": {
+          "easy": 0,
+          "medium": 12,
+          "hard": 13,
+          "senior": 5
+        },
+        "mysql": {
+          "easy": 0,
+          "medium": 14,
+          "hard": 11,
+          "senior": 5
+        },
+        "postgresql": {
+          "easy": 0,
+          "medium": 13,
+          "hard": 12,
+          "senior": 5
+        },
+        "sql": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 5,
+          "senior": 5
+        },
+        "redis": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 5,
+          "senior": 5
+        },
+        "docker": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 5,
+          "senior": 5
+        },
+        "kubernetes": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 4,
+          "senior": 5
+        },
+        "rest-apis": {
+          "easy": 0,
+          "medium": 13,
+          "hard": 12,
+          "senior": 5
+        },
+        "graphql": {
+          "easy": 0,
+          "medium": 13,
+          "hard": 12,
+          "senior": 5
+        },
+        "html": {
+          "easy": 0,
+          "medium": 17,
+          "hard": 8,
+          "senior": 5
+        },
+        "css": {
+          "easy": 0,
+          "medium": 17,
+          "hard": 8,
+          "senior": 5
+        },
+        "git-github": {
+          "easy": 0,
+          "medium": 15,
+          "hard": 7,
+          "senior": 5
+        },
+        "oop": {
+          "easy": 0,
+          "medium": 16,
+          "hard": 9,
+          "senior": 5
+        },
+        "dsa": {
+          "easy": 0,
+          "medium": 17,
+          "hard": 8,
+          "senior": 5
+        },
+        "aws": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 5,
+          "senior": 5
+        },
+        "generative-ai": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 5,
+          "senior": 5
+        },
+        "ai-agents": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 5,
+          "senior": 5
+        },
+        "llm": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 5,
+          "senior": 5
+        },
+        "rag": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 5,
+          "senior": 5
+        },
+        "langchain": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 5,
+          "senior": 5
+        },
+        "system-design": {
+          "easy": 0,
+          "medium": 0,
+          "hard": 25,
+          "senior": 5
+        },
+        "mern": {
+          "easy": 0,
+          "medium": 14,
+          "hard": 11,
+          "senior": 5
+        },
+        "mean": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 5,
+          "senior": 5
+        },
+        "full-stack-web-development": {
+          "easy": 0,
+          "medium": 20,
+          "hard": 5,
+          "senior": 5
+        }
+      },
+      "sources": {
+        "verified_seed": 1105
+      },
+      "missingAnswers": 0,
+      "duplicates": 0,
+      "canonicalDuplicates": 0,
+      "invalidDifficulties": 0,
+      "technologyAliases": 0,
+      "unknownTechnologies": 0,
+      "incorrectVerification": 0
+    },
+    "privateSessionQuestionGroups": [
+      {
+        "_id": {
+          "topicKey": "mern",
+          "difficulty": "medium",
+          "kind": "practice",
+          "sourceType": "verified_seed"
+        },
+        "count": 14
+      },
+      {
+        "_id": {
+          "difficulty": "Hard"
+        },
+        "count": 2
+      },
+      {
+        "_id": {
+          "difficulty": "Easy"
+        },
+        "count": 4
+      },
+      {
+        "_id": {
+          "difficulty": "Medium"
+        },
+        "count": 18
+      },
+      {
+        "_id": {
+          "topicKey": "mern",
+          "difficulty": "senior",
+          "kind": "practice",
+          "sourceType": "verified_seed"
+        },
+        "count": 5
+      },
+      {
+        "_id": {
+          "topicKey": "mern",
+          "difficulty": "hard",
+          "kind": "practice",
+          "sourceType": "verified_seed"
+        },
+        "count": 11
+      }
+    ]
+  }
+}

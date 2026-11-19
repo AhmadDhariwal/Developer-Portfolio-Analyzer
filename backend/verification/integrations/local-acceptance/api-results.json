@@ -202,7 +202,7 @@
   "cleanup": {
     "mongoStopped": true,
     "redisStopped": true,
-    "filesRemoved": 136,
+    "filesRemoved": 142,
     "applicationDatabasesUsed": false,
     "quotaResets": 0,
     "recursiveDeletion": false

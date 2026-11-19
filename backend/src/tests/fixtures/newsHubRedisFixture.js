@@ -56,7 +56,17 @@ function load(relative, dependencies = {}) {
   unit.filename = filename;
   unit.paths = Module._nodeModulePaths(path.dirname(filename));
   const original = unit.require.bind(unit);
-  unit.require = (name) => (Object.hasOwn(dependencies, name) ? dependencies[name] : original(name));
+  unit.require = (name) => {
+    if (Object.hasOwn(dependencies, name)) return dependencies[name];
+    if (name.startsWith('.')) {
+      const targetBase = path.basename(name, '.js');
+      const matchKey = Object.keys(dependencies).find(
+        (key) => key.startsWith('.') && path.basename(key, '.js') === targetBase,
+      );
+      if (matchKey) return dependencies[matchKey];
+    }
+    return original(name);
+  };
   unit._compile(fs.readFileSync(filename, 'utf8'), filename);
   return unit.exports;
 }

@@ -4,7 +4,7 @@ const path = require('node:path');
 const fs = require('node:fs');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env'), quiet: true });
 const mongoose = require('mongoose');
-const migration = require('../services/sprintReservationMigrationService');
+const migration = require('../modules/career-sprint/services/sprintReservationMigrationService');
 const args = process.argv.slice(2);
 const zoneAt = args.indexOf('--legacy-time-zone');
 const options = {

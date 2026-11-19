@@ -1,0 +1,42 @@
+{
+  "checkedAt": "2026-11-18T09:13:19.803Z",
+  "providerHttpRequests": 0,
+  "checks": [
+    "provider/user 429; denied requests do not consume other counters",
+    "two worker processes: one provider winner; global cap; job cap; release",
+    "logical expiry independent of TTL sweep; crash/restart leases; stale-token fencing",
+    "payload/header backoff; 401/403/429; three failures; cooldown extension",
+    "real authenticated routes and captured lee215 fixture; owner isolation; cross-worker revision invalidation",
+    "OAuth state owner isolation/replay rejection; admitted token exchange/identity; encrypted persistence",
+    "duplicate connection claim rejected; action 11 returns 429",
+    "authenticated encryption/AAD isolation; Mongo 503 with zero outbound calls; reconnect recovery",
+    "background polling admitted through Mongo; self-reported fixture persisted",
+    "HTTP 503 before provider work; immutable process store selection"
+  ],
+  "performance": {},
+  "indexes": [
+    {
+      "v": 2,
+      "key": {
+        "_id": 1
+      },
+      "name": "_id_"
+    },
+    {
+      "v": 2,
+      "key": {
+        "expiresAt": 1
+      },
+      "name": "governance_expiry",
+      "expireAfterSeconds": 0
+    }
+  ],
+  "redisStates": [],
+  "redisGovernanceCalls": 0,
+  "fixtureReplays": 3,
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 75,
+    "productionDataUsed": false
+  }
+}

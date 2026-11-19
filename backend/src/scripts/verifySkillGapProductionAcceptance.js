@@ -146,9 +146,9 @@ async function live() {
   });
   await step('freshSyntheticPdfAndEvidence', async () => {
     const bytes = fs.readFileSync(path.resolve(__dirname, '../tests/fixtures/resume/standard.pdf'));
-    const extraction = await require('../services/resumePdfExtraction').extract(bytes);
+    const extraction = await require('../modules/resume/services/resumePdfExtraction').extract(bytes);
     const gold = require('../tests/fixtures/resume/expected.json');
-    const analysis = await require('../services/resumeservice').__test.buildDeterministicAnalysis({
+    const analysis = await require('../modules/resume/services/resumeservice').__test.buildDeterministicAnalysis({
       text: extraction.text,
       fileName: 'synthetic.pdf',
       fileSize: bytes.length,
@@ -162,7 +162,7 @@ async function live() {
       analyzedAt: new Date().toISOString(),
       technicalSkills: gold.skills
     };
-    const engine = require('../services/skillGapEvidenceService');
+    const engine = require('../modules/skill-gap/services/skillGapEvidenceService');
     const calculated = engine.resolve({
       githubData: github || {},
       resumeAnalysis: resume,
@@ -198,7 +198,7 @@ async function live() {
     const runtime = await startMongo({ replicaSet: 'skillgap-live-market' });
     try {
       await mongoose.connect(runtime.uri, { autoIndex: false });
-      const Job = require('../models/jobCache');
+      const Job = require('../modules/jobs/models/jobCache');
       await Job.createCollection();
       const now = Date.now();
       for (const row of rows)
@@ -214,7 +214,7 @@ async function live() {
           freshUntil: new Date(now + 3600000),
           lastSynced: new Date(now)
         });
-      const signal = await require('../services/developerSignalService').getPublicJobMarketSignal();
+      const signal = await require('../core/developer-context/developerSignalService').getPublicJobMarketSignal();
       assert.equal(signal.live, false);
       assert.equal(signal.kind, 'cached-provider-sample');
       assert.equal(signal.sampledJobs, rows.length);
@@ -256,9 +256,9 @@ async function live() {
         code: 'NO_DEVELOPMENT_GEMINI_KEY',
         safeDetail: 'No development Gemini key available.'
       });
-    const manager = require('../services/aiProviderManager');
+    const manager = require('../core/ai/aiProviderManager');
     manager.log = () => {};
-    const prompt = require('../prompts/skillGapPrompt').getSkillGapPrompt('Backend', 'Student', [
+    const prompt = require('../modules/skill-gap/prompts/skillGapPrompt').getSkillGapPrompt('Backend', 'Student', [
       { name: 'TypeScript', status: 'PARTIAL' },
       { name: 'SQL', status: 'CLAIMED_ONLY' }
     ]);
@@ -313,7 +313,7 @@ async function verifyRecordedAi() {
   await step('realControllerNarrativeValidation', async () => {
     const generated = results.gates.liveGeminiQualitativePolicy;
     assert.equal(generated.status, 'PASS');
-    const filename = path.resolve(__dirname, '../controllers/skillgapcontroller.js');
+    const filename = path.resolve(__dirname, '../modules/skill-gap/skillgapcontroller.js');
     const source = fs.readFileSync(filename, 'utf8');
     const NativeModule = require('node:module');
     const unit = new NativeModule(filename, module);
@@ -372,8 +372,8 @@ async function load() {
       await Model.createCollection();
       await Model.createIndexes();
     }
-    await require('../services/integrationMongoGovernanceService').initialize();
-    const user = await require('../models/user').create({
+    await require('../modules/integrations/services/integrationMongoGovernanceService').initialize();
+    const user = await require('../modules/auth/models/user').create({
       name: 'Synthetic load account',
       email: 'skillgap-load@example.invalid',
       providers: ['github'],
@@ -440,9 +440,9 @@ async function load() {
       const accepted = samples.filter((s) => s.status === 200);
       assert.ok(accepted.length > 0 && accepted.length <= 30);
       assert.ok(samples.some((s) => s.status === 429));
-      const Cache = require('../models/analysisCache');
+      const Cache = require('../modules/skill-gap/models/analysisCache');
       assert.equal(await Cache.countDocuments({ userId: user._id }), 1);
-      const count = await require('../models/integrationGovernanceState')
+      const count = await require('../modules/integrations/models/integrationGovernanceState')
         .findById('test:skillgap:ai-calls')
         .lean();
       assert.equal(count.count, 1);

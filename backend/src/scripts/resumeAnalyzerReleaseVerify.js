@@ -6,9 +6,9 @@ const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const path = require('path');
 const fs = require('fs');
-const User = require('../models/user');
-const ResumeFile = require('../models/resumeFile');
-const ResumeAnalysis = require('../models/resumeAnalysis');
+const User = require('../modules/auth/models/user');
+const ResumeFile = require('../modules/resume/models/resumeFile');
+const ResumeAnalysis = require('../modules/resume/models/resumeAnalysis');
 
 const API = String(process.env.RELEASE_API_BASE || 'http://localhost:5000/api').replace(/\/$/, '');
 const WEB = String(process.env.RELEASE_WEB_ORIGIN || 'http://127.0.0.1:4201').replace(/\/$/, '');
@@ -46,7 +46,7 @@ async function bootstrapSession() {
 
   const fs = require('fs');
   const path = require('path');
-  const ResumeFile = require('../models/resumeFile');
+  const ResumeFile = require('../modules/resume/models/resumeFile');
 
   const candidates = await ResumeFile.find({ isAnalyzed: true })
     .sort({ uploadDate: -1 })
@@ -121,7 +121,7 @@ async function runApiWorkflow(session) {
 
   const fs = require('fs');
   const path = require('path');
-  const ResumeFile = require('../models/resumeFile');
+  const ResumeFile = require('../modules/resume/models/resumeFile');
   const owned = await ResumeFile.find({ userId: session.user._id, isAnalyzed: true }).sort({ uploadDate: -1 }).lean();
   const withDisk = owned.find((f) => {
     const abs = path.isAbsolute(f.fileUrl) ? f.fileUrl : path.join(process.cwd(), f.fileUrl);

@@ -1,8 +1,8 @@
 // Explicit maintenance target only; never loads .env or infers the application DB.
 const assert = require('node:assert/strict');
 const mongoose = require('mongoose');
-const Asset = require('../models/storedAsset');
-const Cleanup = require('../models/accountDeletionCleanup');
+const Asset = require('../core/storage/models/storedAsset');
+const Cleanup = require('../modules/auth/models/accountDeletionCleanup');
 function target(env, apply) {
   const uri = env.STORAGE_MAINTENANCE_MONGO_URI;
   const database = env.STORAGE_MAINTENANCE_DATABASE;

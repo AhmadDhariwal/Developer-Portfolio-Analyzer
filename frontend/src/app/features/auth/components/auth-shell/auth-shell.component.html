@@ -1,0 +1,192 @@
+<div class="auth-themed auth-shell" [ngClass]="themeClass">
+  <header class="auth-topbar">
+    <div class="auth-topbar-inner">
+      <a class="brand-lockup" routerLink="/" aria-label="Developer Portfolio Analyzer Home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 3l2.2 4.6 5.1.7-3.7 3.6.9 5.1-4.5-2.4-4.5 2.4.9-5.1-3.7-3.6 5.1-.7L12 3z"
+            />
+          </svg>
+        </span>
+        <span class="brand-copy">
+          <span class="brand-name">DevInsight <span>AI</span></span>
+          <span class="brand-sub">Developer Portfolio Analyzer</span>
+        </span>
+      </a>
+
+      <div class="topbar-actions">
+        @if (topCtaLabel && topCtaLink) {
+          <div class="topbar-prompt-group">
+            @if (topPrompt) {
+              <span class="topbar-prompt">{{ topPrompt }}</span>
+            }
+            <a class="topbar-pill" [routerLink]="topCtaLink">
+              {{ topCtaLabel }}
+            </a>
+          </div>
+        } @else if (backLabel && backLink) {
+          <a class="topbar-pill" [routerLink]="backLink">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5m0 0l6-6m-6 6l6 6" />
+            </svg>
+            <span>{{ backLabel }}</span>
+          </a>
+        }
+
+        <app-theme-menu [compactMobileLabel]="true" />
+      </div>
+    </div>
+  </header>
+
+  <main
+    class="auth-main"
+    [class.auth-main--split]="mode === 'split'"
+    [class.auth-main--centered]="mode === 'centered'"
+  >
+    @if (mode === 'split') {
+      <section class="auth-showcase" aria-label="Workspace highlights">
+        <div class="showcase-badge">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
+          </svg>
+          <span>{{ badge }}</span>
+        </div>
+
+        <h1 class="showcase-title">
+          {{ showcaseTitle }}
+          <span class="showcase-highlight">{{ showcaseHighlight }}</span>
+        </h1>
+
+        <p class="showcase-subtitle">{{ showcaseSubtitle }}</p>
+
+        @if (highlights.length > 0) {
+          <ul class="showcase-list">
+            @for (item of highlights; track item.title) {
+              <li class="showcase-item">
+                <span class="showcase-icon" aria-hidden="true">
+                  @switch (item.icon) {
+                    @case ('chart') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M18 20V10M12 20V4M6 20v-6"
+                        />
+                      </svg>
+                    }
+                    @case ('calendar') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" />
+                        <path
+                          stroke-linecap="round"
+                          d="M16 2v4M8 2v4M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h4"
+                        />
+                      </svg>
+                    }
+                    @case ('layers') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+                        />
+                      </svg>
+                    }
+                    @case ('github') {
+                      <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                          fill-rule="evenodd"
+                          clip-rule="evenodd"
+                          d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+                        />
+                      </svg>
+                    }
+                    @case ('award') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="8" r="6" />
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"
+                        />
+                      </svg>
+                    }
+                    @default {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="9" />
+                        <circle cx="12" cy="12" r="5" />
+                        <circle cx="12" cy="12" r="1" />
+                      </svg>
+                    }
+                  }
+                </span>
+                <div class="showcase-item-body">
+                  <strong>{{ item.title }}</strong>
+                  <span>{{ item.description }}</span>
+                </div>
+              </li>
+            }
+          </ul>
+        }
+
+        <div class="showcase-terminal" aria-hidden="true">
+          <div class="terminal-topbar">
+            <div class="terminal-dots">
+              <span class="dot dot--rose"></span>
+              <span class="dot dot--amber"></span>
+              <span class="dot dot--emerald"></span>
+              <span class="terminal-uri">dpa://workspace/readiness</span>
+            </div>
+            <span class="terminal-live-pill">LIVE SIGNALS</span>
+          </div>
+
+          <div class="terminal-grid">
+            <div class="terminal-kpi">
+              <span class="kpi-label">CODE QUALITY</span>
+              <strong class="kpi-value">86<span>%</span></strong>
+              <span class="kpi-bar"><span style="width: 86%"></span></span>
+            </div>
+            <div class="terminal-kpi">
+              <span class="kpi-label">SKILL COVERAGE</span>
+              <strong class="kpi-value">79<span>%</span></strong>
+              <span class="kpi-bar"><span style="width: 79%"></span></span>
+            </div>
+            <div class="terminal-kpi">
+              <span class="kpi-label">CAREER SPRINT</span>
+              <strong class="kpi-value">72<span>%</span></strong>
+              <span class="kpi-bar"><span style="width: 72%"></span></span>
+            </div>
+          </div>
+
+          <div class="terminal-footer-bar">
+            <span class="terminal-status-dot"></span>
+            <span>Repositories · Resume Parser · Skill Gap · Interview Prep</span>
+          </div>
+        </div>
+      </section>
+    }
+
+    <div class="auth-card-slot">
+      <ng-content></ng-content>
+    </div>
+  </main>
+</div>

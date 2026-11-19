@@ -4,7 +4,7 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../.env'), quiet: t
 // Default is read-only inventory. Explicit --apply creates declared indexes only;
 // never syncIndexes/dropIndex or remove documents in this migration.
 async function ensure(connection, apply = false) {
-  const model = connection.model('NewsTopicCache', require('../models/newsTopicCache').schema);
+  const model = connection.model('NewsTopicCache', require('../modules/news/models/newsTopicCache').schema);
   if (apply) await model.createIndexes();
   const indexes = await model.collection.indexes();
   const requirements = {

@@ -1,0 +1,17 @@
+{
+  "deletedTaskOwnedTemporaryFiles": [
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\custom-failover\\runtime.log",
+      "bytes": 2103,
+      "reason": "Task-owned temporary API log; sanitized structured events retained."
+    },
+    {
+      "path": "D:\\Developer-Portfolio-Analyzer\\backend\\verification\\interview-prep\\custom-failover\\runtime.err",
+      "bytes": 475,
+      "reason": "Task-owned temporary API log; sanitized structured events retained."
+    }
+  ],
+  "sourceFilesDeleted": [],
+  "recursiveDeletes": false,
+  "activePort5000LogsRetained": true
+}

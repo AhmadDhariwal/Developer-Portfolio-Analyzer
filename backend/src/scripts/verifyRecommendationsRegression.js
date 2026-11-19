@@ -21,9 +21,21 @@ if (source.slice(start, hostEnd).includes('@') && originalDb && !query.has('auth
   query.set('authSource', originalDb);
 const testUri = `${source.slice(0, hostEnd)}/${database}${query.size ? '?' + query : ''}`;
 const focused = process.argv.includes('--focused');
-const suiteFiles = fs
-  .readdirSync(path.join(root, 'backend/src/tests'))
-  .filter((name) => name.endsWith('.test.js') && (!focused || /^recommendation/.test(name)))
+const testRoot = path.join(root, 'backend/src/tests');
+const walkTests = (dir, prefix = '') => {
+  const out = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      if (entry.name === 'fixtures') continue;
+      out.push(...walkTests(path.join(dir, entry.name), prefix ? `${prefix}/${entry.name}` : entry.name));
+    } else if (entry.name.endsWith('.test.js')) {
+      out.push(prefix ? `${prefix}/${entry.name}` : entry.name);
+    }
+  }
+  return out;
+};
+const suiteFiles = walkTests(testRoot)
+  .filter((name) => !focused || /^recommendation/.test(path.basename(name)))
   .map((name) => path.join('backend/src/tests', name));
 const run = spawnSync(
   process.execPath,

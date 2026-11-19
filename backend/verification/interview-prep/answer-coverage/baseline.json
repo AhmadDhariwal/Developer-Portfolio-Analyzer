@@ -1,0 +1,13 @@
+{
+  "branch": "fix/bug-01",
+  "target": "not applicable",
+  "status": "",
+  "staged": "",
+  "plan": [
+    "Audit and report defects before implementation",
+    "Add generic intent planning, independent bounded evaluation and repair",
+    "Gate all reuse and persistence with coverage/version checks",
+    "Render practical guidance safely",
+    "Run backend/frontend/types/build checks and mandatory formatting/cleanup finalization"
+  ]
+}

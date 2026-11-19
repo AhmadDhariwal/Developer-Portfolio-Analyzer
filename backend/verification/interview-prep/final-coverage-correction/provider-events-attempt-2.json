@@ -1,0 +1,47 @@
+[
+  {
+    "scope": "AIProviderManager",
+    "event": "providers_ready"
+  },
+  {
+    "scope": "AIService",
+    "event": "prompt_size"
+  },
+  {
+    "scope": "AIService",
+    "event": "prompt_cache_miss"
+  },
+  {
+    "scope": "AIProviderManager",
+    "event": "provider_selected",
+    "provider": "gemini",
+    "model": "gemini-2.5-flash",
+    "attempt": 0
+  },
+  {
+    "scope": "AIProviderManager",
+    "event": "provider_response",
+    "provider": "gemini",
+    "model": "gemini-2.5-flash"
+  },
+  {
+    "scope": "AIProviderManager",
+    "event": "provider_success",
+    "provider": "gemini",
+    "model": "gemini-2.5-flash",
+    "attempt": 0,
+    "latencyMs": 3068
+  },
+  {
+    "scope": "AIService",
+    "event": "ai_request_complete",
+    "provider": "gemini",
+    "model": "gemini-2.5-flash",
+    "durationMs": 3114
+  },
+  {
+    "scope": "AIProviderManager",
+    "event": "provider_missing_key",
+    "provider": "xai"
+  }
+]

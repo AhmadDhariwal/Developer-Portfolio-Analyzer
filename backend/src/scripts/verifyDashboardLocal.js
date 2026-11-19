@@ -56,20 +56,20 @@ async function worker() {
       next();
     }),
   );
-  app.use('/api/dashboard', require('../routes/dashboard.routes'));
+  app.use('/api/dashboard', require('../modules/dashboard/dashboard.routes'));
   // Explicit scoring POST acceptance uses local provider fixtures, never live AI/GitHub.
-  require('../services/githubservice').analyzeGitHubProfile = async () => ({
+  require('../modules/github/services/githubservice').analyzeGitHubProfile = async () => ({
     repoCount: 12,
     scores: { codeQuality: 80, projectImpact: 10, consistency: 20, contribution: 30 },
   });
-  require('../services/aiservice').runAIAnalysis = async () => ({
+  require('../core/ai/aiservice').runAIAnalysis = async () => ({
     summary: 'Local provider fixture; numbers remain deterministic.',
   });
-  app.use('/api/analysis', require('../routes/analysis.routes'));
-  app.use('/api/ai-versions', require('../routes/aiversions.routes'));
+  app.use('/api/analysis', require('../modules/workflows/analysis.routes'));
+  app.use('/api/ai-versions', require('../modules/super-admin/routes/aiversions.routes'));
 
   app.get('/api/profile/me', async (_req, res) => {
-    const user = await require('../models/user')
+    const user = await require('../modules/auth/models/user')
       .findById(process.env.DASHBOARD_FIXTURE_OWNER)
       .lean();
     res.json({ ...user, isConfigured: true });
@@ -182,8 +182,8 @@ async function main() {
       githubSignals: { username: 'fixture-dev' },
       languageDistribution: { TypeScript: 70, JavaScript: 30 },
       contributionActivity: [
-        { month: 'Oct', count: 12 },
-        { month: 'Nov', count: 4 },
+        { month: '2026-10', count: 12 },
+        { month: '2026-11', count: 4 },
       ],
       updatedAt: now,
     });
@@ -194,7 +194,10 @@ async function main() {
       githubStats: { repos: 999 },
       updatedAt: now,
     });
-    const { ANALYSIS_VERSION, buildScope } = require('../services/skillGapCacheContract');
+    const {
+      ANALYSIS_VERSION,
+      buildScope,
+    } = require('../modules/skill-gap/services/skillGapCacheContract');
     const scope = buildScope({
       userId: owner._id,
       user: owner,
@@ -307,8 +310,8 @@ async function main() {
       })),
     );
     process.env.JWT_SECRET = randomBytes(32).toString('hex');
-    const token = require('../utils/authSessionToken').sign(owner, '1h');
-    const otherToken = require('../utils/authSessionToken').sign(other, '1h');
+    const token = require('../modules/auth/utils/authSessionToken').sign(owner, '1h');
+    const otherToken = require('../modules/auth/utils/authSessionToken').sign(other, '1h');
     for (let index = 0; index < 2; index++) {
       const child = fork(__filename, ['--worker'], {
         windowsHide: true,
@@ -544,7 +547,7 @@ async function main() {
     const {
       buildCachePipeline,
       buildIntegrationPipeline,
-    } = require('../services/dashboardQueryService');
+    } = require('../modules/dashboard/services/dashboardQueryService');
     report.plans.cacheFacet = await models.analysisCache.collection
       .aggregate(
         buildCachePipeline(owner._id, 'Backend', 'Student', [

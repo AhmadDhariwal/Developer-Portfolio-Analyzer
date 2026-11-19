@@ -1,0 +1,30 @@
+{
+  "at": "2026-11-15T12:06:17.841Z",
+  "synthetic": false,
+  "liveProvider": true,
+  "backendOrigin": "http://localhost:5008",
+  "requests": [
+    {
+      "label": "actual-netflix-custom-answer",
+      "request": {
+        "question": "system design of netflix",
+        "skill": "system-design"
+      },
+      "status": 503,
+      "durationMs": 26357,
+      "response": {
+        "message": "AI returned an incomplete or invalid answer. Please retry.",
+        "code": "invalid_ai_answer",
+        "generationStatus": "invalid_response",
+        "retryable": true
+      }
+    }
+  ],
+  "checks": [],
+  "screenshots": [],
+  "ownerIdentity": "Existing developer; credentials and personal profile omitted.",
+  "sourceFingerprint": "f17dfcd90319bb914ae43b78910ca5955367492980c767728e6203af61a9b5da",
+  "publicBankCountBefore": 0,
+  "passed": false,
+  "failure": "Actual Custom Q&A failed: invalid_ai_answer\n\n503 !== 200\n"
+}

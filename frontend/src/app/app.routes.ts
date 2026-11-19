@@ -1,48 +1,48 @@
 import { Routes } from '@angular/router';
-import { MainLayout } from './layout/main-layout/main-layout';
-import { DashboardComponent } from './pages/dashboard/dashboard.component';
-import { GithubAnalyzerComponent } from './pages/github-analyzer/github-analyzer.component';
-import { ResumeAnalyzerComponent } from './pages/resume-analyzer/resume-analyzer.component';
-import { SkillGapComponent } from './pages/skill-gap/skill-gap.component';
-import { RecommendationsComponent } from './pages/recommendations/recommendations.component';
-import { ProfileComponent } from './pages/profile/profile.component';
-import { SupportComponent } from './pages/support/support';
-import { CoursesComponent } from './pages/courses/courses.component';
-import { JobsComponent } from './pages/jobs/jobs.component';
-import { JobDetailsComponent } from './pages/job-details/job-details.component';
-import { ActivityLogsComponent } from './pages/activity-logs/activity-logs.component';
-import { AiVersionsComponent } from './pages/ai-versions/ai-versions.component';
-import { TeamManagementComponent } from './pages/team-management/team-management.component';
-import { AcceptInvitationComponent } from './pages/accept-invitation/accept-invitation.component';
-import { LandingPageComponent } from './pages/landing-page/landing-page.component';
-import { IntegrationsMarketplaceComponent } from './pages/integrations-marketplace/integrations-marketplace.component';
-import { ScenarioSimulatorComponent } from './pages/scenario-simulator/scenario-simulator.component';
-import { PrivacyPolicyComponent } from './pages/privacy-policy/privacy-policy.component';
-import { TermsOfServiceComponent } from './pages/terms-of-service/terms-of-service.component';
-import { ApiDocsPageComponent } from './pages/api-docs-page/api-docs-page.component';
-import { PublicBlogPageComponent } from './pages/public-blog-page/public-blog-page.component';
-import { ContactPageComponent } from './pages/contact-page/contact-page.component';
-import { SettingsPageComponent } from './settings/settings-page.component';
-import { NotificationsComponent } from './pages/notifications/notifications.component';
-import { PublicPortfolioComponent } from './pages/public-portfolio/public-portfolio.component';
-import { PortfolioSettingsComponent } from './pages/portfolio-settings/portfolio-settings.component';
-import { WeeklyReportsComponent } from './pages/weekly-reports/weekly-reports.component';
-import { InterviewPrepComponent } from './pages/interview-prep/interview-prep.component';
-import { CareerSprintComponent } from './pages/career-sprint/career-sprint.component';
-import { InterviewsReportsComponent } from './pages/interviews-reports/interviews-reports.component';
-import { NewsComponent } from './pages/news/news.component';
-import { Login } from './auth/login/login';
-import { Signup } from './auth/signup/signup';
+import { MainLayout } from './core/layouts/main-layout/main-layout.component';
+import { DashboardComponent } from './features/developer/pages/dashboard/dashboard.component';
+import { GithubAnalyzerComponent } from './features/developer/pages/github-analyzer/github-analyzer.component';
+import { ResumeAnalyzerComponent } from './features/developer/pages/resume-analyzer/resume-analyzer.component';
+import { SkillGapComponent } from './features/developer/pages/skill-gap/skill-gap.component';
+import { RecommendationsComponent } from './features/developer/pages/recommendations/recommendations.component';
+import { ProfileComponent } from './features/developer/pages/profile/profile.component';
+import { SupportComponent } from './features/developer/pages/support/support.component';
+import { CoursesComponent } from './features/developer/pages/courses/courses.component';
+import { JobsComponent } from './features/developer/pages/jobs/jobs.component';
+import { JobDetailsComponent } from './features/developer/pages/job-details/job-details.component';
+import { ActivityLogsComponent } from './features/super-admin/pages/activity-logs/activity-logs.component';
+import { AiVersionsComponent } from './features/super-admin/pages/ai-versions/ai-versions.component';
+import { TeamManagementComponent } from './features/super-admin/pages/team-management/team-management.component';
+import { AcceptInvitationComponent } from './features/public/pages/accept-invitation/accept-invitation.component';
+import { LandingPageComponent } from './features/public/pages/landing-page/landing-page.component';
+import { IntegrationsMarketplaceComponent } from './features/developer/pages/integrations-marketplace/integrations-marketplace.component';
+import { ScenarioSimulatorComponent } from './features/developer/pages/scenario-simulator/scenario-simulator.component';
+import { PrivacyPolicyComponent } from './features/public/pages/privacy-policy/privacy-policy.component';
+import { TermsOfServiceComponent } from './features/public/pages/terms-of-service/terms-of-service.component';
+import { ApiDocsPageComponent } from './features/public/pages/api-docs-page/api-docs-page.component';
+import { PublicBlogPageComponent } from './features/public/pages/public-blog-page/public-blog-page.component';
+import { ContactPageComponent } from './features/public/pages/contact-page/contact-page.component';
+import { SettingsPageComponent } from './features/super-admin/pages/platform-settings/settings-page.component';
+import { NotificationsComponent } from './features/notifications/notifications.component';
+import { PublicPortfolioComponent } from './features/public/pages/public-portfolio/public-portfolio.component';
+import { PortfolioSettingsComponent } from './features/developer/pages/portfolio-settings/portfolio-settings.component';
+import { WeeklyReportsComponent } from './features/developer/pages/weekly-reports/weekly-reports.component';
+import { InterviewPrepComponent } from './features/developer/pages/interview-prep/interview-prep.component';
+import { CareerSprintComponent } from './features/developer/pages/career-sprint/career-sprint.component';
+import { InterviewsReportsComponent } from './features/developer/pages/interviews-reports/interviews-reports.component';
+import { NewsComponent } from './features/developer/pages/news/news.component';
+import { Login } from './features/auth/pages/login/login.component';
+import { Signup } from './features/auth/pages/signup/signup.component';
 import { OtpVerificationComponent } from './features/auth/pages/otp-verification/otp-verification.component';
 import { ForgotPasswordComponent } from './features/auth/pages/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './features/auth/pages/reset-password/reset-password.component';
 import { OAuthCallbackComponent } from './features/auth/pages/oauth-callback/oauth-callback.component';
-import { authGuard } from './guards/auth.guard';
-import { publicGuard } from './guards/public.guard';
-import { adminSettingsGuard } from './guards/admin-settings.guard';
-import { recruiterRoleGuard } from './guards/recruiter-role.guard';
-import { noAdminTabsGuard } from './guards/no-admin-tabs.guard';
-import { superAdminGuard } from './guards/super-admin.guard';
+import { authGuard } from './core/guards/auth.guard';
+import { publicGuard } from './core/guards/public.guard';
+import { adminSettingsGuard } from './core/guards/admin-settings.guard';
+import { recruiterRoleGuard } from './core/guards/recruiter-role.guard';
+import { noAdminTabsGuard } from './core/guards/no-admin-tabs.guard';
+import { superAdminGuard } from './core/guards/super-admin.guard';
 
 export const routes: Routes = [
   // Public routes
@@ -131,7 +131,7 @@ export const routes: Routes = [
       {
         path: 'admin',
         canActivate: [noAdminTabsGuard, adminSettingsGuard],
-        loadChildren: () => import('./admin/admin.module').then((m) => m.AdminModule),
+        loadChildren: () => import('./features/admin/admin.module').then((m) => m.AdminModule),
       },
 
       // Legacy redirects
@@ -156,7 +156,8 @@ export const routes: Routes = [
   {
     path: 'super-admin',
     canActivate: [authGuard, superAdminGuard],
-    loadChildren: () => import('./super-admin/super-admin.module').then((m) => m.SuperAdminModule),
+    loadChildren: () =>
+      import('./features/super-admin/super-admin.module').then((m) => m.SuperAdminModule),
   },
 
   // Wildcard

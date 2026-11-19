@@ -6,8 +6,8 @@ const { createHash } = require('node:crypto');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
-const { entries } = require('../config/newsEnvCatalog');
-const { newsEnvShape, auditNewsConfiguration, validateNewsRelationships } = require('../config/newsConfig');
+const { entries } = require('../modules/news/config/newsEnvCatalog');
+const { newsEnvShape, auditNewsConfiguration, validateNewsRelationships } = require('../modules/news/config/newsConfig');
 const { z } = require('zod');
 const root = path.resolve(__dirname, '../..');
 const raw = fs.readFileSync(path.join(root, '.env'), 'utf8');
@@ -15,10 +15,10 @@ const local = dotenv.parse(raw);
 const exampleRaw = fs.readFileSync(path.join(root, '.env.example'), 'utf8');
 const example = dotenv.parse(exampleRaw);
 dotenv.config({ path: path.join(root, '.env'), quiet: true });
-const cache = require('../services/redisCacheService');
-const governor = require('../services/newsGovernanceService');
-const catalog = require('../services/newsCatalogService');
-const providers = require('../services/newsDiscoveryProviders');
+const cache = require('../core/cache/redisCacheService');
+const governor = require('../modules/news/services/newsGovernanceService');
+const catalog = require('../modules/news/services/newsCatalogService');
+const providers = require('../modules/news/services/newsDiscoveryProviders');
 const output = path.join(root, 'verification/tech-news/runtime-audit');
 const hash = (value) => createHash('sha256').update(JSON.stringify(value)).digest('hex');
 const privateKey = (key) =>
@@ -29,11 +29,11 @@ function consumers(key) {
   if (key.startsWith('NEWS_TEST_'))
     return [
       key === 'NEWS_TEST_BROWSER'
-        ? 'tests/newsFreeText.integration.test.js'
+        ? 'tests/news/newsFreeText.integration.test.js'
         : key === 'NEWS_TEST_LIVE_PROVIDERS'
-          ? 'tests/newsLiveSearch.integration.test.js'
+          ? 'tests/news/newsLiveSearch.integration.test.js'
           : key === 'NEWS_TEST_MONGODB_URI'
-            ? 'tests/newsCatalog.integration.test.js and isolated Mongo suites'
+            ? 'tests/news/newsCatalog.integration.test.js and isolated Mongo suites'
             : 'tests/fixtures/newsHubRedisFixture.js'
     ];
   if (/RETENTION_HOURS|CATALOG_/.test(key))
@@ -119,9 +119,9 @@ async function main() {
   assert.equal(result.files.example.missingComments.length, 0);
   await mongoose.connect(process.env.MONGODB_URI, { autoIndex: false, serverSelectionTimeoutMS: 5000 });
   await cache.initRedisCache();
-  const Article = require('../models/newsArticle');
-  const User = require('../models/user');
-  const pool = await require('../models/news').findOne({ cacheKey: 'news:v3:public:pool' }).lean();
+  const Article = require('../modules/news/models/newsArticle');
+  const User = require('../modules/auth/models/user');
+  const pool = await require('../modules/news/models/news').findOne({ cacheKey: 'news:v3:public:pool' }).lean();
   const health = await governor.health();
   const redis = cache.getRedisCacheClient({ commandTimeoutMs: 3000 });
   const heartbeat = redis && (await redis.get('news:v1:{discovery}:worker'));

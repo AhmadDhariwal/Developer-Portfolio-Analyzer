@@ -1,0 +1,54 @@
+{
+  "at": "2026-11-15T12:20:54.787996+00:00",
+  "backendFinal": {
+    "tests": 152,
+    "passed": 152,
+    "failed": 0,
+    "skipped": 0,
+    "realIsolatedMongo": true,
+    "evidence": "backend-final-tests.txt"
+  },
+  "postCleanupBackend": {
+    "passed": 72,
+    "failed": 0,
+    "evidence": "post-cleanup-tests.txt"
+  },
+  "frontend": {
+    "passed": 702,
+    "files": 118,
+    "failed": 0,
+    "evidence": "frontend-final-tests.txt",
+    "postCleanupPassed": true
+  },
+  "typescript": {
+    "command": "node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.app.json",
+    "exitCode": 0,
+    "stdout": "empty on success",
+    "postCleanupExitCode": 0
+  },
+  "productionBuild": {
+    "exitCode": 0,
+    "evidence": "build-final.txt",
+    "warnings": [
+      "Initial bundle 4.02 MB / 4 MB (+15.03 kB)",
+      "Public Portfolio SCSS 49.97 kB / 48 kB",
+      "Jobs SCSS 54.35 kB / 48 kB"
+    ],
+    "postCleanupExitCode": 0
+  },
+  "liveProvider": {
+    "actualHttpStatus": 200,
+    "durationMs": 9487,
+    "provider": "gemini",
+    "model": "gemini-2.5-flash",
+    "fields": 15,
+    "sourceEvidence": "live-custom-generation-evidence.json",
+    "note": "The provider response and persistence passed; the first browser check failed on CSS-transformed heading case. Corrected final browser acceptance passes."
+  },
+  "actualPort5000Browser": {
+    "passed": true,
+    "evidence": "live-custom-acceptance.json",
+    "privateOwnedSnapshot": true,
+    "publicBankUnchanged": true
+  }
+}

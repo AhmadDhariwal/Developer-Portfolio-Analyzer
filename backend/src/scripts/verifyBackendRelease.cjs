@@ -152,21 +152,21 @@ async function main() {
       ...new Set(
         previous.records.filter((r) => r.kind === 'skip' && !r.file.includes('newsLiveSearch')).map((r) => r.file)
       ),
-      'backend/src/tests/publicPortfolio.integration.test.js',
-      'backend/src/tests/aiProviderAdmission.integration.test.js'
+      'backend/src/tests/public-portfolio/publicPortfolio.integration.test.js',
+      'backend/src/tests/core/aiProviderAdmission.integration.test.js'
     ];
     const args = [
       '--test',
       '--test-reporter=tap',
       `--test-concurrency=${concurrency}`,
       ...(process.argv.includes('--resume')
-        ? ['backend/src/tests/resumeProduction.test.js', 'backend/src/tests/resumeProductionMongo.test.js']
+        ? ['backend/src/tests/resume/resumeProduction.test.js', 'backend/src/tests/resume/resumeProductionMongo.test.js']
         : process.argv.includes('--legacy')
-          ? ['backend/src/tests/careerSprintLegacy.integration.test.js']
+          ? ['backend/src/tests/career-sprint/careerSprintLegacy.integration.test.js']
           : full
             ? ['backend/src/tests/**/*.test.js']
             : process.argv.includes('--portfolio')
-              ? ['backend/src/tests/publicPortfolio.integration.test.js']
+              ? ['backend/src/tests/public-portfolio/publicPortfolio.integration.test.js']
               : focused)
     ];
     const stdout = fs.createWriteStream(path.join(output, label + '.tap'), { flags: 'wx' });

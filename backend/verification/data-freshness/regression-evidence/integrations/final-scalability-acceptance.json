@@ -1,0 +1,136 @@
+{
+  "checkedAt": "2026-11-17T14:11:39.606Z",
+  "providerHttpRequests": 0,
+  "checks": [
+    "strict public fields; no raw/token/ownership/user score; private providers bypass; detached account copies",
+    "fresh-only expiry; revision invalidation; stale leader fenced; expired dead-worker lease recovered",
+    "LeetCode, Stack Overflow and Dev.to preserve typed admission 429",
+    "cache hits spend account request budget; quota 429 and authoritative admission 503",
+    "measured due-poll index candidate without modifying existing indexes",
+    "1000 virtual users at concurrency eight; shared 500 fetched once; default quota/backpressure preserved; warm snapshot survives worker restart"
+  ],
+  "failures": [],
+  "polling": {
+    "before": 1000,
+    "after": 10,
+    "returned": 10
+  },
+  "baseline": {
+    "calls": 5,
+    "redisCommands": 0,
+    "conflicts": 0,
+    "commands": 41,
+    "durations": [
+      50,
+      3,
+      31,
+      63,
+      1,
+      31,
+      2,
+      2,
+      9,
+      60,
+      2,
+      1,
+      12,
+      2,
+      2,
+      9,
+      15,
+      1,
+      2,
+      12,
+      1,
+      1,
+      9,
+      14,
+      2,
+      3,
+      11,
+      2,
+      3,
+      8,
+      15,
+      2,
+      2,
+      13,
+      2,
+      3,
+      8,
+      14,
+      1,
+      2,
+      13
+    ],
+    "memory": {
+      "rss": 132091904,
+      "heapTotal": 104427520,
+      "heapUsed": 42575312,
+      "external": 22569463,
+      "arrayBuffers": 18571902
+    }
+  },
+  "shared500": {
+    "served": 500,
+    "providerCalls": 1
+  },
+  "simulation": {
+    "users": 1000,
+    "sameUsername": 500,
+    "concurrency": 8,
+    "workers": 2,
+    "elapsedMs": 9375.923900000002,
+    "throughputPerSecond": 106.65615577361926,
+    "statusCounts": {
+      "200": 559,
+      "429": 441
+    },
+    "providerCalls": 60,
+    "observationsReused": 499,
+    "successfulHitRate": 0.8926654740608229,
+    "latencyMs": {
+      "n": 1000,
+      "p50": 31.47479999999996,
+      "p95": 138.71630000000005,
+      "p99": 193.38789999999972,
+      "max": 1219.5673000000002
+    },
+    "mongoCommandMs": {
+      "n": 4677,
+      "p50": 5,
+      "p95": 20,
+      "p99": 34,
+      "max": 831
+    },
+    "transactionConflicts": 235,
+    "redisCommands": 0,
+    "mongoCommands": 5147,
+    "memory": [
+      {
+        "rss": 160112640,
+        "heapTotal": 106524672,
+        "heapUsed": 35459792,
+        "external": 25038754,
+        "arrayBuffers": 21041153
+      },
+      {
+        "rss": 157638656,
+        "heapTotal": 106262528,
+        "heapUsed": 45684392,
+        "external": 25022960,
+        "arrayBuffers": 21025359
+      }
+    ],
+    "snapshotStorage": {
+      "count": 502,
+      "logicalBytes": 94048,
+      "indexBytes": 8192
+    }
+  },
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 82,
+    "productionDataUsed": false
+  }
+}

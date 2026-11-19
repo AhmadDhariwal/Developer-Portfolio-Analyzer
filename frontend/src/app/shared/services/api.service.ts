@@ -26,6 +26,7 @@ export class ApiService {
   private readonly scenarioHistoryInflight = new Map<string, Observable<any>>();
   private readonly scenarioInvalidated$ = new Subject<void>();
   private scenarioGeneration = 0;
+  private readonly organizationsInvalidated = new Subject<void>();
 
   constructor(
     private readonly http: HttpClient,
@@ -33,6 +34,7 @@ export class ApiService {
     private readonly cacheInvalidation: FrontendCacheInvalidationService,
   ) {
     this.cacheInvalidation.register('scenario', () => this.clearScenarioCaches());
+    this.cacheInvalidation.register('organizations', () => this.clearOrganizationsCache());
     globalThis.addEventListener?.('devinsight:profile-personalization-changed', () => {
       this.invalidateScenarioContextCache();
     });
@@ -122,6 +124,7 @@ export class ApiService {
   setActiveResume(fileId: string, setAsDefault = false): Observable<any> {
     return this.http.put(`${this.baseUrl}/resume/active`, { fileId, setAsDefault }).pipe(
       tap(() => {
+        if (setAsDefault) this.cacheInvalidation.clearProfileCache();
         this.invalidateDeveloperSignalState();
         this.cacheInvalidation.clearResumeCaches();
       }),
@@ -201,6 +204,10 @@ export class ApiService {
       githubAnalysis,
       resumeText,
     });
+  }
+
+  assessSavedPortfolio(): Observable<unknown> {
+    return this.http.post(`${this.baseUrl}/analysis/portfolio-score`, {});
   }
 
   /* ── Dashboard ── */
@@ -357,13 +364,15 @@ export class ApiService {
     slug?: string;
     description?: string;
   }): Observable<any> {
-    this.clearOrganizationsCache();
-    return this.http.post(`${this.baseUrl}/tenant/organizations`, payload);
+    return this.http
+      .post(`${this.baseUrl}/tenant/organizations`, payload)
+      .pipe(tap(() => this.clearOrganizationsCache()));
   }
 
   getOrganizations(forceRefresh = false): Observable<any> {
     if (forceRefresh || !this.organizationsCache$) {
       this.organizationsCache$ = this.http.get(`${this.baseUrl}/tenant/organizations`).pipe(
+        takeUntil(this.organizationsInvalidated),
         shareReplay({ bufferSize: 1, refCount: false }),
         catchError((err) => {
           this.organizationsCache$ = null;
@@ -375,6 +384,7 @@ export class ApiService {
   }
 
   clearOrganizationsCache(): void {
+    this.organizationsInvalidated.next();
     this.organizationsCache$ = null;
   }
 
@@ -967,12 +977,21 @@ export class ApiService {
   /* ── Interview Prep ── */
   generateInterviewPrep(payload: {
     skill?: string;
+    query?: string;
+    difficulty?: string;
+    category?: string;
+    tags?: string[];
+    source?: string;
+    limit?: number;
     idempotencyKey?: string;
     skillGaps: string[];
     careerStack?: string;
     experienceLevel?: string;
   }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/interview-prep`, payload);
+    return this.http.post(`${this.baseUrl}/interview-prep`, {
+      ...payload,
+      tags: payload.tags?.join(','),
+    });
   }
 
   getInterviewPrepQuestions(params: {
@@ -1028,8 +1047,14 @@ export class ApiService {
     page?: number;
     limit?: number;
     target?: number;
+    category?: string;
+    tags?: string[];
+    source?: string;
   }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/interview-prep/generate`, payload);
+    return this.http.post(`${this.baseUrl}/interview-prep/generate`, {
+      ...payload,
+      tags: payload.tags?.join(','),
+    });
   }
 
   askInterviewPrepQuestion(payload: {
@@ -1061,6 +1086,11 @@ export class ApiService {
 
   getInterviewSession(id: string): Observable<any> {
     return this.http.get(`${this.baseUrl}/interview-prep/sessions/${encodeURIComponent(id)}`);
+  }
+  deleteInterviewSession(id: string): Observable<{ deleted: boolean }> {
+    return this.http.delete<{ deleted: boolean }>(
+      `${this.baseUrl}/interview-prep/sessions/${encodeURIComponent(id)}`,
+    );
   }
 
   /* ── Career Sprint ── */

@@ -1,0 +1,2240 @@
+const githubHealthScore = require('../../../core/scoring/githubHealthScore');
+const { clampScore: clamp } = require('../../../core/scoring/math');
+const axios = require('axios');
+const aiService = require('../../../core/ai/aiservice');
+const { getGitHubPrompt } = require('../prompts/githubPrompt');
+const { getIntegrationSecretsSync } = require('../../super-admin/services/platformSettingsService');
+const {
+  acquireCacheLock,
+  releaseCacheLock,
+  isRedisCacheEnabled,
+  getCacheJsonWithMeta,
+  setCacheJson
+} = require('../../../core/cache/redisCacheService');
+const GitHubAnalysisCache = require('../models/githubAnalysisCache');
+const AnalysisCache = require('../../skill-gap/models/analysisCache');
+const Analysis = require('../../skill-gap/models/analysis');
+const { escapeRegex } = require('../../../core/utils/validation');
+
+const ANALYSIS_VERSION = 'github-v2';
+const count = (value) =>
+  (typeof value === 'number' || (typeof value === 'string' && value.trim())) &&
+  Number.isFinite(Number(value)) &&
+  Number(value) >= 0
+    ? Number(value)
+    : null;
+const validDate = (value) =>
+  value && Number.isFinite(Date.parse(value)) ? new Date(value).toISOString() : null;
+const DATA_VERSION = 'github-normalized-v2';
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const REQUEST_TIMEOUT_MS = 10000;
+const GITHUB_AI_TIMEOUT_MS = 5000;
+const CACHE_REDIS_TTL_SECONDS = Math.floor(CACHE_TTL_MS / 1000);
+const refreshJobs = new Map();
+const analysisJobs = new Map();
+const memoryAnalysisCache = new Map();
+let swrIndexChecked = false;
+const MAX_ACTIVITY_REPOS = 5;
+const MAX_LANGUAGE_REPOS = 8;
+const MAX_SIGNAL_REPOS = 2;
+const SKILL_GAP_ANALYSIS_VERSION = 'v9-skill-evidence-governance';
+const { SUPPORT_LANGUAGES, languagePresentation } = require('./githubLanguagePresentation');
+
+const isPerfTimingEnabled = () =>
+  String(process.env.GITHUB_TIMING || '') === '1' || process.env.NODE_ENV === 'test';
+
+const createTiming = () => {
+  if (!isPerfTimingEnabled()) return null;
+  const startedAt = Date.now();
+  const stages = {
+    memoryCache: 0,
+    redis: 0,
+    mongo: 0,
+    provider: 0,
+    ai: 0,
+    deterministic: 0,
+    validation: 0,
+    persistence: 0,
+    cacheWrite: 0,
+    total: 0
+  };
+  return {
+    stages,
+    add(name, ms) {
+      if (Object.prototype.hasOwnProperty.call(stages, name)) {
+        stages[name] += Math.max(0, Number(ms || 0));
+      }
+    },
+    async time(name, operation) {
+      const start = Date.now();
+      try {
+        return await operation();
+      } finally {
+        this.add(name, Date.now() - start);
+      }
+    },
+    attach(result) {
+      stages.total = Date.now() - startedAt;
+      return { ...result, timing: { ...stages } };
+    }
+  };
+};
+
+const buildRedisCacheKey = (normalizedUsername) =>
+  `github:analysis:${ANALYSIS_VERSION}:${normalizedUsername}`;
+
+const isFreshCacheEntry = (entry) =>
+  Boolean(
+    entry?.result?.dataVersion === DATA_VERSION &&
+    entry?.expiresAt &&
+    new Date(entry.expiresAt).getTime() > Date.now()
+  );
+
+const readMemoryAnalysisCache = (normalizedUsername) => {
+  const cached = memoryAnalysisCache.get(normalizedUsername);
+  if (!cached) return null;
+  if (!isFreshCacheEntry(cached)) {
+    memoryAnalysisCache.delete(normalizedUsername);
+    return null;
+  }
+  return cached;
+};
+
+const writeMemoryAnalysisCache = (normalizedUsername, entry) => {
+  if (!entry?.result) return;
+  memoryAnalysisCache.set(normalizedUsername, {
+    ...entry,
+    expiresAt: entry.expiresAt || new Date(Date.now() + CACHE_TTL_MS)
+  });
+};
+
+const clearGitHubAnalysisMemoryCache = () => {
+  memoryAnalysisCache.clear();
+};
+
+const packRedisCacheEntry = (entry) => ({
+  result: entry.result,
+  expiresAt: entry.expiresAt,
+  updatedAt: entry.updatedAt || new Date(),
+  createdAt: entry.createdAt || new Date(),
+  snapshots: Array.isArray(entry.snapshots) ? entry.snapshots.slice(-12) : [],
+  githubUsername: entry.githubUsername,
+  normalizedUsername: entry.normalizedUsername,
+  analysisVersion: entry.analysisVersion || ANALYSIS_VERSION
+});
+
+const resolveTieredCacheEntry = async (username, timing = null) => {
+  const normalizedUsername = normalizeUsername(username);
+  if (!normalizedUsername) return { entry: null, source: 'miss' };
+
+  const memoryStarted = Date.now();
+  const memoryEntry = readMemoryAnalysisCache(normalizedUsername);
+  if (timing) timing.add('memoryCache', Date.now() - memoryStarted);
+  if (memoryEntry) return { entry: memoryEntry, source: 'memory' };
+
+  const redisKey = buildRedisCacheKey(normalizedUsername);
+  const redisMeta = await getCacheJsonWithMeta(redisKey);
+  if (timing) {
+    timing.add('memoryCache', redisMeta.memoryMs || 0);
+    timing.add('redis', redisMeta.redisMs || 0);
+  }
+  if (redisMeta.value?.result) {
+    const redisEntry = packRedisCacheEntry(redisMeta.value);
+    if (isFreshCacheEntry(redisEntry)) {
+      writeMemoryAnalysisCache(normalizedUsername, redisEntry);
+      return {
+        entry: redisEntry,
+        source: redisMeta.layer === 'memory' ? 'memory' : 'redis'
+      };
+    }
+  }
+
+  const mongoStarted = Date.now();
+  const mongoEntry = await getCacheEntry(username);
+  if (timing) timing.add('mongo', Date.now() - mongoStarted);
+  if (mongoEntry?.result && isFreshCacheEntry(mongoEntry)) {
+    writeMemoryAnalysisCache(normalizedUsername, mongoEntry);
+    setCacheJson(redisKey, packRedisCacheEntry(mongoEntry), CACHE_REDIS_TTL_SECONDS).catch(
+      () => {}
+    );
+    return { entry: mongoEntry, source: 'mongo' };
+  }
+
+  return {
+    entry: mongoEntry,
+    source: mongoEntry?.result ? 'mongo-stale' : 'miss'
+  };
+};
+
+class GitHubRateLimitError extends Error {
+  constructor(message = 'GitHub API rate limit exceeded.', resetAt = null) {
+    super(message);
+    this.name = 'GitHubRateLimitError';
+    this.status = 429;
+    this.resetAt = resetAt;
+  }
+}
+
+const average = (values = []) => {
+  const safe = values.map(Number).filter(Number.isFinite);
+  if (!safe.length) return 0;
+  return safe.reduce((sum, value) => sum + value, 0) / safe.length;
+};
+
+const normalizeUsername = (username = '') =>
+  String(username || '')
+    .trim()
+    .replace(/^@/, '')
+    .toLowerCase();
+const GITHUB_USERNAME_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/;
+const MAX_GITHUB_USERNAME_LENGTH = 39;
+const ABSURD_GITHUB_USERNAME_LENGTH = 200;
+
+const parseGitHubUsername = (rawUsername = '') => {
+  const trimmed = String(rawUsername || '')
+    .trim()
+    .replace(/^@/, '');
+  if (!trimmed) {
+    const error = new Error('GitHub username is required.');
+    error.status = 400;
+    throw error;
+  }
+  if (trimmed.length > ABSURD_GITHUB_USERNAME_LENGTH) {
+    const error = new Error('GitHub username is too large.');
+    error.status = 413;
+    throw error;
+  }
+  if (trimmed.length > MAX_GITHUB_USERNAME_LENGTH || !GITHUB_USERNAME_PATTERN.test(trimmed)) {
+    const error = new Error('GitHub username format is invalid.');
+    error.status = 400;
+    throw error;
+  }
+  return trimmed;
+};
+
+const unique = (values = []) => {
+  const seen = new Set();
+  return values
+    .map((value) => String(value || '').trim())
+    .filter((value) => {
+      const key = value.toLowerCase();
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+};
+
+const isUsableInsightText = (value, { min = 12, max = 500 } = {}) => {
+  const text = String(value || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (text.length < min || text.length > max) return false;
+  if (
+    /[{}\[\]<>]|<\/?[a-z]|lorem ipsum|as an ai\b|i cannot\b|not sure\b|\bn\/a\b|todo\b|placeholder|sample text|test summary/i.test(
+      text
+    )
+  ) {
+    return false;
+  }
+  if ((text.match(/[!?.]/g) || []).length > 8) return false;
+  return true;
+};
+
+const normalizeInsightList = (values, fallback = []) => {
+  const cleaned = (Array.isArray(values) ? values : [])
+    .map((value) =>
+      String(value || '')
+        .replace(/\s+/g, ' ')
+        .trim()
+    )
+    .filter((value) => isUsableInsightText(value, { min: 8, max: 220 }));
+  return cleaned.length >= 2 ? unique(cleaned).slice(0, 6) : fallback;
+};
+
+const resolveAIInsights = (
+  aiResult,
+  fallback,
+  excludedRepositoryNames = [],
+  evidenceTerms = []
+) => {
+  if (!aiResult || typeof aiResult !== 'object' || Array.isArray(aiResult)) return fallback;
+  // Score fields are ignored — deterministic code owns all numeric outcomes.
+  // Public metadata cannot establish personal authorship, proficiency, or production use.
+  const unsupported =
+    /\b(?:proficien(?:t|cy)|expert(?:ise)?|experience|familiarity|engagement|originality|contributions?|mastery|hands-on|production|authorship|ownership|exposure|understanding|knowledge|command|competence|ability|adoption|widespread|user bases?|reach|current structure|successfully manages|personal commits)\b/i;
+  const grounded = (text) =>
+    typeof text === 'string' &&
+    !/\d/.test(text) &&
+    !unsupported.test(text) &&
+    !excludedRepositoryNames.some((name) =>
+      new RegExp(`(?:^|\\W)${escapeRegex(name)}(?:\\W|$)`, 'i').test(text)
+    );
+  const safeList = (values) => (Array.isArray(values) ? values.filter(grounded) : []);
+  const relevant = (text) =>
+    evidenceTerms.some((term) =>
+      new RegExp(`(?:^|\\W)${escapeRegex(term)}(?:\\W|$)`, 'i').test(text)
+    );
+  const observation = (text) =>
+    grounded(text) &&
+    relevant(text) &&
+    /\b(?:metadata|signals?|language bytes?|language summary)\b/i.test(text) &&
+    /^(?:Public|Original public|Repository|Inspected|Sampled|Detected|The sampled|The public)\b/i.test(
+      text
+    );
+  const discussion = (text) =>
+    grounded(text) &&
+    relevant(text) &&
+    /^(?:Consider how|How (?:would|could)|What (?:would|could))\b/i.test(text) &&
+    !/\b(?:as seen|as shown|given|existing|current|within|utilized|implemented)\b/i.test(text);
+  aiResult = {
+    strengths: safeList(aiResult.strengths).filter(observation),
+    weakAreas: safeList(aiResult.weakAreas).filter(
+      (text) =>
+        /^(?:Consider|Review|Explore|Add|Improve|Document|Check|Assess|Clarify|Evaluate)\b/i.test(
+          text
+        ) && !/\b(?:lacking|lack|missing|absent|absence|without)\b/i.test(text)
+    ),
+    summary: observation(aiResult.summary) ? aiResult.summary : '',
+    explanation: observation(aiResult.explanation) ? aiResult.explanation : '',
+    interviewTalkingPoints: safeList(aiResult.interviewTalkingPoints).filter(discussion)
+  };
+
+  const strengths = normalizeInsightList(aiResult.strengths, fallback.strengths);
+  const weakAreas = normalizeInsightList(aiResult.weakAreas, fallback.weakAreas);
+  const summary = isUsableInsightText(aiResult.summary, { min: 24, max: 600 })
+    ? String(aiResult.summary).replace(/\s+/g, ' ').trim()
+    : fallback.summary;
+  const explanation = isUsableInsightText(aiResult.explanation, {
+    min: 24,
+    max: 600
+  })
+    ? String(aiResult.explanation).replace(/\s+/g, ' ').trim()
+    : fallback.explanation;
+
+  return {
+    developerLevel: fallback.developerLevel,
+    strengths,
+    weakAreas,
+    summary,
+    explanation,
+    interviewTalkingPoints: normalizeInsightList(
+      aiResult.interviewTalkingPoints,
+      fallback.interviewTalkingPoints
+    )
+  };
+};
+
+const buildConfig = (extra = {}) => {
+  const config = {
+    headers: { Accept: 'application/vnd.github.v3+json' },
+    timeout: REQUEST_TIMEOUT_MS,
+    ...extra
+  };
+
+  config.headers = {
+    ...(config.headers || {}),
+    Accept: 'application/vnd.github.v3+json'
+  };
+
+  const integrationSettings = getIntegrationSecretsSync();
+  if (integrationSettings?.githubEnabled === false || extra._skipToken) return config;
+
+  const token = process.env.GITHUB_TOKEN || integrationSettings?.githubApiKey || '';
+  if (token && token !== 'your_github_personal_access_token') {
+    config.headers.Authorization = `token ${token}`;
+  }
+  return config;
+};
+
+const getResetAt = (headers = {}) => {
+  const reset = Number(headers['x-ratelimit-reset'] || 0);
+  return reset ? new Date(reset * 1000).toISOString() : null;
+};
+
+const githubGet = async (url, options = {}) => {
+  try {
+    const response = await axios.get(url, buildConfig(options));
+    // A successful response remains valid even when it consumes the last request.
+    return response;
+  } catch (error) {
+    const status = error.response?.status;
+    const message = String(error.response?.data?.message || error.message || '').toLowerCase();
+    if (status === 401 && /bad credentials/i.test(message) && !options._retriedUnauthenticated) {
+      console.warn(
+        '[GitHubService] Configured GITHUB_TOKEN was rejected with 401 Bad credentials. Falling back to unauthenticated public request.'
+      );
+      return githubGet(url, {
+        ...options,
+        _retriedUnauthenticated: true,
+        _skipToken: true
+      });
+    }
+    if (
+      status === 429 ||
+      (status === 403 &&
+        (String(error.response?.headers?.['x-ratelimit-remaining']) === '0' ||
+          message.includes('rate limit'))) ||
+      message.includes('rate limit')
+    ) {
+      throw new GitHubRateLimitError(
+        'GitHub API rate limit exceeded.',
+        getResetAt(error.response?.headers || {})
+      );
+    }
+    throw error;
+  }
+};
+
+const isRateLimitError = (error) =>
+  error instanceof GitHubRateLimitError ||
+  error?.status === 429 ||
+  (error?.response?.status === 403 &&
+    String(error.response?.headers?.['x-ratelimit-remaining']) === '0') ||
+  error?.response?.status === 429 ||
+  String(error?.message || '')
+    .toLowerCase()
+    .includes('rate limit');
+
+const isTransientGitHubError = (error) => {
+  if (isRateLimitError(error) || error?.transient) return true;
+  const status = Number(error?.status || error?.response?.status || 0);
+  if ([408, 500, 502, 503, 504].includes(status)) return true;
+  const message = String(error?.message || '').toLowerCase();
+  return /timeout|timed out|network|econnreset|econnrefused|socket|temporarily unavailable|failed to fetch/i.test(
+    message
+  );
+};
+
+const fetchGitHubUser = async (username) => {
+  try {
+    const response = await githubGet(
+      `https://api.github.com/users/${encodeURIComponent(username)}`
+    );
+    const data = response.data;
+    if (
+      !data ||
+      typeof data !== 'object' ||
+      Array.isArray(data) ||
+      normalizeUsername(data.login) !== normalizeUsername(username)
+    )
+      throw new Error('Invalid GitHub profile response.');
+    return {
+      ...data,
+      followers: count(data.followers),
+      following: count(data.following),
+      public_repos: count(data.public_repos)
+    };
+  } catch (error) {
+    if (error.response?.status === 404) {
+      const notFoundError = new Error(`GitHub user "${username}" not found.`);
+      notFoundError.status = 404;
+      throw notFoundError;
+    }
+    if (isRateLimitError(error)) throw error;
+    const safe = new Error('Failed to fetch GitHub user data.');
+    safe.transient = true;
+    throw safe;
+  }
+};
+
+const fetchGitHubRepos = async (username) => {
+  try {
+    const rows = [];
+    for (let page = 1; page <= 100; page += 1) {
+      const response = await githubGet(
+        `https://api.github.com/users/${encodeURIComponent(username)}/repos`,
+        { params: { per_page: 100, sort: 'updated', type: 'owner', page } }
+      );
+      if (!Array.isArray(response.data)) throw new Error('Invalid repository response.');
+      rows.push(...response.data);
+      if (response.data.length < 100) break;
+      if (page === 100) throw new Error('Repository listing incomplete.');
+    }
+    const response = { data: rows };
+    if (!Array.isArray(response.data)) throw new Error('Invalid repository response.');
+    const seen = new Set();
+    return response.data
+      .filter((repo) => {
+        if (!repo || typeof repo.name !== 'string' || !/^[\w.-]+$/.test(repo.name)) return false;
+        const key = repo.name.toLowerCase();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .map((repo) => ({
+        ...repo,
+        topics: Array.isArray(repo.topics) ? repo.topics.filter((x) => typeof x === 'string') : [],
+        stargazers_count: count(repo.stargazers_count),
+        forks_count: count(repo.forks_count),
+        size: count(repo.size),
+        language: typeof repo.language === 'string' ? repo.language : null,
+        pushed_at: validDate(repo.pushed_at),
+        updated_at: validDate(repo.updated_at),
+        created_at: validDate(repo.created_at),
+        fork: repo.fork === true,
+        archived: repo.archived === true
+      }));
+  } catch (error) {
+    if (error.response?.status === 404) {
+      const notFoundError = new Error(`GitHub user "${username}" not found.`);
+      notFoundError.status = 404;
+      throw notFoundError;
+    }
+    if (isRateLimitError(error)) throw error;
+    const safe = new Error('Failed to fetch GitHub repositories.');
+    safe.transient = true;
+    throw safe;
+  }
+};
+
+const fetchRepoCommitCount = async (username, repoName) => {
+  try {
+    const response = await githubGet(
+      `https://api.github.com/repos/${encodeURIComponent(username)}/${encodeURIComponent(repoName)}/contributors`,
+      { params: { per_page: 100, anon: true }, timeout: 8000 }
+    );
+    if (response.status === 204) return 0;
+    if (
+      !Array.isArray(response.data) ||
+      response.data.some((item) => !item || count(item.contributions) === null)
+    )
+      return null;
+    const seen = new Set();
+    return response.data.reduce((sum, contributor) => {
+      const id = contributor.id || contributor.login || contributor.email;
+      if (id && seen.has(String(id).toLowerCase())) return sum;
+      if (id) seen.add(String(id).toLowerCase());
+      return sum + count(contributor.contributions);
+    }, 0);
+  } catch (error) {
+    if (isRateLimitError(error)) throw error;
+    return null;
+  }
+};
+
+const fetchRepoLanguages = async (username, repoName) => {
+  try {
+    const response = await githubGet(
+      `https://api.github.com/repos/${encodeURIComponent(username)}/${encodeURIComponent(repoName)}/languages`,
+      { timeout: 8000 }
+    );
+    return response.data && typeof response.data === 'object' && !Array.isArray(response.data)
+      ? response.data
+      : {};
+  } catch (error) {
+    if (isRateLimitError(error)) throw error;
+    return {};
+  }
+};
+
+const decodeContent = (payload) => {
+  if (!payload?.content || payload.encoding !== 'base64') return '';
+  try {
+    return Buffer.from(payload.content, 'base64').toString('utf8').slice(0, 12000);
+  } catch {
+    return '';
+  }
+};
+
+const fetchRepoContent = async (username, repoName, path, canonicalReadme = false) => {
+  try {
+    const response = await githubGet(
+      `https://api.github.com/repos/${encodeURIComponent(username)}/${encodeURIComponent(repoName)}/${canonicalReadme ? 'readme' : `contents/${path}`}`,
+      { timeout: 7000 }
+    );
+    if (Array.isArray(response.data)) return null;
+    if (!response.data?.content || response.data.encoding !== 'base64') return null;
+    return decodeContent(response.data);
+  } catch (error) {
+    if (isRateLimitError(error)) throw error;
+    // A repository may use README, readme.md, or GitHub's other supported names.
+    // Keep the existing inspected document when present; spend at most one extra
+    // request per sampled repository to distinguish absence from another name.
+    if (error.response?.status === 404 && path === 'README.md' && !canonicalReadme) {
+      return fetchRepoContent(username, repoName, path, true);
+    }
+    return error.response?.status === 404 ? '' : null;
+  }
+};
+
+const fetchRepoCheapSignals = async (username, repos = []) => {
+  const targetRepos = repos
+    .filter((repo) => !repo.fork && !repo.archived)
+    .sort((a, b) => {
+      const left = Number(b.stargazers_count || 0) + Number(b.forks_count || 0);
+      const right = Number(a.stargazers_count || 0) + Number(a.forks_count || 0);
+      if (left !== right) return left - right;
+      return (
+        new Date(b.pushed_at || b.updated_at || 0) - new Date(a.pushed_at || a.updated_at || 0)
+      );
+    })
+    .slice(0, MAX_SIGNAL_REPOS);
+
+  const manifestPaths = [
+    'package.json',
+    'requirements.txt',
+    'pyproject.toml',
+    'go.mod',
+    'Dockerfile'
+  ];
+
+  const entries = await Promise.all(
+    targetRepos.map(async (repo) => {
+      const manifests = {};
+      const contents = await Promise.all(
+        manifestPaths.map((path) => fetchRepoContent(username, repo.name, path))
+      );
+      manifestPaths.forEach((path, index) => {
+        if (contents[index]) manifests[path] = contents[index];
+      });
+
+      const readme = await fetchRepoContent(username, repo.name, 'README.md');
+      return [
+        repo.name,
+        {
+          manifests,
+          readme: (readme || '').slice(0, 5000),
+          hasReadme: readme === null ? null : Boolean(readme.trim()),
+          readmeLength: readme === null ? null : readme.trim().length
+        }
+      ];
+    })
+  );
+
+  return Object.fromEntries(entries);
+};
+
+const TECH_CATALOG = [
+  { name: 'React', category: 'Frontend', aliases: ['react', 'reactjs', 'jsx'] },
+  { name: 'Angular', category: 'Frontend', aliases: ['angular', '@angular'] },
+  { name: 'Vue', category: 'Frontend', aliases: ['vue', 'vuejs'] },
+  {
+    name: 'Next.js',
+    category: 'Frontend',
+    aliases: ['next.js', 'nextjs', 'next']
+  },
+  { name: 'Nuxt', category: 'Frontend', aliases: ['nuxt'] },
+  { name: 'Svelte', category: 'Frontend', aliases: ['svelte'] },
+  {
+    name: 'Tailwind CSS',
+    category: 'Frontend',
+    aliases: ['tailwind', 'tailwindcss']
+  },
+  {
+    name: 'TypeScript',
+    category: 'Frontend',
+    aliases: ['typescript', 'tsconfig']
+  },
+  {
+    name: 'Node.js',
+    category: 'Backend',
+    aliases: ['node.js', 'nodejs', 'node']
+  },
+  { name: 'Express', category: 'Backend', aliases: ['express', 'expressjs'] },
+  { name: 'NestJS', category: 'Backend', aliases: ['nestjs', '@nestjs'] },
+  { name: 'Django', category: 'Backend', aliases: ['django'] },
+  { name: 'Flask', category: 'Backend', aliases: ['flask'] },
+  { name: 'FastAPI', category: 'Backend', aliases: ['fastapi'] },
+  {
+    name: 'Spring Boot',
+    category: 'Backend',
+    aliases: ['spring boot', 'spring-boot']
+  },
+  { name: 'Laravel', category: 'Backend', aliases: ['laravel'] },
+  { name: 'GraphQL', category: 'Backend', aliases: ['graphql', 'apollo'] },
+  {
+    name: 'REST APIs',
+    category: 'Backend',
+    aliases: ['rest api', 'restful', 'api']
+  },
+  { name: 'MongoDB', category: 'Database', aliases: ['mongodb', 'mongoose'] },
+  {
+    name: 'PostgreSQL',
+    category: 'Database',
+    aliases: ['postgres', 'postgresql', 'pg']
+  },
+  { name: 'MySQL', category: 'Database', aliases: ['mysql'] },
+  { name: 'Redis', category: 'Database', aliases: ['redis'] },
+  { name: 'SQLite', category: 'Database', aliases: ['sqlite'] },
+  {
+    name: 'Docker',
+    category: 'DevOps',
+    aliases: ['docker', 'dockerfile', 'compose']
+  },
+  { name: 'Kubernetes', category: 'DevOps', aliases: ['kubernetes', 'k8s'] },
+  {
+    name: 'GitHub Actions',
+    category: 'DevOps',
+    aliases: ['github actions', '.github/workflows']
+  },
+  {
+    name: 'CI/CD',
+    category: 'DevOps',
+    aliases: ['ci/cd', 'pipeline', 'workflow']
+  },
+  { name: 'AWS', category: 'Cloud', aliases: ['aws', 'lambda', 's3', 'ec2'] },
+  { name: 'Azure', category: 'Cloud', aliases: ['azure'] },
+  {
+    name: 'Google Cloud',
+    category: 'Cloud',
+    aliases: ['gcp', 'google cloud', 'firebase']
+  },
+  { name: 'Vercel', category: 'Cloud', aliases: ['vercel'] },
+  { name: 'Netlify', category: 'Cloud', aliases: ['netlify'] },
+  { name: 'Jest', category: 'Testing', aliases: ['jest'] },
+  { name: 'Vitest', category: 'Testing', aliases: ['vitest'] },
+  { name: 'Cypress', category: 'Testing', aliases: ['cypress'] },
+  { name: 'Playwright', category: 'Testing', aliases: ['playwright'] },
+  { name: 'Pytest', category: 'Testing', aliases: ['pytest'] },
+  {
+    name: 'React Native',
+    category: 'Mobile',
+    aliases: ['react native', 'react-native']
+  },
+  { name: 'Flutter', category: 'Mobile', aliases: ['flutter', 'dart'] },
+  {
+    name: 'TensorFlow',
+    category: 'AI/ML',
+    aliases: ['tensorflow', 'tf.keras']
+  },
+  { name: 'PyTorch', category: 'AI/ML', aliases: ['pytorch', 'torch'] },
+  {
+    name: 'scikit-learn',
+    category: 'AI/ML',
+    aliases: ['scikit-learn', 'sklearn']
+  },
+  { name: 'Pandas', category: 'AI/ML', aliases: ['pandas'] },
+  { name: 'OpenAI', category: 'AI/ML', aliases: ['openai', 'gpt', 'llm'] }
+];
+
+const LANGUAGE_TECH = {
+  JavaScript: { name: 'JavaScript', category: 'Frontend' },
+  TypeScript: { name: 'TypeScript', category: 'Frontend' },
+  Python: { name: 'Python', category: 'Backend' },
+  Java: { name: 'Java', category: 'Backend' },
+  Go: { name: 'Go', category: 'Backend' },
+  Rust: { name: 'Rust', category: 'Backend' },
+  PHP: { name: 'PHP', category: 'Backend' },
+  Ruby: { name: 'Ruby', category: 'Backend' },
+  Swift: { name: 'Swift', category: 'Mobile' },
+  Kotlin: { name: 'Kotlin', category: 'Mobile' },
+  Dart: { name: 'Dart', category: 'Mobile' },
+  C: { name: 'C', category: 'Backend' },
+  'C++': { name: 'C++', category: 'Backend' },
+  'C#': { name: 'C#', category: 'Backend' },
+  R: { name: 'R', category: 'AI/ML' }
+};
+
+const addTechnology = (map, name, category, source, weight = 1) => {
+  const key = String(name || '').trim();
+  if (!key) return;
+  const current = map.get(key) || {
+    name: key,
+    category,
+    confidence: 0,
+    sources: []
+  };
+  current.category = current.category || category;
+  current.confidence = clamp(current.confidence + weight, 0, 100);
+  current.sources = unique([...(current.sources || []), source]).slice(0, 8);
+  map.set(key, current);
+};
+
+const detectTechnologies = ({ repos = [], languageDistribution = [], repoSignals = {} }) => {
+  const techMap = new Map();
+
+  languageDistribution.forEach((entry) => {
+    const language = String(entry.language || '').trim();
+    const mapped = LANGUAGE_TECH[language];
+    if (mapped)
+      addTechnology(
+        techMap,
+        mapped.name,
+        mapped.category,
+        'language',
+        Math.max(8, Math.min(24, Number(entry.percentage || 0)))
+      );
+  });
+
+  repos.forEach((repo) => {
+    const signals = repoSignals[repo.name] || {};
+    const manifestText = Object.entries(signals.manifests || {})
+      .map(([path, content]) => `${path}\n${content}`)
+      .join('\n');
+    const text = [
+      repo.name,
+      repo.description,
+      repo.language,
+      ...(Array.isArray(repo.topics) ? repo.topics : []),
+      manifestText,
+      signals.readme || ''
+    ]
+      .join(' ')
+      .toLowerCase();
+
+    TECH_CATALOG.forEach((tech) => {
+      if (tech.aliases.some((alias) => text.includes(alias.toLowerCase()))) {
+        addTechnology(techMap, tech.name, tech.category, repo.name, manifestText ? 18 : 10);
+      }
+    });
+  });
+
+  const technologies = Array.from(techMap.values())
+    .map((tech) => ({ ...tech, confidence: clamp(tech.confidence) }))
+    .sort((a, b) => b.confidence - a.confidence || a.name.localeCompare(b.name));
+
+  const categories = [
+    'Frontend',
+    'Backend',
+    'Database',
+    'DevOps',
+    'Cloud',
+    'Testing',
+    'Mobile',
+    'AI/ML'
+  ];
+  const byCategory = categories.reduce((acc, category) => {
+    acc[category] = technologies.filter((tech) => tech.category === category).slice(0, 10);
+    return acc;
+  }, {});
+
+  const totalConfidence = technologies.reduce((sum, tech) => sum + Number(tech.confidence || 0), 0);
+  const technologyDistribution = technologies
+    .map((tech) => ({
+      technology: tech.name,
+      category: tech.category,
+      percentage: totalConfidence
+        ? Math.round((Number(tech.confidence || 0) / totalConfidence) * 100)
+        : 0,
+      confidence: tech.confidence
+    }))
+    .slice(0, 16);
+
+  return {
+    technologies,
+    technologyCategories: byCategory,
+    technologyDistribution
+  };
+};
+
+const buildFallbackLanguageDistribution = (repos = []) => {
+  const counts = {};
+  let total = 0;
+  repos.forEach((repo) => {
+    if (!repo.language) return;
+    counts[repo.language] = (counts[repo.language] || 0) + 1;
+    total += 1;
+  });
+  return Object.entries(counts)
+    .map(([language, count]) => ({
+      language,
+      bytes: count,
+      percentage: total ? Math.round((count / total) * 100) : 0
+    }))
+    .sort((a, b) => b.percentage - a.percentage);
+};
+
+const normalizeDistribution = (byteMap = {}) => {
+  const entries = Object.entries(byteMap)
+    .map(([language, bytes]) => ({ language, bytes: Number(bytes || 0) }))
+    .filter((entry) => entry.language && entry.bytes > 0)
+    .sort((a, b) => b.bytes - a.bytes);
+  const total = entries.reduce((sum, entry) => sum + entry.bytes, 0);
+  if (!total) return [];
+
+  let remaining = 100;
+  return entries.map((entry, index) => {
+    const percentage =
+      index === entries.length - 1
+        ? remaining
+        : Math.max(0, Math.min(remaining, Math.round((entry.bytes / total) * 100)));
+    remaining -= percentage;
+    return { ...entry, percentage };
+  });
+};
+
+const buildLanguageDistribution = async (username, repos = []) => {
+  repos = repos.filter((repo) => !repo.fork);
+  const candidates = repos
+    .filter((repo) => !repo.fork)
+    .sort(
+      (a, b) =>
+        new Date(b.pushed_at || b.updated_at || 0) - new Date(a.pushed_at || a.updated_at || 0)
+    )
+    .slice(0, MAX_LANGUAGE_REPOS);
+
+  if (!candidates.length) {
+    const fallback = buildFallbackLanguageDistribution(repos);
+    return {
+      distribution: fallback.map(({ language, percentage }) => ({
+        language,
+        percentage
+      })),
+      rawLanguageBytes: {},
+      mainLanguageDistribution: fallback
+        .map(({ language, percentage }) => ({ language, percentage }))
+        .filter((entry) => !SUPPORT_LANGUAGES.has(entry.language)),
+      supportLanguageDistribution: fallback
+        .map(({ language, percentage }) => ({ language, percentage }))
+        .filter((entry) => SUPPORT_LANGUAGES.has(entry.language)),
+      source: fallback.length ? 'primary_language' : 'missing'
+    };
+  }
+
+  const payloads = await Promise.all(
+    candidates.map((repo) => fetchRepoLanguages(username, repo.name))
+  );
+  const byteMap = {};
+  payloads.forEach((payload) => {
+    Object.entries(payload || {}).forEach(([language, bytes]) => {
+      if (count(bytes) !== null) byteMap[language] = (byteMap[language] || 0) + count(bytes);
+    });
+  });
+
+  const distribution = normalizeDistribution(byteMap);
+  if (!distribution.length) {
+    const fallback = buildFallbackLanguageDistribution(repos);
+    return {
+      distribution: fallback.map(({ language, percentage }) => ({
+        language,
+        percentage
+      })),
+      rawLanguageBytes: {},
+      mainLanguageDistribution: fallback
+        .map(({ language, percentage }) => ({ language, percentage }))
+        .filter((entry) => !SUPPORT_LANGUAGES.has(entry.language)),
+      supportLanguageDistribution: fallback
+        .map(({ language, percentage }) => ({ language, percentage }))
+        .filter((entry) => SUPPORT_LANGUAGES.has(entry.language)),
+      source: fallback.length ? 'primary_language' : 'missing'
+    };
+  }
+
+  return {
+    distribution,
+    rawLanguageBytes: byteMap,
+    mainLanguageDistribution: distribution.filter(
+      (entry) => !SUPPORT_LANGUAGES.has(entry.language)
+    ),
+    supportLanguageDistribution: distribution.filter((entry) =>
+      SUPPORT_LANGUAGES.has(entry.language)
+    ),
+    source: 'language_bytes'
+  };
+};
+
+const buildRepoQuality = (repo, commits = 0, signals = {}, repoTechnologies = []) => {
+  const descriptionScore = repo.description ? 100 : 20;
+  const topicScore = clamp(((repo.topics || []).length / 5) * 100);
+  const readmeLength = Number(signals.readmeLength || 0);
+  const readmeScore = !signals.hasReadme ? 10 : clamp((readmeLength / 1800) * 100, 35, 100);
+  const stars = Number(repo.stargazers_count || 0);
+  const forks = Number(repo.forks_count || 0);
+  const starSignal = clamp((Math.log10(stars + 1) / 1.7) * 100);
+  const forkSignal = clamp((Math.log10(forks + 1) / 1.5) * 100);
+  const commitSignal = clamp((Math.log10(Number(commits || 0) + 1) / 2.3) * 100);
+  const size = Number(repo.size || 0);
+  const sizeSignal = size <= 0 ? 10 : size < 50 ? 35 : size < 50000 ? 85 : 70;
+  const pushedAt = repo.pushed_at || repo.updated_at;
+  const recencyDays = pushedAt
+    ? Math.max(0, (Date.now() - new Date(pushedAt).getTime()) / (24 * 60 * 60 * 1000))
+    : 365;
+  const recencySignal = clamp(100 - Math.min(100, (recencyDays / 365) * 100));
+  const techSignal = clamp((repoTechnologies.length / 4) * 100);
+
+  return clamp(
+    readmeScore * 0.2 +
+      descriptionScore * 0.12 +
+      topicScore * 0.1 +
+      starSignal * 0.12 +
+      forkSignal * 0.08 +
+      commitSignal * 0.18 +
+      recencySignal * 0.13 +
+      sizeSignal * 0.04 +
+      techSignal * 0.03
+  );
+};
+
+const categorizeRepository = (repo, qualityScore = 0, commits = 0, repoTechnologies = []) => {
+  if (repo.archived) return 'Archived';
+  const text = [repo.name, repo.description, ...(repo.topics || [])].join(' ').toLowerCase();
+  const stars = Number(repo.stargazers_count || 0);
+  const forks = Number(repo.forks_count || 0);
+  if (
+    stars >= 25 ||
+    forks >= 8 ||
+    text.includes('open-source') ||
+    text.includes('library') ||
+    text.includes('package')
+  )
+    return 'Open Source';
+  if (qualityScore >= 72 && commits >= 20 && repoTechnologies.length >= 2) return 'Production';
+  if (text.includes('portfolio') || text.includes('resume') || text.includes('personal'))
+    return 'Portfolio';
+  if (
+    text.includes('learn') ||
+    text.includes('tutorial') ||
+    text.includes('practice') ||
+    text.includes('course')
+  )
+    return 'Learning';
+  return qualityScore < 45 ? 'Experimental' : 'Portfolio';
+};
+
+const deriveDeveloperLevel = ({ healthScore, repoCount, technologies = [], totalStars }) => {
+  if (healthScore >= 78 && repoCount >= 8 && technologies.length >= 8) return 'Advanced';
+  if (healthScore >= 45 || repoCount >= 4 || totalStars >= 5) return 'Intermediate';
+  return 'Beginner';
+};
+
+const buildDeterministicScores = ({
+  repos = [],
+  userData = {},
+  mainLanguageDistribution = [],
+  technologies = [],
+  repositoryActivity = [],
+  repositoryQuality = []
+}) => {
+  const allRepos = repos;
+  repos = repos.filter((repo) => !repo.fork);
+  repositoryQuality = repositoryQuality.filter((item) =>
+    repos.some((repo) => repo.name === item.name)
+  );
+  const repoCount = repos.length;
+  const totalStars = repos.reduce((sum, repo) => sum + Number(repo.stargazers_count || 0), 0);
+  const totalForks = repos.reduce((sum, repo) => sum + Number(repo.forks_count || 0), 0);
+  const followers = Number(userData?.followers || 0);
+  const activeRepos = repos.filter((repo) => {
+    const pushedAt = repo.pushed_at || repo.updated_at;
+    return (
+      !repo.archived &&
+      pushedAt &&
+      Date.now() - new Date(pushedAt).getTime() <= 180 * 24 * 60 * 60 * 1000
+    );
+  }).length;
+  const totalCommits = repositoryActivity.reduce((sum, item) => sum + Number(item.commits || 0), 0);
+  const readmeCoverage = repositoryQuality.length
+    ? (repositoryQuality.filter((repo) => repo.hasReadme).length / repositoryQuality.length) * 100
+    : 0;
+  const avgRepoQuality = average(repositoryQuality.map((repo) => repo.qualityScore));
+
+  const repoSignal = clamp((repoCount / 18) * 100);
+  const starSignal = clamp((Math.log10(totalStars + 1) / 2.2) * 100);
+  const forkSignal = clamp((Math.log10(totalForks + 1) / 1.8) * 100);
+  const followerSignal = clamp((Math.log10(followers + 1) / 1.8) * 100);
+  const contributionSignal = clamp((Math.log10(totalCommits + 1) / 2.4) * 100);
+  const activitySignal = clamp((activeRepos / Math.max(Math.min(repoCount, 12), 1)) * 100);
+  const diversitySignal = clamp((mainLanguageDistribution.length / 7) * 100);
+  const technologySignal = clamp((technologies.length / 12) * 100);
+
+  const codeQuality = clamp(avgRepoQuality * 0.62 + readmeCoverage * 0.18 + technologySignal * 0.2);
+  const projectDiversity = clamp(
+    diversitySignal * 0.48 + technologySignal * 0.42 + repoSignal * 0.1
+  );
+  const originality = clamp(
+    starSignal * 0.35 + forkSignal * 0.2 + avgRepoQuality * 0.25 + repoSignal * 0.2
+  );
+  const projectImpact = clamp(
+    starSignal * 0.34 + forkSignal * 0.2 + repoSignal * 0.16 + originality * 0.3
+  );
+  const profileStrength = clamp(
+    repoSignal * 0.28 +
+      followerSignal * 0.18 +
+      starSignal * 0.2 +
+      activitySignal * 0.18 +
+      codeQuality * 0.16
+  );
+  const impactAvailable = repos.every(
+    (repo) => repo.stargazers_count !== null && repo.forks_count !== null
+  );
+  const recencyAvailable = repos.every(
+    (repo) => repo.archived || repo.pushed_at || repo.updated_at
+  );
+  const scoring = githubHealthScore.calculate(
+    {
+      codeQuality: impactAvailable ? codeQuality : null,
+      projectDiversity,
+      contribution: repositoryActivity.some((item) => item.commits === null)
+        ? null
+        : contributionSignal,
+      consistency: recencyAvailable ? activitySignal : null,
+      projectImpact: impactAvailable ? projectImpact : null,
+      profileStrength:
+        impactAvailable && recencyAvailable && userData.followers !== null ? profileStrength : null
+    },
+    {
+      sources: userData.login ? [{ type: 'github-user', id: String(userData.login) }] : [],
+      facts: {
+        repoCount: allRepos.length,
+        originalRepoCount: repos.filter((repo) => !repo.fork).length,
+        forkRepoCount: allRepos.filter((repo) => repo.fork).length,
+        archivedRepoCount: repos.filter((repo) => repo.archived).length,
+        languageCount: mainLanguageDistribution.length,
+        totalStars: impactAvailable ? totalStars : null,
+        totalForks: impactAvailable ? totalForks : null,
+        totalCommits: repositoryActivity.some((item) => item.commits === null)
+          ? null
+          : totalCommits,
+        activeRepos
+      }
+    }
+  );
+  if (repositoryActivity.some((item) => item.commits === null))
+    scoring.warnings.push('activity_partial_or_unavailable');
+  if (allRepos.some((repo) => repo.stargazers_count === null || repo.forks_count === null))
+    scoring.warnings.push('repository_metrics_partial');
+  if (!mainLanguageDistribution.length && repoCount)
+    scoring.warnings.push('language_data_unavailable');
+  scoring.warnings.push(
+    'activity_sampled_repository_history',
+    'repository_quality_uses_sampled_signals'
+  );
+  const healthScore = scoring.score ?? 0;
+
+  return {
+    scoring,
+    scores: {
+      codeQuality,
+      projectDiversity,
+      originality,
+      contribution: clamp(contributionSignal * 0.7 + activitySignal * 0.3),
+      consistency: activitySignal,
+      projectImpact,
+      skillCoverage: clamp(diversitySignal * 0.45 + technologySignal * 0.55),
+      profileStrength,
+      healthScore,
+      overall: healthScore
+    }
+  };
+};
+
+const buildInsightFallback = ({ developerLevel, strongestRepos = [], weakAreas = [] }) => ({
+  developerLevel,
+  strengths: strongestRepos.some((repo) => !repo.fork)
+    ? strongestRepos
+        .filter((repo) => !repo.fork)
+        .slice(0, 3)
+        .map((repo) => `Original public repository available for review: ${repo.name}`)
+    : ['Public repositories are available for review'],
+  weakAreas: weakAreas.length
+    ? weakAreas.slice(0, 4)
+    : ['Improve documentation and project descriptions'],
+  summary: 'Rule-based GitHub summary based on the available public repository evidence.',
+  explanation:
+    'Scores are deterministic and based on repository quality, activity, languages, stars, forks, and documentation.',
+  interviewTalkingPoints: strongestRepos
+    .filter((repo) => !repo.fork)
+    .slice(0, 3)
+    .map((repo) => `Discuss architecture and tradeoffs in ${repo.name}`)
+});
+
+const buildAIInsights = async ({
+  username,
+  userData,
+  repos,
+  languageSummary,
+  technologySummary,
+  activityMetrics,
+  deterministicScores,
+  weakAreas
+}) => {
+  const topRepos = [...repos]
+    .filter((repo) => !repo.fork)
+    .sort((a, b) => Number(b.qualityScore || 0) - Number(a.qualityScore || 0))
+    .slice(0, 8)
+    .map((repo) => ({
+      name: repo.name,
+      category: repo.category,
+      language: repo.language,
+      technologies: repo.technologies.slice(0, 6),
+      stars: repo.stars,
+      forks: repo.forks,
+      qualityScore: repo.qualityScore,
+      updatedAt: repo.updatedAt
+    }));
+
+  const developerLevel = deriveDeveloperLevel({
+    healthScore: deterministicScores.healthScore,
+    repoCount: repos.length,
+    technologies: technologySummary,
+    totalStars: repos.reduce((sum, repo) => sum + Number(repo.stars || 0), 0)
+  });
+
+  const fallback = buildInsightFallback({
+    developerLevel,
+    strongestRepos: repos,
+    weakAreas
+  });
+  const prompt = getGitHubPrompt({
+    username,
+    profile: {
+      bio: userData.bio || '',
+      publicRepos: Number(userData.public_repos || repos.length),
+      followers: Number(userData.followers || 0)
+    },
+    deterministicScores,
+    topRepos,
+    languageSummary,
+    technologySummary: technologySummary.slice(0, 16),
+    activityMetrics,
+    weakAreaHints: weakAreas
+  });
+
+  let timer;
+  try {
+    const aiResult = await Promise.race([
+      aiService.runAIAnalysis(prompt, fallback, 0, {
+        timeoutMs: GITHUB_AI_TIMEOUT_MS
+      }),
+      new Promise((resolve) => {
+        timer = setTimeout(() => resolve(fallback), GITHUB_AI_TIMEOUT_MS);
+      })
+    ]);
+    return resolveAIInsights(
+      aiResult,
+      fallback,
+      repos.filter((repo) => repo.fork).map((repo) => repo.name),
+      unique([
+        ...topRepos.map((repo) => repo.name),
+        ...languageSummary.map((entry) => entry.language),
+        ...technologySummary.map((tech) => tech.name)
+      ])
+    );
+  } catch {
+    return fallback;
+  } finally {
+    clearTimeout(timer);
+  }
+};
+
+const buildWeakAreas = ({
+  scores,
+  repositoryQuality = [],
+  technologyCategories = {},
+  supportLanguageDistribution = []
+}) => {
+  const weak = [];
+  const missingReadmeCount = repositoryQuality.filter((repo) => repo.hasReadme === false).length;
+  const noDescriptionCount = repositoryQuality.filter((repo) => !repo.description).length;
+  const lowQualityCount = repositoryQuality.filter((repo) => repo.qualityScore < 45).length;
+  if (missingReadmeCount)
+    weak.push(`${missingReadmeCount} repositories need stronger README documentation`);
+  if (noDescriptionCount) weak.push(`${noDescriptionCount} repositories need clear descriptions`);
+  if (lowQualityCount) weak.push('Repository quality is uneven across the portfolio');
+  if (scores.contribution < 45)
+    weak.push('Contribution depth is low in recently updated repositories');
+  if ((technologyCategories.Testing || []).length === 0)
+    weak.push('Testing tools are not clearly visible');
+  if ((technologyCategories.DevOps || []).length === 0)
+    weak.push('DevOps and CI/CD signals are thin');
+  const supportTotal = supportLanguageDistribution.reduce(
+    (sum, item) => sum + Number(item.percentage || 0),
+    0
+  );
+  if (supportTotal > 45)
+    weak.push(
+      'Language mix is dominated by support files, so charts may overstate application code'
+    );
+  return unique(weak).slice(0, 6);
+};
+
+const buildRecruiterInsights = ({
+  scores,
+  repoCount,
+  totalStars,
+  followers,
+  technologies = [],
+  repositoryQuality = []
+}) => {
+  const topTech = technologies.slice(0, 8).map((tech) => tech.name);
+  const productionRepos = repositoryQuality.filter(
+    (repo) => !repo.fork && (repo.category === 'Production' || repo.category === 'Open Source')
+  );
+  const proof = [];
+  if (scores.healthScore >= 75)
+    proof.push('Strong GitHub health score with balanced quality, activity, and impact signals.');
+  if (productionRepos.length)
+    proof.push(
+      `${productionRepos.length} original repositories meet the project's impact heuristics.`
+    );
+  if (topTech.length)
+    proof.push(`Detected repository technology signals: ${topTech.slice(0, 5).join(', ')}.`);
+  if (totalStars || followers)
+    proof.push(
+      `Public metadata reports ${totalStars} repository stars and ${followers} profile followers.`
+    );
+
+  return {
+    headline:
+      scores.healthScore >= 75
+        ? 'Strong recruiter-visible GitHub profile'
+        : scores.healthScore >= 50
+          ? 'Promising GitHub profile with clear improvement levers'
+          : 'Early GitHub signal; needs stronger project proof',
+    proofPoints: proof.slice(0, 5),
+    recruiterSummary: `${repoCount} repositories analyzed with a deterministic GitHub Health Score of ${scores.healthScore}/100.`,
+    interviewTalkingPoints: unique([
+      ...productionRepos
+        .slice(0, 3)
+        .map((repo) => `Discuss architecture and tradeoffs in ${repo.name}`),
+      ...topTech.slice(0, 3).map((tech) => `Discuss the repository signals associated with ${tech}`)
+    ]).slice(0, 5)
+  };
+};
+
+const compareSnapshots = (previous, current) => {
+  if (!previous || !current) return null;
+  return {
+    previousAnalyzedAt: previous.analyzedAt,
+    currentAnalyzedAt: current.analyzedAt,
+    healthScoreDelta: Number(current.healthScore || 0) - Number(previous.healthScore || 0),
+    repoCountDelta: Number(current.repoCount || 0) - Number(previous.repoCount || 0),
+    starsDelta: Number(current.totalStars || 0) - Number(previous.totalStars || 0),
+    forksDelta: Number(current.totalForks || 0) - Number(previous.totalForks || 0),
+    followersDelta: Number(current.followers || 0) - Number(previous.followers || 0)
+  };
+};
+
+const snapshotFromResult = (result = {}) => ({
+  analyzedAt: result.fetchedAt || result.scoring?.calculatedAt || new Date(),
+  healthScore: Number(result.githubHealthScore || result.activityScore || 0),
+  repoCount: Number(result.repoCount || 0),
+  totalStars: Number(result.totalStars || 0),
+  totalForks: Number(result.totalForks || 0),
+  followers: Number(result.followers || 0),
+  topLanguages: (result.mainLanguageDistribution || result.languageDistribution || [])
+    .slice(0, 5)
+    .map((entry) => entry.language),
+  topTechnologies: (result.technologies || [])
+    .slice(0, 8)
+    .map((tech) => tech.name || tech.technology || tech)
+});
+
+const getCacheEntry = async (username) => {
+  const normalizedUsername = normalizeUsername(username);
+  if (!normalizedUsername) return null;
+  return GitHubAnalysisCache.findOne({
+    normalizedUsername,
+    analysisVersion: ANALYSIS_VERSION
+  })
+    .select(
+      'githubUsername normalizedUsername analysisVersion result expiresAt updatedAt createdAt snapshots'
+    )
+    .lean();
+};
+
+const ensureSWRCacheIndex = async () => {
+  if (swrIndexChecked) return;
+  swrIndexChecked = true;
+  try {
+    const indexes = await GitHubAnalysisCache.collection.indexes();
+    const ttlIndex = indexes.find(
+      (index) => index.key?.expiresAt === 1 && Number.isFinite(index.expireAfterSeconds)
+    );
+    if (ttlIndex?.name) {
+      await GitHubAnalysisCache.collection.dropIndex(ttlIndex.name);
+      await GitHubAnalysisCache.collection.createIndex({ expiresAt: 1 });
+      console.log(
+        '[GitHubSWR]',
+        JSON.stringify({
+          event: 'ttl_index_replaced',
+          indexName: ttlIndex.name
+        })
+      );
+    }
+  } catch (error) {
+    console.warn(
+      '[GitHubSWR]',
+      JSON.stringify({ event: 'ttl_index_check_failed', error: error.message })
+    );
+  }
+};
+
+const withCacheMetadata = (result, cacheEntry, source = 'cache') => {
+  const snapshots = Array.isArray(cacheEntry?.snapshots) ? cacheEntry.snapshots : [];
+  return {
+    ...result,
+    ...languagePresentation(
+      result.rawLanguageBytes ?? result.githubSignals?.languages?.rawBytes,
+      result.languageDistribution?.length
+        ? result.languageDistribution
+        : [
+            ...(result.mainLanguageDistribution || []),
+            ...(result.supportLanguageDistribution || [])
+          ]
+    ),
+    analysisVersion: ANALYSIS_VERSION,
+    cache: {
+      source,
+      hit: source === 'cache' || source === 'stale-cache',
+      expiresAt: cacheEntry?.expiresAt || null,
+      cachedAt: cacheEntry?.updatedAt || cacheEntry?.createdAt || null,
+      fetchedAt: result.fetchedAt || result.githubSignals?.analyzedAt || null,
+      stale: source === 'stale-cache'
+    },
+    analysisHistory: snapshots.slice(-6),
+    comparison:
+      result.comparison ||
+      compareSnapshots(snapshots[snapshots.length - 2], snapshots[snapshots.length - 1])
+  };
+};
+
+const getOwnedCacheEntry = async (username, userId) => {
+  const analysis = await Analysis.findOne({ userId })
+    .sort({ updatedAt: -1, _id: -1 })
+    .select('githubSignals githubAnalysisHistory');
+  const signals = analysis?.githubSignals;
+  if (!signals?.analyzedAt || normalizeUsername(signals.username) !== normalizeUsername(username))
+    return null;
+  const saved = signals.acceptedResult;
+  if (!saved) {
+    const { entry } = await resolveTieredCacheEntry(username);
+    if (entry?.result?.githubSignals?.analyzedAt === signals.analyzedAt) return entry;
+    if (!Number.isFinite(signals.stats?.repos) || !Array.isArray(signals.repositories)) return null;
+
+    // Older accepted records contain evidence and scores, but not the whole response.
+    // Keep the recorded fields and expose the result as stale without borrowing preview data.
+    return {
+      result: {
+        fetchedAt: signals.analyzedAt,
+        repoCount: signals.stats.repos,
+        totalStars: signals.stats.stars ?? null,
+        totalForks: signals.stats.forks ?? null,
+        followers: signals.stats.followers ?? null,
+        githubHealthScore: signals.healthScore ?? null,
+        activityScore: signals.healthScore ?? null,
+        scoring: signals.scoring,
+        developerLevel: signals.developerLevel,
+        languageDistribution: signals.languages?.normalized || [],
+        mainLanguageDistribution: signals.languages?.main || [],
+        supportLanguageDistribution: signals.languages?.support || [],
+        rawLanguageBytes: signals.languages?.rawBytes,
+        technologies: signals.technologies,
+        technologyCategories: signals.technologyCategories,
+        repositories: signals.repositories,
+        repositoryQuality: signals.repositories,
+        repositoryActivity: [],
+        recruiterInsights: signals.recruiterInsights,
+        githubSignals: signals
+      },
+      updatedAt: signals.analyzedAt,
+      snapshots: analysis.githubAnalysisHistory
+    };
+  }
+
+  return {
+    result: saved,
+    expiresAt: saved.cache?.expiresAt,
+    updatedAt: saved.cache?.cachedAt || signals.analyzedAt,
+    snapshots: saved.analysisHistory || analysis.githubAnalysisHistory
+  };
+};
+
+const getCachedGitHubAnalysis = async (username, { allowStale = true, userId } = {}) => {
+  const cacheEntry = userId
+    ? await getOwnedCacheEntry(username, userId)
+    : (await resolveTieredCacheEntry(username)).entry;
+  const now = Date.now();
+  const expiresAtMs = cacheEntry?.expiresAt ? new Date(cacheEntry.expiresAt).getTime() : 0;
+  const isFresh = Boolean(cacheEntry?.result && expiresAtMs > now);
+  const isStale = Boolean(cacheEntry?.result && !isFresh);
+  const ageMs = cacheEntry?.updatedAt
+    ? Math.max(0, now - new Date(cacheEntry.updatedAt).getTime())
+    : null;
+
+  if (cacheEntry?.result && (isFresh || allowStale)) {
+    return {
+      data: withCacheMetadata(cacheEntry.result, cacheEntry, isFresh ? 'cache' : 'stale-cache'),
+      cacheEntry,
+      status: isFresh ? 'fresh' : 'stale',
+      isFresh,
+      isStale,
+      ageMs,
+      expiresAt: cacheEntry.expiresAt || null
+    };
+  }
+
+  return {
+    data: null,
+    cacheEntry,
+    status: cacheEntry?.result ? 'stale_disallowed' : 'miss',
+    isFresh: false,
+    isStale,
+    ageMs,
+    expiresAt: cacheEntry?.expiresAt || null
+  };
+};
+
+const composeCacheArtifacts = (username, fresh, previousEntry = null) => {
+  const normalizedUsername = normalizeUsername(username);
+  const currentSnapshot = snapshotFromResult(fresh);
+  const previousSnapshot =
+    Array.isArray(previousEntry?.snapshots) && previousEntry.snapshots.length
+      ? previousEntry.snapshots[previousEntry.snapshots.length - 1]
+      : null;
+  const comparison = compareSnapshots(previousSnapshot, currentSnapshot);
+  const resultWithComparison = {
+    ...fresh,
+    comparison,
+    analysisVersion: ANALYSIS_VERSION
+  };
+  const entry = {
+    githubUsername: username,
+    normalizedUsername,
+    analysisVersion: ANALYSIS_VERSION,
+    result: resultWithComparison,
+    expiresAt: new Date(Date.now() + CACHE_TTL_MS),
+    updatedAt: new Date(),
+    createdAt: previousEntry?.createdAt || new Date(),
+    snapshots: [
+      ...(Array.isArray(previousEntry?.snapshots) ? previousEntry.snapshots : []),
+      currentSnapshot
+    ].slice(-12)
+  };
+  return { resultWithComparison, entry };
+};
+
+const saveCacheResult = async (username, fresh, previousEntry = null, timing = null) => {
+  const evidenceIdentity = (value) =>
+    JSON.stringify({
+      dataVersion: value?.dataVersion,
+      scores: value?.scores,
+      availability: value?.dataAvailability,
+      followers: value?.followers,
+      repositories: [...(value?.repositories || [])].sort((a, b) => a.name.localeCompare(b.name)),
+      languageBytes: value?.rawLanguageBytes,
+      technologies: value?.technologies
+    });
+  if (previousEntry?.result && evidenceIdentity(previousEntry.result) === evidenceIdentity(fresh)) {
+    const expiresAt = new Date(Date.now() + CACHE_TTL_MS);
+    const updated = await GitHubAnalysisCache.findOneAndUpdate(
+      {
+        normalizedUsername: normalizeUsername(username),
+        analysisVersion: ANALYSIS_VERSION,
+        'result.githubSignals.analyzedAt': previousEntry.result.githubSignals?.analyzedAt
+      },
+      { $set: { expiresAt } },
+      { new: true, timestamps: false }
+    ).lean();
+    if (updated) {
+      writeMemoryAnalysisCache(normalizeUsername(username), updated);
+      await setCacheJson(
+        buildRedisCacheKey(normalizeUsername(username)),
+        packRedisCacheEntry(updated),
+        CACHE_REDIS_TTL_SECONDS
+      );
+      return withCacheMetadata(updated.result, updated, 'cache');
+    }
+    // Another worker replaced the assessment while the provider call was active.
+    const current = await getCacheEntry(username);
+    if (current?.result) return withCacheMetadata(current.result, current, 'cache');
+  }
+  const { resultWithComparison, entry } = composeCacheArtifacts(username, fresh, previousEntry);
+  const normalizedUsername = entry.normalizedUsername;
+  await ensureSWRCacheIndex();
+  const persistMongo = async () =>
+    GitHubAnalysisCache.findOneAndUpdate(
+      { normalizedUsername, analysisVersion: ANALYSIS_VERSION },
+      {
+        $set: {
+          githubUsername: username,
+          normalizedUsername,
+          analysisVersion: ANALYSIS_VERSION,
+          result: resultWithComparison,
+          expiresAt: entry.expiresAt
+        },
+        $push: {
+          snapshots: {
+            $each: [entry.snapshots[entry.snapshots.length - 1]],
+            $slice: -12
+          }
+        }
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    ).lean();
+
+  const updated = timing ? await timing.time('cacheWrite', persistMongo) : await persistMongo();
+  writeMemoryAnalysisCache(normalizedUsername, entry);
+  setCacheJson(
+    buildRedisCacheKey(normalizedUsername),
+    packRedisCacheEntry(entry),
+    CACHE_REDIS_TTL_SECONDS
+  ).catch(() => {});
+  return withCacheMetadata(resultWithComparison, updated, 'fresh');
+};
+
+// Count attributable default-branch commits in the analyzer's selected repositories.
+const fetchMonthlyCommitActivity = async (username, repos = [], now = new Date()) => {
+  if (!repos.length) return [];
+  const since = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 5, 1));
+  const months = new Map(
+    Array.from({ length: 6 }, (_, offset) => [
+      new Date(Date.UTC(since.getUTCFullYear(), since.getUTCMonth() + offset, 1))
+        .toISOString()
+        .slice(0, 7),
+      0
+    ])
+  );
+  const commits = new Map();
+  for (const repo of repos) {
+    for (let page = 1; page <= 4; page++) {
+      let response;
+      try {
+        response = await githubGet(
+          `https://api.github.com/repos/${encodeURIComponent(username)}/${encodeURIComponent(repo.name)}/commits`,
+          {
+            timeout: 8000,
+            params: {
+              author: username,
+              since: since.toISOString(),
+              until: now.toISOString(),
+              per_page: 100,
+              page
+            }
+          }
+        );
+      } catch (error) {
+        if (isRateLimitError(error)) throw error;
+        return [];
+      }
+      if (!Array.isArray(response.data)) return [];
+      for (const commit of response.data) {
+        const at = new Date(commit.commit?.committer?.date || commit.commit?.author?.date || NaN);
+        if (!commit.sha || !Number.isFinite(at.getTime())) return [];
+        if (commit.author?.login && commit.author.login.toLowerCase() !== username.toLowerCase())
+          return [];
+        if (at >= since && at <= now) commits.set(commit.sha, at.toISOString().slice(0, 7));
+      }
+      if (!/rel="next"/.test(response.headers?.link || '')) break;
+      if (page === 4) return []; // Pagination limit reached; the window may be incomplete.
+    }
+  }
+  for (const month of commits.values()) months.set(month, months.get(month) + 1);
+  return Array.from(months, ([month, count]) => ({ month, count }));
+};
+
+const buildFreshAnalysis = async (username, timing = null) => {
+  const runProvider = (operation) => (timing ? timing.time('provider', operation) : operation());
+
+  const [userData, repos] = await runProvider(() =>
+    Promise.all([fetchGitHubUser(username), fetchGitHubRepos(username)])
+  );
+
+  const totalStars = repos.reduce((sum, repo) => sum + Number(repo.stargazers_count || 0), 0);
+  const totalForks = repos.reduce((sum, repo) => sum + Number(repo.forks_count || 0), 0);
+
+  if (!repos.length) {
+    const emptyScores = {
+      codeQuality: 0,
+      projectDiversity: 0,
+      originality: 0,
+      contribution: 0,
+      consistency: 0,
+      projectImpact: 0,
+      skillCoverage: 0,
+      profileStrength: 0,
+      healthScore: 0,
+      overall: 0
+    };
+    const scoring = githubHealthScore.calculate(
+      Object.fromEntries(Object.keys(githubHealthScore.WEIGHTS).map((key) => [key, 0])),
+      {
+        sources: [{ type: 'github-user', id: username }],
+        facts: { repoCount: 0, totalStars: 0, totalCommits: 0 }
+      }
+    );
+    return {
+      dataVersion: DATA_VERSION,
+      scoring,
+      fetchedAt: scoring.calculatedAt,
+      repoCount: 0,
+      totalStars,
+      totalForks,
+      followers: Number(userData?.followers || 0),
+      developerLevel: 'Beginner',
+      strengths: [],
+      weakAreas: ['No public owner repositories were found'],
+      summary: 'No public repositories were available for analysis.',
+      explanation: 'GitHub user data was found, but there were no public repositories to score.',
+      scores: emptyScores,
+      githubHealthScore: 0,
+      activityScore: 0,
+      languageDistribution: [],
+      mainLanguageDistribution: [],
+      supportLanguageDistribution: [],
+      rawLanguageBytes: {},
+      languageDistributionSource: 'missing',
+      technologyDistribution: [],
+      technologies: [],
+      technologyCategories: {},
+      repositoryActivity: [],
+      repositories: [],
+      repositoryQuality: [],
+      recruiterInsights: {
+        headline: 'No repository signal available',
+        proofPoints: [],
+        recruiterSummary: 'No public repositories were available for recruiter review.',
+        interviewTalkingPoints: []
+      },
+      githubSignals: {
+        username,
+        scoring,
+        analyzedAt: scoring.calculatedAt,
+        analysisVersion: ANALYSIS_VERSION
+      }
+    };
+  }
+
+  const rankedRepos = [...repos].sort((a, b) => {
+    const bScore = Number(b.stargazers_count || 0) + Number(b.forks_count || 0);
+    const aScore = Number(a.stargazers_count || 0) + Number(a.forks_count || 0);
+    if (bScore !== aScore) return bScore - aScore;
+    return new Date(b.pushed_at || b.updated_at || 0) - new Date(a.pushed_at || a.updated_at || 0);
+  });
+
+  const topActivityRepos = rankedRepos
+    .filter((repo) => !repo.fork && !repo.archived)
+    .slice(0, MAX_ACTIVITY_REPOS);
+  const [commitCounts, languageData, repoSignals, monthlyCommitActivity] = await runProvider(() =>
+    Promise.all([
+      Promise.all(topActivityRepos.map((repo) => fetchRepoCommitCount(username, repo.name))),
+      buildLanguageDistribution(username, repos),
+      fetchRepoCheapSignals(username, rankedRepos),
+      fetchMonthlyCommitActivity(username, topActivityRepos)
+    ])
+  );
+
+  const commitMap = {};
+  topActivityRepos.forEach((repo, index) => {
+    commitMap[repo.name] = commitCounts[index];
+  });
+
+  const {
+    distribution: languageDistribution,
+    rawLanguageBytes,
+    mainLanguageDistribution,
+    supportLanguageDistribution,
+    source: languageDistributionSource
+  } = languageData;
+
+  const techResult = detectTechnologies({
+    repos: repos.filter((repo) => !repo.fork),
+    languageDistribution,
+    repoSignals
+  });
+  const repoTechLookup = new Map();
+  repos.forEach((repo) => {
+    const text = [
+      repo.name,
+      repo.description,
+      ...(repo.topics || []),
+      repo.language,
+      repoSignals[repo.name]?.readme || '',
+      ...Object.values(repoSignals[repo.name]?.manifests || {})
+    ]
+      .join(' ')
+      .toLowerCase();
+    repoTechLookup.set(
+      repo.name,
+      techResult.technologies
+        .filter(
+          (tech) => text.includes(tech.name.toLowerCase()) || tech.sources.includes(repo.name)
+        )
+        .map((tech) => tech.name)
+        .slice(0, 8)
+    );
+  });
+
+  const repositoryQuality = repos.map((repo) => {
+    const repoTechnologies = repoTechLookup.get(repo.name) || [];
+    const signals = repoSignals[repo.name] || {};
+    const commits = commitMap[repo.name] ?? null;
+    const qualityScore = buildRepoQuality(repo, commits ?? 0, signals, repoTechnologies);
+    return {
+      name: repo.name,
+      description: repo.description || '',
+      qualityScore,
+      hasReadme: signals.hasReadme ?? null,
+      readmeQuality:
+        signals.hasReadme == null
+          ? null
+          : signals.hasReadme
+            ? clamp((Number(signals.readmeLength || 0) / 1800) * 100, 35, 100)
+            : 0,
+      topics: Array.isArray(repo.topics) ? repo.topics : [],
+      category: categorizeRepository(repo, qualityScore, commits, repoTechnologies),
+      technologies: repoTechnologies,
+      stars: repo.stargazers_count ?? null,
+      forks: repo.forks_count ?? null,
+      commits,
+      updatedAt: repo.updated_at || null,
+      pushedAt: repo.pushed_at || null
+    };
+  });
+
+  const repositoryActivity = topActivityRepos.map((repo) => ({
+    repo: repo.name,
+    commits: commitMap[repo.name] ?? null
+  }));
+
+  const { scores, scoring } = timing
+    ? await timing.time('deterministic', () =>
+        buildDeterministicScores({
+          repos,
+          userData,
+          mainLanguageDistribution,
+          technologies: techResult.technologies,
+          repositoryActivity,
+          repositoryQuality
+        })
+      )
+    : buildDeterministicScores({
+        repos,
+        userData,
+        mainLanguageDistribution,
+        technologies: techResult.technologies,
+        repositoryActivity,
+        repositoryQuality
+      });
+
+  const weakAreas = buildWeakAreas({
+    scores,
+    repositoryQuality,
+    technologyCategories: techResult.technologyCategories,
+    supportLanguageDistribution
+  });
+
+  const enrichedRepos = repos.map((repo) => {
+    const quality = repositoryQuality.find((item) => item.name === repo.name) || {};
+    return {
+      name: repo.name,
+      description: repo.description || '',
+      topics: Array.isArray(repo.topics) ? repo.topics : [],
+      language: repo.language || 'Unknown',
+      stars: repo.stargazers_count ?? null,
+      forks: repo.forks_count ?? null,
+      commits: commitMap[repo.name] ?? null,
+      activityScore: quality.qualityScore || 0,
+      qualityScore: quality.qualityScore || 0,
+      category: quality.category || 'Experimental',
+      technologies: quality.technologies || [],
+      hasReadme: quality.hasReadme ?? null,
+      readmeQuality: quality.readmeQuality ?? null,
+      updatedAt: repo.updated_at || null,
+      pushedAt: repo.pushed_at || null,
+      createdAt: repo.created_at || null,
+      archived: Boolean(repo.archived),
+      fork: Boolean(repo.fork),
+      isTemplate: repo.is_template === true,
+      size: Number(repo.size || 0)
+    };
+  });
+
+  const narrative = async () =>
+    timing
+      ? timing.time('ai', () =>
+          buildAIInsights({
+            username,
+            userData,
+            repos: enrichedRepos,
+            languageSummary: mainLanguageDistribution.slice(0, 8).map((entry) => ({
+              language: entry.language,
+              percentage: entry.percentage
+            })),
+            technologySummary: techResult.technologies.map((tech) => ({
+              name: tech.name,
+              category: tech.category,
+              confidence: tech.confidence
+            })),
+            activityMetrics: {
+              repoCount: repos.length,
+              totalStars,
+              totalForks,
+              followers: Number(userData?.followers || 0),
+              activeRepos: repos.filter((repo) => {
+                const pushedAt = repo.pushed_at || repo.updated_at;
+                return (
+                  !repo.archived &&
+                  pushedAt &&
+                  Date.now() - new Date(pushedAt).getTime() <= 180 * 24 * 60 * 60 * 1000
+                );
+              }).length,
+              avgRepositoryQuality: clamp(
+                average(repositoryQuality.map((repo) => repo.qualityScore))
+              )
+            },
+            deterministicScores: scores,
+            weakAreas
+          })
+        )
+      : buildAIInsights({
+          username,
+          userData,
+          repos: enrichedRepos,
+          languageSummary: mainLanguageDistribution.slice(0, 8).map((entry) => ({
+            language: entry.language,
+            percentage: entry.percentage
+          })),
+          technologySummary: techResult.technologies.map((tech) => ({
+            name: tech.name,
+            category: tech.category,
+            confidence: tech.confidence
+          })),
+          activityMetrics: {
+            repoCount: repos.length,
+            totalStars,
+            totalForks,
+            followers: Number(userData?.followers || 0),
+            activeRepos: repos.filter((repo) => {
+              const pushedAt = repo.pushed_at || repo.updated_at;
+              return (
+                !repo.archived &&
+                pushedAt &&
+                Date.now() - new Date(pushedAt).getTime() <= 180 * 24 * 60 * 60 * 1000
+              );
+            }).length,
+            avgRepositoryQuality: clamp(average(repositoryQuality.map((repo) => repo.qualityScore)))
+          },
+          deterministicScores: scores,
+          weakAreas
+        });
+
+  const insights = buildInsightFallback({
+    developerLevel: deriveDeveloperLevel({
+      healthScore: scores.healthScore,
+      repoCount: repos.length,
+      technologies: techResult.technologies,
+      totalStars
+    }),
+    strongestRepos: enrichedRepos,
+    weakAreas
+  });
+  const originalRepoNames = new Set(repos.filter((repo) => !repo.fork).map((repo) => repo.name));
+  const recruiterInsights = buildRecruiterInsights({
+    scores,
+    repoCount: repos.length,
+    totalStars,
+    followers: Number(userData?.followers || 0),
+    technologies: techResult.technologies,
+    repositoryQuality: repositoryQuality.filter((repo) => originalRepoNames.has(repo.name))
+  });
+
+  const githubSignals = {
+    scoring,
+    username,
+    analyzedAt: new Date().toISOString(),
+    analysisVersion: ANALYSIS_VERSION,
+    healthScore: scores.healthScore,
+    developerLevel: insights.developerLevel,
+    stats: {
+      repos: repos.length,
+      stars: totalStars,
+      forks: totalForks,
+      followers: Number(userData?.followers || 0)
+    },
+    languages: {
+      rawBytes: rawLanguageBytes,
+      normalized: languageDistribution,
+      main: mainLanguageDistribution,
+      support: supportLanguageDistribution
+    },
+    technologies: techResult.technologies,
+    technologyCategories: techResult.technologyCategories,
+    repositories: repositoryQuality,
+    recruiterInsights
+  };
+
+  return {
+    developerLevel: insights.developerLevel,
+    strengths: insights.strengths,
+    weakAreas: insights.weakAreas,
+    summary: insights.summary,
+    explanation: insights.explanation,
+    dataVersion: DATA_VERSION,
+    scoring,
+    fetchedAt: scoring.calculatedAt,
+    dataAvailability: {
+      repositories: 'complete',
+      activity: repositoryActivity.some((item) => item.commits === null) ? 'partial' : 'sampled',
+      activityScope: 'repository_contributor_history',
+      activityRepositoryLimit: MAX_ACTIVITY_REPOS,
+      repositorySignals: 'sampled',
+      signalRepositoryLimit: MAX_SIGNAL_REPOS,
+      languageRepositoryLimit: MAX_LANGUAGE_REPOS,
+      languages: languageDistributionSource,
+      stars: repos.some((repo) => repo.stargazers_count === null) ? 'partial' : 'complete'
+    },
+    _narrative: narrative,
+    scores,
+    repoCount: repos.length,
+    totalStars,
+    totalForks,
+    followers: Number(userData?.followers || 0),
+    githubHealthScore: scores.healthScore,
+    activityScore: scores.healthScore,
+    languageDistribution,
+    mainLanguageDistribution,
+    supportLanguageDistribution,
+    rawLanguageBytes,
+    languageDistributionSource,
+    technologyDistribution: techResult.technologyDistribution,
+    technologies: techResult.technologies,
+    technologyCategories: techResult.technologyCategories,
+    repositoryActivity,
+    ...(monthlyCommitActivity.length ? { monthlyCommitActivity } : {}),
+    commitMap,
+    repositories: enrichedRepos,
+    repositoryQuality,
+    recruiterInsights,
+    githubSignals
+  };
+};
+
+const analyzeGitHubProfile = async (username, options = {}) => {
+  const timing = createTiming();
+  const trimmedUsername = timing
+    ? await timing.time('validation', async () => parseGitHubUsername(username))
+    : parseGitHubUsername(username);
+
+  const forceRefresh = Boolean(options.forceRefresh);
+  if (options.cacheOnly) {
+    const cached = await getCachedGitHubAnalysis(trimmedUsername, {
+      userId: options.userId
+    });
+    return (
+      cached.data || {
+        repositories: [],
+        languageDistribution: [],
+        cache: { source: 'unavailable', stale: true }
+      }
+    );
+  }
+  let cacheEntry = null;
+  if (!forceRefresh) {
+    const resolved = await resolveTieredCacheEntry(trimmedUsername, timing);
+    cacheEntry = resolved.entry;
+    if (cacheEntry?.result && isFreshCacheEntry(cacheEntry)) {
+      const cached = withCacheMetadata(cacheEntry.result, cacheEntry, 'cache');
+      return timing ? timing.attach(cached) : cached;
+    }
+    if (cacheEntry?.result?.dataVersion === DATA_VERSION) {
+      refreshGitHubAnalysisInBackground(trimmedUsername);
+      const stale = withCacheMetadata(cacheEntry.result, cacheEntry, 'stale-cache');
+      return timing ? timing.attach(stale) : stale;
+    }
+  } else {
+    cacheEntry = await getCacheEntry(trimmedUsername);
+  }
+
+  const normalizedUsername = normalizeUsername(trimmedUsername);
+  const inFlight = analysisJobs.get(normalizedUsername);
+  if (inFlight) return inFlight;
+
+  const job = (async () => {
+    try {
+      if (!forceRefresh) {
+        const rechecked = await resolveTieredCacheEntry(trimmedUsername, timing);
+        if (rechecked.entry?.result && isFreshCacheEntry(rechecked.entry)) {
+          const cached = withCacheMetadata(rechecked.entry.result, rechecked.entry, 'cache');
+          return timing ? timing.attach(cached) : cached;
+        }
+        cacheEntry = rechecked.entry || cacheEntry;
+      }
+
+      const fresh = await buildFreshAnalysis(trimmedUsername, timing);
+      const narrative = fresh._narrative;
+      delete fresh._narrative;
+      const saved = await saveCacheResult(trimmedUsername, fresh, cacheEntry, timing);
+      if (narrative && saved.cache?.source === 'fresh') {
+        const explanation = await narrative();
+        const { interviewTalkingPoints, ...qualitativeFields } = explanation;
+        const narrativeFields = {
+          ...qualitativeFields,
+          recruiterInsights: {
+            ...saved.recruiterInsights,
+            interviewTalkingPoints
+          }
+        };
+        Object.assign(saved, narrativeFields);
+        // Narrative writes cannot extend source freshness or append a history snapshot.
+        try {
+          await GitHubAnalysisCache.updateOne(
+            {
+              normalizedUsername,
+              analysisVersion: ANALYSIS_VERSION,
+              'result.scoring.calculatedAt': saved.scoring.calculatedAt
+            },
+            {
+              $set: Object.fromEntries(
+                Object.entries(narrativeFields).map(([key, value]) => [`result.${key}`, value])
+              )
+            },
+            { timestamps: false }
+          );
+          const entry = memoryAnalysisCache.get(normalizedUsername);
+          if (entry?.result?.scoring?.calculatedAt === saved.scoring.calculatedAt) {
+            Object.assign(entry.result, narrativeFields);
+            await setCacheJson(
+              buildRedisCacheKey(normalizedUsername),
+              packRedisCacheEntry(entry),
+              Math.max(1, Math.floor((new Date(entry.expiresAt).getTime() - Date.now()) / 1000))
+            );
+          }
+        } catch {
+          /* The already persisted deterministic result remains valid. */
+        }
+      }
+      return timing ? timing.attach(saved) : saved;
+    } catch (error) {
+      if (
+        cacheEntry?.result &&
+        isTransientGitHubError(error) &&
+        Number(error?.status || error?.response?.status || 0) !== 404
+      ) {
+        const stale = {
+          ...withCacheMetadata(cacheEntry.result, cacheEntry, 'stale-cache'),
+          rateLimited: isRateLimitError(error),
+          warning: isRateLimitError(error)
+            ? 'GitHub API rate limit reached. Showing the most recent cached analysis.'
+            : 'GitHub refresh failed. Showing the most recent cached analysis.'
+        };
+        return timing ? timing.attach(stale) : stale;
+      }
+      throw error;
+    } finally {
+      if (analysisJobs.get(normalizedUsername) === job) {
+        analysisJobs.delete(normalizedUsername);
+      }
+    }
+  })();
+
+  analysisJobs.set(normalizedUsername, job);
+  return job;
+};
+
+const refreshGitHubAnalysisInBackground = (username, options = {}) => {
+  const trimmedUsername = String(username || '')
+    .trim()
+    .replace(/^@/, '');
+  const normalizedUsername = normalizeUsername(trimmedUsername);
+  if (!normalizedUsername) {
+    return { queued: false, running: false, reason: 'missing_username' };
+  }
+
+  const existing = refreshJobs.get(normalizedUsername);
+  if (existing) {
+    console.log(
+      '[GitHubSWR]',
+      JSON.stringify({ event: 'refresh_deduped', username: trimmedUsername })
+    );
+    return { queued: false, running: true, reason: 'already_running' };
+  }
+
+  const startedAt = Date.now();
+  const lockKey = `lock:github_swr:${normalizedUsername}`;
+  const lockToken = `${process.pid}:${Date.now()}:${Math.random().toString(36).slice(2)}`;
+  console.log(
+    '[GitHubSWR]',
+    JSON.stringify({
+      event: 'refresh_started',
+      username: trimmedUsername,
+      reason: options.reason || 'stale_cache'
+    })
+  );
+
+  const job = (async () => {
+    let lockAcquired = false;
+    try {
+      if (isRedisCacheEnabled()) {
+        lockAcquired = await acquireCacheLock(lockKey, lockToken, 20 * 60);
+        if (!lockAcquired) {
+          console.log(
+            '[GitHubSWR]',
+            JSON.stringify({
+              event: 'refresh_deduped',
+              username: trimmedUsername,
+              scope: 'redis_lock'
+            })
+          );
+          return;
+        }
+      }
+      await ensureSWRCacheIndex();
+      // Reuse foreground deduplication, fallback handling, and qualitative enrichment.
+      const refreshed = await analyzeGitHubProfile(trimmedUsername, {
+        forceRefresh: true
+      });
+      if (refreshed.cache?.stale || refreshed.rateLimited || refreshed.warning) return;
+      await invalidateSkillGapCachesForGitHub(trimmedUsername);
+      console.log(
+        '[GitHubSWR]',
+        JSON.stringify({
+          event: 'refresh_completed',
+          username: trimmedUsername,
+          durationMs: Date.now() - startedAt
+        })
+      );
+    } catch (error) {
+      console.warn(
+        '[GitHubSWR]',
+        JSON.stringify({
+          event: 'refresh_failed',
+          username: trimmedUsername,
+          durationMs: Date.now() - startedAt,
+          error: error.message
+        })
+      );
+    } finally {
+      if (lockAcquired) {
+        await releaseCacheLock(lockKey, lockToken);
+      }
+      refreshJobs.delete(normalizedUsername);
+    }
+  })();
+
+  refreshJobs.set(normalizedUsername, job);
+  return { queued: true, running: false, reason: 'queued' };
+};
+
+const getGitHubRefreshState = () => ({
+  running: refreshJobs.size,
+  usernames: Array.from(refreshJobs.keys())
+});
+
+const invalidateSkillGapCachesForGitHub = async (username, userId) => {
+  const trimmedUsername = String(username || '')
+    .trim()
+    .replace(/^@/, '');
+  if (!trimmedUsername) return;
+  const deleted = await AnalysisCache.deleteMany({
+    githubUsername: new RegExp(`^${escapeRegex(trimmedUsername)}$`, 'i'),
+    analysisVersion: SKILL_GAP_ANALYSIS_VERSION,
+    ...(userId ? { userId } : {})
+  });
+  if (userId) await aiService.invalidateCachePrefix(`skill_gap:result:${String(userId)}:`);
+  // Current Skill Gap caches validate source revisions before lookup; new evidence
+  // selects a new owner-scoped signal hash. Never flush unrelated accounts.
+  console.log(
+    '[GitHubSWR]',
+    JSON.stringify({
+      event: 'skill_gap_cache_invalidated',
+      username: trimmedUsername,
+      mongoDeleted: Number(deleted?.deletedCount || 0)
+    })
+  );
+};
+
+module.exports = {
+  ANALYSIS_VERSION,
+  analyzeGitHubProfile,
+  getCachedGitHubAnalysis,
+  refreshGitHubAnalysisInBackground,
+  getGitHubRefreshState,
+  fetchGitHubUser,
+  fetchGitHubRepos,
+  fetchMonthlyCommitActivity,
+  isRateLimitError,
+  parseGitHubUsername,
+  clearGitHubAnalysisMemoryCache,
+  invalidateSkillGapCachesForGitHub
+};

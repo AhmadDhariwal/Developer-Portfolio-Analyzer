@@ -1,7 +1,7 @@
 const path = require('node:path');
 const mongoose = require('mongoose');
-const Article = require('../models/newsArticle');
-const catalog = require('../services/newsCatalogService');
+const Article = require('../modules/news/models/newsArticle');
+const catalog = require('../modules/news/services/newsCatalogService');
 
 // Dry-run by default. Add indexes only and copy eligible public metadata in bounded
 // batches. Never sync/drop indexes, delete legacy caches, or touch saved/history data.
@@ -25,7 +25,9 @@ async function migrate({ apply = false } = {}) {
       ]);
   }
   for (const name of ['NewsCache', 'NewsTopicCache']) {
-    const model = require(name === 'NewsCache' ? '../models/news' : '../models/newsTopicCache');
+    const model = require(
+      name === 'NewsCache' ? '../modules/news/models/news' : '../modules/news/models/newsTopicCache'
+    );
     const cursor = model
       .find({ cacheKey: name === 'NewsCache' ? 'news:v3:public:pool' : /^news:v1:\{discovery\}:topic:/ })
       .lean()

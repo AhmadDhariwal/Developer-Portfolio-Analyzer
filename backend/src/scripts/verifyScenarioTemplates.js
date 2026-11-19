@@ -8,7 +8,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const fixture = require('../tests/fixtures/scenarioMongo');
-const engine = require('../services/scoring/scenarioPlanningScore');
+const engine = require('../core/scoring/scenarioPlanningScore');
 const output = path.resolve(__dirname, '../../../frontend/verification/scenario-templates');
 
 async function main() {
@@ -20,9 +20,9 @@ async function main() {
   const report = { checks: [], calculations: [], layouts: [], errors: [] };
   try {
     await mongoose.connect(mongo.uri);
-    const User = require('../models/user');
-    const Scenario = require('../models/scenarioSimulation');
-    const Sprint = require('../models/careerSprint');
+    const User = require('../modules/auth/models/user');
+    const Scenario = require('../modules/scenario-simulator/models/scenarioSimulation');
+    const Sprint = require('../modules/career-sprint/models/careerSprint');
     await Promise.all([User.init(), Scenario.init(), Sprint.init()]);
     const users = await User.insertMany(
       ['owner', 'other'].map((name) => ({
@@ -37,7 +37,7 @@ async function main() {
         isActive: true,
       })),
     );
-    await require('../models/analysisCache').create({
+    await require('../modules/skill-gap/models/analysisCache').create({
       userId: users[0]._id,
       githubUsername: 'owner',
       careerStack: 'Frontend',
@@ -56,7 +56,7 @@ async function main() {
         ],
       },
     });
-    await require('../models/publicProfile').create({
+    await require('../modules/public-portfolio/models/publicProfile').create({
       userId: users[0]._id,
       slug: 'template-owner',
       projects: [{ title: 'Shipped project', status: 'completed' }],
@@ -75,8 +75,8 @@ async function main() {
     );
     const app = express();
     app.use(express.json());
-    app.use('/api/simulator', require('../routes/scenarioSimulator.routes'));
-    app.use('/api/profile', require('../routes/profile.routes'));
+    app.use('/api/simulator', require('../modules/scenario-simulator/scenarioSimulator.routes'));
+    app.use('/api/profile', require('../modules/profile/profile.routes'));
     app.use('/api', (_req, res) =>
       res.json({ notifications: [], data: [], integrations: [], resumes: [] }),
     );

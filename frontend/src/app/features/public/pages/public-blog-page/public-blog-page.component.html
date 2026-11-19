@@ -1,0 +1,128 @@
+<app-public-subpage-shell
+  eyebrow="Engineering Blog"
+  title="DevInsight Engineering & Product Notes"
+  subtitle="Practical writing on developer portfolio diagnostics, hiring intelligence, AI-assisted evaluation, and secure multi-tenant engineering."
+  metaLabel="Editorial overview updated · May 24, 2026"
+>
+  <div class="pub-stack">
+    <section class="pub-grid-2" aria-label="Editorial focus">
+      <article class="pub-card">
+        <span class="pub-tag">EDITORIAL SCOPE</span>
+        <h2>What we publish</h2>
+        <p>
+          The DevInsight Engineering Blog focuses on practical product workflows: how hiring teams
+          evaluate portfolio evidence responsibly, how developers quantify stack gaps, and how
+          tenant-safe analytics are engineered in production.
+        </p>
+      </article>
+
+      <article class="pub-card pub-card--subtle">
+        <span class="pub-tag pub-tag--neutral">CORE TRACKS</span>
+        <h2>Engineering themes</h2>
+        <ul class="pub-bullets">
+          @for (note of editorialNotes; track note) {
+            <li>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>{{ note }}</span>
+            </li>
+          }
+        </ul>
+      </article>
+    </section>
+
+    <section class="pub-stack blog-feed-wrap" aria-label="Featured articles">
+      <div class="blog-toolbar">
+        <div class="pub-filter-bar" role="group" aria-label="Filter articles by category">
+          @for (category of categories; track category) {
+            <button
+              type="button"
+              class="pub-filter-pill"
+              [class.is-active]="selectedCategory() === category"
+              [attr.aria-pressed]="selectedCategory() === category"
+              (click)="selectCategory(category)"
+            >
+              {{ category }}
+            </button>
+          }
+        </div>
+        <span class="blog-count">{{ filteredPosts().length }} articles</span>
+      </div>
+
+      <div class="pub-grid-3">
+        @for (post of filteredPosts(); track post.id) {
+          <article class="pub-card is-interactive blog-card">
+            <div class="pub-card-head">
+              <span class="pub-tag">{{ post.category }}</span>
+              <span class="read-time">{{ post.readTime }}</span>
+            </div>
+
+            <h3>{{ post.title }}</h3>
+            <p>{{ post.excerpt }}</p>
+
+            @if (expandedPostId() === post.id) {
+              <ul class="pub-bullets blog-takeaways">
+                @for (point of post.takeaways; track point) {
+                  <li>
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      aria-hidden="true"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>{{ point }}</span>
+                  </li>
+                }
+              </ul>
+            }
+
+            <div class="blog-card-footer">
+              <button
+                type="button"
+                class="pub-btn pub-btn--secondary blog-expand-btn"
+                [attr.aria-expanded]="expandedPostId() === post.id"
+                (click)="togglePostTakeaways(post.id)"
+              >
+                {{ expandedPostId() === post.id ? 'Hide takeaways' : 'Read takeaways' }}
+              </button>
+            </div>
+          </article>
+        }
+      </div>
+    </section>
+
+    <section class="pub-grid-2" aria-label="Audience and contact">
+      <article class="pub-card">
+        <span class="pub-tag pub-tag--neutral">AUDIENCE</span>
+        <h3>Built for developers &amp; engineering teams</h3>
+        <p>
+          Designed for engineers leveling up portfolio readiness as well as recruiters and admins
+          operating structured, auditable hiring workflows.
+        </p>
+      </article>
+
+      <article class="pub-card pub-card--dark">
+        <span class="pub-tag">DISCUSS A TOPIC</span>
+        <h3>Want tailored engineering guidance?</h3>
+        <p>
+          Reach out if your team wants deeper product walkthroughs or architecture context around a
+          specific DevInsight AI workflow.
+        </p>
+        <div class="pub-actions blog-cta-spacer">
+          <a routerLink="/contact" class="pub-btn pub-btn--primary">Contact the Team</a>
+          <a routerLink="/auth/signup" class="pub-btn pub-btn--surface-dark">Create Account</a>
+        </div>
+      </article>
+    </section>
+  </div>
+</app-public-subpage-shell>

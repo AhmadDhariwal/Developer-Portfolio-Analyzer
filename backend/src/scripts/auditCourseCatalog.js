@@ -2,7 +2,7 @@
 
 const mongoose = require('mongoose');
 const fs = require('node:fs');
-const maintenance = require('../services/courseCatalogMaintenanceService');
+const maintenance = require('../modules/courses/services/courseCatalogMaintenanceService');
 
 (async () => {
   const uri = process.env.MONGO_URI;

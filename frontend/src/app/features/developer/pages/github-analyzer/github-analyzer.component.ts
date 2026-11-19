@@ -1,0 +1,765 @@
+import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  DestroyRef,
+  ElementRef,
+  HostListener,
+  inject,
+  OnInit,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { RouterModule } from '@angular/router';
+import { GithubChartsComponent } from './components/github-charts/github-charts.component';
+import { GithubHealthOverviewComponent } from './components/github-health-overview/github-health-overview.component';
+import { GithubInsightsComponent } from './components/github-insights/github-insights.component';
+import { GithubProfileSearchComponent } from './components/github-profile-search/github-profile-search.component';
+import { GithubRepositoryTableComponent } from './components/github-repository-table/github-repository-table.component';
+import { GithubScoringBreakdownComponent } from './components/github-scoring-breakdown/github-scoring-breakdown.component';
+import { GithubTechnicalAuditComponent } from './components/github-technical-audit/github-technical-audit.component';
+import { GithubTechnologyFingerprintComponent } from './components/github-technology-fingerprint/github-technology-fingerprint.component';
+import { GithubPresentation } from './github-presentation';
+import { DisplayBreakdownItem } from './github-view.models';
+
+import {
+  BadgeVariant,
+  ProgressColor,
+  ScoreCardColor,
+  UiButtonComponent,
+  UiEmptyStateComponent,
+  UiErrorStateComponent,
+  UiPageHeaderComponent,
+  UiSkeletonComponent,
+} from '../../../../shared/components';
+import { AuthService } from '../../../../shared/services/auth.service';
+import {
+  GitHubAnalysisResult,
+  GithubService,
+  LanguageDistribution,
+  Repository,
+  ScoreBreakdownItem,
+  ScoreEvidence,
+  TechnologySignal,
+} from '../../../../shared/services/github.service';
+
+@Component({
+  selector: 'app-github-analyzer',
+  standalone: true,
+  imports: [
+    GithubProfileSearchComponent,
+    GithubHealthOverviewComponent,
+    GithubScoringBreakdownComponent,
+    GithubChartsComponent,
+    GithubRepositoryTableComponent,
+    GithubTechnologyFingerprintComponent,
+    GithubInsightsComponent,
+    GithubTechnicalAuditComponent,
+    CommonModule,
+    RouterModule,
+    UiButtonComponent,
+    UiSkeletonComponent,
+    UiEmptyStateComponent,
+    UiErrorStateComponent,
+    UiPageHeaderComponent,
+  ],
+  templateUrl: './github-analyzer.component.html',
+  styleUrl: './github-analyzer.component.scss',
+})
+export class GithubAnalyzerComponent extends GithubPresentation implements OnInit {
+  username = '';
+  defaultUsername = '';
+  viewedUsername = '';
+  isAnalyzing = false;
+  analysisReady = false;
+  errorMessage = '';
+  invalidUsername = false;
+  isInitLoading = true;
+  isTemporaryView = false;
+  result: GitHubAnalysisResult | null = null;
+  showEvidenceDrawer = false;
+  showAllRepositories = false;
+  repoSortField: 'score' | 'stars' | 'name' = 'score';
+  repoSortAsc = false;
+
+  private readonly github = inject(GithubService);
+  private readonly authService = inject(AuthService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly host: ElementRef<HTMLElement> = inject(ElementRef);
+
+  @HostListener('document:keydown', ['$event'])
+  containAuditFocus(event: KeyboardEvent): void {
+    if (!this.showEvidenceDrawer || event.key !== 'Tab') return;
+    const panel = this.host.nativeElement.querySelector<HTMLElement>('[role="dialog"]');
+    if (!panel) return;
+    const focusable = Array.from(
+      panel.querySelectorAll<HTMLElement>('button, a[href], input, summary, [tabindex="0"]'),
+    ).filter((element) => !element.hasAttribute('disabled') && element.getClientRects().length > 0);
+    const first = focusable[0] || panel;
+    const last = focusable[focusable.length - 1] || panel;
+    if (event.shiftKey && (document.activeElement === first || document.activeElement === panel)) {
+      event.preventDefault();
+      last.focus();
+    } else if (
+      !event.shiftKey &&
+      (document.activeElement === last || document.activeElement === panel)
+    ) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
+  constructor() {
+    super();
+    const stored = this.getStoredActiveUsername();
+    if (stored) {
+      this.applyDefaultUsername(stored);
+      this.isInitLoading = false;
+    }
+  }
+
+  ngOnInit(): void {
+    if (this.defaultUsername) {
+      this.isInitLoading = false;
+      this.scheduleInitialAnalyze();
+      return;
+    }
+
+    this.isInitLoading = true;
+    const storedUsername = this.getStoredActiveUsername();
+    if (storedUsername) {
+      this.applyDefaultUsername(storedUsername);
+      this.isInitLoading = false;
+      this.scheduleInitialAnalyze();
+      return;
+    }
+
+    this.github
+      .getActiveUsername()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (data) => {
+          this.applyDefaultUsername(data.username || '');
+          this.isInitLoading = false;
+          if (this.username) {
+            this.scheduleInitialAnalyze();
+          }
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.isInitLoading = false;
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  private getStoredActiveUsername(): string {
+    const user = this.authService.getCurrentUser();
+    return String(user?.activeGithubUsername || user?.githubUsername || '')
+      .trim()
+      .replace(/^@/, '');
+  }
+
+  private applyDefaultUsername(username: string): void {
+    this.defaultUsername = String(username || '')
+      .trim()
+      .replace(/^@/, '');
+    this.username = this.defaultUsername;
+    this.viewedUsername = this.defaultUsername;
+    this.isTemporaryView = false;
+  }
+
+  private scheduleInitialAnalyze(): void {
+    queueMicrotask(() => {
+      if (this.username.trim()) {
+        this.refreshSavedData();
+      }
+    });
+  }
+
+  analyze(forceRefresh = false): void {
+    const trimmed = this.username.trim().replace(/^@/, '');
+    if (!trimmed) return;
+
+    if (trimmed.length > 200) {
+      this.errorMessage = 'GitHub username is too large.';
+      this.invalidUsername = false;
+      return;
+    }
+
+    if (
+      trimmed.length > 39 ||
+      !/^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/.test(trimmed)
+    ) {
+      this.errorMessage = 'GitHub username format is invalid.';
+      this.invalidUsername = true;
+      return;
+    }
+
+    const normalizedDefault = this.defaultUsername.trim().toLowerCase();
+    const normalizedCurrent = trimmed.toLowerCase();
+    const isDefaultProfileAnalysis =
+      Boolean(normalizedDefault) && normalizedCurrent === normalizedDefault;
+
+    if (this.isAnalyzing) return;
+
+    this.isAnalyzing = true;
+    this.errorMessage = '';
+    this.invalidUsername = false;
+
+    const keepCurrentResult =
+      forceRefresh && this.viewedUsername.toLowerCase() === normalizedCurrent;
+    if (!keepCurrentResult) {
+      this.analysisReady = false;
+      this.result = null;
+    }
+
+    const request$ = isDefaultProfileAnalysis
+      ? this.github.analyzeAndSave(trimmed, forceRefresh)
+      : this.github.analyzeProfile(trimmed, forceRefresh);
+
+    request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (data) => {
+        this.isAnalyzing = false;
+        this.applyResult(data, trimmed, isDefaultProfileAnalysis);
+      },
+      error: (err) => {
+        this.isAnalyzing = false;
+        this.analysisReady = Boolean(this.result);
+        this.invalidUsername = err.status === 404 || err.error?.status === 404;
+        this.errorMessage =
+          err.error?.message ??
+          'Failed to analyze GitHub profile. Please check the username and try again.';
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  refreshAnalysis(): void {
+    this.analyze(true);
+  }
+
+  refreshSavedData(): void {
+    if (!this.defaultUsername || this.isAnalyzing) return;
+    this.isAnalyzing = true;
+    this.errorMessage = '';
+    this.invalidUsername = false;
+    this.github
+      .getSavedAnalysis(this.defaultUsername)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (data) => {
+          this.isAnalyzing = false;
+          this.applyResult(data, this.defaultUsername, true);
+        },
+        error: (error) => {
+          this.isAnalyzing = false;
+          this.errorMessage = error.error?.message || 'Saved GitHub analysis could not be loaded.';
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  returnToDefaultProfile(): void {
+    if (!this.defaultUsername || this.isAnalyzing) return;
+    this.username = this.defaultUsername;
+    this.refreshSavedData();
+  }
+
+  toggleEvidenceDrawer(): void {
+    this.showEvidenceDrawer = !this.showEvidenceDrawer;
+  }
+
+  private applyResult(
+    data: GitHubAnalysisResult,
+    username: string,
+    isDefaultProfileAnalysis: boolean,
+  ): void {
+    this.result = data;
+    this.viewedUsername = username;
+    this.isTemporaryView = !isDefaultProfileAnalysis;
+    this.analysisReady = true;
+
+    this.cdr.detectChanges();
+  }
+
+  // ── Authoritative Score & Breakdown ─────────────────────────────
+
+  get healthScoreValue(): number | null {
+    if (!this.result) return null;
+    if (this.result.scoring && this.result.scoring.score !== undefined) {
+      return this.result.scoring.score;
+    }
+    if (this.result.githubHealthScore !== undefined) {
+      return this.result.githubHealthScore;
+    }
+    if (this.result.activityScore !== undefined) {
+      return this.result.activityScore;
+    }
+    return null;
+  }
+
+  get scoreCardColor(): ScoreCardColor {
+    const score = this.healthScoreValue;
+    if (score === null) return 'purple';
+    if (score >= 80) return 'green';
+    if (score >= 60) return 'blue';
+    if (score >= 40) return 'amber';
+    return 'pink';
+  }
+
+  get scoreBreakdownList(): DisplayBreakdownItem[] {
+    if (!this.result) return [];
+    const breakdown = this.result.scoring?.breakdown || {};
+    const scores = this.result.scores || {};
+
+    const definitions: Array<{
+      id: string;
+      label: string;
+      description: string;
+      weight: number;
+      color: ProgressColor;
+    }> = [
+      {
+        id: 'codeQuality',
+        label: 'Code Quality',
+        description: 'Repo documentation, README cleanliness, and engineering stack depth',
+        weight: 24,
+        color: 'primary',
+      },
+      {
+        id: 'projectDiversity',
+        label: 'Project Diversity',
+        description: 'Language distribution balance and tech stack breadth across projects',
+        weight: 17,
+        color: 'info',
+      },
+      {
+        id: 'contribution',
+        label: 'Contribution Signal',
+        description: 'Commit depth across top active repositories (sampled contributor history)',
+        weight: 18,
+        color: 'success',
+      },
+      {
+        id: 'consistency',
+        label: 'Consistency',
+        description: 'Push frequency and active repository updates over the past 6 months',
+        weight: 13,
+        color: 'warning',
+      },
+      {
+        id: 'projectImpact',
+        label: 'Project Impact',
+        description: 'Community adoption, stars, forks, and project visibility',
+        weight: 14,
+        color: 'primary',
+      },
+      {
+        id: 'profileStrength',
+        label: 'Profile Strength',
+        description: 'Profile completeness, follower network, and repository volume',
+        weight: 14,
+        color: 'secondary',
+      },
+    ];
+
+    return definitions.map((def) => {
+      const item: ScoreBreakdownItem | undefined = breakdown[def.id];
+      let value: number | null = null;
+      let contribution: number | null = null;
+      let available = false;
+
+      if (item) {
+        value = item.value !== null && Number.isFinite(item.value) ? Math.round(item.value) : null;
+        contribution =
+          item.contribution !== null && Number.isFinite(item.contribution)
+            ? Number(item.contribution.toFixed(1))
+            : null;
+        available = item.available === true && value !== null;
+      } else if (scores[def.id] !== undefined && scores[def.id] !== null) {
+        const num = Number(scores[def.id]);
+        if (Number.isFinite(num)) {
+          value = Math.round(num);
+          available = true;
+        }
+      }
+
+      return {
+        id: def.id,
+        label: def.label,
+        description: def.description,
+        weightPct: def.weight,
+        value,
+        contribution,
+        available,
+        color: def.color,
+      };
+    });
+  }
+
+  // ── Metrics & Evidence ──────────────────────────────────────────
+
+  get evidenceFacts(): ScoreEvidence['facts'] | null {
+    return this.result?.scoring?.evidence?.facts || null;
+  }
+
+  get originalRepoCount(): number {
+    if (this.evidenceFacts?.originalRepoCount !== undefined) {
+      return this.evidenceFacts.originalRepoCount;
+    }
+    return (this.result?.repositories || []).filter((r) => !r.fork).length;
+  }
+
+  get forkedRepoCount(): number {
+    if (this.evidenceFacts?.forkRepoCount !== undefined) {
+      return this.evidenceFacts.forkRepoCount;
+    }
+    return (this.result?.repositories || []).filter((r) => r.fork).length;
+  }
+
+  get archivedRepoCount(): number {
+    if (this.evidenceFacts?.archivedRepoCount !== undefined) {
+      return this.evidenceFacts.archivedRepoCount;
+    }
+    return (this.result?.repositories || []).filter((r) => r.archived).length;
+  }
+
+  get totalSampledCommits(): number | null {
+    if (this.evidenceFacts?.totalCommits !== undefined) {
+      return this.evidenceFacts.totalCommits;
+    }
+    const activity = this.result?.repositoryActivity || [];
+    if (!activity.length) return null;
+    return activity.reduce(
+      (sum, item) => sum + (Number.isFinite(item.commits) ? Number(item.commits) : 0),
+      0,
+    );
+  }
+
+  get ruleVersion(): string {
+    return (
+      this.result?.scoring?.ruleVersion || this.result?.analysisVersion || 'github-health-score-v1'
+    );
+  }
+
+  get calculationTimestamp(): string {
+    const ts =
+      this.result?.scoring?.calculatedAt ||
+      this.result?.fetchedAt ||
+      this.result?.cache?.cachedAt ||
+      this.result?.githubSignals?.analyzedAt;
+    return this.formatDateTime(ts);
+  }
+
+  get isDefaultProfile(): boolean {
+    if (!this.defaultUsername) return false;
+    const current = (this.viewedUsername || this.username).trim().toLowerCase();
+    return current === this.defaultUsername.trim().toLowerCase();
+  }
+
+  get isStale(): boolean {
+    return Boolean(
+      this.result?.cache?.stale ||
+      this.result?.cache?.source === 'stale-cache' ||
+      this.result?.rateLimited ||
+      (this.result?.warning && this.result.warning.toLowerCase().includes('rate limit')),
+    );
+  }
+
+  get cacheBadgeVariant(): BadgeVariant {
+    if (this.isStale) return 'warning';
+    if (this.result?.cache?.source === 'fresh') return 'success';
+    if (this.result?.cache?.source === 'frontend-cache') return 'info';
+    return 'primary';
+  }
+
+  get cacheStatusLabel(): string {
+    if (!this.result) return '';
+    if (this.isStale) return 'Cached Fallback (Stale)';
+    switch (this.result.cache?.source) {
+      case 'frontend-cache':
+        return 'Browser Cache';
+      case 'cache':
+        return 'Backend Cache';
+      case 'fresh':
+        return 'Fresh Analysis';
+      default:
+        return this.result.cache?.hit ? 'Cached' : 'Fresh Analysis';
+    }
+  }
+
+  get scoringWarnings(): string[] {
+    const warnings = this.result?.scoring?.warnings || [];
+    const map: Record<string, string> = {
+      activity_sampled_repository_history:
+        'Activity metrics reflect sampled history across the top 5 active repositories.',
+      repository_quality_uses_sampled_signals:
+        'Repository scores are derived from manifests, docs, and public heuristics.',
+      activity_partial_or_unavailable:
+        'Commit activity was partially restricted by API rate limits.',
+      repository_metrics_partial: 'Some repository metrics were partially collected.',
+      language_data_unavailable: 'Language byte distribution is temporarily unavailable.',
+      score_unavailable: 'Health score calculation was omitted due to missing core signals.',
+    };
+    return warnings.map((w) => map[w] || w);
+  }
+
+  // ── Languages & Technologies ───────────────────────────────────
+
+  get displayLanguages(): LanguageDistribution[] {
+    return this.sortedLanguages(
+      this.result?.mainLanguageDistribution ?? this.result?.languageDistribution ?? [],
+    );
+  }
+
+  get supportLanguages(): LanguageDistribution[] {
+    return this.sortedLanguages(this.result?.supportLanguageDistribution || []);
+  }
+
+  get technologyCategories(): Array<{ category: string; items: TechnologySignal[] }> {
+    const categories = this.result?.technologyCategories || {};
+    const signals = [
+      ...(this.result?.technologies || []),
+      ...Object.entries(categories).flatMap(([category, items]) =>
+        (items || []).map((item) => ({ ...item, category: item.category || category })),
+      ),
+    ];
+    const deduped = new Map<string, TechnologySignal>();
+    signals.forEach((item) => {
+      const name = String(item?.name || '').trim();
+      if (!name) return;
+      const key = name.toLowerCase();
+      const existing = deduped.get(key);
+      if (!existing || Number(item.confidence || 0) > Number(existing.confidence || 0)) {
+        deduped.set(key, { ...item, name, category: item.category || 'Other' });
+      }
+    });
+
+    const grouped = new Map<string, TechnologySignal[]>();
+    deduped.forEach((item) => {
+      const category = item.category || 'Other';
+      grouped.set(category, [...(grouped.get(category) || []), item]);
+    });
+    return Array.from(grouped.entries())
+      .map(([category, items]) => ({
+        category,
+        items: items.sort(
+          (a, b) =>
+            Number(b.confidence || 0) - Number(a.confidence || 0) || a.name.localeCompare(b.name),
+        ),
+      }))
+      .sort((a, b) => a.category.localeCompare(b.category));
+  }
+
+  get repositoryRows(): Repository[] {
+    return [...(this.result?.repositories || [])].sort(
+      (a, b) =>
+        this.repositoryScore(b) - this.repositoryScore(a) ||
+        Number(b.stars || 0) - Number(a.stars || 0) ||
+        String(a.name || '').localeCompare(String(b.name || '')),
+    );
+  }
+
+  get topRepositories(): Repository[] {
+    return this.repositoryRows.slice(0, 5);
+  }
+
+  get sortedRepositoryRows(): Repository[] {
+    const rows = [...this.repositoryRows];
+    rows.sort((a, b) => {
+      let cmp = 0;
+      if (this.repoSortField === 'score') {
+        cmp = this.repositoryScore(b) - this.repositoryScore(a);
+      } else if (this.repoSortField === 'stars') {
+        cmp = Number(b.stars ?? 0) - Number(a.stars ?? 0);
+      } else if (this.repoSortField === 'name') {
+        cmp = String(a.name || '').localeCompare(String(b.name || ''));
+      }
+      return this.repoSortAsc ? -cmp : cmp;
+    });
+    return rows;
+  }
+
+  toggleShowAllRepositories(): void {
+    this.showAllRepositories = !this.showAllRepositories;
+  }
+
+  setRepoSort(field: 'score' | 'stars' | 'name'): void {
+    if (this.repoSortField === field) {
+      this.repoSortAsc = !this.repoSortAsc;
+    } else {
+      this.repoSortField = field;
+      this.repoSortAsc = false;
+    }
+  }
+
+  // ── Executive Summary Helpers ──────────────────────────────────
+
+  get qualitativeState(): string {
+    const score = this.healthScoreValue;
+    if (score === null) return 'Unavailable';
+    if (score >= 75) return 'Strong';
+    if (score >= 50) return 'Developing';
+    return 'Needs Improvement';
+  }
+
+  get qualitativeStateVariant(): BadgeVariant {
+    const score = this.healthScoreValue;
+    if (score === null) return 'neutral';
+    if (score >= 75) return 'success';
+    if (score >= 50) return 'info';
+    return 'warning';
+  }
+
+  get executiveHeadline(): string {
+    if (!this.result) return 'Evaluating GitHub profile...';
+    if (this.result.recruiterInsights?.headline) {
+      return this.result.recruiterInsights.headline;
+    }
+    if (this.result.developerLevel) {
+      return `${this.result.developerLevel} Developer Profile`;
+    }
+    return 'Technical Portfolio Evaluation';
+  }
+
+  get executiveExplanation(): string {
+    if (!this.result) return '';
+    if (this.result.summary) return this.result.summary;
+    if (this.result.explanation) return this.result.explanation;
+    const score = this.healthScoreValue;
+    if (score === null) {
+      return 'Core profile signals are partially restricted or unavailable. Health score could not be reliably calculated.';
+    }
+    if (score >= 75) {
+      return 'Profile demonstrates solid codebase hygiene, steady activity in active repositories, and well-structured project documentation.';
+    }
+    if (score >= 50) {
+      return 'Profile displays good engineering foundation. Deepening commit cadence and diversifying tech stacks will raise overall readiness.';
+    }
+    return 'Repository presence is in an early stage. Adding original project code, thorough README documentation, and steady commits will strengthen your signal.';
+  }
+
+  get strongestSignal(): { label: string; score: number | null; detail: string } {
+    const breakdown = this.scoreBreakdownList.filter((b) => b.available && b.value !== null);
+    if (breakdown.length) {
+      const top = [...breakdown].sort((a, b) => (b.value ?? 0) - (a.value ?? 0))[0];
+      return {
+        label: `${top.label} (${top.value}/100)`,
+        score: top.value,
+        detail: top.description,
+      };
+    }
+    if (this.result?.strengths?.length) {
+      return {
+        label: 'Engineering Strength',
+        score: null,
+        detail: this.result.strengths[0],
+      };
+    }
+    return {
+      label: 'Repository Foundation',
+      score: null,
+      detail: `${this.result?.repoCount ?? 0} public repositories evaluated.`,
+    };
+  }
+
+  get biggestWeakness(): { label: string; score: number | null; detail: string } {
+    const breakdown = this.scoreBreakdownList.filter((b) => b.available && b.value !== null);
+    if (breakdown.length) {
+      const lowest = [...breakdown].sort((a, b) => (a.value ?? 0) - (b.value ?? 0))[0];
+      return {
+        label: `${lowest.label} (${lowest.value}/100)`,
+        score: lowest.value,
+        detail: lowest.description,
+      };
+    }
+    if (this.result?.weakAreas?.length) {
+      return {
+        label: 'Growth Opportunity',
+        score: null,
+        detail: this.result.weakAreas[0],
+      };
+    }
+    return {
+      label: 'Activity Cadence',
+      score: null,
+      detail: 'Increase commit consistency across public repositories.',
+    };
+  }
+
+  get topRecommendedAction(): { title: string; detail: string } {
+    if (this.result?.weakAreas?.length) {
+      return {
+        title: 'Address Identified Gap',
+        detail: this.result.weakAreas[0],
+      };
+    }
+    const breakdown = this.scoreBreakdownList.filter((b) => b.available && b.value !== null);
+    if (breakdown.length) {
+      const lowest = [...breakdown].sort((a, b) => (a.value ?? 0) - (b.value ?? 0))[0];
+      return {
+        title: `Strengthen ${lowest.label}`,
+        detail: `Focus on ${lowest.description.toLowerCase()} to gain up to +${lowest.weightPct} potential points.`,
+      };
+    }
+    return {
+      title: 'Maintain Active Commits',
+      detail: 'Push regular commits and document architecture in your top projects.',
+    };
+  }
+
+  // ── Conditionals & UI State ────────────────────────────────────
+
+  get hasNoConfiguredGithub(): boolean {
+    return (
+      !this.isInitLoading &&
+      !this.defaultUsername &&
+      !this.analysisReady &&
+      !this.isAnalyzing &&
+      !this.errorMessage
+    );
+  }
+
+  get hasEmptyRepositories(): boolean {
+    return (
+      this.analysisReady &&
+      Boolean(this.result) &&
+      (this.result?.repoCount === 0 || !this.result?.repositories?.length)
+    );
+  }
+
+  get hasLanguageData(): boolean {
+    return this.displayLanguages.length > 0;
+  }
+
+  get hasActivityData(): boolean {
+    return (this.result?.repositoryActivity || []).length > 0;
+  }
+
+  get hasTechnologyData(): boolean {
+    return this.technologyCategories.length > 0;
+  }
+
+  get hasAiContent(): boolean {
+    return Boolean(
+      this.result?.summary ||
+      this.result?.explanation ||
+      this.result?.strengths?.length ||
+      this.result?.weakAreas?.length ||
+      this.result?.recruiterInsights?.proofPoints?.length,
+    );
+  }
+
+  get hasStrengths(): boolean {
+    return Boolean(this.result?.strengths?.length);
+  }
+
+  get hasWeakAreas(): boolean {
+    return Boolean(this.result?.weakAreas?.length);
+  }
+
+  get hasRecruiterInsights(): boolean {
+    return Boolean(this.result?.recruiterInsights?.proofPoints?.length);
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "root": "D:\\Developer-Portfolio-Analyzer",
+  "branch": "fix/bug-01",
+  "target": "not applicable",
+  "sourceFiles": [
+    "backend/src/services/providers/interviewAIProvider.js",
+    "backend/src/services/interviewPrepService.js",
+    "backend/src/services/interviewQuestionQualityService.js",
+    "backend/src/services/aiProviderManager.js",
+    "backend/src/tests/interviewCustomSystemDesign.test.js",
+    "frontend/src/app/shared/services/interview-prep.service.ts",
+    "frontend/src/app/shared/services/interview-prep.service.spec.ts",
+    "frontend/scripts/verify-interview-custom-system-design.cjs"
+  ],
+  "sourceHashes": {
+    "backend/src/services/providers/interviewAIProvider.js": "b9d27ebd982587e68d00de7eb03bdcad06302a150ba759ce66c28f4df44c1aa3",
+    "backend/src/services/interviewPrepService.js": "f17dfcd90319bb914ae43b78910ca5955367492980c767728e6203af61a9b5da",
+    "backend/src/services/interviewQuestionQualityService.js": "7dffbf5afedd01ecb35097e5d27b2ea5015b8cd9b6976f5c1c907e8a031da49d",
+    "backend/src/services/aiProviderManager.js": "9728d5cdd01b5672c5522f6d1304cfbe40a380916851f12f7ede924429f5a03e",
+    "backend/src/tests/interviewCustomSystemDesign.test.js": "9e5eed37d24f17cad1c8c5022b05efbb94583d292f7710e02a5d59b429f38c5c",
+    "frontend/src/app/shared/services/interview-prep.service.ts": "fa273b855b6b2b60ffdbe2f6856fbb0073287c7e2a02bba806b15c541868c91c",
+    "frontend/src/app/shared/services/interview-prep.service.spec.ts": "05a08735b56b71a8f9b40cceb8a0df472f476d4200360e6c5dbd157979988885",
+    "frontend/scripts/verify-interview-custom-system-design.cjs": "487842b2e307b0c81e4399c522c96cb09c7aab9029c4f92cda724547b48b4cac"
+  },
+  "sourceFilesMoved": [],
+  "sourceFilesDeleted": [],
+  "originalStagedEntriesPreserved": true,
+  "otherExistingUnstagedFilesPreserved": true
+}

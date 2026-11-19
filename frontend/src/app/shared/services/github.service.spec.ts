@@ -94,4 +94,24 @@ describe('GithubService cache lifecycle', () => {
     http.expectOne(url).flush(result);
     expect(service.getCachedAnalysis('octocat', 'public')).toBeTruthy();
   });
+
+  it('revalidates saved data after each completed read and shares only pending requests', () => {
+    service.getSavedAnalysis('octocat').subscribe();
+    service.getSavedAnalysis('octocat').subscribe();
+    const first = http.expectOne(`${environment.apiBaseUrl}/github/analyze-save`);
+    expect(first.request.body).toEqual({ username: 'octocat', savedOnly: true });
+    first.flush(result);
+    service.getSavedAnalysis('octocat').subscribe();
+    http.expectOne(`${environment.apiBaseUrl}/github/analyze-save`).flush(result);
+    expect(invalidation.clearDeveloperSignalCaches).not.toHaveBeenCalled();
+  });
+
+  it('cancels saved-data responses when the account cache is cleared', () => {
+    const received = vi.fn();
+    service.getSavedAnalysis('octocat').subscribe(received);
+    const old = http.expectOne(`${environment.apiBaseUrl}/github/analyze-save`);
+    service.clearCache();
+    expect(old.cancelled).toBe(true);
+    expect(received).not.toHaveBeenCalled();
+  });
 });

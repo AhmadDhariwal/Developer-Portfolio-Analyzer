@@ -1,36 +1,70 @@
-<div class="callback-page" role="main">
-  <div class="callback-container">
-    <!-- Brand -->
-    <div class="callback-brand" aria-hidden="true">
-      <span class="callback-logo">DevInsight AI</span>
-    </div>
-
-    <!-- Processing state -->
-    <div *ngIf="status === 'processing'" class="callback-state" aria-live="polite" aria-busy="true">
-      <div class="callback-spinner" role="status">
-        <span class="sr-only">Completing sign-in, please wait…</span>
+<app-auth-shell mode="centered" backLink="/auth/login" backLabel="Back to login">
+  <app-ui-card class="auth-card" [noHeader]="true" [hoverEffect]="false">
+    @if (status === 'processing') {
+      <div class="auth-step-header">
+        <div class="auth-step-icon" aria-hidden="true">
+          <span class="oauth-spinner"></span>
+        </div>
+        <span class="auth-step-badge auth-step-badge--primary">OAuth / Sync</span>
       </div>
-      <p class="callback-message">Completing sign-in…</p>
-      <p class="callback-hint">You'll be redirected momentarily.</p>
-    </div>
-
-    <!-- Error state -->
-    <div *ngIf="status === 'error'" class="callback-state callback-state--error" aria-live="assertive">
-      <div class="callback-error-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="12" y1="8" x2="12" y2="12"/>
-          <line x1="12" y1="16" x2="12.01" y2="16"/>
-        </svg>
+      <div class="status-panel" role="status" aria-live="polite">
+        <h2>Completing sign-in...</h2>
+        <p>
+          Verifying your OAuth session and preparing your Developer Portfolio Analyzer workspace.
+        </p>
+        <div class="status-diag">
+          <strong>Session Handshake</strong>
+          Exchanging provider grant and validating signed DPA JWT claims.
+        </div>
       </div>
-      <p class="callback-message callback-message--error">{{ errorMessage }}</p>
-      <p class="callback-hint">Redirecting you back to sign in…</p>
-    </div>
-  </div>
-
-  <!-- Background -->
-  <div class="callback-background" aria-hidden="true">
-    <div class="gradient-blob blob-1"></div>
-    <div class="gradient-blob blob-2"></div>
-  </div>
-</div>
+    } @else if (status === 'cancelled') {
+      <div class="auth-step-header">
+        <div class="auth-step-icon auth-step-icon--warning" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="9" />
+            <path stroke-linecap="round" d="M12 8v4M12 16h.01" />
+          </svg>
+        </div>
+        <span class="auth-step-badge auth-step-badge--warning">OAuth / Cancelled</span>
+      </div>
+      <div class="status-panel" role="status">
+        <h2>{{ errorTitle }}</h2>
+        <p>{{ errorMessage }}</p>
+        <div class="status-actions">
+          <a routerLink="/auth/login" class="submit-btn callback-link-btn">Return to sign in</a>
+          <a routerLink="/auth/signup" class="auth-link callback-secondary-link"
+            >Create an account</a
+          >
+        </div>
+      </div>
+    } @else {
+      <div class="auth-step-header">
+        <div class="auth-step-icon auth-step-icon--error" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+            />
+            <path stroke-linecap="round" d="M12 9v4M12 17h.01" />
+          </svg>
+        </div>
+        <span class="auth-step-badge auth-step-badge--error">OAuth / Failed</span>
+      </div>
+      <div class="status-panel" role="alert">
+        <h2>{{ errorTitle }}</h2>
+        <p>{{ errorMessage }}</p>
+        <div class="status-diag status-diag--error">
+          <strong>Provider Callback Rejected</strong>
+          No active session was created. Retry OAuth or sign in with email and password.
+        </div>
+        <div class="status-actions">
+          <a routerLink="/auth/login" class="submit-btn callback-link-btn">Return to sign in</a>
+          <a routerLink="/auth/signup" class="auth-link callback-secondary-link"
+            >Create an account</a
+          >
+        </div>
+      </div>
+    }
+  </app-ui-card>
+</app-auth-shell>

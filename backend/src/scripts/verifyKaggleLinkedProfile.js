@@ -6,13 +6,13 @@ const path = require('node:path');
 const assert = require('node:assert/strict');
 const mongoose = require('mongoose');
 const { startMongo } = require('./verifyIntegrationsRealProviders');
-const links = require('../services/integrationLinkedProfileService');
-const controller = require('../controllers/integrationLinkedProfilescontroller').kaggle;
-const LinkedProfile = require('../models/integrationLinkedProfile');
-const User = require('../models/user');
-const Connection = require('../models/integrationConnection');
-const Insight = require('../models/integrationInsight');
-const Log = require('../models/integrationSyncLog');
+const links = require('../modules/integrations/services/integrationLinkedProfileService');
+const controller = require('../modules/integrations/integrationLinkedProfilescontroller').kaggle;
+const LinkedProfile = require('../modules/integrations/models/integrationLinkedProfile');
+const User = require('../modules/auth/models/user');
+const Connection = require('../modules/integrations/models/integrationConnection');
+const Insight = require('../modules/integrations/models/integrationInsight');
+const Log = require('../modules/integrations/models/integrationSyncLog');
 
 async function main() {
   const output = path.resolve(

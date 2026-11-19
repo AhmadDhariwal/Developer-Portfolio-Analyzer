@@ -1,7 +1,7 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
-const AnalysisCache = require('../models/analysisCache');
-const { syncJobsToCache } = require('../services/jobService');
+const AnalysisCache = require('../modules/skill-gap/models/analysisCache');
+const { syncJobsToCache } = require('../modules/jobs/services/jobService');
 
 const JOB_POOL_VERSION = 'jobs_pool_v3_real_sources';
 

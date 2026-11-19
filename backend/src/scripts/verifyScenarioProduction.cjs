@@ -86,14 +86,14 @@ async function main() {
         '--test',
         '--test-reporter=tap',
         ...[
-          'scenarioPlanningScore',
-          'scenarioLegacyParity',
-          'scenarioSimulatorService',
-          'scenarioSimulatorCharacterization',
-          'scenarioSimulatorContext',
-          'scenarioSimulatorReliability',
-          'scenarioProductionContracts',
-          'skillGapConsumerContracts',
+          'scenario-simulator/scenarioPlanningScore',
+          'scenario-simulator/scenarioLegacyParity',
+          'scenario-simulator/scenarioSimulatorService',
+          'scenario-simulator/scenarioSimulatorCharacterization',
+          'scenario-simulator/scenarioSimulatorContext',
+          'scenario-simulator/scenarioSimulatorReliability',
+          'scenario-simulator/scenarioProductionContracts',
+          'skill-gap/skillGapConsumerContracts',
         ].map((name) => `backend/src/tests/${name}.test.js`),
       ]))
     )
@@ -102,10 +102,10 @@ async function main() {
       '--test',
       '--test-concurrency=1',
       '--test-reporter=tap',
-      'backend/src/tests/scenarioSimulatorMongo.integration.test.js',
-      'backend/src/tests/scenarioSimulatorWorkers.integration.test.js',
-      'backend/src/tests/scenarioSprintExport.test.js',
-      'backend/src/tests/scenarioMigration.integration.test.js',
+      'backend/src/tests/scenario-simulator/scenarioSimulatorMongo.integration.test.js',
+      'backend/src/tests/scenario-simulator/scenarioSimulatorWorkers.integration.test.js',
+      'backend/src/tests/scenario-simulator/scenarioSprintExport.test.js',
+      'backend/src/tests/scenario-simulator/scenarioMigration.integration.test.js',
     ]);
   } else if (process.argv.includes('--smoke')) {
     await run('http-redis-fault-contracts', [

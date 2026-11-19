@@ -1,0 +1,79 @@
+{
+  "synthetic": true,
+  "liveProvider": false,
+  "productionBundle": true,
+  "checks": [
+    "Exact selected technology and custom text submitted",
+    "Incomplete coverage shows honest error and retry",
+    "All command/code/expected-output lines rendered safely",
+    "Private saved answer reopens with full structured content",
+    "Desktop and 390px mobile fit without page overflow"
+  ],
+  "network": [
+    {
+      "request": {
+        "question": "Tell me about Redis and also tell me how to use local Redis.",
+        "skill": "redis"
+      },
+      "status": 503,
+      "response": {
+        "code": "invalid_ai_answer",
+        "generationStatus": "invalid_response",
+        "retryable": true,
+        "message": "The answer could not cover every part of your request. Please retry or narrow the question."
+      }
+    },
+    {
+      "request": {
+        "question": "Tell me about Redis and also tell me how to use local Redis.",
+        "skill": "redis"
+      },
+      "status": 200,
+      "response": {
+        "question": "Tell me about Redis and also tell me how to use local Redis.",
+        "answer": "Deterministic practical Redis guide for UI verification.",
+        "topicKey": "redis",
+        "difficulty": "medium",
+        "category": "core-concepts",
+        "tags": [
+          "redis"
+        ],
+        "sourceType": "ai_generated",
+        "verificationStatus": "unverified",
+        "sessionId": "coverage-private",
+        "sourceMeta": {
+          "mode": "custom-question",
+          "answerQuality": {
+            "version": 1
+          }
+        },
+        "answerSections": {
+          "shortAnswer": "Redis is an in-memory data store used for caching and other fast data access patterns.",
+          "explanation": "# Prerequisites\nUse an Ubuntu/WSL terminal for this general example; service status is not verified.\n# Install locally\n1. Install the package.\n2. Start the server.\n3. Verify a client connection.\n```sh\nsudo apt update\nsudo apt install redis-server\nsudo service redis-server start\nredis-cli ping\n# Expected output: PONG\n```\n# Try CLI operations\n```sh\nredis-cli SET demo hello\nredis-cli GET demo\n# Expected output: hello\n```",
+          "keyPoints": [
+            "Install and start the server",
+            "Verify a connection",
+            "Configure and test the application client"
+          ],
+          "example": "## Application integration\nInstall the declared client dependency and adapt the endpoint to your environment.\n```js\nimport { createClient } from \"redis\";\nconst client = createClient({ url: \"redis://127.0.0.1:6379\" });\nclient.on(\"error\", console.error);\nawait client.connect();\nconsole.log(await client.ping()); // PONG\nawait client.quit();\n```",
+          "realWorldUseCase": "Use a local cache while developing an application; this fixture does not execute or verify the commands.",
+          "commonMistakes": [
+            "Connection refused: check the server, address and port.",
+            "Check the network boundary between the application and WSL/container."
+          ],
+          "interviewTip": "Separate the server lifecycle from application client integration."
+        }
+      }
+    }
+  ],
+  "screenshots": [
+    "coverage-desktop.png",
+    "coverage-mobile.png"
+  ],
+  "errors": [],
+  "mobile": {
+    "viewport": 390,
+    "scroll": 390
+  },
+  "passed": true
+}

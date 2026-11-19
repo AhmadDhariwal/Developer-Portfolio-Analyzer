@@ -1,0 +1,18 @@
+{
+  "sourceFiles": [
+    "backend/src/config/aiProviders.js",
+    "backend/src/services/aiProviderManager.js",
+    "backend/src/services/interviewPrepService.js",
+    "backend/src/services/interviewSessionService.js",
+    "backend/src/services/providers/interviewAIProvider.js",
+    "backend/src/tests/aiProviderPlatform.test.js",
+    "backend/src/tests/interviewCompleteAI.test.js",
+    "backend/src/tests/interviewCustomSystemDesign.test.js",
+    "backend/src/tests/interviewPrepPerformance.test.js",
+    "backend/src/tests/interviewCustomFailover.test.js"
+  ],
+  "movedSourceFiles": [],
+  "deletedSourceFiles": [],
+  "formattingWriteAndCheckPassed": true,
+  "nodeSyntaxChecksPassed": true
+}

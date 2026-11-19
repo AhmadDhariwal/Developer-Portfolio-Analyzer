@@ -1,0 +1,21 @@
+{
+  "results": [
+    "Dashboard exact percentages, partial radar and unavailable evidence states",
+    "Normal and cache-bypassing reload preserve measured labels",
+    "Analyzer and Dashboard match, with support bytes and passive saved-only reads",
+    "Explicit GitHub sync refreshes the other tab without an AI request",
+    "Updated tab renders the exact two-point trend, dated counts, full radar and disjoint skill groups",
+    "Recommendations page and Dashboard show the same AI freshness during passive reads",
+    "A shared-browser account switch reloads Dashboard with only the new owner’s data"
+  ],
+  "requests": {
+    "summary": {
+      "fixture": 6,
+      "alternate": 3
+    },
+    "sync": 1,
+    "savedGithub": 1,
+    "ai": 0
+  },
+  "providerTraffic": "Blocked outside the loopback fixture"
+}

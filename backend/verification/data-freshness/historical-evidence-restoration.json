@@ -1,0 +1,54 @@
+[
+  {
+    "historicalPathRestored": "backend/verification/architecture/request-flow-governance-results.json",
+    "currentRunEvidence": "backend/verification/data-freshness/regression-evidence/architecture/request-flow-governance-results.json"
+  },
+  {
+    "historicalPathRestored": "backend/verification/courses/acquisition-2026-11-06/coverage.json",
+    "currentRunEvidence": "backend/verification/data-freshness/regression-evidence/courses/acquisition-2026-11-06/coverage.json"
+  },
+  {
+    "historicalPathRestored": "backend/verification/courses/defects-2026-11-05/mongo-network.json",
+    "currentRunEvidence": "backend/verification/data-freshness/regression-evidence/courses/defects-2026-11-05/mongo-network.json"
+  },
+  {
+    "historicalPathRestored": "backend/verification/courses/defects-2026-11-05/shared-catalog.json",
+    "currentRunEvidence": "backend/verification/data-freshness/regression-evidence/courses/defects-2026-11-05/shared-catalog.json"
+  },
+  {
+    "historicalPathRestored": "backend/verification/courses/relevance-2026-11-06/after.json",
+    "currentRunEvidence": "backend/verification/data-freshness/regression-evidence/courses/relevance-2026-11-06/after.json"
+  },
+  {
+    "historicalPathRestored": "backend/verification/integrations/final-scalability-acceptance.json",
+    "currentRunEvidence": "backend/verification/data-freshness/regression-evidence/integrations/final-scalability-acceptance.json"
+  },
+  {
+    "historicalPathRestored": "backend/verification/integrations/query-plans.json",
+    "currentRunEvidence": "backend/verification/data-freshness/regression-evidence/integrations/query-plans.json"
+  },
+  {
+    "historicalPathRestored": "backend/verification/integrations/repeated-requests-cache-audit.json",
+    "currentRunEvidence": "backend/verification/data-freshness/regression-evidence/integrations/repeated-requests-cache-audit.json"
+  },
+  {
+    "historicalPathRestored": "backend/verification/integrations/scalability-governance-regression.json",
+    "currentRunEvidence": "backend/verification/data-freshness/regression-evidence/integrations/scalability-governance-regression.json"
+  },
+  {
+    "historicalPathRestored": "backend/verification/notifications/integration-results.json",
+    "currentRunEvidence": "backend/verification/data-freshness/regression-evidence/notifications/integration-results.json"
+  },
+  {
+    "historicalPathRestored": "backend/verification/skillgap/production-results.json",
+    "currentRunEvidence": "backend/verification/data-freshness/regression-evidence/skillgap/production-results.json"
+  },
+  {
+    "historicalPathRestored": "backend/verification/weekly-reports/refinement-2026-11-11/pagination.pdf",
+    "currentRunEvidence": "backend/verification/data-freshness/regression-evidence/weekly-reports/refinement-2026-11-11/pagination.pdf"
+  },
+  {
+    "historicalPathRestored": "backend/verification/weekly-reports/refinement-2026-11-11/snapshot.pdf",
+    "currentRunEvidence": "backend/verification/data-freshness/regression-evidence/weekly-reports/refinement-2026-11-11/snapshot.pdf"
+  }
+]

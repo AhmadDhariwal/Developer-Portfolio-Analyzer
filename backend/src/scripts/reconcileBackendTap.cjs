@@ -80,10 +80,23 @@ function inventory(tap) {
     };
     records.push(record);
   }
-  const files = fs.readdirSync(path.resolve(__dirname, '../tests')).filter((name) => name.endsWith('.test.js'));
+  const testRoot = path.resolve(__dirname, '../tests');
+  const walkTests = (dir, prefix = '') => {
+    const out = [];
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (entry.isDirectory()) {
+        if (entry.name === 'fixtures') continue;
+        out.push(...walkTests(path.join(dir, entry.name), prefix ? `${prefix}/${entry.name}` : entry.name));
+      } else if (entry.name.endsWith('.test.js')) {
+        out.push(prefix ? `${prefix}/${entry.name}` : entry.name);
+      }
+    }
+    return out;
+  };
+  const files = walkTests(testRoot);
   const sources = files.map((name) => ({
     name,
-    text: fs.readFileSync(path.resolve(__dirname, '../tests', name), 'utf8')
+    text: fs.readFileSync(path.resolve(testRoot, name), 'utf8')
   }));
   for (const record of records) {
     if (!record.file) {

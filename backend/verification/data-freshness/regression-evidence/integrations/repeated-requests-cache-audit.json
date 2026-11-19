@@ -1,0 +1,83 @@
+{
+  "checkedAt": "2026-11-17T14:12:52.686Z",
+  "providerHttpRequests": 0,
+  "checks": [
+    "warm read-through measured at two payload sizes; generation mismatch falls back to Mongo; expired metadata bypasses Redis; quota/timeout/unavailable/recovered return authoritative data"
+  ],
+  "readThrough": [
+    {
+      "payloadBytes": 615,
+      "mongoOnlyMs": {
+        "n": 12,
+        "p50": 1.75619999999617,
+        "p95": 4.032500000001164,
+        "p99": 4.032500000001164
+      },
+      "readThroughMs": {
+        "n": 12,
+        "p50": 2.7088999999978114,
+        "p95": 4.921399999999267,
+        "p99": 4.921399999999267
+      },
+      "mongoReads": 24,
+      "redisGets": 12
+    },
+    {
+      "payloadBytes": 30103,
+      "mongoOnlyMs": {
+        "n": 12,
+        "p50": 2.0641000000032363,
+        "p95": 3.9636000000027707,
+        "p99": 3.9636000000027707
+      },
+      "readThroughMs": {
+        "n": 12,
+        "p50": 3.197100000004866,
+        "p95": 4.615799999999581,
+        "p99": 4.615799999999581
+      },
+      "mongoReads": 24,
+      "redisGets": 12
+    }
+  ],
+  "prototypeCommands": {
+    "mongoReads": 53,
+    "redisGets": 25,
+    "redisSets": 3
+  },
+  "prototypeFailureModes": [
+    {
+      "mode": "quota",
+      "ms": 4.870100000000093,
+      "mongoReads": 2,
+      "redisGets": 1,
+      "redisSets": 1
+    },
+    {
+      "mode": "timeout",
+      "ms": 166.90269999999873,
+      "mongoReads": 2,
+      "redisGets": 1,
+      "redisSets": 1
+    },
+    {
+      "mode": "unavailable",
+      "ms": 1.781200000004901,
+      "mongoReads": 1,
+      "redisGets": 0,
+      "redisSets": 0
+    },
+    {
+      "mode": "recovered",
+      "ms": 5.323599999996077,
+      "mongoReads": 2,
+      "redisGets": 1,
+      "redisSets": 1
+    }
+  ],
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 71,
+    "productionDataUsed": false
+  }
+}

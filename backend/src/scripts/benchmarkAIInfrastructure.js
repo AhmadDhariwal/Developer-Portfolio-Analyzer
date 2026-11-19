@@ -1,19 +1,19 @@
 const path = require('node:path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
-const aiService = require('../services/aiservice');
-const aiProviderManager = require('../services/aiProviderManager');
-const { initRedisCache } = require('../services/redisCacheService');
-const { estimateTokens, buildSkillGapPromptContext } = require('../services/promptBuilderService');
-const { getSkillGapPrompt } = require('../prompts/skillGapPrompt');
-const { getGitHubPrompt } = require('../prompts/githubPrompt');
-const { getResumePrompt } = require('../prompts/resumePrompt');
-const { getRecommendationPrompt } = require('../prompts/recommendationPrompt');
-const { getCareerSprintPrompt } = require('../prompts/careerSprintPrompt');
-const { getInterviewPrepPrompt } = require('../prompts/interviewPrepPrompt');
-const { getPortfolioScorePrompt } = require('../prompts/portfolioScorePrompt');
-const { getWeeklyReportPrompt } = require('../prompts/weeklyReportPrompt');
-const { getResumeGuidePrompt } = require('../prompts/resumeGuidePrompt');
+const aiService = require('../core/ai/aiservice');
+const aiProviderManager = require('../core/ai/aiProviderManager');
+const { initRedisCache } = require('../core/cache/redisCacheService');
+const { estimateTokens, buildSkillGapPromptContext } = require('../core/ai/promptBuilderService');
+const { getSkillGapPrompt } = require('../modules/skill-gap/prompts/skillGapPrompt');
+const { getGitHubPrompt } = require('../modules/github/prompts/githubPrompt');
+const { getResumePrompt } = require('../modules/resume/prompts/resumePrompt');
+const { getRecommendationPrompt } = require('../modules/recommendations/prompts/recommendationPrompt');
+const { getCareerSprintPrompt } = require('../modules/career-sprint/prompts/careerSprintPrompt');
+const { getInterviewPrepPrompt } = require('../modules/interview-prep/prompts/interviewPrepPrompt');
+const { getPortfolioScorePrompt } = require('../modules/public-portfolio/prompts/portfolioScorePrompt');
+const { getWeeklyReportPrompt } = require('../modules/weekly-reports/prompts/weeklyReportPrompt');
+const { getResumeGuidePrompt } = require('../modules/resume/prompts/resumeGuidePrompt');
 
 const live = process.argv.includes('--live');
 

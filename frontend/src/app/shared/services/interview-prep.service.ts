@@ -10,6 +10,7 @@ import {
   shareReplay,
   takeUntil,
   timeout,
+  tap,
 } from 'rxjs';
 import { ApiService } from './api.service';
 import { AuthService } from './auth.service';
@@ -38,7 +39,7 @@ export class InterviewPrepService implements OnDestroy {
   constructor(
     private readonly api: ApiService,
     auth: AuthService,
-    invalidation: FrontendCacheInvalidationService,
+    private readonly invalidation: FrontendCacheInvalidationService,
   ) {
     this.owner$ = auth.currentUser$.pipe(
       map((user) => String(user?._id || '')),
@@ -61,7 +62,7 @@ export class InterviewPrepService implements OnDestroy {
     const epoch = this.epoch;
     let guarded: Observable<T>;
     const shared = defer(load).pipe(
-      timeout(kind === 'ask' || kind === 'generate' || kind === 'session' ? 20000 : 12000),
+      timeout(['generate', 'session', 'ask'].includes(kind) ? 40000 : 12000),
       takeUntil(this.cancel),
       finalize(() => {
         if (this.inflight.get(key) === guarded) this.inflight.delete(key);
@@ -122,8 +123,12 @@ export class InterviewPrepService implements OnDestroy {
     page?: number;
     limit?: number;
     target?: number;
+    category?: string;
+    tags?: string[];
+    source?: string;
   }): Observable<InterviewQuestionListResponse> {
-    return this.once('generate', payload, () => this.api.generateInterviewPrepQuestions(payload));
+    const request = { ...payload, source: payload.source || 'database' };
+    return this.once('generate', request, () => this.api.generateInterviewPrepQuestions(request));
   }
   askQuestion(payload: {
     question: string;
@@ -139,12 +144,29 @@ export class InterviewPrepService implements OnDestroy {
   startSession(
     skill: string,
     idempotencyKey: string = crypto.randomUUID(),
+    filters: {
+      query?: string;
+      difficulty?: string;
+      category?: string;
+      tags?: string[];
+      source?: string;
+      limit?: number;
+    } = {},
   ): Observable<InterviewQuestionListResponse> {
-    const payload = { skill, skillGaps: [], idempotencyKey };
+    const payload = {
+      skill,
+      skillGaps: [],
+      idempotencyKey,
+      ...filters,
+      source: filters.source || 'database',
+    };
     return this.once('session', payload, () => this.api.generateInterviewPrep(payload));
   }
   getSession(id: string): Observable<InterviewSession> {
     return this.once('session-read', { id }, () => this.api.getInterviewSession(id));
+  }
+  deleteSession(id: string): Observable<{ deleted: boolean }> {
+    return this.once('session-delete', { id }, () => this.api.deleteInterviewSession(id));
   }
   saveProgress(
     id: string,
@@ -160,6 +182,11 @@ export class InterviewPrepService implements OnDestroy {
   completeSession(id: string, expectedVersion: number): Observable<InterviewSession> {
     return this.once('complete', { id, expectedVersion }, () =>
       this.api.updateInterviewSession(id, { expectedVersion }, true),
+    ).pipe(
+      tap(() => {
+        this.invalidation.clearDashboardCaches();
+        this.invalidation.clearWeeklyReportCaches();
+      }),
     );
   }
   getSessions(limit = 10): Observable<InterviewSession[]> {

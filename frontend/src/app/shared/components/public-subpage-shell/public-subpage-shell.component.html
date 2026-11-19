@@ -1,0 +1,192 @@
+<div class="pub-page" [ngClass]="themeClass">
+  <div class="pub-grid-backdrop" aria-hidden="true"></div>
+
+  <header class="pub-nav">
+    <div class="pub-nav-inner">
+      <a class="pub-brand" routerLink="/" aria-label="Developer Portfolio Analyzer Home">
+        <span class="pub-brand-badge" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 3l2.2 4.6 5.1.7-3.7 3.6.9 5.1-4.5-2.4-4.5 2.4.9-5.1-3.7-3.6 5.1-.7L12 3z"
+            />
+          </svg>
+        </span>
+        <span class="pub-brand-copy">
+          <span class="pub-brand-title">DevInsight <span>AI</span></span>
+          <span class="pub-brand-sub">Developer Portfolio Analyzer</span>
+        </span>
+      </a>
+
+      <nav class="pub-nav-links" aria-label="Public resources navigation">
+        @for (item of resourceLinks; track item.route) {
+          <a [routerLink]="item.route" routerLinkActive="is-active" class="pub-nav-link">
+            {{ item.label }}
+          </a>
+        }
+      </nav>
+
+      <div class="pub-nav-actions">
+        <app-theme-menu [compactMobileLabel]="true" />
+
+        <a routerLink="/auth/login" class="pub-btn pub-btn--secondary pub-nav-auth">Sign In</a>
+        <a routerLink="/auth/signup" class="pub-btn pub-btn--primary pub-nav-auth">Get Started</a>
+
+        <button
+          type="button"
+          class="pub-mobile-toggle"
+          [attr.aria-expanded]="mobileMenuOpen()"
+          aria-controls="pub-mobile-drawer"
+          [attr.aria-label]="mobileMenuOpen() ? 'Close navigation menu' : 'Open navigation menu'"
+          (click)="toggleMobileMenu()"
+        >
+          @if (mobileMenuOpen()) {
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          } @else {
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          }
+        </button>
+      </div>
+    </div>
+
+    @if (mobileMenuOpen()) {
+      <div class="pub-mobile-backdrop" aria-hidden="true" (click)="closeMobileMenu()"></div>
+      <div
+        id="pub-mobile-drawer"
+        class="pub-mobile-drawer"
+        role="dialog"
+        aria-label="Mobile navigation"
+      >
+        <nav class="pub-mobile-links" aria-label="Mobile sections">
+          <a routerLink="/" class="pub-mobile-link" (click)="closeMobileMenu()">Home Overview</a>
+          @for (item of resourceLinks; track item.route) {
+            <a
+              [routerLink]="item.route"
+              routerLinkActive="is-active"
+              class="pub-mobile-link"
+              (click)="closeMobileMenu()"
+            >
+              {{ item.label }}
+            </a>
+          }
+        </nav>
+
+        <div class="pub-mobile-theme">
+          <span class="pub-mobile-theme-title">Appearance</span>
+          <app-theme-menu [compactMobileLabel]="false" [fullWidth]="true" [inlineMenu]="true" />
+        </div>
+
+        <div class="pub-mobile-ctas">
+          <a
+            routerLink="/auth/login"
+            class="pub-btn pub-btn--secondary"
+            (click)="closeMobileMenu()"
+          >
+            Sign In
+          </a>
+          <a routerLink="/auth/signup" class="pub-btn pub-btn--primary" (click)="closeMobileMenu()">
+            Get Started
+          </a>
+        </div>
+      </div>
+    }
+  </header>
+
+  <section class="pub-hero">
+    <div class="pub-container">
+      <div class="pub-hero-inner">
+        <div class="pub-hero-kicker-row">
+          <span class="pub-hero-eyebrow">{{ eyebrow }}</span>
+          @if (metaLabel) {
+            <span class="pub-hero-meta">{{ metaLabel }}</span>
+          }
+        </div>
+        <h1 class="pub-hero-title">{{ title }}</h1>
+        <p class="pub-hero-subtitle">{{ subtitle }}</p>
+      </div>
+    </div>
+  </section>
+
+  <main class="pub-main">
+    <div class="pub-container">
+      <ng-content></ng-content>
+    </div>
+  </main>
+
+  <footer class="pub-footer">
+    <div class="pub-container pub-footer-grid">
+      <div class="pub-footer-brand">
+        <a class="pub-brand" routerLink="/" aria-label="DevInsight AI Home">
+          <span class="pub-brand-badge" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 3l2.2 4.6 5.1.7-3.7 3.6.9 5.1-4.5-2.4-4.5 2.4.9-5.1-3.7-3.6 5.1-.7L12 3z"
+              />
+            </svg>
+          </span>
+          <span class="pub-brand-title">DevInsight <span>AI</span></span>
+        </a>
+        <p>
+          GitHub analysis, resume intelligence, skill gap detection, career sprints, and interview
+          preparation built for modern developers.
+        </p>
+      </div>
+
+      <div class="pub-footer-col">
+        <h3>Product</h3>
+        <ul>
+          <li><a routerLink="/" fragment="features">Features</a></li>
+          <li><a routerLink="/" fragment="analysis">GitHub &amp; Resume</a></li>
+          <li><a routerLink="/" fragment="growth">Growth &amp; Prep</a></li>
+          <li><a routerLink="/api-docs">API Documentation</a></li>
+        </ul>
+      </div>
+
+      <div class="pub-footer-col">
+        <h3>Account</h3>
+        <ul>
+          <li><a routerLink="/auth/signup">Create Account</a></li>
+          <li><a routerLink="/auth/login">Sign In</a></li>
+          <li><a routerLink="/auth/forgot-password">Reset Password</a></li>
+        </ul>
+      </div>
+
+      <div class="pub-footer-col">
+        <h3>Company &amp; Legal</h3>
+        <ul>
+          <li><a routerLink="/blog">Engineering Blog</a></li>
+          <li><a routerLink="/contact">Contact</a></li>
+          <li><a routerLink="/privacy">Privacy Policy</a></li>
+          <li><a routerLink="/terms">Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="pub-container pub-footer-bottom">
+      <span>&copy; {{ currentYear }} DevInsight AI · Developer Portfolio Analyzer.</span>
+      <div class="pub-footer-bottom-links">
+        <a routerLink="/privacy">Privacy</a>
+        <a routerLink="/terms">Terms</a>
+      </div>
+    </div>
+  </footer>
+</div>

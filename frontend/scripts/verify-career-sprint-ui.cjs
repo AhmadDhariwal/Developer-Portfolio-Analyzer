@@ -12,7 +12,7 @@ const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
-const { sprintWindow } = require('../../backend/src/utils/sprintCalendar');
+const { sprintWindow } = require('../../backend/src/modules/career-sprint/utils/sprintCalendar');
 const root = path.resolve(__dirname, '../dist/frontend/browser');
 const output = path.resolve(
   process.env.SPRINT_UI_OUTPUT || path.resolve(__dirname, '../verification/career-sprint'),

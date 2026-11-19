@@ -1,0 +1,7 @@
+{
+  "pid": 21692,
+  "startedAt": "2026-11-15T12:08:46.8422329+00:00",
+  "port": 5008,
+  "mode": "development API-only with safe response-shape observation",
+  "stoppedAt": "2026-11-15T12:17:46.1327936+00:00"
+}
