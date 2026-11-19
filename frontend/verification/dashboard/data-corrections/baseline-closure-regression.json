@@ -1,0 +1,41 @@
+{
+  "suite": "baseline",
+  "code": 1,
+  "results": [
+    "✖ Interview Prep isolated Mongo critical paths (14379.0123ms)",
+    "✖ profile hash retains the signal contract and includes selected resume and intent (2479.6259ms)",
+    "✖ uploads validate before persistence and invalidate dependent caches without deleting history (27.3406ms)",
+    "✖ active selection invalidates current caches and selected unanalyzed files never borrow history (24.6148ms)",
+    "✖ src\\tests\\resume\\resumeUploadContract.test.js (2503.855ms)",
+    "✖ real preview-cache fallback preserves owner isolation but requires shared routing for multiple processes (30004.605ms)",
+    "ℹ tests 41",
+    "ℹ pass 33",
+    "ℹ fail 6",
+    "ℹ cancelled 1",
+    "ℹ skipped 1",
+    "ℹ duration_ms 103317.885",
+    "✖ failing tests:",
+    "✖ authenticated API contracts, input rejection, practice fallback, and canonical personalization (2906.2125ms)",
+    "✖ profile hash retains the signal contract and includes selected resume and intent (2479.6259ms)",
+    "✖ uploads validate before persistence and invalidate dependent caches without deleting history (27.3406ms)",
+    "✖ active selection invalidates current caches and selected unanalyzed files never borrow history (24.6148ms)",
+    "✖ src\\tests\\resume\\resumeUploadContract.test.js (2503.855ms)",
+    "✖ real preview-cache fallback preserves owner isolation but requires shared routing for multiple processes (30004.605ms)"
+  ],
+  "diagnostics": [
+    "Resume Upload Error: User.updateOne is not a function",
+    "Resume Upload Error: The PDF could not be parsed. Upload an uncorrupted, unencrypted text-based PDF.",
+    "  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:",
+    "    actual: 503,",
+    "    expected: 200,",
+    "  AssertionError [ERR_ASSERTION]: Expected \"actual\" to be strictly unequal to:",
+    "    actual: '349e65db644699cef54bb48a1bfda0dc44d2e7a082f70a048e67fbad45593e93',",
+    "    expected: '349e65db644699cef54bb48a1bfda0dc44d2e7a082f70a048e67fbad45593e93',",
+    "  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:",
+    "    actual: 500,",
+    "    expected: 200,",
+    "  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:",
+    "    actual: 404,",
+    "    expected: 200,"
+  ]
+}

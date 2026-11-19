@@ -19,6 +19,7 @@ let savedUsername = 'dev';
 let unstable = false;
 let legacy = false;
 let integrationTimeout = false;
+let savedRecommendations = null;
 const user = {
   _id: 'owner',
   name: 'Test Developer',
@@ -78,7 +79,7 @@ const cacheValue = (filter) =>
   filter['analysisData.portfolioScore.overallScore']
     ? { analysisData: { portfolioScore: { overallScore: portfolioScore } }, updatedAt: at }
     : filter['analysisData.projects']
-      ? null
+      ? savedRecommendations
       : { analysisData: { coverage, yourSkills: [], missingSkills: [] }, updatedAt: at };
 mock('../../modules/skill-gap/models/analysisCache', {
   findOne: (filter) => query('AnalysisCache', filter, cacheValue(filter)),
@@ -197,6 +198,7 @@ test.beforeEach((t) => {
   unstable = false;
   legacy = false;
   integrationTimeout = false;
+  savedRecommendations = null;
 });
 const request = (endpoint, headers = {}) =>
   fetch(`${base}/${endpoint}`, { headers: { Authorization: `Bearer ${token}`, ...headers } });
@@ -451,4 +453,26 @@ test('chart availability follows usable data independently of timestamps and pre
   assert.equal(body.activitySnapshot.available, false);
   assert.equal(body.languageSnapshot.available, false);
   assert.deepEqual((await (await request('languages')).json()).data, {});
+});
+
+test('a newer Skill Gap assessment preserves scoped saved recommendations with stale status', async () => {
+  savedRecommendations = {
+    updatedAt: '2026-11-09T12:00:00.000Z',
+    analysisData: { projects: [{ title: 'Build an API' }] },
+  };
+  const { recommendationSnapshot } = await (await request('summary')).json();
+  assert.equal(recommendationSnapshot.stale, true);
+  assert.equal(recommendationSnapshot.items[0].title, 'Build an API');
+  const recommendations = await (await request('recommendations')).json();
+  assert.equal(recommendations.syncStatus, 'stale');
+  assert.deepEqual(recommendations.items, recommendationSnapshot.items);
+});
+
+test('partial repository evidence comes from the accepted profile without inferred monthly counts', async () => {
+  hasAnalysis = true;
+  savedActivity = [];
+  const result = await (await request('summary')).json();
+  assert.deepEqual(result.activitySnapshot.data, []);
+  assert.equal(result.progress.github.repositoryCount, 3);
+  assert.match(result.progress.github.historyStatus, /Partial history/);
 });

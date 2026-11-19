@@ -1601,9 +1601,11 @@ const fetchMonthlyCommitActivity = async (username, repos = [], now = new Date()
       for (const commit of response.data) {
         const at = new Date(commit.commit?.committer?.date || commit.commit?.author?.date || NaN);
         if (!commit.sha || !Number.isFinite(at.getTime())) return [];
+        if (commit.author?.login && commit.author.login.toLowerCase() !== username.toLowerCase())
+          return [];
         if (at >= since && at <= now) commits.set(commit.sha, at.toISOString().slice(0, 7));
       }
-      if (response.data.length < 100 || !/rel="next"/.test(response.headers?.link || '')) break;
+      if (!/rel="next"/.test(response.headers?.link || '')) break;
       if (page === 4) return []; // Pagination limit reached; the window may be incomplete.
     }
   }

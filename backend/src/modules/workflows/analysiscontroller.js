@@ -220,7 +220,7 @@ const getPortfolioReadiness = async (req, res) => {
       summary: 'Solid portfolio with room for improvement in niche areas.',
     };
 
-    const aiResult = await aiService.runAIAnalysis(prompt, fallback);
+    const aiResult = profileMode ? null : await aiService.runAIAnalysis(prompt, fallback);
 
     const transparentResult = calculateTransparentScore(
       {

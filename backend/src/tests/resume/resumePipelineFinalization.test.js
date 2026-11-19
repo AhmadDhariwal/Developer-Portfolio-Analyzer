@@ -160,6 +160,13 @@ const harness = async (t) => {
     '../models/resumeAnalysis': ResumeAnalysis,
     '../models/user': {
       findById: () => chain(state.users),
+      async updateOne(filter, update) {
+        if (filter.defaultResumeFileId === state.users.defaultResumeFileId) {
+          Object.assign(state.users, update.$set);
+          return { modifiedCount: 1 };
+        }
+        return { modifiedCount: 0 };
+      },
       async findByIdAndUpdate(_id, update) {
         Object.assign(state.users, update);
         return state.users;
@@ -215,7 +222,9 @@ const harness = async (t) => {
     const req = String(request);
     if (req.startsWith('.')) {
       const base = path.basename(req, '.js');
-      const key = Object.keys(mocks).find((k) => k.startsWith('.') && path.basename(k, '.js') === base);
+      const key = Object.keys(mocks).find(
+        (k) => k.startsWith('.') && path.basename(k, '.js') === base
+      );
       if (key) return mocks[key];
     }
     return original.call(this, request, parent, isMain);
@@ -406,7 +415,7 @@ test('uploads validate before persistence and invalidate dependent caches withou
   const res = await h.invoke(h.controller.uploadResume, { file });
   assert.equal(res.statusCode, 200);
   assert.equal(h.state.files.length, 2);
-  assert.equal(h.state.users.activeResumeFileId, res.body.fileId);
+  assert.equal(h.state.users.activeResumeFileId, '222222222222222222222222');
   assert.equal(h.state.prefixInvalidations, 1);
   assert.equal(h.state.dashboardInvalidations, 1);
   assert.equal(h.state.records.length, 0);
@@ -570,12 +579,15 @@ test('active selection invalidates current caches and selected unanalyzed files 
   assert.equal(selected.statusCode, 200);
   assert.equal(h.state.users.activeResumeFileId, h.fileId);
   assert.equal(h.state.users.defaultResumeFileId, '222222222222222222222222');
+  const unchangedDefault = await h.invoke(h.controller.getResumeAnalysis);
+  assert.equal(unchangedDefault.statusCode, 404);
+  await h.invoke(h.controller.setActiveResume, { body: { fileId: h.fileId, setAsDefault: true } });
   const current = await h.invoke(h.controller.getResumeAnalysis);
   assert.equal(current.statusCode, 200);
   assert.equal(current.body.fileId, h.fileId);
   assert.deepEqual(copy(h.state.records), historical);
-  assert.equal(h.state.prefixInvalidations, 2);
-  assert.equal(h.state.dashboardInvalidations, 2);
+  assert.equal(h.state.prefixInvalidations, 3);
+  assert.equal(h.state.dashboardInvalidations, 3);
 });
 
 test('expired resume caches cannot extend source freshness when warmed from Mongo', async (t) => {

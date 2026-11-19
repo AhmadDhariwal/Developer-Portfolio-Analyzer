@@ -3,6 +3,12 @@ export interface DashboardHistory {
   points: { at: string; value: number }[];
   reason: string;
 }
+export interface DashboardPortfolioAssessment {
+  assessedAt: string | null;
+  ruleVersion: string | null;
+  components: { label: string; value: number }[];
+}
+
 export interface DashboardProgress {
   history: DashboardHistory;
   sprint: {
@@ -23,6 +29,8 @@ export interface DashboardProgress {
   github: {
     available: boolean;
     historyStatus: string;
+    repositoryCount?: number | null;
+    repositoryEvidence?: { name: string; commits: number | null; pushedAt: string | null }[];
     activity: { month: string; count: number }[];
   };
   completedCourses: { title: string; completedAt: string | null }[];

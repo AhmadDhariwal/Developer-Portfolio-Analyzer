@@ -35,7 +35,7 @@ function comparableHistory(rows, identity, ruleVersion) {
         String(a._id).localeCompare(String(b._id)),
     )
     .filter((row) => {
-      const key = row.provenance.assessmentHash;
+      const key = row.provenance.sourceRevisionHash;
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
@@ -105,7 +105,8 @@ async function loadReadinessHistory(userId, identity, ruleVersion, asOf) {
           },
         },
       },
-      { $group: { _id: '$provenance.assessmentHash', assessment: { $first: '$$ROOT' } } },
+      { $sort: { 'provenance.assessedAt': 1, _id: 1 } },
+      { $group: { _id: '$provenance.sourceRevisionHash', assessment: { $first: '$$ROOT' } } },
       { $replaceWith: '$assessment' },
       { $sort: { 'provenance.assessedAt': -1, _id: -1 } },
       { $limit: 32 },

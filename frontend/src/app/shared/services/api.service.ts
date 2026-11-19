@@ -206,6 +206,10 @@ export class ApiService {
     });
   }
 
+  assessSavedPortfolio(): Observable<unknown> {
+    return this.http.post(`${this.baseUrl}/analysis/portfolio-score`, {});
+  }
+
   /* ── Dashboard ── */
   getDashboardSummary(refresh = false): Observable<DashboardSummary> {
     return this.http.get<DashboardSummary>(

@@ -1,0 +1,26 @@
+{
+  "suite": "recheck",
+  "code": 1,
+  "results": [
+    "✖ Interview Prep isolated Mongo critical paths (13844.0887ms)",
+    "✖ repeated analysis preserves source time, active identity and all histories (31.6427ms)",
+    "ℹ tests 42",
+    "ℹ pass 38",
+    "ℹ fail 3",
+    "ℹ cancelled 0",
+    "ℹ skipped 1",
+    "ℹ duration_ms 126654.1125",
+    "✖ failing tests:",
+    "✖ authenticated API contracts, input rejection, practice fallback, and canonical personalization (2089.3783ms)",
+    "✖ repeated analysis preserves source time, active identity and all histories (31.6427ms)"
+  ],
+  "diagnostics": [
+    "Resume Upload Error: The PDF could not be parsed. Upload an uncorrupted, unencrypted text-based PDF.",
+    "  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:",
+    "    actual: 503,",
+    "    expected: 200,",
+    "  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:",
+    "    actual: 2,",
+    "    expected: 3,"
+  ]
+}

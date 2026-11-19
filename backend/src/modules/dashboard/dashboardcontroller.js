@@ -501,7 +501,7 @@ const maybeSendNotModified = (req, res, payload) => {
 const ensureAnalysis = async (userId, githubUsername) => {
   const analysis = await Analysis.findOne({ userId })
     .select(
-      'githubScore readinessScore githubStats githubSignals.username githubSignals.scoring githubSignals.analyzedAt githubSignals.languages.rawBytes githubSignals.languages.normalized githubSignals.acceptedResult.cache.expiresAt languageDistribution contributionActivity updatedAt createdAt',
+      'githubScore readinessScore githubStats githubSignals.username githubSignals.scoring githubSignals.analyzedAt githubSignals.languages.rawBytes githubSignals.languages.normalized githubSignals.repositories.name githubSignals.repositories.commits githubSignals.repositories.pushedAt githubSignals.acceptedResult.cache.expiresAt languageDistribution contributionActivity updatedAt createdAt',
     )
     .sort({ updatedAt: -1, createdAt: -1, _id: -1 })
     .lean();
@@ -538,8 +538,9 @@ const buildRecommendationPreview = (recommendationData = {}) => {
   if (Array.isArray(signalItems) && signalItems.length) {
     return signalItems.slice(0, 4).map((item) => ({
       title: String(item.title || 'Recommendation').trim(),
-      priority: item.priority || 'High',
-      priorityType: String(item.priority || 'high').toLowerCase(),
+      description: item.description || item.action || null,
+      priority: item.priority || null,
+      priorityType: String(item.priority || '').toLowerCase(),
       category: item.category || 'Career Action',
       confidenceScore: Number(item.confidenceScore || 0),
       estimatedImpact: Number(item.estimatedImpact || 0),
@@ -551,8 +552,9 @@ const buildRecommendationPreview = (recommendationData = {}) => {
   if (structured.length) {
     return structured.slice(0, 4).map((item) => ({
       title: String(item.title || 'Recommendation').trim(),
-      priority: item.priority || 'High',
-      priorityType: String(item.priority || 'high').toLowerCase(),
+      description: item.description || item.action || null,
+      priority: item.priority || null,
+      priorityType: String(item.priority || '').toLowerCase(),
       category: item.category || 'Career Action',
       confidenceScore: Number(item.confidenceScore || 0),
       estimatedImpact: Number(item.estimatedImpact || 0),
@@ -563,8 +565,9 @@ const buildRecommendationPreview = (recommendationData = {}) => {
   const projects = Array.isArray(recommendationData.projects) ? recommendationData.projects : [];
   return projects.slice(0, 4).map((project) => ({
     title: String(project.title || 'Recommendation').trim(),
-    priority: 'High',
-    priorityType: 'high',
+    description: project.description || null,
+    priority: project.priority || null,
+    priorityType: String(project.priority || '').toLowerCase(),
     category:
       Array.isArray(project.tech) && project.tech.length
         ? project.tech.slice(0, 2).join(', ')
@@ -668,9 +671,10 @@ const buildCommandCenter = ({
   latestCareerSprint,
   latestJob,
   latestNews,
+  recommendationsStale,
 }) => {
   const skillData = latestSkillGapCache?.analysisData || {};
-  const missingSkills = Array.isArray(skillData.missingSkills) ? skillData.missingSkills : [];
+  const missingSkills = missingRequiredSkills(skillData.missingSkills);
   const highDemandSkills = Array.isArray(skillData.highDemandSkills)
     ? skillData.highDemandSkills
     : [];
@@ -698,13 +702,19 @@ const buildCommandCenter = ({
     {
       key: 'skillGap',
       label: 'Top Skill Gap',
-      value: firstString(missingSkills, 'No current Skill Gap evidence'),
+      value: firstString(
+        missingSkills,
+        latestSkillGapCache ? 'No confirmed missing skills' : 'No current Skill Gap evidence',
+      ),
       source: 'Skill Gap',
       route: '/app/skill-gap',
     },
     {
       key: 'project',
-      label: 'Top Recommended Project',
+      label:
+        recommendationsStale && projects.length
+          ? 'Last Saved Recommended Project'
+          : 'Top Recommended Project',
       value: String(projects[0]?.title || 'Generate recommendations to pick a project'),
       source: 'Recommendations',
       route: '/app/recommendations',
@@ -712,7 +722,10 @@ const buildCommandCenter = ({
     {
       key: 'sprint',
       label: 'Top Sprint Task',
-      value: String(sprintTask?.title || 'Start a career sprint task'),
+      value: String(
+        sprintTask?.title ||
+          (tasks.length ? 'All sprint tasks completed' : 'No sprint tasks saved'),
+      ),
       source: 'Career Sprint',
       route: '/app/career-sprint',
     },
@@ -943,17 +956,21 @@ const getDashboardSummary = async (req, res) => {
       integrationInsight?.updatedAt,
     );
 
+    const recommendationItems = buildRecommendationPreview(latestRecommendationCache?.analysisData);
     const recommendationSnapshot = {
-      items: currentRecommendationCache?.analysisData
-        ? buildRecommendationPreview(currentRecommendationCache.analysisData)
-        : [],
+      items: recommendationItems,
+      generatedAt:
+        safeDate(latestRecommendationCache?.analysisData?.recommendationSignals?.generatedAt) ||
+        null,
       stale: staleFlags.recommendations,
       status: staleFlags.recommendations
         ? 'stale'
         : toFreshness(latestRecommendationCache?.updatedAt),
       updatedAt: latestRecommendationCache?.updatedAt || null,
       message: staleFlags.recommendations
-        ? 'Inputs changed. Open Recommendations to refresh the evidence-based cards.'
+        ? recommendationItems.length
+          ? 'Showing the last saved recommendations for this profile. Open Recommendations to refresh them against the latest evidence.'
+          : 'Open Recommendations to generate cards from the latest evidence.'
         : currentRecommendationCache?.analysisData?.aiRefreshRecommended
           ? 'AI Refresh Recommended. Evidence-based recommendations reflect the saved inputs.'
           : '',
@@ -1097,7 +1114,8 @@ const getDashboardSummary = async (req, res) => {
 
     const commandCenter = buildCommandCenter({
       latestSkillGapCache: currentSkillGapCache,
-      latestRecommendationCache: currentRecommendationCache,
+      latestRecommendationCache,
+      recommendationsStale: staleFlags.recommendations,
       latestCareerSprint,
       latestJob,
       latestNews,
@@ -1164,6 +1182,27 @@ const getDashboardSummary = async (req, res) => {
       skillsSnapshot,
       learningSnapshot,
       readinessCenter,
+      portfolioAssessment:
+        currentPortfolioScore === null
+          ? null
+          : {
+              assessedAt:
+                currentPortfolioCache?.analysisData?.portfolioScore?.scoring?.calculatedAt || null,
+              ruleVersion:
+                currentPortfolioCache?.analysisData?.portfolioScore?.scoring?.ruleVersion || null,
+              components: Object.entries(
+                currentPortfolioCache?.analysisData?.portfolioScore?.scoring?.breakdown || {},
+              ).flatMap(([key, component]) => {
+                const value = numeric(component?.value);
+                const label = {
+                  codeQuality: 'Code Quality',
+                  industryReadiness: 'Industry Readiness',
+                  skillCoverage: 'Skill Coverage',
+                  projectImpact: 'Project Impact',
+                }[key];
+                return label && value !== null ? [{ label, value }] : [];
+              }),
+            },
       commandCenter,
       sourceFreshness,
       activitySnapshot: {
@@ -1351,7 +1390,7 @@ const getDashboardRecommendations = async (req, res) => {
     const resumeIdentity = selectedResumeIdentity(user, resume);
     const scope = skillGapContract.buildScope({ userId: req.user._id, user, resumeIdentity });
     const [{ analysis }, latestRecommendationCache, latestSkillGapCache] = await Promise.all([
-      ensureAnalysis(req.user._id, scope.githubUsername),
+      ensureAnalysis(req.user._id, developerContext.resolveGithubUsername(user)),
       latestCacheByPredicate(req.user._id, {
         githubUsername: scope.githubUsername,
         careerStack,
@@ -1368,10 +1407,9 @@ const getDashboardRecommendations = async (req, res) => {
       latestSkillGapCache,
       user,
     );
-    const items =
-      !stale && latestRecommendationCache?.analysisData
-        ? buildRecommendationPreview(latestRecommendationCache.analysisData)
-        : [];
+    const items = latestRecommendationCache?.analysisData
+      ? buildRecommendationPreview(latestRecommendationCache.analysisData)
+      : [];
 
     res.json({
       items,

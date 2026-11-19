@@ -365,17 +365,32 @@
         <p>Monthly authored commits in sampled repositories</p>
       </div>
       <div class="activity-badge">
-        &lt;/&gt; {{ activityAvailable ? totalActivity + ' total' : 'Unavailable' }}
+        &lt;/&gt;
+        {{ activityAvailable ? totalActivity + ' authored commits' : 'Monthly counts unavailable' }}
       </div>
     </div>
     <p *ngIf="!isLoading && !activityAvailable" class="empty-state">
       The saved GitHub analysis has no complete dated commit series. Repository totals and last-push
       dates cannot establish monthly counts.
+      <a [routerLink]="['/app/github-analyzer']">Open GitHub Analyzer to sync dated activity</a>.
     </p>
-    <details class="repository-history-note" *ngIf="progress">
-      <summary>Repository history availability</summary>
-      <p>{{ progress.github.historyStatus }}</p>
-    </details>
+    <div class="repository-history-note" *ngIf="!isLoading && progress?.github as github">
+      <p>{{ github.historyStatus }}</p>
+      <ng-container *ngIf="!activityAvailable">
+        <p *ngIf="github.repositoryCount != null">
+          {{ github.repositoryCount }} repositories analyzed
+        </p>
+        <ul *ngIf="github.repositoryEvidence?.length">
+          <li *ngFor="let repo of github.repositoryEvidence">
+            <strong>{{ repo.name }}</strong>
+            <span *ngIf="repo.commits !== null"> · {{ repo.commits }} repository commits</span>
+            <span *ngIf="repo.pushedAt">
+              · Last pushed {{ repo.pushedAt | date: 'mediumDate' : 'UTC' }} UTC</span
+            >
+          </li>
+        </ul>
+      </ng-container>
+    </div>
     <div class="chart-wrap activity-wrap" [hidden]="!activityAvailable">
       <canvas
         #activityChart
@@ -592,8 +607,17 @@
       </a>
     </div>
 
-    <p class="empty-state" *ngIf="!isLoading && recommendations.length === 0">
+    <p
+      class="empty-state"
+      *ngIf="!isLoading && recommendations.length === 0 && !recommendationNotice"
+    >
       No saved recommendations for your active profile. Open Recommendations to get started.
+    </p>
+    <p *ngIf="recommendations.length && (recommendationsStale || recommendationsGeneratedAt)">
+      <strong *ngIf="recommendationsStale">Refresh Recommended</strong>
+      <span *ngIf="recommendationsGeneratedAt" class="recommendation-generation-date">
+        Generated {{ recommendationsGeneratedAt | date: 'medium' }}</span
+      >
     </p>
     <p *ngIf="recommendationNotice" class="empty-state">{{ recommendationNotice }}</p>
     <div class="rec-grid">
@@ -605,10 +629,13 @@
           ></div>
           <div class="rec-content">
             <div class="rec-meta">
-              <span [class]="'priority-badge ' + rec.priorityType">{{ rec.priority }}</span>
+              <span *ngIf="rec.priority" [class]="'priority-badge ' + rec.priorityType">{{
+                rec.priority
+              }}</span>
               <span [class]="'category-tag ' + rec.priorityType">{{ rec.category }}</span>
             </div>
             <p class="rec-title">{{ rec.title }}</p>
+            <p *ngIf="rec.description">{{ rec.description }}</p>
           </div>
         </div>
       </div>
@@ -622,6 +649,11 @@
 <app-dashboard-progress
   [data]="progress"
   [currentPortfolioScore]="currentPortfolioScore"
+  [portfolioAssessment]="portfolioAssessment"
+  [canAssessPortfolio]="!!githubHandle && !isLoading && currentPortfolioScore === null"
+  [assessingPortfolio]="assessingPortfolio"
+  [portfolioAssessmentError]="portfolioAssessmentError"
+  (assessPortfolio)="assessPortfolio()"
   [loading]="isLoading"
   [error]="loadError"
   [stale]="dashboardStale"
