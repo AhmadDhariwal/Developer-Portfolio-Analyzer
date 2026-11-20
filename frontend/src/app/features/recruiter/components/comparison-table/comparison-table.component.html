@@ -1,64 +1,126 @@
 <div class="comparison-wrap" *ngIf="items.length">
-  <table>
+  <table class="comparison-table">
     <thead>
       <tr>
-        <th>Metric</th>
-        <th *ngFor="let item of items">{{ item.name }}</th>
+        <th scope="col" class="metric-col">Evaluation Metric</th>
+        <th scope="col" *ngFor="let item of items">
+          <div class="cand-head">
+            <span class="cand-avatar">{{ initialFor(item.name) }}</span>
+            <div class="cand-meta">
+              <a
+                *ngIf="item.id; else plainHeadName"
+                [routerLink]="['/app/recruiter/candidates', item.id]"
+              >
+                {{ item.name }}
+              </a>
+              <ng-template #plainHeadName>
+                <span>{{ item.name }}</span>
+              </ng-template>
+              <small>{{ item.stack || 'Generalist' }}</small>
+            </div>
+          </div>
+        </th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td>Stack</td>
+        <th scope="row">Primary Stack</th>
         <td *ngFor="let item of items">{{ item.stack || 'Generalist' }}</td>
       </tr>
       <tr>
-        <td>Experience</td>
+        <th scope="row">Experience</th>
         <td *ngFor="let item of items" [class.is-best]="isBest('experience', item.experience)">
-          {{ item.experience || 0 }} yrs
+          <span class="cell-val">{{ item.experience || 0 }} yrs</span>
+          <span class="best-badge" *ngIf="isBest('experience', item.experience)">Best</span>
         </td>
       </tr>
       <tr>
-        <td>Readiness</td>
-        <td
-          *ngFor="let item of items"
-          [class.is-best]="isBest('readinessScore', item.readinessScore)"
-        >
-          {{ item.readinessScore || 0 }}
+        <th scope="row">Overall Readiness</th>
+        <td *ngFor="let item of items" [class.is-best]="isBest('readinessScore', item.readinessScore)">
+          <span class="cell-val">{{ item.readinessScore || 0 }} / 100</span>
+          <span class="best-badge" *ngIf="isBest('readinessScore', item.readinessScore)">Best</span>
         </td>
       </tr>
       <tr>
-        <td>GitHub</td>
+        <th scope="row">GitHub Score</th>
         <td *ngFor="let item of items" [class.is-best]="isBest('githubScore', item.githubScore)">
-          {{ item.githubScore ?? 'Unavailable' }}
+          <ng-container *ngIf="item.githubScore !== null && item.githubScore !== undefined; else naGithub">
+            <span class="cell-val">{{ item.githubScore }}</span>
+            <span class="best-badge" *ngIf="isBest('githubScore', item.githubScore)">Best</span>
+          </ng-container>
+          <ng-template #naGithub>
+            <span class="unavailable-pill">Unavailable</span>
+          </ng-template>
         </td>
       </tr>
       <tr>
-        <td>Resume</td>
+        <th scope="row">Resume Score</th>
         <td *ngFor="let item of items" [class.is-best]="isBest('resumeScore', item.resumeScore)">
-          {{ item.resumeScore || 0 }}
+          <span class="cell-val">{{ item.resumeScore || 0 }}</span>
+          <span class="best-badge" *ngIf="isBest('resumeScore', item.resumeScore)">Best</span>
         </td>
       </tr>
       <tr>
-        <td>Project Quality</td>
-        <td
-          *ngFor="let item of items"
-          [class.is-best]="isBest('projectQuality', item.projectQuality)"
-        >
-          {{ item.projectQuality || 0 }}
-        </td>
-      </tr>
-      <tr *ngIf="hasMatchRow">
-        <td>Job Match</td>
-        <td
-          *ngFor="let item of items"
-          [class.is-best]="isBest('matchScore', item.match?.matchScore)"
-        >
-          {{ item.match?.matchScore ?? '-' }}
+        <th scope="row">Project Quality</th>
+        <td *ngFor="let item of items" [class.is-best]="isBest('projectQuality', item.projectQuality)">
+          <span class="cell-val">{{ item.projectQuality || 0 }}</span>
+          <span class="best-badge" *ngIf="isBest('projectQuality', item.projectQuality)">Best</span>
         </td>
       </tr>
       <tr>
-        <td>Recommendation</td>
-        <td *ngFor="let item of items">{{ item.recommendation || '-' }}</td>
+        <th scope="row">Skill Gaps</th>
+        <td *ngFor="let item of items">
+          <div class="gap-list" *ngIf="(item.skillGaps || []).length; else noGaps">
+            <span class="gap-chip" *ngFor="let gap of item.skillGaps">{{ gap }}</span>
+          </div>
+          <ng-template #noGaps>
+            <span class="muted-cell">None flagged</span>
+          </ng-template>
+        </td>
+      </tr>
+      <ng-container *ngIf="hasMatchRow">
+        <tr>
+          <th scope="row">Job Match Score</th>
+          <td *ngFor="let item of items" [class.is-best]="isBest('matchScore', item.match?.matchScore)">
+            <ng-container *ngIf="item.match?.matchScore !== null && item.match?.matchScore !== undefined; else noMatchScore">
+              <span class="cell-val">{{ item.match.matchScore }}%</span>
+              <span class="best-badge" *ngIf="isBest('matchScore', item.match?.matchScore)">Best</span>
+            </ng-container>
+            <ng-template #noMatchScore><span class="unavailable-pill">Unavailable</span></ng-template>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">Skill Match %</th>
+          <td *ngFor="let item of items" [class.is-best]="isBest('skillMatchPercent', item.match?.skillMatchPercent)">
+            <ng-container *ngIf="item.match?.skillMatchPercent !== null && item.match?.skillMatchPercent !== undefined; else noSkillMatch">
+              <span class="cell-val">{{ item.match.skillMatchPercent }}%</span>
+              <span class="best-badge" *ngIf="isBest('skillMatchPercent', item.match?.skillMatchPercent)">Best</span>
+            </ng-container>
+            <ng-template #noSkillMatch><span class="unavailable-pill">Unavailable</span></ng-template>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">Experience Fit</th>
+          <td *ngFor="let item of items">
+            {{ item.match?.experienceMatch || 'Unavailable' }}
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">Confidence</th>
+          <td *ngFor="let item of items" [class.is-best]="isBest('confidenceScore', item.match?.confidenceScore)">
+            <ng-container *ngIf="item.match?.confidenceScore !== null && item.match?.confidenceScore !== undefined; else noConf">
+              <span class="cell-val">{{ item.match.confidenceScore }}%</span>
+              <span class="best-badge" *ngIf="isBest('confidenceScore', item.match?.confidenceScore)">Best</span>
+            </ng-container>
+            <ng-template #noConf><span class="unavailable-pill">Unavailable</span></ng-template>
+          </td>
+        </tr>
+      </ng-container>
+      <tr>
+        <th scope="row">Recommendation</th>
+        <td *ngFor="let item of items" class="rec-cell">
+          {{ item.match?.recommendation || item.recommendation || '-' }}
+        </td>
       </tr>
     </tbody>
   </table>

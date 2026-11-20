@@ -1,111 +1,312 @@
+@use '../../styles/recruiter-ui' as recruiter;
+
+:host {
+  display: block;
+  min-width: 0;
+}
+
 .shortlist-card {
-  position: relative;
-  overflow: hidden;
-  padding: 1.05rem;
-  border-radius: 22px;
-  background: linear-gradient(170deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.82));
-  border: 1px solid rgba(99, 102, 241, 0.16);
+  @include recruiter.card-surface(18px);
+  height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
-  box-shadow: 0 24px 44px rgba(2, 6, 23, 0.28);
-  transition:
-    transform 0.22s ease,
-    border-color 0.22s ease,
-    box-shadow 0.22s ease;
-  animation: cardIn 0.36s ease both;
+  gap: 12px;
+
+  &:hover {
+    border-color: var(--border-strong);
+  }
 }
-.shortlist-card::after {
-  content: '';
-  position: absolute;
-  inset: auto auto -60px -20px;
-  width: 118px;
-  height: 118px;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.22), rgba(15, 23, 42, 0) 70%);
-  pointer-events: none;
-}
-.shortlist-card:hover {
-  transform: translateY(-3px);
-  border-color: rgba(129, 140, 248, 0.38);
-  box-shadow: 0 28px 56px rgba(2, 6, 23, 0.36);
-}
-.shortlist-card__head,
-.shortlist-card__actions {
+
+.shortlist-card__head {
   display: flex;
-  justify-content: space-between;
-  gap: 0.75rem;
   align-items: flex-start;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
 }
-h3 {
-  margin: 0;
-  color: #f8fafc;
-  font-size: 1rem;
+
+.shortlist-card__identity {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
 }
-p {
-  margin: 0.2rem 0 0;
-  color: #94a3b8;
-  font-size: 0.84rem;
-}
-.shortlist-card__status {
-  padding: 0.35rem 0.7rem;
-  border-radius: 999px;
-  background: rgba(79, 70, 229, 0.16);
-  color: #c7d2fe;
-  font-size: 0.73rem;
+
+.shortlist-card__avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--dev-radius-control, 6px);
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary-border);
+  color: var(--color-primary-text);
+  font-size: 14px;
   font-weight: 700;
-  text-transform: capitalize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
+
+.shortlist-card__titles {
+  min-width: 0;
+  flex: 1;
+
+  h3 {
+    margin: 0;
+    font-size: 15.5px;
+    font-weight: 600;
+    color: var(--text-primary);
+    overflow-wrap: anywhere;
+
+    a {
+      color: inherit;
+      text-decoration: none;
+
+      &:hover {
+        color: var(--color-primary-text);
+        text-decoration: underline;
+      }
+    }
+  }
+
+  p {
+    margin: 3px 0 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+    overflow-wrap: anywhere;
+
+    a {
+      color: inherit;
+      text-decoration: none;
+
+      &:hover {
+        color: var(--color-primary-text);
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+.shortlist-card__status {
+  @include recruiter.status-pill(primary);
+  text-transform: capitalize;
+  flex-shrink: 0;
+
+  &--reviewing {
+    @include recruiter.status-pill(warning);
+  }
+
+  &--contacted {
+    @include recruiter.status-pill(info);
+  }
+
+  &--interview {
+    @include recruiter.status-pill(success);
+  }
+
+  &--rejected {
+    @include recruiter.status-pill(danger);
+  }
+}
+
+.stage-stepper {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  padding: 10px;
+  border-radius: var(--dev-radius-control, 6px);
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.stage-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.stage-step__dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--surface-tertiary);
+  border: 1px solid var(--border-strong);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stage-step__label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.stage-step--done .stage-step__dot {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.stage-step--done .stage-step__label {
+  color: var(--text-secondary);
+}
+
+.stage-step--current .stage-step__dot {
+  background: var(--color-success-soft);
+  border-color: var(--color-success);
+  color: var(--color-success-text);
+}
+
+.stage-step--current .stage-step__label {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
 .shortlist-card__meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 6px;
+
+  span {
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: var(--surface-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 12px;
+  }
 }
-.shortlist-card__meta span {
-  padding: 0.28rem 0.58rem;
-  border-radius: 999px;
-  background: rgba(30, 41, 59, 0.86);
-  color: #cbd5e1;
-  font-size: 0.73rem;
+
+.shortlist-card__notes-box {
+  padding: 10px 12px;
+  border-radius: var(--dev-radius-control, 6px);
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-color);
+  display: grid;
+  gap: 6px;
 }
+
+.notes-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+
+  span {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+  }
+}
+
+.note-edit-link {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary-text);
+  background: transparent;
+  border: 1px solid transparent;
+
+  &:hover {
+    background: var(--color-primary-soft);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+}
+
 .shortlist-card__notes {
   margin: 0;
-  color: #cbd5e1;
-  line-height: 1.6;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
 }
+
+.notes-editor {
+  display: grid;
+  gap: 8px;
+
+  textarea {
+    @include recruiter.field-control;
+    min-height: 70px;
+    resize: vertical;
+  }
+}
+
+.notes-editor__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.btn-mini {
+  @include recruiter.btn-base;
+  min-height: 30px;
+  padding: 0 10px;
+  font-size: 12px;
+
+  &--primary {
+    @include recruiter.btn-primary;
+    min-height: 30px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  &--ghost {
+    @include recruiter.btn-secondary;
+    min-height: 30px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+}
+
+.shortlist-card__actions {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
 .shortlist-card__btn {
-  flex: 1 1 120px;
-  min-height: 42px;
-  border: none;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #7c3aed, #4f46e5);
-  color: #fff;
-  font-weight: 700;
-  cursor: pointer;
-  transition:
-    transform 0.2s ease,
-    filter 0.2s ease;
-}
-.shortlist-card__btn:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.07);
-}
-.shortlist-card__btn--ghost {
-  background: rgba(30, 41, 59, 0.92);
-  color: #e2e8f0;
-}
-@keyframes cardIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
+  @include recruiter.btn-base;
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 12.5px;
+
+  &--primary {
+    @include recruiter.btn-primary;
+    min-height: 36px;
+    padding: 0 12px;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  &--danger {
+    @include recruiter.btn-danger;
+    min-height: 36px;
+    padding: 0 12px;
   }
 }
-@media (max-width: 560px) {
-  .shortlist-card__actions .shortlist-card__btn {
-    flex: 1 1 100%;
-  }
+
+.stage-select {
+  @include recruiter.field-control;
+  width: auto;
+  min-width: 122px;
+  min-height: 36px;
+  padding: 0 10px;
+  font-size: 12.5px;
+  font-weight: 500;
 }

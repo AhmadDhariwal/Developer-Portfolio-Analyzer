@@ -1,59 +1,178 @@
 <section class="hub-page">
-  <header class="hub-header">
-    <div>
-      <span class="hub-kicker">Recruiter Hub</span>
+  <header class="page-header">
+    <div class="page-header__copy">
+      <span class="page-header__eyebrow">Recruiter Hub · Hiring Pipeline</span>
       <h1>Shortlists</h1>
       <p>
-        Track the candidates already moved into your pipeline and push them through the next
-        follow-up stage.
+        Manage saved candidates across review, outreach, and interview stages with persistent recruiter notes.
       </p>
+    </div>
+
+    <div class="page-header__actions">
+      <span class="count-pill">{{ shortlists.length }} saved profiles</span>
+      <a class="btn-secondary" routerLink="/app/recruiter/candidates">Browse Candidates</a>
+      <button type="button" class="btn-primary" [disabled]="loading" (click)="loadShortlists()">
+        {{ loading ? 'Refreshing...' : 'Refresh' }}
+      </button>
     </div>
   </header>
 
+  <app-ui-error-state
+    *ngIf="error && !shortlists.length && !loading"
+    title="Unable to load shortlists"
+    [message]="error"
+    (retry)="loadShortlists()"
+  />
+
+  <div class="banner banner--error" *ngIf="error && (shortlists.length || loading)">{{ error }}</div>
+  <div class="banner banner--success" *ngIf="notice">{{ notice }}</div>
+
   <div class="metric-grid">
     <app-recruiter-stat-card
-      label="Shortlisted"
+      label="Total Saved"
       [value]="shortlists.length"
-      tone="blue"
-      hint="Candidates in your pipeline"
+      tone="indigo"
+      hint="All shortlisted candidates"
     />
     <app-recruiter-stat-card
-      label="Active Follow-up"
+      label="Active Pipeline"
       [value]="activeCount"
-      tone="cyan"
-      hint="Still moving through stages"
+      tone="blue"
+      hint="Shortlisted, reviewing, or contacted"
     />
     <app-recruiter-stat-card
-      label="Interviews"
+      label="Interview Stage"
       [value]="interviewCount"
       tone="green"
-      hint="Reached interview stage"
+      hint="Ready for interview loop"
+    />
+    <app-recruiter-stat-card
+      label="Interview Share"
+      [value]="conversionDisplay"
+      tone="purple"
+      hint="Shortlists at interview stage"
     />
   </div>
 
-  <div class="message message--error" *ngIf="error">{{ error }}</div>
-  <div class="message message--success" *ngIf="notice">{{ notice }}</div>
+  <div class="pipeline-strip" *ngIf="!loading && shortlists.length > 0">
+    <div class="pipeline-strip__bar" aria-hidden="true">
+      <i class="seg seg--shortlisted" [style.width.%]="stageRatio('shortlisted')"></i>
+      <i class="seg seg--reviewing" [style.width.%]="stageRatio('reviewing')"></i>
+      <i class="seg seg--contacted" [style.width.%]="stageRatio('contacted')"></i>
+      <i class="seg seg--interview" [style.width.%]="stageRatio('interview')"></i>
+      <i class="seg seg--rejected" [style.width.%]="stageRatio('rejected')"></i>
+    </div>
+
+    <app-recruiter-performance-chart
+      title="Shortlist Pipeline Funnel"
+      subtitle="Live distribution across hiring workflow stages"
+      mode="funnel"
+      tone="indigo"
+      [height]="180"
+      [items]="stageChartItems"
+    />
+  </div>
+
+  <div class="toolbar">
+    <div class="segmented-tabs" role="tablist" aria-label="Filter shortlists by stage">
+      <button
+        type="button"
+        role="tab"
+        [class.is-active]="stageFilter === 'all'"
+        [attr.aria-selected]="stageFilter === 'all'"
+        (click)="setStageFilter('all')"
+      >
+        All ({{ shortlists.length }})
+      </button>
+      <button
+        type="button"
+        role="tab"
+        [class.is-active]="stageFilter === 'shortlisted'"
+        [attr.aria-selected]="stageFilter === 'shortlisted'"
+        (click)="setStageFilter('shortlisted')"
+      >
+        Shortlisted ({{ countByStage('shortlisted') }})
+      </button>
+      <button
+        type="button"
+        role="tab"
+        [class.is-active]="stageFilter === 'reviewing'"
+        [attr.aria-selected]="stageFilter === 'reviewing'"
+        (click)="setStageFilter('reviewing')"
+      >
+        Reviewing ({{ countByStage('reviewing') }})
+      </button>
+      <button
+        type="button"
+        role="tab"
+        [class.is-active]="stageFilter === 'contacted'"
+        [attr.aria-selected]="stageFilter === 'contacted'"
+        (click)="setStageFilter('contacted')"
+      >
+        Contacted ({{ countByStage('contacted') }})
+      </button>
+      <button
+        type="button"
+        role="tab"
+        [class.is-active]="stageFilter === 'interview'"
+        [attr.aria-selected]="stageFilter === 'interview'"
+        (click)="setStageFilter('interview')"
+      >
+        Interview ({{ interviewCount }})
+      </button>
+      <button
+        type="button"
+        role="tab"
+        [class.is-active]="stageFilter === 'rejected'"
+        [attr.aria-selected]="stageFilter === 'rejected'"
+        (click)="setStageFilter('rejected')"
+      >
+        Rejected ({{ rejectedCount }})
+      </button>
+    </div>
+
+    <div class="toolbar__filters">
+      <select aria-label="Filter by requisition" [(ngModel)]="jobFilter" *ngIf="uniqueJobTitles.length">
+        <option value="">All Requisitions</option>
+        <option *ngFor="let title of uniqueJobTitles" [value]="title">{{ title }}</option>
+      </select>
+
+      <input
+        type="search"
+        aria-label="Search shortlist entries"
+        [(ngModel)]="searchTerm"
+        placeholder="Search candidate or notes..."
+      />
+    </div>
+  </div>
 
   <app-recruiter-loader
     *ngIf="loading"
     label="Loading shortlists..."
     variant="cards"
-    [count]="3"
+    [count]="4"
   />
 
-  <div class="card-grid" *ngIf="!loading && shortlists.length > 0">
+  <div class="card-grid" *ngIf="!loading && filteredShortlists.length > 0">
     <app-shortlist-card
-      *ngFor="let item of shortlists; trackBy: trackByShortlist"
+      *ngFor="let item of filteredShortlists; trackBy: trackByItem"
       [item]="item"
-      (edit)="advance(item)"
-      (remove)="remove(item)"
+      [savingNotes]="savingNoteId === item._id"
+      (edit)="advanceStage($event)"
+      (statusChange)="changeStage($event)"
+      (saveNotes)="updateNotes($event)"
+      (remove)="remove($event)"
     />
   </div>
 
   <app-recruiter-empty-state
-    *ngIf="!loading && shortlists.length === 0"
-    title="No shortlists yet"
-    message="Shortlist candidates from match results or the candidate profile to start follow-up tracking."
+    *ngIf="!loading && filteredShortlists.length === 0 && !error"
+    [title]="shortlists.length ? 'No matching shortlist items' : 'No shortlisted candidates yet'"
+    [message]="
+      shortlists.length
+        ? 'Adjust your stage tab, requisition filter, or search query.'
+        : 'Shortlist strong candidates from the Candidates or Matches workspace to track outreach and interviews.'
+    "
   />
 
   <app-confirm-dialog

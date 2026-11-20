@@ -1,18 +1,33 @@
 <section class="hub-page">
-  <header class="hub-header">
-    <div>
-      <span class="hub-kicker">Recruiter Hub</span>
+  <header class="page-header">
+    <div class="page-header__copy">
+      <span class="page-header__eyebrow">Recruiter Hub · Requisitions</span>
       <h1>Jobs</h1>
-      <p>Create, update, archive, and manage recruiter-owned jobs with live backend data.</p>
+      <p>Create, update, archive, and manage recruiter-owned requisitions with live backend data.</p>
     </div>
-    <div class="hub-summary">
-      <strong>{{ jobs.length }}</strong>
-      <span>Jobs in view</span>
+
+    <div class="page-header__actions">
+      <span class="count-pill">{{ jobs.length }} jobs in view</span>
+      <button
+        type="button"
+        class="btn-primary"
+        data-testid="toggle-job-editor"
+        (click)="toggleEditor()"
+      >
+        {{ editorOpen ? 'Close Form' : '+ New Job' }}
+      </button>
     </div>
   </header>
 
-  <div class="message message--error" *ngIf="error">{{ error }}</div>
-  <div class="message message--success" *ngIf="notice">{{ notice }}</div>
+  <app-ui-error-state
+    *ngIf="error && !jobs.length && !loading"
+    title="Unable to load jobs"
+    [message]="error"
+    (retry)="loadJobs()"
+  />
+
+  <div class="banner banner--error" *ngIf="error && (jobs.length || loading)">{{ error }}</div>
+  <div class="banner banner--success" *ngIf="notice">{{ notice }}</div>
 
   <div class="metric-grid">
     <app-recruiter-stat-card
@@ -41,140 +56,214 @@
     />
   </div>
 
-  <form class="glass-form" [formGroup]="jobForm" (ngSubmit)="saveJob()">
-    <div class="field">
-      <label for="job-title">
-        <span>Job title</span>
-        <span class="field__meta field__meta--required">*</span>
-      </label>
-      <input id="job-title" formControlName="title" placeholder="Senior React Developer" />
-      <small class="field__error" *ngIf="showControlError('title')">
-        {{ controlError('title', 'Job title is required.') }}
-      </small>
+  <div class="ratio-card" *ngIf="jobs.length">
+    <div class="ratio-card__head">
+      <strong>Requisition Status Breakdown</strong>
+      <span>
+        Open: {{ openJobsCount }} · Draft: {{ draftJobsCount }} · Closed: {{ closedJobsCount }}
+      </span>
+    </div>
+    <div class="ratio-bar" aria-hidden="true">
+      <i class="ratio-seg ratio-seg--open" [style.width.%]="statusRatio(openJobsCount)"></i>
+      <i class="ratio-seg ratio-seg--draft" [style.width.%]="statusRatio(draftJobsCount)"></i>
+      <i class="ratio-seg ratio-seg--closed" [style.width.%]="statusRatio(closedJobsCount)"></i>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="segmented-tabs" role="tablist" aria-label="Filter jobs by status">
+      <button
+        type="button"
+        role="tab"
+        [class.is-active]="statusFilter === 'all'"
+        [attr.aria-selected]="statusFilter === 'all'"
+        (click)="setStatusFilter('all')"
+      >
+        All ({{ jobs.length }})
+      </button>
+      <button
+        type="button"
+        role="tab"
+        [class.is-active]="statusFilter === 'open'"
+        [attr.aria-selected]="statusFilter === 'open'"
+        (click)="setStatusFilter('open')"
+      >
+        Open ({{ openJobsCount }})
+      </button>
+      <button
+        type="button"
+        role="tab"
+        [class.is-active]="statusFilter === 'draft'"
+        [attr.aria-selected]="statusFilter === 'draft'"
+        (click)="setStatusFilter('draft')"
+      >
+        Draft ({{ draftJobsCount }})
+      </button>
+      <button
+        type="button"
+        role="tab"
+        [class.is-active]="statusFilter === 'closed'"
+        [attr.aria-selected]="statusFilter === 'closed'"
+        (click)="setStatusFilter('closed')"
+      >
+        Closed ({{ closedJobsCount }})
+      </button>
     </div>
 
-    <div class="field">
-      <label for="job-role">
-        <span>Role label</span>
-        <span class="field__meta field__meta--required">*</span>
-      </label>
-      <input id="job-role" formControlName="role" placeholder="Frontend Engineer" />
-      <small class="field__error" *ngIf="showControlError('role')">
-        {{ controlError('role', 'Role label is required.') }}
-      </small>
-    </div>
-
-    <div class="field">
-      <label for="job-stack">
-        <span>Stack</span>
-        <span class="field__meta field__meta--required">*</span>
-      </label>
-      <input id="job-stack" formControlName="stack" placeholder="React, TypeScript" />
-      <small class="field__error" *ngIf="showControlError('stack')">
-        {{ controlError('stack', 'Stack is required.') }}
-      </small>
-    </div>
-
-    <div class="field">
-      <label for="job-location">
-        <span>Location</span>
-        <span class="field__meta field__meta--required">*</span>
-      </label>
-      <input id="job-location" formControlName="location" placeholder="Remote or on-site" />
-      <small class="field__error" *ngIf="showControlError('location')">
-        {{ controlError('location', 'Location is required.') }}
-      </small>
-    </div>
-
-    <div class="field">
-      <label for="job-employment-type">
-        <span>Employment type</span>
-        <span class="field__meta field__meta--required">*</span>
-      </label>
-      <select id="job-employment-type" formControlName="employmentType">
-        <option value="full-time">Full-time</option>
-        <option value="part-time">Part-time</option>
-        <option value="contract">Contract</option>
-        <option value="internship">Internship</option>
-      </select>
-    </div>
-
-    <div class="field">
-      <label for="job-status">
-        <span>Status</span>
-        <span class="field__meta field__meta--required">*</span>
-      </label>
-      <select id="job-status" formControlName="status">
-        <option value="open">Open</option>
-        <option value="draft">Draft</option>
-        <option value="closed">Closed</option>
-      </select>
-    </div>
-
-    <div class="field">
-      <label for="job-experience">
-        <span>Minimum experience</span>
-        <span class="field__meta field__meta--required">*</span>
-      </label>
+    <div class="toolbar__search">
       <input
-        id="job-experience"
-        formControlName="minExperienceYears"
-        type="number"
-        min="0"
-        placeholder="3"
-      />
-      <small class="field__error" *ngIf="showControlError('minExperienceYears')">
-        {{ controlError('minExperienceYears', 'Minimum experience is required.') }}
-      </small>
-    </div>
-
-    <div class="field">
-      <label for="job-required-skills">
-        <span>Required skills</span>
-        <span class="field__meta field__meta--required">*</span>
-      </label>
-      <input
-        id="job-required-skills"
-        formControlName="requiredSkills"
-        placeholder="React, TypeScript, Testing"
-      />
-      <small class="field__error" *ngIf="showControlError('requiredSkills')">
-        {{ controlError('requiredSkills', 'Required skills are mandatory.') }}
-      </small>
-    </div>
-
-    <div class="field">
-      <label for="job-preferred-skills">
-        <span>Preferred skills</span>
-        <span class="field__meta field__meta--optional">Optional</span>
-      </label>
-      <input
-        id="job-preferred-skills"
-        formControlName="preferredSkills"
-        placeholder="Next.js, GraphQL"
+        type="search"
+        aria-label="Filter jobs"
+        [(ngModel)]="searchTerm"
+        placeholder="Filter jobs by title, stack, or skill..."
       />
     </div>
+  </div>
 
-    <div class="field field--wide">
-      <label for="job-description">
-        <span>Description</span>
-        <span class="field__meta field__meta--optional">Optional</span>
-      </label>
-      <textarea
-        id="job-description"
-        formControlName="description"
-        placeholder="Describe responsibilities, team setup, and hiring goals."
-      ></textarea>
-      <small class="field__error" *ngIf="showControlError('description')">
-        {{ controlError('description', 'Description is too long.') }}
-      </small>
+  <form class="job-editor" *ngIf="editorOpen" [formGroup]="jobForm" (ngSubmit)="saveJob()">
+    <div class="job-editor__head">
+      <div>
+        <h2>{{ editingJobId ? 'Edit Requisition' : 'Create New Job' }}</h2>
+        <p *ngIf="editingJobId">Updating: {{ editingJobTitle }}</p>
+      </div>
+      <button type="button" class="btn-secondary" (click)="toggleEditor()">Close</button>
+    </div>
+
+    <div class="job-editor__grid">
+      <div class="field">
+        <label for="job-title">
+          <span>Job title</span>
+          <span class="field__meta field__meta--required">*</span>
+        </label>
+        <input id="job-title" formControlName="title" placeholder="Senior Backend Architect" />
+        <small class="field__error" *ngIf="showControlError('title')">
+          {{ controlError('title', 'Job title is required.') }}
+        </small>
+      </div>
+
+      <div class="field">
+        <label for="job-role">
+          <span>Role label</span>
+          <span class="field__meta field__meta--required">*</span>
+        </label>
+        <input id="job-role" formControlName="role" placeholder="Backend Engineer" />
+        <small class="field__error" *ngIf="showControlError('role')">
+          {{ controlError('role', 'Role label is required.') }}
+        </small>
+      </div>
+
+      <div class="field">
+        <label for="job-stack">
+          <span>Stack</span>
+          <span class="field__meta field__meta--required">*</span>
+        </label>
+        <input id="job-stack" formControlName="stack" placeholder="Backend, Frontend, Full Stack" />
+        <small class="field__error" *ngIf="showControlError('stack')">
+          {{ controlError('stack', 'Stack is required.') }}
+        </small>
+      </div>
+
+      <div class="field">
+        <label for="job-location">
+          <span>Location</span>
+          <span class="field__meta field__meta--required">*</span>
+        </label>
+        <input id="job-location" formControlName="location" placeholder="Remote or on-site" />
+        <small class="field__error" *ngIf="showControlError('location')">
+          {{ controlError('location', 'Location is required.') }}
+        </small>
+      </div>
+
+      <div class="field">
+        <label for="job-employment-type">
+          <span>Employment type</span>
+          <span class="field__meta field__meta--required">*</span>
+        </label>
+        <select id="job-employment-type" formControlName="employmentType">
+          <option value="full-time">Full-time</option>
+          <option value="part-time">Part-time</option>
+          <option value="contract">Contract</option>
+          <option value="internship">Internship</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="job-status">
+          <span>Status</span>
+          <span class="field__meta field__meta--required">*</span>
+        </label>
+        <select id="job-status" formControlName="status">
+          <option value="open">Open</option>
+          <option value="draft">Draft</option>
+          <option value="closed">Closed</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="job-experience">
+          <span>Minimum experience (years)</span>
+          <span class="field__meta field__meta--required">*</span>
+        </label>
+        <input
+          id="job-experience"
+          formControlName="minExperienceYears"
+          type="number"
+          min="0"
+          placeholder="3"
+        />
+        <small class="field__error" *ngIf="showControlError('minExperienceYears')">
+          {{ controlError('minExperienceYears', 'Minimum experience is required.') }}
+        </small>
+      </div>
+
+      <div class="field">
+        <label for="job-required-skills">
+          <span>Required skills</span>
+          <span class="field__meta field__meta--required">*</span>
+        </label>
+        <input
+          id="job-required-skills"
+          formControlName="requiredSkills"
+          placeholder="Node.js, TypeScript, PostgreSQL"
+        />
+        <small class="field__error" *ngIf="showControlError('requiredSkills')">
+          {{ controlError('requiredSkills', 'Required skills are mandatory.') }}
+        </small>
+      </div>
+
+      <div class="field field--wide">
+        <label for="job-preferred-skills">
+          <span>Preferred skills</span>
+          <span class="field__meta">Optional</span>
+        </label>
+        <input
+          id="job-preferred-skills"
+          formControlName="preferredSkills"
+          placeholder="Docker, Redis, Kubernetes"
+        />
+      </div>
+
+      <div class="field field--wide">
+        <label for="job-description">
+          <span>Description</span>
+          <span class="field__meta">Optional</span>
+        </label>
+        <textarea
+          id="job-description"
+          formControlName="description"
+          placeholder="Describe responsibilities, team setup, and hiring goals."
+        ></textarea>
+        <small class="field__error" *ngIf="showControlError('description')">
+          {{ controlError('description', 'Description is too long.') }}
+        </small>
+      </div>
     </div>
 
     <div class="form-actions">
-      <button type="button" class="ghost-btn" (click)="resetForm()" [disabled]="saving">
+      <button type="button" class="btn-secondary" (click)="resetForm()" [disabled]="saving">
         Clear
       </button>
-      <button type="submit" class="primary-btn" [disabled]="isSubmitDisabled">
+      <button type="submit" class="btn-primary" [disabled]="isSubmitDisabled">
         {{ saving ? 'Saving...' : submitLabel }}
       </button>
     </div>
@@ -182,9 +271,9 @@
 
   <app-recruiter-loader *ngIf="loading" label="Loading jobs..." variant="cards" [count]="4" />
 
-  <div class="card-grid" *ngIf="!loading && jobs.length > 0">
+  <div class="card-grid" *ngIf="!loading && filteredJobs.length > 0">
     <app-recruiter-job-card
-      *ngFor="let job of jobs; trackBy: trackByJob"
+      *ngFor="let job of filteredJobs; trackBy: trackByJob"
       [job]="job"
       (view)="openJob(job)"
       (edit)="editJob(job)"
@@ -194,9 +283,13 @@
   </div>
 
   <app-recruiter-empty-state
-    *ngIf="!loading && jobs.length === 0"
-    title="No jobs yet"
-    message="Create your first recruiter job to start generating match results and shortlist activity."
+    *ngIf="!loading && filteredJobs.length === 0 && !error"
+    [title]="jobs.length ? 'No matching jobs' : 'No jobs yet'"
+    [message]="
+      jobs.length
+        ? 'Adjust your status filter or search query to see other requisitions.'
+        : 'Create your first recruiter job to start generating match results and shortlist activity.'
+    "
   />
 
   <app-confirm-dialog

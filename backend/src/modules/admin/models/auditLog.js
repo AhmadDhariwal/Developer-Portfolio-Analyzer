@@ -84,5 +84,7 @@ auditLogSchema.index({ teamId: 1, timestamp: -1 });
 auditLogSchema.index({ action: 1, timestamp: -1 });
 auditLogSchema.index({ organizationId: 1, teamId: 1, timestamp: -1 });
 auditLogSchema.index({ organizationId: 1, action: 1, timestamp: -1 });
+auditLogSchema.index({ organizationId: 1, actor: 1, timestamp: -1 });
+auditLogSchema.index({ organizationId: 1, actor: 1, action: 1, timestamp: -1 });
 
 module.exports = mongoose.model('AuditLog', auditLogSchema);

@@ -2,15 +2,15 @@ import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { CandidateFilters, DEFAULT_CANDIDATE_FILTERS } from '../../models/recruiter.model';
 import { CandidateService } from '../../services/candidate.service';
 import { RecruiterMatchService } from '../../services/recruiter-match.service';
-import { CandidateFilters, DEFAULT_CANDIDATE_FILTERS } from '../../models/recruiter.model';
 
 @Component({
   selector: 'app-recruiter-candidates',
-  standalone: false,
   templateUrl: './candidates.component.html',
   styleUrl: './candidates.component.scss',
+  standalone: false,
 })
 export class CandidatesComponent implements OnInit {
   loading = true;
@@ -19,16 +19,18 @@ export class CandidatesComponent implements OnInit {
   candidates: any[] = [];
   filters: CandidateFilters = { ...DEFAULT_CANDIDATE_FILTERS };
   meta: any = { page: 1, totalPages: 1, total: 0 };
-  stackOptions: any[] = [];
-  locationOptions: any[] = [];
+  stackOptions: Array<{ label: string; value: string }> = [];
+  locationOptions: Array<{ label: string; value: string }> = [];
+
   private readonly compareIds = new Set<string>();
+  private readonly compareNames = new Map<string, string>();
   private readonly destroyRef = inject(DestroyRef);
   private candidateRequest?: Subscription;
 
   constructor(
-    private readonly candidateService: CandidateService,
-    private readonly matchService: RecruiterMatchService,
-    private readonly router: Router,
+    private candidateService: CandidateService,
+    private matchService: RecruiterMatchService,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -39,52 +41,65 @@ export class CandidatesComponent implements OnInit {
     return this.compareIds.size;
   }
 
+  get selectedCompareItems(): Array<{ id: string; name: string }> {
+    return Array.from(this.compareIds).map((id) => ({
+      id,
+      name: this.compareNames.get(id) || 'Candidate',
+    }));
+  }
+
   get highReadinessCount(): number {
     return this.candidates.filter(
-      (candidate) => Number(candidate?.readinessScore || candidate?.score || 0) >= 80,
+      (item) => Number(item?.readinessScore ?? item?.score ?? 0) >= 80,
     ).length;
   }
 
   get remoteCount(): number {
-    return this.candidates.filter((candidate) =>
-      String(candidate?.location || '')
+    return this.candidates.filter((item) =>
+      String(item?.availability || '')
         .toLowerCase()
         .includes('remote'),
     ).length;
   }
 
   get visiblePages(): number[] {
-    const totalPages = Number(this.meta?.totalPages || 1);
-    const current = Number(this.meta?.page || 1);
-    const start = Math.max(1, current - 1);
-    const end = Math.min(totalPages, start + 2);
-    return Array.from({ length: Math.max(0, end - start + 1) }, (_, index) => start + index);
+    const current = Math.max(1, Number(this.meta?.page || 1));
+    const total = Math.max(1, Number(this.meta?.totalPages || 1));
+    const start = Math.max(1, current - 2);
+    const end = Math.min(total, start + 4);
+    const adjustedStart = Math.max(1, end - 4);
+    const pages: number[] = [];
+    for (let page = adjustedStart; page <= end; page += 1) {
+      pages.push(page);
+    }
+    return pages;
   }
 
   loadCandidates(): void {
+    this.candidateRequest?.unsubscribe();
     this.loading = true;
     this.error = '';
-    this.notice = '';
-    this.candidateRequest?.unsubscribe();
+
     this.candidateRequest = this.candidateService
       .listCandidates(this.filters)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (response) => {
+        next: (response: any) => {
           this.candidates = response?.candidates || [];
           this.meta = response?.meta || { page: 1, totalPages: 1, total: this.candidates.length };
-          this.stackOptions = (response?.filters?.stacks || []).map((label: string) => ({
-            value: label,
-            label,
-          }));
-          this.locationOptions = (response?.filters?.locations || []).map((label: string) => ({
-            value: label,
-            label,
-          }));
+          for (const candidate of this.candidates) {
+            const cid = this.candidateId(candidate);
+            if (cid && !this.compareNames.has(cid)) {
+              this.compareNames.set(cid, candidate?.name || candidate?.fullName || 'Candidate');
+            }
+          }
+          const stacks = response?.filters?.stacks || [];
+          const locations = response?.filters?.locations || [];
+          this.stackOptions = stacks.map((stack: string) => ({ label: stack, value: stack }));
+          this.locationOptions = locations.map((loc: string) => ({ label: loc, value: loc }));
           this.loading = false;
         },
         error: (err) => {
-          this.candidates = [];
           this.error = err?.error?.message || 'Unable to load candidates right now.';
           this.loading = false;
         },
@@ -102,67 +117,89 @@ export class CandidatesComponent implements OnInit {
   }
 
   goToPage(page: number): void {
-    if (page < 1 || page > Number(this.meta?.totalPages || 1) || page === this.meta?.page) return;
-    this.filters = { ...this.filters, page };
+    const total = Math.max(1, Number(this.meta?.totalPages || 1));
+    const target = Math.min(Math.max(1, page), total);
+    if (target === this.filters.page) {
+      return;
+    }
+    this.filters = { ...this.filters, page: target };
     this.loadCandidates();
   }
 
   openCandidate(candidate: any): void {
-    this.router.navigate(['/app/recruiter/candidates', this.getCandidateId(candidate)]);
+    const id = this.candidateId(candidate);
+    if (!id) {
+      return;
+    }
+    this.router.navigate(['/app/recruiter/candidates', id]);
   }
 
   shortlist(candidate: any): void {
-    const candidateId = this.getCandidateId(candidate);
-    if (!candidateId) return;
+    const id = this.candidateId(candidate);
+    if (!id) {
+      return;
+    }
+    this.error = '';
+    this.notice = '';
 
-    this.matchService
-      .addToShortlist({ candidateId })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: () => {
-          this.notice = `${candidate?.name || candidate?.fullName || 'Candidate'} added to shortlist.`;
-          this.error = '';
-        },
-        error: (err) => {
-          this.error = err?.error?.message || 'Unable to shortlist this candidate.';
-        },
-      });
+    this.matchService.addToShortlist({ candidateId: id }).subscribe({
+      next: () => {
+        this.notice = `${candidate?.name || candidate?.fullName || 'Candidate'} added to shortlist.`;
+      },
+      error: (err) => {
+        this.error = err?.error?.message || 'Could not shortlist candidate.';
+      },
+    });
   }
 
   toggleCompare(candidate: any): void {
-    const id = this.getCandidateId(candidate);
-    if (!id) return;
+    const id = this.candidateId(candidate);
+    if (!id) {
+      return;
+    }
+    this.error = '';
+    this.notice = '';
 
     if (this.compareIds.has(id)) {
       this.compareIds.delete(id);
       return;
     }
-
     if (this.compareIds.size >= 3) {
-      this.error = 'You can compare up to 3 candidates at a time.';
+      this.error = 'Select up to 3 candidates for comparison.';
       return;
     }
-
+    this.compareNames.set(id, candidate?.name || candidate?.fullName || 'Candidate');
     this.compareIds.add(id);
-    this.error = '';
+  }
+
+  removeCompareId(id: string): void {
+    this.compareIds.delete(id);
+  }
+
+  clearCompare(): void {
+    this.compareIds.clear();
   }
 
   openComparison(): void {
-    if (this.compareIds.size < 2) return;
+    if (this.compareIds.size < 2) {
+      this.error = 'Select at least 2 candidates to compare side by side.';
+      return;
+    }
     this.router.navigate(['/app/recruiter/comparison'], {
       queryParams: { ids: Array.from(this.compareIds).join(',') },
     });
   }
 
   isSelected(candidate: any): boolean {
-    return this.compareIds.has(this.getCandidateId(candidate));
-  }
-
-  private getCandidateId(candidate: any): string {
-    return String(candidate?.id || candidate?.userId || '').trim();
+    const id = this.candidateId(candidate);
+    return id ? this.compareIds.has(id) : false;
   }
 
   trackByCandidate(index: number, candidate: any): string {
-    return String(candidate?.id || candidate?.userId || candidate?._id || index);
+    return String(candidate?.id || candidate?.userId || candidate?._id || candidate?.name || index);
+  }
+
+  private candidateId(candidate: any): string {
+    return String(candidate?.id || candidate?.userId || candidate?._id || '').trim();
   }
 }

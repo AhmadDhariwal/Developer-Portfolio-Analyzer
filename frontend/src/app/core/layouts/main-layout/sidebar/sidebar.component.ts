@@ -36,6 +36,7 @@ export class Sidebar implements OnInit {
   @Input() isOpen: boolean = false;
   @Input() isMobile: boolean = false;
   @Input() developerWorkspace: boolean = false;
+  @Input() recruiterWorkspace: boolean = false;
   @Output() collapse = new EventEmitter<void>();
 
   openGroups = new Set<string>(['Analysis', 'Growth', 'Opportunities', 'Insights', 'System']);

@@ -1,15 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { SearchableSelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
+import { PerformanceChartItem } from '../../components/recruiter-performance-chart/recruiter-performance-chart.component';
 import { CandidateService } from '../../services/candidate.service';
 import { RecruiterJobService } from '../../services/recruiter-job.service';
 import { RecruiterMatchService } from '../../services/recruiter-match.service';
 
+export type MatchStatusFilter = 'all' | 'generated' | 'shortlisted' | 'rejected';
+
 @Component({
   selector: 'app-recruiter-matches',
-  standalone: false,
   templateUrl: './matches.component.html',
   styleUrl: './matches.component.scss',
+  standalone: false,
 })
 export class MatchesComponent implements OnInit {
   jobsLoading = true;
@@ -22,29 +24,61 @@ export class MatchesComponent implements OnInit {
   candidates: any[] = [];
   matches: any[] = [];
   selectedJobId = '';
-  readonly selectedCandidateIds = new Set<string>();
-  readonly compareIds = new Set<string>();
+  candidateSearch = '';
+  statusFilter: MatchStatusFilter = 'all';
+  selectedCandidateIds = new Set<string>();
+  compareIds = new Set<string>();
+
+  private readonly compareNames = new Map<string, string>();
 
   constructor(
-    private readonly route: ActivatedRoute,
-    private readonly router: Router,
-    private readonly jobService: RecruiterJobService,
-    private readonly candidateService: CandidateService,
-    private readonly matchService: RecruiterMatchService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private jobService: RecruiterJobService,
+    private candidateService: CandidateService,
+    private matchService: RecruiterMatchService,
   ) {}
 
-  get jobOptions(): SearchableSelectOption[] {
-    return this.jobs.map((job) => ({ value: job._id, label: job.title, meta: job.status }));
+  ngOnInit(): void {
+    this.route.queryParamMap.subscribe((params) => {
+      const requestedJobId = String(params.get('jobId') || '').trim();
+      if (requestedJobId && requestedJobId !== this.selectedJobId) {
+        this.selectedJobId = requestedJobId;
+      }
+      this.loadJobs();
+      this.loadCandidates();
+      this.loadMatches();
+    });
   }
 
-  ngOnInit(): void {
-    this.selectedJobId = this.route.snapshot.queryParamMap.get('jobId') || '';
-    this.loadJobs();
-    this.loadCandidates();
+  get jobOptions(): Array<{ label: string; value: string }> {
+    return this.jobs.map((job) => ({
+      label: `${job.title} (${job.status || 'open'})`,
+      value: job._id || job.id,
+    }));
+  }
+
+  get filteredPoolCandidates(): any[] {
+    const query = this.candidateSearch.trim().toLowerCase();
+    if (!query) {
+      return this.candidates;
+    }
+    return this.candidates.filter((candidate) => {
+      const haystack = [candidate?.name, candidate?.fullName, candidate?.stack, ...(candidate?.skills || [])]
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(query);
+    });
   }
 
   get openJobsCount(): number {
     return this.jobs.filter((job) => String(job?.status || '').toLowerCase() === 'open').length;
+  }
+
+  get generatedCount(): number {
+    return this.matches.filter(
+      (match) => String(match?.status || 'generated').toLowerCase() === 'generated',
+    ).length;
   }
 
   get shortlistedCount(): number {
@@ -54,31 +88,80 @@ export class MatchesComponent implements OnInit {
   }
 
   get rejectedCount(): number {
-    return this.matches.filter((match) => String(match?.status || '').toLowerCase() === 'rejected')
-      .length;
+    return this.matches.filter(
+      (match) => String(match?.status || '').toLowerCase() === 'rejected',
+    ).length;
+  }
+
+  get filteredMatches(): any[] {
+    if (this.statusFilter === 'all') {
+      return this.matches;
+    }
+    return this.matches.filter(
+      (match) => String(match?.status || 'generated').toLowerCase() === this.statusFilter,
+    );
+  }
+
+  get scoreDistributionItems(): PerformanceChartItem[] {
+    if (!this.matches.length) {
+      return [];
+    }
+    let band90 = 0;
+    let band80 = 0;
+    let band70 = 0;
+    let bandLow = 0;
+
+    for (const match of this.matches) {
+      const score = Number(match?.matchScore ?? 0);
+      if (score >= 90) band90 += 1;
+      else if (score >= 80) band80 += 1;
+      else if (score >= 70) band70 += 1;
+      else bandLow += 1;
+    }
+
+    return [
+      { label: '90-100%', count: band90 },
+      { label: '80-89%', count: band80 },
+      { label: '70-79%', count: band70 },
+      { label: '< 70%', count: bandLow },
+    ];
+  }
+
+  get statusDistributionItems(): PerformanceChartItem[] {
+    if (!this.matches.length) {
+      return [];
+    }
+    return [
+      { label: 'Generated', count: this.generatedCount },
+      { label: 'Shortlisted', count: this.shortlistedCount },
+      { label: 'Rejected', count: this.rejectedCount },
+    ];
+  }
+
+  get selectedCompareList(): Array<{ id: string; name: string }> {
+    return Array.from(this.compareIds).map((id) => ({
+      id,
+      name: this.compareNames.get(id) || 'Candidate',
+    }));
+  }
+
+  setStatusFilter(filter: MatchStatusFilter): void {
+    this.statusFilter = filter;
   }
 
   loadJobs(): void {
     this.jobsLoading = true;
     this.jobService.listJobs().subscribe({
-      next: (response) => {
+      next: (response: any) => {
         this.jobs = response?.jobs || [];
-        if (!this.selectedJobId && this.jobs.length) {
-          const preferredJob =
-            this.jobs.find((job) => String(job?.status || '').toLowerCase() === 'open') ||
-            this.jobs.find((job) => String(job?.status || '').toLowerCase() === 'draft') ||
-            this.jobs[0];
-          this.selectedJobId = String(preferredJob?._id || '');
+        if (!this.selectedJobId && this.jobs.length > 0) {
+          this.selectedJobId = String(this.jobs[0]._id || this.jobs[0].id || '');
         }
         this.jobsLoading = false;
-        this.loadMatches();
       },
       error: (err) => {
-        this.jobs = [];
+        this.error = err?.error?.message || 'Unable to load recruiter jobs.';
         this.jobsLoading = false;
-        this.error =
-          err?.error?.message || 'Unable to load jobs. Existing matches may still be available.';
-        this.loadMatches();
       },
     });
   }
@@ -86,15 +169,18 @@ export class MatchesComponent implements OnInit {
   loadCandidates(): void {
     this.candidatesLoading = true;
     this.candidateService.listCandidates({ limit: 24, sortBy: 'score-desc' }).subscribe({
-      next: (response) => {
+      next: (response: any) => {
         this.candidates = response?.candidates || [];
+        for (const candidate of this.candidates) {
+          const cid = this.candidateId(candidate);
+          if (cid) {
+            this.compareNames.set(cid, candidate?.name || candidate?.fullName || 'Candidate');
+          }
+        }
         this.candidatesLoading = false;
       },
-      error: (err) => {
-        this.candidates = [];
+      error: () => {
         this.candidatesLoading = false;
-        this.error =
-          this.error || err?.error?.message || 'Unable to load candidate suggestions right now.';
       },
     });
   }
@@ -104,14 +190,12 @@ export class MatchesComponent implements OnInit {
     this.matchService
       .listMatches(this.selectedJobId ? { jobId: this.selectedJobId } : {})
       .subscribe({
-        next: (response) => {
+        next: (response: any) => {
           this.matches = response?.matches || [];
-          this.error = '';
           this.matchesLoading = false;
         },
         error: (err) => {
-          this.matches = [];
-          this.error = err?.error?.message || 'Unable to load match results.';
+          this.error = err?.error?.message || 'Unable to load saved matches.';
           this.matchesLoading = false;
         },
       });
@@ -123,30 +207,37 @@ export class MatchesComponent implements OnInit {
   }
 
   toggleCandidate(candidate: any): void {
-    const id = this.getCandidateId(candidate);
-    if (!id) return;
-    if (this.selectedCandidateIds.has(id)) {
-      this.selectedCandidateIds.delete(id);
+    const id = this.candidateId(candidate);
+    if (!id) {
       return;
     }
-    this.selectedCandidateIds.add(id);
+    if (this.selectedCandidateIds.has(id)) {
+      this.selectedCandidateIds.delete(id);
+    } else {
+      this.selectedCandidateIds.add(id);
+    }
   }
 
   clearSelection(): void {
     this.selectedCandidateIds.clear();
-    this.compareIds.clear();
   }
 
   isCandidateSelected(candidate: any): boolean {
-    return this.selectedCandidateIds.has(this.getCandidateId(candidate));
+    const id = this.candidateId(candidate);
+    return id ? this.selectedCandidateIds.has(id) : false;
   }
 
   runMatches(): void {
-    if (!this.selectedJobId) return;
+    if (!this.selectedJobId || this.generating) {
+      if (!this.selectedJobId) {
+        this.error = 'Select a target job before running match scoring.';
+      }
+      return;
+    }
     this.generating = true;
-    this.matchesLoading = true;
     this.error = '';
     this.notice = '';
+
     const candidateIds = Array.from(this.selectedCandidateIds);
     this.matchService
       .generateMatches({
@@ -154,90 +245,131 @@ export class MatchesComponent implements OnInit {
         candidateIds: candidateIds.length ? candidateIds : undefined,
       })
       .subscribe({
-        next: (response) => {
-          this.matches = response?.matches || [];
-          this.notice = `Generated ${this.matches.length} match results.`;
-          this.generating = false;
-          this.matchesLoading = false;
+        next: (response: any) => {
+          const generatedMatches = response?.matches || [];
+          const generatedCount = generatedMatches.length;
+          // Hydrate persisted match records so newly generated items carry Mongo _id for status updates.
+          this.matchService
+            .listMatches(this.selectedJobId ? { jobId: this.selectedJobId } : {})
+            .subscribe({
+              next: (persisted: any) => {
+                const hydrated = persisted?.matches || [];
+                this.matches = hydrated.length ? hydrated : generatedMatches;
+                this.notice = `Generated ${generatedCount} match results.`;
+                this.generating = false;
+              },
+              error: () => {
+                this.matches = generatedMatches;
+                this.notice = `Generated ${generatedCount} match results.`;
+                this.generating = false;
+              },
+            });
         },
         error: (err) => {
-          this.error = err?.error?.message || 'Unable to generate matches.';
+          this.error = err?.error?.message || 'Could not generate matches.';
           this.generating = false;
-          this.matchesLoading = false;
         },
       });
   }
 
   shortlist(match: any): void {
+    const candidateId = String(match?.candidate?.id || match?.candidateId || '').trim();
+    const jobId = String(match?.job?._id || match?.jobId || this.selectedJobId || '').trim();
+    if (!candidateId) {
+      return;
+    }
+    this.error = '';
+    this.notice = '';
+
     this.matchService
       .addToShortlist({
-        candidateId: match?.candidateId,
-        jobId: match?.jobId,
+        candidateId,
+        jobId: jobId || undefined,
       })
       .subscribe({
         next: () => {
-          this.notice = `${match?.candidate?.name || 'Candidate'} added to shortlist.`;
-          this.error = '';
-          this.matches = this.matches.map((entry) =>
-            entry === match ? { ...entry, status: 'shortlisted', shortlisted: true } : entry,
-          );
+          match.status = 'shortlisted';
+          this.notice = `${match?.candidate?.name || 'Candidate'} shortlisted for ${match?.job?.title || 'job'}.`;
         },
         error: (err) => {
-          this.error = err?.error?.message || 'Unable to shortlist this match.';
+          this.error = err?.error?.message || 'Could not shortlist candidate.';
         },
       });
   }
 
   updateStatus(match: any, status: 'generated' | 'rejected'): void {
-    const matchId = String(match?._id || '').trim();
-    if (!matchId) return;
-
-    this.notice = '';
+    const matchId = String(match?._id || match?.id || '').trim();
+    if (!matchId) {
+      this.error = 'Reload saved matches before updating this match status.';
+      return;
+    }
     this.error = '';
+    this.notice = '';
+
     this.matchService.updateMatchStatus(matchId, status).subscribe({
-      next: (response) => {
-        const nextMatch = response?.match || { ...match, status };
-        this.matches = this.matches.map((entry) =>
-          String(entry?._id || '') === matchId ? { ...entry, ...nextMatch } : entry,
-        );
+      next: () => {
+        match.status = status;
         this.notice =
-          status === 'rejected' ? 'Match marked as rejected.' : 'Match reset to generated.';
+          status === 'rejected'
+            ? `${match?.candidate?.name || 'Match'} marked as rejected.`
+            : `${match?.candidate?.name || 'Match'} restored to generated.`;
       },
       error: (err) => {
-        this.error = err?.error?.message || 'Unable to update this match status.';
+        this.error = err?.error?.message || 'Could not update match status.';
       },
     });
   }
 
   compare(match: any): void {
-    const id = String(match?.candidateId || '').trim();
-    if (!id) return;
-    if (this.compareIds.has(id)) {
-      this.compareIds.delete(id);
-    } else if (this.compareIds.size < 3) {
-      this.compareIds.add(id);
-    } else {
-      this.error = 'You can compare up to 3 matched candidates.';
+    const candidateId = String(match?.candidate?.id || match?.candidateId || '').trim();
+    if (!candidateId) {
       return;
     }
+    this.error = '';
 
-    if (this.compareIds.size >= 2) {
-      this.router.navigate(['/app/recruiter/comparison'], {
-        queryParams: {
-          ids: Array.from(this.compareIds).join(','),
-          jobId: this.selectedJobId || undefined,
-        },
-      });
+    if (this.compareIds.has(candidateId)) {
+      this.compareIds.delete(candidateId);
+      return;
     }
+    if (this.compareIds.size >= 3) {
+      this.error = 'Select up to 3 candidates for comparison.';
+      return;
+    }
+    this.compareNames.set(candidateId, match?.candidate?.name || 'Candidate');
+    this.compareIds.add(candidateId);
   }
 
-  private getCandidateId(candidate: any): string {
-    return String(candidate?.id || candidate?.userId || '').trim();
+  removeCompareId(id: string): void {
+    this.compareIds.delete(id);
   }
 
-  trackByItem(index: number, item: any): string {
-    return String(
-      item?._id || item?.id || item?.candidateId || item?.jobId || item?.userId || index,
-    );
+  clearCompare(): void {
+    this.compareIds.clear();
+  }
+
+  isMatchSelected(match: any): boolean {
+    const cid = String(match?.candidate?.id || match?.candidateId || '').trim();
+    return cid ? this.compareIds.has(cid) : false;
+  }
+
+  openComparison(): void {
+    if (this.compareIds.size < 2) {
+      this.error = 'Select at least 2 candidates to compare side by side.';
+      return;
+    }
+    this.router.navigate(['/app/recruiter/comparison'], {
+      queryParams: {
+        ids: Array.from(this.compareIds).join(','),
+        jobId: this.selectedJobId || undefined,
+      },
+    });
+  }
+
+  trackByItem(_: number, item: any): string {
+    return String(item?._id || item?.id || item?.userId || _);
+  }
+
+  private candidateId(candidate: any): string {
+    return String(candidate?.id || candidate?.userId || candidate?._id || '').trim();
   }
 }

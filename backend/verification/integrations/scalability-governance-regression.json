@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-18T11:19:06.151Z",
+  "checkedAt": "2026-11-19T23:16:57.994Z",
   "providerHttpRequests": 0,
   "checks": [
     "provider/user 429; denied requests do not consume other counters",
@@ -11,9 +11,34 @@
     "duplicate connection claim rejected; action 11 returns 429",
     "authenticated encryption/AAD isolation; Mongo 503 with zero outbound calls; reconnect recovery",
     "background polling admitted through Mongo; self-reported fixture persisted",
-    "HTTP 503 before provider work; immutable process store selection"
+    "HTTP 503 before provider work; immutable process store selection",
+    "five real cache-client states; Connect/Sync/downstream/disconnect; monotonically preserved Mongo counters; historical fixture snapshot/indexes unchanged",
+    "zero Redis governance calls; 12-admission bounded comparison"
   ],
-  "performance": {},
+  "performance": {
+    "workload": "12 sequential admissions, release outside timing",
+    "n": 12,
+    "p50Ms": 11.778299999998126,
+    "p95Ms": 17.226999999998952,
+    "p99Ms": 17.226999999998952,
+    "samplesMs": [
+      8.619500000000698,
+      8.752199999998993,
+      9.541100000002189,
+      9.658500000001368,
+      9.737300000000687,
+      11.778299999998126,
+      12.39640000000145,
+      13.588700000000244,
+      14.441600000001927,
+      14.840200000002369,
+      16.45469999999841,
+      17.226999999998952
+    ],
+    "collectionReads": 12,
+    "collectionReplacements": 48,
+    "collectionWriteCommands": 12
+  },
   "indexes": [
     {
       "v": 2,
@@ -31,7 +56,77 @@
       "expireAfterSeconds": 0
     }
   ],
-  "redisStates": [],
+  "redisStates": [
+    {
+      "mode": "healthy",
+      "cacheResult": "redis",
+      "connect": 200,
+      "sync": 200,
+      "downstream": 200,
+      "before": 1,
+      "after": 1,
+      "cacheCommands": [
+        "CLIENT",
+        "CLIENT",
+        "SET",
+        "EVAL_GET_PTTL"
+      ]
+    },
+    {
+      "mode": "unavailable",
+      "cacheResult": "miss",
+      "connect": 200,
+      "sync": 200,
+      "downstream": 200,
+      "before": 1,
+      "after": 1,
+      "cacheCommands": []
+    },
+    {
+      "mode": "quota",
+      "cacheResult": "miss",
+      "connect": 200,
+      "sync": 200,
+      "downstream": 200,
+      "before": 1,
+      "after": 1,
+      "cacheCommands": [
+        "CLIENT",
+        "CLIENT",
+        "SET",
+        "EVAL_GET_PTTL"
+      ]
+    },
+    {
+      "mode": "timeout",
+      "cacheResult": "miss",
+      "connect": 200,
+      "sync": 200,
+      "downstream": 200,
+      "before": 1,
+      "after": 1,
+      "cacheCommands": [
+        "CLIENT",
+        "CLIENT",
+        "EVAL_GET_PTTL"
+      ]
+    },
+    {
+      "mode": "recovered",
+      "cacheResult": "redis",
+      "connect": 200,
+      "sync": 200,
+      "downstream": 200,
+      "before": 1,
+      "after": 1,
+      "cacheCommands": [
+        "CLIENT",
+        "CLIENT",
+        "SET",
+        "EVAL_GET_PTTL"
+      ]
+    }
+  ],
   "redisGovernanceCalls": 0,
   "fixtureReplays": 3,
   "cleanup": {

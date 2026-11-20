@@ -1,6 +1,10 @@
 <article class="stat-card" [class]="'stat-card stat-card--' + tone">
-  <div class="stat-card__halo"></div>
-  <div class="stat-card__label">{{ label }}</div>
-  <div class="stat-card__value">{{ displayValue }}</div>
+  <div class="stat-card__top">
+    <span class="stat-card__label">{{ label }}</span>
+    <span class="stat-card__dot" aria-hidden="true"></span>
+  </div>
+  <div class="stat-card__value" [class.stat-card__value--unavailable]="isUnavailable">
+    {{ displayValue }}
+  </div>
   <div class="stat-card__hint" *ngIf="hint">{{ hint }}</div>
 </article>

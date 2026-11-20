@@ -179,3 +179,96 @@
 .searchable-select--open .searchable-select__chevron {
   transform: rotate(180deg);
 }
+
+:host-context(.recruiter-workspace) {
+  .searchable-select {
+    --select-scroll-thumb: var(--border-strong, #cbd5e1);
+    --select-scroll-track: var(--surface-subtle, #f1f5f9);
+  }
+
+  .searchable-select__trigger {
+    min-height: 38px;
+    padding: 7px 11px;
+    border-radius: var(--dev-radius-control, 6px);
+    background: var(--surface-input, #ffffff);
+    border: 1px solid var(--border-strong, #cbd5e1);
+    color: var(--text-primary, #0f172a);
+    font-size: 13.5px;
+
+    &:hover:not(:disabled) {
+      border-color: var(--color-primary-light, #6366f1);
+    }
+
+    &:focus,
+    &:focus-visible {
+      outline: none;
+      border-color: var(--color-primary, #4f46e5);
+      box-shadow: var(--focus-ring);
+    }
+  }
+
+  .searchable-select--open .searchable-select__trigger {
+    border-color: var(--color-primary, #4f46e5);
+  }
+
+  .searchable-select__chevron {
+    color: var(--text-muted, #526075);
+  }
+
+  .searchable-select__panel {
+    background: var(--surface-card, #ffffff);
+    border: 1px solid var(--border-color, #e2e8f0);
+    border-radius: var(--dev-radius-surface, 8px);
+    box-shadow: var(--shadow-lg);
+    padding: 8px;
+  }
+
+  .searchable-select__search {
+    background: var(--surface-input, #ffffff);
+    border: 1px solid var(--border-strong, #cbd5e1);
+    border-radius: var(--dev-radius-control, 6px);
+    color: var(--text-primary, #0f172a);
+    font-size: 13px;
+
+    &::placeholder {
+      color: var(--text-muted, #526075);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: var(--color-primary, #4f46e5);
+      box-shadow: var(--focus-ring);
+    }
+  }
+
+  .searchable-select__option {
+    color: var(--text-primary, #0f172a);
+    border-radius: var(--dev-radius-control, 6px);
+    font-size: 13px;
+    padding: 8px 10px;
+
+    &:hover {
+      background: var(--surface-hover, #f8fafc);
+    }
+
+    &--active {
+      background: var(--color-primary-soft, #eef2ff);
+      border-color: var(--color-primary-border, #c7d2fe);
+      color: var(--color-primary-text, #4338ca);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-primary, #4f46e5);
+      outline-offset: -2px;
+    }
+  }
+
+  .searchable-select__option-meta {
+    color: var(--text-muted, #526075);
+  }
+
+  .searchable-select__empty {
+    background: var(--surface-secondary, #f8fafc);
+    color: var(--text-muted, #526075);
+  }
+}

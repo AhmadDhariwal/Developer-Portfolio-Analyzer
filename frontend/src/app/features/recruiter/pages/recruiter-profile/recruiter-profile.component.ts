@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../../shared/services/auth.service';
 import { TenantContextService } from '../../../../shared/services/tenant-context.service';
 import { RecruiterHubService } from '../../services/recruiter-hub.service';
@@ -13,9 +14,12 @@ import { RecruiterProfile } from '../../models/recruiter.model';
 })
 export class RecruiterProfileComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
+  private readonly route = inject(ActivatedRoute);
 
   loading = true;
   saving = false;
+  avatarLoadError = false;
+  isOnboarding = false;
   profile: RecruiterProfile | null = null;
   error = '';
   notice = '';
@@ -28,8 +32,8 @@ export class RecruiterProfileComponent implements OnInit {
     name: ['', [Validators.required, Validators.maxLength(120)]],
     email: [{ value: '', disabled: true }, [Validators.required, Validators.email]],
     avatar: [''],
-    jobTitle: [''],
-    location: [''],
+    jobTitle: ['', [Validators.maxLength(120)]],
+    location: ['', [Validators.maxLength(120)]],
     phoneNumber: [''],
     githubUsername: [''],
     linkedin: [''],
@@ -56,11 +60,57 @@ export class RecruiterProfileComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.isOnboarding = this.route.snapshot.queryParamMap.get('onboarding') === 'recruiter';
     this.loadProfile();
   }
 
   get isSubmitDisabled(): boolean {
     return this.loading || this.saving || this.profileForm.invalid;
+  }
+
+  get profileCompletionItems(): Array<{ label: string; done: boolean }> {
+    const current = this.profile;
+    return [
+      { label: 'Identity', done: Boolean(current?.name && current?.email) },
+      {
+        label: 'Contact',
+        done: Boolean(current?.phoneNumber || current?.linkedin || current?.githubUsername),
+      },
+      {
+        label: 'Background',
+        done: Boolean(
+          current?.recruiterDetails?.education ||
+            current?.recruiterDetails?.yearsOfExperience ||
+            current?.recruiterDetails?.certifications?.length,
+        ),
+      },
+      {
+        label: 'Sourcing Preferences',
+        done: Boolean(
+          current?.recruiterPreferences?.preferredStacks?.length ||
+            current?.recruiterPreferences?.preferredLocations?.length,
+        ),
+      },
+    ];
+  }
+
+  get completedStepsCount(): number {
+    return this.profileCompletionItems.filter((item) => item.done).length;
+  }
+
+  get completionPercent(): number {
+    return Math.round((this.completedStepsCount / this.profileCompletionItems.length) * 100);
+  }
+
+  onAvatarError(): void {
+    this.avatarLoadError = true;
+  }
+
+  discardChanges(): void {
+    this.error = '';
+    this.notice = '';
+    this.fieldErrors = {};
+    this.patchForm(this.profile);
   }
 
   save(): void {
@@ -107,6 +157,7 @@ export class RecruiterProfileComponent implements OnInit {
     this.hubService.updateProfile(payload).subscribe({
       next: (response) => {
         this.profile = (response?.profile as RecruiterProfile) || this.profile;
+        this.avatarLoadError = false;
         this.patchForm(this.profile);
         this.authService.updateCurrentUser({
           name: this.profile?.name,
@@ -133,7 +184,7 @@ export class RecruiterProfileComponent implements OnInit {
     const control = this.profileForm.get(controlName);
     return Boolean(
       this.fieldErrors[controlName] ||
-      (control && control.invalid && (control.touched || control.dirty)),
+        (control && control.invalid && (control.touched || control.dirty)),
     );
   }
 
@@ -150,12 +201,13 @@ export class RecruiterProfileComponent implements OnInit {
     return fallback;
   }
 
-  private loadProfile(): void {
+  loadProfile(): void {
     this.loading = true;
     this.error = '';
     this.hubService.getProfile().subscribe({
       next: (response) => {
         this.profile = (response?.profile as RecruiterProfile) || null;
+        this.avatarLoadError = false;
         this.patchForm(this.profile);
         this.loading = false;
       },
@@ -164,32 +216,6 @@ export class RecruiterProfileComponent implements OnInit {
         this.loading = false;
       },
     });
-  }
-
-  get profileCompletionItems(): Array<{ label: string; done: boolean }> {
-    const current = this.profile;
-    return [
-      { label: 'Identity', done: Boolean(current?.name && current?.email) },
-      {
-        label: 'Contact',
-        done: Boolean(current?.phoneNumber || current?.linkedin || current?.githubUsername),
-      },
-      {
-        label: 'Background',
-        done: Boolean(
-          current?.recruiterDetails?.education ||
-          current?.recruiterDetails?.yearsOfExperience ||
-          current?.recruiterDetails?.certifications?.length,
-        ),
-      },
-      {
-        label: 'Sourcing Preferences',
-        done: Boolean(
-          current?.recruiterPreferences?.preferredStacks?.length ||
-          current?.recruiterPreferences?.preferredLocations?.length,
-        ),
-      },
-    ];
   }
 
   private patchForm(profile: RecruiterProfile | null): void {

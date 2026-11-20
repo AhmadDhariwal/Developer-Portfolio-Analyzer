@@ -517,6 +517,11 @@ export class AuthService implements OnDestroy {
     return this.currentUserSubject.value ?? this.readStoredUser();
   }
 
+  adoptSession(user: SessionUser): void {
+    if (!user?.token) return;
+    this.storeSession(user);
+  }
+
   updateCurrentUser(partial: Partial<SessionUser>): void {
     const current = this.currentUserSubject.value ?? this.readStoredUser();
     if (!current) return;

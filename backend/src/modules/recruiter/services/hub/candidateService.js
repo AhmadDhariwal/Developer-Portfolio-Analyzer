@@ -54,11 +54,12 @@ const sortCandidates = (candidates = [], sortBy = 'score-desc') => {
 };
 
 const enrichCandidates = async (candidates = []) => {
-  const ids = candidates
+  const missingIds = candidates
+    .filter((candidate) => candidate.lastActive === undefined || candidate.experienceLevel === undefined)
     .map((candidate) => String(candidate.userId || candidate.id || ''))
     .filter(Boolean);
-  const users = ids.length
-    ? await User.find({ _id: { $in: ids } })
+  const users = missingIds.length
+    ? await User.find({ _id: { $in: missingIds } })
         .select('_id activeCareerStack activeExperienceLevel location isActive createdAt updatedAt')
         .lean()
     : [];
@@ -70,9 +71,9 @@ const enrichCandidates = async (candidates = []) => {
       ...candidate,
       id: candidate.userId || candidate.id,
       location: candidate.location || user?.location || '',
-      lastActive: user?.updatedAt || user?.createdAt || null,
-      experienceLevel: user?.activeExperienceLevel || '',
-      isActive: user?.isActive !== false
+      lastActive: candidate.lastActive ?? user?.updatedAt ?? user?.createdAt ?? null,
+      experienceLevel: candidate.experienceLevel || user?.activeExperienceLevel || '',
+      isActive: candidate.isActive !== undefined ? candidate.isActive : user?.isActive !== false
     });
   });
 };
@@ -124,13 +125,17 @@ const listRecruiterCandidates = async ({ organizationId, query = {} }) => {
   const page = Math.max(1, Math.floor(toNumber(query.page, 1)));
   const limit = Math.min(240, Math.max(1, Math.floor(toNumber(query.limit, 12))));
   const sortBy = String(query.sortBy || 'score-desc').trim() || 'score-desc';
+  const poolCap = Math.min(
+    2000,
+    Math.max(320, Number.parseInt(process.env.RECRUITER_CANDIDATE_POOL_CAP, 10) || 1000)
+  );
   const base = await listCandidates({
     search: String(query.search || '').trim(),
     stack: String(query.stack || '').trim(),
     experience: toNumber(query.experience, 0),
     minScore: toNumber(query.minReadiness || query.minScore, 0),
     organizationId,
-    limit: 320
+    limit: poolCap
   });
 
   const enriched = await enrichCandidates(base);

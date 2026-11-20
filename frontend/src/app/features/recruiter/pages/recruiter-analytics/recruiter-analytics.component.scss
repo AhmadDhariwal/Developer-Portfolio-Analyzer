@@ -1,168 +1,179 @@
+@use '../../styles/recruiter-ui' as recruiter;
+
 .hub-page {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  overflow: hidden;
+  @include recruiter.page-shell;
 }
-.hero {
-  padding: 1.2rem;
-  border-radius: 24px;
-  background:
-    radial-gradient(circle at 84% -26%, rgba(34, 211, 238, 0.2), rgba(15, 23, 42, 0) 52%),
-    radial-gradient(circle at 4% 8%, rgba(124, 58, 237, 0.24), rgba(15, 23, 42, 0) 45%),
-    linear-gradient(145deg, rgba(17, 24, 39, 0.98), rgba(15, 23, 42, 0.88));
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  box-shadow: 0 24px 48px rgba(2, 6, 23, 0.32);
+
+.page-header {
+  @include recruiter.canvas-header;
 }
-.hero__kicker {
-  display: inline-flex;
-  margin-bottom: 0.45rem;
-  padding: 0.32rem 0.68rem;
-  border-radius: 999px;
-  background: rgba(79, 70, 229, 0.16);
-  color: #c7d2fe;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+
+.page-header__copy {
+  @include recruiter.header-copy;
 }
-.hero h1 {
-  margin: 0;
-  color: #f8fafc;
-  font-size: 2rem;
+
+.page-header__eyebrow {
+  @include recruiter.eyebrow;
 }
-.hero p {
-  margin: 0.4rem 0 0;
-  color: #94a3b8;
-  max-width: 760px;
+
+.page-header__actions {
+  @include recruiter.header-actions;
 }
-.message--error {
-  padding: 0.85rem 1rem;
-  border-radius: 14px;
-  background: rgba(127, 29, 29, 0.45);
-  border: 1px solid rgba(248, 113, 113, 0.24);
-  color: #fecaca;
+
+.count-pill {
+  @include recruiter.status-pill('neutral');
 }
+
+.btn-primary {
+  @include recruiter.btn-primary;
+}
+
+.btn-secondary {
+  @include recruiter.btn-secondary;
+}
+
+.banner--error {
+  @include recruiter.banner-error;
+}
+
 .section-shell {
   display: grid;
-  gap: 0.9rem;
+  gap: 14px;
 }
+
 .section-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 0.85rem;
-  flex-wrap: wrap;
+  @include recruiter.section-head;
 }
-.section-head h2 {
-  margin: 0;
-  color: #f8fafc;
-  font-size: 1.12rem;
+
+.metric-grid {
+  @include recruiter.metric-grid(195px);
 }
-.section-head p {
-  margin: 0.28rem 0 0;
-  color: #94a3b8;
-  max-width: 760px;
-}
-.metric-grid,
-.content-grid,
-.split-grid {
+
+.snapshot-layout {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
 }
-.content-grid {
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-}
-.content-grid--wide {
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-}
-.split-grid {
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-}
+
 .panel {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-  padding: 1rem;
-  border-radius: 22px;
-  border: 1px solid rgba(99, 102, 241, 0.16);
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0.86), rgba(15, 23, 42, 0.72));
-  box-shadow: 0 22px 44px rgba(2, 6, 23, 0.28);
+  @include recruiter.card-surface(20px);
+  display: grid;
+  gap: 14px;
+  align-content: start;
 }
+
 .panel__head {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: 0.5rem;
-  color: #cbd5e1;
+  gap: 8px;
+
+  h3 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 16px;
+    font-weight: 700;
+  }
 }
-.panel__head h2 {
-  margin: 0;
-  color: #f8fafc;
-  font-size: 1rem;
-}
-.panel__head span {
-  font-size: 0.74rem;
-  color: #94a3b8;
-}
-.job-rank-list {
+
+.rank-list {
   display: grid;
-  gap: 0.65rem;
+  gap: 8px;
 }
-.job-rank-list__item {
+
+.rank-list__item {
   display: flex;
   justify-content: space-between;
-  gap: 0.65rem;
   align-items: center;
-  padding: 0.72rem 0.78rem;
-  border-radius: 14px;
-  background: rgba(15, 23, 42, 0.84);
-  border: 1px solid rgba(51, 65, 85, 0.68);
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--dev-radius-control, 6px);
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-light);
 }
-.job-rank-list__item strong {
-  color: #f8fafc;
-  font-size: 0.86rem;
+
+.rank-list__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+
+  strong {
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
-.job-rank-list__item span {
-  color: #a5b4cc;
-  font-size: 0.78rem;
+
+.rank-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
 }
+
+.rank-metric {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
 .snapshot-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 0.68rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
-.snapshot-grid div {
-  padding: 0.75rem;
-  border-radius: 14px;
-  background: rgba(15, 23, 42, 0.84);
-  border: 1px solid rgba(51, 65, 85, 0.68);
+
+.snapshot-tile {
+  padding: 12px 14px;
+  border-radius: var(--dev-radius-control, 6px);
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-light);
+  display: grid;
+  gap: 4px;
+
+  span {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  strong {
+    color: var(--text-primary);
+    font-size: 20px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
 }
-.snapshot-grid label {
-  display: block;
-  color: #94a3b8;
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 0.3rem;
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 18px;
 }
-.snapshot-grid strong {
-  color: #f8fafc;
-  font-size: 1.15rem;
-}
+
 .empty {
   margin: 0;
-  color: #94a3b8;
+  color: var(--text-muted);
+  font-size: 13px;
 }
-@media (max-width: 780px) {
-  .hero h1 {
-    font-size: 1.58rem;
-  }
-  .section-head {
-    align-items: flex-start;
-  }
-  .split-grid {
+
+@media (max-width: 480px) {
+  .snapshot-grid {
     grid-template-columns: 1fr;
   }
 }

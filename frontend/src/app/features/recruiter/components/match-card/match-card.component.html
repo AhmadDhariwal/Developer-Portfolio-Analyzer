@@ -1,50 +1,121 @@
-<article class="match-card">
+<article class="match-card" [class.match-card--selected]="selected">
   <div class="match-card__header">
-    <div>
-      <div class="match-card__rank" *ngIf="match?.rank">Rank #{{ match.rank }}</div>
-      <h3>{{ match?.candidate?.name || match?.candidate?.fullName || match?.candidateId }}</h3>
-      <p>{{ match?.job?.title || match?.jobId }}</p>
+    <div class="match-card__identity">
+      <div class="match-card__top-tags">
+        <span class="match-card__rank" *ngIf="match?.rank">Rank #{{ match.rank }}</span>
+        <span
+          class="match-card__status"
+          [class.match-card__status--shortlisted]="isShortlisted"
+          [class.match-card__status--rejected]="isRejected"
+          *ngIf="match?.status"
+        >
+          {{ match.status }}
+        </span>
+      </div>
+      <h3>
+        <a
+          *ngIf="candidateRouteId; else plainCandidateName"
+          [routerLink]="['/app/recruiter/candidates', candidateRouteId]"
+        >
+          {{ match?.candidate?.name || match?.candidate?.fullName || match?.candidateId }}
+        </a>
+        <ng-template #plainCandidateName>
+          {{ match?.candidate?.name || match?.candidate?.fullName || match?.candidateId }}
+        </ng-template>
+      </h3>
+      <p>
+        <a *ngIf="jobRouteId; else plainJobTitle" [routerLink]="['/app/recruiter/jobs', jobRouteId]">
+          {{ match?.job?.title || match?.jobId }}
+        </a>
+        <ng-template #plainJobTitle>
+          {{ match?.job?.title || match?.jobId }}
+        </ng-template>
+      </p>
     </div>
-    <div class="match-card__score">
-      <strong>{{ match?.matchScore || 0 }}%</strong>
-      <span>Match</span>
+
+    <div class="match-card__ring" [class]="'match-card__ring match-card__ring--' + scoreTone">
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <circle class="ring-track" cx="32" cy="32" [attr.r]="ringRadius"></circle>
+        <circle
+          class="ring-fill"
+          cx="32"
+          cy="32"
+          [attr.r]="ringRadius"
+          [attr.stroke-dasharray]="ringCircumference"
+          [attr.stroke-dashoffset]="ringDashOffset"
+        ></circle>
+      </svg>
+      <div class="ring-value">
+        <strong>{{ scoreValue }}%</strong>
+        <span>Match</span>
+      </div>
     </div>
   </div>
 
   <div class="match-card__meta">
-    <div>
-      <label>Skill</label
-      ><strong>{{
-        match?.skillMatchPercent == null ? 'Unavailable' : match.skillMatchPercent + '%'
-      }}</strong>
+    <div class="meta-cell">
+      <label>Skill Match</label>
+      <strong *ngIf="match?.skillMatchPercent !== null && match?.skillMatchPercent !== undefined; else naSkill">
+        {{ match.skillMatchPercent }}%
+      </strong>
+      <ng-template #naSkill><span class="unavailable-pill">Unavailable</span></ng-template>
     </div>
-    <div>
-      <label>Confidence</label><strong>{{ match?.confidenceScore || 0 }}%</strong>
+    <div class="meta-cell">
+      <label>Confidence</label>
+      <strong *ngIf="match?.confidenceScore !== null && match?.confidenceScore !== undefined; else naConf">
+        {{ match.confidenceScore }}%
+      </strong>
+      <ng-template #naConf><span class="unavailable-pill">Unavailable</span></ng-template>
     </div>
-    <div>
-      <label>Readiness</label><strong>{{ match?.readinessScore || 0 }}</strong>
+    <div class="meta-cell">
+      <label>Readiness</label>
+      <strong>{{ match?.readinessScore ?? 0 }}</strong>
+    </div>
+    <div class="meta-cell">
+      <label>Experience</label>
+      <strong>{{ match?.experienceMatch || 'Unavailable' }}</strong>
     </div>
   </div>
 
-  <div class="match-card__insight">
-    <span class="match-card__badge"
-      >Experience fit · {{ match?.experienceMatch || 'Unavailable' }}</span
-    >
-    <span class="match-card__status" *ngIf="match?.status">{{ match.status }}</span>
+  <div class="breakdown-panel" *ngIf="breakdownRows.length">
+    <div class="breakdown-panel__head">
+      <span>6-Factor Score Breakdown</span>
+      <span *ngIf="match?.githubProjectScore !== null && match?.githubProjectScore !== undefined">
+        GitHub/Projects: {{ match.githubProjectScore }}
+      </span>
+    </div>
+    <div class="breakdown-grid">
+      <div class="breakdown-row" *ngFor="let row of breakdownRows">
+        <div class="breakdown-row__head">
+          <span>{{ row.label }} ({{ row.weightPercent }}%)</span>
+          <strong *ngIf="row.raw !== null; else naFactor">{{ row.raw }}%</strong>
+          <ng-template #naFactor><span class="unavailable-pill">Unavailable</span></ng-template>
+        </div>
+        <div class="breakdown-track" aria-hidden="true">
+          <i *ngIf="row.raw !== null" [style.width.%]="row.raw"></i>
+        </div>
+      </div>
+    </div>
   </div>
 
   <p class="match-card__summary">
     {{ match?.recommendation || match?.explanation || 'AI ranking complete.' }}
   </p>
 
-  <div class="match-card__skills" *ngIf="(match?.strengths || []).length">
-    <span *ngFor="let item of (match?.strengths || []).slice(0, 3)">{{ item }}</span>
+  <div class="match-card__tags" *ngIf="(match?.strengths || []).length || (match?.weaknesses || []).length || matchedSkills.length">
+    <span class="tag tag--strength" *ngFor="let item of (match?.strengths || []).slice(0, 3)">
+      + {{ item }}
+    </span>
+    <span class="tag tag--weakness" *ngFor="let item of (match?.weaknesses || []).slice(0, 2)">
+      ! {{ item }}
+    </span>
+    <span class="tag tag--skill" *ngFor="let skill of matchedSkills">{{ skill }}</span>
   </div>
 
   <div class="match-card__actions" *ngIf="!hideActions">
     <button
       type="button"
-      class="match-card__btn"
+      class="match-card__btn match-card__btn--primary"
       [disabled]="isShortlisted"
       (click)="shortlist.emit(match)"
     >
@@ -52,14 +123,16 @@
     </button>
     <button
       type="button"
-      class="match-card__btn match-card__btn--ghost"
+      class="match-card__btn"
+      [class.match-card__btn--selected]="selected"
+      [class.match-card__btn--secondary]="!selected"
       (click)="compare.emit(match)"
     >
-      Compare
+      {{ selected ? 'Selected' : 'Compare' }}
     </button>
     <button
       type="button"
-      class="match-card__btn match-card__btn--ghost"
+      class="match-card__btn match-card__btn--danger"
       *ngIf="!isRejected"
       (click)="reject.emit(match)"
     >
@@ -67,7 +140,7 @@
     </button>
     <button
       type="button"
-      class="match-card__btn match-card__btn--ghost"
+      class="match-card__btn match-card__btn--secondary"
       *ngIf="isRejected"
       (click)="reset.emit(match)"
     >

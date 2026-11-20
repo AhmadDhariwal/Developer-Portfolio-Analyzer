@@ -68,7 +68,8 @@
   }
 }
 
-.dashboard-shell.developer-workspace {
+.dashboard-shell.developer-workspace,
+.dashboard-shell.recruiter-workspace {
   @include developer.tokens;
   .main-content {
     padding: var(--dev-workspace-padding);

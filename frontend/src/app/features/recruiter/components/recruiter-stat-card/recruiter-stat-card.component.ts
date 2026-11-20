@@ -24,4 +24,8 @@ export class RecruiterStatCardComponent implements OnChanges {
       this.displayValue = this.value;
     }
   }
+
+  get isUnavailable(): boolean {
+    return String(this.displayValue).trim().toLowerCase() === 'unavailable';
+  }
 }

@@ -1,5 +1,6 @@
 const RecruiterShortlist = require('../../models/RecruiterShortlist');
 const RecruiterMatch = require('../../models/RecruiterMatch');
+const Candidate = require('../../models/Candidate');
 const Job = require('../../models/Job');
 const { lockOwnedJob } = require('../matching/jobLifecycleService');
 const { requireObjectId, invalidInput } = require('../../utils/recruiterValidation');
@@ -49,8 +50,21 @@ const hydrateShortlists = async ({ recruiterId, organizationId, items }) => {
 const syncMatchStatus = async (item, status, session) => {
   if (!item.jobId) return;
   const { recruiterId, organizationId, candidateId, jobId } = item;
+  const legacyAliases = await Candidate.find({
+    $or: [{ userId: candidateId }, { _id: candidateId }]
+  })
+    .session(session)
+    .select('_id userId')
+    .lean();
+  const candidateIds = [
+    ...new Set(
+      [candidateId, ...legacyAliases.flatMap((entry) => [entry._id, entry.userId])]
+        .filter(Boolean)
+        .map((id) => String(id))
+    )
+  ];
   await RecruiterMatch.updateMany(
-    { recruiterId, organizationId, candidateId, jobId },
+    { recruiterId, organizationId, candidateId: { $in: candidateIds }, jobId },
     { $set: { status } },
     { session }
   );

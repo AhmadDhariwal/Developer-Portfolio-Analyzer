@@ -2,14 +2,14 @@
   <div class="candidate-card__header">
     <div class="candidate-card__identity">
       <div class="candidate-card__avatar">{{ initial }}</div>
-      <div>
+      <div class="candidate-card__title-block">
         <h3>{{ candidate?.name || candidate?.fullName || 'Candidate' }}</h3>
         <p>{{ candidate?.headline || candidate?.stack || 'Developer profile' }}</p>
       </div>
     </div>
-    <div class="candidate-card__score" [class]="scoreToneClass">
-      <strong>{{ candidate?.readinessScore || candidate?.score || 0 }}</strong>
-      <span>Overall</span>
+    <div [class]="scoreToneClass">
+      <strong>{{ overallScore }}</strong>
+      <span>Readiness</span>
     </div>
   </div>
 
@@ -20,47 +20,73 @@
   </div>
 
   <div class="candidate-card__metrics">
-    <div>
-      <label>GitHub</label><strong>{{ candidate?.githubScore ?? 'Unavailable' }}</strong>
+    <div class="metric-cell">
+      <label>GitHub</label>
+      <strong *ngIf="candidate?.githubScore !== null && candidate?.githubScore !== undefined; else githubUnavailable">
+        {{ candidate.githubScore }}
+      </strong>
+      <ng-template #githubUnavailable>
+        <span class="unavailable-pill">Unavailable</span>
+      </ng-template>
     </div>
-    <div>
-      <label>Resume</label><strong>{{ candidate?.resumeScore || 0 }}</strong>
+    <div class="metric-cell">
+      <label>Resume</label>
+      <strong>{{ candidate?.resumeScore || 0 }}</strong>
     </div>
-    <div>
-      <label>Consistency</label><strong>{{ candidate?.consistencyScore || 0 }}</strong>
+    <div class="metric-cell">
+      <label>Consistency</label>
+      <strong>{{ candidate?.consistencyScore || 0 }}</strong>
     </div>
   </div>
 
   <div class="candidate-card__availability">
-    <span class="candidate-card__availability-badge">{{
-      candidate?.availability || 'Available'
-    }}</span>
-    <span class="candidate-card__activity"
-      >Active
-      {{ candidate?.lastActive ? (candidate?.lastActive | date: 'MMM d') : 'recently' }}</span
-    >
+    <span class="candidate-card__availability-badge">
+      {{ candidate?.availability || 'Available' }}
+    </span>
+    <span class="candidate-card__activity">
+      Active {{ candidate?.lastActive ? (candidate?.lastActive | date: 'MMM d') : 'recently' }}
+    </span>
   </div>
 
-  <div class="candidate-card__skills">
-    <span *ngFor="let skill of (candidate?.skills || []).slice(0, 6)">{{ skill }}</span>
+  <div class="candidate-card__completeness" *ngIf="profileCompleteness > 0">
+    <div class="completeness-meta">
+      <span>Profile completeness</span>
+      <strong>{{ profileCompleteness }}%</strong>
+    </div>
+    <div class="completeness-track" aria-hidden="true">
+      <i [style.width.%]="profileCompleteness"></i>
+    </div>
   </div>
 
-  <div class="candidate-card__summary" *ngIf="candidate?.aiSummary">{{ candidate.aiSummary }}</div>
+  <div class="candidate-card__skills" *ngIf="visibleSkills.length">
+    <span class="skill-chip" *ngFor="let skill of visibleSkills">{{ skill }}</span>
+    <span class="skill-chip skill-chip--more" *ngIf="extraSkillsCount > 0">
+      +{{ extraSkillsCount }} more
+    </span>
+  </div>
+
+  <p class="candidate-card__summary" *ngIf="candidate?.aiSummary">{{ candidate.aiSummary }}</p>
 
   <div class="candidate-card__actions" *ngIf="!hideActions">
     <button
       type="button"
-      class="candidate-card__btn candidate-card__btn--ghost"
+      class="candidate-card__btn candidate-card__btn--secondary"
       (click)="view.emit(candidate)"
     >
       View Profile
     </button>
-    <button type="button" class="candidate-card__btn" (click)="shortlist.emit(candidate)">
+    <button
+      type="button"
+      class="candidate-card__btn candidate-card__btn--primary"
+      (click)="shortlist.emit(candidate)"
+    >
       Shortlist
     </button>
     <button
       type="button"
-      class="candidate-card__btn candidate-card__btn--accent"
+      class="candidate-card__btn"
+      [class.candidate-card__btn--selected]="selected"
+      [class.candidate-card__btn--secondary]="!selected"
       (click)="compare.emit(candidate)"
     >
       {{ selected ? 'Selected' : 'Compare' }}

@@ -98,6 +98,9 @@ const sanitizePublicCandidate = (candidate = {}) => ({
     forks: Number(candidate.githubStats?.forks || 0),
     followers: Number(candidate.githubStats?.followers || 0)
   },
+  lastActive: candidate.lastActive || null,
+  experienceLevel: candidate.experienceLevel || '',
+  isActive: candidate.isActive !== false,
   aiInsight: {
     summary: String(candidate.aiInsight?.summary || ''),
     strengths: Array.isArray(candidate.aiInsight?.strengths) ? candidate.aiInsight.strengths : [],
@@ -291,6 +294,9 @@ const hydrateUserCandidates = async (users = []) => {
       projects,
       skillGaps: analysis?.missingSkills || [],
       publicProfileSlug: profile?.isPublic ? String(profile.slug || '') : null,
+      lastActive: user.updatedAt || user.createdAt || null,
+      experienceLevel: user.activeExperienceLevel || user.experienceLevel || '',
+      isActive: user.isActive !== false,
       githubStats: {
         repos: Number(analysis?.githubStats?.repos || 0),
         stars: Number(analysis?.githubStats?.stars || 0),
@@ -439,16 +445,29 @@ const listCandidates = async ({
 } = {}) => {
   const userQuery = await buildVisibleDeveloperFilter(organizationId);
   if (!userQuery) return [];
-  const safeLimit = Math.min(500, toPositiveInt(limit, 50));
+  const safeLimit = Math.min(2000, toPositiveInt(limit, 50));
+  const andConditions = [];
 
   if (search) {
     const regex = new RegExp(escapeRegex(search), 'i');
-    userQuery.$or = [{ name: regex }, { githubUsername: regex }, { jobTitle: regex }];
+    andConditions.push({ $or: [{ name: regex }, { githubUsername: regex }, { jobTitle: regex }] });
+  }
+
+  const normalizedStackFilter = String(stack || '').trim();
+  if (normalizedStackFilter && normalizedStackFilter.toLowerCase() !== 'all') {
+    const stackRegex = new RegExp(escapeRegex(normalizedStackFilter), 'i');
+    andConditions.push({ $or: [{ activeCareerStack: stackRegex }, { careerStack: stackRegex }] });
+  }
+
+  if (andConditions.length === 1) {
+    Object.assign(userQuery, andConditions[0]);
+  } else if (andConditions.length > 1) {
+    userQuery.$and = andConditions;
   }
 
   const users = await User.find(userQuery)
     .select(
-      'name email githubUsername jobTitle location avatar careerStack activeCareerStack experienceLevel activeExperienceLevel isPublic'
+      'name email githubUsername jobTitle location avatar careerStack activeCareerStack experienceLevel activeExperienceLevel isPublic isActive createdAt updatedAt'
     )
     .sort({ _id: 1 })
     .limit(Math.max(safeLimit, 100))

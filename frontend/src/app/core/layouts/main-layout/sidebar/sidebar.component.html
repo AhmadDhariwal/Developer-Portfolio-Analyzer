@@ -1,7 +1,7 @@
 <aside
   class="sidebar"
   id="application-navigation"
-  [class.developer-navigation]="developerWorkspace"
+  [class.developer-navigation]="developerWorkspace || recruiterWorkspace"
   [attr.role]="isMobile && isOpen ? 'dialog' : null"
   [attr.aria-modal]="isMobile && isOpen ? 'true' : null"
   aria-label="Application navigation"

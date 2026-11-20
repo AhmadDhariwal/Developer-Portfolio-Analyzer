@@ -421,7 +421,8 @@ button {
   color: var(--color-primary);
 }
 
-// Opt-in Developer primitives; role scoping preserves other workspaces.
-.developer-workspace {
+// Opt-in Developer/Recruiter workspace primitives; role scoping preserves Admin/SuperAdmin.
+.developer-workspace,
+.recruiter-workspace {
   @include developer.utilities;
 }

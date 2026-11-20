@@ -173,6 +173,22 @@ export class Navbar implements OnInit {
     return role === 'super_admin' || role === 'superadmin';
   }
 
+  get isRecruiter(): boolean {
+    return String(this.authService.getCurrentUser()?.role || '').toLowerCase() === 'recruiter';
+  }
+
+  get profileRoute(): string {
+    return this.isRecruiter ? '/app/recruiter/profile' : '/app/profile';
+  }
+
+  get dashboardRoute(): string {
+    return this.isRecruiter ? '/app/recruiter/dashboard' : '/app/dashboard';
+  }
+
+  get notificationsRoute(): string {
+    return this.isRecruiter ? '/app/recruiter/notifications' : '/app/notifications';
+  }
+
   private get searchablePages(): SearchSuggestion[] {
     const role = this.selectedRole;
     const sessionRole = String(this.authService.getCurrentUser()?.role || '').toLowerCase();

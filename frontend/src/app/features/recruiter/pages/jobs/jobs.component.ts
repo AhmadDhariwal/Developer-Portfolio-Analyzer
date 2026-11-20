@@ -22,10 +22,14 @@ export class JobsComponent implements OnInit {
   jobs: any[] = [];
   loading = true;
   saving = false;
+  editorOpen = false;
+  statusFilter: 'all' | 'open' | 'draft' | 'closed' = 'all';
+  searchTerm = '';
   error = '';
   notice = '';
   fieldErrors: Record<string, string> = {};
   editingJobId = '';
+  editingJobTitle = '';
 
   readonly confirmState = signal<ConfirmState>({
     open: false,
@@ -78,6 +82,41 @@ export class JobsComponent implements OnInit {
     return this.jobs.filter((job) => String(job?.status || '').toLowerCase() === 'closed').length;
   }
 
+  get filteredJobs(): any[] {
+    const query = this.searchTerm.trim().toLowerCase();
+    return this.jobs.filter((job) => {
+      const status = String(job?.status || 'open').toLowerCase();
+      if (this.statusFilter !== 'all' && status !== this.statusFilter) return false;
+      if (!query) return true;
+      const hay = [
+        job?.title,
+        job?.role,
+        job?.stack,
+        job?.location,
+        ...(job?.requiredSkills || []),
+      ]
+        .join(' ')
+        .toLowerCase();
+      return hay.includes(query);
+    });
+  }
+
+  statusRatio(count: number): number {
+    if (!this.jobs.length) return 0;
+    return Math.round((count / this.jobs.length) * 100);
+  }
+
+  toggleEditor(): void {
+    if (this.editorOpen && this.editingJobId) {
+      this.resetForm();
+    }
+    this.editorOpen = !this.editorOpen;
+  }
+
+  setStatusFilter(status: 'all' | 'open' | 'draft' | 'closed'): void {
+    this.statusFilter = status;
+  }
+
   loadJobs(): void {
     this.loading = true;
     this.error = '';
@@ -120,6 +159,8 @@ export class JobsComponent implements OnInit {
     this.clearMessages();
     this.fieldErrors = {};
     this.editingJobId = String(job?._id || '');
+    this.editingJobTitle = String(job?.title || 'Job posting');
+    this.editorOpen = true;
     this.jobForm.reset(
       {
         title: job?.title || '',
@@ -190,6 +231,7 @@ export class JobsComponent implements OnInit {
 
   resetForm(): void {
     this.editingJobId = '';
+    this.editingJobTitle = '';
     this.fieldErrors = {};
     this.jobForm.reset({
       title: '',
@@ -218,6 +260,7 @@ export class JobsComponent implements OnInit {
   }
 
   showControlError(controlName: string): boolean {
+    if (this.fieldErrors[controlName]) return true;
     const control = this.jobForm.get(controlName);
     return Boolean(control && control.invalid && (control.touched || control.dirty));
   }
@@ -257,6 +300,7 @@ export class JobsComponent implements OnInit {
           }
         }
         this.resetForm();
+        this.editorOpen = false;
         this.saving = false;
       },
       error: (err) => {

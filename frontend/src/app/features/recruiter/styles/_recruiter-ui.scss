@@ -1,0 +1,350 @@
+@use '../../../shared/styles/developer-ui' as developer;
+
+// Shared Recruiter Hub visual foundation aligned 1:1 with canonical Developer UI tokens.
+@mixin page-shell {
+  display: grid;
+  align-content: start;
+  gap: var(--dev-section-gap, 20px);
+  width: 100%;
+  min-width: 0;
+  min-height: calc(100dvh - 120px);
+  font-family: var(--dev-font, var(--font-sans));
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  padding-bottom: 24px;
+}
+
+@mixin canvas-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+@mixin header-copy {
+  min-width: 0;
+  flex: 1 1 320px;
+}
+
+@mixin header-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+
+  @media (max-width: 640px) {
+    width: 100%;
+  }
+}
+
+@mixin eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-primary-text, var(--color-primary));
+}
+
+@mixin page-title {
+  @include developer.page-title;
+  overflow-wrap: anywhere;
+
+  @media (max-width: 640px) {
+    font-size: 24px;
+  }
+}
+
+@mixin page-subtitle {
+  margin: 6px 0 0;
+  max-width: var(--dev-reading-width, 85ch);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+@mixin section-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+
+  h2 {
+    @include developer.section-title;
+  }
+
+  p {
+    margin: 2px 0 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+}
+
+@mixin card-surface($padding: 18px) {
+  min-width: 0;
+  background: var(--surface-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--dev-radius-surface, 8px);
+  padding: $padding;
+  box-shadow: var(--dev-surface-shadow, none);
+}
+
+@mixin metric-grid($min: 200px) {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, #{$min}), 1fr));
+  gap: 14px;
+  min-width: 0;
+}
+
+@mixin card-grid($min: 320px) {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, #{$min}), 1fr));
+  gap: 16px;
+  min-width: 0;
+}
+
+@mixin btn-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: var(--dev-radius-control, 6px);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color var(--transition-fast, 0.15s ease),
+    border-color var(--transition-fast, 0.15s ease),
+    color var(--transition-fast, 0.15s ease);
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+
+  &:disabled {
+    opacity: var(--opacity-disabled, 0.55);
+    cursor: not-allowed;
+  }
+}
+
+@mixin btn-primary {
+  @include btn-base;
+  background: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  color: #ffffff;
+
+  &:hover:not(:disabled) {
+    background: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
+    color: #ffffff;
+  }
+}
+
+@mixin btn-secondary {
+  @include btn-base;
+  background: var(--surface-card);
+  border: 1px solid var(--border-strong);
+  color: var(--text-primary);
+
+  &:hover:not(:disabled) {
+    background: var(--surface-hover);
+    border-color: var(--color-primary-border);
+  }
+}
+
+@mixin btn-ghost {
+  @include btn-base;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+
+  &:hover:not(:disabled) {
+    background: var(--surface-subtle);
+    color: var(--text-primary);
+  }
+}
+
+@mixin btn-danger {
+  @include btn-base;
+  background: var(--color-danger-soft);
+  border: 1px solid var(--color-danger-border);
+  color: var(--color-danger-text);
+
+  &:hover:not(:disabled) {
+    background: var(--color-danger);
+    border-color: var(--color-danger);
+    color: #ffffff;
+  }
+}
+
+@mixin field-control {
+  width: 100%;
+  min-width: 0;
+  min-height: 38px;
+  padding: 8px 11px;
+  border-radius: var(--dev-radius-control, 6px);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-input);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 13.5px;
+  line-height: 1.4;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+
+  &::placeholder {
+    color: var(--text-muted);
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--color-primary-light);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: var(--focus-ring);
+  }
+
+  &:disabled {
+    background: var(--surface-subtle);
+    color: var(--text-muted);
+    cursor: not-allowed;
+  }
+}
+
+@mixin field-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+@mixin status-pill($variant: neutral) {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+
+  @if $variant == success {
+    background: var(--color-success-soft);
+    border: 1px solid var(--color-success-border);
+    color: var(--color-success-text);
+  } @else if $variant == warning {
+    background: var(--color-warning-soft);
+    border: 1px solid var(--color-warning-border);
+    color: var(--color-warning-text);
+  } @else if $variant == danger {
+    background: var(--color-danger-soft);
+    border: 1px solid var(--color-danger-border);
+    color: var(--color-danger-text);
+  } @else if $variant == info {
+    background: var(--color-info-soft);
+    border: 1px solid var(--color-info-border);
+    color: var(--color-info-text);
+  } @else if $variant == primary {
+    background: var(--color-primary-soft);
+    border: 1px solid var(--color-primary-border);
+    color: var(--color-primary-text);
+  } @else {
+    background: var(--color-neutral-soft);
+    border: 1px solid var(--color-neutral-border);
+    color: var(--color-neutral-text);
+  }
+}
+
+@mixin banner-error {
+  padding: 12px 16px;
+  border-radius: var(--dev-radius-surface, 8px);
+  background: var(--color-danger-soft);
+  border: 1px solid var(--color-danger-border);
+  color: var(--color-danger-text);
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+@mixin banner-success {
+  padding: 12px 16px;
+  border-radius: var(--dev-radius-surface, 8px);
+  background: var(--color-success-soft);
+  border: 1px solid var(--color-success-border);
+  color: var(--color-success-text);
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+@mixin banner-info {
+  padding: 12px 16px;
+  border-radius: var(--dev-radius-surface, 8px);
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary-border);
+  color: var(--color-primary-text);
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+@mixin segmented-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--dev-radius-surface, 8px);
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-color);
+  max-width: 100%;
+
+  button {
+    min-height: 32px;
+    padding: 4px 12px;
+    border-radius: var(--dev-radius-control, 6px);
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+      background-color var(--transition-fast),
+      color var(--transition-fast);
+
+    &:hover {
+      color: var(--text-primary);
+    }
+
+    &.is-active {
+      background: var(--surface-card);
+      border-color: var(--border-color);
+      color: var(--color-primary-text, var(--color-primary));
+      box-shadow: var(--shadow-xs);
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: var(--focus-ring);
+    }
+  }
+}

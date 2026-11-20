@@ -1,71 +1,107 @@
 <section class="hub-page">
-  <header class="hub-header">
-    <div>
-      <span class="hub-kicker">Recruiter Hub</span>
+  <header class="page-header">
+    <div class="page-header__copy">
+      <span class="page-header__eyebrow">Recruiter Hub · Talent Pool</span>
       <h1>Candidates</h1>
-      <p>Search, filter, shortlist, and compare real candidates from your scoped talent pool.</p>
+      <p>
+        Browse developer profiles with visible readiness, skill, GitHub, and availability telemetry.
+      </p>
     </div>
-    <div class="hub-summary">
-      <strong>{{ meta.total || 0 }}</strong>
-      <span>Visible candidates</span>
+
+    <div class="page-header__actions">
+      <span class="count-pill">{{ meta?.total || candidates.length }} matching profiles</span>
+      <button
+        type="button"
+        class="btn-primary"
+        [disabled]="compareCount < 2"
+        (click)="openComparison()"
+      >
+        Compare Selected ({{ compareCount }}/3)
+      </button>
     </div>
   </header>
 
-  <app-candidate-filter-bar
-    [model]="filters"
-    [stackOptions]="stackOptions"
-    [locationOptions]="locationOptions"
-    (apply)="applyFilters($event)"
-    (clear)="clearFilters()"
+  <app-ui-error-state
+    *ngIf="error && !candidates.length && !loading"
+    title="Unable to load candidates"
+    [message]="error"
+    (retry)="loadCandidates()"
   />
+
+  <div class="banner banner--error" *ngIf="error && (candidates.length || loading)">{{ error }}</div>
+  <div class="banner banner--success" *ngIf="notice">{{ notice }}</div>
 
   <div class="metric-grid">
     <app-recruiter-stat-card
-      label="In View"
-      [value]="meta.total || 0"
-      tone="blue"
-      [hint]="'Page ' + (meta.page || 1) + ' of ' + (meta.totalPages || 1)"
+      label="Total Matching Pool"
+      [value]="meta?.total || candidates.length"
+      tone="indigo"
+      hint="Across active filter query"
     />
     <app-recruiter-stat-card
-      label="High Readiness"
+      label="High Readiness (Page)"
       [value]="highReadinessCount"
       tone="green"
-      hint="80+ match-ready profiles"
+      hint="Score >= 80 on current page"
     />
     <app-recruiter-stat-card
-      label="Remote Friendly"
+      label="Remote Ready (Page)"
       [value]="remoteCount"
       tone="cyan"
-      hint="Candidates marked remote"
+      hint="Visible on current page"
     />
     <app-recruiter-stat-card
-      label="Compare Queue"
-      [value]="compareCount"
+      label="Comparison Queue"
+      [value]="compareCount + ' / 3'"
       tone="purple"
-      hint="Up to 3 profiles at once"
+      hint="Select 2-3 profiles to compare"
     />
   </div>
 
-  <div class="toolbar">
-    <div class="toolbar__chips">
-      <span class="toolbar__chip">Page {{ meta.page || 1 }} of {{ meta.totalPages || 1 }}</span>
-      <span class="toolbar__chip">{{ compareCount }} selected for comparison</span>
-      <span class="toolbar__chip">{{ highReadinessCount }} high-score profiles</span>
-    </div>
-    <button
-      type="button"
-      class="toolbar__action"
-      [disabled]="compareCount < 2"
-      (click)="openComparison()"
-    >
-      Compare Selected
-    </button>
+  <div class="filter-panel">
+    <app-candidate-filter-bar
+      [model]="filters"
+      [stackOptions]="stackOptions"
+      [locationOptions]="locationOptions"
+      (apply)="applyFilters($event)"
+      (clear)="clearFilters()"
+    />
   </div>
 
-  <div class="message message--error" *ngIf="error">{{ error }}</div>
-  <div class="message message--success" *ngIf="notice">{{ notice }}</div>
+  <div class="compare-tray" *ngIf="compareCount > 0">
+    <div class="compare-tray__items">
+      <span class="compare-tray__label">Comparison tray:</span>
+      <span class="compare-pill" *ngFor="let item of selectedCompareItems">
+        <span>{{ item.name }}</span>
+        <button
+          type="button"
+          [attr.aria-label]="'Remove ' + item.name + ' from comparison'"
+          (click)="removeCompareId(item.id)"
+        >
+          ×
+        </button>
+      </span>
+    </div>
 
-  <app-recruiter-loader *ngIf="loading" label="Loading candidates..." variant="cards" [count]="6" />
+    <div class="compare-tray__actions">
+      <button type="button" class="btn-secondary btn-sm" (click)="clearCompare()">Clear</button>
+      <button
+        type="button"
+        class="btn-primary btn-sm"
+        [disabled]="compareCount < 2"
+        (click)="openComparison()"
+      >
+        Compare Now ({{ compareCount }})
+      </button>
+    </div>
+  </div>
+
+  <app-recruiter-loader
+    *ngIf="loading"
+    label="Loading candidates..."
+    variant="cards"
+    [count]="6"
+  />
 
   <div class="card-grid" *ngIf="!loading && candidates.length > 0">
     <app-candidate-card
@@ -78,30 +114,47 @@
     />
   </div>
 
-  <div class="pager" *ngIf="!loading && meta.totalPages > 1">
-    <button type="button" (click)="goToPage(meta.page - 1)" [disabled]="meta.page <= 1">
-      Previous
-    </button>
-    <button
-      type="button"
-      *ngFor="let page of visiblePages"
-      [class.is-active]="page === meta.page"
-      (click)="goToPage(page)"
-    >
-      {{ page }}
-    </button>
-    <button
-      type="button"
-      (click)="goToPage(meta.page + 1)"
-      [disabled]="meta.page >= meta.totalPages"
-    >
-      Next
-    </button>
-  </div>
-
   <app-recruiter-empty-state
-    *ngIf="!loading && !error && candidates.length === 0"
-    title="No candidates found"
-    message="Try widening the stack, score, or skills filters to surface more of the scoped talent pool."
+    *ngIf="!loading && candidates.length === 0 && !error"
+    title="No matching candidates found"
+    message="Try adjusting your stack, location, experience, or search filters to widen results."
   />
+
+  <nav class="pager" aria-label="Candidate pagination" *ngIf="!loading && (meta?.totalPages || 1) > 1">
+    <span class="pager__summary">
+      Page {{ meta?.page || 1 }} of {{ meta?.totalPages || 1 }}
+      <ng-container *ngIf="meta?.total"> · {{ meta.total }} candidates</ng-container>
+    </span>
+
+    <div class="pager__controls">
+      <button
+        type="button"
+        class="pager__btn"
+        [disabled]="(meta?.page || 1) <= 1"
+        (click)="goToPage((meta?.page || 1) - 1)"
+      >
+        Previous
+      </button>
+
+      <button
+        type="button"
+        class="pager__btn"
+        *ngFor="let page of visiblePages"
+        [class.is-active]="page === (meta?.page || 1)"
+        [attr.aria-current]="page === (meta?.page || 1) ? 'page' : null"
+        (click)="goToPage(page)"
+      >
+        {{ page }}
+      </button>
+
+      <button
+        type="button"
+        class="pager__btn"
+        [disabled]="(meta?.page || 1) >= (meta?.totalPages || 1)"
+        (click)="goToPage((meta?.page || 1) + 1)"
+      >
+        Next
+      </button>
+    </div>
+  </nav>
 </section>

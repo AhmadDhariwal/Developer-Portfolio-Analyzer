@@ -1,4 +1,8 @@
-<div class="dashboard-shell" [class.developer-workspace]="developerWorkspace">
+<div
+  class="dashboard-shell"
+  [class.developer-workspace]="developerWorkspace"
+  [class.recruiter-workspace]="recruiterWorkspace"
+>
   <a
     class="skip-link"
     href="#workspace-main"
@@ -18,6 +22,7 @@
     [isOpen]="sidebarOpen()"
     [isMobile]="isMobile()"
     [developerWorkspace]="developerWorkspace"
+    [recruiterWorkspace]="recruiterWorkspace"
     (collapse)="closeSidebar()"
   ></app-sidebar>
 
