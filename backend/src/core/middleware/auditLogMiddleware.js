@@ -121,6 +121,7 @@ const resolveScope = async (req) => {
 const auditLogMiddleware = (req, res, next) => {
   if (!MUTATION_METHODS.has(req.method)) return next();
   if (!req.originalUrl.startsWith('/api/')) return next();
+  const isRecruiterRoute = /^\/api\/recruiter(?:-hub)?(?:\/|\?|$)/.test(req.originalUrl);
 
   const actor = req.user?._id || resolveActorFromToken(req) || null;
   const ipAddress =
@@ -144,8 +145,11 @@ const auditLogMiddleware = (req, res, next) => {
 
   res.on('finish', async () => {
     try {
+      if (req.recruiterAuditRecorded && res.statusCode < 400) return;
       const action = `${req.method} ${req.baseUrl || ''}${req.path || ''}`.trim();
-      const { organizationId, teamId } = await resolveScope(req);
+      const { organizationId, teamId } = isRecruiterRoute
+        ? { organizationId: firstValidObjectId(req.organizationId), teamId: null }
+        : await resolveScope(req);
       await AuditLog.create({
         actor,
         organizationId,
@@ -153,8 +157,8 @@ const auditLogMiddleware = (req, res, next) => {
         action,
         method: req.method,
         route: requestLogPath(req),
-        before: trimPayload(before),
-        after: trimPayload(responseBody),
+        before: isRecruiterRoute ? null : trimPayload(before),
+        after: isRecruiterRoute ? null : trimPayload(responseBody),
         statusCode: res.statusCode,
         ipAddress,
         userAgent,

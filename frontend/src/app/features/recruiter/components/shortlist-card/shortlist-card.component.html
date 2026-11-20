@@ -1,27 +1,117 @@
 <article class="shortlist-card">
   <div class="shortlist-card__head">
-    <div>
-      <h3>{{ item?.candidate?.name || item?.candidate?.fullName || 'Candidate' }}</h3>
-      <p>{{ item?.job?.title || 'General shortlist' }}</p>
+    <div class="shortlist-card__identity">
+      <div class="shortlist-card__avatar">{{ initial }}</div>
+      <div class="shortlist-card__titles">
+        <h3>
+          <a
+            *ngIf="candidateRouteId; else plainName"
+            [routerLink]="['/app/recruiter/candidates', candidateRouteId]"
+          >
+            {{ item?.candidate?.name || item?.candidate?.fullName || 'Candidate' }}
+          </a>
+          <ng-template #plainName>
+            {{ item?.candidate?.name || item?.candidate?.fullName || 'Candidate' }}
+          </ng-template>
+        </h3>
+        <p>
+          <a *ngIf="jobRouteId; else plainJob" [routerLink]="['/app/recruiter/jobs', jobRouteId]">
+            {{ item?.job?.title || 'Job requisition' }}
+          </a>
+          <ng-template #plainJob>
+            {{ item?.job?.title || 'General shortlist' }}
+          </ng-template>
+        </p>
+      </div>
     </div>
-    <span class="shortlist-card__status">{{ item?.status || 'shortlisted' }}</span>
+
+    <span class="shortlist-card__status" [class]="'shortlist-card__status shortlist-card__status--' + normalizedStatus">
+      {{ item?.status || 'shortlisted' }}
+    </span>
+  </div>
+
+  <div class="stage-stepper" *ngIf="normalizedStatus !== 'rejected'" aria-label="Pipeline stage progress">
+    <div
+      class="stage-step"
+      *ngFor="let stage of pipelineStages; let i = index"
+      [class.stage-step--done]="currentStageIndex > i"
+      [class.stage-step--current]="currentStageIndex === i"
+    >
+      <span class="stage-step__dot">{{ currentStageIndex > i ? '✓' : i + 1 }}</span>
+      <span class="stage-step__label">{{ stage.label }}</span>
+    </div>
   </div>
 
   <div class="shortlist-card__meta">
     <span>{{ item?.candidate?.stack || 'Generalist' }}</span>
     <span>{{ item?.candidate?.yearsOfExperience || 0 }} yrs</span>
+    <span *ngIf="item?.candidate?.readinessScore || item?.candidate?.score">
+      Readiness {{ item?.candidate?.readinessScore || item?.candidate?.score }}
+    </span>
     <span>{{ item?.updatedAt ? (item.updatedAt | date: 'MMM d, y') : 'Recently updated' }}</span>
   </div>
 
-  <p class="shortlist-card__notes">
-    {{ item?.notes || 'No notes added yet. Keep the pipeline moving with a quick follow-up.' }}
-  </p>
+  <div class="shortlist-card__notes-box">
+    <div class="notes-head">
+      <span>Recruiter Note</span>
+      <button
+        type="button"
+        class="note-edit-link"
+        *ngIf="!hideActions && !editingNote"
+        (click)="startEditNote()"
+      >
+        Edit Note
+      </button>
+    </div>
+
+    <p class="shortlist-card__notes" *ngIf="!editingNote">
+      {{ item?.notes || 'No notes added yet. Keep the pipeline moving with a quick follow-up.' }}
+    </p>
+
+    <div class="notes-editor" *ngIf="editingNote">
+      <textarea
+        rows="3"
+        [(ngModel)]="noteDraft"
+        placeholder="Record interview schedule, technical feedback, or outreach status..."
+      ></textarea>
+      <div class="notes-editor__actions">
+        <button type="button" class="btn-mini btn-mini--ghost" (click)="cancelEditNote()">
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn-mini btn-mini--primary"
+          [disabled]="savingNotes"
+          (click)="submitNote()"
+        >
+          {{ savingNotes ? 'Saving...' : 'Save Note' }}
+        </button>
+      </div>
+    </div>
+  </div>
 
   <div class="shortlist-card__actions" *ngIf="!hideActions">
-    <button type="button" class="shortlist-card__btn" (click)="edit.emit(item)">Advance</button>
     <button
       type="button"
-      class="shortlist-card__btn shortlist-card__btn--ghost"
+      class="shortlist-card__btn shortlist-card__btn--primary"
+      [disabled]="isFinalOrRejected"
+      (click)="edit.emit(item)"
+    >
+      {{ normalizedStatus === 'interview' ? 'At Interview Stage' : 'Advance' }}
+    </button>
+
+    <select
+      class="stage-select"
+      aria-label="Change pipeline stage"
+      [ngModel]="normalizedStatus"
+      (ngModelChange)="onStageSelect($event)"
+    >
+      <option *ngFor="let stage of stageOptions" [value]="stage.key">{{ stage.label }}</option>
+    </select>
+
+    <button
+      type="button"
+      class="shortlist-card__btn shortlist-card__btn--danger"
       (click)="remove.emit(item)"
     >
       Remove

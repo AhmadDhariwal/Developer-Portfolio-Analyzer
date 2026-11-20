@@ -1,190 +1,246 @@
 <section class="hub-page">
-  <header class="hero">
-    <div>
-      <span class="hero__kicker">Recruiter Analytics</span>
-      <h1>Performance and pipeline analytics</h1>
-      <p>Live recruiter activity, AI usage, job trends, and candidate supply versus demand.</p>
+  <header class="page-header">
+    <div class="page-header__copy">
+      <span class="page-header__eyebrow">Recruiter Hub · Telemetry</span>
+      <h1>Performance & Pipeline Analytics</h1>
+      <p>
+        Live recruiter activity, AI usage trends, requisition demand, and talent pool supply
+        metrics.
+      </p>
+    </div>
+
+    <div class="page-header__actions">
+      <a class="btn-secondary" routerLink="/app/recruiter/activity-logs">Activity Audit Log</a>
+      <button type="button" class="btn-primary" [disabled]="loading" (click)="loadAnalytics()">
+        {{ loading ? 'Refreshing...' : 'Refresh Analytics' }}
+      </button>
     </div>
   </header>
 
-  <div class="message message--error" *ngIf="error">{{ error }}</div>
+  <app-ui-error-state
+    *ngIf="error && !metricsReady && !loading"
+    title="Unable to load recruiter analytics"
+    [message]="error"
+    (retry)="loadAnalytics()"
+  />
 
-  <section class="section-shell">
-    <div class="section-head">
-      <div>
-        <h2>KPI Overview</h2>
-        <p>Summary cards render as soon as analytics data arrives.</p>
+  <div class="banner banner--error" *ngIf="error && (metricsReady || loading)">{{ error }}</div>
+
+  <app-recruiter-loader
+    *ngIf="loading && !metricsReady"
+    label="Loading recruiter analytics..."
+    variant="stats"
+    [count]="6"
+  />
+
+  <ng-container *ngIf="metricsReady">
+    <section class="section-shell">
+      <div class="section-head">
+        <div>
+          <h2>KPI Overview</h2>
+          <p>
+            Core throughput indicators aggregated directly from backend activity and match records.
+          </p>
+        </div>
       </div>
-    </div>
 
-    <app-recruiter-loader
-      *ngIf="loading && !metricsReady"
-      label="Loading analytics summary..."
-      variant="stats"
-      [count]="6"
-    />
-
-    <div class="metric-grid" *ngIf="metricsReady">
-      <app-recruiter-stat-card
-        label="Viewed"
-        [value]="analytics.metrics.candidatesViewed"
-        tone="blue"
-        hint="Candidate profile opens"
-      />
-      <app-recruiter-stat-card
-        label="Analyzed"
-        [value]="analytics.metrics.candidatesAnalyzed"
-        tone="cyan"
-        hint="AI-enhanced screenings"
-      />
-      <app-recruiter-stat-card
-        label="Matches"
-        [value]="analytics.metrics.matchesGenerated"
-        tone="purple"
-        hint="Ranked candidate matches"
-      />
-      <app-recruiter-stat-card
-        label="Shortlists"
-        [value]="analytics.metrics.shortlistedCandidates"
-        tone="green"
-        hint="Active follow-up pipeline"
-      />
-      <app-recruiter-stat-card
-        label="Success Rate"
-        [value]="analytics.metrics.successRate + '%'"
-        tone="orange"
-        [hint]="successRateHint"
-      />
-      <app-recruiter-stat-card
-        label="Activity Score"
-        [value]="analytics.metrics.recruiterActivityScore"
-        tone="indigo"
-        hint="Weekly recruiter velocity"
-      />
-    </div>
-  </section>
-
-  <section class="section-shell">
-    <div class="section-head">
-      <div>
-        <h2>Executive Snapshot</h2>
-        <p>Highlights and pipeline totals now show immediately with the analytics response.</p>
+      <div class="metric-grid">
+        <app-recruiter-stat-card
+          label="Viewed"
+          [value]="analytics.metrics.candidatesViewed"
+          tone="blue"
+          hint="Candidate profile opens"
+        />
+        <app-recruiter-stat-card
+          label="Analyzed"
+          [value]="analytics.metrics.candidatesAnalyzed"
+          tone="cyan"
+          hint="AI-enhanced screenings"
+        />
+        <app-recruiter-stat-card
+          label="Matches"
+          [value]="analytics.metrics.matchesGenerated"
+          tone="purple"
+          hint="Ranked candidate matches"
+        />
+        <app-recruiter-stat-card
+          label="Shortlists"
+          [value]="analytics.metrics.shortlistedCandidates"
+          tone="green"
+          hint="Active follow-up pipeline"
+        />
+        <app-recruiter-stat-card
+          label="Success Rate"
+          [value]="analytics.metrics.successRate + '%'"
+          tone="orange"
+          [hint]="successRateHint"
+        />
+        <app-recruiter-stat-card
+          label="Activity Score"
+          [value]="analytics.metrics.recruiterActivityScore"
+          tone="indigo"
+          hint="Recruiter engagement velocity"
+        />
       </div>
-    </div>
+    </section>
 
-    <app-recruiter-loader
-      *ngIf="loading && !highlightsReady"
-      label="Loading analytics highlights..."
-      variant="table"
-      [count]="4"
-    />
-
-    <div class="split-grid" *ngIf="highlightsReady">
-      <article class="panel">
-        <div class="panel__head">
-          <h2>Top Performing Jobs</h2>
-          <span>{{ topJobs.length }} tracked</span>
+    <section class="section-shell">
+      <div class="section-head">
+        <div>
+          <h2>Executive Snapshot</h2>
+          <p>Most active requisitions, skill demand signals, and tracked funnel totals.</p>
         </div>
-        <div class="job-rank-list" *ngIf="topJobs.length; else noTopJobs">
-          <div class="job-rank-list__item" *ngFor="let job of topJobs; let index = index; trackBy: trackByItem">
-            <strong>#{{ index + 1 }} {{ job.label || job.name || 'Untitled job' }}</strong>
-            <span>{{ job.count || 0 }} activity signals</span>
-          </div>
-        </div>
-        <ng-template #noTopJobs>
-          <p class="empty">No job performance data yet.</p>
-        </ng-template>
-      </article>
-
-      <article class="panel">
-        <div class="panel__head">
-          <h2>Weekly / Monthly Snapshot</h2>
-          <span>Live metrics</span>
-        </div>
-        <div class="snapshot-grid">
-          <div>
-            <label>Weekly Matches</label>
-            <strong>{{ totalFor(analytics.charts.matchGenerationTrend) }}</strong>
-          </div>
-          <div>
-            <label>Weekly Candidate Activity</label>
-            <strong>{{ totalFor(analytics.charts.candidateActivityTrend) }}</strong>
-          </div>
-          <div>
-            <label>AI Actions</label>
-            <strong>{{ totalFor(analytics.charts.aiUsageGraph) }}</strong>
-          </div>
-          <div>
-            <label>Open Jobs</label>
-            <strong>{{ analytics.metrics.openJobs || 0 }}</strong>
-          </div>
-        </div>
-      </article>
-    </div>
-  </section>
-
-  <section class="section-shell">
-    <div class="section-head">
-      <div>
-        <h2>Trend Analysis</h2>
-        <p>Full-width visual sections bind directly to the loaded API data without needing any extra interaction.</p>
       </div>
-    </div>
 
-    <app-recruiter-loader
-      *ngIf="loading && !chartsReady"
-      label="Loading analytics charts..."
-      variant="charts"
-      [count]="4"
-    />
+      <div class="snapshot-layout" *ngIf="highlightsReady">
+        <article class="panel">
+          <div class="panel__head">
+            <h3>Top Performing Jobs</h3>
+            <span class="count-pill">{{ topJobs.length }} tracked</span>
+          </div>
 
-    <div class="content-grid content-grid--wide" *ngIf="chartsReady">
-      <app-recruiter-performance-chart
-        title="Recruiter Activity Trend"
-        tone="blue"
-        [items]="analytics.charts.candidateActivityTrend"
-        [trendLabel]="trendLabelFor(analytics.charts.candidateActivityTrend)"
-      />
-      <app-recruiter-performance-chart
-        title="Matches Generated Trend"
-        tone="purple"
-        [items]="analytics.charts.matchGenerationTrend"
-        [trendLabel]="trendLabelFor(analytics.charts.matchGenerationTrend)"
-      />
-      <app-recruiter-performance-chart
-        title="AI Ranking Usage"
-        tone="cyan"
-        [items]="analytics.charts.aiUsageGraph"
-      />
-      <app-recruiter-performance-chart
-        title="Top Skills Demand"
-        tone="indigo"
-        [items]="analytics.charts.topSkillsDemand"
-      />
-      <app-recruiter-performance-chart
-        title="Skill Supply vs Demand"
-        tone="green"
-        mode="dual"
-        [items]="analytics.charts.supplyVsDemand"
-      />
-      <app-recruiter-performance-chart
-        title="Weekly Activity Heatmap"
-        tone="purple"
-        mode="heatmap"
-        [items]="analytics.charts.weeklyRecruiterActivity"
-      />
-      <app-recruiter-performance-chart
-        title="Skill Demand Distribution"
-        tone="orange"
-        mode="donut"
-        [items]="analytics.charts.skillDemandChart"
-      />
-      <app-recruiter-performance-chart
-        title="Success Rate"
-        tone="green"
-        mode="gauge"
-        [items]="successGaugeItems"
-      />
-    </div>
-  </section>
+          <div class="rank-list" *ngIf="topJobs.length; else noTopJobs">
+            <div
+              class="rank-list__item"
+              *ngFor="let job of topJobs; let index = index; trackBy: trackByItem"
+            >
+              <div class="rank-list__title">
+                <span class="rank-index">#{{ index + 1 }}</span>
+                <strong>{{ job.label || job.name || job.title || 'Untitled job' }}</strong>
+              </div>
+              <span class="rank-metric">{{ job.count ?? job.matches ?? 0 }} signals</span>
+            </div>
+          </div>
+          <ng-template #noTopJobs>
+            <p class="empty">No job performance telemetry recorded yet.</p>
+          </ng-template>
+        </article>
+
+        <article class="panel">
+          <div class="panel__head">
+            <h3>Most Matched & Requested Skills</h3>
+            <span class="count-pill">{{ topMatchedSkills.length }} skills</span>
+          </div>
+
+          <div class="rank-list" *ngIf="topMatchedSkills.length; else noTopSkills">
+            <div
+              class="rank-list__item"
+              *ngFor="let item of topMatchedSkills; let index = index; trackBy: trackByItem"
+            >
+              <div class="rank-list__title">
+                <span class="rank-index">#{{ index + 1 }}</span>
+                <strong>{{ item.label || item.skill || item.name || 'Skill' }}</strong>
+              </div>
+              <span class="rank-metric"
+                >{{ item.count ?? item.value ?? item.matches ?? 0 }} mentions</span
+              >
+            </div>
+          </div>
+          <ng-template #noTopSkills>
+            <p class="empty">No skill demand telemetry recorded yet.</p>
+          </ng-template>
+        </article>
+
+        <article class="panel">
+          <div class="panel__head">
+            <h3>Activity & Window Totals</h3>
+            <span class="count-pill">Live telemetry</span>
+          </div>
+
+          <div class="snapshot-grid">
+            <div class="snapshot-tile">
+              <span>Tracked Matches</span>
+              <strong>{{ totalFor(analytics.charts.matchGenerationTrend) }}</strong>
+            </div>
+            <div class="snapshot-tile">
+              <span>Candidate Activity Events</span>
+              <strong>{{ totalFor(analytics.charts.candidateActivityTrend) }}</strong>
+            </div>
+            <div class="snapshot-tile">
+              <span>AI Actions</span>
+              <strong>{{ totalFor(analytics.charts.aiUsageGraph) }}</strong>
+            </div>
+            <div class="snapshot-tile">
+              <span>Open Jobs</span>
+              <strong>{{ analytics.metrics.openJobs || 0 }}</strong>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section-shell">
+      <div class="section-head">
+        <div>
+          <h2>Trend Analysis & Visualizations</h2>
+          <p>
+            All 8 visualizations render from real analytics payloads and adapt to light, dark, and
+            system themes.
+          </p>
+        </div>
+      </div>
+
+      <div class="charts-grid" *ngIf="chartsReady">
+        <app-recruiter-performance-chart
+          title="Recruiter Activity Trend"
+          subtitle="Daily candidate viewing & evaluation cadence"
+          mode="area"
+          tone="blue"
+          [items]="analytics.charts.candidateActivityTrend"
+          [trendLabel]="trendLabelFor(analytics.charts.candidateActivityTrend)"
+        />
+        <app-recruiter-performance-chart
+          title="Matches Generated Trend"
+          subtitle="Weighted JD match runs over recent periods"
+          mode="area"
+          tone="purple"
+          [items]="analytics.charts.matchGenerationTrend"
+          [trendLabel]="trendLabelFor(analytics.charts.matchGenerationTrend)"
+        />
+        <app-recruiter-performance-chart
+          title="AI Ranking Usage"
+          subtitle="AI screening & match assist operations"
+          mode="column"
+          tone="cyan"
+          [items]="analytics.charts.aiUsageGraph"
+        />
+        <app-recruiter-performance-chart
+          title="Top Skills Demand"
+          subtitle="Most requested technical skills in requisitions"
+          mode="bars"
+          tone="indigo"
+          [items]="analytics.charts.topSkillsDemand"
+        />
+        <app-recruiter-performance-chart
+          title="Skill Supply vs Demand"
+          subtitle="Visible developer pool count compared against open job requirements"
+          tone="green"
+          mode="dual"
+          [seriesLabels]="['Candidate Supply', 'Job Demand']"
+          [items]="analytics.charts.supplyVsDemand"
+        />
+        <app-recruiter-performance-chart
+          title="Weekly Activity Heatmap"
+          subtitle="Recruiter activity intensity across days"
+          tone="purple"
+          mode="heatmap"
+          [items]="analytics.charts.weeklyRecruiterActivity"
+        />
+        <app-recruiter-performance-chart
+          title="Skill Demand Distribution"
+          subtitle="Relative share across core role skill categories"
+          tone="orange"
+          mode="donut"
+          [items]="analytics.charts.skillDemandChart"
+        />
+        <app-recruiter-performance-chart
+          title="Success Rate"
+          subtitle="Shortlisted outcomes relative to tracked candidate matches"
+          tone="green"
+          mode="gauge"
+          [items]="successGaugeItems"
+        />
+      </div>
+    </section>
+  </ng-container>
 </section>

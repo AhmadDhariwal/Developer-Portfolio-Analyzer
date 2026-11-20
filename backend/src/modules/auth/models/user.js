@@ -209,5 +209,7 @@ const userSchema = new mongoose.Schema({
 
 userSchema.index({ googleId: 1 }, { unique: true, sparse: true });
 userSchema.index({ githubId: 1 }, { unique: true, sparse: true });
+userSchema.index({ isPublic: 1, role: 1, isActive: 1, _id: 1 });
+userSchema.index({ organizationId: 1, isPublic: 1, role: 1, isActive: 1, _id: 1 });
 
 module.exports = mongoose.model('User', userSchema);

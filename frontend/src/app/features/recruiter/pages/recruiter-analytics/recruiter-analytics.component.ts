@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { finalize } from 'rxjs/operators';
 import { RecruiterHubService } from '../../services/recruiter-hub.service';
 
 @Component({
@@ -8,6 +9,7 @@ import { RecruiterHubService } from '../../services/recruiter-hub.service';
   styleUrl: './recruiter-analytics.component.scss',
 })
 export class RecruiterAnalyticsComponent implements OnInit {
+  private readonly cdr = inject(ChangeDetectorRef);
   loading = true;
   error = '';
   metricsReady = false;
@@ -28,23 +30,31 @@ export class RecruiterAnalyticsComponent implements OnInit {
     this.highlightsReady = false;
     this.chartsReady = false;
 
-    this.hubService.getAnalytics().subscribe({
-      next: (analytics) => {
-        this.analytics = this.normalizeAnalytics(analytics);
-        this.metricsReady = true;
-        this.highlightsReady = true;
-        this.chartsReady = true;
-        this.loading = false;
-      },
-      error: (err) => {
-        this.error = err?.error?.message || 'Unable to load recruiter analytics.';
-        this.loading = false;
-      },
-    });
+    this.hubService
+      .getAnalytics()
+      .pipe(finalize(() => this.cdr.markForCheck()))
+      .subscribe({
+        next: (analytics) => {
+          this.analytics = this.normalizeAnalytics(analytics);
+          this.metricsReady = true;
+          this.highlightsReady = true;
+          this.chartsReady = true;
+          this.loading = false;
+        },
+        error: (err) => {
+          this.error = err?.error?.message || 'Unable to load recruiter analytics.';
+          this.loading = false;
+        },
+      });
   }
 
   get topJobs(): any[] {
     return this.analytics?.highlights?.mostActiveJobs || [];
+  }
+
+  get topMatchedSkills(): any[] {
+    const explicit = this.analytics?.highlights?.mostMatchedSkills || [];
+    return explicit.length ? explicit : (this.analytics?.charts?.topSkillsDemand || []).slice(0, 5);
   }
 
   get successGaugeItems(): Array<{ label: string; value: number }> {
@@ -96,6 +106,7 @@ export class RecruiterAnalyticsComponent implements OnInit {
       },
       highlights: {
         mostActiveJobs: this.asArray(payload?.highlights?.mostActiveJobs),
+        mostMatchedSkills: this.asArray(payload?.highlights?.mostMatchedSkills),
       },
     };
   }
@@ -122,6 +133,7 @@ export class RecruiterAnalyticsComponent implements OnInit {
       },
       highlights: {
         mostActiveJobs: [],
+        mostMatchedSkills: [],
       },
     };
   }

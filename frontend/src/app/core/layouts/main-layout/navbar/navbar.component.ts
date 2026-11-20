@@ -173,6 +173,22 @@ export class Navbar implements OnInit {
     return role === 'super_admin' || role === 'superadmin';
   }
 
+  get isRecruiter(): boolean {
+    return String(this.authService.getCurrentUser()?.role || '').toLowerCase() === 'recruiter';
+  }
+
+  get profileRoute(): string {
+    return this.isRecruiter ? '/app/recruiter/profile' : '/app/profile';
+  }
+
+  get dashboardRoute(): string {
+    return this.isRecruiter ? '/app/recruiter/dashboard' : '/app/dashboard';
+  }
+
+  get notificationsRoute(): string {
+    return this.isRecruiter ? '/app/recruiter/notifications' : '/app/notifications';
+  }
+
   private get searchablePages(): SearchSuggestion[] {
     const role = this.selectedRole;
     const sessionRole = String(this.authService.getCurrentUser()?.role || '').toLowerCase();
@@ -180,11 +196,22 @@ export class Navbar implements OnInit {
     const isAdmin = role === 'admin' || sessionRole === 'admin';
     const isRecruiter = sessionRole === 'recruiter';
 
+    if (isRecruiter) {
+      return [
+        ...this.navPages.filter((page) => this.authService.canAccessUrl(page.route || '')),
+        {
+          type: 'page',
+          label: 'Profile',
+          sublabel: 'Recruiter details',
+          route: '/app/recruiter/profile',
+        },
+      ];
+    }
+
     const roleScoped = this.navPages.filter((page) => {
       if (String(page.route || '').startsWith('/app/admin') && !isAdmin) return false;
       if (String(page.route || '').startsWith('/app/admin') && isSuperAdmin) return false;
-      if (String(page.route || '').startsWith('/app/recruiter') && isSuperAdmin) return false;
-      if (String(page.route || '').startsWith('/app/recruiter') && !isRecruiter) return false;
+      if (String(page.route || '').startsWith('/app/recruiter')) return false;
       return true;
     });
 

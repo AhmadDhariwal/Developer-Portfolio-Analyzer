@@ -1,4 +1,6 @@
 const Job = require("../../models/Job");
+const { deleteJobWithPipeline } = require("../matching/jobLifecycleService");
+const { requireObjectId } = require("../../utils/recruiterValidation");
 const {
   assertRecruiterTeamAccess,
 } = require("../../utils/hub/recruiterAccess");
@@ -101,7 +103,11 @@ const getRecruiterJobDetails = async ({
   organizationId,
   jobId,
 }) => {
-  return Job.findOne({ _id: jobId, recruiterId, organizationId }).lean();
+  return Job.findOne({
+    _id: requireObjectId(jobId, "jobId"),
+    recruiterId,
+    organizationId,
+  }).lean();
 };
 
 const createRecruiterJob = async ({
@@ -132,7 +138,11 @@ const updateRecruiterJob = async ({
   jobId,
   payload = {},
 }) => {
-  const job = await Job.findOne({ _id: jobId, recruiterId, organizationId });
+  const job = await Job.findOne({
+    _id: requireObjectId(jobId, "jobId"),
+    recruiterId,
+    organizationId,
+  });
   if (!job) return null;
 
   const teamId =
@@ -144,7 +154,7 @@ const updateRecruiterJob = async ({
   }
 
   const patch = toJobPayload(payload);
-  validateJobPayload(patch);
+  validateJobPayload(toJobPayload({ ...job.toObject(), ...payload }));
   Object.entries(patch).forEach(([key, value]) => {
     if (
       payload[key] !== undefined ||
@@ -160,7 +170,11 @@ const updateRecruiterJob = async ({
 };
 
 const archiveRecruiterJob = async ({ recruiterId, organizationId, jobId }) => {
-  const job = await Job.findOne({ _id: jobId, recruiterId, organizationId });
+  const job = await Job.findOne({
+    _id: requireObjectId(jobId, "jobId"),
+    recruiterId,
+    organizationId,
+  });
   if (!job) return null;
   job.status = "closed";
   job.archivedAt = new Date();
@@ -169,12 +183,11 @@ const archiveRecruiterJob = async ({ recruiterId, organizationId, jobId }) => {
 };
 
 const deleteRecruiterJob = async ({ recruiterId, organizationId, jobId }) => {
-  const deleted = await Job.findOneAndDelete({
-    _id: jobId,
+  return deleteJobWithPipeline({
+    _id: requireObjectId(jobId, "jobId"),
     recruiterId,
     organizationId,
   });
-  return Boolean(deleted);
 };
 
 module.exports = {

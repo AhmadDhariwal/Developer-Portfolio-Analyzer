@@ -1,13 +1,14 @@
 const Organization = require('../../admin/models/organization');
 const User = require('../../auth/models/user');
 const Job = require('../../recruiter/models/Job');
-const Recruiter = require('../../recruiter/models/Recruiter');
 const Membership = require('../../admin/models/membership');
 const Team = require('../../admin/models/team');
 const Analysis = require('../../skill-gap/models/analysis');
-const Recommendation = require('../../recommendations/models/recommendation');
 const Invitation = require('../../admin/models/invitation');
-const Candidate = require('../../recruiter/models/Candidate');
+const {
+  getRecruiterReportingSnapshot
+} = require('../../recruiter/services/hub/recruiterReportingService');
+const { requireObjectId } = require('../../recruiter/utils/recruiterValidation');
 const bcrypt = require('bcryptjs');
 const { validatePasswordAgainstPolicy } = require('../../auth/utils/passwordPolicy');
 
@@ -34,7 +35,7 @@ const {
   mapRecentInvite,
   mapRecentDeveloper,
   mapRecentAnalysis,
-  getPlatformAnalyticsData,
+  getPlatformAnalyticsData
 } = require('../services/superAdminAnalyticsService');
 
 // ── GET /metrics ─────────────────────────────────────────────────────────────
@@ -248,7 +249,6 @@ const getDashboard = async (req, res) => {
   }
 };
 
-
 // ── GET /analytics ────────────────────────────────────────────────────────────
 const getAnalytics = async (req, res) => {
   try {
@@ -407,46 +407,28 @@ const getAllRecruiters = async (req, res) => {
       recruiters.map(async (rec) => {
         const recruiterId = rec._id;
         // assigned teams
-        const memberships = await Membership.find({ userId: recruiterId, status: 'active' })
-          .populate('teamId', 'name _id')
+        const memberships = await Membership.find({
+          userId: recruiterId,
+          organizationId: rec.organizationId?._id || null,
+          status: 'active'
+        })
+          .populate({
+            path: 'teamId',
+            select: 'name',
+            match: { organizationId: rec.organizationId?._id || null }
+          })
           .lean();
         const assignedTeams = memberships
           .map((m) => (m.teamId ? { _id: m.teamId._id, name: m.teamId.name } : null))
           .filter(Boolean);
 
-        // analytics-like metrics
-        const totalCandidatesAnalyzed = await Candidate.countDocuments({ createdBy: recruiterId });
-        const candidateIds = await Candidate.find({ createdBy: recruiterId }).distinct('_id');
-        const matchesGenerated = await Recommendation.countDocuments({
-          userId: { $in: candidateIds }
-        });
-        const totalJobs = await Job.countDocuments({ recruiterId });
-        const closedJobs = await Job.countDocuments({ recruiterId, status: 'closed' });
-        const hiringRate = totalJobs > 0 ? Math.round((closedJobs / totalJobs) * 100) : 0;
-        // activity score based on last activity (candidate or job) vs now
-        const lastCandidate = await Candidate.find({ createdBy: recruiterId })
-          .sort({ createdAt: -1 })
-          .limit(1)
-          .lean();
-        const lastJob = await Job.find({ recruiterId }).sort({ createdAt: -1 }).limit(1).lean();
-        const lastActiveDate =
-          [lastCandidate[0]?.createdAt, lastJob[0]?.createdAt, rec.createdAt]
-            .filter(Boolean)
-            .sort((a, b) => b - a)[0] || rec.createdAt;
-        const daysSince = Math.floor(
-          (Date.now() - new Date(lastActiveDate).getTime()) / (1000 * 60 * 60 * 24)
-        );
-        const activityScore = Math.max(0, Math.min(100, 100 - daysSince * 2));
+        const analytics = await getRecruiterReportingSnapshot(rec);
 
         return {
           ...rec,
           organizationName: rec?.organizationId?.name,
           assignedTeams,
-          totalCandidatesAnalyzed,
-          matchesGenerated,
-          hiringRate,
-          activityScore,
-          lastActive: lastActiveDate,
+          ...analytics,
           status: rec.isActive ? 'Active' : 'Inactive',
           applicationRoute: '/super-admin/users/' + rec._id
         };
@@ -462,43 +444,17 @@ const getAllRecruiters = async (req, res) => {
 // ── GET /recruiters/:id/analytics ─────────────────────────────────────────────
 const getRecruiterAnalytics = async (req, res) => {
   try {
-    const recruiterId = req.params.id;
-    const recruiter = await User.findById(recruiterId).select('-password').lean();
-    if (!recruiter) return res.status(404).json({ message: 'Recruiter not found.' });
-
-    // compute a small analytics snapshot
-    const totalCandidatesAnalyzed = await Candidate.countDocuments({ createdBy: recruiterId });
-    const candidateIds = await Candidate.find({ createdBy: recruiterId }).distinct('_id');
-    const matchesGenerated = await Recommendation.countDocuments({ userId: { $in: candidateIds } });
-    const totalJobs = await Job.countDocuments({ recruiterId });
-    const closedJobs = await Job.countDocuments({ recruiterId, status: 'closed' });
-    const hiringRate = totalJobs > 0 ? Math.round((closedJobs / totalJobs) * 100) : 0;
-    const lastCandidate = await Candidate.find({ createdBy: recruiterId })
-      .sort({ createdAt: -1 })
-      .limit(1)
+    const recruiterId = requireObjectId(req.params.id, 'recruiterId');
+    const recruiter = await User.findOne({ _id: recruiterId, role: 'recruiter' })
+      .select('-password')
       .lean();
-    const lastJob = await Job.find({ recruiterId }).sort({ createdAt: -1 }).limit(1).lean();
-    const lastActiveDate =
-      [lastCandidate[0]?.createdAt, lastJob[0]?.createdAt, recruiter.createdAt]
-        .filter(Boolean)
-        .sort((a, b) => b - a)[0] || recruiter.createdAt;
-    const daysSince = Math.floor(
-      (Date.now() - new Date(lastActiveDate).getTime()) / (1000 * 60 * 60 * 24)
-    );
-    const activityScore = Math.max(0, Math.min(100, 100 - daysSince * 2));
-
-    res.json({
-      recruiter,
-      analytics: {
-        totalCandidatesAnalyzed,
-        matchesGenerated,
-        hiringRate,
-        activityScore,
-        lastActive: lastActiveDate
-      }
+    if (!recruiter) return res.status(404).json({ message: 'Recruiter not found.' });
+    const analytics = await getRecruiterReportingSnapshot(recruiter);
+    return res.json({ recruiter, analytics });
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({
+      message: error.statusCode ? error.message : 'Failed to fetch recruiter analytics'
     });
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch recruiter analytics', error: err?.message });
   }
 };
 

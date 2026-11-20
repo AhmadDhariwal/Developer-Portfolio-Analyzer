@@ -91,5 +91,7 @@ const recruiterMatchSchema = new mongoose.Schema(
 );
 
 recruiterMatchSchema.index({ recruiterId: 1, jobId: 1, candidateId: 1 }, { unique: true });
+recruiterMatchSchema.index({ organizationId: 1, recruiterId: 1, updatedAt: -1 });
+recruiterMatchSchema.index({ organizationId: 1, recruiterId: 1, jobId: 1, updatedAt: -1 });
 
 module.exports = mongoose.model('RecruiterMatch', recruiterMatchSchema);

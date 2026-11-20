@@ -7,7 +7,7 @@
         "$and": [
           {
             "oauthState": {
-              "$eq": "f46b6f5802cb2768239d4ca239d4dae7b5cb56fb1967b563dd346879f702e1be"
+              "$eq": "e3196a89a54fe1406d001e9907bc810f48bf46f94f4628f13a00ccf1c339088d"
             }
           },
           {
@@ -17,7 +17,7 @@
           },
           {
             "oauthStateExpiresAt": {
-              "$gt": "2026-11-18T11:08:39.253Z"
+              "$gt": "2026-11-20T09:17:01.393Z"
             }
           }
         ]
@@ -38,7 +38,7 @@
           "$and": [
             {
               "oauthState": {
-                "$eq": "f46b6f5802cb2768239d4ca239d4dae7b5cb56fb1967b563dd346879f702e1be"
+                "$eq": "e3196a89a54fe1406d001e9907bc810f48bf46f94f4628f13a00ccf1c339088d"
               }
             },
             {
@@ -48,7 +48,7 @@
             },
             {
               "oauthStateExpiresAt": {
-                "$gt": "2026-11-18T11:08:39.253Z"
+                "$gt": "2026-11-20T09:17:01.393Z"
               }
             }
           ]
@@ -60,7 +60,7 @@
     "executionStats": {
       "executionSuccess": true,
       "nReturned": 1,
-      "executionTimeMillis": 0,
+      "executionTimeMillis": 16,
       "totalKeysExamined": 0,
       "totalDocsExamined": 1204,
       "executionStages": {
@@ -70,7 +70,7 @@
           "$and": [
             {
               "oauthState": {
-                "$eq": "f46b6f5802cb2768239d4ca239d4dae7b5cb56fb1967b563dd346879f702e1be"
+                "$eq": "e3196a89a54fe1406d001e9907bc810f48bf46f94f4628f13a00ccf1c339088d"
               }
             },
             {
@@ -80,7 +80,7 @@
             },
             {
               "oauthStateExpiresAt": {
-                "$gt": "2026-11-18T11:08:39.253Z"
+                "$gt": "2026-11-20T09:17:01.393Z"
               }
             }
           ]
@@ -104,18 +104,18 @@
       "find": "integrationconnections",
       "filter": {
         "provider": "leetcode",
-        "oauthState": "f46b6f5802cb2768239d4ca239d4dae7b5cb56fb1967b563dd346879f702e1be",
+        "oauthState": "e3196a89a54fe1406d001e9907bc810f48bf46f94f4628f13a00ccf1c339088d",
         "oauthStateExpiresAt": {
-          "$gt": "2026-11-18T11:08:39.253Z"
+          "$gt": "2026-11-20T09:17:01.393Z"
         }
       },
       "$db": "integration_acceptance"
     },
     "serverInfo": {
-      "host": "ICOMM-AHMAD-HASS",
-      "port": 52107,
-      "version": "8.2.6",
-      "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
+      "host": "DESKTOP-3COFRHD",
+      "port": 57934,
+      "version": "8.2.2",
+      "gitVersion": "594f839ceec1f4385be9a690131412d67b249a0a"
     },
     "serverParameters": {
       "internalQueryFacetBufferSizeBytes": 104857600,
@@ -132,7 +132,7 @@
     "ok": 1,
     "$clusterTime": {
       "clusterTime": {
-        "$timestamp": "7709466807421108239"
+        "$timestamp": "7710180210078908421"
       },
       "signature": {
         "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -140,7 +140,7 @@
       }
     },
     "operationTime": {
-      "$timestamp": "7709466807421108238"
+      "$timestamp": "7710180210078908421"
     }
   },
   "webhookBefore": {
@@ -220,7 +220,7 @@
     "executionStats": {
       "executionSuccess": true,
       "nReturned": 0,
-      "executionTimeMillis": 0,
+      "executionTimeMillis": 8,
       "totalKeysExamined": 0,
       "totalDocsExamined": 1204,
       "executionStages": {
@@ -284,10 +284,10 @@
       "$db": "integration_acceptance"
     },
     "serverInfo": {
-      "host": "ICOMM-AHMAD-HASS",
-      "port": 52107,
-      "version": "8.2.6",
-      "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
+      "host": "DESKTOP-3COFRHD",
+      "port": 57934,
+      "version": "8.2.2",
+      "gitVersion": "594f839ceec1f4385be9a690131412d67b249a0a"
     },
     "serverParameters": {
       "internalQueryFacetBufferSizeBytes": 104857600,
@@ -304,7 +304,7 @@
     "ok": 1,
     "$clusterTime": {
       "clusterTime": {
-        "$timestamp": "7709466807421108239"
+        "$timestamp": "7710180210078908421"
       },
       "signature": {
         "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -312,7 +312,7 @@
       }
     },
     "operationTime": {
-      "$timestamp": "7709466807421108238"
+      "$timestamp": "7710180210078908421"
     }
   },
   "before": {
@@ -331,7 +331,7 @@
                 },
                 {
                   "leaseUntil": {
-                    "$lte": "2026-11-18T11:18:39.248Z"
+                    "$lte": "2026-11-20T09:27:01.353Z"
                   }
                 }
               ]
@@ -345,7 +345,7 @@
                 },
                 {
                   "nextSyncAt": {
-                    "$lte": "2026-11-18T11:18:39.248Z"
+                    "$lte": "2026-11-20T09:27:01.353Z"
                   }
                 }
               ]
@@ -391,7 +391,7 @@
                     },
                     {
                       "leaseUntil": {
-                        "$lte": "2026-11-18T11:18:39.248Z"
+                        "$lte": "2026-11-20T09:27:01.353Z"
                       }
                     }
                   ]
@@ -405,7 +405,7 @@
                     },
                     {
                       "nextSyncAt": {
-                        "$lte": "2026-11-18T11:18:39.248Z"
+                        "$lte": "2026-11-20T09:27:01.353Z"
                       }
                     }
                   ]
@@ -428,20 +428,20 @@
       "executionStats": {
         "executionSuccess": true,
         "nReturned": 7,
-        "executionTimeMillis": 1,
+        "executionTimeMillis": 15,
         "totalKeysExamined": 0,
         "totalDocsExamined": 1204,
         "executionStages": {
           "isCached": false,
           "stage": "SORT",
           "nReturned": 7,
-          "executionTimeMillisEstimate": 0,
+          "executionTimeMillisEstimate": 12,
           "works": 1213,
           "advanced": 7,
           "needTime": 1205,
           "needYield": 0,
-          "saveState": 0,
-          "restoreState": 0,
+          "saveState": 1,
+          "restoreState": 1,
           "isEOF": 1,
           "sortPattern": {
             "nextSyncAt": 1
@@ -468,7 +468,7 @@
                     },
                     {
                       "leaseUntil": {
-                        "$lte": "2026-11-18T11:18:39.248Z"
+                        "$lte": "2026-11-20T09:27:01.353Z"
                       }
                     }
                   ]
@@ -482,7 +482,7 @@
                     },
                     {
                       "nextSyncAt": {
-                        "$lte": "2026-11-18T11:18:39.248Z"
+                        "$lte": "2026-11-20T09:27:01.353Z"
                       }
                     }
                   ]
@@ -498,13 +498,13 @@
               ]
             },
             "nReturned": 7,
-            "executionTimeMillisEstimate": 0,
+            "executionTimeMillisEstimate": 12,
             "works": 1205,
             "advanced": 7,
             "needTime": 1197,
             "needYield": 0,
-            "saveState": 0,
-            "restoreState": 0,
+            "saveState": 1,
+            "restoreState": 1,
             "isEOF": 1,
             "direction": "forward",
             "docsExamined": 1204
@@ -524,7 +524,7 @@
                 },
                 {
                   "nextSyncAt": {
-                    "$lte": "2026-11-18T11:18:39.248Z"
+                    "$lte": "2026-11-20T09:27:01.353Z"
                   }
                 }
               ]
@@ -536,7 +536,7 @@
                 },
                 {
                   "leaseUntil": {
-                    "$lte": "2026-11-18T11:18:39.248Z"
+                    "$lte": "2026-11-20T09:27:01.353Z"
                   }
                 }
               ]
@@ -556,10 +556,10 @@
         "$db": "integration_acceptance"
       },
       "serverInfo": {
-        "host": "ICOMM-AHMAD-HASS",
-        "port": 52107,
-        "version": "8.2.6",
-        "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
+        "host": "DESKTOP-3COFRHD",
+        "port": 57934,
+        "version": "8.2.2",
+        "gitVersion": "594f839ceec1f4385be9a690131412d67b249a0a"
       },
       "serverParameters": {
         "internalQueryFacetBufferSizeBytes": 104857600,
@@ -576,7 +576,7 @@
       "ok": 1,
       "$clusterTime": {
         "clusterTime": {
-          "$timestamp": "7709466807421108239"
+          "$timestamp": "7710180210078908421"
         },
         "signature": {
           "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -584,7 +584,7 @@
         }
       },
       "operationTime": {
-        "$timestamp": "7709466807421108238"
+        "$timestamp": "7710180210078908421"
       }
     },
     "history": {
@@ -595,12 +595,12 @@
           "$and": [
             {
               "userId": {
-                "$eq": "6afd873016d46af446a70f2d"
+                "$eq": "6b000ff7ae5b32a1c6e883e9"
               }
             },
             {
               "createdAt": {
-                "$gte": "2026-11-17T11:08:39.264Z"
+                "$gte": "2026-11-19T09:17:01.565Z"
               }
             }
           ]
@@ -629,12 +629,12 @@
               "$and": [
                 {
                   "userId": {
-                    "$eq": "6afd873016d46af446a70f2d"
+                    "$eq": "6b000ff7ae5b32a1c6e883e9"
                   }
                 },
                 {
                   "createdAt": {
-                    "$gte": "2026-11-17T11:08:39.264Z"
+                    "$gte": "2026-11-19T09:17:01.565Z"
                   }
                 }
               ]
@@ -647,14 +647,14 @@
       "executionStats": {
         "executionSuccess": true,
         "nReturned": 106,
-        "executionTimeMillis": 2,
+        "executionTimeMillis": 3,
         "totalKeysExamined": 0,
         "totalDocsExamined": 1206,
         "executionStages": {
           "isCached": false,
           "stage": "SORT",
           "nReturned": 106,
-          "executionTimeMillisEstimate": 1,
+          "executionTimeMillisEstimate": 0,
           "works": 1314,
           "advanced": 106,
           "needTime": 1207,
@@ -680,18 +680,18 @@
               "$and": [
                 {
                   "userId": {
-                    "$eq": "6afd873016d46af446a70f2d"
+                    "$eq": "6b000ff7ae5b32a1c6e883e9"
                   }
                 },
                 {
                   "createdAt": {
-                    "$gte": "2026-11-17T11:08:39.264Z"
+                    "$gte": "2026-11-19T09:17:01.565Z"
                   }
                 }
               ]
             },
             "nReturned": 106,
-            "executionTimeMillisEstimate": 1,
+            "executionTimeMillisEstimate": 0,
             "works": 1207,
             "advanced": 106,
             "needTime": 1100,
@@ -709,9 +709,9 @@
       "command": {
         "find": "integrationsynclogs",
         "filter": {
-          "userId": "6afd873016d46af446a70f2d",
+          "userId": "6b000ff7ae5b32a1c6e883e9",
           "createdAt": {
-            "$gte": "2026-11-17T11:08:39.264Z"
+            "$gte": "2026-11-19T09:17:01.565Z"
           }
         },
         "sort": {
@@ -721,10 +721,10 @@
         "$db": "integration_acceptance"
       },
       "serverInfo": {
-        "host": "ICOMM-AHMAD-HASS",
-        "port": 52107,
-        "version": "8.2.6",
-        "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
+        "host": "DESKTOP-3COFRHD",
+        "port": 57934,
+        "version": "8.2.2",
+        "gitVersion": "594f839ceec1f4385be9a690131412d67b249a0a"
       },
       "serverParameters": {
         "internalQueryFacetBufferSizeBytes": 104857600,
@@ -741,7 +741,7 @@
       "ok": 1,
       "$clusterTime": {
         "clusterTime": {
-          "$timestamp": "7709466807421108239"
+          "$timestamp": "7710180210078908421"
         },
         "signature": {
           "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -749,7 +749,7 @@
         }
       },
       "operationTime": {
-        "$timestamp": "7709466807421108239"
+        "$timestamp": "7710180210078908421"
       }
     },
     "ownership": {
@@ -765,7 +765,7 @@
             },
             {
               "userId": {
-                "$eq": "6afd873016d46af446a70f2d"
+                "$eq": "6b000ff7ae5b32a1c6e883e9"
               }
             }
           ]
@@ -804,7 +804,7 @@
               "direction": "forward",
               "indexBounds": {
                 "userId": [
-                  "[ObjectId('6afd873016d46af446a70f2d'), ObjectId('6afd873016d46af446a70f2d')]"
+                  "[ObjectId('6b000ff7ae5b32a1c6e883e9'), ObjectId('6b000ff7ae5b32a1c6e883e9')]"
                 ],
                 "provider": [
                   "[\"leetcode\", \"leetcode\"]"
@@ -875,7 +875,7 @@
               "direction": "forward",
               "indexBounds": {
                 "userId": [
-                  "[ObjectId('6afd873016d46af446a70f2d'), ObjectId('6afd873016d46af446a70f2d')]"
+                  "[ObjectId('6b000ff7ae5b32a1c6e883e9'), ObjectId('6b000ff7ae5b32a1c6e883e9')]"
                 ],
                 "provider": [
                   "[\"leetcode\", \"leetcode\"]"
@@ -893,7 +893,7 @@
       "command": {
         "find": "integrationconnections",
         "filter": {
-          "userId": "6afd873016d46af446a70f2d",
+          "userId": "6b000ff7ae5b32a1c6e883e9",
           "provider": "leetcode"
         },
         "limit": 1,
@@ -901,10 +901,10 @@
         "$db": "integration_acceptance"
       },
       "serverInfo": {
-        "host": "ICOMM-AHMAD-HASS",
-        "port": 52107,
-        "version": "8.2.6",
-        "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
+        "host": "DESKTOP-3COFRHD",
+        "port": 57934,
+        "version": "8.2.2",
+        "gitVersion": "594f839ceec1f4385be9a690131412d67b249a0a"
       },
       "serverParameters": {
         "internalQueryFacetBufferSizeBytes": 104857600,
@@ -921,7 +921,7 @@
       "ok": 1,
       "$clusterTime": {
         "clusterTime": {
-          "$timestamp": "7709466807421108239"
+          "$timestamp": "7710180210078908421"
         },
         "signature": {
           "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -929,7 +929,7 @@
         }
       },
       "operationTime": {
-        "$timestamp": "7709466807421108239"
+        "$timestamp": "7710180210078908421"
       }
     }
   },
@@ -939,7 +939,7 @@
       "namespace": "integration_acceptance.integrationsynclogs",
       "parsedQuery": {
         "expiresAt": {
-          "$lte": "2026-11-18T11:08:39.270Z"
+          "$lte": "2026-11-20T09:17:01.649Z"
         }
       },
       "indexFilterSet": false,
@@ -959,7 +959,7 @@
           "stage": "COLLSCAN",
           "filter": {
             "expiresAt": {
-              "$lte": "2026-11-18T11:08:39.270Z"
+              "$lte": "2026-11-20T09:17:01.649Z"
             }
           },
           "direction": "forward"
@@ -970,37 +970,37 @@
     "executionStats": {
       "executionSuccess": true,
       "nReturned": 0,
-      "executionTimeMillis": 0,
+      "executionTimeMillis": 23,
       "totalKeysExamined": 0,
       "totalDocsExamined": 1206,
       "executionStages": {
         "isCached": false,
         "stage": "LIMIT",
         "nReturned": 0,
-        "executionTimeMillisEstimate": 0,
+        "executionTimeMillisEstimate": 18,
         "works": 1207,
         "advanced": 0,
         "needTime": 1206,
         "needYield": 0,
-        "saveState": 0,
-        "restoreState": 0,
+        "saveState": 1,
+        "restoreState": 1,
         "isEOF": 1,
         "limitAmount": 100,
         "inputStage": {
           "stage": "COLLSCAN",
           "filter": {
             "expiresAt": {
-              "$lte": "2026-11-18T11:08:39.270Z"
+              "$lte": "2026-11-20T09:17:01.649Z"
             }
           },
           "nReturned": 0,
-          "executionTimeMillisEstimate": 0,
+          "executionTimeMillisEstimate": 18,
           "works": 1207,
           "advanced": 0,
           "needTime": 1206,
           "needYield": 0,
-          "saveState": 0,
-          "restoreState": 0,
+          "saveState": 1,
+          "restoreState": 1,
           "isEOF": 1,
           "direction": "forward",
           "docsExamined": 1206
@@ -1012,17 +1012,17 @@
       "find": "integrationsynclogs",
       "filter": {
         "expiresAt": {
-          "$lte": "2026-11-18T11:08:39.270Z"
+          "$lte": "2026-11-20T09:17:01.649Z"
         }
       },
       "limit": 100,
       "$db": "integration_acceptance"
     },
     "serverInfo": {
-      "host": "ICOMM-AHMAD-HASS",
-      "port": 52107,
-      "version": "8.2.6",
-      "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
+      "host": "DESKTOP-3COFRHD",
+      "port": 57934,
+      "version": "8.2.2",
+      "gitVersion": "594f839ceec1f4385be9a690131412d67b249a0a"
     },
     "serverParameters": {
       "internalQueryFacetBufferSizeBytes": 104857600,
@@ -1039,7 +1039,7 @@
     "ok": 1,
     "$clusterTime": {
       "clusterTime": {
-        "$timestamp": "7709466807421108239"
+        "$timestamp": "7710180210078908421"
       },
       "signature": {
         "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -1047,7 +1047,7 @@
       }
     },
     "operationTime": {
-      "$timestamp": "7709466807421108239"
+      "$timestamp": "7710180210078908421"
     }
   },
   "callbackAfter": {
@@ -1058,7 +1058,7 @@
         "$and": [
           {
             "oauthState": {
-              "$eq": "f46b6f5802cb2768239d4ca239d4dae7b5cb56fb1967b563dd346879f702e1be"
+              "$eq": "e3196a89a54fe1406d001e9907bc810f48bf46f94f4628f13a00ccf1c339088d"
             }
           },
           {
@@ -1068,7 +1068,7 @@
           },
           {
             "oauthStateExpiresAt": {
-              "$gt": "2026-11-18T11:08:39.885Z"
+              "$gt": "2026-11-20T09:17:02.533Z"
             }
           }
         ]
@@ -1076,7 +1076,7 @@
       "indexFilterSet": false,
       "queryHash": "13730262",
       "planCacheShapeHash": "13730262",
-      "planCacheKey": "A11512B9",
+      "planCacheKey": "1F365191",
       "optimizationTimeMillis": 0,
       "maxIndexedOrSolutionsReached": false,
       "maxIndexedAndSolutionsReached": false,
@@ -1087,7 +1087,7 @@
         "stage": "FETCH",
         "filter": {
           "oauthStateExpiresAt": {
-            "$gt": "2026-11-18T11:08:39.885Z"
+            "$gt": "2026-11-20T09:17:02.533Z"
           }
         },
         "inputStage": {
@@ -1112,7 +1112,7 @@
               "[\"leetcode\", \"leetcode\"]"
             ],
             "oauthState": [
-              "[\"f46b6f5802cb2768239d4ca239d4dae7b5cb56fb1967b563dd346879f702e1be\", \"f46b6f5802cb2768239d4ca239d4dae7b5cb56fb1967b563dd346879f702e1be\"]"
+              "[\"e3196a89a54fe1406d001e9907bc810f48bf46f94f4628f13a00ccf1c339088d\", \"e3196a89a54fe1406d001e9907bc810f48bf46f94f4628f13a00ccf1c339088d\"]"
             ]
           }
         }
@@ -1122,7 +1122,7 @@
     "executionStats": {
       "executionSuccess": true,
       "nReturned": 1,
-      "executionTimeMillis": 5,
+      "executionTimeMillis": 11,
       "totalKeysExamined": 1,
       "totalDocsExamined": 1,
       "executionStages": {
@@ -1130,11 +1130,11 @@
         "stage": "FETCH",
         "filter": {
           "oauthStateExpiresAt": {
-            "$gt": "2026-11-18T11:08:39.885Z"
+            "$gt": "2026-11-20T09:17:02.533Z"
           }
         },
         "nReturned": 1,
-        "executionTimeMillisEstimate": 0,
+        "executionTimeMillisEstimate": 9,
         "works": 2,
         "advanced": 1,
         "needTime": 0,
@@ -1147,7 +1147,7 @@
         "inputStage": {
           "stage": "IXSCAN",
           "nReturned": 1,
-          "executionTimeMillisEstimate": 0,
+          "executionTimeMillisEstimate": 9,
           "works": 2,
           "advanced": 1,
           "needTime": 0,
@@ -1175,7 +1175,7 @@
               "[\"leetcode\", \"leetcode\"]"
             ],
             "oauthState": [
-              "[\"f46b6f5802cb2768239d4ca239d4dae7b5cb56fb1967b563dd346879f702e1be\", \"f46b6f5802cb2768239d4ca239d4dae7b5cb56fb1967b563dd346879f702e1be\"]"
+              "[\"e3196a89a54fe1406d001e9907bc810f48bf46f94f4628f13a00ccf1c339088d\", \"e3196a89a54fe1406d001e9907bc810f48bf46f94f4628f13a00ccf1c339088d\"]"
             ]
           },
           "keysExamined": 1,
@@ -1191,18 +1191,18 @@
       "find": "integrationconnections",
       "filter": {
         "provider": "leetcode",
-        "oauthState": "f46b6f5802cb2768239d4ca239d4dae7b5cb56fb1967b563dd346879f702e1be",
+        "oauthState": "e3196a89a54fe1406d001e9907bc810f48bf46f94f4628f13a00ccf1c339088d",
         "oauthStateExpiresAt": {
-          "$gt": "2026-11-18T11:08:39.885Z"
+          "$gt": "2026-11-20T09:17:02.533Z"
         }
       },
       "$db": "integration_acceptance"
     },
     "serverInfo": {
-      "host": "ICOMM-AHMAD-HASS",
-      "port": 52107,
-      "version": "8.2.6",
-      "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
+      "host": "DESKTOP-3COFRHD",
+      "port": 57934,
+      "version": "8.2.2",
+      "gitVersion": "594f839ceec1f4385be9a690131412d67b249a0a"
     },
     "serverParameters": {
       "internalQueryFacetBufferSizeBytes": 104857600,
@@ -1219,7 +1219,7 @@
     "ok": 1,
     "$clusterTime": {
       "clusterTime": {
-        "$timestamp": "7709466807421108264"
+        "$timestamp": "7710180214373875730"
       },
       "signature": {
         "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -1227,7 +1227,7 @@
       }
     },
     "operationTime": {
-      "$timestamp": "7709466807421108264"
+      "$timestamp": "7710180214373875730"
     }
   },
   "webhookAfter": {
@@ -1264,8 +1264,8 @@
       "indexFilterSet": false,
       "queryHash": "CB7E35C4",
       "planCacheShapeHash": "CB7E35C4",
-      "planCacheKey": "FCDE01D6",
-      "optimizationTimeMillis": 12,
+      "planCacheKey": "CACEEF08",
+      "optimizationTimeMillis": 21,
       "maxIndexedOrSolutionsReached": false,
       "maxIndexedAndSolutionsReached": false,
       "maxScansToExplodeReached": false,
@@ -1364,7 +1364,7 @@
     "executionStats": {
       "executionSuccess": true,
       "nReturned": 0,
-      "executionTimeMillis": 12,
+      "executionTimeMillis": 22,
       "totalKeysExamined": 0,
       "totalDocsExamined": 0,
       "executionStages": {
@@ -1379,7 +1379,7 @@
           }
         },
         "nReturned": 0,
-        "executionTimeMillisEstimate": 11,
+        "executionTimeMillisEstimate": 16,
         "works": 2,
         "advanced": 0,
         "needTime": 0,
@@ -1392,7 +1392,7 @@
         "inputStage": {
           "stage": "IXSCAN",
           "nReturned": 0,
-          "executionTimeMillisEstimate": 11,
+          "executionTimeMillisEstimate": 16,
           "works": 1,
           "advanced": 0,
           "needTime": 0,
@@ -1432,7 +1432,7 @@
       "allPlansExecution": [
         {
           "nReturned": 0,
-          "executionTimeMillisEstimate": 11,
+          "executionTimeMillisEstimate": 16,
           "totalKeysExamined": 0,
           "totalDocsExamined": 0,
           "score": 2.0002,
@@ -1448,7 +1448,7 @@
               }
             },
             "nReturned": 0,
-            "executionTimeMillisEstimate": 11,
+            "executionTimeMillisEstimate": 16,
             "works": 1,
             "advanced": 0,
             "needTime": 0,
@@ -1461,7 +1461,7 @@
             "inputStage": {
               "stage": "IXSCAN",
               "nReturned": 0,
-              "executionTimeMillisEstimate": 11,
+              "executionTimeMillisEstimate": 16,
               "works": 1,
               "advanced": 0,
               "needTime": 0,
@@ -1501,7 +1501,7 @@
         },
         {
           "nReturned": 0,
-          "executionTimeMillisEstimate": 1,
+          "executionTimeMillisEstimate": 4,
           "totalKeysExamined": 1,
           "totalDocsExamined": 1,
           "score": 1.0002,
@@ -1528,7 +1528,7 @@
               ]
             },
             "nReturned": 0,
-            "executionTimeMillisEstimate": 1,
+            "executionTimeMillisEstimate": 4,
             "works": 1,
             "advanced": 0,
             "needTime": 1,
@@ -1541,7 +1541,7 @@
             "inputStage": {
               "stage": "IXSCAN",
               "nReturned": 1,
-              "executionTimeMillisEstimate": 1,
+              "executionTimeMillisEstimate": 4,
               "works": 1,
               "advanced": 1,
               "needTime": 0,
@@ -1599,10 +1599,10 @@
       "$db": "integration_acceptance"
     },
     "serverInfo": {
-      "host": "ICOMM-AHMAD-HASS",
-      "port": 52107,
-      "version": "8.2.6",
-      "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
+      "host": "DESKTOP-3COFRHD",
+      "port": 57934,
+      "version": "8.2.2",
+      "gitVersion": "594f839ceec1f4385be9a690131412d67b249a0a"
     },
     "serverParameters": {
       "internalQueryFacetBufferSizeBytes": 104857600,
@@ -1619,7 +1619,7 @@
     "ok": 1,
     "$clusterTime": {
       "clusterTime": {
-        "$timestamp": "7709466807421108264"
+        "$timestamp": "7710180214373875730"
       },
       "signature": {
         "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -1627,7 +1627,7 @@
       }
     },
     "operationTime": {
-      "$timestamp": "7709466807421108264"
+      "$timestamp": "7710180214373875730"
     }
   },
   "after": {
@@ -1646,7 +1646,7 @@
                 },
                 {
                   "leaseUntil": {
-                    "$lte": "2026-11-18T11:18:39.248Z"
+                    "$lte": "2026-11-20T09:27:01.353Z"
                   }
                 }
               ]
@@ -1660,7 +1660,7 @@
                 },
                 {
                   "nextSyncAt": {
-                    "$lte": "2026-11-18T11:18:39.248Z"
+                    "$lte": "2026-11-20T09:27:01.353Z"
                   }
                 }
               ]
@@ -1679,7 +1679,7 @@
         "queryHash": "C88D2353",
         "planCacheShapeHash": "C88D2353",
         "planCacheKey": "FAB395AB",
-        "optimizationTimeMillis": 0,
+        "optimizationTimeMillis": 1,
         "maxIndexedOrSolutionsReached": false,
         "maxIndexedAndSolutionsReached": false,
         "maxScansToExplodeReached": false,
@@ -1704,7 +1704,7 @@
                 },
                 {
                   "leaseUntil": {
-                    "$lte": "2026-11-18T11:18:39.248Z"
+                    "$lte": "2026-11-20T09:27:01.353Z"
                   }
                 }
               ]
@@ -1770,7 +1770,7 @@
                       "[\"error\", \"error\"]"
                     ],
                     "nextSyncAt": [
-                      "[new Date(-9223372036854775808), new Date(1795000719248)]"
+                      "[new Date(-9223372036854775808), new Date(1795166821353)]"
                     ]
                   }
                 }
@@ -1796,7 +1796,7 @@
                       },
                       {
                         "leaseUntil": {
-                          "$lte": "2026-11-18T11:18:39.248Z"
+                          "$lte": "2026-11-20T09:27:01.353Z"
                         }
                       }
                     ]
@@ -1810,7 +1810,7 @@
                       },
                       {
                         "nextSyncAt": {
-                          "$lte": "2026-11-18T11:18:39.248Z"
+                          "$lte": "2026-11-20T09:27:01.353Z"
                         }
                       }
                     ]
@@ -1884,7 +1884,7 @@
       "executionStats": {
         "executionSuccess": true,
         "nReturned": 7,
-        "executionTimeMillis": 0,
+        "executionTimeMillis": 2,
         "totalKeysExamined": 11,
         "totalDocsExamined": 7,
         "executionStages": {
@@ -1922,7 +1922,7 @@
                 },
                 {
                   "leaseUntil": {
-                    "$lte": "2026-11-18T11:18:39.248Z"
+                    "$lte": "2026-11-20T09:27:01.353Z"
                   }
                 }
               ]
@@ -2043,7 +2043,7 @@
                       "[\"error\", \"error\"]"
                     ],
                     "nextSyncAt": [
-                      "[new Date(-9223372036854775808), new Date(1795000719248)]"
+                      "[new Date(-9223372036854775808), new Date(1795166821353)]"
                     ]
                   },
                   "keysExamined": 9,
@@ -2097,7 +2097,7 @@
                     },
                     {
                       "leaseUntil": {
-                        "$lte": "2026-11-18T11:18:39.248Z"
+                        "$lte": "2026-11-20T09:27:01.353Z"
                       }
                     }
                   ]
@@ -2218,7 +2218,7 @@
                           "[\"error\", \"error\"]"
                         ],
                         "nextSyncAt": [
-                          "[new Date(-9223372036854775808), new Date(1795000719248)]"
+                          "[new Date(-9223372036854775808), new Date(1795166821353)]"
                         ]
                       },
                       "keysExamined": 9,
@@ -2263,7 +2263,7 @@
                         },
                         {
                           "leaseUntil": {
-                            "$lte": "2026-11-18T11:18:39.248Z"
+                            "$lte": "2026-11-20T09:27:01.353Z"
                           }
                         }
                       ]
@@ -2277,7 +2277,7 @@
                         },
                         {
                           "nextSyncAt": {
-                            "$lte": "2026-11-18T11:18:39.248Z"
+                            "$lte": "2026-11-20T09:27:01.353Z"
                           }
                         }
                       ]
@@ -2409,7 +2409,7 @@
                 },
                 {
                   "nextSyncAt": {
-                    "$lte": "2026-11-18T11:18:39.248Z"
+                    "$lte": "2026-11-20T09:27:01.353Z"
                   }
                 }
               ]
@@ -2421,7 +2421,7 @@
                 },
                 {
                   "leaseUntil": {
-                    "$lte": "2026-11-18T11:18:39.248Z"
+                    "$lte": "2026-11-20T09:27:01.353Z"
                   }
                 }
               ]
@@ -2441,10 +2441,10 @@
         "$db": "integration_acceptance"
       },
       "serverInfo": {
-        "host": "ICOMM-AHMAD-HASS",
-        "port": 52107,
-        "version": "8.2.6",
-        "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
+        "host": "DESKTOP-3COFRHD",
+        "port": 57934,
+        "version": "8.2.2",
+        "gitVersion": "594f839ceec1f4385be9a690131412d67b249a0a"
       },
       "serverParameters": {
         "internalQueryFacetBufferSizeBytes": 104857600,
@@ -2461,7 +2461,7 @@
       "ok": 1,
       "$clusterTime": {
         "clusterTime": {
-          "$timestamp": "7709466807421108264"
+          "$timestamp": "7710180214373875730"
         },
         "signature": {
           "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -2469,7 +2469,7 @@
         }
       },
       "operationTime": {
-        "$timestamp": "7709466807421108264"
+        "$timestamp": "7710180214373875730"
       }
     },
     "history": {
@@ -2480,12 +2480,12 @@
           "$and": [
             {
               "userId": {
-                "$eq": "6afd873016d46af446a70f2d"
+                "$eq": "6b000ff7ae5b32a1c6e883e9"
               }
             },
             {
               "createdAt": {
-                "$gte": "2026-11-17T11:08:39.909Z"
+                "$gte": "2026-11-19T09:17:02.636Z"
               }
             }
           ]
@@ -2524,10 +2524,10 @@
               "direction": "forward",
               "indexBounds": {
                 "userId": [
-                  "[ObjectId('6afd873016d46af446a70f2d'), ObjectId('6afd873016d46af446a70f2d')]"
+                  "[ObjectId('6b000ff7ae5b32a1c6e883e9'), ObjectId('6b000ff7ae5b32a1c6e883e9')]"
                 ],
                 "createdAt": [
-                  "[new Date(9223372036854775807), new Date(1794913719909)]"
+                  "[new Date(9223372036854775807), new Date(1795079822636)]"
                 ]
               }
             }
@@ -2538,14 +2538,14 @@
       "executionStats": {
         "executionSuccess": true,
         "nReturned": 106,
-        "executionTimeMillis": 7,
+        "executionTimeMillis": 4,
         "totalKeysExamined": 106,
         "totalDocsExamined": 106,
         "executionStages": {
           "isCached": false,
           "stage": "LIMIT",
           "nReturned": 106,
-          "executionTimeMillisEstimate": 5,
+          "executionTimeMillisEstimate": 0,
           "works": 107,
           "advanced": 106,
           "needTime": 0,
@@ -2557,7 +2557,7 @@
           "inputStage": {
             "stage": "FETCH",
             "nReturned": 106,
-            "executionTimeMillisEstimate": 5,
+            "executionTimeMillisEstimate": 0,
             "works": 107,
             "advanced": 106,
             "needTime": 0,
@@ -2570,7 +2570,7 @@
             "inputStage": {
               "stage": "IXSCAN",
               "nReturned": 106,
-              "executionTimeMillisEstimate": 5,
+              "executionTimeMillisEstimate": 0,
               "works": 107,
               "advanced": 106,
               "needTime": 0,
@@ -2595,10 +2595,10 @@
               "direction": "forward",
               "indexBounds": {
                 "userId": [
-                  "[ObjectId('6afd873016d46af446a70f2d'), ObjectId('6afd873016d46af446a70f2d')]"
+                  "[ObjectId('6b000ff7ae5b32a1c6e883e9'), ObjectId('6b000ff7ae5b32a1c6e883e9')]"
                 ],
                 "createdAt": [
-                  "[new Date(9223372036854775807), new Date(1794913719909)]"
+                  "[new Date(9223372036854775807), new Date(1795079822636)]"
                 ]
               },
               "keysExamined": 106,
@@ -2614,9 +2614,9 @@
       "command": {
         "find": "integrationsynclogs",
         "filter": {
-          "userId": "6afd873016d46af446a70f2d",
+          "userId": "6b000ff7ae5b32a1c6e883e9",
           "createdAt": {
-            "$gte": "2026-11-17T11:08:39.909Z"
+            "$gte": "2026-11-19T09:17:02.636Z"
           }
         },
         "sort": {
@@ -2626,10 +2626,10 @@
         "$db": "integration_acceptance"
       },
       "serverInfo": {
-        "host": "ICOMM-AHMAD-HASS",
-        "port": 52107,
-        "version": "8.2.6",
-        "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
+        "host": "DESKTOP-3COFRHD",
+        "port": 57934,
+        "version": "8.2.2",
+        "gitVersion": "594f839ceec1f4385be9a690131412d67b249a0a"
       },
       "serverParameters": {
         "internalQueryFacetBufferSizeBytes": 104857600,
@@ -2646,7 +2646,7 @@
       "ok": 1,
       "$clusterTime": {
         "clusterTime": {
-          "$timestamp": "7709466807421108264"
+          "$timestamp": "7710180214373875730"
         },
         "signature": {
           "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -2654,7 +2654,7 @@
         }
       },
       "operationTime": {
-        "$timestamp": "7709466807421108264"
+        "$timestamp": "7710180214373875730"
       }
     },
     "ownership": {
@@ -2670,7 +2670,7 @@
             },
             {
               "userId": {
-                "$eq": "6afd873016d46af446a70f2d"
+                "$eq": "6b000ff7ae5b32a1c6e883e9"
               }
             }
           ]
@@ -2709,7 +2709,7 @@
               "direction": "forward",
               "indexBounds": {
                 "userId": [
-                  "[ObjectId('6afd873016d46af446a70f2d'), ObjectId('6afd873016d46af446a70f2d')]"
+                  "[ObjectId('6b000ff7ae5b32a1c6e883e9'), ObjectId('6b000ff7ae5b32a1c6e883e9')]"
                 ],
                 "provider": [
                   "[\"leetcode\", \"leetcode\"]"
@@ -2780,7 +2780,7 @@
               "direction": "forward",
               "indexBounds": {
                 "userId": [
-                  "[ObjectId('6afd873016d46af446a70f2d'), ObjectId('6afd873016d46af446a70f2d')]"
+                  "[ObjectId('6b000ff7ae5b32a1c6e883e9'), ObjectId('6b000ff7ae5b32a1c6e883e9')]"
                 ],
                 "provider": [
                   "[\"leetcode\", \"leetcode\"]"
@@ -2798,7 +2798,7 @@
       "command": {
         "find": "integrationconnections",
         "filter": {
-          "userId": "6afd873016d46af446a70f2d",
+          "userId": "6b000ff7ae5b32a1c6e883e9",
           "provider": "leetcode"
         },
         "limit": 1,
@@ -2806,10 +2806,10 @@
         "$db": "integration_acceptance"
       },
       "serverInfo": {
-        "host": "ICOMM-AHMAD-HASS",
-        "port": 52107,
-        "version": "8.2.6",
-        "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
+        "host": "DESKTOP-3COFRHD",
+        "port": 57934,
+        "version": "8.2.2",
+        "gitVersion": "594f839ceec1f4385be9a690131412d67b249a0a"
       },
       "serverParameters": {
         "internalQueryFacetBufferSizeBytes": 104857600,
@@ -2826,7 +2826,7 @@
       "ok": 1,
       "$clusterTime": {
         "clusterTime": {
-          "$timestamp": "7709466807421108264"
+          "$timestamp": "7710180214373875730"
         },
         "signature": {
           "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -2834,7 +2834,7 @@
         }
       },
       "operationTime": {
-        "$timestamp": "7709466807421108264"
+        "$timestamp": "7710180214373875730"
       }
     }
   },
@@ -2844,7 +2844,7 @@
       "namespace": "integration_acceptance.integrationsynclogs",
       "parsedQuery": {
         "expiresAt": {
-          "$lte": "2026-11-18T11:08:39.920Z"
+          "$lte": "2026-11-20T09:17:02.691Z"
         }
       },
       "indexFilterSet": false,
@@ -2879,7 +2879,7 @@
             "direction": "forward",
             "indexBounds": {
               "expiresAt": [
-                "[new Date(-9223372036854775808), new Date(1795000119920)]"
+                "[new Date(-9223372036854775808), new Date(1795166222691)]"
               ]
             }
           }
@@ -2890,14 +2890,14 @@
     "executionStats": {
       "executionSuccess": true,
       "nReturned": 0,
-      "executionTimeMillis": 6,
+      "executionTimeMillis": 2,
       "totalKeysExamined": 0,
       "totalDocsExamined": 0,
       "executionStages": {
         "isCached": false,
         "stage": "LIMIT",
         "nReturned": 0,
-        "executionTimeMillisEstimate": 5,
+        "executionTimeMillisEstimate": 0,
         "works": 1,
         "advanced": 0,
         "needTime": 0,
@@ -2909,7 +2909,7 @@
         "inputStage": {
           "stage": "FETCH",
           "nReturned": 0,
-          "executionTimeMillisEstimate": 5,
+          "executionTimeMillisEstimate": 0,
           "works": 1,
           "advanced": 0,
           "needTime": 0,
@@ -2922,7 +2922,7 @@
           "inputStage": {
             "stage": "IXSCAN",
             "nReturned": 0,
-            "executionTimeMillisEstimate": 5,
+            "executionTimeMillisEstimate": 0,
             "works": 1,
             "advanced": 0,
             "needTime": 0,
@@ -2945,7 +2945,7 @@
             "direction": "forward",
             "indexBounds": {
               "expiresAt": [
-                "[new Date(-9223372036854775808), new Date(1795000119920)]"
+                "[new Date(-9223372036854775808), new Date(1795166222691)]"
               ]
             },
             "keysExamined": 0,
@@ -2961,17 +2961,17 @@
       "find": "integrationsynclogs",
       "filter": {
         "expiresAt": {
-          "$lte": "2026-11-18T11:08:39.920Z"
+          "$lte": "2026-11-20T09:17:02.691Z"
         }
       },
       "limit": 100,
       "$db": "integration_acceptance"
     },
     "serverInfo": {
-      "host": "ICOMM-AHMAD-HASS",
-      "port": 52107,
-      "version": "8.2.6",
-      "gitVersion": "5d25c835745d06f712320b6cdae9d50b7b43663e"
+      "host": "DESKTOP-3COFRHD",
+      "port": 57934,
+      "version": "8.2.2",
+      "gitVersion": "594f839ceec1f4385be9a690131412d67b249a0a"
     },
     "serverParameters": {
       "internalQueryFacetBufferSizeBytes": 104857600,
@@ -2988,7 +2988,7 @@
     "ok": 1,
     "$clusterTime": {
       "clusterTime": {
-        "$timestamp": "7709466807421108264"
+        "$timestamp": "7710180214373875730"
       },
       "signature": {
         "hash": "AAAAAAAAAAAAAAAAAAAAAAAAAAA=",
@@ -2996,7 +2996,7 @@
       }
     },
     "operationTime": {
-      "$timestamp": "7709466807421108264"
+      "$timestamp": "7710180214373875730"
     }
   },
   "indexes": {

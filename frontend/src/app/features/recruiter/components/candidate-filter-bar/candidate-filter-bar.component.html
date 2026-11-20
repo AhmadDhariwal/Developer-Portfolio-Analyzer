@@ -1,53 +1,62 @@
 <div class="filter-bar">
   <div class="filter-field filter-field--search">
-    <label>Search</label>
+    <label for="candidate-search">Search</label>
     <input
-      [(ngModel)]="model.search"
-      placeholder="Name, stack, skills, GitHub"
-      (keyup.enter)="apply.emit(model)"
+      id="candidate-search"
+      [(ngModel)]="draft.search"
+      placeholder="Name, job title, or GitHub"
+      (keyup.enter)="submit()"
     />
   </div>
   <div class="filter-field">
     <label>Stack</label>
     <app-searchable-select
       [options]="stackOptions"
-      [value]="model.stack"
+      [value]="draft.stack"
       [emptyOptionLabel]="'All stacks'"
-      (valueChange)="setValue('stack', $event)"
+      (valueChange)="draft.stack = $event"
     />
   </div>
   <div class="filter-field">
     <label>Location</label>
     <app-searchable-select
       [options]="locationOptions"
-      [value]="model.location"
+      [value]="draft.location"
       [emptyOptionLabel]="'All locations'"
-      (valueChange)="setValue('location', $event)"
+      (valueChange)="draft.location = $event"
     />
   </div>
   <div class="filter-field">
-    <label>Skills</label>
+    <label for="candidate-skills">Skills</label>
     <input
-      [(ngModel)]="model.skills"
+      id="candidate-skills"
+      [(ngModel)]="draft.skills"
       placeholder="React, Node.js, Python"
-      (keyup.enter)="apply.emit(model)"
+      (keyup.enter)="submit()"
     />
   </div>
   <div class="filter-field">
-    <label>Min Score</label>
-    <input [(ngModel)]="model.minReadiness" type="number" min="0" max="100" placeholder="70" />
+    <label for="candidate-min-score">Min Score</label>
+    <input
+      id="candidate-min-score"
+      [(ngModel)]="draft.minReadiness"
+      type="number"
+      min="0"
+      max="100"
+      placeholder="70"
+    />
   </div>
   <div class="filter-field">
     <label>Sort</label>
     <app-searchable-select
       [options]="sortOptions"
-      [value]="model.sortBy || 'score-desc'"
+      [value]="draft.sortBy"
       [emptyOptionLabel]="'Highest score'"
-      (valueChange)="setValue('sortBy', $event || 'score-desc')"
+      (valueChange)="draft.sortBy = $event || 'score-desc'"
     />
   </div>
   <div class="filter-actions">
     <button type="button" class="filter-btn filter-btn--ghost" (click)="clear.emit()">Clear</button>
-    <button type="button" class="filter-btn" (click)="apply.emit(model)">Apply Filters</button>
+    <button type="button" class="filter-btn" (click)="submit()">Apply Filters</button>
   </div>
 </div>

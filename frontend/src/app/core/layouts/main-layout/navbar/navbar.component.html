@@ -249,7 +249,7 @@
       <a
         *ngIf="totalNotifications > notifications.length"
         class="view-all-btn"
-        routerLink="/app/notifications"
+        [routerLink]="notificationsRoute"
         (click)="closeNotifications()"
       >
         View All Activities
@@ -290,14 +290,14 @@
 
       <!-- User Dropdown Menu -->
       <div id="workspace-account-menu" class="user-dropdown" *ngIf="showUserMenu">
-        <a routerLink="/app/profile" class="dropdown-item" (click)="closeUserMenu()">
+        <a [routerLink]="profileRoute" class="dropdown-item" (click)="closeUserMenu()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
           </svg>
           <span>Profile</span>
         </a>
-        <a routerLink="/app/dashboard" class="dropdown-item" (click)="closeUserMenu()">
+        <a [routerLink]="dashboardRoute" class="dropdown-item" (click)="closeUserMenu()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="3" y="3" width="7" height="7"></rect>
             <rect x="14" y="3" width="7" height="7"></rect>

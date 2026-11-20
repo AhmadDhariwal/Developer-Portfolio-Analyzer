@@ -1,31 +1,54 @@
 .empty-state {
-  padding: 2rem;
-  border-radius: 18px;
-  border: 1px dashed rgba(99, 102, 241, 0.5);
-  background:
-    radial-gradient(circle at 20% -20%, rgba(99, 102, 241, 0.22), rgba(15, 23, 42, 0) 55%),
-    rgba(15, 23, 42, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  animation: fadeIn 0.3s ease both;
+  gap: 8px;
+  padding: 36px 24px;
+  border-radius: var(--dev-radius-surface, 8px);
+  border: 1px dashed var(--border-strong);
+  background: var(--surface-card);
+  color: var(--text-secondary);
 }
+
+.empty-state__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--dev-radius-surface, 8px);
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
 h3 {
-  margin: 0 0 0.45rem;
-  color: #f8fafc;
-  font-size: 1.08rem;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
 }
+
 p {
   margin: 0;
-  color: #94a3b8;
-  max-width: 520px;
-  margin-inline: auto;
+  max-width: 52ch;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-secondary);
 }
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+.empty-state__actions {
+  margin-top: 8px;
+
+  &:empty {
+    display: none;
   }
 }

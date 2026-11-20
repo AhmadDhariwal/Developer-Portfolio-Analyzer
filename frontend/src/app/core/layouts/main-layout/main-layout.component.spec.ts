@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
 import { vi } from 'vitest';
 import { AuthService } from '../../../shared/services/auth.service';
 
@@ -32,6 +32,28 @@ describe('MainLayout', () => {
     expect(component.developerWorkspace).toBe(false);
     user.mockReturnValue({ role: 'admin' });
     expect(component.developerWorkspace).toBe(false);
+    user.mockRestore();
+  });
+
+  it('scopes recruiterWorkspace exclusively to recruiter sessions on /app/recruiter routes', () => {
+    const auth = TestBed.inject(AuthService);
+    const router = TestBed.inject(Router);
+    const user = vi.spyOn(auth, 'getCurrentUser');
+    const urlSpy = vi.spyOn(router, 'url', 'get');
+
+    user.mockReturnValue({ role: 'recruiter' });
+    urlSpy.mockReturnValue('/app/recruiter/dashboard');
+    expect(component.recruiterWorkspace).toBe(true);
+    expect(component.developerWorkspace).toBe(false);
+
+    urlSpy.mockReturnValue('/app/profile');
+    expect(component.recruiterWorkspace).toBe(false);
+
+    user.mockReturnValue({ role: 'developer' });
+    urlSpy.mockReturnValue('/app/recruiter/dashboard');
+    expect(component.recruiterWorkspace).toBe(false);
+
+    urlSpy.mockRestore();
     user.mockRestore();
   });
 

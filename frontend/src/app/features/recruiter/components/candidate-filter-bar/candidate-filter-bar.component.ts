@@ -5,6 +5,7 @@ import {
   SearchableSelectComponent,
   SearchableSelectOption,
 } from '../../../../shared/components/searchable-select/searchable-select.component';
+import { CandidateFilters, DEFAULT_CANDIDATE_FILTERS } from '../../models/recruiter.model';
 
 @Component({
   selector: 'app-candidate-filter-bar',
@@ -14,10 +15,14 @@ import {
   styleUrl: './candidate-filter-bar.component.scss',
 })
 export class CandidateFilterBarComponent {
-  @Input() model: any = {};
+  draft: CandidateFilters = { ...DEFAULT_CANDIDATE_FILTERS };
+
+  @Input() set model(value: CandidateFilters) {
+    this.draft = { ...value };
+  }
   @Input() stackOptions: SearchableSelectOption[] = [];
   @Input() locationOptions: SearchableSelectOption[] = [];
-  @Output() apply = new EventEmitter<any>();
+  @Output() apply = new EventEmitter<CandidateFilters>();
   @Output() clear = new EventEmitter<void>();
 
   readonly sortOptions: SearchableSelectOption[] = [
@@ -28,7 +33,7 @@ export class CandidateFilterBarComponent {
     { value: 'score-asc', label: 'Lowest score' },
   ];
 
-  setValue(key: string, value: string): void {
-    this.model = { ...this.model, [key]: value };
+  submit(): void {
+    this.apply.emit({ ...this.draft, minReadiness: this.draft.minReadiness ?? 0 });
   }
 }

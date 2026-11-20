@@ -47,5 +47,7 @@ const recruiterShortlistSchema = new mongoose.Schema(
 );
 
 recruiterShortlistSchema.index({ recruiterId: 1, candidateId: 1, jobId: 1 }, { unique: true });
+recruiterShortlistSchema.index({ organizationId: 1, recruiterId: 1, updatedAt: -1 });
+recruiterShortlistSchema.index({ organizationId: 1, recruiterId: 1, jobId: 1, updatedAt: -1 });
 
 module.exports = mongoose.model('RecruiterShortlist', recruiterShortlistSchema);

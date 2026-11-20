@@ -1,7 +1,10 @@
 const express = require('express');
-const { protect, authorizeRoles } = require('../../../../core/middleware/authmiddleware');
+const { protect } = require('../../../../core/middleware/authmiddleware');
+const { requireRecruiterTenant } = require('../../middleware/requireRecruiterTenant');
 const { requireOrganizationContext } = require('../../../../core/middleware/orgMiddleware');
-const { requireRecruiterAccessEnabled } = require('../../../../core/middleware/platformSettingsMiddleware');
+const {
+  requireRecruiterAccessEnabled
+} = require('../../../../core/middleware/platformSettingsMiddleware');
 const { compare } = require('../../controllers/hub/comparisonController');
 const { getProfile, patchProfile } = require('../../controllers/hub/recruiterProfileController');
 
@@ -14,7 +17,12 @@ const activityRoutes = require('./activityRoutes');
 
 const router = express.Router();
 
-router.use(protect, authorizeRoles('recruiter'), requireRecruiterAccessEnabled, requireOrganizationContext(['recruiter']));
+router.use(
+  protect,
+  requireRecruiterTenant,
+  requireRecruiterAccessEnabled,
+  requireOrganizationContext(['recruiter'])
+);
 
 router.use('/candidates', candidateRoutes);
 router.use('/jobs', recruiterJobRoutes);

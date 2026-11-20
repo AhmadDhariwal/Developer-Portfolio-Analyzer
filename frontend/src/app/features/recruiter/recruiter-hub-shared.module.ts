@@ -1,5 +1,8 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { UiErrorStateComponent } from '../../shared/components/ui-error-state/ui-error-state.component';
+import { ScoreMeterComponent } from '../../shared/components/score-meter/score-meter.component';
+import { UiBadgeComponent } from '../../shared/components/ui-badge/ui-badge.component';
 import { RecruiterStatCardComponent } from './components/recruiter-stat-card/recruiter-stat-card.component';
 import { CandidateCardComponent } from './components/candidate-card/candidate-card.component';
 import { CandidateFilterBarComponent } from './components/candidate-filter-bar/candidate-filter-bar.component';
@@ -16,6 +19,9 @@ import { RecruiterBackButtonComponent } from './components/recruiter-back-button
 @NgModule({
   imports: [
     CommonModule,
+    UiErrorStateComponent,
+    ScoreMeterComponent,
+    UiBadgeComponent,
     RecruiterStatCardComponent,
     CandidateCardComponent,
     CandidateFilterBarComponent,
@@ -30,6 +36,9 @@ import { RecruiterBackButtonComponent } from './components/recruiter-back-button
     RecruiterBackButtonComponent,
   ],
   exports: [
+    UiErrorStateComponent,
+    ScoreMeterComponent,
+    UiBadgeComponent,
     RecruiterStatCardComponent,
     CandidateCardComponent,
     CandidateFilterBarComponent,

@@ -77,10 +77,10 @@
 
   /* Semantic Status Colors (Restrained Light Mode) */
   --color-success: #10b981;
-  --color-success-dark: #059669;
+  --color-success-dark: #047857;
   --color-success-soft: #ecfdf5;
   --color-success-border: #a7f3d0;
-  --color-success-text: #059669;
+  --color-success-text: #047857;
   --color-success-bg: #ecfdf5;
 
   --color-warning: #f59e0b;
@@ -421,7 +421,8 @@ button {
   color: var(--color-primary);
 }
 
-// Opt-in Developer primitives; role scoping preserves other workspaces.
-.developer-workspace {
+// Opt-in Developer/Recruiter workspace primitives; role scoping preserves Admin/SuperAdmin.
+.developer-workspace,
+.recruiter-workspace {
   @include developer.utilities;
 }

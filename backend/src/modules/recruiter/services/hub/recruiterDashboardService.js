@@ -6,8 +6,12 @@ const Organization = require('../../../admin/models/organization');
 const getRecruiterDashboard = async (req) => {
   const scope = await getRecruiterScope(req);
   const [analytics, activities, organization] = await Promise.all([
-    listRecruiterAnalytics(req),
-    listRecruiterActivities({ recruiterId: scope.recruiterId, organizationId: scope.organizationId, query: { limit: 12 } }),
+    listRecruiterAnalytics(req, scope),
+    listRecruiterActivities({
+      recruiterId: scope.recruiterId,
+      organizationId: scope.organizationId,
+      query: { limit: 12 }
+    }),
     scope.organizationId
       ? Organization.findById(scope.organizationId).select('_id name description').lean()
       : null
@@ -23,7 +27,9 @@ const getRecruiterDashboard = async (req) => {
       recentJobs: analytics.widgets?.recentJobs || [],
       recentMatches: analytics.widgets?.recentMatches || [],
       pendingFollowUps: analytics.widgets?.pendingFollowUps || [],
-      aiInsights: (analytics.charts?.topSkillsDemand || []).slice(0, 5).map((item) => `Skill demand is strongest for ${item.label}.`)
+      aiInsights: (analytics.charts?.topSkillsDemand || [])
+        .slice(0, 5)
+        .map((item) => `Skill demand is strongest for ${item.label}.`)
     },
     profile: {
       recruiterId: scope.recruiterId,

@@ -1,5 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { finalize } from 'rxjs/operators';
+import { AuthService } from '../../../../shared/services/auth.service';
 import { RecruiterHubService } from '../../services/recruiter-hub.service';
 import { TenantContextService } from '../../../../shared/services/tenant-context.service';
 
@@ -10,6 +12,8 @@ import { TenantContextService } from '../../../../shared/services/tenant-context
   styleUrl: './recruiter-dashboard.component.scss',
 })
 export class RecruiterDashboardComponent implements OnInit {
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly authService = inject(AuthService, { optional: true });
   loading = true;
   error = '';
   metricsReady = false;
@@ -34,26 +38,40 @@ export class RecruiterDashboardComponent implements OnInit {
     this.insightsReady = false;
     this.chartsReady = false;
 
-    this.hubService.getDashboard().subscribe({
-      next: (dashboard) => {
-        this.dashboard = this.normalizeDashboard(dashboard);
-        if (this.dashboard?.profile?.organizationId || this.dashboard?.profile?.organizationName) {
-          this.tenantContext.syncOrganization({
-            id: String(this.dashboard?.profile?.organizationId || this.tenantContext.snapshot.organizationId || ''),
-            name: String(this.dashboard?.profile?.organizationName || this.tenantContext.snapshot.organizationName || ''),
-            myRole: 'recruiter'
-          });
-        }
-        this.metricsReady = true;
-        this.insightsReady = true;
-        this.chartsReady = true;
-        this.loading = false;
-      },
-      error: (err) => {
-        this.error = err?.error?.message || 'Unable to load recruiter dashboard.';
-        this.loading = false;
-      },
-    });
+    this.hubService
+      .getDashboard()
+      .pipe(finalize(() => this.cdr.markForCheck()))
+      .subscribe({
+        next: (dashboard) => {
+          this.dashboard = this.normalizeDashboard(dashboard);
+          if (
+            this.dashboard?.profile?.organizationId ||
+            this.dashboard?.profile?.organizationName
+          ) {
+            this.tenantContext.syncOrganization({
+              id: String(
+                this.dashboard?.profile?.organizationId ||
+                  this.tenantContext.snapshot.organizationId ||
+                  '',
+              ),
+              name: String(
+                this.dashboard?.profile?.organizationName ||
+                  this.tenantContext.snapshot.organizationName ||
+                  '',
+              ),
+              myRole: 'recruiter',
+            });
+          }
+          this.metricsReady = true;
+          this.insightsReady = true;
+          this.chartsReady = true;
+          this.loading = false;
+        },
+        error: (err) => {
+          this.error = err?.error?.message || 'Unable to load recruiter dashboard.';
+          this.loading = false;
+        },
+      });
   }
 
   get productivityItems(): Array<{ label: string; value: number }> {
@@ -68,7 +86,7 @@ export class RecruiterDashboardComponent implements OnInit {
 
   get activityTrendLabel(): string {
     const items = this.dashboard?.charts?.weeklyRecruiterActivity || [];
-    if (items.length < 2) return 'Current week';
+    if (items.length < 2) return 'Current cycle';
     const latest = Number(items[items.length - 1]?.count || 0);
     const previous = Number(items[items.length - 2]?.count || 0);
     if (previous <= 0) return latest > 0 ? '+100%' : 'Stable';
@@ -93,13 +111,28 @@ export class RecruiterDashboardComponent implements OnInit {
     return this.dashboard?.widgets?.pendingFollowUps || [];
   }
 
-  get funnelItems(): Array<{ label: string; value: number; tone: string }> {
-    return [
-      { label: 'Candidates', value: Number(this.dashboard?.metrics?.totalCandidates || 0), tone: 'blue' },
-      { label: 'Viewed', value: Number(this.dashboard?.metrics?.candidatesViewed || 0), tone: 'cyan' },
-      { label: 'Open Jobs', value: Number(this.dashboard?.metrics?.openJobs || 0), tone: 'purple' },
-      { label: 'Closed Jobs', value: Number(this.dashboard?.metrics?.closedJobs || 0), tone: 'green' },
+  get recentActivity(): any[] {
+    return this.dashboard?.widgets?.recentActivity || [];
+  }
+
+  get aiInsights(): string[] {
+    return this.dashboard?.widgets?.aiInsights || [];
+  }
+
+  get funnelItems(): Array<{ label: string; value: number; percent: number; tone: string }> {
+    const m = this.dashboard?.metrics || {};
+    const rows = [
+      { label: 'Visible Candidates', value: Number(m.totalCandidates || 0), tone: 'blue' },
+      { label: 'Candidates Viewed', value: Number(m.candidatesViewed || 0), tone: 'cyan' },
+      { label: 'Candidates Analyzed', value: Number(m.candidatesAnalyzed || 0), tone: 'indigo' },
+      { label: 'Matches Generated', value: Number(m.matchesGenerated || 0), tone: 'purple' },
+      { label: 'Shortlisted', value: Number(m.shortlistedCandidates || 0), tone: 'green' },
     ];
+    const baseline = Math.max(1, ...rows.map((r) => r.value));
+    return rows.map((row) => ({
+      ...row,
+      percent: Math.round((row.value / baseline) * 100),
+    }));
   }
 
   initialFor(value: string): string {
@@ -136,8 +169,16 @@ export class RecruiterDashboardComponent implements OnInit {
     return `${days}d ago`;
   }
 
-  openRoute(path: string): void {
+  openRoute(path: string, queryParams?: Record<string, string>): void {
+    if (queryParams) {
+      this.router.navigate([path], { queryParams });
+      return;
+    }
     this.router.navigate([path]);
+  }
+
+  candidateIdFor(candidate: any): string {
+    return String(candidate?.id || candidate?.userId || '').trim();
   }
 
   trackByIndex(index: number): number {
@@ -180,18 +221,26 @@ export class RecruiterDashboardComponent implements OnInit {
         weeklyRecruiterActivity: this.asArray(payload?.charts?.weeklyRecruiterActivity),
       },
       widgets: {
+        assignedTeams: this.asArray(payload?.widgets?.assignedTeams),
         topCandidates: this.asArray(payload?.widgets?.topCandidates),
         recentJobs: this.asArray(payload?.widgets?.recentJobs),
         recentMatches: this.asArray(payload?.widgets?.recentMatches),
         pendingFollowUps: this.asArray(payload?.widgets?.pendingFollowUps),
         recentActivity: this.asArray(payload?.widgets?.recentActivity),
+        aiInsights: this.asArray(payload?.widgets?.aiInsights),
       },
     };
   }
 
   private defaultDashboard(): any {
+    const user = this.authService?.getCurrentUser?.() as any;
     return {
-      profile: { name: 'Recruiter', organizationId: '', organizationName: '', organizationDescription: '' },
+      profile: {
+        name: String(user?.name || '').trim() || 'Recruiter',
+        organizationId: String(user?.organizationId || ''),
+        organizationName: String(user?.organizationName || ''),
+        organizationDescription: '',
+      },
       metrics: {
         totalCandidates: 0,
         avgCandidateScore: 0,
@@ -202,6 +251,9 @@ export class RecruiterDashboardComponent implements OnInit {
         assignedTeams: 0,
         activeJobs: 0,
         candidatesViewed: 0,
+        candidatesAnalyzed: 0,
+        matchesGenerated: 0,
+        shortlistedCandidates: 0,
         recruiterActivityScore: 0,
         successRate: 0,
       },
@@ -215,11 +267,13 @@ export class RecruiterDashboardComponent implements OnInit {
         weeklyRecruiterActivity: [],
       },
       widgets: {
+        assignedTeams: [],
         topCandidates: [],
         recentJobs: [],
         recentMatches: [],
         pendingFollowUps: [],
         recentActivity: [],
+        aiInsights: [],
       },
     };
   }

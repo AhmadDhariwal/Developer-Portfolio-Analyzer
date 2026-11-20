@@ -1,4 +1,11 @@
 {
+  "/api/notifications/stream": {
+    "target": "http://localhost:5000",
+    "secure": false,
+    "changeOrigin": true,
+    "timeout": 0,
+    "proxyTimeout": 0
+  },
   "/api": {
     "target": "http://localhost:5000",
     "secure": false,
