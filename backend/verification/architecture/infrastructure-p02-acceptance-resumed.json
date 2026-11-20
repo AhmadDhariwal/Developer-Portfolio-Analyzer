@@ -1,0 +1,28 @@
+{
+  "mode": "acceptance",
+  "exitCode": 0,
+  "durationMs": 261877,
+  "tests": 51,
+  "passed": 51,
+  "failed": 0,
+  "skipped": 0,
+  "failures": [],
+  "prerequisiteSkips": [],
+  "testFiles": [
+    "src/tests/core/aiProviderPlatform.test.js",
+    "src/tests/core/apiShutdown.test.js",
+    "src/tests/core/boundedCaches.test.js",
+    "src/tests/core/infrastructureWorkers.test.js",
+    "src/tests/core/platformSettingsWorkers.test.js",
+    "src/tests/core/redisConnectionProbe.test.js",
+    "src/tests/core/workerLifecycle.test.js",
+    "src/tests/profile/profileAccountSecurity.test.js",
+    "src/tests/recommendations/recommendationsPerformance.test.js",
+    "src/tests/weekly-reports/weeklyReportScheduler.test.js"
+  ],
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 53,
+    "productionDataUsed": false
+  }
+}

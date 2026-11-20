@@ -5,6 +5,56 @@ const fs = require('node:fs');
 const path = require('node:path');
 const Module = require('node:module');
 
+test('an SDK-reconnecting socket is retained instead of replaced by another Redis client', async () => {
+  const filename = path.resolve(__dirname, '../../core/cache/redisCacheService.js');
+  const previous = process.env.REDIS_URL;
+  process.env.REDIS_URL = 'redis://fixture.invalid';
+  let instance;
+  let created = 0;
+  class Client extends EventEmitter {
+    isOpen = true;
+    isReady = true;
+    async connect() {
+      this.emit('ready');
+    }
+    async quit() {
+      this.isOpen = false;
+    }
+    async disconnect() {
+      this.isOpen = false;
+    }
+  }
+  const unit = new Module(filename, module);
+  unit.filename = filename;
+  unit.paths = Module._nodeModulePaths(path.dirname(filename));
+  const original = unit.require.bind(unit);
+  unit.require = (name) =>
+    name === 'redis'
+      ? {
+          createClient: () => {
+            created++;
+            return (instance = new Client());
+          }
+        }
+      : original(name);
+  unit._compile(fs.readFileSync(filename, 'utf8'), filename);
+  try {
+    await unit.exports.initRedisCache({ silent: true, probeOnly: true });
+    instance.isReady = false;
+    instance.emit('error', Error('Fixture socket reconnecting'));
+    assert.equal(await unit.exports.initRedisCache({ silent: true, probeOnly: true }), null);
+    assert.equal(created, 1);
+    instance.isReady = true;
+    instance.emit('ready');
+    assert.ok(await unit.exports.initRedisCache({ silent: true, probeOnly: true }));
+    assert.equal(created, 1);
+  } finally {
+    await unit.exports.closeRedisCache();
+    if (previous === undefined) delete process.env.REDIS_URL;
+    else process.env.REDIS_URL = previous;
+  }
+});
+
 test('cache shutdown tolerates a socket closing during QUIT and awaits disconnect failures', async () => {
   const filename = path.resolve(__dirname, '../../core/cache/redisCacheService.js');
   const previous = process.env.REDIS_URL;
@@ -146,7 +196,7 @@ test('connection checker resolves backend .env independently of the working dire
       return {
         config: (options) => {
           configuration = options;
-        },
+        }
       };
     if (name === '../core/cache/redisCacheService')
       return {
@@ -157,7 +207,7 @@ test('connection checker resolves backend .env independently of the working dire
         pingRedisCache: async () => 'PONG',
         closeRedisCache: async () => {
           closed = true;
-        },
+        }
       };
     return original(name);
   };

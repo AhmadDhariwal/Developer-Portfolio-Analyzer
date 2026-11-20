@@ -221,6 +221,31 @@ async function requestWindow(prefix, maximum, windowMs) {
   });
 }
 
+// Authentication preserves the first-hit-relative windows of its previous store.
+// Count denied attempts too, so a settings change cannot restore consumed budget.
+async function authWindow(prefix, windowMs) {
+  if (
+    !/^auth:v1:rate:[a-z-]+:[a-f0-9]{64}$/.test(prefix) ||
+    !Number.isSafeInteger(windowMs) ||
+    windowMs < 1
+  )
+    throw unavailable();
+  return transaction(async (session, now) => {
+    const state = await State.collection.findOne({ _id: prefix }, { session });
+    if (
+      state &&
+      (!(state.expiresAt instanceof Date) || !Number.isFinite(state.expiresAt.getTime()))
+    )
+      throw unavailable();
+    const active = state && state.expiresAt.getTime() > now;
+    const count = active ? state.count + 1 : 1;
+    if (!Number.isSafeInteger(count) || count < 1) throw unavailable();
+    const until = active ? state.expiresAt.getTime() : now + windowMs;
+    await write({ _id: prefix, count, leases: [], expiresAt: new Date(until) }, session);
+    return { count, until };
+  });
+}
+
 async function notificationStream(owner, reservation = null) {
   const keys = ['notifications:streams:global', `notifications:streams:user:${hash(owner)}`];
   const token = reservation?.token || randomUUID();
@@ -308,5 +333,6 @@ module.exports = {
   consumeSnapshot,
   initialize,
   requestWindow,
+  authWindow,
   notificationStream
 };

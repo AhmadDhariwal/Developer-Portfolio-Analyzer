@@ -1,5 +1,6 @@
 const { createClient } = require('redis');
 const { randomUUID } = require('node:crypto');
+const revisionStore = require('./interviewRevisionStore');
 
 const CACHE_TTL_SECONDS = 60 * 60;
 const INTERVIEW_CACHE_PREFIXES = ['interview:questions:', 'interview:search:', 'interview:custom:'];
@@ -16,12 +17,17 @@ let client;
 let clientProxy;
 let redisEnabled = false;
 let connectPromise;
+let revisionReplay = Promise.resolve();
+let revisionRecoveryNeeded = false;
 let reconnectTimer;
 let closing = false;
 const memoryCache = new Map();
 const MAX_MEMORY_ENTRIES = 2000;
 const INTERVIEW_MEMORY_TTL_SECONDS = 30;
 const interviewRevisions = new Map();
+const pendingInterviewInvalidations = new Map();
+let invalidationRetry;
+let invalidationFlush;
 const isInterviewKey = (key) => INTERVIEW_CACHE_PREFIXES.some((prefix) => key.startsWith(prefix));
 
 const getMemoryValue = (key) => {
@@ -127,12 +133,20 @@ const initRedisCache = async ({ silent = false, probeOnly = false } = {}) => {
     return null;
   }
 
-  if (redisEnabled && client?.isReady) {
-    return clientProxy || client;
+  if (client?.isReady) {
+    redisEnabled = true;
+    clientProxy ||= createCommandProxy(client);
+    return clientProxy;
   }
 
   if (connectPromise) {
     return connectPromise;
+  }
+  // The SDK owns reconnection while its socket is open. Replacing it here can
+  // abandon a socket that later reconnects and keeps the worker alive forever.
+  if (client?.isOpen) {
+    scheduleReconnect();
+    return null;
   }
 
   let redisClient;
@@ -168,21 +182,34 @@ const initRedisCache = async ({ silent = false, probeOnly = false } = {}) => {
     if (client !== redisClient) return;
     redisEnabled = true;
     clientProxy = createCommandProxy(redisClient);
-    // Mutations may have succeeded while Redis was unavailable. Recovery starts
-    // a fresh shared namespace instead of resurrecting pre-outage results.
-    if (!probeOnly) redisClient.set('interview:revision:global', randomUUID()).catch(() => {});
+    // First initialization is shared. Ordinary worker reconnects retain revisions.
+    if (!probeOnly) {
+      revisionReplay = clientProxy
+        .set('interview:revision:global', randomUUID(), { NX: true })
+        .then(async () => {
+          revisionRecoveryNeeded = !(await revisionStore.restore(clientProxy));
+        })
+        .catch(() => {
+          revisionRecoveryNeeded = true;
+          console.warn('[redis] interview revision recovery deferred.');
+        })
+        .then(() => flushPendingInterviewInvalidations());
+    }
   });
 
   connectPromise = redisClient
     .connect()
-    .then(() => {
+    .then(async () => {
       if (closing || client !== redisClient) return null;
       redisEnabled = true;
+      await revisionReplay;
+      if (closing || client !== redisClient) return null;
       if (!silent) console.log('[redis] connected.');
       return clientProxy;
     })
-    .catch(() => {
+    .catch(async () => {
       setUnavailable(redisClient);
+      if (redisClient.isOpen) await redisClient.disconnect().catch(() => {});
       if (client === redisClient) client = null;
       if (!silent) console.warn('[redis] connection unavailable; using application fallbacks.');
       return null;
@@ -200,7 +227,13 @@ const getCacheJsonWithMeta = async (key) => {
   const startedAt = nowMs();
   const memoryValue = getMemoryValue(key);
   if (memoryValue !== null) {
-    return { value: memoryValue, layer: 'memory', memoryMs: nowMs() - startedAt, redisMs: 0 };
+    return {
+      value: memoryValue,
+      layer: 'memory',
+      expiresAt: memoryCache.get(key).expiresAt,
+      memoryMs: nowMs() - startedAt,
+      redisMs: 0,
+    };
   }
   const memoryMs = nowMs() - startedAt;
   const redis = getRedisCacheClient();
@@ -224,7 +257,13 @@ const getCacheJsonWithMeta = async (key) => {
     );
     if (ttlMs > 0)
       setMemoryCacheJson(key, value, Math.max(0, readStartedAt + ttlMs - Date.now()) / 1000);
-    return { value, layer: 'redis', memoryMs, redisMs };
+    return {
+      value,
+      layer: 'redis',
+      expiresAt: readStartedAt + Number(remainingMs),
+      memoryMs,
+      redisMs,
+    };
   } catch {
     console.warn('[redis] cache read failed; using application fallback.');
     return { value: null, layer: 'miss', memoryMs, redisMs: nowMs() - redisStartedAt };
@@ -350,7 +389,7 @@ const resolveInterviewCacheKey = async (key, topicKey) => {
   if (redis) {
     try {
       const revisions = await redis.mGet(names);
-      names.forEach((name, index) => interviewRevisions.set(name, revisions[index] || '0'));
+      names.forEach((name, index) => rememberInterviewRevision(name, revisions[index] || '0'));
     } catch {
       /* Bounded process cache remains usable during a Redis outage. */
     }
@@ -358,36 +397,118 @@ const resolveInterviewCacheKey = async (key, topicKey) => {
   return `${key}:revision=${names.map((name) => interviewRevisions.get(name) || '0').join('.')}`;
 };
 
+const rememberInterviewRevision = (name, revision) => {
+  const previous = String(interviewRevisions.get(name) || '').split(':');
+  const incoming = String(revision).split(':');
+  if (
+    previous.length === 3 &&
+    incoming.length === 3 &&
+    previous[0] === incoming[0] &&
+    Number(previous[1]) > Number(incoming[1])
+  )
+    return;
+  interviewRevisions.delete(name);
+  interviewRevisions.set(name, revision);
+  if (interviewRevisions.size > 1000) {
+    interviewRevisions.delete(interviewRevisions.keys().next().value);
+    // Eviction must not revive a formerly cached revision-zero namespace offline.
+    for (const key of memoryCache.keys()) if (isInterviewKey(key)) memoryCache.delete(key);
+  }
+};
+
+const flushPendingInterviewInvalidations = () => {
+  if (invalidationFlush) return invalidationFlush;
+  invalidationFlush = performInvalidationFlush().finally(() => {
+    invalidationFlush = null;
+  });
+  return invalidationFlush;
+};
+
+const performInvalidationFlush = async () => {
+  if (invalidationRetry) clearTimeout(invalidationRetry);
+  invalidationRetry = null;
+  const redis = getRedisCacheClient();
+  if (revisionRecoveryNeeded && redis) {
+    try {
+      revisionRecoveryNeeded = !(await revisionStore.restore(redis));
+    } catch {
+      /* Retry metadata recovery without replacing the healthy Redis client. */
+    }
+  }
+  for (const name of pendingInterviewInvalidations.keys()) {
+    // An uncertain earlier SET may have succeeded. A fresh token prevents replay
+    // from resurrecting a namespace populated before a later bank mutation.
+    const pending = pendingInterviewInvalidations.get(name);
+    const durable =
+      String(pending).split(':').length === 3
+        ? pending
+        : await revisionStore.create(name).catch(() => null);
+    const revision = durable || (redis ? randomUUID() : pending);
+    pendingInterviewInvalidations.set(name, revision);
+    rememberInterviewRevision(name, revision);
+    if (!redis) continue;
+    try {
+      await revisionStore.publish(redis, name, revision);
+      if (pendingInterviewInvalidations.get(name) === revision)
+        pendingInterviewInvalidations.delete(name);
+    } catch {
+      break;
+    }
+  }
+  if ((pendingInterviewInvalidations.size || revisionRecoveryNeeded) && !closing) {
+    invalidationRetry = setTimeout(flushPendingInterviewInvalidations, 2000);
+    invalidationRetry.unref?.();
+  }
+};
+
 const invalidateInterviewPrepCache = async (topicKey = '') => {
   const name = topicKey
     ? `interview:revision:topic=${encodeURIComponent(topicKey)}`
     : 'interview:revision:global';
-  const revision = randomUUID();
-  interviewRevisions.set(name, revision);
+  const redis = getRedisCacheClient();
+  const observed = redis ? await redis.get(name).catch(() => '') : '';
+  const durable = await revisionStore.create(name, observed).catch(() => {
+    console.warn('[redis] durable interview invalidation deferred.');
+    return null;
+  });
+  const revision = durable || randomUUID();
+  rememberInterviewRevision(name, revision);
   for (const key of memoryCache.keys()) {
     if (isInterviewKey(key) && (!topicKey || key.includes(`:topic=${topicKey}:`)))
       memoryCache.delete(key);
   }
-  const redis = getRedisCacheClient();
   if (redis) {
     // Revision keys intentionally outlive cached payloads; expiring a revision
     // could resurrect an older namespace. Unreachable payloads expire normally.
     try {
-      await redis.set(name, revision);
+      await revisionStore.publish(redis, name, revision);
+      if (!durable) pendingInterviewInvalidations.set(name, revision);
     } catch {
+      pendingInterviewInvalidations.set(name, revision);
       console.warn('[redis] interview invalidation unavailable; process cache remains bounded.');
     }
+  } else pendingInterviewInvalidations.set(name, revision);
+  if (pendingInterviewInvalidations.size > 1000) {
+    pendingInterviewInvalidations.clear();
+    pendingInterviewInvalidations.set('interview:revision:global', randomUUID());
+  }
+  if (pendingInterviewInvalidations.size && !invalidationRetry && !closing) {
+    invalidationRetry = setTimeout(flushPendingInterviewInvalidations, 2000);
+    invalidationRetry.unref?.();
   }
 };
 
 const closeRedisCache = async () => {
   closing = true;
+  if (invalidationRetry) clearTimeout(invalidationRetry);
+  invalidationRetry = null;
   if (reconnectTimer) clearTimeout(reconnectTimer);
   reconnectTimer = null;
   const redisClient = client;
   client = null;
   clientProxy = null;
   redisEnabled = false;
+  await Promise.allSettled([revisionReplay, invalidationFlush]);
   if (!redisClient?.isOpen) return;
   if (!redisClient.isReady) {
     await redisClient.disconnect().catch(() => {});

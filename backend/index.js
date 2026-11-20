@@ -55,16 +55,30 @@ const { globalRateLimiter } = require('./src/core/middleware/securityMiddleware'
 const { metricsMiddleware, metricsHandler } = require('./src/core/observability/metricsService');
 const { initTracing, shutdownTracing } = require('./src/core/observability/tracingService');
 const superAdminRoutes = require('./src/modules/super-admin/routes/super-admin.routes');
-const { startEmailRetryWorker } = require('./src/core/messaging/emailRetryQueueService');
-const { startIntegrationSyncWorker } = require('./src/modules/integrations/services/integrationSyncService');
-const { startJobSourceSyncWorker } = require('./src/modules/jobs/services/jobSourceSyncService');
-const { startWeeklyReportScheduler } = require('./src/modules/weekly-reports/services/weeklyReportService');
+const {
+  startEmailRetryWorker,
+  stopEmailRetryWorker,
+} = require('./src/core/messaging/emailRetryQueueService');
+const {
+  startIntegrationSyncWorker,
+  stopIntegrationSyncWorker,
+} = require('./src/modules/integrations/services/integrationSyncService');
+const {
+  startJobSourceSyncWorker,
+  stopJobSourceSyncWorker,
+} = require('./src/modules/jobs/services/jobSourceSyncService');
+const {
+  startWeeklyReportScheduler,
+  stopWeeklyReportScheduler,
+} = require('./src/modules/weekly-reports/services/weeklyReportService');
 const { initRedisCache, closeRedisCache } = require('./src/core/cache/redisCacheService');
 const {
   startInterviewQuestionIngestionScheduler,
+  stopInterviewQuestionIngestionScheduler,
 } = require('./src/modules/interview-prep/services/interviewQuestionIngestionService');
 const {
   startInterviewQuestionMaintenanceScheduler,
+  stopInterviewQuestionMaintenanceScheduler,
 } = require('./src/modules/interview-prep/services/interviewQuestionMaintenanceService');
 const {
   getSettingsSnapshotSync,
@@ -257,27 +271,50 @@ const initializeRedisAtStartup = async () => {
   }
 };
 
+let server;
+let shutdownPromise;
+const workerStops = [];
+const startWorker = (start, stop) => {
+  if (start() !== null) workerStops.push(stop);
+};
+const closeResources = async () => {
+  await Promise.allSettled([closeRedisCache(), shutdownTracing()]);
+  await require('mongoose').disconnect();
+};
+const startupCancelled = async () => {
+  if (!shutdownPromise) return false;
+  stopSettingsSynchronization();
+  await closeResources();
+  return true;
+};
+
 const startServer = async () => {
   await connectDB();
+  if (await startupCancelled()) return;
   await initializeRedisAtStartup();
+  if (await startupCancelled()) return;
   await startSettingsSynchronization();
+  if (await startupCancelled()) return;
 
-  app.listen(PORT, localApiOnly ? 'localhost' : undefined, () => {
+  server = app.listen(PORT, localApiOnly ? 'localhost' : undefined, () => {
     logger.info('server started', { port: PORT });
     if (localApiOnly) {
       logger.info('development API-only mode: loopback listener; background workers disabled.');
       return;
     }
-    require('./src/modules/notifications/services/notificationRetentionService').start();
-    startEmailRetryWorker();
-    startIntegrationSyncWorker();
-    startJobSourceSyncWorker();
-    startNewsIngestionScheduler();
-    require('./src/modules/courses/services/courseCatalogMaintenanceService').start();
+    const retention = require('./src/modules/notifications/services/notificationRetentionService');
+    startWorker(retention.start, retention.stop);
+    startWorker(startEmailRetryWorker, stopEmailRetryWorker);
+    startWorker(startIntegrationSyncWorker, stopIntegrationSyncWorker);
+    startWorker(startJobSourceSyncWorker, stopJobSourceSyncWorker);
+    startWorker(startNewsIngestionScheduler, stopNewsIngestionScheduler);
+    const courses = require('./src/modules/courses/services/courseCatalogMaintenanceService');
+    startWorker(courses.start, courses.stop);
     initTracing();
-    if (process.env.WEEKLY_REPORT_PROCESS_ROLE !== 'api') startWeeklyReportScheduler();
-    startInterviewQuestionIngestionScheduler();
-    startInterviewQuestionMaintenanceScheduler();
+    if (process.env.WEEKLY_REPORT_PROCESS_ROLE !== 'api')
+      startWorker(startWeeklyReportScheduler, stopWeeklyReportScheduler);
+    startWorker(startInterviewQuestionIngestionScheduler, stopInterviewQuestionIngestionScheduler);
+    startWorker(startInterviewQuestionMaintenanceScheduler, stopInterviewQuestionMaintenanceScheduler);
     getSettings().catch((err) => logger.warn('settings warmup failed', { error: err?.message }));
 
     // Warn if GitHub token is missing (will hit rate limits very quickly)
@@ -315,22 +352,49 @@ const startServer = async () => {
   });
 };
 
-startServer().catch((error) => {
+startServer().catch(async (error) => {
   logger.error('server startup failed', {
     error: error?.message || 'Unknown startup error',
   });
   process.exitCode = 1;
+  await shutdown();
 });
 
 const shutdown = () => {
+  if (shutdownPromise) return shutdownPromise;
   stopSettingsSynchronization();
-  require('./src/modules/notifications/services/notificationRetentionService').stop();
-  require('./src/modules/notifications/services/notificationStreamService')
-    .stop()
-    .catch(() => {});
-  stopNewsIngestionScheduler();
-  require('./src/modules/courses/services/courseCatalogMaintenanceService').stop();
-  Promise.allSettled([closeRedisCache(), shutdownTracing()]);
+  // Shutdown must not refresh policy settings after synchronization/storage stop.
+  const deadline = setTimeout(() => {
+    console.error('shutdown deadline exceeded; unfinished jobs retain their durable recovery leases');
+    server?.closeAllConnections();
+    process.exit(1);
+  }, 15000);
+  deadline.unref();
+  shutdownPromise = (async () => {
+    const listenerClosed = new Promise((resolve) => {
+      if (!server) return resolve();
+      server.close(resolve);
+      server.closeIdleConnections();
+    });
+    const drains = workerStops.splice(0).map((stop) => Promise.resolve().then(stop));
+    drains.push(require('./src/modules/notifications/services/notificationStreamService').stop());
+    const results = await Promise.allSettled([listenerClosed, ...drains]);
+    if (results.some((result) => result.status === 'rejected')) {
+      console.error('worker drain failed; shutdown deadline remains active');
+      process.exitCode = 1;
+      return;
+    }
+    try {
+      await closeResources();
+    } catch {
+      console.error('resource shutdown failed; shutdown deadline remains active');
+      process.exitCode = 1;
+      return;
+    }
+    clearTimeout(deadline);
+    console.info('server shutdown completed');
+  })();
+  return shutdownPromise;
 };
 
 process.on('SIGTERM', shutdown);

@@ -32,7 +32,8 @@ const GITHUB_AI_TIMEOUT_MS = 5000;
 const CACHE_REDIS_TTL_SECONDS = Math.floor(CACHE_TTL_MS / 1000);
 const refreshJobs = new Map();
 const analysisJobs = new Map();
-const memoryAnalysisCache = new Map();
+const BoundedMemoryCache = require('../../../core/cache/boundedMemoryCache');
+const memoryAnalysisCache = new BoundedMemoryCache(128);
 let swrIndexChecked = false;
 const MAX_ACTIVITY_REPOS = 5;
 const MAX_LANGUAGE_REPOS = 8;
@@ -140,6 +141,10 @@ const resolveTieredCacheEntry = async (username, timing = null) => {
   }
   if (redisMeta.value?.result) {
     const redisEntry = packRedisCacheEntry(redisMeta.value);
+    if (redisMeta.expiresAt)
+      redisEntry.expiresAt = new Date(
+        Math.min(new Date(redisEntry.expiresAt).getTime(), redisMeta.expiresAt)
+      );
     if (isFreshCacheEntry(redisEntry)) {
       writeMemoryAnalysisCache(normalizedUsername, redisEntry);
       return {
@@ -2029,6 +2034,10 @@ const analyzeGitHubProfile = async (username, options = {}) => {
   const normalizedUsername = normalizeUsername(trimmedUsername);
   const inFlight = analysisJobs.get(normalizedUsername);
   if (inFlight) return inFlight;
+  if (analysisJobs.size >= 32)
+    throw Object.assign(new Error('GitHub analysis capacity temporarily unavailable.'), {
+      status: 503
+    });
 
   const job = (async () => {
     try {
@@ -2122,6 +2131,8 @@ const refreshGitHubAnalysisInBackground = (username, options = {}) => {
   }
 
   const existing = refreshJobs.get(normalizedUsername);
+  if (!existing && refreshJobs.size >= 32)
+    return { queued: false, running: false, reason: 'capacity' };
   if (existing) {
     console.log(
       '[GitHubSWR]',
@@ -2236,5 +2247,6 @@ module.exports = {
   isRateLimitError,
   parseGitHubUsername,
   clearGitHubAnalysisMemoryCache,
+  getGitHubAnalysisMemoryCacheSize: () => memoryAnalysisCache.size,
   invalidateSkillGapCachesForGitHub
 };
