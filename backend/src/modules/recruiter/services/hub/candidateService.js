@@ -5,7 +5,9 @@ const { listCandidates, getCandidatesByIds } = require('../matching/matchingServ
 const {
   formatCandidateCard,
   formatCandidateComparison,
-  calculateProfileCompleteness
+  calculateProfileCompleteness,
+  measuredScore,
+  averageAvailableScores
 } = require('../../utils/hub/candidateFormatter');
 
 const normalizeArrayFilter = (value) => {
@@ -55,7 +57,9 @@ const sortCandidates = (candidates = [], sortBy = 'score-desc') => {
 
 const enrichCandidates = async (candidates = []) => {
   const missingIds = candidates
-    .filter((candidate) => candidate.lastActive === undefined || candidate.experienceLevel === undefined)
+    .filter(
+      (candidate) => candidate.lastActive === undefined || candidate.experienceLevel === undefined
+    )
     .map((candidate) => String(candidate.userId || candidate.id || ''))
     .filter(Boolean);
   const users = missingIds.length
@@ -210,27 +214,41 @@ const analyzeRecruiterCandidate = async ({
   const candidate = await getRecruiterCandidateDetails(candidateId, organizationId);
   if (!candidate) return null;
 
+  const signals = [
+    { key: 'readiness', label: 'Readiness', score: measuredScore(candidate.readinessScore) },
+    { key: 'github', label: 'GitHub', score: measuredScore(candidate.githubScore) },
+    { key: 'resume', label: 'Resume', score: measuredScore(candidate.resumeScore) }
+  ];
+  const availableSignalScore = averageAvailableScores(signals.map((signal) => signal.score));
   const analysis = {
+    assessmentType: 'deterministic',
     summary:
-      candidate.aiSummary || `${candidate.name} shows strongest traction in ${candidate.stack}.`,
-    strengths: [
-      `Readiness score ${candidate.readinessScore}`,
-      candidate.githubScore == null
-        ? 'GitHub evidence is unavailable'
-        : `GitHub score ${candidate.githubScore}`,
-      `${(candidate.skills || []).slice(0, 3).join(', ')}`
-    ].filter((value) => String(value || '').trim().length > 0),
+      availableSignalScore === null
+        ? 'No valid score measurements are available. Missing evidence does not establish low ability.'
+        : `Assessment uses ${signals.filter((signal) => signal.score !== null).length} of 3 available score measurements. Review the underlying evidence before outreach.`,
+    strengths: signals
+      .filter((signal) => signal.score !== null)
+      .map((signal) => `${signal.label} score ${signal.score}/100`),
     weaknesses: (candidate.skillGaps || []).slice(0, 3),
     recommendation:
-      candidate.readinessScore >= 75
-        ? 'Strong fit for outreach.'
-        : 'Promising candidate for pipeline nurture.',
-    confidenceScore: Math.round(
-      (Number(candidate.readinessScore || 0) +
-        Number(candidate.githubScore || 0) +
-        Number(candidate.resumeScore || 0)) /
-        3
-    )
+      availableSignalScore === null
+        ? 'Collect evidence before assessment.'
+        : 'Review recorded evidence for outreach; this is not a job-match recommendation.',
+    availableSignalScore,
+    // Compatibility alias for existing API consumers; this is not statistical confidence.
+    confidenceScore: availableSignalScore,
+    scoreExplanation:
+      'Rounded arithmetic mean of available readiness, GitHub and resume scores. Missing values are excluded; zero is included. Readiness can reuse the same underlying sources. This is neither statistical confidence nor a job-match score.',
+    evidence: signals.map((signal) => ({
+      ...signal,
+      available: signal.score !== null,
+      recordedAt: candidate.assessmentEvidence?.[signal.key]?.recordedAt || null,
+      explanation:
+        candidate.assessmentEvidence?.[signal.key]?.explanation ||
+        (signal.score === null
+          ? 'No valid measurement is available.'
+          : 'Source timestamp is not recorded.')
+    }))
   };
 
   await AuditLog.create({

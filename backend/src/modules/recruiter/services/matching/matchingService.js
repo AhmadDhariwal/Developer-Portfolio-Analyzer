@@ -12,6 +12,7 @@ const { deleteJobWithPipeline } = require('./jobLifecycleService');
 const PlatformSettings = require('../../../super-admin/models/platformSettings');
 const { escapeRegex } = require('../../../../core/utils/validation');
 const { requireObjectId, validateCandidateIds } = require('../../utils/recruiterValidation');
+const { measuredScore, averageAvailableScores } = require('../../utils/hub/candidateFormatter');
 
 const DEVELOPER_ROLE_VALUES = Object.freeze(['developer', 'user']);
 
@@ -81,6 +82,7 @@ const sanitizePublicCandidate = (candidate = {}) => ({
   consistencyScore: Number(candidate.consistencyScore || 0),
   growthPotentialScore: Number(candidate.growthPotentialScore || 0),
   score: Number(candidate.score || 0),
+  assessmentEvidence: candidate.assessmentEvidence,
   skills: Array.isArray(candidate.skills) ? candidate.skills : [],
   skillScores: Array.isArray(candidate.skillScores) ? candidate.skillScores : [],
   projects: Array.isArray(candidate.projects)
@@ -313,6 +315,52 @@ const hydrateUserCandidates = async (users = []) => {
     };
 
     candidate.score = baseCandidateScore(candidate);
+    // Presentation metadata only: do not change the matching inputs above.
+    const githubTimestamp = analysis?.githubSignals?.analyzedAt || null;
+    const githubMeasured = Boolean(
+      githubTimestamp ||
+      analysis?.githubSignals?.acceptedResult ||
+      analysis?.githubAnalysisHistory?.length ||
+      Number(analysis?.githubScore) > 0
+    );
+    const assessedGithubScore = githubMeasured ? measuredScore(githubScore) : null;
+    const assessedResumeScore = resume
+      ? averageAvailableScores([
+          resume.atsScore,
+          resume.keywordDensity,
+          resume.formatScore,
+          resume.contentQuality
+        ])
+      : null;
+    const readinessAvailable =
+      assessedGithubScore !== null ||
+      assessedResumeScore !== null ||
+      Boolean(sprint || weeklyReport || projects.length);
+    candidate.assessmentEvidence = {
+      readiness: {
+        score: readinessAvailable ? measuredScore(candidate.score) : null,
+        recordedAt: null,
+        explanation: readinessAvailable
+          ? 'Existing weighted readiness score; derived from recorded inputs, not an independent measurement.'
+          : 'No recorded inputs support a readiness assessment.'
+      },
+      github: {
+        score: assessedGithubScore,
+        recordedAt: githubTimestamp,
+        explanation:
+          assessedGithubScore === null
+            ? 'No valid GitHub score with supporting analysis evidence is available.'
+            : 'Recorded GitHub analysis score; availability does not establish current skill or freshness.'
+      },
+      resume: {
+        score: assessedResumeScore,
+        recordedAt: resume?.analyzedAt || null,
+        explanation:
+          assessedResumeScore === null
+            ? 'No valid resume score measurements are available.'
+            : 'Mean of available ATS, keyword density, format and content measurements; resume claims are not verified ability.'
+      }
+    };
     return candidate;
   });
 };
