@@ -13,7 +13,10 @@
 
   <div class="match-card__meta">
     <div>
-      <label>Skill</label><strong>{{ match?.skillMatchPercent || 0 }}%</strong>
+      <label>Skill</label
+      ><strong>{{
+        match?.skillMatchPercent == null ? 'Unavailable' : match.skillMatchPercent + '%'
+      }}</strong>
     </div>
     <div>
       <label>Confidence</label><strong>{{ match?.confidenceScore || 0 }}%</strong>
@@ -24,7 +27,9 @@
   </div>
 
   <div class="match-card__insight">
-    <span class="match-card__badge">{{ match?.experienceMatch || 'Moderate' }} experience fit</span>
+    <span class="match-card__badge"
+      >Experience fit · {{ match?.experienceMatch || 'Unavailable' }}</span
+    >
     <span class="match-card__status" *ngIf="match?.status">{{ match.status }}</span>
   </div>
 
@@ -37,7 +42,12 @@
   </div>
 
   <div class="match-card__actions" *ngIf="!hideActions">
-    <button type="button" class="match-card__btn" [disabled]="isShortlisted" (click)="shortlist.emit(match)">
+    <button
+      type="button"
+      class="match-card__btn"
+      [disabled]="isShortlisted"
+      (click)="shortlist.emit(match)"
+    >
       {{ isShortlisted ? 'Shortlisted' : 'Shortlist' }}
     </button>
     <button

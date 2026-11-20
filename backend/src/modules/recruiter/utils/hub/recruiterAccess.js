@@ -1,7 +1,7 @@
 const Membership = require('../../../admin/models/membership');
 const Team = require('../../../admin/models/team');
 
-const toId = (value) => String(value || '').trim();
+const { requireObjectId } = require('../recruiterValidation');
 
 const getRecruiterMemberships = async ({ recruiterId, organizationId }) => {
   return Membership.find({
@@ -9,14 +9,18 @@ const getRecruiterMemberships = async ({ recruiterId, organizationId }) => {
     organizationId,
     status: 'active'
   })
-    .populate('teamId', 'name')
+    .populate({
+      path: 'teamId',
+      select: 'name',
+      match: { organizationId, isActive: { $ne: false } }
+    })
     .select('teamId role organizationId')
     .lean();
 };
 
 const getRecruiterScope = async (req) => {
-  const recruiterId = toId(req.user?._id);
-  const organizationId = toId(req.organizationId);
+  const recruiterId = requireObjectId(req.user?._id, 'recruiterId');
+  const organizationId = requireObjectId(req.organizationId, 'organizationId');
   const memberships = await getRecruiterMemberships({ recruiterId, organizationId });
   const teams = memberships
     .filter((membership) => membership.teamId?._id)
@@ -36,6 +40,7 @@ const getRecruiterScope = async (req) => {
 
 const assertRecruiterTeamAccess = async ({ recruiterId, organizationId, teamId }) => {
   if (!teamId) return null;
+  teamId = requireObjectId(teamId, 'teamId');
 
   const membership = await Membership.findOne({
     userId: recruiterId,
@@ -43,7 +48,11 @@ const assertRecruiterTeamAccess = async ({ recruiterId, organizationId, teamId }
     teamId,
     status: 'active'
   })
-    .populate('teamId', 'name')
+    .populate({
+      path: 'teamId',
+      select: 'name',
+      match: { organizationId, isActive: { $ne: false } }
+    })
     .lean();
 
   if (!membership?.teamId?._id) {

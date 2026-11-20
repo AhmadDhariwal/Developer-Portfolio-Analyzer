@@ -7,7 +7,7 @@ const clamp = (value, min = 0, max = 100) => Math.max(min, Math.min(max, Number(
 
 const normalizeFeatureMatrix = (rows) => {
   const bounds = RANKING_FEATURES.reduce((acc, key) => {
-    const values = rows.map((row) => Number(row.features[key]) || 0);
+    const values = rows.map((row) => row.features[key]).filter(Number.isFinite);
     const min = Math.min(...values);
     const max = Math.max(...values);
     acc[key] = { min, max };
@@ -19,9 +19,11 @@ const normalizeFeatureMatrix = (rows) => {
 
     RANKING_FEATURES.forEach((key) => {
       const { min, max } = bounds[key];
-      const raw = Number(row.features[key]) || 0;
+      const raw = row.features[key];
 
-      if (max === min) {
+      if (!Number.isFinite(raw)) {
+        normalized[key] = null;
+      } else if (max === min) {
         normalized[key] = clamp(raw);
       } else {
         normalized[key] = clamp(((raw - min) / (max - min)) * 100);

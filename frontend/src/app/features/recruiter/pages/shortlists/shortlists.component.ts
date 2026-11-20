@@ -1,5 +1,4 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { RecruiterHubService } from '../../services/recruiter-hub.service';
 import { RecruiterMatchService } from '../../services/recruiter-match.service';
 
 type ConfirmState = {
@@ -28,23 +27,22 @@ export class ShortlistsComponent implements OnInit {
   });
   private pendingConfirmAction: (() => void) | null = null;
 
-  constructor(
-    private readonly hubService: RecruiterHubService,
-    private readonly matchService: RecruiterMatchService,
-  ) {}
+  constructor(private readonly matchService: RecruiterMatchService) {}
 
   ngOnInit(): void {
     this.loadShortlists();
   }
 
   get activeCount(): number {
-    return this.shortlists.filter((item) => String(item?.status || '').toLowerCase() !== 'interview')
-      .length;
+    return this.shortlists.filter(
+      (item) => String(item?.status || '').toLowerCase() !== 'interview',
+    ).length;
   }
 
   get interviewCount(): number {
-    return this.shortlists.filter((item) => String(item?.status || '').toLowerCase() === 'interview')
-      .length;
+    return this.shortlists.filter(
+      (item) => String(item?.status || '').toLowerCase() === 'interview',
+    ).length;
   }
 
   loadShortlists(): void {
@@ -74,7 +72,6 @@ export class ShortlistsComponent implements OnInit {
           next: () => {
             this.notice = `${item?.candidate?.name || 'Candidate'} moved to ${nextStatus}.`;
             this.loadShortlists();
-            this.hubService.clearCache();
           },
           error: (err) => {
             this.error = err?.error?.message || 'Unable to update this shortlist entry.';
@@ -94,7 +91,6 @@ export class ShortlistsComponent implements OnInit {
           next: () => {
             this.notice = `${item?.candidate?.name || 'Candidate'} removed from shortlist.`;
             this.loadShortlists();
-            this.hubService.clearCache();
           },
           error: (err) => {
             this.error = err?.error?.message || 'Unable to remove this shortlist entry.';

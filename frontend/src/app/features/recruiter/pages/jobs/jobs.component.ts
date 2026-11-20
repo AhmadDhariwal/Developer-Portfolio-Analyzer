@@ -1,7 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { RecruiterHubService } from '../../services/recruiter-hub.service';
 import { RecruiterJobService } from '../../services/recruiter-job.service';
 
 type ConfirmState = {
@@ -51,7 +50,6 @@ export class JobsComponent implements OnInit {
   private pendingConfirmAction: (() => void) | null = null;
 
   constructor(
-    private readonly hubService: RecruiterHubService,
     private readonly jobService: RecruiterJobService,
     private readonly router: Router,
   ) {}
@@ -152,7 +150,6 @@ export class JobsComponent implements OnInit {
           next: (response) => {
             this.notice = `${job?.title || 'Job'} archived.`;
             this.replaceJob(response?.job || { ...job, status: 'closed' });
-            this.hubService.clearCache();
           },
           error: (err) => {
             this.error = this.extractApiError(err, 'Unable to archive this job.');
@@ -178,7 +175,6 @@ export class JobsComponent implements OnInit {
             if (this.editingJobId === String(job?._id || '')) {
               this.resetForm();
             }
-            this.hubService.clearCache();
           },
           error: (err) => {
             this.error = this.extractApiError(err, 'Unable to delete this job.');
@@ -262,7 +258,6 @@ export class JobsComponent implements OnInit {
         }
         this.resetForm();
         this.saving = false;
-        this.hubService.clearCache();
       },
       error: (err) => {
         this.saving = false;

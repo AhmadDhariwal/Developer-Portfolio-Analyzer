@@ -115,7 +115,6 @@ export class RecruiterProfileComponent implements OnInit {
         });
         this.notice = 'Recruiter profile updated successfully.';
         this.saving = false;
-        this.hubService.clearCache();
       },
       error: (err) => {
         this.saving = false;
@@ -134,7 +133,7 @@ export class RecruiterProfileComponent implements OnInit {
     const control = this.profileForm.get(controlName);
     return Boolean(
       this.fieldErrors[controlName] ||
-        (control && control.invalid && (control.touched || control.dirty)),
+      (control && control.invalid && (control.touched || control.dirty)),
     );
   }
 
@@ -171,9 +170,25 @@ export class RecruiterProfileComponent implements OnInit {
     const current = this.profile;
     return [
       { label: 'Identity', done: Boolean(current?.name && current?.email) },
-      { label: 'Contact', done: Boolean(current?.phoneNumber || current?.linkedin || current?.githubUsername) },
-      { label: 'Background', done: Boolean(current?.recruiterDetails?.education || current?.recruiterDetails?.yearsOfExperience || current?.recruiterDetails?.certifications?.length) },
-      { label: 'Sourcing Preferences', done: Boolean(current?.recruiterPreferences?.preferredStacks?.length || current?.recruiterPreferences?.preferredLocations?.length) },
+      {
+        label: 'Contact',
+        done: Boolean(current?.phoneNumber || current?.linkedin || current?.githubUsername),
+      },
+      {
+        label: 'Background',
+        done: Boolean(
+          current?.recruiterDetails?.education ||
+          current?.recruiterDetails?.yearsOfExperience ||
+          current?.recruiterDetails?.certifications?.length,
+        ),
+      },
+      {
+        label: 'Sourcing Preferences',
+        done: Boolean(
+          current?.recruiterPreferences?.preferredStacks?.length ||
+          current?.recruiterPreferences?.preferredLocations?.length,
+        ),
+      },
     ];
   }
 
@@ -181,15 +196,15 @@ export class RecruiterProfileComponent implements OnInit {
     if (profile?.organization?._id || profile?.organization?.name) {
       this.tenantContext.syncOrganization({
         id: String(profile?.organization?._id || this.tenantContext.snapshot.organizationId || ''),
-        name: String(profile?.organization?.name || this.tenantContext.snapshot.organizationName || ''),
-        myRole: 'recruiter'
+        name: String(
+          profile?.organization?.name || this.tenantContext.snapshot.organizationName || '',
+        ),
+        myRole: 'recruiter',
       });
     }
 
     this.organizationName =
-      profile?.organization?.name ||
-      this.tenantContext.snapshot.organizationName ||
-      '';
+      profile?.organization?.name || this.tenantContext.snapshot.organizationName || '';
     this.connectedTeams = Array.isArray(profile?.teams)
       ? profile.teams.map((team) => team.name).filter(Boolean)
       : [];

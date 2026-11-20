@@ -40,10 +40,13 @@ const formatCandidateComparison = (candidate = {}) => ({
   stack: candidate.stack || '',
   experience: Number(candidate.yearsOfExperience || 0),
   readinessScore: Number(candidate.score || 0),
-  githubScore: Number(candidate.githubScore || 0),
+  githubScore: candidate.githubScore ?? null,
   resumeScore: Number(candidate.resumeScore || 0),
   projectQuality: Array.isArray(candidate.projects)
-    ? Math.round(candidate.projects.reduce((sum, project) => sum + Number(project?.impactScore || 0), 0) / Math.max(candidate.projects.length, 1))
+    ? Math.round(
+        candidate.projects.reduce((sum, project) => sum + Number(project?.impactScore || 0), 0) /
+          Math.max(candidate.projects.length, 1)
+      )
     : 0,
   skillGaps: Array.isArray(candidate.skillGaps) ? candidate.skillGaps : [],
   recommendation: toTitle(candidate.aiInsight?.recommendation || candidate.aiSummary || '')

@@ -1,39 +1,17 @@
 import { Injectable } from '@angular/core';
-import { Observable, throwError } from 'rxjs';
-import { catchError, shareReplay } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 import { ApiService } from '../../../shared/services/api.service';
 
 @Injectable()
 export class RecruiterHubService {
-  private dashboard$?: Observable<any>;
-  private analytics$?: Observable<any>;
-
   constructor(private readonly api: ApiService) {}
 
-  getDashboard(forceRefresh = false): Observable<any> {
-    if (!this.dashboard$ || forceRefresh) {
-      this.dashboard$ = this.api.getRecruiterHubDashboard().pipe(
-        catchError((error) => {
-          this.dashboard$ = undefined;
-          return throwError(() => error);
-        }),
-        shareReplay(1),
-      );
-    }
-    return this.dashboard$;
+  getDashboard(): Observable<any> {
+    return this.api.getRecruiterHubDashboard();
   }
 
-  getAnalytics(forceRefresh = false): Observable<any> {
-    if (!this.analytics$ || forceRefresh) {
-      this.analytics$ = this.api.getRecruiterHubAnalytics().pipe(
-        catchError((error) => {
-          this.analytics$ = undefined;
-          return throwError(() => error);
-        }),
-        shareReplay(1),
-      );
-    }
-    return this.analytics$;
+  getAnalytics(): Observable<any> {
+    return this.api.getRecruiterHubAnalytics();
   }
 
   getActivity(params: Record<string, string | number> = {}): Observable<any> {
@@ -46,10 +24,5 @@ export class RecruiterHubService {
 
   updateProfile(payload: Record<string, unknown>): Observable<any> {
     return this.api.updateRecruiterHubProfile(payload);
-  }
-
-  clearCache(): void {
-    this.dashboard$ = undefined;
-    this.analytics$ = undefined;
   }
 }

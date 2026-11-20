@@ -1,25 +1,39 @@
 const { rankCandidates } = require('../../services/matching/aiRankingService');
 
-const averageWeighted = (breakdown = {}, keys = []) => {
-  if (!keys.length) return 0;
-  const values = keys.map((key) => Number(breakdown?.[key]?.weighted || 0));
-  return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+const averageAvailable = (values) => {
+  const available = values.filter(Number.isFinite);
+  if (!available.length) return null;
+  return Math.round(available.reduce((sum, value) => sum + value, 0) / available.length);
 };
 
 const normalizeMatchRecord = (rankedRow = {}, job = {}) => ({
   jobId: String(job?._id || ''),
-  candidateId: String(rankedRow.candidateId || rankedRow.candidate?.userId || rankedRow.candidate?.id || ''),
+  candidateId: String(rankedRow.candidate?.userId || rankedRow.candidateId || ''),
   matchScore: Number(rankedRow.rankScore || 0),
-  skillMatchPercent: averageWeighted(rankedRow.scoreBreakdown, ['skillCoverage', 'requiredSkillAlignment']),
-  experienceMatch: Number(rankedRow.rawFeatures?.experienceAlignment || 0) >= 70 ? 'Strong' : 'Moderate',
-  githubProjectScore: averageWeighted(rankedRow.scoreBreakdown, ['githubSignal', 'projectImpact']),
+  skillMatchPercent: rankedRow.rawFeatures?.skillMatch ?? null,
+  experienceMatch:
+    rankedRow.rawFeatures?.experience == null
+      ? 'Unavailable'
+      : rankedRow.rawFeatures.experience >= 70
+        ? 'Strong'
+        : 'Moderate',
+  githubProjectScore: averageAvailable([
+    rankedRow.rawFeatures?.github,
+    rankedRow.rawFeatures?.projectQuality
+  ]),
   readinessScore: Number(rankedRow.candidate?.score || 0),
-  confidenceScore: Math.round((Number(rankedRow.rankScore || 0) + averageWeighted(rankedRow.scoreBreakdown, ['consistency', 'growthTrajectory'])) / 2),
+  confidenceScore: averageAvailable([
+    rankedRow.rankScore,
+    averageAvailable([rankedRow.rawFeatures?.consistency, rankedRow.rawFeatures?.growth])
+  ]),
   recommendation: String(rankedRow.aiInsight?.recommendation || ''),
   strengths: Array.isArray(rankedRow.aiInsight?.strengths) ? rankedRow.aiInsight.strengths : [],
   weaknesses: Array.isArray(rankedRow.aiInsight?.weaknesses) ? rankedRow.aiInsight.weaknesses : [],
   explanation: String(rankedRow.aiInsight?.summary || ''),
-  breakdown: rankedRow.scoreBreakdown || {}
+  breakdown: {
+    ...rankedRow.scoreBreakdown,
+    matchedSkills: rankedRow.rawFeatures?.matchedSkills || []
+  }
 });
 
 const generateMatches = ({ job, candidates = [] }) => {

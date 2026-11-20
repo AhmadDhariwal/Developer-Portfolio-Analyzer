@@ -29,7 +29,7 @@
       <tr>
         <td>GitHub</td>
         <td *ngFor="let item of items" [class.is-best]="isBest('githubScore', item.githubScore)">
-          {{ item.githubScore || 0 }}
+          {{ item.githubScore ?? 'Unavailable' }}
         </td>
       </tr>
       <tr>

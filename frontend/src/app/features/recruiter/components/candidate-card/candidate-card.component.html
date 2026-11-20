@@ -21,7 +21,7 @@
 
   <div class="candidate-card__metrics">
     <div>
-      <label>GitHub</label><strong>{{ candidate?.githubScore || 0 }}</strong>
+      <label>GitHub</label><strong>{{ candidate?.githubScore ?? 'Unavailable' }}</strong>
     </div>
     <div>
       <label>Resume</label><strong>{{ candidate?.resumeScore || 0 }}</strong>

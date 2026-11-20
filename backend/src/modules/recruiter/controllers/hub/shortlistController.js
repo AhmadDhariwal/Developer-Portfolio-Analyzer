@@ -28,10 +28,13 @@ const createShortlist = async (req, res) => {
       statusCode: 201,
       timestamp: new Date()
     });
+    req.recruiterAuditRecorded = true;
     return res.status(201).json({ shortlist });
   } catch (error) {
     console.error('Recruiter hub create shortlist error:', error.message);
-    return res.status(error.statusCode || 500).json({ message: error.message || 'Failed to shortlist candidate.' });
+    return res
+      .status(error.statusCode || 500)
+      .json({ message: error.message || 'Failed to shortlist candidate.' });
   }
 };
 
@@ -42,14 +45,20 @@ const getShortlists = async (req, res) => {
     return res.status(200).json({ shortlists });
   } catch (error) {
     console.error('Recruiter hub list shortlists error:', error.message);
-    return res.status(error.statusCode || 500).json({ message: error.message || 'Failed to load shortlists.' });
+    return res
+      .status(error.statusCode || 500)
+      .json({ message: error.message || 'Failed to load shortlists.' });
   }
 };
 
 const patchShortlist = async (req, res) => {
   try {
     const scope = await getRecruiterScope(req);
-    const shortlist = await updateShortlist({ ...scope, shortlistId: req.params.id, payload: req.body || {} });
+    const shortlist = await updateShortlist({
+      ...scope,
+      shortlistId: req.params.id,
+      payload: req.body || {}
+    });
     if (!shortlist) return res.status(404).json({ message: 'Shortlist entry not found.' });
     await AuditLog.create({
       actor: scope.recruiterId,
@@ -68,10 +77,13 @@ const patchShortlist = async (req, res) => {
       statusCode: 200,
       timestamp: new Date()
     });
+    req.recruiterAuditRecorded = true;
     return res.status(200).json({ shortlist });
   } catch (error) {
     console.error('Recruiter hub patch shortlist error:', error.message);
-    return res.status(error.statusCode || 500).json({ message: error.message || 'Failed to update shortlist.' });
+    return res
+      .status(error.statusCode || 500)
+      .json({ message: error.message || 'Failed to update shortlist.' });
   }
 };
 
@@ -96,10 +108,13 @@ const deleteShortlist = async (req, res) => {
       statusCode: 200,
       timestamp: new Date()
     });
+    req.recruiterAuditRecorded = true;
     return res.status(200).json({ message: 'Shortlist removed successfully.' });
   } catch (error) {
     console.error('Recruiter hub delete shortlist error:', error.message);
-    return res.status(error.statusCode || 500).json({ message: error.message || 'Failed to remove shortlist.' });
+    return res
+      .status(error.statusCode || 500)
+      .json({ message: error.message || 'Failed to remove shortlist.' });
   }
 };
 

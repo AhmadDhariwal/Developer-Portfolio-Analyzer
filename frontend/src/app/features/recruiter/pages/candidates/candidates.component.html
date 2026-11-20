@@ -15,7 +15,7 @@
     [model]="filters"
     [stackOptions]="stackOptions"
     [locationOptions]="locationOptions"
-    (apply)="applyFilters()"
+    (apply)="applyFilters($event)"
     (clear)="clearFilters()"
   />
 
@@ -65,12 +65,7 @@
   <div class="message message--error" *ngIf="error">{{ error }}</div>
   <div class="message message--success" *ngIf="notice">{{ notice }}</div>
 
-  <app-recruiter-loader
-    *ngIf="loading"
-    label="Loading candidates..."
-    variant="cards"
-    [count]="6"
-  />
+  <app-recruiter-loader *ngIf="loading" label="Loading candidates..." variant="cards" [count]="6" />
 
   <div class="card-grid" *ngIf="!loading && candidates.length > 0">
     <app-candidate-card
@@ -105,7 +100,7 @@
   </div>
 
   <app-recruiter-empty-state
-    *ngIf="!loading && candidates.length === 0"
+    *ngIf="!loading && !error && candidates.length === 0"
     title="No candidates found"
     message="Try widening the stack, score, or skills filters to surface more of the scoped talent pool."
   />

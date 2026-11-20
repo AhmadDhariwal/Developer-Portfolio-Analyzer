@@ -34,6 +34,7 @@ const updateRecruiterJob = async (req, res) => {
   try {
     const job = await updateJob({
       organizationId: req.organizationId,
+      recruiterId: req.user._id,
       jobId: req.params.id,
       payload: req.body || {}
     });
@@ -57,6 +58,7 @@ const deleteRecruiterJob = async (req, res) => {
   try {
     const deleted = await deleteJob({
       organizationId: req.organizationId,
+      recruiterId: req.user._id,
       jobId: req.params.id
     });
 
@@ -77,7 +79,7 @@ const deleteRecruiterJob = async (req, res) => {
 
 const getRecruiterJobs = async (req, res) => {
   try {
-    const jobs = await listJobs({ organizationId: req.organizationId });
+    const jobs = await listJobs({ organizationId: req.organizationId, recruiterId: req.user._id });
     return res.status(200).json({ jobs });
   } catch (error) {
     if (error.code === 400) {

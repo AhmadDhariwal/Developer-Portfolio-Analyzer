@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { CandidateService } from '../../services/candidate.service';
-import { RecruiterHubService } from '../../services/recruiter-hub.service';
 import { RecruiterMatchService } from '../../services/recruiter-match.service';
+import { CandidateFilters, DEFAULT_CANDIDATE_FILTERS } from '../../models/recruiter.model';
 
 @Component({
   selector: 'app-recruiter-candidates',
@@ -15,24 +17,16 @@ export class CandidatesComponent implements OnInit {
   error = '';
   notice = '';
   candidates: any[] = [];
-  filters: any = {
-    search: '',
-    stack: '',
-    location: '',
-    skills: '',
-    minReadiness: 0,
-    sortBy: 'score-desc',
-    page: 1,
-    limit: 12,
-  };
+  filters: CandidateFilters = { ...DEFAULT_CANDIDATE_FILTERS };
   meta: any = { page: 1, totalPages: 1, total: 0 };
   stackOptions: any[] = [];
   locationOptions: any[] = [];
   private readonly compareIds = new Set<string>();
+  private readonly destroyRef = inject(DestroyRef);
+  private candidateRequest?: Subscription;
 
   constructor(
     private readonly candidateService: CandidateService,
-    private readonly hubService: RecruiterHubService,
     private readonly matchService: RecruiterMatchService,
     private readonly router: Router,
   ) {}
@@ -46,8 +40,8 @@ export class CandidatesComponent implements OnInit {
   }
 
   get highReadinessCount(): number {
-    return this.candidates.filter((candidate) =>
-      Number(candidate?.readinessScore || candidate?.score || 0) >= 80,
+    return this.candidates.filter(
+      (candidate) => Number(candidate?.readinessScore || candidate?.score || 0) >= 80,
     ).length;
   }
 
@@ -71,44 +65,39 @@ export class CandidatesComponent implements OnInit {
     this.loading = true;
     this.error = '';
     this.notice = '';
-    this.candidateService.listCandidates(this.filters).subscribe({
-      next: (response) => {
-        this.candidates = response?.candidates || [];
-        this.meta = response?.meta || { page: 1, totalPages: 1, total: this.candidates.length };
-        this.stackOptions = (response?.filters?.stacks || []).map((label: string) => ({
-          value: label,
-          label,
-        }));
-        this.locationOptions = (response?.filters?.locations || []).map((label: string) => ({
-          value: label,
-          label,
-        }));
-        this.loading = false;
-      },
-      error: (err) => {
-        this.candidates = [];
-        this.error = err?.error?.message || 'Unable to load candidates right now.';
-        this.loading = false;
-      },
-    });
+    this.candidateRequest?.unsubscribe();
+    this.candidateRequest = this.candidateService
+      .listCandidates(this.filters)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          this.candidates = response?.candidates || [];
+          this.meta = response?.meta || { page: 1, totalPages: 1, total: this.candidates.length };
+          this.stackOptions = (response?.filters?.stacks || []).map((label: string) => ({
+            value: label,
+            label,
+          }));
+          this.locationOptions = (response?.filters?.locations || []).map((label: string) => ({
+            value: label,
+            label,
+          }));
+          this.loading = false;
+        },
+        error: (err) => {
+          this.candidates = [];
+          this.error = err?.error?.message || 'Unable to load candidates right now.';
+          this.loading = false;
+        },
+      });
   }
 
-  applyFilters(): void {
-    this.filters = { ...this.filters, page: 1 };
+  applyFilters(filters: CandidateFilters): void {
+    this.filters = { ...filters, page: 1 };
     this.loadCandidates();
   }
 
   clearFilters(): void {
-    this.filters = {
-      search: '',
-      stack: '',
-      location: '',
-      skills: '',
-      minReadiness: 0,
-      sortBy: 'score-desc',
-      page: 1,
-      limit: 12,
-    };
+    this.filters = { ...DEFAULT_CANDIDATE_FILTERS };
     this.loadCandidates();
   }
 
@@ -126,16 +115,18 @@ export class CandidatesComponent implements OnInit {
     const candidateId = this.getCandidateId(candidate);
     if (!candidateId) return;
 
-    this.matchService.addToShortlist({ candidateId }).subscribe({
-      next: () => {
-        this.notice = `${candidate?.name || candidate?.fullName || 'Candidate'} added to shortlist.`;
-        this.error = '';
-        this.hubService.clearCache();
-      },
-      error: (err) => {
-        this.error = err?.error?.message || 'Unable to shortlist this candidate.';
-      },
-    });
+    this.matchService
+      .addToShortlist({ candidateId })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.notice = `${candidate?.name || candidate?.fullName || 'Candidate'} added to shortlist.`;
+          this.error = '';
+        },
+        error: (err) => {
+          this.error = err?.error?.message || 'Unable to shortlist this candidate.';
+        },
+      });
   }
 
   toggleCompare(candidate: any): void {

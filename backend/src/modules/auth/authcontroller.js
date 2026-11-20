@@ -6,9 +6,13 @@ const PendingRegistration = require('./models/pendingRegistration');
 const Invitation = require('../admin/models/invitation');
 const Organization = require('../admin/models/organization');
 const Membership = require('../admin/models/membership');
+const Team = require('../admin/models/team');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { registerAuthFailure, clearAuthFailures } = require('../../core/middleware/securityMiddleware');
+const {
+  registerAuthFailure,
+  clearAuthFailures
+} = require('../../core/middleware/securityMiddleware');
 const { createOtp, validateOtp } = require('./services/otpService');
 const { getSettingsSnapshotSync } = require('../super-admin/services/platformSettingsService');
 const { hashValue, matchesHashedValue } = require('../../core/utils/hash');
@@ -214,7 +218,7 @@ const loadValidRecruiterInvitationByToken = async (rawToken) => {
   }
 
   if (new Date(invitation.expiresAt).getTime() < Date.now()) {
-    await Invitation.findByIdAndUpdate(invitation._id, { status: 'expired' });
+    await Invitation.updateOne({ _id: invitation._id, status: 'pending' }, { status: 'expired' });
     return { error: { status: 400, message: 'Invitation has expired.' } };
   }
 
@@ -716,119 +720,98 @@ const acceptInvite = async (req, res) => {
     const requestedPhone = normalizePhone(req.body?.phoneNumber);
     const requestedCountryCode = normalizeCountryCode(req.body?.countryCode);
 
-    const existingUser = await User.findOne({ email: invitation.email });
-
-    if (
-      existingUser?.organizationId &&
-      String(existingUser.organizationId) !== String(invitation.organizationId)
-    ) {
-      return res.status(403).json({
-        message: 'This invitation cannot be accepted outside the assigned organization.'
-      });
-    }
-
-    if (
-      existingUser?.role &&
-      !['recruiter', 'user', 'developer'].includes(String(existingUser.role).toLowerCase())
-    ) {
-      return res
-        .status(409)
-        .json({ message: 'This email is already linked to a restricted account role.' });
-    }
-
-    let user = existingUser;
-    if (!user) {
-      const passwordPolicy = validatePasswordAgainstPolicy(requestedPassword);
-      if (!passwordPolicy.valid) {
-        return res.status(400).json({ message: passwordPolicy.message });
+    const user = await User.db.transaction(async (session) => {
+      const claimed = await Invitation.findOneAndUpdate(
+        { _id: invitation._id, token, status: 'pending', expiresAt: { $gt: new Date() } },
+        { $set: { status: 'accepted' } },
+        { session, new: true }
+      );
+      if (!claimed) {
+        throw Object.assign(new Error('Invitation is no longer pending.'), { statusCode: 400 });
       }
-    }
 
-    if (user) {
-      if (requestedPassword) {
+      const organizationExists = await Organization.exists({ _id: claimed.organizationId }).session(
+        session
+      );
+      if (!organizationExists) {
+        throw Object.assign(new Error('The assigned organization is unavailable.'), {
+          statusCode: 409
+        });
+      }
+      if (claimed.teamId) {
+        const teamExists = await Team.exists({
+          _id: claimed.teamId,
+          organizationId: claimed.organizationId
+        }).session(session);
+        if (!teamExists) {
+          throw Object.assign(new Error('The assigned team is unavailable.'), { statusCode: 409 });
+        }
+      }
+
+      let account = await User.findOne({ email: claimed.email }).session(session);
+      if (account?.organizationId && !account.organizationId.equals(claimed.organizationId)) {
+        throw Object.assign(
+          new Error('This invitation cannot be accepted outside the assigned organization.'),
+          { statusCode: 403 }
+        );
+      }
+      if (
+        account &&
+        (account.isActive === false || !['recruiter', 'user', 'developer'].includes(account.role))
+      ) {
+        throw Object.assign(new Error('This email is already linked to a restricted account.'), {
+          statusCode: 409
+        });
+      }
+      if (!account || requestedPassword) {
         const passwordPolicy = validatePasswordAgainstPolicy(requestedPassword);
         if (!passwordPolicy.valid) {
-          return res.status(400).json({ message: passwordPolicy.message });
+          throw Object.assign(new Error(passwordPolicy.message), { statusCode: 400 });
         }
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(requestedPassword, salt);
-        user.providers = Array.from(new Set([...(user.providers || []), 'local']));
       }
 
-      user.name = requestedName || invitation.name || user.name;
-      user.role = 'recruiter';
-      user.organizationId = invitation.organizationId;
-      user.isVerified = true;
-      user.isActive = true;
+      if (!account) {
+        account = new User({ email: claimed.email, isPublic: false });
+      } else {
+        account.sessionRevision = Number(account.sessionRevision || 0) + 1;
+      }
+      if (requestedPassword) {
+        account.password = await bcrypt.hash(requestedPassword, 10);
+        account.providers = [...new Set([...(account.providers || []), 'local'])];
+      }
+      account.name = requestedName || claimed.name || account.name || claimed.email.split('@')[0];
+      account.role = 'recruiter';
+      account.organizationId = claimed.organizationId;
+      account.isVerified = true;
+      account.isActive = true;
       if (requestedGithub) {
-        user.githubUsername = requestedGithub;
-        user.activeGithubUsername = requestedGithub;
+        account.githubUsername = requestedGithub;
+        account.activeGithubUsername = requestedGithub;
       }
-      if (requestedLinkedIn || requestedLinkedIn === '') {
-        user.linkedin = requestedLinkedIn;
-      }
-      if (requestedPhone || requestedPhone === '') {
-        user.phoneNumber = requestedPhone;
-      }
-      if (requestedCountryCode || requestedCountryCode === '') {
-        user.countryCode = requestedCountryCode;
+      if (req.body?.linkedin !== undefined) account.linkedin = requestedLinkedIn;
+      if (req.body?.phoneNumber !== undefined) account.phoneNumber = requestedPhone;
+      if (req.body?.countryCode !== undefined) account.countryCode = requestedCountryCode;
+      account.activeCareerStack = account.activeCareerStack || account.careerStack || 'Full Stack';
+      account.activeExperienceLevel =
+        account.activeExperienceLevel || account.experienceLevel || 'Student';
+      account.onboardingCompleted = true;
+      await account.save({ session });
+
+      for (const teamId of claimed.teamId ? [null, claimed.teamId] : [null]) {
+        await Membership.findOneAndUpdate(
+          { organizationId: claimed.organizationId, userId: account._id, teamId },
+          {
+            $set: { status: 'active' },
+            $setOnInsert: { role: 'member', invitedBy: claimed.invitedBy, joinedAt: new Date() }
+          },
+          { session, upsert: true, setDefaultsOnInsert: true }
+        );
       }
 
-      await user.save();
-    } else {
-      const fallbackName =
-        requestedName || invitation.name || String(invitation.email).split('@')[0] || 'Recruiter';
-      const fallbackGithub = requestedGithub;
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(requestedPassword, salt);
-
-      user = await User.create({
-        name: fallbackName,
-        email: invitation.email,
-        password: hashedPassword,
-        githubUsername: fallbackGithub,
-        activeGithubUsername: fallbackGithub,
-        role: 'recruiter',
-        organizationId: invitation.organizationId,
-        isPublic: false,
-        isVerified: true,
-        isActive: true,
-        linkedin: requestedLinkedIn,
-        phoneNumber: requestedPhone,
-        countryCode: requestedCountryCode,
-        activeCareerStack: 'Full Stack',
-        activeExperienceLevel: 'Student'
-      });
-    }
-
-    await Invitation.findByIdAndUpdate(invitation._id, {
-      status: 'accepted',
-      acceptedBy: user._id
+      claimed.acceptedBy = account._id;
+      await claimed.save({ session });
+      return account;
     });
-
-    // Ensure the recruiter has an active membership record for this org
-    // (used by orgMiddleware to resolve organization context on subsequent requests)
-    await Membership.findOneAndUpdate(
-      {
-        organizationId: invitation.organizationId,
-        userId: user._id,
-        teamId: null
-      },
-      {
-        $set: {
-          role: 'member',
-          status: 'active',
-          invitedBy: invitation.invitedBy,
-          joinedAt: new Date()
-        }
-      },
-      { upsert: true, setDefaultsOnInsert: true }
-    );
-
-    user.activeCareerStack = user.activeCareerStack || user.careerStack || 'Full Stack';
-    user.activeExperienceLevel = user.activeExperienceLevel || user.experienceLevel || 'Student';
-    user.onboardingCompleted = true;
-    await user.save();
 
     const profileCompleted = isRecruiterProfileComplete(user);
 
@@ -837,7 +820,7 @@ const acceptInvite = async (req, res) => {
       requiresProfileCompletion: !profileCompleted,
       redirectTo: profileCompleted
         ? '/app/recruiter/dashboard'
-        : '/app/profile?onboarding=recruiter',
+        : '/app/recruiter/profile?onboarding=recruiter',
       user: {
         _id: user.id,
         name: user.name,
@@ -864,7 +847,9 @@ const acceptInvite = async (req, res) => {
       }
     });
   } catch (error) {
-    return res.status(500).json({ message: error.message || 'Failed to accept invitation.' });
+    const status = error.statusCode || (error.code === 11000 ? 409 : 500);
+    const message = error.statusCode ? error.message : 'Failed to accept invitation.';
+    return res.status(status).json({ message });
   }
 };
 

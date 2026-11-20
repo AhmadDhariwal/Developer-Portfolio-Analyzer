@@ -15,7 +15,9 @@ const listCandidates = async (req, res) => {
     return res.status(200).json(result);
   } catch (error) {
     console.error('Recruiter hub candidates error:', error.message);
-    return res.status(error.statusCode || 500).json({ message: error.message || 'Failed to load candidates.' });
+    return res
+      .status(error.statusCode || 500)
+      .json({ message: error.message || 'Failed to load candidates.' });
   }
 };
 
@@ -38,7 +40,9 @@ const getCandidateDetails = async (req, res) => {
     return res.status(200).json({ candidate });
   } catch (error) {
     console.error('Recruiter hub candidate details error:', error.message);
-    return res.status(error.statusCode || 500).json({ message: error.message || 'Failed to load candidate details.' });
+    return res
+      .status(error.statusCode || 500)
+      .json({ message: error.message || 'Failed to load candidate details.' });
   }
 };
 
@@ -57,10 +61,13 @@ const analyzeCandidate = async (req, res) => {
       return res.status(404).json({ message: 'Candidate not found.' });
     }
 
+    req.recruiterAuditRecorded = true;
     return res.status(200).json({ analysis });
   } catch (error) {
     console.error('Recruiter hub candidate analysis error:', error.message);
-    return res.status(error.statusCode || 500).json({ message: error.message || 'Failed to analyze candidate.' });
+    return res
+      .status(error.statusCode || 500)
+      .json({ message: error.message || 'Failed to analyze candidate.' });
   }
 };
 

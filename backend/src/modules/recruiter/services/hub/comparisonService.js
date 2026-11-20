@@ -1,11 +1,11 @@
-const { getRecruiterCandidateDetails, formatCandidateComparison } = require('./candidateService');
+const { getRecruiterCandidatesByIds, formatCandidateComparison } = require('./candidateService');
 const { getRecruiterJobDetails } = require('./recruiterJobService');
 const { generateMatches } = require('../../utils/hub/matchCalculator');
+const { requireObjectId, validateCandidateIds } = require('../../utils/recruiterValidation');
 
 const compareCandidates = async ({ recruiterId, organizationId, payload = {} }) => {
-  const candidateIds = Array.isArray(payload.candidateIds)
-    ? payload.candidateIds.map((item) => String(item || '').trim()).filter(Boolean).slice(0, 3)
-    : [];
+  const candidateIds = validateCandidateIds(payload.candidateIds ?? [], 3);
+  const jobId = payload.jobId ? requireObjectId(payload.jobId, 'jobId') : null;
 
   if (candidateIds.length < 2) {
     const error = new Error('Select at least 2 candidates to compare.');
@@ -13,12 +13,16 @@ const compareCandidates = async ({ recruiterId, organizationId, payload = {} }) 
     throw error;
   }
 
-  const candidates = (await Promise.all(candidateIds.map((candidateId) => getRecruiterCandidateDetails(candidateId, organizationId))))
-    .filter(Boolean);
+  const available = await getRecruiterCandidatesByIds(candidateIds, organizationId);
+  const candidates = [
+    ...new Map(
+      [...available.values()].filter(Boolean).map((candidate) => [candidate.id, candidate])
+    ).values()
+  ];
 
   let matchSummaries = [];
-  if (payload.jobId) {
-    const job = await getRecruiterJobDetails({ recruiterId, organizationId, jobId: String(payload.jobId) });
+  if (jobId) {
+    const job = await getRecruiterJobDetails({ recruiterId, organizationId, jobId });
     if (job) {
       const matchResult = generateMatches({ job, candidates });
       matchSummaries = matchResult.records;

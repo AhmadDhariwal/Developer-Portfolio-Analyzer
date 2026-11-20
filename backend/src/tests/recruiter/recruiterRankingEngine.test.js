@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 
 const { calculateWeightedScore } = require('../../modules/recruiter/utils/matching/scoringEngine');
 const { rankCandidates } = require('../../modules/recruiter/services/matching/aiRankingService');
+const { generateMatches } = require('../../modules/recruiter/utils/hub/matchCalculator');
 
 test('calculateWeightedScore applies recruiter formula weights', () => {
   const result = calculateWeightedScore({
@@ -60,4 +61,41 @@ test('rankCandidates returns sorted candidates with explanations', () => {
   assert.ok(result.rankedCandidates[0].rankScore >= result.rankedCandidates[1].rankScore);
   assert.equal(typeof result.rankedCandidates[0].aiInsight.summary, 'string');
   assert.ok(Array.isArray(result.rankedCandidates[0].aiInsight.strengths));
+});
+
+test('GitHub evidence contributes its configured weight and excludes unavailable values from normalization', () => {
+  const { rankedCandidates } = rankCandidates({
+    job: { requiredSkills: ['angular'] },
+    candidates: [
+      { id: 'zero', githubScore: 0, skills: ['angular'] },
+      { id: 'high', githubScore: 80, skills: ['angular'] },
+      { id: 'missing', githubScore: null, skills: ['angular'] }
+    ]
+  });
+  const byId = new Map(rankedCandidates.map((row) => [row.candidateId, row]));
+  assert.equal(byId.get('high').scoreBreakdown.github.weighted, 15);
+  assert.equal(byId.get('zero').scoreBreakdown.github.weighted, 0);
+  assert.equal(byId.get('missing').scoreBreakdown.github.raw, null);
+  assert.equal(byId.get('missing').scoreBreakdown.github.weighted, null);
+  assert.ok(byId.get('high').rankScore > byId.get('zero').rankScore);
+});
+
+test('match records publish absolute feature scores and canonical user IDs', () => {
+  const { records } = generateMatches({
+    job: { _id: 'job-1', requiredSkills: ['angular', 'rxjs'], minExperienceYears: 2 },
+    candidates: [
+      {
+        id: 'legacy-id',
+        userId: 'user-id',
+        skills: ['angular'],
+        yearsOfExperience: 2,
+        githubScore: 80,
+        projects: [{ impactScore: 75, status: 'completed' }]
+      }
+    ]
+  });
+  assert.equal(records[0].candidateId, 'user-id');
+  assert.equal(records[0].skillMatchPercent, 50);
+  assert.equal(records[0].experienceMatch, 'Strong');
+  assert.equal(records[0].githubProjectScore, 80);
 });

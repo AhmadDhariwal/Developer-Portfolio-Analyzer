@@ -30,7 +30,7 @@
       />
       <app-recruiter-stat-card
         label="GitHub Score"
-        [value]="candidate.githubScore || 0"
+        [value]="candidate.githubScore ?? 'Unavailable'"
         tone="cyan"
       />
       <app-recruiter-stat-card

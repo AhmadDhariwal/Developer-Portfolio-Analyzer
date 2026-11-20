@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SearchableSelectOption } from '../../../../shared/components/searchable-select/searchable-select.component';
 import { CandidateService } from '../../services/candidate.service';
-import { RecruiterHubService } from '../../services/recruiter-hub.service';
 import { RecruiterJobService } from '../../services/recruiter-job.service';
 import { RecruiterMatchService } from '../../services/recruiter-match.service';
 
@@ -29,7 +28,6 @@ export class MatchesComponent implements OnInit {
   constructor(
     private readonly route: ActivatedRoute,
     private readonly router: Router,
-    private readonly hubService: RecruiterHubService,
     private readonly jobService: RecruiterJobService,
     private readonly candidateService: CandidateService,
     private readonly matchService: RecruiterMatchService,
@@ -50,8 +48,9 @@ export class MatchesComponent implements OnInit {
   }
 
   get shortlistedCount(): number {
-    return this.matches.filter((match) => String(match?.status || '').toLowerCase() === 'shortlisted')
-      .length;
+    return this.matches.filter(
+      (match) => String(match?.status || '').toLowerCase() === 'shortlisted',
+    ).length;
   }
 
   get rejectedCount(): number {
@@ -77,7 +76,8 @@ export class MatchesComponent implements OnInit {
       error: (err) => {
         this.jobs = [];
         this.jobsLoading = false;
-        this.error = err?.error?.message || 'Unable to load jobs. Existing matches may still be available.';
+        this.error =
+          err?.error?.message || 'Unable to load jobs. Existing matches may still be available.';
         this.loadMatches();
       },
     });
@@ -157,7 +157,6 @@ export class MatchesComponent implements OnInit {
         next: (response) => {
           this.matches = response?.matches || [];
           this.notice = `Generated ${this.matches.length} match results.`;
-          this.hubService.clearCache();
           this.generating = false;
           this.matchesLoading = false;
         },
@@ -182,7 +181,6 @@ export class MatchesComponent implements OnInit {
           this.matches = this.matches.map((entry) =>
             entry === match ? { ...entry, status: 'shortlisted', shortlisted: true } : entry,
           );
-          this.hubService.clearCache();
         },
         error: (err) => {
           this.error = err?.error?.message || 'Unable to shortlist this match.';
@@ -202,8 +200,8 @@ export class MatchesComponent implements OnInit {
         this.matches = this.matches.map((entry) =>
           String(entry?._id || '') === matchId ? { ...entry, ...nextMatch } : entry,
         );
-        this.notice = status === 'rejected' ? 'Match marked as rejected.' : 'Match reset to generated.';
-        this.hubService.clearCache();
+        this.notice =
+          status === 'rejected' ? 'Match marked as rejected.' : 'Match reset to generated.';
       },
       error: (err) => {
         this.error = err?.error?.message || 'Unable to update this match status.';

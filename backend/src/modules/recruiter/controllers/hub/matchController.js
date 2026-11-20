@@ -27,10 +27,13 @@ const generateMatches = async (req, res) => {
       statusCode: 200,
       timestamp: new Date()
     });
+    req.recruiterAuditRecorded = true;
     return res.status(200).json(result);
   } catch (error) {
     console.error('Recruiter hub generate matches error:', error.message);
-    return res.status(error.statusCode || 500).json({ message: error.message || 'Failed to generate matches.' });
+    return res
+      .status(error.statusCode || 500)
+      .json({ message: error.message || 'Failed to generate matches.' });
   }
 };
 
@@ -41,7 +44,9 @@ const listMatches = async (req, res) => {
     return res.status(200).json({ matches });
   } catch (error) {
     console.error('Recruiter hub list matches error:', error.message);
-    return res.status(error.statusCode || 500).json({ message: error.message || 'Failed to load matches.' });
+    return res
+      .status(error.statusCode || 500)
+      .json({ message: error.message || 'Failed to load matches.' });
   }
 };
 
@@ -53,7 +58,9 @@ const getMatchDetails = async (req, res) => {
     return res.status(200).json({ match });
   } catch (error) {
     console.error('Recruiter hub match detail error:', error.message);
-    return res.status(error.statusCode || 500).json({ message: error.message || 'Failed to load match details.' });
+    return res
+      .status(error.statusCode || 500)
+      .json({ message: error.message || 'Failed to load match details.' });
   }
 };
 
@@ -83,10 +90,13 @@ const patchMatchStatus = async (req, res) => {
       statusCode: 200,
       timestamp: new Date()
     });
+    req.recruiterAuditRecorded = true;
     return res.status(200).json({ match });
   } catch (error) {
     console.error('Recruiter hub patch match status error:', error.message);
-    return res.status(error.statusCode || 500).json({ message: error.message || 'Failed to update match status.' });
+    return res
+      .status(error.statusCode || 500)
+      .json({ message: error.message || 'Failed to update match status.' });
   }
 };
 

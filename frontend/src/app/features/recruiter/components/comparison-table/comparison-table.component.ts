@@ -20,9 +20,7 @@ export class ComparisonTableComponent {
   isBest(key: string, value: number | null | undefined): boolean {
     if (value === undefined || value === null) return false;
     const values = this.items
-      .map((item) =>
-        key === 'matchScore' ? Number(item?.match?.matchScore || 0) : Number(item?.[key] || 0),
-      )
+      .map((item) => (key === 'matchScore' ? item?.match?.matchScore : item?.[key]))
       .filter((item) => Number.isFinite(item));
     if (!values.length) return false;
     return Number(value) === Math.max(...values);

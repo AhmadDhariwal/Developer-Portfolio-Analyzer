@@ -4,12 +4,15 @@ const RecruiterShortlist = require('../../models/RecruiterShortlist');
 const AuditLog = require('../../../admin/models/auditLog');
 const Membership = require('../../../admin/models/membership');
 const User = require('../../../auth/models/user');
-const { listRecruiterCandidates, getRecruiterCandidateDetails } = require('./candidateService');
+const { listRecruiterCandidates, getRecruiterCandidatesByIds } = require('./candidateService');
 const { getRecruiterScope } = require('../../utils/hub/recruiterAccess');
 const { bucketByDay, topCounts } = require('../../utils/hub/recruiterAnalyticsBuilder');
+const { getRecruiterSummary } = require('./recruiterSummaryCache');
 
 const average = (values = []) => {
-  const numeric = values.map((value) => Number(value || 0)).filter((value) => Number.isFinite(value));
+  const numeric = values
+    .map((value) => Number(value || 0))
+    .filter((value) => Number.isFinite(value));
   if (!numeric.length) return 0;
   return Math.round((numeric.reduce((sum, value) => sum + value, 0) / numeric.length) * 10) / 10;
 };
@@ -17,11 +20,13 @@ const average = (values = []) => {
 const bucketByMonth = (items = [], dateSelector, count = 6) => {
   const now = new Date();
   const months = Array.from({ length: count }, (_, index) => {
-    const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (count - index - 1), 1));
+    const date = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (count - index - 1), 1)
+    );
     const key = date.toISOString().slice(0, 7);
     return {
       key,
-      label: date.toLocaleString('en-US', { month: 'short' }),
+      label: date.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' }),
       count: 0
     };
   });
@@ -126,9 +131,13 @@ const countTeamRecruiters = async ({ recruiterId, organizationId, teamIds = [] }
     organizationId,
     teamId: { $in: teamIds },
     status: 'active'
-  }).select('userId').lean();
+  })
+    .select('userId')
+    .lean();
 
-  const recruiterIds = [...new Set(memberships.map((entry) => String(entry.userId || '')).filter(Boolean))];
+  const recruiterIds = [
+    ...new Set(memberships.map((entry) => String(entry.userId || '')).filter(Boolean))
+  ];
   if (!recruiterIds.includes(String(recruiterId))) recruiterIds.push(String(recruiterId));
 
   return User.countDocuments({
@@ -139,105 +148,177 @@ const countTeamRecruiters = async ({ recruiterId, organizationId, teamIds = [] }
   });
 };
 
-const listRecruiterAnalytics = async (req) => {
-  const scope = await getRecruiterScope(req);
+const listRecruiterAnalytics = async (req, scope) => {
+  scope ??= await getRecruiterScope(req);
   const { recruiterId, organizationId, teams, teamIds } = scope;
   const [jobs, matches, shortlists, logs, candidatesResponse, teamRecruiters] = await Promise.all([
     Job.find({ recruiterId, organizationId }).lean(),
-    RecruiterMatch.find({ recruiterId, organizationId }).lean(),
+    RecruiterMatch.find({ recruiterId, organizationId })
+      .select('candidateId jobId matchScore confidenceScore status breakdown updatedAt createdAt')
+      .lean(),
     RecruiterShortlist.find({ recruiterId, organizationId }).lean(),
-    AuditLog.find({ actor: recruiterId, organizationId }).sort({ timestamp: -1 }).limit(500).lean(),
+    AuditLog.find({ actor: recruiterId, organizationId })
+      .select('action method route statusCode timestamp')
+      .sort({ timestamp: -1 })
+      .limit(500)
+      .lean(),
     listRecruiterCandidates({ organizationId, query: { limit: 240, sortBy: 'score-desc' } }),
     countTeamRecruiters({ recruiterId, organizationId, teamIds })
   ]);
 
   const candidates = candidatesResponse?.candidates || [];
   const totalCandidates = Number(candidatesResponse?.meta?.total || candidates.length || 0);
-  const allDemandSkills = jobs.flatMap((job) => [...(job.requiredSkills || []), ...(job.preferredSkills || [])]);
+  const allDemandSkills = jobs.flatMap((job) => [
+    ...(job.requiredSkills || []),
+    ...(job.preferredSkills || [])
+  ]);
 
-  const recentMatches = await Promise.all(
-    [...matches]
-      .sort((left, right) => new Date(right.updatedAt || right.createdAt || 0).getTime() - new Date(left.updatedAt || left.createdAt || 0).getTime())
-      .slice(0, 5)
-      .map(async (match) => ({
-        _id: String(match._id || ''),
-        candidateId: String(match.candidateId || ''),
-        jobId: String(match.jobId || ''),
-        matchScore: Number(match.matchScore || 0),
-        confidenceScore: Number(match.confidenceScore || 0),
-        status: String(match.status || 'generated'),
-        candidate: await getRecruiterCandidateDetails(match.candidateId, organizationId),
-        job: mapJobSummary(jobs.find((job) => String(job._id) === String(match.jobId)) || {}),
-        updatedAt: match.updatedAt || match.createdAt
-      }))
+  const byRecent = (left, right) =>
+    new Date(right.updatedAt || right.createdAt || 0) -
+    new Date(left.updatedAt || left.createdAt || 0);
+  const jobById = new Map(jobs.map((job) => [String(job._id), mapJobSummary(job)]));
+  const recentMatchRows = [...matches].sort(byRecent).slice(0, 5);
+  const followUpRows = shortlists
+    .filter((entry) => ['shortlisted', 'reviewing', 'contacted'].includes(entry.status))
+    .sort(byRecent)
+    .slice(0, 6);
+  const visible = await getRecruiterCandidatesByIds(
+    [...recentMatchRows, ...followUpRows].map((item) => item.candidateId),
+    organizationId
   );
+  const recentMatches = recentMatchRows
+    .filter((match) => visible.get(String(match.candidateId)) && jobById.has(String(match.jobId)))
+    .map((match) => ({
+      _id: String(match._id || ''),
+      candidateId: String(match.candidateId || ''),
+      jobId: String(match.jobId || ''),
+      matchScore: Number(match.matchScore || 0),
+      confidenceScore: Number(match.confidenceScore || 0),
+      status: String(match.status || 'generated'),
+      candidate: visible.get(String(match.candidateId)),
+      job: jobById.get(String(match.jobId)),
+      updatedAt: match.updatedAt || match.createdAt
+    }));
 
   const viewed = logs.filter((log) => log.action === 'RECRUITER_CANDIDATE_VIEWED').length;
   const analyzed = logs.filter((log) => log.action === 'RECRUITER_CANDIDATE_ANALYZED').length;
-  const successRate = matches.length > 0
-    ? Math.round((matches.filter((match) => match.status === 'shortlisted').length / matches.length) * 100)
-    : 0;
-  const activityScore = Math.min(100, viewed * 3 + analyzed * 5 + jobs.length * 4 + shortlists.length * 4 + matches.length * 2);
+  const successRate =
+    matches.length > 0
+      ? Math.round(
+          (matches.filter((match) => match.status === 'shortlisted').length / matches.length) * 100
+        )
+      : 0;
+  const activityScore = Math.min(
+    100,
+    viewed * 3 + analyzed * 5 + jobs.length * 4 + shortlists.length * 4 + matches.length * 2
+  );
+
+  const summary = await getRecruiterSummary(
+    {
+      recruiterId,
+      organizationId,
+      teamIds,
+      revision: [
+        jobs,
+        matches,
+        shortlists.length,
+        logs,
+        totalCandidates,
+        teamRecruiters,
+        candidates.map(({ stack, readinessScore, yearsOfExperience, skills }) => [
+          stack,
+          readinessScore,
+          yearsOfExperience,
+          skills
+        ])
+      ]
+    },
+    () => ({
+      metrics: {
+        totalCandidates,
+        avgCandidateScore: average(
+          candidates.map((candidate) => candidate.readinessScore || candidate.score || 0)
+        ),
+        openJobs: jobs.filter((job) => job.status === 'open').length,
+        draftJobs: jobs.filter((job) => job.status === 'draft').length,
+        closedJobs: jobs.filter((job) => job.status === 'closed').length,
+        teamRecruiters,
+        assignedTeams: teams.length,
+        candidatesViewed: viewed,
+        candidatesAnalyzed: analyzed,
+        activeJobs: jobs.filter((job) => job.status === 'open').length,
+        matchesGenerated: matches.length,
+        shortlistedCandidates: shortlists.length,
+        recruiterActivityScore: activityScore,
+        successRate
+      },
+      charts: {
+        scoreDistribution: buildScoreDistribution(candidates),
+        candidatesByStack: topCounts(candidates, (candidate) => candidate.stack, 6),
+        jobsPostedTrend: bucketByMonth(jobs, (item) => item.createdAt),
+        experienceDistribution: buildExperienceDistribution(candidates),
+        topSkillsDemand: topCounts(allDemandSkills, (skill) => skill, 8),
+        supplyVsDemand: buildSupplyVsDemand(candidates, jobs),
+        candidateActivityTrend: bucketByDay(
+          logs.filter((log) => /CANDIDATE_VIEWED|CANDIDATE_ANALYZED/.test(String(log.action))),
+          (log) => log.timestamp
+        ),
+        matchGenerationTrend: bucketByDay(matches, (item) => item.createdAt),
+        weeklyRecruiterActivity: bucketByDay(logs, (log) => log.timestamp),
+        aiUsageGraph: bucketByDay(
+          logs.filter((log) => /ANALYZED|MATCH/.test(String(log.action))),
+          (log) => log.timestamp
+        ),
+        jobPerformanceChart: jobs.map((job) => ({
+          label: job.title,
+          status: job.status,
+          updatedAt: job.updatedAt
+        })),
+        skillDemandChart: topCounts(
+          jobs.flatMap((job) => job.requiredSkills || []),
+          (skill) => skill
+        )
+      }
+    })
+  );
 
   return {
-    metrics: {
-      totalCandidates,
-      avgCandidateScore: average(candidates.map((candidate) => candidate.readinessScore || candidate.score || 0)),
-      openJobs: jobs.filter((job) => job.status === 'open').length,
-      draftJobs: jobs.filter((job) => job.status === 'draft').length,
-      closedJobs: jobs.filter((job) => job.status === 'closed').length,
-      teamRecruiters,
-      assignedTeams: teams.length,
-      candidatesViewed: viewed,
-      candidatesAnalyzed: analyzed,
-      activeJobs: jobs.filter((job) => job.status === 'open').length,
-      matchesGenerated: matches.length,
-      shortlistedCandidates: shortlists.length,
-      recruiterActivityScore: activityScore,
-      successRate
-    },
-    charts: {
-      scoreDistribution: buildScoreDistribution(candidates),
-      candidatesByStack: topCounts(candidates, (candidate) => candidate.stack, 6),
-      jobsPostedTrend: bucketByMonth(jobs, (item) => item.createdAt),
-      experienceDistribution: buildExperienceDistribution(candidates),
-      topSkillsDemand: topCounts(allDemandSkills, (skill) => skill, 8),
-      supplyVsDemand: buildSupplyVsDemand(candidates, jobs),
-      candidateActivityTrend: bucketByDay(logs.filter((log) => /CANDIDATE_VIEWED|CANDIDATE_ANALYZED/.test(String(log.action))), (log) => log.timestamp),
-      matchGenerationTrend: bucketByDay(matches, (item) => item.createdAt),
-      weeklyRecruiterActivity: bucketByDay(logs, (log) => log.timestamp),
-      aiUsageGraph: bucketByDay(logs.filter((log) => /ANALYZED|MATCH/.test(String(log.action))), (log) => log.timestamp),
-      jobPerformanceChart: jobs.map((job) => ({
-        label: job.title,
-        status: job.status,
-        updatedAt: job.updatedAt
-      })),
-      skillDemandChart: topCounts(jobs.flatMap((job) => job.requiredSkills || []), (skill) => skill)
-    },
+    ...summary,
     highlights: {
-      mostMatchedSkills: topCounts(matches.flatMap((match) => Object.keys(match.breakdown || {})), (skill) => skill),
+      mostMatchedSkills: topCounts(
+        matches.flatMap((match) => match.breakdown?.matchedSkills || []),
+        (skill) => skill
+      ),
       mostActiveJobs: topCounts(jobs, (job) => job.title),
       recentActivity: logs.slice(0, 10)
     },
     widgets: {
       recentJobs: [...jobs]
-        .sort((left, right) => new Date(right.updatedAt || right.createdAt || 0).getTime() - new Date(left.updatedAt || left.createdAt || 0).getTime())
+        .sort(
+          (left, right) =>
+            new Date(right.updatedAt || right.createdAt || 0).getTime() -
+            new Date(left.updatedAt || left.createdAt || 0).getTime()
+        )
         .slice(0, 5)
         .map(mapJobSummary),
       recentMatches,
-      pendingFollowUps: await Promise.all(
-        shortlists
-          .filter((entry) => ['shortlisted', 'reviewing', 'contacted'].includes(String(entry.status || '')))
-          .sort((left, right) => new Date(right.updatedAt || right.createdAt || 0).getTime() - new Date(left.updatedAt || left.createdAt || 0).getTime())
-          .slice(0, 6)
-          .map(async (entry) => ({
-            ...entry,
-            candidate: await getRecruiterCandidateDetails(entry.candidateId, organizationId),
-            job: entry.jobId ? mapJobSummary(jobs.find((job) => String(job._id) === String(entry.jobId)) || {}) : null
-          }))
-      ),
+      pendingFollowUps: followUpRows
+        .filter(
+          (entry) =>
+            visible.get(String(entry.candidateId)) &&
+            (!entry.jobId || jobById.has(String(entry.jobId)))
+        )
+        .map((entry) => ({
+          ...entry,
+          candidate: visible.get(String(entry.candidateId)),
+          job: entry.jobId ? jobById.get(String(entry.jobId)) : null
+        })),
       topCandidates: [...candidates]
-        .sort((left, right) => Number(right.readinessScore || right.score || 0) - Number(left.readinessScore || left.score || 0))
+        .sort(
+          (left, right) =>
+            Number(right.readinessScore || right.score || 0) -
+            Number(left.readinessScore || left.score || 0)
+        )
         .slice(0, 5)
     }
   };

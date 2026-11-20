@@ -580,7 +580,8 @@ export class AuthService implements OnDestroy {
     }
 
     if (role === 'recruiter') {
-      return target.startsWith('/app/recruiter');
+      const path = target.split(/[?#]/, 1)[0];
+      return path === '/app/recruiter' || path.startsWith('/app/recruiter/');
     }
 
     return !(
