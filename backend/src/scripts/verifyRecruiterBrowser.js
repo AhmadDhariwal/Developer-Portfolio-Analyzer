@@ -591,6 +591,7 @@ async function run() {
       assert.ok(rec1JobsText.includes('Staff Full Stack Engineer'));
       assert.ok(!rec1JobsText.includes('Beta Exclusive Role'));
 
+      await page.click('[data-testid="toggle-job-editor"]');
       await page.fill('#job-title', 'Senior QA Automation Engineer');
       await page.fill('#job-role', 'QA Engineer');
       await page.fill('#job-stack', 'TypeScript, Playwright');
@@ -598,7 +599,7 @@ async function run() {
       await page.fill('#job-experience', '2');
       await page.fill('#job-required-skills', 'TypeScript, Playwright, CI');
       await page.fill('#job-description', '');
-      await page.click('form.glass-form button[type="submit"]');
+      await page.click('form.job-editor button[type="submit"]');
       await page.waitForFunction(
         () => document.body.innerText.includes('Senior QA Automation Engineer'),
         { timeout: 8000 }
@@ -608,17 +609,17 @@ async function run() {
       await page.goto(`${baseUrl}/app/recruiter/candidates`, { waitUntil: 'domcontentloaded' });
       await waitForAngularIdle(page);
       await page.fill('app-candidate-filter-bar input[placeholder*="Search"], app-candidate-filter-bar input', 'Aliya');
-      await page.click('app-candidate-filter-bar button.filter-btn');
+      await page.locator('app-candidate-filter-bar button.filter-btn').nth(1).click();
       await page.waitForTimeout(350);
       assert.ok((await page.locator('main.main-content').innerText()).includes('Aliya Developer'));
 
       await page.goto(`${baseUrl}/app/recruiter/comparison`, { waitUntil: 'domcontentloaded' });
       await waitForAngularIdle(page);
-      const pills = page.locator('.candidate-pill');
+      const pills = page.locator('.picker-chip');
       if ((await pills.count()) >= 2) {
         await pills.nth(0).click();
         await pills.nth(1).click();
-        await page.click('button.primary-btn:has-text("Compare")');
+        await page.click('button.btn-primary:has-text("Run Comparison")');
         await page.waitForSelector('app-comparison-table', { timeout: 8000 });
       }
 
@@ -647,7 +648,7 @@ async function run() {
           await page.waitForTimeout(100);
           for (const theme of THEMES) {
             await ensureTheme(page, theme);
-            await page.waitForTimeout(120);
+            await page.waitForTimeout(260);
             const audit = await runAuditOnCurrentPage(page);
             matrix.push({
               route: route.name,

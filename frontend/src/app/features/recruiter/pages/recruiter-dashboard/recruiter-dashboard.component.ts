@@ -1,5 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { finalize } from 'rxjs/operators';
+import { AuthService } from '../../../../shared/services/auth.service';
 import { RecruiterHubService } from '../../services/recruiter-hub.service';
 import { TenantContextService } from '../../../../shared/services/tenant-context.service';
 
@@ -10,6 +12,8 @@ import { TenantContextService } from '../../../../shared/services/tenant-context
   styleUrl: './recruiter-dashboard.component.scss',
 })
 export class RecruiterDashboardComponent implements OnInit {
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly authService = inject(AuthService, { optional: true });
   loading = true;
   error = '';
   metricsReady = false;
@@ -34,34 +38,40 @@ export class RecruiterDashboardComponent implements OnInit {
     this.insightsReady = false;
     this.chartsReady = false;
 
-    this.hubService.getDashboard().subscribe({
-      next: (dashboard) => {
-        this.dashboard = this.normalizeDashboard(dashboard);
-        if (this.dashboard?.profile?.organizationId || this.dashboard?.profile?.organizationName) {
-          this.tenantContext.syncOrganization({
-            id: String(
-              this.dashboard?.profile?.organizationId ||
-                this.tenantContext.snapshot.organizationId ||
-                '',
-            ),
-            name: String(
-              this.dashboard?.profile?.organizationName ||
-                this.tenantContext.snapshot.organizationName ||
-                '',
-            ),
-            myRole: 'recruiter',
-          });
-        }
-        this.metricsReady = true;
-        this.insightsReady = true;
-        this.chartsReady = true;
-        this.loading = false;
-      },
-      error: (err) => {
-        this.error = err?.error?.message || 'Unable to load recruiter dashboard.';
-        this.loading = false;
-      },
-    });
+    this.hubService
+      .getDashboard()
+      .pipe(finalize(() => this.cdr.markForCheck()))
+      .subscribe({
+        next: (dashboard) => {
+          this.dashboard = this.normalizeDashboard(dashboard);
+          if (
+            this.dashboard?.profile?.organizationId ||
+            this.dashboard?.profile?.organizationName
+          ) {
+            this.tenantContext.syncOrganization({
+              id: String(
+                this.dashboard?.profile?.organizationId ||
+                  this.tenantContext.snapshot.organizationId ||
+                  '',
+              ),
+              name: String(
+                this.dashboard?.profile?.organizationName ||
+                  this.tenantContext.snapshot.organizationName ||
+                  '',
+              ),
+              myRole: 'recruiter',
+            });
+          }
+          this.metricsReady = true;
+          this.insightsReady = true;
+          this.chartsReady = true;
+          this.loading = false;
+        },
+        error: (err) => {
+          this.error = err?.error?.message || 'Unable to load recruiter dashboard.';
+          this.loading = false;
+        },
+      });
   }
 
   get productivityItems(): Array<{ label: string; value: number }> {
@@ -223,11 +233,12 @@ export class RecruiterDashboardComponent implements OnInit {
   }
 
   private defaultDashboard(): any {
+    const user = this.authService?.getCurrentUser?.() as any;
     return {
       profile: {
-        name: 'Recruiter',
-        organizationId: '',
-        organizationName: '',
+        name: String(user?.name || '').trim() || 'Recruiter',
+        organizationId: String(user?.organizationId || ''),
+        organizationName: String(user?.organizationName || ''),
         organizationDescription: '',
       },
       metrics: {

@@ -1,7 +1,8 @@
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 import { CandidateFilters, DEFAULT_CANDIDATE_FILTERS } from '../../models/recruiter.model';
 import { CandidateService } from '../../services/candidate.service';
 import { RecruiterMatchService } from '../../services/recruiter-match.service';
@@ -13,6 +14,7 @@ import { RecruiterMatchService } from '../../services/recruiter-match.service';
   standalone: false,
 })
 export class CandidatesComponent implements OnInit {
+  private readonly cdr = inject(ChangeDetectorRef);
   loading = true;
   error = '';
   notice = '';
@@ -49,16 +51,13 @@ export class CandidatesComponent implements OnInit {
   }
 
   get highReadinessCount(): number {
-    return this.candidates.filter(
-      (item) => Number(item?.readinessScore ?? item?.score ?? 0) >= 80,
-    ).length;
+    return this.candidates.filter((item) => Number(item?.readinessScore ?? item?.score ?? 0) >= 80)
+      .length;
   }
 
   get remoteCount(): number {
     return this.candidates.filter((item) =>
-      String(item?.availability || '')
-        .toLowerCase()
-        .includes('remote'),
+      `${item?.location || ''} ${item?.availability || ''}`.toLowerCase().includes('remote'),
     ).length;
   }
 
@@ -82,7 +81,10 @@ export class CandidatesComponent implements OnInit {
 
     this.candidateRequest = this.candidateService
       .listCandidates(this.filters)
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.cdr.markForCheck()),
+      )
       .subscribe({
         next: (response: any) => {
           this.candidates = response?.candidates || [];
@@ -142,14 +144,17 @@ export class CandidatesComponent implements OnInit {
     this.error = '';
     this.notice = '';
 
-    this.matchService.addToShortlist({ candidateId: id }).subscribe({
-      next: () => {
-        this.notice = `${candidate?.name || candidate?.fullName || 'Candidate'} added to shortlist.`;
-      },
-      error: (err) => {
-        this.error = err?.error?.message || 'Could not shortlist candidate.';
-      },
-    });
+    this.matchService
+      .addToShortlist({ candidateId: id })
+      .pipe(finalize(() => this.cdr.markForCheck()))
+      .subscribe({
+        next: () => {
+          this.notice = `${candidate?.name || candidate?.fullName || 'Candidate'} added to shortlist.`;
+        },
+        error: (err) => {
+          this.error = err?.error?.message || 'Could not shortlist candidate.';
+        },
+      });
   }
 
   toggleCompare(candidate: any): void {

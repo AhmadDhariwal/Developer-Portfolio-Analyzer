@@ -1,6 +1,7 @@
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
+import { catchError, forkJoin, of } from 'rxjs';
 import { RecruiterJobService } from '../../services/recruiter-job.service';
 import { RecruiterMatchService } from '../../services/recruiter-match.service';
 
@@ -12,6 +13,7 @@ import { RecruiterMatchService } from '../../services/recruiter-match.service';
 })
 export class JobDetailsComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   loading = true;
   generating = false;
@@ -59,21 +61,30 @@ export class JobDetailsComponent implements OnInit {
     if (!this.currentJobId) {
       this.loading = false;
       this.error = 'Job identifier is missing.';
+      this.cdr.markForCheck();
       return;
     }
 
     this.loading = true;
     this.error = '';
-    this.jobService.getJob(this.currentJobId).subscribe({
-      next: (response) => {
-        this.job = response?.job || null;
+    forkJoin({
+      jobResponse: this.jobService.getJob(this.currentJobId),
+      matchesResponse: this.matchService
+        .listMatches({ jobId: this.currentJobId })
+        .pipe(catchError(() => of({ matches: [] }))),
+    }).subscribe({
+      next: ({ jobResponse, matchesResponse }) => {
+        this.job = jobResponse?.job || null;
+        this.jobMatches = (matchesResponse?.matches || []).slice(0, 5);
         this.loading = false;
-        this.loadExistingMatches();
+        this.cdr.markForCheck();
       },
       error: (err) => {
         this.job = null;
+        this.jobMatches = [];
         this.error = err?.error?.message || 'Unable to load this job.';
         this.loading = false;
+        this.cdr.markForCheck();
       },
     });
   }
@@ -85,6 +96,7 @@ export class JobDetailsComponent implements OnInit {
     this.matchService.generateMatches({ jobId: this.job._id }).subscribe({
       next: () => {
         this.generating = false;
+        this.cdr.markForCheck();
         this.router.navigate(['/app/recruiter/matches'], {
           queryParams: { jobId: this.job._id },
         });
@@ -92,18 +104,7 @@ export class JobDetailsComponent implements OnInit {
       error: (err) => {
         this.generating = false;
         this.error = err?.error?.message || 'Unable to generate matches for this job.';
-      },
-    });
-  }
-
-  private loadExistingMatches(): void {
-    if (!this.job?._id) return;
-    this.matchService.listMatches({ jobId: this.job._id }).subscribe({
-      next: (response) => {
-        this.jobMatches = (response?.matches || []).slice(0, 5);
-      },
-      error: () => {
-        this.jobMatches = [];
+        this.cdr.markForCheck();
       },
     });
   }

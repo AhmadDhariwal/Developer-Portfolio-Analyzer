@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { finalize } from 'rxjs/operators';
 import { PerformanceChartItem } from '../../components/recruiter-performance-chart/recruiter-performance-chart.component';
 import { CandidateService } from '../../services/candidate.service';
 import { RecruiterJobService } from '../../services/recruiter-job.service';
@@ -14,6 +15,7 @@ export type MatchStatusFilter = 'all' | 'generated' | 'shortlisted' | 'rejected'
   standalone: false,
 })
 export class MatchesComponent implements OnInit {
+  private readonly cdr = inject(ChangeDetectorRef);
   jobsLoading = true;
   candidatesLoading = true;
   matchesLoading = true;
@@ -64,7 +66,12 @@ export class MatchesComponent implements OnInit {
       return this.candidates;
     }
     return this.candidates.filter((candidate) => {
-      const haystack = [candidate?.name, candidate?.fullName, candidate?.stack, ...(candidate?.skills || [])]
+      const haystack = [
+        candidate?.name,
+        candidate?.fullName,
+        candidate?.stack,
+        ...(candidate?.skills || []),
+      ]
         .join(' ')
         .toLowerCase();
       return haystack.includes(query);
@@ -88,9 +95,8 @@ export class MatchesComponent implements OnInit {
   }
 
   get rejectedCount(): number {
-    return this.matches.filter(
-      (match) => String(match?.status || '').toLowerCase() === 'rejected',
-    ).length;
+    return this.matches.filter((match) => String(match?.status || '').toLowerCase() === 'rejected')
+      .length;
   }
 
   get filteredMatches(): any[] {
@@ -151,44 +157,51 @@ export class MatchesComponent implements OnInit {
 
   loadJobs(): void {
     this.jobsLoading = true;
-    this.jobService.listJobs().subscribe({
-      next: (response: any) => {
-        this.jobs = response?.jobs || [];
-        if (!this.selectedJobId && this.jobs.length > 0) {
-          this.selectedJobId = String(this.jobs[0]._id || this.jobs[0].id || '');
-        }
-        this.jobsLoading = false;
-      },
-      error: (err) => {
-        this.error = err?.error?.message || 'Unable to load recruiter jobs.';
-        this.jobsLoading = false;
-      },
-    });
+    this.jobService
+      .listJobs()
+      .pipe(finalize(() => this.cdr.markForCheck()))
+      .subscribe({
+        next: (response: any) => {
+          this.jobs = response?.jobs || [];
+          if (!this.selectedJobId && this.jobs.length > 0) {
+            this.selectedJobId = String(this.jobs[0]._id || this.jobs[0].id || '');
+          }
+          this.jobsLoading = false;
+        },
+        error: (err) => {
+          this.error = err?.error?.message || 'Unable to load recruiter jobs.';
+          this.jobsLoading = false;
+        },
+      });
   }
 
   loadCandidates(): void {
     this.candidatesLoading = true;
-    this.candidateService.listCandidates({ limit: 24, sortBy: 'score-desc' }).subscribe({
-      next: (response: any) => {
-        this.candidates = response?.candidates || [];
-        for (const candidate of this.candidates) {
-          const cid = this.candidateId(candidate);
-          if (cid) {
-            this.compareNames.set(cid, candidate?.name || candidate?.fullName || 'Candidate');
+    this.candidateService
+      .listCandidates({ limit: 24, sortBy: 'score-desc' })
+      .pipe(finalize(() => this.cdr.markForCheck()))
+      .subscribe({
+        next: (response: any) => {
+          this.candidates = response?.candidates || [];
+          for (const candidate of this.candidates) {
+            const cid = this.candidateId(candidate);
+            if (cid) {
+              this.compareNames.set(cid, candidate?.name || candidate?.fullName || 'Candidate');
+            }
           }
-        }
-        this.candidatesLoading = false;
-      },
-      error: () => {
-        this.candidatesLoading = false;
-      },
-    });
+          this.candidatesLoading = false;
+        },
+        error: () => {
+          this.candidatesLoading = false;
+        },
+      });
   }
 
   loadMatches(): void {
     this.matchesLoading = true;
     this.matchService
       .listMatches(this.selectedJobId ? { jobId: this.selectedJobId } : {})
+      .pipe(finalize(() => this.cdr.markForCheck()))
       .subscribe({
         next: (response: any) => {
           this.matches = response?.matches || [];
@@ -244,6 +257,7 @@ export class MatchesComponent implements OnInit {
         jobId: this.selectedJobId,
         candidateIds: candidateIds.length ? candidateIds : undefined,
       })
+      .pipe(finalize(() => this.cdr.markForCheck()))
       .subscribe({
         next: (response: any) => {
           const generatedMatches = response?.matches || [];
@@ -251,6 +265,7 @@ export class MatchesComponent implements OnInit {
           // Hydrate persisted match records so newly generated items carry Mongo _id for status updates.
           this.matchService
             .listMatches(this.selectedJobId ? { jobId: this.selectedJobId } : {})
+            .pipe(finalize(() => this.cdr.markForCheck()))
             .subscribe({
               next: (persisted: any) => {
                 const hydrated = persisted?.matches || [];
@@ -286,6 +301,7 @@ export class MatchesComponent implements OnInit {
         candidateId,
         jobId: jobId || undefined,
       })
+      .pipe(finalize(() => this.cdr.markForCheck()))
       .subscribe({
         next: () => {
           match.status = 'shortlisted';
@@ -306,18 +322,21 @@ export class MatchesComponent implements OnInit {
     this.error = '';
     this.notice = '';
 
-    this.matchService.updateMatchStatus(matchId, status).subscribe({
-      next: () => {
-        match.status = status;
-        this.notice =
-          status === 'rejected'
-            ? `${match?.candidate?.name || 'Match'} marked as rejected.`
-            : `${match?.candidate?.name || 'Match'} restored to generated.`;
-      },
-      error: (err) => {
-        this.error = err?.error?.message || 'Could not update match status.';
-      },
-    });
+    this.matchService
+      .updateMatchStatus(matchId, status)
+      .pipe(finalize(() => this.cdr.markForCheck()))
+      .subscribe({
+        next: () => {
+          match.status = status;
+          this.notice =
+            status === 'rejected'
+              ? `${match?.candidate?.name || 'Match'} marked as rejected.`
+              : `${match?.candidate?.name || 'Match'} restored to generated.`;
+        },
+        error: (err) => {
+          this.error = err?.error?.message || 'Could not update match status.';
+        },
+      });
   }
 
   compare(match: any): void {

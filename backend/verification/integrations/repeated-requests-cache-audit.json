@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-19T23:17:56.506Z",
+  "checkedAt": "2026-11-20T09:16:18.900Z",
   "providerHttpRequests": 0,
   "checks": [
     "three identical fresh Connect clicks preserve connection/insight; two explicit Syncs still normalize and append history; one source fetch across accounts",
@@ -9,21 +9,21 @@
   "baselineConnect": {
     "commands": 48,
     "documentWrites": 21,
-    "ms": 300.6215999999986,
+    "ms": 448.0575000000026,
     "providerCalls": 0,
     "normalizations": 3
   },
   "improvedConnect": {
     "commands": 27,
     "documentWrites": 3,
-    "ms": 133.3068000000003,
+    "ms": 235.79349999999977,
     "providerCalls": 0,
     "normalizations": 0
   },
   "manualSync": {
     "commands": 42,
     "documentWrites": 22,
-    "ms": 168.84220000000096,
+    "ms": 419.46240000000034,
     "providerCalls": 0,
     "normalizations": 2
   },
@@ -32,15 +32,15 @@
       "payloadBytes": 615,
       "mongoOnlyMs": {
         "n": 12,
-        "p50": 2.1491000000005442,
-        "p95": 3.7977000000009866,
-        "p99": 3.7977000000009866
+        "p50": 4.387399999999616,
+        "p95": 14.140599999998813,
+        "p99": 14.140599999998813
       },
       "readThroughMs": {
         "n": 12,
-        "p50": 3.429500000000189,
-        "p95": 4.529199999999037,
-        "p99": 4.529199999999037
+        "p50": 6.761600000001636,
+        "p95": 15.163899999999558,
+        "p99": 15.163899999999558
       },
       "mongoReads": 24,
       "redisGets": 12
@@ -49,15 +49,15 @@
       "payloadBytes": 30103,
       "mongoOnlyMs": {
         "n": 12,
-        "p50": 2.283500000001368,
-        "p95": 2.8946999999989202,
-        "p99": 2.8946999999989202
+        "p50": 3.8660999999992782,
+        "p95": 7.180599999999686,
+        "p99": 7.180599999999686
       },
       "readThroughMs": {
         "n": 12,
-        "p50": 3.5393999999996595,
-        "p95": 4.487800000000789,
-        "p99": 4.487800000000789
+        "p50": 6.437000000001717,
+        "p95": 19.65179999999964,
+        "p99": 19.65179999999964
       },
       "mongoReads": 24,
       "redisGets": 12
@@ -71,28 +71,28 @@
   "prototypeFailureModes": [
     {
       "mode": "quota",
-      "ms": 6.391700000000128,
+      "ms": 10.920399999999063,
       "mongoReads": 2,
       "redisGets": 1,
       "redisSets": 1
     },
     {
       "mode": "timeout",
-      "ms": 166.20999999999913,
+      "ms": 175.73979999999938,
       "mongoReads": 2,
       "redisGets": 1,
       "redisSets": 1
     },
     {
       "mode": "unavailable",
-      "ms": 2.769000000000233,
+      "ms": 11.195800000001327,
       "mongoReads": 1,
       "redisGets": 0,
       "redisSets": 0
     },
     {
       "mode": "recovered",
-      "ms": 8.338599999999133,
+      "ms": 15.361999999997352,
       "mongoReads": 2,
       "redisGets": 1,
       "redisSets": 1

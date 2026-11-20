@@ -1,6 +1,7 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { finalize } from 'rxjs/operators';
 import { AuthService } from '../../../../shared/services/auth.service';
 import { TenantContextService } from '../../../../shared/services/tenant-context.service';
 import { RecruiterHubService } from '../../services/recruiter-hub.service';
@@ -15,6 +16,7 @@ import { RecruiterProfile } from '../../models/recruiter.model';
 export class RecruiterProfileComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly route = inject(ActivatedRoute);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   loading = true;
   saving = false;
@@ -80,15 +82,15 @@ export class RecruiterProfileComponent implements OnInit {
         label: 'Background',
         done: Boolean(
           current?.recruiterDetails?.education ||
-            current?.recruiterDetails?.yearsOfExperience ||
-            current?.recruiterDetails?.certifications?.length,
+          current?.recruiterDetails?.yearsOfExperience ||
+          current?.recruiterDetails?.certifications?.length,
         ),
       },
       {
         label: 'Sourcing Preferences',
         done: Boolean(
           current?.recruiterPreferences?.preferredStacks?.length ||
-            current?.recruiterPreferences?.preferredLocations?.length,
+          current?.recruiterPreferences?.preferredLocations?.length,
         ),
       },
     ];
@@ -154,37 +156,40 @@ export class RecruiterProfileComponent implements OnInit {
       },
     };
 
-    this.hubService.updateProfile(payload).subscribe({
-      next: (response) => {
-        this.profile = (response?.profile as RecruiterProfile) || this.profile;
-        this.avatarLoadError = false;
-        this.patchForm(this.profile);
-        this.authService.updateCurrentUser({
-          name: this.profile?.name,
-          avatar: this.profile?.avatar,
-          githubUsername: this.profile?.githubUsername,
-        });
-        this.notice = 'Recruiter profile updated successfully.';
-        this.saving = false;
-      },
-      error: (err) => {
-        this.saving = false;
-        this.error = this.extractApiError(err, 'Unable to update recruiter profile.');
-        const errors = err?.error?.errors;
-        if (errors && typeof errors === 'object') {
-          this.fieldErrors = Object.fromEntries(
-            Object.entries(errors).map(([key, value]) => [key, String(value || '')]),
-          );
-        }
-      },
-    });
+    this.hubService
+      .updateProfile(payload)
+      .pipe(finalize(() => this.cdr.markForCheck()))
+      .subscribe({
+        next: (response) => {
+          this.profile = (response?.profile as RecruiterProfile) || this.profile;
+          this.avatarLoadError = false;
+          this.patchForm(this.profile);
+          this.authService.updateCurrentUser({
+            name: this.profile?.name,
+            avatar: this.profile?.avatar,
+            githubUsername: this.profile?.githubUsername,
+          });
+          this.notice = 'Recruiter profile updated successfully.';
+          this.saving = false;
+        },
+        error: (err) => {
+          this.saving = false;
+          this.error = this.extractApiError(err, 'Unable to update recruiter profile.');
+          const errors = err?.error?.errors;
+          if (errors && typeof errors === 'object') {
+            this.fieldErrors = Object.fromEntries(
+              Object.entries(errors).map(([key, value]) => [key, String(value || '')]),
+            );
+          }
+        },
+      });
   }
 
   showControlError(controlName: string): boolean {
     const control = this.profileForm.get(controlName);
     return Boolean(
       this.fieldErrors[controlName] ||
-        (control && control.invalid && (control.touched || control.dirty)),
+      (control && control.invalid && (control.touched || control.dirty)),
     );
   }
 
@@ -204,18 +209,21 @@ export class RecruiterProfileComponent implements OnInit {
   loadProfile(): void {
     this.loading = true;
     this.error = '';
-    this.hubService.getProfile().subscribe({
-      next: (response) => {
-        this.profile = (response?.profile as RecruiterProfile) || null;
-        this.avatarLoadError = false;
-        this.patchForm(this.profile);
-        this.loading = false;
-      },
-      error: (err) => {
-        this.error = this.extractApiError(err, 'Unable to load recruiter profile.');
-        this.loading = false;
-      },
-    });
+    this.hubService
+      .getProfile()
+      .pipe(finalize(() => this.cdr.markForCheck()))
+      .subscribe({
+        next: (response) => {
+          this.profile = (response?.profile as RecruiterProfile) || null;
+          this.avatarLoadError = false;
+          this.patchForm(this.profile);
+          this.loading = false;
+        },
+        error: (err) => {
+          this.error = this.extractApiError(err, 'Unable to load recruiter profile.');
+          this.loading = false;
+        },
+      });
   }
 
   private patchForm(profile: RecruiterProfile | null): void {

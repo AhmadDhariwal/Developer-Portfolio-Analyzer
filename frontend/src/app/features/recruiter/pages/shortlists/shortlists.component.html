@@ -4,7 +4,8 @@
       <span class="page-header__eyebrow">Recruiter Hub · Hiring Pipeline</span>
       <h1>Shortlists</h1>
       <p>
-        Manage saved candidates across review, outreach, and interview stages with persistent recruiter notes.
+        Manage saved candidates across review, outreach, and interview stages with persistent
+        recruiter notes.
       </p>
     </div>
 
@@ -24,7 +25,9 @@
     (retry)="loadShortlists()"
   />
 
-  <div class="banner banner--error" *ngIf="error && (shortlists.length || loading)">{{ error }}</div>
+  <div class="banner banner--error" *ngIf="error && (shortlists.length || loading)">
+    {{ error }}
+  </div>
   <div class="banner banner--success" *ngIf="notice">{{ notice }}</div>
 
   <div class="metric-grid">
@@ -51,25 +54,6 @@
       [value]="conversionDisplay"
       tone="purple"
       hint="Shortlists at interview stage"
-    />
-  </div>
-
-  <div class="pipeline-strip" *ngIf="!loading && shortlists.length > 0">
-    <div class="pipeline-strip__bar" aria-hidden="true">
-      <i class="seg seg--shortlisted" [style.width.%]="stageRatio('shortlisted')"></i>
-      <i class="seg seg--reviewing" [style.width.%]="stageRatio('reviewing')"></i>
-      <i class="seg seg--contacted" [style.width.%]="stageRatio('contacted')"></i>
-      <i class="seg seg--interview" [style.width.%]="stageRatio('interview')"></i>
-      <i class="seg seg--rejected" [style.width.%]="stageRatio('rejected')"></i>
-    </div>
-
-    <app-recruiter-performance-chart
-      title="Shortlist Pipeline Funnel"
-      subtitle="Live distribution across hiring workflow stages"
-      mode="funnel"
-      tone="indigo"
-      [height]="180"
-      [items]="stageChartItems"
     />
   </div>
 
@@ -132,7 +116,11 @@
     </div>
 
     <div class="toolbar__filters">
-      <select aria-label="Filter by requisition" [(ngModel)]="jobFilter" *ngIf="uniqueJobTitles.length">
+      <select
+        aria-label="Filter by requisition"
+        [(ngModel)]="jobFilter"
+        *ngIf="uniqueJobTitles.length"
+      >
         <option value="">All Requisitions</option>
         <option *ngFor="let title of uniqueJobTitles" [value]="title">{{ title }}</option>
       </select>
@@ -146,12 +134,26 @@
     </div>
   </div>
 
-  <app-recruiter-loader
-    *ngIf="loading"
-    label="Loading shortlists..."
-    variant="cards"
-    [count]="4"
-  />
+  <app-recruiter-loader *ngIf="loading" label="Loading shortlists..." variant="cards" [count]="4" />
+
+  <div class="pipeline-strip" *ngIf="!loading && shortlists.length > 0">
+    <div class="pipeline-strip__bar" aria-hidden="true">
+      <i class="seg seg--shortlisted" [style.width.%]="stageRatio('shortlisted')"></i>
+      <i class="seg seg--reviewing" [style.width.%]="stageRatio('reviewing')"></i>
+      <i class="seg seg--contacted" [style.width.%]="stageRatio('contacted')"></i>
+      <i class="seg seg--interview" [style.width.%]="stageRatio('interview')"></i>
+      <i class="seg seg--rejected" [style.width.%]="stageRatio('rejected')"></i>
+    </div>
+
+    <app-recruiter-performance-chart
+      title="Shortlist Pipeline Funnel"
+      subtitle="Live distribution across hiring workflow stages"
+      mode="funnel"
+      tone="indigo"
+      [height]="180"
+      [items]="stageChartItems"
+    />
+  </div>
 
   <div class="card-grid" *ngIf="!loading && filteredShortlists.length > 0">
     <app-shortlist-card

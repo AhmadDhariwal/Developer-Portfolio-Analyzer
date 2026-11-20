@@ -1,5 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { catchError, forkJoin, of } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 import {
   ChartTone,
   PerformanceChartDataset,
@@ -15,6 +17,7 @@ import { RecruiterMatchService } from '../../services/recruiter-match.service';
   standalone: false,
 })
 export class ComparisonComponent implements OnInit {
+  private readonly cdr = inject(ChangeDetectorRef);
   loading = false;
   candidatesLoading = true;
   error = '';
@@ -68,7 +71,12 @@ export class ComparisonComponent implements OnInit {
       return this.candidates;
     }
     return this.candidates.filter((candidate) => {
-      const haystack = [candidate?.name, candidate?.fullName, candidate?.stack, ...(candidate?.skills || [])]
+      const haystack = [
+        candidate?.name,
+        candidate?.fullName,
+        candidate?.stack,
+        ...(candidate?.skills || []),
+      ]
         .join(' ')
         .toLowerCase();
       return haystack.includes(query);
@@ -137,26 +145,45 @@ export class ComparisonComponent implements OnInit {
   loadReferenceData(shouldCompare = false): void {
     this.candidatesLoading = true;
     this.candidatesError = '';
+    const runInitialCompare = shouldCompare && this.selectedIds.size >= 2;
+    if (runInitialCompare) {
+      this.loading = true;
+      this.error = '';
+    }
 
-    this.candidateService.listCandidates({ limit: 24, sortBy: 'score-desc' }).subscribe({
-      next: (response: any) => {
-        this.candidates = response?.candidates || [];
-        if (shouldCompare && this.selectedIds.size >= 2) {
-          this.loadComparison();
+    forkJoin({
+      candidatesRes: this.candidateService.listCandidates({ limit: 24, sortBy: 'score-desc' }).pipe(
+        catchError((err) => {
+          this.candidatesError =
+            err?.error?.message || 'Unable to load candidate pool for selection.';
+          return of({ candidates: [] });
+        }),
+      ),
+      jobsRes: this.jobService.listJobs().pipe(catchError(() => of({ jobs: [] }))),
+      compareRes: runInitialCompare
+        ? this.matchService
+            .compareCandidates({
+              candidateIds: Array.from(this.selectedIds),
+              jobId: this.selectedJobId || undefined,
+            })
+            .pipe(
+              catchError((err) => {
+                this.error = err?.error?.message || 'Unable to compare selected candidates.';
+                return of({ candidates: [], comparison: [] });
+              }),
+            )
+        : of(null),
+    })
+      .pipe(finalize(() => this.cdr.markForCheck()))
+      .subscribe(({ candidatesRes, jobsRes, compareRes }: any) => {
+        this.candidates = candidatesRes?.candidates || [];
+        this.jobs = jobsRes?.jobs || [];
+        if (runInitialCompare) {
+          this.comparison = compareRes?.candidates || compareRes?.comparison || [];
+          this.loading = false;
         }
         this.candidatesLoading = false;
-      },
-      error: (err) => {
-        this.candidatesError = err?.error?.message || 'Unable to load candidate pool for selection.';
-        this.candidatesLoading = false;
-      },
-    });
-
-    this.jobService.listJobs().subscribe({
-      next: (response: any) => {
-        this.jobs = response?.jobs || [];
-      },
-    });
+      });
   }
 
   onJobChange(jobId: string): void {
@@ -208,6 +235,7 @@ export class ComparisonComponent implements OnInit {
         candidateIds: Array.from(this.selectedIds),
         jobId: this.selectedJobId || undefined,
       })
+      .pipe(finalize(() => this.cdr.markForCheck()))
       .subscribe({
         next: (response: any) => {
           this.comparison = response?.candidates || response?.comparison || [];

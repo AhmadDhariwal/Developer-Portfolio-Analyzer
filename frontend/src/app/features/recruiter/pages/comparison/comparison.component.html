@@ -4,7 +4,8 @@
       <span class="page-header__eyebrow">Recruiter Hub · Matrix View</span>
       <h1>Candidate Comparison</h1>
       <p>
-        Compare 2-3 candidates side by side across readiness pillars, verified telemetry, and job alignment.
+        Compare 2-3 candidates side by side across readiness pillars, verified telemetry, and job
+        alignment.
       </p>
     </div>
 
@@ -111,14 +112,20 @@
           [class.is-selected]="isSelected(candidate)"
           (click)="toggleCandidate(candidate)"
         >
-          <span class="picker-chip__name">{{ candidate.name || candidate.fullName || 'Candidate' }}</span>
+          <span class="picker-chip__name">{{
+            candidate.name || candidate.fullName || 'Candidate'
+          }}</span>
           <span class="picker-chip__meta">
-            {{ candidate.stack || 'Developer' }} · {{ candidate.readinessScore ?? candidate.score ?? 0 }}%
+            {{ candidate.stack || 'Developer' }} ·
+            {{ candidate.readinessScore ?? candidate.score ?? 0 }}%
           </span>
         </button>
       </div>
 
-      <p class="muted-note" *ngIf="!candidatesLoading && !filteredCandidates.length && !candidatesError">
+      <p
+        class="muted-note"
+        *ngIf="!candidatesLoading && !filteredCandidates.length && !candidatesError"
+      >
         No candidates match your search query.
       </p>
     </div>
@@ -143,7 +150,9 @@
       />
 
       <p class="telemetry-note" *ngIf="unavailableGithubCount > 0">
-        {{ unavailableGithubCount }} selected candidate(s) do not have verified GitHub telemetry. Unavailable metrics are omitted from the chart and marked as "Unavailable" in the comparison table below.
+        {{ unavailableGithubCount }} selected candidate(s) do not have verified GitHub telemetry.
+        Unavailable metrics are omitted from the chart and marked as "Unavailable" in the comparison
+        table below.
       </p>
     </div>
 
@@ -151,7 +160,7 @@
   </ng-container>
 
   <app-recruiter-empty-state
-    *ngIf="!loading && comparison.length === 0"
+    *ngIf="!loading && !candidatesLoading && comparison.length === 0"
     title="Ready to compare candidates"
     message="Select 2-3 candidates above and click Run Comparison to inspect readiness scores, verified telemetry, and match alignment side by side."
   />

@@ -109,13 +109,23 @@ const VIEWPORTS =
   phase === 'before'
     ? [
         { name: 'desktop-1440', width: 1440, height: 900, routes: 'all' },
-        { name: 'mobile-390', width: 390, height: 844, routes: ['01-dashboard', '05-candidates', '07-matches', '10-analytics'] },
+        {
+          name: 'mobile-390',
+          width: 390,
+          height: 844,
+          routes: ['01-dashboard', '05-candidates', '07-matches', '10-analytics'],
+        },
       ]
     : [
         { name: 'desktop-1440', width: 1440, height: 900, routes: 'all' },
         { name: 'tablet-768', width: 768, height: 1024, routes: 'all' },
         { name: 'mobile-390', width: 390, height: 844, routes: 'all' },
-        { name: 'mobile-320', width: 320, height: 640, routes: ['01-dashboard', '05-candidates', '06-candidate-details', '08-comparison'] },
+        {
+          name: 'mobile-320',
+          width: 320,
+          height: 640,
+          routes: ['01-dashboard', '05-candidates', '06-candidate-details', '08-comparison'],
+        },
       ];
 
 async function settle(page) {
@@ -362,9 +372,7 @@ function attachApiRoutes(page, state, options = {}) {
         return route.fulfill({ status: 201, json: { shortlist: created } });
       }
       const status = url.searchParams.get('status') || '';
-      const list = status
-        ? state.shortlists.filter((s) => s.status === status)
-        : state.shortlists;
+      const list = status ? state.shortlists.filter((s) => s.status === status) : state.shortlists;
       return route.fulfill({ json: { shortlists: list } });
     }
 
@@ -482,8 +490,9 @@ async function runCaptureMatrix() {
             const docEl = document.documentElement;
             const main = document.querySelector('.main-content');
             const card =
-              document.querySelector('.ui-card, .stat-card, .candidate-card, .job-card, .panel, .list-card') ||
-              main;
+              document.querySelector(
+                '.ui-card, .stat-card, .candidate-card, .job-card, .panel, .list-card',
+              ) || main;
             const h1 = document.querySelector('h1');
             return {
               theme: docEl.dataset.theme || '',
@@ -519,7 +528,10 @@ async function runCaptureMatrix() {
             assert.equal(metrics.hasRecruiterWorkspace, true);
             assert.equal(metrics.hasDeveloperWorkspace, false);
             assert.notEqual(metrics.cardBg, metrics.h1Color, `Contrast check failed on ${r.key}`);
-            assert.ok(metrics.cls <= 0.05, `CLS ${metrics.cls} exceeded 0.05 on ${theme} ${vp.name} ${r.key}`);
+            assert.ok(
+              metrics.cls <= 0.05,
+              `CLS ${metrics.cls} exceeded 0.05 on ${theme} ${vp.name} ${r.key}`,
+            );
             if (theme === 'light') {
               assert.equal(metrics.theme, 'light');
             } else {
@@ -542,19 +554,28 @@ async function runCaptureMatrix() {
           await settle(page);
           await page.emulateMedia({ colorScheme: 'light' });
           await page.waitForFunction(() => document.documentElement.dataset.theme === 'light');
-          const afterLightBg = await page.evaluate(() =>
-            getComputedStyle(document.querySelector('.main-content')).backgroundColor,
+          const afterLightBg = await page.evaluate(
+            () => getComputedStyle(document.querySelector('.main-content')).backgroundColor,
           );
           await page.emulateMedia({ colorScheme: 'dark' });
           await page.waitForFunction(() => document.documentElement.dataset.theme === 'dark');
-          const afterDarkBg = await page.evaluate(() =>
-            getComputedStyle(document.querySelector('.main-content')).backgroundColor,
+          const afterDarkBg = await page.evaluate(
+            () => getComputedStyle(document.querySelector('.main-content')).backgroundColor,
           );
           assert.notEqual(afterLightBg, afterDarkBg);
-          interactionChecks.push({ name: 'system-theme-live-os-switch', status: 'PASS', afterLightBg, afterDarkBg });
+          interactionChecks.push({
+            name: 'system-theme-live-os-switch',
+            status: 'PASS',
+            afterLightBg,
+            afterDarkBg,
+          });
         }
 
-        assert.deepEqual(pageErrors, [], `Page errors in ${theme} ${vp.name}: ${pageErrors.join('; ')}`);
+        assert.deepEqual(
+          pageErrors,
+          [],
+          `Page errors in ${theme} ${vp.name}: ${pageErrors.join('; ')}`,
+        );
         await context.close();
       }
     }
@@ -622,21 +643,29 @@ async function runCaptureMatrix() {
       await page.getByText('Unavailable').first().waitFor();
       interactionChecks.push({ name: 'candidate-unavailable-github-disclosure', status: 'PASS' });
 
-      // 7. Recruiter shared /app/profile stays non-workspace scoped
+      // 7. Recruiter RBAC guard redirects Developer-only /app/profile to Recruiter workspace
       await page.goto(`${origin}/app/profile`);
+      await page.waitForURL(/\/app\/recruiter\//, { timeout: 10000 });
       await settle(page);
       const profileScope = await page.evaluate(() => ({
+        pathname: window.location.pathname,
         hasRecruiterWorkspace: Boolean(document.querySelector('.recruiter-workspace')),
         hasDeveloperWorkspace: Boolean(document.querySelector('.developer-workspace')),
         overflow: document.documentElement.scrollWidth > window.innerWidth,
       }));
-      assert.equal(profileScope.hasRecruiterWorkspace, false);
+      assert.match(profileScope.pathname, /^\/app\/recruiter\//);
+      assert.equal(profileScope.hasRecruiterWorkspace, true);
       assert.equal(profileScope.hasDeveloperWorkspace, false);
       assert.equal(profileScope.overflow, false);
-      interactionChecks.push({ name: 'recruiter-shared-profile-scoping', status: 'PASS' });
+      interactionChecks.push({ name: 'recruiter-rbac-profile-redirect', status: 'PASS' });
 
       // 6. Empty pool / hidden visibility verification
-      const emptySession = await createRecruiterContext(browser, 'light', { width: 1440, height: 900 }, true);
+      const emptySession = await createRecruiterContext(
+        browser,
+        'light',
+        { width: 1440, height: 900 },
+        true,
+      );
       await emptySession.page.goto(`${origin}/app/recruiter/candidates`);
       await emptySession.page.locator('app-recruiter-empty-state').waitFor();
       await emptySession.page.screenshot({
@@ -741,4 +770,3 @@ runCaptureMatrix().catch((error) => {
   server.close();
   process.exitCode = 1;
 });
-

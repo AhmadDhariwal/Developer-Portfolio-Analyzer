@@ -1,4 +1,5 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject, signal } from '@angular/core';
+import { finalize } from 'rxjs/operators';
 import { PerformanceChartItem } from '../../components/recruiter-performance-chart/recruiter-performance-chart.component';
 import { RecruiterMatchService } from '../../services/recruiter-match.service';
 
@@ -25,6 +26,7 @@ interface ConfirmState {
   standalone: false,
 })
 export class ShortlistsComponent implements OnInit {
+  private readonly cdr = inject(ChangeDetectorRef);
   loading = true;
   error = '';
   notice = '';
@@ -143,16 +145,19 @@ export class ShortlistsComponent implements OnInit {
     this.loading = true;
     this.error = '';
 
-    this.matchService.getShortlists().subscribe({
-      next: (response: any) => {
-        this.shortlists = response?.shortlists || [];
-        this.loading = false;
-      },
-      error: (err) => {
-        this.error = err?.error?.message || 'Unable to load shortlists right now.';
-        this.loading = false;
-      },
-    });
+    this.matchService
+      .getShortlists()
+      .pipe(finalize(() => this.cdr.markForCheck()))
+      .subscribe({
+        next: (response: any) => {
+          this.shortlists = response?.shortlists || [];
+          this.loading = false;
+        },
+        error: (err) => {
+          this.error = err?.error?.message || 'Unable to load shortlists right now.';
+          this.loading = false;
+        },
+      });
   }
 
   advance(item: any): void {
@@ -212,18 +217,21 @@ export class ShortlistsComponent implements OnInit {
     this.error = '';
     this.notice = '';
 
-    this.matchService.updateShortlist(id, { notes: event.notes }).subscribe({
-      next: (response: any) => {
-        const updated = response?.shortlist;
-        event.item.notes = updated?.notes ?? event.notes;
-        this.savingNoteId = '';
-        this.notice = `Saved notes for ${event.item?.candidate?.name || 'candidate'}.`;
-      },
-      error: (err) => {
-        this.savingNoteId = '';
-        this.error = err?.error?.message || 'Could not update shortlist notes.';
-      },
-    });
+    this.matchService
+      .updateShortlist(id, { notes: event.notes })
+      .pipe(finalize(() => this.cdr.markForCheck()))
+      .subscribe({
+        next: (response: any) => {
+          const updated = response?.shortlist;
+          event.item.notes = updated?.notes ?? event.notes;
+          this.savingNoteId = '';
+          this.notice = `Saved notes for ${event.item?.candidate?.name || 'candidate'}.`;
+        },
+        error: (err) => {
+          this.savingNoteId = '';
+          this.error = err?.error?.message || 'Could not update shortlist notes.';
+        },
+      });
   }
 
   remove(item: any): void {
@@ -241,15 +249,18 @@ export class ShortlistsComponent implements OnInit {
         this.error = '';
         this.notice = '';
 
-        this.matchService.removeShortlist(id).subscribe({
-          next: () => {
-            this.shortlists = this.shortlists.filter((entry) => entry._id !== id);
-            this.notice = `Removed ${item?.candidate?.name || 'candidate'} from shortlist.`;
-          },
-          error: (err) => {
-            this.error = err?.error?.message || 'Could not remove shortlist entry.';
-          },
-        });
+        this.matchService
+          .removeShortlist(id)
+          .pipe(finalize(() => this.cdr.markForCheck()))
+          .subscribe({
+            next: () => {
+              this.shortlists = this.shortlists.filter((entry) => entry._id !== id);
+              this.notice = `Removed ${item?.candidate?.name || 'candidate'} from shortlist.`;
+            },
+            error: (err) => {
+              this.error = err?.error?.message || 'Could not remove shortlist entry.';
+            },
+          });
       },
     });
   }
@@ -288,15 +299,18 @@ export class ShortlistsComponent implements OnInit {
     this.error = '';
     this.notice = '';
 
-    this.matchService.updateShortlist(id, { status: nextStatus }).subscribe({
-      next: (response: any) => {
-        const updated = response?.shortlist;
-        item.status = updated?.status || nextStatus;
-        this.notice = `Updated ${item?.candidate?.name || 'candidate'} to stage "${item.status}".`;
-      },
-      error: (err) => {
-        this.error = err?.error?.message || 'Could not update shortlist stage.';
-      },
-    });
+    this.matchService
+      .updateShortlist(id, { status: nextStatus })
+      .pipe(finalize(() => this.cdr.markForCheck()))
+      .subscribe({
+        next: (response: any) => {
+          const updated = response?.shortlist;
+          item.status = updated?.status || nextStatus;
+          this.notice = `Updated ${item?.candidate?.name || 'candidate'} to stage "${item.status}".`;
+        },
+        error: (err) => {
+          this.error = err?.error?.message || 'Could not update shortlist stage.';
+        },
+      });
   }
 }

@@ -29,10 +29,20 @@
 
 .page-header {
   @include recruiter.canvas-header;
+
+  @media (max-width: 960px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 .page-header__copy {
   @include recruiter.header-copy;
+
+  @media (max-width: 960px) {
+    flex: 0 0 auto;
+    width: 100%;
+  }
 
   h1 {
     @include recruiter.page-title;

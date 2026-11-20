@@ -3,7 +3,9 @@
     <div class="page-header__copy">
       <span class="page-header__eyebrow">Recruiter Hub · Requisitions</span>
       <h1>Jobs</h1>
-      <p>Create, update, archive, and manage recruiter-owned requisitions with live backend data.</p>
+      <p>
+        Create, update, archive, and manage recruiter-owned requisitions with live backend data.
+      </p>
     </div>
 
     <div class="page-header__actions">
@@ -56,20 +58,6 @@
     />
   </div>
 
-  <div class="ratio-card" *ngIf="jobs.length">
-    <div class="ratio-card__head">
-      <strong>Requisition Status Breakdown</strong>
-      <span>
-        Open: {{ openJobsCount }} · Draft: {{ draftJobsCount }} · Closed: {{ closedJobsCount }}
-      </span>
-    </div>
-    <div class="ratio-bar" aria-hidden="true">
-      <i class="ratio-seg ratio-seg--open" [style.width.%]="statusRatio(openJobsCount)"></i>
-      <i class="ratio-seg ratio-seg--draft" [style.width.%]="statusRatio(draftJobsCount)"></i>
-      <i class="ratio-seg ratio-seg--closed" [style.width.%]="statusRatio(closedJobsCount)"></i>
-    </div>
-  </div>
-
   <div class="toolbar">
     <div class="segmented-tabs" role="tablist" aria-label="Filter jobs by status">
       <button
@@ -117,6 +105,20 @@
         [(ngModel)]="searchTerm"
         placeholder="Filter jobs by title, stack, or skill..."
       />
+    </div>
+  </div>
+
+  <div class="ratio-card" *ngIf="jobs.length">
+    <div class="ratio-card__head">
+      <strong>Requisition Status Breakdown</strong>
+      <span>
+        Open: {{ openJobsCount }} · Draft: {{ draftJobsCount }} · Closed: {{ closedJobsCount }}
+      </span>
+    </div>
+    <div class="ratio-bar" aria-hidden="true">
+      <i class="ratio-seg ratio-seg--open" [style.width.%]="statusRatio(openJobsCount)"></i>
+      <i class="ratio-seg ratio-seg--draft" [style.width.%]="statusRatio(draftJobsCount)"></i>
+      <i class="ratio-seg ratio-seg--closed" [style.width.%]="statusRatio(closedJobsCount)"></i>
     </div>
   </div>
 

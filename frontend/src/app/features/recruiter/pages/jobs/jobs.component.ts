@@ -1,6 +1,7 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { finalize } from 'rxjs/operators';
 import { RecruiterJobService } from '../../services/recruiter-job.service';
 
 type ConfirmState = {
@@ -18,6 +19,7 @@ type ConfirmState = {
 })
 export class JobsComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   jobs: any[] = [];
   loading = true;
@@ -88,13 +90,7 @@ export class JobsComponent implements OnInit {
       const status = String(job?.status || 'open').toLowerCase();
       if (this.statusFilter !== 'all' && status !== this.statusFilter) return false;
       if (!query) return true;
-      const hay = [
-        job?.title,
-        job?.role,
-        job?.stack,
-        job?.location,
-        ...(job?.requiredSkills || []),
-      ]
+      const hay = [job?.title, job?.role, job?.stack, job?.location, ...(job?.requiredSkills || [])]
         .join(' ')
         .toLowerCase();
       return hay.includes(query);
@@ -120,17 +116,20 @@ export class JobsComponent implements OnInit {
   loadJobs(): void {
     this.loading = true;
     this.error = '';
-    this.jobService.listJobs().subscribe({
-      next: (response) => {
-        this.jobs = this.sortJobs(response?.jobs || []);
-        this.loading = false;
-      },
-      error: (err) => {
-        this.jobs = [];
-        this.error = this.extractApiError(err, 'Unable to load jobs right now.');
-        this.loading = false;
-      },
-    });
+    this.jobService
+      .listJobs()
+      .pipe(finalize(() => this.cdr.markForCheck()))
+      .subscribe({
+        next: (response) => {
+          this.jobs = this.sortJobs(response?.jobs || []);
+          this.loading = false;
+        },
+        error: (err) => {
+          this.jobs = [];
+          this.error = this.extractApiError(err, 'Unable to load jobs right now.');
+          this.loading = false;
+        },
+      });
   }
 
   saveJob(): void {
@@ -187,15 +186,18 @@ export class JobsComponent implements OnInit {
       'Archive',
       () => {
         this.clearMessages();
-        this.jobService.archiveJob(job._id).subscribe({
-          next: (response) => {
-            this.notice = `${job?.title || 'Job'} archived.`;
-            this.replaceJob(response?.job || { ...job, status: 'closed' });
-          },
-          error: (err) => {
-            this.error = this.extractApiError(err, 'Unable to archive this job.');
-          },
-        });
+        this.jobService
+          .archiveJob(job._id)
+          .pipe(finalize(() => this.cdr.markForCheck()))
+          .subscribe({
+            next: (response) => {
+              this.notice = `${job?.title || 'Job'} archived.`;
+              this.replaceJob(response?.job || { ...job, status: 'closed' });
+            },
+            error: (err) => {
+              this.error = this.extractApiError(err, 'Unable to archive this job.');
+            },
+          });
       },
     );
   }
@@ -207,20 +209,23 @@ export class JobsComponent implements OnInit {
       'Delete',
       () => {
         this.clearMessages();
-        this.jobService.deleteJob(job._id).subscribe({
-          next: () => {
-            this.notice = `${job?.title || 'Job'} deleted.`;
-            this.jobs = this.jobs.filter(
-              (entry) => String(entry?._id || '') !== String(job?._id || ''),
-            );
-            if (this.editingJobId === String(job?._id || '')) {
-              this.resetForm();
-            }
-          },
-          error: (err) => {
-            this.error = this.extractApiError(err, 'Unable to delete this job.');
-          },
-        });
+        this.jobService
+          .deleteJob(job._id)
+          .pipe(finalize(() => this.cdr.markForCheck()))
+          .subscribe({
+            next: () => {
+              this.notice = `${job?.title || 'Job'} deleted.`;
+              this.jobs = this.jobs.filter(
+                (entry) => String(entry?._id || '') !== String(job?._id || ''),
+              );
+              if (this.editingJobId === String(job?._id || '')) {
+                this.resetForm();
+              }
+            },
+            error: (err) => {
+              this.error = this.extractApiError(err, 'Unable to delete this job.');
+            },
+          });
       },
     );
   }
@@ -287,7 +292,7 @@ export class JobsComponent implements OnInit {
       ? this.jobService.updateJob(this.editingJobId, payload)
       : this.jobService.createJob(payload);
 
-    request$.subscribe({
+    request$.pipe(finalize(() => this.cdr.markForCheck())).subscribe({
       next: (response) => {
         const savedJob = response?.job;
         const isEditing = Boolean(this.editingJobId);

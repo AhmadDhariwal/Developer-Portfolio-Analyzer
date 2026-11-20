@@ -1,6 +1,7 @@
-import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
+import { finalize } from 'rxjs/operators';
 import { PerformanceChartItem } from '../../components/recruiter-performance-chart/recruiter-performance-chart.component';
 import { CandidateService } from '../../services/candidate.service';
 import { RecruiterMatchService } from '../../services/recruiter-match.service';
@@ -12,6 +13,7 @@ import { RecruiterMatchService } from '../../services/recruiter-match.service';
   standalone: false,
 })
 export class CandidateDetailsComponent implements OnInit {
+  private readonly cdr = inject(ChangeDetectorRef);
   loading = true;
   analyzing = false;
   shortlisting = false;
@@ -91,7 +93,10 @@ export class CandidateDetailsComponent implements OnInit {
       { label: 'Profile', raw: this.candidate?.profileCompleteness },
     ];
     return candidates
-      .filter((entry) => entry.raw !== null && entry.raw !== undefined && Number.isFinite(Number(entry.raw)))
+      .filter(
+        (entry) =>
+          entry.raw !== null && entry.raw !== undefined && Number.isFinite(Number(entry.raw)),
+      )
       .map((entry) => ({
         label: entry.label,
         count: Math.round(Number(entry.raw)),
@@ -125,7 +130,10 @@ export class CandidateDetailsComponent implements OnInit {
 
     this.candidateService
       .getCandidate(this.currentCandidateId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.cdr.markForCheck()),
+      )
       .subscribe({
         next: (response: any) => {
           this.candidate = response?.candidate || null;
@@ -149,17 +157,20 @@ export class CandidateDetailsComponent implements OnInit {
     this.error = '';
     this.notice = '';
 
-    this.candidateService.analyzeCandidate(id).subscribe({
-      next: (response: any) => {
-        this.analysis = response?.analysis || response?.insight || null;
-        this.notice = 'AI candidate analysis updated from verified telemetry.';
-        this.analyzing = false;
-      },
-      error: (err) => {
-        this.error = err?.error?.message || 'Could not run candidate analysis.';
-        this.analyzing = false;
-      },
-    });
+    this.candidateService
+      .analyzeCandidate(id)
+      .pipe(finalize(() => this.cdr.markForCheck()))
+      .subscribe({
+        next: (response: any) => {
+          this.analysis = response?.analysis || response?.insight || null;
+          this.notice = 'AI candidate analysis updated from verified telemetry.';
+          this.analyzing = false;
+        },
+        error: (err) => {
+          this.error = err?.error?.message || 'Could not run candidate analysis.';
+          this.analyzing = false;
+        },
+      });
   }
 
   analyze(): void {
@@ -177,16 +188,19 @@ export class CandidateDetailsComponent implements OnInit {
     this.error = '';
     this.notice = '';
 
-    this.matchService.addToShortlist({ candidateId: id }).subscribe({
-      next: () => {
-        this.notice = `${this.candidate?.name || 'Candidate'} added to shortlist.`;
-        this.shortlisting = false;
-      },
-      error: (err) => {
-        this.error = err?.error?.message || 'Could not add candidate to shortlist.';
-        this.shortlisting = false;
-      },
-    });
+    this.matchService
+      .addToShortlist({ candidateId: id })
+      .pipe(finalize(() => this.cdr.markForCheck()))
+      .subscribe({
+        next: () => {
+          this.notice = `${this.candidate?.name || 'Candidate'} added to shortlist.`;
+          this.shortlisting = false;
+        },
+        error: (err) => {
+          this.error = err?.error?.message || 'Could not add candidate to shortlist.';
+          this.shortlisting = false;
+        },
+      });
   }
 
   shortlist(): void {
