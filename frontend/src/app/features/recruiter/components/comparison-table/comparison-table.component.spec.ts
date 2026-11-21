@@ -50,5 +50,15 @@ describe('ComparisonTableComponent', () => {
     expect(text).toContain('91');
     expect(component.isBest('githubScore', 91)).toBe(true);
     expect(component.isBest('githubScore', null)).toBe(false);
+    component.items[0].resumeScore = 0;
+    component.items[1].resumeScore = null;
+    fixture.componentRef.setInput('items', [...component.items]);
+    fixture.detectChanges();
+    const row = Array.from(
+      fixture.nativeElement.querySelectorAll('tr') as NodeListOf<HTMLTableRowElement>,
+    ).find((item) => item.querySelector('th')?.textContent?.includes('Resume Score'));
+    expect(Array.from(row!.querySelectorAll('td')).map((cell) => cell.textContent?.trim())).toEqual(
+      ['0', 'Unavailable'],
+    );
   });
 });

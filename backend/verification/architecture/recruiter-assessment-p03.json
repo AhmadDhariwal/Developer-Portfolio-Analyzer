@@ -1,0 +1,139 @@
+{
+  "scope": "DPA P0.3 only",
+  "branch": "fix/P1-project",
+  "integrationTarget": "not applicable",
+  "rootCauses": [
+    "Assessment coerced missing inputs to zero and divided by three, publishing the result as confidence.",
+    "Candidate Details incorrectly described deterministic arithmetic as AI and verified ability.",
+    "Resume score hydration and presentation defaults obscured absent measurements; cards and comparison tables rendered missing resume values as zero."
+  ],
+  "calculation": {
+    "before": "round((Number(readiness || 0) + Number(github || 0) + Number(resume || 0))/3)",
+    "after": "Validate numeric scores in [0,100], retain zero, exclude missing/invalid scores, round sum/count; return null for no available scores.",
+    "examples": [
+      {
+        "inputs": [
+          null,
+          null,
+          null
+        ],
+        "before": 0,
+        "after": null
+      },
+      {
+        "inputs": [
+          0,
+          null,
+          null
+        ],
+        "before": 0,
+        "after": 0
+      },
+      {
+        "inputs": [
+          80,
+          null,
+          null
+        ],
+        "before": 27,
+        "after": 80
+      },
+      {
+        "inputs": [
+          80,
+          0,
+          null
+        ],
+        "before": 27,
+        "after": 40
+      },
+      {
+        "inputs": [
+          80,
+          60,
+          40
+        ],
+        "before": 60,
+        "after": 60
+      }
+    ],
+    "inputOrder": [
+      "Readiness",
+      "GitHub",
+      "Resume"
+    ],
+    "partialResume": "Only valid ATS, keyword density, format and content scores participate in the presentation average. One recorded ATS score of 40 produces resume assessment 40; matching retains its existing legacy resume calculation of 10.",
+    "readiness": "Existing weighted readiness calculation and all ranking inputs/weights remain unchanged. Assessment metadata suppresses unsupported default-only readiness. The UI explicitly explains reused underlying sources."
+  },
+  "api": {
+    "preserved": [
+      "Existing routes, analysis response envelope, summary/strengths/weaknesses/recommendation fields and audit action.",
+      "Legacy confidenceScore key retained as an alias for the corrected average, including null.",
+      "Matching/ranking calculations, weights, filters and stored models."
+    ],
+    "additive": [
+      "availableSignalScore",
+      "assessmentType",
+      "scoreExplanation",
+      "evidence",
+      "assessmentEvidence"
+    ],
+    "nullable": "Unavailable assessment/card/comparison GitHub, resume and readiness scores return null; genuine supported zero measurements remain zero."
+  },
+  "ui": "Evidence Assessment/Deterministic Candidate Assessment labels; available-signal average instead of confidence; recorded scores instead of verified strengths. Source timestamps/explanations appear when recorded, otherwise timestamp unavailable. Existing components, styles and theme tokens are reused with no CSS changes.",
+  "privacy": "Existing live public-consent, active-account, organization scope and candidate alias protections are unchanged and executed before assessment. New metadata contains only scores, timestamps and generic source explanations, with no resume text, IDs, hashes, email or new public URLs. No AI calls, new modules, models, caches or dependencies.",
+  "validation": {
+    "backend": {
+      "command": "node --test --test-concurrency=1 backend/src/tests/recruiter/candidateAssessment.test.js backend/src/tests/recruiter/recruiterRankingEngine.test.js",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0
+    },
+    "angular": {
+      "passed": 5,
+      "failed": 0,
+      "excludedByScopeFilter": 10,
+      "files": [
+        "recruiter-pages.spec.ts",
+        "recruiter-components.spec.ts",
+        "comparison-table.component.spec.ts"
+      ],
+      "filter": "CandidateDetails|CandidateCard|ComparisonTable",
+      "initialRun": "Two newly extended tests initially used direct post-render input mutation and triggered Angular development change detection checks. Updated tests use ComponentRef.setInput; assertions remain intact. The final focused run passed."
+    },
+    "typescript": "tsc --noEmit -p frontend/tsconfig.app.json passed",
+    "formatting": "Explicit-file Prettier write then check passed for all 11 task-owned source/test files.",
+    "syntax": "node --check passed for all four changed/new backend JavaScript files.",
+    "whitespace": "git diff --check and git diff --cached --check passed.",
+    "notRun": [
+      "Full frontend/backend suites",
+      "Full application build",
+      "Playwright or theme matrices"
+    ],
+    "warning": "Existing jsdom HTMLCanvasElement.getContext warnings occurred. Component DOM/score assertions passed; chart pixels and visual themes were not tested."
+  },
+  "files": {
+    "changed": [
+      "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\services\\hub\\candidateService.js",
+      "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\services\\matching\\matchingService.js",
+      "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\utils\\hub\\candidateFormatter.js",
+      "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\recruiter\\candidateAssessment.test.js",
+      "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\recruiter\\pages\\candidate-details\\candidate-details.component.ts",
+      "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\recruiter\\pages\\candidate-details\\candidate-details.component.html",
+      "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\recruiter\\pages\\recruiter-pages.spec.ts",
+      "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\recruiter\\components\\candidate-card\\candidate-card.component.html",
+      "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\recruiter\\components\\comparison-table\\comparison-table.component.html",
+      "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\recruiter\\components\\comparison-table\\comparison-table.component.spec.ts",
+      "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\recruiter\\components\\recruiter-components.spec.ts"
+    ],
+    "report": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\architecture\\recruiter-assessment-p03.json",
+    "moved": [],
+    "deleted": []
+  },
+  "remainingIssues": [
+    "Historical source rows may lack provenance/timestamps. No dates are inferred from account activity. GitHub default-only zero without supporting analysis provenance is unavailable; a supported measured zero remains valid.",
+    "Recorded resume scores describe stored measurements and claims, not verified skill. Existing schema defaults cannot be retrospectively distinguished from deliberately persisted zero metrics without additional historical provenance.",
+    "Job-match confidenceScore fields outside this candidate assessment retain their existing behavior; job matching was not redesigned."
+  ],
+  "finalization": "No task-owned temporary files were created. Existing staged P0.1/P0.2/P0.2.1 work and historical reports were preserved. No commits, pushes, deployment or database mutations. Stop at P0.3."
+}

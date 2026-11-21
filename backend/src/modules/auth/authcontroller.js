@@ -164,7 +164,7 @@ const oauthCallback = (provider) => async (req, res) => {
     const state = String(req.query.state || '');
     if (!code)
       throw Object.assign(new Error('Authorization code is missing.'), { statusCode: 400 });
-    validateState(provider, state, req.headers.cookie || '');
+    await validateState(provider, state, req.headers.cookie || '');
     res.clearCookie(stateCookieName(provider), clearOptions);
     const identity =
       provider === 'google'
@@ -374,7 +374,7 @@ const loginUser = async (req, res) => {
       user.activeCareerStack = user.careerStack || 'Full Stack';
       user.activeExperienceLevel = user.experienceLevel || 'Student';
       await user.save();
-      clearAuthFailures(req);
+      await clearAuthFailures(req);
 
       // Resolve organization name for tenant context
       let organizationName = '';
@@ -406,9 +406,11 @@ const loginUser = async (req, res) => {
       });
     }
 
-    registerAuthFailure(req);
+    await registerAuthFailure(req);
     return res.status(401).json({ message: 'Invalid credentials' });
   } catch (error) {
+    if (error.status === 503)
+      return res.status(503).json({ message: 'Authentication controls temporarily unavailable.' });
     return res.status(500).json({ message: error.message });
   }
 };

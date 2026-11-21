@@ -39,6 +39,21 @@ describe('Recruiter standalone UI components', () => {
     component.view.subscribe(viewSpy);
     component.view.emit(component.candidate);
     expect(viewSpy).toHaveBeenCalledWith(component.candidate);
+    fixture.componentRef.setInput('candidate', {
+      readinessScore: null,
+      githubScore: null,
+      resumeScore: null,
+    });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Readiness unavailable');
+    expect(fixture.nativeElement.querySelectorAll('.unavailable-pill').length).toBe(3);
+    fixture.componentRef.setInput('candidate', {
+      readinessScore: 0,
+      githubScore: 0,
+      resumeScore: 0,
+    });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('.unavailable-pill').length).toBe(0);
   });
 
   it('renders JobCardComponent, ShortlistCardComponent, and MatchCardComponent status helpers', () => {

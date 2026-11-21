@@ -1,0 +1,13 @@
+{
+  "issue": "courses",
+  "exitCode": 0,
+  "testFiles": ["courses/coursesMongo.integration.test.js"],
+  "productionDataUsed": false,
+  "counts": ["# tests 9", "# pass 9", "# fail 0", "# skipped 0", "# duration_ms 17343.8154"],
+  "failures": [],
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 228,
+    "productionDataUsed": false
+  }
+}

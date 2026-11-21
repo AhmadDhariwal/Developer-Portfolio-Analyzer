@@ -115,20 +115,39 @@ const runInterviewQuestionIngestion = async () =>
     return totalInserted;
   });
 
+let schedulerTask;
+let activeTick;
+
 const startInterviewQuestionIngestionScheduler = () => {
-  cron.schedule(INGEST_CRON_EXPR, async () => {
-    try {
-      const inserted = await runInterviewQuestionIngestion();
-      logger.info('interview-ingestion completed', { inserted });
-    } catch (error) {
-      logger.error('interview-ingestion cron error', { message: error.message });
-    }
+  if (schedulerTask) return schedulerTask;
+  schedulerTask = cron.schedule(INGEST_CRON_EXPR, () => {
+    if (activeTick) return activeTick;
+    activeTick = (async () => {
+      try {
+        const inserted = await runInterviewQuestionIngestion();
+        logger.info('interview-ingestion completed', { inserted });
+      } catch (error) {
+        logger.error('interview-ingestion cron error', { message: error.message });
+      }
+    })().finally(() => {
+      activeTick = null;
+    });
+    return activeTick;
   });
 
   logger.info('interview-ingestion scheduler started', { cron: INGEST_CRON_EXPR });
 };
 
+const stopInterviewQuestionIngestionScheduler = () => {
+  schedulerTask?.stop();
+  schedulerTask?.destroy?.();
+  cron.getTasks?.()?.delete?.(schedulerTask?.options?.name);
+  schedulerTask = null;
+  return activeTick;
+};
+
 module.exports = {
+  stopInterviewQuestionIngestionScheduler,
   runInterviewQuestionIngestion,
   startInterviewQuestionIngestionScheduler
 };

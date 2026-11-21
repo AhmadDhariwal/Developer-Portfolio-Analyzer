@@ -1,0 +1,12 @@
+{
+  "issue": "notifications-recovery",
+  "exitCode": 1,
+  "testFiles": ["notifications/notificationsProduction.test.js"],
+  "productionDataUsed": false,
+  "counts": ["# tests 2", "# pass 0", "# fail 2", "# skipped 0", "# duration_ms 13753.6024"],
+  "failures": [
+    "    not ok 1 - Mongo transport interruption closes streams and committed data reconciles on recovery",
+    "not ok 1 - notifications: disposable replica set, atomic production and two real workers"
+  ],
+  "cleanup": "Suite-owned disposable Mongo cleanup; see TAP and suite evidence"
+}

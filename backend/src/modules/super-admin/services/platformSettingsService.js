@@ -1,5 +1,6 @@
 const crypto = require('node:crypto');
 const PlatformSettings = require('../models/platformSettings');
+const { getRedisCacheClient } = require('../../../core/cache/redisCacheService');
 
 const DEFAULT_SETTINGS = {
   general: {
@@ -62,8 +63,20 @@ const DEFAULT_SETTINGS = {
   }
 };
 
-const CACHE_TTL_MS = 60 * 1000;
+const CACHE_TTL_MS = 30 * 1000;
 let settingsCache = { value: null, expiresAt: 0 };
+let refreshPromise;
+let synchronizationTimer;
+let synchronizationStopped = true;
+let synchronizationEpoch = 0;
+let observedRevision;
+let cacheGeneration = 0;
+const revisionKey = () => `platform-settings:revision:${PlatformSettings.db.name}:global`;
+
+const unavailable = () =>
+  Object.assign(new Error('Platform settings are temporarily unavailable.'), {
+    status: 503
+  });
 
 const getKey = () => {
   const source = String(process.env.SETTINGS_ENCRYPTION_KEY || process.env.JWT_SECRET || 'devinsight-settings-key');
@@ -339,24 +352,93 @@ const sanitizeForClient = (doc) => {
   };
 };
 
-const getSettingsDocument = async () => {
-  if (settingsCache.value && settingsCache.expiresAt > Date.now()) {
+const getSettingsDocument = async (force = false) => {
+  if (!force && settingsCache.value && settingsCache.expiresAt > Date.now()) {
     return settingsCache.value;
   }
 
-  let doc = await PlatformSettings.findOne({ scope: 'global' }).lean();
-  if (!doc) {
-    doc = await PlatformSettings.create({ scope: 'global', ...deepClone(DEFAULT_SETTINGS) });
-    doc = doc.toObject ? doc.toObject() : doc;
-  }
-
-  settingsCache = { value: doc, expiresAt: Date.now() + CACHE_TTL_MS };
-  return doc;
+  if (refreshPromise) return refreshPromise;
+  const generation = cacheGeneration;
+  refreshPromise = (async () => {
+    let doc = await PlatformSettings.findOne({ scope: 'global' }).setOptions({ timeoutMS: 5000 }).lean();
+    if (!doc)
+      doc = await PlatformSettings.findOneAndUpdate(
+        { scope: 'global' },
+        {
+          $setOnInsert: {
+            scope: 'global',
+            ...deepClone(DEFAULT_SETTINGS),
+            createdAt: new Date(),
+            updatedAt: new Date()
+          }
+        },
+        {
+          upsert: true,
+          returnDocument: 'after',
+          timestamps: false,
+          timeoutMS: 5000
+        }
+      ).lean();
+    // An overlapping local write owns the newer cache, even if this read completes last.
+    if (generation === cacheGeneration) {
+      settingsCache = { value: doc, expiresAt: Date.now() + CACHE_TTL_MS };
+    }
+    return settingsCache.value;
+  })().finally(() => {
+    refreshPromise = null;
+  });
+  return refreshPromise;
 };
 
 const getSettings = async () => sanitizeForClient(await getSettingsDocument());
 
-const getSettingsSnapshotSync = () => settingsCache.value || deepClone(DEFAULT_SETTINGS);
+const getSettingsSnapshotSync = () => {
+  // Preserve pre-start configuration consumers. API readiness awaits Mongo warmup
+  // and request middleware revalidates before any policy-dependent handler runs.
+  if (!settingsCache.value && synchronizationStopped) return deepClone(DEFAULT_SETTINGS);
+  if (!settingsCache.value || settingsCache.expiresAt <= Date.now()) {
+    getSettingsDocument().catch(() => {});
+    throw unavailable();
+  }
+  return settingsCache.value;
+};
+
+// Share the existing bounded Redis command client. Revision polling avoids a second
+// subscription connection and recovers missed notifications automatically.
+const startSettingsSynchronization = async () => {
+  await getSettingsDocument();
+  if (!synchronizationStopped) return;
+  synchronizationStopped = false;
+  const epoch = ++synchronizationEpoch;
+  const tick = async () => {
+    try {
+      const redis = getRedisCacheClient();
+      const revision = redis ? await redis.get(revisionKey()).catch(() => null) : null;
+      const changed = revision !== null && revision !== observedRevision;
+      if (changed || settingsCache.expiresAt <= Date.now() + 5000) {
+        // A read begun before this invalidation may have observed the old document.
+        if (changed && refreshPromise) await refreshPromise;
+        await getSettingsDocument(true);
+        if (revision !== null) observedRevision = revision;
+      }
+    } catch {
+      // The last verified snapshot remains usable only until its hard deadline.
+    } finally {
+      if (!synchronizationStopped && epoch === synchronizationEpoch) {
+        synchronizationTimer = setTimeout(tick, 1500 + Math.random() * 500);
+        synchronizationTimer.unref?.();
+      }
+    }
+  };
+  synchronizationTimer = setTimeout(tick, 0);
+  synchronizationTimer.unref?.();
+};
+
+const stopSettingsSynchronization = () => {
+  synchronizationStopped = true;
+  synchronizationEpoch += 1;
+  clearTimeout(synchronizationTimer);
+};
 
 const getOrganizationSettingsSync = () => {
   const settings = getSettingsSnapshotSync();
@@ -378,22 +460,36 @@ const getAnalyticsSettingsSync = () => {
   return settings?.analytics || deepClone(DEFAULT_SETTINGS.analytics);
 };
 
-const updateSettings = async (payload = {}, updatedBy = null) => {
-  const existing = await getSettingsDocument();
+const updateSettings = async (payload = {}, updatedBy = null, attempt = 0) => {
+  // Read the authority for each write. Compare-and-swap preserves concurrent patches.
+  const existing =
+    (await PlatformSettings.findOne({ scope: 'global' }).setOptions({ timeoutMS: 5000 }).lean()) ||
+    (await getSettingsDocument());
   const stored = buildStoredDocument(payload, existing);
+  delete stored._id;
+  delete stored.createdAt;
+  delete stored.updatedAt;
   const updated = await PlatformSettings.findOneAndUpdate(
-    { scope: 'global' },
+    { scope: 'global', updatedAt: existing?.updatedAt || { $exists: false } },
     {
       $set: {
         ...stored,
         scope: 'global',
+        updatedAt: new Date(Math.max(Date.now(), new Date(existing.updatedAt || 0).getTime() + 1)),
         updatedBy: updatedBy || undefined
       }
     },
-    { new: true, upsert: true, setDefaultsOnInsert: true }
+    { returnDocument: 'after', timestamps: false, timeoutMS: 5000 }
   ).lean();
-
-  settingsCache = { value: updated, expiresAt: Date.now() + CACHE_TTL_MS };
+  if (!updated && attempt < 4) return updateSettings(payload, updatedBy, attempt + 1);
+  if (!updated) throw Object.assign(new Error('Settings changed concurrently. Please retry.'), { status: 409 });
+  cacheGeneration += 1;
+  // Concurrent write responses can arrive in the opposite order to Mongo commits.
+  if (new Date(updated.updatedAt).getTime() >= new Date(settingsCache.value?.updatedAt || 0).getTime()) {
+    settingsCache = { value: updated, expiresAt: Date.now() + CACHE_TTL_MS };
+  }
+  const redis = getRedisCacheClient();
+  if (redis) await redis.set(revisionKey(), crypto.randomUUID()).catch(() => {});
   return sanitizeForClient(updated);
 };
 
@@ -428,6 +524,8 @@ const getIntegrationSecretsSync = () => {
 };
 
 module.exports = {
+  startSettingsSynchronization,
+  stopSettingsSynchronization,
   DEFAULT_SETTINGS,
   getSettings,
   getSettingsSnapshotSync,

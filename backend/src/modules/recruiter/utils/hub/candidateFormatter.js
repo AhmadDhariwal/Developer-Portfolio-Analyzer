@@ -1,5 +1,15 @@
 const toTitle = (value) => String(value || '').trim();
 
+const measuredScore = (value) =>
+  typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 100 ? value : null;
+
+const averageAvailableScores = (values) => {
+  const available = values.map(measuredScore).filter((value) => value !== null);
+  return available.length
+    ? Math.round(available.reduce((sum, value) => sum + value, 0) / available.length)
+    : null;
+};
+
 const calculateProfileCompleteness = (candidate = {}) => {
   const fields = [
     candidate.fullName,
@@ -26,7 +36,15 @@ const inferAvailability = (candidate = {}) => {
 const formatCandidateCard = (candidate = {}) => ({
   ...candidate,
   name: candidate.fullName || candidate.name || '',
-  readinessScore: Number(candidate.score || 0),
+  readinessScore: candidate.assessmentEvidence
+    ? measuredScore(candidate.assessmentEvidence.readiness?.score)
+    : measuredScore(candidate.score),
+  githubScore: candidate.assessmentEvidence
+    ? measuredScore(candidate.assessmentEvidence.github?.score)
+    : measuredScore(candidate.githubScore),
+  resumeScore: candidate.assessmentEvidence
+    ? measuredScore(candidate.assessmentEvidence.resume?.score)
+    : measuredScore(candidate.resumeScore),
   publicPortfolioLink: candidate.publicProfileSlug ? `/p/${candidate.publicProfileSlug}` : '',
   profileCompleteness: calculateProfileCompleteness(candidate),
   availability: inferAvailability(candidate),
@@ -39,9 +57,15 @@ const formatCandidateComparison = (candidate = {}) => ({
   name: candidate.fullName || '',
   stack: candidate.stack || '',
   experience: Number(candidate.yearsOfExperience || 0),
-  readinessScore: Number(candidate.score || 0),
-  githubScore: candidate.githubScore ?? null,
-  resumeScore: Number(candidate.resumeScore || 0),
+  readinessScore: candidate.assessmentEvidence
+    ? measuredScore(candidate.assessmentEvidence.readiness?.score)
+    : measuredScore(candidate.readinessScore ?? candidate.score),
+  githubScore: candidate.assessmentEvidence
+    ? measuredScore(candidate.assessmentEvidence.github?.score)
+    : measuredScore(candidate.githubScore),
+  resumeScore: candidate.assessmentEvidence
+    ? measuredScore(candidate.assessmentEvidence.resume?.score)
+    : measuredScore(candidate.resumeScore),
   projectQuality: Array.isArray(candidate.projects)
     ? Math.round(
         candidate.projects.reduce((sum, project) => sum + Number(project?.impactScore || 0), 0) /
@@ -53,6 +77,8 @@ const formatCandidateComparison = (candidate = {}) => ({
 });
 
 module.exports = {
+  measuredScore,
+  averageAvailableScores,
   calculateProfileCompleteness,
   formatCandidateCard,
   formatCandidateComparison

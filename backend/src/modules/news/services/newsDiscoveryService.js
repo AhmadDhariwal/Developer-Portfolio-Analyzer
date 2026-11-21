@@ -45,7 +45,8 @@ const topicKey = (topic) => `${BASE}:topic:${queryFor(topic)?.key || 'invalid'}`
 const stateKey = (topic) =>
   `${BASE}:state:${topic === '__broad__' ? 'general' : queryFor(topic)?.key || 'invalid'}`;
 const usable = (value) =>
-  Number.isFinite(new Date(value?.expiresAt).getTime()) && new Date(value.expiresAt).getTime() > Date.now();
+  Number.isFinite(new Date(value?.expiresAt).getTime()) &&
+  new Date(value.expiresAt).getTime() > Date.now();
 const SEARCHING =
   "if redis.call('GET', KEYS[1]) ~= ARGV[1] then return 0 end; redis.call('SET', KEYS[2], ARGV[2], 'PX', 180000); return 1";
 const ENQUEUE = `
@@ -127,7 +128,9 @@ const view = (snapshot, topic) => {
     total: allItems.length,
     providerUsed,
     lastUpdated: providerUsed.length
-      ? new Date(Math.min(...providerUsed.map((source) => Number(snapshot.filters.sourceTimes[source]))))
+      ? new Date(
+          Math.min(...providerUsed.map((source) => Number(snapshot.filters.sourceTimes[source])))
+        )
       : null
   };
 };
@@ -159,8 +162,12 @@ async function readTopic(topic) {
     }
     if (!usable(value)) {
       try {
-        if (TopicCache.db && TopicCache.db.readyState !== 1) throw new Error('Topic store unavailable');
-        const query = TopicCache.findOne({ cacheKey: topicKey(topic), expiresAt: { $gt: new Date() } });
+        if (TopicCache.db && TopicCache.db.readyState !== 1)
+          throw new Error('Topic store unavailable');
+        const query = TopicCache.findOne({
+          cacheKey: topicKey(topic),
+          expiresAt: { $gt: new Date() }
+        });
         if (typeof query.maxTimeMS === 'function') query.maxTimeMS(300);
         let timer;
         try {
@@ -190,7 +197,9 @@ function classify(filters, total, broadTotal, diagnostics = []) {
   if (!query) return 'unsupported_query';
   if (filters.source !== 'All' && !['Hacker News', 'Dev.to'].includes(filters.source)) {
     const source = diagnostics.find((item) => item.provider === filters.source);
-    return source?.reachable && !source.articlesFetched ? 'source_exhausted' : 'restrictive_filters';
+    return source?.reachable && !source.articlesFetched
+      ? 'source_exhausted'
+      : 'restrictive_filters';
   }
   if (broadTotal >= MINIMUM) return 'restrictive_filters';
   return 'coverage_gap';
@@ -235,7 +244,10 @@ async function coverage({
       const redis = cache.getRedisCacheClient({ commandTimeoutMs: 1000 });
       const current = redis && JSON.parse((await redis.get(stateKey(topic))) || 'null');
       if (current?.status === 'queued' && !(await redis.get(HEARTBEAT)))
-        return { coverage: result, enrichment: status('worker_unavailable', 'worker_offline', 20000) };
+        return {
+          coverage: result,
+          enrichment: status('worker_unavailable', 'worker_offline', 20000)
+        };
       const completed = current && ['ready', 'exhausted', 'no_newer'].includes(current.status);
       const expired =
         !completed && current?.nextEligibleAt && Date.parse(current.nextEligibleAt) <= Date.now();
@@ -249,7 +261,8 @@ async function coverage({
       /* Admission below reports unavailable infrastructure for genuine gaps. */
     }
   }
-  if (filters.page > 1) return { coverage: result, enrichment: status('not_needed', 'pagination_only') };
+  if (filters.page > 1)
+    return { coverage: result, enrichment: status('not_needed', 'pagination_only') };
   if (readOnly)
     return {
       coverage: result,
@@ -258,22 +271,39 @@ async function coverage({
         providers.enabled() ? 'catalog_only' : 'discovery_disabled'
       )
     };
-  if (!providers.enabled()) return { coverage: result, enrichment: status('disabled', 'discovery_disabled') };
+  if (!providers.enabled())
+    return { coverage: result, enrichment: status('disabled', 'discovery_disabled') };
   if (topic === '__broad__' && revalidate)
     return { coverage: result, enrichment: await enqueue(topic, admissionKey, true) };
   if (classification !== 'coverage_gap' && !refreshEligible)
     return { coverage: result, enrichment: status('not_needed', classification) };
-  if (!providers.enabled()) return { coverage: result, enrichment: status('disabled', 'discovery_disabled') };
+  if (!providers.enabled())
+    return { coverage: result, enrichment: status('disabled', 'discovery_disabled') };
   if (!providers.available(topic).length)
     return { coverage: result, enrichment: status('source_unavailable', 'no_approved_sources') };
-  if (!refreshEligible && queryAttemptAt && Date.now() - Number(queryAttemptAt) < FRESH && broadTotal > 0)
+  if (
+    !refreshEligible &&
+    queryAttemptAt &&
+    Date.now() - Number(queryAttemptAt) < FRESH &&
+    broadTotal > 0
+  )
     return {
       coverage: result,
-      enrichment: status('ready', 'articles_cached', FRESH - (Date.now() - Number(queryAttemptAt)), {
-        eligibilityReason: 'query_freshness'
-      })
+      enrichment: status(
+        'ready',
+        'articles_cached',
+        FRESH - (Date.now() - Number(queryAttemptAt)),
+        {
+          eligibilityReason: 'query_freshness'
+        }
+      )
     };
-  if (!refreshEligible && queryAttemptAt && !broadTotal && Date.now() - Number(queryAttemptAt) < NEGATIVE)
+  if (
+    !refreshEligible &&
+    queryAttemptAt &&
+    !broadTotal &&
+    Date.now() - Number(queryAttemptAt) < NEGATIVE
+  )
     return {
       coverage: result,
       enrichment: status(
@@ -305,8 +335,8 @@ async function coverage({
   if (!stateFlight.has(topic))
     stateFlight.set(
       topic,
-      enqueue(topic, admissionKey, revalidate, Boolean(refreshEligible && !revalidate)).finally(() =>
-        stateFlight.delete(topic)
+      enqueue(topic, admissionKey, revalidate, Boolean(refreshEligible && !revalidate)).finally(
+        () => stateFlight.delete(topic)
       )
     );
   return { coverage: result, enrichment: await stateFlight.get(topic) };
@@ -318,13 +348,18 @@ async function enqueue(topic, admissionKey, manual = false, stale = false) {
     const now = Date.now();
     const date = new Date(now);
     const end = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 1);
-    const daily = Math.max(1, Math.min(48, Number.parseInt(process.env.NEWS_DISCOVERY_DAILY_JOBS, 10) || 12));
+    const daily = Math.max(
+      1,
+      Math.min(48, Number.parseInt(process.env.NEWS_DISCOVERY_DAILY_JOBS, 10) || 12)
+    );
     try {
       const existing = JSON.parse((await redis.get(stateKey(topic))) || 'null');
-      if (existing && ['queued', 'searching', 'processing'].includes(existing.status)) return existing;
+      if (existing && ['queued', 'searching', 'processing'].includes(existing.status))
+        return existing;
       const successful = existing && ['ready', 'exhausted', 'no_newer'].includes(existing.status);
       const checkedAt = existing?.checkedAtMs || Date.parse(existing?.lastAttemptAt) || now;
-      const expired = !successful && existing?.nextEligibleAt && Date.parse(existing.nextEligibleAt) <= now;
+      const expired =
+        !successful && existing?.nextEligibleAt && Date.parse(existing.nextEligibleAt) <= now;
       if (
         existing &&
         !expired &&
@@ -344,7 +379,10 @@ async function enqueue(topic, admissionKey, manual = false, stale = false) {
             : providers.available(topic);
         if (!candidates.length) return status('source_unavailable', 'no_approved_sources');
         const checks = await Promise.all(
-          candidates.map(async (provider) => ({ provider, ...(await governance.inspect(provider)) }))
+          candidates.map(async (provider) => ({
+            provider,
+            ...(await governance.inspect(provider))
+          }))
         );
         if (checks.length && checks.every((check) => !check.allowed)) {
           const timed = checks
@@ -432,7 +470,8 @@ async function enqueue(topic, admissionKey, manual = false, stale = false) {
   if (value.status === 'queued') {
     wakeWorker();
     try {
-      if (!(await redis.get(HEARTBEAT))) value = status('worker_unavailable', 'worker_offline', 20000);
+      if (!(await redis.get(HEARTBEAT)))
+        value = status('worker_unavailable', 'worker_offline', 20000);
     } catch {
       value = status('unavailable', 'quota_store_unavailable', 60000);
     }
@@ -460,7 +499,12 @@ function buildSnapshot(topic, previous, outcomes, attemptedAt) {
     .flat()
     .map(normalizeItem)
     .filter((item) => {
-      if (!item || !matchesQuery(item, topic) || urls.has(item.url) || titles.has(item.title.toLowerCase()))
+      if (
+        !item ||
+        !matchesQuery(item, topic) ||
+        urls.has(item.url) ||
+        titles.has(item.title.toLowerCase())
+      )
         return false;
       urls.add(item.url);
       titles.add(item.title.toLowerCase());
@@ -481,14 +525,16 @@ function buildSnapshot(topic, previous, outcomes, attemptedAt) {
     allItems,
     total: allItems.length,
     providerUsed,
-    providerDiagnostics: outcomes.map(({ provider, status: value, items, reason, nextEligibleAt }) => ({
-      provider,
-      status: value,
-      articlesFetched: items.length,
-      reason: reason || null,
-      nextEligibleAt: nextEligibleAt || null,
-      checkedAt: new Date(attemptedAt).toISOString()
-    })),
+    providerDiagnostics: outcomes.map(
+      ({ provider, status: value, items, reason, nextEligibleAt }) => ({
+        provider,
+        status: value,
+        articlesFetched: items.length,
+        reason: reason || null,
+        nextEligibleAt: nextEligibleAt || null,
+        checkedAt: new Date(attemptedAt).toISOString()
+      })
+    ),
     lastUpdated: providerUsed.length
       ? new Date(Math.min(...providerUsed.map((source) => sourceTimes[source])))
       : new Date(attemptedAt),
@@ -512,7 +558,9 @@ async function processQueue() {
     const attemptedAt = Date.now();
     const queuedState = JSON.parse((await redis.get(stateKey(topic))) || 'null');
     if (queuedState?.queuedAtMs)
-      require('./newsMetricsService').queueDelay.observe(Math.max(0, attemptedAt - queuedState.queuedAtMs));
+      require('./newsMetricsService').queueDelay.observe(
+        Math.max(0, attemptedAt - queuedState.queuedAtMs)
+      );
     if (
       Number(
         await redis.eval(SEARCHING, {
@@ -546,7 +594,9 @@ async function processQueue() {
         {
           checkedAtMs: attemptedAt,
           newArticles: result?.inserted || 0,
-          ...(result?.successful ? { lastSuccessfulCheckAt: new Date(attemptedAt).toISOString() } : {})
+          ...(result?.successful
+            ? { lastSuccessfulCheckAt: new Date(attemptedAt).toISOString() }
+            : {})
         }
       );
       await redis.eval(COMMIT, {
@@ -570,14 +620,18 @@ async function processQueue() {
     // One global worker, sequential attempts, at most four requests, no immediate retries.
     const selectedProviders = providers.available(topic).slice(0, 4);
     for (const [index, provider] of selectedProviders.entries()) {
-      if ((await redis.get(lease.key)) !== lease.token) return { skipped: true, reason: 'lease_lost' };
-      const priority = (await redis.get(stateKey(topic) + ':priority')) === 'prewarm' ? 'prewarm' : 'user';
+      if ((await redis.get(lease.key)) !== lease.token)
+        return { skipped: true, reason: 'lease_lost' };
+      const priority =
+        (await redis.get(stateKey(topic) + ':priority')) === 'prewarm' ? 'prewarm' : 'user';
       const outcome = await providers.search(provider, topic, priority);
       outcomes.push({ ...outcome, provider });
       outcome.items.forEach((item) => collected.add(item.url));
       if (
         collected.size >= MINIMUM &&
-        !selectedProviders.slice(index + 1).some((key) => ['hackernewssearch', 'devtosearch'].includes(key))
+        !selectedProviders
+          .slice(index + 1)
+          .some((key) => ['hackernewssearch', 'devtosearch'].includes(key))
       )
         break;
     }
@@ -622,16 +676,19 @@ async function processQueue() {
       {
         lastAttemptAt: new Date(attemptedAt).toISOString(),
         checkedAtMs: attemptedAt,
-        sourceHealth: outcomes.map(({ provider, status: state, items, reason, nextEligibleAt }) => ({
-          provider,
-          status: state,
-          articlesFound: items.length,
-          reason: reason || null,
-          nextEligibleAt: nextEligibleAt || null
-        }))
+        sourceHealth: outcomes.map(
+          ({ provider, status: state, items, reason, nextEligibleAt }) => ({
+            provider,
+            status: state,
+            articlesFound: items.length,
+            reason: reason || null,
+            nextEligibleAt: nextEligibleAt || null
+          })
+        )
       }
     );
-    if ((await redis.get(lease.key)) !== lease.token) return { skipped: true, reason: 'lease_lost' };
+    if ((await redis.get(lease.key)) !== lease.token)
+      return { skipped: true, reason: 'lease_lost' };
     let ingestion;
     if (successful) {
       try {
@@ -665,9 +722,13 @@ async function processQueue() {
           if (times.length) nextSourceAt = Math.min(...times);
         }
       }
-      value.nextEligibleAt = new Date(Math.max(attemptedAt + REFRESH_INTERVAL, nextSourceAt)).toISOString();
+      value.nextEligibleAt = new Date(
+        Math.max(attemptedAt + REFRESH_INTERVAL, nextSourceAt)
+      ).toISOString();
       value.eligibilityReason =
-        nextSourceAt > attemptedAt + REFRESH_INTERVAL ? 'provider_admission' : 'manual_refresh_interval';
+        nextSourceAt > attemptedAt + REFRESH_INTERVAL
+          ? 'provider_admission'
+          : 'manual_refresh_interval';
       try {
         await TopicCache.updateOne(
           {
@@ -708,7 +769,15 @@ async function processQueue() {
 }
 
 // Independent short worker tick; feed admission only schedules asynchronous work.
-async function workerTick() {
+let activeWorkerRun;
+function workerTick() {
+  if (activeWorkerRun) return activeWorkerRun;
+  activeWorkerRun = performWorkerTick().finally(() => {
+    activeWorkerRun = null;
+  });
+  return activeWorkerRun;
+}
+async function performWorkerTick() {
   if (!workerTimer || !providers.enabled()) return;
   try {
     const redis = cache.getRedisCacheClient({ commandTimeoutMs: 1000 });
@@ -745,6 +814,7 @@ function startWorker() {
 function stopWorker() {
   clearInterval(workerTimer);
   workerTimer = null;
+  return activeWorkerRun;
 }
 
 let prewarmUntil = 0;

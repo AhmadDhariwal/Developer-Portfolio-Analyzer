@@ -1,0 +1,107 @@
+{
+  "task": "DPA P0.4.1",
+  "branch": "fix/P1-project",
+  "integrationTarget": "not applicable",
+  "existingStagedFiles": "All ten pre-existing staged files preserved; no staging, commits, pushes, deployments or backend changes performed.",
+  "rootCauses": [
+    "Ranking asynchronous success/error callbacks mutated plain fields without markForCheck under Angular zoneless detection.",
+    "Admin page-local custom properties and hardcoded surfaces/foregrounds forced a dark palette regardless of the resolved theme. Chart.js also hardcoded dark-mode colors."
+  ],
+  "changedFiles": [
+    {
+      "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/features/admin/pages/admin-jobs/admin-jobs.component.ts",
+      "change": "Notify zoneless detection for ranking, validation and drawers; cancel pending scroll on destruction."
+    },
+    {
+      "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/features/admin/pages/admin-jobs/admin-jobs.component.spec.ts",
+      "change": "Add delayed-response DOM regressions for loading, results, errors, empty results and edit validation."
+    },
+    {
+      "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/features/admin/pages/admin-jobs/admin-jobs.component.scss",
+      "change": "Inherit theme tokens for surfaces, text, pills and controls; preserve filled-button hover contrast and keyboard focus."
+    },
+    {
+      "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/features/admin/pages/admin-teams/admin-teams.component.ts",
+      "change": "Notify detection when recruiter loading fails."
+    },
+    {
+      "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/features/admin/pages/admin-teams/admin-teams.component.scss",
+      "change": "Replace dark-only surfaces and semantic colors with shared tokens; retain layout and add keyboard focus."
+    },
+    {
+      "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/features/admin/pages/admin-dashboard/admin-dashboard.component.ts",
+      "change": "Resolve Chart.js labels, axes, tooltips and doughnut borders from shared CSS tokens; redraw on active theme changes."
+    },
+    {
+      "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/features/admin/pages/admin-dashboard/admin-dashboard.component.spec.ts",
+      "change": "Verify chart redraw and resolved chart colors after theme changes."
+    },
+    {
+      "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/features/admin/pages/admin-dashboard/admin-dashboard.component.scss",
+      "change": "Remove conflicting dark-only overrides; inherit shared surfaces, text and status colors; add keyboard focus."
+    },
+    {
+      "path": "D:/Developer-Portfolio-Analyzer/frontend/src/app/shared/services/theme.service.spec.ts",
+      "change": "Verify System mode follows live OS changes while explicit Light/Dark ignore them."
+    },
+    {
+      "path": "D:/Developer-Portfolio-Analyzer/frontend/scripts/admin-theme-tokens.test.cjs",
+      "change": "Add compiled-Sass regression checks for token inheritance, references, foregrounds and drawer/modal surfaces in both resolved themes."
+    },
+    {
+      "path": "D:/Developer-Portfolio-Analyzer/frontend/verification/p0.4.1-validation.json",
+      "change": "Retain exact file inventory and final validation evidence."
+    }
+  ],
+  "movedFiles": [],
+  "deletedFiles": [],
+  "contractVerification": {
+    "frontend": "frontend/src/app/shared/services/api.service.ts uses /tenant/organizations",
+    "backendMount": "backend/index.js:223 mounts tenant router at /api/tenant",
+    "backendRoute": "backend/src/modules/admin/routes/tenant.routes.js defines GET and POST /organizations",
+    "result": "No mismatch. No API or backend route changes."
+  },
+  "validation": {
+    "status": "passed",
+    "focusedAngularSpecs": {
+      "result": "18 passed across 4 files",
+      "command": "npm test -- --watch=false --include=src/app/features/admin/pages/admin-jobs/admin-jobs.component.spec.ts --include=src/app/features/admin/pages/admin-teams/admin-teams.component.spec.ts --include=src/app/features/admin/pages/admin-dashboard/admin-dashboard.component.spec.ts --include=src/app/shared/services/theme.service.spec.ts",
+      "workingDirectory": "D:/Developer-Portfolio-Analyzer/frontend",
+      "note": "Initial sandbox attempt failed before running tests with EPERM renaming Vitest temporary cache. Final run with filesystem access passed."
+    },
+    "compiledThemeTests": {
+      "result": "3 passed",
+      "command": "node --test frontend/scripts/admin-theme-tokens.test.cjs"
+    },
+    "applicationTypeScript": {
+      "result": "passed",
+      "command": "node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.app.json"
+    },
+    "specTypeScript": {
+      "result": "passed",
+      "command": "node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.spec.json"
+    },
+    "productionBuild": {
+      "result": "passed with warnings",
+      "command": "npm run build",
+      "warnings": [
+        "Initial bundle 4.07 MB exceeds 4 MB warning budget by 66.63 kB.",
+        "Unchanged public-portfolio stylesheet 49.97 kB exceeds 48 kB warning budget.",
+        "Unchanged developer jobs stylesheet 54.35 kB exceeds 48 kB warning budget."
+      ]
+    },
+    "formatting": "Installed Prettier --write followed by --check on every exact task-changed file; passed.",
+    "whitespace": "git diff --check and git diff --cached --check passed.",
+    "javascriptSyntax": "node --check frontend/scripts/admin-theme-tokens.test.cjs passed."
+  },
+  "limitations": [
+    "DOM regression specs use Angular/Vitest with jsdom. No live browser acceptance session or Playwright matrix was run.",
+    "Full frontend and backend suites intentionally not run."
+  ],
+  "cleanup": "No disposable task-owned screenshots, traces, scripts or logs created. Reusable regression script and this evidence retained.",
+  "beforeAfter": {
+    "ranking": "Before: asynchronous responses could leave loading/results/errors stale until a later interaction. After: start, success, empty and error states notify Angular immediately; delayed-response DOM tests require no manual detectChanges or extra click.",
+    "themes": "Before: page-local dark values overrode the active theme and canvas chart labels used fixed light text. After: pages inherit shared resolved tokens and charts redraw from those tokens on active theme changes. Existing System media-query listener is verified for live OS changes; its implementation is unchanged.",
+    "relatedPaths": "Job validation/drawer paths notify Angular explicitly. Existing mutation callbacks already notify through list-refresh subscriptions or error handlers. Teams recruiter-fetch error now notifies Angular. Existing CRUD, membership-refresh and chart-scale regression tests pass."
+  }
+}

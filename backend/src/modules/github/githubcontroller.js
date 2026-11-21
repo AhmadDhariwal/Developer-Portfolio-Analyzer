@@ -237,7 +237,16 @@ const replaceRepositoriesSafely = async (userId, repositories = [], session) => 
     );
 };
 
+const ensureGitHubPersistenceReady = async () => {
+    await Promise.all(
+        [User, GitHubSaveLock, Analysis, Repository]
+            .filter((model) => typeof model?.init === 'function' && model?.db?.readyState === 1)
+            .map((model) => model.init())
+    );
+};
+
 const persistGitHubAnalysis = async (user, githubUsername, forceRefresh) => {
+    await ensureGitHubPersistenceReady();
     const lock = await acquireSaveLock(user._id);
     if (!lock) {
         const error = new Error('GitHub analysis save is already in progress. Please retry.');
@@ -352,9 +361,11 @@ const persistGitHubAnalysis = async (user, githubUsername, forceRefresh) => {
             user._id,
             async (session) => {
                 await renewSaveLock(lock, session);
-                const currentOwner = await User.findById(user._id).select(
-                    'githubUsername activeGithubUsername'
-                );
+                const currentOwner = await User.findById(
+                    user._id,
+                    null,
+                    session ? { session } : undefined
+                ).select('githubUsername activeGithubUsername');
                 if (
                     currentOwner &&
                     String(
@@ -485,6 +496,10 @@ const analyzeAndSaveGitHubProfile = async (req, res) => {
         saveKey = `${req.user._id}:${githubUsername.toLowerCase()}`;
         job = saveJobs.get(saveKey);
         if (!job) {
+            if (saveJobs.size >= 64)
+                throw Object.assign(new Error('GitHub save capacity temporarily unavailable.'), {
+                    status: 503
+                });
             job = persistGitHubAnalysis(req.user, githubUsername, toForceRefresh(req));
             saveJobs.set(saveKey, job);
         }

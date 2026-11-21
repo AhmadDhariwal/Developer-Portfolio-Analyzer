@@ -120,4 +120,33 @@ describe('ThemeService', () => {
     expect(service.preference()).toBe('light');
     expect(service.activeTheme()).toBe('light');
   });
+
+  it('follows live OS changes in System mode and ignores them for explicit preferences', () => {
+    let change: (event: MediaQueryListEvent) => void = () => {};
+    const media = {
+      matches: false,
+      addEventListener: (_: string, listener: typeof change) => {
+        change = listener;
+      },
+    };
+    window.matchMedia = vi.fn().mockReturnValue(media);
+    storageMap.set(THEME_STORAGE_KEY, 'system');
+    service = new ThemeService();
+    expect(service.activeTheme()).toBe('light');
+
+    for (const dark of [true, false, true]) {
+      media.matches = dark;
+      change({ matches: dark } as MediaQueryListEvent);
+      expect(service.preference()).toBe('system');
+      expect(service.activeTheme()).toBe(dark ? 'dark' : 'light');
+      expect(htmlElement.dataset['theme']).toBe(dark ? 'dark' : 'light');
+      expect(htmlElement.classList.contains('dark')).toBe(dark);
+    }
+    service.setTheme('light');
+    change({ matches: true } as MediaQueryListEvent);
+    expect(service.activeTheme()).toBe('light');
+    service.setTheme('dark');
+    change({ matches: false } as MediaQueryListEvent);
+    expect(service.activeTheme()).toBe('dark');
+  });
 });

@@ -6,11 +6,7 @@
     />
   </div>
 
-  <app-recruiter-loader
-    *ngIf="loading"
-    label="Loading candidate dossier..."
-    variant="detail"
-  />
+  <app-recruiter-loader *ngIf="loading" label="Loading candidate dossier..." variant="detail" />
 
   <app-ui-error-state
     *ngIf="error && !candidate && !loading"
@@ -69,7 +65,7 @@
           [disabled]="analyzing"
           (click)="analyzeCandidate()"
         >
-          {{ analyzing ? 'Analyzing...' : 'Run AI Analysis' }}
+          {{ analyzing ? 'Assessing...' : 'Run Evidence Assessment' }}
         </button>
         <button
           type="button"
@@ -86,14 +82,23 @@
       <section class="surface-card score-hero">
         <div class="section-head">
           <div>
-            <h2>Readiness & Verified Pillars</h2>
-            <p>Aggregate scores computed from portfolio and repository signals.</p>
+            <h2>Readiness & Recorded Signals</h2>
+            <p>
+              Available scores describe recorded evidence, not verified ability or job suitability.
+            </p>
           </div>
         </div>
 
         <div class="score-hero__body">
           <div class="score-hero__meter">
-            <app-score-meter [score]="readinessScore" size="md" />
+            <app-score-meter
+              *ngIf="readinessScore !== null; else noReadiness"
+              [score]="readinessScore"
+              size="md"
+            />
+            <ng-template #noReadiness
+              ><strong class="is-unavailable">Unavailable</strong></ng-template
+            >
             <span class="meter-caption">Readiness Index</span>
           </div>
 
@@ -106,25 +111,43 @@
             </div>
             <div class="pillar-item">
               <span>Resume Signal</span>
-              <strong [class.is-unavailable]="candidate.resumeScore === null || candidate.resumeScore === undefined">
+              <strong
+                [class.is-unavailable]="
+                  candidate.resumeScore === null || candidate.resumeScore === undefined
+                "
+              >
                 {{ formatScore(candidate.resumeScore) }}
               </strong>
             </div>
             <div class="pillar-item">
               <span>Consistency</span>
-              <strong [class.is-unavailable]="candidate.consistencyScore === null || candidate.consistencyScore === undefined">
+              <strong
+                [class.is-unavailable]="
+                  candidate.consistencyScore === null || candidate.consistencyScore === undefined
+                "
+              >
                 {{ formatScore(candidate.consistencyScore) }}
               </strong>
             </div>
             <div class="pillar-item">
               <span>Growth Potential</span>
-              <strong [class.is-unavailable]="candidate.growthPotentialScore === null || candidate.growthPotentialScore === undefined">
+              <strong
+                [class.is-unavailable]="
+                  candidate.growthPotentialScore === null ||
+                  candidate.growthPotentialScore === undefined
+                "
+              >
                 {{ formatScore(candidate.growthPotentialScore) }}
               </strong>
             </div>
             <div class="pillar-item">
               <span>Completeness</span>
-              <strong [class.is-unavailable]="candidate.profileCompleteness === null || candidate.profileCompleteness === undefined">
+              <strong
+                [class.is-unavailable]="
+                  candidate.profileCompleteness === null ||
+                  candidate.profileCompleteness === undefined
+                "
+              >
                 {{ formatScore(candidate.profileCompleteness) }}
               </strong>
             </div>
@@ -135,9 +158,16 @@
           </div>
         </div>
 
-        <p class="unavailable-note" *ngIf="!hasGithubScore">
-          GitHub repository telemetry is unavailable for this candidate. Missing signals are never interpolated into charts.
-        </p>
+        <div class="block" *ngFor="let evidence of evidenceItems">
+          <h3>{{ evidence.label }}: {{ formatScore(evidence.score) }}</h3>
+          <p class="muted-note">{{ evidence.explanation }}</p>
+          <p class="muted-note">
+            Source recorded:
+            {{
+              evidence.recordedAt ? (evidence.recordedAt | date: 'medium') : 'Timestamp unavailable'
+            }}
+          </p>
+        </div>
       </section>
 
       <app-recruiter-performance-chart
@@ -152,33 +182,38 @@
       />
     </div>
 
-    <section class="surface-card analysis-panel" *ngIf="analysis || candidate.aiSummary">
+    <section class="surface-card analysis-panel" *ngIf="analysis">
       <div class="section-head">
         <div>
-          <h2>AI Candidate Assessment</h2>
-          <p>Grounded strictly in verified skills, project evidence, and telemetry.</p>
+          <h2>Deterministic Candidate Assessment</h2>
+          <p>
+            {{
+              analysis?.scoreExplanation ||
+                'Assessment uses available recorded scores. No AI confidence is calculated.'
+            }}
+          </p>
         </div>
 
         <div class="analysis-badges">
           <app-ui-badge *ngIf="analysis?.recommendation" variant="primary" size="md">
             {{ analysis.recommendation }}
           </app-ui-badge>
-          <span class="confidence-pill" [class.is-unavailable]="!hasConfidenceScore">
-            Confidence:
+          <span class="confidence-pill" [class.is-unavailable]="!hasAvailableSignalScore">
+            Available-signal average:
             <strong>
-              {{ hasConfidenceScore ? (analysis.confidenceScore + '%') : 'Unavailable' }}
+              {{ hasAvailableSignalScore ? analysis.availableSignalScore + '%' : 'Unavailable' }}
             </strong>
           </span>
         </div>
       </div>
 
       <p class="analysis-summary">
-        {{ analysis?.summary || candidate.aiSummary }}
+        {{ analysis.summary }}
       </p>
 
       <div class="insight-columns" *ngIf="strengthsList.length || weaknessesList.length">
         <div class="insight-box insight-box--strengths">
-          <h3>Verified Strengths</h3>
+          <h3>Recorded Scores</h3>
           <ul *ngIf="strengthsList.length; else noStrengths">
             <li *ngFor="let point of strengthsList">{{ point }}</li>
           </ul>
@@ -193,7 +228,9 @@
             <li *ngFor="let point of weaknessesList">{{ point }}</li>
           </ul>
           <ng-template #noWeaknesses>
-            <p class="muted-note">No explicit gaps flagged by AI analysis.</p>
+            <p class="muted-note">
+              No review notes recorded. Missing evidence does not establish an absence of gaps.
+            </p>
           </ng-template>
         </div>
       </div>
@@ -204,11 +241,11 @@
         <div class="section-head">
           <div>
             <h2>Skills & GitHub Telemetry</h2>
-            <p>Verified stack depth and open-source footprint.</p>
+            <p>Recorded skills and repository activity; source claims may require review.</p>
           </div>
         </div>
 
-        <div class="github-metrics" *ngIf="candidate.githubStats">
+        <div class="github-metrics" *ngIf="hasGithubScore && candidate.githubStats">
           <div class="gh-stat">
             <span>Repositories</span>
             <strong>{{ candidate.githubStats.repos ?? 0 }}</strong>
@@ -228,7 +265,7 @@
         </div>
 
         <div class="block" *ngIf="candidate.skills?.length">
-          <h3>Verified Skills</h3>
+          <h3>Recorded Skills</h3>
           <div class="chips">
             <span class="chip chip--skill" *ngFor="let skill of candidate.skills">{{ skill }}</span>
           </div>
@@ -258,7 +295,11 @@
 
         <p
           class="muted-note"
-          *ngIf="!candidate.skills?.length && !skillScores.length && !candidate.githubStats"
+          *ngIf="
+            !candidate.skills?.length &&
+            !skillScores.length &&
+            (!hasGithubScore || !candidate.githubStats)
+          "
         >
           No skill or repository telemetry recorded yet.
         </p>

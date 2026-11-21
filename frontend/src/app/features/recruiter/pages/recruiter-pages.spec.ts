@@ -278,6 +278,59 @@ describe('Recruiter Hub page components', () => {
     expect(matchServiceMock['addToShortlist']).toHaveBeenCalledWith({ candidateId: 'c1' });
   });
 
+  it('CandidateDetails distinguishes absent evidence from measured zero without AI confidence claims', async () => {
+    candidateServiceMock['getCandidate'].mockReturnValue(
+      of({
+        candidate: {
+          id: 'c1',
+          name: 'Fixture',
+          readinessScore: null,
+          score: 0,
+          githubScore: null,
+          resumeScore: null,
+          skillScores: [
+            { name: 'Unknown', score: null },
+            { name: 'Measured zero', score: 0 },
+          ],
+        },
+      }),
+    );
+    candidateServiceMock['analyzeCandidate'].mockReturnValue(
+      of({
+        analysis: {
+          availableSignalScore: null,
+          confidenceScore: null,
+          summary: 'No valid measurements are available.',
+          scoreExplanation: 'Missing values are excluded. This is not statistical confidence.',
+        },
+      }),
+    );
+    const fixture = await configureRecruiterPageModule(CandidateDetailsComponent);
+    const component: CandidateDetailsComponent = fixture.componentInstance;
+    expect(component.readinessScore).toBeNull();
+    expect(component.hasGithubScore).toBe(false);
+    expect(component.skillScores).toEqual([{ name: 'Measured zero', score: 0 }]);
+    expect(component.breakdownChartItems.some((item) => item.label === 'GitHub')).toBe(false);
+    component.analyze();
+    fixture.detectChanges();
+    expect(component.hasAvailableSignalScore).toBe(false);
+    expect(fixture.nativeElement.textContent).toContain('Available-signal average:');
+    expect(fixture.nativeElement.textContent).toContain('Timestamp unavailable');
+    expect(fixture.nativeElement.textContent).not.toContain('Run AI Analysis');
+    expect(fixture.nativeElement.textContent).not.toContain('AI Candidate Assessment');
+    component.candidate = { readinessScore: 0, githubScore: 0, resumeScore: 0 };
+    component.analysis = {
+      availableSignalScore: 0,
+      evidence: [{ key: 'github', score: 0, recordedAt: '2026-11-18T12:00:00.000Z' }],
+    };
+    expect(component.readinessScore).toBe(0);
+    expect(component.hasGithubScore).toBe(true);
+    expect(component.hasAvailableSignalScore).toBe(true);
+    expect(component.formatScore(0)).toBe('0%');
+    expect(component.formatScore(null)).toBe('Unavailable');
+    expect(component.evidenceItems[1].recordedAt).toBe('2026-11-18T12:00:00.000Z');
+  });
+
   it('creates a job without description on JobsComponent and supports archive/delete confirmation', async () => {
     const fixture = await configureRecruiterPageModule(JobsComponent);
     const component: JobsComponent = fixture.componentInstance;

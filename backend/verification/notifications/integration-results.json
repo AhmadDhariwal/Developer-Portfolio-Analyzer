@@ -8,7 +8,6 @@
     "HTTP IDOR bulk cursor counts session PASS",
     "Help atomic creation status and operational email receipts PASS",
     "organization team and revocation isolation PASS",
-    "Mongo disconnect fail-closed and recovery PASS",
     "active stream expiry and session revocation PASS",
     "real process restart and Redis outage independence PASS",
     "real Profile preference rollback, password update/reset and reset replay PASS",
@@ -17,12 +16,12 @@
     "index bounded reads and Mongo-only admission PASS"
   ],
   "productionDataUsed": false,
-  "crossWorkerDeliveryMs": 230.65559999999823,
+  "crossWorkerDeliveryMs": 120.58809999999721,
   "persistenceSample": {
     "count": 25,
-    "p50Ms": 119.9779000000126,
-    "p95Ms": 219.77439999999478,
-    "eventsPerSecond": 7.3075533180281935,
+    "p50Ms": 14.804799999998068,
+    "p95Ms": 26.40439999999944,
+    "eventsPerSecond": 63.54357615113088,
     "workload": "sequential single recipient; local disposable replica; not a production capacity claim"
   },
   "inboxQuery": {

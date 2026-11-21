@@ -6,12 +6,17 @@
         Organization Command Center
       </div>
       <h1>{{ orgName }}</h1>
-      <p>Real organization analytics across teams, recruiters, jobs, public developers, and activity. Every widget stays within the current organization scope.</p>
+      <p>
+        Real organization analytics across teams, recruiters, jobs, public developers, and activity.
+        Every widget stays within the current organization scope.
+      </p>
     </div>
 
     <div class="hero__actions">
       <a class="btn btn--ghost" routerLink="/app/admin/console">Org Console</a>
-      <a class="btn btn--ghost" routerLink="/app/admin/console/performance-statistics">Deep Analytics</a>
+      <a class="btn btn--ghost" routerLink="/app/admin/console/performance-statistics"
+        >Deep Analytics</a
+      >
       <button type="button" class="btn btn--primary" (click)="refreshAll()">Refresh</button>
     </div>
   </header>
@@ -20,7 +25,12 @@
     <span></span>
   </div>
 
-  <app-shared-message [visible]="!!error" type="error" [text]="error" (dismiss)="error = ''"></app-shared-message>
+  <app-shared-message
+    [visible]="!!error"
+    type="error"
+    [text]="error"
+    (dismiss)="error = ''"
+  ></app-shared-message>
 
   <section class="panel panel--filters">
     <div class="panel__header">
@@ -43,7 +53,9 @@
         <span>Team</span>
         <select [(ngModel)]="selectedTeamId" (change)="onTeamChange()">
           <option value="">All teams</option>
-          <option *ngFor="let team of performance?.filters?.teams || []" [value]="team._id">{{ team.name }}</option>
+          <option *ngFor="let team of performance?.filters?.teams || []" [value]="team._id">
+            {{ team.name }}
+          </option>
         </select>
       </label>
 
@@ -51,7 +63,12 @@
         <span>Recruiter</span>
         <select [(ngModel)]="selectedRecruiterId" (change)="onRecruiterChange()">
           <option value="">All recruiters</option>
-          <option *ngFor="let recruiter of performance?.filters?.recruiters || []" [value]="recruiter._id">{{ recruiter.name }}</option>
+          <option
+            *ngFor="let recruiter of performance?.filters?.recruiters || []"
+            [value]="recruiter._id"
+          >
+            {{ recruiter.name }}
+          </option>
         </select>
       </label>
 
@@ -59,27 +76,33 @@
         <span>Stack</span>
         <select [(ngModel)]="selectedStack" (change)="onStackChange()">
           <option value="">All stacks</option>
-          <option *ngFor="let stack of performance?.filters?.stacks || []" [value]="stack">{{ stack }}</option>
+          <option *ngFor="let stack of performance?.filters?.stacks || []" [value]="stack">
+            {{ stack }}
+          </option>
         </select>
       </label>
-
     </div>
   </section>
 
   <div class="skeleton-grid" *ngIf="showInitialSkeleton">
-    <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6,7,8]"></div>
+    <div class="skeleton-card" *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8]"></div>
   </div>
 
-  <div class="empty-state" *ngIf="initialized && !loading && !hasPerformanceData">
+  <div
+    class="empty-state"
+    *ngIf="initialized && !loading && !analyticsLoadFailed && !hasPerformanceData"
+  >
     <p>No dashboard analytics are available for the current filters yet.</p>
   </div>
 
-  <ng-container *ngIf="performance && hasPerformanceData">
+  <ng-container *ngIf="performance && hasPerformanceData && !analyticsLoadFailed">
     <section class="panel panel--overview">
       <div class="panel__header">
         <div>
           <h2>Organization Overview</h2>
-          <p>{{ preferences?.organization?.description || 'No organization description added yet.' }}</p>
+          <p>
+            {{ preferences?.organization?.description || 'No organization description added yet.' }}
+          </p>
         </div>
         <div class="summary-pill">
           <span class="summary-pill__label">Performance Score</span>
@@ -90,11 +113,15 @@
       <div class="overview-band">
         <div class="overview-band__item">
           <span class="overview-band__label">Org ID</span>
-          <span class="overview-band__value">{{ overview.organizationId || preferences?.organization?._id }}</span>
+          <span class="overview-band__value">{{
+            overview.organizationId || preferences?.organization?._id
+          }}</span>
         </div>
         <div class="overview-band__item">
           <span class="overview-band__label">Pending Invitations</span>
-          <span class="overview-band__value">{{ performance.summary.pendingInvitations || overview.pendingInvitationsCount }}</span>
+          <span class="overview-band__value">{{
+            performance.summary.pendingInvitations || overview.pendingInvitationsCount
+          }}</span>
         </div>
         <div class="overview-band__item">
           <span class="overview-band__label">Recent Activity</span>
@@ -110,40 +137,81 @@
     </section>
 
     <section class="kpi-grid" *ngIf="dashboardConfig.showKpiCards">
-      <button type="button" class="kpi-card kpi-card--indigo kpi-card--button" (click)="openTeamsView()">
+      <button
+        type="button"
+        class="kpi-card kpi-card--indigo kpi-card--button"
+        (click)="openTeamsView()"
+      >
         <span class="kpi-card__label">Teams</span>
         <span class="kpi-card__value">{{ performance.summary.totalTeams }}</span>
         <span class="kpi-card__meta">{{ overview.activeTeamsCount }} active in organization</span>
       </button>
 
-      <button type="button" class="kpi-card kpi-card--cyan kpi-card--button" (click)="openRecruitersView()">
+      <button
+        type="button"
+        class="kpi-card kpi-card--cyan kpi-card--button"
+        (click)="openRecruitersView()"
+      >
         <span class="kpi-card__label">Recruiters</span>
         <span class="kpi-card__value">{{ performance.summary.totalRecruiters }}</span>
-        <span class="kpi-card__meta">{{ performance.summary.activeRecruiters }} active / {{ performance.summary.inactiveRecruiters || 0 }} inactive</span>
+        <span class="kpi-card__meta"
+          >{{ performance.summary.activeRecruiters }} active /
+          {{ performance.summary.inactiveRecruiters || 0 }} inactive</span
+        >
       </button>
 
-      <button type="button" class="kpi-card kpi-card--amber kpi-card--button" (click)="openJobsView()">
+      <button
+        type="button"
+        class="kpi-card kpi-card--amber kpi-card--button"
+        (click)="openJobsView()"
+      >
         <span class="kpi-card__label">Jobs</span>
-        <span class="kpi-card__value">{{ performance.summary.totalJobs || performance.hiringAnalytics.total }}</span>
-        <span class="kpi-card__meta">{{ performance.summary.openJobs || performance.hiringAnalytics.open }} open / {{ performance.summary.closedJobs || performance.hiringAnalytics.closed }} closed</span>
+        <span class="kpi-card__value">{{
+          performance.summary.totalJobs || performance.hiringAnalytics.total
+        }}</span>
+        <span class="kpi-card__meta"
+          >{{ performance.summary.openJobs || performance.hiringAnalytics.open }} open /
+          {{ performance.summary.closedJobs || performance.hiringAnalytics.closed }} closed</span
+        >
       </button>
 
-      <button type="button" class="kpi-card kpi-card--teal kpi-card--button" (click)="openDevelopersView()">
+      <button
+        type="button"
+        class="kpi-card kpi-card--teal kpi-card--button"
+        (click)="openDevelopersView()"
+      >
         <span class="kpi-card__label">Public Developers</span>
         <span class="kpi-card__value">{{ overview.globalDevelopersCount }}</span>
         <span class="kpi-card__meta">Safe public profiles only</span>
       </button>
 
-      <button type="button" class="kpi-card kpi-card--slate kpi-card--button" (click)="openPerformanceView()">
+      <button
+        type="button"
+        class="kpi-card kpi-card--slate kpi-card--button"
+        (click)="openPerformanceView()"
+      >
         <span class="kpi-card__label">Candidates Analyzed</span>
-        <span class="kpi-card__value">{{ performance.candidateAnalytics?.candidatesAnalyzed || 0 }}</span>
-        <span class="kpi-card__meta">{{ performance.candidateAnalytics?.aiEnhancedCandidates || 0 }} AI-enhanced</span>
+        <span class="kpi-card__value">{{
+          performance.candidateAnalytics?.candidatesAnalyzed || 0
+        }}</span>
+        <span class="kpi-card__meta"
+          >{{ performance.candidateAnalytics?.aiEnhancedCandidates || 0 }} AI-enhanced</span
+        >
       </button>
 
-      <button type="button" class="kpi-card kpi-card--rose kpi-card--button" (click)="openPerformanceView()">
+      <button
+        type="button"
+        class="kpi-card kpi-card--rose kpi-card--button"
+        (click)="openPerformanceView()"
+      >
         <span class="kpi-card__label">Matches Generated</span>
-        <span class="kpi-card__value">{{ performance.summary.matchesGenerated || performance.aiEffectiveness?.matchCalls || 0 }}</span>
-        <span class="kpi-card__meta">{{ performance.summary.aiRankUsage || performance.aiEffectiveness?.aiRankCalls || 0 }} AI rank calls</span>
+        <span class="kpi-card__value">{{
+          performance.summary.matchesGenerated || performance.aiEffectiveness?.matchCalls || 0
+        }}</span>
+        <span class="kpi-card__meta"
+          >{{ performance.summary.aiRankUsage || performance.aiEffectiveness?.aiRankCalls || 0 }} AI
+          rank calls</span
+        >
       </button>
     </section>
 
@@ -154,7 +222,14 @@
             <h2>Team Performance Overview</h2>
             <p>Selected team focus with hiring, activity, and AI signals.</p>
           </div>
-          <button *ngIf="focusTeam" type="button" class="btn btn--ghost btn--sm" (click)="openTeamDetail(focusTeam)">View Details</button>
+          <button
+            *ngIf="focusTeam"
+            type="button"
+            class="btn btn--ghost btn--sm"
+            (click)="openTeamDetail(focusTeam)"
+          >
+            View Details
+          </button>
         </div>
 
         <ng-container *ngIf="focusTeam as team; else noTeamData">
@@ -162,7 +237,11 @@
             <div class="focus-card__header">
               <div>
                 <h3>{{ team.name }}</h3>
-                <span class="badge" [class.badge--green]="team.isActive" [class.badge--red]="!team.isActive">
+                <span
+                  class="badge"
+                  [class.badge--green]="team.isActive"
+                  [class.badge--red]="!team.isActive"
+                >
                   {{ team.isActive ? 'Active' : 'Inactive' }}
                 </span>
               </div>
@@ -209,17 +288,17 @@
               </div>
             </div>
           </div>
-
-          <div class="chart-card">
-            <div class="chart-card__header">
-              <h3>Hiring Funnel</h3>
-              <span>Jobs and accepted invitations</span>
-            </div>
-            <div class="chart-card__canvas">
-              <canvas #hiringFunnelChart></canvas>
-            </div>
-          </div>
         </ng-container>
+
+        <div class="chart-card">
+          <div class="chart-card__header">
+            <h3>Hiring Funnel</h3>
+            <span>Jobs and accepted invitations</span>
+          </div>
+          <div class="chart-card__canvas" *ngIf="hasHiringFunnelData; else noHiringFunnelData">
+            <canvas #hiringFunnelChart></canvas>
+          </div>
+        </div>
       </div>
 
       <div class="panel">
@@ -230,26 +309,34 @@
           </div>
         </div>
 
-        <div class="chart-card chart-card--panel" *ngIf="performance.teamMetrics.length > 0; else noTeamData">
+        <div class="chart-card chart-card--panel" *ngIf="performance.teamMetrics.length > 0">
           <div class="chart-card__canvas chart-card__canvas--lg">
             <canvas #teamActivityChart></canvas>
           </div>
         </div>
 
         <div class="bar-list" *ngIf="performance.teamMetrics.length > 0; else noTeamData">
-          <article class="bar-list__row" *ngFor="let team of performance.teamMetrics; trackBy: trackByTeamId">
+          <article
+            class="bar-list__row"
+            *ngFor="let team of performance.teamMetrics; trackBy: trackByTeamId"
+          >
             <div class="bar-list__head">
               <div>
                 <strong>{{ team.name }}</strong>
                 <span>{{ team.recruiterCount }} recruiters - {{ team.totalJobs }} jobs</span>
               </div>
-              <button type="button" class="btn btn--ghost btn--sm" (click)="openTeamDetail(team)">Details</button>
+              <button type="button" class="btn btn--ghost btn--sm" (click)="openTeamDetail(team)">
+                Details
+              </button>
             </div>
 
             <div class="metric-line">
               <span>Performance</span>
               <div class="metric-line__track">
-                <div class="metric-line__fill metric-line__fill--indigo" [style.width.%]="scorePct(team.performanceScore || team.engagementScore)"></div>
+                <div
+                  class="metric-line__fill metric-line__fill--indigo"
+                  [style.width.%]="scorePct(team.performanceScore || team.engagementScore)"
+                ></div>
               </div>
               <strong>{{ team.performanceScore || team.engagementScore }}</strong>
             </div>
@@ -257,7 +344,10 @@
             <div class="metric-line">
               <span>Candidate Engagement</span>
               <div class="metric-line__track">
-                <div class="metric-line__fill metric-line__fill--cyan" [style.width.%]="barPct(team.candidatesAnalyzed || 0, maxTeamCandidates())"></div>
+                <div
+                  class="metric-line__fill metric-line__fill--cyan"
+                  [style.width.%]="barPct(team.candidatesAnalyzed || 0, maxTeamCandidates())"
+                ></div>
               </div>
               <strong>{{ team.candidatesAnalyzed || 0 }}</strong>
             </div>
@@ -265,7 +355,10 @@
             <div class="metric-line">
               <span>AI Usage</span>
               <div class="metric-line__track">
-                <div class="metric-line__fill metric-line__fill--teal" [style.width.%]="barPct(team.aiUsage || 0, maxTeamAiUsage())"></div>
+                <div
+                  class="metric-line__fill metric-line__fill--teal"
+                  [style.width.%]="barPct(team.aiUsage || 0, maxTeamAiUsage())"
+                ></div>
               </div>
               <strong>{{ team.aiUsage || 0 }}</strong>
             </div>
@@ -283,13 +376,21 @@
           </div>
         </div>
         <div class="leader-list">
-          <button type="button" class="leader-list__item" *ngFor="let team of topTeams; let i = index" (click)="openTeamDetail(team)" [attr.title]="leaderboardTooltip(team)">
+          <button
+            type="button"
+            class="leader-list__item"
+            *ngFor="let team of topTeams; let i = index"
+            (click)="openTeamDetail(team)"
+            [attr.title]="leaderboardTooltip(team)"
+          >
             <span class="leader-list__rank">0{{ i + 1 }}</span>
             <div class="leader-list__body">
               <strong>{{ team.name }}</strong>
               <span>{{ team.totalJobs }} jobs - {{ team.candidatesAnalyzed || 0 }} candidates</span>
             </div>
-            <span class="leader-list__score">{{ team.performanceScore || team.engagementScore }}</span>
+            <span class="leader-list__score">{{
+              team.performanceScore || team.engagementScore
+            }}</span>
           </button>
         </div>
       </div>
@@ -302,7 +403,13 @@
           </div>
         </div>
         <div class="leader-list">
-          <button type="button" class="leader-list__item leader-list__item--muted" *ngFor="let team of lowActivityTeams; let i = index" (click)="openTeamDetail(team)" [attr.title]="leaderboardTooltip(team)">
+          <button
+            type="button"
+            class="leader-list__item leader-list__item--muted"
+            *ngFor="let team of lowActivityTeams; let i = index"
+            (click)="openTeamDetail(team)"
+            [attr.title]="leaderboardTooltip(team)"
+          >
             <span class="leader-list__rank">0{{ i + 1 }}</span>
             <div class="leader-list__body">
               <strong>{{ team.name }}</strong>
@@ -318,12 +425,14 @@
       <div class="panel__header">
         <div>
           <h2>Recruiter Performance</h2>
-          <p>Real recruiter output based on jobs, AI usage, candidate analysis, and recent activity.</p>
+          <p>
+            Real recruiter output based on jobs, AI usage, candidate analysis, and recent activity.
+          </p>
         </div>
         <a class="btn btn--ghost btn--sm" routerLink="/app/admin/recruiters">Manage Recruiters</a>
       </div>
 
-      <div class="chart-card chart-card--panel" *ngIf="recruiterHighlights.length > 0; else noRecruiterData">
+      <div class="chart-card chart-card--panel" *ngIf="recruiterHighlights.length > 0">
         <div class="chart-card__header">
           <h3>Recruiter Comparison</h3>
           <span>Jobs, matches, and AI calls</span>
@@ -334,25 +443,46 @@
       </div>
 
       <div class="recruiter-grid" *ngIf="recruiterHighlights.length > 0; else noRecruiterData">
-        <article class="recruiter-card" *ngFor="let recruiter of recruiterHighlights; trackBy: trackByRecruiterId">
+        <article
+          class="recruiter-card"
+          *ngFor="let recruiter of recruiterHighlights; trackBy: trackByRecruiterId"
+        >
           <div class="recruiter-card__header">
             <div>
               <h3>{{ recruiter.name }}</h3>
               <span>{{ recruiter.email }}</span>
             </div>
-            <span class="badge" [class.badge--green]="recruiter.isActive" [class.badge--red]="!recruiter.isActive">
+            <span
+              class="badge"
+              [class.badge--green]="recruiter.isActive"
+              [class.badge--red]="!recruiter.isActive"
+            >
               {{ recruiter.isActive ? 'Active' : 'Inactive' }}
             </span>
           </div>
 
           <div class="recruiter-card__stats">
-            <div><span>Jobs</span><strong>{{ recruiter.totalJobs }}</strong></div>
-            <div><span>AI Calls</span><strong>{{ recruiter.totalAnalyses }}</strong></div>
-            <div><span>Candidates</span><strong>{{ recruiter.candidatesAnalyzed }}</strong></div>
-            <div><span>Score</span><strong>{{ recruiter.score }}</strong></div>
+            <div>
+              <span>Jobs</span><strong>{{ recruiter.totalJobs }}</strong>
+            </div>
+            <div>
+              <span>AI Calls</span><strong>{{ recruiter.totalAnalyses }}</strong>
+            </div>
+            <div>
+              <span>Candidates</span><strong>{{ recruiter.candidatesAnalyzed }}</strong>
+            </div>
+            <div>
+              <span>Score</span><strong>{{ recruiter.score }}</strong>
+            </div>
           </div>
 
-          <button type="button" class="btn btn--ghost btn--sm" (click)="openRecruiterDetail(recruiter)">View Details</button>
+          <button
+            type="button"
+            class="btn btn--ghost btn--sm"
+            (click)="openRecruiterDetail(recruiter)"
+          >
+            View Details
+          </button>
         </article>
       </div>
     </section>
@@ -367,10 +497,19 @@
         </div>
 
         <div class="trend-chart">
-          <button type="button" class="trend-chart__col trend-chart__col--button" *ngFor="let trend of performance.hiringAnalytics.monthlyTrend" (click)="openTrendDetail(trend.label)" [attr.title]="'Open detailed analytics for ' + trend.label">
+          <button
+            type="button"
+            class="trend-chart__col trend-chart__col--button"
+            *ngFor="let trend of performance.hiringAnalytics.monthlyTrend"
+            (click)="openTrendDetail(trend.label)"
+            [attr.title]="'Open detailed analytics for ' + trend.label"
+          >
             <span class="trend-chart__value" *ngIf="trend.count > 0">{{ trend.count }}</span>
             <div class="trend-chart__bar-wrap">
-              <div class="trend-chart__bar" [style.height.%]="barPct(trend.count, maxMonthlyTrend())"></div>
+              <div
+                class="trend-chart__bar"
+                [style.height.%]="barPct(trend.count, maxMonthlyTrend())"
+              ></div>
             </div>
             <span class="trend-chart__label">{{ trend.label }}</span>
           </button>
@@ -405,10 +544,19 @@
         </div>
 
         <div class="stack-list" *ngIf="performance.hiringAnalytics.stackDistribution.length > 0">
-          <button type="button" class="stack-list__row stack-list__row--button" *ngFor="let item of performance.hiringAnalytics.stackDistribution" (click)="applyStackFilter(item.stack)" [attr.title]="'Filter dashboard by ' + item.stack">
+          <button
+            type="button"
+            class="stack-list__row stack-list__row--button"
+            *ngFor="let item of performance.hiringAnalytics.stackDistribution"
+            (click)="applyStackFilter(item.stack)"
+            [attr.title]="'Filter dashboard by ' + item.stack"
+          >
             <span>{{ item.stack }}</span>
             <div class="stack-list__track">
-              <div class="stack-list__fill" [style.width.%]="barPct(item.count, maxStackDistribution())"></div>
+              <div
+                class="stack-list__fill"
+                [style.width.%]="barPct(item.count, maxStackDistribution())"
+              ></div>
             </div>
             <strong>{{ item.count }}</strong>
           </button>
@@ -427,25 +575,42 @@
         </div>
 
         <div class="developer-grid" *ngIf="recentPublicDevelopers.length > 0; else noDeveloperData">
-          <article class="developer-card" *ngFor="let developer of recentPublicDevelopers; trackBy: trackByDeveloperId">
+          <article
+            class="developer-card"
+            *ngFor="let developer of recentPublicDevelopers; trackBy: trackByDeveloperId"
+          >
             <div class="developer-card__header">
               <div>
                 <h3>{{ developer.name }}</h3>
                 <span>{{ developer.headline || developer.jobTitle || 'Public profile' }}</span>
               </div>
-              <button type="button" class="btn btn--ghost btn--sm" (click)="openDeveloperDetail(developer)">Details</button>
+              <button
+                type="button"
+                class="btn btn--ghost btn--sm"
+                (click)="openDeveloperDetail(developer)"
+              >
+                Details
+              </button>
             </div>
 
             <div class="chip-row">
               <span class="chip" *ngIf="developer.stack">{{ developer.stack }}</span>
-              <span class="chip" *ngIf="developer.experienceLevel">{{ developer.experienceLevel }}</span>
+              <span class="chip" *ngIf="developer.experienceLevel">{{
+                developer.experienceLevel
+              }}</span>
               <span class="chip" *ngIf="developer.location">{{ developer.location }}</span>
             </div>
 
             <div class="score-row">
-              <div><span>GitHub</span><strong>{{ developer.githubScore || 0 }}</strong></div>
-              <div><span>Resume</span><strong>{{ developer.resumeScore || 0 }}</strong></div>
-              <div><span>Readiness</span><strong>{{ developer.readinessScore || 0 }}</strong></div>
+              <div>
+                <span>GitHub</span><strong>{{ developer.githubScore || 0 }}</strong>
+              </div>
+              <div>
+                <span>Resume</span><strong>{{ developer.resumeScore || 0 }}</strong>
+              </div>
+              <div>
+                <span>Readiness</span><strong>{{ developer.readinessScore || 0 }}</strong>
+              </div>
             </div>
           </article>
         </div>
@@ -457,17 +622,22 @@
             <h2>Recent Activity</h2>
             <p>Latest org-scoped operational events for the current filters.</p>
           </div>
-          <button type="button" class="btn btn--ghost btn--sm" (click)="openActivityView()">Open Logs</button>
+          <button type="button" class="btn btn--ghost btn--sm" (click)="openActivityView()">
+            Open Logs
+          </button>
         </div>
 
         <div class="activity-list" *ngIf="recentActivityFeed.length > 0; else noActivityData">
-          <article class="activity-list__item" *ngFor="let activity of recentActivityFeed; trackBy: trackByActivityId">
+          <article
+            class="activity-list__item"
+            *ngFor="let activity of recentActivityFeed; trackBy: trackByActivityId"
+          >
             <div class="activity-list__main">
               <strong>{{ activity.actorName }}</strong>
               <span>{{ formatActivityAction(activity.action, activity.route) }}</span>
             </div>
             <div class="activity-list__meta">
-              <span>{{ activity.timestamp | date:'MMM d, h:mm a' }}</span>
+              <span>{{ activity.timestamp | date: 'MMM d, h:mm a' }}</span>
               <span class="status-pill">{{ shortStatusLabel(activity.statusCode) }}</span>
             </div>
           </article>
@@ -483,14 +653,23 @@
             <p>Latest actions from the current recruiter scope.</p>
           </div>
         </div>
-        <div class="activity-list" *ngIf="focusRecruiterMetric?.recentActivity?.length; else noRecentActions">
-          <article class="activity-list__item" *ngFor="let activity of focusRecruiterMetric?.recentActivity || []; trackBy: trackByActivityId">
+        <div
+          class="activity-list"
+          *ngIf="focusRecruiterMetric?.recentActivity?.length; else noRecentActions"
+        >
+          <article
+            class="activity-list__item"
+            *ngFor="
+              let activity of focusRecruiterMetric?.recentActivity || [];
+              trackBy: trackByActivityId
+            "
+          >
             <div class="activity-list__main">
               <strong>{{ activity.actorName }}</strong>
               <span>{{ formatActivityAction(activity.action, activity.route) }}</span>
             </div>
             <div class="activity-list__meta">
-              <span>{{ activity.timestamp | date:'MMM d, h:mm a' }}</span>
+              <span>{{ activity.timestamp | date: 'MMM d, h:mm a' }}</span>
               <span class="status-pill">{{ shortStatusLabel(activity.statusCode) }}</span>
             </div>
           </article>
@@ -508,11 +687,21 @@
           <div class="focus-card__header">
             <div>
               <h3>{{ recruiter.name }}</h3>
-              <span class="badge" [class.badge--green]="recruiter.isActive" [class.badge--red]="!recruiter.isActive">
+              <span
+                class="badge"
+                [class.badge--green]="recruiter.isActive"
+                [class.badge--red]="!recruiter.isActive"
+              >
                 {{ recruiter.isActive ? 'Active' : 'Inactive' }}
               </span>
             </div>
-            <button type="button" class="btn btn--ghost btn--sm" (click)="openRecruiterDetail(recruiter)">View Details</button>
+            <button
+              type="button"
+              class="btn btn--ghost btn--sm"
+              (click)="openRecruiterDetail(recruiter)"
+            >
+              View Details
+            </button>
           </div>
 
           <div class="mini-stats">
@@ -544,6 +733,12 @@
     </div>
   </ng-template>
 
+  <ng-template #noHiringFunnelData>
+    <div class="empty-state">
+      <p>No jobs or accepted invitations for the selected filters.</p>
+    </div>
+  </ng-template>
+
   <ng-template #noRecruiterData>
     <div class="empty-state">
       <p>No recruiter performance data available for the selected filters.</p>
@@ -572,163 +767,249 @@
   <aside class="drawer" *ngIf="detailView" (click)="$event.stopPropagation()">
     <div class="drawer__close-bar">
       <span class="drawer__close-bar-title">
-        {{ detailView === 'team' ? 'Team Details' : detailView === 'recruiter' ? 'Recruiter Details' : 'Developer Details' }}
+        {{
+          detailView === 'team'
+            ? 'Team Details'
+            : detailView === 'recruiter'
+              ? 'Recruiter Details'
+              : 'Developer Details'
+        }}
       </span>
-      <button type="button" class="drawer__close" (click)="closeDetail()" aria-label="Close details drawer">
+      <button
+        type="button"
+        class="drawer__close"
+        (click)="closeDetail()"
+        aria-label="Close details drawer"
+      >
         <span>&times;</span>
       </button>
     </div>
 
     <div class="drawer__body">
-    <ng-container *ngIf="detailView === 'team' && selectedTeam as team">
-      <div class="drawer__header">
-        <h2>{{ team.name }}</h2>
-        <span class="badge" [class.badge--green]="team.isActive" [class.badge--red]="!team.isActive">{{ team.isActive ? 'Active' : 'Inactive' }}</span>
-      </div>
+      <ng-container *ngIf="detailView === 'team' && selectedTeam as team">
+        <div class="drawer__header">
+          <h2>{{ team.name }}</h2>
+          <span
+            class="badge"
+            [class.badge--green]="team.isActive"
+            [class.badge--red]="!team.isActive"
+            >{{ team.isActive ? 'Active' : 'Inactive' }}</span
+          >
+        </div>
 
-      <div class="drawer-stats">
-        <div><span>Recruiters Assigned</span><strong>{{ teamRecruiters(team).length }}</strong></div>
-        <div><span>Jobs Linked</span><strong>{{ team.totalJobs }}</strong></div>
-        <div><span>Candidates Analyzed</span><strong>{{ team.candidatesAnalyzed || 0 }}</strong></div>
-        <div><span>AI Usage</span><strong>{{ team.aiUsage || 0 }}</strong></div>
-        <div><span>Matches Generated</span><strong>{{ team.matchesGenerated || 0 }}</strong></div>
-        <div><span>Performance Score</span><strong>{{ team.performanceScore || team.engagementScore }}</strong></div>
-      </div>
-
-      <section class="drawer-section">
-        <h3>Assigned Recruiters</h3>
-        <div class="drawer-list" *ngIf="teamRecruiters(team).length > 0; else emptyDrawerBlock">
-          <div class="drawer-list__item" *ngFor="let recruiter of teamRecruiters(team)">
-            <strong>{{ recruiter.name }}</strong>
-            <span>{{ recruiter.email }}</span>
+        <div class="drawer-stats">
+          <div>
+            <span>Recruiters Assigned</span><strong>{{ teamRecruiters(team).length }}</strong>
+          </div>
+          <div>
+            <span>Jobs Linked</span><strong>{{ team.totalJobs }}</strong>
+          </div>
+          <div>
+            <span>Candidates Analyzed</span><strong>{{ team.candidatesAnalyzed || 0 }}</strong>
+          </div>
+          <div>
+            <span>AI Usage</span><strong>{{ team.aiUsage || 0 }}</strong>
+          </div>
+          <div>
+            <span>Matches Generated</span><strong>{{ team.matchesGenerated || 0 }}</strong>
+          </div>
+          <div>
+            <span>Performance Score</span
+            ><strong>{{ team.performanceScore || team.engagementScore }}</strong>
           </div>
         </div>
-      </section>
 
-      <section class="drawer-section">
-        <h3>Recent Jobs</h3>
-        <div class="drawer-list" *ngIf="team.recentJobsList?.length; else emptyDrawerBlock">
-          <div class="drawer-list__item" *ngFor="let job of team.recentJobsList">
-            <strong>{{ job.title }}</strong>
-            <span>{{ job.status | titlecase }} - {{ job.stack }} - {{ job.createdAt | date:'MMM d' }}</span>
+        <section class="drawer-section">
+          <h3>Assigned Recruiters</h3>
+          <div class="drawer-list" *ngIf="teamRecruiters(team).length > 0; else emptyDrawerBlock">
+            <div class="drawer-list__item" *ngFor="let recruiter of teamRecruiters(team)">
+              <strong>{{ recruiter.name }}</strong>
+              <span>{{ recruiter.email }}</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="drawer-section">
+          <h3>Recent Jobs</h3>
+          <div class="drawer-list" *ngIf="team.recentJobsList?.length; else emptyDrawerBlock">
+            <div class="drawer-list__item" *ngFor="let job of team.recentJobsList">
+              <strong>{{ job.title }}</strong>
+              <span
+                >{{ job.status | titlecase }} - {{ job.stack }} -
+                {{ job.createdAt | date: 'MMM d' }}</span
+              >
+            </div>
+          </div>
+        </section>
+
+        <section class="drawer-section">
+          <h3>Recent Actions</h3>
+          <div class="drawer-list" *ngIf="team.recentActions?.length; else emptyDrawerBlock">
+            <div class="drawer-list__item" *ngFor="let action of team.recentActions">
+              <strong>{{ action.actorName }}</strong>
+              <span
+                >{{ formatActivityAction(action.action, action.route) }} -
+                {{ action.timestamp | date: 'MMM d, h:mm a' }}</span
+              >
+            </div>
+          </div>
+        </section>
+      </ng-container>
+
+      <ng-container *ngIf="detailView === 'recruiter' && selectedRecruiterMetric as metric">
+        <div class="drawer__header">
+          <h2>{{ recruiterProfile(metric)?.name || metric.name }}</h2>
+          <span
+            class="badge"
+            [class.badge--green]="metric.isActive"
+            [class.badge--red]="!metric.isActive"
+            >{{ metric.isActive ? 'Active' : 'Inactive' }}</span
+          >
+        </div>
+
+        <div class="drawer-stats">
+          <div>
+            <span>Email</span><strong>{{ recruiterProfile(metric)?.email || metric.email }}</strong>
+          </div>
+          <div>
+            <span>Phone</span
+            ><strong>{{ recruiterProfile(metric)?.phoneNumber || 'Not provided' }}</strong>
+          </div>
+          <div>
+            <span>Jobs Created</span><strong>{{ metric.totalJobs }}</strong>
+          </div>
+          <div>
+            <span>Matches Generated</span><strong>{{ metric.matchesGenerated }}</strong>
+          </div>
+          <div>
+            <span>Candidates Analyzed</span><strong>{{ metric.candidatesAnalyzed }}</strong>
+          </div>
+          <div>
+            <span>AI Calls</span><strong>{{ metric.totalAnalyses }}</strong>
+          </div>
+          <div>
+            <span>Shortlists</span><strong>{{ metric.shortlists || 0 }}</strong>
+          </div>
+          <div>
+            <span>Activity Score</span><strong>{{ metric.activityScore }}</strong>
           </div>
         </div>
-      </section>
 
-      <section class="drawer-section">
-        <h3>Recent Actions</h3>
-        <div class="drawer-list" *ngIf="team.recentActions?.length; else emptyDrawerBlock">
-          <div class="drawer-list__item" *ngFor="let action of team.recentActions">
-            <strong>{{ action.actorName }}</strong>
-            <span>{{ formatActivityAction(action.action, action.route) }} - {{ action.timestamp | date:'MMM d, h:mm a' }}</span>
+        <section class="drawer-section">
+          <h3>Assigned Teams</h3>
+          <div class="chip-row">
+            <span class="chip" *ngFor="let team of recruiterProfile(metric)?.teams || []">{{
+              team.name
+            }}</span>
+          </div>
+        </section>
+
+        <section class="drawer-section">
+          <h3>Recent Jobs</h3>
+          <div class="drawer-list" *ngIf="metric.recentJobsList?.length; else emptyDrawerBlock">
+            <div class="drawer-list__item" *ngFor="let job of metric.recentJobsList">
+              <strong>{{ job.title }}</strong>
+              <span
+                >{{ job.status | titlecase }} - {{ job.stack }} -
+                {{ job.createdAt | date: 'MMM d' }}</span
+              >
+            </div>
+          </div>
+        </section>
+
+        <section class="drawer-section">
+          <h3>Recent Activity</h3>
+          <div class="drawer-list" *ngIf="metric.recentActivity?.length; else emptyDrawerBlock">
+            <div class="drawer-list__item" *ngFor="let activity of metric.recentActivity">
+              <strong>{{ formatActivityAction(activity.action, activity.route) }}</strong>
+              <span>{{ activity.timestamp | date: 'MMM d, h:mm a' }}</span>
+            </div>
+          </div>
+        </section>
+      </ng-container>
+
+      <ng-container *ngIf="detailView === 'developer' && selectedDeveloper as developer">
+        <div class="drawer__header">
+          <h2>{{ developer.name }}</h2>
+          <span class="badge badge--green">Public Safe Data</span>
+        </div>
+
+        <div class="drawer-stats">
+          <div>
+            <span>Stack</span><strong>{{ developer.stack || 'Not set' }}</strong>
+          </div>
+          <div>
+            <span>Experience</span><strong>{{ developer.experienceLevel || 'Not set' }}</strong>
+          </div>
+          <div>
+            <span>GitHub Score</span><strong>{{ developer.githubScore || 0 }}</strong>
+          </div>
+          <div>
+            <span>Resume Score</span><strong>{{ developer.resumeScore || 0 }}</strong>
+          </div>
+          <div>
+            <span>Readiness</span><strong>{{ developer.readinessScore || 0 }}</strong>
+          </div>
+          <div>
+            <span>Projects</span><strong>{{ developer.projectsCount || 0 }}</strong>
           </div>
         </div>
-      </section>
-    </ng-container>
 
-    <ng-container *ngIf="detailView === 'recruiter' && selectedRecruiterMetric as metric">
-      <div class="drawer__header">
-        <h2>{{ recruiterProfile(metric)?.name || metric.name }}</h2>
-        <span class="badge" [class.badge--green]="metric.isActive" [class.badge--red]="!metric.isActive">{{ metric.isActive ? 'Active' : 'Inactive' }}</span>
-      </div>
-
-      <div class="drawer-stats">
-        <div><span>Email</span><strong>{{ recruiterProfile(metric)?.email || metric.email }}</strong></div>
-        <div><span>Phone</span><strong>{{ recruiterProfile(metric)?.phoneNumber || 'Not provided' }}</strong></div>
-        <div><span>Jobs Created</span><strong>{{ metric.totalJobs }}</strong></div>
-        <div><span>Matches Generated</span><strong>{{ metric.matchesGenerated }}</strong></div>
-        <div><span>Candidates Analyzed</span><strong>{{ metric.candidatesAnalyzed }}</strong></div>
-        <div><span>AI Calls</span><strong>{{ metric.totalAnalyses }}</strong></div>
-        <div><span>Shortlists</span><strong>{{ metric.shortlists || 0 }}</strong></div>
-        <div><span>Activity Score</span><strong>{{ metric.activityScore }}</strong></div>
-      </div>
-
-      <section class="drawer-section">
-        <h3>Assigned Teams</h3>
-        <div class="chip-row">
-          <span class="chip" *ngFor="let team of recruiterProfile(metric)?.teams || []">{{ team.name }}</span>
-        </div>
-      </section>
-
-      <section class="drawer-section">
-        <h3>Recent Jobs</h3>
-        <div class="drawer-list" *ngIf="metric.recentJobsList?.length; else emptyDrawerBlock">
-          <div class="drawer-list__item" *ngFor="let job of metric.recentJobsList">
-            <strong>{{ job.title }}</strong>
-            <span>{{ job.status | titlecase }} - {{ job.stack }} - {{ job.createdAt | date:'MMM d' }}</span>
+        <section class="drawer-section">
+          <h3>Professional Links</h3>
+          <div class="drawer-list">
+            <div class="drawer-list__item">
+              <strong>GitHub</strong>
+              <span>{{ developer.githubUsername || 'Not provided' }}</span>
+            </div>
+            <div class="drawer-list__item">
+              <strong>LinkedIn</strong>
+              <a
+                *ngIf="hasExternalLink(developer.linkedin)"
+                [href]="developer.linkedin"
+                target="_blank"
+                rel="noopener"
+                >Open Profile</a
+              >
+              <span *ngIf="!hasExternalLink(developer.linkedin)">Not provided</span>
+            </div>
+            <div class="drawer-list__item">
+              <strong>Portfolio</strong>
+              <a
+                *ngIf="hasExternalLink(developer.website)"
+                [href]="developer.website"
+                target="_blank"
+                rel="noopener"
+                >Open Portfolio</a
+              >
+              <span *ngIf="!hasExternalLink(developer.website)">Not provided</span>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section class="drawer-section">
-        <h3>Recent Activity</h3>
-        <div class="drawer-list" *ngIf="metric.recentActivity?.length; else emptyDrawerBlock">
-          <div class="drawer-list__item" *ngFor="let activity of metric.recentActivity">
-            <strong>{{ formatActivityAction(activity.action, activity.route) }}</strong>
-            <span>{{ activity.timestamp | date:'MMM d, h:mm a' }}</span>
+        <section class="drawer-section">
+          <h3>Skills</h3>
+          <div class="chip-row">
+            <span class="chip" *ngFor="let skill of developer.skills || []">{{ skill }}</span>
           </div>
-        </div>
-      </section>
-    </ng-container>
+        </section>
 
-    <ng-container *ngIf="detailView === 'developer' && selectedDeveloper as developer">
-      <div class="drawer__header">
-        <h2>{{ developer.name }}</h2>
-        <span class="badge badge--green">Public Safe Data</span>
-      </div>
-
-      <div class="drawer-stats">
-        <div><span>Stack</span><strong>{{ developer.stack || 'Not set' }}</strong></div>
-        <div><span>Experience</span><strong>{{ developer.experienceLevel || 'Not set' }}</strong></div>
-        <div><span>GitHub Score</span><strong>{{ developer.githubScore || 0 }}</strong></div>
-        <div><span>Resume Score</span><strong>{{ developer.resumeScore || 0 }}</strong></div>
-        <div><span>Readiness</span><strong>{{ developer.readinessScore || 0 }}</strong></div>
-        <div><span>Projects</span><strong>{{ developer.projectsCount || 0 }}</strong></div>
-      </div>
-
-      <section class="drawer-section">
-        <h3>Professional Links</h3>
-        <div class="drawer-list">
-          <div class="drawer-list__item">
-            <strong>GitHub</strong>
-            <span>{{ developer.githubUsername || 'Not provided' }}</span>
+        <section class="drawer-section">
+          <h3>Projects</h3>
+          <div class="drawer-list" *ngIf="developer.projects?.length; else emptyDrawerBlock">
+            <div class="drawer-list__item" *ngFor="let project of developer.projects">
+              <strong>{{ project.title }}</strong>
+              <span>{{ project.description || 'No project description provided.' }}</span>
+            </div>
           </div>
-          <div class="drawer-list__item">
-            <strong>LinkedIn</strong>
-            <a *ngIf="hasExternalLink(developer.linkedin)" [href]="developer.linkedin" target="_blank" rel="noopener">Open Profile</a>
-            <span *ngIf="!hasExternalLink(developer.linkedin)">Not provided</span>
-          </div>
-          <div class="drawer-list__item">
-            <strong>Portfolio</strong>
-            <a *ngIf="hasExternalLink(developer.website)" [href]="developer.website" target="_blank" rel="noopener">Open Portfolio</a>
-            <span *ngIf="!hasExternalLink(developer.website)">Not provided</span>
-          </div>
-        </div>
-      </section>
+        </section>
+      </ng-container>
 
-      <section class="drawer-section">
-        <h3>Skills</h3>
-        <div class="chip-row">
-          <span class="chip" *ngFor="let skill of developer.skills || []">{{ skill }}</span>
+      <ng-template #emptyDrawerBlock>
+        <div class="empty-state empty-state--drawer">
+          <p>No detail data available for this section.</p>
         </div>
-      </section>
-
-      <section class="drawer-section">
-        <h3>Projects</h3>
-        <div class="drawer-list" *ngIf="developer.projects?.length; else emptyDrawerBlock">
-          <div class="drawer-list__item" *ngFor="let project of developer.projects">
-            <strong>{{ project.title }}</strong>
-            <span>{{ project.description || 'No project description provided.' }}</span>
-          </div>
-        </div>
-      </section>
-    </ng-container>
-
-    <ng-template #emptyDrawerBlock>
-      <div class="empty-state empty-state--drawer">
-        <p>No detail data available for this section.</p>
-      </div>
-    </ng-template>
+      </ng-template>
     </div>
   </aside>
 </section>
