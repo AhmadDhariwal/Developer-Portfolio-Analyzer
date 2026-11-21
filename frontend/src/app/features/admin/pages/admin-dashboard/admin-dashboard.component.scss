@@ -95,8 +95,8 @@
   }
 
   &--primary {
-    background: linear-gradient(135deg, #4f46e5, #0891b2);
-    color: #fff;
+    background: var(--button-primary-gradient);
+    color: var(--button-gradient-text);
   }
 
   &--ghost {
