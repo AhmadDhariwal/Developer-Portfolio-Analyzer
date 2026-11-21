@@ -2,10 +2,10 @@ import { Component, DestroyRef, OnInit, inject, ChangeDetectorRef } from '@angul
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { BehaviorSubject, Subject, of } from 'rxjs';
-import { catchError, debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
+import { BehaviorSubject, EMPTY, Subject, of } from 'rxjs';
+import { catchError, debounceTime, filter, startWith, switchMap, tap } from 'rxjs/operators';
 
-import { AdminConsoleService, ConsoleTeam } from '../admin-console/admin-console.service';
+import { AdminConsoleService } from '../admin-console/admin-console.service';
 import { AdminHiringService, AdminRecruiter } from '../../services/admin-hiring.service';
 
 type SortOption = {
@@ -25,6 +25,8 @@ export class AdminTeamsPageComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly searchInput$ = new Subject<string>();
+  private readonly analyticsRefresh$ = new Subject<void>();
+  private feedbackTimeout?: ReturnType<typeof setTimeout>;
 
   private readonly initialQuery = {
     page: 1,
@@ -36,7 +38,7 @@ export class AdminTeamsPageComponent implements OnInit {
     sortOrder: 'desc',
   };
 
-  protected readonly queryState$ = new BehaviorSubject<any>(this.initialQuery);
+  protected readonly queryState$ = new BehaviorSubject(this.initialQuery);
 
   // Filter Dropdowns
   recruiters: AdminRecruiter[] = [];
@@ -53,7 +55,9 @@ export class AdminTeamsPageComponent implements OnInit {
   ];
 
   // Component State
-  loading = false;
+  loading = true;
+  teamsLoadFailed = false;
+  analyticsLoadFailed = false;
   saving = false;
   message = '';
   messageType: 'success' | 'error' = 'success';
@@ -102,9 +106,14 @@ export class AdminTeamsPageComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.destroyRef.onDestroy(() => clearTimeout(this.feedbackTimeout));
     // 1. Set up search input debouncing
     this.searchInput$
-      .pipe(debounceTime(250), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .pipe(
+        debounceTime(250),
+        filter((search) => search !== this.queryState$.value.search),
+        takeUntilDestroyed(this.destroyRef),
+      )
       .subscribe((search) => {
         this.patchQuery({ search, page: 1 });
       });
@@ -112,15 +121,16 @@ export class AdminTeamsPageComponent implements OnInit {
     // 2. Listen to query state changes & load teams
     this.queryState$
       .pipe(
-        distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
         tap(() => {
           this.loading = true;
-          this.message = '';
+          this.teamsLoadFailed = false;
+          this.cdr.markForCheck();
         }),
         switchMap((query) =>
           this.consoleService.getTeamsPaginated(query).pipe(
-            catchError((err) => {
-              this.loading = false;
+            catchError(() => {
+              clearTimeout(this.feedbackTimeout);
+              this.teamsLoadFailed = true;
               this.message = 'Failed to load teams.';
               this.messageType = 'error';
               return of({
@@ -136,7 +146,7 @@ export class AdminTeamsPageComponent implements OnInit {
         ),
         takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe((response: any) => {
+      .subscribe((response) => {
         this.teams = response.teams || [];
         this.page = response.page || 1;
         this.pageSize = response.limit || 10;
@@ -147,35 +157,51 @@ export class AdminTeamsPageComponent implements OnInit {
 
         // Keep drawer selected team in sync if it's open
         if (this.selectedTeam) {
-          const updated = this.teams.find((t) => t._id === this.selectedTeam._id);
-          if (updated) {
-            this.selectedTeam = updated;
-          }
+          this.selectedTeam = this.teams.find((team) => team._id === this.selectedTeam._id) ?? null;
         }
         this.cdr.markForCheck();
       });
 
     // 3. Load other context details (recruiters, analytics for widgets)
     this.loadRecruiters();
-    this.loadAnalyticsData();
+    this.observeAnalytics();
   }
 
   loadRecruiters(): void {
-    this.hiringService.getRecruiters().subscribe({
-      next: (res) => {
-        this.recruiters = res || [];
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.recruiters = [];
-      },
-    });
+    this.hiringService
+      .getRecruiters()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.recruiters = res || [];
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.recruiters = [];
+        },
+      });
   }
 
-  loadAnalyticsData(): void {
-    // Fetch performance metrics for all teams to compute widgets
-    this.consoleService.getPerformance().subscribe({
-      next: (res) => {
+  private observeAnalytics(): void {
+    this.analyticsRefresh$
+      .pipe(
+        startWith(undefined),
+        switchMap(() =>
+          this.consoleService.getPerformance().pipe(
+            catchError(() => {
+              this.analyticsLoadFailed = true;
+              this.topTeams = [];
+              this.recruiterDistribution = [];
+              this.teamActivityTrend = [];
+              this.cdr.markForCheck();
+              return EMPTY;
+            }),
+          ),
+        ),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((res) => {
+        this.analyticsLoadFailed = false;
         const metrics = res?.teamMetrics || [];
 
         // Compact Widget 1: Top 5 Teams
@@ -204,11 +230,7 @@ export class AdminTeamsPageComponent implements OnInit {
           .slice(0, 5);
 
         this.cdr.markForCheck();
-      },
-      error: (err) => {
-        console.error('Failed to load performance analytics for widgets', err);
-      },
-    });
+      });
   }
 
   // Query state helpers
@@ -247,12 +269,23 @@ export class AdminTeamsPageComponent implements OnInit {
     return items;
   }
 
-  private patchQuery(patch: any): void {
+  private patchQuery(patch: Partial<typeof this.initialQuery>, refresh = false): void {
     const nextQuery = {
       ...this.queryState$.value,
       ...patch,
     };
+    if (!refresh) {
+      if (JSON.stringify(nextQuery) === JSON.stringify(this.queryState$.value)) {
+        return;
+      }
+      this.message = '';
+    }
     this.queryState$.next(nextQuery);
+  }
+
+  private refreshTeams(page = this.queryState$.value.page): void {
+    this.patchQuery({ page }, true);
+    this.analyticsRefresh$.next();
   }
 
   // Filter Event Handlers
@@ -284,6 +317,7 @@ export class AdminTeamsPageComponent implements OnInit {
 
   resetFilters(): void {
     this.searchInput = '';
+    this.searchInput$.next('');
     this.statusFilter = 'all';
     this.recruiterFilter = '';
     this.patchQuery({
@@ -340,20 +374,22 @@ export class AdminTeamsPageComponent implements OnInit {
       return;
     }
     this.saving = true;
-    this.consoleService.createTeam(this.modalTeamForm).subscribe({
-      next: () => {
-        this.showFeedback('Team created successfully.', 'success');
-        this.closeModals();
-        this.patchQuery({ page: 1 });
-        this.loadAnalyticsData();
-        this.saving = false;
-      },
-      error: (err) => {
-        this.showFeedback(err?.error?.message || 'Failed to create team.', 'error');
-        this.saving = false;
-        this.cdr.markForCheck();
-      },
-    });
+    this.consoleService
+      .createTeam(this.modalTeamForm)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.showFeedback('Team created successfully.', 'success');
+          this.closeModals();
+          this.refreshTeams(1);
+          this.saving = false;
+        },
+        error: (err) => {
+          this.showFeedback(err?.error?.message || 'Failed to create team.', 'error');
+          this.saving = false;
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   saveTeam(): void {
@@ -362,22 +398,23 @@ export class AdminTeamsPageComponent implements OnInit {
       return;
     }
     this.saving = true;
-    this.consoleService.updateTeam(this.modalTeamForm._id, this.modalTeamForm).subscribe({
-      next: (res) => {
-        this.showFeedback('Team updated successfully.', 'success');
-        this.closeModals();
+    this.consoleService
+      .updateTeam(this.modalTeamForm._id, this.modalTeamForm)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.showFeedback('Team updated successfully.', 'success');
+          this.closeModals();
 
-        // Refresh paginated grid
-        this.patchQuery({});
-        this.loadAnalyticsData();
-        this.saving = false;
-      },
-      error: (err) => {
-        this.showFeedback(err?.error?.message || 'Failed to update team.', 'error');
-        this.saving = false;
-        this.cdr.markForCheck();
-      },
-    });
+          this.refreshTeams();
+          this.saving = false;
+        },
+        error: (err) => {
+          this.showFeedback(err?.error?.message || 'Failed to update team.', 'error');
+          this.saving = false;
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   toggleActive(team: any, event?: Event): void {
@@ -385,18 +422,20 @@ export class AdminTeamsPageComponent implements OnInit {
       event.stopPropagation();
     }
     this.loading = true;
-    this.consoleService.setTeamActive(team._id, !team.isActive).subscribe({
-      next: () => {
-        this.showFeedback(team.isActive ? 'Team deactivated.' : 'Team activated.', 'success');
-        this.patchQuery({});
-        this.loadAnalyticsData();
-      },
-      error: (err) => {
-        this.showFeedback(err?.error?.message || 'Failed to toggle status.', 'error');
-        this.loading = false;
-        this.cdr.markForCheck();
-      },
-    });
+    this.consoleService
+      .setTeamActive(team._id, !team.isActive)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.showFeedback(team.isActive ? 'Team deactivated.' : 'Team activated.', 'success');
+          this.refreshTeams();
+        },
+        error: (err) => {
+          this.showFeedback(err?.error?.message || 'Failed to toggle status.', 'error');
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   confirmDelete(team: any, event: Event): void {
@@ -414,24 +453,27 @@ export class AdminTeamsPageComponent implements OnInit {
 
   deleteTeam(): void {
     if (!this.teamToDelete) return;
+    const teamId = this.teamToDelete._id;
     this.loading = true;
     this.showConfirmDelete = false;
-    this.consoleService.deleteTeam(this.teamToDelete._id).subscribe({
-      next: () => {
-        this.showFeedback('Team deleted successfully.', 'success');
-        this.teamToDelete = null;
-        if (this.selectedTeam && this.selectedTeam._id === this.teamToDelete?._id) {
-          this.selectedTeam = null;
-        }
-        this.patchQuery({ page: 1 });
-        this.loadAnalyticsData();
-      },
-      error: (err) => {
-        this.showFeedback(err?.error?.message || 'Failed to delete team.', 'error');
-        this.loading = false;
-        this.cdr.markForCheck();
-      },
-    });
+    this.consoleService
+      .deleteTeam(teamId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.showFeedback('Team deleted successfully.', 'success');
+          this.teamToDelete = null;
+          if (this.selectedTeam?._id === teamId) {
+            this.closeDrawer();
+          }
+          this.refreshTeams(1);
+        },
+        error: (err) => {
+          this.showFeedback(err?.error?.message || 'Failed to delete team.', 'error');
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   // Recruiter Assignment inside drawer
@@ -440,13 +482,12 @@ export class AdminTeamsPageComponent implements OnInit {
     this.saving = true;
     this.consoleService
       .assignRecruiterToTeam(this.selectedTeam._id, this.newRecruiterId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (res) => {
+        next: () => {
           this.showFeedback('Recruiter assigned successfully.', 'success');
           this.newRecruiterId = '';
-          this.selectedTeam = res.team;
-          this.patchQuery({});
-          this.loadAnalyticsData();
+          this.refreshTeams();
           this.saving = false;
         },
         error: (err) => {
@@ -460,28 +501,30 @@ export class AdminTeamsPageComponent implements OnInit {
   removeRecruiter(recruiterId: string): void {
     if (!this.selectedTeam) return;
     this.saving = true;
-    this.consoleService.removeRecruiterFromTeam(this.selectedTeam._id, recruiterId).subscribe({
-      next: (res) => {
-        this.showFeedback('Recruiter removed from team.', 'success');
-        this.selectedTeam = res.team;
-        this.patchQuery({});
-        this.loadAnalyticsData();
-        this.saving = false;
-      },
-      error: (err) => {
-        this.showFeedback(err?.error?.message || 'Failed to remove recruiter.', 'error');
-        this.saving = false;
-        this.cdr.markForCheck();
-      },
-    });
+    this.consoleService
+      .removeRecruiterFromTeam(this.selectedTeam._id, recruiterId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.showFeedback('Recruiter removed from team.', 'success');
+          this.refreshTeams();
+          this.saving = false;
+        },
+        error: (err) => {
+          this.showFeedback(err?.error?.message || 'Failed to remove recruiter.', 'error');
+          this.saving = false;
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   // Helpers
   showFeedback(text: string, type: 'success' | 'error'): void {
+    clearTimeout(this.feedbackTimeout);
     this.message = text;
     this.messageType = type;
     this.cdr.markForCheck();
-    setTimeout(() => {
+    this.feedbackTimeout = setTimeout(() => {
       this.message = '';
       this.cdr.markForCheck();
     }, 4000);

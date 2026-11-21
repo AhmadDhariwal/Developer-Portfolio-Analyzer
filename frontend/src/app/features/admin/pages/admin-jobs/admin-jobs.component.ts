@@ -1,14 +1,22 @@
-import { Component, DestroyRef, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  DestroyRef,
+  ElementRef,
+  OnInit,
+  ViewChild,
+  inject,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BehaviorSubject, Subject, of } from 'rxjs';
-import { catchError, debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
+import { catchError, debounceTime, filter, switchMap, tap } from 'rxjs/operators';
 
 import {
   AdminHiringService,
   AdminJob,
   AdminJobPage,
   AdminJobQuery,
-  AdminRankedCandidate
+  AdminRankedCandidate,
 } from '../../services/admin-hiring.service';
 
 type JobFormModel = {
@@ -36,12 +44,13 @@ type SortOption = {
   selector: 'app-admin-jobs-page',
   standalone: false,
   templateUrl: './admin-jobs.component.html',
-  styleUrls: ['./admin-jobs.component.scss']
+  styleUrls: ['./admin-jobs.component.scss'],
 })
 export class AdminJobsPageComponent implements OnInit {
   @ViewChild('rankingResults') rankingResults?: ElementRef<HTMLElement>;
 
   private readonly destroyRef = inject(DestroyRef);
+  private readonly cdr = inject(ChangeDetectorRef);
   private readonly searchInput$ = new Subject<string>();
   private readonly initialQuery: AdminJobQuery = {
     page: 1,
@@ -52,19 +61,24 @@ export class AdminJobsPageComponent implements OnInit {
     employmentType: '',
     location: '',
     sortBy: 'updatedAt',
-    sortOrder: 'desc'
+    sortOrder: 'desc',
   };
   private readonly queryState$ = new BehaviorSubject<AdminJobQuery>(this.initialQuery);
 
   readonly stackOptions = ['Frontend', 'Backend', 'Full Stack', 'AI/ML'];
   readonly statusOptions: AdminJob['status'][] = ['open', 'draft', 'closed'];
-  readonly employmentTypeOptions: AdminJob['employmentType'][] = ['full-time', 'part-time', 'contract', 'internship'];
+  readonly employmentTypeOptions: AdminJob['employmentType'][] = [
+    'full-time',
+    'part-time',
+    'contract',
+    'internship',
+  ];
   readonly sortOptions: SortOption[] = [
     { label: 'Recently updated', sortBy: 'updatedAt', sortOrder: 'desc' },
     { label: 'Recently created', sortBy: 'createdAt', sortOrder: 'desc' },
     { label: 'Title A-Z', sortBy: 'title', sortOrder: 'asc' },
     { label: 'Status A-Z', sortBy: 'status', sortOrder: 'asc' },
-    { label: 'Experience high-low', sortBy: 'minExperienceYears', sortOrder: 'desc' }
+    { label: 'Experience high-low', sortBy: 'minExperienceYears', sortOrder: 'desc' },
   ];
 
   jobsLoading = false;
@@ -107,23 +121,22 @@ export class AdminJobsPageComponent implements OnInit {
     this.searchInput$
       .pipe(
         debounceTime(250),
-        distinctUntilChanged(),
-        takeUntilDestroyed(this.destroyRef)
+        filter((search) => search !== this.queryState$.value.search),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((search) => this.patchQuery({ search, page: 1 }));
 
     this.queryState$
       .pipe(
-        distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
         tap(() => {
           this.jobsLoading = true;
-          this.message = '';
+          this.cdr.markForCheck();
         }),
         switchMap((query) =>
           this.adminService.getJobs(query).pipe(
+            tap(() => (this.hasLoadedJobs = true)),
             catchError(() => {
-              this.jobsLoading = false;
-              this.hasLoadedJobs = true;
+              this.hasLoadedJobs = false;
               this.messageType = 'error';
               this.message = 'Failed to load organization jobs.';
               return of<AdminJobPage>({
@@ -132,14 +145,19 @@ export class AdminJobsPageComponent implements OnInit {
                 limit: query.limit || 10,
                 total: 0,
                 totalPages: 1,
-                hasMore: false
+                hasMore: false,
               });
-            })
-          )
+            }),
+          ),
         ),
-        takeUntilDestroyed(this.destroyRef)
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((response) => {
+        const lastPage = Math.max(1, response.totalPages);
+        if (response.page > lastPage && this.hasLoadedJobs) {
+          this.refreshCurrentPage(lastPage);
+          return;
+        }
         this.jobs = response.jobs || [];
         this.page = response.page || 1;
         this.pageSize = response.limit || 10;
@@ -147,7 +165,6 @@ export class AdminJobsPageComponent implements OnInit {
         this.totalPages = response.totalPages || 1;
         this.hasMore = response.hasMore || false;
         this.jobsLoading = false;
-        this.hasLoadedJobs = true;
 
         if (this.selectedJobId) {
           const selected = this.jobs.find((job) => job._id === this.selectedJobId);
@@ -166,9 +183,14 @@ export class AdminJobsPageComponent implements OnInit {
         }
 
         if (this.drawerJob) {
-          const fresh = this.jobs.find((job) => job._id === this.drawerJob?._id) || this.drawerJob;
-          this.drawerJob = fresh;
+          const fresh = this.jobs.find((job) => job._id === this.drawerJob?._id);
+          if (fresh) {
+            this.drawerJob = fresh;
+          } else {
+            this.closeDrawer();
+          }
         }
+        this.cdr.markForCheck();
       });
   }
 
@@ -181,7 +203,11 @@ export class AdminJobsPageComponent implements OnInit {
   }
 
   get activeSort(): SortOption {
-    return this.sortOptions.find((option) => `${option.sortBy}:${option.sortOrder}` === this.sortValue) || this.sortOptions[0];
+    return (
+      this.sortOptions.find(
+        (option) => `${option.sortBy}:${option.sortOrder}` === this.sortValue,
+      ) || this.sortOptions[0]
+    );
   }
 
   get pageItems(): Array<number | string> {
@@ -190,7 +216,9 @@ export class AdminJobsPageComponent implements OnInit {
     }
 
     const pages = new Set<number>([1, this.totalPages, this.page - 1, this.page, this.page + 1]);
-    const ordered = Array.from(pages).filter((value) => value >= 1 && value <= this.totalPages).sort((a, b) => a - b);
+    const ordered = Array.from(pages)
+      .filter((value) => value >= 1 && value <= this.totalPages)
+      .sort((a, b) => a - b);
     const items: Array<number | string> = [];
 
     ordered.forEach((value, index) => {
@@ -256,6 +284,7 @@ export class AdminJobsPageComponent implements OnInit {
 
   resetFilters(): void {
     this.searchInput = '';
+    this.searchInput$.next('');
     this.stackFilter = '';
     this.statusFilter = '';
     this.employmentTypeFilter = '';
@@ -278,21 +307,25 @@ export class AdminJobsPageComponent implements OnInit {
     }
 
     this.actionLoading = true;
-    this.adminService.createJob(this.serializeForm(this.form)).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (job) => {
-        this.form = this.createEmptyForm();
-        this.messageType = 'success';
-        this.message = 'Job created successfully.';
-        this.actionLoading = false;
-        this.selectedJobId = job._id;
-        this.refreshCurrentPage(1);
-      },
-      error: (err) => {
-        this.actionLoading = false;
-        this.messageType = 'error';
-        this.message = String(err?.error?.message || 'Failed to create job.');
-      }
-    });
+    this.adminService
+      .createJob(this.serializeForm(this.form))
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (job) => {
+          this.form = this.createEmptyForm();
+          this.messageType = 'success';
+          this.message = 'Job created successfully.';
+          this.actionLoading = false;
+          this.selectedJobId = job._id;
+          this.refreshCurrentPage(1);
+        },
+        error: (err) => {
+          this.actionLoading = false;
+          this.messageType = 'error';
+          this.message = String(err?.error?.message || 'Failed to create job.');
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   openJobDetails(job: AdminJob): void {
@@ -322,38 +355,46 @@ export class AdminJobsPageComponent implements OnInit {
     }
 
     this.actionLoading = true;
-    this.adminService.updateJob(this.drawerJob._id, this.serializeForm(this.editForm)).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => {
-        this.actionLoading = false;
-        this.messageType = 'success';
-        this.message = 'Job updated successfully.';
-        this.closeDrawer();
-        this.refreshCurrentPage();
-      },
-      error: (err) => {
-        this.actionLoading = false;
-        this.messageType = 'error';
-        this.message = String(err?.error?.message || 'Failed to update job.');
-      }
-    });
+    this.adminService
+      .updateJob(this.drawerJob._id, this.serializeForm(this.editForm))
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.actionLoading = false;
+          this.messageType = 'success';
+          this.message = 'Job updated successfully.';
+          this.closeDrawer();
+          this.refreshCurrentPage();
+        },
+        error: (err) => {
+          this.actionLoading = false;
+          this.messageType = 'error';
+          this.message = String(err?.error?.message || 'Failed to update job.');
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   closeJob(job: AdminJob): void {
     if (job.status === 'closed') return;
     this.actionLoading = true;
-    this.adminService.closeJob(job._id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => {
-        this.actionLoading = false;
-        this.messageType = 'success';
-        this.message = 'Job closed successfully.';
-        this.refreshCurrentPage();
-      },
-      error: (err) => {
-        this.actionLoading = false;
-        this.messageType = 'error';
-        this.message = String(err?.error?.message || 'Failed to close job.');
-      }
-    });
+    this.adminService
+      .closeJob(job._id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.actionLoading = false;
+          this.messageType = 'success';
+          this.message = 'Job closed successfully.';
+          this.refreshCurrentPage();
+        },
+        error: (err) => {
+          this.actionLoading = false;
+          this.messageType = 'error';
+          this.message = String(err?.error?.message || 'Failed to close job.');
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   deleteJob(job: AdminJob): void {
@@ -362,27 +403,31 @@ export class AdminJobsPageComponent implements OnInit {
     }
 
     this.actionLoading = true;
-    this.adminService.deleteJob(job._id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => {
-        this.actionLoading = false;
-        this.messageType = 'success';
-        this.message = 'Job deleted successfully.';
-        if (this.drawerJob?._id === job._id) {
-          this.closeDrawer();
-        }
-        if (this.selectedJobId === job._id) {
-          this.selectedJobId = '';
-          this.selectedJob = null;
-        }
-        const nextPage = this.jobs.length === 1 && this.page > 1 ? this.page - 1 : this.page;
-        this.refreshCurrentPage(nextPage);
-      },
-      error: (err) => {
-        this.actionLoading = false;
-        this.messageType = 'error';
-        this.message = String(err?.error?.message || 'Failed to delete job.');
-      }
-    });
+    this.adminService
+      .deleteJob(job._id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.actionLoading = false;
+          this.messageType = 'success';
+          this.message = 'Job deleted successfully.';
+          if (this.drawerJob?._id === job._id) {
+            this.closeDrawer();
+          }
+          if (this.selectedJobId === job._id) {
+            this.selectedJobId = '';
+            this.selectedJob = null;
+          }
+          const nextPage = this.jobs.length === 1 && this.page > 1 ? this.page - 1 : this.page;
+          this.refreshCurrentPage(nextPage);
+        },
+        error: (err) => {
+          this.actionLoading = false;
+          this.messageType = 'error';
+          this.message = String(err?.error?.message || 'Failed to delete job.');
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   runRanking(): void {
@@ -394,26 +439,32 @@ export class AdminJobsPageComponent implements OnInit {
 
     this.rankingLoading = true;
     this.rankingMessage = '';
-    this.adminService.rankCandidates(this.selectedJobId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: (ranking) => {
-        this.ranking = ranking;
-        this.rankingLoading = false;
-        this.rankingMessageType = 'success';
-        this.rankingMessage = ranking.length
-          ? `AI ranking completed for ${ranking.length} candidate${ranking.length !== 1 ? 's' : ''}.`
-          : 'AI ranking completed but no candidates matched this job yet.';
+    this.adminService
+      .rankCandidates(this.selectedJobId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (ranking) => {
+          this.ranking = ranking;
+          this.rankingLoading = false;
+          this.rankingMessageType = 'success';
+          this.rankingMessage = ranking.length
+            ? `AI ranking completed for ${ranking.length} candidate${ranking.length !== 1 ? 's' : ''}.`
+            : 'AI ranking completed but no candidates matched this job yet.';
 
-        setTimeout(() => {
-          this.rankingResults?.nativeElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 150);
-      },
-      error: (err) => {
-        this.rankingLoading = false;
-        this.ranking = [];
-        this.rankingMessageType = 'error';
-        this.rankingMessage = String(err?.error?.message || 'Failed to run AI ranking.');
-      }
-    });
+          setTimeout(() => {
+            this.rankingResults?.nativeElement?.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start',
+            });
+          }, 150);
+        },
+        error: (err) => {
+          this.rankingLoading = false;
+          this.ranking = [];
+          this.rankingMessageType = 'error';
+          this.rankingMessage = String(err?.error?.message || 'Failed to run AI ranking.');
+        },
+      });
   }
 
   formatEmploymentType(value?: string): string {
@@ -426,22 +477,25 @@ export class AdminJobsPageComponent implements OnInit {
   scoreBreakdownItems(item: AdminRankedCandidate): Array<{ label: string; value: number }> {
     return Object.entries(item.scoreBreakdown || {}).map(([key, value]) => ({
       label: key.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (char) => char.toUpperCase()),
-      value: Number(value || 0)
+      value: Number(value || 0),
     }));
   }
 
-  private refreshCurrentPage(page = this.page): void {
-    this.patchQuery({ page });
+  private refreshCurrentPage(page = this.queryState$.value.page): void {
+    this.patchQuery({ page }, true);
   }
 
-  private patchQuery(patch: AdminJobQuery): void {
+  private patchQuery(patch: AdminJobQuery, refresh = false): void {
     const nextQuery = {
       ...this.queryState$.value,
-      ...patch
+      ...patch,
     };
 
-    if (JSON.stringify(nextQuery) === JSON.stringify(this.queryState$.value)) {
-      return;
+    if (!refresh) {
+      if (JSON.stringify(nextQuery) === JSON.stringify(this.queryState$.value)) {
+        return;
+      }
+      this.message = '';
     }
 
     this.queryState$.next(nextQuery);
@@ -458,15 +512,17 @@ export class AdminJobsPageComponent implements OnInit {
       minExperienceYears: 0,
       location: '',
       employmentType: 'full-time',
-      status: 'open'
+      status: 'open',
     };
   }
 
   private validateForm(form: JobFormModel): string {
     if (!String(form.title || '').trim()) return 'Job title is required.';
     if (!String(form.description || '').trim()) return 'Job description is required.';
-    if (String(form.title || '').trim().length < 3) return 'Job title must be at least 3 characters.';
-    if (String(form.description || '').trim().length < 20) return 'Job description should be at least 20 characters.';
+    if (String(form.title || '').trim().length < 3)
+      return 'Job title must be at least 3 characters.';
+    if (String(form.description || '').trim().length < 20)
+      return 'Job description should be at least 20 characters.';
     if (Number(form.minExperienceYears || 0) < 0) return 'Minimum experience cannot be negative.';
     return '';
   }
@@ -482,7 +538,7 @@ export class AdminJobsPageComponent implements OnInit {
       minExperienceYears: Math.max(0, Number(form.minExperienceYears || 0)),
       location: String(form.location || '').trim(),
       employmentType: form.employmentType,
-      status: form.status
+      status: form.status,
     };
   }
 
@@ -497,7 +553,7 @@ export class AdminJobsPageComponent implements OnInit {
       minExperienceYears: Number(job.minExperienceYears || 0),
       location: job.location || '',
       employmentType: job.employmentType || 'full-time',
-      status: job.status || 'open'
+      status: job.status || 'open',
     };
   }
 
