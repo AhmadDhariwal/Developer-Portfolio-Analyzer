@@ -463,10 +463,13 @@ export class AdminJobsPageComponent implements OnInit {
 
           clearTimeout(this.rankingScrollTimeout);
           this.rankingScrollTimeout = setTimeout(() => {
-            this.rankingResults?.nativeElement?.scrollIntoView({
-              behavior: 'smooth',
-              block: 'start',
-            });
+            const target = this.rankingResults?.nativeElement;
+            if (typeof target?.scrollIntoView === 'function') {
+              target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start',
+              });
+            }
           }, 150);
         },
         error: (err) => {
