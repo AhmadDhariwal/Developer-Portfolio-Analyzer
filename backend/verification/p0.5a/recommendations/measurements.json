@@ -1,0 +1,20 @@
+{
+  "cold": {
+    "p50": 330.51,
+    "p95": 362.55
+  },
+  "redis": {
+    "p50": 95.55,
+    "p95": 147.01
+  },
+  "memory": {
+    "p50": 32.04,
+    "p95": 33.71
+  },
+  "concurrentDelta": {
+    "github": 0,
+    "ai": 1,
+    "signals": 1,
+    "persistence": 2
+  }
+}

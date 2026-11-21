@@ -177,6 +177,30 @@ test('shared messages keep AA body and Dismiss contrast for every variant and re
   }
 });
 
+test('shared empty states keep AA text contrast in both themes despite page text overrides', (t) => {
+  const css = componentCss('app/shared/components/empty-state/empty-state.component.scss');
+  for (const [preference, theme] of themes) {
+    const root = themeTokens(theme);
+    const tokens = Object.fromEntries(
+      Object.entries(root).map(([name, value]) => [name, resolveValue(value, root)]),
+    );
+    tokens['--text-primary'] = '#f8fbff';
+    tokens['--text-muted'] = '#6f819f';
+    for (const compact of [false, true]) {
+      const panel = resolvedStyles(
+        css,
+        ['.ui-empty-state', ...(compact ? ['.ui-empty-state.is-compact'] : [])],
+        tokens,
+      );
+      for (const selector of ['.empty-title', '.empty-desc']) {
+        const content = resolvedStyles(css, [`.ui-empty-state ${selector}`], tokens);
+        const ratio = assertReadable({ ...panel, ...content }, `${preference} ${selector}`);
+        if (!compact) t.diagnostic(`${preference} ${selector}: ${ratio}:1`);
+      }
+    }
+  }
+});
+
 test('Refresh label stays AA across the complete gradient in every resolved theme', (t) => {
   const css = componentCss(
     'app/features/admin/pages/admin-dashboard/admin-dashboard.component.scss',

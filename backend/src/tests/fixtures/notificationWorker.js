@@ -8,6 +8,9 @@ async function start() {
   if (!/^mongodb:\/\/127\.0\.0\.1:\d+\//.test(process.env.NOTIFICATION_TEST_URI || ''))
     throw Error('Disposable loopback database required');
   await mongoose.connect(process.env.NOTIFICATION_TEST_URI, {
+    // The parent fixture creates collections/indexes. With buffering disabled,
+    // autoCreate on an explicit reconnect can bind init work to the closed client.
+    autoCreate: false,
     autoIndex: false,
     serverSelectionTimeoutMS: 2000
   });
@@ -23,13 +26,15 @@ process.on('message', async (message) => {
     if (message.action === 'retention') {
       process.send({
         id: message.id,
-        result: await require('../../modules/notifications/services/notificationRetentionService').runOnce()
+        result:
+          await require('../../modules/notifications/services/notificationRetentionService').runOnce()
       });
     }
     if (message.action === 'create') {
-      const result = await require('../../modules/notifications/services/notificationService').createNotification(
-        message.payload
-      );
+      const result =
+        await require('../../modules/notifications/services/notificationService').createNotification(
+          message.payload
+        );
       process.send({ id: message.id, result: result?._id || null });
     }
     if (message.action === 'stop') {
@@ -46,6 +51,7 @@ process.on('message', async (message) => {
     }
     if (message.action === 'recover') {
       await mongoose.connect(process.env.NOTIFICATION_TEST_URI, {
+        autoCreate: false,
         autoIndex: false,
         serverSelectionTimeoutMS: 2000
       });
