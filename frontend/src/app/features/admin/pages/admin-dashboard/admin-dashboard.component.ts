@@ -8,7 +8,9 @@ import {
   OnInit,
   ViewChild,
   inject,
+  effect,
 } from '@angular/core';
+import { ThemeService } from '../../../../shared/services/theme.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { Observable, Subscription, forkJoin, of } from 'rxjs';
@@ -94,6 +96,12 @@ export class AdminDashboardPageComponent implements OnInit, AfterViewChecked, On
     private readonly router: Router,
   ) {
     Chart.register(...registerables);
+    const theme = inject(ThemeService);
+    effect(() => {
+      theme.activeTheme();
+      this.chartsNeedRender = true;
+      this.cdr.markForCheck();
+    });
   }
 
   ngOnInit(): void {
@@ -675,7 +683,7 @@ export class AdminDashboardPageComponent implements OnInit, AfterViewChecked, On
           {
             data: values,
             backgroundColor: ['#6366f1', '#22d3ee', '#14b8a6', '#f59e0b'],
-            borderColor: '#091426',
+            borderColor: this.chartToken('--chart-donut-border'),
             borderWidth: 2,
             hoverOffset: 6,
           },
@@ -688,17 +696,17 @@ export class AdminDashboardPageComponent implements OnInit, AfterViewChecked, On
           legend: {
             position: 'bottom',
             labels: {
-              color: '#cbd5e1',
+              color: this.chartToken('--chart-label'),
               boxWidth: 12,
               padding: 16,
             },
           },
           tooltip: {
-            backgroundColor: 'rgba(15, 23, 42, 0.96)',
-            borderColor: 'rgba(71, 85, 105, 0.45)',
+            backgroundColor: this.chartToken('--surface-modal'),
+            borderColor: this.chartToken('--border-color'),
             borderWidth: 1,
-            titleColor: '#f8fafc',
-            bodyColor: '#e2e8f0',
+            titleColor: this.chartToken('--text-primary'),
+            bodyColor: this.chartToken('--text-secondary'),
           },
         },
       },
@@ -722,42 +730,42 @@ export class AdminDashboardPageComponent implements OnInit, AfterViewChecked, On
         legend: {
           position: 'bottom',
           labels: {
-            color: '#cbd5e1',
+            color: this.chartToken('--chart-label'),
             boxWidth: 12,
             padding: 16,
           },
         },
         tooltip: {
-          backgroundColor: 'rgba(15, 23, 42, 0.96)',
-          borderColor: 'rgba(71, 85, 105, 0.45)',
+          backgroundColor: this.chartToken('--surface-modal'),
+          borderColor: this.chartToken('--border-color'),
           borderWidth: 1,
-          titleColor: '#f8fafc',
-          bodyColor: '#e2e8f0',
+          titleColor: this.chartToken('--text-primary'),
+          bodyColor: this.chartToken('--text-secondary'),
         },
       },
       scales: {
         x: {
           ticks: {
-            color: '#94a3b8',
+            color: this.chartToken('--chart-tick'),
           },
           grid: {
-            color: 'rgba(51, 65, 85, 0.25)',
+            color: this.chartToken('--chart-grid'),
           },
         },
         y: {
           beginAtZero: true,
           ticks: {
-            color: '#94a3b8',
+            color: this.chartToken('--chart-tick'),
           },
           title: axisTitles?.leftTitle
             ? {
                 display: true,
                 text: axisTitles.leftTitle,
-                color: '#94a3b8',
+                color: this.chartToken('--chart-tick'),
               }
             : undefined,
           grid: {
-            color: 'rgba(51, 65, 85, 0.25)',
+            color: this.chartToken('--chart-grid'),
           },
         },
         ...(axisTitles?.rightTitle && {
@@ -767,12 +775,12 @@ export class AdminDashboardPageComponent implements OnInit, AfterViewChecked, On
             beginAtZero: true,
             position: 'right',
             ticks: {
-              color: '#94a3b8',
+              color: this.chartToken('--chart-tick'),
             },
             title: {
               display: true,
               text: axisTitles.rightTitle,
-              color: '#94a3b8',
+              color: this.chartToken('--chart-tick'),
             },
             grid: {
               drawOnChartArea: false,
@@ -781,6 +789,10 @@ export class AdminDashboardPageComponent implements OnInit, AfterViewChecked, On
         }),
       },
     };
+  }
+
+  private chartToken(name: string): string {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   }
 
   private chartValue(value?: number): number {

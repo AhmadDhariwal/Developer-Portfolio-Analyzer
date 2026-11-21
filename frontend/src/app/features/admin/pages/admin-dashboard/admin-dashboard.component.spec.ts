@@ -5,6 +5,7 @@ import { Chart } from 'chart.js';
 import { Subject, throwError } from 'rxjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AdminModule } from '../../admin.module';
+import { ThemeService } from '../../../../shared/services/theme.service';
 import { AdminHiringService } from '../../services/admin-hiring.service';
 import { AdminConsoleService } from '../admin-console/admin-console.service';
 import {
@@ -63,6 +64,36 @@ describe('AdminDashboardPageComponent', () => {
       }
     } finally {
       logError.mockRestore();
+    }
+  });
+
+  it('redraws charts with resolved shared colors when the active theme changes', () => {
+    const theme = TestBed.inject(ThemeService);
+    const render = vi.spyOn(component as any, 'renderCharts').mockImplementation(() => {});
+    const root = document.documentElement;
+    const originalStyle = root.getAttribute('style');
+    const originalPreference = theme.preference();
+    try {
+      for (const [mode, label] of [
+        ['light', '#475569'],
+        ['dark', '#cbd5e1'],
+      ] as const) {
+        theme.setTheme(mode);
+        root.style.setProperty('--chart-label', label);
+        root.style.setProperty('--chart-tick', label);
+        TestBed.tick();
+        component.ngAfterViewChecked();
+        expect(component['buildChartOptions']()).toMatchObject({
+          plugins: { legend: { labels: { color: label } } },
+          scales: { x: { ticks: { color: label } }, y: { ticks: { color: label } } },
+        });
+      }
+      expect(render).toHaveBeenCalledTimes(2);
+    } finally {
+      theme.setTheme(originalPreference);
+      if (originalStyle === null) root.removeAttribute('style');
+      else root.setAttribute('style', originalStyle);
+      render.mockRestore();
     }
   });
 

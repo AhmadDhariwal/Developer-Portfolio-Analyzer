@@ -178,6 +178,7 @@ export class AdminTeamsPageComponent implements OnInit {
         },
         error: () => {
           this.recruiters = [];
+          this.cdr.markForCheck();
         },
       });
   }

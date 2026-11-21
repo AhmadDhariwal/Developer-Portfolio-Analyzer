@@ -52,6 +52,7 @@ export class AdminJobsPageComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly searchInput$ = new Subject<string>();
+  private rankingScrollTimeout?: ReturnType<typeof setTimeout>;
   private readonly initialQuery: AdminJobQuery = {
     page: 1,
     limit: 10,
@@ -118,6 +119,7 @@ export class AdminJobsPageComponent implements OnInit {
   constructor(private readonly adminService: AdminHiringService) {}
 
   ngOnInit(): void {
+    this.destroyRef.onDestroy(() => clearTimeout(this.rankingScrollTimeout));
     this.searchInput$
       .pipe(
         debounceTime(250),
@@ -303,6 +305,7 @@ export class AdminJobsPageComponent implements OnInit {
     if (validation) {
       this.messageType = 'warning';
       this.message = validation;
+      this.cdr.markForCheck();
       return;
     }
 
@@ -331,17 +334,20 @@ export class AdminJobsPageComponent implements OnInit {
   openJobDetails(job: AdminJob): void {
     this.drawerJob = job;
     this.drawerMode = 'details';
+    this.cdr.markForCheck();
   }
 
   openJobEdit(job: AdminJob): void {
     this.drawerJob = job;
     this.drawerMode = 'edit';
     this.editForm = this.toForm(job);
+    this.cdr.markForCheck();
   }
 
   closeDrawer(): void {
     this.drawerJob = null;
     this.drawerMode = '';
+    this.cdr.markForCheck();
   }
 
   saveJobEdit(): void {
@@ -351,6 +357,7 @@ export class AdminJobsPageComponent implements OnInit {
     if (validation) {
       this.messageType = 'warning';
       this.message = validation;
+      this.cdr.markForCheck();
       return;
     }
 
@@ -434,11 +441,13 @@ export class AdminJobsPageComponent implements OnInit {
     if (!this.selectedJobId) {
       this.rankingMessageType = 'warning';
       this.rankingMessage = 'Select a job before running AI ranking.';
+      this.cdr.markForCheck();
       return;
     }
 
     this.rankingLoading = true;
     this.rankingMessage = '';
+    this.cdr.markForCheck();
     this.adminService
       .rankCandidates(this.selectedJobId)
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -450,8 +459,10 @@ export class AdminJobsPageComponent implements OnInit {
           this.rankingMessage = ranking.length
             ? `AI ranking completed for ${ranking.length} candidate${ranking.length !== 1 ? 's' : ''}.`
             : 'AI ranking completed but no candidates matched this job yet.';
+          this.cdr.markForCheck();
 
-          setTimeout(() => {
+          clearTimeout(this.rankingScrollTimeout);
+          this.rankingScrollTimeout = setTimeout(() => {
             this.rankingResults?.nativeElement?.scrollIntoView({
               behavior: 'smooth',
               block: 'start',
@@ -463,6 +474,7 @@ export class AdminJobsPageComponent implements OnInit {
           this.ranking = [];
           this.rankingMessageType = 'error';
           this.rankingMessage = String(err?.error?.message || 'Failed to run AI ranking.');
+          this.cdr.markForCheck();
         },
       });
   }
