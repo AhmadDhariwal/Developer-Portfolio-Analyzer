@@ -111,4 +111,19 @@ describe('Recruiter domain services', () => {
       jobId: 'job-1',
     });
   });
+
+  it('keeps private job pickers owner-only while metadata workspace explicitly includes shared jobs', () => {
+    const jobs = [
+      { _id: 'owned', access: { isOwner: true, matching: true } },
+      { _id: 'shared-manager', access: { isOwner: false, edit: true, matching: false } },
+      { _id: 'unknown' },
+    ];
+    apiMock['getRecruiterHubJobs'].mockReturnValue(of({ jobs, teams: [] }));
+    jobService.listJobs().subscribe((response) => {
+      expect(response.jobs.map((job: any) => job._id)).toEqual(['owned']);
+    });
+    jobService.listJobs(true).subscribe((response) => {
+      expect(response.jobs).toEqual(jobs);
+    });
+  });
 });

@@ -7,6 +7,7 @@ import { TenantContextService } from '../../../shared/services/tenant-context.se
 import { RecruiterModule } from '../recruiter.module';
 import { CandidateService } from '../services/candidate.service';
 import { RecruiterHubService } from '../services/recruiter-hub.service';
+import { JobApplicationsService } from '../../../shared/services/job-applications.service';
 import { RecruiterJobService } from '../services/recruiter-job.service';
 import { RecruiterMatchService } from '../services/recruiter-match.service';
 import { RecruiterActivityLogsComponent } from './activity-logs/activity-logs.component';
@@ -40,6 +41,10 @@ describe('Recruiter Hub page components', () => {
       imports: [RecruiterModule],
       providers: [
         provideRouter([]),
+        {
+          provide: JobApplicationsService,
+          useValue: { applicants: () => of({ applications: [] }) },
+        },
         { provide: RecruiterHubService, useValue: hubServiceMock },
         { provide: CandidateService, useValue: candidateServiceMock },
         { provide: RecruiterJobService, useValue: jobServiceMock },
@@ -157,6 +162,17 @@ describe('Recruiter Hub page components', () => {
         of({
           job: {
             _id: 'j1',
+            version: 0,
+            access: {
+              isOwner: true,
+              matching: true,
+              privateEvidence: true,
+              edit: true,
+              publish: true,
+              archive: true,
+              delete: true,
+              manageSharing: true,
+            },
             title: 'Staff Engineer',
             stack: 'Node.js',
             status: 'open',
@@ -349,7 +365,7 @@ describe('Recruiter Hub page components', () => {
     component.saveJob();
     expect(jobServiceMock['createJob']).toHaveBeenCalled();
 
-    component.archiveJob({ _id: 'j1', title: 'Staff Engineer' });
+    component.archiveJob({ _id: 'j1', title: 'Staff Engineer', access: { archive: true } });
     component.onConfirmAccepted();
     expect(jobServiceMock['archiveJob']).toHaveBeenCalledWith('j1');
   });
@@ -362,6 +378,69 @@ describe('Recruiter Hub page components', () => {
     expect(component.job?.title).toBe('Staff Engineer');
     component.generateMatches();
     expect(matchServiceMock['generateMatches']).toHaveBeenCalledWith({ jobId: 'j1' });
+  });
+
+  it('shared Job Details never fetches matching or mounts private applications', async () => {
+    jobServiceMock['getJob'].mockReturnValue(
+      of({
+        job: {
+          _id: 'j1',
+          title: 'Shared Job',
+          owner: { name: 'Creator' },
+          teamShared: true,
+          sharedTeam: { name: 'Hiring' },
+          access: {
+            isOwner: false,
+            view: true,
+            edit: false,
+            publish: false,
+            matching: false,
+            privateEvidence: false,
+          },
+        },
+      }),
+    );
+    const fixture = await configureRecruiterPageModule(JobDetailsComponent, {
+      params: { id: 'j1' },
+    });
+    const component: JobDetailsComponent = fixture.componentInstance;
+    expect(matchServiceMock['listMatches']).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.querySelector('app-job-applicants')).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Creator');
+    component.generateMatches();
+    component.togglePublication();
+    expect(matchServiceMock['generateMatches']).not.toHaveBeenCalled();
+    expect(jobServiceMock['updateJob']).not.toHaveBeenCalled();
+  });
+  it('team manager can publish with the observed revision but gets no evidence/matching controls', async () => {
+    const job = {
+      _id: 'j1',
+      title: 'Shared Job',
+      version: 3,
+      published: false,
+      access: {
+        isOwner: false,
+        view: true,
+        edit: true,
+        publish: true,
+        matching: false,
+        privateEvidence: false,
+      },
+    };
+    jobServiceMock['getJob'].mockReturnValue(of({ job }));
+    jobServiceMock['updateJob'].mockReturnValue(
+      of({ job: { ...job, version: 4, published: true } }),
+    );
+    const fixture = await configureRecruiterPageModule(JobDetailsComponent, {
+      params: { id: 'j1' },
+    });
+    fixture.componentInstance.togglePublication();
+    expect(jobServiceMock['updateJob']).toHaveBeenCalledWith('j1', {
+      published: true,
+      expectedVersion: 3,
+    });
+    expect(matchServiceMock['listMatches']).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.querySelector('app-job-applicants')).toBeNull();
   });
 
   it('renders MatchesComponent, updates match status, and advances ShortlistsComponent', async () => {

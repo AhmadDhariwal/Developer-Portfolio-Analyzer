@@ -1,13 +1,24 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { ApiService } from '../../../shared/services/api.service';
 
 @Injectable()
 export class RecruiterJobService {
   constructor(private readonly api: ApiService) {}
 
-  listJobs(): Observable<any> {
-    return this.api.getRecruiterHubJobs();
+  listJobs(includeShared = false): Observable<any> {
+    // Existing matching/comparison consumers stay owner-only. Only the metadata
+    // workspace opts in to team-visible jobs; this is not an evidence grant.
+    return this.api.getRecruiterHubJobs().pipe(
+      map((response) =>
+        includeShared
+          ? response
+          : {
+              ...response,
+              jobs: (response?.jobs || []).filter((job: any) => job.access?.matching === true),
+            },
+      ),
+    );
   }
 
   getJob(id: string): Observable<any> {

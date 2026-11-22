@@ -32,6 +32,7 @@ const getRecruiterScope = async (req) => {
   return {
     recruiterId,
     organizationId,
+    sessionRevision: Number(req.user.sessionRevision || 0),
     memberships,
     teamIds: teams.map((team) => team._id),
     teams

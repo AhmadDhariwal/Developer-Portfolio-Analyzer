@@ -1,9 +1,7 @@
 const Job = require("../../models/Job");
 const { deleteJobWithPipeline } = require("../matching/jobLifecycleService");
 const { requireObjectId } = require("../../utils/recruiterValidation");
-const {
-  assertRecruiterTeamAccess,
-} = require("../../utils/hub/recruiterAccess");
+const accessPolicy = require("../../utils/hub/recruiterJobAccess");
 
 const EMPLOYMENT_TYPES = new Set([
   "full-time",
@@ -100,12 +98,33 @@ const validateJobPayload = (jobPayload = {}) => {
   }
 };
 
-const listRecruiterJobs = async ({ recruiterId, organizationId }) => {
-  return Job.find({ recruiterId, organizationId })
-    .sort({ updatedAt: -1 })
-    .lean();
-};
+const listRecruiterJobWorkspace = async (scope) =>
+  accessPolicy.withAccess(scope, async (ctx) => {
+    const jobs = await Job.find({
+      organizationId: ctx.organizationId,
+      $or: [
+        { recruiterId: ctx.recruiterId },
+        { teamShared: true, teamId: { $in: [...ctx.grants.keys()] } },
+      ],
+    })
+      .sort({ updatedAt: -1 })
+      .session(ctx.session)
+      .lean();
+    const views = [];
+    for (const job of jobs) views.push(await accessPolicy.jobView(job, ctx));
+    return {
+      jobs: views,
+      teams: [...ctx.grants.values()].map(({ team, role }) => ({
+        _id: String(team._id),
+        name: team.name,
+        role,
+      })),
+    };
+  });
+const listRecruiterJobs = async (scope) =>
+  (await listRecruiterJobWorkspace(scope)).jobs;
 
+// Private consumers (comparison/shortlists) deliberately retain owner-only lookup.
 const getRecruiterJobDetails = async ({
   recruiterId,
   organizationId,
@@ -118,89 +137,182 @@ const getRecruiterJobDetails = async ({
   }).lean();
 };
 
-const createRecruiterJob = async ({
-  recruiterId,
-  organizationId,
-  payload = {},
-}) => {
-  const teamId = String(payload.teamId || "").trim() || null;
-  if (teamId) {
-    await assertRecruiterTeamAccess({ recruiterId, organizationId, teamId });
-  }
+const getAccessibleRecruiterJob = async (scope) =>
+  accessPolicy.withAccess(scope, async (ctx) => {
+    const job = await Job.findOne({
+      _id: requireObjectId(scope.jobId, "jobId"),
+      organizationId: ctx.organizationId,
+    })
+      .session(ctx.session)
+      .lean();
+    return job ? accessPolicy.jobView(job, ctx) : null;
+  });
 
+const validateCollaboration = (payload) => {
+  if (
+    payload.teamShared !== undefined &&
+    typeof payload.teamShared !== "boolean"
+  )
+    throw createValidationError("teamShared must be a boolean.");
+  if (
+    payload.expectedVersion !== undefined &&
+    (!Number.isSafeInteger(payload.expectedVersion) ||
+      payload.expectedVersion < 0)
+  )
+    throw createValidationError(
+      "expectedVersion must be a non-negative integer.",
+    );
+  if (
+    ["recruiterId", "organizationId", "owner", "access"].some((key) =>
+      Object.hasOwn(payload, key),
+    )
+  )
+    throw createValidationError(
+      "Ownership and permissions cannot be supplied.",
+    );
+};
+const assertVersion = (job, payload, required = false) => {
+  if (required && payload.expectedVersion === undefined)
+    throw createValidationError(
+      "Refresh the job and supply expectedVersion before changing sharing.",
+    );
+  if (
+    payload.expectedVersion !== undefined &&
+    payload.expectedVersion !== Number(job.__v || 0)
+  )
+    throw accessPolicy.denied(
+      "Job changed. Refresh and review it before retrying.",
+      409,
+    );
+};
+const readJob = async (ctx, jobId) =>
+  Job.findOne({
+    _id: requireObjectId(jobId, "jobId"),
+    organizationId: ctx.organizationId,
+  })
+    .session(ctx.session)
+    .lean();
+const writeJob = async (ctx, job, patch) => {
+  const updated = await Job.findOneAndUpdate(
+    {
+      _id: job._id,
+      organizationId: job.organizationId,
+      recruiterId: job.recruiterId,
+      __v: job.__v === undefined ? { $exists: false } : job.__v,
+    },
+    { $set: patch, $inc: { __v: 1 } },
+    { session: ctx.session, returnDocument: "after" },
+  ).lean();
+  if (!updated)
+    throw accessPolicy.denied("Job changed. Refresh and try again.", 409);
+  return accessPolicy.jobView(updated, ctx);
+};
+
+const createRecruiterJob = async ({ payload = {}, ...scope }) => {
+  validateCollaboration(payload);
   const jobPayload = toJobPayload(payload);
   validateJobPayload(jobPayload);
-
-  return Job.create({
-    ...jobPayload,
-    recruiterId,
-    organizationId,
-    teamId,
-    archivedAt: null,
+  return accessPolicy.withAccess(scope, async (ctx) => {
+    const teamId = payload.teamId
+      ? requireObjectId(payload.teamId, "teamId")
+      : null;
+    if (teamId) accessPolicy.sharingTeam(ctx, teamId);
+    if (payload.teamShared === true && !teamId)
+      throw createValidationError("Select an active team before sharing.");
+    const [job] = await Job.create(
+      [
+        {
+          ...jobPayload,
+          recruiterId: ctx.recruiterId,
+          organizationId: ctx.organizationId,
+          teamId,
+          teamShared: payload.teamShared === true,
+          archivedAt: null,
+        },
+      ],
+      { session: ctx.session },
+    );
+    return accessPolicy.jobView(job.toObject(), ctx);
   });
 };
 
-const updateRecruiterJob = async ({
-  recruiterId,
-  organizationId,
-  jobId,
-  payload = {},
-}) => {
-  const job = await Job.findOne({
-    _id: requireObjectId(jobId, "jobId"),
-    recruiterId,
-    organizationId,
-  });
-  if (!job) return null;
-
-  const teamId =
-    payload.teamId !== undefined
-      ? String(payload.teamId || "").trim() || null
-      : job.teamId;
-  if (teamId) {
-    await assertRecruiterTeamAccess({ recruiterId, organizationId, teamId });
-  }
-
-  const patch = toJobPayload(payload);
-  validateJobPayload(toJobPayload({ ...job.toObject(), ...payload }));
-  Object.entries(patch).forEach(([key, value]) => {
+const updateRecruiterJob = async ({ jobId, payload = {}, ...scope }) => {
+  validateCollaboration(payload);
+  return accessPolicy.withAccess(scope, async (ctx) => {
+    const job = await readJob(ctx, jobId);
+    if (!job) return null;
+    const permissions = accessPolicy.requirePermission(job, ctx, "edit");
+    const changesSharing =
+      payload.teamShared !== undefined || payload.teamId !== undefined;
+    if (changesSharing && !permissions.manageSharing)
+      throw accessPolicy.denied("Only the job owner can change sharing.");
+    assertVersion(
+      job,
+      payload,
+      changesSharing &&
+        (job.teamShared === true || payload.teamShared !== undefined),
+    );
+    const teamId =
+      payload.teamId !== undefined
+        ? payload.teamId
+          ? requireObjectId(payload.teamId, "teamId")
+          : null
+        : job.teamId;
+    const teamShared =
+      payload.teamShared !== undefined
+        ? payload.teamShared
+        : job.teamShared === true;
     if (
-      payload[key] !== undefined ||
-      (key === "employmentType" &&
-        (payload.jobType !== undefined || payload.employmentType !== undefined))
-    ) {
-      job[key] = value;
+      changesSharing &&
+      teamId &&
+      (teamShared || String(teamId) !== String(job.teamId))
+    )
+      accessPolicy.sharingTeam(ctx, teamId);
+    if (teamShared && !teamId)
+      throw createValidationError("Select an active team before sharing.");
+    const normalized = toJobPayload(payload);
+    validateJobPayload(toJobPayload({ ...job, ...payload }));
+    const patch = {};
+    for (const [key, value] of Object.entries(normalized)) {
+      if (
+        payload[key] !== undefined ||
+        (key === "employmentType" && payload.jobType !== undefined)
+      )
+        patch[key] = value;
     }
+    if (changesSharing) Object.assign(patch, { teamId, teamShared });
+    return writeJob(ctx, job, patch);
   });
-  job.teamId = teamId;
-  await job.save();
-  return job.toObject();
 };
 
-const archiveRecruiterJob = async ({ recruiterId, organizationId, jobId }) => {
-  const job = await Job.findOne({
-    _id: requireObjectId(jobId, "jobId"),
-    recruiterId,
-    organizationId,
+const archiveRecruiterJob = async ({ jobId, ...scope }) =>
+  accessPolicy.withAccess(scope, async (ctx) => {
+    const job = await readJob(ctx, jobId);
+    if (!job) return null;
+    accessPolicy.requirePermission(job, ctx, "archive");
+    return writeJob(ctx, job, { status: "closed", archivedAt: new Date() });
   });
-  if (!job) return null;
-  job.status = "closed";
-  job.archivedAt = new Date();
-  await job.save();
-  return job.toObject();
-};
 
-const deleteRecruiterJob = async ({ recruiterId, organizationId, jobId }) => {
-  return deleteJobWithPipeline({
-    _id: requireObjectId(jobId, "jobId"),
-    recruiterId,
-    organizationId,
+const deleteRecruiterJob = async ({ jobId, ...scope }) =>
+  accessPolicy.withAccess(scope, async (ctx) => {
+    const job = await readJob(ctx, jobId);
+    if (!job) return false;
+    accessPolicy.requirePermission(job, ctx, "delete");
+    return deleteJobWithPipeline(
+      {
+        _id: job._id,
+        organizationId: job.organizationId,
+        recruiterId: ctx.recruiterId,
+      },
+      ctx.session,
+    );
   });
-};
 
 module.exports = {
   listRecruiterJobs,
+  listRecruiterJobWorkspace,
   getRecruiterJobDetails,
+  getAccessibleRecruiterJob,
   createRecruiterJob,
   updateRecruiterJob,
   archiveRecruiterJob,

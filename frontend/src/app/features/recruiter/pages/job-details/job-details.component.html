@@ -35,6 +35,14 @@
           </span>
         </div>
         <h1>{{ job.title }}</h1>
+        <p>Owner: {{ job.owner?.name }}{{ job.access?.isOwner ? ' (you)' : '' }}</p>
+        <p>
+          {{
+            job.teamShared
+              ? 'Shared team: ' + (job.sharedTeam?.name || 'Unavailable')
+              : 'Private to owner'
+          }}
+        </p>
         <div class="meta-pills">
           <span *ngIf="job.role">{{ job.role }}</span>
           <span>{{ job.employmentType || 'full-time' }}</span>
@@ -43,7 +51,7 @@
         </div>
       </div>
 
-      <div class="page-header__actions">
+      <div class="page-header__actions" *ngIf="job.access?.matching">
         <a
           class="btn-secondary"
           [routerLink]="['/app/recruiter/matches']"
@@ -99,9 +107,15 @@
           </div>
         </article>
 
-        <app-job-applicants [jobId]="job._id" />
+        <app-job-applicants *ngIf="job.access?.privateEvidence" [jobId]="job._id" />
+        <article class="panel" *ngIf="!job.access?.privateEvidence">
+          <p>
+            Shared access covers job details only. Applications, submitted evidence and matching are
+            private to the job owner.
+          </p>
+        </article>
 
-        <article class="panel">
+        <article class="panel" *ngIf="job.access?.matching">
           <div class="panel-head">
             <h2>Matched Candidates Preview</h2>
             <a
@@ -178,6 +192,7 @@
           <button
             type="button"
             class="btn-secondary discovery-toggle-btn"
+            *ngIf="job.access?.publish"
             (click)="togglePublication()"
             [disabled]="publishing"
           >

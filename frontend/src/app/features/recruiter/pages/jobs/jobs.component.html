@@ -131,6 +131,25 @@
       <button type="button" class="btn-secondary" (click)="toggleEditor()">Close</button>
     </div>
 
+    <fieldset class="sharing-controls" *ngIf="canManageSharing" [disabled]="saving">
+      <legend>Team sharing (optional)</legend>
+      <label for="job-sharing-team">Team</label>
+      <select id="job-sharing-team" formControlName="teamId">
+        <option value="">No team</option>
+        <option *ngIf="unavailableTeam" [value]="jobForm.controls.teamId.value">
+          Current team unavailable
+        </option>
+        <option *ngFor="let team of teams" [value]="team._id">{{ team.name }}</option>
+      </select>
+      <label
+        ><input type="checkbox" formControlName="teamShared" /> Share job details with this
+        team</label
+      >
+      <p>
+        Team members can view job details. Team managers can edit, publish and archive.
+        Applications, submitted evidence and matching stay private to the job owner.
+      </p>
+    </fieldset>
     <div class="job-editor__grid">
       <div class="field">
         <label for="job-title">

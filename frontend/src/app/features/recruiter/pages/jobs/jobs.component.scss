@@ -151,6 +151,29 @@
   gap: 14px;
 }
 
+.sharing-controls {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 8px);
+  color: var(--text-primary);
+  background: var(--surface-card);
+
+  label,
+  legend {
+    @include recruiter.field-label;
+  }
+
+  select {
+    @include recruiter.field-control;
+  }
+
+  p {
+    color: var(--text-muted);
+  }
+}
+
 .field {
   display: grid;
   gap: 6px;
