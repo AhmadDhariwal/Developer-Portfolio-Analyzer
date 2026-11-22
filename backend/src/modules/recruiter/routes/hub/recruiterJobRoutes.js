@@ -9,6 +9,10 @@ const {
 } = require('../../controllers/hub/recruiterJobController');
 
 const router = express.Router();
+const applications = require('../../../jobs/jobApplicationController');
+router.get('/:id/applications', applications.applicants);
+router.patch('/:id/applications/:applicationId', applications.status);
+router.get('/:id/applications/:applicationId/resume', applications.resume);
 
 router.get('/', listJobs);
 router.post('/', createJob);

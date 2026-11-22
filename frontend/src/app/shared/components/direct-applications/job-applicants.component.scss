@@ -1,0 +1,221 @@
+@use './direct-applications';
+
+.applicants-panel {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  border-radius: var(--dev-radius-surface, 8px);
+  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--surface-card, #ffffff);
+}
+
+.applicants-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+
+  &__title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+
+    h2 {
+      margin: 0;
+      font-size: 16.5px;
+      font-weight: 600;
+      color: var(--text-primary, #0f172a);
+    }
+  }
+
+  &__controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.filter-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 3px;
+  border-radius: var(--dev-radius-surface, 8px);
+  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--surface-secondary, #f8fafc);
+
+  button {
+    min-height: 28px;
+    padding: 0 10px;
+    border: none;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--text-secondary, #475569);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease;
+
+    &:hover:not(.is-active) {
+      color: var(--text-primary, #0f172a);
+    }
+
+    &.is-active {
+      background: var(--surface-card, #ffffff);
+      color: var(--color-primary-text, #4338ca);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+    }
+  }
+}
+
+.applicant-list {
+  display: grid;
+  gap: 14px;
+}
+
+.applicant-card {
+  display: grid;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: var(--dev-radius-surface, 8px);
+  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--surface-card, #ffffff);
+
+  &__top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  &__identity {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  &__name-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+
+    strong,
+    .applicant-name {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 650;
+      color: var(--text-primary, #0f172a);
+    }
+  }
+
+  &__meta {
+    margin: 2px 0 0;
+    font-size: 12px;
+    color: var(--text-muted, #64748b);
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__evidence-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.applicant-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--color-primary-soft, #eef2ff);
+  border: 1px solid var(--color-primary-border, #c7d2fe);
+  color: var(--color-primary-text, #4338ca);
+}
+
+.pdf-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--surface-secondary, #f8fafc);
+  color: var(--text-primary, #0f172a);
+  font-size: 12px;
+  font-weight: 500;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.evidence-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 9px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--surface-secondary, #f8fafc);
+  color: var(--text-muted, #64748b);
+
+  &--included {
+    background: var(--color-success-soft, #ecfdf5);
+    border-color: var(--color-success-border, #a7f3d0);
+    color: var(--color-success-text, #047857);
+  }
+}
+
+:host-context([data-theme='dark']),
+:host-context(.dark) {
+  .applicants-panel,
+  .applicant-card {
+    background: var(--surface-card, #151d2a);
+    border-color: var(--border-color, #1e293b);
+  }
+
+  .filter-tabs,
+  .pdf-chip,
+  .evidence-tag {
+    background: var(--surface-secondary, #101622);
+    border-color: var(--border-color, #1e293b);
+  }
+
+  .filter-tabs button.is-active {
+    background: var(--surface-card, #151d2a);
+    color: #c7d2fe;
+  }
+
+  .applicant-avatar {
+    background: rgba(99, 102, 241, 0.16);
+    border-color: rgba(129, 140, 248, 0.35);
+    color: #c7d2fe;
+  }
+
+  .evidence-tag--included {
+    background: rgba(16, 185, 129, 0.14);
+    border-color: rgba(52, 211, 153, 0.32);
+    color: #6ee7b7;
+  }
+}

@@ -1,0 +1,178 @@
+<section class="applicants-panel" aria-labelledby="direct-applicants-heading">
+  <header class="applicants-header">
+    <div class="applicants-header__title">
+      <h2 id="direct-applicants-heading">Direct applicants</h2>
+      @if (!loading && !error) {
+        <span class="da-badge da-badge--neutral">{{ applications.length }} applicant(s)</span>
+      }
+    </div>
+
+    <div class="applicants-header__controls">
+      @if (!loading && !error && applications.length) {
+        <div class="filter-tabs" role="tablist" aria-label="Filter direct applicants by status">
+          <button
+            type="button"
+            role="tab"
+            [class.is-active]="filterStatus === 'all'"
+            [attr.aria-selected]="filterStatus === 'all'"
+            (click)="filterStatus = 'all'"
+          >
+            All ({{ applications.length }})
+          </button>
+          <button
+            type="button"
+            role="tab"
+            [class.is-active]="filterStatus === 'submitted'"
+            [attr.aria-selected]="filterStatus === 'submitted'"
+            (click)="filterStatus = 'submitted'"
+          >
+            Submitted ({{ countByStatus('submitted') }})
+          </button>
+          <button
+            type="button"
+            role="tab"
+            [class.is-active]="filterStatus === 'reviewing'"
+            [attr.aria-selected]="filterStatus === 'reviewing'"
+            (click)="filterStatus = 'reviewing'"
+          >
+            Reviewing ({{ countByStatus('reviewing') }})
+          </button>
+          <button
+            type="button"
+            role="tab"
+            [class.is-active]="filterStatus === 'rejected'"
+            [attr.aria-selected]="filterStatus === 'rejected'"
+            (click)="filterStatus = 'rejected'"
+          >
+            Rejected ({{ countByStatus('rejected') }})
+          </button>
+        </div>
+      }
+
+      <button type="button" class="da-btn da-btn--secondary da-btn--sm" (click)="load()">
+        Refresh applicants
+      </button>
+    </div>
+  </header>
+
+  <div class="alert-banner alert-banner--info" role="status">
+    <span
+      >Statuses shown here are also visible to applicants on their direct applications view.</span
+    >
+  </div>
+
+  @if (loading) {
+    <div class="panel-state" role="status">
+      <span class="spinner" aria-hidden="true"></span>
+      <span>Loading direct applicants…</span>
+    </div>
+  } @else if (error) {
+    <div class="alert-banner alert-banner--error" role="alert">
+      <div class="alert-banner__copy">
+        <strong>Unable to load direct applicants</strong>
+        <span>{{ error }}</span>
+      </div>
+      <button type="button" class="da-btn da-btn--secondary da-btn--sm" (click)="load()">
+        Try again
+      </button>
+    </div>
+  } @else if (!applications.length) {
+    <div class="empty-card" role="status">
+      <p class="empty-card__title">No direct applications yet.</p>
+      <p class="empty-card__hint">
+        Developers who apply while this job is published will appear here with frozen evidence.
+      </p>
+    </div>
+  } @else if (!filteredApplications.length) {
+    <div class="empty-card" role="status">
+      <p class="empty-card__title">No applicants match status "{{ filterStatus }}".</p>
+      <p class="empty-card__hint">Switch back to All to inspect all submitted applications.</p>
+    </div>
+  } @else {
+    <div class="applicant-list">
+      @for (application of filteredApplications; track application._id) {
+        <article class="applicant-card">
+          <div class="applicant-card__top">
+            <div class="applicant-card__identity">
+              <div class="applicant-avatar" aria-hidden="true">
+                {{ initials(application.applicantName || 'Developer') }}
+              </div>
+              <div>
+                <div class="applicant-card__name-row">
+                  <h3 class="applicant-name">
+                    {{ application.applicantName || 'Developer applicant' }}
+                  </h3>
+                  <span class="status-pill status-pill--{{ application.status }}">
+                    {{ application.status }}
+                  </span>
+                </div>
+                <p class="applicant-card__meta">
+                  Submitted
+                  @if (application.createdAt) {
+                    {{ application.createdAt | date: 'mediumDate' }}
+                  }
+                </p>
+              </div>
+            </div>
+
+            <div class="applicant-card__actions">
+              <button
+                type="button"
+                class="da-btn da-btn--secondary da-btn--sm"
+                [disabled]="busy"
+                (click)="download(application)"
+              >
+                Download submitted PDF: {{ application.resume.fileName }}
+              </button>
+
+              @if (application.status === 'submitted') {
+                <button
+                  type="button"
+                  class="da-btn da-btn--indigo-outline da-btn--sm"
+                  [disabled]="busy"
+                  (click)="status(application, 'reviewing')"
+                >
+                  Mark reviewing
+                </button>
+              }
+
+              @if (application.status !== 'rejected') {
+                <button
+                  type="button"
+                  class="da-btn da-btn--danger-outline da-btn--sm"
+                  [disabled]="busy"
+                  (click)="status(application, 'rejected')"
+                >
+                  Mark rejected
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="applicant-card__evidence-bar">
+            <span class="pdf-chip">{{ application.resume.fileName }}</span>
+            <span class="hash-pill" [title]="application.resume.sha256">
+              sha256: {{ shortHash(application.resume.sha256) }}
+            </span>
+            @if (application.portfolio) {
+              <span class="evidence-tag evidence-tag--included">Portfolio snapshot included</span>
+            } @else {
+              <span class="evidence-tag">Portfolio snapshot not shared</span>
+            }
+          </div>
+
+          <details class="evidence-details">
+            <summary>Submitted evidence</summary>
+            <div class="evidence-details__body">
+              <div class="evidence-details__hash">
+                <span>Resume SHA-256</span>
+                <code>{{ application.resume.sha256 }}</code>
+              </div>
+              <app-submitted-portfolio [portfolio]="application.portfolio" />
+            </div>
+          </details>
+        </article>
+      }
+    </div>
+  }
+</section>

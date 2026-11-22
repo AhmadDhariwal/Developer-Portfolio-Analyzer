@@ -17,6 +17,7 @@ export class JobDetailsComponent implements OnInit {
 
   loading = true;
   generating = false;
+  publishing = false;
   error = '';
   job: any = null;
   jobMatches: any[] = [];
@@ -104,6 +105,24 @@ export class JobDetailsComponent implements OnInit {
       error: (err) => {
         this.generating = false;
         this.error = err?.error?.message || 'Unable to generate matches for this job.';
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  togglePublication(): void {
+    if (!this.job || this.publishing) return;
+    this.publishing = true;
+    this.error = '';
+    this.jobService.updateJob(this.job._id, { published: !this.job.published }).subscribe({
+      next: (response) => {
+        this.job = response.job;
+        this.publishing = false;
+        this.cdr.markForCheck();
+      },
+      error: (error) => {
+        this.error = error.error?.message || 'Unable to update publication.';
+        this.publishing = false;
         this.cdr.markForCheck();
       },
     });

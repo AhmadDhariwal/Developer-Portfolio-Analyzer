@@ -4,7 +4,12 @@
     <span class="breadcrumb" *ngIf="job">Jobs / {{ job.title }}</span>
   </div>
 
-  <app-recruiter-loader *ngIf="loading" label="Loading job details..." variant="cards" [count]="2" />
+  <app-recruiter-loader
+    *ngIf="loading"
+    label="Loading job details..."
+    variant="cards"
+    [count]="2"
+  />
 
   <app-ui-error-state
     *ngIf="error && !job && !loading"
@@ -21,6 +26,13 @@
         <div class="eyebrow-row">
           <span class="page-header__eyebrow">Requisition Details</span>
           <span [class]="statusToneClass">{{ job.status || 'open' }}</span>
+          <span
+            class="discovery-pill"
+            [class.discovery-pill--published]="job.published"
+            [class.discovery-pill--draft]="!job.published"
+          >
+            {{ job.published ? 'Published in Developer Jobs' : 'Not published' }}
+          </span>
         </div>
         <h1>{{ job.title }}</h1>
         <div class="meta-pills">
@@ -55,7 +67,9 @@
         <article class="panel">
           <h2>Role Overview &amp; Responsibilities</h2>
           <p class="role-description">
-            {{ job.description || 'No detailed description has been added to this requisition yet.' }}
+            {{
+              job.description || 'No detailed description has been added to this requisition yet.'
+            }}
           </p>
         </article>
 
@@ -65,7 +79,9 @@
           <div class="skills-group">
             <h3>Required Skills ({{ (job.requiredSkills || []).length }})</h3>
             <div class="tag-row" *ngIf="(job.requiredSkills || []).length; else noReqSkills">
-              <span class="tag tag--primary" *ngFor="let skill of job.requiredSkills">{{ skill }}</span>
+              <span class="tag tag--primary" *ngFor="let skill of job.requiredSkills">{{
+                skill
+              }}</span>
             </div>
             <ng-template #noReqSkills>
               <p class="muted">No required skills specified.</p>
@@ -82,6 +98,8 @@
             </ng-template>
           </div>
         </article>
+
+        <app-job-applicants [jobId]="job._id" />
 
         <article class="panel">
           <div class="panel-head">
@@ -115,7 +133,9 @@
                       {{ m?.candidate?.name || m?.candidate?.fullName || m?.candidateId }}
                     </a>
                   </td>
-                  <td><strong>{{ m?.matchScore || 0 }}%</strong></td>
+                  <td>
+                    <strong>{{ m?.matchScore || 0 }}%</strong>
+                  </td>
                   <td>{{ m?.readinessScore || 0 }}</td>
                   <td>
                     <span class="status-pill">{{ m?.status || 'generated' }}</span>
@@ -134,12 +154,53 @@
       </div>
 
       <aside class="detail-side">
+        <article class="panel discovery-panel">
+          <div class="panel-head">
+            <h2>Developer discovery</h2>
+            <span
+              class="discovery-pill"
+              [class.discovery-pill--published]="job.published"
+              [class.discovery-pill--draft]="!job.published"
+            >
+              {{ job.published ? 'Published' : 'Unpublished' }}
+            </span>
+          </div>
+          <div class="discovery-status-box" [class.is-published]="job.published">
+            <span class="discovery-dot" aria-hidden="true"></span>
+            <p class="discovery-copy">
+              {{
+                job.published
+                  ? 'Published for direct applications while open.'
+                  : 'Not published in Developer Jobs.'
+              }}
+            </p>
+          </div>
+          <button
+            type="button"
+            class="btn-secondary discovery-toggle-btn"
+            (click)="togglePublication()"
+            [disabled]="publishing"
+          >
+            {{
+              publishing
+                ? 'Saving…'
+                : job.published
+                  ? 'Unpublish'
+                  : 'Publish for direct applications'
+            }}
+          </button>
+        </article>
+
         <article class="panel">
           <h2>Job Snapshot</h2>
           <dl class="snapshot-list">
             <div>
               <dt>Status</dt>
               <dd>{{ job.status || 'open' }}</dd>
+            </div>
+            <div>
+              <dt>Direct Discovery</dt>
+              <dd>{{ job.published ? 'Published' : 'Unpublished' }}</dd>
             </div>
             <div>
               <dt>Primary Stack</dt>

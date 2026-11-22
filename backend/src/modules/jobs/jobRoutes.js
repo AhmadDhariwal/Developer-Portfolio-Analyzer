@@ -20,6 +20,11 @@ const router = express.Router();
 // GET /api/jobs
 // Query params: stack, experience, platform, location, skills, jobType, expLevel, page, limit
 router.use(protect, validateJobsRequest, jobsRateLimit);
+const applications = require('./jobApplicationController');
+router.get('/internal', applications.developerOnly, applications.discover);
+router.get('/internal/options', applications.developerOnly, applications.options);
+router.get('/internal/applications', applications.developerOnly, applications.mine);
+router.post('/internal/:id/applications', applications.developerOnly, applications.submit);
 router.get('/', jobsRefreshLimit, fetchJobs);
 router.get('/source-health', getSourceHealthStatus);
 router.get('/cache-health', getCacheHealthStatus);

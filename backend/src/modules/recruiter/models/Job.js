@@ -72,7 +72,8 @@ const jobSchema = new mongoose.Schema(
     archivedAt: {
       type: Date,
       default: null
-    }
+    },
+    published: { type: Boolean, default: false, index: true }
   },
   { timestamps: true }
 );

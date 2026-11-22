@@ -1,0 +1,429 @@
+<section class="internal-jobs-workspace" aria-labelledby="internal-jobs-heading">
+  <header class="workspace-header">
+    <div class="workspace-header__copy">
+      <h2 id="internal-jobs-heading">Internal openings & direct applications</h2>
+      <p>
+        Apply directly to published organization roles using your verified PDF resume and an
+        optional frozen portfolio snapshot.
+      </p>
+    </div>
+    <button type="button" class="da-btn da-btn--secondary" (click)="load()">
+      Refresh direct applications
+    </button>
+  </header>
+
+  <div class="kpi-strip" aria-label="Direct applications summary">
+    <div class="kpi-card">
+      <div>
+        <p class="kpi-card__label">Open internal roles</p>
+        <div class="kpi-card__value">
+          {{
+            jobsState.loading && !jobs.length ? '—' : jobsState.error ? 'Unavailable' : jobs.length
+          }}
+        </div>
+        <p class="kpi-card__hint">Published openings accepting direct submissions</p>
+      </div>
+      <div class="kpi-card__icon" aria-hidden="true">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <rect x="3" y="4" width="18" height="16" rx="2" />
+          <path d="M8 9h8M8 13h6" />
+        </svg>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div>
+        <p class="kpi-card__label">Available PDF resumes</p>
+        <div class="kpi-card__value">
+          {{
+            optionsState.loading && !optionsState.loaded
+              ? '—'
+              : optionsState.error
+                ? 'Unavailable'
+                : options.resumes.length
+          }}
+        </div>
+        <p class="kpi-card__hint">Uploaded resumes eligible for selection</p>
+      </div>
+      <div class="kpi-card__icon kpi-card__icon--success" aria-hidden="true">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+        </svg>
+      </div>
+    </div>
+
+    <div class="kpi-card">
+      <div>
+        <p class="kpi-card__label">Direct applications</p>
+        <div class="kpi-card__value">
+          {{
+            historyState.loading && !applications.length
+              ? '—'
+              : historyState.error
+                ? 'Unavailable'
+                : applications.length
+          }}
+        </div>
+        <p class="kpi-card__hint">Submitted with explicit applicant consent</p>
+      </div>
+      <div class="kpi-card__icon kpi-card__icon--info" aria-hidden="true">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <polyline points="9 11 12 14 22 4" />
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  @if (notice) {
+    <div class="alert-banner alert-banner--success" role="status">
+      <span>{{ notice }}</span>
+    </div>
+  }
+
+  <div class="workspace-grid">
+    <!-- Left Column: Published Internal Openings -->
+    <div class="openings-column">
+      <div class="section-heading">
+        <h3>Published internal openings</h3>
+        @if (!jobsState.loading && !jobsState.error) {
+          <span class="section-heading__meta">{{ jobs.length }} role(s) available</span>
+        }
+      </div>
+
+      @if (jobsState.loading) {
+        <div class="panel-state" role="status">
+          <span class="spinner" aria-hidden="true"></span>
+          <span>Loading internal openings…</span>
+        </div>
+      } @else if (jobsState.error) {
+        <div class="alert-banner alert-banner--error" role="alert">
+          <div class="alert-banner__copy">
+            <strong>Unable to load internal openings</strong>
+            <span>{{ jobsState.error }}</span>
+          </div>
+          <button type="button" class="da-btn da-btn--secondary da-btn--sm" (click)="loadJobs()">
+            Retry jobs
+          </button>
+        </div>
+      } @else if (!jobs.length) {
+        <div class="empty-card" role="status">
+          <p class="empty-card__title">No internal openings match right now.</p>
+          <p class="empty-card__hint">
+            Published requisitions from participating organizations will appear here when open.
+          </p>
+        </div>
+      } @else {
+        <div class="openings-list">
+          @for (job of jobs; track job._id) {
+            <article class="opening-card" [class.is-selected]="selected?._id === job._id">
+              <div class="opening-card__top">
+                <div class="opening-card__identity">
+                  <div class="monogram-badge" aria-hidden="true">
+                    {{ initials(job.organizationName || job.title) }}
+                  </div>
+                  <div class="opening-card__titles">
+                    <span class="opening-card__org">{{
+                      job.organizationName || 'Internal opening'
+                    }}</span>
+                    <h4>{{ job.title }}</h4>
+                  </div>
+                </div>
+
+                @if (applied(job._id); as existing) {
+                  <span class="status-pill status-pill--{{ existing.status }}"
+                    >Application: {{ existing.status }}</span
+                  >
+                } @else {
+                  <span class="status-pill status-pill--open">Open</span>
+                }
+              </div>
+
+              <div class="opening-card__meta">
+                <span>{{ job.location || 'Unspecified location' }}</span>
+                <span aria-hidden="true">·</span>
+                <span>{{ job.employmentType || 'Unspecified' }}</span>
+                <span aria-hidden="true">·</span>
+                <span>{{ job.minExperienceYears }}+ yrs exp</span>
+              </div>
+
+              @if (job.description) {
+                <p class="opening-card__desc">{{ job.description }}</p>
+              }
+
+              @if (job.requiredSkills.length) {
+                <div class="opening-card__skills">
+                  <span class="opening-card__skills-label">Required:</span>
+                  @for (skill of job.requiredSkills; track skill) {
+                    <span class="skill-chip">{{ skill }}</span>
+                  }
+                </div>
+              }
+
+              <div class="opening-card__footer">
+                @if (applied(job._id); as existing) {
+                  <span class="opening-card__skills-label">
+                    Submitted {{ existing.resume.fileName }}
+                  </span>
+                  <span class="da-badge da-badge--neutral">Direct track recorded</span>
+                } @else {
+                  <span class="opening-card__skills-label">
+                    {{
+                      selected?._id === job._id
+                        ? 'Currently selected in direct application panel'
+                        : 'Direct resume & consent submission'
+                    }}
+                  </span>
+                  <button
+                    type="button"
+                    class="da-btn"
+                    [class.da-btn--primary]="selected?._id !== job._id"
+                    [class.da-btn--indigo-outline]="selected?._id === job._id"
+                    (click)="choose(job)"
+                    [disabled]="!!applied(job._id)"
+                  >
+                    Review and apply
+                  </button>
+                }
+              </div>
+            </article>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Right Column: Direct Application Drawer + Submitted History -->
+    <div class="drawer-column">
+      @if (optionsState.loading) {
+        <div class="panel-state" role="status">
+          <span class="spinner" aria-hidden="true"></span>
+          <span>Loading resume options…</span>
+        </div>
+      }
+      @if (optionsState.error) {
+        <div class="alert-banner alert-banner--error" role="alert">
+          <div class="alert-banner__copy">
+            <strong>Unable to load resume options</strong>
+            <span>{{ optionsState.error }}</span>
+          </div>
+          <button type="button" class="da-btn da-btn--secondary da-btn--sm" (click)="loadOptions()">
+            Retry options
+          </button>
+        </div>
+      }
+
+      @if (selected; as job) {
+        <section class="drawer-card" aria-label="Direct application form">
+          <div class="drawer-card__header">
+            <span class="da-badge da-badge--brand">Direct application</span>
+            <h3>Apply to {{ job.title }}</h3>
+            <p>Employer: {{ job.organizationName || 'Internal opening' }}</p>
+          </div>
+
+          @if (error) {
+            <div class="alert-banner alert-banner--error" role="alert">{{ error }}</div>
+          }
+
+          @if (optionsState.loaded && !optionsState.error && !options.resumes.length) {
+            <div class="resume-missing-note" role="status">
+              <span>Upload a PDF resume before submitting a direct application.</span>
+              <a href="/app/resume" class="inline-link" (click)="openResumePage($event)">
+                Go to Resume Builder
+              </a>
+            </div>
+          }
+
+          @if (options.resumes.length) {
+            <form class="apply-form" (ngSubmit)="submit()">
+              <div class="field-group">
+                <label for="direct-resume">Select resume PDF</label>
+                <select
+                  id="direct-resume"
+                  name="resume"
+                  [(ngModel)]="resumeId"
+                  class="field-control"
+                >
+                  <option value="" disabled>Select a PDF resume…</option>
+                  @for (resume of options.resumes; track resume._id) {
+                    <option [value]="resume._id">{{ resume.fileName }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="opt-in-box">
+                <label class="check-row">
+                  <input type="checkbox" name="portfolio" [(ngModel)]="sharePortfolio" />
+                  <span>
+                    <strong>Include frozen portfolio snapshot (optional)</strong>
+                    <span class="opt-in-help">
+                      Off by default. When checked, freezes your current headline, summary, skills,
+                      and projects with this submission.
+                    </span>
+                  </span>
+                </label>
+
+                @if (options.portfolio; as portfolio) {
+                  <div class="payload-preview" aria-label="Available portfolio snapshot summary">
+                    @if (portfolio.headline) {
+                      <span>Headline ready</span>
+                    }
+                    <span>{{ portfolio.skills.length }} skills</span>
+                    <span>{{ portfolio.projects.length }} projects</span>
+                  </div>
+                  <details class="evidence-details">
+                    <summary>Preview portfolio disclosure</summary>
+                    <div class="evidence-details__body">
+                      <app-submitted-portfolio [portfolio]="portfolio" />
+                    </div>
+                  </details>
+                } @else {
+                  <p class="opt-in-help">No portfolio profile snapshot available yet.</p>
+                }
+              </div>
+
+              <div class="consent-box">
+                <label class="check-row">
+                  <input type="checkbox" name="consent" [(ngModel)]="consent" />
+                  <span>
+                    Submit my selected PDF resume and consented profile fields to this employer
+                    organization.
+                  </span>
+                </label>
+              </div>
+
+              <div class="form-actions">
+                <button
+                  type="submit"
+                  class="da-btn da-btn--primary"
+                  [disabled]="!canApply || busy || !consent || !resumeId"
+                >
+                  {{ busy ? 'Submitting…' : 'Submit application' }}
+                </button>
+                <button type="button" class="da-btn da-btn--secondary" (click)="selected = null">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          } @else {
+            <div class="form-actions">
+              <button type="button" class="da-btn da-btn--secondary" (click)="selected = null">
+                Close
+              </button>
+            </div>
+          }
+        </section>
+      } @else {
+        <div class="drawer-placeholder">
+          <span class="da-badge da-badge--neutral">Direct application drawer</span>
+          <h3>Select an internal opening to apply</h3>
+          <p>
+            Choose any open requisition and click <strong>Review and apply</strong> to pick a
+            verified PDF resume, optionally attach a frozen portfolio snapshot, and submit with
+            explicit consent.
+          </p>
+        </div>
+      }
+
+      <section class="history-card" aria-labelledby="direct-history-heading">
+        <div class="drawer-card__header">
+          <div class="section-heading">
+            <h3 id="direct-history-heading">My direct applications</h3>
+            @if (!historyState.loading && !historyState.error) {
+              <span class="da-badge da-badge--neutral">{{ applications.length }} total</span>
+            }
+          </div>
+          <p>Frozen snapshots and live employer review status for direct submissions.</p>
+        </div>
+
+        @if (historyState.loading) {
+          <div class="panel-state" role="status">
+            <span class="spinner" aria-hidden="true"></span>
+            <span>Loading application history…</span>
+          </div>
+        } @else if (historyState.error) {
+          <div class="alert-banner alert-banner--error" role="alert">
+            <div class="alert-banner__copy">
+              <strong>Unable to load direct applications</strong>
+              <span>{{ historyState.error }}</span>
+            </div>
+            <button
+              type="button"
+              class="da-btn da-btn--secondary da-btn--sm"
+              (click)="loadHistory()"
+            >
+              Retry history
+            </button>
+          </div>
+        } @else if (!applications.length) {
+          <div class="empty-card" role="status">
+            <p class="empty-card__title">You have not submitted a direct application yet.</p>
+            <p class="empty-card__hint">
+              Submitted applications will track here with frozen resume proof.
+            </p>
+          </div>
+        } @else {
+          <div class="history-list">
+            @for (application of applications; track application._id) {
+              <article class="history-item">
+                <div class="history-item__top">
+                  <div>
+                    <h4>{{ application.jobTitle }}</h4>
+                    <p>
+                      {{ application.organizationName || 'Internal opening' }}
+                      @if (application.createdAt) {
+                        · {{ application.createdAt | date: 'mediumDate' }}
+                      }
+                    </p>
+                  </div>
+                  <span class="status-pill status-pill--{{ application.status }}">
+                    {{ application.status }}
+                  </span>
+                </div>
+
+                <div class="history-item__meta">
+                  <span class="resume-chip">{{ application.resume.fileName }}</span>
+                  <span class="hash-pill" [title]="application.resume.sha256">
+                    sha256: {{ shortHash(application.resume.sha256) }}
+                  </span>
+                </div>
+
+                <details class="evidence-details">
+                  <summary>View submitted evidence</summary>
+                  <div class="evidence-details__body">
+                    <div class="evidence-details__hash">
+                      <span>Resume SHA-256</span>
+                      <code>{{ application.resume.sha256 }}</code>
+                    </div>
+                    <app-submitted-portfolio [portfolio]="application.portfolio" />
+                  </div>
+                </details>
+              </article>
+            }
+          </div>
+        }
+      </section>
+    </div>
+  </div>
+</section>

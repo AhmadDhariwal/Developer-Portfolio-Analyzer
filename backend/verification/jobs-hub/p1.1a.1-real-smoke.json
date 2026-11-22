@@ -1,0 +1,328 @@
+{
+  "branch": "fix/P1-project",
+  "checkout": "D:\\Developer-Portfolio-Analyzer",
+  "apiMocks": false,
+  "requests": [
+    {
+      "url": "http://localhost:4211/api/jobs/internal",
+      "method": "GET",
+      "status": 401,
+      "body": {
+        "message": "Not authorized, no token"
+      }
+    },
+    {
+      "url": "http://localhost:4211/api/jobs/internal",
+      "method": "GET",
+      "status": 403,
+      "body": {
+        "message": "Developer access required."
+      }
+    },
+    {
+      "url": "http://localhost:4211/api/jobs/internal",
+      "method": "GET",
+      "status": 200,
+      "body": {
+        "jobs": []
+      }
+    },
+    {
+      "url": "http://localhost:4211/api/jobs/internal/options",
+      "method": "GET",
+      "status": 401,
+      "body": {
+        "message": "Not authorized, no token"
+      }
+    },
+    {
+      "url": "http://localhost:4211/api/jobs/internal/options",
+      "method": "GET",
+      "status": 403,
+      "body": {
+        "message": "Developer access required."
+      }
+    },
+    {
+      "url": "http://localhost:4211/api/jobs/internal/options",
+      "method": "GET",
+      "status": 200,
+      "body": {
+        "resumes": [],
+        "portfolio": null,
+        "portfolioHash": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+      }
+    },
+    {
+      "url": "http://localhost:4211/api/jobs/internal/applications",
+      "method": "GET",
+      "status": 401,
+      "body": {
+        "message": "Not authorized, no token"
+      }
+    },
+    {
+      "url": "http://localhost:4211/api/jobs/internal/applications",
+      "method": "GET",
+      "status": 403,
+      "body": {
+        "message": "Developer access required."
+      }
+    },
+    {
+      "url": "http://localhost:4211/api/jobs/internal/applications",
+      "method": "GET",
+      "status": 200,
+      "body": {
+        "applications": []
+      }
+    },
+    {
+      "url": "http://localhost:4211/api/recruiter-hub/jobs",
+      "method": "POST",
+      "status": 201,
+      "body": {
+        "job": {
+          "organizationId": "6b021026c197a7f8f8a22f11",
+          "recruiterId": "6b021026c197a7f8f8a22f10",
+          "teamId": null,
+          "title": "Smoke Engineer",
+          "role": "Smoke Engineer",
+          "description": "Disposable workflow verification",
+          "stack": "Full Stack",
+          "requiredSkills": [
+            "Angular"
+          ],
+          "preferredSkills": [],
+          "minExperienceYears": 0,
+          "location": "Remote",
+          "salaryRangeMin": 0,
+          "salaryRangeMax": 0,
+          "employmentType": "full-time",
+          "status": "open",
+          "archivedAt": null,
+          "published": false,
+          "_id": "6b02108262f51c7e7f229764",
+          "createdAt": "2026-11-21T21:43:30.185Z",
+          "updatedAt": "2026-11-21T21:43:30.185Z",
+          "__v": 0
+        }
+      }
+    },
+    {
+      "url": "http://localhost:4211/api/recruiter-hub/jobs/6b02108262f51c7e7f229764",
+      "method": "PATCH",
+      "status": 200,
+      "body": {
+        "job": {
+          "_id": "6b02108262f51c7e7f229764",
+          "organizationId": "6b021026c197a7f8f8a22f11",
+          "recruiterId": "6b021026c197a7f8f8a22f10",
+          "teamId": null,
+          "title": "Smoke Engineer",
+          "role": "Smoke Engineer",
+          "description": "Disposable workflow verification",
+          "stack": "Full Stack",
+          "requiredSkills": [
+            "Angular"
+          ],
+          "preferredSkills": [],
+          "minExperienceYears": 0,
+          "location": "Remote",
+          "salaryRangeMin": 0,
+          "salaryRangeMax": 0,
+          "employmentType": "full-time",
+          "status": "open",
+          "archivedAt": null,
+          "published": true,
+          "createdAt": "2026-11-21T21:43:30.185Z",
+          "updatedAt": "2026-11-21T21:43:30.256Z",
+          "__v": 0
+        }
+      }
+    },
+    {
+      "url": "http://localhost:4211/api/recruiter-hub/jobs/6b02108262f51c7e7f229764/applications",
+      "method": "GET",
+      "status": 200,
+      "body": {
+        "applications": [
+          {
+            "_id": "720580c7c6275f71c9607c3eeeb1486ecb97be0bded9d5974b430d0c1ae698ab",
+            "organizationId": "6b021026c197a7f8f8a22f11",
+            "organizationName": "Disposable Smoke Organization",
+            "recruiterId": "6b021026c197a7f8f8a22f10",
+            "jobId": "6b02108262f51c7e7f229764",
+            "applicantId": "6b021026c197a7f8f8a22f0f",
+            "applicantName": "Smoke Developer",
+            "jobTitle": "Smoke Engineer",
+            "resume": {
+              "fileId": "6b021081c197a7f8f8a22f24",
+              "fileName": "smoke-resume.pdf",
+              "sha256": "cbff3586a0a725e5f8ca6e060924744c2de8eccff7d78c22eb554d661a8b4092",
+              "uploadedAt": "2026-11-21T21:43:29.926Z"
+            },
+            "portfolio": null,
+            "consent": {
+              "version": "direct-apply-v1",
+              "submittedAt": "2026-11-21T21:43:35.284Z",
+              "sharePortfolio": false
+            },
+            "status": "submitted",
+            "history": [
+              {
+                "from": "",
+                "to": "submitted",
+                "actorId": "6b021026c197a7f8f8a22f0f",
+                "at": "2026-11-21T21:43:35.284Z",
+                "_id": "6b02108762f51c7e7f2297bf"
+              }
+            ],
+            "createdAt": "2026-11-21T21:43:35.298Z",
+            "updatedAt": "2026-11-21T21:43:35.298Z",
+            "__v": 0
+          }
+        ]
+      }
+    },
+    {
+      "url": "http://localhost:4211/api/recruiter-hub/jobs/6b02108262f51c7e7f229764/applications/720580c7c6275f71c9607c3eeeb1486ecb97be0bded9d5974b430d0c1ae698ab/resume",
+      "method": "GET",
+      "status": 200,
+      "body": "%PDF-1.7\nDisposable smoke resume\n%%EOF"
+    },
+    {
+      "url": "http://localhost:4211/api/recruiter-hub/jobs/6b02108262f51c7e7f229764/applications/720580c7c6275f71c9607c3eeeb1486ecb97be0bded9d5974b430d0c1ae698ab",
+      "method": "PATCH",
+      "status": 200,
+      "body": {
+        "application": {
+          "_id": "720580c7c6275f71c9607c3eeeb1486ecb97be0bded9d5974b430d0c1ae698ab",
+          "organizationId": "6b021026c197a7f8f8a22f11",
+          "organizationName": "Disposable Smoke Organization",
+          "recruiterId": "6b021026c197a7f8f8a22f10",
+          "jobId": "6b02108262f51c7e7f229764",
+          "applicantId": "6b021026c197a7f8f8a22f0f",
+          "applicantName": "Smoke Developer",
+          "jobTitle": "Smoke Engineer",
+          "resume": {
+            "fileId": "6b021081c197a7f8f8a22f24",
+            "fileName": "smoke-resume.pdf",
+            "sha256": "cbff3586a0a725e5f8ca6e060924744c2de8eccff7d78c22eb554d661a8b4092",
+            "uploadedAt": "2026-11-21T21:43:29.926Z"
+          },
+          "portfolio": null,
+          "consent": {
+            "version": "direct-apply-v1",
+            "submittedAt": "2026-11-21T21:43:35.284Z",
+            "sharePortfolio": false
+          },
+          "status": "reviewing",
+          "history": [
+            {
+              "from": "",
+              "to": "submitted",
+              "actorId": "6b021026c197a7f8f8a22f0f",
+              "at": "2026-11-21T21:43:35.284Z",
+              "_id": "6b02108762f51c7e7f2297bf"
+            },
+            {
+              "from": "submitted",
+              "to": "reviewing",
+              "actorId": "6b021026c197a7f8f8a22f10",
+              "at": "2026-11-21T21:43:35.756Z",
+              "_id": "6b02108762f51c7e7f2297e3"
+            }
+          ],
+          "createdAt": "2026-11-21T21:43:35.298Z",
+          "updatedAt": "2026-11-21T21:43:35.757Z",
+          "__v": 0
+        }
+      }
+    }
+  ],
+  "backendLogs": [
+    "[news config] {\"missing\":[],\"deprecated\":[\"NEWS_DISCOVERY_PREWARM_TOPICS (ignored)\"]}\n",
+    "[config] env loaded: NODE_ENV=development, PORT=5011, JWT_ISSUER=devinsight-api, JWT_AUDIENCE=devinsight-web, JWT_SECRET=configured\n",
+    "[AIProviderManager] DISABLED Gemini (missing_key)\n",
+    "[AIProviderManager] {\"scope\":\"AIProviderManager\",\"event\":\"provider_missing_key\",\"provider\":\"gemini\",\"envKey\":\"GEMINI_API_KEY\"}\n",
+    "[AIProviderManager] DISABLED OpenAI (missing_key)\n",
+    "[AIProviderManager] {\"scope\":\"AIProviderManager\",\"event\":\"provider_missing_key\",\"provider\":\"openai\",\"envKey\":\"OPENAI_API_KEY\"}\n",
+    "[AIProviderManager] DISABLED Groq (missing_key)\n",
+    "[AIProviderManager] {\"scope\":\"AIProviderManager\",\"event\":\"provider_missing_key\",\"provider\":\"groq\",\"envKey\":\"GROQ_API_KEY\"}\n[AIProviderManager] DISABLED Anthropic (Claude) (missing_key)\n",
+    "[AIProviderManager] {\"scope\":\"AIProviderManager\",\"event\":\"provider_missing_key\",\"provider\":\"anthropic\",\"envKey\":\"ANTHROPIC_API_KEY\"}\n",
+    "[AIProviderManager] DISABLED Grok (xAI) (missing_key)\n",
+    "[AIProviderManager] {\"scope\":\"AIProviderManager\",\"event\":\"provider_missing_key\",\"provider\":\"xai\",\"envKey\":\"XAI_API_KEY\"}\n",
+    "[AIProviderManager] {\"scope\":\"AIProviderManager\",\"event\":\"no_providers_ready\",\"providers\":[],\"priority\":\"\"}\n",
+    "MongoDB Connected: 127.0.0.1\n",
+    "[redis] connection unavailable; using application fallbacks.\n",
+    "{\"ts\":\"2026-11-21T21:41:56.992Z\",\"level\":\"info\",\"message\":\"server started\",\"port\":5011}\n",
+    "{\"ts\":\"2026-11-21T21:41:56.993Z\",\"level\":\"info\",\"message\":\"development API-only mode: loopback listener; background workers disabled.\"}\n",
+    "{\"ts\":\"2026-11-21T21:41:57.737Z\",\"level\":\"info\",\"message\":\"request\",\"requestId\":\"1f974829-c6ef-4cad-a86d-3a1ee3f63b0f\",\"method\":\"GET\",\"path\":\"/api/jobs/internal\"}\n",
+    "{\"ts\":\"2026-11-21T21:43:29.562Z\",\"level\":\"info\",\"message\":\"request\",\"requestId\":\"0fac2673-3829-4287-9111-df9ab465d281\",\"method\":\"GET\",\"path\":\"/api/jobs/internal\"}\n",
+    "{\"ts\":\"2026-11-21T21:43:29.620Z\",\"level\":\"info\",\"message\":\"request\",\"requestId\":\"af98bd5a-2e2b-4e35-bfeb-5a4dfa59f212\",\"method\":\"GET\",\"path\":\"/api/jobs/internal\"}\n",
+    "{\"ts\":\"2026-11-21T21:43:29.674Z\",\"level\":\"info\",\"message\":\"request\",\"requestId\":\"50986b19-71bf-4f53-a24e-5191b86f9f26\",\"method\":\"GET\",\"path\":\"/api/jobs/internal\"}\n",
+    "{\"ts\":\"2026-11-21T21:43:29.737Z\",\"level\":\"info\",\"message\":\"request\",\"requestId\":\"6773aa15-7bd5-4716-b4de-cb776782deb1\",\"method\":\"GET\",\"path\":\"/api/jobs/internal/options\"}\n",
+    "{\"ts\":\"2026-11-21T21:43:29.765Z\",\"level\":\"info\",\"message\":\"request\",\"requestId\":\"8492a83f-5e5c-44eb-86a8-3ec5c6b5e20e\",\"method\":\"GET\",\"path\":\"/api/jobs/internal/options\"}\n",
+    "{\"ts\":\"2026-11-21T21:43:29.798Z\",\"level\":\"info\",\"message\":\"request\",\"requestId\":\"2ca69e8d-19a5-4b79-bd96-de89491437cc\",\"method\":\"GET\",\"path\":\"/api/jobs/internal/options\"}\n",
+    "{\"ts\":\"2026-11-21T21:43:29.840Z\",\"level\":\"info\",\"message\":\"request\",\"requestId\":\"b7de7ab1-cfa5-420b-a369-e5fcd7fa830a\",\"method\":\"GET\",\"path\":\"/api/jobs/internal/applications\"}\n",
+    "{\"ts\":\"2026-11-21T21:43:29.871Z\",\"level\":\"info\",\"message\":\"request\",\"requestId\":\"f3f47e60-a815-489b-b27a-81e644582253\",\"method\":\"GET\",\"path\":\"/api/jobs/internal/applications\"}\n",
+    "{\"ts\":\"2026-11-21T21:43:29.906Z\",\"level\":\"info\",\"message\":\"request\",\"requestId\":\"a311758d-4dad-41ee-bf22-62eecd0fcd23\",\"method\":\"GET\",\"path\":\"/api/jobs/internal/applications\"}\n",
+    "{\"ts\":\"2026-11-21T21:43:30.092Z\",\"level\":\"info\",\"message\":\"request\",\"requestId\":\"7e5810ab-d447-48bc-b22b-557ab7f2e263\",\"method\":\"POST\",\"path\":\"/api/recruiter-hub/jobs\"}\n",
+    "{\"ts\":\"2026-11-21T21:43:30.232Z\",\"level\":\"info\",\"message\":\"request\",\"requestId\":\"09f7daba-772a-44cf-a3d5-6613e0de0961\",\"method\":\"PATCH\",\"path\":\"/api/recruiter-hub/jobs/6b02108262f51c7e7f229764\"}\n",
+    "{\"ts\":\"2026-11-21T21:43:33.083Z\",\"level\":\"info\",\"message\":\"request\",\"requestId\":\"97c7a7e8-e0de-4c30-9c07-92d6a07bd3a7\",\"method\":\"GET\",\"path\":\"/api/notifications\"}\n",
+    "{\"ts\":\"2026-11-21T21:43:33.215Z\",\"level\":\"info\",\"message\":\"request\",\"requestId\":\"20fb1315-8139-4b16-b600-20b9141bf70d\",\"method\":\"GET\",\"path\":\"/api/notifications/stream\"}\n",
+    "{\"ts\":\"2026-11-21T21:43:33.357Z\",\"level\":\"info\",\"message\":\"request\",\"requestId\":\"782ed709-9348-4dc8-a4ce-b2ddf9f1b58d\",\"method\":\"GET\",\"path\":\"/api/tenant/organizations\"}\n",
+    "{\"ts\":\"2026-11-21T21:43:33.419Z\",\"level\":\"info\",\"message\":\"request\",\"requestId\":\"fc1e1ada-0797-4a03-8f7c-4435241a56aa\",\"method\":\"GET\",\"path\":\"/api/jobs?page=1&limit=10\"}\n",
+    "{\"ts\":\"2026-11-21T21:43:34.460Z\",\"level\":\"info\",\"message\":\"request\",\"requestId\":\"405379c2-7410-45b0-a97e-b20287318b92\",\"method\":\"GET\",\"path\":\"/api/jobs/internal\"}\n",
+    "{\"ts\":\"2026-11-21T21:43:34.567Z\",\"level\":\"info\",\"message\":\"request\",\"requestId\":\"a6b0b659-9497-4c93-be9a-98825b70519c\",\"method\":\"GET\",\"path\":\"/api/jobs/internal/options\"}\n",
+    "{\"ts\":\"2026-11-21T21:43:34.666Z\",\"level\":\"info\",\"message\":\"request\",\"requestId\":\"7f04c35f-0993-4637-84bb-c628ad9b83db\",\"method\":\"GET\",\"path\":\"/api/jobs/internal/applications\"}\n",
+    "{\"ts\":\"2026-11-21T21:43:35.227Z\",\"level\":\"info\",\"message\":\"request\",\"requestId\":\"9e757981-392b-445f-81a7-a74bbef09827\",\"method\":\"POST\",\"path\":\"/api/jobs/internal/6b02108262f51c7e7f229764/applications\"}\n",
+    "{\"ts\":\"2026-11-21T21:43:35.601Z\",\"level\":\"info\",\"message\":\"request\",\"requestId\":\"9890cf25-fde4-49e0-b9e4-e6d80adffe30\",\"method\":\"GET\",\"path\":\"/api/recruiter-hub/jobs/6b02108262f51c7e7f229764/applications\"}\n",
+    "{\"ts\":\"2026-11-21T21:43:35.664Z\",\"level\":\"info\",\"message\":\"request\",\"requestId\":\"5be3fae9-f379-4555-9dfe-2f7d520abe96\",\"method\":\"GET\",\"path\":\"/api/recruiter-hub/jobs/6b02108262f51c7e7f229764/applications/720580c7c6275f71c9607c3eeeb1486ecb97be0bded9d5974b430d0c1ae698ab/resume\"}\n",
+    "{\"ts\":\"2026-11-21T21:43:35.723Z\",\"level\":\"info\",\"message\":\"request\",\"requestId\":\"bbcb5dae-c76c-4ed0-833a-3daf2ca073e2\",\"method\":\"PATCH\",\"path\":\"/api/recruiter-hub/jobs/6b02108262f51c7e7f229764/applications/720580c7c6275f71c9607c3eeeb1486ecb97be0bded9d5974b430d0c1ae698ab\"}\n",
+    "{\"ts\":\"2026-11-21T21:43:36.033Z\",\"level\":\"info\",\"message\":\"request\",\"requestId\":\"970787e4-00c6-4738-be12-2cb4a9c4dbf9\",\"method\":\"GET\",\"path\":\"/api/jobs/internal/options\"}\n",
+    "{\"ts\":\"2026-11-21T21:43:36.077Z\",\"level\":\"info\",\"message\":\"request\",\"requestId\":\"4ef5616a-929a-4c38-8bfe-ff343b546d70\",\"method\":\"GET\",\"path\":\"/api/jobs/internal/applications\"}\n",
+    "{\"ts\":\"2026-11-21T21:43:36.097Z\",\"level\":\"info\",\"message\":\"request\",\"requestId\":\"f5390b06-8e15-4222-81e6-2ca5ccfb2dcf\",\"method\":\"GET\",\"path\":\"/api/jobs/internal\"}\n"
+  ],
+  "checks": [
+    "Authenticated empty collections return 200; missing auth 401; recruiter role 403 through Angular proxy",
+    "Real Angular service loaded all internal APIs, submitted consent/resume to Express/Mongo; recruiter publication/list/PDF/status succeeded; Developer UI refreshed reviewing status"
+  ],
+  "angularRequests": [
+    {
+      "url": "http://localhost:4211/api/jobs/internal",
+      "status": 200
+    },
+    {
+      "url": "http://localhost:4211/api/jobs/internal/options",
+      "status": 200
+    },
+    {
+      "url": "http://localhost:4211/api/jobs/internal/applications",
+      "status": 200
+    },
+    {
+      "url": "http://localhost:4211/api/jobs/internal/6b02108262f51c7e7f229764/applications",
+      "status": 201
+    },
+    {
+      "url": "http://localhost:4211/api/jobs/internal/options",
+      "status": 200
+    },
+    {
+      "url": "http://localhost:4211/api/jobs/internal/applications",
+      "status": 200
+    },
+    {
+      "url": "http://localhost:4211/api/jobs/internal",
+      "status": 200
+    }
+  ],
+  "passed": true,
+  "cleanup": {
+    "mongoStopped": true,
+    "temporaryFilesRemoved": 453,
+    "productionDataUsed": false
+  }
+}

@@ -13,6 +13,13 @@ const EMPLOYMENT_TYPES = new Set([
 ]);
 const JOB_STATUSES = new Set(["draft", "open", "closed"]);
 
+const publicationFlag = (value) => {
+  if (value !== undefined && typeof value !== "boolean") {
+    throw createValidationError("Published must be a boolean.");
+  }
+  return value === true;
+};
+
 const normalizeSkills = (value) => {
   if (Array.isArray(value)) {
     return [
@@ -29,6 +36,7 @@ const normalizeSkills = (value) => {
 };
 
 const toJobPayload = (payload = {}) => ({
+  published: publicationFlag(payload.published),
   title: String(payload.title || "").trim(),
   role: String(payload.role || payload.title || "").trim(),
   description: String(payload.description || "").trim(),
