@@ -56,8 +56,10 @@ const deepMask = (obj) => {
 
 const trimPayload = (value, maxLen = 5000) => {
   if (value === null || value === undefined) return value;
-  const masked = deepMask(value);
   try {
+    // Match the response's JSON contract before traversing it. Mongoose documents
+    // contain cyclic internal state; toJSON also preserves ObjectIds and dates.
+    const masked = deepMask(JSON.parse(JSON.stringify(value)));
     const text = JSON.stringify(masked);
     if (text.length <= maxLen) return masked;
     return { __truncated: true, preview: text.slice(0, maxLen) };
@@ -149,7 +151,11 @@ const auditLogMiddleware = (req, res, next) => {
       const action = `${req.method} ${req.baseUrl || ''}${req.path || ''}`.trim();
       const { organizationId, teamId } = isRecruiterRoute
         ? { organizationId: firstValidObjectId(req.organizationId), teamId: null }
-        : await resolveScope(req);
+        : req.method === 'POST' &&
+            req.originalUrl.split('?')[0] === '/api/tenant/organizations' &&
+            res.statusCode === 201
+          ? { organizationId: firstValidObjectId(responseBody?.organization?._id), teamId: null }
+          : await resolveScope(req);
       await AuditLog.create({
         actor,
         organizationId,
