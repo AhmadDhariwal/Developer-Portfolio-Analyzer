@@ -37,6 +37,7 @@ export class InternalJobsComponent implements OnInit {
   busy = false;
   error = '';
   notice = '';
+  withdrawal: DirectApplication | null = null;
   jobs: InternalJob[] = [];
   applications: DirectApplication[] = [];
   options: ApplicationOptions = { resumes: [], portfolio: null, portfolioHash: '' };
@@ -48,17 +49,20 @@ export class InternalJobsComponent implements OnInit {
     this.load();
   }
   load() {
+    if (this.busy) return;
     this.selected = null;
     this.loadJobs();
     this.loadOptions();
     this.loadHistory();
   }
   loadJobs() {
+    if (this.busy) return;
     this.loadResource(this.jobsState, this.api.discover(), 'Unable to load internal jobs.', (r) => {
       this.jobs = r.jobs;
     });
   }
   loadOptions() {
+    if (this.busy) return;
     this.selected = null;
     this.loadResource(
       this.optionsState,
@@ -70,6 +74,7 @@ export class InternalJobsComponent implements OnInit {
     );
   }
   loadHistory() {
+    if (this.busy) return;
     this.loadResource(
       this.historyState,
       this.api.mine(),
@@ -136,6 +141,37 @@ export class InternalJobsComponent implements OnInit {
         error: (error) => {
           this.error = error.error?.message || 'Submission failed. You can safely retry.';
           this.busy = false;
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  confirmWithdrawal() {
+    const application = this.withdrawal;
+    if (!application || this.busy) return;
+    this.busy = true;
+    this.error = '';
+    this.api
+      .withdraw(application._id, application.status)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ({ application: updated }) => {
+          this.applications = this.applications.map((item) =>
+            item._id === updated._id ? updated : item,
+          );
+          this.withdrawal = null;
+          this.busy = false;
+          this.notice = 'Application withdrawn. Reapplication is unavailable for this job.';
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          this.busy = false;
+          this.withdrawal = null;
+          this.error =
+            error.status === 409
+              ? 'Application changed. History has been refreshed; review its current status.'
+              : error.error?.message || 'Withdrawal failed. Please retry.';
+          if (error.status === 409) this.loadHistory();
           this.cdr.markForCheck();
         },
       });

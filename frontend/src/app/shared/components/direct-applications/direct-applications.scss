@@ -456,3 +456,8 @@
     }
   }
 }
+
+.status-pill--withdrawn {
+  color: var(--text-secondary);
+  background: var(--surface-secondary);
+}

@@ -312,7 +312,9 @@ export class NotificationsComponent extends NotificationPresentation implements 
 
   openNotification(notification: AppNotification): void {
     this.markAsRead(notification);
-    void this.router.navigateByUrl(notificationTarget(notification));
+    void this.router.navigateByUrl(
+      notificationTarget(notification, this.authService.getCurrentUser()?.role),
+    );
   }
 
   fetchNotifications(page = this.page, forceRefresh = false, background = false): void {

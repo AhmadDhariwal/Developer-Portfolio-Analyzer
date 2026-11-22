@@ -15,8 +15,11 @@ const targets = new Set([
   '/app/portfolio',
 ]);
 
-export function notificationTarget(notification: AppNotification): string {
+export function notificationTarget(notification: AppNotification, role?: string): string {
   const target = notification.meta?.['target'];
+  if (target === '/app/jobs?view=internal')
+    return ['developer', 'user', 'guest'].includes(role || '') ? target : '/app/notifications';
+  if (target === '/app/recruiter/jobs') return role === 'recruiter' ? target : '/app/notifications';
   if (typeof target === 'string' && targets.has(target)) return target;
   if (notification.meta?.['ticketId']) return '/app/support';
   if (notification.meta?.['reportId']) return '/app/weekly-reports';

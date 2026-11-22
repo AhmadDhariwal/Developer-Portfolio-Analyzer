@@ -26,6 +26,7 @@ test(
     const originalRead = storage.read;
     const originalNotify = notifications.createNotification;
     t.after(async () => {
+      await require('../../modules/notifications/services/notificationStreamService').stop();
       if (server) await new Promise((resolve) => server.close(resolve));
       storage.read = originalRead;
       notifications.createNotification = originalNotify;
@@ -103,17 +104,12 @@ test(
       reads++;
       return pdf;
     };
-    let notificationAttempts = 0;
-    notifications.createNotification = async () => {
-      notificationAttempts++;
-      assert.equal(await Application.countDocuments(), 1);
-      throw Error('Simulated notification outage');
-    };
     process.env.JWT_SECRET = 'disposable-direct-application-fixture';
     const controller = require('../../modules/jobs/jobApplicationController');
     const app = express();
     app.use(express.json());
     // Production route modules with real JWT and tenant middleware; no Redis dependency is required.
+    app.use('/api/notifications', require('../../modules/notifications/notification.routes'));
     app.use('/api/jobs', require('../../modules/jobs/jobRoutes'));
     app.use('/api/recruiter-hub', require('../../modules/recruiter/routes/hub/recruiterHubRoutes'));
     server = app.listen(0, '127.0.0.1');
@@ -245,6 +241,33 @@ test(
       storage.read = priorRead;
       assert.equal(await Application.countDocuments(), 0);
     });
+    await t.test(
+      'notification failure rolls back application, receipt and inbox revision',
+      async () => {
+        notifications.createNotification = async (input) => {
+          await originalNotify(input);
+          throw Error('Injected write failure');
+        };
+        try {
+          assert.equal((await request(path, developer, 'POST', payload)).status, 503);
+        } finally {
+          notifications.createNotification = originalNotify;
+        }
+        assert.equal(await Application.countDocuments(), 0);
+        assert.equal(
+          await require('../../modules/notifications/models/notification').countDocuments(),
+          0
+        );
+        assert.equal(
+          await require('../../modules/notifications/models/notificationReceipt').countDocuments(),
+          0
+        );
+        assert.equal(
+          await require('../../modules/notifications/models/notificationState').countDocuments(),
+          0
+        );
+      }
+    );
     let application;
     await t.test(
       'concurrent submissions create exactly one durable application and notification attempt',
@@ -258,7 +281,10 @@ test(
         assert.equal(results.filter((r) => r.status === 200).length, 7);
         assert.equal(new Set(results.map((r) => r.body.application._id)).size, 1);
         assert.equal(await Application.countDocuments(), 1);
-        assert.equal(notificationAttempts, 1);
+        assert.equal(
+          await require('../../modules/notifications/models/notification').countDocuments(),
+          1
+        );
         application = results[0].body.application;
         assert.equal(application.organizationName, 'Test organization');
         assert.equal(application.resumeBytes, undefined);
@@ -346,10 +372,203 @@ test(
         assert.equal(mine.history, undefined);
       }
     );
+    await t.test(
+      'withdrawal is owned, terminal, atomic and idempotent; safe timelines exclude actors',
+      async () => {
+        const secondJob = await Job.create({
+          recruiterId: recruiter,
+          organizationId: orgId,
+          title: 'Withdrawal fixture',
+          published: true
+        });
+        const file = await Resume.create({
+          userId: developer,
+          fileName: 'withdraw.pdf',
+          fileUrl: '/test-only.pdf',
+          fileSize: pdf.length
+        });
+        const body = { resumeId: String(file._id), consent: true, sharePortfolio: false };
+        const submitted = await request(
+          `/jobs/internal/${secondJob._id}/applications`,
+          developer,
+          'POST',
+          body
+        );
+        assert.equal(submitted.status, 201);
+        const id = submitted.body.application._id;
+        const withdrawalPath = `/jobs/internal/applications/${id}/withdraw`;
+        assert.equal(
+          (await request(withdrawalPath, other, 'POST', { expectedStatus: 'submitted' })).status,
+          404
+        );
+        assert.equal(
+          (await request(withdrawalPath, recruiter, 'POST', { expectedStatus: 'submitted' }))
+            .status,
+          403
+        );
+        assert.equal(
+          (await request(withdrawalPath, developer, 'POST', { expectedStatus: 'rejected' })).status,
+          400
+        );
+        const statusPath = `/recruiter-hub/jobs/${secondJob._id}/applications/${id}`;
+        assert.equal(
+          (
+            await request(statusPath, recruiter, 'PATCH', {
+              status: 'reviewing',
+              expectedStatus: 'submitted'
+            })
+          ).status,
+          200
+        );
+        assert.equal(
+          (await request(withdrawalPath, developer, 'POST', { expectedStatus: 'submitted' }))
+            .status,
+          409
+        );
+        const results = await Promise.all(
+          Array.from({ length: 5 }, () =>
+            request(withdrawalPath, developer, 'POST', { expectedStatus: 'reviewing' })
+          )
+        );
+        assert.ok(results.every((r) => r.status === 200));
+        const row = results[0].body.application;
+        assert.equal(row.status, 'withdrawn');
+        assert.deepEqual(
+          row.timeline.map((e) => e.status),
+          ['submitted', 'reviewing', 'withdrawn']
+        );
+        assert.ok(row.timeline.every((e) => Object.keys(e).sort().join(',') === 'at,status'));
+        assert.equal(row.history, undefined);
+        assert.equal(
+          (await request(statusPath, recruiter, 'PATCH', { status: 'rejected' })).status,
+          409
+        );
+        assert.equal(
+          (await request(`/jobs/internal/${secondJob._id}/applications`, developer, 'POST', body))
+            .body.application.status,
+          'withdrawn'
+        );
+        const Notice = require('../../modules/notifications/models/notification');
+        const notices = await Notice.find({ dedupeKey: { $regex: id } }).lean();
+        assert.equal(notices.length, 3);
+        assert.equal(notices.filter((n) => String(n.userId) === String(developer)).length, 1);
+        assert.ok(
+          notices.every(
+            (n) =>
+              !JSON.stringify(n).includes('Original headline') &&
+              !JSON.stringify(n).includes('sha256')
+          )
+        );
+        assert.equal(
+          notices.find((n) => n.title === 'Application withdrawn').meta.target,
+          '/app/recruiter/jobs'
+        );
+        assert.equal(
+          notices.find((n) => n.title === 'Application status updated').meta.target,
+          '/app/jobs?view=internal'
+        );
+        assert.equal((await Application.findById(id)).history.length, 3);
+      }
+    );
+    await t.test(
+      'status/withdraw races and notification failure preserve atomic history and SSE',
+      async () => {
+        const job = await Job.create({
+          recruiterId: recruiter,
+          organizationId: orgId,
+          title: 'Race fixture',
+          published: true
+        });
+        const file = await Resume.findOne({ userId: developer });
+        const submitted = await request(
+          `/jobs/internal/${job._id}/applications`,
+          developer,
+          'POST',
+          { resumeId: String(file._id), consent: true, sharePortfolio: false }
+        );
+        assert.equal(submitted.status, 201);
+        const id = submitted.body.application._id;
+        const statusPath = `/recruiter-hub/jobs/${job._id}/applications/${id}`;
+        const withdrawPath = `/jobs/internal/applications/${id}/withdraw`;
+        const Notice = require('../../modules/notifications/models/notification');
+        const before = await Notice.countDocuments();
+        notifications.createNotification = async (input) => {
+          await originalNotify(input);
+          throw Error('Injected status delivery failure');
+        };
+        try {
+          assert.equal(
+            (
+              await request(statusPath, recruiter, 'PATCH', {
+                status: 'reviewing',
+                expectedStatus: 'submitted'
+              })
+            ).status,
+            503
+          );
+        } finally {
+          notifications.createNotification = originalNotify;
+        }
+        assert.equal((await Application.findById(id)).status, 'submitted');
+        assert.equal((await Application.findById(id)).history.length, 1);
+        assert.equal(await Notice.countDocuments(), before);
+        const abort = new AbortController();
+        const timeout = setTimeout(() => abort.abort(), 15000);
+        try {
+          const stream = await fetch(base + '/notifications/stream', {
+            headers: { Authorization: `Bearer ${sign({ _id: developer })}` },
+            signal: abort.signal
+          });
+          assert.equal(stream.status, 200);
+          const reader = stream.body.getReader();
+          await reader.read();
+          assert.equal(
+            (
+              await request(statusPath, recruiter, 'PATCH', {
+                status: 'reviewing',
+                expectedStatus: 'submitted'
+              })
+            ).status,
+            200
+          );
+          await require('../../modules/notifications/services/notificationStreamService').reconcile();
+          const event = new TextDecoder().decode((await reader.read()).value);
+          assert.match(event, /notification/);
+          assert.match(event, /reconcile/);
+          assert.equal(event.includes('portfolio'), false);
+          assert.equal(event.includes('Race fixture'), false);
+        } finally {
+          clearTimeout(timeout);
+          abort.abort();
+        }
+        // Competing terminal mutations use the same observed status. Exactly one wins.
+        const race = await Promise.all([
+          request(statusPath, recruiter, 'PATCH', {
+            status: 'rejected',
+            expectedStatus: 'reviewing'
+          }),
+          request(withdrawPath, developer, 'POST', { expectedStatus: 'reviewing' })
+        ]);
+        assert.deepEqual(race.map((r) => r.status).sort(), [200, 409]);
+        assert.equal((await Application.findById(id)).history.length, 3);
+        assert.equal(await Notice.countDocuments({ dedupeKey: { $regex: id } }), 3);
+        assert.equal(
+          (
+            await request(
+              `/jobs/internal/applications/${application._id}/withdraw`,
+              developer,
+              'POST',
+              { expectedStatus: 'reviewing' }
+            )
+          ).status,
+          409
+        );
+      }
+    );
     await t.test('closed job blocks new submissions but preserves prior status', async () => {
-      await Job.updateOne({ _id: job._id }, { $set: { status: 'closed' } });
+      await Job.updateMany({ recruiterId: recruiter }, { $set: { status: 'closed' } });
       assert.equal((await request('/jobs/internal')).body.jobs.length, 0);
-      assert.equal((await request('/jobs/internal/applications')).body.applications.length, 1);
+      assert.equal((await request('/jobs/internal/applications')).body.applications.length, 3);
       assert.equal(
         await service
           .applicants(

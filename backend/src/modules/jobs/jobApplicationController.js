@@ -26,20 +26,35 @@ module.exports = {
     const result = await service.submit(req.user, req.params.id, req.body);
     res.status(result.created ? 201 : 200).json(result);
   }),
+  withdraw: handle(async (req, res) => {
+    if (!req.body || Object.keys(req.body).some((key) => key !== 'expectedStatus'))
+      return res.status(400).json({ message: 'Only expectedStatus may be supplied.' });
+    res.json({
+      application: await service.withdraw(
+        req.user._id,
+        req.params.applicationId,
+        req.body.expectedStatus
+      )
+    });
+  }),
   applicants: handle(async (req, res) =>
     res.json({
       applications: await service.applicants(await getRecruiterScope(req), req.params.id)
     })
   ),
   status: handle(async (req, res) => {
-    if (!req.body || Object.keys(req.body).some((key) => key !== 'status'))
-      return res.status(400).json({ message: 'Only status may be updated.' });
+    if (
+      !req.body ||
+      Object.keys(req.body).some((key) => !['status', 'expectedStatus'].includes(key))
+    )
+      return res.status(400).json({ message: 'Only status and expectedStatus may be supplied.' });
     res.json({
       application: await service.changeStatus(
         await getRecruiterScope(req),
         req.params.id,
         req.params.applicationId,
-        req.body.status
+        req.body.status,
+        req.body.expectedStatus
       )
     });
   }),

@@ -128,6 +128,12 @@ export class JobsComponent implements OnInit, OnDestroy {
     return this.offline || this.coolingDown || this.now < this.actions.retryAt;
   }
   ngOnInit(): void {
+    this.subscriptions.add(
+      this.route.queryParamMap?.subscribe((params) => {
+        const next = params.get('view');
+        if (next === 'internal' && this.view !== 'internal') this.setView('internal');
+      }),
+    );
     const tab = this.route.snapshot.queryParamMap.get('view');
     if (this.tabs.some((item) => item.id === tab)) this.view = tab as View;
     this.subscriptions.add(

@@ -8,6 +8,7 @@ const User = require('../../auth/models/user');
 const storage = require('../../resume/services/resumeStorageService');
 const { requireObjectId } = require('../../recruiter/utils/recruiterValidation');
 const notifications = require('../../notifications/services/notificationService');
+const persistence = require('../../notifications/services/notificationTransactionService');
 const fail = (message, statusCode = 400) => Object.assign(Error(message), { statusCode });
 const eligible = { published: true, status: 'open', archivedAt: null };
 const applicationId = (job, applicant) =>
@@ -39,6 +40,9 @@ const applicantView = (a) => ({
   jobTitle: a.jobTitle,
   organizationName: a.organizationName,
   status: a.status,
+  timeline: (a.history || [])
+    .filter((event) => ['submitted', 'reviewing', 'rejected', 'withdrawn'].includes(event.to))
+    .map((event) => ({ status: event.to, at: event.at })),
   resume: a.resume,
   portfolio: a.portfolio,
   consent: a.consent,
@@ -137,7 +141,7 @@ async function submit(user, jobId, payload = {}) {
     throw fail('Portfolio changed. Refresh and review it before submitting.', 409);
   let saved;
   try {
-    saved = await Job.db.transaction(async (session) => {
+    saved = await persistence.transaction(async (session) => {
       const duplicate = await Application.findById(id).session(session).lean();
       if (duplicate) return { application: duplicate, created: false };
       const applicant = await User.updateOne(
@@ -198,23 +202,12 @@ async function submit(user, jobId, payload = {}) {
         ],
         { session }
       );
+      await notifyApplication(application, 'submitted', session);
       return { application: application.toObject(), created: true };
     });
   } catch (error) {
     if (error.code !== 11000) throw error;
     saved = { application: await Application.findById(id).lean(), created: false };
-  }
-  if (saved.created) {
-    // Best effort after durable commit. Notification failure cannot undo or fail submission.
-    await notifications
-      .createNotification({
-        userId: saved.application.recruiterId,
-        type: 'info',
-        title: 'New job application',
-        message: 'A developer submitted an application to your job.',
-        eventId: `application:${id}`
-      })
-      .catch(() => {});
   }
   return { application: applicantView(saved.application), created: saved.created };
 }
@@ -234,7 +227,7 @@ async function ownedJob(scope, jobId) {
 }
 async function applicants(scope, jobId) {
   await ownedJob(scope, jobId);
-  return Application.find({
+  const applications = await Application.find({
     jobId,
     organizationId: scope.organizationId,
     recruiterId: scope.recruiterId
@@ -242,6 +235,10 @@ async function applicants(scope, jobId) {
     .sort({ createdAt: -1 })
     .limit(100)
     .lean();
+  return applications.map((application) => ({
+    ...application,
+    timeline: applicantView(application).timeline
+  }));
 }
 function ownedApplication(scope, jobId, id) {
   if (!/^[a-f0-9]{64}$/.test(String(id))) throw fail('Invalid application identifier.');
@@ -252,31 +249,94 @@ function ownedApplication(scope, jobId, id) {
     recruiterId: scope.recruiterId
   };
 }
-async function changeStatus(scope, jobId, id, status) {
-  await ownedJob(scope, jobId);
-  const from =
-    status === 'reviewing'
-      ? ['submitted']
-      : status === 'rejected'
-        ? ['submitted', 'reviewing']
-        : [];
-  if (!from.length) throw fail('Invalid application status.');
-  const filter = ownedApplication(scope, jobId, id);
-  const current = await Application.findOne(filter).lean();
-  if (!current || !from.includes(current.status))
-    throw fail('Application unavailable or transition no longer allowed.', 409);
-  const updated = await Application.findOneAndUpdate(
-    { ...filter, status: current.status },
-    {
-      $set: { status },
-      $push: {
-        history: { from: current.status, to: status, actorId: scope.recruiterId, at: new Date() }
-      }
-    },
-    { returnDocument: 'after' }
-  ).lean();
-  if (!updated) throw fail('Application unavailable or transition no longer allowed.', 409);
-  return updated;
+// Notification and application writes share one transaction. Permanent event receipts
+// survive inbox deletion and transaction retries; SSE observes only committed revisions.
+async function notifyApplication(application, status, session) {
+  const recruiterEvent = status === 'submitted' || status === 'withdrawn';
+  const userId = recruiterEvent ? application.recruiterId : application.applicantId;
+  // Deleted/revoked recipients have no available inbox; lifecycle progress is retained.
+  if (!(await User.exists({ _id: userId, isActive: { $ne: false } }).session(session))) return;
+  await notifications.createNotification({
+    userId,
+    session,
+    type: 'info',
+    title:
+      status === 'submitted'
+        ? 'New job application'
+        : status === 'withdrawn'
+          ? 'Application withdrawn'
+          : 'Application status updated',
+    message:
+      status === 'submitted'
+        ? 'A developer submitted an application to your job.'
+        : status === 'withdrawn'
+          ? 'A developer withdrew an application to your job.'
+          : `Your direct application is now ${status}.`,
+    eventId:
+      status === 'submitted'
+        ? `application:${application._id}`
+        : `application:${application._id}:${status}`,
+    meta: { target: recruiterEvent ? '/app/recruiter/jobs' : '/app/jobs?view=internal' }
+  });
+}
+function validateApplicationId(id) {
+  if (!/^[a-f0-9]{64}$/.test(String(id))) throw fail('Invalid application identifier.');
+  return id;
+}
+async function transition(filter, actorId, status, expectedStatus, scope) {
+  const from = status === 'reviewing' ? ['submitted'] : ['submitted', 'reviewing'];
+  return persistence.transaction(async (session) => {
+    await persistence.fence(actorId, session);
+    if (scope) {
+      const locked = await Job.updateOne(
+        { _id: filter.jobId, recruiterId: scope.recruiterId, organizationId: scope.organizationId },
+        { $inc: { __v: 1 } },
+        { session, timestamps: false }
+      );
+      if (!locked.matchedCount) throw fail('Job not found.', 404);
+    }
+    const current = await Application.findOne(filter).session(session).lean();
+    if (!current) throw fail('Application not found.', 404);
+    // Retried withdrawal is an idempotent acknowledgement, without another event.
+    if (status === 'withdrawn' && current.status === 'withdrawn') return current;
+    if (
+      !from.includes(current.status) ||
+      (expectedStatus !== undefined && current.status !== expectedStatus)
+    )
+      throw fail('Application changed. Refresh before trying again.', 409);
+    const updated = await Application.findOneAndUpdate(
+      { ...filter, status: current.status },
+      {
+        $set: { status },
+        $push: { history: { from: current.status, to: status, actorId, at: new Date() } }
+      },
+      { session, returnDocument: 'after' }
+    ).lean();
+    if (!updated) throw fail('Application changed. Refresh before trying again.', 409);
+    await notifyApplication(updated, status, session);
+    return updated;
+  });
+}
+async function changeStatus(scope, jobId, id, status, expectedStatus) {
+  if (!['reviewing', 'rejected'].includes(status)) throw fail('Invalid application status.');
+  if (expectedStatus !== undefined && !['submitted', 'reviewing'].includes(expectedStatus))
+    throw fail('Invalid expected status.');
+  const application = await transition(
+    ownedApplication(scope, jobId, id),
+    scope.recruiterId,
+    status,
+    expectedStatus,
+    scope
+  );
+  return { ...application, timeline: applicantView(application).timeline };
+}
+async function withdraw(applicantId, id, expectedStatus) {
+  validateApplicationId(id);
+  if (!['submitted', 'reviewing'].includes(expectedStatus))
+    throw fail('An active expected status is required.');
+  return applicantView(
+    await transition({ _id: id, applicantId }, applicantId, 'withdrawn', expectedStatus)
+  );
 }
 async function submittedResume(scope, jobId, id) {
   await ownedJob(scope, jobId);
@@ -293,6 +353,7 @@ module.exports = {
   mine,
   applicants,
   changeStatus,
+  withdraw,
   submittedResume,
   portfolioSnapshot
 };

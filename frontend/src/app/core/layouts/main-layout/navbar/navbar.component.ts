@@ -613,7 +613,9 @@ export class Navbar implements OnInit {
   markNotificationRead(notification: AppNotification): void {
     if (notification.isRead) {
       this.closeNotifications();
-      void this.router.navigateByUrl(notificationTarget(notification));
+      void this.router.navigateByUrl(
+        notificationTarget(notification, this.authService.getCurrentUser()?.role),
+      );
       return;
     }
     const version = this.notificationSummaryVersion;
@@ -638,7 +640,9 @@ export class Navbar implements OnInit {
         },
       });
     this.closeNotifications();
-    void this.router.navigateByUrl(notificationTarget(notification));
+    void this.router.navigateByUrl(
+      notificationTarget(notification, this.authService.getCurrentUser()?.role),
+    );
   }
 
   markAllNotificationsRead(): void {

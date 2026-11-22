@@ -24,6 +24,11 @@ const applications = require('./jobApplicationController');
 router.get('/internal', applications.developerOnly, applications.discover);
 router.get('/internal/options', applications.developerOnly, applications.options);
 router.get('/internal/applications', applications.developerOnly, applications.mine);
+router.post(
+  '/internal/applications/:applicationId/withdraw',
+  applications.developerOnly,
+  applications.withdraw
+);
 router.post('/internal/:id/applications', applications.developerOnly, applications.submit);
 router.get('/', jobsRefreshLimit, fetchJobs);
 router.get('/source-health', getSourceHealthStatus);

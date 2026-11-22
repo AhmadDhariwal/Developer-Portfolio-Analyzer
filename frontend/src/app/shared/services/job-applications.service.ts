@@ -24,7 +24,8 @@ export interface DirectApplication {
   jobId: string;
   jobTitle: string;
   applicantName?: string;
-  status: 'submitted' | 'reviewing' | 'rejected';
+  status: 'submitted' | 'reviewing' | 'rejected' | 'withdrawn';
+  timeline?: { status: string; at: string }[];
   resume: { fileName: string; sha256: string };
   portfolio: PortfolioSubmission | null;
   createdAt: string;
@@ -58,8 +59,17 @@ export class JobApplicationsService {
   applicants(jobId: string) {
     return this.http.get<{ applications: DirectApplication[] }>(this.url(jobId));
   }
-  status(jobId: string, id: string, status: string) {
-    return this.http.patch(this.url(jobId) + '/' + encodeURIComponent(id), { status });
+  withdraw(id: string, expectedStatus: string) {
+    return this.http.post<{ application: DirectApplication }>(
+      `${this.base}/jobs/internal/applications/${encodeURIComponent(id)}/withdraw`,
+      { expectedStatus },
+    );
+  }
+  status(jobId: string, id: string, status: string, expectedStatus?: string) {
+    return this.http.patch(this.url(jobId) + '/' + encodeURIComponent(id), {
+      status,
+      expectedStatus,
+    });
   }
   resume(jobId: string, id: string) {
     return this.http.get(this.url(jobId) + '/' + encodeURIComponent(id) + '/resume', {

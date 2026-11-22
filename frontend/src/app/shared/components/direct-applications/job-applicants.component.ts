@@ -20,14 +20,16 @@ export class JobApplicantsComponent implements OnChanges {
   loading = false;
   busy = false;
   error = '';
-  filterStatus: 'all' | 'submitted' | 'reviewing' | 'rejected' = 'all';
+  actionError = '';
+  private loadVersion = 0;
+  filterStatus: 'all' | 'submitted' | 'reviewing' | 'rejected' | 'withdrawn' = 'all';
 
   get filteredApplications(): DirectApplication[] {
     if (this.filterStatus === 'all') return this.applications;
     return this.applications.filter((app) => app.status === this.filterStatus);
   }
 
-  countByStatus(status: 'submitted' | 'reviewing' | 'rejected'): number {
+  countByStatus(status: 'submitted' | 'reviewing' | 'rejected' | 'withdrawn'): number {
     return this.applications.filter((app) => app.status === status).length;
   }
 
@@ -43,18 +45,23 @@ export class JobApplicantsComponent implements OnChanges {
   }
   load() {
     if (!this.jobId) return;
+    const version = ++this.loadVersion;
+    const jobId = this.jobId;
     this.loading = true;
+    this.applications = [];
     this.error = '';
     this.api
       .applicants(this.jobId)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (r) => {
+          if (jobId !== this.jobId || version !== this.loadVersion) return;
           this.applications = r.applications;
           this.loading = false;
           this.cdr.markForCheck();
         },
         error: () => {
+          if (jobId !== this.jobId || version !== this.loadVersion) return;
           this.error = 'Unable to load applicants. Please retry.';
           this.loading = false;
           this.cdr.markForCheck();
@@ -62,10 +69,11 @@ export class JobApplicantsComponent implements OnChanges {
       });
   }
   status(application: DirectApplication, status: string) {
+    if (this.busy || this.loading) return;
     this.busy = true;
-    this.error = '';
+    this.actionError = '';
     this.api
-      .status(this.jobId, application._id, status)
+      .status(this.jobId, application._id, status, application.status)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
@@ -74,14 +82,19 @@ export class JobApplicantsComponent implements OnChanges {
         },
         error: (e) => {
           this.busy = false;
-          this.error = e.error?.message || 'Unable to change status.';
+          if (e.status === 409) {
+            this.load();
+            this.actionError =
+              'Application changed. Refresh and review the current status before trying again.';
+          } else this.actionError = e.error?.message || 'Unable to change status.';
           this.cdr.markForCheck();
         },
       });
   }
   download(application: DirectApplication) {
+    if (this.busy || this.loading) return;
     this.busy = true;
-    this.error = '';
+    this.actionError = '';
     this.api
       .resume(this.jobId, application._id)
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -98,7 +111,7 @@ export class JobApplicantsComponent implements OnChanges {
         },
         error: () => {
           this.busy = false;
-          this.error = 'Unable to download submitted resume.';
+          this.actionError = 'Unable to download submitted resume.';
           this.cdr.markForCheck();
         },
       });

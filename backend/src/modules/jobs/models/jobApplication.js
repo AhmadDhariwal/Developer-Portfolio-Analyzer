@@ -35,7 +35,11 @@ const schema = new mongoose.Schema(
         { _id: false }
       )
     ),
-    status: { type: String, enum: ['submitted', 'reviewing', 'rejected'], default: 'submitted' },
+    status: {
+      type: String,
+      enum: ['submitted', 'reviewing', 'rejected', 'withdrawn'],
+      default: 'submitted'
+    },
     history: [{ from: String, to: String, actorId: mongoose.Schema.Types.ObjectId, at: Date }]
   },
   { timestamps: true }

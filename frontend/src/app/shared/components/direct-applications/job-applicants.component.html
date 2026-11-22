@@ -2,6 +2,7 @@
   <header class="applicants-header">
     <div class="applicants-header__title">
       <h2 id="direct-applicants-heading">Direct applicants</h2>
+
       @if (!loading && !error) {
         <span class="da-badge da-badge--neutral">{{ applications.length }} applicant(s)</span>
       }
@@ -19,6 +20,7 @@
           >
             All ({{ applications.length }})
           </button>
+
           <button
             type="button"
             role="tab"
@@ -28,6 +30,7 @@
           >
             Submitted ({{ countByStatus('submitted') }})
           </button>
+
           <button
             type="button"
             role="tab"
@@ -37,6 +40,7 @@
           >
             Reviewing ({{ countByStatus('reviewing') }})
           </button>
+
           <button
             type="button"
             role="tab"
@@ -46,10 +50,25 @@
           >
             Rejected ({{ countByStatus('rejected') }})
           </button>
+
+          <button
+            type="button"
+            role="tab"
+            [class.is-active]="filterStatus === 'withdrawn'"
+            [attr.aria-selected]="filterStatus === 'withdrawn'"
+            (click)="filterStatus = 'withdrawn'"
+          >
+            Withdrawn ({{ countByStatus('withdrawn') }})
+          </button>
         </div>
       }
 
-      <button type="button" class="da-btn da-btn--secondary da-btn--sm" (click)="load()">
+      <button
+        type="button"
+        class="da-btn da-btn--secondary da-btn--sm"
+        [disabled]="loading || busy"
+        (click)="load()"
+      >
         Refresh applicants
       </button>
     </div>
@@ -61,24 +80,37 @@
     >
   </div>
 
+  @if (actionError) {
+    <p role="alert">{{ actionError }}</p>
+  }
+
   @if (loading) {
     <div class="panel-state" role="status">
       <span class="spinner" aria-hidden="true"></span>
+
       <span>Loading direct applicants…</span>
     </div>
   } @else if (error) {
     <div class="alert-banner alert-banner--error" role="alert">
       <div class="alert-banner__copy">
         <strong>Unable to load direct applicants</strong>
+
         <span>{{ error }}</span>
       </div>
-      <button type="button" class="da-btn da-btn--secondary da-btn--sm" (click)="load()">
+
+      <button
+        type="button"
+        class="da-btn da-btn--secondary da-btn--sm"
+        [disabled]="loading || busy"
+        (click)="load()"
+      >
         Try again
       </button>
     </div>
   } @else if (!applications.length) {
     <div class="empty-card" role="status">
       <p class="empty-card__title">No direct applications yet.</p>
+
       <p class="empty-card__hint">
         Developers who apply while this job is published will appear here with frozen evidence.
       </p>
@@ -86,6 +118,7 @@
   } @else if (!filteredApplications.length) {
     <div class="empty-card" role="status">
       <p class="empty-card__title">No applicants match status "{{ filterStatus }}".</p>
+
       <p class="empty-card__hint">Switch back to All to inspect all submitted applications.</p>
     </div>
   } @else {
@@ -97,17 +130,21 @@
               <div class="applicant-avatar" aria-hidden="true">
                 {{ initials(application.applicantName || 'Developer') }}
               </div>
+
               <div>
                 <div class="applicant-card__name-row">
                   <h3 class="applicant-name">
                     {{ application.applicantName || 'Developer applicant' }}
                   </h3>
+
                   <span class="status-pill status-pill--{{ application.status }}">
                     {{ application.status }}
                   </span>
                 </div>
+
                 <p class="applicant-card__meta">
                   Submitted
+
                   @if (application.createdAt) {
                     {{ application.createdAt | date: 'mediumDate' }}
                   }
@@ -136,7 +173,7 @@
                 </button>
               }
 
-              @if (application.status !== 'rejected') {
+              @if (application.status === 'submitted' || application.status === 'reviewing') {
                 <button
                   type="button"
                   class="da-btn da-btn--danger-outline da-btn--sm"
@@ -149,11 +186,22 @@
             </div>
           </div>
 
+          <details class="evidence-details">
+            <summary>Status timeline</summary>
+            <ol>
+              <li *ngFor="let event of application.timeline">
+                {{ event.status }} - {{ event.at | date: 'medium' }}
+              </li>
+            </ol>
+          </details>
+
           <div class="applicant-card__evidence-bar">
             <span class="pdf-chip">{{ application.resume.fileName }}</span>
+
             <span class="hash-pill" [title]="application.resume.sha256">
               sha256: {{ shortHash(application.resume.sha256) }}
             </span>
+
             @if (application.portfolio) {
               <span class="evidence-tag evidence-tag--included">Portfolio snapshot included</span>
             } @else {
@@ -163,11 +211,14 @@
 
           <details class="evidence-details">
             <summary>Submitted evidence</summary>
+
             <div class="evidence-details__body">
               <div class="evidence-details__hash">
                 <span>Resume SHA-256</span>
+
                 <code>{{ application.resume.sha256 }}</code>
               </div>
+
               <app-submitted-portfolio [portfolio]="application.portfolio" />
             </div>
           </details>
