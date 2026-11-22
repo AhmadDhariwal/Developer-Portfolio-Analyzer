@@ -150,6 +150,11 @@ const getAccessibleRecruiterJob = async (scope) =>
 
 const validateCollaboration = (payload) => {
   if (
+    payload.evaluationShared !== undefined &&
+    typeof payload.evaluationShared !== "boolean"
+  )
+    throw createValidationError("evaluationShared must be a boolean.");
+  if (
     payload.teamShared !== undefined &&
     typeof payload.teamShared !== "boolean"
   )
@@ -219,6 +224,10 @@ const createRecruiterJob = async ({ payload = {}, ...scope }) => {
     if (teamId) accessPolicy.sharingTeam(ctx, teamId);
     if (payload.teamShared === true && !teamId)
       throw createValidationError("Select an active team before sharing.");
+    if (payload.evaluationShared === true && payload.teamShared !== true)
+      throw createValidationError(
+        "Share job metadata with an active team before sharing evaluations.",
+      );
     const [job] = await Job.create(
       [
         {
@@ -227,6 +236,7 @@ const createRecruiterJob = async ({ payload = {}, ...scope }) => {
           organizationId: ctx.organizationId,
           teamId,
           teamShared: payload.teamShared === true,
+          evaluationShared: payload.evaluationShared === true,
           archivedAt: null,
         },
       ],
@@ -243,14 +253,18 @@ const updateRecruiterJob = async ({ jobId, payload = {}, ...scope }) => {
     if (!job) return null;
     const permissions = accessPolicy.requirePermission(job, ctx, "edit");
     const changesSharing =
-      payload.teamShared !== undefined || payload.teamId !== undefined;
+      payload.teamShared !== undefined ||
+      payload.teamId !== undefined ||
+      payload.evaluationShared !== undefined;
     if (changesSharing && !permissions.manageSharing)
       throw accessPolicy.denied("Only the job owner can change sharing.");
     assertVersion(
       job,
       payload,
       changesSharing &&
-        (job.teamShared === true || payload.teamShared !== undefined),
+        (job.teamShared === true ||
+          payload.teamShared !== undefined ||
+          payload.evaluationShared !== undefined),
     );
     const teamId =
       payload.teamId !== undefined
@@ -265,11 +279,24 @@ const updateRecruiterJob = async ({ jobId, payload = {}, ...scope }) => {
     if (
       changesSharing &&
       teamId &&
-      (teamShared || String(teamId) !== String(job.teamId))
+      (String(teamId) !== String(job.teamId) ||
+        (teamShared &&
+          (payload.teamShared === true || payload.evaluationShared === true)))
     )
       accessPolicy.sharingTeam(ctx, teamId);
     if (teamShared && !teamId)
       throw createValidationError("Select an active team before sharing.");
+    // A different team never inherits the previous team's evaluation disclosure.
+    const evaluationShared =
+      payload.evaluationShared !== undefined
+        ? payload.evaluationShared
+        : teamShared &&
+          String(teamId) === String(job.teamId) &&
+          job.evaluationShared === true;
+    if (evaluationShared && (!teamShared || !teamId))
+      throw createValidationError(
+        "Share job metadata with an active team before sharing evaluations.",
+      );
     const normalized = toJobPayload(payload);
     validateJobPayload(toJobPayload({ ...job, ...payload }));
     const patch = {};
@@ -280,7 +307,8 @@ const updateRecruiterJob = async ({ jobId, payload = {}, ...scope }) => {
       )
         patch[key] = value;
     }
-    if (changesSharing) Object.assign(patch, { teamId, teamShared });
+    if (changesSharing)
+      Object.assign(patch, { teamId, teamShared, evaluationShared });
     return writeJob(ctx, job, patch);
   });
 };

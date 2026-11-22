@@ -7,8 +7,8 @@ export class RecruiterJobService {
   constructor(private readonly api: ApiService) {}
 
   listJobs(includeShared = false): Observable<any> {
-    // Existing matching/comparison consumers stay owner-only. Only the metadata
-    // workspace opts in to team-visible jobs; this is not an evidence grant.
+    // Comparison remains owner-only. Metadata and evaluation workspaces opt in
+    // separately; metadata sharing is never an evaluation or evidence grant.
     return this.api.getRecruiterHubJobs().pipe(
       map((response) =>
         includeShared
@@ -18,6 +18,15 @@ export class RecruiterJobService {
               jobs: (response?.jobs || []).filter((job: any) => job.access?.matching === true),
             },
       ),
+    );
+  }
+
+  listEvaluationJobs(): Observable<any> {
+    return this.listJobs(true).pipe(
+      map((response) => ({
+        ...response,
+        jobs: (response?.jobs || []).filter((job: any) => job.access?.evaluationView === true),
+      })),
     );
   }
 

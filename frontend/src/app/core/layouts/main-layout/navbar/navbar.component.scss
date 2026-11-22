@@ -8,7 +8,7 @@
   padding: 0 24px;
   position: fixed;
   top: 0;
-  left: 260px;
+  left: var(--sidebar-expanded-width, 260px);
   right: 0;
   z-index: 100;
   border-bottom: 1px solid var(--border-color);
@@ -16,7 +16,7 @@
   transition: left var(--transition-base);
 
   &.sidebar-closed {
-    left: 72px;
+    left: var(--sidebar-collapsed-width, 72px);
   }
 
   @media (max-width: 768px) {
@@ -946,7 +946,7 @@
 
 @media (max-width: 768px) {
   :host-context(.developer-workspace) .navbar,
-:host-context(.recruiter-workspace) .navbar {
+  :host-context(.recruiter-workspace) .navbar {
     padding-inline: 14px;
     gap: 10px;
 
@@ -977,7 +977,7 @@
 
 @media (max-width: 640px) {
   :host-context(.developer-workspace) .navbar,
-:host-context(.recruiter-workspace) .navbar {
+  :host-context(.recruiter-workspace) .navbar {
     padding-inline: 12px;
     gap: 8px;
 
@@ -993,7 +993,7 @@
 
 @media (max-width: 360px) {
   :host-context(.developer-workspace) .navbar,
-:host-context(.recruiter-workspace) .navbar {
+  :host-context(.recruiter-workspace) .navbar {
     padding-inline: 10px;
     gap: 6px;
 
@@ -1015,6 +1015,26 @@
 
 .navbar .suggestion-item[aria-selected='true'] {
   background: var(--surface-hover);
+}
+
+// Recruiter names/handles can be long. Keep the toolbar's fixed controls from
+// expanding across the search/menu area when the desktop sidebar is open.
+:host-context(.recruiter-workspace) .navbar {
+  .navbar-left .search-bar {
+    min-width: 0;
+  }
+
+  .navbar-right .user-info {
+    min-width: 0;
+    max-width: clamp(64px, 12vw, 160px);
+
+    .user-name,
+    .user-handle {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
 }
 
 @media (max-width: 640px) {

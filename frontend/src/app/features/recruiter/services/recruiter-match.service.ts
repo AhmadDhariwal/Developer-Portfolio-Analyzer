@@ -14,8 +14,15 @@ export class RecruiterMatchService {
     return this.api.generateRecruiterHubMatches(payload);
   }
 
-  updateMatchStatus(id: string, status: 'generated' | 'shortlisted' | 'rejected'): Observable<any> {
-    return this.api.updateRecruiterHubMatchStatus(id, { status });
+  updateMatchStatus(
+    id: string,
+    status: 'generated' | 'shortlisted' | 'rejected',
+    expectedVersion?: number,
+  ): Observable<any> {
+    return this.api.updateRecruiterHubMatchStatus(id, {
+      status,
+      ...(expectedVersion !== undefined ? { expectedVersion } : {}),
+    });
   }
 
   getShortlists(params: Record<string, string | number> = {}): Observable<any> {

@@ -90,7 +90,9 @@ function permissions(job, ctx) {
     delete: isOwner,
     manageSharing: isOwner,
     privateEvidence: isOwner,
-    matching: isOwner
+    matching: isOwner,
+    evaluationView: isOwner || Boolean(grant && job.evaluationShared === true),
+    evaluationManage: isOwner || Boolean(grant && job.evaluationShared === true && manage)
   };
 }
 
@@ -128,6 +130,7 @@ async function jobView(job, ctx) {
   return {
     ...metadata,
     teamShared: job.teamShared === true,
+    evaluationShared: job.evaluationShared === true,
     version: Number(job.__v || 0),
     owner: { _id: job.recruiterId, name: owner?.name || 'Job owner' },
     sharedTeam: team ? { _id: team._id, name: team.name } : null,
@@ -143,4 +146,12 @@ async function withAccess(scope, work) {
   });
 }
 
-module.exports = { withAccess, permissions, requirePermission, sharingTeam, jobView, denied };
+module.exports = {
+  withAccess,
+  permissions,
+  requirePermission,
+  sharingTeam,
+  jobView,
+  denied,
+  fence
+};

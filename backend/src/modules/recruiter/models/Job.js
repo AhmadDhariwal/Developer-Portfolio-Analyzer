@@ -75,7 +75,8 @@ const jobSchema = new mongoose.Schema(
     },
     published: { type: Boolean, default: false, index: true },
     // Historical team assignment is metadata only; collaboration requires opt-in.
-    teamShared: { type: Boolean, default: false }
+    teamShared: { type: Boolean, default: false },
+    evaluationShared: { type: Boolean, default: false }
   },
   { timestamps: true }
 );

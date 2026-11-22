@@ -193,8 +193,8 @@ const toCandidateDetails = (candidate) => {
   };
 };
 
-const getRecruiterCandidatesByIds = async (candidateIds, organizationId) => {
-  const candidates = await getCandidatesByIds(candidateIds, { organizationId });
+const getRecruiterCandidatesByIds = async (candidateIds, organizationId, session) => {
+  const candidates = await getCandidatesByIds(candidateIds, { organizationId, session });
   return new Map([...candidates].map(([id, candidate]) => [id, toCandidateDetails(candidate)]));
 };
 
@@ -291,6 +291,7 @@ module.exports = {
   listRecruiterCandidates,
   getRecruiterCandidateDetails,
   getRecruiterCandidatesByIds,
+  toCandidateDetails,
   analyzeRecruiterCandidate,
   logCandidateView,
   formatCandidateComparison

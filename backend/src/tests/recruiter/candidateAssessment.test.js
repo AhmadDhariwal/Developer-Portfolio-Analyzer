@@ -19,6 +19,9 @@ const {
 const id = '507f1f77bcf86cd799439011';
 const stamp = '2026-11-18T12:00:00.000Z';
 const query = (value) => ({
+  session() {
+    return this;
+  },
   select() {
     return this;
   },

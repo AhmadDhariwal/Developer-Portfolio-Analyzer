@@ -126,4 +126,23 @@ describe('Recruiter domain services', () => {
       expect(response.jobs).toEqual(jobs);
     });
   });
+  it('separates evaluation job choices from metadata sharing and private comparison choices', () => {
+    apiMock['getRecruiterHubJobs'].mockReturnValue(
+      of({
+        jobs: [
+          { _id: 'owned', access: { matching: true, evaluationView: true } },
+          { _id: 'metadata', access: { evaluationView: false } },
+          { _id: 'evaluations', access: { matching: false, evaluationView: true } },
+        ],
+      }),
+    );
+    jobService
+      .listEvaluationJobs()
+      .subscribe((response) =>
+        expect(response.jobs.map((job: any) => job._id)).toEqual(['owned', 'evaluations']),
+      );
+    jobService
+      .listJobs()
+      .subscribe((response) => expect(response.jobs.map((job: any) => job._id)).toEqual(['owned']));
+  });
 });

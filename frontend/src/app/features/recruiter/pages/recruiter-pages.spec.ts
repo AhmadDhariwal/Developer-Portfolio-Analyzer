@@ -141,6 +141,17 @@ describe('Recruiter Hub page components', () => {
     };
 
     jobServiceMock = {
+      listEvaluationJobs: vi.fn().mockReturnValue(
+        of({
+          jobs: [
+            {
+              _id: 'j1',
+              title: 'Engineer',
+              access: { isOwner: true, evaluationView: true, evaluationManage: true },
+            },
+          ],
+        }),
+      ),
       listJobs: vi.fn().mockReturnValue(
         of({
           jobs: [
@@ -166,6 +177,8 @@ describe('Recruiter Hub page components', () => {
             access: {
               isOwner: true,
               matching: true,
+              evaluationView: true,
+              evaluationManage: true,
               privateEvidence: true,
               edit: true,
               publish: true,
@@ -192,6 +205,7 @@ describe('Recruiter Hub page components', () => {
           matches: [
             {
               _id: 'm1',
+              access: { manage: true },
               jobId: 'j1',
               candidateId: 'c1',
               matchScore: 90,
@@ -205,12 +219,15 @@ describe('Recruiter Hub page components', () => {
       generateMatches: vi.fn().mockReturnValue(of({ matches: [] })),
       updateMatchStatus: vi
         .fn()
-        .mockReturnValue(of({ match: { _id: 'm1', status: 'shortlisted' } })),
+        .mockReturnValue(
+          of({ match: { _id: 'm1', access: { manage: true }, status: 'shortlisted' } }),
+        ),
       getShortlists: vi.fn().mockReturnValue(
         of({
           shortlists: [
             {
               _id: 's1',
+              access: { manage: true },
               status: 'shortlisted',
               candidate: { id: 'c1', name: 'Aliya Dev' },
             },
@@ -220,7 +237,9 @@ describe('Recruiter Hub page components', () => {
       addToShortlist: vi.fn().mockReturnValue(of({ shortlist: { _id: 's1' } })),
       updateShortlist: vi
         .fn()
-        .mockReturnValue(of({ shortlist: { _id: 's1', status: 'reviewing' } })),
+        .mockReturnValue(
+          of({ shortlist: { _id: 's1', access: { manage: true }, status: 'reviewing' } }),
+        ),
       removeShortlist: vi.fn().mockReturnValue(of({ message: 'Removed' })),
       compareCandidates: vi.fn().mockReturnValue(
         of({
@@ -448,17 +467,54 @@ describe('Recruiter Hub page components', () => {
     const matchesComp: MatchesComponent = matchFixture.componentInstance;
     expect(matchesComp.matches.length).toBe(1);
     matchesComp.updateStatus(matchesComp.matches[0], 'rejected');
-    expect(matchServiceMock['updateMatchStatus']).toHaveBeenCalledWith('m1', 'rejected');
+    expect(matchServiceMock['updateMatchStatus']).toHaveBeenCalledWith('m1', 'rejected', undefined);
 
     TestBed.resetTestingModule();
     const slFixture = await configureRecruiterPageModule(ShortlistsComponent);
     const slComp: ShortlistsComponent = slFixture.componentInstance;
     expect(slComp.shortlists.length).toBe(1);
-    slComp.advance({ _id: 's1', status: 'shortlisted' });
+    slComp.advance({ _id: 's1', access: { manage: true }, status: 'shortlisted' });
     slComp.onConfirmAccepted();
     expect(matchServiceMock['updateShortlist']).toHaveBeenCalledWith('s1', {
       status: 'reviewing',
+      expectedVersion: undefined,
     });
+  });
+
+  it('shows explicitly shared evaluations without mounting private applications or enabling generation for members', async () => {
+    jobServiceMock['getJob'].mockReturnValue(
+      of({
+        job: {
+          _id: 'shared',
+          title: 'Team role',
+          access: { evaluationView: true, evaluationManage: false, privateEvidence: false },
+        },
+      }),
+    );
+    const fixture = await configureRecruiterPageModule(JobDetailsComponent);
+    expect(matchServiceMock['listMatches']).toHaveBeenCalledWith({ jobId: 'item-1' });
+    expect(fixture.nativeElement.textContent).toContain('View Matches');
+    expect(fixture.nativeElement.querySelector('app-job-applicants')).toBeNull();
+    fixture.componentInstance.generateMatches();
+    expect(matchServiceMock['generateMatches']).not.toHaveBeenCalled();
+  });
+
+  it('blocks member shortlist mutations and clears retained results on request failure', async () => {
+    const fixture = await configureRecruiterPageModule(ShortlistsComponent);
+    const component = fixture.componentInstance;
+    const item = { _id: 'shared', version: 4, access: { manage: false }, status: 'shortlisted' };
+    component.advance(item);
+    component.updateNotes({ item, notes: 'Forbidden' });
+    component.remove(item);
+    expect(component.confirmState().open).toBe(false);
+    expect(matchServiceMock['updateShortlist']).not.toHaveBeenCalled();
+    expect(matchServiceMock['removeShortlist']).not.toHaveBeenCalled();
+    matchServiceMock['getShortlists'].mockReturnValue(
+      throwError(() => ({ status: 403, error: { message: 'Revoked' } })),
+    );
+    component.loadShortlists();
+    expect(component.shortlists).toEqual([]);
+    expect(fixture.componentInstance.error).toBe('Revoked');
   });
 
   it('supports ComparisonComponent multi-candidate selection, Analytics, ActivityLogs, and Profile save', async () => {

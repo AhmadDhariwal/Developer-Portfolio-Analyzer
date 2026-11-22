@@ -25,12 +25,19 @@
       </div>
     </div>
 
-    <span class="shortlist-card__status" [class]="'shortlist-card__status shortlist-card__status--' + normalizedStatus">
+    <span
+      class="shortlist-card__status"
+      [class]="'shortlist-card__status shortlist-card__status--' + normalizedStatus"
+    >
       {{ item?.status || 'shortlisted' }}
     </span>
   </div>
 
-  <div class="stage-stepper" *ngIf="normalizedStatus !== 'rejected'" aria-label="Pipeline stage progress">
+  <div
+    class="stage-stepper"
+    *ngIf="normalizedStatus !== 'rejected'"
+    aria-label="Pipeline stage progress"
+  >
     <div
       class="stage-step"
       *ngFor="let stage of pipelineStages; let i = index"
@@ -42,6 +49,10 @@
     </div>
   </div>
 
+  <p *ngIf="item?.job?.sharedTeam">
+    {{ item?.job?.owner?.name }} � {{ item.job.sharedTeam.name }} �
+    {{ item?.access?.manage ? 'Can manage evaluations' : 'Read only' }}
+  </p>
   <div class="shortlist-card__meta">
     <span>{{ item?.candidate?.stack || 'Generalist' }}</span>
     <span>{{ item?.candidate?.yearsOfExperience || 0 }} yrs</span>
@@ -57,7 +68,7 @@
       <button
         type="button"
         class="note-edit-link"
-        *ngIf="!hideActions && !editingNote"
+        *ngIf="!hideActions && item?.access?.manage && !editingNote"
         (click)="startEditNote()"
       >
         Edit Note
@@ -90,7 +101,7 @@
     </div>
   </div>
 
-  <div class="shortlist-card__actions" *ngIf="!hideActions">
+  <div class="shortlist-card__actions" *ngIf="!hideActions && item?.access?.manage">
     <button
       type="button"
       class="shortlist-card__btn shortlist-card__btn--primary"

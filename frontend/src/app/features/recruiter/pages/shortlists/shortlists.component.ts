@@ -154,6 +154,7 @@ export class ShortlistsComponent implements OnInit {
           this.loading = false;
         },
         error: (err) => {
+          this.shortlists = [];
           this.error = err?.error?.message || 'Unable to load shortlists right now.';
           this.loading = false;
         },
@@ -161,6 +162,7 @@ export class ShortlistsComponent implements OnInit {
   }
 
   advance(item: any): void {
+    if (item?.access?.manage !== true) return;
     const id = String(item?._id || '').trim();
     if (!id) {
       return;
@@ -185,6 +187,7 @@ export class ShortlistsComponent implements OnInit {
   }
 
   changeStage(event: { item: any; status: string }): void {
+    if (event.item?.access?.manage !== true) return;
     const { item, status } = event;
     const id = String(item?._id || '').trim();
     if (!id || !status) {
@@ -209,6 +212,7 @@ export class ShortlistsComponent implements OnInit {
   }
 
   updateNotes(event: { item: any; notes: string }): void {
+    if (event.item?.access?.manage !== true) return;
     const id = String(event?.item?._id || '').trim();
     if (!id) {
       return;
@@ -218,23 +222,25 @@ export class ShortlistsComponent implements OnInit {
     this.notice = '';
 
     this.matchService
-      .updateShortlist(id, { notes: event.notes })
+      .updateShortlist(id, { notes: event.notes, expectedVersion: event.item.version })
       .pipe(finalize(() => this.cdr.markForCheck()))
       .subscribe({
         next: (response: any) => {
           const updated = response?.shortlist;
-          event.item.notes = updated?.notes ?? event.notes;
+          Object.assign(event.item, updated || { notes: event.notes });
           this.savingNoteId = '';
           this.notice = `Saved notes for ${event.item?.candidate?.name || 'candidate'}.`;
         },
         error: (err) => {
           this.savingNoteId = '';
+          this.refreshAfterDenied(err);
           this.error = err?.error?.message || 'Could not update shortlist notes.';
         },
       });
   }
 
   remove(item: any): void {
+    if (item?.access?.manage !== true) return;
     const id = String(item?._id || '').trim();
     if (!id) {
       return;
@@ -258,6 +264,7 @@ export class ShortlistsComponent implements OnInit {
               this.notice = `Removed ${item?.candidate?.name || 'candidate'} from shortlist.`;
             },
             error: (err) => {
+              this.refreshAfterDenied(err);
               this.error = err?.error?.message || 'Could not remove shortlist entry.';
             },
           });
@@ -287,11 +294,19 @@ export class ShortlistsComponent implements OnInit {
     });
   }
 
+  private refreshAfterDenied(error: any): void {
+    if ([403, 404, 409].includes(error?.status)) {
+      this.shortlists = [];
+      this.loadShortlists();
+    }
+  }
+
   trackByItem(_: number, item: any): string {
     return String(item?._id || _);
   }
 
   private applyStageUpdate(item: any, nextStatus: string): void {
+    if (item?.access?.manage !== true) return;
     const id = String(item?._id || '').trim();
     if (!id) {
       return;
@@ -300,15 +315,16 @@ export class ShortlistsComponent implements OnInit {
     this.notice = '';
 
     this.matchService
-      .updateShortlist(id, { status: nextStatus })
+      .updateShortlist(id, { status: nextStatus, expectedVersion: item.version })
       .pipe(finalize(() => this.cdr.markForCheck()))
       .subscribe({
         next: (response: any) => {
           const updated = response?.shortlist;
-          item.status = updated?.status || nextStatus;
+          Object.assign(item, updated || { status: nextStatus });
           this.notice = `Updated ${item?.candidate?.name || 'candidate'} to stage "${item.status}".`;
         },
         error: (err) => {
+          this.refreshAfterDenied(err);
           this.error = err?.error?.message || 'Could not update shortlist stage.';
         },
       });

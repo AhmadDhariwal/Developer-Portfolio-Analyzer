@@ -1,12 +1,8 @@
 const RecruiterShortlist = require('../../models/RecruiterShortlist');
 const RecruiterMatch = require('../../models/RecruiterMatch');
 const Candidate = require('../../models/Candidate');
-const Job = require('../../models/Job');
-const { lockOwnedJob } = require('../matching/jobLifecycleService');
 const { requireObjectId, invalidInput } = require('../../utils/recruiterValidation');
-const { getRecruiterCandidateDetails, getRecruiterCandidatesByIds } = require('./candidateService');
-const { getRecruiterJobDetails } = require('./recruiterJobService');
-
+const access = require('../../utils/hub/recruiterEvaluationAccess');
 const SHORTLIST_STATUSES = new Set([
   'shortlisted',
   'reviewing',
@@ -14,7 +10,6 @@ const SHORTLIST_STATUSES = new Set([
   'interview',
   'rejected'
 ]);
-
 const normalizeStatus = (value) => {
   const status = String(value || 'shortlisted')
     .trim()
@@ -22,31 +17,6 @@ const normalizeStatus = (value) => {
   if (!SHORTLIST_STATUSES.has(status)) throw invalidInput('Shortlist status is invalid.');
   return status;
 };
-
-const hydrateShortlists = async ({ recruiterId, organizationId, items }) => {
-  const jobIds = [
-    ...new Set(items.map((item) => item.jobId && String(item.jobId)).filter(Boolean))
-  ];
-  const [candidates, jobs] = await Promise.all([
-    getRecruiterCandidatesByIds(
-      items.map((item) => item.candidateId),
-      organizationId
-    ),
-    jobIds.length ? Job.find({ _id: { $in: jobIds }, recruiterId, organizationId }).lean() : []
-  ]);
-  const jobMap = new Map(jobs.map((job) => [String(job._id), job]));
-  return items
-    .filter(
-      (item) =>
-        candidates.get(String(item.candidateId)) && (!item.jobId || jobMap.has(String(item.jobId)))
-    )
-    .map((item) => ({
-      ...item,
-      candidate: candidates.get(String(item.candidateId)),
-      job: jobMap.get(String(item.jobId)) || null
-    }));
-};
-
 const syncMatchStatus = async (item, status, session) => {
   if (!item.jobId) return;
   const { recruiterId, organizationId, candidateId, jobId } = item;
@@ -64,85 +34,138 @@ const syncMatchStatus = async (item, status, session) => {
     )
   ];
   await RecruiterMatch.updateMany(
-    { recruiterId, organizationId, candidateId: { $in: candidateIds }, jobId },
-    { $set: { status } },
+    {
+      recruiterId,
+      organizationId,
+      candidateId: { $in: candidateIds },
+      jobId,
+      status: { $ne: status }
+    },
+    { $set: { status }, $inc: { __v: 1 } },
     { session }
   );
 };
 
 const shortlistMatchStatus = (status) => (status === 'rejected' ? 'rejected' : 'shortlisted');
-
-const addToShortlist = async ({ recruiterId, organizationId, teamIds = [], payload = {} }) => {
+async function hydrate(ctx, items, jobs) {
+  items = items.filter((item) => access.ownsRecord(item, jobs.get(String(item.jobId)), ctx));
+  const candidates = await access.candidates(
+    ctx,
+    items.map((item) => item.candidateId)
+  );
+  return items
+    .filter(
+      (item) =>
+        access.ownsRecord(item, jobs.get(String(item.jobId)), ctx) &&
+        candidates.get(String(item.candidateId))
+    )
+    .map((item) =>
+      access.rowView(
+        item,
+        jobs.get(String(item.jobId)),
+        candidates.get(String(item.candidateId)),
+        ctx
+      )
+    );
+}
+const addToShortlist = async ({ payload = {}, ...scope }) => {
   const id = requireObjectId(payload.candidateId, 'candidateId');
   const jobId = payload.jobId ? requireObjectId(payload.jobId, 'jobId') : null;
   const status = normalizeStatus(payload.status);
-  const candidate = await getRecruiterCandidateDetails(id, organizationId);
-  if (!candidate) throw Object.assign(new Error('Candidate not found.'), { statusCode: 404 });
-
-  return RecruiterShortlist.db.transaction(async (session) => {
-    if (jobId) await lockOwnedJob({ jobId, recruiterId, organizationId, session });
-    const job = jobId && (await Job.findById(jobId).session(session).select('teamId').lean());
-    const shortlist = await RecruiterShortlist.findOneAndUpdate(
-      { recruiterId, organizationId, candidateId: candidate.userId, jobId },
+  await Promise.all([RecruiterMatch.init(), RecruiterShortlist.init()]);
+  return access.withAccess(scope, async (ctx) => {
+    const jobs = jobId ? await access.jobs(ctx, jobId) : new Map();
+    const job = jobs.get(jobId);
+    if (job) access.authorize(job, ctx, true);
+    const candidate = (await access.candidates(ctx, [id])).get(id);
+    if (!candidate) throw access.denied('Candidate not found.', 404);
+    const recruiterId = job ? job.recruiterId : ctx.recruiterId;
+    const row = await RecruiterShortlist.findOneAndUpdate(
+      { recruiterId, organizationId: ctx.organizationId, candidateId: candidate.userId, jobId },
       {
-        $set: {
-          teamId: jobId ? job.teamId : teamIds[0] || null,
+        $set: { teamId: job ? job.teamId || null : scope.teamIds?.[0] || null },
+        $setOnInsert: {
           notes: String(payload.notes || '').trim(),
           status
         }
       },
-      { session, upsert: true, new: true, setDefaultsOnInsert: true }
+      { session: ctx.session, upsert: true, new: true, setDefaultsOnInsert: true }
     ).lean();
-    await syncMatchStatus(shortlist, shortlistMatchStatus(status), session);
-    return shortlist;
+    await syncMatchStatus(row, shortlistMatchStatus(row.status), ctx.session);
+    return (await hydrate(ctx, [row], jobs))[0];
   });
 };
-
-const listShortlists = async ({ recruiterId, organizationId, query = {} }) => {
-  const filter = { recruiterId, organizationId };
-  if (query.jobId) filter.jobId = requireObjectId(query.jobId, 'jobId');
-  if (query.status) filter.status = normalizeStatus(query.status);
-  const items = await RecruiterShortlist.find(filter).sort({ updatedAt: -1 }).lean();
-  return hydrateShortlists({ recruiterId, organizationId, items });
-};
-
-const updateShortlist = async ({ recruiterId, organizationId, shortlistId, payload = {} }) => {
-  const filter = { _id: requireObjectId(shortlistId, 'shortlistId'), recruiterId, organizationId };
-  const existing = await RecruiterShortlist.findOne(filter).select('candidateId jobId').lean();
-  if (!existing) return null;
-  const [visible, job] = await Promise.all([
-    getRecruiterCandidateDetails(existing.candidateId, organizationId),
-    existing.jobId
-      ? getRecruiterJobDetails({ recruiterId, organizationId, jobId: existing.jobId })
-      : true
-  ]);
-  if (!visible || !job) return null;
-  const update = {};
-  if (payload.notes !== undefined) update.notes = String(payload.notes || '').trim();
-  if (payload.status !== undefined) update.status = normalizeStatus(payload.status);
-
-  const shortlist = await RecruiterShortlist.db.transaction(async (session) => {
-    const item = await RecruiterShortlist.findOneAndUpdate(
-      filter,
-      { $set: update },
-      { session, new: true, runValidators: true }
+const listShortlists = async ({ query = {}, ...scope }) =>
+  access.withAccess(scope, async (ctx) => {
+    const jobs = await access.jobs(ctx, query.jobId);
+    const filter = {
+      organizationId: ctx.organizationId,
+      ...(query.jobId
+        ? { jobId: query.jobId }
+        : {
+            $or: [
+              { jobId: { $in: [...jobs.keys()] } },
+              { recruiterId: ctx.recruiterId, jobId: null }
+            ]
+          })
+    };
+    if (query.status) filter.status = normalizeStatus(query.status);
+    const rows = await RecruiterShortlist.find(filter)
+      .sort({ updatedAt: -1 })
+      .session(ctx.session)
+      .lean();
+    return hydrate(ctx, rows, jobs);
+  });
+async function selected(ctx, shortlistId) {
+  const row = await RecruiterShortlist.findOne({
+    _id: requireObjectId(shortlistId, 'shortlistId'),
+    organizationId: ctx.organizationId
+  })
+    .session(ctx.session)
+    .lean();
+  if (!row) return null;
+  const jobs = row.jobId ? await access.jobs(ctx, row.jobId) : new Map();
+  const job = jobs.get(String(row.jobId));
+  if (!access.ownsRecord(row, job, ctx)) return null;
+  if (job) access.authorize(job, ctx, true);
+  const [visible] = await hydrate(ctx, [row], jobs);
+  return visible ? { row, jobs } : null;
+}
+const updateShortlist = async ({ shortlistId, payload = {}, ...scope }) =>
+  access.withAccess(scope, async (ctx) => {
+    const result = await selected(ctx, shortlistId);
+    if (!result) return null;
+    access.version(result.row, payload.expectedVersion);
+    const job = result.jobs.get(String(result.row.jobId));
+    const update = { teamId: job ? job.teamId || null : result.row.teamId };
+    if (payload.notes !== undefined) update.notes = String(payload.notes || '').trim();
+    if (payload.status !== undefined) update.status = normalizeStatus(payload.status);
+    const row = await RecruiterShortlist.findOneAndUpdate(
+      {
+        _id: result.row._id,
+        recruiterId: result.row.recruiterId,
+        organizationId: ctx.organizationId
+      },
+      { $set: update, $inc: { __v: 1 } },
+      { session: ctx.session, new: true, runValidators: true }
     ).lean();
-    if (item && update.status)
-      await syncMatchStatus(item, shortlistMatchStatus(item.status), session);
-    return item;
+    if (update.status) await syncMatchStatus(row, shortlistMatchStatus(row.status), ctx.session);
+    return (await hydrate(ctx, [row], result.jobs))[0];
   });
-  if (!shortlist) return null;
-  const [hydrated] = await hydrateShortlists({ recruiterId, organizationId, items: [shortlist] });
-  return hydrated || null;
-};
-
-const removeShortlist = async ({ recruiterId, organizationId, shortlistId }) => {
-  const filter = { _id: requireObjectId(shortlistId, 'shortlistId'), recruiterId, organizationId };
-  return RecruiterShortlist.db.transaction(async (session) => {
-    const shortlist = await RecruiterShortlist.findOneAndDelete(filter, { session }).lean();
-    if (shortlist) await syncMatchStatus(shortlist, 'generated', session);
-    return shortlist;
+const removeShortlist = async ({ shortlistId, ...scope }) =>
+  access.withAccess(scope, async (ctx) => {
+    const result = await selected(ctx, shortlistId);
+    if (!result) return null;
+    const row = await RecruiterShortlist.findOneAndDelete(
+      {
+        _id: result.row._id,
+        recruiterId: result.row.recruiterId,
+        organizationId: ctx.organizationId
+      },
+      { session: ctx.session }
+    ).lean();
+    await syncMatchStatus(row, 'generated', ctx.session);
+    const job = result.jobs.get(String(row.jobId));
+    return { ...row, teamId: job ? job.teamId || null : row.teamId };
   });
-};
-
 module.exports = { addToShortlist, listShortlists, updateShortlist, removeShortlist };

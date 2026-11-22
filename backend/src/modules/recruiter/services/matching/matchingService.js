@@ -172,10 +172,11 @@ const toObjectId = (id) => {
   return new mongoose.Types.ObjectId(id);
 };
 
-const buildVisibleDeveloperFilter = async (organizationId) => {
+const buildVisibleDeveloperFilter = async (organizationId, session) => {
   // Consent and global discovery policy must be current on every worker.
   const settings = await PlatformSettings.findOne({ scope: 'global' })
     .select('recruiter.candidateVisibility')
+    .session(session)
     .lean();
   const mode = String(settings?.recruiter?.candidateVisibility || 'public').toLowerCase();
   if (['private', 'disabled', 'none', 'off'].includes(mode)) return null;
@@ -190,26 +191,44 @@ const buildVisibleDeveloperFilter = async (organizationId) => {
   return filter;
 };
 
-const hydrateUserCandidates = async (users = []) => {
+// MongoDB does not support parallel operations on a transaction session.
+const resolveCandidateReads = async (reads, session) => {
+  if (!session) return Promise.all(reads);
+  const results = [];
+  for (const read of reads) results.push(await read);
+  return results;
+};
+
+const hydrateUserCandidates = async (users = [], session) => {
   if (!users.length) return [];
 
   const userIds = users.map((user) => user._id);
 
-  const [analyses, resumeAnalyses, publicProfiles, sprints, weeklyReports] = await Promise.all([
-    Analysis.find({ userId: { $in: userIds } }).lean(),
-    ResumeAnalysis.find({ userId: { $in: userIds } })
-      .sort({ analyzedAt: -1 })
-      .lean(),
-    PublicProfile.find({ userId: { $in: userIds }, isPublic: true })
-      .select('userId slug isPublic skills projects')
-      .lean(),
-    CareerSprint.find({ userId: { $in: userIds } })
-      .sort({ updatedAt: -1 })
-      .lean(),
-    WeeklyReport.find({ userId: { $in: userIds } })
-      .sort({ weekEndDate: -1 })
-      .lean()
-  ]);
+  const [analyses, resumeAnalyses, publicProfiles, sprints, weeklyReports] =
+    await resolveCandidateReads(
+      [
+        Analysis.find({ userId: { $in: userIds } })
+          .session(session)
+          .lean(),
+        ResumeAnalysis.find({ userId: { $in: userIds } })
+          .sort({ analyzedAt: -1 })
+          .session(session)
+          .lean(),
+        PublicProfile.find({ userId: { $in: userIds }, isPublic: true })
+          .select('userId slug isPublic skills projects')
+          .session(session)
+          .lean(),
+        CareerSprint.find({ userId: { $in: userIds } })
+          .sort({ updatedAt: -1 })
+          .session(session)
+          .lean(),
+        WeeklyReport.find({ userId: { $in: userIds } })
+          .sort({ weekEndDate: -1 })
+          .session(session)
+          .lean()
+      ],
+      session
+    );
 
   const analysisByUser = new Map(analyses.map((entry) => [String(entry.userId), entry]));
   const resumeByUser = new Map();
@@ -489,9 +508,10 @@ const listCandidates = async ({
   experience = 0,
   minScore = 0,
   organizationId = '',
-  limit = 50
+  limit = 50,
+  session
 } = {}) => {
-  const userQuery = await buildVisibleDeveloperFilter(organizationId);
+  const userQuery = await buildVisibleDeveloperFilter(organizationId, session);
   if (!userQuery) return [];
   const safeLimit = Math.min(2000, toPositiveInt(limit, 50));
   const andConditions = [];
@@ -519,18 +539,21 @@ const listCandidates = async ({
     )
     .sort({ _id: 1 })
     .limit(Math.max(safeLimit, 100))
+    .session(session)
     .lean();
 
   if (!users.length) return [];
 
-  const hydratedUsers = await hydrateUserCandidates(users);
+  const hydratedUsers = await hydrateUserCandidates(users, session);
   const hydratedUserIds = hydratedUsers
     .map((candidate) => candidate.userId)
     .filter((id) => mongoose.Types.ObjectId.isValid(id))
     .map((id) => new mongoose.Types.ObjectId(id));
 
   const candidateDocs = hydratedUserIds.length
-    ? await Candidate.find({ isActive: true, userId: { $in: hydratedUserIds } }).lean()
+    ? await Candidate.find({ isActive: true, userId: { $in: hydratedUserIds } })
+        .session(session)
+        .lean()
     : [];
 
   const merged = mergeCandidates(candidateDocs, hydratedUsers);
@@ -540,14 +563,15 @@ const listCandidates = async ({
   return sorted.slice(0, safeLimit).map((candidate) => sanitizePublicCandidate(candidate));
 };
 
-const getCandidatesByIds = async (ids, { organizationId } = {}) => {
+const getCandidatesByIds = async (ids, { organizationId, session } = {}) => {
   const requestedIds = [...new Set(ids.map(toObjectId).filter(Boolean).map(String))];
   if (!requestedIds.length) return new Map();
 
-  const userFilter = await buildVisibleDeveloperFilter(organizationId);
+  const userFilter = await buildVisibleDeveloperFilter(organizationId, session);
   if (!userFilter) return new Map();
   const aliases = await Candidate.find({ _id: { $in: requestedIds }, isActive: true })
     .select('userId')
+    .session(session)
     .lean();
   const aliasMap = new Map(
     aliases
@@ -559,13 +583,19 @@ const getCandidatesByIds = async (ids, { organizationId } = {}) => {
     .select(
       'name email githubUsername jobTitle location avatar careerStack activeCareerStack experienceLevel activeExperienceLevel'
     )
+    .session(session)
     .lean();
   if (!users.length) return new Map();
 
-  const [hydrated, documents] = await Promise.all([
-    hydrateUserCandidates(users),
-    Candidate.find({ userId: { $in: users.map((user) => user._id) }, isActive: true }).lean()
-  ]);
+  const [hydrated, documents] = await resolveCandidateReads(
+    [
+      hydrateUserCandidates(users, session),
+      Candidate.find({ userId: { $in: users.map((user) => user._id) }, isActive: true })
+        .session(session)
+        .lean()
+    ],
+    session
+  );
   const candidates = new Map(
     mergeCandidates(documents, hydrated).map((candidate) => [
       candidate.userId,

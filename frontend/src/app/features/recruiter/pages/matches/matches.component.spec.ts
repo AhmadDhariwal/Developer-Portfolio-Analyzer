@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { RecruiterModule } from '../../recruiter.module';
 import { CandidateService } from '../../services/candidate.service';
@@ -20,14 +20,25 @@ describe('MatchesComponent', () => {
 
   beforeEach(async () => {
     const jobServiceMock = {
-      listJobs: vi.fn().mockReturnValue(
-        of({ jobs: [{ _id: 'job-1', title: 'Staff Frontend Engineer', status: 'open' }] }),
+      listEvaluationJobs: vi.fn().mockReturnValue(
+        of({
+          jobs: [
+            {
+              _id: 'job-1',
+              title: 'Staff Frontend Engineer',
+              status: 'open',
+              access: { isOwner: true, evaluationView: true, evaluationManage: true },
+            },
+          ],
+        }),
       ),
     };
     const candidateServiceMock = {
-      listCandidates: vi.fn().mockReturnValue(
-        of({ candidates: [{ id: 'cand-1', name: 'Elena Rostova', readinessScore: 92 }] }),
-      ),
+      listCandidates: vi
+        .fn()
+        .mockReturnValue(
+          of({ candidates: [{ id: 'cand-1', name: 'Elena Rostova', readinessScore: 92 }] }),
+        ),
     };
     matchServiceMock = {
       listMatches: vi.fn().mockReturnValue(of({ matches: [] })),
@@ -39,6 +50,7 @@ describe('MatchesComponent', () => {
               job: { _id: 'job-1', title: 'Staff Frontend Engineer' },
               matchScore: 91,
               status: 'generated',
+              access: { manage: true },
             },
           ],
         }),
@@ -72,6 +84,7 @@ describe('MatchesComponent', () => {
             job: { _id: 'job-1', title: 'Staff Frontend Engineer' },
             matchScore: 91,
             status: 'generated',
+            access: { manage: true },
           },
         ],
       }),
@@ -87,7 +100,24 @@ describe('MatchesComponent', () => {
     expect(matchServiceMock.updateMatchStatus).toHaveBeenCalledWith(
       'match-persisted-1',
       'rejected',
+      undefined,
     );
     expect(component.rejectedCount).toBe(1);
+  });
+  it('fails closed for read-only team results and refreshes after revoked access', () => {
+    component.jobs = [{ _id: 'job-1', access: { evaluationView: true, evaluationManage: false } }];
+    component.runMatches();
+    component.shortlist({ _id: 'match', access: { manage: false } });
+    component.updateStatus({ _id: 'match', access: { manage: false } }, 'rejected');
+    expect(matchServiceMock.generateMatches).not.toHaveBeenCalled();
+    expect(matchServiceMock.addToShortlist).not.toHaveBeenCalled();
+    expect(matchServiceMock.updateMatchStatus).not.toHaveBeenCalled();
+    matchServiceMock.listMatches.mockReturnValue(
+      throwError(() => ({ status: 404, error: { message: 'Sharing withdrawn' } })),
+    );
+    component.matches = [{ _id: 'stale' }];
+    component.loadMatches();
+    expect(component.matches).toEqual([]);
+    expect(component.error).toBe('Sharing withdrawn');
   });
 });

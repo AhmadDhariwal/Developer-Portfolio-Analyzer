@@ -51,7 +51,7 @@
         </div>
       </div>
 
-      <div class="page-header__actions" *ngIf="job.access?.matching">
+      <div class="page-header__actions" *ngIf="job.access?.evaluationView">
         <a
           class="btn-secondary"
           [routerLink]="['/app/recruiter/matches']"
@@ -62,6 +62,7 @@
         <button
           type="button"
           class="btn-primary"
+          *ngIf="job.access?.evaluationManage"
           [disabled]="generating"
           (click)="generateMatches()"
         >
@@ -110,12 +111,12 @@
         <app-job-applicants *ngIf="job.access?.privateEvidence" [jobId]="job._id" />
         <article class="panel" *ngIf="!job.access?.privateEvidence">
           <p>
-            Shared access covers job details only. Applications, submitted evidence and matching are
-            private to the job owner.
+            Applications and submitted evidence remain private to the job owner. Evaluation access
+            is controlled separately.
           </p>
         </article>
 
-        <article class="panel" *ngIf="job.access?.matching">
+        <article class="panel" *ngIf="job.access?.evaluationView">
           <div class="panel-head">
             <h2>Matched Candidates Preview</h2>
             <a

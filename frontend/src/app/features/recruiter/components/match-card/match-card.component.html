@@ -24,7 +24,10 @@
         </ng-template>
       </h3>
       <p>
-        <a *ngIf="jobRouteId; else plainJobTitle" [routerLink]="['/app/recruiter/jobs', jobRouteId]">
+        <a
+          *ngIf="jobRouteId; else plainJobTitle"
+          [routerLink]="['/app/recruiter/jobs', jobRouteId]"
+        >
           {{ match?.job?.title || match?.jobId }}
         </a>
         <ng-template #plainJobTitle>
@@ -52,17 +55,28 @@
     </div>
   </div>
 
+  <p *ngIf="match?.job?.sharedTeam">
+    {{ match?.job?.owner?.name }} � {{ match.job.sharedTeam.name }} �
+    {{ match?.access?.manage ? 'Can manage evaluations' : 'Read only' }}
+  </p>
   <div class="match-card__meta">
     <div class="meta-cell">
       <label>Skill Match</label>
-      <strong *ngIf="match?.skillMatchPercent !== null && match?.skillMatchPercent !== undefined; else naSkill">
+      <strong
+        *ngIf="
+          match?.skillMatchPercent !== null && match?.skillMatchPercent !== undefined;
+          else naSkill
+        "
+      >
         {{ match.skillMatchPercent }}%
       </strong>
       <ng-template #naSkill><span class="unavailable-pill">Unavailable</span></ng-template>
     </div>
     <div class="meta-cell">
       <label>Confidence</label>
-      <strong *ngIf="match?.confidenceScore !== null && match?.confidenceScore !== undefined; else naConf">
+      <strong
+        *ngIf="match?.confidenceScore !== null && match?.confidenceScore !== undefined; else naConf"
+      >
         {{ match.confidenceScore }}%
       </strong>
       <ng-template #naConf><span class="unavailable-pill">Unavailable</span></ng-template>
@@ -102,7 +116,12 @@
     {{ match?.recommendation || match?.explanation || 'AI ranking complete.' }}
   </p>
 
-  <div class="match-card__tags" *ngIf="(match?.strengths || []).length || (match?.weaknesses || []).length || matchedSkills.length">
+  <div
+    class="match-card__tags"
+    *ngIf="
+      (match?.strengths || []).length || (match?.weaknesses || []).length || matchedSkills.length
+    "
+  >
     <span class="tag tag--strength" *ngFor="let item of (match?.strengths || []).slice(0, 3)">
       + {{ item }}
     </span>
@@ -116,6 +135,7 @@
     <button
       type="button"
       class="match-card__btn match-card__btn--primary"
+      *ngIf="match?.access?.manage"
       [disabled]="isShortlisted"
       (click)="shortlist.emit(match)"
     >
@@ -133,7 +153,7 @@
     <button
       type="button"
       class="match-card__btn match-card__btn--danger"
-      *ngIf="!isRejected"
+      *ngIf="!isRejected && match?.access?.manage"
       (click)="reject.emit(match)"
     >
       Reject
@@ -141,7 +161,7 @@
     <button
       type="button"
       class="match-card__btn match-card__btn--secondary"
-      *ngIf="isRejected"
+      *ngIf="isRejected && match?.access?.manage"
       (click)="reset.emit(match)"
     >
       Reset

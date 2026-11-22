@@ -56,6 +56,7 @@ export class JobsComponent implements OnInit {
     preferredSkills: [''],
     teamId: [''],
     teamShared: [false],
+    evaluationShared: [false],
   });
 
   private pendingConfirmAction: (() => void) | null = null;
@@ -195,6 +196,7 @@ export class JobsComponent implements OnInit {
         preferredSkills: (job?.preferredSkills || []).join(', '),
         teamId: job?.teamId || '',
         teamShared: job?.teamShared === true,
+        evaluationShared: job?.evaluationShared === true,
       },
       { emitEvent: false },
     );
@@ -278,6 +280,7 @@ export class JobsComponent implements OnInit {
       preferredSkills: '',
       teamId: '',
       teamShared: false,
+      evaluationShared: false,
     });
     this.jobForm.markAsPristine();
     this.jobForm.markAsUntouched();
@@ -322,6 +325,7 @@ export class JobsComponent implements OnInit {
       if (!this.canManageSharing) {
         delete payload['teamId'];
         delete payload['teamShared'];
+        delete payload['evaluationShared'];
       }
     }
     const request$ = this.editingJobId

@@ -76,7 +76,7 @@ export class JobDetailsComponent implements OnInit {
       .getJob(this.currentJobId)
       .pipe(
         switchMap((jobResponse) =>
-          (jobResponse?.job?.access?.matching
+          (jobResponse?.job?.access?.evaluationView
             ? this.matchService
                 .listMatches({ jobId: this.currentJobId })
                 .pipe(catchError(() => of({ matches: [] })))
@@ -103,7 +103,7 @@ export class JobDetailsComponent implements OnInit {
   }
 
   generateMatches(): void {
-    if (!this.job?._id || !this.job?.access?.matching || this.generating) return;
+    if (!this.job?._id || !this.job?.access?.evaluationManage || this.generating) return;
     this.generating = true;
     this.error = '';
     this.matchService.generateMatches({ jobId: this.job._id }).subscribe({

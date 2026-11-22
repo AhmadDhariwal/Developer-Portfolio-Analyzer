@@ -199,4 +199,23 @@ describe('JobsComponent', () => {
     expect(component.error).toContain('Job changed');
     expect(jobServiceMock.listJobs).toHaveBeenCalledTimes(2);
   });
+  it('requires separate evaluation opt-in and keeps evaluation sharing out of manager patches', () => {
+    component.editJob({
+      _id: 'shared',
+      version: 3,
+      title: 'Engineer',
+      role: 'Engineer',
+      stack: 'Node',
+      location: 'Remote',
+      requiredSkills: ['Node'],
+      access: { edit: true, manageSharing: false },
+    });
+    component.jobForm.controls.evaluationShared.setValue(true);
+    component.saveJob();
+    component.onConfirmAccepted();
+    const payload = jobServiceMock.updateJob.mock.calls[0][1];
+    expect(payload.expectedVersion).toBe(3);
+    expect(payload).not.toHaveProperty('teamShared');
+    expect(payload).not.toHaveProperty('evaluationShared');
+  });
 });
