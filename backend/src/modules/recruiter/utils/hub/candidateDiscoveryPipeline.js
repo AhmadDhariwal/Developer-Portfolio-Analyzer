@@ -87,7 +87,7 @@ const measured = (field) => ({
 const regex = (input, value) => ({
   $regexMatch: { input: { $ifNull: [input, ''] }, regex: escapeRegex(value), options: 'i' }
 });
-const normalizeSkills = (value) => ({
+const unorderedSkills = (value) => ({
   $filter: {
     input: {
       $setUnion: [
@@ -109,6 +109,36 @@ const normalizeSkills = (value) => ({
     cond: { $ne: ['$$skill', ''] }
   }
 });
+// Exact String.prototype.trim whitespace for analytics Map grouping. Keep the
+// accepted discovery expression unchanged unless stable card order is requested.
+const jsTrim = (input) => ({
+  $trim: {
+    input,
+    chars:
+      '\u0009\u000a\u000b\u000c\u000d\u0020\u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000\ufeff'
+  }
+});
+const normalizeSkills = (value, ordered = false) => {
+  const expression = unorderedSkills(value);
+  if (ordered) {
+    const normalized = expression.$filter.input.$setUnion[0];
+    normalized.$map.in = jsTrim(normalized.$map.in.$trim.input);
+    expression.$filter.input = {
+      $reduce: {
+        input: normalized,
+        initialValue: [],
+        in: {
+          $cond: [
+            { $in: ['$$this', '$$value'] },
+            '$$value',
+            { $concatArrays: ['$$value', ['$$this']] }
+          ]
+        }
+      }
+    };
+  }
+  return expression;
+};
 
 function projectExpression(projection, variable) {
   const result = { _id: `${variable}._id` };
@@ -268,7 +298,7 @@ function equalityJoinsFirst(stages) {
   ];
 }
 
-function buildPipeline(visibility, options, position) {
+function buildCandidateStages(visibility, options) {
   const stages = [
     { $match: visibility },
     {
@@ -583,11 +613,16 @@ function buildPipeline(visibility, options, position) {
         { $map: { input: '$skills', as: 'skill', in: { $toLower: '$$skill' } } }
       ]
     });
+  stages.push({ $match: { $expr: { $and: conditions } } });
+  return equalityJoinsFirst(stages);
+}
+
+function buildPipeline(visibility, options, position) {
+  const stages = buildCandidateStages(visibility, options);
   const [field, direction] = SORTS[options.sortBy];
-  stages.push(
-    { $match: { $expr: { $and: conditions } } },
-    { $project: { _id: 1, stack: 1, location: 1, position: { $ifNull: [`$${field}`, 0] } } }
-  );
+  stages.push({
+    $project: { _id: 1, stack: 1, location: 1, position: { $ifNull: [`$${field}`, 0] } }
+  });
   const data = [];
   if (position)
     data.push({
@@ -615,7 +650,7 @@ function buildPipeline(visibility, options, position) {
       locations: facet('location')
     }
   });
-  return equalityJoinsFirst(stages);
+  return stages;
 }
 
 function buildHydrationPipeline(ids, visibility) {
@@ -709,4 +744,12 @@ function buildHydrationPipeline(ids, visibility) {
   ]);
 }
 
-module.exports = { buildPipeline, buildHydrationPipeline, fixed2, round };
+module.exports = {
+  buildPipeline,
+  buildCandidateStages,
+  buildHydrationPipeline,
+  normalizeSkills,
+  jsTrim,
+  fixed2,
+  round
+};

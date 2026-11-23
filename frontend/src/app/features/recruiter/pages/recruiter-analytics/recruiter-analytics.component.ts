@@ -66,6 +66,26 @@ export class RecruiterAnalyticsComponent implements OnInit {
     return `${shortlistCount} shortlisted`;
   }
 
+  get populationAccuracyHint(): string {
+    const population = this.analytics?.meta?.candidatePopulation;
+    return population?.mode === 'exact'
+      ? `Candidate averages, distributions and skill supply cover all ${Number(population.total || 0).toLocaleString('en-US')} currently eligible candidates.`
+      : 'Candidate population coverage is not reported by this response.';
+  }
+
+  get boundedAccuracyHint(): string {
+    const activity = this.analytics?.meta?.activity;
+    const cards = this.analytics?.meta?.topCandidates;
+    const hints: string[] = [];
+    if (activity?.mode === 'bounded')
+      hints.push(`Activity indicators use up to ${activity.limit} recent audit events.`);
+    if (cards?.mode === 'bounded')
+      hints.push(
+        `Top Candidates is a bounded list selected from up to ${cards.poolLimit} discovery profiles.`,
+      );
+    return hints.join(' ');
+  }
+
   trendLabelFor(items: any[]): string {
     const list = Array.isArray(items) ? items : [];
     if (list.length < 2) return 'Current cycle';
@@ -91,6 +111,7 @@ export class RecruiterAnalyticsComponent implements OnInit {
     const payload = response?.analytics || response || {};
     const defaults = this.defaultAnalytics();
     return {
+      meta: payload?.meta || {},
       metrics: {
         ...defaults.metrics,
         ...(payload?.metrics || {}),
@@ -113,6 +134,7 @@ export class RecruiterAnalyticsComponent implements OnInit {
 
   private defaultAnalytics(): any {
     return {
+      meta: {},
       metrics: {
         candidatesViewed: 0,
         candidatesAnalyzed: 0,

@@ -21,8 +21,12 @@ const availability = ['Open to entry roles', 'High intent', 'Available', 'Review
 const unavailable = (message, statusCode = 503) =>
   Object.assign(new Error(message), { statusCode });
 
-async function listCandidatePage({ organizationId, recruiterId, sessionRevision = 0, query = {} }) {
-  const options = pagination.parse(query);
+async function withCandidateReadScope(
+  { organizationId, recruiterId, sessionRevision = 0, requireRecruiter = false },
+  read
+) {
+  if (requireRecruiter && !recruiterId)
+    throw unavailable('Recruiter authentication is required.', 401);
   const orgId = new mongoose.Types.ObjectId(requireObjectId(organizationId, 'organizationId'));
   const scope = {
     organizationId: String(orgId),
@@ -66,12 +70,13 @@ async function listCandidatePage({ organizationId, recruiterId, sessionRevision 
         }
         const settings = await Settings.findOne({ scope: 'global' })
           .session(session)
-          .select('recruiter.candidateVisibility')
+          .select('recruiter.candidateVisibility recruiter.enableRecruiterAccess')
           .lean();
         if (!settings) throw unavailable('Platform settings are not initialized.');
+        if (requireRecruiter && settings.recruiter?.enableRecruiterAccess === false)
+          throw unavailable('Recruiter access is currently disabled by Super Admin settings.', 403);
         const mode = String(settings.recruiter?.candidateVisibility || 'public').toLowerCase();
         const requestScope = { ...scope, visibility: mode };
-        const position = pagination.decode(options, requestScope);
         const visible = {
           isPublic: true,
           role: { $in: ['developer', 'user'] },
@@ -79,81 +84,7 @@ async function listCandidatePage({ organizationId, recruiterId, sessionRevision 
           ...(mode === 'organization' ? { organizationId: orgId } : {})
         };
         const blocked = ['private', 'disabled', 'none', 'off'].includes(mode);
-        const pipeline = buildPipeline(visible, options, position);
-        const [result] = blocked
-          ? [{ data: [], count: [], stacks: [], locations: [] }]
-          : await User.aggregate(pipeline)
-              .session(session)
-              .collation({ locale: 'en' })
-              .allowDiskUse(true)
-              .option({ maxTimeMS: MAX_TIME_MS });
-        const total = result.count[0]?.total || 0;
-        const rows = result.data.slice(0, options.limit);
-        const hasNext = result.data.length > options.limit;
-        const documents = rows.length
-          ? await User.aggregate(
-              buildHydrationPipeline(
-                rows.map((row) => row._id),
-                visible
-              )
-            )
-              .session(session)
-              .option({ maxTimeMS: MAX_TIME_MS })
-          : [];
-        const byId = new Map(
-          documents.map((user) => {
-            const base = candidateFromSources(user, {
-              analysis: user._a,
-              resume: user._r,
-              profile: user._p,
-              sprint: user._s,
-              weeklyReport: user._w
-            });
-            const alias = user._aliases[0];
-            const legacy = alias
-              ? [
-                  {
-                    ...alias.last,
-                    skills: alias.skills.filter(Boolean),
-                    fullName: alias.name.value || user.name,
-                    headline: alias.headline.value || user.jobTitle,
-                    projects: alias.projectPayload?.data || []
-                  }
-                ]
-              : [];
-            const [merged] = mergeCandidates(legacy, [base]);
-            return [
-              String(user._id),
-              formatCandidateCard({ ...sanitizePublicCandidate(merged), id: String(user._id) })
-            ];
-          })
-        );
-        const candidates = rows.map((row) => byId.get(String(row._id))).filter(Boolean);
-        if (candidates.length !== rows.length)
-          throw unavailable('Candidate eligibility changed. Retry this search.');
-        return {
-          candidates,
-          filters: {
-            stacks: result.stacks.slice(0, 200).map((row) => row._id),
-            locations: result.locations.slice(0, 200).map((row) => row._id),
-            availability,
-            optionsTruncated: result.stacks.length > 200 || result.locations.length > 200
-          },
-          meta: {
-            page: options.page,
-            limit: options.limit,
-            total,
-            organizationId: scope.organizationId,
-            recruiterId: scope.recruiterId,
-            totalPages: Math.max(1, Math.ceil(total / options.limit)),
-            sortBy: options.sortBy,
-            hasNext,
-            hasPrevious: options.page > 1,
-            nextCursor:
-              hasNext && rows.length ? pagination.encode(options, requestScope, rows.at(-1)) : null,
-            pagination: position ? 'cursor' : 'page'
-          }
-        };
+        return read({ session, scope, requestScope, visible, blocked });
       },
       {
         readConcern: { level: 'snapshot' },
@@ -170,4 +101,94 @@ async function listCandidatePage({ organizationId, recruiterId, sessionRevision 
   }
 }
 
-module.exports = { listCandidatePage, MAX_TIME_MS };
+async function hydrateCandidateRows(rows, visible, session) {
+  const documents = rows.length
+    ? await User.aggregate(
+        buildHydrationPipeline(
+          rows.map((row) => row._id),
+          visible
+        )
+      )
+        .session(session)
+        .option({ maxTimeMS: MAX_TIME_MS })
+    : [];
+  const byId = new Map(
+    documents.map((user) => {
+      const base = candidateFromSources(user, {
+        analysis: user._a,
+        resume: user._r,
+        profile: user._p,
+        sprint: user._s,
+        weeklyReport: user._w
+      });
+      const alias = user._aliases[0];
+      const legacy = alias
+        ? [
+            {
+              ...alias.last,
+              skills: alias.skills.filter(Boolean),
+              fullName: alias.name.value || user.name,
+              headline: alias.headline.value || user.jobTitle,
+              projects: alias.projectPayload?.data || []
+            }
+          ]
+        : [];
+      const [merged] = mergeCandidates(legacy, [base]);
+      return [
+        String(user._id),
+        formatCandidateCard({ ...sanitizePublicCandidate(merged), id: String(user._id) })
+      ];
+    })
+  );
+  const candidates = rows.map((row) => byId.get(String(row._id))).filter(Boolean);
+  if (candidates.length !== rows.length)
+    throw unavailable('Candidate eligibility changed. Retry this search.');
+  return candidates;
+}
+
+async function listCandidatePage({ organizationId, recruiterId, sessionRevision = 0, query = {} }) {
+  const options = pagination.parse(query);
+  return withCandidateReadScope(
+    { organizationId, recruiterId, sessionRevision },
+    async ({ session, scope, requestScope, visible, blocked }) => {
+      const position = pagination.decode(options, requestScope);
+      const pipeline = buildPipeline(visible, options, position);
+      const [result] = blocked
+        ? [{ data: [], count: [], stacks: [], locations: [] }]
+        : await User.aggregate(pipeline)
+            .session(session)
+            .collation({ locale: 'en' })
+            .allowDiskUse(true)
+            .option({ maxTimeMS: MAX_TIME_MS });
+      const total = result.count[0]?.total || 0;
+      const rows = result.data.slice(0, options.limit);
+      const hasNext = result.data.length > options.limit;
+      const candidates = await hydrateCandidateRows(rows, visible, session);
+      return {
+        candidates,
+        filters: {
+          stacks: result.stacks.slice(0, 200).map((row) => row._id),
+          locations: result.locations.slice(0, 200).map((row) => row._id),
+          availability,
+          optionsTruncated: result.stacks.length > 200 || result.locations.length > 200
+        },
+        meta: {
+          page: options.page,
+          limit: options.limit,
+          total,
+          organizationId: scope.organizationId,
+          recruiterId: scope.recruiterId,
+          totalPages: Math.max(1, Math.ceil(total / options.limit)),
+          sortBy: options.sortBy,
+          hasNext,
+          hasPrevious: options.page > 1,
+          nextCursor:
+            hasNext && rows.length ? pagination.encode(options, requestScope, rows.at(-1)) : null,
+          pagination: position ? 'cursor' : 'page'
+        }
+      };
+    }
+  );
+}
+
+module.exports = { listCandidatePage, withCandidateReadScope, hydrateCandidateRows, MAX_TIME_MS };

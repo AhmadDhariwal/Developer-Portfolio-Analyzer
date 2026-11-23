@@ -4,18 +4,12 @@ const RecruiterShortlist = require('../../models/RecruiterShortlist');
 const AuditLog = require('../../../admin/models/auditLog');
 const Membership = require('../../../admin/models/membership');
 const User = require('../../../auth/models/user');
-const { listRecruiterCandidates, getRecruiterCandidatesByIds } = require('./candidateService');
+const { getRecruiterCandidatesByIds } = require('./candidateService');
+const { readCandidateAnalytics } = require('./candidateAnalyticsService');
+const { CARD_POOL_LIMIT } = require('../../utils/hub/candidateAnalyticsPipeline');
 const { getRecruiterScope } = require('../../utils/hub/recruiterAccess');
 const { bucketByDay, topCounts } = require('../../utils/hub/recruiterAnalyticsBuilder');
 const { getRecruiterSummary } = require('./recruiterSummaryCache');
-
-const average = (values = []) => {
-  const numeric = values
-    .map((value) => Number(value || 0))
-    .filter((value) => Number.isFinite(value));
-  if (!numeric.length) return 0;
-  return Math.round((numeric.reduce((sum, value) => sum + value, 0) / numeric.length) * 10) / 10;
-};
 
 const bucketByMonth = (items = [], dateSelector, count = 6) => {
   const now = new Date();
@@ -41,72 +35,6 @@ const bucketByMonth = (items = [], dateSelector, count = 6) => {
   });
 
   return months.map((entry) => ({ label: entry.label, count: entry.count }));
-};
-
-const buildScoreDistribution = (candidates = []) => {
-  const buckets = [
-    { label: '90-100', min: 90, max: 100, count: 0 },
-    { label: '80-89', min: 80, max: 89.999, count: 0 },
-    { label: '70-79', min: 70, max: 79.999, count: 0 },
-    { label: '60-69', min: 60, max: 69.999, count: 0 },
-    { label: 'Below 60', min: -Infinity, max: 59.999, count: 0 }
-  ];
-
-  candidates.forEach((candidate) => {
-    const score = Number(candidate.readinessScore || candidate.score || 0);
-    const bucket = buckets.find((entry) => score >= entry.min && score <= entry.max);
-    if (bucket) bucket.count += 1;
-  });
-
-  return buckets;
-};
-
-const buildExperienceDistribution = (candidates = []) => {
-  const buckets = [
-    { label: '0-2 Years', min: 0, max: 2, count: 0 },
-    { label: '2-5 Years', min: 2, max: 5, count: 0 },
-    { label: '5-8 Years', min: 5, max: 8, count: 0 },
-    { label: '8+ Years', min: 8, max: Infinity, count: 0 }
-  ];
-
-  candidates.forEach((candidate) => {
-    const years = Number(candidate.yearsOfExperience || 0);
-    const bucket = buckets.find((entry) => years >= entry.min && years < entry.max);
-    if (bucket) bucket.count += 1;
-  });
-
-  return buckets;
-};
-
-const buildSupplyVsDemand = (candidates = [], jobs = [], limit = 6) => {
-  const supplyCounts = new Map();
-  const demandCounts = new Map();
-
-  candidates.forEach((candidate) => {
-    (candidate.skills || []).forEach((skill) => {
-      const key = String(skill || '').trim();
-      if (!key) return;
-      supplyCounts.set(key, (supplyCounts.get(key) || 0) + 1);
-    });
-  });
-
-  jobs.forEach((job) => {
-    [...(job.requiredSkills || []), ...(job.preferredSkills || [])].forEach((skill) => {
-      const key = String(skill || '').trim();
-      if (!key) return;
-      demandCounts.set(key, (demandCounts.get(key) || 0) + 1);
-    });
-  });
-
-  const labels = [...new Set([...demandCounts.keys(), ...supplyCounts.keys()])]
-    .sort((left, right) => (demandCounts.get(right) || 0) - (demandCounts.get(left) || 0))
-    .slice(0, limit);
-
-  return labels.map((label) => ({
-    label,
-    supply: Number(supplyCounts.get(label) || 0),
-    demand: Number(demandCounts.get(label) || 0)
-  }));
 };
 
 const mapJobSummary = (job = {}) => ({
@@ -150,8 +78,8 @@ const countTeamRecruiters = async ({ recruiterId, organizationId, teamIds = [] }
 
 const listRecruiterAnalytics = async (req, scope) => {
   scope ??= await getRecruiterScope(req);
-  const { recruiterId, organizationId, teams, teamIds } = scope;
-  const [jobs, matches, shortlists, logs, candidatesResponse, teamRecruiters] = await Promise.all([
+  const { recruiterId, organizationId, sessionRevision, teams, teamIds } = scope;
+  const [jobs, matches, shortlists, logs, teamRecruiters] = await Promise.all([
     Job.find({ recruiterId, organizationId }).lean(),
     RecruiterMatch.find({ recruiterId, organizationId })
       .select('candidateId jobId matchScore confidenceScore status breakdown updatedAt createdAt')
@@ -162,12 +90,16 @@ const listRecruiterAnalytics = async (req, scope) => {
       .sort({ timestamp: -1 })
       .limit(500)
       .lean(),
-    listRecruiterCandidates({ organizationId, query: { limit: 240, sortBy: 'score-desc' } }),
     countTeamRecruiters({ recruiterId, organizationId, teamIds })
   ]);
 
-  const candidates = candidatesResponse?.candidates || [];
-  const totalCandidates = Number(candidatesResponse?.meta?.total || candidates.length || 0);
+  const { candidates, ...population } = await readCandidateAnalytics({
+    organizationId,
+    recruiterId,
+    sessionRevision,
+    jobs
+  });
+  const totalCandidates = population.total;
   const allDemandSkills = jobs.flatMap((job) => [
     ...(job.requiredSkills || []),
     ...(job.preferredSkills || [])
@@ -225,20 +157,14 @@ const listRecruiterAnalytics = async (req, scope) => {
         logs,
         totalCandidates,
         teamRecruiters,
-        candidates.map(({ stack, readinessScore, yearsOfExperience, skills }) => [
-          stack,
-          readinessScore,
-          yearsOfExperience,
-          skills
-        ])
+        'complete-population-v1',
+        population
       ]
     },
     () => ({
       metrics: {
         totalCandidates,
-        avgCandidateScore: average(
-          candidates.map((candidate) => candidate.readinessScore || candidate.score || 0)
-        ),
+        avgCandidateScore: population.avgCandidateScore,
         openJobs: jobs.filter((job) => job.status === 'open').length,
         draftJobs: jobs.filter((job) => job.status === 'draft').length,
         closedJobs: jobs.filter((job) => job.status === 'closed').length,
@@ -253,12 +179,12 @@ const listRecruiterAnalytics = async (req, scope) => {
         successRate
       },
       charts: {
-        scoreDistribution: buildScoreDistribution(candidates),
-        candidatesByStack: topCounts(candidates, (candidate) => candidate.stack, 6),
+        scoreDistribution: population.scoreDistribution,
+        candidatesByStack: population.candidatesByStack,
         jobsPostedTrend: bucketByMonth(jobs, (item) => item.createdAt),
-        experienceDistribution: buildExperienceDistribution(candidates),
+        experienceDistribution: population.experienceDistribution,
         topSkillsDemand: topCounts(allDemandSkills, (skill) => skill, 8),
-        supplyVsDemand: buildSupplyVsDemand(candidates, jobs),
+        supplyVsDemand: population.supplyVsDemand,
         candidateActivityTrend: bucketByDay(
           logs.filter((log) => /CANDIDATE_VIEWED|CANDIDATE_ANALYZED/.test(String(log.action))),
           (log) => log.timestamp
@@ -284,6 +210,41 @@ const listRecruiterAnalytics = async (req, scope) => {
 
   return {
     ...summary,
+    meta: {
+      candidatePopulation: {
+        mode: 'exact',
+        total: totalCandidates,
+        metrics: [
+          'totalCandidates',
+          'avgCandidateScore',
+          'scoreDistribution',
+          'candidatesByStack',
+          'experienceDistribution',
+          'supplyVsDemand'
+        ]
+      },
+      topCandidates: {
+        mode: 'bounded',
+        poolLimit: CARD_POOL_LIMIT,
+        poolSize: candidates.length,
+        returned: Math.min(5, candidates.length),
+        selection:
+          'First 240 discovery score-desc cards, then analytics score descending within that pool; not a population ranking.'
+      },
+      activity: {
+        mode: 'bounded',
+        limit: 500,
+        returned: logs.length,
+        metrics: [
+          'candidatesViewed',
+          'candidatesAnalyzed',
+          'recruiterActivityScore',
+          'candidateActivityTrend',
+          'weeklyRecruiterActivity',
+          'aiUsageGraph'
+        ]
+      }
+    },
     highlights: {
       mostMatchedSkills: topCounts(
         matches.flatMap((match) => match.breakdown?.matchedSkills || []),

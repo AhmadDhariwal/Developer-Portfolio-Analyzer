@@ -34,6 +34,12 @@
   />
 
   <ng-container *ngIf="metricsReady">
+    <div class="section-head" aria-live="polite">
+      <div>
+        <p>{{ populationAccuracyHint }}</p>
+        <p *ngIf="boundedAccuracyHint">{{ boundedAccuracyHint }}</p>
+      </div>
+    </div>
     <section class="section-shell">
       <div class="section-head">
         <div>
@@ -213,7 +219,11 @@
         />
         <app-recruiter-performance-chart
           title="Skill Supply vs Demand"
-          subtitle="Visible developer pool count compared against open job requirements"
+          [subtitle]="
+            analytics.meta?.candidatePopulation?.mode === 'exact'
+              ? 'Complete eligible candidate supply compared against your job requirements'
+              : 'Candidate supply compared against your job requirements; coverage unreported'
+          "
           tone="green"
           mode="dual"
           [seriesLabels]="['Candidate Supply', 'Job Demand']"
