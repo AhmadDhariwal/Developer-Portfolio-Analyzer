@@ -126,6 +126,7 @@ describe('Recruiter Hub page components', () => {
           total: 2,
           page: 1,
           totalPages: 1,
+          meta: { total: 2, page: 1, totalPages: 1, limit: 12 },
         }),
       ),
       getCandidate: vi.fn().mockReturnValue(
@@ -254,6 +255,10 @@ describe('Recruiter Hub page components', () => {
     authServiceMock = {
       updateCurrentUser: vi.fn(),
     };
+
+    Object.assign(authServiceMock, {
+      currentUser$: of({ _id: 'r1', role: 'recruiter', organizationId: 'org1' }),
+    });
 
     tenantContextMock = {
       syncOrganization: vi.fn(),

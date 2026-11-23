@@ -1,0 +1,162 @@
+{
+  "phase": "P1.3A",
+  "date": "2026-11-22",
+  "branch": "fix/P1-project",
+  "baseCommit": "59a07f75",
+  "pullRequestTarget": "not applicable",
+  "scope": "Recruiter Candidates Hub discovery; no matching algorithm, application disclosure, schema, dependency, production index or production data changes",
+  "files": {
+    "modified": [
+      "D:/Developer-Portfolio-Analyzer/backend/src/modules/recruiter/controllers/hub/candidateController.js",
+      "D:/Developer-Portfolio-Analyzer/backend/src/modules/recruiter/services/hub/candidateService.js",
+      "D:/Developer-Portfolio-Analyzer/backend/src/modules/recruiter/services/matching/matchingService.js",
+      "D:/Developer-Portfolio-Analyzer/frontend/src/app/features/recruiter/pages/candidates/candidates.component.ts",
+      "D:/Developer-Portfolio-Analyzer/frontend/src/app/features/recruiter/pages/candidates/candidates.component.html",
+      "D:/Developer-Portfolio-Analyzer/frontend/src/app/features/recruiter/pages/recruiter-pages.spec.ts"
+    ],
+    "added": [
+      "D:/Developer-Portfolio-Analyzer/backend/src/modules/recruiter/services/hub/candidateDiscoveryService.js",
+      "D:/Developer-Portfolio-Analyzer/backend/src/modules/recruiter/utils/hub/candidateDiscoveryPipeline.js",
+      "D:/Developer-Portfolio-Analyzer/backend/src/modules/recruiter/utils/hub/candidateDiscoveryQuery.js",
+      "D:/Developer-Portfolio-Analyzer/backend/src/tests/recruiter/candidateDiscovery.integration.test.js",
+      "D:/Developer-Portfolio-Analyzer/backend/src/tests/recruiter/candidateDiscoveryQuery.test.js",
+      "D:/Developer-Portfolio-Analyzer/backend/scripts/verify-candidate-discovery.cjs",
+      "D:/Developer-Portfolio-Analyzer/frontend/src/app/features/recruiter/pages/candidates/candidates.component.spec.ts",
+      "D:/Developer-Portfolio-Analyzer/backend/verification/jobs-hub/p1.3a-index-readiness.md",
+      "D:/Developer-Portfolio-Analyzer/backend/verification/jobs-hub/p1.3a-discovery.json",
+      "D:/Developer-Portfolio-Analyzer/frontend/verification/recruiter/p1.3a/candidates-real.png",
+      "D:/Developer-Portfolio-Analyzer/frontend/verification/recruiter/p1.3a/real-stack.json"
+    ],
+    "moved": [],
+    "deletedAcceptedFiles": []
+  },
+  "preflight": {
+    "reviewed": "backend/verification/jobs-hub/p1.2b-team-evaluations.json",
+    "beforeImplementation": "teamEvaluations.integration.test.js: 8 passed against real Express/JWT/disposable MongoDB",
+    "dedicatedRealBrowserAcceptance": "frontend/verification/recruiter/p1.3a/real-stack.json: evaluationShared=true explicitly created; manager generated and rejected a match; member saw the result read-only; member application listing, PDF and status requests returned 404",
+    "materialPermissionOrEvidenceLeakDefectFound": false,
+    "gitPreservation": "No agent commits, index writes, resets or branch switches. The pre-existing staged P1.2B changes became commit 59a07f75 through an external operation during preflight; implementation started from that accepted tip."
+  },
+  "queryFlow": {
+    "old": "Hub fetched the first 1000/2000 Users through the matching helper, hydrated source histories, then filtered, sorted, counted and paginated the incomplete pool in JavaScript.",
+    "new": [
+      "Validate bounded parameters and authorize live recruiter, organization, direct membership and durable PlatformSettings inside a read-only MongoDB snapshot transaction.",
+      "Match the complete eligible public, active developer/user population and organization visibility scope. Join the six existing source collections using adjacent equality joins and collapse their records inside MongoDB.",
+      "Exclude withdrawn public-profile/project evidence before counts. Compute the existing scalar filter/sort values, apply every advanced filter, then facet exact totals, bounded suggestions and limit+1 result positions.",
+      "Hydrate only the returned page with whitelisted, collapsed source records in one aggregation. Reuse the extracted existing mapper, merge and formatter. No per-candidate requests, whole-pool JS sort or response history hydration."
+    ],
+    "matchingCompatibility": "candidateFromSources was extracted from the existing hydrator without changing formulas. Six-weight job matching/ranking, details, comparison, shortlist and application code remain authoritative and unchanged."
+  },
+  "api": {
+    "route": "GET /api/recruiter-hub/candidates",
+    "response": "Existing {candidates, filters, meta} and candidate card fields retained. Additive meta: organizationId, recruiterId, hasNext, hasPrevious, nextCursor, pagination. Additive filters.optionsTruncated.",
+    "parameters": {
+      "page": "positive safe integer, default 1; offset skips at most 50000",
+      "limit": "positive integer 1..240, default 12",
+      "cursor": "optional signed continuation, maximum 2048 characters, expires after 15 minutes; page must match its signed next page",
+      "filters": "search, stack, location, skills (all requested skills; maximum 20), availability, experience, profileCompleteness, minReadiness/minScore",
+      "sorts": "score-desc, score-asc, experience-desc, experience-asc, name-asc, latest; canonical User _id ascending is the stable tie-break",
+      "minReadiness": "Compatibility alias for the existing base-score filter; does not silently switch to the separate displayed evidence readiness calculation"
+    },
+    "security": "Cursor HMAC is domain-separated from the existing JWT secret and bound to actor, organization, session revision, visibility policy, all filters, sort and page size. It conveys a position, never authorization. Every request rechecks current access and consent.",
+    "counts": "Exact filtered total across the complete eligible dataset, independent of cursor position. TotalPages is at least 1. Valid pages beyond the last result return an empty page with the actual total instead of silently clamping to another page.",
+    "validation": "Invalid shapes, ranges, unsupported sorts, oversized filters and excessive offsets return 400. Invalid/expired cursor returns 400 with CANDIDATE_CURSOR_INVALID. Missing authentication is 401; forbidden role/org/membership/activity is 401/403; missing settings or exhausted query budget is 503. Errors are not converted into empty success.",
+    "bounds": "15-second budget per aggregation; page hydration at most 240 Users; limit+1 positions; at most 200 stack/location suggestions, explicitly flagged when truncated; no eligible-population cap"
+  },
+  "privacy": [
+    "Authenticated Recruiter role only; live organization affiliation, non-suspended org, active account/session and active direct membership when present. Legacy affiliation without a direct Membership remains supported.",
+    "User public opt-in, active developer/user account and current platform organization visibility restrictions are enforced before returned results and counts.",
+    "A private PublicProfile or disabled public project section conservatively excludes that candidate. No PublicProfile retains existing public User opt-in semantics.",
+    "Returned page uses the existing public sanitizer. Emails, credentials, PDF bytes, private application evidence and application consent are not part of discovery.",
+    "Read-only snapshot makes eligibility, source values, count and hydration consistent within a request. No retained authorization grants or cross-user discovery cache."
+  ],
+  "accuracy": {
+    "filters": "Advanced combinations run before pagination over all eligible Users, including a rare skill on candidate 2205. Escaped literal search and literal skill values do not become regex or aggregation expressions.",
+    "scores": "Database expressions agree with the existing JS mapper/formatter across six supported sorts, source combinations and legacy aliases. Missing evidence remains unavailable; measured zero remains a measurement. Binary midpoint cases such as 1.005 and 2.675 preserve JS toFixed(2), and Math.round ties retain their previous semantics.",
+    "aliases": "Active legacy Candidate records retain scalar precedence, stable skill union and nonempty name/headline/project fallbacks. Existing Candidate remains authoritative; no duplicate candidate model or projection collection.",
+    "selection": "Discovery deterministically selects greatest _id for Analysis/PublicProfile, latest analyzedAt for Resume, updatedAt for Sprint and weekEndDate for Weekly; dated ties use _id ascending. Old duplicate Analysis/Profile selection was unordered; other consumers retain their prior selectors pending an explicit consistency decision."
+  },
+  "indexesAndBaseline": {
+    "newIndexes": [],
+    "productionIndexOperations": [],
+    "instructions": "backend/verification/jobs-hub/p1.3a-index-readiness.md",
+    "fixture": "Disposable MongoDB 8.2.2 replica set; 2205 eligible developers across two orgs, excluded private/inactive/nondeveloper accounts, all six source collections and existing declared indexes",
+    "finalDefaultHttpRequestMs": 1396,
+    "returnedPageSize": 12,
+    "exactTotal": 2205,
+    "threeDefaultAndAdvancedRequestsCombinedMs": 3474,
+    "oldIncomplete1000UserHelperMs": 253,
+    "baselineCaveat": "The old helper returned only 1000 profiles and did less work. These local timings demonstrate bounded complete discovery, not a latency improvement or production SLA.",
+    "explain": {
+      "winningEqualityJoins": 6,
+      "winningStrategy": "HashJoin for all six small source tables in the final fixture; indexed loop joins also accepted. Unindexed nested loops are rejected by the regression.",
+      "winningPlanIndexNames": [
+        "isPublic_1",
+        "userId_1",
+        "userId_1_analyzedAt_-1",
+        "userId_1_githubAnalysisVersion_1_updatedAt_-1"
+      ],
+      "indexCaveat": "SBE HashJoin plan nodes carry available foreign index names but do not prove repeated index probing. The User eligibility scan uses existing indexes. No forced hint or speculative index was added.",
+      "cursorTotalDocsExamined": 5670,
+      "cursorTotalKeysExamined": 2207,
+      "executionTimeMillis": 970,
+      "finalFacetElapsedEstimateMs": 946,
+      "twentyUserProbeFinalEstimateMs": 63
+    },
+    "queryShapeDecision": "Initial correlated lookup pipelines exceeded 15 seconds despite indexes. Adjacent equality joins enabled the SBE plan and stayed within the unchanged budget. Index creation was not justified. Computed final sorts and broad exact counts are not claimed to be index-only."
+  },
+  "ui": [
+    "Exact total and page result count; page-scoped high-readiness/remote metrics labelled honestly; bounded pager with First/Previous/Next and signed continuation bookmarks.",
+    "Applied filters preserved during page navigation and retry. Filter changes restart pagination. Expired cursor retry restarts at page 1 while preserving filters.",
+    "Independent loading, successful empty page, no matches, malformed response and failure states. Shortlist/comparison action errors preserve successful search counts and cards.",
+    "Cancel superseded requests and ignore stale versions. Account/role/org changes clear results, totals, options, comparison identities and cursors. Reject responses carrying another actor/org identity.",
+    "Existing theme/layout styles, candidate cards, details navigation, matches, shortlist, comparison and analytics contracts retained. No response cache introduced."
+  ],
+  "validation": {
+    "focusedBackendRun": "32 tests: 31 passed, 0 failed, 1 optional Redis-outage test skipped because RECRUITER_TEST_REDIS_URL was not configured",
+    "backendFiles": [
+      "src/tests/recruiter/candidateDiscovery.integration.test.js",
+      "src/tests/recruiter/candidateDiscoveryQuery.test.js",
+      "src/tests/recruiter/candidateAssessment.test.js",
+      "src/tests/recruiter/recruiterRankingEngine.test.js",
+      "src/tests/recruiter/teamEvaluations.integration.test.js",
+      "src/tests/recruiter/recruiterHttp.integration.test.js",
+      "src/tests/recruiter/recruiterAcceptance.integration.test.js"
+    ],
+    "finalStrengthenedDiscoveryRerun": "8 passed, 0 failed, 0 skipped; includes actual winning-plan strategy checks",
+    "affectedAngularRun": "21 tests passed across candidates.component.spec.ts (8), recruiter-pages.spec.ts (12), candidate-filter-bar.component.spec.ts (1)",
+    "typeScript": "tsc --noEmit -p frontend/tsconfig.app.json passed",
+    "angularTemplates": "ngc --noEmit -p frontend/tsconfig.app.json passed",
+    "realStack": "Actual current Angular development bundle -> real Express routes/JWT middleware -> disposable MongoDB; no Playwright API interception or target API mocks. Retained real-stack.json records actual request URLs/statuses, shared-evaluation access and cursor/filter navigation.",
+    "warnings": "Existing jsdom canvas-not-implemented notices, Mongoose new-option deprecations and unconfigured optional provider warnings did not fail focused checks. No external AI provider or Redis service was configured/called by the smoke.",
+    "developmentBuild": "npm run build -- --configuration development --output-path verification/recruiter/p1.3a-build-20261122 --delete-output-path=false passed in 67.988 seconds; this final bundle passed the real-stack smoke before its disposable output was removed",
+    "postCleanupBackendUnitRun": "8 passed, 0 failed: cursor validation, candidate assessment and unchanged six-weight ranking",
+    "syntax": "node --check passed for all 9 changed/added backend JS/CJS source, test and script files"
+  },
+  "reproduce": [
+    "From backend: node --test --test-concurrency=1 src/tests/recruiter/candidateDiscovery.integration.test.js src/tests/recruiter/candidateDiscoveryQuery.test.js src/tests/recruiter/candidateAssessment.test.js src/tests/recruiter/recruiterRankingEngine.test.js src/tests/recruiter/teamEvaluations.integration.test.js src/tests/recruiter/recruiterHttp.integration.test.js src/tests/recruiter/recruiterAcceptance.integration.test.js",
+    "From frontend: npm test -- --watch=false --include=src/app/features/recruiter/pages/candidates/candidates.component.spec.ts --include=src/app/features/recruiter/pages/recruiter-pages.spec.ts --include=src/app/features/recruiter/components/candidate-filter-bar/candidate-filter-bar.component.spec.ts",
+    "From frontend, with the temporary output directory absent: npm run build -- --configuration development --output-path verification/recruiter/p1.3a-build-20261122 --delete-output-path=false",
+    "From backend: node scripts/verify-candidate-discovery.cjs. Requires the installed MongoDB fixture binary, installed Playwright runtime (or PLAYWRIGHT_MODULE) and headless Edge. Creates and cleans only disposable fixture data; retains screenshot and sanitized request evidence."
+  ],
+  "limitationsAndP13B": [
+    "Exact computed counts and score sorts still process all eligible records in MongoDB. Validate production data volume, history sizes and workload before rollout; only the stated local fixture was benchmarked.",
+    "Large per-user histories remain subject to MongoDB document/memory/time limits. No source history is silently truncated to alter scores. P1.3B may require a versioned, transactionally maintained source-head/assessment projection with explicit ownership, invalidation, consent, parity and backfill contracts.",
+    "Duplicate Analysis/PublicProfile source rows need a consistent selection/repair policy across all consumers. Discovery has deterministic selection; matching formulas/selectors are intentionally otherwise untouched.",
+    "A cursor is stable for unchanged data; it is not a frozen cross-request snapshot. Concurrent public name/score changes can move a candidate between pages. Current consent is rechecked rather than retained in a session snapshot.",
+    "Names use English MongoDB collation. Suggestions are capped and flagged. The UI retains at most roughly 100 nearby cursor bookmarks; remote deep positions require forward traversal or a first-page restart.",
+    "Analytics retains its existing bounded 240-card distribution sample and now receives the complete eligible total. Legacy matching helper/legacy candidate endpoint limits remain separate from Hub discovery to avoid changing matching contracts.",
+    "A replica set and compatible aggregation operators are required. No full backend/frontend suite, browser/theme matrix, production benchmark or production index rollout was performed.",
+    "P1.2C private application disclosure and P1.4 shortlist/application lifecycle linkage remain separate decisions. No private application permissions or state synchronization were added."
+  ],
+  "finalization": {
+    "sourceFormatting": "Explicit changed-source Prettier write followed by the same-path check; backend singleQuote/trailingComma:none/printWidth:100, frontend configured .prettierrc",
+    "cleanupPolicy": "Only the verified task-owned Angular build directory and fixture-owned disposable Mongo files are removed individually. Final script, tests, docs, screenshot and request evidence retained; original assets, licenses and accepted work preserved.",
+    "generatedBuildRoot": "D:/Developer-Portfolio-Analyzer/frontend/verification/recruiter/p1.3a-build-20261122",
+    "noAgentCommitsPushesDeploymentsOrProductionMutations": true,
+    "finalGeneratedBuildFilesRemoved": 231,
+    "finalGeneratedEmptyDirectoriesRemoved": 7,
+    "formatterCheck": "All 13 changed/added source/test/script files passed explicit same-option Prettier checks after write; retained JSON/Markdown evidence is formatted separately",
+    "whitespace": "git diff --check and git diff --cached --check passed"
+  }
+}

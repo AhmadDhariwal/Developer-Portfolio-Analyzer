@@ -10,14 +10,17 @@ const listCandidates = async (req, res) => {
   try {
     const result = await listRecruiterCandidates({
       organizationId: req.organizationId,
+      recruiterId: req.user._id,
+      sessionRevision: Number(req.user.sessionRevision || 0),
       query: req.query || {}
     });
     return res.status(200).json(result);
   } catch (error) {
     console.error('Recruiter hub candidates error:', error.message);
-    return res
-      .status(error.statusCode || 500)
-      .json({ message: error.message || 'Failed to load candidates.' });
+    return res.status(error.statusCode || 500).json({
+      message: error.message || 'Failed to load candidates.',
+      code: error.code === 'CANDIDATE_CURSOR_INVALID' ? error.code : undefined
+    });
   }
 };
 

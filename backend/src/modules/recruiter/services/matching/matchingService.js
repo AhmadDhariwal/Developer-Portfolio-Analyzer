@@ -250,138 +250,142 @@ const hydrateUserCandidates = async (users = [], session) => {
 
   return users.map((user) => {
     const userId = String(user._id);
-    const analysis = analysisByUser.get(userId);
-    const resume = resumeByUser.get(userId);
-    const profile = profileByUser.get(userId);
-    const sprint = sprintByUser.get(userId);
-    const weeklyReport = weeklyByUser.get(userId);
-
-    const resumeSkills = flattenResumeSkills(resume?.skills);
-    const profileSkills = (profile?.skills || []).map((skill) => skill?.name).filter(Boolean);
-    const skills = normalizeSkills([...resumeSkills, ...profileSkills]);
-    const projects = (profile?.projects || []).map((project) => ({
-      title: project.title,
-      description: project.description || '',
-      technologies: normalizeSkills(project.tech || []),
-      impactScore: 65,
-      status: project.status === 'completed' ? 'completed' : 'in-progress'
-    }));
-
-    const githubScore = analysis?.githubScore ?? null;
-    const resumeScore = computeResumeScore(resume);
-    const consistencyScore = computeConsistencyScore({ sprint, weeklyReport });
-    const growthSignals = computeGrowthSignals({
-      weeklyReport,
-      sprint,
-      projectCount: projects.length
+    return candidateFromSources(user, {
+      analysis: analysisByUser.get(userId),
+      resume: resumeByUser.get(userId),
+      profile: profileByUser.get(userId),
+      sprint: sprintByUser.get(userId),
+      weeklyReport: weeklyByUser.get(userId)
     });
-    const growthPotentialScore = clamp(
-      growthSignals.weeklyCoverageDelta +
-        growthSignals.readinessDelta +
-        growthSignals.sprintCompletionRate * 0.4 +
-        growthSignals.githubConsistencySignal * 0.4 +
-        growthSignals.projectVelocity * 0.2
-    );
-
-    const candidate = {
-      id: String(user._id),
-      userId: String(user._id),
-      sourceType: 'user',
-      name: user.name,
-      fullName: user.name,
-      email: user.email,
-      stack: user.activeCareerStack || user.careerStack || 'Full Stack',
-      yearsOfExperience: Number(
-        resume?.experienceYears ||
-          EXPERIENCE_LEVEL_TO_YEARS[user.activeExperienceLevel || user.experienceLevel] ||
-          0
-      ),
-      jobTitle: user.jobTitle || '',
-      headline: user.jobTitle || '',
-      location: user.location || '',
-      avatar: user.avatar || '',
-      githubUsername: user.githubUsername || '',
-      githubScore,
-      resumeScore,
-      consistencyScore,
-      growthPotentialScore,
-      skills,
-      skillScores: (profile?.skills || [])
-        .map((skill) => ({
-          name: skill?.name || '',
-          score: Number(skill?.score || 0)
-        }))
-        .filter((skill) => Boolean(skill.name)),
-      projects,
-      skillGaps: analysis?.missingSkills || [],
-      publicProfileSlug: profile?.isPublic ? String(profile.slug || '') : null,
-      lastActive: user.updatedAt || user.createdAt || null,
-      experienceLevel: user.activeExperienceLevel || user.experienceLevel || '',
-      isActive: user.isActive !== false,
-      githubStats: {
-        repos: Number(analysis?.githubStats?.repos || 0),
-        stars: Number(analysis?.githubStats?.stars || 0),
-        forks: Number(analysis?.githubStats?.forks || 0),
-        followers: Number(analysis?.githubStats?.followers || 0)
-      },
-      aiInsight: {
-        summary: '',
-        strengths: [],
-        weaknesses: [],
-        recommendation: ''
-      },
-      enrichment: growthSignals
-    };
-
-    candidate.score = baseCandidateScore(candidate);
-    // Presentation metadata only: do not change the matching inputs above.
-    const githubTimestamp = analysis?.githubSignals?.analyzedAt || null;
-    const githubMeasured = Boolean(
-      githubTimestamp ||
-      analysis?.githubSignals?.acceptedResult ||
-      analysis?.githubAnalysisHistory?.length ||
-      Number(analysis?.githubScore) > 0
-    );
-    const assessedGithubScore = githubMeasured ? measuredScore(githubScore) : null;
-    const assessedResumeScore = resume
-      ? averageAvailableScores([
-          resume.atsScore,
-          resume.keywordDensity,
-          resume.formatScore,
-          resume.contentQuality
-        ])
-      : null;
-    const readinessAvailable =
-      assessedGithubScore !== null ||
-      assessedResumeScore !== null ||
-      Boolean(sprint || weeklyReport || projects.length);
-    candidate.assessmentEvidence = {
-      readiness: {
-        score: readinessAvailable ? measuredScore(candidate.score) : null,
-        recordedAt: null,
-        explanation: readinessAvailable
-          ? 'Existing weighted readiness score; derived from recorded inputs, not an independent measurement.'
-          : 'No recorded inputs support a readiness assessment.'
-      },
-      github: {
-        score: assessedGithubScore,
-        recordedAt: githubTimestamp,
-        explanation:
-          assessedGithubScore === null
-            ? 'No valid GitHub score with supporting analysis evidence is available.'
-            : 'Recorded GitHub analysis score; availability does not establish current skill or freshness.'
-      },
-      resume: {
-        score: assessedResumeScore,
-        recordedAt: resume?.analyzedAt || null,
-        explanation:
-          assessedResumeScore === null
-            ? 'No valid resume score measurements are available.'
-            : 'Mean of available ATS, keyword density, format and content measurements; resume claims are not verified ability.'
-      }
-    };
-    return candidate;
   });
+};
+
+const candidateFromSources = (user, { analysis, resume, profile, sprint, weeklyReport }) => {
+  const resumeSkills = flattenResumeSkills(resume?.skills);
+  const profileSkills = (profile?.skills || []).map((skill) => skill?.name).filter(Boolean);
+  const skills = normalizeSkills([...resumeSkills, ...profileSkills]);
+  const projects = (profile?.projects || []).map((project) => ({
+    title: project.title,
+    description: project.description || '',
+    technologies: normalizeSkills(project.tech || []),
+    impactScore: 65,
+    status: project.status === 'completed' ? 'completed' : 'in-progress'
+  }));
+
+  const githubScore = analysis?.githubScore ?? null;
+  const resumeScore = computeResumeScore(resume);
+  const consistencyScore = computeConsistencyScore({ sprint, weeklyReport });
+  const growthSignals = computeGrowthSignals({
+    weeklyReport,
+    sprint,
+    projectCount: projects.length
+  });
+  const growthPotentialScore = clamp(
+    growthSignals.weeklyCoverageDelta +
+      growthSignals.readinessDelta +
+      growthSignals.sprintCompletionRate * 0.4 +
+      growthSignals.githubConsistencySignal * 0.4 +
+      growthSignals.projectVelocity * 0.2
+  );
+
+  const candidate = {
+    id: String(user._id),
+    userId: String(user._id),
+    sourceType: 'user',
+    name: user.name,
+    fullName: user.name,
+    email: user.email,
+    stack: user.activeCareerStack || user.careerStack || 'Full Stack',
+    yearsOfExperience: Number(
+      resume?.experienceYears ||
+        EXPERIENCE_LEVEL_TO_YEARS[user.activeExperienceLevel || user.experienceLevel] ||
+        0
+    ),
+    jobTitle: user.jobTitle || '',
+    headline: user.jobTitle || '',
+    location: user.location || '',
+    avatar: user.avatar || '',
+    githubUsername: user.githubUsername || '',
+    githubScore,
+    resumeScore,
+    consistencyScore,
+    growthPotentialScore,
+    skills,
+    skillScores: (profile?.skills || [])
+      .map((skill) => ({
+        name: skill?.name || '',
+        score: Number(skill?.score || 0)
+      }))
+      .filter((skill) => Boolean(skill.name)),
+    projects,
+    skillGaps: analysis?.missingSkills || [],
+    publicProfileSlug: profile?.isPublic ? String(profile.slug || '') : null,
+    lastActive: user.updatedAt || user.createdAt || null,
+    experienceLevel: user.activeExperienceLevel || user.experienceLevel || '',
+    isActive: user.isActive !== false,
+    githubStats: {
+      repos: Number(analysis?.githubStats?.repos || 0),
+      stars: Number(analysis?.githubStats?.stars || 0),
+      forks: Number(analysis?.githubStats?.forks || 0),
+      followers: Number(analysis?.githubStats?.followers || 0)
+    },
+    aiInsight: {
+      summary: '',
+      strengths: [],
+      weaknesses: [],
+      recommendation: ''
+    },
+    enrichment: growthSignals
+  };
+
+  candidate.score = baseCandidateScore(candidate);
+  // Presentation metadata only: do not change the matching inputs above.
+  const githubTimestamp = analysis?.githubSignals?.analyzedAt || null;
+  const githubMeasured = Boolean(
+    githubTimestamp ||
+    analysis?.githubSignals?.acceptedResult ||
+    analysis?.githubAnalysisHistory?.length ||
+    Number(analysis?.githubScore) > 0
+  );
+  const assessedGithubScore = githubMeasured ? measuredScore(githubScore) : null;
+  const assessedResumeScore = resume
+    ? averageAvailableScores([
+        resume.atsScore,
+        resume.keywordDensity,
+        resume.formatScore,
+        resume.contentQuality
+      ])
+    : null;
+  const readinessAvailable =
+    assessedGithubScore !== null ||
+    assessedResumeScore !== null ||
+    Boolean(sprint || weeklyReport || projects.length);
+  candidate.assessmentEvidence = {
+    readiness: {
+      score: readinessAvailable ? measuredScore(candidate.score) : null,
+      recordedAt: null,
+      explanation: readinessAvailable
+        ? 'Existing weighted readiness score; derived from recorded inputs, not an independent measurement.'
+        : 'No recorded inputs support a readiness assessment.'
+    },
+    github: {
+      score: assessedGithubScore,
+      recordedAt: githubTimestamp,
+      explanation:
+        assessedGithubScore === null
+          ? 'No valid GitHub score with supporting analysis evidence is available.'
+          : 'Recorded GitHub analysis score; availability does not establish current skill or freshness.'
+    },
+    resume: {
+      score: assessedResumeScore,
+      recordedAt: resume?.analyzedAt || null,
+      explanation:
+        assessedResumeScore === null
+          ? 'No valid resume score measurements are available.'
+          : 'Mean of available ATS, keyword density, format and content measurements; resume claims are not verified ability.'
+    }
+  };
+  return candidate;
 };
 
 const normalizeCandidateDoc = (candidateDoc = {}) => {
@@ -826,6 +830,9 @@ const matchCandidatesToJob = async ({ organizationId, recruiterId, jobId, candid
 };
 
 module.exports = {
+  candidateFromSources,
+  mergeCandidates,
+  sanitizePublicCandidate,
   listCandidates,
   getCandidateById,
   getCandidatesByIds,
