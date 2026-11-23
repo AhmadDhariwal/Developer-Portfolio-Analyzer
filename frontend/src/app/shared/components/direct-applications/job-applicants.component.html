@@ -9,6 +9,11 @@
     </div>
 
     <div class="applicants-header__controls">
+      @if (applicationId) {
+        <a class="da-btn da-btn--secondary da-btn--sm" [routerLink]="['/app/recruiter/jobs', jobId]"
+          >All applicants</a
+        >
+      }
       @if (!loading && !error && applications.length) {
         <div class="filter-tabs" role="tablist" aria-label="Filter direct applicants by status">
           <button
@@ -83,6 +88,9 @@
   @if (actionError) {
     <p role="alert">{{ actionError }}</p>
   }
+  @if (notice) {
+    <p role="status">{{ notice }}</p>
+  }
 
   @if (loading) {
     <div class="panel-state" role="status">
@@ -153,6 +161,28 @@
             </div>
 
             <div class="applicant-card__actions">
+              @if (application.shortlist) {
+                <span class="da-badge da-badge--neutral"
+                  >Already Shortlisted · internal stage: {{ application.shortlist.status }}</span
+                >
+                <a
+                  class="da-btn da-btn--secondary da-btn--sm"
+                  routerLink="/app/recruiter/shortlists"
+                  [queryParams]="{ source: 'applications' }"
+                  >Owner-only shortlist</a
+                >
+              } @else if (
+                application.status === 'submitted' || application.status === 'reviewing'
+              ) {
+                <button
+                  type="button"
+                  class="da-btn da-btn--indigo-outline da-btn--sm"
+                  [disabled]="busy || loading"
+                  (click)="shortlist(application)"
+                >
+                  Add to Shortlist (internal)
+                </button>
+              }
               <button
                 type="button"
                 class="da-btn da-btn--secondary da-btn--sm"

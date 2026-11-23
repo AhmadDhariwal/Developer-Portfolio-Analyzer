@@ -1,6 +1,7 @@
 const { createHash } = require('node:crypto');
 const Job = require('../../recruiter/models/Job');
 const Application = require('../models/jobApplication');
+const Shortlist = require('../../recruiter/models/RecruiterShortlist');
 const Resume = require('../../resume/models/resumeFile');
 const Profile = require('../../public-portfolio/models/publicProfile');
 const Organization = require('../../admin/models/organization');
@@ -235,10 +236,26 @@ async function applicants(scope, jobId) {
     .sort({ createdAt: -1 })
     .limit(100)
     .lean();
-  return applications.map((application) => ({
-    ...application,
-    timeline: applicantView(application).timeline
-  }));
+  const links = await Shortlist.find({
+    applicationId: { $in: applications.map((application) => application._id) },
+    jobId,
+    organizationId: scope.organizationId,
+    recruiterId: scope.recruiterId
+  })
+    .select('_id applicationId candidateId status __v')
+    .lean();
+  const byApplication = new Map(links.map((link) => [link.applicationId, link]));
+  return applications.map((application) => {
+    const link = byApplication.get(application._id);
+    return {
+      ...application,
+      timeline: applicantView(application).timeline,
+      shortlist:
+        link && String(link.candidateId) === String(application.applicantId)
+          ? { id: String(link._id), status: link.status, version: Number(link.__v || 0) }
+          : null
+    };
+  });
 }
 function ownedApplication(scope, jobId, id) {
   if (!/^[a-f0-9]{64}$/.test(String(id))) throw fail('Invalid application identifier.');

@@ -23,6 +23,9 @@ export class JobDetailsComponent implements OnInit {
   jobMatches: any[] = [];
   private currentJobId = '';
   private request?: Subscription;
+  get selectedApplicationId(): string {
+    return this.route.snapshot?.queryParamMap?.get('applicationId') || '';
+  }
 
   constructor(
     private readonly route: ActivatedRoute,

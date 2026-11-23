@@ -18,7 +18,7 @@ const normalizeStatus = (value) => {
   return status;
 };
 const syncMatchStatus = async (item, status, session) => {
-  if (!item.jobId) return;
+  if (!item.jobId || item.applicationId) return;
   const { recruiterId, organizationId, candidateId, jobId } = item;
   const legacyAliases = await Candidate.find({
     $or: [{ userId: candidateId }, { _id: candidateId }]
@@ -69,6 +69,8 @@ async function hydrate(ctx, items, jobs) {
     );
 }
 const addToShortlist = async ({ payload = {}, ...scope }) => {
+  if (payload.applicationId !== undefined)
+    throw invalidInput('Use the direct application evaluation workflow.');
   const id = requireObjectId(payload.candidateId, 'candidateId');
   const jobId = payload.jobId ? requireObjectId(payload.jobId, 'jobId') : null;
   const status = normalizeStatus(payload.status);
@@ -80,8 +82,23 @@ const addToShortlist = async ({ payload = {}, ...scope }) => {
     const candidate = (await access.candidates(ctx, [id])).get(id);
     if (!candidate) throw access.denied('Candidate not found.', 404);
     const recruiterId = job ? job.recruiterId : ctx.recruiterId;
+    if (
+      await RecruiterShortlist.exists({
+        recruiterId,
+        candidateId: candidate.userId,
+        jobId,
+        applicationId: { $ne: null }
+      }).session(ctx.session)
+    )
+      throw access.denied('Shortlist entry is unavailable.', 404);
     const row = await RecruiterShortlist.findOneAndUpdate(
-      { recruiterId, organizationId: ctx.organizationId, candidateId: candidate.userId, jobId },
+      {
+        recruiterId,
+        organizationId: ctx.organizationId,
+        candidateId: candidate.userId,
+        jobId,
+        applicationId: null
+      },
       {
         $set: { teamId: job ? job.teamId || null : scope.teamIds?.[0] || null },
         $setOnInsert: {
@@ -99,6 +116,7 @@ const listShortlists = async ({ query = {}, ...scope }) =>
   access.withAccess(scope, async (ctx) => {
     const jobs = await access.jobs(ctx, query.jobId);
     const filter = {
+      applicationId: null,
       organizationId: ctx.organizationId,
       ...(query.jobId
         ? { jobId: query.jobId }
@@ -118,6 +136,7 @@ const listShortlists = async ({ query = {}, ...scope }) =>
   });
 async function selected(ctx, shortlistId) {
   const row = await RecruiterShortlist.findOne({
+    applicationId: null,
     _id: requireObjectId(shortlistId, 'shortlistId'),
     organizationId: ctx.organizationId
   })
@@ -142,6 +161,7 @@ const updateShortlist = async ({ shortlistId, payload = {}, ...scope }) =>
     if (payload.status !== undefined) update.status = normalizeStatus(payload.status);
     const row = await RecruiterShortlist.findOneAndUpdate(
       {
+        applicationId: null,
         _id: result.row._id,
         recruiterId: result.row.recruiterId,
         organizationId: ctx.organizationId
@@ -158,6 +178,7 @@ const removeShortlist = async ({ shortlistId, ...scope }) =>
     if (!result) return null;
     const row = await RecruiterShortlist.findOneAndDelete(
       {
+        applicationId: null,
         _id: result.row._id,
         recruiterId: result.row.recruiterId,
         organizationId: ctx.organizationId

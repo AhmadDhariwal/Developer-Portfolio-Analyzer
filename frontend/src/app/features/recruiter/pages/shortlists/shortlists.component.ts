@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit, inject, signal } from '@angular/core';
 import { finalize } from 'rxjs/operators';
+import { ActivatedRoute } from '@angular/router';
 import { PerformanceChartItem } from '../../components/recruiter-performance-chart/recruiter-performance-chart.component';
 import { RecruiterMatchService } from '../../services/recruiter-match.service';
 
@@ -27,6 +28,9 @@ interface ConfirmState {
 })
 export class ShortlistsComponent implements OnInit {
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly route = inject(ActivatedRoute, { optional: true });
+  source: 'public' | 'applications' = 'public';
+  private loadVersion = 0;
   loading = true;
   error = '';
   notice = '';
@@ -49,6 +53,19 @@ export class ShortlistsComponent implements OnInit {
   constructor(private matchService: RecruiterMatchService) {}
 
   ngOnInit(): void {
+    if (this.route?.snapshot?.queryParamMap?.get('source') === 'applications')
+      this.source = 'applications';
+    this.loadShortlists();
+  }
+  setSource(source: 'public' | 'applications'): void {
+    if (source === this.source) return;
+    this.source = source;
+    this.shortlists = [];
+    this.notice = '';
+    this.jobFilter = '';
+    this.searchTerm = '';
+    this.stageFilter = 'all';
+    this.onConfirmCancelled();
     this.loadShortlists();
   }
 
@@ -142,27 +159,37 @@ export class ShortlistsComponent implements OnInit {
   }
 
   loadShortlists(): void {
+    const version = ++this.loadVersion;
+    const source = this.source;
     this.loading = true;
     this.error = '';
+    this.notice = '';
+    this.savingNoteId = '';
+    this.shortlists = [];
+    this.onConfirmCancelled();
 
-    this.matchService
-      .getShortlists()
-      .pipe(finalize(() => this.cdr.markForCheck()))
-      .subscribe({
-        next: (response: any) => {
-          this.shortlists = response?.shortlists || [];
-          this.loading = false;
-        },
-        error: (err) => {
-          this.shortlists = [];
-          this.error = err?.error?.message || 'Unable to load shortlists right now.';
-          this.loading = false;
-        },
-      });
+    const request =
+      source === 'applications'
+        ? this.matchService.getApplicationShortlists()
+        : this.matchService.getShortlists();
+    request.pipe(finalize(() => this.cdr.markForCheck())).subscribe({
+      next: (response: any) => {
+        if (version !== this.loadVersion || source !== this.source) return;
+        this.shortlists = response?.shortlists || [];
+        this.loading = false;
+      },
+      error: (err) => {
+        if (version !== this.loadVersion || source !== this.source) return;
+        this.shortlists = [];
+        this.error = err?.error?.message || 'Unable to load shortlists right now.';
+        this.loading = false;
+      },
+    });
   }
 
   advance(item: any): void {
     if (item?.access?.manage !== true) return;
+    if (item.applicationId && !item.access.manageStages) return;
     const id = String(item?._id || '').trim();
     if (!id) {
       return;
@@ -188,6 +215,7 @@ export class ShortlistsComponent implements OnInit {
 
   changeStage(event: { item: any; status: string }): void {
     if (event.item?.access?.manage !== true) return;
+    if (event.item.applicationId && !event.item.access.manageStages) return;
     const { item, status } = event;
     const id = String(item?._id || '').trim();
     if (!id || !status) {
@@ -220,27 +248,37 @@ export class ShortlistsComponent implements OnInit {
     this.savingNoteId = id;
     this.error = '';
     this.notice = '';
+    const version = this.loadVersion;
 
-    this.matchService
-      .updateShortlist(id, { notes: event.notes, expectedVersion: event.item.version })
-      .pipe(finalize(() => this.cdr.markForCheck()))
-      .subscribe({
-        next: (response: any) => {
-          const updated = response?.shortlist;
-          Object.assign(event.item, updated || { notes: event.notes });
-          this.savingNoteId = '';
-          this.notice = `Saved notes for ${event.item?.candidate?.name || 'candidate'}.`;
-        },
-        error: (err) => {
-          this.savingNoteId = '';
-          this.refreshAfterDenied(err);
-          this.error = err?.error?.message || 'Could not update shortlist notes.';
-        },
-      });
+    const request = event.item.applicationId
+      ? this.matchService.updateApplicationShortlist(id, {
+          notes: event.notes,
+          expectedVersion: event.item.version,
+        })
+      : this.matchService.updateShortlist(id, {
+          notes: event.notes,
+          expectedVersion: event.item.version,
+        });
+    request.pipe(finalize(() => this.cdr.markForCheck())).subscribe({
+      next: (response: any) => {
+        if (version !== this.loadVersion) return;
+        const updated = response?.shortlist;
+        Object.assign(event.item, updated || { notes: event.notes });
+        this.savingNoteId = '';
+        this.notice = `Saved notes for ${event.item?.candidate?.name || 'candidate'}.`;
+      },
+      error: (err) => {
+        if (version !== this.loadVersion) return;
+        this.savingNoteId = '';
+        this.refreshAfterDenied(err);
+        this.error = err?.error?.message || 'Could not update shortlist notes.';
+      },
+    });
   }
 
   remove(item: any): void {
     if (item?.access?.manage !== true) return;
+    if (item.applicationId) return;
     const id = String(item?._id || '').trim();
     if (!id) {
       return;
@@ -307,26 +345,36 @@ export class ShortlistsComponent implements OnInit {
 
   private applyStageUpdate(item: any, nextStatus: string): void {
     if (item?.access?.manage !== true) return;
+    if (item.applicationId && !item.access.manageStages) return;
     const id = String(item?._id || '').trim();
     if (!id) {
       return;
     }
     this.error = '';
     this.notice = '';
+    const version = this.loadVersion;
 
-    this.matchService
-      .updateShortlist(id, { status: nextStatus, expectedVersion: item.version })
-      .pipe(finalize(() => this.cdr.markForCheck()))
-      .subscribe({
-        next: (response: any) => {
-          const updated = response?.shortlist;
-          Object.assign(item, updated || { status: nextStatus });
-          this.notice = `Updated ${item?.candidate?.name || 'candidate'} to stage "${item.status}".`;
-        },
-        error: (err) => {
-          this.refreshAfterDenied(err);
-          this.error = err?.error?.message || 'Could not update shortlist stage.';
-        },
-      });
+    const request = item.applicationId
+      ? this.matchService.updateApplicationShortlist(id, {
+          status: nextStatus,
+          expectedVersion: item.version,
+        })
+      : this.matchService.updateShortlist(id, {
+          status: nextStatus,
+          expectedVersion: item.version,
+        });
+    request.pipe(finalize(() => this.cdr.markForCheck())).subscribe({
+      next: (response: any) => {
+        if (version !== this.loadVersion) return;
+        const updated = response?.shortlist;
+        Object.assign(item, updated || { status: nextStatus });
+        this.notice = `Updated ${item?.candidate?.name || 'candidate'} to stage "${item.status}".`;
+      },
+      error: (err) => {
+        if (version !== this.loadVersion) return;
+        this.refreshAfterDenied(err);
+        this.error = err?.error?.message || 'Could not update shortlist stage.';
+      },
+    });
   }
 }

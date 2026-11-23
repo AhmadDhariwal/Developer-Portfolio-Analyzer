@@ -809,6 +809,18 @@ export class ApiService {
       payload,
     );
   }
+  getRecruiterApplicationShortlists(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/recruiter-hub/shortlists/applications`);
+  }
+  updateRecruiterApplicationShortlist(
+    id: string,
+    payload: Record<string, unknown>,
+  ): Observable<any> {
+    return this.http.patch(
+      `${this.baseUrl}/recruiter-hub/shortlists/applications/${encodeURIComponent(id)}`,
+      payload,
+    );
+  }
 
   deleteRecruiterHubShortlist(id: string): Observable<any> {
     return this.http.delete(`${this.baseUrl}/recruiter-hub/shortlists/${encodeURIComponent(id)}`);

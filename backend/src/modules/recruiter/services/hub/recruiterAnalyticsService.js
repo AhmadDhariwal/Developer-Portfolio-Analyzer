@@ -84,7 +84,7 @@ const listRecruiterAnalytics = async (req, scope) => {
     RecruiterMatch.find({ recruiterId, organizationId })
       .select('candidateId jobId matchScore confidenceScore status breakdown updatedAt createdAt')
       .lean(),
-    RecruiterShortlist.find({ recruiterId, organizationId }).lean(),
+    RecruiterShortlist.find({ recruiterId, organizationId, applicationId: null }).lean(),
     AuditLog.find({ actor: recruiterId, organizationId })
       .select('action method route statusCode timestamp')
       .sort({ timestamp: -1 })

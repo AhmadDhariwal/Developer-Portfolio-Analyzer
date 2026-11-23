@@ -18,6 +18,29 @@
     </div>
   </header>
 
+  <div class="segmented-tabs" role="group" aria-label="Shortlist source">
+    <button
+      type="button"
+      [attr.aria-pressed]="source === 'public'"
+      [class.is-active]="source === 'public'"
+      (click)="setSource('public')"
+    >
+      Public candidates
+    </button>
+    <button
+      type="button"
+      [attr.aria-pressed]="source === 'applications'"
+      [class.is-active]="source === 'applications'"
+      (click)="setSource('applications')"
+    >
+      Direct applications · owner only
+    </button>
+  </div>
+  <p *ngIf="source === 'applications'">
+    Latest 100 application evaluations. Notes and stages are internal and do not change the
+    application status or notify the applicant.
+  </p>
+
   <app-ui-error-state
     *ngIf="error && !shortlists.length && !loading"
     title="Unable to load shortlists"

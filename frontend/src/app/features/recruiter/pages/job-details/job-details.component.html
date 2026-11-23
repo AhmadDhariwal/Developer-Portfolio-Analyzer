@@ -108,7 +108,11 @@
           </div>
         </article>
 
-        <app-job-applicants *ngIf="job.access?.privateEvidence" [jobId]="job._id" />
+        <app-job-applicants
+          *ngIf="job.access?.privateEvidence"
+          [jobId]="job._id"
+          [applicationId]="selectedApplicationId"
+        />
         <article class="panel" *ngIf="!job.access?.privateEvidence">
           <p>
             Applications and submitted evidence remain private to the job owner. Evaluation access

@@ -19,6 +19,7 @@ export interface PortfolioSubmission {
   projects: { title: string; description: string; tech: string[] }[];
 }
 export interface DirectApplication {
+  shortlist?: { id: string; status: string; version: number } | null;
   organizationName?: string;
   _id: string;
   jobId: string;
@@ -58,6 +59,17 @@ export class JobApplicationsService {
   }
   applicants(jobId: string) {
     return this.http.get<{ applications: DirectApplication[] }>(this.url(jobId));
+  }
+  application(jobId: string, id: string) {
+    return this.http.get<{ application: DirectApplication }>(
+      this.url(jobId) + '/' + encodeURIComponent(id),
+    );
+  }
+  shortlist(jobId: string, id: string, expectedStatus: string) {
+    return this.http.post<{ created: boolean }>(
+      this.url(jobId) + '/' + encodeURIComponent(id) + '/shortlist',
+      { expectedStatus },
+    );
   }
   withdraw(id: string, expectedStatus: string) {
     return this.http.post<{ application: DirectApplication }>(

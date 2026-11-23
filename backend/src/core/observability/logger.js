@@ -1,4 +1,7 @@
-const { getAnalyticsSettingsSync } = require('../../modules/super-admin/services/platformSettingsService');
+const {
+  getAnalyticsSettingsSync
+} = require('../../modules/super-admin/services/platformSettingsService');
+const requestLogPath = require('./requestLogPath');
 
 const LEVELS = ['debug', 'info', 'warn', 'error'];
 
@@ -37,7 +40,7 @@ const write = (level, message, meta = {}) => {
 const withRequest = (req) => ({
   requestId: req?.requestId || '',
   method: req?.method || '',
-  path: req?.originalUrl || req?.url || '',
+  path: requestLogPath({ originalUrl: req?.originalUrl || req?.url || '' }),
   userId: req?.user?._id ? String(req.user._id) : undefined
 });
 

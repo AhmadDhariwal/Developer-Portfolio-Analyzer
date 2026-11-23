@@ -29,10 +29,7 @@ export class ShortlistCardComponent {
     { key: 'interview', label: 'Interview' },
   ];
 
-  readonly stageOptions = [
-    ...this.pipelineStages,
-    { key: 'rejected', label: 'Rejected' },
-  ];
+  readonly stageOptions = [...this.pipelineStages, { key: 'rejected', label: 'Rejected' }];
 
   get normalizedStatus(): string {
     return String(this.item?.status || 'shortlisted').toLowerCase();
@@ -47,6 +44,7 @@ export class ShortlistCardComponent {
   }
 
   get candidateRouteId(): string {
+    if (this.item?.applicationId) return '';
     return String(
       this.item?.candidate?.id || this.item?.candidate?.userId || this.item?.candidateId || '',
     ).trim();

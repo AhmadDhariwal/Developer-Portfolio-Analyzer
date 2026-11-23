@@ -54,7 +54,12 @@ const generateRecruiterMatches = async ({ payload = {}, ...scope }) => {
     const result = generateMatches({ job, candidates });
     const recruiterId = job.recruiterId;
     const organizationId = ctx.organizationId;
-    const shortlisted = await RecruiterShortlist.find({ recruiterId, organizationId, jobId })
+    const shortlisted = await RecruiterShortlist.find({
+      recruiterId,
+      organizationId,
+      jobId,
+      applicationId: null
+    })
       .session(ctx.session)
       .lean();
     const statusByCandidate = new Map(

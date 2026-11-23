@@ -32,6 +32,14 @@ const recruiterShortlistSchema = new mongoose.Schema(
       default: null,
       index: true
     },
+    // A reference only. Submitted evidence and applicant-visible status remain
+    // authoritative on JobApplication. Null/missing preserves legacy public rows.
+    applicationId: {
+      type: String,
+      default: null,
+      immutable: true,
+      validate: (value) => value === null || /^[a-f0-9]{64}$/.test(value)
+    },
     notes: {
       type: String,
       default: ''

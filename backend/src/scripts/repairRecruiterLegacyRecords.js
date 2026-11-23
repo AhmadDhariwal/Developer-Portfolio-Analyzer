@@ -30,7 +30,8 @@ const isMatchStale = (existing, computed) => {
   if (numbersDiffer(existing.skillMatchPercent, computed.skillMatchPercent)) return true;
   if (numbersDiffer(existing.githubProjectScore, computed.githubProjectScore)) return true;
   if (numbersDiffer(existing.confidenceScore, computed.confidenceScore)) return true;
-  if (String(existing.experienceMatch || '') !== String(computed.experienceMatch || '')) return true;
+  if (String(existing.experienceMatch || '') !== String(computed.experienceMatch || ''))
+    return true;
   if (!existing.breakdown || typeof existing.breakdown !== 'object') return true;
   if (Object.keys(existing.breakdown).length === 0) return true;
   return false;
@@ -66,6 +67,7 @@ const repairRecruiterLegacyRecords = async ({ apply = false, organizationId = ''
     const legacyIds = [...aliasToUserId.keys()];
 
     const legacyShortlists = await RecruiterShortlist.find({
+      applicationId: null,
       ...scopeFilter,
       candidateId: { $in: legacyIds }
     }).lean();
@@ -89,7 +91,9 @@ const repairRecruiterLegacyRecords = async ({ apply = false, organizationId = ''
           shortlistId: String(row._id),
           legacyCandidateId: String(row.candidateId),
           canonicalUserId: targetCandidateId,
-          existingCanonicalShortlistId: String(conflict._id)
+          ...(conflict.applicationId
+            ? { reason: 'Canonical record is unavailable for public evaluation repair.' }
+            : { existingCanonicalShortlistId: String(conflict._id) })
         });
         continue;
       }
@@ -251,4 +255,3 @@ if (require.main === module) {
       process.exit(1);
     });
 }
-

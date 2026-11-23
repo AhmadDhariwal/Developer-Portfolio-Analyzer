@@ -36,6 +36,7 @@ function authorize(job, ctx, manage = false) {
 
 function ownsRecord(row, job, ctx) {
   return (
+    !row.applicationId &&
     String(row.organizationId) === ctx.organizationId &&
     (job
       ? String(row.recruiterId) === String(job.recruiterId)

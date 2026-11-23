@@ -40,6 +40,12 @@ export class RecruiterMatchService {
   removeShortlist(id: string): Observable<any> {
     return this.api.deleteRecruiterHubShortlist(id);
   }
+  getApplicationShortlists(): Observable<any> {
+    return this.api.getRecruiterApplicationShortlists();
+  }
+  updateApplicationShortlist(id: string, payload: Record<string, unknown>): Observable<any> {
+    return this.api.updateRecruiterApplicationShortlist(id, payload);
+  }
 
   compareCandidates(payload: Record<string, unknown>): Observable<any> {
     return this.api.compareRecruiterHubCandidates(payload);
