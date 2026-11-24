@@ -1,6 +1,6 @@
 {
   "phase": "P1.5A",
-  "status": "selected for implementation and measurement",
+  "status": "implemented and measured",
   "rootCause": "Every scoped row executes an interpreted 64-round SHA-256 Mongo expression before the count facet. This CPU cost scales with the population, not page size. The key depends only on immutable ObjectId job/applicant values.",
   "alternatives": [
     {
@@ -42,5 +42,6 @@
     "Focused privacy/ownership/consent/withdrawal/notification/public discovery/Analytics regressions, affected Angular tests and production build.",
     "Targeted real Angular -> production Express routes -> disposable Mongo smoke, then formatting, cleanup, compiler/syntax/whitespace and baseline-index preservation checks."
   ],
-  "refinement": "Initial measurements found database per-row lookups remained dominant at 1000 records. Extend the same bounded integrity pass with one batch owned-Job query and one batch owned-Application query for minimal tuples/consent/status. Reuse extracted accepted genuine/canonicalRow predicates, then pass fully validated shortlist IDs to a simple Mongo facet. Hydrate only the returned page with two batched view queries. All reads share the authorization snapshot and five-second validation/count budget; existing page fences remain. At most 10000 provisional rows and source maps are held, never submitted evidence. No persisted marker or source projection."
+  "refinement": "Initial measurements found database per-row lookups remained dominant at 1000 records. Extend the same bounded integrity pass with one batch owned-Job query and one batch owned-Application query for minimal tuples/consent/status. Reuse extracted accepted genuine/canonicalRow predicates, then pass fully validated shortlist IDs to a simple Mongo facet. Hydrate only the returned page with two batched view queries. All reads share the authorization snapshot and five-second validation/count budget; existing page fences remain. At most 10000 provisional rows and source maps are held, never submitted evidence. No persisted marker or source projection.",
+  "finalFlow": "Bounded minimal shortlist identity stream -> native Node SHA-256 -> batched original-owner Job/Application tuple+consent checks using accepted genuine/canonical predicates -> exact DB facet over validated IDs -> two page-only view hydrations -> retained access fences; one snapshot session throughout."
 }

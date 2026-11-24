@@ -1,0 +1,80 @@
+{
+  "status": "passed",
+  "backendDistinctPassed": 89,
+  "skipped": 0,
+  "backendProtocol": "12 files run with node --test --test-concurrency=1; 81 passed and one fixture startup failed before subtests. After fixture-only cold initialization fix, Candidate Discovery rerun passed all 8 checks. Initial failure report retained; no failed result relabeled as passed.",
+  "backendEvidence": [
+    "backend/verification/jobs-hub/p1.5a-regressions.json",
+    "backend/verification/jobs-hub/p1.5a-discovery-rerun.json",
+    "backend/verification/jobs-hub/p1.5a-workflow-regression.json",
+    "backend/verification/jobs-hub/p1.5a-notifications/integration-results.json",
+    "backend/verification/jobs-hub/p1.5a-integrity-rerun.json"
+  ],
+  "angularDistinctPassed": 73,
+  "angularFiles": 10,
+  "finalComponentRecheck": {
+    "passed": 7,
+    "reason": "Final accurate match-card fallback wording."
+  },
+  "angularCommand": "npm test -- --watch=false --include='src/app/shared/components/direct-applications/*.spec.ts' --include='src/app/features/recruiter/pages/recruiter-pages.spec.ts' --include='src/app/features/recruiter/components/recruiter-components.spec.ts' --include='src/app/features/recruiter/pages/matches/matches.component.spec.ts' --include='src/app/features/recruiter/pages/recruiter-analytics/recruiter-analytics.component.spec.ts' --include='src/app/shared/utils/notification-navigation.spec.ts' --include='src/app/features/notifications/notifications.component.spec.ts' --include='src/app/core/layouts/main-layout/navbar/navbar.component.spec.ts'",
+  "full805SuiteRepeated": false,
+  "productionBuild": "npm run build passed on final frontend implementation; 4.13 MB initial bundle warning and existing developer/jobs (54.40 kB) and public-portfolio (49.97 kB) style warnings remain. No budget increased.",
+  "typescript": "node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.app.json passed.",
+  "browser": {
+    "status": "passed",
+    "apiMocks": false,
+    "engine": "Installed headless Edge using native CDP over a fresh task-owned profile; no Playwright or other dependency installed.",
+    "screenshots": [
+      "frontend/verification/recruiter/p1.5a/light-desktop.png",
+      "frontend/verification/recruiter/p1.5a/dark-mobile.png",
+      "frontend/verification/recruiter/p1.5a/system-tablet.png"
+    ],
+    "evidence": "frontend/verification/recruiter/p1.5a/real-stack.json",
+    "checks": [
+      "page 2 -> explicit reviewing -> reject cancel/confirm -> terminal -> exact submitted-evidence navigation; two notifications; stale 409",
+      "Light/Dark/System responsive screenshots and peer owner-only exclusion"
+    ],
+    "appearance": [
+      {
+        "name": "light-desktop",
+        "theme": "light",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "observedTheme": "light"
+      },
+      {
+        "name": "dark-mobile",
+        "theme": "dark",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "observedTheme": "dark"
+      },
+      {
+        "name": "system-tablet",
+        "theme": "system",
+        "viewport": {
+          "width": 768,
+          "height": 1024
+        },
+        "observedTheme": "dark"
+      }
+    ],
+    "sessionClearing": {
+      "destination": "/auth/login",
+      "ng0100": false,
+      "organization503": 0
+    }
+  },
+  "finalization": "Explicit changed-file Prettier write/check, backend syntax, tracked/staged/new-file whitespace, index preservation and cleanup verification are run before final response. No source moves or deletions.",
+  "finalCleanupRechecks": {
+    "lifecyclePassed": 5,
+    "integrityPassed": 3,
+    "discoveryPassed": 8,
+    "note": "Counts overlap the 89 distinct checks; startup-only fixture failures are retained in the history and fixed by explicit post-connect DDL. No runtime tests skipped."
+  },
+  "fixtureStartupHistory": "A final import-cleanup run passed lifecycle 5/5 but hit import-time Mongoose collection-create buffering in the integrity fixture. Final explicit-DDL reruns passed integrity 3/3 and discovery 8/8. Startup hardening does not change the timed application query path or production defaults."
+}

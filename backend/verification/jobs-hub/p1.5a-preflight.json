@@ -105,5 +105,117 @@
     }
   ],
   "unstagedBaseline": [],
-  "independentAcceptance": "User supplied P1.4B acceptance and 261-record QA measurements. No separately named independent P1.4A/B report found in jobs-hub or recruiter verification folders; existing implementation/test evidence retained."
+  "independentAcceptance": "User supplied P1.4B acceptance and 261-record QA measurements. No separately named independent P1.4A/B report found in jobs-hub or recruiter verification folders; existing implementation/test evidence retained.",
+  "resumption": {
+    "branch": "fix/P1-project",
+    "head": "bfda6cb368ebd2661c1e6a423522e2ffe0421c01",
+    "target": "not applicable",
+    "indexBaseline": [
+      {
+        "path": "backend/scripts/benchmark-application-shortlists.cjs",
+        "blob": "257f9ef6b74aae3bf0a4d5cb504cb6f73d8a4142"
+      },
+      {
+        "path": "backend/scripts/smoke-application-shortlists.cjs",
+        "blob": "7241aaafbf134f9acfb9ba6b4550fbe9b885aa3a"
+      },
+      {
+        "path": "backend/scripts/verify-recruiter-p15a.cjs",
+        "blob": "cbf23d66c2e3042df386039e5ab30a39b68ab137"
+      },
+      {
+        "path": "backend/src/modules/jobs/services/jobApplicationService.js",
+        "blob": "1a77a0304756ba9b8b1495365af2b8dcb98df407"
+      },
+      {
+        "path": "backend/src/modules/recruiter/services/hub/applicationShortlistService.js",
+        "blob": "33866a720b1b2ec83e78747b82af1cf1800a2179"
+      },
+      {
+        "path": "backend/src/modules/recruiter/utils/hub/applicationIdentityValidation.js",
+        "blob": "6e667792e5df14edf4587ea938727a125c228a31"
+      },
+      {
+        "path": "backend/src/modules/recruiter/utils/hub/applicationShortlistQuery.js",
+        "blob": "66c328462b015a32172baef8c93ad08be193df04"
+      },
+      {
+        "path": "backend/src/tests/fixtures/applicationPerformanceFixture.js",
+        "blob": "d43e9dfba643fb31bf25bf092002e1c3ed8e7b29"
+      },
+      {
+        "path": "backend/src/tests/recruiter/applicationIntegrity.integration.test.js",
+        "blob": "f91ad99c61d8592af4da592cfcac88878e46b89c"
+      },
+      {
+        "path": "backend/src/tests/recruiter/applicationWorkflow.integration.test.js",
+        "blob": "69b024cad34f4bfd5fc91a9d11489ace9b24f39c"
+      },
+      {
+        "path": "backend/verification/jobs-hub/p1.5a-benchmarks-1000.json",
+        "blob": "8c88fd92d11d361faf58bee97a82c7666302ff72"
+      },
+      {
+        "path": "backend/verification/jobs-hub/p1.5a-benchmarks-261.json",
+        "blob": "12227960e764ec56297017373ce84c3076a4f42a"
+      },
+      {
+        "path": "backend/verification/jobs-hub/p1.5a-benchmarks.json",
+        "blob": "3f300679655c2ed3b2ac7440e1968dc54f3d2488"
+      },
+      {
+        "path": "backend/verification/jobs-hub/p1.5a-design.json",
+        "blob": "8bd70691efc3fc0fb2842b8fdfba47a1c6acd352"
+      },
+      {
+        "path": "backend/verification/jobs-hub/p1.5a-legacy-inventory.json",
+        "blob": "464da474d70fe97eb8acb145a09eb22c9ec3b6c4"
+      },
+      {
+        "path": "backend/verification/jobs-hub/p1.5a-optimization-evaluation.json",
+        "blob": "7788ba859bfbc7cbb4b5602dad218443164057b1"
+      },
+      {
+        "path": "backend/verification/jobs-hub/p1.5a-preflight.json",
+        "blob": "96b4a6f9f1a12be4ec1d99681d28d17d08fc936b"
+      },
+      {
+        "path": "frontend/src/app/features/recruiter/components/match-card/match-card.component.html",
+        "blob": "f671f6ece8dc4b6dfb7f942c7d4593c6478ddf48"
+      },
+      {
+        "path": "frontend/src/app/features/recruiter/components/recruiter-components.spec.ts",
+        "blob": "6bebda5b151e8bdea808095ab041c519f6cb5ef3"
+      },
+      {
+        "path": "frontend/src/app/features/recruiter/components/shortlist-card/shortlist-card.component.html",
+        "blob": "ccca0376665541f848f6bb1a243f53ec75f0ac72"
+      },
+      {
+        "path": "frontend/src/app/features/recruiter/pages/matches/matches.component.spec.ts",
+        "blob": "bc0daad13c7d7c5fb5de67edde77dc45c56a79f5"
+      },
+      {
+        "path": "frontend/src/app/features/recruiter/pages/matches/matches.component.ts",
+        "blob": "a5d8def1ac5da0628636c75366b6ae466c1ded5b"
+      },
+      {
+        "path": "frontend/src/app/features/recruiter/pages/recruiter-analytics/recruiter-analytics.component.html",
+        "blob": "0eb24b003c50e0d70a2df9e02023f1faaadda653"
+      },
+      {
+        "path": "frontend/src/app/features/recruiter/pages/recruiter-analytics/recruiter-analytics.component.spec.ts",
+        "blob": "7ff552f1287dc61fe7669be4a0e871fc8272f5ca"
+      },
+      {
+        "path": "frontend/src/app/shared/utils/notification-navigation.spec.ts",
+        "blob": "768603530e66eb8f5c109fe8a32c309f255db833"
+      },
+      {
+        "path": "frontend/src/app/shared/utils/notification-navigation.ts",
+        "blob": "240d9671f3655e8e0dd98c146c9fc4ff6464e9a7"
+      }
+    ],
+    "note": "HEAD/index changed externally while interrupted. Preserve resumed index exactly; P1.4B original blob IDs above remain benchmark provenance."
+  }
 }

@@ -44,8 +44,14 @@ const evidence = {
 function acceptedBaseline() {
   const relative = 'backend/src/modules/recruiter/services/hub/applicationShortlistService.js';
   const filename = path.join(root, relative);
-  // Read the preserved P1.4B index blob, never checkout/reset/write the index.
-  const source = execFileSync('git', ['show', ':' + relative], { cwd: root, encoding: 'utf8' });
+  // Pin the accepted blob recorded before implementation; the user may stage
+  // or commit current changes between runs. Never modify the checkout/index.
+  const preflight = JSON.parse(
+    fs.readFileSync(path.join(root, 'backend/verification/jobs-hub/p1.5a-preflight.json'), 'utf8')
+  );
+  const blob = preflight.stagedBaseline.find((entry) => entry.path === relative)?.indexBlob;
+  assert.match(blob || '', /^[a-f0-9]{40}$/);
+  const source = execFileSync('git', ['cat-file', 'blob', blob], { cwd: root, encoding: 'utf8' });
   assert.match(source, /maxTimeMS: 5000/);
   assert.doesNotMatch(source, /verifyApplicationIdentities/);
   const baseline = new Module(filename, module);

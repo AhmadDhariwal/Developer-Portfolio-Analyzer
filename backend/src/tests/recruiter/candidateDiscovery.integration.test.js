@@ -5,6 +5,9 @@ const path = require('node:path');
 const { once } = require('node:events');
 const express = require('express');
 const mongoose = require('mongoose');
+// Own the disposable fixture DDL explicitly after connection, not at import time.
+mongoose.set('autoCreate', false);
+mongoose.set('autoIndex', false);
 const { startMongo } = require('../fixtures/disposableRequestMongo');
 const settings = require('../../modules/super-admin/services/platformSettingsService');
 const Settings = require('../../modules/super-admin/models/platformSettings');
@@ -29,6 +32,7 @@ const {
 } = require('../../modules/recruiter/utils/hub/candidateDiscoveryPipeline');
 const { parse } = require('../../modules/recruiter/utils/hub/candidateDiscoveryQuery');
 const { sign } = require('../../modules/auth/utils/authSessionToken');
+const hub = require('../../modules/recruiter/routes/hub/recruiterHubRoutes');
 
 test(
   'candidate discovery: complete database filters, secure pagination and source parity',
@@ -50,12 +54,14 @@ test(
       else process.env.JWT_SECRET = previous;
     });
     await mongoose.connect(mongo.uri);
-    await settings.startSettingsSynchronization();
+    // Finish cold route/model DDL before the bounded authoritative settings read.
     await Promise.all(
-      [User, Organization, Membership, Candidate, Analysis, Resume, Profile, Sprint, Weekly].map(
-        (model) => model.init()
-      )
+      Object.values(mongoose.models).map(async (model) => {
+        await model.createCollection();
+        await model.createIndexes();
+      })
     );
+    await settings.startSettingsSynchronization();
     const id = () => new mongoose.Types.ObjectId();
     const org = id(),
       foreignOrg = id(),
@@ -217,7 +223,7 @@ test(
     );
     const app = express();
     app.use(express.json());
-    app.use('/api/recruiter-hub', require('../../modules/recruiter/routes/hub/recruiterHubRoutes'));
+    app.use('/api/recruiter-hub', hub);
     server = app.listen(0, '127.0.0.1');
     await once(server, 'listening');
     const base = `http://127.0.0.1:${server.address().port}/api/recruiter-hub/candidates`;

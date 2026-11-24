@@ -9,7 +9,6 @@ const mongoose = require('mongoose');
 const { startMongo } = require('../fixtures/disposableRequestMongo');
 const User = require('../../modules/auth/models/user');
 const Organization = require('../../modules/admin/models/organization');
-const Settings = require('../../modules/super-admin/models/platformSettings');
 const Job = require('../../modules/recruiter/models/Job');
 const Application = require('../../modules/jobs/models/jobApplication');
 const Shortlist = require('../../modules/recruiter/models/RecruiterShortlist');

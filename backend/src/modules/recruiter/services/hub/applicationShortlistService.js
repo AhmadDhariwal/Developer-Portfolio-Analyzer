@@ -6,10 +6,7 @@ const User = require('../../../auth/models/user');
 const Settings = require('../../../super-admin/models/platformSettings');
 const access = require('../../utils/hub/recruiterEvaluationAccess');
 const { pagination, buildPipeline } = require('../../utils/hub/applicationShortlistQuery');
-const {
-  permittedRecruiterStatuses,
-  canonicalApplicationId: applicationKey
-} = require('../../../jobs/services/jobApplicationService');
+const { permittedRecruiterStatuses } = require('../../../jobs/services/jobApplicationService');
 const {
   verifyApplicationIdentities,
   remainingBudget,

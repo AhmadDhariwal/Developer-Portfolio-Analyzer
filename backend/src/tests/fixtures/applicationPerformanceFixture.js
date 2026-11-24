@@ -4,6 +4,10 @@ const fs = require('node:fs');
 const path = require('node:path');
 const express = require('express');
 const mongoose = require('mongoose');
+// This fixture owns a fresh database and runs once per process. Prevent model
+// registration from starting DDL before the disposable server has connected.
+mongoose.set('autoCreate', false);
+mongoose.set('autoIndex', false);
 const { startMongo } = require('./disposableRequestMongo');
 const User = require('../../modules/auth/models/user');
 const Organization = require('../../modules/admin/models/organization');
@@ -41,7 +45,12 @@ async function startApplicationFixture({ count = 261, configure } = {}) {
   try {
     await mongoose.connect(runtime.uri);
     // Register route dependencies first; finish cold DDL before any transaction.
-    await Promise.all(Object.values(mongoose.models).map((model) => model.init()));
+    await Promise.all(
+      Object.values(mongoose.models).map(async (model) => {
+        await model.createCollection();
+        await model.createIndexes();
+      })
+    );
     await settings.startSettingsSynchronization();
     const oid = () => new mongoose.Types.ObjectId();
     const owner = oid(),
@@ -129,7 +138,12 @@ async function startApplicationFixture({ count = 261, configure } = {}) {
     app.use('/api/notifications', require('../../modules/notifications/notification.routes'));
     app.use('/api/profile', require('../../modules/profile/profile.routes'));
     // New route imports may register additional models needed during browser boot.
-    await Promise.all(Object.values(mongoose.models).map((model) => model.init()));
+    await Promise.all(
+      Object.values(mongoose.models).map(async (model) => {
+        await model.createCollection();
+        await model.createIndexes();
+      })
+    );
     server = app.listen(0, '127.0.0.1');
     await once(server, 'listening');
     const origin = `http://127.0.0.1:${server.address().port}`;
