@@ -300,8 +300,12 @@ function validateApplicationId(id) {
   if (!/^[a-f0-9]{64}$/.test(String(id))) throw fail('Invalid application identifier.');
   return id;
 }
+function permittedRecruiterStatuses(status) {
+  if (status === 'submitted') return ['reviewing', 'rejected'];
+  if (status === 'reviewing') return ['rejected'];
+  return [];
+}
 async function transition(filter, actorId, status, expectedStatus, scope) {
-  const from = status === 'reviewing' ? ['submitted'] : ['submitted', 'reviewing'];
   return persistence.transaction(async (session) => {
     await persistence.fence(actorId, session);
     if (scope) {
@@ -316,10 +320,10 @@ async function transition(filter, actorId, status, expectedStatus, scope) {
     if (!current) throw fail('Application not found.', 404);
     // Retried withdrawal is an idempotent acknowledgement, without another event.
     if (status === 'withdrawn' && current.status === 'withdrawn') return current;
-    if (
-      !from.includes(current.status) ||
-      (expectedStatus !== undefined && current.status !== expectedStatus)
-    )
+    const permitted = scope
+      ? permittedRecruiterStatuses(current.status).includes(status)
+      : ['submitted', 'reviewing'].includes(current.status);
+    if (!permitted || (expectedStatus !== undefined && current.status !== expectedStatus))
       throw fail('Application changed. Refresh before trying again.', 409);
     const updated = await Application.findOneAndUpdate(
       { ...filter, status: current.status },
@@ -372,5 +376,6 @@ module.exports = {
   changeStatus,
   withdraw,
   submittedResume,
+  permittedRecruiterStatuses,
   portfolioSnapshot
 };

@@ -14,10 +14,12 @@ export class ShortlistCardComponent {
   @Input() item: any;
   @Input() hideActions = false;
   @Input() savingNotes = false;
+  @Input() changingApplication = false;
   @Output() edit = new EventEmitter<any>();
   @Output() remove = new EventEmitter<any>();
   @Output() saveNotes = new EventEmitter<{ item: any; notes: string }>();
   @Output() statusChange = new EventEmitter<{ item: any; status: string }>();
+  @Output() applicationStatusChange = new EventEmitter<{ item: any; status: string }>();
 
   editingNote = false;
   noteDraft = '';

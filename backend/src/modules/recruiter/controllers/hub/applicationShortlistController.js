@@ -24,8 +24,8 @@ module.exports = {
     });
     res.status(result.created ? 201 : 200).json(result);
   }),
-  list: handle(async (_req, res, scope) =>
-    res.json(await service.listApplicationShortlists(scope))
+  list: handle(async (req, res, scope) =>
+    res.json(await service.listApplicationShortlists({ ...scope, query: req.query }))
   ),
   update: handle(async (req, res, scope) =>
     res.json({

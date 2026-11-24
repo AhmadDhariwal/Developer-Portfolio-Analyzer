@@ -256,4 +256,12 @@
       }
     </div>
   }
+  <app-confirm-dialog
+    [open]="!!rejection"
+    title="Reject application"
+    message="Reject this application and notify the applicant? This is terminal. Internal notes and stage are retained."
+    confirmText="Reject application"
+    (confirmed)="confirmRejection()"
+    (cancelled)="rejection = null"
+  />
 </section>

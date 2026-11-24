@@ -6,6 +6,8 @@ const Application = require('../../../jobs/models/jobApplication');
 const User = require('../../../auth/models/user');
 const Settings = require('../../../super-admin/models/platformSettings');
 const access = require('../../utils/hub/recruiterEvaluationAccess');
+const { pagination, buildPipeline } = require('../../utils/hub/applicationShortlistQuery');
+const { permittedRecruiterStatuses } = require('../../../jobs/services/jobApplicationService');
 const { requireObjectId, invalidInput } = require('../../utils/recruiterValidation');
 
 const ACTIVE = new Set(['submitted', 'reviewing']);
@@ -111,13 +113,15 @@ function view(row, application, job) {
       _id: application._id,
       status: application.status,
       jobTitle: application.jobTitle,
+      permittedStatuses: permittedRecruiterStatuses(application.status),
       submittedAt: application.createdAt
     },
     access: {
       view: true,
       manage: true,
       isOwner: true,
-      manageStages: ACTIVE.has(application.status)
+      manageStages: ACTIVE.has(application.status),
+      manageApplicationStatus: true
     }
   };
 }
@@ -197,41 +201,14 @@ async function linkApplication({ jobId, applicationId: value, payload = {}, ...s
   });
 }
 
-async function listApplicationShortlists(scope) {
+async function listApplicationShortlists({ query, ...scope }) {
+  const { page, limit } = pagination(query);
   return withPrivateAccess(scope, async (ctx) => {
-    const rows = await Shortlist.find({
-      recruiterId: ctx.recruiterId,
-      organizationId: ctx.organizationId,
-      applicationId: { $ne: null }
-    })
-      .sort({ updatedAt: -1, _id: 1 })
-      .limit(100)
+    const [result] = await Shortlist.aggregate(buildPipeline(ctx, { page, limit }))
       .session(ctx.session)
-      .lean();
-    const jobs = await Job.find({
-      _id: { $in: rows.map((row) => row.jobId) },
-      recruiterId: ctx.recruiterId,
-      organizationId: ctx.organizationId
-    })
-      .session(ctx.session)
-      .lean();
-    const applications = await Application.find({
-      _id: { $in: rows.map((row) => row.applicationId) },
-      recruiterId: ctx.recruiterId,
-      organizationId: ctx.organizationId
-    })
-      .select(
-        '_id jobId organizationId recruiterId applicantId applicantName jobTitle status consent createdAt'
-      )
-      .session(ctx.session)
-      .lean();
-    const jobMap = new Map(jobs.map((job) => [id(job._id), job]));
-    const appMap = new Map(applications.map((application) => [application._id, application]));
-    const valid = rows.filter((row) => {
-      const application = appMap.get(row.applicationId),
-        job = jobMap.get(id(row.jobId));
-      return genuine(application, job) && canonicalRow(row, application, job);
-    });
+      .option({ maxTimeMS: 5000 });
+    const valid = result.rows;
+    const total = result.count[0]?.total || 0;
     if (valid.length) {
       const lockedJobs = await Job.collection.updateMany(
         {
@@ -258,10 +235,14 @@ async function listApplicationShortlists(scope) {
         throw access.denied('Application access changed. Refresh before retrying.', 409);
     }
     return {
-      shortlists: valid.map((row) =>
-        view(row, appMap.get(row.applicationId), jobMap.get(id(row.jobId)))
-      ),
-      meta: { scope: 'owner-only-applications', limit: 100 }
+      shortlists: valid.map((row) => view(row, row.linkedApplication, row.linkedJob)),
+      meta: {
+        scope: 'owner-only-applications',
+        limit,
+        page,
+        total,
+        pages: Math.ceil(total / limit)
+      }
     };
   });
 }

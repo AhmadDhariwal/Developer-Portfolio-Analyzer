@@ -160,7 +160,11 @@ describe('Owner-only application shortlist workflow', () => {
     await TestBed.configureTestingModule({
       imports: [CommonModule, FormsModule, RouterLink, ShortlistCardComponent],
       declarations: [ShortlistsComponent],
-      providers: [provideRouter([]), { provide: RecruiterMatchService, useValue: service }],
+      providers: [
+        provideRouter([]),
+        { provide: RecruiterMatchService, useValue: service },
+        { provide: JobApplicationsService, useValue: service.applications || {} },
+      ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
     const fixture = TestBed.createComponent(ShortlistsComponent);
@@ -197,5 +201,158 @@ describe('Owner-only application shortlist workflow', () => {
     fixture.detectChanges();
     expect(fixture.componentInstance.shortlists).toEqual([]);
     expect(fixture.nativeElement.textContent).not.toContain('Private Applicant');
+  });
+  const actionableRow = () => ({
+    ...structuredClone(row),
+    application: { ...row.application, permittedStatuses: ['reviewing', 'rejected'] },
+    access: { ...row.access, manageApplicationStatus: true },
+  });
+  it('confirms application rejection separately, sends observed status and refreshes canonical state', async () => {
+    const entry = actionableRow();
+    const api = {
+      getShortlists: vi.fn().mockReturnValue(of({ shortlists: [] })),
+      getApplicationShortlists: vi.fn().mockReturnValue(of({ shortlists: [entry] })),
+      applications: { status: vi.fn().mockReturnValue(of({})) },
+    };
+    const fixture = await shortlists(api);
+    fixture.componentInstance.setSource('applications');
+    fixture.detectChanges();
+    button(fixture, 'Reject application').click();
+    fixture.detectChanges();
+    expect(api.applications.status).not.toHaveBeenCalled();
+    expect(fixture.componentInstance.confirmState().title).toBe('Reject application');
+    fixture.componentInstance.onConfirmCancelled();
+    expect(api.applications.status).not.toHaveBeenCalled();
+    fixture.componentInstance.changeApplicationStatus({ item: entry, status: 'rejected' });
+    api.getApplicationShortlists.mockReturnValue(
+      of({
+        shortlists: [
+          {
+            ...entry,
+            application: { ...entry.application, status: 'rejected', permittedStatuses: [] },
+            access: { ...entry.access, manageStages: false },
+          },
+        ],
+      }),
+    );
+    fixture.componentInstance.onConfirmAccepted();
+    fixture.detectChanges();
+    expect(api.applications.status).toHaveBeenCalledWith(
+      'job-1',
+      application._id,
+      'rejected',
+      'submitted',
+    );
+    expect(api.getApplicationShortlists).toHaveBeenCalledTimes(2);
+    expect(fixture.nativeElement.textContent).toContain('Application status: rejected');
+    expect(fixture.nativeElement.textContent).toContain('Internal stage: reviewing');
+    expect(button(fixture, 'Reject application')).toBeUndefined();
+    expect(fixture.componentInstance.notice).toContain('Application status updated');
+  });
+  it('refreshes on a 409, offers no terminal actions, and rejects stale source callbacks', async () => {
+    const entry = actionableRow();
+    const pending = new Subject<any>();
+    const api = {
+      getShortlists: vi.fn().mockReturnValue(of({ shortlists: [] })),
+      getApplicationShortlists: vi.fn().mockReturnValue(of({ shortlists: [entry] })),
+      applications: { status: vi.fn().mockReturnValue(throwError(() => ({ status: 409 }))) },
+    };
+    const fixture = await shortlists(api);
+    fixture.componentInstance.setSource('applications');
+    api.getApplicationShortlists.mockReturnValueOnce(
+      of({
+        shortlists: [
+          {
+            ...entry,
+            application: { ...entry.application, status: 'withdrawn', permittedStatuses: [] },
+            access: { ...entry.access, manageStages: false },
+          },
+        ],
+      }),
+    );
+    fixture.componentInstance.changeApplicationStatus({ item: entry, status: 'reviewing' });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Application status: withdrawn');
+    expect(fixture.componentInstance.error).toContain('Application changed');
+    expect(fixture.componentInstance.notice).toBe('');
+    expect(button(fixture, 'Mark application reviewing')).toBeUndefined();
+    api.getApplicationShortlists.mockReturnValue(of({ shortlists: [entry] }));
+    fixture.componentInstance.loadShortlists();
+    api.applications.status.mockReturnValue(pending);
+    fixture.componentInstance.changeApplicationStatus({ item: entry, status: 'reviewing' });
+    fixture.componentInstance.setSource('public');
+    pending.next({});
+    fixture.detectChanges();
+    expect(fixture.componentInstance.notice).toBe('');
+    expect(fixture.nativeElement.textContent).not.toContain('Private Applicant');
+  });
+  it('paginates on the server, preserves empty-filter navigation, and rejects late page results', async () => {
+    const entry = actionableRow();
+    const pending = new Subject<any>();
+    const api = {
+      getShortlists: vi.fn().mockReturnValue(of({ shortlists: [] })),
+      getApplicationShortlists: vi
+        .fn()
+        .mockReturnValue(of({ shortlists: [entry], meta: { total: 125, pages: 7 } })),
+    };
+    const fixture = await shortlists(api);
+    fixture.componentInstance.setSource('applications');
+    fixture.detectChanges();
+    expect(api.getApplicationShortlists).toHaveBeenCalledWith(1, 20);
+    const search: HTMLInputElement = fixture.nativeElement.querySelector('input[type="search"]');
+    search.value = 'does not match';
+    search.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(button(fixture, 'Next page')).toBeTruthy();
+    api.getApplicationShortlists.mockReturnValueOnce(pending);
+    button(fixture, 'Next page').click();
+    expect(api.getApplicationShortlists).toHaveBeenLastCalledWith(2, 20);
+    fixture.componentInstance.setSource('public');
+    pending.next({ shortlists: [entry], meta: { total: 125, pages: 7 } });
+    fixture.detectChanges();
+    expect(fixture.componentInstance.applicationPage).toBe(1);
+    expect(fixture.componentInstance.applicationTotal).toBe(0);
+    expect(fixture.componentInstance.shortlists).toEqual([]);
+    expect(fixture.nativeElement.textContent).not.toContain('Private Applicant');
+  });
+  it('does not expose status actions without owner permission or replay cancelled confirmation', async () => {
+    const entry = actionableRow();
+    const api = {
+      getShortlists: vi.fn().mockReturnValue(of({ shortlists: [] })),
+      getApplicationShortlists: vi.fn().mockReturnValue(of({ shortlists: [entry] })),
+      applications: { status: vi.fn() },
+    };
+    const fixture = await shortlists(api);
+    fixture.componentInstance.setSource('applications');
+    fixture.componentInstance.changeApplicationStatus({ item: entry, status: 'rejected' });
+    fixture.componentInstance.setSource('public');
+    fixture.componentInstance.onConfirmAccepted();
+    expect(api.applications.status).not.toHaveBeenCalled();
+    entry.access.manageApplicationStatus = false;
+    fixture.componentInstance.setSource('applications');
+    fixture.detectChanges();
+    expect(button(fixture, 'Reject application')).toBeUndefined();
+    fixture.componentInstance.changeApplicationStatus({ item: entry, status: 'reviewing' });
+    expect(api.applications.status).not.toHaveBeenCalled();
+  });
+  it('confirms rejection from Job Applicants and ignores status responses after navigation', async () => {
+    const pending = new Subject<any>();
+    const api = {
+      applicants: vi.fn().mockReturnValue(of({ applications: [application] })),
+      status: vi.fn().mockReturnValue(pending),
+    };
+    const fixture = await applicants(api);
+    button(fixture, 'Mark rejected').click();
+    fixture.detectChanges();
+    expect(api.status).not.toHaveBeenCalled();
+    fixture.componentInstance.confirmRejection();
+    expect(api.status).toHaveBeenCalledWith('job-1', application._id, 'rejected', 'submitted');
+    fixture.componentRef.setInput('jobId', 'job-2');
+    fixture.detectChanges();
+    pending.next({});
+    fixture.detectChanges();
+    expect(api.applicants).toHaveBeenCalledTimes(2);
+    expect(fixture.componentInstance.notice).toBe('');
   });
 });

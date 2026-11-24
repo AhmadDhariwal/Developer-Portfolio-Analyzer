@@ -5,11 +5,12 @@ import { RouterLink } from '@angular/router';
 import { map } from 'rxjs/operators';
 import { DirectApplication, JobApplicationsService } from '../../services/job-applications.service';
 import { formatInitials, truncateSha256 } from './direct-application-ui.utils';
+import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { SubmittedPortfolioComponent } from './submitted-portfolio.component';
 @Component({
   selector: 'app-job-applicants',
   standalone: true,
-  imports: [CommonModule, SubmittedPortfolioComponent, RouterLink],
+  imports: [CommonModule, SubmittedPortfolioComponent, RouterLink, ConfirmDialogComponent],
   templateUrl: './job-applicants.component.html',
   styleUrl: './job-applicants.component.scss',
 })
@@ -26,6 +27,7 @@ export class JobApplicantsComponent implements OnChanges {
   actionError = '';
   notice = '';
   private loadVersion = 0;
+  rejection: DirectApplication | null = null;
   filterStatus: 'all' | 'submitted' | 'reviewing' | 'rejected' | 'withdrawn' = 'all';
 
   get filteredApplications(): DirectApplication[] {
@@ -54,6 +56,7 @@ export class JobApplicantsComponent implements OnChanges {
   load() {
     if (!this.jobId) return;
     const version = ++this.loadVersion;
+    this.rejection = null;
     const jobId = this.jobId;
     this.loading = true;
     this.applications = [];
@@ -127,24 +130,57 @@ export class JobApplicantsComponent implements OnChanges {
       });
   }
   status(application: DirectApplication, status: string) {
+    if (
+      this.busy ||
+      this.loading ||
+      !this.applications.includes(application) ||
+      !['submitted', 'reviewing'].includes(application.status) ||
+      !['reviewing', 'rejected'].includes(status) ||
+      status === application.status
+    )
+      return;
+    if (status === 'rejected') {
+      this.rejection = application;
+      return;
+    }
+    this.applyStatus(application, status);
+  }
+  confirmRejection() {
+    const application = this.rejection;
+    this.rejection = null;
+    if (
+      application &&
+      this.applications.includes(application) &&
+      ['submitted', 'reviewing'].includes(application.status)
+    )
+      this.applyStatus(application, 'rejected');
+  }
+  private applyStatus(application: DirectApplication, status: string) {
     if (this.busy || this.loading) return;
+    const version = this.loadVersion;
+    const jobId = this.jobId;
     this.busy = true;
     this.actionError = '';
+    this.notice = '';
     this.api
-      .status(this.jobId, application._id, status, application.status)
+      .status(jobId, application._id, status, application.status)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
+          if (version !== this.loadVersion || jobId !== this.jobId) return;
           this.busy = false;
           this.load();
+          this.notice = `Application status updated to ${status}.`;
+          this.cdr.markForCheck();
         },
         error: (e) => {
+          if (version !== this.loadVersion || jobId !== this.jobId) return;
           this.busy = false;
-          if (e.status === 409) {
-            this.load();
-            this.actionError =
-              'Application changed. Refresh and review the current status before trying again.';
-          } else this.actionError = e.error?.message || 'Unable to change status.';
+          if ([403, 404, 409].includes(e.status)) this.load();
+          this.actionError =
+            e.status === 409
+              ? 'Application changed. Refresh and review the current status before trying again.'
+              : e.error?.message || 'Unable to change status.';
           this.cdr.markForCheck();
         },
       });

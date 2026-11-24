@@ -27,6 +27,8 @@ describe('Recruiter domain services', () => {
       generateRecruiterHubMatches: vi.fn().mockReturnValue(of({ matches: [] })),
       updateRecruiterHubMatchStatus: vi.fn().mockReturnValue(of({ match: { _id: 'm1' } })),
       getRecruiterHubShortlists: vi.fn().mockReturnValue(of({ shortlists: [] })),
+      getRecruiterApplicationShortlists: vi.fn().mockReturnValue(of({ shortlists: [], meta: {} })),
+      updateRecruiterApplicationShortlist: vi.fn().mockReturnValue(of({ shortlist: {} })),
       createRecruiterHubShortlist: vi.fn().mockReturnValue(of({ shortlist: { _id: 's1' } })),
       updateRecruiterHubShortlist: vi.fn().mockReturnValue(of({ shortlist: { _id: 's1' } })),
       deleteRecruiterHubShortlist: vi.fn().mockReturnValue(of({ message: 'Removed' })),
@@ -86,6 +88,10 @@ describe('Recruiter domain services', () => {
     matchService.addToShortlist({ candidateId: 'c1', jobId: 'job-1' }).subscribe();
     matchService.updateShortlist('s1', { status: 'interview', notes: 'Great' }).subscribe();
     matchService.removeShortlist('s1').subscribe();
+    matchService.getApplicationShortlists(6, 20).subscribe();
+    matchService
+      .updateApplicationShortlist('private-1', { notes: 'Owner notes', expectedVersion: 3 })
+      .subscribe();
     matchService.compareCandidates({ candidateIds: ['c1', 'c2'], jobId: 'job-1' }).subscribe();
 
     expect(apiMock['getRecruiterHubMatches']).toHaveBeenCalledWith({ jobId: 'job-1' });
@@ -106,6 +112,11 @@ describe('Recruiter domain services', () => {
       notes: 'Great',
     });
     expect(apiMock['deleteRecruiterHubShortlist']).toHaveBeenCalledWith('s1');
+    expect(apiMock['getRecruiterApplicationShortlists']).toHaveBeenCalledWith(6, 20);
+    expect(apiMock['updateRecruiterApplicationShortlist']).toHaveBeenCalledWith('private-1', {
+      notes: 'Owner notes',
+      expectedVersion: 3,
+    });
     expect(apiMock['compareRecruiterHubCandidates']).toHaveBeenCalledWith({
       candidateIds: ['c1', 'c2'],
       jobId: 'job-1',

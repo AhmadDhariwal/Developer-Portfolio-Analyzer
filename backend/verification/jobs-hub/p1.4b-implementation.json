@@ -1,0 +1,245 @@
+{
+  "phase": "P1.4B",
+  "date": "2026-11-24",
+  "status": "complete",
+  "scope": "Complete linked application workflow and status coordination only. P1.5 not started.",
+  "preflight": {
+    "source": "fix/P1-project",
+    "current": "fix/P1-project",
+    "sourceRefVerified": true,
+    "head": "9a207034512c65a8a16dc0d2f2f1375753a19f70",
+    "target": "not applicable; no PR or branch integration requested",
+    "initialIndexAndWorkingTree": "clean",
+    "authorization": "User explicitly requested continuing the existing branch and compatible additive API fields. No dependency or schema changes."
+  },
+  "planCompleted": [
+    "Read repository instructions, accepted P1.4A implementation/linkage reports and existing lifecycle/notification/authorization/UI code; use supplied independent acceptance as baseline.",
+    "Expose canonical permitted application transitions and reuse the existing lifecycle endpoint from linked shortlists; require rejection confirmation in both affected interfaces.",
+    "Replace latest-100 feed with bounded database authorization, canonical-key/consent validation, deterministic ordering and exact counts before pagination.",
+    "Run disposable replica-set HTTP, concurrency, privacy, notification and compatibility checks plus focused Angular verification.",
+    "Format every changed source file in write mode then check mode; inspect modularity/imports, preserve historical/user artifacts, verify fixture cleanup, recheck syntax/compiler/build/whitespace and retain final evidence."
+  ],
+  "authorityContracts": {
+    "JobApplication": "Sole authority for applicant-visible status, history, original consent and frozen submitted evidence. permittedRecruiterStatuses is owned by its existing lifecycle service and also drives the linked view metadata.",
+    "RecruiterShortlist": "Internal notes and stage only. No automatic application synchronization. Shortlisted/contacted/interview/rejected internal stages never notify the Developer.",
+    "RecruiterMatch": "Existing public matching authority. No new status model, states, ATS, notification provider, worker or queue.",
+    "permissions": "Application-origin disclosure stays owner-only under existing live actor/org/membership/settings/job/application policy and transaction fences. Team/evaluation sharing grants no private application access. Current job ownership and immutable original application ownership must both match; neither party gains access after a mismatched transfer."
+  },
+  "apiChanges": [
+    {
+      "route": "GET /api/recruiter-hub/shortlists/applications",
+      "additions": "page and limit query parameters; meta.page, meta.total, meta.pages. Existing shortlists, meta.scope and meta.limit retained. Default page=1/limit=100; strict positive integer limit<=100, page<=1000000; invalid or unknown query shapes rejected with 400.",
+      "ordering": "updatedAt descending, _id ascending; each request is a transaction snapshot. Concurrent edits may move records between offset pages; no multi-request snapshot is promised."
+    },
+    {
+      "view": "Linked shortlist rows",
+      "additions": "application.permittedStatuses and access.manageApplicationStatus. Submitted permits reviewing/rejected; reviewing permits rejected; withdrawn/rejected permit none."
+    },
+    {
+      "route": "PATCH /api/recruiter-hub/jobs/:id/applications/:applicationId",
+      "change": "Existing endpoint reused without a new route or request contract. UI always supplies observed expectedStatus. Lifecycle service remains the only status/history/notification writer; shortlist service retains only its accepted access fences."
+    }
+  ],
+  "uiChanges": [
+    "Existing shortlist card renders distinct applicant-visible status action buttons and internal-stage controls; only server-permitted application actions are offered to authorized owners.",
+    "Application rejection requires explicit confirmation, with cancellation and stale-source guards. Job Applicants uses the same existing confirmation component.",
+    "Successful application actions reload canonical evaluations; 403/404/409 reload and clear stale records, and 409 never silently replays the requested transition. Late source/page/job responses cannot paint another context.",
+    "Application feed uses 20 rows per UI page, previous/next navigation, total/page indicators, out-of-range recovery and loading/error/retry/empty/success states. Existing search, filters and metrics are explicitly page-local.",
+    "Exact application/evidence links are retained beyond the applicant-list cap. Existing responsive button/group/card styles and theme tokens are reused; public workflows remain unchanged."
+  ],
+  "paginationAndQueryPlan": {
+    "implementation": "One Mongo aggregation with owner/org match, indexed owned-Job and immutable-source Application joins, original-consent and lifecycle validity checks, canonical SHA-256 key validation, then a rows/count facet. Node receives at most limit rows; no per-row database requests. Only returned page jobs/applications receive the existing batched write fences.",
+    "integrity": "Native aggregation SHA-256 expression is specialized to the existing 49-byte ObjectId:ObjectId key. Tested against Node crypto vectors and 125 random canonical links; forged valid-looking hashes, missing links, wrong applicant/job/org/owner, invalid consent/date/boolean/status are excluded before totals. No server-side JavaScript, schema field or competing identity introduced.",
+    "bounds": "At most 100 rows per API page; aggregation maxTimeMS=5000 fails closed, with no partial success. Exact totals and canonical-key checks still perform server work proportional to the scoped owner population; the fixture is not a production capacity claim.",
+    "fixture": {
+      "valid": 125,
+      "invalid": 10,
+      "pagesAtLimit20": 7,
+      "lastPageRows": 5,
+      "unauthorizedTotals": 0
+    },
+    "serverVersion": "8.2.6",
+    "executionStats": {
+      "executionTimeMillis": 1489,
+      "totalDocsExamined": 135,
+      "totalKeysExamined": 135,
+      "nReturned": 133
+    },
+    "sort": "Explicit deterministic tie-break sort; 54934 bytes sorted, usedDisk=false, spills=0 in retained plan.",
+    "indexes": "Existing organizationId/recruiterId indexes on Shortlist and Job; existing jobId/applicantId unique application index. Foreign joins show zero collection scans. No declaration, migration or production index operation added; this small plan does not justify a new index.",
+    "evidence": "backend/verification/jobs-hub/p1.4b-workflow-tests.json"
+  },
+  "notificationConsistency": {
+    "mechanism": "Accepted P1.1B lifecycle notification transaction and permanent event receipts are reused unchanged.",
+    "results": "Five concurrent observed reviewing intents produce one 200 and four 409s, one notification, one receipt and one inbox revision. Stale/rejected/withdrawn intents do not create success notifications. Internal note/interview-stage changes create none.",
+    "atomicity": "Injected failure after the real notification write rolls back application status/history, receipt, inbox notification and revision together. Concurrent rejection/withdrawal has one winner and one 409, without reopening.",
+    "privacy": "Notification title/message/meta contain no private notes, applicant evidence or application identifiers. Original resume bytes, metadata, portfolio and consent remain unchanged.",
+    "durability": "Unmodified broader production notification assertions passed: cross-worker delivery, inbox-deletion tombstones, restart/reconnect, scope/session revocation, Mongo outage recovery, preference and account deletion contracts.",
+    "evidence": "backend/verification/jobs-hub/p1.4b-notifications/integration-results.json"
+  },
+  "validation": {
+    "backend": {
+      "passedAcrossFocusedRuns": 71,
+      "skipped": 0,
+      "groups": [
+        {
+          "command": "node --test src/tests/jobs/jobApplications.integration.test.js src/tests/recruiter/applicationShortlists.integration.test.js src/tests/core/applicationEvaluationRequestLogging.test.js",
+          "passed": 24,
+          "result": "passed, also passed within final combined rerun"
+        },
+        {
+          "command": "node --test backend/src/tests/recruiter/applicationWorkflow.integration.test.js",
+          "passed": 5,
+          "result": "final isolated run passed after latest source edits"
+        },
+        {
+          "command": "node --test src/tests/recruiter/candidateDiscovery.integration.test.js src/tests/recruiter/candidateAnalytics.integration.test.js src/tests/recruiter/candidateDiscoveryQuery.test.js src/tests/recruiter/teamEvaluations.integration.test.js",
+          "passed": 27,
+          "result": "passed; no historical evidence files overwritten"
+        },
+        {
+          "test": "src/tests/notifications/notificationsProduction.test.js",
+          "passed": 15,
+          "result": "passed via node:test automatic runner loaded from stdin; a diagnostic wrapper logged and rethrew the first MongoClient.connect error without changing behavior or assertions; two real worker processes ran"
+        }
+      ]
+    },
+    "angular": {
+      "command": "npm test -- --watch=false --include='src/app/shared/components/direct-applications/*.spec.ts' --include='src/app/features/recruiter/pages/recruiter-pages.spec.ts' --include='src/app/features/recruiter/components/recruiter-components.spec.ts' --include='src/app/features/recruiter/services/recruiter-domain-services.spec.ts'",
+      "passed": 47,
+      "files": 6,
+      "skipped": 0,
+      "full805SuiteRepeated": false
+    },
+    "compiler": "node frontend/node_modules/typescript/bin/tsc --noEmit -p frontend/tsconfig.app.json passed after final source formatting.",
+    "productionBuild": "npm run build passed, including Angular template compilation; final output frontend/dist/frontend retained.",
+    "syntax": "node --check passed for all six changed backend JavaScript files.",
+    "formatting": "Installed frontend/node_modules/prettier/bin/prettier.cjs used with explicit changed paths in --write and --check. Frontend uses frontend/.prettierrc; backend retains single quotes, printWidth=100 and trailingComma=none.",
+    "whitespace": "git diff --check and git diff --cached --check passed; added text files separately checked with git diff --no-index --check.",
+    "retryHistory": [
+      "Initial Angular run: 46 passed, one new test failed due to a programmatic ngModel assignment. Replaced it with an actual input event; final 47 passed.",
+      "Several local replica-set startups failed at the readiness deadline; fixtures stopped and cleaned their own temporary files. No production data or settings were used.",
+      "One combined final rerun passed existing application/link/privacy tests but failed the new concurrency expectation with zero successful responses. No response detail was recorded in that attempt; no root-cause assertion is made. A diagnostic assertion was added, and the final isolated workflow run passed all five tests. Local concurrent-run stability remains a verification limitation.",
+      "The final notification diagnostic run passed every assertion; the wrapper changed only error logging. Earlier readiness failures are not counted as passing runs."
+    ],
+    "warnings": [
+      "Production initial bundle 4.13 MB exceeds 4 MB warning budget; public-portfolio.scss 49.97 kB and developer/jobs.scss 54.40 kB exceed 48 kB warning budgets. Build remains below error budgets.",
+      "Existing jsdom canvas-not-implemented and Mongoose new-option deprecation messages remain; no dependency or unrelated source changes were made."
+    ],
+    "limits": [
+      "No new live-browser Light/Dark/System, viewport or screen-reader matrix was run; DOM interactions and production templates passed and existing theme/responsive styles were reused.",
+      "No production-scale latency, multi-replica failover or rollout compatibility claim. Native expressions were verified on the retained MongoDB 8.2.6 disposable replica set."
+    ]
+  },
+  "cleanup": {
+    "status": "complete",
+    "movedSourceFiles": [],
+    "deletedSourceFiles": [],
+    "taskOwnedTemporaryScriptsOrLogsRemaining": [],
+    "disposableInfrastructure": "All current-task test processes completed and fixture cleanup stopped their MongoDB children and removed individually verified temporary files. Final workflow cleanup removed 227 files; final notification cleanup removed 227 files. Existing fixtures own and validate their exact cleanup paths; no recursive shell deletion was used.",
+    "preserved": "Historical reports/screenshots/fixtures, existing user work, source/assets/licenses and final build evidence retained. backend/verification/devinsight-real-integrations-RBmeeF predates this task (2026-11-23 creation) and was left untouched. Existing Angular cache/build folders were not purged.",
+    "references": "No source files moved or deleted; runtime navigation/import references verified by TypeScript, Angular production compilation and focused tests."
+  },
+  "futurePolicyDecisions": [
+    "Explicit user-reviewed public/legacy conflict reconciliation or conversion: preserve 409 and existing evaluations until authorized; never auto merge/delete/convert.",
+    "Application ownership transfer requires an explicit product/privacy/consent/evidence-retention decision. Current original/current owner mismatch fails closed; no automatic transfer.",
+    "Any changed job/account deletion or historical evidence-retention policy requires a separate task; accepted contracts remain unchanged."
+  ],
+  "remainingP15Requirements": [
+    "MASTER-PRODUCT-ROADMAP.md P1.5: confirm zero external consumers before retiring legacy /api/recruiter routes, compatibility models and duplicate admin surfaces.",
+    "Inventory/deprecate legacy ApiService methods and dead compatibility code with cross-module regression evidence; no P1.5 removals or refactors are included here."
+  ],
+  "prohibitedActionsPerformed": {
+    "commits": false,
+    "pushes": false,
+    "deployments": false,
+    "productionMutations": false,
+    "productionMigrations": false,
+    "productionIndexOperations": false,
+    "stagingChanges": false
+  },
+  "inventory": {
+    "modified": [
+      {
+        "path": "backend/src/modules/jobs/services/jobApplicationService.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\jobs\\services\\jobApplicationService.js"
+      },
+      {
+        "path": "backend/src/modules/recruiter/controllers/hub/applicationShortlistController.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\controllers\\hub\\applicationShortlistController.js"
+      },
+      {
+        "path": "backend/src/modules/recruiter/services/hub/applicationShortlistService.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\services\\hub\\applicationShortlistService.js"
+      },
+      {
+        "path": "frontend/src/app/features/recruiter/components/shortlist-card/shortlist-card.component.html",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\recruiter\\components\\shortlist-card\\shortlist-card.component.html"
+      },
+      {
+        "path": "frontend/src/app/features/recruiter/components/shortlist-card/shortlist-card.component.ts",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\recruiter\\components\\shortlist-card\\shortlist-card.component.ts"
+      },
+      {
+        "path": "frontend/src/app/features/recruiter/pages/shortlists/shortlists.component.html",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\recruiter\\pages\\shortlists\\shortlists.component.html"
+      },
+      {
+        "path": "frontend/src/app/features/recruiter/pages/shortlists/shortlists.component.ts",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\recruiter\\pages\\shortlists\\shortlists.component.ts"
+      },
+      {
+        "path": "frontend/src/app/features/recruiter/services/recruiter-domain-services.spec.ts",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\recruiter\\services\\recruiter-domain-services.spec.ts"
+      },
+      {
+        "path": "frontend/src/app/features/recruiter/services/recruiter-match.service.ts",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\features\\recruiter\\services\\recruiter-match.service.ts"
+      },
+      {
+        "path": "frontend/src/app/shared/components/direct-applications/application-shortlist-ui.spec.ts",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\components\\direct-applications\\application-shortlist-ui.spec.ts"
+      },
+      {
+        "path": "frontend/src/app/shared/components/direct-applications/job-applicants.component.html",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\components\\direct-applications\\job-applicants.component.html"
+      },
+      {
+        "path": "frontend/src/app/shared/components/direct-applications/job-applicants.component.ts",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\components\\direct-applications\\job-applicants.component.ts"
+      },
+      {
+        "path": "frontend/src/app/shared/services/api.service.ts",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\frontend\\src\\app\\shared\\services\\api.service.ts"
+      }
+    ],
+    "added": [
+      {
+        "path": "backend/src/modules/recruiter/utils/hub/applicationKeyExpression.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\utils\\hub\\applicationKeyExpression.js"
+      },
+      {
+        "path": "backend/src/modules/recruiter/utils/hub/applicationShortlistQuery.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\modules\\recruiter\\utils\\hub\\applicationShortlistQuery.js"
+      },
+      {
+        "path": "backend/src/tests/recruiter/applicationWorkflow.integration.test.js",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\src\\tests\\recruiter\\applicationWorkflow.integration.test.js"
+      },
+      {
+        "path": "backend/verification/jobs-hub/p1.4b-notifications/integration-results.json",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\p1.4b-notifications\\integration-results.json"
+      },
+      {
+        "path": "backend/verification/jobs-hub/p1.4b-workflow-tests.json",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\p1.4b-workflow-tests.json"
+      },
+      {
+        "path": "backend/verification/jobs-hub/p1.4b-implementation.json",
+        "absolutePath": "C:\\Users\\ahmad.hassan\\Desktop\\Developer-Portfolio-Analyzer\\backend\\verification\\jobs-hub\\p1.4b-implementation.json"
+      }
+    ],
+    "moved": [],
+    "deleted": []
+  }
+}

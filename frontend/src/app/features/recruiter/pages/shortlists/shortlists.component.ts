@@ -3,6 +3,7 @@ import { finalize } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
 import { PerformanceChartItem } from '../../components/recruiter-performance-chart/recruiter-performance-chart.component';
 import { RecruiterMatchService } from '../../services/recruiter-match.service';
+import { JobApplicationsService } from '../../../../shared/services/job-applications.service';
 
 export type ShortlistStageFilter =
   | 'all'
@@ -28,6 +29,7 @@ interface ConfirmState {
 })
 export class ShortlistsComponent implements OnInit {
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly applications = inject(JobApplicationsService);
   private readonly route = inject(ActivatedRoute, { optional: true });
   source: 'public' | 'applications' = 'public';
   private loadVersion = 0;
@@ -39,6 +41,11 @@ export class ShortlistsComponent implements OnInit {
   jobFilter = '';
   searchTerm = '';
   savingNoteId = '';
+  applicationPage = 1;
+  readonly applicationLimit = 20;
+  applicationTotal = 0;
+  applicationPages = 0;
+  changingApplicationId = '';
 
   readonly confirmState = signal<ConfirmState>({
     open: false,
@@ -60,6 +67,9 @@ export class ShortlistsComponent implements OnInit {
   setSource(source: 'public' | 'applications'): void {
     if (source === this.source) return;
     this.source = source;
+    this.applicationPage = 1;
+    this.applicationTotal = 0;
+    this.applicationPages = 0;
     this.shortlists = [];
     this.notice = '';
     this.jobFilter = '';
@@ -158,33 +168,103 @@ export class ShortlistsComponent implements OnInit {
     this.stageFilter = stage;
   }
 
-  loadShortlists(): void {
+  changeApplicationPage(page: number): void {
+    if (this.loading || page < 1 || page > this.applicationPages) return;
+    this.applicationPage = page;
+    this.loadShortlists();
+  }
+
+  loadShortlists(message = ''): void {
     const version = ++this.loadVersion;
     const source = this.source;
     this.loading = true;
     this.error = '';
-    this.notice = '';
+    this.notice = message;
     this.savingNoteId = '';
+    this.changingApplicationId = '';
     this.shortlists = [];
     this.onConfirmCancelled();
 
     const request =
       source === 'applications'
-        ? this.matchService.getApplicationShortlists()
+        ? this.matchService.getApplicationShortlists(this.applicationPage, this.applicationLimit)
         : this.matchService.getShortlists();
     request.pipe(finalize(() => this.cdr.markForCheck())).subscribe({
       next: (response: any) => {
         if (version !== this.loadVersion || source !== this.source) return;
         this.shortlists = response?.shortlists || [];
+        if (source === 'applications') {
+          this.applicationTotal = response?.meta?.total ?? this.shortlists.length;
+          this.applicationPages = response?.meta?.pages ?? 1;
+          if (this.applicationPage > Math.max(1, this.applicationPages)) {
+            this.applicationPage = Math.max(1, this.applicationPages);
+            this.loadShortlists(message);
+            return;
+          }
+        }
         this.loading = false;
       },
       error: (err) => {
         if (version !== this.loadVersion || source !== this.source) return;
         this.shortlists = [];
+        this.applicationTotal = 0;
+        this.applicationPages = 0;
         this.error = err?.error?.message || 'Unable to load shortlists right now.';
         this.loading = false;
       },
     });
+  }
+
+  changeApplicationStatus(event: { item: any; status: string }): void {
+    const { item, status } = event;
+    if (
+      this.loading ||
+      this.changingApplicationId ||
+      this.source !== 'applications' ||
+      !this.shortlists.includes(item) ||
+      item?.access?.manageApplicationStatus !== true ||
+      !item.applicationId ||
+      !item.application?.permittedStatuses?.includes(status)
+    )
+      return;
+    const expectedStatus = item.application.status;
+    const version = this.loadVersion;
+    const apply = () => {
+      if (version !== this.loadVersion || this.changingApplicationId) return;
+      this.changingApplicationId = item._id;
+      this.error = '';
+      this.notice = '';
+      this.applications
+        .status(item.jobId, item.applicationId, status, expectedStatus)
+        .pipe(finalize(() => this.cdr.markForCheck()))
+        .subscribe({
+          next: () => {
+            if (version !== this.loadVersion) return;
+            this.loadShortlists(
+              `Application status updated to ${status}. Internal stage is unchanged.`,
+            );
+          },
+          error: (error) => {
+            if (version !== this.loadVersion) return;
+            this.changingApplicationId = '';
+            this.refreshAfterDenied(error);
+            this.error =
+              error?.status === 409
+                ? 'Application changed. Refreshed the current status; review it before trying again.'
+                : error?.error?.message || 'Unable to update application status. Please retry.';
+          },
+        });
+    };
+    if (status === 'rejected') {
+      this.confirmState.set({
+        open: true,
+        title: 'Reject application',
+        message:
+          'Reject this application and notify the applicant? This is terminal. Internal notes and stage are retained.',
+        confirmText: 'Reject application',
+        action: apply,
+      });
+    } else apply();
   }
 
   advance(item: any): void {

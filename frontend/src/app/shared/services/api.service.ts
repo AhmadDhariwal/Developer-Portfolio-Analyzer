@@ -809,8 +809,10 @@ export class ApiService {
       payload,
     );
   }
-  getRecruiterApplicationShortlists(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/recruiter-hub/shortlists/applications`);
+  getRecruiterApplicationShortlists(page = 1, limit = 20): Observable<any> {
+    return this.http.get(`${this.baseUrl}/recruiter-hub/shortlists/applications`, {
+      params: { page, limit },
+    });
   }
   updateRecruiterApplicationShortlist(
     id: string,

@@ -53,6 +53,25 @@
     {{ item?.job?.owner?.name }} � {{ item.job.sharedTeam.name }} �
     {{ item?.access?.manage ? 'Can manage evaluations' : 'Read only' }}
   </p>
+  <div
+    class="shortlist-card__actions"
+    *ngIf="item?.applicationId && !hideActions && item?.access?.manageApplicationStatus"
+    role="group"
+    aria-label="Applicant-visible application status"
+  >
+    <button
+      *ngFor="let status of item.application.permittedStatuses"
+      type="button"
+      class="shortlist-card__btn"
+      [class.shortlist-card__btn--danger]="status === 'rejected'"
+      [class.shortlist-card__btn--primary]="status === 'reviewing'"
+      [disabled]="changingApplication"
+      (click)="applicationStatusChange.emit({ item: item, status: status })"
+    >
+      {{ status === 'rejected' ? 'Reject application' : 'Mark application reviewing' }}
+    </button>
+    <span *ngIf="changingApplication" role="status">Updating application...</span>
+  </div>
   <p *ngIf="item?.applicationId">
     Direct application · Owner only · Application status: {{ item.application.status }}
     <a
